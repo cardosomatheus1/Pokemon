@@ -7,7 +7,7 @@ import { BEHAV, applyStorm } from './coreografia.mjs';
 import { H, W } from './render.mjs';
 import { MOVE_FX, bursts, later, pushFx } from './efeitos.mjs';
 import { S } from './estado.mjs';
-import { TCOLOR } from '../../engine/engine.mjs';
+import { TCOLOR } from './motor.mjs';
 import { dirOf } from './sprites.mjs';
 import { drawFrame, floatText, koToast, selRing, setAnim, uiLayer, updatePlate } from './rodada.mjs';
 import { marcarAbate } from './killfeed.mjs';

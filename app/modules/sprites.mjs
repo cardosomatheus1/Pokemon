@@ -7,7 +7,7 @@
  * v0.6.1, registrada no CLAUDE.md e no LEIA-ME do protótipo.
  */
 
-import { showdownSlug, spriteURL } from '../../engine/engine.mjs';
+import { showdownSlug, spriteURL } from './motor.mjs';
 import { S } from './estado.mjs';
 import { log } from './dom.mjs';
 

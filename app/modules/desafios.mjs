@@ -3,7 +3,7 @@
  * Fronteira: mede o que aconteceu e paga recompensa não transferível. */
 
 import { S } from './estado.mjs';
-import { TIPO_PT, rng } from '../../engine/engine.mjs';
+import { TIPO_PT, rng } from './motor.mjs';
 import { saveBal } from './controles.mjs';
 import { saveProfile } from './perfil.mjs';
 

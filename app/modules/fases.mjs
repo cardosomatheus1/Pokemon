@@ -5,7 +5,7 @@
 
 import { $, log } from './dom.mjs';
 import { APOSTA_MIN, emReais, registrarAposta, valorAposta } from './carteira.mjs';
-import { CONF, CUR, MOEDA, applyWeather, newSeed, pickLineup, rng, rollWeather, simulate } from '../../engine/engine.mjs';
+import { CONF, CUR, MOEDA, applyWeather, newSeed, pickLineup, rng, rollWeather, simulate } from './motor.mjs';
 import { S } from './estado.mjs';
 import { buildEntities, overlay, preloadSheets, selRing } from './rodada.mjs';
 import { buildPickList, computeOdds, refreshOddsTable } from './odds.mjs';

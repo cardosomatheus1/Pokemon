@@ -187,9 +187,9 @@ muleta.
 
 ---
 
-### L-014 — `spriteURL` mora no motor e é dado de conteúdo
+### L-014 — `spriteURL` mora no motor e é dado de conteúdo ✅ FECHADA
 
-**Dono:** F0.4 · **Notada em:** F0.2
+**Fechada em:** F0.4 · **Notada em:** F0.2
 
 `buildRoster` grava `f.sprite` e a interface usa esse campo. Para não mudar
 comportamento no F0.2, `spriteURL` ficou dentro de `engine/engine.mjs`. É função
@@ -197,6 +197,11 @@ pura e sem DOM, então não fere o teste de motor limpo — mas é **dado de con
 morando no motor, exatamente o que a Content Layer existe para eliminar.
 
 Em F0.4, `spriteURL` sai do motor e vira responsabilidade do ContentPack.
+
+**Como fechou.** `sprite(esp)` é agora uma função do pack, exigida por
+`validarPack`; `montarElenco` chama `pack.sprite(p)` e não conhece endereço
+nenhum. O pack sintético devolve um data URI, e a rodada dele passa — prova de
+que o motor não presume HTTP nem espelho.
 
 ### L-015 — quatro handlers `onclick` embutidos no HTML ✅ FECHADA
 
@@ -261,6 +266,41 @@ precisa de inspeção visual antes de virar ovo.
 De todo modo o ovo é **genérico**, não é de espécie — então é o candidato natural
 a ser a **primeira peça de arte original** do projeto, e não depende da troca de
 tema inteira para existir. Ver L-008.
+
+### L-020 — a ligação exporta 13 apelidos herdados
+
+**Dono:** F0.5 · **Notada em:** F0.4
+
+`app/modules/motor.mjs` exporta `KANTO_DEX`, `CHART`, `simulate`, `buildRoster`,
+`pickLineup`, `rollWeather`, `applyWeather`, `displayName`, `showdownSlug`,
+`spriteURL` e mais três, todos apontando para os nomes novos em português.
+
+Existem porque o F0.4 é a Content Layer, não uma renomeação: reescrever 11
+módulos e 3 fixtures no mesmo bloco misturaria duas mudanças e tornaria
+impossível dizer qual quebrou o quê. Mas `KANTO_DEX` num arquivo que promete
+independência de tema é justamente o que o bloco veio tirar — o apelido carrega
+o nome da franquia de volta para dentro do app.
+
+**O que destrava:** F0.5 já mexe em toda a superfície de sorteio para plantar a
+seed raiz. Renomear no mesmo passo é um `sed` com o parser de escopo que o F0.3a
+já usou, e o teste de vazamento passa a valer para `app/modules/` também.
+
+### L-021 — o motor exige um pool de golpes chamado `normal`
+
+**Dono:** F1.3 · **Notada em:** F0.4
+
+`atribuirGolpes` cai em `golpes.normal` quando o pool do próprio tipo se esgota,
+e `validarPack` exige que a chave exista. Ou seja: o motor não conhece o tema,
+mas conhece **uma palavra** do tema. Um pack sem nada equivalente a "golpe
+genérico" — só afinidades exclusivas — não consegue nascer.
+
+Não cabe agora porque trocar o contrato exige decidir o que substitui: um campo
+`golpes.reserva` explícito no pack, um pool derivado, ou permitir moveset menor
+que quatro. As três mudam distribuição de dano, e distribuição de dano move as
+odds — medição de F1.3, que é o bloco do balanceamento de golpes.
+
+**O que destrava:** F1.3 já vai medir cobertura de golpe por espécie (os 14 de 66
+nunca atribuídos, do baseline do F0.1). A escolha do contrato sai dessa medição.
 
 ## Conteúdo e identidade
 

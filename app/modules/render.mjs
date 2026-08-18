@@ -8,7 +8,7 @@
  * módulo é importado por um script no fim do <body>.
  */
 
-import { rng } from '../../engine/engine.mjs';
+import { rng } from './motor.mjs';
 import { S } from './estado.mjs';
 import { drawWeatherGround } from './clima.mjs';
 

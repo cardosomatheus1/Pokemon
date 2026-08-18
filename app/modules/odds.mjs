@@ -5,7 +5,7 @@
  * uma vez, senão quem abre a página em segundo plano nunca vê as odds saírem. */
 
 import { $ } from './dom.mjs';
-import { CONF, newSeed, simulate } from '../../engine/engine.mjs';
+import { CONF, newSeed, simulate } from './motor.mjs';
 import { S } from './estado.mjs';
 import { imgTag } from './sprites.mjs';
 

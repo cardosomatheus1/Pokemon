@@ -318,9 +318,9 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 
 ---
 
-### F0.4 — Content Layer
+### F0.4 — Content Layer ✅
 
-**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q3 · **Depende de** F0.3
+**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q3 Q6 · **Depende de** F0.3
 
 **Escopo:** todo dado de Pokémon — dex, nomes, tipos, stats, golpes, sprites, trilha — sai do código e vira `ContentPack`. O motor recebe o pack como parâmetro.
 
@@ -330,7 +330,21 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 
 **Q6:** validação de pack é superfície — pack malformado não pode causar execução arbitrária nem travar o servidor futuro. Testar pack com campos extras, tipos errados e valores fora de faixa.
 
+**Também resolve:** L-014 (`spriteURL` sai do motor e vira função do pack).
+
 **Saída:** o motor roda contra pack sintético de 12 criaturas inventadas; goldens do pack Kanto inalterados.
+
+**Entregue.** `engine/engine.mjs` virou a fábrica `criarMotor(pack)`; `engine/pack.mjs` valida; `content/pokemon_kanto_v1.mjs` guarda os 146 registros, os 66 golpes, a tabela de tipos, os 5 climas, a moeda e as três funções de nome e arte. A ligação com o app acontece uma vez, em `app/modules/motor.mjs` — o teste de fonte única passou a exigir que seja **uma só**, porque duas ligações seriam dois packs vivos no mesmo processo.
+
+**Goldens byte a byte inalterados: 20/20.** A suíte foi de 62 para 75 testes (83 com o portão de navegador).
+
+> **O gerador do instantâneo saiu de `engine/` para `tools/`.** O teste de vazamento varre `engine/` inteiro, e um script que lista `KANTO_DEX` por nome não é motor, é ferramenta. Sem essa mudança o teste precisaria de uma exceção, e exceção em teste de vazamento é o começo do vazamento.
+
+> **A sabotagem achou um buraco na primeira rodada, e é o buraco que o próprio bloco previu.** S22 remove do validador a checagem "toda espécie alcança um pool do próprio tipo" e **passou despercebido**: os dois packs em uso têm pool para todo mundo, então a checagem removida não mudava nada. Medido com a checagem fora: a espécie de tipo puro sem pool sai com quatro golpes Normais — **o lutador mudo**, exatamente o que o bloco mandava fazer falhar alto. O que faltava não era a checagem, era um pack de teste nessa forma. Com o estrago novo em `test/conteudo.mjs`, S22 fica vermelho.
+
+**O que o Q6 cobre:** 12 ataques de pack malformado — stat negativo, `NaN`, `Infinity`, número como string, poder `1e9`, precisão 40, efetividade `1e6` e negativa, multiplicador de clima 500, array onde vai objeto e objeto onde vai array. Mais três casos de forma: campo extra com getter que estoura ao ser lido (não pode derrubar o carregamento), `__proto__` e `constructor.prototype` hostis (não podem poluir `Object.prototype`), e um pack de 5.000 espécies validado em tempo linear — custo quadrático na validação é negação de serviço no servidor da V2.
+
+**Lacunas abertas:** L-020 (a ligação exporta 13 apelidos herdados, incluindo `KANTO_DEX`; dono F0.5) e L-021 (o motor exige um pool chamado `normal`; dono F1.3).
 
 ---
 

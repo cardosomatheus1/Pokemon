@@ -3,7 +3,7 @@
  * Fronteira: não sabe regra nenhuma; pergunta a fase e delega. */
 
 import { $ } from './dom.mjs';
-import { CONF } from '../../engine/engine.mjs';
+import { CONF } from './motor.mjs';
 import { S } from './estado.mjs';
 import { applyEvent } from './eventos.mjs';
 import { drawFx, sched } from './efeitos.mjs';

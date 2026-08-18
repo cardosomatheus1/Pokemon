@@ -3,7 +3,7 @@
  * Fronteira: puramente cosmética. Nada aqui toca probabilidade nem economia. */
 
 import { $ } from './dom.mjs';
-import { CUR, KANTO_DEX, KANTO_DEX_FULL, TCOLOR, TIPO_PT, displayName, showdownSlug } from '../../engine/engine.mjs';
+import { CUR, KANTO_DEX, KANTO_DEX_FULL, TCOLOR, TIPO_PT, displayName, showdownSlug } from './motor.mjs';
 import { DEPOSIT_PACKAGES, simulateDeposit } from './carteira.mjs';
 import { PROFILE_DEFAULT, loadProfile, nivelDe, progressoNivel, saveProfile, tituloDe, topOf } from './perfil.mjs';
 import { S } from './estado.mjs';

@@ -10,6 +10,7 @@ import * as fonteUnica from './fonte-unica.mjs';
 import * as paridade from './paridade.mjs';
 import * as estado from './estado.mjs';
 import * as modulos from './modulos.mjs';
+import * as conteudo from './conteudo.mjs';
 import * as visual from './visual.mjs';
 
 if (process.argv.includes('--gerar')) {
@@ -49,7 +50,7 @@ else console.log('  · Q5 visual pulado (sem navegador) — use npm run portoes 
 const suites = [
   ...(semGolden ? [] : [golden.suite()]),
   invariantes.suite(), estatistica.suite(),
-  fonteUnica.suite(), estado.suite(), modulos.suite(),
+  fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(),
   ...(visual.disponivel() && !semVisual ? [visual.suite(rVisual), visual.suiteBase(baseAtual, baseGravada)] : []), await paridade.suite(),
 ];
 let total = 0, falhas = [];

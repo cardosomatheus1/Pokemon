@@ -4,7 +4,7 @@
  * como tal; autenticação de verdade é da V1. */
 
 import { $ } from './dom.mjs';
-import { CUR } from '../../engine/engine.mjs';
+import { CUR } from './motor.mjs';
 import { S } from './estado.mjs';
 import { avatarURL, renderProfile, trainerURL } from './customizacao.mjs';
 import { progressoNivel, saveProfile, tituloDe } from './perfil.mjs';

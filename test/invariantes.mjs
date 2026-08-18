@@ -4,7 +4,7 @@
  * A Spec §4.6 lista 11 invariantes. Cinco delas são de carteira/aposta e só
  * passam a ser verificáveis a partir de F0.9 e F1.4; estão marcadas abaixo e
  * NÃO são silenciosamente omitidas. */
-import * as E from '../engine/engine.mjs';
+import * as E from './motor.mjs';
 import { criarSuite, ok, rngTeste, elencoDeterministico } from './harness.mjs';
 
 const RODADAS = 2000;

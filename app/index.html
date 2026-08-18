@@ -1166,7 +1166,7 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 /* O motor de combate NÃO mora mais aqui. Ele é importado de engine/engine.mjs,
    que é a fonte única desde o bloco F0.2. Uma cópia divergente neste arquivo é
    o modo de falha clássico desta troca, e test/fonte-unica.mjs a reprova. */
-import { CHART, CONF, KANTO_DEX, KANTO_DEX_FULL, rng } from '../engine/engine.mjs';
+import { CHART, CONF, KANTO_DEX, KANTO_DEX_FULL, rng } from './modules/motor.mjs';
 import { S } from './modules/estado.mjs';
 import { $, log } from './modules/dom.mjs';
 import { ensureDaily } from './modules/desafios.mjs';

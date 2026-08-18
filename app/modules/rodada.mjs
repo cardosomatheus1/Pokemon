@@ -8,7 +8,7 @@ import { MOVE_FX, fxSheet } from './efeitos.mjs';
 import { PMD, SPRITE_MAX_H, conferirFolha, folhasFalhas, folhasOk, sheetURL, urlFolha } from './sprites.mjs';
 import { S } from './estado.mjs';
 import { place } from './coreografia.mjs';
-import { rng } from '../../engine/engine.mjs';
+import { rng } from './motor.mjs';
 
 /* =====================================================================
    ESTADO DA RODADA

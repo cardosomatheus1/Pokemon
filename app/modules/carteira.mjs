@@ -4,7 +4,7 @@
  * ledger do servidor, e por isso todo acesso já passa por aqui. */
 
 import { $ } from './dom.mjs';
-import { CUR, MOEDA } from '../../engine/engine.mjs';
+import { CUR, MOEDA } from './motor.mjs';
 import { S } from './estado.mjs';
 import { alternarSom, aplicarVolume, music } from './audio.mjs';
 import { atualizarSaldo, saveBal } from './controles.mjs';

@@ -5,7 +5,7 @@
   "type": "module",
   "description": "PokéArena — arnês de regressão do bloco F0.1",
   "scripts": {
-    "snapshot": "node engine/snapshot-prototipo.mjs",
+    "snapshot": "node tools/snapshot-prototipo.mjs",
     "test": "node test/run.mjs",
     "test:sem-golden": "SEM_GOLDEN=1 node test/run.mjs",
     "test:gerar": "node test/run.mjs --gerar",

@@ -21,6 +21,10 @@ const LIMITE = 600;
    que NÃO pode é infraestrutura (0 a 3) depender de aplicação. É essa a
    inversão que o teste procura. */
 const CAMADA = {
+  /* A ligação com o motor é a base de tudo: ela instancia o ContentPack e
+     nenhum módulo do app pode ficar abaixo dela. Não importa nada de ./ — só
+     do motor e do pack, que vivem fora desta pasta. */
+  'motor.mjs': 0,
   'dom.mjs': 0,
   'estado.mjs': 0,
   'sprites.mjs': 1,

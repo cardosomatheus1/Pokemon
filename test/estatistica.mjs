@@ -2,7 +2,7 @@
  * Pega mudanças que não alteram nenhum caso isolado mas movem a distribuição:
  * balanceamento, precificação, viés de sorteio. */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import * as E from '../engine/engine.mjs';
+import * as E from './motor.mjs';
 import { criarSuite, ok, dentro, rngTeste, elencoDeterministico } from './harness.mjs';
 
 const ARQ = new URL('./fixtures/baseline.json', import.meta.url);

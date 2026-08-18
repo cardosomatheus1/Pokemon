@@ -1,5 +1,8 @@
 /* Gera um instantâneo do motor CONGELADO em prototype/index.html.
  *
+ * Mudou de engine/ para tools/ no F0.4: o teste de vazamento varre engine/
+ * inteiro e um gerador que lista KANTO_DEX por nome não é motor, é ferramenta.
+ *
  * No F0.1 este script produzia o motor de trabalho. No F0.2 o motor virou
  * código próprio em engine/engine.mjs, e este script mudou de papel: agora
  * serve só ao teste de paridade, que compara o motor vivo com o do protótipo
@@ -10,7 +13,7 @@
  *
  * A saída é descartável e não vai para o versionamento.
  *
- * Uso: node engine/snapshot-prototipo.mjs
+ * Uso: node tools/snapshot-prototipo.mjs
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -80,5 +83,5 @@ ${ALVOS.map(a => '  ' + a + ',').join('\n')}
 };
 `;
 
-writeFileSync(join(raiz, 'engine/.snapshot-prototipo.mjs'), saida);
+writeFileSync(join(raiz, 'tools/.snapshot-prototipo.mjs'), saida);
 console.log(`instantâneo do protótipo · ${ALVOS.length} declarações · ${saida.length} bytes`);

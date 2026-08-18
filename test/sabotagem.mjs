@@ -42,9 +42,14 @@ const DOM    = 'app/modules/dom.mjs';
 const EFEITOS= 'app/modules/efeitos.mjs';
 const COREO  = 'app/modules/coreografia.mjs';
 const SPRITES= 'app/modules/sprites.mjs';
+const LIGACAO= 'app/modules/motor.mjs';
+const PACK   = 'content/pokemon_kanto_v1.mjs';
+const VALID  = 'engine/pack.mjs';
 
 const DEFEITOS = [
-  { id:'S1', arquivo:MOTOR, nome:'tabela de tipos invertida',
+  /* Desde o F0.4 a tabela de tipos é DADO DO PACK, não do motor. O defeito é o
+     mesmo; o arquivo mudou de lado, e é isso que a Content Layer significa. */
+  { id:'S1', arquivo:PACK, nome:'tabela de tipos invertida',
     real:'alguém "corrige" uma entrada e inverte a relação Fogo/Água',
     de:'fire:{fire:.5,water:.5', para:'fire:{fire:.5,water:2' },
 
@@ -85,9 +90,9 @@ const DEFEITOS = [
     de:'<script type="module">',
     para:'<script type="module">\nfunction damageOf(A,D,mv,R){ return {dmg:1,eff:1,crit:false}; }' },
 
-  { id:'S10', arquivo:APP, nome:'app deixa de importar o motor',
+  { id:'S10', arquivo:LIGACAO, nome:'a ligação deixa de importar o motor',
     real:'import removido durante um merge',
-    de:"} from '../engine/engine.mjs';", para:"} from '../engine/copia-local.mjs';" },
+    de:"} from '../../engine/engine.mjs';", para:"} from '../../engine/copia-local.mjs';" },
 
   /* --- defeitos do F0.3a: a fronteira de estado ------------------------- */
   { id:'S11', arquivo:APP, nome:'estado compartilhado volta a ser variável de topo',
@@ -110,7 +115,7 @@ const DEFEITOS = [
   /* --- defeitos do F0.3b: o grafo de módulos ---------------------------- */
   { id:'S15', arquivo:RENDER, nome:'módulo usa símbolo do motor sem importar',
     real:'import perdido num merge — foi exatamente o que aconteceu ao extrair',
-    de:"import { rng } from '../../engine/engine.mjs';\n", para:'' },
+    de:"import { rng } from './motor.mjs';\n", para:'' },
 
   { id:'S16', arquivo:DOM, nome:'dependência invertida entre camadas',
     real:'utilidade de DOM passa a puxar render "só para uma coisinha"',
@@ -135,6 +140,25 @@ const DEFEITOS = [
   { id:'S20', arquivo:APP, nome:'cor do tema alterada sem intenção',
     real:'ajuste de CSS que ninguém revisou; nenhuma suíte de lógica vê',
     de:'  --gold: #f5c542;', para:'  --gold: #7fd8ff;' },
+
+  /* --- defeitos do F0.4: a Content Layer -------------------------------- */
+  { id:'S21', arquivo:PACK, nome:'espécie perde um tipo',
+    real:'edição de dado do pack — a classe de erro que a Content Layer cria',
+    de:"{dex:6,n:'charizard',t:['fire','flying']", para:"{dex:6,n:'charizard',t:[]" },
+
+  { id:'S22', arquivo:VALID, nome:'espécie sem moveset possível passa pela validação',
+    real:'checagem "toda espécie alcança um pool" removida por parecer redundante',
+    de:"    for (const p of pack.especies ?? [])\n      exigir(p.t?.some(",
+    para:"    for (const p of pack.especies ?? [])\n      exigir(true || p.t?.some(" },
+
+  { id:'S23', arquivo:MOTOR, nome:'identificador da franquia hard-coded fora do pack',
+    real:'atalho para um caso especial: "só este Pokémon precisa disso"',
+    de:'function sortearPool(pack, elenco, weatherType){',
+    para:"function sortearPool(pack, elenco, weatherType){\n  const favorito = 'pikachu';" },
+
+  { id:'S24', arquivo:VALID, nome:'validação de pack aceita elenco menor que a arena',
+    real:'limite afrouxado para deixar um pack de teste passar',
+    de:'exigir(pack.elenco.length >= 12,', para:'exigir(pack.elenco.length >= 1,' },
 ];
 
 /* A sabotagem mede se a SUÍTE pega o defeito, então roda sem o portão de
@@ -159,13 +183,15 @@ const suitesQuePegaram = saida => {
   return nomes.length ? nomes : ['(não carrega)'];
 };
 
-const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES];
+const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES, LIGACAO, PACK, VALID];
 const originais = new Map();
 for (const f of ARQUIVOS) originais.set(f, readFileSync(f, 'utf8'));
 
 /* A cópia leva tudo o que a suíte precisa e nada de .git. */
 const CAIXA = mkdtempSync(join(tmpdir(), 'pokearena-sabotagem-'));
-for (const dir of ['engine', 'app', 'test', 'prototype'])
+/* content/ entrou no F0.4 (o motor não roda sem pack) e tools/ carrega o
+   gerador do instantâneo que o teste de paridade executa. */
+for (const dir of ['engine', 'app', 'test', 'prototype', 'content', 'tools'])
   cpSync(dir, join(CAIXA, dir), { recursive: true });
 cpSync('package.json', join(CAIXA, 'package.json'));
 console.log(`caixa de areia: ${CAIXA}\n`);

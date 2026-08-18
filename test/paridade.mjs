@@ -6,7 +6,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { criarSuite, ok, elencoDeterministico, rngTeste } from './harness.mjs';
-import * as VIVO from '../engine/engine.mjs';
+import * as VIVO from './motor.mjs';
 
 /* Divergências intencionais em relação ao protótipo v0.8. */
 export const DIVERGENCIAS = [
@@ -17,8 +17,8 @@ const RODADAS = 3000;
 
 export async function suite() {
   const s = criarSuite('paridade');
-  execFileSync('node', ['engine/snapshot-prototipo.mjs'], { stdio: 'pipe' });
-  const PROTO = await import('../engine/.snapshot-prototipo.mjs');
+  execFileSync('node', ['tools/snapshot-prototipo.mjs'], { stdio: 'pipe' });
+  const PROTO = await import('../tools/.snapshot-prototipo.mjs');
 
   s.teste('mesmo elenco a partir dos mesmos dados', () => {
     ok(PROTO.KANTO_DEX.length === VIVO.KANTO_DEX.length, 'tamanho do elenco divergiu');
