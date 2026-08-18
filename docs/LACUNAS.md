@@ -167,6 +167,35 @@ F1.9 entrega o mecanismo e a instrumentação; a calibração é pós-V1 e preci
 dono declarado quando a V1 estiver em produção, senão o sistema roda para sempre
 com os números de exemplo.
 
+### L-013 — os capítulos 6 a 9 da Spec ficaram desatualizados
+
+**Dono:** trilha `documento` · **Bloqueia:** nada imediatamente · **Criado por:** decisões do Design Depth §8
+
+As três decisões tomadas sobre profundidade — mercados de apuração mútua, V3
+absorvido em V2, Liga de Previsão antecipada — mudam o que V2 a V5 são. A Spec
+v1.4 ainda descreve a estrutura anterior:
+
+| Capítulo da Spec | Estado |
+|---|---|
+| §3 Mapa de versões | desatualizado: nomes e conteúdo das fases mudaram |
+| §5.6 Aposta | incompleto: descreve só o Winner Market de odd fixa; falta apuração mútua |
+| §6 V2 Collection | precisa virar V3 e ganhar a camada de informação/dossiê |
+| §7 V3 Trainer Idle | deixa de ser capítulo próprio; expedições viram pesquisa dentro da Collection |
+| §8 V4 Team & Journey | reposicionamento: ginásios como ensino do motor, não segundo jogo |
+| §9 V5 League | falta a Liga de Previsão, que sobe para a V2 |
+| §10 Economia | falta a taxa de mercado mútuo como sink, e informação como recompensa não monetária |
+| §22 Decisões separadas | falta `Informação != Probabilidade` como invariante |
+
+**Por que não foi feito junto:** reescrever oito capítulos da fonte de verdade é
+trabalho de documento, não de bloco, e fazê-lo no mesmo commit que o plano de
+execução misturaria duas revisões independentes. O `BUILD_BLOCKS v1.2` já reflete
+as decisões e é o que vale para executar; a Spec vira v1.5 quando esta lacuna
+fechar.
+
+**Risco enquanto estiver aberto:** `CLAUDE.md` diz que em conflito a Spec vence.
+Entre agora e a v1.5 da Spec, essa regra tem uma exceção — para V2 a V5, valem o
+`DESIGN_DEPTH_v1.0` e o `BUILD_BLOCKS v1.2`. Está anotado no `CLAUDE.md`.
+
 ### L-012 — a consulta de enquadramento regulatório não foi feita
 
 **Dono:** trilha `jurídico` · **Bloqueia:** Etapa A item 8, Fase 5 inteira

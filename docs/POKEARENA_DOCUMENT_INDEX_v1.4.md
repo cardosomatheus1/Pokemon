@@ -97,14 +97,20 @@ Plano de execução. Decompõe v0.9 → V5 em 50 blocos cíclicos, cada um dimen
 
 Não substitui a Master Spec: a Spec diz *o quê*, este documento diz *em que ordem e em que pedaços*.
 
-### 5) `POKEARENA_DESIGN_DEPTH_v1.0.md` — ATUAL, **em decisão**
+### 5) `POKEARENA_DESIGN_DEPTH_v1.1.md` — ATUAL
 Análise de profundidade, maestria e retenção. Nasceu da pergunta "os outros modos não são simples demais?" e encontrou um problema anterior a ela: **a Arena não tem teto de habilidade**. Como as odds saem de `1/p × (1-margem)`, o `p` cancela e toda aposta tem o mesmo valor esperado — medido, 0,89 a 0,93, dentro do ruído de amostragem.
 
 Corolário: os dois defeitos de fairness que a Spec v1.4 manda corrigir eram as duas únicas formas de um jogador ter vantagem. Quanto mais correto o jogo fica, menos habilidade tem.
 
 Propõe três movimentos que preservam P4 integralmente: mercados de apuração mútua, informação como moeda do metagame, e calibração como métrica de maestria. Reposiciona V2 a V5.
 
-**Contém quatro decisões em aberto (§8) que alteram escopo de V2 a V5. Nada ali vale até serem respondidas.**
+A v1.1 acrescenta o capítulo 11 — **mundo do treinador**: evolução, treino, escolha de golpes e ginásios. Ele corrige um desequilíbrio da v1.0, que ao conectar tudo por informação havia deixado de fora a fantasia de criar Pokémon. A ponte que faltava é o doce de espécie: apostar numa espécie rende matéria-prima para criar a sua, e capturar na Arena rende a **forma base**, não o lutador que apareceu — você viu o campeão, leva um ovo.
+
+O item de maior retorno do capítulo: **ginásios exibem a probabilidade de vitória do seu time antes do desafio**. O jogador manipula uma probabilidade e vê o número mexer, que é a única forma de aprender a ler probabilidade. Depois volta para a Arena, onde só pode ler, e lê melhor.
+
+**Decisões do §8 aceitas:** mercados de apuração mútua sim · V3 Idle absorvido em V2 · Liga de Previsão antecipada para a V2.
+
+> Enquanto a lacuna **L-013** estiver aberta, este documento e o Build Blocks v1.2 **prevalecem sobre a Spec** para V2 a V5.
 
 ## 2. Documentos substituídos
 
@@ -162,7 +168,7 @@ Inalterados nesta revisão — as simulações da v1.1 foram reproduzidas de for
 1. Master Spec v1.4 — começar pelas seções 0.5.1, 0.6 e cap. 28 se o interesse for a mudança desta revisão;
 2. Economy Study v1.2;
 3. Unit Economics Study v1.2;
-4. Design Depth v1.0 — antes de detalhar qualquer bloco de V2 a V5;
+4. Design Depth v1.1 — antes de detalhar qualquer bloco de V2 a V5;
 5. Build Blocks v1.1 — para executar, não para decidir;
 6. CSVs/simuladores apenas quando for alterar parâmetros.
 

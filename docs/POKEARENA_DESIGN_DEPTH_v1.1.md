@@ -1,9 +1,11 @@
-# PokéArena — Profundidade, Maestria e Retenção v1.0
+# PokéArena — Profundidade, Maestria e Retenção v1.1
 
-**Documento:** DESIGN-DEPTH-001 · Revisão 1.0
+**Documento:** DESIGN-DEPTH-001 · Revisão 1.1 (mundo do treinador)
 **Base:** Master Spec v1.4 · medições feitas sobre o motor da base v0.8
 **Pergunta que motivou:** os modos de jogo além da Arena são simples demais para prender o jogador?
-**Status:** análise de design com proposta. Altera escopo de V2 a V5; nada aqui vale até ser aceito.
+**Status:** análise de design com proposta. Altera escopo de V2 a V5.
+**Decisões aceitas (§8):** mercados de apuração mútua **sim**; V3 Idle **absorvido em V2**; Liga de Previsão **antecipada para a V2**.
+**Alterações da v1.1:** capítulo 11 é novo — evolução, treino, escolha de golpes e ginásios. Ele corrige um desequilíbrio da v1.0.
 
 ---
 
@@ -262,3 +264,183 @@ Nada aqui deveria ser construído inteiro com base neste documento. O caminho ba
 | Coleção puxa aposta | medir se quem captura passa a apostar mais na espécie capturada |
 
 As quatro cabem dentro da V1 mais um bloco cada, e as quatro respondem antes de comprometer V2 a V5.
+
+---
+
+# 11. O mundo do treinador — evolução, treino, golpes e ginásios
+
+## 11.1 O que a v1.1 corrige
+
+A revisão v1.0 resolveu um problema real — os modos estavam desconectados do núcleo — e criou outro no caminho: ao conectar tudo por **informação**, ela transformou o metagame em analytics e deixou de fora a fantasia que é o coração do gênero. Criar, treinar, evoluir, escolher golpes, vencer o ginásio.
+
+Isso não é enfeite nostálgico. É o motor de retenção mais testado que existe nesse tipo de jogo, e ele opera por um mecanismo que o dossiê não alcança: **apego**. Um relatório de desempenho do Onix é útil. *O meu* Onix, que eu criei desde o começo e que passou do ginásio de Pedra no limite, é outra coisa.
+
+As duas precisam coexistir. Este capítulo mostra como, sem tocar em P4.
+
+## 11.2 A regra que dá espaço para tudo
+
+O P4 diz que nada que o jogador possui altera **a Arena**. Ele **não** diz nada sobre o resto do jogo.
+
+```text
+Arena          normalizada, odds honestas, o que você possui é irrelevante
+Mundo do       RPG completo — nível, evolução, golpes escolhidos, time,
+treinador      ginásios. O que você possui é tudo
+```
+
+A separação não é limitação, é o desenho. O problema nunca foi que o Pokémon possuído não entra na Arena — foi que **não havia razão para ir de um lado ao outro**. A v1.0 construiu uma ponte (informação, do mundo do treinador para a Arena). Faltava a ponte de volta.
+
+## 11.3 A ponte que faltava: a Arena alimenta o time
+
+**Proposta:** apostar passa a render matéria-prima para criar.
+
+```text
+aposto no Onix  ──►  Onix vence  ──►  PokéCash  +  Doce de Onix
+                                                        │
+                                                        ▼
+                                          o MEU Onix sobe de nível
+```
+
+O doce de espécie já existe na Spec (§6.9, `Species Candy`), hoje sem propósito claro. Ligá-lo ao resultado da aposta faz três coisas de uma vez:
+
+1. **Suas escolhas de aposta moldam seu time.** Quem aposta muito em Pedra cria um time de Pedra. A identidade do treinador emerge do comportamento, não de um seletor de classe.
+2. **Perder deixa de ser estéril.** Aposta perdida ainda rende doce reduzido da espécie — você não levou o dinheiro, mas avançou o bicho. Isso ataca diretamente o ponto mais frágil da retenção num jogo de aposta: a sessão que termina no vermelho.
+3. **Não fere P4 nem P5.** O doce não compra probabilidade, não entra na Arena, não é transferível. É recurso de PvE.
+
+> **Guarda-corpo:** o doce precisa vir do **fato de a espécie ter vencido**, não do valor apostado. Escalar com o valor transformaria criar Pokémon em motivo para apostar mais alto, que é exatamente o incentivo que o capítulo 28 existe para não criar.
+
+## 11.4 De onde vem o Pokémon que você cria
+
+Aqui há um problema que precisa ser resolvido antes de tudo: **o elenco da Arena é só evolução final** (76 lutadores, por decisão da v0.3). Se a captura viesse do que aparece na Arena, o jogador só capturaria formas finais — e não haveria evolução nenhuma para jogar.
+
+**Proposta:** a captura na Arena rende a **forma base** da espécie, não o lutador que apareceu.
+
+Isso é mecanicamente necessário e tematicamente melhor do que a alternativa:
+
+> Você viu o campeão lutar. O que você leva para casa é um ovo.
+
+O jogador assiste ao Charizard dominar a arena e sai com um Charmander. A distância entre os dois **é o jogo**. Nada explica melhor por que vale a pena criar.
+
+Espécies sem pré-evolução (Tauros, Ditto, Snorlax, Lapras e as outras 15 do elenco) vêm na própria forma — e viram naturalmente a faixa de entrada, porque não exigem cadeia de evolução para serem usáveis.
+
+## 11.5 Evolução: uma escolha com consequência em dois sistemas
+
+Evolução automática por nível é progressão sem decisão. A proposta é dar peso à decisão, com um trade-off que existe nos jogos originais e que aqui ganha uma segunda camada:
+
+```text
+evoluir agora    ── stats maiores, acesso ao ginásio seguinte
+                 ── libera o DOSSIÊ da forma final na Arena
+
+esperar          ── a pré-evolução aprende golpes que a forma final não aprende
+                 ── amplitude de moveset para PvE e Liga de Equipe
+```
+
+A segunda linha é a que amarra os dois documentos: **a Arena só tem formas finais, então evoluir é como se destrava a análise dos lutadores em que você realmente aposta.** O jogador que quer o dossiê do Charizard precisa evoluir o Charmander dele. A fantasia de RPG e a economia de informação passam a puxar na mesma direção em vez de competir.
+
+E o custo de esperar é real: quem segura a evolução por causa de um golpe tem PvE mais difícil e demora mais a destravar a análise.
+
+## 11.6 Golpes: a mecânica de RPG que é o tutorial do jogo de aposta
+
+Na Arena, os quatro golpes de cada lutador saem de `assignMoves` — determinístico por espécie, com viés ofensivo que privilegia o lado mais forte do bicho. O jogador não escolhe e nem vê o porquê.
+
+No mundo do treinador, **o jogador escolhe**. E é aí que está a oportunidade que nenhum outro jogo desse tipo tem:
+
+> Ao montar o moveset do seu Pokémon, um botão mostra **o que a Arena escolheria para aquela espécie, e por quê** — e deixa comparar.
+
+```text
+seu Charizard         Lança-Chamas · Voar · Terremoto · Garra de Dragão
+Charizard da Arena    Lança-Chamas · Rajada de Fogo · Voar · Bicada
+                      (viés ofensivo: SpA 109 > Atk 84 → prioriza especial)
+```
+
+O jogador que faz isso vinte vezes aprende, sem aula nenhuma, como os lutadores da Arena são construídos — e passa a olhar uma pool de 12 e enxergar quais estão bem montados. É perícia de aposta adquirida por meio de uma mecânica de RPG.
+
+Esse é o tipo de conexão que a v1.0 procurava e não achou: a mecânica não é uma ponte *para* o núcleo, ela **é** treinamento do núcleo.
+
+## 11.7 Treino: legível, não profundo
+
+O §21 da Spec já proíbe IV/EV/Natures completos, e está certo — é complexidade que afasta sem criar decisão interessante para este público.
+
+```text
+Nível              cresce com doce e com PvE
+Foco de treino     Training Center concentra crescimento em uma frente
+                   (ofensiva, defensiva, velocidade), com custo de trocar
+Vínculo            sobe com uso; dá bônus pequeno e é onde mora o apego
+```
+
+Três eixos, cada um com efeito visível numa tela. Se o jogador não consegue explicar para um amigo o que o treino fez, o sistema está complexo demais.
+
+## 11.8 Ginásios: onde o Monte Carlo vira treinador
+
+Este é o item com maior retorno de todo o capítulo, e ele só é possível **porque este jogo tem um motor de simulação**.
+
+Antes de desafiar um ginásio, o jogo mostra:
+
+```text
+        Ginásio de Pedra — Brock
+        seu time vence 23% das vezes
+
+        maior fraqueza: nenhum golpe seu é super-efetivo contra Pedra
+        se trocar Pidgeotto por Squirtle:  61%
+```
+
+O jogador **manipula uma probabilidade e vê o número se mexer**. Ele monta time, troca golpe, evolui, e observa o efeito. Isso é exatamente a habilidade que a Arena cobra — ler probabilidade a partir de composição de tipos e stats — praticada num ambiente onde ele tem controle, que é a única forma de aprender.
+
+Depois ele volta para a Arena, onde só pode ler, e lê melhor.
+
+```text
+Mundo do treinador   probabilidade que você MANIPULA   → aprende
+Arena                probabilidade que você só LÊ      → aplica
+```
+
+Nenhum outro jogo de criaturas pode fazer isso, porque nenhum outro publica as próprias probabilidades. Aqui o motor já existe e o número já é calculado — falta só mostrá-lo.
+
+Os ginásios ficam com identidade de tipo e ordem clássica, e cada um ensina uma interação específica: Brock ensina fraqueza de tipo, Misty ensina que velocidade decide trocas apertadas, Lt. Surge ensina imunidade, Sabrina ensina físico contra especial.
+
+## 11.9 O laço completo
+
+```text
+      aposto numa espécie
+              │
+              ├──► ganho PokéCash               (economia)
+              └──► ganho doce daquela espécie
+                          │
+                          ▼
+              crio, treino e evoluo o meu
+                          │
+                          ├──► libero o dossiê da forma final  ──┐
+                          │                                      │
+                          ▼                                      │
+              escolho golpes e comparo com os da Arena           │
+                          │                                      │
+                          ▼                                      │
+              passo do ginásio, vendo minha % subir              │
+                          │                                      │
+                          ▼                                      │
+              aprendo a ler composição de tipo e stat            │
+                          │                                      │
+                          ▼                                      │
+              leio melhor a pool ◄─────────────────────────────--┘
+                          │
+                          ▼
+              aposto melhor nos mercados mútuos
+```
+
+Três motivos de retorno diferentes, para três perfis diferentes de jogador, no mesmo laço: quem volta pelo dinheiro, quem volta pelo bicho, e quem volta para ficar melhor. Nenhum deles depende de recompensa diária ou temporizador.
+
+## 11.10 O que isso muda no roadmap
+
+| Decisão anterior | Ajuste |
+|---|---|
+| V3 absorvido em V2 | mantido, mas o que é absorvido muda: expedições viram fonte de **encontro e doce**, não só de relatório |
+| Collection = dossiê | passa a ser Collection = **criar** + dossiê. Captura rende forma base |
+| V4 = ensinar a ler o motor | confirmado e reforçado: ginásios com probabilidade exibida são o mecanismo |
+| Doce de espécie | sai de recurso sem propósito e vira a ponte Arena → mundo do treinador |
+
+Isso acrescenta blocos à fase de Collection: cadeia de evolução, moveset escolhido pelo jogador, comparador com a Arena, e o cálculo de probabilidade de ginásio.
+
+## 11.11 Riscos que este capítulo cria
+
+1. **Duas curvas de progressão competindo pela sessão.** Calibração e nível do time medem coisas diferentes e podem puxar o jogador para lados opostos. Mitigação: manter uma tela inicial só, que mostre as duas e o próximo passo de cada.
+2. **O doce pode virar motivo para apostar mais.** Por isso a regra de não escalar com valor apostado. Precisa de teste explícito no bloco.
+3. **PvE mal calibrado vira paredão ou passeio.** A probabilidade exibida ajuda o jogador, mas exige que o balanceamento dos ginásios seja medido, não estimado — mesmo método do killstreak e das odds.
+4. **Escopo.** Evolução, moveset e ginásios com probabilidade são bem mais trabalho que a Collection original. Se for preciso cortar, cortar **treino** (§11.7) antes de cortar evolução ou escolha de golpes: treino é o eixo com menos decisão por unidade de esforço.
