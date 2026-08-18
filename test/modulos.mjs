@@ -12,15 +12,36 @@ const DIR = new URL('../app/modules/', import.meta.url);
 const APP = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
 const LIMITE = 600;
 
-/* Camadas, da base para o topo. Um módulo só pode importar de camada
-   estritamente anterior, ou da mesma. */
+/* Camadas, da base para o topo. Um módulo importa da mesma camada ou de uma
+   anterior, nunca de uma posterior.
+
+   A camada 4 é a aplicação, e ali os módulos se importam entre si de
+   propósito: fases chama carteira, carteira abre modal de navegação,
+   navegação lê perfil. Isso é acoplamento real do produto, não bagunça — o
+   que NÃO pode é infraestrutura (0 a 3) depender de aplicação. É essa a
+   inversão que o teste procura. */
 const CAMADA = {
-  'dom.mjs': 0, 'estado.mjs': 0,
-  'sprites.mjs': 1, 'audio.mjs': 1,
-  'render.mjs': 2, 'efeitos.mjs': 2, 'clima.mjs': 2,
-  'odds.mjs': 3, 'killfeed.mjs': 3,
-  'rodada.mjs': 4, 'coreografia.mjs': 4,
-  'eventos.mjs': 5,
+  'dom.mjs': 0,
+  'estado.mjs': 0,
+  'sprites.mjs': 1,
+  'audio.mjs': 1,
+  'render.mjs': 2,
+  'efeitos.mjs': 2,
+  'clima.mjs': 2,
+  'odds.mjs': 2,
+  'killfeed.mjs': 2,
+  'rodada.mjs': 3,
+  'coreografia.mjs': 3,
+  'eventos.mjs': 3,
+  'perfil.mjs': 4,
+  'desafios.mjs': 4,
+  'medalhas.mjs': 4,
+  'customizacao.mjs': 4,
+  'carteira.mjs': 4,
+  'navegacao.mjs': 4,
+  'controles.mjs': 4,
+  'fases.mjs': 4,
+  'loop.mjs': 5,
 };
 
 function importsDe(txt) {
@@ -50,6 +71,24 @@ const nomesImportados = txt =>
 
 const declaradosNoTopo = txt =>
   new Set([...txt.matchAll(/^\s*(?:export\s+)?(?:const|let|var|function|class)\s+([A-Za-z_$][\w$]*)/gm)].map(m => m[1]));
+
+/* Parâmetros também são nomes locais. Sem isso, um parâmetro chamado `frame`
+   parece uso do `frame` exportado por loop.mjs — foi o terceiro falso positivo
+   desta varredura, depois de chave de objeto e artefato de mascaramento.
+   A lição é que varredura por texto tem teto; quem pega de verdade é o portão
+   de navegador. Esta continua como rede barata e rápida. */
+const nomesDeParametro = txt => {
+  const out = new Set();
+  const listas = [
+    ...[...txt.matchAll(/function\s*[\w$]*\s*\(([^)]*)\)/g)].map(m => m[1]),
+    ...[...txt.matchAll(/\(([^)]*)\)\s*=>/g)].map(m => m[1]),
+    ...[...txt.matchAll(/(?:^|[\s(,])([A-Za-z_$][\w$]*)\s*=>/g)].map(m => m[1]),
+  ];
+  for (const l of listas)
+    for (const n of l.split(',').map(x => x.trim().split(/[=:\s]/)[0]).filter(Boolean))
+      if (/^[A-Za-z_$][\w$]*$/.test(n)) out.add(n);
+  return out;
+};
 
 export function suite() {
   const s = criarSuite('modulos');
@@ -112,7 +151,7 @@ export function suite() {
     const alvos = [...Object.entries(fonte), ['app/index.html', APP]];
     for (const [f, txt] of alvos) {
       const codigo = semTexto(txt);
-      const local = new Set([...declaradosNoTopo(txt), ...nomesImportados(txt)]);
+      const local = new Set([...declaradosNoTopo(txt), ...nomesImportados(txt), ...nomesDeParametro(txt)]);
       const faltando = new Set();
       for (const [nome, quem] of dono) {
         if (quem === f || local.has(nome)) continue;

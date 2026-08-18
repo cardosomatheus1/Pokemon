@@ -74,6 +74,11 @@ vermelho quando alguém corrigir. Ver `D-001` em `test/invariantes.mjs`.
 estatística · `Q5` visual · `Q6` segurança · `Q7` crítico cego · `Q8` carga e
 concorrência · `Q9` telemetria.
 
+**Q5 é o que pega erro de ligação.** Teste estático não vê símbolo não importado
+nem atribuição a binding importado — os dois derrubam o app em execução e
+passaram verdes pela suíte inteira mais de uma vez. O portão abre o jogo num
+navegador de verdade e reprova em qualquer `pageerror`.
+
 **Q1 e Q2 são obrigatórios em todos os blocos.** Os demais conforme o bloco
 declara. Um bloco sem superfície nova escreve `Q6: sem superfície nova` —
 explicitamente, para que a ausência seja decisão e não esquecimento.
@@ -93,20 +98,27 @@ explicitamente, para que a ausência seja decisão e não esquecimento.
 ## Comandos
 
 ```bash
-npm run portoes      # extrai o motor, roda a suíte e a sabotagem
-npm test             # suíte (Q1, Q3, Q4)
-npm run sabotagem    # Q2
-npm run test:gerar   # regrava fixtures — só com mudança intencional
+npm run portoes      # suíte com o portão de navegador + sabotagem
+npm test             # suíte (pula Q5 se não houver navegador)
+npm run sabotagem    # Q2 — leva ~9 min
+npm run test:gerar   # regrava fixtures E linha de base visual
+npm run snapshot     # regera o instantâneo do protótipo (paridade)
 ```
 
-Zero dependências, igual ao protótipo. Não introduza pacote sem que um bloco peça.
+**Zero dependências no repositório.** O portão Q5 precisa de `playwright-core`,
+instalado **fora** do projeto — ver `tools/README.md`. `npm test` pula Q5 com
+aviso; `npm run portoes` exige, porque portão que pula em silêncio é decorativo.
 
 ## Fixtures
 
-`test/fixtures/` é o comportamento fotografado da base v0.8. Regravar **só** em
-bloco que muda comportamento de propósito, **no mesmo commit**, com a diferença
-explicada na mensagem. Fixture regravada sem explicação é a forma mais fácil de
-esconder uma regressão.
+`test/fixtures/` é o comportamento fotografado da base v0.8, mais a linha de base
+visual. Regravar **só** em bloco que muda comportamento de propósito, **no mesmo
+commit**, com a diferença explicada na mensagem. Fixture regravada sem explicação
+é a forma mais fácil de esconder uma regressão.
+
+`visual-base.json` guarda impressão digital de 32×32 em RGB, não PNG: a captura
+conteria arte de terceiros, e comparar PNG exigiria dependência. Os sprites são
+bloqueados durante a captura, então a linha de base mede a **nossa** interface.
 
 ## Commits
 

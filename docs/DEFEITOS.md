@@ -77,10 +77,9 @@ detectada por invariantes, estatística e paridade.
 
 ---
 
-## D-002 — o nome exibido é usado onde se espera o slug, e quebra o resgate de imagem
+## D-002 — o nome exibido é usado onde se espera o slug, e quebra o resgate de imagem ✅ CORRIGIDO
 
-**Encontrado por:** F0.3c, na primeira execução do portão Q5
-**Dono:** F0.3d (é onde moram customização, perfil e killfeed)
+**Encontrado por:** F0.3c, na primeira execução do portão Q5 · **Corrigido em:** F0.3d
 **Gravidade:** baixa em impacto, alta como sinal
 **Teste que registra:** `test/visual.mjs` → lista `CONHECIDOS`
 
@@ -92,13 +91,15 @@ que indexa por nome. O último elo faz `showdownSlug(slug)`.
 `showdownSlug` remove hífens e **não remove apóstrofos, acentos ou espaços** —
 ela foi escrita para receber o slug cru da PokeAPI, não o nome exibido.
 
-Quatro chamadas passam o nome exibido:
+**Correção do próprio registro.** Ao consertar, contei os chamadores de novo: eram
+**dois** passando `m.n` de uma lista onde `n` é o slug cru — corretos — e **um**
+passando `r.f.n`, que é o nome exibido. O registro original dizia "quatro
+chamadas" e estava errado; o defeito real era de um lugar só.
 
 ```text
-app/index.html:3062   dexImg(m.dex, m.n, …)      ← nome exibido
-app/index.html:3074   dexImg(m.dex, m.n, …)      ← nome exibido
-app/index.html:3422   dexImg(r.f.dex, r.f.n)     ← nome exibido
-app/index.html:3038   dexImg(b.dex, slugDoDex(b.dex), …)   ← correto
+killfeed.mjs   dexImg(r.f.dex, r.f.n)              ← ERRADO: nome exibido
+index.html     dexImg(m.dex, m.n, …)               ← ok: m.n é slug cru
+index.html     dexImg(b.dex, slugDoDex(b.dex), …)  ← ok
 ```
 
 Consequências, em ordem de visibilidade:
@@ -116,11 +117,68 @@ espécie tem caractere especial no nome. As três espécies afetadas aparecem em
 ~4% das pools. Foi o portão Q5 — `pageerror` num navegador de verdade — que
 achou, na primeira vez que rodou.
 
-### Correção esperada em F0.3d
+### Como foi corrigido em F0.3d
 
-Passar sempre o slug cru, como a linha 3038 já faz, e endurecer `showdownSlug`
-para descartar tudo que não seja `[a-z0-9]`. As duas coisas: a primeira conserta
-as chamadas, a segunda impede que o próximo chamador repita o erro.
+Duas camadas, e as duas importam:
 
-Enquanto não for corrigido, `test/visual.mjs` mantém o defeito na lista
-`CONHECIDOS` — ele aparece no relatório e não reprova o portão.
+1. **O chamador.** O killfeed passa `r.f.sp`, que é o slug, no lugar de `r.f.n`.
+2. **A função.** `showdownSlug` passou a descartar tudo que não seja `[a-z0-9]`,
+   não só hífen. Para as 146 espécies do pack a saída é **idêntica** — medido,
+   zero diferenças — então goldens e fixtures não mudaram. O que muda é o que
+   acontece quando alguém passa a coisa errada: agora degrada em URL inútil em
+   vez de quebrar a sintaxe do handler.
+
+A primeira conserta o caso; a segunda impede o próximo chamador de repetir.
+Saiu da lista `CONHECIDOS` de `test/visual.mjs` — agora um apóstrofo escapando
+volta a reprovar o portão.
+
+---
+
+## D-003 — o corte duro de tempo é suave
+
+**Encontrado por:** F0.3d, ao escrever o teste da lacuna L-016
+**Dono:** F0.6 (é o bloco que reexamina a distribuição de duração)
+**Gravidade:** nenhuma hoje, mas contradiz uma invariante escrita na Spec
+**Teste que afirma o defeito:** `test/invariantes.mjs` → `L-016 · o corte duro`
+
+### O que acontece
+
+A Spec §4.6 lista, entre as invariantes: *"nenhuma batalha excede hard cap"*.
+O motor não cumpre.
+
+O laço de `simulate()` avalia `t < CONF.MAX_TIME` **antes** de executar a ação.
+A última ação pode ser agendada logo abaixo do corte e levar `t` para além dele
+— até um intervalo de ataque depois, ou seja `BASE_CD` ajustado pela
+velocidade do lutador.
+
+Medido no cenário de imunidade mútua, com a tempestade desligada:
+
+```text
+CONF.MAX_TIME   56,00 s
+duração real    56,47 s
+```
+
+### Por que ninguém viu
+
+Duas camadas de sorte. Primeira: com a tempestade ligada, **nenhuma** das 10.000
+rodadas do lote estatístico chega perto do corte — ela encerra tudo bem antes.
+Segunda: o corte só é alcançável num empate por imunidade mútua, e o elenco de
+Kanto **não produz esse empate** — o único Fantasma é Gengar, que é
+Fantasma/Venenoso, e golpes Venenosos atingem Normal normalmente.
+
+Ou seja: o caminho existe, é inalcançável em jogo, e por isso ficou sem
+cobertura até alguém construir o cenário de propósito.
+
+### Correção esperada em F0.6
+
+Duas opções, e a escolha é de desenho:
+
+1. **Truncar** — encerrar exatamente em `MAX_TIME`, descartando a ação que
+   estouraria. Cumpre a invariante ao pé da letra e pode cortar um golpe no ar.
+2. **Corrigir a invariante da Spec** — declarar que o corte é o instante a
+   partir do qual nenhuma ação NOVA é agendada, e que a duração pode exceder em
+   até um intervalo de ação. É o que o motor já faz, e é defensável.
+
+A segunda parece mais honesta com o comportamento, mas é decisão de F0.6, não
+deste bloco. O que não pode continuar é a Spec afirmar uma coisa e o motor
+fazer outra.

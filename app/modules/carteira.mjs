@@ -1,0 +1,246 @@
+/* Carteira — saldo, fichas de aposta, compra simulada e histórico.
+ *
+ * Fronteira: é o único módulo que escreve saldo. Em V1 vira a fachada do
+ * ledger do servidor, e por isso todo acesso já passa por aqui. */
+
+import { $ } from './dom.mjs';
+import { CUR, MOEDA } from '../../engine/engine.mjs';
+import { S } from './estado.mjs';
+import { alternarSom, aplicarVolume, music } from './audio.mjs';
+import { atualizarSaldo, saveBal } from './controles.mjs';
+import { closeModal, openModal } from './navegacao.mjs';
+import { newRound, startFight } from './fases.mjs';
+import { saveProfile } from './perfil.mjs';
+
+/* =====================================================================
+   COMPRA DE POKÉCASH — SIMULAÇÃO
+   ---------------------------------------------------------------------
+   100% simulado: clicar credita na hora, sem cobrança nenhuma. Serve
+   pra testar a régua de preços antes de existir gateway de verdade.
+   ===================================================================== */
+/* =====================================================================
+   POKÉCASH — a moeda do jogo
+   ---------------------------------------------------------------------
+   Conversão direta e linear: 10 PokéCash = R$ 1,00. Sem bônus por
+   pacote nesta versão (a pedido) — o pacote maior não rende mais por
+   real do que o menor, então a escolha é só de conveniência, não de
+   vantagem. Quando entrar promoção, é aqui que ela nasce.
+
+   Manter a taxa numa constante (e não espalhar números pelo código) é
+   o que permite mexer no câmbio depois sem caçar valor solto em vinte
+   lugares.                                                            */
+const PC_POR_REAL = 10;
+const emReais = pc => 'R$ ' + (pc / PC_POR_REAL).toFixed(2).replace('.', ',');
+
+const DEPOSIT_PACKAGES = [
+  { brl:5,   pc:50   },
+  { brl:10,  pc:100  },
+  { brl:30,  pc:300  },
+  { brl:50,  pc:500  },
+  { brl:100, pc:1000 },
+];
+
+function loadDeposits(){
+  try { return JSON.parse(localStorage.getItem('ar_deposits')) || []; } catch(e) { return []; }
+}
+function saveDeposits(list){ localStorage.setItem('ar_deposits', JSON.stringify(list)); }
+
+function renderDeposit(){
+  $('#pkgList').innerHTML = DEPOSIT_PACKAGES.map((p,i) => `
+    <div class="pkg" data-i="${i}">
+      <div>
+        <div class="price">R$ ${p.brl.toFixed(2).replace('.',',')}</div>
+        <div class="bonus">${(p.pc / p.brl).toFixed(0)} ${MOEDA} por real</div>
+      </div>
+      <div class="diamonds">${CUR} ${p.pc.toLocaleString('pt-BR')}</div>
+    </div>`).join('');
+
+  $('#depHist').innerHTML = renderHistDep(4);
+}
+
+function simulateDeposit(pkg){
+  S.bal += pkg.pc; saveBal();
+  const list = loadDeposits();
+  list.push({ date: Date.now(), brl: pkg.brl, pc: pkg.pc });
+  saveDeposits(list);
+  renderDeposit();
+  atualizarSaldo();
+  $('#depToast').textContent = `✅ Simulado: +${CUR} ${pkg.pc.toLocaleString('pt-BR')} creditados.`;
+  $('#depToast').classList.remove('show'); void $('#depToast').offsetWidth; $('#depToast').classList.add('show');
+}
+
+/* --------------------------------------------------------------------
+   HISTÓRICO — apostas e depósitos
+   --------------------------------------------------------------------
+   Guardado no perfil, limitado às últimas 120 entradas de cada tipo.
+   O limite existe porque localStorage é pequeno e um histórico infinito
+   acabaria estourando a cota justamente de quem mais joga.            */
+const HIST_MAX = 120;
+
+function registrarAposta(reg){
+  if (!S.profile.histBets) S.profile.histBets = [];
+  S.profile.histBets.push(reg);
+  if (S.profile.histBets.length > HIST_MAX) S.profile.histBets = S.profile.histBets.slice(-HIST_MAX);
+  saveProfile(S.profile);
+}
+
+const dataHora = t => new Date(t).toLocaleString('pt-BR',
+  {day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'});
+
+function renderHistApostas(ganhos){
+  const lista = (S.profile.histBets || []).filter(b => !!b.won === ganhos).reverse();
+  if (!lista.length)
+    return `<div class="tiny" style="padding:10px 2px">Nenhuma ${ganhos ? 'vitória' : 'derrota'} registrada ainda.</div>`;
+  const soma = lista.reduce((a,b) => a + (ganhos ? (b.payout - b.amount) : b.amount), 0);
+  return `<div class="histsum ${ganhos ? 'up' : 'down'}">
+      <span>${lista.length} ${lista.length === 1 ? 'registro' : 'registros'}</span>
+      <b>${ganhos ? '+' : '−'}${CUR} ${soma.toLocaleString('pt-BR')}</b>
+    </div>` +
+    lista.map(b => `
+    <div class="hrow2 ${ganhos ? 'up' : 'down'}">
+      <div class="l">
+        <b>${b.mon}</b>
+        <span>${dataHora(b.t)} · x${(b.odd||1).toFixed(2)}${b.pos ? ' · ' + b.pos + 'º lugar' : ''}</span>
+      </div>
+      <div class="r">
+        <b>${ganhos ? '+' : '−'}${CUR} ${(ganhos ? b.payout - b.amount : b.amount).toLocaleString('pt-BR')}</b>
+        <span>apostou ${CUR} ${b.amount.toLocaleString('pt-BR')}</span>
+      </div>
+    </div>`).join('');
+}
+
+function renderHistDep(limite){
+  const lista = loadDeposits().slice(-(limite || HIST_MAX)).reverse();
+  if (!lista.length) return '<div class="tiny" style="padding:10px 2px">Nenhum depósito simulado ainda.</div>';
+  const total = lista.reduce((a,d) => a + (d.pc || d.diamonds || 0), 0);
+  return `<div class="histsum up"><span>${lista.length} depósito(s)</span>
+      <b>+${CUR} ${total.toLocaleString('pt-BR')}</b></div>` +
+    lista.map(d => `
+    <div class="hrow2 up">
+      <div class="l"><b>R$ ${d.brl.toFixed(2).replace('.',',')}</b><span>${dataHora(d.date)}</span></div>
+      <div class="r"><b>+${CUR} ${(d.pc || d.diamonds || 0).toLocaleString('pt-BR')}</b><span>simulado</span></div>
+    </div>`).join('');
+}
+
+
+/* =====================================================================
+   VALORES DE APOSTA
+   ---------------------------------------------------------------------
+   As fichas usam a mesma escada dos pacotes de compra (50/100/300/500/
+   1000), com o equivalente em reais embaixo, para o apostador ver o que
+   está pondo em jogo na moeda que ele conhece. Aposta mínima = 50, que
+   é o menor pacote.
+
+   Ficha maior que o saldo aparece desabilitada em vez de sumir: some
+   com a opção e a pessoa não entende por que a grade mudou; desabilitada
+   ela mostra que existe e que falta saldo.                            */
+const APOSTA_MIN = 50;
+const CHIP_VALUES = [50, 100, 300, 500, 1000];
+
+function atualizarFichas(){
+  const row = $('#chipRow'); if (!row) return;
+  row.innerHTML = CHIP_VALUES.map(v => `
+      <button class="chip ${S.chipVal === v ? 'on' : ''} ${v > S.bal ? 'off' : ''}" data-v="${v}">
+        <b>${v.toLocaleString('pt-BR')}</b><span>${emReais(v)}</span>
+      </button>`).join('') +
+    `<button class="chip ${S.chipVal === 'max' ? 'on' : ''} ${S.bal < APOSTA_MIN ? 'off' : ''}" data-v="max">
+        <b>Tudo</b><span>${emReais(S.bal)}</span></button>`;
+
+  row.querySelectorAll('.chip').forEach(b => b.onclick = () => {
+    if (b.classList.contains('off')) return;
+    S.chipVal = b.dataset.v === 'max' ? 'max' : +b.dataset.v;
+    const inp = $('#betCustom'); if (inp) inp.value = '';
+    atualizarFichas();
+  });
+
+  const dica = $('#chipHint');
+  if (dica){
+    const v = valorAposta();
+    dica.innerHTML = S.bal < APOSTA_MIN
+      ? `Saldo abaixo da aposta mínima de ${CUR} ${APOSTA_MIN}. Complete um desafio diário ou compre ${MOEDA}.`
+      : `Apostando <b>${CUR} ${v.toLocaleString('pt-BR')}</b> (${emReais(v)}) por rodada.`;
+  }
+}
+
+/* valor efetivo da aposta, já limitado ao saldo */
+function valorAposta(){
+  const v = S.chipVal === 'max' ? S.bal : S.chipVal;
+  return Math.max(0, Math.min(v, S.bal));
+}
+
+function usarValorPersonalizado(){
+  const inp = $('#betCustom');
+  const v = Math.floor(+inp.value || 0);
+  const dica = $('#chipHint');
+  if (v < APOSTA_MIN){
+    dica.innerHTML = `<span style="color:var(--red)">A aposta mínima é ${CUR} ${APOSTA_MIN} (${emReais(APOSTA_MIN)}).</span>`;
+    return;
+  }
+  if (v > S.bal){
+    dica.innerHTML = `<span style="color:var(--red)">Saldo insuficiente: você tem ${CUR} ${S.bal.toLocaleString('pt-BR')}.</span>`;
+    return;
+  }
+  S.chipVal = v;
+  atualizarFichas();
+}
+
+$('#btnCustomBet').onclick = usarValorPersonalizado;
+$('#betCustom').addEventListener('keydown', e => { if (e.key === 'Enter') usarValorPersonalizado(); });
+
+function abrirCarteira(){
+  atualizarSaldo();
+  $('#histGanhos').innerHTML = renderHistApostas(true);
+  $('#histPerdas').innerHTML = renderHistApostas(false);
+  $('#histDep').innerHTML    = renderHistDep();
+
+  // resumo do topo: quanto entrou, quanto saiu, saldo do período
+  const h = S.profile.histBets || [];
+  const ganho  = h.filter(b => b.won).reduce((a,b) => a + (b.payout - b.amount), 0);
+  const perda  = h.filter(b => !b.won).reduce((a,b) => a + b.amount, 0);
+  const dep    = loadDeposits().reduce((a,d) => a + (d.pc || d.diamonds || 0), 0);
+  const liq    = ganho - perda;
+  $('#wSum').innerHTML = `
+    <div class="wcard up"><span>Ganhos</span><b>+${CUR} ${ganho.toLocaleString('pt-BR')}</b><i>${emReais(ganho)}</i></div>
+    <div class="wcard down"><span>Perdas</span><b>−${CUR} ${perda.toLocaleString('pt-BR')}</b><i>${emReais(perda)}</i></div>
+    <div class="wcard ${liq>=0?'up':'down'}"><span>Resultado</span>
+      <b>${liq>=0?'+':'−'}${CUR} ${Math.abs(liq).toLocaleString('pt-BR')}</b><i>${emReais(Math.abs(liq))}</i></div>
+    <div class="wcard"><span>Depositado</span><b>${CUR} ${dep.toLocaleString('pt-BR')}</b><i>${emReais(dep)}</i></div>`;
+  openModal('#walletModal');
+}
+$('#btnWallet').onclick = abrirCarteira;
+$('#btnWalletDep').onclick = () => { closeModal('#walletModal'); renderDeposit(); openModal('#depositModal'); };
+document.querySelectorAll('#walletModal .tab').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#walletModal .tab').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('#walletModal .pane').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); $('#' + b.dataset.wpane).classList.add('on');
+});
+
+$('#btnStart').onclick = () => {
+  if (S.state === 'betting') startFight();
+  else if (S.state === 'result' || S.state === 'idle') newRound();
+};
+$('#btnAuto').onclick = e => { S.auto = !S.auto; e.target.textContent = 'Auto: ' + (S.auto ? 'ON' : 'OFF'); e.target.classList.toggle('on', S.auto); };
+$('#btnSound').onclick = e => {
+  const ligado = alternarSom();
+  e.target.textContent = ligado ? '🔊' : '🔇';
+  if (ligado){ if (S.state === 'countdown' || S.state === 'fighting') music(true); }
+  else music(false);
+};
+$('#vol').oninput = e => {
+  S.musicVol = +e.target.value;
+  aplicarVolume(S.musicVol);
+};
+$('#spd').oninput = e => { S.speed = +e.target.value; $('#spdVal').textContent = S.speed.toFixed(1) + 'x'; };
+
+$('#btnTopUp').onclick = () => { S.bal += 1000; saveBal(); $('#betInfo').textContent = `+${CUR} 1.000 de teste.`; };
+
+export {
+  APOSTA_MIN,
+  DEPOSIT_PACKAGES,
+  atualizarFichas,
+  emReais,
+  registrarAposta,
+  renderDeposit,
+  simulateDeposit,
+  valorAposta,
+};

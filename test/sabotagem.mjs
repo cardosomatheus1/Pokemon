@@ -26,6 +26,7 @@ const RENDER = 'app/modules/render.mjs';
 const DOM    = 'app/modules/dom.mjs';
 const EFEITOS= 'app/modules/efeitos.mjs';
 const COREO  = 'app/modules/coreografia.mjs';
+const SPRITES= 'app/modules/sprites.mjs';
 
 const DEFEITOS = [
   { id:'S1', arquivo:MOTOR, nome:'tabela de tipos invertida',
@@ -110,10 +111,15 @@ const DEFEITOS = [
     real:'atalho para "guardar" estado de outro módulo — TypeError em execução',
     de:"function pushFx(o){", para:"function pushFx(o){\n  W = 1;" },
 
-  { id:'S19', arquivo:COREO, nome:'ciclo entre módulos da mesma fatia',
-    real:'import de conveniência que fecha ciclo e some no code review',
-    de:"import { $, log } from './dom.mjs';",
-    para:"import { $, log } from './dom.mjs';\nimport { applyEvent } from './eventos.mjs';" },
+  { id:'S19', arquivo:SPRITES, nome:'infraestrutura passa a depender de aplicação',
+    real:'import de conveniência que inverte o grafo e some no code review',
+    de:"import { S } from './estado.mjs';",
+    para:"import { S } from './estado.mjs';\nimport { valorAposta } from './carteira.mjs';" },
+
+  /* --- defeito do F0.3d: mudança visual não intencional ------------------ */
+  { id:'S20', arquivo:APP, nome:'cor do tema alterada sem intenção',
+    real:'ajuste de CSS que ninguém revisou; nenhuma suíte de lógica vê',
+    de:'  --gold: #f5c542;', para:'  --gold: #7fd8ff;' },
 ];
 
 /* A sabotagem mede se a SUÍTE pega o defeito, então roda sem o portão de
@@ -142,14 +148,23 @@ console.log('Q2 · SABOTAGEM\n');
 if (rodar(false, false).vermelha) { console.error('ABORTADO: a suíte já está vermelha.'); process.exit(2); }
 console.log('linha de base: VERDE\n');
 
-const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO];
+const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES];
 const originais = new Map();
 for (const f of ARQUIVOS) { originais.set(f, readFileSync(f,'utf8')); copyFileSync(f, f + '.bak'); }
 
-/* Restaura mesmo se este processo morrer no meio — timeout, Ctrl-C, kill.
-   Sem isso, uma execução interrompida deixa um DEFEITO PLANTADO no
-   repositório, e a suíte seguinte acusa erros que ninguém escreveu.
-   Aconteceu de verdade no F0.3c. */
+/* Restaura se este processo morrer no meio. Sem isso, uma execução
+   interrompida deixa um DEFEITO PLANTADO no repositório, e a suíte seguinte
+   acusa erros que ninguém escreveu. Aconteceu de verdade no F0.3c.
+
+   LIMITE CONHECIDO, descoberto no F0.3d: enquanto a execução está parada
+   dentro do `execFileSync` que roda a suíte, o laço de eventos do Node não
+   gira e ESTE HANDLER NÃO DISPARA. SIGTERM fica pendente até a chamada
+   síncrona voltar; SIGKILL não deixa nada rodar.
+
+   Por isso os `.bak` ficam ao lado dos arquivos e não numa pasta temporária:
+   se um kill pegar a execução no meio, a restauração é manual e óbvia —
+   `cp x.bak x` para cada um. É a diferença entre um estrago recuperável e
+   um repositório com defeito escondido. */
 let restaurado = false;
 function restaurar(){
   if (restaurado) return; restaurado = true;

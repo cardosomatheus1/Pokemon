@@ -296,7 +296,7 @@ A divisão é por módulo, como o próprio bloco mandava — nunca por camada ho
 
 ---
 
-### F0.3d — Treinador, economia e linha de base visual
+### F0.3d — Treinador, economia e linha de base visual ✅
 
 **Tam.** G · **Método** GL+INV · **Portões** Q1 Q2 Q5 Q6 · **Depende de** F0.3c
 
@@ -306,11 +306,15 @@ A divisão é por módulo, como o próprio bloco mandava — nunca por camada ho
 
 **Também resolve:** L-015 (trocar os quatro `onclick` embutidos por `addEventListener` e remover `window.closeModal`), L-016 (teste com pool sintética de tipos mutuamente imunes, que force a batalha a alcançar `MAX_TIME`), L-019 (fechada por redundância assim que o portão Q5 subiu no F0.3c) e o defeito **D-002**.
 
-**Q5:** a verificação de vida já é portão desde o F0.3c (`test/visual.mjs`). Falta a **linha de base por captura** — arena, resultado, carteira e perfil, nos dois temas, em três larguras.
+**Q5 entregue, com uma correção de escopo:** o bloco pedia capturas "nos dois temas". **O app tem um tema só**, por desenho — não há `prefers-color-scheme` nem alternador. Fingir dois temas seria teatro; a linha de base cobre **4 telas × 3 larguras**, que são os três pontos de quebra reais do CSS.
+
+A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta para dentro da página, vira 32×32 em tons de cinza e é comparada numericamente, com tolerância de média e de pico. Dois motivos — a captura conteria sprites de terceiros, que este repositório não versiona, e comparar PNG exigiria uma dependência de decodificação. Durante a captura os sprites são bloqueados, então a linha de base mede a **nossa** interface e não oscila com a rede.
 
 **Q7 (GL):** barra a definir para a tela de resultado.
 
 **Saída:** nenhum módulo acima de ~600 linhas; dependências numa direção só; linha de base visual versionada.
+
+> **A regra de camadas ganhou uma exceção declarada.** Os módulos de aplicação — `fases`, `carteira`, `navegacao`, `controles`, `customizacao`, `desafios`, `perfil` — importam-se entre si de propósito: fases chama carteira, carteira abre modal de navegação, navegação lê perfil. Isso é acoplamento real do produto. O que o teste proíbe é **infraestrutura depender de aplicação**, que é a inversão que importa.
 
 ---
 

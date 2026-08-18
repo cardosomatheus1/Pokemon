@@ -294,7 +294,14 @@ function displayName(slug){
 }
 
 
-function showdownSlug(slug){ return slug.replace(/-/g,''); }
+/* Slug para as fontes que indexam por nome. Descarta TUDO que não seja
+   [a-z0-9], não só hífen: nome exibido tem apóstrofo (Farfetch'd), acento e
+   espaço, e um apóstrofo escapando daqui fecha a string JS de um `onerror`
+   embutido lá na frente — foi o defeito D-002.
+
+   Para as 146 espécies do pack a saída é idêntica à versão anterior; o que
+   muda é o que acontece quando alguém passa a coisa errada. */
+function showdownSlug(slug){ return String(slug).toLowerCase().replace(/[^a-z0-9]/g, ''); }
 
 
 const MASTER_MOVES = {

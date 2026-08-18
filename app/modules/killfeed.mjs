@@ -72,7 +72,7 @@ function renderKillfeed(destacar){
     const meu = S.myBet && S.myBet.idx === r.i ? ' mine' : '';
     return `<div class="kfrow${medal}${r.k ? '' : ' zero'}${vivo ? '' : ' dead'}${meu}" data-i="${r.i}">
       <span class="pos">${r.k > 0 && pos < 3 ? ['🥇','🥈','🥉'][pos] : (pos + 1) + 'º'}</span>
-      <span class="face">${dexImg(r.f.dex, r.f.n)}</span>
+      <span class="face">${dexImg(r.f.dex, r.f.sp)}</span>
       <span class="nm">${r.f.n}</span>
       <span class="ko">${r.k}<small> ab</small></span>
     </div>`;

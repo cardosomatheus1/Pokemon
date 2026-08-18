@@ -2,6 +2,7 @@
  * Uso:  node test/run.mjs           roda a suíte
  *       node test/run.mjs --gerar   regrava as fixtures (só quando a mudança é intencional)
  */
+import { readFileSync, writeFileSync } from 'node:fs';
 import * as golden from './golden.mjs';
 import * as invariantes from './invariantes.mjs';
 import * as estatistica from './estatistica.mjs';
@@ -18,6 +19,13 @@ if (process.argv.includes('--gerar')) {
   console.log(`  golden: ${g.length} rodadas`);
   console.log(`  baseline: ${b.rodadas} rodadas · duração média ${b.duracaoMedia.toFixed(2)}s · ` +
               `melhor ${b.melhor.nome} ${(b.melhor.taxa*100).toFixed(2)}% · amplitude ${b.amplitude.toFixed(1)}x`);
+  if (visual.disponivel()) {
+    const base = await visual.capturarBase();
+    writeFileSync(new URL('./fixtures/visual-base.json', import.meta.url), JSON.stringify(base));
+    console.log(`  linha de base visual: ${Object.keys(base).length} telas`);
+  } else {
+    console.log('  linha de base visual NÃO regravada — sem navegador');
+  }
   process.exit(0);
 }
 
@@ -29,8 +37,12 @@ const semGolden = process.env.SEM_GOLDEN === '1';
    porque portão que pula em silêncio é decorativo. */
 const exigeVisual = process.env.EXIGE_VISUAL === '1';
 const semVisual = process.env.SEM_VISUAL === '1';   // usado pela sabotagem
-let rVisual = null;
-if (visual.disponivel() && !semVisual) rVisual = await visual.rodar();
+let rVisual = null, baseAtual = null, baseGravada = null;
+if (visual.disponivel() && !semVisual) {
+  rVisual = await visual.rodar();
+  baseAtual = await visual.capturarBase();
+  baseGravada = JSON.parse(readFileSync(new URL('./fixtures/visual-base.json', import.meta.url), 'utf8'));
+}
 else if (exigeVisual && !semVisual) { console.error('\nQ5 indisponível: instale playwright-core (ver tools/README.md)'); process.exit(2); }
 else console.log('  · Q5 visual pulado (sem navegador) — use npm run portoes para exigir\n');
 
@@ -38,7 +50,7 @@ const suites = [
   ...(semGolden ? [] : [golden.suite()]),
   invariantes.suite(), estatistica.suite(),
   fonteUnica.suite(), estado.suite(), modulos.suite(),
-  ...(visual.disponivel() && !semVisual ? [visual.suite(rVisual)] : []), await paridade.suite(),
+  ...(visual.disponivel() && !semVisual ? [visual.suite(rVisual), visual.suiteBase(baseAtual, baseGravada)] : []), await paridade.suite(),
 ];
 let total = 0, falhas = [];
 for (const s of suites) {

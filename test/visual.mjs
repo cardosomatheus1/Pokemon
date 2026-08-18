@@ -41,6 +41,90 @@ function servidor() {
   });
 }
 
+/* --- linha de base visual (Q5) -------------------------------------------
+ * Guardar PNG traria dois problemas: a captura conteria sprites de terceiros,
+ * que este repositório não versiona, e a comparação exigiria decodificar PNG —
+ * dependência que o projeto não tem.
+ *
+ * Em vez disso guardamos uma IMPRESSÃO DIGITAL: a captura volta para dentro da
+ * página, é desenhada num canvas, reduzida a 32x32 e vira 3072 números — R, G e
+ * B separados. Compara-se numericamente, com tolerância. É insensível a
+ * antisserrilhado e sensível a mudança de layout, cor e conteúdo.
+ *
+ * A primeira versão guardava tons de CINZA, e a sabotagem S20 provou que isso
+ * não serve: trocar o dourado #f5c542 pelo azul #7fd8ff muda a identidade
+ * visual inteira e mexe 2,6 pontos de luminância — ruído. Cor precisa dos três
+ * canais.
+ *
+ * As folhas de sprite são bloqueadas durante a captura: a linha de base mede a
+ * NOSSA interface, e sprite que chega da rede tornaria o resultado instável.  */
+const LADO = 32;
+
+async function impressao(pg) {
+  const png = (await pg.screenshot()).toString('base64');
+  return pg.evaluate(async ({ b64, lado }) => {
+    const img = new Image();
+    await new Promise(r => { img.onload = r; img.src = 'data:image/png;base64,' + b64; });
+    const c = document.createElement('canvas');
+    c.width = lado; c.height = lado;
+    const g = c.getContext('2d');
+    g.drawImage(img, 0, 0, lado, lado);
+    const d = g.getImageData(0, 0, lado, lado).data;
+    const out = [];
+    for (let i = 0; i < d.length; i += 4) { out.push(d[i], d[i+1], d[i+2]); }
+    return out;
+  }, { b64: png, lado: LADO });
+}
+
+const LARGURAS = [
+  { nome: 'largo',  w: 1440, h: 900 },
+  { nome: 'medio',  w: 1100, h: 900 },
+  { nome: 'estreito', w: 700, h: 900 },
+];
+
+export async function capturarBase() {
+  const { chromium } = await import(PW);
+  const { s, porta } = await servidor();
+  const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+  const saida = {};
+  for (const L of LARGURAS) {
+    const pg = await (await b.newContext({ viewport: { width: L.w, height: L.h } })).newPage();
+    /* sprite bloqueado: a linha de base é da nossa interface */
+    await pg.route(/(githubusercontent|jsdelivr|pokemonshowdown)/, r => r.fulfill({ status: 204 }));
+    await pg.goto(`http://127.0.0.1:${porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
+    await pg.waitForTimeout(4000);
+    const telas = {
+      inicio:   () => pg.evaluate(() => { document.querySelectorAll('.view').forEach(v=>v.classList.remove('on')); document.querySelector('#viewHome')?.classList.add('on'); }),
+      arena:    () => pg.evaluate(() => { document.querySelectorAll('.view').forEach(v=>v.classList.remove('on')); document.querySelector('#viewArena')?.classList.add('on'); }),
+      regras:   () => pg.evaluate(() => { document.querySelectorAll('.view').forEach(v=>v.classList.remove('on')); document.querySelector('#viewRules')?.classList.add('on'); }),
+      comofunciona: () => pg.evaluate(() => { document.querySelectorAll('.view').forEach(v=>v.classList.remove('on')); document.querySelector('#viewHow')?.classList.add('on'); }),
+    };
+    for (const [nome, ir] of Object.entries(telas)) {
+      await ir(); await pg.waitForTimeout(700);
+      saida[`${nome}@${L.nome}`] = await impressao(pg);
+    }
+    await pg.context().close();
+  }
+  await b.close(); s.close();
+  return saida;
+}
+
+export function compararBase(atual, base) {
+  const falhas = [];
+  for (const chave of Object.keys(base)) {
+    const a = atual[chave], b = base[chave];
+    if (!a) { falhas.push(`${chave}: captura não produzida`); continue; }
+    let soma = 0, pior = 0;
+    for (let i = 0; i < b.length; i++) { const d = Math.abs(a[i] - b[i]); soma += d; if (d > pior) pior = d; }
+    const medio = soma / b.length;
+    /* tolerância: média baixa aceita ruído de renderização; o pico existe para
+       pegar mudança localizada que a média dilui. */
+    if (medio > 3 || pior > 60) falhas.push(`${chave}: diferença média ${medio.toFixed(1)}, pico ${pior}`);
+  }
+  for (const chave of Object.keys(atual)) if (!(chave in base)) falhas.push(`${chave}: tela nova, sem linha de base`);
+  return falhas;
+}
+
 export async function rodar() {
   const { chromium } = await import(PW);
   const { s, porta } = await servidor();
@@ -51,7 +135,8 @@ export async function rodar() {
      continuam visíveis no relatório. Mesmo padrão de paridade.mjs: divergência
      conhecida é decisão, divergência nova é falha. */
   const CONHECIDOS = [
-    { id:'D-002', re:/Unexpected identifier 'd'|Invalid or unexpected token/ },
+    /* vazio. D-002 foi corrigido no F0.3d. Manter a estrutura: defeito que se
+       decide conviver entra aqui COM id, e some quando for corrigido. */
   ];
   const erros = [], conhecidos = [];
   pg.on('pageerror', e => {
@@ -118,6 +203,21 @@ export async function rodar() {
 
   await b.close(); s.close();
   return { erros, conhecidos, apostas, aoVivo, relogio, folhas: cache.size, erroDepois, ...st };
+}
+
+export function suiteBase(atual, base) {
+  const s = criarSuite('visual-base');
+  s.teste('a interface não mudou sem intenção', () => {
+    const falhas = compararBase(atual, base);
+    ok(falhas.length === 0,
+      `${falhas.length} tela(s) fora da linha de base:\n      ` + falhas.join('\n      ') +
+      `\n      Se a mudança é intencional, regrave com npm run test:gerar e explique no commit.`);
+  });
+  s.teste('a linha de base cobre as telas e larguras declaradas', () => {
+    ok(Object.keys(base).length === 12,
+      `linha de base tem ${Object.keys(base).length} entradas, esperado 12 (4 telas x 3 larguras)`);
+  });
+  return s;
 }
 
 export function suite(r) {

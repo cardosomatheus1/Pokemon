@@ -146,5 +146,71 @@ export function suite() {
     }
   });
 
+  /* ------------------------------------------------------------------ *
+   * L-016 · o corte duro de tempo.
+   *
+   * `CONF.MAX_TIME` existe para o caso de dois tipos mutuamente imunes
+   * sobrarem por último. Medido: NENHUMA das 10.000 rodadas do lote
+   * estatístico chega perto dele — a tempestade encerra tudo antes, sempre.
+   * Um seguro que nunca dispara não tem cobertura, e foi assim que ele
+   * passou despercebido até o F0.3d.
+   *
+   * Para exercitá-lo é preciso desligar a tempestade e montar a pool que ele
+   * existe para cobrir: Normal puro contra Fantasma puro, que não se tocam.
+   * ------------------------------------------------------------------ */
+  s.teste('L-016 · o corte duro de tempo encerra a batalha e escolhe um vencedor', () => {
+    const stormOrig = E.CONF.STORM_FROM;
+    try {
+      E.CONF.STORM_FROM = 9999;          // desliga a tempestade
+
+      /* O elenco de Kanto NÃO produz empate: o único Fantasma é Gengar, que é
+         Fantasma/Venenoso, e os golpes Venenosos atingem Normal normalmente.
+         Então o cenário que o corte existe para cobrir precisa ser CONSTRUÍDO:
+         Normal puro com golpe Normal contra Fantasma puro com golpe Fantasma.
+         Nenhum dos dois toca o outro, e nada mais encerra a batalha. */
+      const f = E.buildRoster(E.KANTO_DEX.slice(0, 2));
+      const golpe = (t) => ({ n:`teste ${t}`, t, p:100, cat:'fis', fx:'melee', acc:1 });
+      f[0].types = ['normal']; f[0].moves = [golpe('normal')];
+      f[1].types = ['ghost'];  f[1].moves = [golpe('ghost')];
+      ok(E.effect('normal', f[1].types) === 0 && E.effect('ghost', f[0].types) === 0,
+        'a imunidade mútua do cenário deixou de valer — a tabela de tipos mudou');
+
+      let alcancou = 0;
+      for (let i = 0; i < 200; i++) {
+        const r = E.simulate(f, 900000 + i, true);
+        /* D-003 · o corte é SUAVE, não duro. O laço testa `t < MAX_TIME` antes
+           de agir, então a última ação pode ser agendada logo abaixo do corte
+           e levar `t` para além dele — até um intervalo de ataque depois.
+           Este teste AFIRMA O DEFEITO de propósito: quando alguém endurecer o
+           corte, ele fica vermelho e aponta para docs/DEFEITOS.md. */
+        const folga = E.CONF.BASE_CD * 1.3;
+        ok(r.duration > E.CONF.MAX_TIME,
+          `a batalha parou em ${r.duration.toFixed(2)}s, dentro do corte — D-003 foi corrigido? ` +
+          `Se sim, troque esta asserção por <= MAX_TIME e feche o defeito.`);
+        ok(r.duration <= E.CONF.MAX_TIME + folga,
+          `estouro de ${(r.duration - E.CONF.MAX_TIME).toFixed(2)}s passa do intervalo de ação`);
+        ok(r.winner >= 0, `corte de tempo devolveu ${r.winner} em vez de um vencedor`);
+        alcancou++;
+      }
+      ok(alcancou > 0,
+        'nenhuma das 200 batalhas alcançou o corte — a pool escolhida não exercita o caminho');
+    } finally {
+      E.CONF.STORM_FROM = stormOrig;
+    }
+  });
+
+  s.teste('L-016 · com a tempestade ligada, o corte duro nunca é alcançado', () => {
+    /* O outro lado da mesma verdade, e é o que documenta por que o caminho
+       acima precisa de um cenário artificial. Se um dia isto ficar vermelho,
+       a tempestade deixou de garantir o término e o corte virou o mecanismo
+       real de encerramento — o que mudaria a distribuição de duração. */
+    const f = elencoDeterministico(E.KANTO_DEX, E.buildRoster, 77);
+    let perto = 0;
+    for (let i = 0; i < 500; i++)
+      if (E.simulate(f, 950000 + i, true).duration >= E.CONF.MAX_TIME - 2) perto++;
+    ok(perto === 0,
+      `${perto} de 500 rodadas chegaram perto do corte duro — a tempestade parou de encerrar antes`);
+  });
+
   return s;
 }

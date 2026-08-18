@@ -198,9 +198,9 @@ morando no motor, exatamente o que a Content Layer existe para eliminar.
 
 Em F0.4, `spriteURL` sai do motor e vira responsabilidade do ContentPack.
 
-### L-015 — quatro handlers `onclick` embutidos no HTML
+### L-015 — quatro handlers `onclick` embutidos no HTML ✅ FECHADA
 
-**Dono:** F0.3d · **Notada em:** F0.2
+**Fechada em:** F0.3d · **Notada em:** F0.2
 
 Os botões de fechar modal usam `onclick="closeModal(...)"` no HTML. Escopo de
 módulo não é global, então o F0.2 precisou de `window.closeModal = closeModal`
@@ -209,9 +209,9 @@ para não mudar comportamento.
 Funciona, e é feio. Em F0.3, que separa a interface, trocar por `addEventListener`
 e remover a exposição no `window`.
 
-### L-016 — o corte duro de tempo nunca é exercitado
+### L-016 — o corte duro de tempo nunca é exercitado ✅ FECHADA
 
-**Dono:** F0.3d · **Notada em:** F0.2
+**Fechada em:** F0.3d · **Notada em:** F0.2
 
 `CONF.MAX_TIME` é 56 s, mas **nenhuma** das 10.000 rodadas do lote estatístico passa
 de 50 s — a tempestade encerra tudo antes. O corte duro é um seguro que nunca
