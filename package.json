@@ -1,0 +1,14 @@
+{
+  "name": "pokearena",
+  "version": "0.9.0-F0.1",
+  "private": true,
+  "type": "module",
+  "description": "PokéArena — arnês de regressão do bloco F0.1",
+  "scripts": {
+    "extract": "node engine/extract.mjs",
+    "test": "node test/run.mjs",
+    "test:gerar": "node test/run.mjs --gerar",
+    "sabotagem": "node test/sabotagem.mjs",
+    "portoes": "npm run extract && npm test && npm run sabotagem"
+  }
+}

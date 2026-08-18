@@ -1,0 +1,18 @@
+{
+ "rodadas": 10000,
+ "duracaoMedia": 31.097636315246085,
+ "abatesPorRodada": 10.9668,
+ "taxaTempestade": 0.2787,
+ "mortesPorTempestadePorRodada": 0.0339,
+ "taxaCritico": 0.054990365623579486,
+ "taxaErro": 0.09234251448508717,
+ "melhor": {
+  "nome": "Gengar",
+  "taxa": 0.35240572171651496
+ },
+ "pior": {
+  "nome": "Ditto",
+  "taxa": 0.02127659574468085
+ },
+ "amplitude": 16.563068920676205
+}
