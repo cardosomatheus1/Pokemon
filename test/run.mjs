@@ -9,6 +9,7 @@ import * as fonteUnica from './fonte-unica.mjs';
 import * as paridade from './paridade.mjs';
 import * as estado from './estado.mjs';
 import * as modulos from './modulos.mjs';
+import * as visual from './visual.mjs';
 
 if (process.argv.includes('--gerar')) {
   console.log('gerando fixtures a partir do motor atual...');
@@ -24,10 +25,20 @@ if (process.argv.includes('--gerar')) {
    defeito que só o golden pega indica cobertura de propriedade fraca naquela
    área, porque golden byte-exato pega qualquer mudança de comportamento. */
 const semGolden = process.env.SEM_GOLDEN === '1';
+/* Q5 exige navegador. `npm test` pula com aviso; `npm run portoes` exige,
+   porque portão que pula em silêncio é decorativo. */
+const exigeVisual = process.env.EXIGE_VISUAL === '1';
+const semVisual = process.env.SEM_VISUAL === '1';   // usado pela sabotagem
+let rVisual = null;
+if (visual.disponivel() && !semVisual) rVisual = await visual.rodar();
+else if (exigeVisual && !semVisual) { console.error('\nQ5 indisponível: instale playwright-core (ver tools/README.md)'); process.exit(2); }
+else console.log('  · Q5 visual pulado (sem navegador) — use npm run portoes para exigir\n');
+
 const suites = [
   ...(semGolden ? [] : [golden.suite()]),
   invariantes.suite(), estatistica.suite(),
-  fonteUnica.suite(), estado.suite(), modulos.suite(), await paridade.suite(),
+  fonteUnica.suite(), estado.suite(), modulos.suite(),
+  ...(visual.disponivel() && !semVisual ? [visual.suite(rVisual)] : []), await paridade.suite(),
 ];
 let total = 0, falhas = [];
 for (const s of suites) {

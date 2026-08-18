@@ -280,15 +280,19 @@ A divisão é por módulo, como o próprio bloco mandava — nunca por camada ho
 
 ---
 
-### F0.3c — Módulos de rodada
+### F0.3c — Serviços de base e módulos de rodada ✅
 
 **Tam.** G · **Método** INV · **Portões** Q1 Q2 Q4 Q5 · **Depende de** F0.3b
 
-**Escopo:** `rodada`, `coreografia`, `eventos`, `fases`, `loop`, `odds-ui`. É onde mora quase todo o `S`, então é o de maior risco — e por isso vem depois de a fronteira já estar provada.
+**Escopo executado:** `audio`, `killfeed`, `odds`, `rodada`, `coreografia`, `eventos`.
 
-**Também resolve:** L-005 (a animação de entrada usa `setTimeout` em tempo real enquanto a batalha corre em `battleT` escalado).
+> **O escopo mudou durante o bloco, e o motivo é a direção da dependência.** O plano original começava por `fases` e `loop`. A extração provou que `fases` chama perfil, carteira, killfeed e áudio — que só sairiam em F0.3d. Extrair de cima para baixo não fecha; as folhas vêm primeiro. `fases` e `loop` passaram para o F0.3d, junto com quem eles chamam.
 
-**Saída:** o grafo de dependências da rodada aponta numa direção só.
+**Também resolveu:** L-005. A causa registrada estava incompleta — não é o controle de velocidade, é a **fonte de tempo**: a entrada usava `setTimeout` (tempo de parede) enquanto a fase avança por `S.clock`, que soma delta de `requestAnimationFrame` limitado a 0,05 s por quadro. As duas andam juntas a 60 fps e separam quando o navegador estrangula a aba. Agora a entrada é uma fila consumida pelo mesmo relógio da fase.
+
+**Saída:** o grafo de dependências aponta numa direção só, com camadas declaradas e testadas.
+
+> **Três defeitos da mesma família apareceram aqui:** módulos atribuindo a símbolos importados (`moveAcc`, `soundEnabled`, `fadeTimer`). Em módulo ES isso é `TypeError` em execução e nenhum teste estático anterior via. A correção não foi inchar o `S` — foi dar API ao dono: `reiniciarMovimento()`, `alternarSom()`, `aplicarVolume()`. Virou teste permanente.
 
 ---
 
@@ -296,11 +300,13 @@ A divisão é por módulo, como o próprio bloco mandava — nunca por camada ho
 
 **Tam.** G · **Método** GL+INV · **Portões** Q1 Q2 Q5 Q6 · **Depende de** F0.3c
 
-**Escopo:** `audio`, `perfil`, `desafios`, `customizacao`, `carteira`, `navegacao`, `killfeed`, `controles`, `boot`. Fecha a separação.
+**Escopo:** `perfil`, `desafios`, `medalhas`, `customizacao`, `carteira`, `navegacao`, `controles`, **`fases`**, **`loop`**, `boot`. Fecha a separação.
 
-**Também resolve:** L-015 (trocar os quatro `onclick` embutidos por `addEventListener` e remover `window.closeModal`) e L-016 (teste com pool sintética de tipos mutuamente imunes, que force a batalha a alcançar `MAX_TIME`).
+> `fases` e `loop` vieram do F0.3c porque dependem de perfil, carteira e desafios — a direção da dependência mandou extraí-los junto com quem eles chamam, não antes.
 
-**Q5:** primeira linha de base visual — capturas da arena, resultado, carteira e perfil, nos dois temas, em três larguras. É a referência que todos os blocos seguintes comparam. `tools/verificar-visual.mjs` é o ponto de partida.
+**Também resolve:** L-015 (trocar os quatro `onclick` embutidos por `addEventListener` e remover `window.closeModal`), L-016 (teste com pool sintética de tipos mutuamente imunes, que force a batalha a alcançar `MAX_TIME`), L-019 (fechada por redundância assim que o portão Q5 subiu no F0.3c) e o defeito **D-002**.
+
+**Q5:** a verificação de vida já é portão desde o F0.3c (`test/visual.mjs`). Falta a **linha de base por captura** — arena, resultado, carteira e perfil, nos dois temas, em três larguras.
 
 **Q7 (GL):** barra a definir para a tela de resultado.
 

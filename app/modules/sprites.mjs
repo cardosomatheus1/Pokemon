@@ -7,7 +7,7 @@
  * v0.6.1, registrada no CLAUDE.md e no LEIA-ME do protótipo.
  */
 
-import { spriteURL } from '../../engine/engine.mjs';
+import { showdownSlug, spriteURL } from '../../engine/engine.mjs';
 import { S } from './estado.mjs';
 import { log } from './dom.mjs';
 
@@ -283,10 +283,33 @@ function imgTag(p, extra){
        + `onerror="this.onerror=function(){this.onerror=null;this.src='${b}'};this.src='${a}'">`;
 }
 
+/* Cadeia de espelhos por número da dex. Veio do corpo do app no F0.3c:
+   resolver endereço de imagem é responsabilidade deste módulo, e o killfeed
+   precisava disso sem poder depender da camada de perfil.
+   ATENÇÃO: ver defeito D-002 — chamadores passam nome exibido onde se espera
+   slug cru, e nomes com apóstrofo quebram o onerror embutido. */
+const DEX_MIRRORS = [
+  dex => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${dex}.png`,
+  dex => `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${dex}.png`,
+];
+
+const dexURL = dex => DEX_MIRRORS[0](dex);
+
+function dexImg(dex, slug, extra){
+  const urls = DEX_MIRRORS.map(f => f(dex))
+    .concat([`https://play.pokemonshowdown.com/sprites/gen5/${showdownSlug(slug)}.png`]);
+  const cadeia = urls.slice(1).reduceRight(
+    (acc, u) => `this.onerror=function(){${acc}};this.src='${u}';`,
+    `this.onerror=null;this.style.opacity=.25;`);
+  return `<img src="${urls[0]}" alt="" ${extra||''} onerror="${cadeia.replace(/"/g,'&quot;')}">`;
+}
+
 export {
   PMD,
   SPRITE_MAX_H,
   conferirFolha,
+  dexImg,
+  dexURL,
   dirOf,
   folhasFalhas,
   folhasOk,

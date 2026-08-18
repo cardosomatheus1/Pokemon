@@ -10,7 +10,7 @@
     "test:sem-golden": "SEM_GOLDEN=1 node test/run.mjs",
     "test:gerar": "node test/run.mjs --gerar",
     "sabotagem": "node test/sabotagem.mjs",
-    "portoes": "npm test && npm run sabotagem",
+    "portoes": "EXIGE_VISUAL=1 npm test && npm run sabotagem",
     "serve": "node prototype/serve.js"
   }
 }

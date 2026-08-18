@@ -74,3 +74,53 @@ seed 3060347309   rápido -1 ->  1   gravação  1
 
 Os testes agora afirmam a correção. Reverter o desempate é a sabotagem S7 e é
 detectada por invariantes, estatística e paridade.
+
+---
+
+## D-002 — o nome exibido é usado onde se espera o slug, e quebra o resgate de imagem
+
+**Encontrado por:** F0.3c, na primeira execução do portão Q5
+**Dono:** F0.3d (é onde moram customização, perfil e killfeed)
+**Gravidade:** baixa em impacto, alta como sinal
+**Teste que registra:** `test/visual.mjs` → lista `CONHECIDOS`
+
+### O que acontece
+
+`dexImg(dex, slug, extra)` monta uma cadeia de espelhos e termina no Showdown,
+que indexa por nome. O último elo faz `showdownSlug(slug)`.
+
+`showdownSlug` remove hífens e **não remove apóstrofos, acentos ou espaços** —
+ela foi escrita para receber o slug cru da PokeAPI, não o nome exibido.
+
+Quatro chamadas passam o nome exibido:
+
+```text
+app/index.html:3062   dexImg(m.dex, m.n, …)      ← nome exibido
+app/index.html:3074   dexImg(m.dex, m.n, …)      ← nome exibido
+app/index.html:3422   dexImg(r.f.dex, r.f.n)     ← nome exibido
+app/index.html:3038   dexImg(b.dex, slugDoDex(b.dex), …)   ← correto
+```
+
+Consequências, em ordem de visibilidade:
+
+| Espécie | `showdownSlug(nome)` | Efeito |
+|---|---|---|
+| Farfetch'd | `Farfetch'd` | o apóstrofo fecha a string JS do `onerror` embutido → **SyntaxError**, e a cadeia de resgate morre. A imagem fica quebrada em vez de cair para o espelho |
+| Nidoran♀ / ♂ | `Nidoran♀` | URL inválida; o último espelho nunca funciona. Silencioso |
+| Mr. Mime | `Mr. Mime` | idem |
+
+### Por que estava invisível
+
+Nenhum teste estático pega: o erro só existe quando a imagem falha **e** a
+espécie tem caractere especial no nome. As três espécies afetadas aparecem em
+~4% das pools. Foi o portão Q5 — `pageerror` num navegador de verdade — que
+achou, na primeira vez que rodou.
+
+### Correção esperada em F0.3d
+
+Passar sempre o slug cru, como a linha 3038 já faz, e endurecer `showdownSlug`
+para descartar tudo que não seja `[a-z0-9]`. As duas coisas: a primeira conserta
+as chamadas, a segunda impede que o próximo chamador repita o erro.
+
+Enquanto não for corrigido, `test/visual.mjs` mantém o defeito na lista
+`CONHECIDOS` — ele aparece no relatório e não reprova o portão.

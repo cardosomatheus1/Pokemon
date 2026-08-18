@@ -21,9 +21,9 @@ seu critério de saída.
 
 ---
 
-### L-019 — a varredura de símbolos não é verificador de escopo
+### L-019 — a varredura de símbolos não é verificador de escopo ✅ FECHADA
 
-**Dono:** F0.3d · **Notada em:** F0.3b
+**Fechada em:** F0.3c · **Notada em:** F0.3b
 
 `test/modulos.mjs` pega símbolo conhecido usado sem import, que foi a classe de
 erro real da extração. Mas ele varre por texto, não por escopo: uma variável
@@ -34,9 +34,16 @@ Escrever um verificador de escopo em JS puro é caro, e trazer um parser fere a
 regra de dependência zero. **A alternativa boa é o navegador**: um `pageerror`
 na verificação visual pega qualquer símbolo indefinido, sem heurística nenhuma.
 
-**O que fazer em F0.3d:** promover a verificação visual a portão, com
-`pageerror` reprovando o bloco. Aí a varredura de texto vira rede secundária e
-a lacuna fecha por redundância, não por perfeição.
+**Fechada por redundância, como previsto.** `test/visual.mjs` virou portão no
+F0.3c: sobe servidor próprio, abre o app num Chromium de verdade e reprova em
+qualquer `pageerror`. A varredura de texto continua existindo como rede
+secundária — e ganhou duas correções no caminho: passou a excluir chave de
+objeto e a exigir que o símbolo apareça solto no código mascarado **e** no texto
+cru, porque o mascarador não entende literal de expressão regular e inventava
+ocorrências.
+
+Na primeira execução o portão achou o defeito **D-002**, que nenhum teste
+estático via.
 
 ## Achados que NÃO são lacunas
 
@@ -127,16 +134,24 @@ necessárias. É trade-off de produto, não de engenharia.
 
 ## Motor e protótipo
 
-### L-005 — animação de entrada não acompanha o controle de velocidade
+### L-005 — animação de entrada não acompanha o relógio da fase ✅ FECHADA
 
-**Dono:** F0.3c · **Notado em:** leitura do protótipo
+**Fechada em:** F0.3c · **Notada em:** leitura do protótipo
 
-`releaseAll()` agenda a abertura das pokébolas com `setTimeout` em tempo real,
-enquanto a batalha corre em `battleT`, que é multiplicado por `speed`. Com o
-controle de velocidade do painel Dev ativo, a entrada dessincroniza do combate.
+**A causa registrada estava incompleta.** Não é o controle de velocidade: a
+entrada acontece na contagem, que não é escalada. O problema é a **fonte de
+tempo**.
 
-Cosmético e restrito ao modo de desenvolvimento, mas vira visível se algum dia
-houver replay acelerado.
+`releaseAll()` agendava com `setTimeout`, ou seja, tempo de parede. A fase
+avança por `S.clock`, que soma o delta do `requestAnimationFrame` **limitado a
+0,05 s por quadro**. A 60 fps as duas andam juntas; quando o navegador
+estrangula a aba, `S.clock` fica para trás e a pokébola abre antes de o relógio
+da fase chegar lá.
+
+**Corrigido:** a entrada virou uma fila consumida pelo mesmo `S.clock` que
+decide o fim da contagem. Uma fonte de tempo só. A única marcação que continua
+em tempo de parede é a remoção da classe `opening`, porque ela acompanha a
+duração de uma animação CSS — o relógio ali é o do CSS.
 
 ### L-006 — a rodada depende de `requestAnimationFrame`
 

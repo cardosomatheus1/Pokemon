@@ -16,8 +16,11 @@ const LIMITE = 600;
    estritamente anterior, ou da mesma. */
 const CAMADA = {
   'dom.mjs': 0, 'estado.mjs': 0,
-  'sprites.mjs': 1,
+  'sprites.mjs': 1, 'audio.mjs': 1,
   'render.mjs': 2, 'efeitos.mjs': 2, 'clima.mjs': 2,
+  'odds.mjs': 3, 'killfeed.mjs': 3,
+  'rodada.mjs': 4, 'coreografia.mjs': 4,
+  'eventos.mjs': 5,
 };
 
 function importsDe(txt) {
@@ -113,11 +116,38 @@ export function suite() {
       const faltando = new Set();
       for (const [nome, quem] of dono) {
         if (quem === f || local.has(nome)) continue;
-        const re = new RegExp(`(?<![.\\w$])${nome.replace(/\$/g,'\\$')}(?![\\w$])`);
-        if (re.test(codigo)) faltando.add(`${nome} (de ${quem})`);
+        /* Duas condições, e a segunda existe porque `semTexto` não entende
+           literal de expressão regular e pode inventar uma ocorrência ao
+           mascarar. Exigir que o símbolo apareça solto NO CÓDIGO MASCARADO e
+           TAMBÉM no texto cru elimina os dois lados: menção só em comentário
+           some no mascarado, artefato de mascaramento some no cru. */
+        const re = new RegExp(`(?<![.\\w$])${nome.replace(/\$/g,'\\$')}(?![\\w$])(?!\\s*:)`);
+        if (re.test(codigo) && re.test(txt)) faltando.add(`${nome} (de ${quem})`);
       }
       ok(faltando.size === 0,
         `${f} usa sem importar: ${[...faltando].join(', ')}`);
+    }
+  });
+
+  /* Este teste nasceu no F0.3c, depois de três defeitos seguidos da mesma
+     família: um módulo atribuía a algo que importou. Em módulo ES isso é
+     TypeError em tempo de execução, e nenhum teste estático anterior via.
+     A regra que ele impõe é a mesma do estado.mjs: quem precisa MUTAR estado
+     de outro módulo pede uma função ao dono, não escreve no binding. */
+  s.teste('ninguém atribui a um símbolo importado', () => {
+    const alvos = [...Object.entries(fonte), ['app/index.html', APP]];
+    for (const [f, txt] of alvos) {
+      const codigo = semTexto(txt);
+      const importados = nomesImportados(txt);
+      const ruins = [];
+      for (const nome of importados) {
+        const esc = nome.replace(/\$/g, '\\$');
+        const re = new RegExp(`(?<![.\\w$])${esc}\\s*(?:=[^=>]|\\+\\+|--|\\+=|-=|\\*=|/=)`);
+        if (re.test(codigo) && re.test(txt)) ruins.push(nome);
+      }
+      ok(ruins.length === 0,
+        `${f} atribui a símbolo importado: ${ruins.join(', ')}. ` +
+        `Peça uma função ao módulo dono — binding importado é somente leitura.`);
     }
   });
 

@@ -24,6 +24,8 @@ const APP    = 'app/index.html';
 const ESTADO = 'app/modules/estado.mjs';
 const RENDER = 'app/modules/render.mjs';
 const DOM    = 'app/modules/dom.mjs';
+const EFEITOS= 'app/modules/efeitos.mjs';
+const COREO  = 'app/modules/coreografia.mjs';
 
 const DEFEITOS = [
   { id:'S1', arquivo:MOTOR, nome:'tabela de tipos invertida',
@@ -102,10 +104,26 @@ const DEFEITOS = [
   { id:'S17', arquivo:APP, nome:'app deixa de importar um módulo de apresentação',
     real:'linha de import removida sem querer',
     de:"} from './modules/clima.mjs';", para:"} from './modules/clima-antigo.mjs';" },
+
+  /* --- defeitos do F0.3c: mutação através de fronteira ------------------ */
+  { id:'S18', arquivo:EFEITOS, nome:'módulo atribui a símbolo importado',
+    real:'atalho para "guardar" estado de outro módulo — TypeError em execução',
+    de:"function pushFx(o){", para:"function pushFx(o){\n  W = 1;" },
+
+  { id:'S19', arquivo:COREO, nome:'ciclo entre módulos da mesma fatia',
+    real:'import de conveniência que fecha ciclo e some no code review',
+    de:"import { $, log } from './dom.mjs';",
+    para:"import { $, log } from './dom.mjs';\nimport { applyEvent } from './eventos.mjs';" },
 ];
 
-function rodar(semGolden) {
-  const env = { ...process.env, ...(semGolden ? { SEM_GOLDEN: '1' } : {}) };
+/* A sabotagem mede se a SUÍTE pega o defeito, então roda sem o portão de
+   navegador: ele custa ~40 s por execução e são duas execuções por defeito.
+   Defeito que escapa das duas é reexecutado COM o navegador, porque aí a
+   pergunta muda — não é mais "a suíte pega?", é "alguém pega?". */
+function rodar(semGolden, comVisual) {
+  const env = { ...process.env,
+    ...(semGolden ? { SEM_GOLDEN: '1' } : {}),
+    ...(comVisual ? {} : { SEM_VISUAL: '1' }) };
   try { execFileSync('node', ['test/run.mjs'], { encoding:'utf8', stdio:'pipe', env });
         return { vermelha:false, saida:'' }; }
   catch (e) { return { vermelha:true, saida:(e.stdout||'') + (e.stderr||'') }; }
@@ -121,27 +139,49 @@ const suitesQuePegaram = saida => {
 };
 
 console.log('Q2 · SABOTAGEM\n');
-if (rodar(false).vermelha) { console.error('ABORTADO: a suíte já está vermelha.'); process.exit(2); }
+if (rodar(false, false).vermelha) { console.error('ABORTADO: a suíte já está vermelha.'); process.exit(2); }
 console.log('linha de base: VERDE\n');
 
+const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO];
 const originais = new Map();
-for (const f of [MOTOR, APP, ESTADO, RENDER, DOM]) { originais.set(f, readFileSync(f,'utf8')); copyFileSync(f, f + '.bak'); }
+for (const f of ARQUIVOS) { originais.set(f, readFileSync(f,'utf8')); copyFileSync(f, f + '.bak'); }
+
+/* Restaura mesmo se este processo morrer no meio — timeout, Ctrl-C, kill.
+   Sem isso, uma execução interrompida deixa um DEFEITO PLANTADO no
+   repositório, e a suíte seguinte acusa erros que ninguém escreveu.
+   Aconteceu de verdade no F0.3c. */
+let restaurado = false;
+function restaurar(){
+  if (restaurado) return; restaurado = true;
+  for (const f of ARQUIVOS) {
+    try { if (existsSync(f + '.bak')) { copyFileSync(f + '.bak', f); unlinkSync(f + '.bak'); } } catch {}
+  }
+}
+process.on('exit', restaurar);
+for (const sinal of ['SIGINT','SIGTERM','SIGHUP'])
+  process.on(sinal, () => { restaurar(); process.exit(130); });
+process.on('uncaughtException', e => { restaurar(); console.error(e); process.exit(1); });
 
 const res = [];
 for (const d of DEFEITOS) {
   const src = originais.get(d.arquivo);
   if (!src.includes(d.de)) { res.push({ ...d, status:'ÂNCORA PERDIDA', com:'-', sem:'-' }); continue; }
   writeFileSync(d.arquivo, src.replace(d.de, d.para));
-  const comG = rodar(false);
-  const semG = rodar(true);
+  const comG = rodar(false, false);
+  const semG = rodar(true, false);
+  let navegador = '';
+  if (!comG.vermelha) {              // escapou da suíte: o navegador pega?
+    const v = rodar(false, true);
+    navegador = v.vermelha ? 'só o navegador' : '';
+  }
   writeFileSync(d.arquivo, src);
   res.push({ ...d,
-    status: comG.vermelha ? 'PEGOU' : 'PASSOU',
-    com: comG.vermelha ? suitesQuePegaram(comG.saida).join(',') : '—',
-    sem: semG.vermelha ? suitesQuePegaram(semG.saida).join(',') : 'NADA' });
+    status: comG.vermelha ? 'PEGOU' : (navegador ? 'PEGOU' : 'PASSOU'),
+    com: comG.vermelha ? suitesQuePegaram(comG.saida).join(',') : navegador,
+    sem: comG.vermelha ? (semG.vermelha ? suitesQuePegaram(semG.saida).join(',') : 'NADA') : navegador });
 }
 
-for (const f of [MOTOR, APP, ESTADO, RENDER, DOM]) { copyFileSync(f + '.bak', f); unlinkSync(f + '.bak'); }
+restaurar();
 
 console.log('id   defeito                                 status    sem golden, pego por');
 console.log('─'.repeat(96));
@@ -163,5 +203,5 @@ if (soGolden.length) {
 if (escaparam.length) process.exit(1);
 console.log(`Q2 VERDE — ${DEFEITOS.length}/${DEFEITOS.length} detectados` +
             (soGolden.length ? `, mas ${soGolden.length} dependem do golden.` : ', nenhum dependente só do golden.'));
-if (rodar(false).vermelha) { console.error('RESTAURAÇÃO FALHOU'); process.exit(2); }
+if (rodar(false, false).vermelha) { console.error('RESTAURAÇÃO FALHOU'); process.exit(2); }
 console.log('motor e app restaurados: VERDE');
