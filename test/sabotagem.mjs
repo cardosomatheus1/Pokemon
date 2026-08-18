@@ -14,10 +14,25 @@
  * então ele sozinho não prova cobertura. O que interessa é a coluna "sem
  * golden": defeito que só o golden pega revela área com propriedade fraca.
  *
+ * A execução acontece numa CÓPIA do repositório, fora da árvore de trabalho.
+ * As duas primeiras versões plantavam o defeito no lugar e restauravam depois,
+ * e isso deu errado duas vezes no F0.3d: um timeout matou o processo no meio e
+ * deixou defeito plantado, e o gancho de commit pediu para commitar enquanto a
+ * execução estava no meio — o que teria gravado o defeito no repositório.
+ *
+ * O handler de restauração que eu havia escrito não resolve, e vale registrar
+ * por quê: enquanto a execução está parada dentro do `execFileSync` que roda a
+ * suíte, o laço de eventos do Node não gira e o handler não dispara.
+ *
+ * Copiar é a resposta certa. A árvore de trabalho fica intocada do começo ao
+ * fim, e matar este processo a qualquer momento não deixa rastro.
+ *
  * Uso: node test/sabotagem.mjs
  */
-import { readFileSync, writeFileSync, copyFileSync, unlinkSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, cpSync, rmSync, mkdtempSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const MOTOR  = 'engine/engine.mjs';
 const APP    = 'app/index.html';
@@ -130,7 +145,7 @@ function rodar(semGolden, comVisual) {
   const env = { ...process.env,
     ...(semGolden ? { SEM_GOLDEN: '1' } : {}),
     ...(comVisual ? {} : { SEM_VISUAL: '1' }) };
-  try { execFileSync('node', ['test/run.mjs'], { encoding:'utf8', stdio:'pipe', env });
+  try { execFileSync('node', ['test/run.mjs'], { encoding:'utf8', stdio:'pipe', env, cwd:CAIXA });
         return { vermelha:false, saida:'' }; }
   catch (e) { return { vermelha:true, saida:(e.stdout||'') + (e.stderr||'') }; }
 }
@@ -144,44 +159,27 @@ const suitesQuePegaram = saida => {
   return nomes.length ? nomes : ['(não carrega)'];
 };
 
+const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES];
+const originais = new Map();
+for (const f of ARQUIVOS) originais.set(f, readFileSync(f, 'utf8'));
+
+/* A cópia leva tudo o que a suíte precisa e nada de .git. */
+const CAIXA = mkdtempSync(join(tmpdir(), 'pokearena-sabotagem-'));
+for (const dir of ['engine', 'app', 'test', 'prototype'])
+  cpSync(dir, join(CAIXA, dir), { recursive: true });
+cpSync('package.json', join(CAIXA, 'package.json'));
+console.log(`caixa de areia: ${CAIXA}\n`);
+
 console.log('Q2 · SABOTAGEM\n');
 if (rodar(false, false).vermelha) { console.error('ABORTADO: a suíte já está vermelha.'); process.exit(2); }
 console.log('linha de base: VERDE\n');
 
-const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES];
-const originais = new Map();
-for (const f of ARQUIVOS) { originais.set(f, readFileSync(f,'utf8')); copyFileSync(f, f + '.bak'); }
-
-/* Restaura se este processo morrer no meio. Sem isso, uma execução
-   interrompida deixa um DEFEITO PLANTADO no repositório, e a suíte seguinte
-   acusa erros que ninguém escreveu. Aconteceu de verdade no F0.3c.
-
-   LIMITE CONHECIDO, descoberto no F0.3d: enquanto a execução está parada
-   dentro do `execFileSync` que roda a suíte, o laço de eventos do Node não
-   gira e ESTE HANDLER NÃO DISPARA. SIGTERM fica pendente até a chamada
-   síncrona voltar; SIGKILL não deixa nada rodar.
-
-   Por isso os `.bak` ficam ao lado dos arquivos e não numa pasta temporária:
-   se um kill pegar a execução no meio, a restauração é manual e óbvia —
-   `cp x.bak x` para cada um. É a diferença entre um estrago recuperável e
-   um repositório com defeito escondido. */
-let restaurado = false;
-function restaurar(){
-  if (restaurado) return; restaurado = true;
-  for (const f of ARQUIVOS) {
-    try { if (existsSync(f + '.bak')) { copyFileSync(f + '.bak', f); unlinkSync(f + '.bak'); } } catch {}
-  }
-}
-process.on('exit', restaurar);
-for (const sinal of ['SIGINT','SIGTERM','SIGHUP'])
-  process.on(sinal, () => { restaurar(); process.exit(130); });
-process.on('uncaughtException', e => { restaurar(); console.error(e); process.exit(1); });
 
 const res = [];
 for (const d of DEFEITOS) {
   const src = originais.get(d.arquivo);
   if (!src.includes(d.de)) { res.push({ ...d, status:'ÂNCORA PERDIDA', com:'-', sem:'-' }); continue; }
-  writeFileSync(d.arquivo, src.replace(d.de, d.para));
+  writeFileSync(join(CAIXA, d.arquivo), src.replace(d.de, d.para));
   const comG = rodar(false, false);
   const semG = rodar(true, false);
   let navegador = '';
@@ -189,14 +187,14 @@ for (const d of DEFEITOS) {
     const v = rodar(false, true);
     navegador = v.vermelha ? 'só o navegador' : '';
   }
-  writeFileSync(d.arquivo, src);
+  writeFileSync(join(CAIXA, d.arquivo), src);   // desfaz dentro da caixa
   res.push({ ...d,
     status: comG.vermelha ? 'PEGOU' : (navegador ? 'PEGOU' : 'PASSOU'),
     com: comG.vermelha ? suitesQuePegaram(comG.saida).join(',') : navegador,
     sem: comG.vermelha ? (semG.vermelha ? suitesQuePegaram(semG.saida).join(',') : 'NADA') : navegador });
 }
 
-restaurar();
+rmSync(CAIXA, { recursive:true, force:true });
 
 console.log('id   defeito                                 status    sem golden, pego por');
 console.log('─'.repeat(96));
@@ -218,5 +216,4 @@ if (soGolden.length) {
 if (escaparam.length) process.exit(1);
 console.log(`Q2 VERDE — ${DEFEITOS.length}/${DEFEITOS.length} detectados` +
             (soGolden.length ? `, mas ${soGolden.length} dependem do golden.` : ', nenhum dependente só do golden.'));
-if (rodar(false, false).vermelha) { console.error('RESTAURAÇÃO FALHOU'); process.exit(2); }
-console.log('motor e app restaurados: VERDE');
+console.log('caixa de areia removida; a árvore de trabalho não foi tocada.');
