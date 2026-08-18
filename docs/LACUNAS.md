@@ -21,6 +21,27 @@ seu critério de saída.
 
 ---
 
+## Achados que NÃO são lacunas
+
+Registrados aqui para não serem redescobertos.
+
+### A-001 — os sprites das pré-evoluções já existem no app
+
+**Medido em:** F0.2
+
+A tabela `PMD` do app cobre **146 espécies** — todo o Kanto menos os cinco
+lendários — e não apenas os 76 lutadores da arena. As **68 pré-evoluções** que a
+Fase 3 precisa (Charmander, Squirtle, Bulbasaur, Abra, Machop, Gastly, Magikarp,
+Dratini e as demais) **já têm metadado de sprite embutido**, com largura, altura e
+duração de quadro por animação.
+
+Verificado upstream numa amostra de 13 pré-evoluções: as quatro folhas
+(Walk, Idle, Attack, Hurt) respondem 200 em todas.
+
+Consequência: a Fase 3 **não precisa de trabalho de sprite para pré-evolução**.
+Quem montou a tabela já extraiu o Kanto inteiro. Sobram exatamente dois itens de
+arte: o ovo (L-018) e os cinco lendários, que estão fora por decisão de escopo.
+
 ## Elenco e balanceamento
 
 As quatro primeiras foram medidas pelo arnês de F0.1 e têm o **mesmo dono, por
@@ -170,6 +191,44 @@ para 50 não é detectado por nada.
 **O que fazer em F0.3:** um teste com pool sintética de tipos mutuamente imunes,
 que force a batalha a alcançar o corte. É justamente o cenário que o corte existe
 para cobrir, segundo o comentário do próprio protótipo.
+
+### L-017 — a dependência de CDN de terceiros em tempo de execução
+
+**Dono:** F0.4 · **Notada em:** F0.2, ao verificar os sprites no navegador
+
+O app busca as folhas de sprite direto do `raw.githubusercontent.com` a cada
+sessão, com espelho no jsDelivr. Uma rodada carrega ~200 folhas.
+
+Isso já custou três versões ao projeto (v0.6.1 a v0.6.3) e o próprio mapa mental
+classifica "dependência de sprites externos" como risco 🟡. A hipótese registrada
+para os sprites terem sumido "sem nada ter mudado no código" é acúmulo de limite
+de requisições — e ela continua válida.
+
+Também impede o app de rodar em ambiente com egresso restrito: a verificação
+visual do F0.2 só funcionou porque o harness intercepta as requisições e as serve
+pelo Node.
+
+**O que fazer em F0.4:** resolução de asset passa a ser responsabilidade do
+ContentPack, com ordem `local → origem → espelho`. Um script baixa as folhas para
+um diretório **fora do versionamento**.
+
+> **Não versionar as folhas.** São arte de terceiros, mesma razão pela qual o
+> `battle-theme.mp3` ficou de fora. O script baixa; o repositório não guarda.
+
+### L-018 — não existe sprite de ovo
+
+**Dono:** F3.2 · **Notada em:** F0.2
+
+O §7.5 da Spec define que a captura entrega a forma base — "você viu o campeão,
+leva um ovo". O ovo precisa de arte e não existe.
+
+Sondagem do que há no PMDCollab: `sprite/0000/Walk-Anim.png` e
+`portrait/0000/Normal.png` respondem 200, mas 0000 é slot de placeholder e
+precisa de inspeção visual antes de virar ovo.
+
+De todo modo o ovo é **genérico**, não é de espécie — então é o candidato natural
+a ser a **primeira peça de arte original** do projeto, e não depende da troca de
+tema inteira para existir. Ver L-008.
 
 ## Conteúdo e identidade
 
