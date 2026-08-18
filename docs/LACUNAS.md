@@ -267,9 +267,9 @@ De todo modo o ovo é **genérico**, não é de espécie — então é o candida
 a ser a **primeira peça de arte original** do projeto, e não depende da troca de
 tema inteira para existir. Ver L-008.
 
-### L-020 — a ligação exporta 13 apelidos herdados
+### L-020 — a ligação exporta 13 apelidos herdados ✅ FECHADA
 
-**Dono:** F0.5 · **Notada em:** F0.4
+**Fechada em:** F0.5 · **Notada em:** F0.4
 
 `app/modules/motor.mjs` exporta `KANTO_DEX`, `CHART`, `simulate`, `buildRoster`,
 `pickLineup`, `rollWeather`, `applyWeather`, `displayName`, `showdownSlug`,
@@ -284,6 +284,15 @@ o nome da franquia de volta para dentro do app.
 **O que destrava:** F0.5 já mexe em toda a superfície de sorteio para plantar a
 seed raiz. Renomear no mesmo passo é um `sed` com o parser de escopo que o F0.3a
 já usou, e o teste de vazamento passa a valer para `app/modules/` também.
+
+**Como fechou.** Os treze saíram, mais `newSeed`. A renomeação foi feita com
+guarda de ponto (`(?<![.\w$])`), em duas passadas — nome solto e acesso por
+namespace (`E.simulate`) — porque `PROTO.simulate`, que aponta para o protótipo
+congelado, precisa continuar com o nome antigo. Em `sprites.mjs` a função do
+pack entra como `sprite as enderecoSprite`: o lutador já tem um campo
+`f.sprite`, e dois nomes iguais no mesmo arquivo é convite a erro de leitura.
+A lista de nomes proibidos de `test/fonte-unica.mjs` guardou os apelidos
+removidos — reaparecer é regressão desta lacuna, não conveniência.
 
 ### L-021 — o motor exige um pool de golpes chamado `normal`
 

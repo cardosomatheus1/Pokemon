@@ -99,7 +99,10 @@ function rng(seed){
   };
 }
 
-const newSeed = () => (Math.random() * 4294967296) >>> 0;
+/* `newSeed` saiu daqui no F0.5. A raiz da rodada tem dono próprio —
+   engine/seed.mjs — e vem do CSPRNG da plataforma, não de Math.random. Manter
+   uma segunda fonte de semente no motor era manter a porta por onde a rodada
+   voltava a ser irreconstituível. */
 
 function statAt(b){ return Math.floor((2*b + 31) * CONF.LEVEL / 100) + 5; }
 
@@ -361,9 +364,14 @@ function aplicarClima(fList, weather){
 }
 
 
-function sortearPool(pack, elenco, weatherType){
+/* O sorteio da pool recebe a sub-seed de ELENCO (Spec §P3). Antes do F0.5 os
+   dois embaralhamentos vinham de Math.random, e era isso que tornava a rodada
+   irreconstituível: mesmo guardando a seed da batalha, ninguém remontava os 12
+   que caíram na arena. */
+function sortearPool(pack, elenco, weatherType, sementeElenco){
+  const R = rng(sementeElenco >>> 0);
   const src = elenco.slice();
-  for (let i=src.length-1;i>0;i--){ const j = Math.random()*(i+1)|0; [src[i],src[j]]=[src[j],src[i]]; }
+  for (let i=src.length-1;i>0;i--){ const j = R()*(i+1)|0; [src[i],src[j]]=[src[j],src[i]]; }
 
   let list;
   if (weatherType){
@@ -376,7 +384,7 @@ function sortearPool(pack, elenco, weatherType){
       const guaranteed = src.splice(gi, 1)[0];
       list = [guaranteed, ...src.slice(0, CONF.ARENA_SIZE - 1)];
       // reembaralha pra o garantido não cair sempre na mesma posição
-      for (let i=list.length-1;i>0;i--){ const j = Math.random()*(i+1)|0; [list[i],list[j]]=[list[j],list[i]]; }
+      for (let i=list.length-1;i>0;i--){ const j = R()*(i+1)|0; [list[i],list[j]]=[list[j],list[i]]; }
     }
   } else {
     list = src.slice(0, CONF.ARENA_SIZE);
@@ -406,7 +414,7 @@ function criarMotor(pack){
     simular:       (f, seed, gravar)   => simular(chart, f, seed, gravar),
     montarElenco:  (lista)             => montarElenco(pack, lista),
     atribuirGolpes:(esp)               => atribuirGolpes(pack.golpes, esp),
-    sortearPool:   (tipoClima)         => sortearPool(pack, elenco, tipoClima),
+    sortearPool:   (tipoClima, semente) => sortearPool(pack, elenco, tipoClima, semente),
     sortearClima:  (seed)              => sortearClima(pack.clima, seed),
     aplicarClima:  (lista, clima)      => aplicarClima(lista, clima),
     nomeExibido:   (slug)              => pack.nomeExibido(slug),
@@ -418,4 +426,4 @@ function criarMotor(pack){
   };
 }
 
-export { criarMotor, CONF, rng, newSeed, statAt, stormRate };
+export { criarMotor, CONF, rng, statAt, stormRate };

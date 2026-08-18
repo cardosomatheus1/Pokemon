@@ -7,6 +7,7 @@
 import { $, log } from './dom.mjs';
 import { CX, CY, GRASS_RX, GRASS_RY, H, W, isleNorm, puffs } from './render.mjs';
 import { S } from './estado.mjs';
+import { coreo, enfeite } from './sorte.mjs';
 import { dirOf } from './sprites.mjs';
 import { drawFrame, floatText, koToast, selRing, setAnim, updatePlate } from './rodada.mjs';
 import { marcarAbate } from './killfeed.mjs';
@@ -123,10 +124,10 @@ function decideTarget(e, STEP){
   e.homeAng += MOVE.ORBIT * STEP;
   e.wander -= STEP;
   if (e.wander <= 0 || Math.hypot(e.tx - e.x, e.ty - e.y) < 9){
-    e.wander = 1.6 + S.moveRng()*2.4;
+    e.wander = 1.6 + coreo()*2.4;
     const hx = CX + Math.cos(e.homeAng) * (GRASS_RX-30) * e.homeR;
     const hy = CY + Math.sin(e.homeAng) * (GRASS_RY-34) * e.homeR;
-    const a = S.moveRng()*Math.PI*2, r = MOVE.ROAM * Math.sqrt(S.moveRng());
+    const a = coreo()*Math.PI*2, r = MOVE.ROAM * Math.sqrt(coreo());
     e.tx = hx + Math.cos(a)*r;
     e.ty = hy + Math.sin(a)*r;
     clampTarget(e);
@@ -165,7 +166,7 @@ function tickAnim(e, STEP){
     const f = Math.min(e.cols - 1, Math.floor(cyc * e.cols));
     if (f !== e.frame){
       // poeira nos quadros em que o pé encosta
-      if (f % 2 === 1) puffs.push({x: e.x + (Math.random()-.5)*5, y: e.y,
+      if (f % 2 === 1) puffs.push({x: e.x + (enfeite()-.5)*5, y: e.y,
                                    vx: -vx*0.05, age:0, life:.42});
       e.frame = f;
     }
@@ -255,7 +256,7 @@ function stepMovement(dt){
         const b = S.ents[j]; if (!b.alive) continue;
         let dx = b.x - a.x, dy = (b.y - a.y) * YSQUASH;
         let d = Math.hypot(dx, dy);
-        if (d < 0.01){ dx = (S.moveRng()-.5); dy = (S.moveRng()-.5); d = Math.hypot(dx,dy) || 1; }
+        if (d < 0.01){ dx = (coreo()-.5); dy = (coreo()-.5); d = Math.hypot(dx,dy) || 1; }
         if (d < SEP){
           // empurrão limitado: precisa ser da mesma ordem da caminhada,
           // senão a repulsão domina e todo mundo vira um bloco rígido

@@ -11,6 +11,7 @@ import * as paridade from './paridade.mjs';
 import * as estado from './estado.mjs';
 import * as modulos from './modulos.mjs';
 import * as conteudo from './conteudo.mjs';
+import * as semente from './semente.mjs';
 import * as visual from './visual.mjs';
 
 if (process.argv.includes('--gerar')) {
@@ -38,11 +39,15 @@ const semGolden = process.env.SEM_GOLDEN === '1';
    porque portão que pula em silêncio é decorativo. */
 const exigeVisual = process.env.EXIGE_VISUAL === '1';
 const semVisual = process.env.SEM_VISUAL === '1';   // usado pela sabotagem
-let rVisual = null, baseAtual = null, baseGravada = null;
+let rVisual = null, baseAtual = null, baseGravada = null, digitaisNav = null;
+/* Q3 do F0.5 pede a mesma rodada reproduzida em dois ambientes JS. Estas são as
+   raízes comparadas — fixas, para que a falha seja reproduzível. */
+const RAIZES_Q3 = [1, 42, 0xC0FFEE, 0xFFFFFFFF, 987654321];
 if (visual.disponivel() && !semVisual) {
   rVisual = await visual.rodar();
   baseAtual = await visual.capturarBase();
   baseGravada = JSON.parse(readFileSync(new URL('./fixtures/visual-base.json', import.meta.url), 'utf8'));
+  digitaisNav = await visual.digitaisNoNavegador(RAIZES_Q3);
 }
 else if (exigeVisual && !semVisual) { console.error('\nQ5 indisponível: instale playwright-core (ver tools/README.md)'); process.exit(2); }
 else console.log('  · Q5 visual pulado (sem navegador) — use npm run portoes para exigir\n');
@@ -50,8 +55,11 @@ else console.log('  · Q5 visual pulado (sem navegador) — use npm run portoes 
 const suites = [
   ...(semGolden ? [] : [golden.suite()]),
   invariantes.suite(), estatistica.suite(),
-  fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(),
-  ...(visual.disponivel() && !semVisual ? [visual.suite(rVisual), visual.suiteBase(baseAtual, baseGravada)] : []), await paridade.suite(),
+  fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(), semente.suite(),
+  ...(visual.disponivel() && !semVisual
+     ? [visual.suite(rVisual), visual.suiteBase(baseAtual, baseGravada),
+        visual.suiteAmbientes(digitaisNav, RAIZES_Q3), visual.suiteRodadaViva(rVisual)]
+     : []), await paridade.suite(),
 ];
 let total = 0, falhas = [];
 for (const s of suites) {

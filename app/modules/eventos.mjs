@@ -7,7 +7,8 @@ import { BEHAV, applyStorm } from './coreografia.mjs';
 import { H, W } from './render.mjs';
 import { MOVE_FX, bursts, later, pushFx } from './efeitos.mjs';
 import { S } from './estado.mjs';
-import { TCOLOR } from './motor.mjs';
+import { enfeite } from './sorte.mjs';
+import { tipoCores } from './motor.mjs';
 import { dirOf } from './sprites.mjs';
 import { drawFrame, floatText, koToast, selRing, setAnim, uiLayer, updatePlate } from './rodada.mjs';
 import { marcarAbate } from './killfeed.mjs';
@@ -21,7 +22,7 @@ function applyEvent(ev){
   const A = S.ents[ev.a], D = S.ents[ev.d];
   if (!A || !D) return;
   const mv = A.f.moves[ev.m];
-  const col = TCOLOR[mv.t] || '#fff';
+  const col = tipoCores[mv.t] || '#fff';
 
   // balão de ataque
   A.bub.textContent = mv.n;
@@ -85,7 +86,7 @@ function applyEvent(ev){
               x: dx, y: F.ground ? D.y : dy, dur:0.5});
     } else {
       // sem folha boa para este golpe: estouro procedural na cor do tipo
-      bursts.push({x:dx, y:dy, col, r:16, life:.45, age:0, seed:Math.random()*6});
+      bursts.push({x:dx, y:dy, col, r:16, life:.45, age:0, seed:enfeite()*6});
     }
     if (F.shake) S.shake = Math.max(S.shake, F.shake * (ev.crit ? 1.5 : 1));
     if (!ev.miss) aplicarDano(ev, A, D, ang);
@@ -157,7 +158,7 @@ function aplicarDano(ev, A, D, ang){
 /* =====================================================================
    KILLSTREAK — o que aparece na tela
    ---------------------------------------------------------------------
-   O buff em si já foi decidido lá no simulate() (e portanto já está
+   O buff em si já foi decidido lá no simular() (e portanto já está
    embutido nas odds). Aqui é só a encenação: faixa com o sprite, aura
    de fúria no bicho e linha no log. A aura é removida por relógio da
    BATALHA, não por setTimeout, para acompanhar a velocidade do replay.

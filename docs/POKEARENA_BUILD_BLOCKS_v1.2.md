@@ -348,9 +348,9 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 
 ---
 
-### F0.5 — Seed raiz e derivações
+### F0.5 — Seed raiz e derivações ✅
 
-**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q3 · **Depende de** F0.4
+**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q3 Q5 Q6 · **Depende de** F0.4
 
 **Escopo:** a árvore do §P3 — `roundSeed` derivando `lineupSeed`, `environmentSeed`, `battleSeed`, `visualSeed`, `rewardSeed`. Eliminar todo `Math.random()` do caminho da rodada, incluindo o embaralhamento de `pickLineup` e as seeds do Monte Carlo.
 
@@ -360,7 +360,27 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 
 **Q6:** seed previsível é superfície. Testar que `roundSeed` não é derivável de tempo, de contador nem de rodada anterior.
 
+**Também resolve:** L-020 (os treze apelidos herdados da ligação).
+
 **Saída:** uma rodada inteira reconstituível a partir de um único número.
+
+**Entregue.** `engine/seed.mjs` guarda a árvore: `novaRaiz()` tira a raiz do CSPRNG da plataforma, `derivar(raiz, rótulo)` desce até os cinco ramos do §P3 — elenco, ambiente, batalha, visual, recompensa — e `derivarIndice` dá sub-seed às 20.000 simulações do Monte Carlo. `sortearPool` passou a receber a sub-seed de elenco. Zero `Math.random()` no caminho da rodada.
+
+**Suíte: 75 → 106 testes** (100 sem o navegador), verdes. **Goldens 20/20 inalterados** — o F0.5 muda de onde as sementes vêm, não o que o motor faz com elas.
+
+> **A derivação é por RÓTULO, não por posição, e isso é decisão de projeto.** `derivar(raiz, 'batalha')` não muda se um ramo novo entrar na lista; `derivar(raiz, 3)` mudaria. Com derivação posicional, acrescentar `recompensa` antes de `visual` reescreveria todas as rodadas já publicadas e a auditoria do §25.2 deixaria de fechar. Dois testes protegem isso, e o defeito S27 planta exatamente a troca.
+
+> **A sabotagem do bloco pedia "derivar `battleSeed` antes de `lineupSeed`".** Esse defeito **não é plantável nesta arquitetura**, e vale registrar por quê em vez de deixar a ausência passar por esquecimento: ele pressupõe um PRNG sequencial, em que a ordem de consumo decide o valor. Com derivação por rótulo os cinco ramos são independentes e a ordem não existe. O que substitui a sabotagem é o teste "a ordem dos ramos não muda nenhum ramo", mais o S27 — que planta justamente a volta para derivação posicional.
+
+> **O Monte Carlo saiu de `app/modules/odds.mjs` para `engine/preco.mjs`.** A matemática do preço morava num módulo que importa o DOM, então nenhuma suíte conseguia rodá-la, e a sabotagem que troca a sub-seed derivada por sorteio solto passava despercebida. Preço que ninguém consegue testar é preço que ninguém consegue auditar. A fórmula **não mudou** — precisão de odd é F0.7, clima no modelo é F0.6.
+
+> **`S.moveRng` saiu do estado compartilhado e virou `app/modules/sorte.mjs`,** com dois fluxos: `coreo()` para movimento e ordem de entrada, `enfeite()` para partículas, confete, tremor e frases. Separados de propósito — com um fluxo só, acrescentar uma partícula de neve deslocaria todos os sorteios da coreografia. A superfície de `S` **continua com 20 campos**: `seeds` entrou, `moveRng` saiu.
+
+**Q3 entre dois ambientes JS.** O portão de navegador ganhou uma suíte nova: o Chromium importa `test/rodada-digital.mjs` — o **mesmo arquivo** que o Node usa — e as duas impressões digitais precisam bater byte a byte para cinco raízes fixas. Importar a mesma fonte é o que separa "dois ambientes" de "duas implementações parecidas".
+
+> **A sabotagem achou o segundo buraco do bloco, e ele é de LIGAÇÃO, não de matemática.** S30 troca `S.seeds.batalha` por `S.seeds.elenco` numa linha de `fases.mjs` — a batalha passa a rodar com a sub-seed do sorteio. Passou despercebido: `semente.mjs` prova que a árvore é sólida, mas nada provava que **o app está ligado nela**, e o portão de navegador só olhava para erro de página e pixels. A resposta foi a suíte `rodada-viva`: o Chromium entrega o estado real da rodada (`S.seeds`, elenco, clima, vencedor, número de eventos) e o Node recompõe a mesma rodada a partir da raiz. Divergiu, reprova. Com ela, S30 fica vermelho.
+
+**Q6 — semente previsível é superfície.** Seis testes sobre `novaRaiz()`: não é contador (3.000 raízes, diferenças todas distintas, ~50% crescentes), não sai do relógio (raízes tiradas dentro de um mesmo milissegundo, nenhuma repetida, menos de 5% a distância inferior a 2^16), os 32 bits valem 1 em 44–56% dos sorteios, nenhuma repetição em 20.000, e — o que importa para o §25.2 — a raiz seguinte nunca coincide com nenhuma das doze previsões derivadas da rodada anterior, cujas sementes são públicas depois do reveal.
 
 ---
 

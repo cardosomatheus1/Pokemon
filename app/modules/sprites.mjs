@@ -7,7 +7,9 @@
  * v0.6.1, registrada no CLAUDE.md e no LEIA-ME do protótipo.
  */
 
-import { showdownSlug, spriteURL } from './motor.mjs';
+/* `sprite` chega com apelido: o lutador já tem um campo `f.sprite`, e duas
+   coisas com o mesmo nome no mesmo arquivo é convite a erro de leitura. */
+import { slugExterno, sprite as enderecoSprite } from './motor.mjs';
 import { S } from './estado.mjs';
 import { log } from './dom.mjs';
 
@@ -279,7 +281,7 @@ function dirOf(dx, dy){
 function imgTag(p, extra){
   const a = `https://play.pokemonshowdown.com/sprites/ani/${p.sp}.gif`;
   const b = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.dex}.png`;
-  return `<img src="${spriteURL(p)}" alt="${p.n}" ${extra||''} `
+  return `<img src="${enderecoSprite(p)}" alt="${p.n}" ${extra||''} `
        + `onerror="this.onerror=function(){this.onerror=null;this.src='${b}'};this.src='${a}'">`;
 }
 
@@ -297,7 +299,7 @@ const dexURL = dex => DEX_MIRRORS[0](dex);
 
 function dexImg(dex, slug, extra){
   const urls = DEX_MIRRORS.map(f => f(dex))
-    .concat([`https://play.pokemonshowdown.com/sprites/gen5/${showdownSlug(slug)}.png`]);
+    .concat([`https://play.pokemonshowdown.com/sprites/gen5/${slugExterno(slug)}.png`]);
   const cadeia = urls.slice(1).reduceRight(
     (acc, u) => `this.onerror=function(){${acc}};this.src='${u}';`,
     `this.onerror=null;this.style.opacity=.25;`);

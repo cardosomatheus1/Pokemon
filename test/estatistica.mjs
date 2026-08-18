@@ -13,9 +13,9 @@ function medir() {
   let crits = 0, erros = 0, golpes = 0;
   const vitorias = {}, aparicoes = {};
   for (let i = 0; i < RODADAS; i++) {
-    const f = elencoDeterministico(E.KANTO_DEX, E.buildRoster, 100000 + i);
+    const f = elencoDeterministico(E.elenco, E.montarElenco, 100000 + i);
     for (const x of f) aparicoes[x.n] = (aparicoes[x.n] || 0) + 1;
-    const r = E.simulate(f, 200000 + i, true);
+    const r = E.simular(f, 200000 + i, true);
     vitorias[f[r.winner].n] = (vitorias[f[r.winner].n] || 0) + 1;
     duracao += r.duration;
     let teveTempestade = false;

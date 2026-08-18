@@ -5,8 +5,12 @@
 
 import { $, log } from './dom.mjs';
 import { APOSTA_MIN, emReais, registrarAposta, valorAposta } from './carteira.mjs';
-import { CONF, CUR, MOEDA, applyWeather, newSeed, pickLineup, rng, rollWeather, simulate } from './motor.mjs';
+import { CONF, CUR, MOEDA, aplicarClima, sortearPool, rng, sortearClima, simular } from './motor.mjs';
+/* A árvore de sementes não passa pela ligação do motor: ela não depende de
+   ContentPack nenhum. É infraestrutura, como o DOM. */
+import { derivar, novaRaiz, sementes } from '../../engine/seed.mjs';
 import { S } from './estado.mjs';
+import { coreo, enfeite, semearVisual } from './sorte.mjs';
 import { buildEntities, overlay, preloadSheets, selRing } from './rodada.mjs';
 import { buildPickList, computeOdds, refreshOddsTable } from './odds.mjs';
 import { bursts, fxs, sched, shots } from './efeitos.mjs';
@@ -59,8 +63,19 @@ async function newRound(){
   // pool sorteada tenha pelo menos 1 lutador do tipo favorecido — ex.:
   // Sol Forte garante 1 Pokémon de Fogo na pool — sem revelar ao
   // apostador qual clima é nem que a garantia existe.
-  S.weather = rollWeather(newSeed());
-  S.fighters = pickLineup(S.weather.type);
+  /* --- A RAIZ DA RODADA (Spec §P3) ---------------------------------
+     Um número, e a rodada inteira sai dele: clima, elenco, preço, layout,
+     ordem de entrada e batalha. Antes do F0.5 eram cinco Math.random
+     soltos, e nada disso era reconstituível — nem por quem escreveu o
+     jogo. Guardar `S.seeds.raiz` é guardar a rodada.
+
+     A raiz vem do CSPRNG (ver engine/seed.mjs). É a única coisa aqui que
+     não pode ser previsível: quem adivinha a raiz sabe o vencedor antes
+     de a aposta abrir.                                              */
+  S.seeds = sementes(novaRaiz());
+
+  S.weather = sortearClima(S.seeds.ambiente);
+  S.fighters = sortearPool(S.weather.type, S.seeds.elenco);
 
   overlay.classList.remove('hide');
   overlay.innerHTML = `<div class="banner">calculando odds…</div>`;
@@ -70,18 +85,17 @@ async function newRound(){
   // acima). Ele só é revelado depois que as apostas fecham (ver
   // startFight). É de propósito: ninguém aposta sabendo do bônus
   // climático de antemão.
-  S.odds = await computeOdds(S.fighters, CONF.SIMS);
+  S.odds = await computeOdds(S.fighters, CONF.SIMS, undefined, S.seeds.raiz);
 
-  const layoutSeed = newSeed();
-  S.moveRng = rng(layoutSeed); reiniciarMovimento();
-  buildEntities(layoutSeed);
+  semearVisual(S.seeds.visual); reiniciarMovimento();
+  buildEntities(S.seeds.visual);
 
   preloadSheets();
   refreshOddsTable();
   S.ents.forEach(updatePlate);
   resetKillfeed();          // placar zerado com a pool nova
 
-  log(`<span class="l-sys">&gt; nova rodada · 12 sorteados de 76 · odds calculadas sem o clima</span>`);
+  log(`<span class="l-sys">&gt; nova rodada · raiz ${S.seeds.raiz.toString(16)} · 12 sorteados de 76 · odds calculadas sem o clima</span>`);
 
   overlay.innerHTML = `
     <div class="banner">Escolha seu lutador!</div>
@@ -147,11 +161,13 @@ function startFight(){
   // depois que as apostas fecharam — é o que garante que as odds
   // mostradas na fase anterior não conheciam o bônus climático.
   initWeatherFx(S.weather);
-  const battleFighters = applyWeather(S.fighters, S.weather);
-  const seed = newSeed();
-  S.battle = simulate(battleFighters, seed, true);
+  const battleFighters = aplicarClima(S.fighters, S.weather);
+  const seed = S.seeds.batalha;
+  S.battle = simular(battleFighters, seed, true);
   S.battle.seed = seed; S.battle.stormWarned = false;
-  S.moveRng = rng(seed ^ 0x9e3779b9); reiniciarMovimento();
+  /* Fluxo visual próprio para a luta, derivado do ramo visual — a mesma raiz
+     reproduz a coreografia, e ela continua independente da batalha. */
+  semearVisual(derivar(S.seeds.visual, 'luta')); reiniciarMovimento();
 
   S.evPtr = 0; S.battleT = 0;
   S.ents.forEach(e => { e.atkQueue = []; e.atkPtr = 0; });
@@ -165,7 +181,7 @@ function startFight(){
 
   showWeatherBadge(S.weather);
   log(`<span class="l-sys">&gt; ${S.weather.emoji} clima revelado: <b>${S.weather.name}</b> — ${S.weather.desc}</span>`);
-  log(`<span class="l-sys">&gt; combate sorteado · seed ${seed.toString(16)} · duração prevista ${S.battle.duration.toFixed(1)}s</span>`);
+  log(`<span class="l-sys">&gt; combate sorteado · raiz ${S.seeds.raiz.toString(16)} · duração prevista ${S.battle.duration.toFixed(1)}s</span>`);
 
   music(true);
 }
@@ -173,7 +189,7 @@ function startFight(){
 /* Entrada UM DE CADA VEZ (não os 12 juntos): pra cada lutador, primeiro
    aparece o anel+brilho no chão (telegrafo), e só depois — com a bola
    ainda fechada até esse instante — ela abre com o clarão de sempre.
-   A ordem é embaralhada com `moveRng` (mesma seed da coreografia), então
+   A ordem é embaralhada com o fluxo de coreografia, então
    o "show" de entrada também é reproduzível igual ao resto da batalha,
    mesmo sendo puramente cosmético e não afetar quem vence.            */
 const ENTRY = { RING_LEAD: 0.35, STAGGER: 0.18 };
@@ -197,7 +213,7 @@ function releaseAll(){
   S.released = true;
   filaEntrada.length = 0;
   const order = S.ents.slice();
-  for (let i=order.length-1;i>0;i--){ const j=(S.moveRng()*(i+1))|0; [order[i],order[j]]=[order[j],order[i]]; }
+  for (let i=order.length-1;i>0;i--){ const j=(coreo()*(i+1))|0; [order[i],order[j]]=[order[j],order[i]]; }
 
   order.forEach((e, i) => {
     const delayRing = i * ENTRY.STAGGER;
@@ -206,7 +222,7 @@ function releaseAll(){
       sfx('beep');
     }});
     filaEntrada.push({ t: delayRing + ENTRY.RING_LEAD, fn: () => {
-      bursts.push({x:e.x, y:e.y-7, col:'#ffffff', r:20, life:.45, age:0, seed:Math.random()*6});
+      bursts.push({x:e.x, y:e.y-7, col:'#ffffff', r:20, life:.45, age:0, seed:enfeite()*6});
       e.el.classList.remove('ball');
       e.el.classList.add('opening');
     }});
@@ -408,7 +424,7 @@ function finish(){
                      won:false, payout:0, pos:minhaPos});
     log(`<span class="l-ko">💸 −${S.myBet.amount.toLocaleString('pt-BR')} ${MOEDA} · você tinha ${meu.n}</span>`);
 
-    const cheer = CHEER_LINES[(Math.random()*CHEER_LINES.length)|0];
+    const cheer = CHEER_LINES[(enfeite()*CHEER_LINES.length)|0];
     overlay.innerHTML = `<div id="winBox" class="lose">
         ${imgTag(meu)}
         <div class="kostamp">K.O.</div>
@@ -444,10 +460,10 @@ function dropConfetti(box){
   for (let i=0;i<10;i++){
     const c = document.createElement('div');
     c.className = 'confetti';
-    c.style.left = (6 + Math.random()*88) + '%';
-    c.style.background = CONFETTI_COLORS[(Math.random()*CONFETTI_COLORS.length)|0];
-    c.style.animationDelay = (Math.random()*0.45).toFixed(2) + 's';
-    c.style.animationDuration = (1.2 + Math.random()*0.7).toFixed(2) + 's';
+    c.style.left = (6 + enfeite()*88) + '%';
+    c.style.background = CONFETTI_COLORS[(enfeite()*CONFETTI_COLORS.length)|0];
+    c.style.animationDelay = (enfeite()*0.45).toFixed(2) + 's';
+    c.style.animationDuration = (1.2 + enfeite()*0.7).toFixed(2) + 's';
     box.appendChild(c);
     setTimeout(() => c.remove(), 2600);
   }

@@ -19,6 +19,7 @@ import { createServer } from 'node:http';
 import { readFileSync, existsSync } from 'node:fs';
 import { extname, join, sep } from 'node:path';
 import { criarSuite, ok } from './harness.mjs';
+import { digital as digitalNode, rodada as rodadaNode } from './rodada-digital.mjs';
 
 const RAIZ = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const PW = '/tmp/pw/node_modules/playwright-core/index.mjs';
@@ -32,6 +33,12 @@ export const disponivel = () => existsSync(PW) && existsSync(CHROME);
 function servidor() {
   return new Promise(res => {
     const s = createServer((q, r) => {
+      /* Página mínima do teste Q3 entre ambientes: só precisa de uma origem
+         igual à do repositório para poder importar os módulos por caminho. */
+      if (q.url.startsWith('/__q3')) {
+        r.writeHead(200, { 'Content-Type': MIME['.html'] });
+        return r.end('<!doctype html><meta charset="utf-8"><title>q3</title>');
+      }
       const p = join(RAIZ, decodeURIComponent(q.url.split('?')[0]));
       if (!p.startsWith(RAIZ + sep) || !existsSync(p)) { r.writeHead(404); return r.end(); }
       r.writeHead(200, { 'Content-Type': MIME[extname(p)] || 'application/octet-stream' });
@@ -108,6 +115,51 @@ export async function capturarBase() {
   await b.close(); s.close();
   return saida;
 }
+
+/* Q3 · DETERMINISMO ENTRE AMBIENTES.
+ *
+ * A Spec §P3 exige que a mesma raiz reproduza a rodada "em dois ambientes JS
+ * distintos". Node e Chromium são motores diferentes (V8 é o mesmo, mas as
+ * versões, o JIT e o ambiente não), e uma divergência aqui apontaria para o
+ * lugar clássico: aritmética que escapou de `| 0` / `>>> 0` e virou float de
+ * 53 bits num lado só.
+ *
+ * O navegador importa `test/rodada-digital.mjs` — o MESMO arquivo que o Node
+ * usa. Comparar duas implementações parecidas provaria bem menos.            */
+export async function digitaisNoNavegador(raizes) {
+  const { chromium } = await import(PW);
+  const { s, porta } = await servidor();
+  const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+  const pg = await b.newPage();
+  const erros = [];
+  pg.on('pageerror', e => erros.push(String(e).split('\n')[0]));
+  await pg.goto(`http://127.0.0.1:${porta}/__q3.html`, { waitUntil: 'load', timeout: 60000 });
+  const out = await pg.evaluate(async lista => {
+    const { digital } = await import('/test/rodada-digital.mjs');
+    return lista.map(digital);
+  }, raizes);
+  await b.close(); s.close();
+  if (erros.length) throw new Error('erro na página do Q3: ' + erros[0]);
+  return out;
+}
+
+export function suiteAmbientes(doNavegador, raizes) {
+  const s = criarSuite('ambientes');
+  s.teste('a mesma raiz reproduz a rodada no Node e no navegador', () => {
+    raizes.forEach((raiz, i) => {
+      const aqui = digitalNode(raiz);
+      ok(aqui === doNavegador[i],
+        `raiz ${raiz}: Node e navegador divergiram. ` +
+        `Primeiro ponto: ${primeiraDiferenca(aqui, doNavegador[i])}`);
+    });
+  });
+  return s;
+}
+
+const primeiraDiferenca = (a, b) => {
+  let i = 0; while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  return `posição ${i}: "${a.slice(i, i + 60)}" contra "${b.slice(i, i + 60)}"`;
+};
 
 export function compararBase(atual, base) {
   const falhas = [];
@@ -201,8 +253,59 @@ export async function rodar() {
   const relogio = await pg.evaluate(() => document.querySelector('#clock')?.textContent);
   const erroDepois = erros.length;
 
+  /* --- a rodada que o APP montou -------------------------------------------
+     Ler o estado do app e recompor a mesma rodada em Node a partir da raiz é o
+     único jeito de provar que o jogo usa a árvore de sementes como manda o §P3.
+     Os testes de `semente.mjs` provam que a árvore funciona; este prova que o
+     app está ligado nela — e que cada ramo alimenta o que deve.
+
+     A importação dinâmica devolve a MESMA instância do módulo que a página
+     carregou (o registro de módulos é por URL), então isto lê o estado vivo,
+     sem precisar de nenhuma exposição em `window` só para o teste.           */
+  const jogo = await pg.evaluate(async () => {
+    const { S } = await import('/app/modules/estado.mjs');
+    if (!S.seeds || !S.battle) return null;
+    return {
+      raiz: S.seeds.raiz,
+      clima: S.weather?.key,
+      elenco: S.fighters.map(f => [f.dex, f.n, f.maxHp, f.atk, f.def, f.spa, f.spd, f.spe,
+                                   f.moves.map(m => m.n)]),
+      vencedor: S.battle.winner,
+      duracao: S.battle.duration,
+      nEventos: S.battle.events.length,
+    };
+  }).catch(() => null);
+
   await b.close(); s.close();
-  return { erros, conhecidos, apostas, aoVivo, relogio, folhas: cache.size, erroDepois, ...st };
+  return { erros, conhecidos, apostas, aoVivo, relogio, folhas: cache.size, erroDepois, jogo, ...st };
+}
+
+/* Q3 · A RODADA DO APP SAI DA RAIZ.
+ *
+ * `semente.mjs` prova que a árvore é sólida. Este teste prova a outra metade:
+ * que o app está LIGADO nela, e que cada ramo alimenta o que deve. Trocar
+ * `S.seeds.batalha` por `S.seeds.elenco` numa linha de `fases.mjs` não muda
+ * nada que a suíte estática enxergue — foi o defeito S30, e é ele que este
+ * teste existe para pegar.                                                  */
+export function suiteRodadaViva(r) {
+  const s = criarSuite('rodada-viva');
+  s.teste('a rodada montada pelo app é a que a raiz reproduz', () => {
+    ok(r.jogo, 'não deu para ler a rodada do app — sem seeds ou sem batalha');
+    const esperado = rodadaNode(r.jogo.raiz);
+    ok(esperado.clima.key === r.jogo.clima,
+      `clima: app ${r.jogo.clima}, raiz reproduz ${esperado.clima.key} — o ramo ambiente não é o usado`);
+    const elencoEsperado = esperado.elenco.map(f => [f.dex, f.n, f.maxHp, f.atk, f.def, f.spa, f.spd,
+                                                     f.spe, f.moves.map(m => m.n)]);
+    ok(JSON.stringify(elencoEsperado) === JSON.stringify(r.jogo.elenco),
+      'elenco: o app sorteou uma pool que a raiz não reproduz — o ramo elenco não é o usado');
+    ok(esperado.batalha.winner === r.jogo.vencedor
+       && esperado.batalha.events.length === r.jogo.nEventos
+       && Math.abs(esperado.batalha.duration - r.jogo.duracao) < 1e-9,
+      `batalha: app venceu ${r.jogo.vencedor} em ${r.jogo.nEventos} eventos, ` +
+      `a raiz reproduz ${esperado.batalha.winner} em ${esperado.batalha.events.length} — ` +
+      `o ramo batalha não é o usado`);
+  });
+  return s;
 }
 
 export function suiteBase(atual, base) {

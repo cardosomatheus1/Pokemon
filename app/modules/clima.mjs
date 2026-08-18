@@ -6,6 +6,7 @@
 
 import { S } from './estado.mjs';
 import { $ } from './dom.mjs';
+import { enfeite } from './sorte.mjs';
 import { H, W, fx, map } from './render.mjs';
 
 /* =====================================================================
@@ -62,31 +63,31 @@ function initWeatherFx(w){
   weatherParticles = [];
   if (weatherKind === 'chuva'){
     for (let i=0;i<70;i++) weatherParticles.push({
-      x: Math.random()*W, y: Math.random()*H,
-      len: 7+Math.random()*7, spd: 260+Math.random()*130,
+      x: enfeite()*W, y: enfeite()*H,
+      len: 7+enfeite()*7, spd: 260+enfeite()*130,
     });
   } else if (weatherKind === 'neve'){
     for (let i=0;i<55;i++) weatherParticles.push({
-      x: Math.random()*W, y: Math.random()*H,
-      r: 1+Math.random()*1.6, spd: 16+Math.random()*20,
-      sway: Math.random()*Math.PI*2, swaySpd: 1+Math.random()*1.4,
+      x: enfeite()*W, y: enfeite()*H,
+      r: 1+enfeite()*1.6, spd: 16+enfeite()*20,
+      sway: enfeite()*Math.PI*2, swaySpd: 1+enfeite()*1.4,
     });
   } else if (weatherKind === 'vento'){
     for (let i=0;i<24;i++) weatherParticles.push({
-      x: Math.random()*W, y: Math.random()*H,
-      len: 20+Math.random()*32, spd: 190+Math.random()*150,
-      wobble: Math.random()*Math.PI*2,
+      x: enfeite()*W, y: enfeite()*H,
+      len: 20+enfeite()*32, spd: 190+enfeite()*150,
+      wobble: enfeite()*Math.PI*2,
     });
   } else if (weatherKind === 'sol'){
     // raios: nascem FORA do canto superior esquerdo e cruzam a ilha na
     // diagonal (ângulo medido a partir do eixo X, sentido horário)
     for (let i=0;i<6;i++) weatherParticles.push({
-      ray:true, ang: 0.30 + i*0.15, phase: Math.random()*Math.PI*2,
+      ray:true, ang: 0.30 + i*0.15, phase: enfeite()*Math.PI*2,
     });
     // glints: pontinhos de brilho piscando na grama, tipo sol batendo
     for (let i=0;i<16;i++) weatherParticles.push({
-      ray:false, x: 20+Math.random()*(W-40), y: 60+Math.random()*(H-120),
-      phase: Math.random()*Math.PI*2, spd: 1.2+Math.random()*1.6,
+      ray:false, x: 20+enfeite()*(W-40), y: 60+enfeite()*(H-120),
+      phase: enfeite()*Math.PI*2, spd: 1.2+enfeite()*1.6,
     });
   }
 }
@@ -114,7 +115,7 @@ function drawWeatherFx(dt, time){
     fx.strokeStyle = 'rgba(210,230,255,.55)'; fx.lineWidth = 1.3;
     for (const p of weatherParticles){
       p.y += p.spd*dt; p.x += p.spd*dt*(dirX/dirY);
-      if (p.y > H+20){ p.y = -20; p.x = Math.random()*W; }
+      if (p.y > H+20){ p.y = -20; p.x = enfeite()*W; }
       fx.beginPath();
       fx.moveTo(p.x, p.y);
       fx.lineTo(p.x - dirX*p.len, p.y - dirY*p.len);
@@ -125,7 +126,7 @@ function drawWeatherFx(dt, time){
     for (const p of weatherParticles){
       p.y += p.spd*dt; p.sway += p.swaySpd*dt;
       const x = p.x + Math.sin(p.sway)*10;
-      if (p.y > H+5){ p.y = -5; p.x = Math.random()*W; }
+      if (p.y > H+5){ p.y = -5; p.x = enfeite()*W; }
       fx.beginPath(); fx.arc(x, p.y, p.r, 0, Math.PI*2); fx.fill();
     }
   } else if (weatherKind === 'vento'){
@@ -133,7 +134,7 @@ function drawWeatherFx(dt, time){
     for (const p of weatherParticles){
       p.x += p.spd*dt; p.wobble += dt*3;
       const y = p.y + Math.sin(p.wobble)*4;
-      if (p.x - p.len > W){ p.x = -p.len - Math.random()*60; p.y = Math.random()*H; }
+      if (p.x - p.len > W){ p.x = -p.len - enfeite()*60; p.y = enfeite()*H; }
       fx.beginPath();
       fx.moveTo(p.x, y);
       fx.lineTo(p.x - p.len, y - 3);

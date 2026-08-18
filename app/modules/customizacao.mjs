@@ -3,7 +3,7 @@
  * Fronteira: puramente cosmética. Nada aqui toca probabilidade nem economia. */
 
 import { $ } from './dom.mjs';
-import { CUR, KANTO_DEX, KANTO_DEX_FULL, TCOLOR, TIPO_PT, displayName, showdownSlug } from './motor.mjs';
+import { CUR, elenco, especies, tipoCores, tipoNomes, nomeExibido, slugExterno } from './motor.mjs';
 import { DEPOSIT_PACKAGES, simulateDeposit } from './carteira.mjs';
 import { PROFILE_DEFAULT, loadProfile, nivelDe, progressoNivel, saveProfile, tituloDe, topOf } from './perfil.mjs';
 import { S } from './estado.mjs';
@@ -56,7 +56,7 @@ const trainerURL = id => `https://play.pokemonshowdown.com/sprites/trainers/${id
 /* slug do lutador a partir do número da dex — o último espelho da
    cadeia (Showdown) indexa por nome, não por número */
 function slugDoDex(dex){
-  const e = KANTO_DEX_FULL.find(p => p.dex === dex);
+  const e = especies.find(p => p.dex === dex);
   return e ? e.n : 'pikachu';
 }
 
@@ -70,8 +70,8 @@ function avatarURL(){
    caminho mais provável. */
 function customMons(){
   const favs = Object.keys(S.profile.mons);
-  return KANTO_DEX.slice().sort((a,b) => {
-    const na = S.profile.mons[displayName(a.n)] || 0, nb = S.profile.mons[displayName(b.n)] || 0;
+  return elenco.slice().sort((a,b) => {
+    const na = S.profile.mons[nomeExibido(a.n)] || 0, nb = S.profile.mons[nomeExibido(b.n)] || 0;
     return nb - na || a.dex - b.dex;
   });
 }
@@ -86,7 +86,7 @@ function renderBanner(){
   av.src = avatarURL();
   av.onerror = () => {
     av.onerror = () => { av.onerror = null; av.src = trainerURL('red'); };
-    av.src = `https://play.pokemonshowdown.com/sprites/gen5/${showdownSlug(slugDoDex(
+    av.src = `https://play.pokemonshowdown.com/sprites/gen5/${slugExterno(slugDoDex(
       (S.profile.avatar && S.profile.avatar.kind === 'mon') ? S.profile.avatar.id : 25))}.png`;
   };
 }
@@ -105,7 +105,7 @@ function renderCustom(){
   $('#pickMon').innerHTML = mons.map(m => `
     <div class="opt ${a.kind==='mon'&&+a.id===m.dex?'on':''}" data-av="mon" data-id="${m.dex}">
       ${dexImg(m.dex, m.n, 'loading="lazy"')}
-      <div class="cap">${displayName(m.n)}</div>
+      <div class="cap">${nomeExibido(m.n)}</div>
     </div>`).join('');
 
   $('#pickScene').innerHTML = BANNER_SCENES.map(s => `
@@ -117,7 +117,7 @@ function renderCustom(){
   $('#pickBannerMon').innerHTML = mons.map(m => `
     <div class="opt ${+b.dex===m.dex?'on':''}" data-bmon="${m.dex}">
       ${dexImg(m.dex, m.n, 'loading="lazy"')}
-      <div class="cap">${displayName(m.n)}</div>
+      <div class="cap">${nomeExibido(m.n)}</div>
     </div>`).join('');
 }
 
@@ -156,16 +156,16 @@ function renderProfile(){
 
   // destaques: Pokémon e tipo mais apostados
   const favMon = topOf(S.profile.mons), favType = topOf(S.profile.types);
-  const dexOf = nm => { const e = KANTO_DEX.find(p => displayName(p.n) === nm); return e ? e.dex : 25; };
+  const dexOf = nm => { const e = elenco.find(p => nomeExibido(p.n) === nm); return e ? e.dex : 25; };
   $('#profHighlights').innerHTML =
     (favMon
       ? `<div class="hi">${dexImg(dexOf(favMon.k), slugDoDex(dexOf(favMon.k)))}
            <div class="t"><b>${favMon.k}</b><span>parceiro · ${favMon.v}x apostado</span></div></div>`
       : `<div class="hi"><div class="t"><b>—</b><span>ainda sem parceiro</span></div></div>`) +
     (favType
-      ? `<div class="hi"><div class="tdot" style="background:${TCOLOR[favType.k]||'#555'}">${
+      ? `<div class="hi"><div class="tdot" style="background:${tipoCores[favType.k]||'#555'}">${
            (TYPE_BADGES.find(b=>b.t===favType.k)||{ico:'●'}).ico}</div>
-           <div class="t"><b>${TIPO_PT[favType.k] || favType.k}</b><span>tipo favorito · ${favType.v}x</span></div></div>`
+           <div class="t"><b>${tipoNomes[favType.k] || favType.k}</b><span>tipo favorito · ${favType.v}x</span></div></div>`
       : `<div class="hi"><div class="t"><b>—</b><span>ainda sem tipo favorito</span></div></div>`);
 
   $('#profStats').innerHTML = `

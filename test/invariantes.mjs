@@ -22,16 +22,16 @@ export function suite() {
 
   s.teste(`I1 · exatamente um campeão em ${RODADAS} rodadas`, () => {
     for (let i = 0; i < RODADAS; i++) {
-      const f = elencoDeterministico(E.KANTO_DEX, E.buildRoster, 5000 + i);
-      const r = E.simulate(f, 900000 + i, true);
+      const f = elencoDeterministico(E.elenco, E.montarElenco, 5000 + i);
+      const r = E.simular(f, 900000 + i, true);
       ok(r.winner >= 0 && r.winner < f.length, `rodada ${i}: campeão inválido ${r.winner}`);
     }
   });
 
   s.teste('I2 · nenhuma batalha excede o corte duro de tempo', () => {
     for (let i = 0; i < RODADAS; i++) {
-      const f = elencoDeterministico(E.KANTO_DEX, E.buildRoster, 6000 + i);
-      const r = E.simulate(f, 910000 + i, true);
+      const f = elencoDeterministico(E.elenco, E.montarElenco, 6000 + i);
+      const r = E.simular(f, 910000 + i, true);
       ok(r.duration <= E.CONF.MAX_TIME, `rodada ${i}: duração ${r.duration} > MAX_TIME`);
       for (const ev of r.events) ok(ev.t <= E.CONF.MAX_TIME, `evento além do corte`);
     }
@@ -39,8 +39,8 @@ export function suite() {
 
   s.teste('I3 · nenhum lutador é abatido duas vezes', () => {
     for (let i = 0; i < RODADAS; i++) {
-      const f = elencoDeterministico(E.KANTO_DEX, E.buildRoster, 7000 + i);
-      const r = E.simulate(f, 920000 + i, true);
+      const f = elencoDeterministico(E.elenco, E.montarElenco, 7000 + i);
+      const r = E.simular(f, 920000 + i, true);
       const mortos = new Set();
       for (const ev of r.events) {
         if (ev.storm) { for (const h of ev.hits) if (h.ko) {
@@ -55,8 +55,8 @@ export function suite() {
 
   s.teste('I4 · lutador abatido não age nem é alvo depois', () => {
     for (let i = 0; i < RODADAS; i++) {
-      const f = elencoDeterministico(E.KANTO_DEX, E.buildRoster, 8000 + i);
-      const r = E.simulate(f, 930000 + i, true);
+      const f = elencoDeterministico(E.elenco, E.montarElenco, 8000 + i);
+      const r = E.simular(f, 930000 + i, true);
       const mortos = new Set();
       for (const ev of r.events) {
         if (ev.storm) { for (const h of ev.hits) { ok(!mortos.has(h.i), 'tempestade atingiu morto'); if (h.ko) mortos.add(h.i); } continue; }
@@ -70,8 +70,8 @@ export function suite() {
 
   s.teste('I5 · tempo dos eventos é monotônico', () => {
     for (let i = 0; i < RODADAS; i++) {
-      const f = elencoDeterministico(E.KANTO_DEX, E.buildRoster, 9000 + i);
-      const r = E.simulate(f, 940000 + i, true);
+      const f = elencoDeterministico(E.elenco, E.montarElenco, 9000 + i);
+      const r = E.simular(f, 940000 + i, true);
       let ult = -1;
       for (const ev of r.events) { ok(ev.t >= ult - 1e-9, `rodada ${i}: tempo retrocedeu`); ult = ev.t; }
     }
@@ -79,8 +79,8 @@ export function suite() {
 
   s.teste('I6 · dano é 0 só quando erra ou é imune; nunca negativo', () => {
     for (let i = 0; i < RODADAS; i++) {
-      const f = elencoDeterministico(E.KANTO_DEX, E.buildRoster, 11000 + i);
-      const r = E.simulate(f, 950000 + i, true);
+      const f = elencoDeterministico(E.elenco, E.montarElenco, 11000 + i);
+      const r = E.simular(f, 950000 + i, true);
       for (const ev of r.events) {
         if (ev.storm || ev.streak) continue;
         ok(ev.dmg >= 0, `dano negativo em t=${ev.t}`);
@@ -90,9 +90,9 @@ export function suite() {
   });
 
   s.teste('I7 · só entram lutadores do elenco declarado', () => {
-    const validos = new Set(E.KANTO_DEX.map(p => p.dex));
+    const validos = new Set(E.elenco.map(p => p.dex));
     for (let i = 0; i < 300; i++) {
-      const f = elencoDeterministico(E.KANTO_DEX, E.buildRoster, 12000 + i);
+      const f = elencoDeterministico(E.elenco, E.montarElenco, 12000 + i);
       ok(f.length === E.CONF.ARENA_SIZE, `pool com ${f.length} lutadores`);
       ok(new Set(f.map(x => x.dex)).size === f.length, 'lutador repetido na pool');
       for (const x of f) ok(validos.has(x.dex), `dex ${x.dex} fora do elenco`);
@@ -101,11 +101,11 @@ export function suite() {
 
   s.teste('I8 · nenhuma probabilidade estimada é zero (Laplace)', () => {
     for (let i = 0; i < 12; i++) {
-      const f = elencoDeterministico(E.KANTO_DEX, E.buildRoster, 13000 + i);
+      const f = elencoDeterministico(E.elenco, E.montarElenco, 13000 + i);
       const SIMS = 3000, w = new Uint32Array(f.length);
       const R = rngTeste(600000 + i);
       for (let k = 0; k < SIMS; k++) {
-        const x = E.simulate(f, (R() * 4294967296) >>> 0, false);
+        const x = E.simular(f, (R() * 4294967296) >>> 0, false);
         if (x >= 0) w[x]++;
       }
       const p = Array.from(w, v => (v + 1) / (SIMS + f.length));
@@ -116,7 +116,7 @@ export function suite() {
   /* ------------------------------------------------------------------ *
    * D-001 · CORRIGIDO em F0.2.
    *
-   * O caminho rápido de simulate() devolvia -1 quando um carimbo de
+   * O caminho rápido de simular() devolvia -1 quando um carimbo de
    * tempestade abatia os últimos lutadores no mesmo instante, porque o
    * desempate percorria `hits`, alimentado só em modo gravação. Medido em
    * 0,034% das simulações, e o descarte não era aleatório.
@@ -126,11 +126,11 @@ export function suite() {
    * aqui e aponta para docs/DEFEITOS.md.
    * ------------------------------------------------------------------ */
   s.teste('D-001 · caminho rápido e modo gravação concordam na varredura por tempestade', () => {
-    const f = E.buildRoster(E.KANTO_DEX.slice(0, 12));
+    const f = E.montarElenco(E.elenco.slice(0, 12));
     const SEEDS_DO_DEFEITO = [3846931268, 3582205302, 3060347309];
     for (const seed of SEEDS_DO_DEFEITO) {
-      const rapido = E.simulate(f, seed, false);
-      const gravado = E.simulate(f, seed, true);
+      const rapido = E.simular(f, seed, false);
+      const gravado = E.simular(f, seed, true);
       ok(rapido >= 0, `D-001 regrediu: caminho rápido devolveu ${rapido} na seed ${seed}`);
       ok(rapido === gravado.winner,
         `seed ${seed}: caminho rápido (${rapido}) discorda do modo gravação (${gravado.winner})`);
@@ -138,11 +138,11 @@ export function suite() {
   });
 
   s.teste('D-001 · nenhuma simulação perde o vencedor em 50.000 amostras', () => {
-    const f = E.buildRoster(E.KANTO_DEX.slice(0, 12));
+    const f = E.montarElenco(E.elenco.slice(0, 12));
     const R = rngTeste(4242);
     for (let i = 0; i < 50000; i++) {
       const seed = (R() * 4294967296) >>> 0;
-      ok(E.simulate(f, seed, false) >= 0, `caminho rápido devolveu -1 na seed ${seed}`);
+      ok(E.simular(f, seed, false) >= 0, `caminho rápido devolveu -1 na seed ${seed}`);
     }
   });
 
@@ -168,16 +168,16 @@ export function suite() {
          Então o cenário que o corte existe para cobrir precisa ser CONSTRUÍDO:
          Normal puro com golpe Normal contra Fantasma puro com golpe Fantasma.
          Nenhum dos dois toca o outro, e nada mais encerra a batalha. */
-      const f = E.buildRoster(E.KANTO_DEX.slice(0, 2));
+      const f = E.montarElenco(E.elenco.slice(0, 2));
       const golpe = (t) => ({ n:`teste ${t}`, t, p:100, cat:'fis', fx:'melee', acc:1 });
       f[0].types = ['normal']; f[0].moves = [golpe('normal')];
       f[1].types = ['ghost'];  f[1].moves = [golpe('ghost')];
-      ok(E.effect('normal', f[1].types) === 0 && E.effect('ghost', f[0].types) === 0,
+      ok(E.efeito('normal', f[1].types) === 0 && E.efeito('ghost', f[0].types) === 0,
         'a imunidade mútua do cenário deixou de valer — a tabela de tipos mudou');
 
       let alcancou = 0;
       for (let i = 0; i < 200; i++) {
-        const r = E.simulate(f, 900000 + i, true);
+        const r = E.simular(f, 900000 + i, true);
         /* D-003 · o corte é SUAVE, não duro. O laço testa `t < MAX_TIME` antes
            de agir, então a última ação pode ser agendada logo abaixo do corte
            e levar `t` para além dele — até um intervalo de ataque depois.
@@ -204,10 +204,10 @@ export function suite() {
        acima precisa de um cenário artificial. Se um dia isto ficar vermelho,
        a tempestade deixou de garantir o término e o corte virou o mecanismo
        real de encerramento — o que mudaria a distribuição de duração. */
-    const f = elencoDeterministico(E.KANTO_DEX, E.buildRoster, 77);
+    const f = elencoDeterministico(E.elenco, E.montarElenco, 77);
     let perto = 0;
     for (let i = 0; i < 500; i++)
-      if (E.simulate(f, 950000 + i, true).duration >= E.CONF.MAX_TIME - 2) perto++;
+      if (E.simular(f, 950000 + i, true).duration >= E.CONF.MAX_TIME - 2) perto++;
     ok(perto === 0,
       `${perto} de 500 rodadas chegaram perto do corte duro — a tempestade parou de encerrar antes`);
   });

@@ -3,7 +3,7 @@
  * Fronteira: mede o que aconteceu e paga recompensa não transferível. */
 
 import { S } from './estado.mjs';
-import { TIPO_PT, rng } from './motor.mjs';
+import { tipoNomes, rng } from './motor.mjs';
 import { saveBal } from './controles.mjs';
 import { saveProfile } from './perfil.mjs';
 
@@ -55,7 +55,7 @@ function rollDaily(){
       id: base.id, meta, tipo, prog: 0, feito: false, pago: false,
       xp: base.xp, dia: base.dia,
       txt: base.txt.replace('{n}', meta).replace('{s}', meta === 1 ? '' : 's')
-                   .replace('{t}', tipo ? (TIPO_PT[tipo]||tipo) : ''),
+                   .replace('{t}', tipo ? (tipoNomes[tipo]||tipo) : ''),
     });
   }
   return {data: d, lista: escolhidos};

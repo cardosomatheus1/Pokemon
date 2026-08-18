@@ -45,6 +45,9 @@ const SPRITES= 'app/modules/sprites.mjs';
 const LIGACAO= 'app/modules/motor.mjs';
 const PACK   = 'content/pokemon_kanto_v1.mjs';
 const VALID  = 'engine/pack.mjs';
+const SEMENTE= 'engine/seed.mjs';
+const FASES  = 'app/modules/fases.mjs';
+const PRECO  = 'engine/preco.mjs';
 
 const DEFEITOS = [
   /* Desde o F0.4 a tabela de tipos é DADO DO PACK, não do motor. O defeito é o
@@ -153,12 +156,51 @@ const DEFEITOS = [
 
   { id:'S23', arquivo:MOTOR, nome:'identificador da franquia hard-coded fora do pack',
     real:'atalho para um caso especial: "só este Pokémon precisa disso"',
-    de:'function sortearPool(pack, elenco, weatherType){',
-    para:"function sortearPool(pack, elenco, weatherType){\n  const favorito = 'pikachu';" },
+    de:'function sortearPool(pack, elenco, weatherType, sementeElenco){',
+    para:"function sortearPool(pack, elenco, weatherType, sementeElenco){\n  const favorito = 'pikachu';" },
 
   { id:'S24', arquivo:VALID, nome:'validação de pack aceita elenco menor que a arena',
     real:'limite afrouxado para deixar um pack de teste passar',
     de:'exigir(pack.elenco.length >= 12,', para:'exigir(pack.elenco.length >= 1,' },
+
+  /* --- defeitos do F0.5: a árvore de sementes --------------------------- */
+  { id:'S25', arquivo:MOTOR, nome:'um Math.random volta ao caminho da rodada',
+    real:'"só um embaralhamento, não muda nada" — foi assim que o protótipo ficou irreconstituível',
+    de:'  for (let i=src.length-1;i>0;i--){ const j = R()*(i+1)|0;',
+    para:'  for (let i=src.length-1;i>0;i--){ const j = Math.random()*(i+1)|0;' },
+
+  { id:'S26', arquivo:SEMENTE, nome:'duas derivações caem na mesma sub-seed',
+    real:'rótulo ignorado numa refatoração — elenco e batalha passam a correlacionar',
+    de:'  return misturar(misturar(raiz >>> 0) ^ hashRotulo(String(rotulo)));',
+    para:'  return misturar(misturar(raiz >>> 0));' },
+
+  { id:'S27', arquivo:SEMENTE, nome:'a árvore passa a derivar por posição',
+    real:'"o índice é mais barato que o hash do rótulo" — e aí um ramo novo reescreve as rodadas antigas',
+    de:'  for (const r of RAMOS) out[r] = derivar(raiz, r);',
+    para:'  RAMOS.forEach((r, i) => { out[r] = derivar(raiz, String(i)); });' },
+
+  { id:'S28', arquivo:SEMENTE, nome:'a raiz passa a sair do relógio',
+    real:'CSPRNG trocado por algo "que sempre existe" — e a raiz vira adivinhável',
+    de:'  return c.getRandomValues(new Uint32Array(1))[0] >>> 0;',
+    para:'  return (Date.now() * 65537) >>> 0;' },
+
+  { id:'S29', arquivo:PRECO, nome:'o Monte Carlo volta a sortear sozinho',
+    real:'sub-seed derivada trocada por semente solta — o preço deixa de ser auditável',
+    de:"    const w = simular(fighters, derivarIndice(raiz, 'simulacao', i), false);",
+    para:'    const w = simular(fighters, (Math.random()*4294967296)>>>0, false);' },
+
+  { id:'S31', arquivo:PRECO, nome:'a sub-seed da simulação vem da posição no lote',
+    real:'"o índice do laço serve" — e aí o preço passa a depender do tamanho da fatia',
+    de:"  for (let i = de; i < ate; i++) {\n    const w = simular(fighters, derivarIndice(raiz, 'simulacao', i), false);",
+    para:"  for (let i = de; i < ate; i++) {\n    const w = simular(fighters, derivarIndice(raiz, 'simulacao', i - de), false);" },
+
+  { id:'S32', arquivo:PRECO, nome:'a suavização de Laplace some',
+    real:'"o +1 não faz diferença com 20.000 simulações" — até alguém não vencer nenhuma',
+    de:'    const p = (wins[i] + 1) / (sims + n);', para:'    const p = wins[i] / sims;' },
+
+  { id:'S30', arquivo:FASES, nome:'a batalha usa a sub-seed do elenco',
+    real:'ramo trocado por engano — batalha e sorteio deixam de ser independentes',
+    de:'  const seed = S.seeds.batalha;', para:'  const seed = S.seeds.elenco;' },
 ];
 
 /* A sabotagem mede se a SUÍTE pega o defeito, então roda sem o portão de
@@ -183,7 +225,8 @@ const suitesQuePegaram = saida => {
   return nomes.length ? nomes : ['(não carrega)'];
 };
 
-const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES, LIGACAO, PACK, VALID];
+const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES, LIGACAO, PACK, VALID,
+                  SEMENTE, FASES, PRECO];
 const originais = new Map();
 for (const f of ARQUIVOS) originais.set(f, readFileSync(f, 'utf8'));
 

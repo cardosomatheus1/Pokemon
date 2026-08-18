@@ -25,6 +25,9 @@ const CAMADA = {
      nenhum módulo do app pode ficar abaixo dela. Não importa nada de ./ — só
      do motor e do pack, que vivem fora desta pasta. */
   'motor.mjs': 0,
+  /* Fluxo visual da rodada. Depende só da ligação do motor e da árvore de
+     sementes, então mora na base junto com ela. */
+  'sorte.mjs': 0,
   'dom.mjs': 0,
   'estado.mjs': 0,
   'sprites.mjs': 1,
@@ -128,7 +131,9 @@ export function suite() {
   });
 
   s.teste('nenhum módulo redeclara símbolo do motor', () => {
-    const doMotor = ['CONF','CHART','simulate','buildRoster','damageOf','pickLineup','rng','effect','assignMoves'];
+    const doMotor = ['CONF','rng','statAt','stormRate','efetividade','simular',
+                     'montarElenco','dano','sortearPool','efeito','atribuirGolpes',
+                     'derivar','sementes','novaRaiz','precificar','simularLote'];
     for (const [f, txt] of Object.entries(fonte))
       for (const nome of doMotor)
         ok(!new RegExp(`^\\s*(?:const|let|var|function)\\s+${nome}\\b`, 'm').test(txt),
@@ -136,7 +141,7 @@ export function suite() {
   });
 
   /* Este é o teste que faltava no F0.3b e que custou três erros de import em
-     sequência: rng, spriteURL e o par $/log. Ele não é um verificador de
+     sequência: rng, o endereço de sprite e o par $/log. Ele não é um verificador de
      escopo completo — checa apenas SÍMBOLOS CONHECIDOS, os que algum módulo do
      projeto exporta. É exatamente a classe de erro que a extração produz. */
   s.teste('nenhum módulo usa símbolo conhecido sem importar', () => {

@@ -17,6 +17,13 @@
  */
 export const S = {
   /* --- rodada ------------------------------------------------------------ */
+  /* A raiz da rodada e seus cinco ramos (Spec §P3). Entram aqui porque são
+     reatribuídos a cada rodada e lidos por precificação, montagem e batalha —
+     três módulos. Guardar a raiz é guardar a rodada: em V1 ela é o que a casa
+     publica no reveal do §25.2, e o que qualquer um usa para recalcular o
+     preço que viu na tela. */
+  seeds:    null,     // {raiz, elenco, ambiente, batalha, visual, recompensa}
+
   state:    'boot',   // boot | betting | countdown | fighting | result
   clock:    0,        // relógio da fase atual
   battleT:  0,        // relógio do replay
@@ -30,7 +37,6 @@ export const S = {
 
   /* --- apresentação ------------------------------------------------------ */
   shake:    0,        // tremor de tela, 0 a 1
-  moveRng:  null,     // PRNG da coreografia; semeado em cada rodada
   /* `ents` entrou no F0.3b, e a justificativa é a mesma dos outros: é
      REATRIBUÍDO (`S.ents = []` a cada montagem de rodada), e apresentação
      precisa lê-lo. Binding importado não aceita atribuição. Os arrays de

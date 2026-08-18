@@ -11,8 +11,8 @@ const SEEDS = [1, 7, 42, 99, 123456789, 2**31, 777, 31337, 8675309, 1010101,
 
 export function gerar() {
   const saida = SEEDS.map((seed, i) => {
-    const f = elencoDeterministico(E.KANTO_DEX, E.buildRoster, seed + i);
-    const r = E.simulate(f, seed, true);
+    const f = elencoDeterministico(E.elenco, E.montarElenco, seed + i);
+    const r = E.simular(f, seed, true);
     return {
       seed, elenco: f.map(x => x.n), campeao: r.winner,
       duracao: +r.duration.toFixed(6), nEventos: r.events.length,
@@ -32,9 +32,9 @@ export function suite() {
   const esperado = JSON.parse(readFileSync(ARQ, 'utf8'));
   for (const [i, exp] of esperado.entries()) {
     s.teste(`seed ${exp.seed}`, () => {
-      const f = elencoDeterministico(E.KANTO_DEX, E.buildRoster, exp.seed + i);
+      const f = elencoDeterministico(E.elenco, E.montarElenco, exp.seed + i);
       igual(f.map(x => x.n).join(','), exp.elenco.join(','), 'elenco divergiu');
-      const r = E.simulate(f, exp.seed, true);
+      const r = E.simular(f, exp.seed, true);
       igual(r.winner, exp.campeao, 'campeão divergiu');
       igual(r.events.length, exp.nEventos, 'número de eventos divergiu');
       igual(+r.duration.toFixed(6), exp.duracao, 'duração divergiu');

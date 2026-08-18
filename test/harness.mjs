@@ -26,8 +26,10 @@ export function dentro(v, alvo, tol, msg) {
 }
 
 /* PRNG próprio do arnês, para que a seleção de elenco nos testes seja
-   reproduzível. O protótipo ainda usa Math.random em pickLineup; consertar
-   isso é o bloco F0.5, não este. */
+   reproduzível. Continua existindo depois do F0.5, que deu semente ao
+   `sortearPool` do motor: as fixtures foram gravadas com ESTE embaralhamento, e
+   trocá-lo por outro reescreveria todos os goldens sem nenhuma mudança real de
+   comportamento. */
 export function rngTeste(seed) {
   let a = seed >>> 0;
   return () => {
@@ -38,12 +40,12 @@ export function rngTeste(seed) {
   };
 }
 
-export function elencoDeterministico(KANTO_DEX, buildRoster, seed, n = 12) {
+export function elencoDeterministico(elenco, montarElenco, seed, n = 12) {
   const R = rngTeste(seed);
-  const src = KANTO_DEX.slice();
+  const src = elenco.slice();
   for (let i = src.length - 1; i > 0; i--) {
     const j = (R() * (i + 1)) | 0;
     [src[i], src[j]] = [src[j], src[i]];
   }
-  return buildRoster(src.slice(0, n));
+  return montarElenco(src.slice(0, n));
 }

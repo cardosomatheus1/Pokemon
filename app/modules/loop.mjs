@@ -5,6 +5,7 @@
 import { $ } from './dom.mjs';
 import { CONF } from './motor.mjs';
 import { S } from './estado.mjs';
+import { enfeite } from './sorte.mjs';
 import { applyEvent } from './eventos.mjs';
 import { drawFx, sched } from './efeitos.mjs';
 import { drawMap } from './render.mjs';
@@ -72,7 +73,7 @@ function frame(now){
   if (S.shake > 0.004){
     const a = S.shake * 7;
     $('#arena').style.transform =
-      `translate(${((Math.random()*2-1)*a).toFixed(1)}px, ${((Math.random()*2-1)*a).toFixed(1)}px)`;
+      `translate(${((enfeite()*2-1)*a).toFixed(1)}px, ${((enfeite()*2-1)*a).toFixed(1)}px)`;
     S.shake *= Math.pow(0.02, raw);      // decai ~98% por segundo
   } else if (S.shake !== 0){
     S.shake = 0; $('#arena').style.transform = '';

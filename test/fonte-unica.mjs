@@ -14,11 +14,17 @@ const MODULOS = new URL('../app/modules/', import.meta.url);
 
 /* Declarações que pertencem ao motor e NÃO podem reaparecer no app. */
 const DO_MOTOR = [
-  'CONF', 'CHART', 'KANTO_DEX_FULL', 'ARENA_DEX', 'KANTO_DEX', 'MASTER_MOVES',
-  'assignMoves', 'rng', 'statAt', 'buildRoster', 'effect', 'damageOf',
-  'simulate', 'stormRate', 'WEATHER_TABLE', 'rollWeather', 'applyWeather',
-  'pickLineup', 'displayName', 'showdownSlug', 'TIPO_PT', 'TCOLOR', 'NAME_FIX',
-  'MOEDA', 'CUR', 'newSeed',
+  /* nomes de hoje */
+  'CONF', 'rng', 'statAt', 'stormRate', 'criarMotor', 'efetividade', 'especies',
+  'elenco', 'montarElenco', 'atribuirGolpes', 'efeito', 'dano', 'simular',
+  'sortearPool', 'sortearClima', 'aplicarClima', 'nomeExibido', 'slugExterno',
+  'tipoNomes', 'tipoCores', 'MOEDA', 'CUR', 'novaRaiz', 'derivar', 'sementes',
+  /* e os apelidos que o F0.5 removeu: reaparecer aqui é regressão da L-020,
+     não conveniência */
+  'CHART', 'KANTO_DEX_FULL', 'ARENA_DEX', 'KANTO_DEX', 'MASTER_MOVES',
+  'assignMoves', 'buildRoster', 'effect', 'damageOf', 'simulate',
+  'WEATHER_TABLE', 'rollWeather', 'applyWeather', 'pickLineup', 'displayName',
+  'showdownSlug', 'TIPO_PT', 'TCOLOR', 'NAME_FIX', 'newSeed', 'spriteURL',
 ];
 
 export function suite() {

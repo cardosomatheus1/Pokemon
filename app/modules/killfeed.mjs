@@ -13,7 +13,7 @@ import { S } from './estado.mjs';
    COMO A PRECISÃO É GARANTIDA (é o ponto crítico deste sistema):
 
    1. Existe UMA única origem de verdade — a lista de eventos que o
-      simulate() produziu. O placar mostrado na tela é montado a partir
+      simular() produziu. O placar mostrado na tela é montado a partir
       dela, evento por evento, conforme o replay chega em cada um.
    2. Um abate só conta quando o evento é de ATAQUE e derrubou alguém:
       `!ev.storm && !ev.streak && ev.ko`. Os eventos de killstreak

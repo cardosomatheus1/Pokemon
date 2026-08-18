@@ -21,14 +21,14 @@ export async function suite() {
   const PROTO = await import('../tools/.snapshot-prototipo.mjs');
 
   s.teste('mesmo elenco a partir dos mesmos dados', () => {
-    ok(PROTO.KANTO_DEX.length === VIVO.KANTO_DEX.length, 'tamanho do elenco divergiu');
-    for (let i = 0; i < VIVO.KANTO_DEX.length; i++)
-      ok(PROTO.KANTO_DEX[i].dex === VIVO.KANTO_DEX[i].dex, `dex divergiu na posição ${i}`);
+    ok(PROTO.KANTO_DEX.length === VIVO.elenco.length, 'tamanho do elenco divergiu');
+    for (let i = 0; i < VIVO.elenco.length; i++)
+      ok(PROTO.KANTO_DEX[i].dex === VIVO.elenco[i].dex, `dex divergiu na posição ${i}`);
   });
 
   s.teste('mesmos golpes atribuídos a cada espécie', () => {
-    for (const p of VIVO.KANTO_DEX) {
-      const a = VIVO.assignMoves(p).map(m => m.n).join('|');
+    for (const p of VIVO.elenco) {
+      const a = VIVO.atribuirGolpes(p).map(m => m.n).join('|');
       const b = PROTO.assignMoves(p).map(m => m.n).join('|');
       ok(a === b, `moveset de ${p.n} divergiu`);
     }
@@ -36,10 +36,10 @@ export async function suite() {
 
   s.teste(`modo gravação idêntico em ${RODADAS} rodadas`, () => {
     for (let i = 0; i < RODADAS; i++) {
-      const fv = elencoDeterministico(VIVO.KANTO_DEX, VIVO.buildRoster, 40000 + i);
+      const fv = elencoDeterministico(VIVO.elenco, VIVO.montarElenco, 40000 + i);
       const fp = elencoDeterministico(PROTO.KANTO_DEX, PROTO.buildRoster, 40000 + i);
       const seed = 500000 + i;
-      const a = VIVO.simulate(fv, seed, true), b = PROTO.simulate(fp, seed, true);
+      const a = VIVO.simular(fv, seed, true), b = PROTO.simulate(fp, seed, true);
       ok(a.winner === b.winner && a.events.length === b.events.length
          && Math.abs(a.duration - b.duration) < 1e-12,
         `rodada ${i}: modo gravação divergiu — nenhuma divergência foi declarada para ele`);
@@ -49,18 +49,18 @@ export async function suite() {
   s.teste(`caminho rápido diverge SOMENTE onde D-001 previa`, () => {
     let divergiu = 0, corrigido = 0;
     const R = rngTeste(4242);
-    const f = VIVO.buildRoster(VIVO.KANTO_DEX.slice(0, 12));
+    const f = VIVO.montarElenco(VIVO.elenco.slice(0, 12));
     const fp = PROTO.buildRoster(PROTO.KANTO_DEX.slice(0, 12));
     for (let i = 0; i < 200000; i++) {
       const seed = (R() * 4294967296) >>> 0;
-      const a = VIVO.simulate(f, seed, false), b = PROTO.simulate(fp, seed, false);
+      const a = VIVO.simular(f, seed, false), b = PROTO.simulate(fp, seed, false);
       if (a === b) continue;
       divergiu++;
       /* a única divergência aceita: o protótipo perdia o vencedor, o vivo acha */
       ok(b === -1 && a >= 0,
         `divergência fora do previsto na seed ${seed}: vivo=${a} protótipo=${b}`);
       /* e o vencedor achado tem que ser o mesmo do modo gravação */
-      ok(VIVO.simulate(f, seed, true).winner === a,
+      ok(VIVO.simular(f, seed, true).winner === a,
         `seed ${seed}: caminho rápido e modo gravação discordam entre si`);
       corrigido++;
     }

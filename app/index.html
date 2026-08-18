@@ -1166,7 +1166,7 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 /* O motor de combate NÃO mora mais aqui. Ele é importado de engine/engine.mjs,
    que é a fonte única desde o bloco F0.2. Uma cópia divergente neste arquivo é
    o modo de falha clássico desta troca, e test/fonte-unica.mjs a reprova. */
-import { CHART, CONF, KANTO_DEX, KANTO_DEX_FULL, rng } from './modules/motor.mjs';
+import { efetividade, CONF, elenco, especies, rng } from './modules/motor.mjs';
 import { S } from './modules/estado.mjs';
 import { $, log } from './modules/dom.mjs';
 import { ensureDaily } from './modules/desafios.mjs';
@@ -1238,11 +1238,11 @@ import { hideWeatherBadge, initWeatherFx, showWeatherBadge } from './modules/cli
 
    Tipos já na tipagem MODERNA (pós geração 6), por isso Clefairy,
    Jigglypuff e Mr. Mime aparecem como Fada — é o retcon oficial da
-   franquia, e a tabela de tipos (CHART) já foi escrita nesse padrão
+   franquia, e a tabela de tipos (efetividade) já foi escrita nesse padrão
    desde o início, então não precisa de nenhum ajuste extra.
 
    Isto é a matéria-prima completa, não o elenco que entra em jogo —
-   ver KANTO_DEX logo abaixo, que filtra isto pra 76.
+   ver elenco logo abaixo, que filtra isto pra 76.
    ===================================================================== */
 
 
@@ -1255,7 +1255,7 @@ import { hideWeatherBadge, initWeatherFx, showWeatherBadge } from './modules/cli
    Charmeleon, Squirtle, Wartortle, Pikachu, Eevee cru etc.) — a ideia
    é nunca ver um bicho de primeiro estágio brigando de igual pra igual
    com o resto do elenco. Os lendários já tinham saído lá em
-   KANTO_DEX_FULL; aqui é só o corte por estágio de evolução.
+   especies; aqui é só o corte por estágio de evolução.
    ===================================================================== */
 
 
@@ -1277,7 +1277,7 @@ import { hideWeatherBadge, initWeatherFx, showWeatherBadge } from './modules/cli
    ===================================================================== */
 
 
-/* Escolhe os 4 golpes de um lutador da KANTO_DEX. Garante pelo menos
+/* Escolhe os 4 golpes de um lutador da elenco. Garante pelo menos
    1 golpe de cada tipo que ele tem (então um dual-type sempre tem os
    dois STAB representados) e completa até 4 preferindo mais STAB, com
    uma chance de golpe de cobertura genérico (pool "normal"). */
@@ -1310,7 +1310,8 @@ import { hideWeatherBadge, initWeatherFx, showWeatherBadge } from './modules/cli
    inertes, de propósito: assim ele não impõe ordem de carga a ninguém. */
 S.bal     = +(localStorage.getItem('ar_bal') || 1000);
 S.profile = loadProfile();
-S.moveRng = rng(1);
+/* O fluxo visual não precisa mais ser semeado aqui: sorte.mjs nasce com
+   sementes fixas e é re-semeado a cada rodada pelo ramo `visual` da árvore. */
 
 (async function boot(){
   saveBal();
