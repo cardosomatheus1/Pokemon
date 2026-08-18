@@ -81,6 +81,19 @@ Estudo da empresa. Contém:
 - web/PWA vs app stores;
 - metas financeiras para escala.
 
+### 4) `POKEARENA_BUILD_BLOCKS_v1.0.md` — ATUAL
+Plano de execução. Decompõe v0.9 → V5 em 50 blocos cíclicos, cada um dimensionado para ser executado do começo ao fim numa única sessão de trabalho. Contém:
+
+- a forma do ciclo (entrada, escopo, testes, saída, rollback);
+- o trilho de regressão que todo bloco precisa manter verde;
+- 10 blocos da Fundação v0.9 e 12 da V1, em detalhe;
+- Fases 2 a 5 em blocos, com as invariantes de cada uma;
+- gates de fase e o que cada um exige em dados de produção;
+- paralelismo permitido e regra de convivência entre blocos;
+- o que trava o percurso e **não** é resolvível com código.
+
+Não substitui a Master Spec: a Spec diz *o quê*, este documento diz *em que ordem e em que pedaços*.
+
 ## 2. Documentos substituídos
 
 Não usar como fonte principal:
@@ -130,7 +143,10 @@ Inalterados nesta revisão — as simulações da v1.1 foram reproduzidas de for
 1. Master Spec v1.4 — começar pelas seções 0.5.1, 0.6 e cap. 28 se o interesse for a mudança desta revisão;
 2. Economy Study v1.2;
 3. Unit Economics Study v1.2;
-4. CSVs/simuladores apenas quando for alterar parâmetros.
+4. Build Blocks v1.0 — para executar, não para decidir;
+5. CSVs/simuladores apenas quando for alterar parâmetros.
+
+Para quem vai **construir** e não decidir: ler o Build Blocks primeiro e consultar a Spec pelas seções que cada bloco cita.
 
 ## 5. Pendências abertas após a v1.4
 
@@ -157,4 +173,6 @@ Proteção do jogador é requisito da V1, não da versão com dinheiro real
 Teto de payout preserva a margem; teto de odd a destrói
 Vitória exibida != vitória econômica só é aceitável se o líquido estiver visível
 Idade do jogador != maturidade da conta
+Bloco fechado != jogo quebrado — o trilho de regressão fica verde sempre
+Mapa completo != autorização de execução contínua (Spec §27)
 ```
