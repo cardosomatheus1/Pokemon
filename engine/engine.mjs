@@ -1,10 +1,14 @@
-/* GERADO POR engine/extract.mjs — NÃO EDITAR À MÃO.
- * Fonte: prototype/index.html (base v0.8)
- * Regenerar: node engine/extract.mjs
+/* Motor de combate do PokéArena.
  *
- * Este módulo é o motor de combate sem nenhuma dependência de DOM, para que
- * possa ser testado, medido e rodado no servidor. O bloco F0.1 exige que ele
- * seja byte-a-byte equivalente em comportamento ao protótipo.
+ * FONTE ÚNICA. Foi semeado a partir de prototype/index.html no bloco F0.1 e,
+ * desde o F0.2, é código próprio — o protótipo continua congelado apenas como
+ * referência de onde os goldens vieram.
+ *
+ * Sem DOM: roda no navegador, no servidor e nos testes com o mesmo resultado.
+ *
+ * Divergências intencionais em relação ao protótipo v0.8 ficam listadas em
+ * test/paridade.mjs e justificadas em docs/DEFEITOS.md. O teste de paridade
+ * reprova qualquer divergência não declarada.
  */
 
 /* o protótipo resolve sprite pela URL; no motor isso é irrelevante */
@@ -548,9 +552,24 @@ function simulate(fighters, seed, record){
       const rate = stormRate(t);
       if (rate > 0){
         const hits = [];
+        /* --- D-001 ---------------------------------------------------------
+           O desempate de varredura simultânea percorria `hits`, que só era
+           alimentado em modo gravação. No caminho rápido — o que roda as
+           simulações das odds — o vetor chegava vazio e a função devolvia -1,
+           descartando a amostra em silêncio. Medido: 0,034% das simulações.
+           O descarte não era aleatório: removia exatamente as rodadas que
+           terminam em varredura, e nelas a batalha exibida TEM vencedor. Os
+           dois caminhos discordavam, contra o princípio de que as odds saem
+           do mesmo motor que roda a luta.
+
+           O desempate agora é acompanhado em duas variáveis soltas, fora de
+           `hits`. É correto nos dois modos e não aloca nada no caminho quente,
+           que é o motivo pelo qual `hits` existia só sob `ev`.                */
+        let ultimoIdx = -1, ultimoPct = -1;
         for (let i=0;i<n;i++){
           if (!alive[i]) continue;
           const before = hp[i], beforePct = before / fighters[i].maxHp;
+          if (beforePct > ultimoPct){ ultimoPct = beforePct; ultimoIdx = i; }
           const dmg = Math.max(1, Math.round(fighters[i].maxHp * rate));
           hp[i] = Math.max(0, hp[i] - dmg);
           const ko = hp[i] <= 0;
@@ -561,9 +580,7 @@ function simulate(fighters, seed, record){
         if (aliveCount <= 0){
           // desempate: quem tinha mais % de vida um instante antes do
           // carimbo que zerou todo mundo junto
-          let w = -1, bp = -1;
-          for (const h of hits) if (h.beforePct > bp){ bp = h.beforePct; w = h.i; }
-          return record ? {winner:w, events:ev, duration:t} : w;
+          return record ? {winner:ultimoIdx, events:ev, duration:t} : ultimoIdx;
         }
       }
       continue;
@@ -698,6 +715,7 @@ function pickLineup(weatherType){
 
 
 export {
+  spriteURL,
   MOEDA,
   CUR,
   CONF,

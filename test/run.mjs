@@ -5,6 +5,8 @@
 import * as golden from './golden.mjs';
 import * as invariantes from './invariantes.mjs';
 import * as estatistica from './estatistica.mjs';
+import * as fonteUnica from './fonte-unica.mjs';
+import * as paridade from './paridade.mjs';
 
 if (process.argv.includes('--gerar')) {
   console.log('gerando fixtures a partir do motor atual...');
@@ -16,7 +18,15 @@ if (process.argv.includes('--gerar')) {
   process.exit(0);
 }
 
-const suites = [golden.suite(), invariantes.suite(), estatistica.suite()];
+/* SEM_GOLDEN=1 roda tudo menos os golden tests. Serve ao portão Q2: um
+   defeito que só o golden pega indica cobertura de propriedade fraca naquela
+   área, porque golden byte-exato pega qualquer mudança de comportamento. */
+const semGolden = process.env.SEM_GOLDEN === '1';
+const suites = [
+  ...(semGolden ? [] : [golden.suite()]),
+  invariantes.suite(), estatistica.suite(),
+  fonteUnica.suite(), await paridade.suite(),
+];
 let total = 0, falhas = [];
 for (const s of suites) {
   process.stdout.write(`${s.rodar ? '' : ''}`);

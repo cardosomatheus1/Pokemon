@@ -109,19 +109,67 @@ estica e a batalha congela. Localmente é irrelevante; com relógio compartilhad
 inaceitável, e é exatamente o que F1.5 resolve ao tornar o servidor dono do
 relógio. Registrado para que ninguém "conserte" no cliente antes disso.
 
-### L-007 — sabotagem fácil demais enquanto os goldens forem byte-exatos
+### L-007 — sabotagem fácil demais enquanto os goldens forem byte-exatos ✅ FECHADA
 
-**Dono:** F0.2 · **Notado em:** F0.1
+**Fechada em:** F0.2 · **Notada em:** F0.1
 
 Qualquer sabotagem que mude comportamento derruba os golden tests, então Q2 passa
 sem esforço. O sinal real é a coluna "pego por" do relatório de sabotagem: se um
 defeito só cai no golden e não toca invariantes nem estatística, a cobertura de
 propriedade está fraca naquela área mesmo com Q2 verde.
 
-**Refinamento pedido:** sabotagens que **preservem as 20 seeds do golden** e só
-desloquem o agregado. São as que provam de verdade a suíte estatística.
+**Como foi resolvida.** A tentativa óbvia — inventar uma sabotagem que preserve as
+20 seeds — falhou de forma instrutiva: cortar `MAX_TIME` de 56 para 50 não é pego
+por **nada**, porque nenhuma das 10.000 rodadas do lote estatístico passa de 50 s
+(ver L-016). Uma sabotagem que ninguém pega não mede cobertura, mede sorte.
+
+A solução foi estrutural em vez de pontual: `test/run.mjs` aceita `SEM_GOLDEN=1`, e
+a sabotagem roda **cada defeito duas vezes**, com e sem os golden tests. O relatório
+mostra quem pegou o defeito sem o golden. Defeito que só o golden pega é sinalizado
+como cobertura de propriedade fraca naquela área.
+
+Resultado no F0.2: **10 de 10 defeitos são pegos sem o golden.** Invariantes,
+estatística e paridade sustentam sozinhas, e o golden é rede extra em vez de
+muleta.
 
 ---
+
+### L-014 — `spriteURL` mora no motor e é dado de conteúdo
+
+**Dono:** F0.4 · **Notada em:** F0.2
+
+`buildRoster` grava `f.sprite` e a interface usa esse campo. Para não mudar
+comportamento no F0.2, `spriteURL` ficou dentro de `engine/engine.mjs`. É função
+pura e sem DOM, então não fere o teste de motor limpo — mas é **dado de conteúdo**
+morando no motor, exatamente o que a Content Layer existe para eliminar.
+
+Em F0.4, `spriteURL` sai do motor e vira responsabilidade do ContentPack.
+
+### L-015 — quatro handlers `onclick` embutidos no HTML
+
+**Dono:** F0.3 · **Notada em:** F0.2
+
+Os botões de fechar modal usam `onclick="closeModal(...)"` no HTML. Escopo de
+módulo não é global, então o F0.2 precisou de `window.closeModal = closeModal`
+para não mudar comportamento.
+
+Funciona, e é feio. Em F0.3, que separa a interface, trocar por `addEventListener`
+e remover a exposição no `window`.
+
+### L-016 — o corte duro de tempo nunca é exercitado
+
+**Dono:** F0.3 · **Notada em:** F0.2
+
+`CONF.MAX_TIME` é 56 s, mas **nenhuma** das 10.000 rodadas do lote estatístico passa
+de 50 s — a tempestade encerra tudo antes. O corte duro é um seguro que nunca
+dispara nos testes, então nenhuma suíte cobre o caminho.
+
+Descoberto ao tentar construir uma sabotagem para a L-007: baixar `MAX_TIME` de 56
+para 50 não é detectado por nada.
+
+**O que fazer em F0.3:** um teste com pool sintética de tipos mutuamente imunes,
+que force a batalha a alcançar o corte. É justamente o cenário que o corte existe
+para cobrir, segundo o comentário do próprio protótipo.
 
 ## Conteúdo e identidade
 

@@ -1,7 +1,7 @@
 /* Q1 · Golden tests — mesma seed, mesmos eventos, byte a byte.
  * Pega qualquer mudança acidental no motor. */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import * as E from '../engine/generated.mjs';
+import * as E from '../engine/engine.mjs';
 import { criarSuite, ok, igual, elencoDeterministico } from './harness.mjs';
 
 const ARQ = new URL('./fixtures/golden.json', import.meta.url);

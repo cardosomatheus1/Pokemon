@@ -1,2 +1,3 @@
 node_modules/
-engine/generated.mjs.bak
+engine/.snapshot-prototipo.mjs
+engine/*.bak

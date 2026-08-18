@@ -1,11 +1,16 @@
-/* Extrai o motor de combate do protótipo de arquivo único para um módulo
- * importável sem DOM.
+/* Gera um instantâneo do motor CONGELADO em prototype/index.html.
+ *
+ * No F0.1 este script produzia o motor de trabalho. No F0.2 o motor virou
+ * código próprio em engine/engine.mjs, e este script mudou de papel: agora
+ * serve só ao teste de paridade, que compara o motor vivo com o do protótipo
+ * e reprova qualquer divergência que não esteja declarada.
  *
  * Extrai por NOME DE DECLARAÇÃO com casamento de chaves, não por intervalo de
- * linhas: intervalo quebra em silêncio na primeira edição do protótipo, e o
- * bloco F0.1 existe justamente para não depender de silêncio.
+ * linhas: intervalo quebraria em silêncio na primeira edição do protótipo.
  *
- * Uso: node engine/extract.mjs
+ * A saída é descartável e não vai para o versionamento.
+ *
+ * Uso: node engine/snapshot-prototipo.mjs
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -58,13 +63,11 @@ function extrair(nome) {
 
 const partes = ALVOS.map(extrair);
 
-const saida = `/* GERADO POR engine/extract.mjs — NÃO EDITAR À MÃO.
- * Fonte: prototype/index.html (base v0.8)
- * Regenerar: node engine/extract.mjs
+const saida = `/* GERADO POR engine/snapshot-prototipo.mjs — NÃO EDITAR, NÃO VERSIONAR.
+ * Fonte: prototype/index.html (base v0.8, congelado)
  *
- * Este módulo é o motor de combate sem nenhuma dependência de DOM, para que
- * possa ser testado, medido e rodado no servidor. O bloco F0.1 exige que ele
- * seja byte-a-byte equivalente em comportamento ao protótipo.
+ * Existe apenas para o teste de paridade. O motor de trabalho é
+ * engine/engine.mjs.
  */
 
 /* o protótipo resolve sprite pela URL; no motor isso é irrelevante */
@@ -77,5 +80,5 @@ ${ALVOS.map(a => '  ' + a + ',').join('\n')}
 };
 `;
 
-writeFileSync(join(raiz, 'engine/generated.mjs'), saida);
-console.log(`engine/generated.mjs escrito · ${ALVOS.length} declarações · ${saida.length} bytes`);
+writeFileSync(join(raiz, 'engine/.snapshot-prototipo.mjs'), saida);
+console.log(`instantâneo do protótipo · ${ALVOS.length} declarações · ${saida.length} bytes`);

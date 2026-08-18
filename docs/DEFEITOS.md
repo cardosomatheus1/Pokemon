@@ -9,12 +9,11 @@ enquanto espera o bloco certo.
 
 ---
 
-## D-001 — o caminho rápido do motor perde o vencedor em varredura por tempestade
+## D-001 — o caminho rápido do motor perde o vencedor em varredura por tempestade ✅ CORRIGIDO
 
-**Encontrado por:** F0.1, invariante I8
-**Dono:** F0.2 (motor como módulo — fonte única de comportamento)
+**Encontrado por:** F0.1, invariante I8 · **Corrigido em:** F0.2
 **Gravidade:** baixa em magnitude, alta em princípio
-**Teste que trava:** `test/invariantes.mjs` → `D-001`
+**Testes que travam a regressão:** `test/invariantes.mjs` → `D-001` (duas asserções) e `test/paridade.mjs`
 
 ### O que acontece
 
@@ -52,8 +51,26 @@ Isso contradiz diretamente o princípio declarado do projeto — as odds saem da
 20.000 simulações do *mesmo motor* que roda a luta. Hoje não saem: saem de um
 motor que, numa fração das vezes, não concorda com o que aparece na tela.
 
-### Correção esperada em F0.2
+### Como foi corrigido em F0.2
 
-Alimentar o desempate independentemente de `record`, mantendo `ev` como a única
-coisa que o modo rápido pula. A correção muda comportamento agregado, então F0.2
-passa a atualizar goldens e baseline no mesmo commit, com a diferença explicada.
+O desempate deixou de depender de `hits` e passou a ser acompanhado em duas
+variáveis soltas (`ultimoIdx`, `ultimoPct`) dentro do mesmo laço. Correto nos dois
+modos, e **sem alocar nada no caminho quente** — que era o motivo de `hits` só
+existir sob `ev`.
+
+**Goldens e baseline não mudaram**, ao contrário do que se previa. O modo gravação
+já preenchia `hits`, então só o caminho rápido tinha comportamento errado. A
+previsão de "muda comportamento agregado" estava errada, e é bom que a suíte tenha
+provado isso em vez de a gente confiar na previsão.
+
+Evidência da correção:
+
+```text
+seed 3846931268   rápido -1 -> 11   gravação 11
+seed 3582205302   rápido -1 ->  5   gravação  5
+seed 3060347309   rápido -1 ->  1   gravação  1
+50.000 amostras   nenhum -1
+```
+
+Os testes agora afirmam a correção. Reverter o desempate é a sabotagem S7 e é
+detectada por invariantes, estatística e paridade.

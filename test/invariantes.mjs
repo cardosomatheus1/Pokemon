@@ -4,7 +4,7 @@
  * A Spec §4.6 lista 11 invariantes. Cinco delas são de carteira/aposta e só
  * passam a ser verificáveis a partir de F0.9 e F1.4; estão marcadas abaixo e
  * NÃO são silenciosamente omitidas. */
-import * as E from '../engine/generated.mjs';
+import * as E from '../engine/engine.mjs';
 import { criarSuite, ok, rngTeste, elencoDeterministico } from './harness.mjs';
 
 const RODADAS = 2000;
@@ -114,32 +114,35 @@ export function suite() {
   });
 
   /* ------------------------------------------------------------------ *
-   * D-001 · DEFEITO REGISTRADO, encontrado por este arnês.
+   * D-001 · CORRIGIDO em F0.2.
    *
-   * O caminho rápido de simulate() (record=false, o que roda as 20.000
-   * simulações das odds) devolve -1 quando um carimbo de tempestade abate os
-   * últimos lutadores no mesmo instante. Causa: o desempate percorre `hits`,
-   * mas `hits` só é preenchido `if (ev)` — ou seja, apenas em modo gravação.
+   * O caminho rápido de simulate() devolvia -1 quando um carimbo de
+   * tempestade abatia os últimos lutadores no mesmo instante, porque o
+   * desempate percorria `hits`, alimentado só em modo gravação. Medido em
+   * 0,034% das simulações, e o descarte não era aleatório.
    *
-   * Consequência: as odds e a batalha exibida discordam em ~0,034% das
-   * simulações, e computeOdds descarta a amostra em silêncio. Isso contradiz
-   * o princípio declarado de que as odds saem do MESMO motor que roda a luta.
-   *
-   * F0.1 fotografa, não conserta — ver docs/DEFEITOS.md. Este teste afirma o
-   * defeito de propósito: quando alguém corrigir, ele fica vermelho e aponta
-   * para o registro.
+   * Este teste agora afirma a CORREÇÃO. As seeds são as mesmas que
+   * demonstravam o defeito: se voltarem a divergir, a regressão aparece
+   * aqui e aponta para docs/DEFEITOS.md.
    * ------------------------------------------------------------------ */
-  s.teste('D-001 · defeito registrado: caminho rápido devolve -1 em varredura por tempestade', () => {
+  s.teste('D-001 · caminho rápido e modo gravação concordam na varredura por tempestade', () => {
     const f = E.buildRoster(E.KANTO_DEX.slice(0, 12));
-    const SEEDS_CONHECIDAS = [3846931268, 3582205302, 3060347309];
-    for (const seed of SEEDS_CONHECIDAS) {
+    const SEEDS_DO_DEFEITO = [3846931268, 3582205302, 3060347309];
+    for (const seed of SEEDS_DO_DEFEITO) {
       const rapido = E.simulate(f, seed, false);
       const gravado = E.simulate(f, seed, true);
-      ok(rapido === -1,
-        `D-001 parece corrigido para a seed ${seed} (rápido devolveu ${rapido}). ` +
-        `Se foi intencional, atualize docs/DEFEITOS.md e remova este teste.`);
-      ok(gravado.winner >= 0,
-        `modo gravação também perdeu o vencedor na seed ${seed} — defeito pior que o registrado`);
+      ok(rapido >= 0, `D-001 regrediu: caminho rápido devolveu ${rapido} na seed ${seed}`);
+      ok(rapido === gravado.winner,
+        `seed ${seed}: caminho rápido (${rapido}) discorda do modo gravação (${gravado.winner})`);
+    }
+  });
+
+  s.teste('D-001 · nenhuma simulação perde o vencedor em 50.000 amostras', () => {
+    const f = E.buildRoster(E.KANTO_DEX.slice(0, 12));
+    const R = rngTeste(4242);
+    for (let i = 0; i < 50000; i++) {
+      const seed = (R() * 4294967296) >>> 0;
+      ok(E.simulate(f, seed, false) >= 0, `caminho rápido devolveu -1 na seed ${seed}`);
     }
   });
 
