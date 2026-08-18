@@ -81,15 +81,15 @@ Estudo da empresa. Contém:
 - web/PWA vs app stores;
 - metas financeiras para escala.
 
-### 4) `POKEARENA_BUILD_BLOCKS_v1.1.md` — ATUAL
-Plano de execução. Decompõe v0.9 → V5 em 50 blocos cíclicos, cada um dimensionado para ser executado do começo ao fim numa única sessão de trabalho. Contém:
+### 4) `POKEARENA_BUILD_BLOCKS_v1.2.md` — ATUAL
+Plano de execução. Decompõe v0.9 → V5 em **61 blocos** cíclicos, cada um dimensionado para ser executado do começo ao fim numa única sessão de trabalho. Contém:
 
 - a forma do ciclo, com sabotagem entre escrever o teste e construir;
 - **os nove portões de qualidade**, sendo comportamento e sabotagem obrigatórios nos 50 blocos;
 - **as duas metodologias** — Gauntlet Loop onde existe barra comparável, ciclo dirigido por invariante onde a correção é binária — e a distribuição pelos blocos;
 - o trilho de regressão que todo bloco precisa manter verde;
-- 10 blocos da Fundação v0.9 e 12 da V1 em detalhe, com lista de sabotagem por bloco;
-- Fases 2 a 5 em tabela, com método, portões e sabotagem central de cada bloco;
+- 52 blocos em detalhe, com lista de sabotagem por bloco, e a Fase 5 em tabela;
+- Fases 2 a 4 reestruturadas pelas decisões do Design Depth: mercados mútuos, criação e ginásios com probabilidade exibida;
 - gates de fase e o que cada um exige em dados de produção;
 - paralelismo permitido e regra de convivência;
 - **prompts de gauntlet prontos** para os blocos elegíveis;
@@ -125,7 +125,9 @@ Não usar como fonte principal:
 - `POKEARENA_UNIT_ECONOMICS_STUDY_v1.0.md` → substituído por v1.2;
 - `POKEARENA_UNIT_ECONOMICS_STUDY_v1.1.md` → substituído por v1.2;
 - `POKEARENA_DOCUMENT_INDEX_v1.3.md` → substituído por v1.4;
-- `POKEARENA_BUILD_BLOCKS_v1.0.md` → substituído por v1.1.
+- `POKEARENA_BUILD_BLOCKS_v1.0.md` → substituído por v1.2;
+- `POKEARENA_BUILD_BLOCKS_v1.1.md` → substituído por v1.2;
+- `POKEARENA_DESIGN_DEPTH_v1.0.md` → substituído por v1.1.
 
 ### Registros vivos (não versionados, sempre atuais)
 
@@ -169,7 +171,7 @@ Inalterados nesta revisão — as simulações da v1.1 foram reproduzidas de for
 2. Economy Study v1.2;
 3. Unit Economics Study v1.2;
 4. Design Depth v1.1 — antes de detalhar qualquer bloco de V2 a V5;
-5. Build Blocks v1.1 — para executar, não para decidir;
+5. Build Blocks v1.2 — para executar, não para decidir;
 6. CSVs/simuladores apenas quando for alterar parâmetros.
 
 Para quem vai **construir** e não decidir: ler o Build Blocks primeiro e consultar a Spec pelas seções que cada bloco cita.
