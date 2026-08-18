@@ -97,6 +97,15 @@ Plano de execução. Decompõe v0.9 → V5 em 50 blocos cíclicos, cada um dimen
 
 Não substitui a Master Spec: a Spec diz *o quê*, este documento diz *em que ordem e em que pedaços*.
 
+### 5) `POKEARENA_DESIGN_DEPTH_v1.0.md` — ATUAL, **em decisão**
+Análise de profundidade, maestria e retenção. Nasceu da pergunta "os outros modos não são simples demais?" e encontrou um problema anterior a ela: **a Arena não tem teto de habilidade**. Como as odds saem de `1/p × (1-margem)`, o `p` cancela e toda aposta tem o mesmo valor esperado — medido, 0,89 a 0,93, dentro do ruído de amostragem.
+
+Corolário: os dois defeitos de fairness que a Spec v1.4 manda corrigir eram as duas únicas formas de um jogador ter vantagem. Quanto mais correto o jogo fica, menos habilidade tem.
+
+Propõe três movimentos que preservam P4 integralmente: mercados de apuração mútua, informação como moeda do metagame, e calibração como métrica de maestria. Reposiciona V2 a V5.
+
+**Contém quatro decisões em aberto (§8) que alteram escopo de V2 a V5. Nada ali vale até serem respondidas.**
+
 ## 2. Documentos substituídos
 
 Não usar como fonte principal:
@@ -111,6 +120,12 @@ Não usar como fonte principal:
 - `POKEARENA_UNIT_ECONOMICS_STUDY_v1.1.md` → substituído por v1.2;
 - `POKEARENA_DOCUMENT_INDEX_v1.3.md` → substituído por v1.4;
 - `POKEARENA_BUILD_BLOCKS_v1.0.md` → substituído por v1.1.
+
+### Registros vivos (não versionados, sempre atuais)
+
+- `../CLAUDE.md` — instruções de trabalho: disciplina de bloco, os nove portões, e a regra de registrar achado fora de escopo apontando o bloco dono;
+- `DEFEITOS.md` — o que está quebrado e ainda não foi corrigido, com bloco dono;
+- `LACUNAS.md` — o que foi identificado e adiado, com bloco dono ou trilha nomeada.
 
 Eles podem ser mantidos apenas como histórico de decisão.
 
@@ -147,8 +162,9 @@ Inalterados nesta revisão — as simulações da v1.1 foram reproduzidas de for
 1. Master Spec v1.4 — começar pelas seções 0.5.1, 0.6 e cap. 28 se o interesse for a mudança desta revisão;
 2. Economy Study v1.2;
 3. Unit Economics Study v1.2;
-4. Build Blocks v1.1 — para executar, não para decidir;
-5. CSVs/simuladores apenas quando for alterar parâmetros.
+4. Design Depth v1.0 — antes de detalhar qualquer bloco de V2 a V5;
+5. Build Blocks v1.1 — para executar, não para decidir;
+6. CSVs/simuladores apenas quando for alterar parâmetros.
 
 Para quem vai **construir** e não decidir: ler o Build Blocks primeiro e consultar a Spec pelas seções que cada bloco cita.
 
