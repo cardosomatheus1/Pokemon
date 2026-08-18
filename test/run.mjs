@@ -8,6 +8,7 @@ import * as estatistica from './estatistica.mjs';
 import * as fonteUnica from './fonte-unica.mjs';
 import * as paridade from './paridade.mjs';
 import * as estado from './estado.mjs';
+import * as modulos from './modulos.mjs';
 
 if (process.argv.includes('--gerar')) {
   console.log('gerando fixtures a partir do motor atual...');
@@ -26,7 +27,7 @@ const semGolden = process.env.SEM_GOLDEN === '1';
 const suites = [
   ...(semGolden ? [] : [golden.suite()]),
   invariantes.suite(), estatistica.suite(),
-  fonteUnica.suite(), estado.suite(), await paridade.suite(),
+  fonteUnica.suite(), estado.suite(), modulos.suite(), await paridade.suite(),
 ];
 let total = 0, falhas = [];
 for (const s of suites) {

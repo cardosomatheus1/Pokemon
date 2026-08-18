@@ -1196,6 +1196,11 @@ import {
   spriteURL
 } from '../engine/engine.mjs';
 import { S } from './modules/estado.mjs';
+import { $, log } from './modules/dom.mjs';
+import { PMD, SPRITE_MAX_H, conferirFolha, dirOf, folhasFalhas, folhasOk, imgTag, sheetURL, urlFolha } from './modules/sprites.mjs';
+import { CX, CY, GRASS_RX, GRASS_RY, H, W, drawMap, entryRings, isleNorm, puffs } from './modules/render.mjs';
+import { MOVE_FX, bursts, drawFx, fxSheet, fxs, later, pushFx, sched, shots } from './modules/efeitos.mjs';
+import { hideWeatherBadge, initWeatherFx, showWeatherBadge } from './modules/clima.mjs';
 
 /* =====================================================================
    ARENA ROYALE — protótipo de battle royale automático
@@ -1362,942 +1367,19 @@ function computeOdds(fighters, sims, onProgress){
   });
 }
 
-/* =====================================================================
-   SPRITES DE OVERWORLD (PMDCollab/SpriteCollab)
-   ---------------------------------------------------------------------
-   Os GIFs do Showdown são sprites de BATALHA: o bicho fica parado de
-   perfil mexendo braço e rabo. Não existe ciclo de passo neles — por
-   isso ele deslizava pelo mapa.
-
-   Estas folhas aqui são as de Pokémon Mystery Dungeon, que é um jogo
-   top-down igual à nossa arena. Cada folha tem:
-     - 8 LINHAS = 8 direções (linha 0 = de frente, 2 = perfil direito,
-       4 = de costas, 6 = perfil esquerdo)
-     - N COLUNAS = os quadros da animação
-   E existem folhas separadas para Andar, Parado, Atacar e Apanhar.
-
-   Ou seja: perna mexendo de verdade, e o bicho vira para o lado que
-   está indo.
-
-   A tabela abaixo é o conteúdo do AnimData.xml de cada um, já extraído
-   (largura do quadro, altura do quadro, duração de cada quadro em 1/60
-   de segundo). Fica embutido para o arquivo continuar funcionando com
-   duplo clique, sem depender de nenhuma requisição extra.
-   ===================================================================== */
-/* =====================================================================
-   DE ONDE VÊM AS SPRITES DA ARENA
-   ---------------------------------------------------------------------
-   Folhas de animação do Pokémon Mystery Dungeon (PMDCollab): vista de
-   cima, 8 direções por folha. É a identidade visual do projeto e não
-   muda — qualquer "plano B" tem que trazer ESTA arte, de outro
-   endereço, nunca outra arte.
-
-   Lição da v0.6.1: eu tinha posto um modo de emergência que, quando as
-   folhas não vinham, trocava o corpo pelo retrato de batalha do
-   Showdown (vista lateral). Resolvia "invisível" criando um problema
-   pior — o jogo inteiro com a arte errada. Um plano B que descaracteriza
-   o produto não é plano B. Por isso ele foi removido: se uma folha não
-   vier, o resgate é buscar A MESMA FOLHA num espelho; nunca substituir
-   por outro estilo.
-
-   BASE = raw do GitHub, exatamente como nas versões que rodaram bem.
-   ESPELHO = jsDelivr, servindo o mesmo repositório, usado só por folha
-   que falhou e só se ele realmente responder.
-   ===================================================================== */
-const PMD_BASE   = 'https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/';
-const PMD_ESPELHO = 'https://cdn.jsdelivr.net/gh/PMDCollab/SpriteCollab@master/sprite/';
-
-const PMD = {
-  1:{w:[40,40,[4,4,4,4,4,4]],i:[32,40,[40,6,6]],a:[64,72,[4,2,4,2,2,2,2,2,2,2,4]],h:[40,56,[2,8]]},
-  2:{w:[32,32,[8,10,8,10]],i:[32,32,[40,12,12,12]],a:[64,64,[4,2,4,2,2,2,2,2,4]],h:[48,56,[2,8]]},
-  3:{w:[32,32,[8,16,8,16]],i:[32,32,[30,16,12,16]],a:[72,72,[4,2,4,2,2,2,2,2,2,2,4]],h:[48,48,[2,8]]},
-  4:{w:[32,32,[6,8,6,8]],i:[32,40,[12,8,8,8]],a:[64,64,[2,2,4,2,2,2,2,2,2,2,2]],h:[48,56,[2,8]]},
-  5:{w:[24,32,[8,10,8,10]],i:[32,56,[40,2,3,3,3,2]],a:[72,80,[2,2,2,2,4,1,1,2,2,2,2,2,2,2]],h:[48,64,[2,8]]},
-  6:{w:[40,48,[8,10,8,10]],i:[40,48,[15,15,15,15]],a:[80,88,[2,2,2,2,4,1,1,2,2,2,2,2,2,2]],h:[64,64,[2,8]]},
-  7:{w:[32,32,[12,8,12,8]],i:[32,32,[30,2,2,4,4,4,2,2]],a:[64,72,[2,4,1,1,1,2,2,2,2,2]],h:[40,56,[2,8]]},
-  8:{w:[32,40,[8,10,8,10]],i:[24,40,[40,2,2,2]],a:[64,72,[4,2,4,2,2,2,2,2,2,2,4]],h:[48,48,[2,8]]},
-  9:{w:[32,40,[8,14,8,14]],i:[40,40,[32,12,4,4,4,4,4,8]],a:[64,72,[2,2,2,2,2,2,2,1,1,1,2,2,4]],h:[40,40,[2,8]]},
-  10:{w:[32,32,[10,10,10]],i:[32,32,[8,8,8,8,8,8,8,4,10,4]],a:[64,64,[4,2,4,2,2,2,2,2,2,2,4]],h:[48,56,[2,8]]},
-  11:{w:[32,48,[4,2,2,2,2,4,4,4,4,4]],i:[32,40,[10,14,10,14]],a:[72,80,[2,4,1,1,1,2,2,2,2,2]],h:[48,64,[2,8]]},
-  12:{w:[32,56,[8,8,8,8,8,8,8,8,8,8,8,8]],i:[32,56,[8,8,8,8]],a:[72,80,[2,2,2,2,2,1,1,1,2,2,2,2,2,2]],h:[56,72,[2,8]]},
-  13:{w:[32,40,[8,10,8]],i:[32,40,[40,8,8,8]],a:[64,64,[4,2,4,2,2,2,2,2,2,2,4]],h:[56,64,[2,8]]},
-  14:{w:[24,40,[8,4,4,4,10]],i:[24,40,[40,1,1,4,1,1]],a:[64,72,[2,2,2,2,2,2,2,6,1,1,1,2,2,2]],h:[48,56,[2,8]]},
-  15:{w:[32,48,[4,4,4,4]],i:[32,48,[4,4,4,4]],a:[64,80,[2,2,4,1,1,1,1,1,1,1,2,2,2,2,2,2,2,1]],h:[48,64,[2,8]]},
-  16:{w:[32,32,[6,4,4,4,4]],i:[24,40,[30,4,4,4,4]],a:[64,72,[2,2,2,4,1,1,2,2,2,2,2,2,2,2]],h:[48,48,[2,8]]},
-  17:{w:[32,40,[6,10,6,10]],i:[32,48,[40,2,4,2]],a:[64,80,[2,2,2,4,1,1,2,2,2,2,2,2,2,2]],h:[48,64,[2,8]]},
-  18:{w:[32,40,[8,12,8,12]],i:[32,48,[40,2,4,2]],a:[72,72,[2,2,2,4,1,1,2,2,2,2,2,2,2,2]],h:[56,64,[2,8]]},
-  19:{w:[48,40,[6,4,4,4,4,4,4]],i:[32,32,[40,2,2,2,4,2,2,2]],a:[64,72,[2,4,1,1,1,2,2,2,2,2]],h:[56,56,[2,8]]},
-  20:{w:[40,48,[4,6,4,4,4,4]],i:[32,48,[30,6,3,4,3,6]],a:[72,72,[2,2,4,1,2,2,2,2,2,2,2,2,2]],h:[40,48,[2,8]]},
-  21:{w:[32,40,[6,4,4,4,4]],i:[24,40,[40,2,3,4,3,2]],a:[64,80,[2,2,2,4,1,1,2,2,2,2,2,2,2,2]],h:[40,56,[2,8]]},
-  22:{w:[40,64,[4,5,6,4,5,6]],i:[40,72,[40,20,4,4,4,4,4,4,4,4]],a:[64,72,[2,2,2,2,2,4,1,1,2,2,2,2,2,2,2]],h:[48,72,[2,8]]},
-  23:{w:[40,48,[6,6,6,6,6,6]],i:[32,48,[16,16]],a:[72,72,[4,2,4,6,2,2,2,2,2,2,4]],h:[48,48,[2,8]]},
-  24:{w:[40,56,[6,6,8,6,6,6]],i:[32,56,[32,14]],a:[80,88,[2,4,6,2,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  25:{w:[32,40,[8,10,8,10]],i:[40,56,[40,2,3,3,3,2]],a:[80,80,[2,4,1,1,1,2,2,2,2,4]],h:[48,64,[2,8]]},
-  26:{w:[40,48,[8,10,8,10]],i:[40,56,[40,2,4,4,4,2]],a:[72,80,[2,4,1,1,1,2,2,2,2,2]],h:[56,64,[2,8]]},
-  27:{w:[32,32,[6,10,6,10]],i:[32,40,[40,2,2,2]],a:[72,72,[2,4,1,1,1,2,2,2,2,2,2]],h:[40,48,[2,8]]},
-  28:{w:[32,40,[8,10,8,10]],i:[32,40,[25,10,25,10]],a:[72,80,[2,4,1,1,1,2,2,2,2,2,2]],h:[48,64,[2,8]]},
-  29:{w:[40,48,[6,4,4,4,4,4,4]],i:[24,40,[24,6,6,6,6]],a:[64,72,[2,4,1,1,1,2,2,2,2,2]],h:[40,56,[2,8]]},
-  30:{w:[24,32,[6,8,6,8]],i:[24,40,[40,2,4,2]],a:[64,72,[2,4,1,1,1,2,2,2,2,2]],h:[56,64,[2,8]]},
-  31:{w:[32,40,[8,10,8,10]],i:[32,40,[20,6,6,6,12]],a:[72,80,[2,6,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  32:{w:[40,48,[6,6,5,6,6,4]],i:[32,48,[30,4,4,4,4]],a:[64,80,[2,4,1,1,1,2,2,2,2,2]],h:[40,48,[2,8]]},
-  33:{w:[40,40,[6,12,6,12]],i:[40,40,[40,10,2,2,2,2,2,2,2,6]],a:[72,88,[2,6,1,1,1,2,2,2,2,2,2]],h:[40,48,[2,8]]},
-  34:{w:[40,48,[8,14,8,14]],i:[32,48,[35,12]],a:[72,80,[2,2,2,2,1,1,2,2,2,2,2,2,2]],h:[48,64,[2,8]]},
-  35:{w:[24,40,[8,4,8,4,8,4,8,4]],i:[32,40,[30,3,4,5,4,3]],a:[72,80,[2,4,1,1,1,2,2,2,2,2]],h:[56,56,[2,8]]},
-  36:{w:[32,48,[8,6,6,6,8,6,6,6]],i:[32,48,[30,6,6,6,6,6]],a:[72,72,[2,4,1,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  37:{w:[32,40,[6,4,4,4,6]],i:[32,32,[40,12,20,12]],a:[72,72,[4,2,6,1,1,2,2,2,2,2,2]],h:[40,56,[2,8]]},
-  38:{w:[40,40,[8,10,8,10]],i:[40,40,[60,10,2,2,2,2,2,2,2,2,2,2,2,10]],a:[64,72,[2,4,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  39:{w:[32,40,[6,4,4,4,6]],i:[24,32,[25,8,15,8,15]],a:[72,80,[2,2,6,1,1,2,2,2,2,2,2,2,2]],h:[40,48,[2,8]]},
-  40:{w:[32,40,[8,10,8,10]],i:[32,48,[40,4,6,4]],a:[64,80,[2,4,1,1,1,2,2,2,2,2]],h:[40,56,[2,8]]},
-  41:{w:[32,56,[6,6,6,6,6,6,6,6]],i:[32,56,[10,6,6,6,6,6,6,8]],a:[72,80,[2,3,4,1,1,1,2,2,2,2,2]],h:[40,48,[2,8]]},
-  42:{w:[40,64,[6,6,6,6,6,6,6,6]],i:[40,56,[6,6,6,6]],a:[72,88,[2,3,4,1,1,1,2,2,2,2,2]],h:[40,64,[2,8]]},
-  43:{w:[24,40,[8,4,8,6,8,4,8,6]],i:[24,40,[30,4,4,4,4]],a:[72,80,[2,2,2,2,2,2,1,2,2,2,2,2,2,2,2]],h:[56,48,[2,8]]},
-  44:{w:[32,32,[6,8,6,8]],i:[32,32,[30,8,8,8,8]],a:[72,80,[2,2,2,2,2,2,1,2,2,2,2,2,2,2,2]],h:[48,64,[2,8]]},
-  45:{w:[32,32,[8,10,8,10]],i:[32,40,[30,3,3,8,3,3,30,3,3,8,3,3]],a:[72,72,[2,2,2,2,2,2,1,2,2,2,2,2,2,2,2]],h:[56,56,[2,8]]},
-  46:{w:[32,24,[6,8,6,8]],i:[24,24,[24,6,6,6]],a:[64,72,[2,2,4,1,3,3,2,2,2,2,2,2,2]],h:[40,40,[2,8]]},
-  47:{w:[32,32,[8,10,8,10]],i:[32,32,[40,4,2]],a:[72,72,[2,1,1,1,1,1,1,2,2,2,2,2,1,1,2,2,2,2,2]],h:[56,64,[2,8]]},
-  48:{w:[32,48,[8,6,6,6,8]],i:[24,40,[16,16]],a:[72,80,[1,1,2,3,2,1,2,2,2,2,2,2,2,2]],h:[48,56,[2,8]]},
-  49:{w:[40,48,[8,8,8,8,8,8,8,8,8,8,8,8]],i:[32,56,[12,12,12,12,12,12,12,12]],a:[72,80,[2,2,2,2,2,1,1,1,2,2,2,2,2,2]],h:[56,64,[2,8]]},
-  50:{w:[40,40,[8,8,8]],i:[24,24,[16,16]],a:[64,56,[2,6,2,2,2,2,2,2,2]],h:[32,32,[2,8]]},
-  51:{w:[56,48,[8,8,8]],i:[32,32,[12,16]],a:[80,72,[2,6,2,2,2,2,2,2,2]],h:[40,40,[2,8]]},
-  52:{w:[24,32,[6,10,6,10]],i:[32,32,[12,12,12,12]],a:[64,80,[2,4,1,1,1,2,2,2,2,2]],h:[40,56,[2,8]]},
-  53:{w:[32,40,[8,10,8,10]],i:[32,48,[8]],a:[64,80,[2,2,6,2,2,1,2,2,1,2,2,2,2,2,2,2]],h:[40,56,[2,8]]},
-  54:{w:[24,40,[8,12,8,12]],i:[24,40,[16,20,16,20]],a:[72,72,[4,2,4,2,2,2,2,2,2,2,4]],h:[40,56,[2,8]]},
-  55:{w:[32,40,[8,12,8,12]],i:[32,40,[40,20,40,20]],a:[72,80,[2,2,6,1,2,2,2,2,2,2,2,2,2]],h:[56,56,[2,8]]},
-  56:{w:[32,56,[8,4,4,4,8,4,4,4]],i:[32,56,[40,4,4,4,4]],a:[64,80,[2,4,4,2,2,2,2,1,1,1,1,2,2,2,2]],h:[48,64,[2,8]]},
-  57:{w:[32,40,[6,8,6,8]],i:[32,56,[22,4,6,4,22,4,6,4]],a:[72,80,[2,4,1,1,2,2,2,2,2,2,2,2,1,2]],h:[48,64,[2,8]]},
-  58:{w:[32,40,[6,8,6,8]],i:[40,48,[40,4,2]],a:[72,80,[2,2,6,2,2,2,2,2,2,2,2,2,2]],h:[48,48,[2,8]]},
-  59:{w:[32,48,[8,10,8,10]],i:[40,48,[8]],a:[72,88,[2,2,6,1,1,2,2,2,2,2,2,2,2]],h:[40,56,[2,8]]},
-  60:{w:[32,40,[8,6,6,6,6]],i:[40,48,[30,8,6,6,4,4,4,4]],a:[72,72,[2,4,2,2,2,2,2,2,2,2,2]],h:[48,40,[2,8]]},
-  61:{w:[32,40,[8,10,8,10]],i:[32,40,[40,2,4,4,2]],a:[72,80,[2,6,1,1,1,2,2,2,2,2]],h:[40,48,[2,8]]},
-  62:{w:[40,40,[8,10,8,10]],i:[32,48,[40,2,4,2]],a:[72,80,[2,6,1,1,2,2,2,2,2,2]],h:[48,64,[2,8]]},
-  63:{w:[32,48,[8,10,8,10,8,10,8,10]],i:[24,48,[24,8,8,24,8,8]],a:[72,80,[4,2,4,1,1,1,2,2,2,2,4]],h:[48,64,[2,8]]},
-  64:{w:[40,40,[8,12,8,12]],i:[40,56,[4,4,6,6,6,6,6,6,4]],a:[72,80,[2,6,1,1,1,2,2,2,2,2]],h:[48,64,[2,8]]},
-  65:{w:[32,40,[8,12,8,12]],i:[32,48,[6,6,6,6,6,6,6,6]],a:[72,72,[2,4,1,1,1,1,2,2,2,4]],h:[48,64,[2,8]]},
-  66:{w:[24,32,[8,8,8,8]],i:[24,40,[40,4,4,4]],a:[64,80,[2,4,1,1,1,2,2,2,2,4]],h:[40,56,[2,8]]},
-  67:{w:[32,48,[8,10,8,10]],i:[32,48,[40,4,4,4]],a:[72,80,[4,2,2,2,2,2,2,3,1,1,2,2,2,2]],h:[48,64,[2,8]]},
-  68:{w:[32,48,[8,10,8,10]],i:[40,48,[40,2,2,2,2,2,2,2,2,12]],a:[72,88,[2,2,2,2,1,1,1,1,2,2,2,2,2]],h:[48,64,[2,8]]},
-  69:{w:[24,32,[8,10,8,10]],i:[24,32,[20,22]],a:[72,72,[2,4,1,1,1,2,2,2,2,2]],h:[48,48,[2,8]]},
-  70:{w:[32,32,[8,10,8,10]],i:[32,32,[16,8,16,8]],a:[64,80,[2,4,1,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  71:{w:[32,56,[6,8,6,8]],i:[32,56,[35,3,3,5,5,5,3,3,3]],a:[72,80,[2,4,1,1,1,2,2,2,2,2]],h:[48,64,[2,8]]},
-  72:{w:[24,40,[8,10,8,10]],i:[24,48,[4,8,8,4,8,8,8]],a:[64,72,[2,2,2,4,1,1,1,2,2,2,2,2,2,2]],h:[48,72,[2,8]]},
-  73:{w:[32,40,[8,10,8,10]],i:[32,48,[6,10,10,6,10,10,10]],a:[64,72,[2,2,2,4,1,1,1,2,2,2,2,2,2,2]],h:[48,72,[2,8]]},
-  74:{w:[32,32,[8,10,8,10]],i:[32,24,[8,12,8,12]],a:[72,80,[3,3,2,2,2,2,1,1,1,1,1,1,2,2]],h:[40,48,[2,8]]},
-  75:{w:[32,48,[6,10,6,10]],i:[40,48,[60,10,2,2,2,2,2,2,2,2,2,2,2,10]],a:[80,80,[2,6,1,1,1,2,2,2,2,2]],h:[40,56,[2,8]]},
-  76:{w:[32,40,[8,12,8,12]],i:[32,40,[30,25]],a:[72,80,[6,2,2,2,2,2,2,2,2,2,2,2,2,2,2]],h:[48,56,[2,8]]},
-  77:{w:[32,40,[8,10,8,10]],i:[32,40,[60,10,2,2,2,2,2,2,2,2,2,2,2,10]],a:[64,72,[2,6,1,1,1,2,2,2,2,2]],h:[40,56,[2,8]]},
-  78:{w:[40,56,[8,10,8,10]],i:[40,56,[60,10,2,2,2,2,2,2,2,2,2,2,2,10]],a:[72,88,[2,6,1,1,1,2,2,2,2,2]],h:[56,64,[2,8]]},
-  79:{w:[24,32,[8,10,8,10]],i:[24,32,[40,8,8,8]],a:[64,64,[2,4,1,1,2,2,2,2,2,2]],h:[48,56,[2,8]]},
-  80:{w:[32,40,[8,12,8,12]],i:[40,40,[30,30]],a:[64,72,[6,6,1,1,1,2,2,1,1,1,1,1,1,2,2,2,2,1]],h:[56,56,[2,8]]},
-  81:{w:[24,32,[8,6,6,8,6,6]],i:[24,32,[10,14,10,14]],a:[72,72,[2,2,2,2,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  82:{w:[32,48,[8,8,8,8,8,8,8,8]],i:[32,40,[14,10,14,10]],a:[72,72,[2,4,1,1,1,2,2,2,2,2]],h:[48,64,[2,8]]},
-  83:{w:[24,32,[6,12,6,12]],i:[24,32,[30,12,30,12]],a:[88,80,[2,6,1,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  84:{w:[32,40,[8,12,8,12]],i:[40,40,[40,6,12,6]],a:[80,72,[1,2,4,3,2,2,1,1,1,2,2,2,2,2]],h:[40,56,[2,8]]},
-  85:{w:[32,48,[8,12,8,12]],i:[40,48,[40,10,16,10,16,10]],a:[72,80,[1,2,4,3,2,2,1,1,1,2,2,2,2,2]],h:[40,64,[2,8]]},
-  86:{w:[32,40,[8,6,8,10,6,6,6]],i:[32,32,[30,20]],a:[72,72,[2,6,1,1,1,2,2,2,2,2,2,2]],h:[40,56,[2,8]]},
-  87:{w:[40,48,[8,6,6,6,10,8,8]],i:[48,40,[30,12,8,12,8,12]],a:[72,72,[2,4,1,1,1,2,2,2,2,2]],h:[48,64,[2,8]]},
-  88:{w:[32,32,[8,8,8,8,8,8]],i:[24,32,[40,8,30,8]],a:[64,72,[2,2,2,4,1,1,2,2,2,2,2,2,2]],h:[40,56,[2,8]]},
-  89:{w:[48,40,[10,8,6,10,8]],i:[40,40,[40,8,30,8]],a:[72,72,[2,4,1,1,2,2,2,2,2,2,2,2]],h:[48,56,[2,8]]},
-  90:{w:[24,32,[10,6,10,10,6,10]],i:[24,32,[14,40,14,30]],a:[72,72,[2,4,1,1,1,2,2,2,2,2]],h:[40,56,[2,8]]},
-  91:{w:[32,48,[8,8,8,10,8,8]],i:[32,48,[12,12,12,14,12,12]],a:[72,80,[2,2,6,1,1,2,2,2,2,2,2,2,2]],h:[40,64,[2,8]]},
-  92:{w:[48,64,[6,6,6,6,6,6,6,6,6,6,6,6]],i:[48,56,[10,10,10,10,10,10]],a:[64,80,[2,2,2,2,2,2,2,1,1,2,2,2,3]],h:[56,64,[2,8]]},
-  93:{w:[32,56,[6,6,6,10,6,6,6,6,10,6]],i:[32,56,[14,8,14,8]],a:[72,80,[2,2,2,6,2,1,1,2,2,2,2,4]],h:[40,64,[2,8]]},
-  94:{w:[32,40,[8,10,8,10]],i:[32,40,[40,4,3,3,3,3,3,4]],a:[72,80,[4,2,4,1,1,1,2,2,2,2,4]],h:[48,56,[2,8]]},
-  95:{w:[88,112,[10,14,10,14]],i:[96,104,[16,16,16,16]],a:[128,152,[2,6,1,1,1,2,2,2,2,2,2]],h:[80,88,[2,8]]},
-  96:{w:[32,40,[8,12,8,12]],i:[32,40,[40,10,6,10]],a:[80,72,[2,6,1,1,2,2,2,2,2,2,2,2]],h:[48,64,[2,8]]},
-  97:{w:[40,40,[8,10,8,10]],i:[40,48,[30,1,2,3,3,3,2,1]],a:[72,80,[2,4,1,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  98:{w:[32,32,[8,10,8,10]],i:[24,40,[30,30]],a:[72,80,[1,2,3,2,1,3,1,1,1,2,2,2,2,4,2,1]],h:[48,48,[2,8]]},
-  99:{w:[32,32,[8,10,8,10]],i:[32,48,[30,30]],a:[72,72,[1,2,3,2,1,3,1,1,1,2,2,2,2,4,2,1]],h:[48,56,[2,8]]},
-  100:{w:[32,40,[6,6,10,4,4,4,6,8]],i:[24,32,[22,6,2,6,6]],a:[72,72,[2,2,6,1,1,2,2,2,2,2,2,2,2,2]],h:[48,48,[2,8]]},
-  101:{w:[32,40,[4,4,6,8,6,4,10]],i:[24,32,[10,18,10,18]],a:[64,72,[2,2,6,1,2,2,2,2,2,2,2,2,2]],h:[56,64,[2,8]]},
-  102:{w:[32,32,[6,8,6,8]],i:[32,40,[30,2,4,4,4,2]],a:[64,72,[2,4,1,1,1,2,2,2,2,2]],h:[48,48,[2,8]]},
-  103:{w:[40,48,[8,12,8,12]],i:[40,56,[40,12,8,12]],a:[88,80,[2,2,6,1,1,1,2,2,2,2,2]],h:[40,56,[2,8]]},
-  104:{w:[32,32,[8,10,8,10]],i:[32,40,[40,1,2,3,2,1]],a:[64,72,[2,4,1,1,1,2,2,2,2,2]],h:[48,64,[2,8]]},
-  105:{w:[32,40,[8,10,8,10]],i:[32,48,[40,6,16,6]],a:[72,88,[2,6,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  106:{w:[40,48,[10,12,10,12]],i:[40,48,[40,20]],a:[72,72,[2,4,1,1,1,2,2,2,2,2]],h:[48,64,[2,8]]},
-  107:{w:[32,40,[8,10,8,10]],i:[48,56,[30,6,8,6]],a:[64,72,[2,2,6,1,1,2,2,2,2,2,2,2,2]],h:[32,48,[2,8]]},
-  108:{w:[32,40,[10,14,10,14]],i:[48,48,[36,12,10,12]],a:[80,80,[2,6,1,1,1,2,2,2,2,2]],h:[48,64,[2,8]]},
-  109:{w:[32,56,[6,6,6,6,8,6,6,6,6,8]],i:[32,56,[10,10,8,10,10,8]],a:[72,80,[2,2,2,2,2,4,2,1,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  110:{w:[32,56,[8,8,8,8,8,8]],i:[32,64,[12,12,12,12,12,12,12,12,12,12,12]],a:[72,80,[2,6,1,1,1,2,1,1,1,1,2,2]],h:[40,64,[2,8]]},
-  111:{w:[32,32,[8,10,8,10]],i:[40,32,[40,20,15]],a:[64,72,[2,6,1,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  112:{w:[32,48,[8,12,8,12]],i:[48,48,[40,26]],a:[72,80,[2,6,1,1,1,2,2,2,2,2]],h:[48,64,[2,8]]},
-  113:{w:[24,32,[8,10,8,10]],i:[24,40,[40,2,3,4,3,2]],a:[64,80,[2,4,1,1,1,2,2,2,2,2]],h:[40,56,[2,8]]},
-  114:{w:[32,48,[8,6,6,6,6,6]],i:[32,48,[34,6,6,6]],a:[64,72,[2,2,4,1,2,2,2,2,2,2,2]],h:[48,64,[2,8]]},
-  115:{w:[40,56,[16,10,16,10]],i:[40,56,[30,3,4,3,20]],a:[72,96,[1,2,3,2,1,1,1,1,2,2,2,2,2]],h:[40,64,[2,8]]},
-  116:{w:[24,48,[8,12,8,12]],i:[24,48,[8,16,8,16]],a:[64,72,[2,4,1,1,1,2,2,2,2,2]],h:[48,72,[2,8]]},
-  117:{w:[40,56,[8,8,10,8,10]],i:[32,64,[12,12,12,12,8,8,8,8]],a:[72,80,[2,4,1,1,1,2,2,2,2,2]],h:[48,72,[2,8]]},
-  118:{w:[32,40,[10,10,10,10,10,10,10,10]],i:[32,40,[16,10,16,10,16,10,16,2,4,4,4,12,10,16,10]],a:[64,72,[2,4,1,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  119:{w:[32,48,[10,8,10,8]],i:[32,48,[16,10,16,10,16,10,16,2,4,4,4,12,10,16,10]],a:[64,72,[2,4,1,1,1,2,2,2,2,2]],h:[40,56,[2,8]]},
-  120:{w:[24,32,[8,10,8,10]],i:[24,32,[36,10,6,10]],a:[64,64,[2,2,4,2,2,1,1,1,2,2,2,2,2,2,2]],h:[48,56,[2,8]]},
-  121:{w:[24,40,[8,10,8,10]],i:[24,32,[60,4,4,4,4,4,4,4]],a:[64,64,[2,2,4,2,2,1,1,1,2,2,2,2,2,2,2]],h:[56,56,[2,8]]},
-  122:{w:[32,48,[8,12,8,12]],i:[32,48,[20,12]],a:[72,88,[2,6,1,1,1,2,2,2,2,2,2]],h:[48,64,[2,8]]},
-  123:{w:[40,48,[8,10,8,10]],i:[32,48,[40,10,14,10]],a:[72,80,[2,4,1,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  124:{w:[32,40,[8,12,8,12]],i:[32,40,[30,14,30,14]],a:[72,72,[2,4,1,1,1,2,2,2,2,2]],h:[40,56,[2,8]]},
-  125:{w:[40,56,[8,10,8,10]],i:[40,56,[28,18,28,18]],a:[72,72,[2,6,1,1,1,2,2,2,2,2]],h:[48,64,[2,8]]},
-  126:{w:[32,48,[8,10,8,10]],i:[32,48,[40,6,12,6]],a:[72,80,[2,4,1,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  127:{w:[32,48,[8,12,8,12]],i:[32,48,[40,2,6,3,2]],a:[64,80,[2,4,1,1,1,2,2,2,2,2]],h:[40,64,[2,8]]},
-  128:{w:[40,56,[8,6,6,6,6,6,6]],i:[32,56,[40,3,6,3,2]],a:[72,80,[1,2,4,1,1,2,2,2,2,2,2,2]],h:[48,64,[2,8]]},
-  129:{w:[32,40,[6,2,4,6,4,2,6]],i:[32,32,[8,10,10,12]],a:[64,72,[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]],h:[48,48,[2,8]]},
-  130:{w:[88,128,[10,14,10,14]],i:[72,128,[18,8,18,8]],a:[104,136,[4,6,1,1,1,2,2,2,2,2]],h:[72,120,[2,8]]},
-  131:{w:[48,56,[10,12,10,12]],i:[48,56,[40,12,16,12]],a:[88,88,[2,2,6,1,1,1,2,2,2,2,2,2]],h:[56,96,[2,8]]},
-  132:{w:[32,32,[10,8,10,8,8]],i:[24,32,[16,16]],a:[64,72,[2,4,1,1,1,2,2,2,2,2]],h:[32,48,[2,8]]},
-  133:{w:[40,48,[4,4,4,4,6,2,2]],i:[24,32,[16,16]],a:[64,72,[4,2,2,2,2,2,2,2,4,4,4]],h:[48,48,[2,8]]},
-  134:{w:[32,48,[8,10,8,10]],i:[40,56,[60,16]],a:[72,80,[2,4,1,1,1,2,2,2,2,2]],h:[48,48,[2,8]]},
-  135:{w:[32,40,[8,10,8,10]],i:[32,40,[60,16]],a:[64,80,[2,4,1,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  136:{w:[32,40,[8,8,8,8]],i:[32,40,[12,16,12,16]],a:[64,72,[4,2,4,2,2,2,2,2,2,2,4]],h:[48,56,[2,8]]},
-  137:{w:[32,40,[10,10,10,10]],i:[32,40,[12,8,12,8]],a:[64,64,[2,4,1,1,1,2,2,2,2,2]],h:[40,64,[2,8]]},
-  138:{w:[32,32,[8,8,8,8]],i:[32,32,[30,12]],a:[80,80,[2,4,1,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  139:{w:[40,40,[8,8,8,8]],i:[32,40,[30,20]],a:[80,88,[2,4,1,1,1,2,2,2,2,2]],h:[48,56,[2,8]]},
-  140:{w:[24,24,[8,10,8,10]],i:[24,24,[40,4,4]],a:[64,64,[4,2,4,2,2,2,2,2,2,2,4]],h:[32,40,[2,8]]},
-  141:{w:[40,48,[6,4,8,4,6,4,8,4]],i:[40,48,[20,10,20,10]],a:[64,64,[4,2,4,2,2,2,2,2,2,2,4]],h:[48,64,[2,8]]},
-  142:{w:[40,64,[8,8,8,8]],i:[40,64,[8,8,8,8,8,8,8,8]],a:[64,72,[2,2,6,1,2,2,2,2,2,2,2,2,2]],h:[40,64,[2,8]]},
-  143:{w:[32,48,[8,10,8,10]],i:[32,64,[40,1,3,4,3,1]],a:[64,88,[2,8,1,1,1,2,2,2,2,2]],h:[48,64,[2,8]]},
-  147:{w:[32,40,[10,8,8,8,8]],i:[32,40,[10,20,10,20]],a:[64,80,[2,4,1,1,1,2,2,2,2,2]],h:[48,64,[2,8]]},
-  148:{w:[48,56,[8,6,6,8,6,6,6]],i:[48,56,[8,6,6,8,6,6,6]],a:[80,80,[2,6,1,1,1,2,2,2,2,2]],h:[48,72,[2,8]]},
-  149:{w:[40,56,[8,12,8,12]],i:[40,64,[40,2,2,3,3,2,2]],a:[72,80,[2,4,1,1,1,2,2,2,2,2,2,2,2]],h:[48,72,[2,8]]},
-};
-// dex que não têm Idle-Anim.png próprio; usam a folha do Walk
-const IDLE_USES_WALK = new Set([15,148]);
-const ANIM_FILE = { w:'Walk', i:'Idle', a:'Attack', h:'Hurt' };
-
-// tamanho na tela: 1 pixel de sprite = 1 unidade do mapa, com teto —
-// assim o Gyarados continua sendo um bicho enorme e o Pikachu um bichinho
-const SPRITE_MAX_H = 76;
-
-function sheetURL(dex, key){
-  const k = (key === 'i' && IDLE_USES_WALK.has(dex)) ? 'w' : key;
-  return String(dex).padStart(4,'0') + '/' + ANIM_FILE[k] + '-Anim.png';
-}
-
-/* Resgate POR FOLHA, sem nunca trocar o estilo da arte.
-   `folhaSrc` guarda, para cada caminho, o endereço que funcionou. Por
-   padrão é o raw; se ele falhar, tenta o MESMO arquivo no espelho e,
-   dando certo, atualiza quem já está em cena. Se os dois falharem, o
-   comportamento é o mesmo das versões anteriores — nada de inventar
-   outro sprite no lugar. */
-const folhaSrc = {};      // caminho -> URL completa que vale
-const folhaVista = new Set();
-let folhasOk = 0, folhasFalhas = 0;
-
-function urlFolha(path){ return folhaSrc[path] || (PMD_BASE + path); }
-
-/* Reaplica o fundo de quem está usando esta folha agora — sem isso, o
-   resgate só valeria a partir da próxima animação. */
-function refrescarFolha(path){
-  for (const e of (ents || [])){
-    if (!e.anim) continue;
-    if (sheetURL(e.f.dex, e.anim) !== path) continue;
-    e.body.style.backgroundImage = `url(${urlFolha(path)})`;
-  }
-}
-
-function conferirFolha(path){
-  if (folhaVista.has(path)) return;
-  folhaVista.add(path);
-  const img = new Image();
-  img.onload  = () => { folhasOk++; };
-  img.onerror = () => {
-    // raw falhou: tenta o mesmo arquivo no espelho
-    const alt = PMD_ESPELHO + path;
-    const img2 = new Image();
-    img2.onload = () => {
-      folhasOk++;
-      folhaSrc[path] = alt;
-      refrescarFolha(path);
-      if (!avisouEspelho){
-        avisouEspelho = true;
-        log('<span class="l-sys">sprites: fonte principal falhou em alguma folha; usando espelho (mesma arte).</span>');
-      }
-    };
-    img2.onerror = () => { folhasFalhas++; };
-    img2.src = alt;
-  };
-  img.src = PMD_BASE + path;
-}
-let avisouEspelho = false;
-
-/* direção (0..7) a partir de um vetor.
-   linha 0 = de frente (para baixo na tela), e o índice cresce girando
-   no sentido baixo -> direita -> cima -> esquerda */
-function dirOf(dx, dy){
-  const deg = Math.atan2(dy, dx) * 180 / Math.PI;
-  return ((Math.round((90 - deg) / 45) % 8) + 8) % 8;
-}
-
-// Showdown gen5ani continua sendo usado só nos retratos da lista e da
-// tela de vitória, onde uma pose de batalha fica melhor que um quadro solto
-// Sylveon e Corviknight não existem no pack gen5ani, então o retrato cai
-// para o pack animado gen6+ e, em último caso, para o PNG estático.
-function imgTag(p, extra){
-  const a = `https://play.pokemonshowdown.com/sprites/ani/${p.sp}.gif`;
-  const b = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.dex}.png`;
-  return `<img src="${spriteURL(p)}" alt="${p.n}" ${extra||''} `
-       + `onerror="this.onerror=function(){this.onerror=null;this.src='${b}'};this.src='${a}'">`;
-}
-
-/* =====================================================================
-   RENDER — ilha 2D top-down desenhada em canvas (pixel art procedural)
-   ===================================================================== */
-const W = 300, H = 400;
-const map = document.getElementById('mapCanvas').getContext('2d');
-const fx  = document.getElementById('fxCanvas').getContext('2d');
-map.imageSmoothingEnabled = false; fx.imageSmoothingEnabled = false;
-
-const CX = W/2, CY = H/2;
-// a ilha encosta nas laterais, igual ao vídeo de referência — só sobra
-// água nos cantos e nas pontas de cima/baixo
-const SAND_RX = 154, SAND_RY = 196;   // praia
-const GRASS_RX = 134, GRASS_RY = 176; // grama
-// expoente da superelipse: 2 = elipse, 4 = quase retângulo.
-// 2.8 dá o formato de "retângulo arredondado" da referência.
-const NSHAPE = 2.8;
-
-// camada estática (praia + grama + detalhes + pokébolas do cenário)
-const island = document.createElement('canvas');
-island.width = W; island.height = H;
-buildIsland(island.getContext('2d'));
-
-// Math.max(0,...) é só um cinto de segurança: sob configurações MUITO
-// fora do padrão de produção (velocidades/temporizadores artificiais de
-// teste, bem além do que a UI permite ajustar) um raio podia chegar
-// aqui negativo por um instante e o canvas lança IndexSizeError nesse
-// caso. Não custa nada travar em 0 em vez de deixar o loop quebrar.
-function ell(c,x,y,rx,ry){ c.beginPath(); c.ellipse(x,y,Math.max(0,rx),Math.max(0,ry),0,0,Math.PI*2); }
-
-// superelipse: |x/rx|^n + |y/ry|^n = 1 — o contorno da ilha
-function isle(c,x,y,rx,ry,n=NSHAPE){
-  const e = 2/n;
-  c.beginPath();
-  for (let i=0;i<=160;i++){
-    const t = i/160 * Math.PI*2;
-    const ct = Math.cos(t), st = Math.sin(t);
-    c[i ? 'lineTo' : 'moveTo'](
-      x + rx * Math.sign(ct) * Math.pow(Math.abs(ct), e),
-      y + ry * Math.sign(st) * Math.pow(Math.abs(st), e));
-  }
-  c.closePath();
-}
-// distância normalizada no mesmo espaço: <=1 está dentro
-function isleNorm(x,y,rx,ry,n=NSHAPE){
-  return Math.pow(Math.pow(Math.abs((x-CX)/rx), n) + Math.pow(Math.abs((y-CY)/ry), n), 1/n);
-}
-
-function buildIsland(c){
-  c.imageSmoothingEnabled = false;
-  c.clearRect(0,0,W,H);
-
-  // praia
-  isle(c,CX,CY,SAND_RX,SAND_RY); c.fillStyle = '#efdda6'; c.fill();
-  isle(c,CX,CY,SAND_RX-5,SAND_RY-6); c.fillStyle = '#e3cd92'; c.fill();
-
-  // grama
-  isle(c,CX,CY,GRASS_RX,GRASS_RY); c.fillStyle = '#4f9c30'; c.fill();
-  isle(c,CX,CY,GRASS_RX-3,GRASS_RY-4); c.fillStyle = '#6fc247'; c.fill();
-
-  const R = rng(20260814); // seed fixa: o cenário é sempre o mesmo
-  const inGrass = (x,y,m=6) => isleNorm(x,y,GRASS_RX-m,GRASS_RY-m) <= 1;
-
-  // tufos de capim (o "ruído" que dá cara de tileset de GBA)
-  for (let i=0;i<1100;i++){
-    const x = CX + (R()*2-1)*GRASS_RX, y = CY + (R()*2-1)*GRASS_RY;
-    if (!inGrass(x,y)) continue;
-    const r = R();
-    c.fillStyle = r < .45 ? 'rgba(58,138,42,.75)'
-                : r < .80 ? 'rgba(140,212,102,.60)'
-                          : 'rgba(84,176,60,.70)';
-    const w = 2 + (R()*3|0);
-    c.fillRect(x|0, y|0, w, 1);
-    if (R() < .45) c.fillRect((x|0)+1, (y|0)-1, 1, 1);
-    if (R() < .25) c.fillRect((x|0)-1, (y|0)+1, 1, 1);
-  }
-  // manchas de grama mais escura, pra quebrar o verde chapado
-  for (let i=0;i<34;i++){
-    const x = CX + (R()*2-1)*GRASS_RX, y = CY + (R()*2-1)*GRASS_RY;
-    if (!inGrass(x,y,20)) continue;
-    c.fillStyle = 'rgba(70,160,48,.35)';
-    ell(c,x,y, 9+R()*14, 6+R()*9); c.fill();
-  }
-  // florzinhas
-  for (let i=0;i<90;i++){
-    const x = CX + (R()*2-1)*GRASS_RX, y = CY + (R()*2-1)*GRASS_RY;
-    if (!inGrass(x,y,14)) continue;
-    const col = ['#f4e04d','#f27676','#f2a2d8','#ffffff'][R()*4|0];
-    c.fillStyle = '#3f8a2c'; c.fillRect(x|0, (y|0)+2, 1, 2);
-    c.fillStyle = col; c.fillRect(x|0, y|0, 2, 2);
-  }
-  // pedrinhas
-  for (let i=0;i<38;i++){
-    const x = CX + (R()*2-1)*GRASS_RX, y = CY + (R()*2-1)*GRASS_RY;
-    if (!inGrass(x,y,10)) continue;
-    c.fillStyle = '#8a939a'; c.fillRect(x|0, y|0, 5, 4);
-    c.fillStyle = '#b9c1c6'; c.fillRect(x|0, y|0, 5, 2);
-    c.fillStyle = '#6d757b'; c.fillRect(x|0, (y|0)+3, 5, 1);
-  }
-  // arbustos
-  for (let i=0;i<20;i++){
-    const x = CX + (R()*2-1)*GRASS_RX, y = CY + (R()*2-1)*GRASS_RY;
-    if (!inGrass(x,y,18)) continue;
-    c.fillStyle = 'rgba(0,0,0,.16)'; ell(c,x,y+3,7,3); c.fill();
-    c.fillStyle = '#2f7a22'; ell(c,x,y,7,5.5); c.fill();
-    c.fillStyle = '#47a233'; ell(c,x,y-1,6,4.5); c.fill();
-    c.fillStyle = '#6cc44a'; ell(c,x-1.5,y-2,3,2); c.fill();
-  }
-  // detalhe na areia
-  const e2 = 2/NSHAPE;
-  for (let i=0;i<340;i++){
-    const t = R()*Math.PI*2, k = 1.01 + R()*0.13;
-    const ct = Math.cos(t), st = Math.sin(t);
-    const x = CX + GRASS_RX*k * Math.sign(ct)*Math.pow(Math.abs(ct), e2);
-    const y = CY + GRASS_RY*k * Math.sign(st)*Math.pow(Math.abs(st), e2);
-    c.fillStyle = R() < .5 ? 'rgba(206,182,126,.55)' : 'rgba(250,238,196,.5)';
-    c.fillRect(x|0, y|0, 2, 1);
-  }
-
-  // (as pokébolas que ficavam espalhadas de enfeite pela grama foram
-  // removidas — as únicas pokébolas na arena agora são as 12 de spawn,
-  // que marcam onde cada lutador realmente vai aparecer)
-}
-
-function drawBall(c,x,y,top){
-  const r = 6;
-  c.save();
-  c.fillStyle = 'rgba(0,0,0,.22)'; ell(c,x,y+r-1,r,r*0.4); c.fill();
-  c.beginPath(); c.arc(x,y,r,Math.PI,0); c.closePath(); c.fillStyle = top; c.fill();
-  c.beginPath(); c.arc(x,y,r,0,Math.PI); c.closePath(); c.fillStyle = '#f4f4f4'; c.fill();
-  c.fillStyle = '#141414'; c.fillRect(x-r, y-1, r*2, 2);
-  c.beginPath(); c.arc(x,y,2.4,0,Math.PI*2); c.fillStyle = '#141414'; c.fill();
-  c.beginPath(); c.arc(x,y,1.4,0,Math.PI*2); c.fillStyle = '#f4f4f4'; c.fill();
-  c.strokeStyle = 'rgba(0,0,0,.55)'; c.lineWidth = 1;
-  c.beginPath(); c.arc(x,y,r,0,Math.PI*2); c.stroke();
-  c.restore();
-}
-
-const puffs = [];   // poeirinha levantada a cada pisada
-
-/* Anel + brilho que aparece no chão um instante antes de cada lutador
-   materializar — a entrada é UMA DE CADA VEZ (não os 12 juntos), então
-   este telegrafo é o que avisa "é aqui que o próximo vai aparecer".    */
-const entryRings = [];
-function drawEntryRings(dt){
-  for (let i=entryRings.length-1;i>=0;i--){
-    const r = entryRings[i];
-    r.age += dt;
-    const k = r.age / r.life;
-    if (k >= 1){ entryRings.splice(i,1); continue; }
-    const rad = 3 + k*13;
-    const fade = k < 0.5 ? k*2 : (1-k)*2;
-    fx.globalAlpha = fade;
-    fx.strokeStyle = '#ffffff'; fx.lineWidth = 2;
-    fx.beginPath(); fx.arc(r.x, r.y-6, rad, 0, Math.PI*2); fx.stroke();
-    fx.strokeStyle = 'rgba(255,220,120,.8)'; fx.lineWidth = 1;
-    fx.beginPath(); fx.arc(r.x, r.y-6, rad*0.6, 0, Math.PI*2); fx.stroke();
-    // brilho girando junto
-    fx.fillStyle = '#ffe066';
-    const spin = k * Math.PI * 3.2;
-    for (let p=0;p<4;p++){
-      const ang = spin + p*Math.PI/2;
-      const d = rad*0.9;
-      fx.fillRect(r.x+Math.cos(ang)*d-1, r.y-6+Math.sin(ang)*d-1, 2, 2);
-    }
-    fx.globalAlpha = 1;
-  }
-}
-
-function drawMap(time, dt = 0){
-  // mar
-  map.fillStyle = '#2f74d6'; map.fillRect(0,0,W,H);
-  map.fillStyle = '#2963bd';
-  for (let y=0; y<H; y+=8) map.fillRect(0, y + ((time*6)%8|0), W, 3);
-
-  // ondas concêntricas que "batem" na praia
-  const phase = (time * 7) % 13;
-  map.lineWidth = 2;
-  for (let k=0;k<7;k++){
-    const g = 5 + k*13 + phase;
-    map.strokeStyle = `rgba(255,255,255,${0.30 - k*0.035})`;
-    isle(map, CX, CY, SAND_RX+g, SAND_RY+g); map.stroke();
-  }
-  map.strokeStyle = 'rgba(255,255,255,.75)'; map.lineWidth = 3;
-  isle(map, CX, CY, SAND_RX+2, SAND_RY+2); map.stroke();
-
-  map.drawImage(island, 0, 0);
-
-  // poeira das pisadas (por baixo dos sprites)
-  for (let i=puffs.length-1;i>=0;i--){
-    const p = puffs[i];
-    p.age += dt;
-    const k = p.age / p.life;
-    if (k >= 1){ puffs.splice(i,1); continue; }
-    map.globalAlpha = (1-k) * 0.45;
-    map.fillStyle = '#efe2bd';
-    ell(map, p.x + p.vx*p.age*18, p.y - k*2.5, 1.5 + k*4.5, 1 + k*2); map.fill();
-    map.globalAlpha = 1;
-  }
-
-  // antes de abrir: cada lutador é uma pokébola no chão
-  const closed = !S.released;
-  for (const e of ents){
-    if (!e.alive) continue;
-    if (closed){ drawBall(map, e.x|0, (e.y-7)|0, e.ballCol); continue; }
-    // sombra proporcional ao tamanho do bicho (Gyarados faz mais sombra
-    // que Pikachu), e um tico maior enquanto ele está atacando
-    const r = e.meta.w[0] * e.scale * 0.30;
-    map.fillStyle = 'rgba(0,0,0,.28)';
-    ell(map, e.x, e.y, r, r*0.42); map.fill();
-  }
-  // anel do vencedor
-  if (S.state === 'result' && S.champ >= 0 && ents[S.champ]){
-    const e = ents[S.champ], p = (Math.sin(time*4)*0.5+0.5);
-    map.strokeStyle = `rgba(255,220,80,${0.45+p*0.45})`; map.lineWidth = 2;
-    ell(map, e.x, e.y, 18+p*4, 7+p*2); map.stroke();
-  }
-
-  drawWeatherGround();
-}
-
-/* =====================================================================
-   EFEITOS DE GOLPE
-   ---------------------------------------------------------------------
-   Mesma ideia dos sprites de personagem: em vez de inventar uma bolinha
-   colorida por tipo, usamos as folhas de efeito originais do Pokémon
-   Mystery Dungeon (PMDCollab/RawAsset). São 667 arquivos nomeados por
-   golpe — Shadow_Ball, Crunch, Earthquake, Discharge, Close_Combat...
-
-   O corte da folha sai do próprio nome do arquivo, sem metadado:
-     - quadros são QUADRADOS
-     - "Nome.Dir8.png" -> 8 linhas (uma por direção)
-     - "Nome.None.png" -> 1 linha
-     - lado do quadro = altura / número de linhas
-     - número de quadros = largura / lado
-
-   Cada golpe é montado em até 3 tempos: carga no atacante, viagem até o
-   alvo, e impacto. Quando não existe folha boa para alguma parte, cai no
-   efeito procedural antigo, colorido pelo tipo — melhor um brilho
-   genérico do que um sprite que não tem nada a ver.
-   ===================================================================== */
-/* Mesma regra das folhas de personagem: base no raw (o endereço que
-   sempre rodou), espelho só como resgate do MESMO arquivo. Foi trocar
-   isto pela CDN, na v0.6.1, que apagou as animações de golpe — saía o
-   balão com o nome e nenhum efeito. */
-const FX_BASE    = 'https://raw.githubusercontent.com/PMDCollab/RawAsset/master/';
-const FX_ESPELHO = 'https://cdn.jsdelivr.net/gh/PMDCollab/RawAsset@master/';
-const fxCache = {};
-
-function fxSheet(path){
-  if (fxCache[path]) return fxCache[path];
-  const m = /\.Dir(\d)\./.exec(path);
-  const rec = { ok:false, rows: m ? +m[1] : 1, side:0, n:1, img:new Image() };
-  rec.img.onload = () => {
-    rec.side = rec.img.naturalHeight / rec.rows;
-    rec.n = Math.max(1, Math.round(rec.img.naturalWidth / rec.side));
-    rec.ok = rec.side > 0;
-  };
-  // com CORS o canvas não fica "contaminado" e continua exportável;
-  // se por algum motivo falhar, recarrega sem CORS — o jogo em si não
-  // precisa exportar nada, então é só perder essa capacidade.
-  // E, se nem assim vier, tenta o MESMO arquivo no espelho (nunca outro
-  // efeito): sem isso o golpe sai só com o balão e nenhuma animação.
-  rec.img.crossOrigin = 'anonymous';
-  rec.img.onerror = () => {
-    rec.img.onerror = () => {
-      rec.img.onerror = null;
-      rec.img.src = FX_ESPELHO + path;
-    };
-    rec.img.removeAttribute('crossorigin');
-    rec.img.src = FX_BASE + path;
-  };
-  rec.img.src = FX_BASE + path;
-  return fxCache[path] = rec;
-}
-
-const P = f => 'Particle/' + f + '.png';
-
-/* Mapa golpe -> encenação.
-     cast  : folha tocada no atacante antes de sair o golpe
-     proj  : folha que VIAJA do atacante até o alvo
-     beam  : folha repetida ao longo da linha (jato contínuo)
-     hit   : folha do impacto, no alvo
-     sc    : escala do sprite (1 = tamanho original)
-     shake : tremor de tela, 0 a 1
-   Faltando 'hit', usa o estouro procedural na cor do tipo.            */
-const MOVE_FX = {
-  // ---- fogo ----
-  'Flamethrower':  {beam:P('Flamethrower.None'), sc:.55, hit:P('Fire_Fang_Hit.None'), hsc:.5, shake:.2},
-  'Fire Blast':    {proj:P('Fire_Blast.None'), sc:.8, hit:P('Blast_Burn.None'), hsc:1.6, shake:.5},
-  'Fire Punch':    {hit:P('Fire_Fang_Hit.None'), hsc:.55, shake:.3},
-  // ---- água ----
-  'Hydro Pump':    {beam:P('Hydro_Pump_RSE.Dir1'), sc:.9, hit:P('Aqua_Tail_Splash.None'), hsc:1.1, shake:.45},
-  'Waterfall':     {hit:P('Aqua_Tail_Splash.None'), hsc:1.2, shake:.35},
-  'Ice Fang':      {hit:P('Ice_Fang_Hit.None'), hsc:.5},
-  // ---- elétrico ----
-  'Thunderbolt':   {beam:P('Shock_Wave.None'), sc:.8, hit:P('Discharge.None'), hsc:.45, shake:.35},
-  'Volt Tackle':   {cast:P('Spark.None'), csc:.7, hit:P('Discharge_Hit.None'), hsc:.6, shake:.6},
-  // ---- planta ----
-  'Solar Beam':    {cast:P('Solar_Beam_Charge.None'), csc:1, beam:P('Solar_Beam_Particle.None'),
-                    sc:2.2, hit:P('Giga_Impact_Front.None'), hsc:.7, shake:.5},
-  'Petal Dance':   {proj:P('Petal_Dance_Flower_Pink.None'), sc:1.3, hit:P('Circle_Pink_Out.None'), hsc:.5},
-  'Magical Leaf':  {proj:P('Magical_Leaf.None'), sc:.7},
-  // ---- gelo ----
-  'Ice Beam':      {beam:P('Ice_Pieces.None'), sc:1.4, hit:P('Avalanche_Hit.None'), hsc:.6, shake:.2},
-  'Blizzard':      {beam:P('Hail.None'), sc:1.2, hit:P('Avalanche_Hit.None'), hsc:.85, shake:.4},
-  // ---- lutador ----
-  'Aura Sphere':   {proj:P('Aura_Sphere.None'), sc:1.1},
-  'Focus Blast':   {proj:P('Focus_Blast_Ball.Dir8'), sc:.8, hit:P('Focus_Blast_Hit.None'), hsc:.7, shake:.5},
-  'Close Combat':  {hit:P('Close_Combat.None'), hsc:.6, shake:.5},
-  'Cross Chop':    {hit:P('Cross_Chop.None'), hsc:.8, shake:.4},
-  'Dynamic Punch': {hit:P('Dizzy_Punch_Hit.None'), hsc:.5, shake:.55},
-  'Body Press':    {hit:P('Giga_Impact_Front.None'), hsc:.6, shake:.5},
-  // ---- veneno ----
-  'Sludge Bomb':   {proj:P('Acid_Purple.None'), sc:1.1, hit:P('Cross_Poison.None'), hsc:.7},
-  // ---- terra ----
-  'Earthquake':    {hit:P('Earthquake_Ranger.None'), hsc:.75, shake:.9, ground:true},
-  // ---- voador ----
-  'Air Slash':     {proj:P('Air_Slash_Slash.None'), sc:.7},
-  'Brave Bird':    {cast:P('Brave_Bird.Dir8'), csc:1, hit:P('Brave_Bird_Hit.None'), hsc:.9, shake:.6},
-  'Drill Peck':    {hit:P('Wing_Attack.None'), hsc:.5, shake:.25},
-  // ---- psíquico ----
-  'Psychic':       {hit:P('Psycho_Boost_Front.None'), hsc:.7, shake:.35},
-  'Psyshock':      {proj:P('Psycho_Cut_Cut.None'), sc:1, hit:P('Psycho_Boost_Front.None'), hsc:.55},
-  'Zen Headbutt':  {hit:P('Zen_Headbutt.None'), hsc:.7, shake:.35},
-  // ---- pedra ----
-  'Stone Edge':    {proj:P('Stone_Edge_Rock.None'), sc:2.2, hit:P('Iron_Head.None'), hsc:.5, shake:.5},
-  // ---- fantasma ----
-  'Shadow Ball':   {proj:P('Shadow_Ball.None'), sc:1.4, spin:true, hit:P('Sucker_Punch_Hit.None'), hsc:.7},
-  // ---- dragão ----
-  'Dragon Pulse':  {proj:P('Dragon_Pulse_Ball.None'), sc:1.2, shake:.2},
-  'Dragon Claw':   {hit:P('Cut_Dark.Dir8'), hsc:.55, shake:.3},
-  'Outrage':       {hit:P('Giga_Impact_Back.None'), hsc:.7, shake:.6},
-  // ---- sombrio ----
-  'Dark Pulse':    {beam:P('Dark_Pulse_Front.None'), sc:.4, hit:P('Sucker_Punch_Hit.None'), hsc:.7},
-  'Crunch':        {hit:P('Crunch.Dir8'), hsc:.7, shake:.35},
-  'Bite':          {hit:P('Bite.Dir8'), hsc:.6},
-  'Knock Off':     {hit:P('Knock_Off.Flip'), hsc:.7, shake:.3},
-  'Payback':       {hit:P('Payback.None'), hsc:.7},
-  'Foul Play':     {hit:P('Cut_Dark.Dir8'), hsc:.6, shake:.35},
-  // ---- aço ----
-  'Flash Cannon':  {beam:P('Flash_Cannon.None'), sc:.7, hit:P('Flash_Cannon_Release.None'), hsc:.8, shake:.3},
-  'Iron Head':     {hit:P('Iron_Head.None'), hsc:.55, shake:.4},
-  'Iron Tail':     {hit:P('Metal_Burst.None'), hsc:.5, shake:.45},
-  'Meteor Mash':   {proj:P('Meteor_Mash_Star.Dir8'), sc:1.6, hit:P('Bullet_Punch.None'), hsc:.6, shake:.4},
-  'Bullet Punch':  {hit:P('Bullet_Punch.None'), hsc:.5},
-  // ---- fada ----
-  'Moonblast':     {proj:P('Circle_Small_Pink_Out.None'), sc:.45, hit:P('Circle_Pink_Out.None'), hsc:.8, shake:.4},
-  'Dazzling Gleam':{hit:P('Circle_Pink_Out.None'), hsc:.9, shake:.25},
-  // ---- normal ----
-  'Hyper Beam':    {cast:P('Charge_Up.None'), csc:1, beam:P('Solar_Beam_Particle.None'), sc:2.6,
-                    hit:P('Giga_Impact_Front.None'), hsc:1, shake:.9},
-  'Hyper Voice':   {hit:P('Circle_Uproar_Yellow_Out.None'), hsc:.8, shake:.3},
-  'Body Slam':     {hit:P('Giga_Impact_Front.None'), hsc:.6, shake:.5},
-  'Skull Bash':    {hit:P('Giga_Impact_Back.None'), hsc:.7, shake:.7},
-  'Quick Attack':  {hit:P('Metal_Burst.None'), hsc:.35},
-  'Extreme Speed': {hit:P('Metal_Burst.None'), hsc:.5, shake:.3},
-  // ---- inseto ----
-  'Bug Bite':      {hit:P('Bug_Bite.None'), hsc:.55},
-  'X-Scissor':     {hit:P('X_Scissor.None'), hsc:.6, shake:.3},
-  'Megahorn':      {hit:P('Megahorn_Front.None'), hsc:.7, shake:.5},
-  'Signal Beam':   {proj:P('Signal_Beam.None'), sc:1.3},
-  // ---- terra (extra) ----
-  'Dig':           {hit:P('Dig.None'), hsc:.7, shake:.4, ground:true},
-  'Mud Shot':      {proj:P('Mud_Shot_Ball.None'), sc:1.2, hit:P('Mud_Bomb_Hit.None'), hsc:.55},
-  // ---- pedra (extra) ----
-  'Rock Tomb':     {hit:P('Ancient_Power_Front.None'), hsc:.7, shake:.3},
-  'Ancient Power': {proj:P('Ancient_Power_Front.None'), sc:1.1, shake:.3},
-  // ---- fantasma (extra) ----
-  'Shadow Claw':   {hit:P('Shadow_Claw.None'), hsc:.6, shake:.3},
-  'Lick':          {hit:P('Lick.None'), hsc:.55},
-  // ---- veneno (extra) ----
-  'Poison Jab':    {hit:P('Poison_Jab.None'), hsc:.6, shake:.2},
-  'Gunk Shot':     {proj:P('Gunk_Shot.Dir8'), sc:1.1, hit:P('Gunk_Shot_Hit.None'), hsc:.65, shake:.4},
-  // ---- água (extra) ----
-  'Surf':          {beam:P('Aqua_Tail_Wave.None'), sc:1.3, hit:P('Aqua_Tail_Splash.None'), hsc:1.0, shake:.4},
-  // ---- elétrico (extra) ----
-  'Discharge':     {hit:P('Discharge.None'), hsc:.55, shake:.3},
-  'Thunder Fang':  {hit:P('Thunder_Fang_Fang.None'), hsc:.5},
-};
-
-const shots = [];   // projéteis/raios em voo (procedural, usado como reserva)
-const bursts = [];  // impactos procedurais
-const fxs   = [];   // efeitos com sprite
-const sched = [];   // coisas marcadas para acontecer daqui a N segundos
-
-// agenda no relógio da BATALHA (não em setTimeout), para respeitar
-// pausa, velocidade de replay e a sincronia entre jogadores
-function later(dt, fn){ sched.push({ t: S.battleT + dt, fn }); }
-
-function pushFx(o){
-  o.sheetRec = fxSheet(o.sheet);
-  o.age = 0;
-  fxs.push(o);
-  return o;
-}
-
-/* desenha um quadro de uma folha de efeito, centrado em (x,y) */
-function blitFx(rec, frame, dir, x, y, sc, alpha){
-  if (!rec.ok) return;
-  const s = rec.side, d = s * sc;
-  fx.globalAlpha = alpha === undefined ? 1 : alpha;
-  fx.drawImage(rec.img, (frame % rec.n) * s, (dir % rec.rows) * s, s, s,
-               x - d/2, y - d/2, d, d);
-  fx.globalAlpha = 1;
-}
-
-function drawSpriteFx(dt){
-  for (let i = fxs.length-1; i >= 0; i--){
-    const o = fxs[i];
-    o.age += dt;
-    const k = o.age / o.dur;
-    if (k >= 1){ fxs.splice(i,1); continue; }
-    const rec = o.sheetRec;
-    if (!rec.ok) continue;
-
-    if (o.kind === 'proj'){
-      // viaja do atacante ao alvo, com um arco leve
-      const x = o.x0 + (o.x1-o.x0)*k;
-      const y = o.y0 + (o.y1-o.y0)*k - Math.sin(k*Math.PI) * o.arc;
-      // gira ou corre os quadros
-      const f = o.spin ? Math.floor(o.age * 24) : Math.floor(o.age * 18);
-      blitFx(rec, f, o.dir, x, y, o.sc);
-    }
-    else if (o.kind === 'beam'){
-      // repete o sprite ao longo da linha; a defasagem por segmento faz
-      // o jato "correr" do atacante para o alvo
-      const seg = Math.max(3, Math.round(o.len / (rec.side * o.sc * 0.55)));
-      const fade = k < .18 ? k/.18 : k > .8 ? (1-k)/.2 : 1;
-      for (let s = 0; s <= seg; s++){
-        const t = s/seg;
-        if (t > k * 1.6) break;                 // a ponta avança com o tempo
-        const x = o.x0 + (o.x1-o.x0)*t;
-        const y = o.y0 + (o.y1-o.y0)*t;
-        const f = Math.floor(o.age*20 + s*1.7);
-        blitFx(rec, f, o.dir, x, y, o.sc, fade);
-      }
-    }
-    else {  // 'anim' — parado num ponto
-      const f = Math.floor(k * rec.n);
-      blitFx(rec, f, o.dir, o.x, o.y, o.sc, k > .85 ? (1-k)/.15 : 1);
-    }
-  }
-}
-
-function drawFx(dt, time){
-  fx.clearRect(0,0,W,H);
-  drawSpriteFx(dt);
-  drawEntryRings(dt);
-
-  for (let i=shots.length-1;i>=0;i--){
-    const s = shots[i];
-    s.age += dt;
-    const k = Math.min(1, s.age / s.life);
-    if (s.kind === 'beam'){
-      const a = k < .5 ? k*2 : (1-k)*2;
-      fx.strokeStyle = s.col; fx.globalAlpha = a; fx.lineWidth = 4;
-      fx.beginPath(); fx.moveTo(s.x0,s.y0); fx.lineTo(s.x1,s.y1); fx.stroke();
-      fx.globalAlpha = a*0.7; fx.lineWidth = 1.5; fx.strokeStyle = '#fff';
-      fx.beginPath(); fx.moveTo(s.x0,s.y0); fx.lineTo(s.x1,s.y1); fx.stroke();
-      fx.globalAlpha = 1;
-    } else {
-      const x = s.x0 + (s.x1-s.x0)*k, y = s.y0 + (s.y1-s.y0)*k - Math.sin(k*Math.PI)*14;
-      fx.fillStyle = s.col; fx.beginPath(); fx.arc(x,y,4.5,0,Math.PI*2); fx.fill();
-      fx.fillStyle = 'rgba(255,255,255,.85)'; fx.beginPath(); fx.arc(x-1,y-1,1.8,0,Math.PI*2); fx.fill();
-      fx.globalAlpha = .35; fx.fillStyle = s.col;
-      fx.beginPath(); fx.arc(s.x0+(s.x1-s.x0)*Math.max(0,k-.12), s.y0+(s.y1-s.y0)*Math.max(0,k-.12), 3, 0, Math.PI*2);
-      fx.fill(); fx.globalAlpha = 1;
-    }
-    if (k >= 1) shots.splice(i,1);
-  }
-
-  for (let i=bursts.length-1;i>=0;i--){
-    const b = bursts[i];
-    b.age += dt;
-    const k = Math.min(1, b.age / b.life);
-    fx.globalAlpha = 1-k;
-    fx.strokeStyle = b.col; fx.lineWidth = 2.5;
-    fx.beginPath(); fx.arc(b.x, b.y, 3 + k*b.r, 0, Math.PI*2); fx.stroke();
-    for (let p=0;p<6;p++){
-      const ang = b.seed + p*Math.PI/3, d = 3 + k*b.r*0.9;
-      fx.fillStyle = b.col;
-      fx.fillRect(b.x + Math.cos(ang)*d - 1, b.y + Math.sin(ang)*d - 1, 2.5, 2.5);
-    }
-    fx.globalAlpha = 1;
-    if (k >= 1) bursts.splice(i,1);
-  }
-
-  drawWeatherFx(dt, time);
-}
-
-/* =====================================================================
-   CLIMA DA ARENA
-   ---------------------------------------------------------------------
-   O clima só é sorteado DEPOIS que as apostas fecham — na hora em que a
-   partida realmente começa (transição apostas -> contagem). É por isso
-   que as odds mostradas durante a fase de apostas NÃO conhecem o clima:
-   elas saem de um Monte Carlo rodado sobre os stats crus, sem bônus
-   climático nenhum. O clima é revelado junto com a contagem regressiva,
-   como um fator surpresa — mais parecido com "chove no dia do jogo" do
-   que com uma informação disponível na hora de apostar.
-
-   Isso é intencional, não uma falha: o resultado real da luta PODE
-   divergir da distribuição que gerou as odds, porque o clima entra
-   depois. É a mesma dinâmica de qualquer aposta esportiva ao ar livre.
-   ===================================================================== */
 
 
 
-/* Devolve uma CÓPIA do elenco com ATK/SpA ou Velocidade ajustados para
-   quem bate com o tipo do clima. maxHp, defesas, golpes e tudo mais
-   continuam iguais — só a ofensiva/velocidade muda. */
-
-function showWeatherBadge(weather){
-  const el = $('#weatherBadge');
-  const afetados = weather.type ? S.fighters.filter(f=>f.types.includes(weather.type)).map(f=>f.n) : [];
-  el.innerHTML = `<b>${weather.emoji} ${weather.name}</b><span>${weather.desc}</span>`;
-  el.title = afetados.length ? 'Favorecidos: ' + afetados.join(', ') : '';
-  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('show','pop');
-}
-function hideWeatherBadge(){ $('#weatherBadge').classList.remove('show','pop'); }
-
-/* =====================================================================
-   EFEITOS VISUAIS DO CLIMA
-   ---------------------------------------------------------------------
-   O selo no canto avisa qual clima caiu, mas sozinho é fácil de não
-   notar. Aqui cada clima ganha:
-     1) um véu de cor sobre o chão (desenhado em drawMap, por baixo dos
-        sprites — os Pokémon continuam legíveis por cima)
-     2) partículas animadas por cima de tudo (desenhadas em drawFx —
-        chuva/neve/vento caem/voam NA FRENTE dos lutadores, como na vida
-        real) — exceto o Sol, que é só luz (vinheta quente + raios).
-
-   As partículas vivem num pool fixo, reciclado: em vez de nascer e
-   morrer (push/splice o jogo inteiro), cada uma volta pro início assim
-   que sai da tela. Mais barato e não falta partícula no meio da luta.
-   ===================================================================== */
-let weatherParticles = [];
-let weatherKind = null;   // 'sol' | 'chuva' | 'vento' | 'neve' | null (Neutro)
-
-function initWeatherFx(w){
-  weatherKind = (w && w.type) ? w.key : null;
-  weatherParticles = [];
-  if (weatherKind === 'chuva'){
-    for (let i=0;i<70;i++) weatherParticles.push({
-      x: Math.random()*W, y: Math.random()*H,
-      len: 7+Math.random()*7, spd: 260+Math.random()*130,
-    });
-  } else if (weatherKind === 'neve'){
-    for (let i=0;i<55;i++) weatherParticles.push({
-      x: Math.random()*W, y: Math.random()*H,
-      r: 1+Math.random()*1.6, spd: 16+Math.random()*20,
-      sway: Math.random()*Math.PI*2, swaySpd: 1+Math.random()*1.4,
-    });
-  } else if (weatherKind === 'vento'){
-    for (let i=0;i<24;i++) weatherParticles.push({
-      x: Math.random()*W, y: Math.random()*H,
-      len: 20+Math.random()*32, spd: 190+Math.random()*150,
-      wobble: Math.random()*Math.PI*2,
-    });
-  } else if (weatherKind === 'sol'){
-    // raios: nascem FORA do canto superior esquerdo e cruzam a ilha na
-    // diagonal (ângulo medido a partir do eixo X, sentido horário)
-    for (let i=0;i<6;i++) weatherParticles.push({
-      ray:true, ang: 0.30 + i*0.15, phase: Math.random()*Math.PI*2,
-    });
-    // glints: pontinhos de brilho piscando na grama, tipo sol batendo
-    for (let i=0;i<16;i++) weatherParticles.push({
-      ray:false, x: 20+Math.random()*(W-40), y: 60+Math.random()*(H-120),
-      phase: Math.random()*Math.PI*2, spd: 1.2+Math.random()*1.6,
-    });
-  }
-}
-
-// véu de cor sobre o chão — chamado de dentro de drawMap, depois de
-// tudo o mais (fica por cima da ilha e das sombras, embaixo dos sprites
-// porque os sprites são elementos DOM numa camada acima do canvas)
-function drawWeatherGround(){
-  if (!weatherKind) return;
-  if (weatherKind === 'sol'){
-    map.fillStyle = 'rgba(255,185,70,.14)'; map.fillRect(0,0,W,H);
-  } else if (weatherKind === 'chuva'){
-    map.fillStyle = 'rgba(35,55,100,.20)'; map.fillRect(0,0,W,H);
-  } else if (weatherKind === 'vento'){
-    map.fillStyle = 'rgba(210,225,215,.05)'; map.fillRect(0,0,W,H);
-  } else if (weatherKind === 'neve'){
-    map.fillStyle = 'rgba(222,236,255,.18)'; map.fillRect(0,0,W,H);
-  }
-}
-
-// partículas + luz — chamado de dentro de drawFx, por cima de tudo
-function drawWeatherFx(dt, time){
-  if (weatherKind === 'chuva'){
-    const dirX = -0.32, dirY = 0.95;   // quase vertical, cai puxando pra esquerda
-    fx.strokeStyle = 'rgba(210,230,255,.55)'; fx.lineWidth = 1.3;
-    for (const p of weatherParticles){
-      p.y += p.spd*dt; p.x += p.spd*dt*(dirX/dirY);
-      if (p.y > H+20){ p.y = -20; p.x = Math.random()*W; }
-      fx.beginPath();
-      fx.moveTo(p.x, p.y);
-      fx.lineTo(p.x - dirX*p.len, p.y - dirY*p.len);
-      fx.stroke();
-    }
-  } else if (weatherKind === 'neve'){
-    fx.fillStyle = 'rgba(255,255,255,.88)';
-    for (const p of weatherParticles){
-      p.y += p.spd*dt; p.sway += p.swaySpd*dt;
-      const x = p.x + Math.sin(p.sway)*10;
-      if (p.y > H+5){ p.y = -5; p.x = Math.random()*W; }
-      fx.beginPath(); fx.arc(x, p.y, p.r, 0, Math.PI*2); fx.fill();
-    }
-  } else if (weatherKind === 'vento'){
-    fx.strokeStyle = 'rgba(255,255,255,.5)'; fx.lineWidth = 1.4;
-    for (const p of weatherParticles){
-      p.x += p.spd*dt; p.wobble += dt*3;
-      const y = p.y + Math.sin(p.wobble)*4;
-      if (p.x - p.len > W){ p.x = -p.len - Math.random()*60; p.y = Math.random()*H; }
-      fx.beginPath();
-      fx.moveTo(p.x, y);
-      fx.lineTo(p.x - p.len, y - 3);
-      fx.stroke();
-    }
-  } else if (weatherKind === 'sol'){
-    // vinheta quente saindo do canto — origem BEM de fora da tela, senão
-    // o brilho concentra num cantinho minúsculo e some
-    const x0 = -40, y0 = -40;
-    const g = fx.createRadialGradient(x0,y0,20, x0,y0,W*1.15);
-    g.addColorStop(0, 'rgba(255,220,120,.55)');
-    g.addColorStop(1, 'rgba(255,220,120,0)');
-    fx.fillStyle = g; fx.fillRect(0,0,W,H);
-
-    fx.save();
-    fx.globalCompositeOperation = 'lighter';
-    for (const p of weatherParticles){
-      if (p.ray){
-        // raio: uma faixa larga cruzando a ilha na diagonal, pulsando
-        const a = 0.10 + 0.07*Math.sin(time*0.6 + p.phase);
-        fx.strokeStyle = `rgba(255,240,190,${a})`; fx.lineWidth = 26;
-        fx.beginPath(); fx.moveTo(x0,y0);
-        fx.lineTo(x0+Math.cos(p.ang)*620, y0+Math.sin(p.ang)*620);
-        fx.stroke();
-      } else {
-        // glint: brilho piscando na grama, como sol reluzindo
-        const a = Math.max(0, Math.sin(time*p.spd + p.phase));
-        if (a < 0.55) continue;
-        const s = (a-0.55)/0.45;               // 0..1 só no pico do brilho
-        fx.fillStyle = `rgba(255,255,235,${s*0.9})`;
-        fx.fillRect(p.x-1, p.y-3*s, 2, 6*s);
-        fx.fillRect(p.x-3*s, p.y-1, 6*s, 2);
-      }
-    }
-    fx.restore();
-  }
-}
 
 /* =====================================================================
    ESTADO DA RODADA
    ===================================================================== */
-let ents = [];          // entidades na tela (posição, elemento DOM, hp)
 let selRing = null;     // anel dourado sob o lutador em que você apostou
 
 
-const $ = s => document.querySelector(s);
+
 const monLayer = $('#monLayer'), uiLayer = $('#uiLayer'), hud = $('#hud');
-const overlay = $('#overlay'), logBox = $('#log');
+const overlay = $('#overlay');
 
 /* ------------------------- MONTAGEM DA RODADA ------------------------- */
 /* Baixa as 4 folhas de cada lutador durante a fase de apostas, para
@@ -2349,7 +1431,7 @@ const SPAWN_BALLS = ['#e5443b','#3f6fd8','#f0c419','#7b3fa0','#f5f5f5','#2f8f6b'
 
 function buildEntities(layoutSeed){
   monLayer.innerHTML = ''; uiLayer.innerHTML = ''; hud.innerHTML = '';
-  ents = [];
+  S.ents = [];
   // anel de seleção: primeiro filho, então fica atrás de todos os bichos
   selRing = document.createElement('div');
   selRing.id = 'selRing';
@@ -2401,7 +1483,7 @@ function buildEntities(layoutSeed){
       speedMul:1, dash:0, dashX:0, dashY:0,
       kbX:0, kbY:0,            // empurrão ao levar dano (em unidades do mapa)
     };
-    ents.push(e);
+    S.ents.push(e);
     setAnim(e, 'i');
     place(e);
   });
@@ -2487,7 +1569,7 @@ function decideTarget(e, STEP){
   // --- o próximo golpe DELE na linha do tempo ---
   while (e.atkPtr < e.atkQueue.length && e.atkQueue[e.atkPtr].t < S.battleT - 0.1) e.atkPtr++;
   const nx = e.atkQueue[e.atkPtr];
-  const alvo = nx ? ents[nx.d] : null;
+  const alvo = nx ? S.ents[nx.d] : null;
   const lead = nx ? nx.t - S.battleT : Infinity;
 
   if (e.retreat > 0) e.retreat -= STEP;
@@ -2536,7 +1618,7 @@ function decideTarget(e, STEP){
   // --- machucado: sai de perto do inimigo mais próximo ---
   if (e.hp / e.f.maxHp < BEHAV.LOW_HP){
     let near = null, nd = 1e9;
-    for (const o of ents){
+    for (const o of S.ents){
       if (o === e || !o.alive) continue;
       const d = Math.hypot(o.x-e.x, o.y-e.y);
       if (d < nd){ nd = d; near = o; }
@@ -2630,7 +1712,7 @@ function place(e){
   e.el.style.top  = (ay / H * 100) + '%';
   e.bub.style.left = (e.x / W * 100) + '%';
   e.bub.style.top  = ((e.y - (e.meta.w[1] * e.scale) - 6) / H * 100) + '%';
-  if (S.myBet && ents[S.myBet.idx] === e) posSelRing();
+  if (S.myBet && S.ents[S.myBet.idx] === e) posSelRing();
 }
 
 /* ------------------------- MOVIMENTO (cosmético) -------------------------
@@ -2656,7 +1738,7 @@ function stepMovement(dt){
   while (moveAcc >= STEP){
     moveAcc -= STEP;
     // 1) decide para onde cada um vai, e anda
-    for (const e of ents){
+    for (const e of S.ents){
       if (!e.alive) continue;
       decideTarget(e, STEP);
 
@@ -2680,10 +1762,10 @@ function stepMovement(dt){
     // 2) separação: ninguém fica em cima do outro (senão os balões
     //    de ataque viram um bolo ilegível no meio do mapa)
     const {SEP, SEP_K, SEP_MAX, YSQUASH} = MOVE;
-    for (let i=0;i<ents.length;i++){
-      const a = ents[i]; if (!a.alive) continue;
-      for (let j=i+1;j<ents.length;j++){
-        const b = ents[j]; if (!b.alive) continue;
+    for (let i=0;i<S.ents.length;i++){
+      const a = S.ents[i]; if (!a.alive) continue;
+      for (let j=i+1;j<S.ents.length;j++){
+        const b = S.ents[j]; if (!b.alive) continue;
         let dx = b.x - a.x, dy = (b.y - a.y) * YSQUASH;
         let d = Math.hypot(dx, dy);
         if (d < 0.01){ dx = (S.moveRng()-.5); dy = (S.moveRng()-.5); d = Math.hypot(dx,dy) || 1; }
@@ -2698,7 +1780,7 @@ function stepMovement(dt){
     }
 
     // 3) trava dentro da grama + anima o corpo
-    for (const e of ents){
+    for (const e of S.ents){
       if (!e.alive) continue;
       const m = isleNorm(e.x, e.y, GRASS_RX-20, GRASS_RY-24);
       if (m > 1){ e.x = CX + (e.x-CX)/m; e.y = CY + (e.y-CY)/m; }
@@ -2713,7 +1795,7 @@ function stepMovement(dt){
    termina em ≤56s mesmo no caso raro de imunidades mútuas. */
 function applyStorm(ev){
   for (const h of ev.hits){
-    const D = ents[h.i]; if (!D) continue;
+    const D = S.ents[h.i]; if (!D) continue;
     D.hp = h.hpAfter;
     updatePlate(D);
     floatText(D, '-'+h.dmg, 'weak');
@@ -2741,7 +1823,7 @@ function applyStorm(ev){
 function applyEvent(ev){
   if (ev.storm){ applyStorm(ev); return; }
   if (ev.streak){ applyStreak(ev); return; }
-  const A = ents[ev.a], D = ents[ev.d];
+  const A = S.ents[ev.a], D = S.ents[ev.d];
   if (!A || !D) return;
   const mv = A.f.moves[ev.m];
   const col = TCOLOR[mv.t] || '#fff';
@@ -2877,7 +1959,7 @@ function aplicarDano(ev, A, D, ang){
    (combate normal e tempestade), por isso é chamado nos dois lugares. */
 function koToast(e){
   e.el.classList.remove('rage');                  // aura de killstreak morre junto
-  if (!S.myBet || ents[S.myBet.idx] !== e) return;
+  if (!S.myBet || S.ents[S.myBet.idx] !== e) return;
   if (selRing) selRing.classList.remove('on');    // some o anel do seu lutador
   const el = $('#koToast');
   el.innerHTML = `<b>${e.f.n}</b> foi nocauteado!<span class="ret">retornando à pokébola…</span>`;
@@ -2899,7 +1981,7 @@ const STREAK_BUFFS = {
   3:{n:'VELOCIDADE',ico:'💨', cls:'spe'},
 };
 function applyStreak(ev){
-  const A = ents[ev.a]; if (!A) return;
+  const A = S.ents[ev.a]; if (!A) return;
   const nome = STREAK_NAMES[Math.min(ev.lvl, 5)] || 'RAMPAGE';
   const buff = STREAK_BUFFS[ev.kind];
   const mult = (ev.mult || 1.5).toFixed(2).replace('.', ',');
@@ -2940,20 +2022,14 @@ function updatePlate(e){
   e.plate.classList.remove('hurt'); void e.plate.offsetWidth; e.plate.classList.add('hurt');
 }
 
-function log(html){
-  const d = document.createElement('div');
-  d.innerHTML = html;
-  logBox.appendChild(d);
-  while (logBox.children.length > 260) logBox.removeChild(logBox.firstChild);
-  logBox.scrollTop = logBox.scrollHeight;
-}
+
 
 /* ------------------------- PAINEL DE ODDS ------------------------- */
 function refreshOddsTable(){
   const body = $('#oddsBody');
   const rows = S.odds.slice().sort((a,b) => a.odd - b.odd);
   body.innerHTML = rows.map(o => {
-    const e = ents[o.idx], f = S.fighters[o.idx];
+    const e = S.ents[o.idx], f = S.fighters[o.idx];
     const dead = e && !e.alive;
     const hpPct = e ? Math.round(e.hp / f.maxHp * 100) : 100;
     return `<tr class="${dead ? 'out':''}">
@@ -3034,7 +2110,7 @@ async function newRound(){
 
   preloadSheets();
   refreshOddsTable();
-  ents.forEach(updatePlate);
+  S.ents.forEach(updatePlate);
   resetKillfeed();          // placar zerado com a pool nova
 
   log(`<span class="l-sys">&gt; nova rodada · 12 sorteados de 76 · odds calculadas sem o clima</span>`);
@@ -3058,7 +2134,7 @@ async function newRound(){
    anel dourado no chão. Roda a cada aposta — inclusive na troca, que
    precisa apagar a marcação anterior. */
 function markMyPlate(){
-  ents.forEach((e,i) => {
+  S.ents.forEach((e,i) => {
     const meu = !!S.myBet && S.myBet.idx === i;
     e.plate.classList.toggle('mine', meu);
     e.el.classList.toggle('mine', meu);
@@ -3071,7 +2147,7 @@ function markMyPlate(){
 /* O anel acompanha o lutador quadro a quadro, colado nos pés dele. */
 function posSelRing(){
   if (!selRing || !S.myBet) return;
-  const e = ents[S.myBet.idx];
+  const e = S.ents[S.myBet.idx];
   if (!e || !e.alive){ selRing.classList.remove('on'); return; }
   selRing.style.left = (e.x / W * 100) + '%';
   selRing.style.top  = ((e.y + 3) / H * 100) + '%';
@@ -3116,12 +2192,12 @@ function startFight(){
   S.moveRng = rng(seed ^ 0x9e3779b9); moveAcc = 0;
 
   S.evPtr = 0; S.battleT = 0;
-  ents.forEach(e => { e.atkQueue = []; e.atkPtr = 0; });
+  S.ents.forEach(e => { e.atkQueue = []; e.atkPtr = 0; });
   // dá a cada lutador a lista dos ataques que ELE vai desferir, com hora
   // marcada. É o que a coreografia consulta para se posicionar antes.
   for (const ev of S.battle.events){
     if (ev.storm || ev.streak) continue;   // não são ataques: não entram na coreografia
-    ents[ev.a].atkQueue.push({ t: ev.t, d: ev.d,
+    S.ents[ev.a].atkQueue.push({ t: ev.t, d: ev.d,
                                melee: S.fighters[ev.a].moves[ev.m].fx === 'melee' });
   }
 
@@ -3143,7 +2219,7 @@ function entryTotalTime(n){ return (n-1) * ENTRY.STAGGER + ENTRY.RING_LEAD + 0.5
 
 function releaseAll(){
   S.released = true;
-  const order = ents.slice();
+  const order = S.ents.slice();
   for (let i=order.length-1;i>0;i--){ const j=(S.moveRng()*(i+1))|0; [order[i],order[j]]=[order[j],order[i]]; }
 
   order.forEach((e, i) => {
@@ -3250,7 +2326,7 @@ function finish(){
   setPhase('result');
   // o loop de balões só roda na fase 'fighting'; sem isso o último
   // ataque fica com o balão travado na tela até a rodada seguinte
-  ents.forEach(e => { e.bub.classList.remove('on'); e.bubbleUntil = -1; });
+  S.ents.forEach(e => { e.bub.classList.remove('on'); e.bubbleUntil = -1; });
   const f = S.fighters[S.champ];
   log(`<span class="l-win">🏆 ${f.n} venceu a rodada!</span>`);
   // som coerente com o SEU resultado: jingle só quando não é derrota
@@ -3416,7 +2492,7 @@ function frame(now){
       }
     }
     if (S.clock < 3 && Math.floor(S.clock) !== window.__lastBeep){ window.__lastBeep = Math.floor(S.clock); sfx('beep'); }
-    if (S.clock >= 3.9 + entryTotalTime(ents.length)){ setPhase('fighting'); S.battleT = 0; }
+    if (S.clock >= 3.9 + entryTotalTime(S.ents.length)){ setPhase('fighting'); S.battleT = 0; }
   }
   else if (S.state === 'fighting'){
     S.battleT += dt;
@@ -3427,10 +2503,10 @@ function frame(now){
     // dispara o que estava marcado (cargas, viagens e impactos)
     for (let i = sched.length-1; i >= 0; i--)
       if (sched[i].t <= S.battleT){ const f = sched[i].fn; sched.splice(i,1); f(); }
-    for (const e of ents) if (e.bubbleUntil > 0 && S.battleT > e.bubbleUntil){ e.bub.classList.remove('on'); e.bubbleUntil = -1; }
+    for (const e of S.ents) if (e.bubbleUntil > 0 && S.battleT > e.bubbleUntil){ e.bub.classList.remove('on'); e.bubbleUntil = -1; }
     // aura de killstreak expira no relógio da BATALHA (acompanha o replay
     // acelerado, ao contrário de um setTimeout)
-    for (const e of ents) if (e.rageUntil > 0 && S.battleT > e.rageUntil){ e.el.classList.remove('rage'); e.rageUntil = -1; }
+    for (const e of S.ents) if (e.rageUntil > 0 && S.battleT > e.rageUntil){ e.el.classList.remove('rage'); e.rageUntil = -1; }
     if (S.evPtr >= S.battle.events.length && S.battleT > S.battle.duration + 0.9) finish();
     stepMovement(dt);
   }
@@ -4338,7 +3414,7 @@ function renderKillfeed(destacar){
   const rank = rankingAbates();
 
   lista.innerHTML = rank.map((r, pos) => {
-    const vivo = ents[r.i] ? ents[r.i].alive : true;
+    const vivo = S.ents[r.i] ? S.ents[r.i].alive : true;
     const medal = r.k > 0 && pos < 3 ? ' m' + (pos + 1) : '';
     const meu = S.myBet && S.myBet.idx === r.i ? ' mine' : '';
     return `<div class="kfrow${medal}${r.k ? '' : ' zero'}${vivo ? '' : ' dead'}${meu}" data-i="${r.i}">
@@ -4380,7 +3456,7 @@ function conferirAbates(){
     renderKillfeed();
   }
   // invariante: abates + quedas da arena = mortos da rodada
-  const mortos = ents.filter(e => !e.alive).length;
+  const mortos = S.ents.filter(e => !e.alive).length;
   const soma = ref.reduce((a, b) => a + b, 0) + refArena;
   if (soma !== mortos)
     console.warn('killfeed: soma de abates', soma, 'difere de lutadores caídos', mortos);

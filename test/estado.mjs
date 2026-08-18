@@ -17,7 +17,7 @@ const APP = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
    exige responder: quem escreve, quando, e o que mais depende disso. */
 const ESPERADO = [
   'state','clock','battleT','fighters','odds','battle','evPtr','champ','weather','released',
-  'shake','moveRng',
+  'shake','moveRng','ents',
   'bal','chipVal','myBet',
   'auto','speed','musicVol','profile',
 ];
@@ -57,9 +57,10 @@ export function suite() {
   });
 
   s.teste('a superfície compartilhada não cresceu', () => {
-    ok(ESPERADO.length <= 19,
-      `a superfície tem ${ESPERADO.length} campos. Passar de 19 sem dividir módulo é sinal de ` +
-      `que a fronteira está no lugar errado — ver F0.3b em diante.`);
+    ok(ESPERADO.length <= 20,
+      `a superfície tem ${ESPERADO.length} campos. Cada entrada precisa ser REATRIBUÍDA por ` +
+      `mais de um módulo — mutação de conteúdo (push num array const) atravessa binding ` +
+      `importado e não justifica entrar aqui.`);
   });
 
   return s;

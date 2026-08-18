@@ -21,6 +21,23 @@ seu critério de saída.
 
 ---
 
+### L-019 — a varredura de símbolos não é verificador de escopo
+
+**Dono:** F0.3d · **Notada em:** F0.3b
+
+`test/modulos.mjs` pega símbolo conhecido usado sem import, que foi a classe de
+erro real da extração. Mas ele varre por texto, não por escopo: uma variável
+local com o mesmo nome de um símbolo exportado suprime o alerta, e um símbolo
+usado só dentro de string dinâmica passa.
+
+Escrever um verificador de escopo em JS puro é caro, e trazer um parser fere a
+regra de dependência zero. **A alternativa boa é o navegador**: um `pageerror`
+na verificação visual pega qualquer símbolo indefinido, sem heurística nenhuma.
+
+**O que fazer em F0.3d:** promover a verificação visual a portão, com
+`pageerror` reprovando o bloco. Aí a varredura de texto vira rede secundária e
+a lacuna fecha por redundância, não por perfeição.
+
 ## Achados que NÃO são lacunas
 
 Registrados aqui para não serem redescobertos.

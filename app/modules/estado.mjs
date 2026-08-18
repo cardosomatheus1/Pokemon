@@ -31,6 +31,13 @@ export const S = {
   /* --- apresentação ------------------------------------------------------ */
   shake:    0,        // tremor de tela, 0 a 1
   moveRng:  null,     // PRNG da coreografia; semeado em cada rodada
+  /* `ents` entrou no F0.3b, e a justificativa é a mesma dos outros: é
+     REATRIBUÍDO (`S.ents = []` a cada montagem de rodada), e apresentação
+     precisa lê-lo. Binding importado não aceita atribuição. Os arrays de
+     efeito — shots, bursts, fxs, sched — NÃO estão aqui de propósito: são
+     `const` que só sofrem push, e push atravessa binding importado sem
+     problema. A diferença é reatribuição, não mutação. */
+  ents:     [],       // entidades em cena: posição, elemento, hp
 
   /* --- aposta e carteira ------------------------------------------------- */
   bal:      0,        // saldo em PokéCash; carregado no boot

@@ -266,7 +266,7 @@ A divisão é por módulo, como o próprio bloco mandava — nunca por camada ho
 
 ---
 
-### F0.3b — Módulos de apresentação
+### F0.3b — Módulos de apresentação ✅
 
 **Tam.** G · **Método** INV · **Portões** Q1 Q2 Q4 Q5 · **Depende de** F0.3a
 
@@ -275,6 +275,8 @@ A divisão é por módulo, como o próprio bloco mandava — nunca por camada ho
 **Sabotagem:** quebrar um import; inverter direção de dependência (motor importando apresentação); remover um módulo do grafo.
 
 **Saída:** nenhum módulo acima de ~600 linhas; o app roda.
+
+> **Lição registrada.** A extração produziu três erros de import em sequência — `rng`, `spriteURL` e o par `$`/`log` — e nenhum foi pego pela suíte: todos só apareceram ao carregar a página. O bloco fechou com um teste que varre **símbolos conhecidos** (o que algum módulo exporta) usados sem import. Ele não é verificador de escopo completo, e não precisa ser: é exatamente a classe de erro que separar módulos produz.
 
 ---
 

@@ -22,6 +22,8 @@ import { execFileSync } from 'node:child_process';
 const MOTOR  = 'engine/engine.mjs';
 const APP    = 'app/index.html';
 const ESTADO = 'app/modules/estado.mjs';
+const RENDER = 'app/modules/render.mjs';
+const DOM    = 'app/modules/dom.mjs';
 
 const DEFEITOS = [
   { id:'S1', arquivo:MOTOR, nome:'tabela de tipos invertida',
@@ -86,6 +88,20 @@ const DEFEITOS = [
   { id:'S14', arquivo:ESTADO, nome:'superfície cresce sem justificativa',
     real:'estado local promovido a global "só por enquanto"',
     de:'  profile:  null,', para:'  profile:  null,\n  cacheQualquer: {},' },
+
+  /* --- defeitos do F0.3b: o grafo de módulos ---------------------------- */
+  { id:'S15', arquivo:RENDER, nome:'módulo usa símbolo do motor sem importar',
+    real:'import perdido num merge — foi exatamente o que aconteceu ao extrair',
+    de:"import { rng } from '../../engine/engine.mjs';\n", para:'' },
+
+  { id:'S16', arquivo:DOM, nome:'dependência invertida entre camadas',
+    real:'utilidade de DOM passa a puxar render "só para uma coisinha"',
+    de:'/* Utilidades de DOM.',
+    para:"import { W } from './render.mjs';\n/* Utilidades de DOM." },
+
+  { id:'S17', arquivo:APP, nome:'app deixa de importar um módulo de apresentação',
+    real:'linha de import removida sem querer',
+    de:"} from './modules/clima.mjs';", para:"} from './modules/clima-antigo.mjs';" },
 ];
 
 function rodar(semGolden) {
@@ -109,7 +125,7 @@ if (rodar(false).vermelha) { console.error('ABORTADO: a suíte já está vermelh
 console.log('linha de base: VERDE\n');
 
 const originais = new Map();
-for (const f of [MOTOR, APP, ESTADO]) { originais.set(f, readFileSync(f,'utf8')); copyFileSync(f, f + '.bak'); }
+for (const f of [MOTOR, APP, ESTADO, RENDER, DOM]) { originais.set(f, readFileSync(f,'utf8')); copyFileSync(f, f + '.bak'); }
 
 const res = [];
 for (const d of DEFEITOS) {
@@ -125,7 +141,7 @@ for (const d of DEFEITOS) {
     sem: semG.vermelha ? suitesQuePegaram(semG.saida).join(',') : 'NADA' });
 }
 
-for (const f of [MOTOR, APP, ESTADO]) { copyFileSync(f + '.bak', f); unlinkSync(f + '.bak'); }
+for (const f of [MOTOR, APP, ESTADO, RENDER, DOM]) { copyFileSync(f + '.bak', f); unlinkSync(f + '.bak'); }
 
 console.log('id   defeito                                 status    sem golden, pego por');
 console.log('─'.repeat(96));
