@@ -19,8 +19,9 @@
 import { readFileSync, writeFileSync, copyFileSync, unlinkSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
-const MOTOR = 'engine/engine.mjs';
-const APP   = 'app/index.html';
+const MOTOR  = 'engine/engine.mjs';
+const APP    = 'app/index.html';
+const ESTADO = 'app/modules/estado.mjs';
 
 const DEFEITOS = [
   { id:'S1', arquivo:MOTOR, nome:'tabela de tipos invertida',
@@ -67,6 +68,24 @@ const DEFEITOS = [
   { id:'S10', arquivo:APP, nome:'app deixa de importar o motor',
     real:'import removido durante um merge',
     de:"} from '../engine/engine.mjs';", para:"} from '../engine/copia-local.mjs';" },
+
+  /* --- defeitos do F0.3a: a fronteira de estado ------------------------- */
+  { id:'S11', arquivo:APP, nome:'estado compartilhado volta a ser variável de topo',
+    real:'alguém "simplifica" S.champ de volta para uma variável solta',
+    de:"import { S } from './modules/estado.mjs';",
+    para:"import { S } from './modules/estado.mjs';\nlet champ = -1;" },
+
+  { id:'S12', arquivo:ESTADO, nome:'estado.mjs deixa de ser inerte',
+    real:'alguém inicializa o saldo direto no módulo de estado',
+    de:'  bal:      0,', para:"  bal:      +(localStorage.getItem('ar_bal') || 1000)," },
+
+  { id:'S13', arquivo:ESTADO, nome:'campo some da superfície declarada',
+    real:'remoção de campo durante refatoração, sem atualizar quem lê',
+    de:'  champ:    -1,', para:'' },
+
+  { id:'S14', arquivo:ESTADO, nome:'superfície cresce sem justificativa',
+    real:'estado local promovido a global "só por enquanto"',
+    de:'  profile:  null,', para:'  profile:  null,\n  cacheQualquer: {},' },
 ];
 
 function rodar(semGolden) {
@@ -76,16 +95,21 @@ function rodar(semGolden) {
   catch (e) { return { vermelha:true, saida:(e.stdout||'') + (e.stderr||'') }; }
 }
 
-const suitesQuePegaram = saida => [...new Set(
-  saida.split('\n').filter(l => /^\s{2}\[/.test(l))
-       .map(l => l.match(/^\s{2}\[([\w-]+)\]/)?.[1]).filter(Boolean))];
+const suitesQuePegaram = saida => {
+  const nomes = [...new Set(saida.split('\n').filter(l => /^\s{2}\[/.test(l))
+    .map(l => l.match(/^\s{2}\[([\w-]+)\]/)?.[1]).filter(Boolean))];
+  /* Defeito que impede o módulo de carregar derruba a execução inteira em vez
+     de reprovar um teste. Continua sendo vermelho, mas é outra coisa e o
+     relatório não deve fingir que foi uma suíte que pegou. */
+  return nomes.length ? nomes : ['(não carrega)'];
+};
 
 console.log('Q2 · SABOTAGEM\n');
 if (rodar(false).vermelha) { console.error('ABORTADO: a suíte já está vermelha.'); process.exit(2); }
 console.log('linha de base: VERDE\n');
 
 const originais = new Map();
-for (const f of [MOTOR, APP]) { originais.set(f, readFileSync(f,'utf8')); copyFileSync(f, f + '.bak'); }
+for (const f of [MOTOR, APP, ESTADO]) { originais.set(f, readFileSync(f,'utf8')); copyFileSync(f, f + '.bak'); }
 
 const res = [];
 for (const d of DEFEITOS) {
@@ -101,7 +125,7 @@ for (const d of DEFEITOS) {
     sem: semG.vermelha ? suitesQuePegaram(semG.saida).join(',') : 'NADA' });
 }
 
-for (const f of [MOTOR, APP]) { copyFileSync(f + '.bak', f); unlinkSync(f + '.bak'); }
+for (const f of [MOTOR, APP, ESTADO]) { copyFileSync(f + '.bak', f); unlinkSync(f + '.bak'); }
 
 console.log('id   defeito                                 status    sem golden, pego por');
 console.log('─'.repeat(96));

@@ -1195,6 +1195,7 @@ import {
   pickLineup,
   spriteURL
 } from '../engine/engine.mjs';
+import { S } from './modules/estado.mjs';
 
 /* =====================================================================
    ARENA ROYALE — protótipo de battle royale automático
@@ -1833,7 +1834,7 @@ function drawMap(time, dt = 0){
   }
 
   // antes de abrir: cada lutador é uma pokébola no chão
-  const closed = !released;
+  const closed = !S.released;
   for (const e of ents){
     if (!e.alive) continue;
     if (closed){ drawBall(map, e.x|0, (e.y-7)|0, e.ballCol); continue; }
@@ -1844,8 +1845,8 @@ function drawMap(time, dt = 0){
     ell(map, e.x, e.y, r, r*0.42); map.fill();
   }
   // anel do vencedor
-  if (state === 'result' && champ >= 0 && ents[champ]){
-    const e = ents[champ], p = (Math.sin(time*4)*0.5+0.5);
+  if (S.state === 'result' && S.champ >= 0 && ents[S.champ]){
+    const e = ents[S.champ], p = (Math.sin(time*4)*0.5+0.5);
     map.strokeStyle = `rgba(255,220,80,${0.45+p*0.45})`; map.lineWidth = 2;
     ell(map, e.x, e.y, 18+p*4, 7+p*2); map.stroke();
   }
@@ -2017,11 +2018,10 @@ const shots = [];   // projéteis/raios em voo (procedural, usado como reserva)
 const bursts = [];  // impactos procedurais
 const fxs   = [];   // efeitos com sprite
 const sched = [];   // coisas marcadas para acontecer daqui a N segundos
-let shake = 0;      // tremor de tela
 
 // agenda no relógio da BATALHA (não em setTimeout), para respeitar
 // pausa, velocidade de replay e a sincronia entre jogadores
-function later(dt, fn){ sched.push({ t: battleT + dt, fn }); }
+function later(dt, fn){ sched.push({ t: S.battleT + dt, fn }); }
 
 function pushFx(o){
   o.sheetRec = fxSheet(o.sheet);
@@ -2148,7 +2148,7 @@ function drawFx(dt, time){
 
 function showWeatherBadge(weather){
   const el = $('#weatherBadge');
-  const afetados = weather.type ? fighters.filter(f=>f.types.includes(weather.type)).map(f=>f.n) : [];
+  const afetados = weather.type ? S.fighters.filter(f=>f.types.includes(weather.type)).map(f=>f.n) : [];
   el.innerHTML = `<b>${weather.emoji} ${weather.name}</b><span>${weather.desc}</span>`;
   el.title = afetados.length ? 'Favorecidos: ' + afetados.join(', ') : '';
   el.classList.remove('pop'); void el.offsetWidth; el.classList.add('show','pop');
@@ -2291,24 +2291,9 @@ function drawWeatherFx(dt, time){
 /* =====================================================================
    ESTADO DA RODADA
    ===================================================================== */
-let fighters = [];      // elenco da rodada (com stats calculados)
-let odds = [];          // resultado do Monte Carlo
 let ents = [];          // entidades na tela (posição, elemento DOM, hp)
 let selRing = null;     // anel dourado sob o lutador em que você apostou
-let battle = null;      // {winner, events, duration}
-let evPtr = 0;
-let state = 'boot';     // boot | betting | countdown | fighting | result
-let clock = 0;          // relógio da fase atual
-let battleT = 0;        // relógio do replay
-let champ = -1;
-let released = false;   // false = pokébolas fechadas no chão
-let weather = null;     // clima revelado no início da luta (null = ainda não revelado)
-let auto = true;
-let speed = 1;
 
-let bal = +(localStorage.getItem('ar_bal') || 1000);
-let chipVal = 50;   // aposta mínima = menor pacote de PokéCash
-let myBet = null;       // {idx, amount, odd}
 
 const $ = s => document.querySelector(s);
 const monLayer = $('#monLayer'), uiLayer = $('#uiLayer'), hud = $('#hud');
@@ -2321,7 +2306,7 @@ const overlay = $('#overlay'), logBox = $('#log');
    conferirFolha, garante um pedido por arquivo por sessão. */
 
 function preloadSheets(){
-  for (const f of fighters){
+  for (const f of S.fighters){
     for (const k of ['w','i','a','h']){
       if (!(PMD[f.dex] && PMD[f.dex][k])) continue;
       // conferirFolha já faz o pedido (e o resgate no espelho, se precisar);
@@ -2372,9 +2357,9 @@ function buildEntities(layoutSeed){
   monLayer.appendChild(selRing);
   const R = rng(layoutSeed || 1);
 
-  fighters.forEach((f,i) => {
+  S.fighters.forEach((f,i) => {
     // posição inicial: círculo dentro da grama (como as pokébolas do vídeo)
-    const ang = (i / fighters.length) * Math.PI*2 - Math.PI/2;
+    const ang = (i / S.fighters.length) * Math.PI*2 - Math.PI/2;
     const x = CX + Math.cos(ang) * GRASS_RX * 0.62;
     const y = CY + Math.sin(ang) * GRASS_RY * 0.62;
 
@@ -2500,10 +2485,10 @@ function decideTarget(e, STEP){
   e.speedMul = 1;
 
   // --- o próximo golpe DELE na linha do tempo ---
-  while (e.atkPtr < e.atkQueue.length && e.atkQueue[e.atkPtr].t < battleT - 0.1) e.atkPtr++;
+  while (e.atkPtr < e.atkQueue.length && e.atkQueue[e.atkPtr].t < S.battleT - 0.1) e.atkPtr++;
   const nx = e.atkQueue[e.atkPtr];
   const alvo = nx ? ents[nx.d] : null;
-  const lead = nx ? nx.t - battleT : Infinity;
+  const lead = nx ? nx.t - S.battleT : Infinity;
 
   if (e.retreat > 0) e.retreat -= STEP;
 
@@ -2574,10 +2559,10 @@ function decideTarget(e, STEP){
   e.homeAng += MOVE.ORBIT * STEP;
   e.wander -= STEP;
   if (e.wander <= 0 || Math.hypot(e.tx - e.x, e.ty - e.y) < 9){
-    e.wander = 1.6 + moveRng()*2.4;
+    e.wander = 1.6 + S.moveRng()*2.4;
     const hx = CX + Math.cos(e.homeAng) * (GRASS_RX-30) * e.homeR;
     const hy = CY + Math.sin(e.homeAng) * (GRASS_RY-34) * e.homeR;
-    const a = moveRng()*Math.PI*2, r = MOVE.ROAM * Math.sqrt(moveRng());
+    const a = S.moveRng()*Math.PI*2, r = MOVE.ROAM * Math.sqrt(S.moveRng());
     e.tx = hx + Math.cos(a)*r;
     e.ty = hy + Math.sin(a)*r;
     clampTarget(e);
@@ -2645,14 +2630,14 @@ function place(e){
   e.el.style.top  = (ay / H * 100) + '%';
   e.bub.style.left = (e.x / W * 100) + '%';
   e.bub.style.top  = ((e.y - (e.meta.w[1] * e.scale) - 6) / H * 100) + '%';
-  if (myBet && ents[myBet.idx] === e) posSelRing();
+  if (S.myBet && ents[S.myBet.idx] === e) posSelRing();
 }
 
 /* ------------------------- MOVIMENTO (cosmético) -------------------------
    Passo fixo de 1/30s alimentado pelo relógio da batalha e por uma seed
    derivada da seed da partida -> todo cliente desenha o mesmo passeio.
 ------------------------------------------------------------------------- */
-let moveRng = rng(1), moveAcc = 0;
+let moveAcc = 0;
 // MOVE: velocidade de caminhada, distância e força de repulsão.
 // Se a repulsão ficar forte demais eles "cristalizam" num bloco no meio
 // do mapa; se ficar fraca demais, viram um monte de sprites sobrepostos.
@@ -2701,7 +2686,7 @@ function stepMovement(dt){
         const b = ents[j]; if (!b.alive) continue;
         let dx = b.x - a.x, dy = (b.y - a.y) * YSQUASH;
         let d = Math.hypot(dx, dy);
-        if (d < 0.01){ dx = (moveRng()-.5); dy = (moveRng()-.5); d = Math.hypot(dx,dy) || 1; }
+        if (d < 0.01){ dx = (S.moveRng()-.5); dy = (S.moveRng()-.5); d = Math.hypot(dx,dy) || 1; }
         if (d < SEP){
           // empurrão limitado: precisa ser da mesma ordem da caminhada,
           // senão a repulsão domina e todo mundo vira um bloco rígido
@@ -2742,9 +2727,9 @@ function applyStorm(ev){
       marcarAbate(null, h.i);     // tempestade não tem autor
     }
   }
-  shake = Math.max(shake, 0.3);
-  if (!battle.stormWarned){
-    battle.stormWarned = true;
+  S.shake = Math.max(S.shake, 0.3);
+  if (!S.battle.stormWarned){
+    S.battle.stormWarned = true;
     $('#stormBadge').classList.add('show');
     log('<span class="l-crit">🌪️ A arena entra em colapso — dano contínuo até sobrar um só!</span>');
     sfx('crit');
@@ -2765,7 +2750,7 @@ function applyEvent(ev){
   A.bub.textContent = mv.n;
   A.bub.style.borderColor = col;
   A.bub.classList.add('on');
-  A.bubbleUntil = battleT + 1.9;
+  A.bubbleUntil = S.battleT + 1.9;
 
   // encara o alvo e toca a animação de ataque
   const ang = Math.atan2(D.y - A.y, D.x - A.x);
@@ -2825,7 +2810,7 @@ function applyEvent(ev){
       // sem folha boa para este golpe: estouro procedural na cor do tipo
       bursts.push({x:dx, y:dy, col, r:16, life:.45, age:0, seed:Math.random()*6});
     }
-    if (F.shake) shake = Math.max(shake, F.shake * (ev.crit ? 1.5 : 1));
+    if (F.shake) S.shake = Math.max(S.shake, F.shake * (ev.crit ? 1.5 : 1));
     if (!ev.miss) aplicarDano(ev, A, D, ang);
     else { floatText(D, 'ERROU', 'miss'); sfx('miss'); }
   });
@@ -2892,7 +2877,7 @@ function aplicarDano(ev, A, D, ang){
    (combate normal e tempestade), por isso é chamado nos dois lugares. */
 function koToast(e){
   e.el.classList.remove('rage');                  // aura de killstreak morre junto
-  if (!myBet || ents[myBet.idx] !== e) return;
+  if (!S.myBet || ents[S.myBet.idx] !== e) return;
   if (selRing) selRing.classList.remove('on');    // some o anel do seu lutador
   const el = $('#koToast');
   el.innerHTML = `<b>${e.f.n}</b> foi nocauteado!<span class="ret">retornando à pokébola…</span>`;
@@ -2966,9 +2951,9 @@ function log(html){
 /* ------------------------- PAINEL DE ODDS ------------------------- */
 function refreshOddsTable(){
   const body = $('#oddsBody');
-  const rows = odds.slice().sort((a,b) => a.odd - b.odd);
+  const rows = S.odds.slice().sort((a,b) => a.odd - b.odd);
   body.innerHTML = rows.map(o => {
-    const e = ents[o.idx], f = fighters[o.idx];
+    const e = ents[o.idx], f = S.fighters[o.idx];
     const dead = e && !e.alive;
     const hpPct = e ? Math.round(e.hp / f.maxHp * 100) : 100;
     return `<tr class="${dead ? 'out':''}">
@@ -2981,9 +2966,9 @@ function refreshOddsTable(){
 }
 
 function buildPickList(){
-  const rows = odds.slice().sort((a,b) => a.odd - b.odd);
+  const rows = S.odds.slice().sort((a,b) => a.odd - b.odd);
   return rows.map(o => {
-    const f = fighters[o.idx];
+    const f = S.fighters[o.idx];
     return `<div class="pick" data-i="${o.idx}">
       ${imgTag(f)}
       <span class="n">${f.n}</span>
@@ -2994,7 +2979,7 @@ function buildPickList(){
 
 /* ------------------------- FASES ------------------------- */
 function setPhase(s){
-  state = s; clock = 0;
+  S.state = s; S.clock = 0;
   $('#phase').textContent =
     s === 'betting' ? 'APOSTAS' : s === 'countdown' ? 'PREPARAR' :
     s === 'fighting' ? 'AO VIVO' : s === 'result' ? 'RESULTADO' : '—';
@@ -3012,9 +2997,9 @@ let roundPending = false;
 async function newRound(){
   if (roundPending) return;
   roundPending = true;
-  champ = -1; evPtr = 0; battleT = 0; myBet = null; released = false;
+  S.champ = -1; S.evPtr = 0; S.battleT = 0; S.myBet = null; S.released = false;
   shots.length = 0; bursts.length = 0; puffs.length = 0;
-  fxs.length = 0; sched.length = 0; shake = 0; entryRings.length = 0;
+  fxs.length = 0; sched.length = 0; S.shake = 0; entryRings.length = 0;
   $('#arena').style.transform = '';
   $('#betInfo').innerHTML = 'Escolha um lutador na arena durante a fase de apostas.';
   hideWeatherBadge();
@@ -3030,8 +3015,8 @@ async function newRound(){
   // pool sorteada tenha pelo menos 1 lutador do tipo favorecido — ex.:
   // Sol Forte garante 1 Pokémon de Fogo na pool — sem revelar ao
   // apostador qual clima é nem que a garantia existe.
-  weather = rollWeather(newSeed());
-  fighters = pickLineup(weather.type);
+  S.weather = rollWeather(newSeed());
+  S.fighters = pickLineup(S.weather.type);
 
   overlay.classList.remove('hide');
   overlay.innerHTML = `<div class="banner">calculando odds…</div>`;
@@ -3041,10 +3026,10 @@ async function newRound(){
   // acima). Ele só é revelado depois que as apostas fecham (ver
   // startFight). É de propósito: ninguém aposta sabendo do bônus
   // climático de antemão.
-  odds = await computeOdds(fighters, CONF.SIMS);
+  S.odds = await computeOdds(S.fighters, CONF.SIMS);
 
   const layoutSeed = newSeed();
-  moveRng = rng(layoutSeed); moveAcc = 0;
+  S.moveRng = rng(layoutSeed); moveAcc = 0;
   buildEntities(layoutSeed);
 
   preloadSheets();
@@ -3074,42 +3059,42 @@ async function newRound(){
    precisa apagar a marcação anterior. */
 function markMyPlate(){
   ents.forEach((e,i) => {
-    const meu = !!myBet && myBet.idx === i;
+    const meu = !!S.myBet && S.myBet.idx === i;
     e.plate.classList.toggle('mine', meu);
     e.el.classList.toggle('mine', meu);
   });
-  if (selRing) selRing.classList.toggle('on', !!myBet);
+  if (selRing) selRing.classList.toggle('on', !!S.myBet);
   posSelRing();
   renderKillfeed();         // marca a sua linha no ranking de abates
 }
 
 /* O anel acompanha o lutador quadro a quadro, colado nos pés dele. */
 function posSelRing(){
-  if (!selRing || !myBet) return;
-  const e = ents[myBet.idx];
+  if (!selRing || !S.myBet) return;
+  const e = ents[S.myBet.idx];
   if (!e || !e.alive){ selRing.classList.remove('on'); return; }
   selRing.style.left = (e.x / W * 100) + '%';
   selRing.style.top  = ((e.y + 3) / H * 100) + '%';
 }
 
 function placeBet(idx, row){
-  if (state !== 'betting') return;
+  if (S.state !== 'betting') return;
   const amount = valorAposta();
   if (amount < APOSTA_MIN){
     $('#betInfo').innerHTML = `<b>Saldo insuficiente.</b> A aposta mínima é ${CUR} ${APOSTA_MIN} `
       + `(${emReais(APOSTA_MIN)}). Complete um desafio diário ou compre ${MOEDA}.`;
     return;
   }
-  if (myBet) bal += myBet.amount;                    // troca de aposta: devolve a anterior
-  const o = odds.find(x => x.idx === idx);
-  bal -= amount;
-  myBet = {idx, amount, odd:o.odd};
+  if (S.myBet) S.bal += S.myBet.amount;                    // troca de aposta: devolve a anterior
+  const o = S.odds.find(x => x.idx === idx);
+  S.bal -= amount;
+  S.myBet = {idx, amount, odd:o.odd};
   saveBal();
-  recordBetPlaced(amount, fighters[idx]);
+  recordBetPlaced(amount, S.fighters[idx]);
   markMyPlate();
   document.querySelectorAll('.pick').forEach(p => p.classList.toggle('sel', +p.dataset.i === idx));
   $('#betInfo').innerHTML =
-    `<b>${CUR} ${amount.toLocaleString('pt-BR')}</b> em <b>${fighters[idx].n}</b> (x${o.odd.toFixed(2)})<br>
+    `<b>${CUR} ${amount.toLocaleString('pt-BR')}</b> em <b>${S.fighters[idx].n}</b> (x${o.odd.toFixed(2)})<br>
      retorno se vencer: <b style="color:var(--gold)">${CUR} ${Math.floor(amount*o.odd).toLocaleString('pt-BR')}</b>
      <span class="tiny">(${emReais(Math.floor(amount*o.odd))})</span>`;
 }
@@ -3123,26 +3108,26 @@ function startFight(){
   // visual, bônus nos stats) e a batalha DE VERDADE só nascem agora,
   // depois que as apostas fecharam — é o que garante que as odds
   // mostradas na fase anterior não conheciam o bônus climático.
-  initWeatherFx(weather);
-  const battleFighters = applyWeather(fighters, weather);
+  initWeatherFx(S.weather);
+  const battleFighters = applyWeather(S.fighters, S.weather);
   const seed = newSeed();
-  battle = simulate(battleFighters, seed, true);
-  battle.seed = seed; battle.stormWarned = false;
-  moveRng = rng(seed ^ 0x9e3779b9); moveAcc = 0;
+  S.battle = simulate(battleFighters, seed, true);
+  S.battle.seed = seed; S.battle.stormWarned = false;
+  S.moveRng = rng(seed ^ 0x9e3779b9); moveAcc = 0;
 
-  evPtr = 0; battleT = 0;
+  S.evPtr = 0; S.battleT = 0;
   ents.forEach(e => { e.atkQueue = []; e.atkPtr = 0; });
   // dá a cada lutador a lista dos ataques que ELE vai desferir, com hora
   // marcada. É o que a coreografia consulta para se posicionar antes.
-  for (const ev of battle.events){
+  for (const ev of S.battle.events){
     if (ev.storm || ev.streak) continue;   // não são ataques: não entram na coreografia
     ents[ev.a].atkQueue.push({ t: ev.t, d: ev.d,
-                               melee: fighters[ev.a].moves[ev.m].fx === 'melee' });
+                               melee: S.fighters[ev.a].moves[ev.m].fx === 'melee' });
   }
 
-  showWeatherBadge(weather);
-  log(`<span class="l-sys">&gt; ${weather.emoji} clima revelado: <b>${weather.name}</b> — ${weather.desc}</span>`);
-  log(`<span class="l-sys">&gt; combate sorteado · seed ${seed.toString(16)} · duração prevista ${battle.duration.toFixed(1)}s</span>`);
+  showWeatherBadge(S.weather);
+  log(`<span class="l-sys">&gt; ${S.weather.emoji} clima revelado: <b>${S.weather.name}</b> — ${S.weather.desc}</span>`);
+  log(`<span class="l-sys">&gt; combate sorteado · seed ${seed.toString(16)} · duração prevista ${S.battle.duration.toFixed(1)}s</span>`);
 
   music(true);
 }
@@ -3157,9 +3142,9 @@ const ENTRY = { RING_LEAD: 0.35, STAGGER: 0.18 };
 function entryTotalTime(n){ return (n-1) * ENTRY.STAGGER + ENTRY.RING_LEAD + 0.5; }
 
 function releaseAll(){
-  released = true;
+  S.released = true;
   const order = ents.slice();
-  for (let i=order.length-1;i>0;i--){ const j=(moveRng()*(i+1))|0; [order[i],order[j]]=[order[j],order[i]]; }
+  for (let i=order.length-1;i>0;i--){ const j=(S.moveRng()*(i+1))|0; [order[i],order[j]]=[order[j],order[i]]; }
 
   order.forEach((e, i) => {
     const delayRing = i * ENTRY.STAGGER;
@@ -3194,15 +3179,15 @@ const CHEER_LINES = [
    É o que dá o "desempenho" do XP — assim quem escolheu bem e foi
    longe ganha mais do que quem caiu de cara, mesmo os dois perdendo. */
 function posicaoFinal(idx){
-  if (idx === champ) return 1;
+  if (idx === S.champ) return 1;
   const ordem = [];
-  for (const e of battle.events){
+  for (const e of S.battle.events){
     if (e.storm){ for (const h of e.hits) if (h.ko) ordem.push(h.i); }
     else if (e.ko) ordem.push(e.d);
   }
   const i = ordem.indexOf(idx);
   if (i === -1) return 2;                    // sobreviveu ao tempo, mas não venceu
-  return fighters.length - i;                // 1º eliminado -> último lugar
+  return S.fighters.length - i;                // 1º eliminado -> último lugar
 }
 
 /* O desafio de variedade não é incremental: ele conta quantos Pokémon
@@ -3216,11 +3201,11 @@ function atualizaVariedade(){
     c.prog = Math.min(c.meta, n);
     if (c.prog >= c.meta && !c.pago){
       c.feito = true; c.pago = true;
-      profile.xp += c.xp; bal += c.dia; saveBal();
-      profile.dailyDone = (profile.dailyDone || 0) + 1;
+      S.profile.xp += c.xp; S.bal += c.dia; saveBal();
+      S.profile.dailyDone = (S.profile.dailyDone || 0) + 1;
     }
   }
-  saveProfile(profile);
+  saveProfile(S.profile);
 }
 
 /* Bloco de XP do fim de rodada: barra, de onde veio cada ponto, aviso
@@ -3261,15 +3246,15 @@ function animaXP(){
 }
 
 function finish(){
-  champ = battle.winner;
+  S.champ = S.battle.winner;
   setPhase('result');
   // o loop de balões só roda na fase 'fighting'; sem isso o último
   // ataque fica com o balão travado na tela até a rodada seguinte
   ents.forEach(e => { e.bub.classList.remove('on'); e.bubbleUntil = -1; });
-  const f = fighters[champ];
+  const f = S.fighters[S.champ];
   log(`<span class="l-win">🏆 ${f.n} venceu a rodada!</span>`);
   // som coerente com o SEU resultado: jingle só quando não é derrota
-  music(false); sfx(myBet && myBet.idx !== champ ? 'ko' : 'win');
+  music(false); sfx(S.myBet && S.myBet.idx !== S.champ ? 'ko' : 'win');
 
   /* ---- XP e desafios: só valem se você entrou na rodada ----
      `minhaPos` é declarada AQUI, no escopo da função, e não dentro do
@@ -3286,29 +3271,29 @@ function finish(){
      algo falhar aqui, o jogador ainda vê quem venceu e quanto ganhou ou
      perdeu — e o erro vai pro console em vez de sumir em silêncio. */
   try {
-  if (myBet){
-    const venceu = myBet.idx === champ;
+  if (S.myBet){
+    const venceu = S.myBet.idx === S.champ;
     // colocação: quantos dos 12 ele sobreviveu (1º = 12 posições)
-    const pos = minhaPos = posicaoFinal(myBet.idx);
+    const pos = minhaPos = posicaoFinal(S.myBet.idx);
     const sobrevividos = 12 - pos;                    // 0..11
     const partes = [{ n:'Rodada disputada', xp:10 }];
     if (venceu) partes.push({ n:'Vitória', xp:25 });
     const desemp = Math.round((sobrevividos / 11) * 15);
     if (desemp > 0) partes.push({ n:`Desempenho (${pos}º lugar)`, xp:desemp });
-    if (myBet.odd >= 4 && pos <= 6) partes.push({ n:'Azarão que foi longe', xp:5 });
+    if (S.myBet.odd >= 4 && pos <= 6) partes.push({ n:'Azarão que foi longe', xp:5 });
     xpInfo = darXP(partes);
 
     // desafios
     feitos = feitos.concat(progDesafio('rodadas', 1));
     if (venceu) feitos = feitos.concat(progDesafio('vitorias', 1));
     if (pos <= 3) feitos = feitos.concat(progDesafio('sobrevive', 1));
-    if (weather && weather.type) feitos = feitos.concat(progDesafio('clima', 1));
-    for (const t of fighters[myBet.idx].types) feitos = feitos.concat(progDesafio('tipo', 1, t));
-    if (myBet.odd >= 4) feitos = feitos.concat(progDesafio('azarao', 1));
+    if (S.weather && S.weather.type) feitos = feitos.concat(progDesafio('clima', 1));
+    for (const t of S.fighters[S.myBet.idx].types) feitos = feitos.concat(progDesafio('tipo', 1, t));
+    if (S.myBet.odd >= 4) feitos = feitos.concat(progDesafio('azarao', 1));
     // "derrote X de tipo Y": conta os abates que o SEU lutador fez
-    const abates = battle.events.filter(e => !e.storm && !e.streak && e.ko && e.a === myBet.idx);
+    const abates = S.battle.events.filter(e => !e.storm && !e.streak && e.ko && e.a === S.myBet.idx);
     for (const ab of abates)
-      for (const t of fighters[ab.d].types) feitos = feitos.concat(progDesafio('derrote', 1, t));
+      for (const t of S.fighters[ab.d].types) feitos = feitos.concat(progDesafio('derrote', 1, t));
     // variedade: quantos Pokémon distintos já foram apostados hoje
     atualizaVariedade();
     if (xpInfo.subiu) sfx('levelup');
@@ -3324,16 +3309,16 @@ function finish(){
 
   overlay.classList.remove('hide');
 
-  if (myBet && myBet.idx === champ){
+  if (S.myBet && S.myBet.idx === S.champ){
     /* ---------- VITÓRIA ---------- */
-    const win = Math.floor(myBet.amount * myBet.odd);
-    const lucro = win - myBet.amount;
-    bal += win; saveBal();
-    recordBetResult(true, myBet.amount, win, f);
+    const win = Math.floor(S.myBet.amount * S.myBet.odd);
+    const lucro = win - S.myBet.amount;
+    S.bal += win; saveBal();
+    recordBetResult(true, S.myBet.amount, win, f);
     $('#betInfo').innerHTML = `<b style="color:var(--green)">Ganhou ${CUR} ${win.toLocaleString('pt-BR')}!</b> (${emReais(win)})`;
-    registrarAposta({t:Date.now(), mon:f.n, amount:myBet.amount, odd:myBet.odd,
+    registrarAposta({t:Date.now(), mon:f.n, amount:S.myBet.amount, odd:S.myBet.odd,
                      won:true, payout:win, pos:1});
-    log(`<span class="l-win">💵 +${win.toLocaleString('pt-BR')} ${MOEDA} (x${myBet.odd.toFixed(2)}) — lucro de ${lucro.toLocaleString('pt-BR')}!</span>`);
+    log(`<span class="l-win">💵 +${win.toLocaleString('pt-BR')} ${MOEDA} (x${S.myBet.odd.toFixed(2)}) — lucro de ${lucro.toLocaleString('pt-BR')}!</span>`);
 
     overlay.innerHTML = `<div id="winBox" class="win">
         <div class="trophy">🏆</div>
@@ -3341,29 +3326,29 @@ function finish(){
         ${imgTag(f)}
         <div class="banner" style="margin-top:8px">${f.n} venceu!</div>
         <div class="payout">+${CUR} ${win.toLocaleString('pt-BR')}
-          <small>x${myBet.odd.toFixed(2)} · lucro de ${lucro.toLocaleString('pt-BR')} ${MOEDA} (${emReais(lucro)})</small>
+          <small>x${S.myBet.odd.toFixed(2)} · lucro de ${lucro.toLocaleString('pt-BR')} ${MOEDA} (${emReais(lucro)})</small>
         </div>
         ${blocoXP(xpInfo, feitos)}
       </div>`;
     dropConfetti($('#winBox')); animaXP();
 
-  } else if (myBet){
+  } else if (S.myBet){
     /* ---------- DERROTA ---------- */
     // mostra o SEU lutador caído, não o vencedor: o que interessa aqui
     // é "o que aconteceu com o meu", e o vencedor vira só uma linha.
-    const meu = fighters[myBet.idx];
-    recordBetResult(false, myBet.amount, 0, meu);
-    $('#betInfo').innerHTML = `<b style="color:var(--red)">Perdeu ${CUR} ${myBet.amount.toLocaleString('pt-BR')}.</b>`;
-    registrarAposta({t:Date.now(), mon:meu.n, amount:myBet.amount, odd:myBet.odd,
+    const meu = S.fighters[S.myBet.idx];
+    recordBetResult(false, S.myBet.amount, 0, meu);
+    $('#betInfo').innerHTML = `<b style="color:var(--red)">Perdeu ${CUR} ${S.myBet.amount.toLocaleString('pt-BR')}.</b>`;
+    registrarAposta({t:Date.now(), mon:meu.n, amount:S.myBet.amount, odd:S.myBet.odd,
                      won:false, payout:0, pos:minhaPos});
-    log(`<span class="l-ko">💸 −${myBet.amount.toLocaleString('pt-BR')} ${MOEDA} · você tinha ${meu.n}</span>`);
+    log(`<span class="l-ko">💸 −${S.myBet.amount.toLocaleString('pt-BR')} ${MOEDA} · você tinha ${meu.n}</span>`);
 
     const cheer = CHEER_LINES[(Math.random()*CHEER_LINES.length)|0];
     overlay.innerHTML = `<div id="winBox" class="lose">
         ${imgTag(meu)}
         <div class="kostamp">K.O.</div>
         <div class="banner" style="margin-top:8px">${f.n} venceu a rodada</div>
-        <div class="loss">−${CUR} ${myBet.amount.toLocaleString('pt-BR')}
+        <div class="loss">−${CUR} ${S.myBet.amount.toLocaleString('pt-BR')}
           <small>você tinha ${meu.n}</small>
         </div>
         <div class="cheer">${cheer}</div>
@@ -3407,21 +3392,21 @@ function dropConfetti(box){
 let last = performance.now();
 function frame(now){
   const raw = Math.min(0.05, (now - last)/1000); last = now;
-  const dt = raw * (state === 'fighting' ? speed : 1);
-  clock += raw;
+  const dt = raw * (S.state === 'fighting' ? S.speed : 1);
+  S.clock += raw;
 
-  if (state === 'betting'){
-    const left = Math.max(0, CONF.BET_WINDOW - clock);
+  if (S.state === 'betting'){
+    const left = Math.max(0, CONF.BET_WINDOW - S.clock);
     const t = $('#pickTtl'); if (t) t.textContent = `QUEM VENCE? — ${left.toFixed(0)}s`;
     if (left <= 0) startFight();
   }
-  else if (state === 'countdown'){
+  else if (S.state === 'countdown'){
     const c = $('#count');
     if (c){
-      if (clock < 1){ c.textContent = '3'; c.className = ''; }
-      else if (clock < 2){ c.textContent = '2'; }
-      else if (clock < 3){ c.textContent = '1'; }
-      else if (clock < 3.9){
+      if (S.clock < 1){ c.textContent = '3'; c.className = ''; }
+      else if (S.clock < 2){ c.textContent = '2'; }
+      else if (S.clock < 3){ c.textContent = '1'; }
+      else if (S.clock < 3.9){
         if (!c.classList.contains('go')){ c.textContent='BATTLE!!'; c.className='go'; releaseAll(); }
       }
       else if (!overlay.classList.contains('hide')){
@@ -3430,41 +3415,41 @@ function frame(now){
         overlay.classList.add('hide');
       }
     }
-    if (clock < 3 && Math.floor(clock) !== window.__lastBeep){ window.__lastBeep = Math.floor(clock); sfx('beep'); }
-    if (clock >= 3.9 + entryTotalTime(ents.length)){ setPhase('fighting'); battleT = 0; }
+    if (S.clock < 3 && Math.floor(S.clock) !== window.__lastBeep){ window.__lastBeep = Math.floor(S.clock); sfx('beep'); }
+    if (S.clock >= 3.9 + entryTotalTime(ents.length)){ setPhase('fighting'); S.battleT = 0; }
   }
-  else if (state === 'fighting'){
-    battleT += dt;
-    $('#clock').textContent = battleT.toFixed(1) + 's';
-    while (evPtr < battle.events.length && battle.events[evPtr].t <= battleT){
-      applyEvent(battle.events[evPtr++]);
+  else if (S.state === 'fighting'){
+    S.battleT += dt;
+    $('#clock').textContent = S.battleT.toFixed(1) + 's';
+    while (S.evPtr < S.battle.events.length && S.battle.events[S.evPtr].t <= S.battleT){
+      applyEvent(S.battle.events[S.evPtr++]);
     }
     // dispara o que estava marcado (cargas, viagens e impactos)
     for (let i = sched.length-1; i >= 0; i--)
-      if (sched[i].t <= battleT){ const f = sched[i].fn; sched.splice(i,1); f(); }
-    for (const e of ents) if (e.bubbleUntil > 0 && battleT > e.bubbleUntil){ e.bub.classList.remove('on'); e.bubbleUntil = -1; }
+      if (sched[i].t <= S.battleT){ const f = sched[i].fn; sched.splice(i,1); f(); }
+    for (const e of ents) if (e.bubbleUntil > 0 && S.battleT > e.bubbleUntil){ e.bub.classList.remove('on'); e.bubbleUntil = -1; }
     // aura de killstreak expira no relógio da BATALHA (acompanha o replay
     // acelerado, ao contrário de um setTimeout)
-    for (const e of ents) if (e.rageUntil > 0 && battleT > e.rageUntil){ e.el.classList.remove('rage'); e.rageUntil = -1; }
-    if (evPtr >= battle.events.length && battleT > battle.duration + 0.9) finish();
+    for (const e of ents) if (e.rageUntil > 0 && S.battleT > e.rageUntil){ e.el.classList.remove('rage'); e.rageUntil = -1; }
+    if (S.evPtr >= S.battle.events.length && S.battleT > S.battle.duration + 0.9) finish();
     stepMovement(dt);
   }
-  else if (state === 'result'){
+  else if (S.state === 'result'){
     stepMovement(dt);   // o campeão continua andando pela ilha
-    if (auto && clock > CONF.RESULT_HOLD) newRound();
+    if (S.auto && S.clock > CONF.RESULT_HOLD) newRound();
   }
 
   drawMap(now/1000, dt);
   drawFx(dt, now/1000);
 
   // tremor de tela dos golpes pesados
-  if (shake > 0.004){
-    const a = shake * 7;
+  if (S.shake > 0.004){
+    const a = S.shake * 7;
     $('#arena').style.transform =
       `translate(${((Math.random()*2-1)*a).toFixed(1)}px, ${((Math.random()*2-1)*a).toFixed(1)}px)`;
-    shake *= Math.pow(0.02, raw);      // decai ~98% por segundo
-  } else if (shake !== 0){
-    shake = 0; $('#arena').style.transform = '';
+    S.shake *= Math.pow(0.02, raw);      // decai ~98% por segundo
+  } else if (S.shake !== 0){
+    S.shake = 0; $('#arena').style.transform = '';
   }
 
   requestAnimationFrame(frame);
@@ -3530,7 +3515,7 @@ function sfx(kind){
    que o navegador tem a última palavra, então a estratégia é insistir
    em vez de supor.                                                     */
 const bgm = document.getElementById('bgm');
-let musicVol = 0.5, fadeTimer = null, bgmReady = false, bgmWant = false;
+let fadeTimer = null, bgmReady = false, bgmWant = false;
 let bgmAvisou = false;   // já contou no log que a trilha entrou?
 
 // fallback de caminho: se battle-theme.mp3 não existir na raiz, tenta
@@ -3571,13 +3556,13 @@ function tentarTocar(comFade){
     p.then(() => {
       bgmReady = true;
       if (bgmWant){
-        if (comFade) fadeTo(musicVol, 400); else bgm.volume = musicVol;
+        if (comFade) fadeTo(S.musicVol, 400); else bgm.volume = S.musicVol;
         if (!bgmAvisou){ bgmAvisou = true; log('<span class="l-sys">🎵 trilha de batalha tocando.</span>'); }
       }
     }).catch(() => { /* sem gesto do usuário ainda — o watchdog tenta de novo */ });
   } else {
     bgmReady = true;   // navegadores antigos, sem Promise em play()
-    if (bgmWant && !comFade) bgm.volume = musicVol;
+    if (bgmWant && !comFade) bgm.volume = S.musicVol;
   }
 }
 
@@ -3590,7 +3575,7 @@ function music(on){
   // volta pro começo da faixa a cada rodada (se o arquivo já permite)
   if (bgm.readyState > 0){ try { bgm.currentTime = 0; } catch(e) {} }
   bgm.volume = 0;
-  fadeTo(musicVol, 500);
+  fadeTo(S.musicVol, 500);
   // e — o ponto que faltava — GARANTE que está de fato tocando
   if (bgm.paused) tentarTocar(false);
 }
@@ -3601,7 +3586,7 @@ function music(on){
 setInterval(() => {
   if (!bgmWant || !soundEnabled) return;
   if (bgm.paused) tentarTocar(true);
-  else if (bgm.volume < 0.01 && !fadeTimer) bgm.volume = musicVol;
+  else if (bgm.volume < 0.01 && !fadeTimer) bgm.volume = S.musicVol;
 }, 1000);
 
 // qualquer interação do usuário é uma chance de destravar o áudio
@@ -3653,29 +3638,28 @@ function loadProfile(){
 }
 function saveProfile(p){ localStorage.setItem('ar_profile', JSON.stringify(p)); }
 
-let profile = loadProfile();
 
 function recordBetPlaced(amount, fighter){
-  profile.betsCount++; profile.totalBet += amount;
+  S.profile.betsCount++; S.profile.totalBet += amount;
   if (fighter){
-    profile.mons[fighter.n] = (profile.mons[fighter.n] || 0) + 1;
-    for (const t of fighter.types) profile.types[t] = (profile.types[t] || 0) + 1;
+    S.profile.mons[fighter.n] = (S.profile.mons[fighter.n] || 0) + 1;
+    for (const t of fighter.types) S.profile.types[t] = (S.profile.types[t] || 0) + 1;
     // lista de Pokémon distintos apostados HOJE (desafio de variedade)
     const d = ensureDaily();
     if (!d.mons) d.mons = [];
     if (!d.mons.includes(fighter.n)) d.mons.push(fighter.n);
   }
-  saveProfile(profile);
+  saveProfile(S.profile);
 }
 function recordBetResult(won, amount, payout, fighter){
   if (won){
-    profile.winsCount++; profile.totalWon += payout;
-    if (payout > profile.biggestWin) profile.biggestWin = payout;
-    if (fighter) profile.winMons[fighter.n] = (profile.winMons[fighter.n] || 0) + 1;
+    S.profile.winsCount++; S.profile.totalWon += payout;
+    if (payout > S.profile.biggestWin) S.profile.biggestWin = payout;
+    if (fighter) S.profile.winMons[fighter.n] = (S.profile.winMons[fighter.n] || 0) + 1;
   } else {
-    profile.totalLost += amount;
+    S.profile.totalLost += amount;
   }
-  saveProfile(profile);
+  saveProfile(S.profile);
 }
 
 /* topo de um dicionário {chave: contagem} */
@@ -3739,11 +3723,11 @@ function tituloDe(n){
 /* Concede XP e devolve o detalhamento, pra tela de fim de rodada poder
    mostrar de onde veio cada pedaço. */
 function darXP(partes){
-  const antes = progressoNivel(profile.xp);
+  const antes = progressoNivel(S.profile.xp);
   const total = partes.reduce((a,p) => a + p.xp, 0);
-  profile.xp += total;
-  const depois = progressoNivel(profile.xp);
-  saveProfile(profile);
+  S.profile.xp += total;
+  const depois = progressoNivel(S.profile.xp);
+  saveProfile(S.profile);
   return {partes, total, antes, depois, subiu: depois.nivel > antes.nivel};
 }
 
@@ -3802,11 +3786,11 @@ function rollDaily(){
 }
 
 function ensureDaily(){
-  if (!profile.daily || profile.daily.data !== hojeStr()){
-    profile.daily = rollDaily();
-    saveProfile(profile);
+  if (!S.profile.daily || S.profile.daily.data !== hojeStr()){
+    S.profile.daily = rollDaily();
+    saveProfile(S.profile);
   }
-  return profile.daily;
+  return S.profile.daily;
 }
 
 /* Avança um desafio. `quanto` permite somar mais de 1 de uma vez.
@@ -3822,14 +3806,14 @@ function progDesafio(id, quanto, tipo){
       c.feito = true;
       if (!c.pago){
         c.pago = true;
-        profile.xp += c.xp;
-        bal += c.dia; saveBal();
-        profile.dailyDone = (profile.dailyDone || 0) + 1;
+        S.profile.xp += c.xp;
+        S.bal += c.dia; saveBal();
+        S.profile.dailyDone = (S.profile.dailyDone || 0) + 1;
       }
       concluidos.push(c);
     }
   }
-  saveProfile(profile);
+  saveProfile(S.profile);
   return concluidos;
 }
 
@@ -3867,21 +3851,21 @@ function badgeList(){
     out.push({ico, nm, val, tier, prox, pct});
   };
 
-  push('🏆', 'Vitórias',        profile.winsCount,  [1, 10, 50, 200]);
-  push('🎯', 'Rodadas',         profile.betsCount,  [5, 25, 100, 500]);
-  push('💰', 'Total apostado',  profile.totalBet,   [1000, 10000, 50000, 250000]);
-  push('💵', 'Maior prêmio',    profile.biggestWin, [500, 2500, 10000, 50000]);
+  push('🏆', 'Vitórias',        S.profile.winsCount,  [1, 10, 50, 200]);
+  push('🎯', 'Rodadas',         S.profile.betsCount,  [5, 25, 100, 500]);
+  push('💰', 'Total apostado',  S.profile.totalBet,   [1000, 10000, 50000, 250000]);
+  push('💵', 'Maior prêmio',    S.profile.biggestWin, [500, 2500, 10000, 50000]);
 
-  const liq = profile.totalWon - profile.totalLost;
+  const liq = S.profile.totalWon - S.profile.totalLost;
   push('📈', 'Saldo positivo',  Math.max(0, liq),   [1, 2000, 20000, 100000]);
 
   // medalha do Pokémon predileto
-  const fav = topOf(profile.mons);
+  const fav = topOf(S.profile.mons);
   if (fav) push('⭐', 'Parceiro: ' + fav.k, fav.v, [5, 20, 60, 150]);
 
   // medalhas por tipo: só aparecem depois da primeira aposta naquele tipo
   for (const b of TYPE_BADGES){
-    const n = profile.types[b.t] || 0;
+    const n = S.profile.types[b.t] || 0;
     if (n > 0) push(b.ico, b.nm, n, [10, 50, 150, 400]);
   }
   return out;
@@ -3956,7 +3940,7 @@ function slugDoDex(dex){
 }
 
 function avatarURL(){
-  const a = profile.avatar || PROFILE_DEFAULT.avatar;
+  const a = S.profile.avatar || PROFILE_DEFAULT.avatar;
   return a.kind === 'mon' ? dexURL(a.id) : trainerURL(a.id);
 }
 
@@ -3964,15 +3948,15 @@ function avatarURL(){
    que você mais usou na frente — customizar com o seu predileto é o
    caminho mais provável. */
 function customMons(){
-  const favs = Object.keys(profile.mons);
+  const favs = Object.keys(S.profile.mons);
   return KANTO_DEX.slice().sort((a,b) => {
-    const na = profile.mons[displayName(a.n)] || 0, nb = profile.mons[displayName(b.n)] || 0;
+    const na = S.profile.mons[displayName(a.n)] || 0, nb = S.profile.mons[displayName(b.n)] || 0;
     return nb - na || a.dex - b.dex;
   });
 }
 
 function renderBanner(){
-  const b = profile.banner || PROFILE_DEFAULT.banner;
+  const b = S.profile.banner || PROFILE_DEFAULT.banner;
   $('#profBanner').innerHTML =
     `<div class="scene sc-${b.scene}"></div>
      ${dexImg(b.dex, slugDoDex(b.dex), 'class="mon"')}
@@ -3982,13 +3966,13 @@ function renderBanner(){
   av.onerror = () => {
     av.onerror = () => { av.onerror = null; av.src = trainerURL('red'); };
     av.src = `https://play.pokemonshowdown.com/sprites/gen5/${showdownSlug(slugDoDex(
-      (profile.avatar && profile.avatar.kind === 'mon') ? profile.avatar.id : 25))}.png`;
+      (S.profile.avatar && S.profile.avatar.kind === 'mon') ? S.profile.avatar.id : 25))}.png`;
   };
 }
 
 function renderCustom(){
-  const a = profile.avatar || PROFILE_DEFAULT.avatar;
-  const b = profile.banner || PROFILE_DEFAULT.banner;
+  const a = S.profile.avatar || PROFILE_DEFAULT.avatar;
+  const b = S.profile.banner || PROFILE_DEFAULT.banner;
   const mons = customMons();
 
   $('#pickTrainer').innerHTML = TRAINER_AVATARS.map(t => `
@@ -4030,19 +4014,19 @@ function renderDaily(){
     </div>`;
   }).join('') +
   `<div class="tiny" style="margin-top:8px">Desafios concluídos no total:
-     <b style="color:var(--gold)">${profile.dailyDone || 0}</b></div>`;
+     <b style="color:var(--gold)">${S.profile.dailyDone || 0}</b></div>`;
 }
 
 function renderProfile(){
-  const winRate = profile.betsCount ? Math.round(profile.winsCount/profile.betsCount*100) : 0;
-  const desde = new Date(profile.since).toLocaleDateString('pt-BR', {day:'2-digit',month:'short',year:'numeric'});
-  const saldoLiq = profile.totalWon - profile.totalLost;
+  const winRate = S.profile.betsCount ? Math.round(S.profile.winsCount/S.profile.betsCount*100) : 0;
+  const desde = new Date(S.profile.since).toLocaleDateString('pt-BR', {day:'2-digit',month:'short',year:'numeric'});
+  const saldoLiq = S.profile.totalWon - S.profile.totalLost;
 
-  $('#profName').value = profile.name;
-  $('#profNameShow').textContent = profile.name;
+  $('#profName').value = S.profile.name;
+  $('#profNameShow').textContent = S.profile.name;
   $('#profSince').textContent = 'Treinador desde ' + desde;
 
-  const np = progressoNivel(profile.xp || 0);
+  const np = progressoNivel(S.profile.xp || 0);
   $('#profLvl').innerHTML =
     `<span class="tag">NV ${np.nivel}</span><span class="ttl">${tituloDe(np.nivel)} · ${np.atual}/${np.fim-np.ini} XP</span>`;
   $('#profXpBar').innerHTML = `<i style="width:${np.pct.toFixed(1)}%"></i>`;
@@ -4050,7 +4034,7 @@ function renderProfile(){
   renderBanner();
 
   // destaques: Pokémon e tipo mais apostados
-  const favMon = topOf(profile.mons), favType = topOf(profile.types);
+  const favMon = topOf(S.profile.mons), favType = topOf(S.profile.types);
   const dexOf = nm => { const e = KANTO_DEX.find(p => displayName(p.n) === nm); return e ? e.dex : 25; };
   $('#profHighlights').innerHTML =
     (favMon
@@ -4064,13 +4048,13 @@ function renderProfile(){
       : `<div class="hi"><div class="t"><b>—</b><span>ainda sem tipo favorito</span></div></div>`);
 
   $('#profStats').innerHTML = `
-    <div class="stat-box"><b>${bal.toLocaleString('pt-BR')}</b><span>${CUR} saldo atual</span></div>
-    <div class="stat-box"><b>NV ${nivelDe(profile.xp||0)}</b><span>${tituloDe(nivelDe(profile.xp||0))}</span></div>
-    <div class="stat-box"><b>${profile.betsCount}</b><span>rodadas disputadas</span></div>
-    <div class="stat-box"><b>${profile.winsCount}</b><span>vitórias</span></div>
+    <div class="stat-box"><b>${S.bal.toLocaleString('pt-BR')}</b><span>${CUR} saldo atual</span></div>
+    <div class="stat-box"><b>NV ${nivelDe(S.profile.xp||0)}</b><span>${tituloDe(nivelDe(S.profile.xp||0))}</span></div>
+    <div class="stat-box"><b>${S.profile.betsCount}</b><span>rodadas disputadas</span></div>
+    <div class="stat-box"><b>${S.profile.winsCount}</b><span>vitórias</span></div>
     <div class="stat-box"><b>${winRate}%</b><span>taxa de acerto</span></div>
-    <div class="stat-box"><b>${profile.biggestWin.toLocaleString('pt-BR')}</b><span>maior prêmio</span></div>
-    <div class="stat-box"><b>${profile.totalBet.toLocaleString('pt-BR')}</b><span>total apostado</span></div>
+    <div class="stat-box"><b>${S.profile.biggestWin.toLocaleString('pt-BR')}</b><span>maior prêmio</span></div>
+    <div class="stat-box"><b>${S.profile.totalBet.toLocaleString('pt-BR')}</b><span>total apostado</span></div>
     <div class="stat-box" style="grid-column:1/-1;color:${saldoLiq>=0?'var(--green)':'var(--red)'}">
       <b style="color:inherit">${saldoLiq>=0?'+':''}${saldoLiq.toLocaleString('pt-BR')}</b>
       <span>saldo líquido de apostas</span></div>`;
@@ -4127,7 +4111,7 @@ function renderDeposit(){
 }
 
 function simulateDeposit(pkg){
-  bal += pkg.pc; saveBal();
+  S.bal += pkg.pc; saveBal();
   const list = loadDeposits();
   list.push({ date: Date.now(), brl: pkg.brl, pc: pkg.pc });
   saveDeposits(list);
@@ -4146,17 +4130,17 @@ function simulateDeposit(pkg){
 const HIST_MAX = 120;
 
 function registrarAposta(reg){
-  if (!profile.histBets) profile.histBets = [];
-  profile.histBets.push(reg);
-  if (profile.histBets.length > HIST_MAX) profile.histBets = profile.histBets.slice(-HIST_MAX);
-  saveProfile(profile);
+  if (!S.profile.histBets) S.profile.histBets = [];
+  S.profile.histBets.push(reg);
+  if (S.profile.histBets.length > HIST_MAX) S.profile.histBets = S.profile.histBets.slice(-HIST_MAX);
+  saveProfile(S.profile);
 }
 
 const dataHora = t => new Date(t).toLocaleString('pt-BR',
   {day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'});
 
 function renderHistApostas(ganhos){
-  const lista = (profile.histBets || []).filter(b => !!b.won === ganhos).reverse();
+  const lista = (S.profile.histBets || []).filter(b => !!b.won === ganhos).reverse();
   if (!lista.length)
     return `<div class="tiny" style="padding:10px 2px">Nenhuma ${ganhos ? 'vitória' : 'derrota'} registrada ainda.</div>`;
   const soma = lista.reduce((a,b) => a + (ganhos ? (b.payout - b.amount) : b.amount), 0);
@@ -4212,13 +4196,13 @@ document.addEventListener('click', e => {
 });
 
 function renderHero(){
-  const np = progressoNivel(profile.xp || 0);
+  const np = progressoNivel(S.profile.xp || 0);
   const el = $('#heroStats'); if (!el) return;
   el.innerHTML = sessaoAtiva()
     ? `<div><b>NV ${np.nivel}</b><span>${tituloDe(np.nivel)}</span></div>
-       <div><b>${profile.betsCount}</b><span>rodadas</span></div>
-       <div><b>${profile.winsCount}</b><span>vitórias</span></div>
-       <div><b>${bal.toLocaleString('pt-BR')}</b><span>${CUR} saldo</span></div>`
+       <div><b>${S.profile.betsCount}</b><span>rodadas</span></div>
+       <div><b>${S.profile.winsCount}</b><span>vitórias</span></div>
+       <div><b>${S.bal.toLocaleString('pt-BR')}</b><span>${CUR} saldo</span></div>`
     : `<div><b>76</b><span>lutadores</span></div>
        <div><b>12</b><span>por rodada</span></div>
        <div><b>20.000</b><span>simulações/odd</span></div>
@@ -4230,11 +4214,11 @@ const sessaoAtiva = () => localStorage.getItem('ar_session') === '1';
 function renderSession(){
   const box = $('#sessionBox');
   if (sessaoAtiva()){
-    const np = progressoNivel(profile.xp || 0);
+    const np = progressoNivel(S.profile.xp || 0);
     box.innerHTML =
       `<div class="who-chip" id="chipProfile" title="Abrir perfil">
          <img src="${avatarURL()}" alt="" onerror="this.onerror=null;this.src='${trainerURL('red')}'">
-         <div class="i"><b>${profile.name}</b><span>NV ${np.nivel}</span></div>
+         <div class="i"><b>${S.profile.name}</b><span>NV ${np.nivel}</span></div>
        </div>
        <button class="tbtn" id="btnDeposit2">💵</button>
        <button class="tbtn" id="btnLogout" title="Sair">⏻</button>`;
@@ -4262,7 +4246,7 @@ function abrirAuth(modo){
   $('#btnAuthSwap').textContent = modo === 'signup' ? 'Já tenho conta' : 'Criar uma conta';
   $('#authAgeRow').style.display = modo === 'signup' ? 'flex' : 'none';
   $('#authMsg').textContent = '';
-  $('#authName').value = modo === 'login' && existe ? profile.name : '';
+  $('#authName').value = modo === 'login' && existe ? S.profile.name : '';
   $('#authPin').value = '';
   openModal('#authModal');
 }
@@ -4277,13 +4261,13 @@ $('#btnAuthGo').onclick = () => {
 
   if (authMode === 'signup'){
     if (!$('#authAge').checked){ msg.textContent = 'É preciso confirmar a declaração acima.'; return; }
-    profile.name = nome;
-    profile.pin = pin || null;
-    if (!profile.since) profile.since = Date.now();
-    saveProfile(profile);
+    S.profile.name = nome;
+    S.profile.pin = pin || null;
+    if (!S.profile.since) S.profile.since = Date.now();
+    saveProfile(S.profile);
   } else {
-    if (profile.pin && profile.pin !== pin){ msg.textContent = 'PIN incorreto.'; return; }
-    if (nome.toLowerCase() !== (profile.name||'').toLowerCase()){
+    if (S.profile.pin && S.profile.pin !== pin){ msg.textContent = 'PIN incorreto.'; return; }
+    if (nome.toLowerCase() !== (S.profile.name||'').toLowerCase()){
       msg.textContent = 'Não existe treinador com esse nome neste navegador.'; return;
     }
   }
@@ -4322,7 +4306,7 @@ let killsArena = 0;      // mortes sem autor (tempestade)
 let kfOrdem = [];        // ordem de chegada, para desempate estável
 
 function resetKillfeed(){
-  kills = new Array(fighters.length).fill(0);
+  kills = new Array(S.fighters.length).fill(0);
   killsArena = 0;
   kfOrdem = [];
   renderKillfeed();
@@ -4342,7 +4326,7 @@ function marcarAbate(autor, vitima){
    depois pela posição na pool — assim a lista não fica "dançando" a
    cada render entre lutadores empatados. */
 function rankingAbates(){
-  return fighters.map((f, i) => ({f, i, k: kills[i] || 0}))
+  return S.fighters.map((f, i) => ({f, i, k: kills[i] || 0}))
     .sort((a, b) => b.k - a.k
       || (kfOrdem.indexOf(a.i) + 1 || 99) - (kfOrdem.indexOf(b.i) + 1 || 99)
       || a.i - b.i);
@@ -4350,13 +4334,13 @@ function rankingAbates(){
 
 function renderKillfeed(destacar){
   const lista = $('#kfList'); if (!lista) return;
-  if (!fighters.length){ lista.innerHTML = ''; return; }
+  if (!S.fighters.length){ lista.innerHTML = ''; return; }
   const rank = rankingAbates();
 
   lista.innerHTML = rank.map((r, pos) => {
     const vivo = ents[r.i] ? ents[r.i].alive : true;
     const medal = r.k > 0 && pos < 3 ? ' m' + (pos + 1) : '';
-    const meu = myBet && myBet.idx === r.i ? ' mine' : '';
+    const meu = S.myBet && S.myBet.idx === r.i ? ' mine' : '';
     return `<div class="kfrow${medal}${r.k ? '' : ' zero'}${vivo ? '' : ' dead'}${meu}" data-i="${r.i}">
       <span class="pos">${r.k > 0 && pos < 3 ? ['🥇','🥈','🥉'][pos] : (pos + 1) + 'º'}</span>
       <span class="face">${dexImg(r.f.dex, r.f.n)}</span>
@@ -4382,9 +4366,9 @@ function renderKillfeed(destacar){
 /* Conferência de fim de rodada: recalcula tudo do zero a partir dos
    eventos e compara com o placar acumulado ao vivo. */
 function conferirAbates(){
-  const ref = new Array(fighters.length).fill(0);
+  const ref = new Array(S.fighters.length).fill(0);
   let refArena = 0;
-  for (const ev of battle.events){
+  for (const ev of S.battle.events){
     if (ev.storm){ for (const h of ev.hits) if (h.ko) refArena++; continue; }
     if (ev.streak) continue;
     if (ev.ko) ref[ev.a]++;
@@ -4409,7 +4393,7 @@ function mostrarPodio(){
   const rank = rankingAbates().filter(r => r.k > 0).slice(0, 3);
   const box = $('#kfList');
   if (!box || !rank.length) return;
-  const oddDe = i => { const o = odds.find(x => x.idx === i); return o ? 'x' + o.odd.toFixed(2) : '—'; };
+  const oddDe = i => { const o = S.odds.find(x => x.idx === i); return o ? 'x' + o.odd.toFixed(2) : '—'; };
   box.insertAdjacentHTML('afterend', `
     <div class="kfpodium" id="kfPodium">
       <div class="t">Pódio de abates da rodada</div>
@@ -4417,7 +4401,7 @@ function mostrarPodio(){
         <div class="kfpod">
           <span class="md">${['🥇','🥈','🥉'][p]}</span>
           <span class="i"><b>${r.f.n}</b><span>${r.k} abate${r.k > 1 ? 's' : ''}${
-            r.i === champ ? ' · venceu a rodada' : ''}</span></span>
+            r.i === S.champ ? ' · venceu a rodada' : ''}</span></span>
           <span class="od">${oddDe(r.i)}</span>
         </div>`).join('')}
     </div>`);
@@ -4430,17 +4414,17 @@ function openModal(id){ $(id).classList.add('show'); }
 function closeModal(id){ $(id).classList.remove('show'); }
 
 /* ------------------------- CONTROLES ------------------------- */
-function saveBal(){ localStorage.setItem('ar_bal', bal); atualizarSaldo(); }
+function saveBal(){ localStorage.setItem('ar_bal', S.bal); atualizarSaldo(); }
 
 /* Um só lugar redesenha o saldo — carteira, cabeçalho e o equivalente em
    reais. Antes só o número da esquerda era atualizado, e agora que o
    valor aparece em quatro lugares isso viraria dessincronia garantida. */
 function atualizarSaldo(){
-  const fmt = bal.toLocaleString('pt-BR');
+  const fmt = S.bal.toLocaleString('pt-BR');
   const el = $('#bal'); if (el) el.textContent = fmt;
-  const br = $('#balBrl'); if (br) br.textContent = emReais(bal);
+  const br = $('#balBrl'); if (br) br.textContent = emReais(S.bal);
   const wb = $('#wBal'); if (wb) wb.textContent = fmt;
-  const wr = $('#wBalBrl'); if (wr) wr.textContent = emReais(bal);
+  const wr = $('#wBalBrl'); if (wr) wr.textContent = emReais(S.bal);
   atualizarFichas();
 }
 
@@ -4461,15 +4445,15 @@ const CHIP_VALUES = [50, 100, 300, 500, 1000];
 function atualizarFichas(){
   const row = $('#chipRow'); if (!row) return;
   row.innerHTML = CHIP_VALUES.map(v => `
-      <button class="chip ${chipVal === v ? 'on' : ''} ${v > bal ? 'off' : ''}" data-v="${v}">
+      <button class="chip ${S.chipVal === v ? 'on' : ''} ${v > S.bal ? 'off' : ''}" data-v="${v}">
         <b>${v.toLocaleString('pt-BR')}</b><span>${emReais(v)}</span>
       </button>`).join('') +
-    `<button class="chip ${chipVal === 'max' ? 'on' : ''} ${bal < APOSTA_MIN ? 'off' : ''}" data-v="max">
-        <b>Tudo</b><span>${emReais(bal)}</span></button>`;
+    `<button class="chip ${S.chipVal === 'max' ? 'on' : ''} ${S.bal < APOSTA_MIN ? 'off' : ''}" data-v="max">
+        <b>Tudo</b><span>${emReais(S.bal)}</span></button>`;
 
   row.querySelectorAll('.chip').forEach(b => b.onclick = () => {
     if (b.classList.contains('off')) return;
-    chipVal = b.dataset.v === 'max' ? 'max' : +b.dataset.v;
+    S.chipVal = b.dataset.v === 'max' ? 'max' : +b.dataset.v;
     const inp = $('#betCustom'); if (inp) inp.value = '';
     atualizarFichas();
   });
@@ -4477,7 +4461,7 @@ function atualizarFichas(){
   const dica = $('#chipHint');
   if (dica){
     const v = valorAposta();
-    dica.innerHTML = bal < APOSTA_MIN
+    dica.innerHTML = S.bal < APOSTA_MIN
       ? `Saldo abaixo da aposta mínima de ${CUR} ${APOSTA_MIN}. Complete um desafio diário ou compre ${MOEDA}.`
       : `Apostando <b>${CUR} ${v.toLocaleString('pt-BR')}</b> (${emReais(v)}) por rodada.`;
   }
@@ -4485,8 +4469,8 @@ function atualizarFichas(){
 
 /* valor efetivo da aposta, já limitado ao saldo */
 function valorAposta(){
-  const v = chipVal === 'max' ? bal : chipVal;
-  return Math.max(0, Math.min(v, bal));
+  const v = S.chipVal === 'max' ? S.bal : S.chipVal;
+  return Math.max(0, Math.min(v, S.bal));
 }
 
 function usarValorPersonalizado(){
@@ -4497,11 +4481,11 @@ function usarValorPersonalizado(){
     dica.innerHTML = `<span style="color:var(--red)">A aposta mínima é ${CUR} ${APOSTA_MIN} (${emReais(APOSTA_MIN)}).</span>`;
     return;
   }
-  if (v > bal){
-    dica.innerHTML = `<span style="color:var(--red)">Saldo insuficiente: você tem ${CUR} ${bal.toLocaleString('pt-BR')}.</span>`;
+  if (v > S.bal){
+    dica.innerHTML = `<span style="color:var(--red)">Saldo insuficiente: você tem ${CUR} ${S.bal.toLocaleString('pt-BR')}.</span>`;
     return;
   }
-  chipVal = v;
+  S.chipVal = v;
   atualizarFichas();
 }
 
@@ -4515,7 +4499,7 @@ function abrirCarteira(){
   $('#histDep').innerHTML    = renderHistDep();
 
   // resumo do topo: quanto entrou, quanto saiu, saldo do período
-  const h = profile.histBets || [];
+  const h = S.profile.histBets || [];
   const ganho  = h.filter(b => b.won).reduce((a,b) => a + (b.payout - b.amount), 0);
   const perda  = h.filter(b => !b.won).reduce((a,b) => a + b.amount, 0);
   const dep    = loadDeposits().reduce((a,d) => a + (d.pc || d.diamonds || 0), 0);
@@ -4537,25 +4521,25 @@ document.querySelectorAll('#walletModal .tab').forEach(b => b.onclick = () => {
 });
 
 $('#btnStart').onclick = () => {
-  if (state === 'betting') startFight();
-  else if (state === 'result' || state === 'idle') newRound();
+  if (S.state === 'betting') startFight();
+  else if (S.state === 'result' || S.state === 'idle') newRound();
 };
-$('#btnAuto').onclick = e => { auto = !auto; e.target.textContent = 'Auto: ' + (auto ? 'ON' : 'OFF'); e.target.classList.toggle('on', auto); };
+$('#btnAuto').onclick = e => { S.auto = !S.auto; e.target.textContent = 'Auto: ' + (S.auto ? 'ON' : 'OFF'); e.target.classList.toggle('on', S.auto); };
 $('#btnSound').onclick = e => {
   soundEnabled = !soundEnabled;
   e.target.textContent = soundEnabled ? '🔊' : '🔇';
   if (soundEnabled){
     audio().resume();
-    if (state === 'countdown' || state === 'fighting') music(true);
+    if (S.state === 'countdown' || S.state === 'fighting') music(true);
   } else music(false);
 };
 $('#vol').oninput = e => {
-  musicVol = +e.target.value;
-  if (musicOn){ clearInterval(fadeTimer); fadeTimer = null; bgm.volume = musicVol; }
+  S.musicVol = +e.target.value;
+  if (musicOn){ clearInterval(fadeTimer); fadeTimer = null; bgm.volume = S.musicVol; }
 };
-$('#spd').oninput = e => { speed = +e.target.value; $('#spdVal').textContent = speed.toFixed(1) + 'x'; };
+$('#spd').oninput = e => { S.speed = +e.target.value; $('#spdVal').textContent = S.speed.toFixed(1) + 'x'; };
 
-$('#btnTopUp').onclick = () => { bal += 1000; saveBal(); $('#betInfo').textContent = `+${CUR} 1.000 de teste.`; };
+$('#btnTopUp').onclick = () => { S.bal += 1000; saveBal(); $('#betInfo').textContent = `+${CUR} 1.000 de teste.`; };
 
 /* --------- perfil e depósito --------- */
 /* os botões de perfil/depósito agora nascem dentro de renderSession(),
@@ -4564,7 +4548,7 @@ $('#profileModal').addEventListener('click', e => { if (e.target.id === 'profile
 $('#depositModal').addEventListener('click', e => { if (e.target.id === 'depositModal') closeModal('#depositModal'); });
 $('#btnProfSave').onclick = () => {
   const v = $('#profName').value.trim().slice(0,18) || 'Treinador';
-  profile.name = v; saveProfile(profile); renderProfile(); renderSession();
+  S.profile.name = v; saveProfile(S.profile); renderProfile(); renderSession();
 };
 
 /* --------- abas do perfil --------- */
@@ -4582,11 +4566,11 @@ document.querySelectorAll('#profileModal .tab').forEach(b => b.onclick = () => {
 $('#profileModal').addEventListener('click', ev => {
   const opt = ev.target.closest('.opt');
   if (!opt) return;
-  if (opt.dataset.av)          profile.avatar = {kind:opt.dataset.av, id: opt.dataset.av==='mon' ? +opt.dataset.id : opt.dataset.id};
-  else if (opt.dataset.scene)  profile.banner = {...profile.banner, scene: opt.dataset.scene};
-  else if (opt.dataset.bmon)   profile.banner = {...profile.banner, dex: +opt.dataset.bmon};
+  if (opt.dataset.av)          S.profile.avatar = {kind:opt.dataset.av, id: opt.dataset.av==='mon' ? +opt.dataset.id : opt.dataset.id};
+  else if (opt.dataset.scene)  S.profile.banner = {...S.profile.banner, scene: opt.dataset.scene};
+  else if (opt.dataset.bmon)   S.profile.banner = {...S.profile.banner, dex: +opt.dataset.bmon};
   else return;
-  saveProfile(profile);
+  saveProfile(S.profile);
   renderBanner(); renderSession();
   // marca a opção escolhida sem redesenhar a grade inteira (não perde o scroll)
   const grid = opt.parentElement;
@@ -4597,8 +4581,8 @@ $('#profileModal').addEventListener('click', ev => {
 $('#btnProfReset').onclick = () => {
   if (!confirm('Resetar todo o perfil e o saldo?')) return;
   localStorage.removeItem('ar_profile'); localStorage.removeItem('ar_deposits');
-  localStorage.setItem('ar_bal','1000'); bal=1000; saveBal();
-  profile = loadProfile(); localStorage.removeItem('ar_session');
+  localStorage.setItem('ar_bal','1000'); S.bal=1000; saveBal();
+  S.profile = loadProfile(); localStorage.removeItem('ar_session');
   renderProfile(); renderSession(); goView('viewHome');
 };
 $('#pkgList').addEventListener('click', e => {
@@ -4607,6 +4591,12 @@ $('#pkgList').addEventListener('click', e => {
 });
 
 /* ------------------------- BOOT ------------------------- */
+/* Estado que depende de função declarada acima. estado.mjs guarda só valores
+   inertes, de propósito: assim ele não impõe ordem de carga a ninguém. */
+S.bal     = +(localStorage.getItem('ar_bal') || 1000);
+S.profile = loadProfile();
+S.moveRng = rng(1);
+
 (async function boot(){
   saveBal();
   $('#btnAuto').classList.add('on');

@@ -2,7 +2,7 @@
 
 **Documento:** BUILD-BLOCKS-001 · Revisão 1.2 (mercados mútuos, criação e jornada)
 **Base:** Master Spec v1.5 · Design Depth v1.1 · Economy Study v1.2 · Unit Economics v1.2
-**Escopo:** decomposição de v0.9 → V5 em **61 blocos** cíclicos executáveis
+**Escopo:** decomposição de v0.9 → V5 em **64 blocos** cíclicos executáveis
 **Status:** plano de execução. Trata de *em que ordem*, *em que pedaços* e *com que prova de qualidade*.
 **Alterações da v1.2:** Fases 2 a 5 reestruturadas pelas decisões aceitas do Design Depth §8 e pelo capítulo 11. Ver seção 15.
 
@@ -178,13 +178,13 @@ entre fases      -> gate com dados de produção (seção 12)
 
 | Fase | Versão | Blocos | Método dominante | O que passa a existir |
 |---|---|---:|---|---|
-| **0** | v0.9 Foundation | 10 | INV | motor confiável, modular, testável, pronto para servidor |
+| **0** | v0.9 Foundation | 13 | INV | motor confiável, modular, testável, pronto para servidor |
 | **1** | V1 Arena Online | 12 | GL+INV | produto multiplayer, carteira, proteção, telemetria |
 | **2** | V2 Mercados Mútuos e Previsão | 8 | INV | **teto de habilidade**: preço formado por jogadores e maestria mensurável |
 | **3** | V3 Coleção, Criação e Informação | 13 | INV | criar, evoluir, escolher golpes, e o dossiê que paga na aposta |
 | **4** | V4 Time e Jornada | 9 | INV | ginásios com probabilidade exibida — onde se aprende a ler o motor |
 | **5** | V5 Liga | 9 | INV | competição assíncrona, temporadas, economia competitiva |
-| | | **61** | | |
+| | | **64** | | |
 
 ### O que mudou em relação à v1.1
 
@@ -244,19 +244,65 @@ Objetivo: tornar o protótipo confiável sem mudar o que o jogador vê, exceto o
 
 ### F0.3 — Separação de interface, economia e perfil
 
-**Tam.** G · **Método** INV · **Portões** Q1 Q2 Q4 Q5 · **Depende de** F0.2
+**Dividido em quatro.** O bloco previa 3.462 linhas de script num único ciclo e já se declarava "único candidato natural a divisão". Ao medir, apareceu o motivo concreto: **19 variáveis mutáveis são escritas de mais de uma parte do script**, e em módulos ES não se atribui a um binding importado. Nenhuma separação funciona antes de resolver isso.
 
-**Escopo:** quebrar o restante em módulos com fronteira explícita — render/animação, carteira e economia, perfil e progressão, killfeed, áudio. Sem servidor, sem mudança de comportamento.
+A divisão é por módulo, como o próprio bloco mandava — nunca por camada horizontal.
 
-**Sabotagem:** quebrar um import; inverter a direção de uma dependência (engine importando ui); remover um módulo do grafo e ver se o smoke test cai.
+---
 
-**Q5:** primeira linha de base visual — capturas da arena, resultado, carteira e perfil, nos dois temas, em três larguras. É a referência que todos os blocos seguintes comparam.
+### F0.3a — Estado compartilhado explícito ✅
+
+**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q3 Q4 · **Depende de** F0.2
+
+**Escopo:** `app/modules/estado.mjs` reúne num objeto `S` as 19 mutáveis que cruzam fronteira. Todas as referências passam a `S.<campo>`. O app continua num arquivo só; muda a fronteira, não o formato.
+
+**Sabotagem:** campo volta a ser variável de topo; `estado.mjs` deixa de ser inerte; campo some da superfície; superfície cresce sem justificativa.
 
 **Q6:** sem superfície nova.
 
-**Saída:** nenhum módulo acima de ~600 linhas; dependências numa direção só.
+**Saída:** suíte verde, app roda, e a lista de estado compartilhado cabe numa tela. **A lista é o entregável** — se crescer sem justificativa, a fronteira está no lugar errado.
 
-> Maior bloco da fase e único candidato natural a divisão. Se dividir, dividir por módulo, nunca por camada horizontal.
+> A transformação foi feita com parser com escopo, não com regex: `computeOdds(fighters, …)` tem parâmetro com o mesmo nome de uma global, e regex renomearia o parâmetro junto. 333 referências reescritas.
+
+---
+
+### F0.3b — Módulos de apresentação
+
+**Tam.** G · **Método** INV · **Portões** Q1 Q2 Q4 Q5 · **Depende de** F0.3a
+
+**Escopo:** `sprites`, `render`, `efeitos-golpe`, `clima-visual`. É a fatia mais isolável: quase não escreve estado, só lê e desenha.
+
+**Sabotagem:** quebrar um import; inverter direção de dependência (motor importando apresentação); remover um módulo do grafo.
+
+**Saída:** nenhum módulo acima de ~600 linhas; o app roda.
+
+---
+
+### F0.3c — Módulos de rodada
+
+**Tam.** G · **Método** INV · **Portões** Q1 Q2 Q4 Q5 · **Depende de** F0.3b
+
+**Escopo:** `rodada`, `coreografia`, `eventos`, `fases`, `loop`, `odds-ui`. É onde mora quase todo o `S`, então é o de maior risco — e por isso vem depois de a fronteira já estar provada.
+
+**Também resolve:** L-005 (a animação de entrada usa `setTimeout` em tempo real enquanto a batalha corre em `battleT` escalado).
+
+**Saída:** o grafo de dependências da rodada aponta numa direção só.
+
+---
+
+### F0.3d — Treinador, economia e linha de base visual
+
+**Tam.** G · **Método** GL+INV · **Portões** Q1 Q2 Q5 Q6 · **Depende de** F0.3c
+
+**Escopo:** `audio`, `perfil`, `desafios`, `customizacao`, `carteira`, `navegacao`, `killfeed`, `controles`, `boot`. Fecha a separação.
+
+**Também resolve:** L-015 (trocar os quatro `onclick` embutidos por `addEventListener` e remover `window.closeModal`) e L-016 (teste com pool sintética de tipos mutuamente imunes, que force a batalha a alcançar `MAX_TIME`).
+
+**Q5:** primeira linha de base visual — capturas da arena, resultado, carteira e perfil, nos dois temas, em três larguras. É a referência que todos os blocos seguintes comparam. `tools/verificar-visual.mjs` é o ponto de partida.
+
+**Q7 (GL):** barra a definir para a tela de resultado.
+
+**Saída:** nenhum módulo acima de ~600 linhas; dependências numa direção só; linha de base visual versionada.
 
 ---
 

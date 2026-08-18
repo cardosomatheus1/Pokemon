@@ -112,7 +112,7 @@ necessárias. É trade-off de produto, não de engenharia.
 
 ### L-005 — animação de entrada não acompanha o controle de velocidade
 
-**Dono:** F0.3 · **Notado em:** leitura do protótipo
+**Dono:** F0.3c · **Notado em:** leitura do protótipo
 
 `releaseAll()` agenda a abertura das pokébolas com `setTimeout` em tempo real,
 enquanto a batalha corre em `battleT`, que é multiplicado por `speed`. Com o
@@ -168,7 +168,7 @@ Em F0.4, `spriteURL` sai do motor e vira responsabilidade do ContentPack.
 
 ### L-015 — quatro handlers `onclick` embutidos no HTML
 
-**Dono:** F0.3 · **Notada em:** F0.2
+**Dono:** F0.3d · **Notada em:** F0.2
 
 Os botões de fechar modal usam `onclick="closeModal(...)"` no HTML. Escopo de
 módulo não é global, então o F0.2 precisou de `window.closeModal = closeModal`
@@ -179,7 +179,7 @@ e remover a exposição no `window`.
 
 ### L-016 — o corte duro de tempo nunca é exercitado
 
-**Dono:** F0.3 · **Notada em:** F0.2
+**Dono:** F0.3d · **Notada em:** F0.2
 
 `CONF.MAX_TIME` é 56 s, mas **nenhuma** das 10.000 rodadas do lote estatístico passa
 de 50 s — a tempestade encerra tudo antes. O corte duro é um seguro que nunca
