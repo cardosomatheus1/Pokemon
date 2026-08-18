@@ -1,11 +1,11 @@
 # PokéArena — Master Product & Technical Specification
 
-**Documento:** SPEC-MASTER-001 · Revisão 1.4 (proteção do jogador, exposição e precisão de odds)  
+**Documento:** SPEC-MASTER-001 · Revisão 1.5 (profundidade, maestria e mundo do treinador)  
 **Base analisada:** v0.8  
 **Escopo desta especificação:** Fundação v0.9 + Produto V1 a V5  
 **Tema assumido nesta fase:** Pokémon / Kanto  
 **Status:** especificação integrada de produto, tecnologia, economia virtual, proteção do jogador e viabilidade empresarial  
-**Alterações da v1.4:** ver seção 28.  
+**Alterações da v1.5:** ver seção 30. A v1.4 continua descrita na seção 29.  
 
 ---
 
@@ -347,14 +347,33 @@ Nenhuma versão pode oferecer aposta sem oferecer, na mesma versão, limite conf
 
 # 3. Mapa de versões
 
-| Fase | Nome | Objetivo principal |
+| Fase | Nome | Capítulo | Objetivo principal |
+|---|---|---|---|
+| v0.9 | Foundation | §4 | Tornar o protótipo confiável, modular, testável e server-ready |
+| V1 | Arena Online | §5 | Transformar a Arena atual em produto multiplayer sincronizado |
+| **V2** | **Mercados Mútuos e Previsão** | §6 | **Criar teto de habilidade** — preço formado por jogadores e maestria mensurável |
+| **V3** | **Coleção, Criação e Informação** | §7 | Criar, evoluir, escolher golpes, e o dossiê que faz a coleção pagar na aposta |
+| **V4** | **Time e Jornada** | §8 | Onde se aprende a ler o motor: ginásios com probabilidade exibida |
+| V5 | Liga | §9 | Competição assíncrona, temporadas e endgame |
+
+### O que mudou na v1.5, e por quê
+
+A v1.4 e anteriores organizavam o metagame como quatro modos genéricos — coleção, idle, autobattler, PvP assíncrono. A revisão encontrou dois problemas encadeados:
+
+1. **A Arena não tem teto de habilidade** (§6.2). Com odd derivada de `1/p`, o valor esperado é idêntico para toda aposta. Não há o que dominar.
+2. **O metagame estava desconectado.** O P4 impede que o Pokémon possuído altere a Arena — corretamente — mas nada preenchia o vazio, então eram dois jogos no mesmo aplicativo.
+
+As mudanças de estrutura:
+
+| Antes | Agora | Razão |
 |---|---|---|
-| v0.9 | Foundation | Tornar o protótipo confiável, modular, testável e server-ready |
-| V1 | Arena Online | Transformar a Arena atual em produto multiplayer sincronizado |
-| V2 | Collection | Criar captura, coleção e motivos para perseguir espécies |
-| V3 | Trainer Idle | Criar progressão passiva, recursos e retorno diário |
-| V4 | Team & Journey | Criar estratégia com Pokémon próprios e PvE |
-| V5 | League | Criar competição assíncrona, temporadas e endgame |
+| V2 Collection | **V2 Mercados Mútuos e Previsão** | sem teto de habilidade, nada do resto se sustenta |
+| V3 Trainer Idle | **dissolvido** dentro do §7 | modo mais fraco e mais caro; expedições viram fonte de encontro, doce e pesquisa |
+| V2 Collection → | **V3 Coleção, Criação e Informação** | ganha evolução, moveset escolhido e dossiê |
+| V4 segundo jogo de batalha | **V4 onde se aprende a ler o motor** | ginásios exibem a probabilidade do time |
+| Liga de Previsão na V5 | **antecipada para a V2** | barata, sem risco regulatório, ataca retenção cedo |
+
+O detalhamento da análise está em `POKEARENA_DESIGN_DEPTH_v1.1.md`; a decomposição em blocos executáveis, em `POKEARENA_BUILD_BLOCKS_v1.2.md`.
 
 ---
 
@@ -841,7 +860,7 @@ Isso impede usar odds da Arena como conversor automático de bônus gratuito em 
 
 ## 5.6 Aposta
 
-V1 possui somente um mercado:
+**A V1 possui somente um mercado.** Os mercados de apuração mútua entram na V2 (§6) e não devem ser antecipados: a V1 precisa provar o ciclo econômico simples antes de acrescentar um segundo tipo de precificação.
 
 **Winner Market — qual Pokémon será o último sobrevivente?**
 
@@ -1117,653 +1136,478 @@ claimed_at
 Não avançar por empolgação. Procurar evidência de que jogadores jogam múltiplos rounds e retornam em outro dia.
 
 ---
+# 6. Fase 2 — Mercados Mútuos e Previsão
 
-# 6. V2 — Collection & Capture
+> **Este capítulo substituiu o antigo "V2 — Collection & Capture".** Coleção passou para o capítulo 7. A troca de ordem é deliberada e está justificada em §6.2.
 
 ## 6.1 Objetivo
 
-Transformar os Pokémon da Arena em objetos de desejo persistentes.
+Dar teto de habilidade ao produto. Até aqui, nenhuma quantidade de conhecimento melhora o resultado esperado de um jogador na Arena. Esta fase cria o lugar onde ler melhor paga, e a métrica que torna "ler melhor" observável.
 
-O jogador deve começar a pensar:
+## 6.2 O achado que motiva esta fase
 
-> “Quero que esse Pokémon apareça porque quero adicioná-lo à minha coleção.”
-
-A Collection não altera a Arena.
-
-## 6.2 Conteúdo inicial
-
-V2 trabalha inicialmente com os **76 Pokémon já elegíveis à Arena**.
-
-Razão: reduz conteúdo e permite reaproveitar assets auditados.
-
-A expansão para pré-evoluções e famílias completas pode entrar na V3/V4.
-
-## 6.3 Pokédex
-
-Cada espécie possui estados:
+As odds saem de `1/p × (1 - margem)` com `p` vindo do mesmo motor que roda a luta. Logo:
 
 ```text
-UNKNOWN
-SEEN
-ENCOUNTERED
-CAPTURED
-MASTERED
+EV = p × odd = p × (1/p) × (1 - margem) = 1 - margem
 ```
 
-### UNKNOWN
+O `p` cancela. **Toda aposta tem o mesmo valor esperado**, independentemente de quem aposta, quanto sabe, ou em quem aposta.
 
-Silhueta.
+Medido numa pool fixa, com odds de 150.000 simulações e o EV medido em amostra independente de outras 150.000: a melhor aposta rende 93,3% e a pior 89,2%, e essa amplitude de 4,6% é inteiramente explicada por erro amostral — para `p ≈ 0,02` o erro relativo esperado com 150.000 simulações é 1,8%.
 
-### SEEN
+Consequência que precisa estar escrita: **os defeitos que a v1.4 mandou corrigir eram as duas únicas fontes acidentais de vantagem.** O clima fora da precificação dava +2,90% a quem apostasse em Fogo, Água, Voador ou Gelo; o Monte Carlo subdimensionado sobrepagava a odd do azarão em até 19,22%. Fechar F0.6 e F0.7 é certo e continua sendo obrigatório — e deixa a Arena uma máquina de −8% perfeitamente justa e sem nada a dominar.
 
-Apareceu em um round observado pelo usuário.
+Isso torna esta fase estrutural, não incremental. Sem ela não existe curva de maestria, e sem curva de maestria o metagame dos capítulos 7 a 9 não tem onde se apoiar.
 
-### ENCOUNTERED
-
-Jogador ganhou direito a tentar capturar.
-
-### CAPTURED
-
-Possui pelo menos uma cópia.
-
-### MASTERED
-
-Meta de domínio, por exemplo:
-
-- capturado;
-- X rounds observado;
-- X vitórias em Trainer World futuramente;
-- nível/meta específica.
-
-## 6.4 Como nasce uma captura
-
-Ao terminar cada batalha, o servidor calcula `captureOpportunity`.
-
-V2 recomendada:
-
-- no máximo 1 oportunidade principal por round por jogador;
-- apenas Pokémon que participaram daquele round;
-- chance de gerar oportunidade influenciada por ações, mas sem exigir vitória na aposta.
-
-Exemplos de modificadores:
+## 6.3 Dois tipos de mercado, com papéis distintos
 
 ```text
-assistiu até o final           + peso
-apostou naquele Pokémon        + peso
-Pokémon foi campeão            + peso
-Pokémon fez top 3 kills        + peso
-primeira vez que viu espécie   + peso
+Mercado principal   quem vence      odd fixa, preço da casa, margem declarada
+                                    porta de entrada, transparente, sem perícia
+Mercados mútuos     abates, pódio,  preço formado pelos apostadores
+                    duração         casa retira taxa e NÃO toma posição
 ```
 
-Esses modificadores aumentam a chance de **encontro**, não alteram a luta.
+O mercado principal permanece exatamente como está. Ele é honesto, é auditável, e é o que um jogador novo entende sem explicação. A perícia mora ao lado dele, não no lugar dele.
 
-## 6.5 Fluxo de captura
+## 6.4 Apuração mútua — mecânica
 
 ```text
-Resultado da Arena
-  ↓
-“Um Gengar apareceu!”
-  ↓
-Escolher Ball
-  ↓
-Animação curta
-  ↓
-Sucesso / Escape
-  ↓
-Pokédex atualizada
+potBruto  = soma das entradas do mercado na rodada
+taxa      = potBruto × taxa_mercado
+potLiquido = potBruto - taxa
+pagamento_i = potLiquido × (entrada_i / soma das entradas acertadoras)
 ```
 
-## 6.6 Poké Balls
+Regras obrigatórias:
 
-Tipos V2:
+- a casa nunca paga do próprio caixa — **passivo estrutural igual a zero**;
+- nenhuma entrada é aceita após o lock do servidor;
+- liquidação atômica e idempotente, mesma disciplina do §5.6;
+- o **resíduo de divisão** tem destino declarado e registrado no ledger; nunca desaparece nem é absorvido em silêncio;
+- se nenhum apostador acertar, o `potLiquido` tem destino declarado — devolução proporcional ou transferência para tesouraria, escolhido por parâmetro e exibido antes.
 
-| Item | Função |
-|---|---|
-| Poké Ball | chance base |
-| Great Ball | multiplicador moderado |
-| Ultra Ball | multiplicador alto |
-| Master Ball | captura garantida; extremamente rara e não vendida aleatoriamente no lançamento |
+## 6.5 Mercados iniciais
 
-A fórmula precisa ficar no servidor e ser versionada.
+| Mercado | Fonte do dado | Observação |
+|---|---|---|
+| **Mais abates** | KillFeed, existente desde a v0.8 | primeiro a implementar; o dado já existe e já é auditado |
+| Pódio (top 3 em ordem) | ordem de eliminação | maior variância, maior retorno; exige regra de empate |
+| Faixa de duração | duração da batalha | fácil de entender, baixa variância; bom para liquidez |
 
-Exemplo conceitual:
+Abrir um por vez. Um mercado sem liquidez não forma preço, e vários mercados rasos são piores que um mercado líquido.
+
+## 6.6 O preço do modelo, e quando publicar
+
+O servidor **pode** precificar os mercados mútuos com o mesmo Monte Carlo, e deve calculá-lo — mas publica somente **após a liquidação**, ao lado do preço que o bolo formou.
+
+> **Invariante que sustenta a fase inteira:** publicar a probabilidade do modelo **antes** do fechamento faz o bolo convergir para ela, e a habilidade desaparece. Este é o modo de falha que anula o capítulo.
+
+O que se publica **antes** é a composição do bolo — quanto está apostado em cada opção. Isso é informação de mercado, não de modelo.
+
+O preço do modelo é calculado e gravado **antes de o resultado ser conhecido**, com carimbo de tempo, para que a publicação posterior seja verificável e não uma racionalização.
+
+Isso aumenta a transparência em vez de reduzi-la: o jogador vê onde o mercado errou, e aprende.
+
+## 6.7 Calibração
+
+O jogador registra previsões em probabilidade e recebe pontuação por regra de scoring **própria** — aquela em que declarar a probabilidade que se acredita maximiza a nota esperada.
+
+Requisitos:
+
+- funciona **sem apostar dinheiro**. É o que dá progressão a quem está sob limite ou em cool-off do capítulo 28;
+- previsões precisam somar 1 e ser registradas antes do lock;
+- amostra mínima declarada antes de o jogador entrar em qualquer ranking;
+- mudança de método de pontuação **não** recalcula histórico; cria período novo.
+
+**Invariante testável:** um apostador que declara suas crenças honestamente supera, em 10.000 rodadas simuladas, um apostador que exagera para os extremos. Se não superar, a regra de pontuação não é própria e está errada.
+
+## 6.8 Liga de Previsão
+
+Ranking por calibração, com temporada. **Sem stake, sem risco econômico.**
+
+Por não movimentar valor, ela **não depende do checkpoint do §25.1** — é a via competitiva de menor risco regulatório do projeto inteiro, e por isso foi antecipada da Fase 5 para cá.
+
+- volume de previsões não substitui qualidade no ranking;
+- contas ligadas não somam;
+- previsão liquidada não reabre.
+
+## 6.9 Perfil de leitura
+
+A tela onde o jogador vê **onde discordou do modelo e quem estava certo**. É o principal gancho de retorno da fase.
+
+Regra de honestidade, herdada do §28.5: acerto e erro aparecem com o mesmo destaque, e o tamanho da amostra fica visível. Mostrar só os acertos transforma a ferramenta de aprendizado em máquina de autoengano.
+
+## 6.10 Modelo de dados
+
+### markets
 
 ```text
-captureChance = speciesBaseRate × ballMultiplier × contextModifier
+id · round_id · kind · status · opens_at · locks_at · settled_at
+fee_rate · pot_gross · pot_net · residue_destination
+model_price_json · model_priced_at · published_at
 ```
 
-Clamp mínimo/máximo explícito.
-
-## 6.7 Raridade
-
-Raridade não precisa inventar novos stats. Serve para economia e frequência.
-
-Sugestão:
+### market_entries
 
 ```text
-Common
-Uncommon
-Rare
-Epic
+id · market_id · user_id · selection · amount
+stake_breakdown · created_at · payout · settled_at
 ```
 
-A raridade pode derivar de:
-
-- força/posição no roster;
-- frequência de aparição;
-- valor de coleção.
-
-Evitar “Legendary” antes de existir conteúdo lendário próprio.
-
-## 6.8 Duplicatas
-
-Capturar duplicata gera:
-
-- `Species Candy`;
-- progresso de domínio;
-- opcionalmente estrela visual/coleção.
-
-Não permitir troca entre usuários na V2.
-
-## 6.9 Recursos V2
-
-Introduzir separação:
-
-### PokéCash
-
-Arena e recompensas de Arena.
-
-### Trainer Coins
-
-Progressão do metagame.
-
-### Species Candy
-
-Recurso ligado a uma espécie/família.
-
-Não criar mais moedas sem necessidade.
-
-## 6.10 Fontes de Poké Balls
-
-- desafio diário;
-- level-up;
-- streak;
-- achievement;
-- eventos;
-- recompensa de coleção;
-- Trainer Coins em loja interna limitada.
-
-Em protótipo, não vender tentativa aleatória diretamente por dinheiro real.
-
-## 6.11 Tela “Minha Coleção”
-
-Filtros:
-
-- todos;
-- capturados;
-- faltantes;
-- tipo;
-- raridade;
-- favoritos.
-
-Card:
-
-- sprite;
-- nome;
-- tipo;
-- status Pokédex;
-- quantidade capturada;
-- candy;
-- domínio.
-
-Detalhe:
-
-- bio curta;
-- estatísticas da espécie na Arena;
-- número de vezes vista;
-- aparições;
-- win rate histórico global;
-- média de kills;
-- melhor odd já ofertada observada pelo jogador;
-- histórico pessoal relacionado.
-
-O “histórico do lutador” previsto no roadmap v0.8 entra aqui de forma natural.
-
-## 6.12 Missões de coleção
-
-Exemplos:
-
-- capture 3 tipos Água;
-- complete 10 espécies;
-- capture 1 Rare;
-- veja todos os Fire da Arena;
-- capture 5 espécies diferentes na semana.
-
-## 6.13 Badges
-
-Badges permanentes:
-
-- Fire Collector;
-- Water Collector;
-- Kanto 25%;
-- Kanto 50%;
-- Kanto 75%;
-- Kanto Complete.
-
-## 6.14 Banco de dados V2
-
-### species
+### predictions
 
 ```text
-id
-content_pack
-name
-dex
-type_1
-type_2
-rarity
-capture_rate
-active
+id · round_id · user_id · market_kind · distribution_json
+created_at · score · scored_at · scoring_version
 ```
 
-### user_species
+### calibration_ratings
 
 ```text
-id
-user_id
-species_id
-first_seen_at
-first_captured_at
-copies
-candy
-mastery_points
-favorite
+user_id · season_id · sample_size · score · rank
+updated_at
 ```
 
-### inventory
+## 6.11 Ledger types acrescentados
 
 ```text
-user_id
-item_id
-quantity
+MARKET_ENTRY_RESERVE
+MARKET_ENTRY_RELEASE
+MARKET_LOSS
+MARKET_PAYOUT_TRANSFERABLE
+MARKET_PAYOUT_BONUS
+MARKET_FEE
+MARKET_RESIDUE
 ```
 
-### capture_attempts
+A proveniência é preservada como no §5.5: entrada em PC-B paga em PC-B. Apuração mútua **não** é rota de conversão de bônus em transferível.
+
+## 6.12 Economia da fase
+
+- a taxa de mercado é **sink**, com a mesma regra do rake do §10: não é receita em reais no instante da retirada;
+- o passivo por rodada dos mercados mútuos é zero, então o teto do §4.4.6 continua valendo **apenas** para o mercado principal;
+- a taxa de mercado alimenta tesouraria pela mesma política do §10.7; se alimentar a Exchange Reserve, a fração precisa ser declarada lá e não aqui.
+
+## 6.13 Proteção do jogador nesta fase
+
+Mercado novo é superfície nova de risco, e o capítulo 28 se aplica integralmente:
+
+- limites do §28.3 valem sobre a soma de todos os mercados, nunca por mercado;
+- a coreografia de vitória do §28.5 vale igual: pagamento menor que a entrada nunca comemora;
+- a Liga de Previsão sem stake é caminho de progressão para conta sob limite — **precisa** continuar acessível nesse estado;
+- o retorno estimado do mercado mútuo é exibido como estimativa que se move, nunca como promessa.
+
+## 6.14 KPIs
 
 ```text
-id
-user_id
-round_id
-species_id
-ball_type
-calculated_chance
-rng_commit/reference
-result
-created_at
+participação por mercado
+liquidez: entradas por mercado por rodada
+concentração do bolo (índice de dispersão das entradas)
+calibração média da população, por coorte de tempo de jogo
+participação na Liga de Previsão
+fração de jogadores que consultam o perfil de leitura
 ```
 
-## 6.15 Antifraude
+## 6.15 Gate para a Fase 3
 
-- oportunidade criada pelo servidor;
-- item consumido atomicamente;
-- resultado idempotente;
-- refresh não repete captura;
-- RNG auditável internamente;
-- limite de requests;
-- nenhuma chance enviada pelo cliente como fonte de verdade.
-
-## 6.16 KPIs V2
-
-- % usuários que abrem Pokédex;
-- % que fazem primeira captura;
-- tempo até primeira captura;
-- capturas/dia;
-- espécies diferentes por usuário;
-- D1/D7 de quem capturou vs quem não capturou;
-- sessões motivadas por coleção;
-- consumo/geração de Balls;
-- taxa de falha de captura e frustração.
-
-## 6.17 Gate para V3
-
-A Collection deve demonstrar que cria retorno. Se jogadores ignorarem coleção, não adicionar um idle enorme para tentar salvar uma camada que não funciona.
+- mercado mútuo com liquidez suficiente para formar preço, medido e declarado;
+- **calibração média da população medida e melhorando** — se não melhora, o produto não está ensinando e a Fase 3 não conserta isso;
+- participação na Liga de Previsão conhecida;
+- nenhuma divergência de liquidação em 1.000 rodadas.
 
 ---
 
-# 7. V3 — Trainer Idle
+# 7. Fase 3 — Coleção, Criação e Informação
+
+> **Este capítulo substituiu o antigo "V3 — Trainer Idle" e absorveu o antigo capítulo 6.** As expedições sobrevivem como fonte de encontro, doce e pesquisa; o modo idle como fase própria deixou de existir. Justificativa em §7.1.
 
 ## 7.1 Objetivo
 
-Dar utilidade aos Pokémon capturados e criar atividades que continuam progredindo enquanto o usuário está offline.
+Duas coisas ao mesmo tempo, e o capítulo só funciona se as duas existirem:
 
-A pergunta que V3 responde:
+1. **A fantasia de criar.** Capturar, treinar, evoluir, escolher golpes. É o motor de retenção mais testado do gênero, e ele opera por apego — algo que nenhum relatório de desempenho alcança.
+2. **A economia de informação.** O dossiê que faz a coleção pagar na aposta.
 
-> “O que faço com os Pokémon depois que capturei?”
+A v1.4 tratava esses como capítulos separados (V2 Collection e V3 Idle) e nenhum dos dois se conectava ao núcleo. O idle foi dissolvido porque era o modo mais fraco e o mais caro de fazer bem: temporizador só funciona quando o recurso produzido é desejado, e o recurso desejado aqui é informação, que já vem da coleção.
 
-## 7.2 Trainer Base
+## 7.2 A regra que dá espaço para tudo isto
 
-Criar uma base com quatro instalações iniciais:
-
-1. Training Center
-2. Expedition Board
-3. Research Lab
-4. Item Storage
-
-Visualmente, pode ser uma tela/mapa simples; não precisa virar um simulador de cidade.
-
-## 7.3 Pokémon do jogador
-
-A partir da V3, cada cópia relevante pode ter instância própria.
-
-### pokemon_instances
+O P4 restringe **a Arena**. Ele não restringe o resto do jogo.
 
 ```text
-id
-user_id
-species_id
-level
-xp
-power_score
-created_at
-locked_activity_id
-favorite
+Arena             normalizada. O que você possui é irrelevante
+Mundo do          RPG completo. O que você possui é tudo
+treinador
 ```
 
-Não introduzir IV, EV, Nature, breeding, shiny stat bonus e dezenas de subsistemas nesta fase.
+A separação nunca foi o problema. O problema era não haver razão para ir de um lado ao outro. Este capítulo constrói as duas pontes.
 
-## 7.4 Níveis
-
-Sugestão inicial:
+## 7.3 As duas pontes
 
 ```text
-Level 1–50
+mundo → Arena     informação: o dossiê melhora a leitura, nunca a probabilidade
+Arena → mundo     doce de espécie: apostar rende matéria-prima para criar
 ```
 
-XP vem de:
+## 7.4 A Pokédex, com peso econômico
 
-- Training Center;
-- Expedições;
-- conteúdo PvE futuro;
-- missões.
+Os cinco estados deixam de ser troféu e passam a controlar acesso a informação:
 
-Nível não afeta Arena.
+| Estado | Como se chega | O que libera |
+|---|---|---|
+| `UNKNOWN` | — | nada |
+| `SEEN` | apareceu numa rodada sua | nome e tipos |
+| `ENCOUNTERED` | você apostou nela | taxa de vitória bruta, com tamanho de amostra |
+| `CAPTURED` | você capturou | dossiê completo (§7.12) |
+| `MASTERED` | requisito de domínio cumprido | desempenho por clima e por composição de tipo |
 
-## 7.5 Training Center
+A tela precisa deixar óbvio **o que falta para o próximo estado**. É o gancho de retorno da fase.
 
-Slots iniciais: 2.
+## 7.5 Encontro e captura — você leva a forma base
 
-Durações:
+O elenco da Arena é composto só de evoluções finais e bases sem evolução. Se a captura entregasse o lutador que apareceu, o jogador só teria formas finais e **não haveria evolução para jogar**.
+
+**Regra:** a captura entrega a **forma base** da linha evolutiva.
+
+> Você viu o campeão lutar. O que leva para casa é um ovo.
+
+Espécies sem pré-evolução vêm inteiras e são naturalmente a faixa de entrada, porque não exigem cadeia para serem usáveis.
+
+Requisitos:
+
+- o encontro nasce da rodada, com RNG **próprio**, separado do RNG de batalha (§22);
+- a taxa de captura não pode depender de saldo, de valor apostado, nem de compra;
+- captura é resolvida no servidor; o cliente nunca informa resultado.
+
+## 7.6 Poké Balls, raridade e duplicatas
+
+Fontes de Balls: desafio diário, level-up, streak, achievement, eventos, recompensa de coleção, e loja interna limitada por Trainer Coins. **Não vender tentativa aleatória por dinheiro real no protótipo.**
+
+- bola melhor altera a **chance de captura**, nunca a espécie sorteada;
+- raridade declarada precisa bater com a frequência medida em amostra grande;
+- duplicata converte em doce da espécie, respeitando o teto de emissão.
+
+## 7.7 Recursos
 
 ```text
-15 min
-1 h
-4 h
-8 h
+PokéCash        moeda principal, regida pelo capítulo 10
+Trainer Coins   moeda de PvE e facilidades; nunca conversível em PokéCash
+Species Candy   por espécie; progressão do Pokémon possuído
 ```
 
-Quanto maior o tempo, melhor eficiência total; evitar multiplicador tão alto que torne opções curtas inúteis.
+Não criar mais moedas sem necessidade.
 
-Ao finalizar:
+## 7.8 Doce de espécie ligado à aposta
 
-- XP;
-- chance pequena de item comum;
-- Trainer XP opcional.
-
-## 7.6 Expedition Board
-
-Expedições usam equipe e tipo.
-
-Exemplo:
-
-### Viridian Forest
+A ponte Arena → mundo do treinador.
 
 ```text
-Duration: 2 h
-Recommended: Bug / Flying / Fire
-Team size: 3
-Rewards: Trainer Coins, Balls, Bug materials
+apostou numa espécie e ela venceu   -> doce daquela espécie
+apostou e ela perdeu                -> doce reduzido daquela espécie
 ```
 
-### Power Plant
+Efeitos pretendidos: as escolhas de aposta moldam o time, a identidade do treinador emerge do comportamento, e **a sessão que termina no vermelho deixa de ser estéril** — que é o ponto mais frágil da retenção num jogo de aposta.
+
+> **Invariante inegociável:** o doce é função de *a espécie venceu* e *houve aposta*, **e de nada mais**. O valor apostado não pode aparecer na fórmula. Escalar com valor transformaria criar Pokémon em motivo para apostar mais alto, que é exatamente o incentivo que o capítulo 28 existe para não criar. Teste obrigatório: variar o stake de mínimo a máximo e exigir o mesmo doce.
+
+Doce não é emitido para conta em cool-off ou autoexclusão (§28.4).
+
+## 7.9 Instâncias do jogador — nível, foco e vínculo
+
+Três eixos, deliberadamente rasos. O §21 já proíbe IV/EV/Natures completos.
 
 ```text
-Duration: 4 h
-Recommended: Ground / Electric resistance
-Team size: 3
-Rewards: Electric materials, Coins, chance de encounter
+Nível     cresce com doce e com PvE
+Foco      Training Center concentra crescimento numa frente
+          (ofensiva, defensiva, velocidade), com custo para trocar
+Vínculo   sobe com uso; bônus pequeno; é onde mora o apego
 ```
 
-### Seafoam Islands
+Critério de aceitação de desenho: se o jogador não consegue explicar para um amigo o que o treino fez, o sistema está complexo demais.
+
+## 7.10 Evolução como escolha
+
+Evolução automática por nível é progressão sem decisão. Aqui a decisão tem consequência em dois sistemas:
 
 ```text
-Duration: 8 h
-Recommended: Fire / Fighting / Electric
+evoluir agora   stats maiores, acesso ao conteúdo PvE seguinte
+                LIBERA O DOSSIÊ DA FORMA FINAL na Arena
+esperar         a pré-evolução aprende golpes que a forma final não aprende
+                amplitude de moveset para PvE e Liga de Equipe
 ```
 
-## 7.7 Cálculo de expedição
+A segunda linha é o que amarra o capítulo: **a Arena só tem formas finais, então evoluir é como se destrava a análise dos lutadores em que se aposta.** Quem quer o dossiê do Charizard precisa evoluir o Charmander dele.
 
-Não precisa simular batalha frame a frame.
+Evolução exige requisito declarado e consumido. Nenhuma evolução altera coisa alguma na Arena.
+
+## 7.11 Moveset escolhido e o comparador
+
+O jogador escolhe os quatro golpes do Pokémon dele, dentro do que espécie e nível permitem. O moveset escolhido **nunca** entra em `assignMoves` nem toca a Arena.
+
+**O comparador** é o item de maior valor pedagógico do capítulo. Ao montar o moveset, o jogador pode ver o que a Arena escolheria para aquela espécie **e por quê**:
 
 ```text
-teamScore
-+ typeAffinity
-+ levelScore
-+ small deterministic variance
-= expeditionRating
+seu Charizard         Lança-Chamas · Voar · Terremoto · Garra de Dragão
+Charizard da Arena    Lança-Chamas · Rajada de Fogo · Voar · Bicada
+                      viés ofensivo: SpA 109 > Atk 84 -> prioriza especial
 ```
 
-Resultados:
+Requisito de implementação: o comparador chama **a mesma função** que a Arena, jamais uma reimplementação. Duas implementações divergem no primeiro ajuste de algoritmo e passam a ensinar coisa errada.
+
+## 7.12 Dossiê
+
+O servidor roda 150.000 simulações por rodada e sabe muito mais do que mostra. O dossiê publica:
 
 ```text
-C
-B
-A
-S
+taxa de vitória histórica            média e variância de abates
+colocação típica                     desempenho por clima
+perfil de risco (morre cedo x dura)  desempenho contra composições de tipo
+tamanho de amostra de cada número
 ```
 
-Recompensa baseada na faixa.
+Três regras:
 
-Servidor calcula no momento do início e armazena commit/result seed; entrega apenas quando tempo termina.
+1. **Informação não é probabilidade.** Possuir o dossiê não muda nenhuma odd, nenhum resultado, nenhuma captura. Invariante testável, e ela é a que protege P4.
+2. **Nenhum número sem tamanho de amostra.** Um número sozinho convida a conclusão errada.
+3. **O dossiê não é vendável por dinheiro.** Informação com valor de aposta sendo comprável é pay-to-win econômico, e fere P5 tão gravemente quanto vender probabilidade feriria P4.
 
-## 7.8 Offline progress
+## 7.13 Expedições como pesquisa
 
-Nunca rodar timers individuais em memória.
+O que sobreviveu da V3 Idle. Expedições produzem **encontro, doce e relatório** — estreitam o intervalo de confiança de uma espécie, revelam desempenho sob um clima, mapeiam um confronto de tipos.
 
-Registrar:
+Locais mantidos do desenho anterior (Viridian Forest, Power Plant, Seafoam Islands e sucessores) com identidade de tipo, duração e faixa de recompensa próprias.
+
+**Expedição adianta conhecimento, nunca sorte.** Nenhuma expedição pode devolver probabilidade, odd melhor, ou vantagem na Arena.
+
+## 7.14 Progresso offline e energia
+
+Progresso offline é calculado **no servidor**, a partir de carimbo de tempo próprio. Nunca aceitar carimbo do cliente — é a superfície mais explorada de todo jogo idle.
+
+Energia limita ritmo sem bloquear sessão curta. Slots: Training Center 2 base com expansão, Expedition 1 base até 3, Storage amplo o bastante para não virar dor imediata.
+
+## 7.15 Missões, badges e a tela Minha Coleção
+
+Missões de coleção e badges permanentes seguem o desenho anterior — capturar por tipo, completar percentuais da Pokédex, ver todas as espécies de um tipo na Arena.
+
+A tela **Minha Coleção** é onde tudo se encontra: time, Pokédex, dossiês, progresso de expedição. É o álbum do treinador e o painel do apostador na mesma superfície. Critério de aceitação: **dá para decidir em quem apostar sem sair dela.**
+
+## 7.16 Laço de retorno diário
 
 ```text
-started_at
-finishes_at
+Abrir  ->  coletar expedições  ->  ver quem subiu de nível
+       ->  reiniciar atividades  ->  jogar rodadas da Arena
+       ->  ganhar doce e encontros  ->  ajustar time e dossiês  ->  sair
 ```
 
-Quando usuário volta:
+A diferença em relação ao desenho anterior: o jogador volta porque **quer saber uma coisa específica**, não porque um contador renovou.
+
+## 7.17 Modelo de dados
 
 ```text
-if now >= finishes_at → claim disponível
+species              dex · nome · tipos · stats · linha_evolutiva · raridade
+evolution_chain      species_id · evolui_para · requisito
+user_species         user_id · species_id · estado · visto_em · capturado_em
+                     dominio_progresso
+pokemon_instances    id · user_id · species_id · nivel · foco · vinculo
+                     moveset_json · evoluido_de · criado_em
+inventory            user_id · item · quantidade
+species_candy        user_id · species_id · quantidade
+capture_attempts     id · user_id · round_id · species_id · resultado · rng_seed
+expeditions          id · user_id · local · inicio · fim · reivindicado_em
+                     recompensa_json
+dossiers             species_id · metrica · valor · amostra · atualizado_em
 ```
 
-## 7.9 Research Lab
+## 7.18 Economia da fase
 
-Funções iniciais:
+**Faucets:** doce por aposta, doce por duplicata, Trainer Coins por PvE e expedição, Balls por desafio e progressão.
 
-- gastar Species Candy;
-- desbloquear bônus de Trainer World;
-- desbloquear lore/arte/badge;
-- preparar evolução futura.
+**Sinks:** evolução, foco de treino, expansão de slot, itens consumíveis, cosméticos internos.
 
-Não alterar Arena.
+**Recompensa não monetária:** o dossiê é exatamente o "substituto não monetário" que o §6 do Estudo Econômico pede para o jogador que bateu o teto de emissão de PC-B. Desejável, sem inflação, e alinhado ao núcleo.
 
-## 7.10 Evolução — entrada controlada
+Trainer Coins e Species Candy **nunca** convertem em PokéCash, em nenhum sentido.
 
-V3 pode introduzir famílias completas de Kanto gradualmente.
+## 7.19 Antifraude
 
-Estratégia recomendada:
+- captura forjada pelo cliente;
+- farm por contas ligadas por dispositivo, rede ou padrão de horário;
+- manipulação de relógio para colher expedição;
+- reivindicação repetida da mesma expedição ou missão.
 
-- Arena continua usando 76 finais/base;
-- Trainer World expande para pré-evoluções;
-- capturas/ovos/expedições podem trazer primeiro estágio;
-- Candy + nível permitem evolução.
-
-Exemplo:
+## 7.20 KPIs
 
 ```text
-Charmander → Charmeleon → Charizard
+taxa de captura e progressão de Pokédex por coorte
+fração de jogadores que evoluem ao menos um Pokémon
+uso do comparador de moveset
+consulta a dossiê antes de apostar
+diversidade de espécies apostadas, antes e depois do dossiê
+retenção D7 e D30 de quem capturou x quem não capturou
 ```
 
-A espécie de Arena e a instância do jogador continuam entidades separadas.
+## 7.21 Gate para a Fase 4
 
-## 7.11 Eggs — opcional, não obrigatório para V3.0
-
-Se entrar:
-
-- eggs vêm de conteúdo, não compra aleatória direta;
-- incubação por tempo;
-- pool de resultado declarada;
-- sem stats exclusivos que criem pay-to-win.
-
-Pode ficar para V3.1.
-
-## 7.12 Energia
-
-Minha recomendação: **não implementar energia global na primeira versão idle**.
-
-Motivo: já existem timers como freio natural. Energia + timers + moedas frequentemente cria fricção excessiva.
-
-Reavaliar com telemetria.
-
-## 7.13 Slots e progressão
-
-Slots:
-
-- Training Center: 2 base, expansão via progressão;
-- Expedition: 1 base, até 3 por progressão;
-- Storage: amplo o suficiente para não virar dor imediata.
-
-Monetização futura pode vender conveniência moderada/cosmética, mas limite competitivo deve ser avaliado.
-
-## 7.14 Daily return loop
-
-Exemplo:
-
-```text
-Abrir jogo
-↓
-Coletar expedições
-↓
-Ver Pokémon que subiram de nível
-↓
-Reiniciar atividades
-↓
-Fazer 2–5 rounds na Arena
-↓
-Conseguir novas Balls/encounters
-↓
-Ajustar equipe
-↓
-Sair
-```
-
-## 7.15 Daily/Weekly quests V3
-
-Daily:
-
-- complete 2 rounds;
-- finalize 1 training;
-- claim 1 expedition;
-- tente 1 captura.
-
-Weekly:
-
-- complete 10 expeditions;
-- capture 5 species;
-- obtenha 3 ratings A+;
-- alcance X rounds.
-
-## 7.16 Economia V3
-
-### Faucets
-
-- Arena rewards;
-- dailies;
-- expedition;
-- achievements;
-- level-up.
-
-### Sinks
-
-- Training upgrades;
-- expedition fees especiais;
-- evolution;
-- crafting simples;
-- consumíveis;
-- cosmetics internos.
-
-Simular economia por 30/60/90 dias antes de liberar.
-
-## 7.17 Dados V3
-
-### activities
-
-```text
-id
-user_id
-type
-status
-started_at
-finishes_at
-seed
-payload
-result
-claimed_at
-```
-
-### facilities
-
-```text
-user_id
-facility_type
-level
-slots
-```
-
-### pokemon_instances
-
-conforme acima.
-
-### evolution_history
-
-```text
-instance_id
-from_species_id
-to_species_id
-cost
-created_at
-```
-
-## 7.18 KPIs V3
-
-- claims por DAU;
-- % usuários que voltam com atividade concluída;
-- atividades iniciadas/dia;
-- utilização de slots;
-- tempo offline médio;
-- impacto em D7;
-- % jogadores que evoluem primeiro Pokémon;
-- recursos acumulados vs gastos.
-
-## 7.19 Gate para V4
-
-O usuário precisa demonstrar apego/utilidade aos Pokémon próprios. Se ninguém se importa em otimizar time, V4 deve ser simplificada.
+- taxa de captura e progressão nas bandas projetadas;
+- **evidência de que o dossiê muda comportamento de aposta.** Sem isso a tese central do capítulo falhou, e a Fase 4 — que se apoia na mesma tese — precisa ser repensada antes de começar, não depois;
+- P4 verificado por teste após todas as features da fase estarem ligadas;
+- antifraude de captura com taxa de detecção conhecida.
 
 ---
 
-# 8. V4 — Team & Kanto Journey
+# 8. Fase 4 — Time e Jornada
 
 ## 8.1 Objetivo
 
-Transformar coleção + idle em **estratégia jogável**.
+**Onde se aprende a ler o motor.**
 
-Aqui os Pokémon do usuário finalmente lutam em um modo próprio.
+A leitura anterior desta fase — "transformar coleção e idle em estratégia jogável" — criava um segundo jogo de batalha competindo por atenção com a Arena. A v1.5 reposiciona: a Trainer Battle Engine é o **simulador de treino** da Arena Engine, não uma rival.
+
+O mecanismo que faz isso funcionar é o §8.2.1: antes de qualquer combate, o jogo mostra a probabilidade de vitória do time e o efeito de cada troca possível. O jogador **manipula uma probabilidade e vê o número mexer**, que é a única forma de aprender a ler probabilidade. Depois volta para a Arena, onde só pode ler, e lê melhor.
+
+```text
+Mundo do treinador   probabilidade que você MANIPULA   -> aprende
+Arena                probabilidade que você só LÊ      -> aplica
+```
+
+Nenhum outro jogo de criaturas pode fazer isso, porque nenhum outro publica as próprias probabilidades. Aqui o motor já existe e o número já é calculado.
+
+Os Pokémon do usuário lutam em modo próprio, e continuam sem tocar a Arena (P4).
+
+## 8.1.1 Probabilidade exibida — requisito central da fase
+
+Antes de um combate PvE, exibir:
+
+```text
+Ginásio de Pedra — Brock
+seu time vence 23% das vezes
+
+maior fraqueza: nenhum golpe seu é super-efetivo contra Pedra
+se trocar Pidgeotto por Squirtle:  61%
+```
+
+**Invariante:** a probabilidade exibida bate com a frequência observada em pelo menos 20.000 combates simulados, por faixa. Se o número mentir, o jogador aprende a coisa errada — e o propósito inteiro da fase se inverte.
+
+O cálculo usa o mesmo motor e os mesmos parâmetros do combate real, nunca uma aproximação separada.
+
+## 8.1.2 Ginásios como aulas
+
+Cada ginásio ensina **uma** interação, e a probabilidade de §8.1.1 é o instrumento:
+
+| Ginásio | Ensina |
+|---|---|
+| Brock | fraqueza de tipo |
+| Misty | velocidade decide trocas apertadas |
+| Lt. Surge | imunidade |
+| Sabrina | físico contra especial |
+
+**Critério de aceitação:** um time montado ignorando a lição do ginásio precisa perder a maior parte das vezes. Ginásio vencível sem entender a lição não ensina nada.
+
+Dificuldade de cada ginásio é **medida**, não estimada — mesmo método que calibrou killstreak e odds.
+
+## 8.2 Separação de engines
 
 ## 8.2 Separação de engines
 
@@ -1993,13 +1837,15 @@ Só lançar competição quando o Trainer Battle Engine estiver suficientemente 
 
 ---
 
-# 9. V5 — League & Seasons
+# 9. Fase 5 — Liga
 
 ## 9.1 Objetivo
 
 Criar endgame competitivo recorrente.
 
 O jogador passa a ter um motivo de longo prazo para otimizar coleção e time.
+
+> **A Liga de Previsão não está mais aqui.** Ela foi antecipada para a V2 (§6.8), porque não movimenta valor, não depende do checkpoint do §25.1, é barata de construir e ataca retenção muito antes. Este capítulo trata apenas da **Liga de Equipe** e da economia competitiva que a acompanha.
 
 ## 9.2 Formato inicial
 
@@ -2152,6 +1998,18 @@ Separar:
 
 - rating oculto/preciso para matchmaking;
 - tier visual para experiência.
+
+### Três ratings, nunca misturados
+
+A partir da v1.5 existem **três** avaliações independentes, medindo perícias diferentes:
+
+```text
+Arena MMR         previsão dentro da Arena
+Calibração        qualidade das previsões declaradas (§6.7), sem stake
+Liga MMR          combate 6x6 com time próprio
+```
+
+Nenhum alimenta o outro. Prever bem não faz o time lutar melhor, e vencer na Liga não melhora calibração. Misturá-los destruiria o valor informativo dos três.
 
 Não inventar fórmula excessivamente complexa no início.
 
@@ -2481,6 +2339,7 @@ Nenhum grant gratuito rotineiro gera PC-T.
 Core sinks:
 
 - margem esperada da Arena, baseline 8%;
+- **taxa de mercado mútuo (§6.4)**, sobre o pot bruto, com passivo zero da casa;
 - rake bruto da Liga, baseline 10% do pot;
 - taxa P2P opcional, baseline 2%;
 - event entries;
@@ -2507,6 +2366,14 @@ Não usar como sink principal:
 - alteração silenciosa de rake no meio da temporada.
 
 A margem da Arena, rake competitivo, P2P, grants e Exchange devem ser simulados conjuntamente.
+
+### Recompensa não monetária — o dossiê
+
+O §6 do Estudo Econômico mostra que o teto de emissão de PC-B só funciona se houver algo para dar ao jogador que já acumulou moeda e deixou de receber reposição. A v1.5 nomeia esse algo: **informação**.
+
+O dossiê (§7.12) é a recompensa ideal para essa faixa — desejável, sem inflação, e alinhada ao núcleo do produto. Ele não entra em `ΔM_B` nem em `ΔM_T`, porque não é moeda.
+
+Regra que acompanha: **dossiê não é vendável por dinheiro**. Informação com valor de aposta sendo comprável é pay-to-win econômico.
 
 ### Proteção de falência
 
@@ -3450,9 +3317,21 @@ Para controlar escopo:
 
 Regra absoluta.
 
-## Arena MMR != League MMR
+## Arena MMR != Calibração != League MMR
 
-Previsão e combate são habilidades diferentes.
+Três perícias distintas, três avaliações que nunca se alimentam (§9.7). Previsão dentro da Arena, qualidade de previsão declarada, e combate com time próprio.
+
+## Informação != Probabilidade
+
+O dossiê muda o que o jogador **sabe**, nunca o que **acontece**. É esta separação que permite o metagame inteiro existir sem ferir P4, e ela precisa ter teste dedicado, não apenas intenção.
+
+## Preço do modelo != Preço do mercado
+
+Nos mercados mútuos, o preço que o bolo forma e o preço que o modelo calcula são coisas diferentes, e o segundo só é publicado depois da liquidação (§6.6). Publicar antes faz o mercado convergir para ele e destrói a perícia que o mercado existe para criar.
+
+## Doce de espécie != Valor apostado
+
+O doce é função de a espécie ter vencido e de ter havido aposta. O valor apostado não entra na fórmula (§7.8). Escalar com valor transformaria criar Pokémon em motivo para apostar mais alto.
 
 ## PokéCash != Trainer Coins
 
@@ -3560,29 +3439,29 @@ Saída: engine reproduzível, odds coerentes, código modular e testável.
 
 Saída: backend, round global, wallet, auth, sync e settlement.
 
-## V2 — Collection
+## V2 — Mercados Mútuos e Previsão
 
-> “Tenho motivo para querer espécies específicas?”
+> “Consigo ficar melhor nisso?”
 
-Saída: Pokédex, capture, inventory e collection.
+Saída: motor de apuração mútua, mercado de abates, preço do modelo publicado após a liquidação, pontuação de calibração e Liga de Previsão.
 
-## V3 — Trainer Idle
+## V3 — Coleção, Criação e Informação
 
-> “Tenho motivo para voltar amanhã?”
+> “Tenho motivo para querer espécies específicas, e o que eu crio importa?”
 
-Saída: training, expeditions, progressão offline e evolução.
+Saída: Pokédex com peso econômico, captura da forma base, evolução como escolha, moveset escolhido com comparador, dossiê, e expedições como pesquisa.
 
-## V4 — Team & Journey
+## V4 — Time e Jornada
 
-> “Minhas escolhas de time importam?”
+> “Estou aprendendo a ler o jogo?”
 
-Saída: Trainer Battle Engine, team builder, Kanto PvE e Gyms.
+Saída: Trainer Battle Engine, team builder, probabilidade exibida antes do combate, e ginásios que ensinam uma interação cada.
 
-## V5 — League
+## V5 — Liga
 
 > “Tenho motivo para continuar jogando por meses?”
 
-Saída: competição, seasons, ranking e endgame.
+Saída: Liga de Equipe, seasons, ranking, e a economia competitiva com seus gates.
 
 ---
 
@@ -3968,3 +3847,38 @@ Alterações em relação à Spec v1.3. Nenhuma decisão econômica da v1.3 foi 
 2. **Limiares numéricos de risco** (§28.6) — só calibráveis com coorte real.
 3. **Política de publicidade e afiliados** — não coberta por nenhum documento do conjunto.
 4. **Decisão de tema** — a Content Layer resolve o "como"; falta o "quando" ser executado, e a v1.4 apenas fixa o prazo, não a arte.
+
+---
+
+# 30. Changelog v1.5
+
+Fecha a lacuna L-013. Alinha a Spec às decisões de profundidade aceitas e ao capítulo 11 do `POKEARENA_DESIGN_DEPTH_v1.1.md`.
+
+**Nenhuma decisão econômica, de fairness ou de proteção do jogador da v1.4 foi revertida.** As Fases v0.9 e V1 (§4 e §5) seguem intactas — a discussão inteira de metagame não tocou o núcleo, o que é por si uma validação do desenho.
+
+| Seção | Mudança |
+|---|---|
+| Cabeçalho | Revisão 1.5. |
+| §3 | Mapa de versões refeito, com capítulo de cada fase e a tabela do que mudou e por quê. |
+| §5.6 | Explicita que a V1 tem um mercado só, e que os mercados mútuos não devem ser antecipados. |
+| **§6** | **Reescrito.** Era "V2 — Collection & Capture"; vira "Fase 2 — Mercados Mútuos e Previsão". Contém o achado do EV constante, a mecânica de apuração mútua com passivo zero, a invariante do preço do modelo, calibração e Liga de Previsão. |
+| **§7** | **Reescrito.** Era "V3 — Trainer Idle"; vira "Fase 3 — Coleção, Criação e Informação". Absorve o antigo §6 e as expedições do antigo §7. Captura entrega a forma base, evolução é escolha, moveset é do jogador com comparador, e o dossiê passa a existir. |
+| **§8** | Reposicionado: de segundo jogo de batalha para onde se aprende a ler o motor. Novos §8.1.1 (probabilidade exibida, com invariante de 20.000 combates) e §8.1.2 (ginásios como aulas, com critério de aceitação). |
+| §9 | Liga de Previsão sai daqui e vai para §6.8. §9.7 passa a definir três ratings independentes. |
+| §10 | Taxa de mercado mútuo entra como core sink. Nova subseção sobre o dossiê como recompensa não monetária, que é o que o teto de emissão de PC-B precisava. |
+| §22 | Quatro separações novas: os três ratings, `Informação != Probabilidade`, `Preço do modelo != Preço do mercado`, `Doce != Valor apostado`. |
+| §25 | Definição resumida de cada release refeita para as fases novas. |
+| §30 | Este changelog. |
+
+## Capítulos que não mudaram e por quê
+
+`§4` Fundação e `§5` V1 não têm uma linha alterada. `§11` a `§21`, `§23`, `§24`, `§26`, `§27` e `§28` permanecem válidos como estão: tratam de monetização, UX, segurança, telemetria, qualidade, escopo e proteção do jogador, e nenhuma decisão de profundidade os contradiz.
+
+`§12` (mapa de telas) e `§17` (telemetria) **ganham itens** com as fases novas, mas a estrutura permanece; o detalhamento por bloco está no `BUILD_BLOCKS v1.2`, que é onde a execução vive.
+
+## O que continua em aberto após a v1.5
+
+1. **Resposta da consulta de enquadramento** (§0.5.1, lacuna L-012). Continua sendo a única pendência capaz de reordenar o roadmap econômico inteiro — e agora ganha três perguntas novas, sobre apuração mútua, elemento de perícia mensurável, e Liga de Previsão sem stake.
+2. **Limiares numéricos de risco** (§28.6, lacuna L-011).
+3. **Política de publicidade e afiliados** (lacuna L-010).
+4. **Execução da troca de tema** (§0.3.1, lacuna L-008).

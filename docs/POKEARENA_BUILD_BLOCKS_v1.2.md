@@ -1,12 +1,12 @@
 # PokéArena — Blocos de Construção v1.2
 
 **Documento:** BUILD-BLOCKS-001 · Revisão 1.2 (mercados mútuos, criação e jornada)
-**Base:** Master Spec v1.4 · Design Depth v1.1 · Economy Study v1.2 · Unit Economics v1.2
+**Base:** Master Spec v1.5 · Design Depth v1.1 · Economy Study v1.2 · Unit Economics v1.2
 **Escopo:** decomposição de v0.9 → V5 em **61 blocos** cíclicos executáveis
 **Status:** plano de execução. Trata de *em que ordem*, *em que pedaços* e *com que prova de qualidade*.
 **Alterações da v1.2:** Fases 2 a 5 reestruturadas pelas decisões aceitas do Design Depth §8 e pelo capítulo 11. Ver seção 15.
 
-> **Precedência, enquanto a lacuna L-013 estiver aberta.** Para **v0.9 e V1**, a Master Spec v1.4 é a fonte de verdade. Para **V2 a V5**, a Spec está desatualizada e quem vale é o `POKEARENA_DESIGN_DEPTH_v1.1.md` mais este documento. A Spec vira v1.5 quando L-013 fechar.
+> **Precedência.** A Master Spec v1.5 é a fonte de verdade sobre *o quê*, em todas as fases — a lacuna L-013, que tirava V2 a V5 dessa regra, foi fechada. Este documento trata de execução; o `POKEARENA_DESIGN_DEPTH_v1.1.md` explica por que o metagame é assim.
 
 ---
 

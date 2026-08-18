@@ -1,0 +1,13 @@
+Cenario,Regime,ARPMAU_bruto,ARPMAU_liquido,Contribuicao_por_MAU,Custo_fixo,Break_even_MAU
+Conservador,atual,1.1805,1.0365,0.7365,75000.0,101838
+Conservador,restrito (§6.1),0.6085,0.5343,0.2343,75000.0,320162
+Conservador,com conformidade,1.1462,1.0063,0.618,87000.0,140777
+Conservador,restrito + conformidade,0.6085,0.5343,0.1543,79000.0,512133
+Base,atual,3.8956,3.4203,3.1203,75000.0,24037
+Base,restrito (§6.1),1.694,1.4873,1.1873,75000.0,63168
+Base,com conformidade,3.7635,3.3043,2.9077,87000.0,29922
+Base,restrito + conformidade,1.694,1.4873,1.1073,79000.0,71344
+Forte,atual,10.338,9.0767,8.7767,75000.0,8546
+Forte,restrito (§6.1),3.588,3.1502,2.8502,75000.0,26314
+Forte,com conformidade,9.933,8.7211,8.3098,87000.0,10470
+Forte,restrito + conformidade,3.588,3.1502,2.7702,79000.0,28518

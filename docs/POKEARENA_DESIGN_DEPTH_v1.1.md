@@ -1,7 +1,7 @@
 # PokéArena — Profundidade, Maestria e Retenção v1.1
 
 **Documento:** DESIGN-DEPTH-001 · Revisão 1.1 (mundo do treinador)
-**Base:** Master Spec v1.4 · medições feitas sobre o motor da base v0.8
+**Base:** Master Spec v1.5 · medições feitas sobre o motor da base v0.8
 **Pergunta que motivou:** os modos de jogo além da Arena são simples demais para prender o jogador?
 **Status:** análise de design com proposta. Altera escopo de V2 a V5.
 **Decisões aceitas (§8):** mercados de apuração mútua **sim**; V3 Idle **absorvido em V2**; Liga de Previsão **antecipada para a V2**.

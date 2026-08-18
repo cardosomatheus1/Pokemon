@@ -1,11 +1,35 @@
-# PokéArena — Índice Oficial de Documentos v1.4
+# PokéArena — Índice Oficial de Documentos v1.5
 
 **Data:** 18/08/2026  
 **Status:** conjunto atual de referência do projeto
 
 Este índice existe para evitar conflito entre versões antigas. Para novas decisões, usar somente os documentos listados como **ATUAIS** abaixo.
 
-## 0. O que mudou na v1.4
+## 0. O que mudou na v1.5
+
+A v1.5 fecha as duas últimas lacunas documentais do conjunto. **A trilha `documento` está sem pendências.**
+
+| Lacuna | Como fechou |
+|---|---|
+| **L-013** — capítulos 6 a 9 da Spec desatualizados pelas decisões de profundidade | **Spec v1.5**: §6 e §7 reescritos, §8 reposicionado, §3, §5.6, §9, §10, §22 e §25 ajustados, changelog em §30 |
+| **L-009** — cenários novos não reproduzíveis | **modelo v1.2** em `support/unit_economics/`, gerando quatro CSVs. Achou e corrigiu um número publicado: o pior caso combinado é 71.344 MAU, não 71.345 |
+
+A Spec volta a valer integralmente para todas as fases — a exceção de precedência que existia no `CLAUDE.md` foi removida.
+
+Estrutura de fases depois da v1.5:
+
+```text
+v0.9  Foundation                        §4    inalterada
+V1    Arena Online                      §5    inalterada
+V2    Mercados Mútuos e Previsão        §6    nova — cria teto de habilidade
+V3    Coleção, Criação e Informação     §7    absorve o antigo Idle
+V4    Time e Jornada                    §8    reposicionada: onde se aprende a ler o motor
+V5    Liga                              §9    Liga de Previsão saiu daqui para a V2
+```
+
+---
+
+## 0.1 O que havia mudado na v1.4
 
 A revisão anterior (v1.3) fechou a arquitetura econômica: proveniência de PokéCash, Competitive Profit Account, Exchange sem mint, PC-T Pending e unit economics. Essa parte não foi revertida — foi verificada e confirmada.
 
@@ -26,7 +50,7 @@ Nenhuma conclusão econômica da v1.3 foi revertida.
 
 ## 1. Documentos atuais
 
-### 1) `POKEARENA_SPEC_MASTER_V1-V5_v1.4_COMPLETE.md` — ATUAL
+### 1) `POKEARENA_SPEC_MASTER_V1-V5_v1.5_COMPLETE.md` — ATUAL
 Fonte principal de produto e implementação. Contém:
 
 - visão V0.9 → V5;
@@ -124,7 +148,10 @@ Não usar como fonte principal:
 - `POKEARENA_ECONOMY_STUDY_v1.1.md` → substituído por v1.2;
 - `POKEARENA_UNIT_ECONOMICS_STUDY_v1.0.md` → substituído por v1.2;
 - `POKEARENA_UNIT_ECONOMICS_STUDY_v1.1.md` → substituído por v1.2;
-- `POKEARENA_DOCUMENT_INDEX_v1.3.md` → substituído por v1.4;
+- `POKEARENA_SPEC_MASTER_V1-V5_v1.4_COMPLETE.md` → substituído por v1.5;
+- `POKEARENA_DOCUMENT_INDEX_v1.3.md` → substituído por v1.5;
+- `POKEARENA_DOCUMENT_INDEX_v1.4.md` → substituído por v1.5;
+- `pokearena_unit_economics_model_v1.1.py` → substituído por v1.2;
 - `POKEARENA_BUILD_BLOCKS_v1.0.md` → substituído por v1.2;
 - `POKEARENA_BUILD_BLOCKS_v1.1.md` → substituído por v1.2;
 - `POKEARENA_DESIGN_DEPTH_v1.0.md` → substituído por v1.1.
@@ -139,7 +166,9 @@ Eles podem ser mantidos apenas como histórico de decisão.
 
 ## 3. Arquivos reproduzíveis
 
-Inalterados nesta revisão — as simulações da v1.1 foram reproduzidas de forma independente e conferem (ruína de bankroll com desvio máximo de 0,13 ponto percentual; fórmulas de rake, hurdle, cobertura e break-even exatas).
+As simulações de economia do jogo seguem as da v1.1, reproduzidas de forma independente e conferindo (ruína de bankroll com desvio máximo de 0,13 ponto percentual; fórmulas de rake, hurdle, cobertura e break-even exatas).
+
+O modelo de unit economics foi **atualizado para a v1.2** e agora cobre os cenários que faltavam.
 
 ### Economia do jogo
 
@@ -153,7 +182,12 @@ Inalterados nesta revisão — as simulações da v1.1 foram reproduzidas de for
 
 ### Unit economics
 
-- `unit_economics_scenarios.csv`;
+- `pokearena_unit_economics_model_v1.2.py`;
+- `unit_economics_scenarios_v1_2.csv`;
+- `restricted_regime_break_even.csv`;
+- `compliance_cost_sensitivity.csv`;
+- `combined_worst_case.csv`;
+- `unit_economics_scenarios.csv` (v1.1, histórico);
 - `break_even_mau.csv`;
 - `mau_for_profit_targets.csv`;
 - `pc_price_sensitivity.csv`;
@@ -163,11 +197,11 @@ Inalterados nesta revisão — as simulações da v1.1 foram reproduzidas de for
 - `scale_pnl_base.csv`;
 - gráficos de break-even, lucro, preço e Exchange Coverage.
 
-> **Pendência de ferramental.** Os cenários novos da v1.4 — regime restrito (§6.1) e custo de conformidade (§11.1) — estão calculados nos documentos mas ainda **não** foram incorporados aos simuladores. Enquanto isso não acontecer, os `.py` e `.csv` refletem o modelo v1.1. Ver §5 abaixo.
+> **Pendência fechada.** Os cenários de regime restrito (§6.1) e custo de conformidade (§11.1) passaram a ser reproduzíveis pelo modelo v1.2.
 
 ## 4. Ordem de leitura recomendada
 
-1. Master Spec v1.4 — começar pelas seções 0.5.1, 0.6 e cap. 28 se o interesse for a mudança desta revisão;
+1. Master Spec v1.5 — começar por §3 se o interesse for a estrutura de fases, ou por §6 e §7 se for o metagame;
 2. Economy Study v1.2;
 3. Unit Economics Study v1.2;
 4. Design Depth v1.1 — antes de detalhar qualquer bloco de V2 a V5;
@@ -180,11 +214,13 @@ Para quem vai **construir** e não decidir: ler o Build Blocks primeiro e consul
 
 Em ordem de impacto sobre o roadmap:
 
-1. **Consulta de enquadramento regulatório** (Spec §0.5.1). É a única pendência capaz de reordenar o roadmap econômico inteiro, e é entrada de arquitetura da v0.9 — não item final de checklist.
-2. **Incorporar os cenários novos aos simuladores**, para que §6.1 e §11.1 sejam reproduzíveis como o resto do conjunto.
-3. **Limiares numéricos de risco** (Spec §28.6). Só calibráveis com coorte real.
-4. **Política de publicidade e afiliados.** Não coberta por nenhum documento do conjunto, e necessária antes de qualquer aquisição paga.
-5. **Execução da troca de tema.** A Spec §0.3.1 fixa o prazo — antes do fim da V1 — mas a arte do ContentPack original ainda não existe.
+Nenhuma delas é trabalho de escrita. **A trilha `documento` está limpa**; o que resta depende de terceiros.
+
+1. **Consulta de enquadramento regulatório** (Spec §0.5.1, lacuna L-012). Única pendência capaz de reordenar o roadmap econômico inteiro, e entrada de arquitetura da v0.9. Ganhou três perguntas novas na v1.5: apuração mútua muda o enquadramento? Elemento de perícia mensurável muda? Liga de Previsão sem stake é atividade regulada?
+2. **Execução da troca de tema** (Spec §0.3.1, lacuna L-008). Prazo fixado — antes do fim da V1 — e a arte é produção externa que precisa começar muito antes.
+3. **Política de publicidade e afiliados** (lacuna L-010). Sem dono em nenhum documento.
+4. **Limiares numéricos de risco** (Spec §28.6, lacuna L-011). Só calibráveis com coorte real.
+5. **Balanceamento do elenco** (lacunas L-001 a L-004). Roteadas para F1.12, porque o elenco Kanto sai de cena e rebalancear elenco que será substituído é descartável.
 
 ## 6. Princípios que não podem divergir entre documentos
 

@@ -1,8 +1,9 @@
 # PokéArena — Estudo de Unit Economics e Viabilidade Empresarial v1.2
 
-**Base econômica:** Master Spec v1.4 + Estudo Econômico Quantitativo v1.2  
+**Base econômica:** Master Spec v1.5 + Estudo Econômico Quantitativo v1.2  
 **Data de revisão:** 18/08/2026  
 **Alterações da v1.2:** seções 6.1 e 11.1 são novas; §17 e §20 revisados; changelog na seção 23.  
+**Reprodutibilidade:** todos os números deste estudo, incluindo os cenários novos, são gerados por `support/unit_economics/pokearena_unit_economics_model_v1.2.py`.  
 **Objetivo:** responder se o PokéArena pode sustentar uma empresa, quantos jogadores/volume são necessários, quais receitas realmente viram caixa e quais parâmetros econômicos mais alteram a viabilidade.
 
 > Este estudo separa rigorosamente **economia do jogo** de **economia da empresa**. Rake, edge e fees em PokéCash são sinks monetários; sem cash-out oficial, eles não devem ser somados como receita em reais no instante da partida. O caixa surge principalmente quando o usuário compra PC-T, Season Pass ou conteúdo premium.
@@ -309,7 +310,7 @@ Regime restrito (§6.1) **mais** custo de proteção, cenário Base — sem veri
 ```text
 contribuição/MAU     R$ 1,107
 custo fixo           R$ 79.000
-break-even           71.345 MAU
+break-even           71.344 MAU
 ```
 
 Contra os 24.037 do modelo atual. Este é o número a ter em mente ao decidir tamanho de equipe: **o mesmo produto precisa de 3× mais usuários se as duas hipóteses adversas se realizarem juntas**.
@@ -522,10 +523,11 @@ Custos fiscais, jurídicos, KYC/AML, licenciamento de pagamentos e propriedade i
 |---|---|
 | Cabeçalho | Base passa a Master Spec v1.4 + Estudo Econômico v1.2. |
 | 6.1 | **Nova.** Cenário regulatório restritivo, sem PC-T comprável: break-even Base vai de 24.037 para 63.168 MAU. Passa a ser cenário permanente do modelo. |
-| 11.1 | **Nova.** Custo de conformidade e proteção do jogador, com sensibilidade. Break-even Base vai de 24.037 para 29.922 MAU. Pior caso combinado: 71.345 MAU. |
+| 11.1 | **Nova.** Custo de conformidade e proteção do jogador, com sensibilidade. Break-even Base vai de 24.037 para 29.922 MAU. Pior caso combinado: 71.344 MAU. |
 | 17 | Dois novos requisitos, incluindo o único que não depende da empresa. |
 | 20 | Metas de validação incluem custo de conformidade, `protection_volume_drag` medido e aceitação explícita do cenário restrito. |
 | 23 | **Novo.** Este changelog. |
+| — | Correção: o pior caso combinado é **71.344** MAU, não 71.345. A v1.2 inicial arredondou um valor intermediário antes da divisão. O modelo reproduzível corrige. |
 
 ### Verificação independente dos números da v1.1
 

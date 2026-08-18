@@ -14,8 +14,9 @@ Estado: protótipo v0.8 congelado em `prototype/`, sendo reconstruído em blocos
 ## Hierarquia dos documentos
 
 ```
-docs/POKEARENA_SPEC_MASTER_V1-V5_v1.4_COMPLETE.md   o QUÊ — fonte de verdade
-docs/POKEARENA_BUILD_BLOCKS_v1.x.md                 o COMO e em que ordem
+docs/POKEARENA_SPEC_MASTER_V1-V5_v1.5_COMPLETE.md   o QUÊ — fonte de verdade
+docs/POKEARENA_BUILD_BLOCKS_v1.2.md                 o COMO e em que ordem
+docs/POKEARENA_DESIGN_DEPTH_v1.1.md                 por que o metagame é assim
 docs/POKEARENA_ECONOMY_STUDY_v1.2.md                economia do jogo
 docs/POKEARENA_UNIT_ECONOMICS_STUDY_v1.2.md         economia da empresa
 docs/POKEARENA_DOCUMENT_INDEX_v1.4.md               índice; começa por ele
@@ -25,11 +26,6 @@ docs/LACUNAS.md                                     trabalho identificado, adiad
 
 Conflito entre documentos: a Spec vence. Se a Spec estiver errada, corrija a Spec
 no mesmo commit — não contorne no código.
-
-> **Exceção temporária (lacuna L-013).** Para **V2 a V5**, a Spec v1.4 está
-> desatualizada: as decisões de profundidade aceitas mudaram o que essas fases
-> são. Até a Spec v1.5 sair, valem `POKEARENA_DESIGN_DEPTH_v1.0.md` e
-> `BUILD_BLOCKS v1.2`. Para v0.9 e V1 a Spec continua valendo integralmente.
 
 ---
 

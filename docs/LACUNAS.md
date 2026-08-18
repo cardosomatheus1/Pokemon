@@ -139,15 +139,24 @@ desloquem o agregado. São as que provam de verdade a suíte estatística.
 
 Trabalho real que **nenhum bloco resolve**. Fica aqui para não sumir do radar.
 
-### L-009 — os simuladores não incorporam os cenários novos
+> **Estado da trilha `documento`: sem pendências.** L-009 e L-013 fechadas em
+> 18/08/2026. As lacunas restantes desta seção dependem de terceiros — jurídico,
+> arte e dados de produção — e não de escrita.
 
-**Dono:** trilha `documento`
+### L-009 — os simuladores não incorporam os cenários novos ✅ FECHADA
 
-O Estudo Econômico v1.2 e o de Unit Economics v1.2 acrescentaram o cenário
-regulatório restritivo (§6.1) e o custo de conformidade (§11.1). Os números estão
-calculados nos documentos, mas os `.py` e `.csv` de `support/` continuam sendo os
-da v1.1. Enquanto isso não mudar, essas duas seções não são reproduzíveis como o
-resto do conjunto.
+**Fechada em:** 18/08/2026 · **Dono:** trilha `documento`
+
+`support/unit_economics/pokearena_unit_economics_model_v1.2.py` substitui a v1.1 e
+gera os quatro cenários — atual, restrito, com conformidade, e restrito mais
+conformidade — em `unit_economics_scenarios_v1_2.csv`,
+`restricted_regime_break_even.csv`, `compliance_cost_sensitivity.csv` e
+`combined_worst_case.csv`.
+
+Todos os números publicados no Estudo v1.2 conferem, com **uma correção**: o pior
+caso combinado é 71.344 MAU e não 71.345. A diferença veio de arredondar um valor
+intermediário antes da divisão, e é exatamente o tipo de erro que existir o
+simulador impede. O estudo foi corrigido.
 
 ### L-010 — não existe política de publicidade e afiliados
 
@@ -167,9 +176,13 @@ F1.9 entrega o mecanismo e a instrumentação; a calibração é pós-V1 e preci
 dono declarado quando a V1 estiver em produção, senão o sistema roda para sempre
 com os números de exemplo.
 
-### L-013 — os capítulos 6 a 9 da Spec ficaram desatualizados
+### L-013 — os capítulos 6 a 9 da Spec ficaram desatualizados ✅ FECHADA
 
-**Dono:** trilha `documento` · **Bloqueia:** nada imediatamente · **Criado por:** decisões do Design Depth §8
+**Fechada em:** 18/08/2026 pela **Spec v1.5** · **Dono:** trilha `documento`
+
+Os capítulos 6 e 7 foram reescritos, o 8 reposicionado, e o 3, 5.6, 9, 10, 22 e 25
+ajustados. A exceção temporária de precedência no `CLAUDE.md` foi removida: a Spec
+volta a valer integralmente para todas as fases. Registro do estado anterior abaixo.
 
 As três decisões tomadas sobre profundidade — mercados de apuração mútua, V3
 absorvido em V2, Liga de Previsão antecipada — mudam o que V2 a V5 são. A Spec
@@ -192,9 +205,8 @@ execução misturaria duas revisões independentes. O `BUILD_BLOCKS v1.2` já re
 as decisões e é o que vale para executar; a Spec vira v1.5 quando esta lacuna
 fechar.
 
-**Risco enquanto estiver aberto:** `CLAUDE.md` diz que em conflito a Spec vence.
-Entre agora e a v1.5 da Spec, essa regra tem uma exceção — para V2 a V5, valem o
-`DESIGN_DEPTH_v1.0` e o `BUILD_BLOCKS v1.2`. Está anotado no `CLAUDE.md`.
+**Resolvido.** A Spec v1.5 incorporou tudo, e a exceção de precedência saiu do
+`CLAUDE.md`. Ver o changelog §30 da Spec.
 
 ### L-012 — a consulta de enquadramento regulatório não foi feita
 

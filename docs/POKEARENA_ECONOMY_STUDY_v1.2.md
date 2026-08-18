@@ -1,6 +1,6 @@
 # PokéArena — Estudo Econômico Quantitativo v1.2
 
-**Base:** Master Spec v1.4  
+**Base:** Master Spec v1.5  
 **Objetivo:** testar estabilidade monetária, inflação, sinks/faucets, risco de quebra, conversão PC-C → PC-T, rake, transferência P2P, **precisão da margem da Arena**, **exposição por rodada** e sustentabilidade do loop competitivo.  
 **Status:** estudo de design e simulação atualizado; não é previsão de comportamento real, contabilidade oficial nem parecer jurídico.  
 **Alterações da v1.2:** seções 4.1, 5.1 e 15.1 são novas; §20 ganha ressalvas de modelo; ver changelog na seção 24.
@@ -201,7 +201,7 @@ Para erro relativo `ε`, `n = (1-p)/(p·ε²)`. A cauda dita a amostra:
 | Mediana do elenco | 0,083 | 27.621 |
 | Pior do elenco | 0,016 | **153.750** |
 
-`SIMS_MIN = 150.000` passa a ser baseline (Spec v1.4, §4.4.4). O custo não é obstáculo: a 23 µs/batalha e uma Arena por minuto, são ~41 CPU-h/mês, contra ~5,5 CPU-h/mês com 20.000. A conclusão do §12 do Estudo de Unit Economics — o Monte Carlo não domina o P&L — sobrevive ao aumento de 7,5×.
+`SIMS_MIN = 150.000` passa a ser baseline (Spec §4.4.4). O custo não é obstáculo: a 23 µs/batalha e uma Arena por minuto, são ~41 CPU-h/mês, contra ~5,5 CPU-h/mês com 20.000. A conclusão do §12 do Estudo de Unit Economics — o Monte Carlo não domina o P&L — sobrevive ao aumento de 7,5×.
 
 ### Implicação econômica
 
@@ -291,7 +291,7 @@ tickets_cortados_por_teto     quantos e de que perfil
 
 Sem essas séries, um pico de pagamento na cauda aparece no relatório como "mês ruim" em vez de aparecer como o que é: exposição não limitada.
 
-Parâmetros na Spec v1.4, §4.4.6.
+Parâmetros na Spec §4.4.6.
 
 ---
 
