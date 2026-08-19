@@ -534,7 +534,7 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 
 ---
 
-### F0.10 — Commit-reveal, telemetria e fechamento da v0.9
+### F0.10 — Commit-reveal, telemetria e fechamento da v0.9 ✅
 
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 Q6 Q9 · **Depende de** F0.9
 
@@ -549,6 +549,18 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 **Q9:** todo evento com campos obrigatórios, verificado por teste.
 
 **Saída:** os dez critérios do §4.8 marcados com evidência, **e o F0.11 e o F0.12 fechados** — a v0.9 não é tagueada com um canal de informação aberto nem dependendo de CDN de terceiros para abrir. **Fim da Fase 0.**
+
+**Entregue.** `engine/commit.mjs` (protocolo do §4.5), `app/modules/telemetria.mjs` (os 14 eventos do §4.7, todos emitidos) e `test/saida-v09.mjs`, que confere o §4.8 **item a item, com evidência apontada** — e imprime o quadro a cada execução da suíte.
+
+> **O SAL NÃO É ENFEITE, e é a coisa mais importante do bloco.** A raiz tem 32 bits: `SHA256(raiz)` sozinho é invertível por força bruta em segundos — 4,3 bilhões de tentativas é trabalho de laptop. Publicar commit sem sal seria **publicar o resultado** antes da aposta. O sal de 128 bits é o que torna a busca impraticável, e o teste faz a busca de verdade num espaço reduzido para provar que a proteção vem dele. O defeito S60 tira o sal e fica vermelho.
+
+**Q9 — os 14 eventos, e o que os faz valer.** A lista é lida da fonte, não redigitada no teste; cada evento declarado precisa ser **emitido** em algum lugar do app; e — a parte que escapou primeiro — **o evento que sai precisa trazer os campos comuns preenchidos**.
+
+> **Terceira vez que o mesmo padrão aparece, e agora está nomeado.** S30 (F0.5): a árvore de sementes estava certa e o app não estava ligado nela. S53 (F0.9): `reconciliar` funcionava e ninguém a chamava no boot. S65 (aqui): a lista de campos estava declarada e `emitir` não a cumpria. **Testar a peça não testa o encaixe — e testar a declaração não testa a peça.**
+
+**L-025 fechada, nas duas metades.** A varredura de dinheiro passou a alcançar `test/`, com o texto mascarado antes (o próprio enunciado dos testes cita `S.bal` para explicar a regra). E `npm run portoes` passou a rodar a suíte **duas vezes**, reprovando se as execuções discordarem: **instável reprova diferente de vermelho** — vermelho constante é defeito com endereço, instável é defeito que escolhe quando aparecer, e foi assim que o D-004 chegou a um commit.
+
+**Fim da Fase 0.** 212 testes verdes em duas execuções seguidas, 66/66 na sabotagem. Nove dos dez critérios do §4.8 cumpridos com evidência.
 
 > **Um dos dez critérios do §4.8 não é código.** O último item é *"a consulta de enquadramento regulatório da §0.5.1 tiver sido feita e a resposta estiver registrada neste documento"* — trilha `jurídico`, lacuna **L-012**, sem dono nomeado até hoje. Nenhum bloco fecha isso escrevendo software, e ele não está em cima de ninguém dentro do time de código. **A v0.9 não pode ser tagueada sem ele**, e é o item de maior prazo de todos os que faltam.
 

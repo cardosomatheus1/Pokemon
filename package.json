@@ -1,6 +1,6 @@
 {
   "name": "pokearena",
-  "version": "0.9.0-F0.12",
+  "version": "0.9.0",
   "private": true,
   "type": "module",
   "description": "PokéArena — battle royale de apostas com moeda simulada",
@@ -11,7 +11,8 @@
     "test:sem-golden": "SEM_GOLDEN=1 node test/run.mjs",
     "test:gerar": "node test/run.mjs --gerar",
     "sabotagem": "node test/sabotagem.mjs",
-    "portoes": "EXIGE_VISUAL=1 EXIGE_LOCAL=1 npm test && npm run sabotagem",
+    "portoes": "npm run repetir && npm run sabotagem",
+    "repetir": "node tools/repetir-portao.mjs",
     "serve": "node prototype/serve.js"
   }
 }

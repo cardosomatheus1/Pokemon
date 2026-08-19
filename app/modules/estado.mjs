@@ -33,6 +33,12 @@ export const S = {
      Entra em `S` porque a aposta escreve e a interface lê: duas fronteiras.
      Zerado a cada rodada, porque o teto do §4.4.6 é por rodada. */
   passivo:  null,
+  /* Commit-reveal (§4.5). `commit` é PÚBLICO desde o início da rodada;
+     `segredoRodada` só vira reveal depois que ela acaba. Separados de propósito:
+     o que se publica cedo não pode ter campo que o reveal traria. */
+  commit:   null,
+  segredoRodada: null,
+  reveal:   null,     // raiz e sal, publicados só depois da rodada
   battle:   null,     // {winner, events, duration}
   evPtr:    0,        // ponteiro de leitura da linha do tempo
   champ:    -1,

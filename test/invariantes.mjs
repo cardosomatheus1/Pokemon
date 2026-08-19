@@ -10,7 +10,6 @@ import { criarSuite, ok, rngTeste, elencoDeterministico } from './harness.mjs';
 const RODADAS = 2000;
 
 export const NAO_APLICAVEIS_AINDA = [
-  'saldo nunca fica negativo            -> F0.9',
   'payout ocorre uma única vez          -> F1.7',
   'aposta fechada não pode ser alterada -> F1.7',
 ];
@@ -21,6 +20,7 @@ export const JA_VERIFICADAS = [
   'nenhum ticket excede MAX_PAYOUT      -> F0.8, em test/exposicao.mjs',
   'nenhuma rodada excede MAX_LIABILITY  -> F0.8, em test/exposicao.mjs',
   'nenhuma batalha excede hard cap      -> F0.6, D-003, aqui em L-016',
+  'saldo nunca fica negativo            -> F0.9, em test/carteira.mjs',
 ];
 
 export function suite() {

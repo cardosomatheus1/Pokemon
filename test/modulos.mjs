@@ -36,6 +36,7 @@ const CAMADA = {
   'sprites-dados.mjs': 0,
   'assets.mjs': 0,
   'efeitos-dados.mjs': 0,
+  'telemetria.mjs': 0,
   'sprites.mjs': 1,
   'audio.mjs': 1,
   'render.mjs': 2,
@@ -62,8 +63,10 @@ function importsDe(txt) {
 }
 
 /* Remove strings, comentários e template literals, para que a varredura de
-   símbolos não confunda texto com código. */
-function semTexto(src) {
+   símbolos não confunda texto com código. Exportado desde o F0.10: a varredura
+   de dinheiro em test/carteira.mjs precisa da mesma máscara, e duas
+   implementações da mesma coisa divergem. */
+export function semTexto(src) {
   const out = [...src]; const n = src.length; let k = 0;
   while (k < n) {
     const c = src[k], nx = src[k + 1] ?? '';

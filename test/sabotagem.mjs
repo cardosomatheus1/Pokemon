@@ -56,6 +56,8 @@ const BANCO  = 'app/modules/banco.mjs';
 const INFO   = 'test/informacao.mjs';
 const ASSETS = 'app/modules/assets.mjs';
 const FX     = 'app/modules/efeitos.mjs';
+const COMMIT = 'engine/commit.mjs';
+const TELEM  = 'app/modules/telemetria.mjs';
 
 const DEFEITOS = [
   /* Desde o F0.4 a tabela de tipos é DADO DO PACK, não do motor. O defeito é o
@@ -341,6 +343,40 @@ const DEFEITOS = [
     real:'cascata desfeita ao mexer no CORS — 70 requisições por rodada voltam a sair',
     de:'  const lista = candidatos(FX_BASE + path, FX_ESPELHO + path);',
     para:'  const lista = [FX_BASE + path, FX_ESPELHO + path];' },
+
+  /* --- defeitos do F0.10: commit-reveal, telemetria, critério de saída --- */
+  { id:'S60', arquivo:COMMIT, nome:'o commit é publicado sem sal',
+    real:'"o SHA-256 já protege" — e com raiz de 32 bits ele é invertível em segundos',
+    de:"  if (typeof sal !== 'string' || sal.length < TAM_SAL * 2)",
+    para:"  if (false && typeof sal !== 'string')" },
+
+  { id:'S61', arquivo:COMMIT, nome:'o pacote público carrega a raiz',
+    real:'campo a mais "para facilitar o debug" — e o compromisso entrega o que devia esconder',
+    de:"  return { publico: { commit: await comprometer(raiz, sal), esquema: 'SHA256|v1' },",
+    para:"  return { publico: { commit: await comprometer(raiz, sal), esquema: 'SHA256|v1', raiz }," },
+
+  { id:'S62', arquivo:COMMIT, nome:'o sal é fixo entre rodadas',
+    real:'"gerar sal toda rodada é caro" — e uma tabela pré-computada quebra todos os commits',
+    de:'  return hex(c.getRandomValues(new Uint8Array(TAM_SAL)));',
+    para:"  return 'a'.repeat(TAM_SAL * 2);" },
+
+  { id:'S63', arquivo:COMMIT, nome:'a conferência aceita qualquer commit',
+    real:'comparação frouxa numa refatoração — o reveal deixa de provar coisa alguma',
+    de:'  return dif === 0;', para:'  return true;' },
+
+  { id:'S64', arquivo:TELEM, nome:'um evento do §4.7 some da lista',
+    real:'limpeza de "evento que ninguém usa" — e a pergunta que ele responderia fica sem dado',
+    de:"  'result_viewed', 'profile_opened', 'wallet_opened', 'challenge_completed',",
+    para:"  'result_viewed', 'profile_opened', 'wallet_opened'," },
+
+  { id:'S65', arquivo:TELEM, nome:'o evento sai sem a rodada',
+    real:'campo comum esquecido — o evento existe e não responde nada',
+    de:'    rodada: S.seeds ? S.seeds.raiz.toString(16) : null,', para:'' },
+
+  { id:'S66', arquivo:TELEM, nome:'a telemetria passa a identificar o dispositivo',
+    real:'"é só para segmentar melhor" — e classe de dispositivo vira impressão digital',
+    de:"  const w = globalThis.innerWidth || 0;",
+    para:"  const w = globalThis.innerWidth || 0; const ua = globalThis.navigator?.userAgent;" },
 ];
 
 /* --- COMO A SABOTAGEM RODA, E POR QUE ASSIM -----------------------------
@@ -388,7 +424,7 @@ const suitesQuePegaram = saida => {
 };
 
 const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES, LIGACAO, PACK, VALID,
-                  SEMENTE, FASES, PRECO, CLIMA, EXPO, PAINEL, BOLSO, BANCO, INFO, ASSETS];
+                  SEMENTE, FASES, PRECO, CLIMA, EXPO, PAINEL, BOLSO, BANCO, INFO, ASSETS, COMMIT, TELEM];
 const originais = new Map();
 for (const f of ARQUIVOS) originais.set(f, readFileSync(f, 'utf8'));
 
@@ -398,7 +434,9 @@ const N_TRAB = Math.max(1, Math.min(cpus().length, 4));
 const CAIXAS = [];
 for (let i = 0; i < N_TRAB; i++) {
   const c = mkdtempSync(join(tmpdir(), 'pokearena-sabotagem-'));
-  for (const dir of ['engine', 'app', 'test', 'prototype', 'content', 'tools'])
+  /* `docs/` entra desde o F0.10: test/saida-v09.mjs confere o §4.8 contra a
+     Spec e o registro das lacunas, e sem eles a suíte não roda na caixa. */
+  for (const dir of ['engine', 'app', 'test', 'prototype', 'content', 'tools', 'docs'])
     cpSync(dir, join(c, dir), { recursive: true });
   cpSync('package.json', join(c, 'package.json'));
   /* `.gitignore` entra porque test/assets.mjs afirma que a arte não é

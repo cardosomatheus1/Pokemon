@@ -9,6 +9,7 @@
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
+import { semTexto } from './modulos.mjs';
 import {
   BUCKETS, ORDEM_CONSUMO, TIPOS, carteiraVazia, creditar, lancar, liberar,
   liquidarGanho, liquidarPerda, reconciliar, reconstruir, reservar,
@@ -289,9 +290,21 @@ export function suite() {
   s.teste('só a fachada da carteira toca em dinheiro', () => {
     const DIR = new URL('../app/modules/', import.meta.url);
     const arquivos = readdirSync(DIR).filter(f => f.endsWith('.mjs') && f !== 'banco.mjs');
+    /* A varredura alcança `test/` desde o F0.10, e não é zelo: o defeito D-004
+       sobreviveu exatamente ali. Um `S.bal = x` num teste é atribuição a campo
+       que ninguém lê — JavaScript válido, silencioso, e o teste passa a medir
+       outra coisa. */
+    const TESTE = new URL('./', import.meta.url);
     const fontes = [...arquivos.map(f => [f, readFileSync(new URL(f, DIR), 'utf8')]),
-                    ['app/index.html', readFileSync(new URL('../app/index.html', import.meta.url), 'utf8')]];
-    for (const [nome, txt] of fontes) {
+                    ['app/index.html', readFileSync(new URL('../app/index.html', import.meta.url), 'utf8')],
+                    ...readdirSync(TESTE).filter(f => f.endsWith('.mjs'))
+                      .map(f => ['test/' + f, readFileSync(new URL(f, TESTE), 'utf8')])];
+    for (const [nome, bruto] of fontes) {
+      /* Mascarar texto antes de varrer: o próprio enunciado destes testes cita
+         `S.bal` para explicar a regra, e uma varredura crua acusaria a
+         explicação. Regra que não sabe se distinguir da própria descrição não
+         serve. */
+      const txt = semTexto(bruto);
       ok(!/S\.carteira\s*(?:=[^=]|\.\w+\s*[-+]?=)/.test(txt),
         `${nome} escreve em S.carteira direto. Quem move dinheiro é banco.mjs — ` +
         `o §5.5 exige lançamento no ledger para toda mudança de saldo.`);

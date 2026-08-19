@@ -19,7 +19,7 @@ const ESPERADO = [
   /* F0.5: a árvore de sementes, num campo só. Justificativa no próprio
      estado.mjs — reatribuída por rodada, lida por precificação, montagem e
      batalha. */
-  'seeds','passivo',
+  'seeds','passivo','commit','segredoRodada','reveal',
   'state','clock','battleT','fighters','odds','battle','evPtr','champ','weather','released',
   'shake','ents',
   'carteira','chipVal','myBet',
@@ -56,7 +56,8 @@ export function suite() {
       ok(!mod.includes(proibido),
         `estado.mjs referencia ${proibido} — deixa de ser inerte e passa a impor ordem de carga`);
     }
-    ok(S.carteira === null && S.profile === null && S.seeds === null && S.passivo === null,
+    ok(S.carteira === null && S.profile === null && S.seeds === null && S.passivo === null
+       && S.commit === null && S.segredoRodada === null && S.reveal === null,
       'campos que dependem de função precisam nascer inertes e ser preenchidos no boot');
   });
 
@@ -65,8 +66,12 @@ export function suite() {
        para 21 no F0.8, com `passivo`. A entrada é obrigatória e não tinha como
        ficar local: a aposta ESCREVE o passivo e a interface LÊ, duas fronteiras
        diferentes, e em módulo ES não se atribui a binding importado. Subir o
-       teto é decisão, e ela fica escrita aqui. */
-    ok(ESPERADO.length <= 21,
+       teto é decisão, e ela fica escrita aqui.
+
+       Subiu de novo no F0.10, para 23: `commit` e `segredoRodada`, exigidos
+       pelo §4.5. São dois campos e não um porque a separação É a garantia — o
+       que se publica antes da aposta não pode carregar o que o reveal traz. */
+    ok(ESPERADO.length <= 24,
       `a superfície tem ${ESPERADO.length} campos. Cada entrada precisa ser REATRIBUÍDA por ` +
       `mais de um módulo — mutação de conteúdo (push num array const) atravessa binding ` +
       `importado e não justifica entrar aqui.`);

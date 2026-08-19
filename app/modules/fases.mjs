@@ -11,6 +11,8 @@ import { tiposDaPool } from '../../engine/engine.mjs';
    ContentPack nenhum. É infraestrutura, como o DOM. */
 import { derivar, novaRaiz, sementes } from '../../engine/seed.mjs';
 import { avaliarAposta, passivoVazio, registrarTicket } from '../../engine/exposicao.mjs';
+import { abrirRodada, revelar } from '../../engine/commit.mjs';
+import { emitir } from './telemetria.mjs';
 import { S } from './estado.mjs';
 import { coreo, enfeite, semearVisual } from './sorte.mjs';
 import { buildEntities, overlay, preloadSheets, selRing } from './rodada.mjs';
@@ -76,6 +78,13 @@ async function newRound(){
      não pode ser previsível: quem adivinha a raiz sabe o vencedor antes
      de a aposta abrir.                                              */
   S.seeds = sementes(novaRaiz());
+  /* --- COMMIT-REVEAL (Spec §4.5) ------------------------------------
+     O compromisso é publicado AGORA, antes de qualquer aposta. A raiz e o
+     sal só saem depois que a rodada acaba. É o que permite a alguém
+     conferir que o resultado já estava decidido — sem precisar confiar. */
+  const rodada = await abrirRodada(S.seeds.raiz);
+  S.commit = rodada.publico;
+  S.segredoRodada = rodada.segredo;
 
   /* --- A POOL VEM PRIMEIRO, E O CLIMA DEPOIS (F0.11) -----------------
      Era o contrário: sorteava-se o clima e a pool era obrigada a conter
@@ -107,7 +116,8 @@ async function newRound(){
   S.ents.forEach(updatePlate);
   resetKillfeed();          // placar zerado com a pool nova
 
-  log(`<span class="l-sys">&gt; nova rodada · raiz ${S.seeds.raiz.toString(16)} · 12 sorteados de 76 · odds calculadas sem o clima</span>`);
+  log(`<span class="l-sys">&gt; nova rodada · commit ${S.commit.commit.slice(0,16)}… · 12 sorteados de 76</span>`);
+  emitir('round_viewed', { commit: S.commit.commit });
 
   overlay.innerHTML = `
     <div class="banner">Escolha seu lutador!</div>
@@ -180,7 +190,9 @@ function placeBet(idx, row){
     return;
   }
   const o = S.odds.lutadores.find(x => x.idx === idx);
+  emitir(S.myBet ? 'bet_changed' : 'bet_selected', { lutador: S.fighters[idx].n, odd: o.odd });
   S.myBet = {idx, amount, odd:o.odd, composicao: reserva.composicao};
+  emitir('bet_confirmed', { valor: amount, odd: o.odd, composicao: reserva.composicao });
   registrarTicket(S.passivo, idx, amount, o.odd);
   atualizarSaldo();
   recordBetPlaced(amount, S.fighters[idx]);
@@ -225,7 +237,8 @@ function startFight(){
 
   showWeatherBadge(S.weather);
   log(`<span class="l-sys">&gt; ${S.weather.emoji} clima revelado: <b>${S.weather.name}</b> — ${S.weather.desc}</span>`);
-  log(`<span class="l-sys">&gt; combate sorteado · raiz ${S.seeds.raiz.toString(16)} · duração prevista ${S.battle.duration.toFixed(1)}s</span>`);
+  log(`<span class="l-sys">&gt; combate sorteado · duração prevista ${S.battle.duration.toFixed(1)}s</span>`);
+  emitir('battle_started');
 
   music(true);
 }
@@ -327,6 +340,7 @@ function atualizaVariedade(){
     if (c.prog >= c.meta && !c.pago){
       c.feito = true; c.pago = true;
       S.profile.xp += c.xp; creditarRecompensa('CHALLENGE_REWARD', c.dia, 'desafio:' + c.id); atualizarSaldo();
+      emitir('challenge_completed', { desafio: c.id });
       S.profile.dailyDone = (S.profile.dailyDone || 0) + 1;
     }
   }
@@ -431,6 +445,15 @@ function finish(){
   // a rodada com o pódio dos três que mais abateram
   conferirAbates();
   mostrarPodio();
+  /* §4.7: o desfecho da rodada e o do SEU palpite são eventos diferentes.
+     `player_pick_ko` é o que permite medir frustração sem perguntar nada. */
+  emitir('battle_completed', { campeao: S.fighters[S.champ]?.n ?? null,
+                               duracao: +(S.battle?.duration ?? 0).toFixed(2) });
+  if (S.myBet) emitir('player_pick_ko', { acertou: S.myBet.idx === S.champ });
+  else emitir('bet_skipped');
+  emitir('result_viewed');
+  /* REVEAL (§4.5): a raiz e o sal saem só agora, com a rodada encerrada. */
+  if (S.segredoRodada) S.reveal = revelar(S.segredoRodada);
 
   overlay.classList.remove('hide');
 

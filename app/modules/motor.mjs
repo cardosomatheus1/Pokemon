@@ -12,7 +12,7 @@
  * bloco; ficar com eles seria carregar o nome da franquia de volta para dentro
  * de um módulo que promete independência de tema.
  */
-import { criarMotor, CONF, rng, statAt, stormRate, tiposDaPool } from '../../engine/engine.mjs';
+import { criarMotor, CONF, VERSAO, rng, statAt, stormRate, tiposDaPool } from '../../engine/engine.mjs';
 import pack from '../../content/pokemon_kanto_v1.mjs';
 
 export const M = criarMotor(pack);
@@ -23,6 +23,7 @@ export const {
   tipoCor, tipoNome,
 } = M;
 export { CONF, rng, statAt, stormRate, tiposDaPool, pack };
+export const VERSAO_MOTOR = VERSAO;
 
 /* Dado do pack que a interface lê direto. Não são apelidos: são as tabelas
    inteiras, e quem as consome (customização, painel de tipos) precisa

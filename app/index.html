@@ -1185,6 +1185,7 @@ import { goView, renderSession, sessaoAtiva } from './modules/navegacao.mjs';
 import { loadProfile } from './modules/perfil.mjs';
 import { newRound } from './modules/fases.mjs';
 import { atualizarSaldo } from './modules/controles.mjs';
+import { emitir } from './modules/telemetria.mjs';
 import { carregar as carregarCarteira } from './modules/banco.mjs';
 import { applyEvent } from './modules/eventos.mjs';
 import { alternarSom, aplicarVolume, audio, bgm, music, musicOn, sfx, somLigado } from './modules/audio.mjs';
@@ -1325,6 +1326,12 @@ carregarCarteira();
 S.profile = loadProfile();
 /* O fluxo visual não precisa mais ser semeado aqui: sorte.mjs nasce com
    sementes fixas e é re-semeado a cada rodada pelo ramo `visual` da árvore. */
+
+/* §4.7: a sessão abre e fecha com evento. `pagehide` e não `unload` — o
+   segundo não dispara em navegador móvel, e sessão que nunca fecha é métrica
+   de retenção mentindo para cima. */
+emitir('session_started');
+addEventListener('pagehide', () => emitir('session_ended'));
 
 (async function boot(){
   atualizarSaldo();

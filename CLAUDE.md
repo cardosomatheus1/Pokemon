@@ -98,7 +98,9 @@ explicitamente, para que a ausência seja decisão e não esquecimento.
 ## Comandos
 
 ```bash
-npm run portoes      # suíte com o portão de navegador + sabotagem
+npm run portoes      # suíte DUAS vezes com navegador + sabotagem
+npm run repetir      # só a repetição — instável reprova como vermelho
+npm run assets       # baixa a arte para assets/, fora do versionamento
 npm test             # suíte (pula Q5 se não houver navegador)
 npm run sabotagem    # Q2 — ~6 min em 4 cores desde o F0.11
 npm run test:gerar   # regrava fixtures E linha de base visual
@@ -137,7 +139,8 @@ Branch de trabalho: `claude/pok-arena-repo-setup-qgcn76`.
 ## Nunca
 
 - Corrigir fora do escopo do bloco, mesmo que seja "rapidinho".
-- Fechar bloco com a suíte vermelha.
+- Fechar bloco com a suíte vermelha — ou com ela **instável**, que é pior:
+  vermelho constante é defeito com endereço, instável escolhe quando aparecer.
 - Regravar fixture sem explicar a diferença.
 - Pular a sabotagem porque "o teste obviamente funciona".
 - Substituir arte, som ou dado por outro de fonte diferente quando o original

@@ -19,6 +19,9 @@ import * as carteira from './carteira.mjs';
 import * as banco from './banco.mjs';
 import * as informacao from './informacao.mjs';
 import * as assets from './assets.mjs';
+import * as telemetria from './telemetria.mjs';
+import * as commit from './commit.mjs';
+import * as saida from './saida-v09.mjs';
 import * as visual from './visual.mjs';
 
 if (process.argv.includes('--gerar')) {
@@ -96,7 +99,7 @@ const suites = [
   ...(semGolden ? [] : [golden.suite()]),
   /* baratas: varredura de texto e lotes pequenos */
   fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(),
-  carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(),
+  carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(), telemetria.suite(), commit.suite(), saida.suite(),
   /* médias: lotes de simulação curtos */
   semente.suite(), estatistica.suite(), precisao.suite(), invariantes.suite(),
   ...(visual.disponivel() && !semVisual
@@ -123,6 +126,10 @@ if (falhas.length) {
   process.exit(1);
 }
 console.log(`VERDE — ${total}/${total} passaram`);
+console.log('\n§4.8 — critério de saída da v0.9, item a item:');
+console.log(saida.relatorio());
+console.log('  ⏳ = registrado e pendente; não se resolve escrevendo software.');
+
 console.log('\nInvariantes da Spec §4.6 já verificadas:');
 for (const n of invariantes.JA_VERIFICADAS) console.log('  ✓ ' + n);
 console.log('\nInvariantes da Spec §4.6 ainda não verificáveis neste bloco:');

@@ -6,6 +6,7 @@
 import { $ } from './dom.mjs';
 import { CUR } from './motor.mjs';
 import { S } from './estado.mjs';
+import { emitir } from './telemetria.mjs';
 import { saldo } from './banco.mjs';
 import { avatarURL, renderProfile, trainerURL } from './customizacao.mjs';
 import { progressoNivel, saveProfile, tituloDe } from './perfil.mjs';
@@ -124,7 +125,13 @@ document.addEventListener('click', ev => {
   const b = ev.target.closest('[data-fechar]');
   if (b) closeModal(b.dataset.fechar);
 });
-function openModal(id){ $(id).classList.add('show'); }
+function openModal(id){
+  $(id).classList.add('show');
+  /* §4.7: abrir perfil e carteira são eventos próprios. Medir o que o jogador
+     OLHA, e não só o que ele aposta, é o que separa produto de cassino. */
+  if (id === '#profileModal') emitir('profile_opened');
+  if (id === '#walletModal')  emitir('wallet_opened');
+}
 function closeModal(id){ $(id).classList.remove('show'); }
 
 export {

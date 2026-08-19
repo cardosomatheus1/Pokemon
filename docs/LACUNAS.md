@@ -438,9 +438,22 @@ que ninguém prometeu.
 de ser simulada. A estrutura já está pronta para receber: o bucket existe, está
 fora da ordem de consumo, e os tipos estão nomeados na Spec.
 
-### L-025 — o portão fecha bloco com uma execução só
+### L-025 — o portão fecha bloco com uma execução só ✅ FECHADA
 
-**Dono:** F0.10 · **Notada em:** F0.9, ao investigar o D-004
+**Fechada em:** F0.10 · **Notada em:** F0.9, ao investigar o D-004
+
+**Como fechou.** As duas metades:
+
+1. A varredura de dinheiro de `test/carteira.mjs` passou a alcançar `test/`, com
+   as strings e comentários mascarados antes — o próprio enunciado dos testes
+   cita `S.bal` para explicar a regra, e varredura crua acusaria a explicação.
+   Regra que não sabe se distinguir da própria descrição não serve.
+2. `npm run portoes` passou a rodar a suíte **duas vezes** e a reprovar se as
+   execuções discordarem (`tools/repetir-portao.mjs`). Duas e não cinco: pega a
+   instabilidade grosseira — a classe do D-004, que falhava em 1 de 3 — sem
+   triplicar um passo de ~50 s. **Instável reprova diferente de vermelho:**
+   vermelho constante é defeito com endereço, instável é defeito que escolhe
+   quando aparecer.
 
 O defeito D-004 passava em **duas de cada três** execuções do portão Q5, e
 entrou no repositório porque o bloco foi fechado rodando o portão uma vez.
