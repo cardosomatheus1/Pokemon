@@ -5,7 +5,7 @@
  * uma vez, senão quem abre a página em segundo plano nunca vê as odds saírem. */
 
 import { $ } from './dom.mjs';
-import { CONF, simular } from './motor.mjs';
+import { CONF, M } from './motor.mjs';
 import { precificar, simularLote } from '../../engine/preco.mjs';
 import { S } from './estado.mjs';
 import { imgTag } from './sprites.mjs';
@@ -18,6 +18,10 @@ import { imgTag } from './sprites.mjs';
    deixa de ser irreproduzível. Duas execuções da mesma rodada dão a MESMA
    tabela de odds, que é o que o §25.2 precisa para alguém auditar o preço
    depois de a rodada acabar.
+
+   Desde o F0.6 cada simulação sorteia o próprio clima (§4.3). O clima da luta
+   real segue secreto até as apostas fecharem — o que mudou é que o preço passa
+   a saber que ele existe.
 ---------------------------------------------------------------------- */
 function computeOdds(fighters, sims, onProgress, raiz){
   return new Promise(resolve => {
@@ -32,13 +36,13 @@ function computeOdds(fighters, sims, onProgress, raiz){
       // O tamanho da fatia NÃO afeta o resultado: cada simulação tem sub-seed
       // derivada do próprio índice (engine/preco.mjs), não de um sorteio.
       if (document.hidden){
-        simularLote(simular, fighters, raiz, done, sims, wins);
+        simularLote(M, fighters, raiz, done, sims, wins);
         done = sims;
       } else {
         const t0 = performance.now();
         while (done < sims && performance.now() - t0 < 12){
           const ate = Math.min(sims, done + 200);
-          simularLote(simular, fighters, raiz, done, ate, wins);
+          simularLote(M, fighters, raiz, done, ate, wins);
           done = ate;
         }
       }

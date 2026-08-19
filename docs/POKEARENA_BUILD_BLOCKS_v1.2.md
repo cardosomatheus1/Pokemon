@@ -384,9 +384,9 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 
 ---
 
-### F0.6 — Clima dentro do modelo probabilístico
+### F0.6 — Clima dentro do modelo probabilístico ✅
 
-**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q3 Q4 · **Depende de** F0.5
+**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q3 Q4 Q5 · **Depende de** F0.5
 
 **Escopo:** §4.3 da Spec — cada simulação do Monte Carlo deriva o próprio `environmentSeed` e sorteia clima com a mesma distribuição da luta real.
 
@@ -396,7 +396,32 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 
 **Q6:** sem superfície nova.
 
+**Também corrige:** o defeito **D-003** (o corte duro de tempo é suave).
+
 **Saída:** diferença entre grupos dentro do ruído, medida em 300 rodadas × 8.000 simulações. **Muda comportamento de propósito — atualizar goldens no mesmo commit.**
+
+**Entregue.** Cada simulação do Monte Carlo deriva o próprio `environmentSeed` e sorteia clima com a mesma distribuição da luta real. O clima da batalha continua secreto até as apostas fecharem — o que mudou é que **o preço passa a saber que ele existe**.
+
+**Medido, 300 rodadas × 8.000 simulações:**
+
+| grupo (observável na hora de apostar) | antes | depois |
+|---|---|---|
+| tipo buffável (Fogo, Água, Voador, Gelo) | −0,61 % | **7,36 % ± 1,55** |
+| resto | +14,96 % | **7,80 % ± 0,65** |
+| **diferença** | **−15,58 pontos** | **−0,44 pontos** |
+| margem geral | 8,22 % | 7,61 % |
+
+> **O clima não era surpresa: era desconto.** Com o preço saindo de stats crus, a casa *pagava* para aceitar aposta em lutador de tipo buffável, e quem soubesse disso apostava só em Fogo, Água, Voador e Gelo. A diferença de 15,58 pontos era a mensalidade dessa estratégia.
+
+> **O agrupamento é pelo OBSERVÁVEL, e essa é a parte que decide o teste.** Agrupar pelo clima que de fato saiu mede uma vantagem que ninguém consegue usar — o clima só é revelado depois do fechamento. Condicionada ao clima realizado, a margem continua em −45 % para quem foi buffado contra +13 % no resto. Isso **não é defeito enquanto o clima for imprevisível**, e a pergunta de se ele é virou a lacuna **L-022** e o bloco **F0.11**, proposto neste commit.
+
+> **A previsão do bloco sobre goldens estava errada, e a medição corrigiu.** O bloco dizia "muda comportamento de propósito — atualizar goldens no mesmo commit". **Nenhum golden mudou.** As fixtures fotografam a BATALHA, e a batalha não mudou: o que mudou foi o PREÇO, que nenhuma fixture cobria. A fixture nova é `test/fixtures/margem.json`, com a medição de 300 × 8.000.
+
+**A margem geral fica em 7,61 %, não 8 %.** É o viés de Jensen sobre o estimador `1/p̂`, que é convexo — medido em +19,22 % no pior lutador com 20.000 simulações, no baseline do F0.1. Corrigi-lo é escopo do **F0.7**, e o teste de margem geral carrega essa folga escrita, com o motivo.
+
+**D-003 fechado, e a Spec venceu.** Das duas saídas registradas — truncar, ou reescrever a invariante para "nenhuma ação NOVA é agendada depois do corte" — vale a primeira: um teto que não segura não é teto. Reescrever a invariante trocaria uma garantia por uma descrição do que o código fazia, e invariante que se adapta ao código não é invariante. O teste que **afirmava o defeito de propósito** ficou vermelho na correção, como fora escrito para fazer.
+
+**Q5 ganhou um teste:** o portão de navegador passou a ler, **ainda na fase de apostas**, se o selo de clima está visível. O clima é sorteado antes da pool, para garantir 1 lutador do tipo favorecido; se vazasse na tela, o §4.3 viraria letra morta. O defeito S35 planta o vazamento.
 
 ---
 
@@ -464,7 +489,29 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 
 **Q9:** todo evento com campos obrigatórios, verificado por teste.
 
-**Saída:** os seis critérios do §4.8 marcados com evidência. **Fim da Fase 0.**
+**Saída:** os seis critérios do §4.8 marcados com evidência, **e o F0.11 fechado** — a v0.9 não é tagueada com um canal de informação aberto. **Fim da Fase 0.**
+
+---
+
+### F0.11 — Vazamento de informação pela pool
+
+**Tam.** P · **Método** INV · **Portões** Q1 Q2 Q4 Q6 · **Depende de** F0.7
+
+> **Proposto no F0.6**, ao medir a margem por grupo de tipo. Não existia bloco dono: nenhum dos dez anteriores trata de informação observável, e "depois" não é dono.
+
+**O achado que o originou.** Depois do F0.6 a margem por grupo OBSERVÁVEL fecha em 8 %. Mas condicionada ao clima que de fato saiu, ela continua em **−45 % para quem foi buffado** contra **+13 % no resto** — 58 pontos de diferença. Isso é inofensivo enquanto o clima for imprevisível, e o problema é que ele não é totalmente: **a pool garante 1 lutador do tipo favorecido**. Ver um único lutador de Gelo numa pool de 12 é evidência de Nevasca, e evidência é preço.
+
+Medido em 400 rodadas, estratificando a margem pelo número de lutadores daquele tipo na pool: nenhuma célula ficou negativa com confiança — `fire:1` deu −2,02 % ± 6,69, `ice:1` deu +1,23 % ± 4,64. **O canal existe por construção; a exploração não foi demonstrada.** É por isso que isto é lacuna e não defeito.
+
+**Escopo:** medir a exploração de verdade, com um apostador bayesiano que usa só o observável — a contagem de cada tipo buffável na pool — e escolhe a melhor aposta. Se o EV for positivo, fechar o canal. Três saídas possíveis, e a escolha sai da medição: (a) tirar a garantia de tipo da pool, (b) sortear a pool sem conhecer o clima e sortear o clima só entre os que a pool suporta, (c) condicionar o preço à mesma informação que o apostador tem — a alternativa que o §4.3 já prevê.
+
+**Sabotagem:** devolver a garantia de tipo depois de removida; usar distribuição de clima diferente entre o preço e a luta; deixar o apostador bayesiano com informação que ele não teria (o clima real).
+
+**Q4:** o EV do melhor apostador que usa só informação observável fica **negativo**, dentro do intervalo, em 300 rodadas.
+
+**Q6:** informação é superfície. Testar que nenhum campo enviado ao cliente antes do fechamento das apostas permite reconstruir o clima.
+
+**Saída:** o EV do apostador informado medido e negativo, com o número publicado — e, se alguma opção de fechamento for adotada, os goldens regravados no mesmo commit.
 
 ---
 

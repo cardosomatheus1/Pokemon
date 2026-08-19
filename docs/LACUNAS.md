@@ -296,7 +296,7 @@ removidos — reaparecer é regressão desta lacuna, não conveniência.
 
 ### L-021 — o motor exige um pool de golpes chamado `normal`
 
-**Dono:** F1.3 · **Notada em:** F0.4
+**Dono:** F1.12 · **Notada em:** F0.4
 
 `atribuirGolpes` cai em `golpes.normal` quando o pool do próprio tipo se esgota,
 e `validarPack` exige que a chave exista. Ou seja: o motor não conhece o tema,
@@ -308,8 +308,43 @@ Não cabe agora porque trocar o contrato exige decidir o que substitui: um campo
 que quatro. As três mudam distribuição de dano, e distribuição de dano move as
 odds — medição de F1.3, que é o bloco do balanceamento de golpes.
 
-**O que destrava:** F1.3 já vai medir cobertura de golpe por espécie (os 14 de 66
-nunca atribuídos, do baseline do F0.1). A escolha do contrato sai dessa medição.
+**O que destrava:** F1.12 constrói um ContentPack do zero, e é ali que o
+contrato aperta de verdade — um tema original pode não ter nada equivalente a
+"golpe genérico". A escolha sai de lá, junto com a medição de cobertura de golpe
+por espécie (os 14 de 66 nunca atribuídos, do baseline do F0.1).
+
+> **Correção de registro:** este verbete nasceu com dono F1.3, por engano — F1.3
+> é autenticação real, não balanceamento. Corrigido no F0.6.
+
+### L-022 — a garantia de tipo na pool é um canal de informação sobre o clima
+
+**Dono:** F0.11 · **Notada em:** F0.6
+
+Depois do F0.6 a margem por grupo **observável** fecha em 8 %. Condicionada ao
+clima que de fato saiu, ela continua torta: **−45 % para quem foi buffado**
+contra **+13 % no resto**, 58 pontos de diferença.
+
+Isso seria inofensivo se o clima fosse imprevisível. Não é totalmente: `sortearPool`
+**garante 1 lutador do tipo favorecido** na pool, para que o clima tenha em quem
+bater. Ver um único lutador de Gelo entre 12 é evidência de Nevasca — e evidência
+é preço.
+
+**Medido, e é por isso que é lacuna e não defeito.** Em 400 rodadas,
+estratificando a margem pelo número de lutadores daquele tipo na pool, nenhuma
+célula ficou negativa com confiança: `fire:1` deu −2,02 % ± 6,69, `ice:1` deu
++1,23 % ± 4,64. O canal existe por construção; a exploração não foi demonstrada.
+
+**Por que não cabe agora.** Medir a exploração de verdade exige um apostador
+bayesiano — posterior do clima dado a contagem de tipos na pool, e probabilidade
+de vitória por clima — e o intervalo de confiança precisa ser menor que a
+vantagem procurada. Com o estimador de hoje a dispersão no azarão é de ~22 %
+(baseline do F0.1); qualquer edge de 1 a 2 pontos some no ruído. **Fechar o
+estimador vem primeiro**, e isso é o F0.7.
+
+**O que a destrava:** F0.7 derruba a dispersão para menos de 3 %. Aí a medição
+passa a distinguir uma vantagem real de ruído, e o F0.11 — proposto no mesmo
+commit — decide entre tirar a garantia, sortear o clima depois da pool, ou
+condicionar o preço à mesma informação que o apostador tem.
 
 ## Conteúdo e identidade
 

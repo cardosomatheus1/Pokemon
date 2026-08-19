@@ -19,10 +19,24 @@ import { derivarIndice } from './seed.mjs';
  *
  * A sub-seed de cada simulação vem do ÍNDICE, não de um sorteio: com isso o
  * lote 0-500 dá o mesmo resultado tendo sido rodado de uma vez ou em vinte
- * fatias, e a tabela de odds inteira é reproduzível a partir da raiz. */
-export function simularLote(simular, fighters, raiz, de, ate, wins) {
+ * fatias, e a tabela de odds inteira é reproduzível a partir da raiz.
+ *
+ * CADA SIMULAÇÃO SORTEIA O PRÓPRIO CLIMA (Spec §4.3), com a mesma distribuição
+ * da luta real. Antes do F0.6 o Monte Carlo rodava sobre stats crus enquanto a
+ * batalha rodava com o bônus climático, e os dois discordavam. Medido em 150
+ * rodadas: quem tinha tipo buffável saía a -0,61% de margem — a casa PAGAVA
+ * para aceitar essas apostas — contra +14,96% no resto, com 8% declarados.
+ * O clima não era surpresa: era desconto.
+ *
+ * O clima da luta real continua secreto até as apostas fecharem. O que muda é
+ * que o preço passa a levar em conta que ELE EXISTE. */
+export function simularLote(M, fighters, raiz, de, ate, wins) {
   for (let i = de; i < ate; i++) {
-    const w = simular(fighters, derivarIndice(raiz, 'simulacao', i), false);
+    const clima = M.sortearClima(derivarIndice(raiz, 'ambiente', i));
+    /* Clima sem tipo favorecido não muda ninguém; copiar 12 lutadores à toa
+       custaria caro num laço de 20.000 voltas. */
+    const f = clima.type ? M.aplicarClima(fighters, clima) : fighters;
+    const w = M.simular(f, derivarIndice(raiz, 'simulacao', i), false);
     if (w >= 0) wins[w]++;
   }
   return wins;

@@ -48,6 +48,7 @@ const VALID  = 'engine/pack.mjs';
 const SEMENTE= 'engine/seed.mjs';
 const FASES  = 'app/modules/fases.mjs';
 const PRECO  = 'engine/preco.mjs';
+const CLIMA  = 'app/modules/clima.mjs';
 
 const DEFEITOS = [
   /* Desde o F0.4 a tabela de tipos é DADO DO PACK, não do motor. O defeito é o
@@ -186,13 +187,13 @@ const DEFEITOS = [
 
   { id:'S29', arquivo:PRECO, nome:'o Monte Carlo volta a sortear sozinho',
     real:'sub-seed derivada trocada por semente solta — o preço deixa de ser auditável',
-    de:"    const w = simular(fighters, derivarIndice(raiz, 'simulacao', i), false);",
-    para:'    const w = simular(fighters, (Math.random()*4294967296)>>>0, false);' },
+    de:"    const w = M.simular(f, derivarIndice(raiz, 'simulacao', i), false);",
+    para:'    const w = M.simular(f, (Math.random()*4294967296)>>>0, false);' },
 
   { id:'S31', arquivo:PRECO, nome:'a sub-seed da simulação vem da posição no lote',
     real:'"o índice do laço serve" — e aí o preço passa a depender do tamanho da fatia',
-    de:"  for (let i = de; i < ate; i++) {\n    const w = simular(fighters, derivarIndice(raiz, 'simulacao', i), false);",
-    para:"  for (let i = de; i < ate; i++) {\n    const w = simular(fighters, derivarIndice(raiz, 'simulacao', i - de), false);" },
+    de:"    const w = M.simular(f, derivarIndice(raiz, 'simulacao', i), false);\n    if (w >= 0) wins[w]++;",
+    para:"    const w = M.simular(f, derivarIndice(raiz, 'simulacao', i - de), false);\n    if (w >= 0) wins[w]++;" },
 
   { id:'S32', arquivo:PRECO, nome:'a suavização de Laplace some',
     real:'"o +1 não faz diferença com 20.000 simulações" — até alguém não vencer nenhuma',
@@ -201,6 +202,27 @@ const DEFEITOS = [
   { id:'S30', arquivo:FASES, nome:'a batalha usa a sub-seed do elenco',
     real:'ramo trocado por engano — batalha e sorteio deixam de ser independentes',
     de:'  const seed = S.seeds.batalha;', para:'  const seed = S.seeds.elenco;' },
+
+  /* --- defeitos do F0.6: o clima dentro do preço ------------------------ */
+  { id:'S33', arquivo:PRECO, nome:'o preço volta a sair de stats crus',
+    real:'"o clima é surpresa, não deve entrar no preço" — o argumento que custou 15 pontos de margem',
+    de:'    const f = clima.type ? M.aplicarClima(fighters, clima) : fighters;',
+    para:'    const f = fighters;' },
+
+  { id:'S34', arquivo:PRECO, nome:'o preço usa uma distribuição de clima diferente da luta',
+    real:'sub-seed de ambiente fixa numa refatoração — todas as simulações veem o mesmo clima',
+    de:"    const clima = M.sortearClima(derivarIndice(raiz, 'ambiente', i));",
+    para:"    const clima = M.sortearClima(derivarIndice(raiz, 'ambiente', 0));" },
+
+  { id:'S35', arquivo:CLIMA, nome:'o clima é revelado antes de as apostas fecharem',
+    real:'selo mostrado cedo demais — o apostador passa a ver o bônus antes de escolher',
+    de:"function hideWeatherBadge(){ $('#weatherBadge').classList.remove('show','pop'); }",
+    para:"function hideWeatherBadge(){ $('#weatherBadge').classList.add('show'); }" },
+
+  { id:'S36', arquivo:MOTOR, nome:'D-003 revertido: o corte duro volta a ser suave',
+    real:'alguém "simplifica" o descarte da ação agendada além do corte',
+    de:'    if (best >= CONF.MAX_TIME){ t = CONF.MAX_TIME; break; }\n\n',
+    para:'' },
 ];
 
 /* A sabotagem mede se a SUÍTE pega o defeito, então roda sem o portão de
@@ -226,7 +248,7 @@ const suitesQuePegaram = saida => {
 };
 
 const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES, LIGACAO, PACK, VALID,
-                  SEMENTE, FASES, PRECO];
+                  SEMENTE, FASES, PRECO, CLIMA];
 const originais = new Map();
 for (const f of ARQUIVOS) originais.set(f, readFileSync(f, 'utf8'));
 

@@ -174,8 +174,8 @@ export function suite() {
   s.teste('a mesma raiz produz a mesma tabela de odds', () => {
     const { elenco } = rodada(2026);
     const a = new Uint32Array(elenco.length), b = new Uint32Array(elenco.length);
-    simularLote(E.simular, elenco, 2026, 0, 800, a);
-    simularLote(E.simular, elenco, 2026, 0, 800, b);
+    simularLote(E, elenco, 2026, 0, 800, a);
+    simularLote(E, elenco, 2026, 0, 800, b);
     igual(a.join(','), b.join(','), 'dois lotes idênticos deram placares diferentes');
     const pa = precificar(a, 800, 0.08), pb = precificar(b, 800, 0.08);
     igual(JSON.stringify(pa), JSON.stringify(pb), 'a mesma contagem gerou preços diferentes');
@@ -188,11 +188,11 @@ export function suite() {
   s.teste('o tamanho da fatia não muda o preço', () => {
     const { elenco } = rodada(31337);
     const inteiro = new Uint32Array(elenco.length);
-    simularLote(E.simular, elenco, 31337, 0, 900, inteiro);
+    simularLote(E, elenco, 31337, 0, 900, inteiro);
     for (const fatia of [1, 7, 100, 450]) {
       const partido = new Uint32Array(elenco.length);
       for (let de = 0; de < 900; de += fatia)
-        simularLote(E.simular, elenco, 31337, de, Math.min(900, de + fatia), partido);
+        simularLote(E, elenco, 31337, de, Math.min(900, de + fatia), partido);
       igual(partido.join(','), inteiro.join(','),
         `fatia de ${fatia} deu placar diferente de uma execução inteira`);
     }
@@ -201,8 +201,8 @@ export function suite() {
   s.teste('raízes diferentes dão tabelas de odds diferentes', () => {
     const { elenco } = rodada(5);
     const a = new Uint32Array(elenco.length), b = new Uint32Array(elenco.length);
-    simularLote(E.simular, elenco, 111, 0, 600, a);
-    simularLote(E.simular, elenco, 222, 0, 600, b);
+    simularLote(E, elenco, 111, 0, 600, a);
+    simularLote(E, elenco, 222, 0, 600, b);
     ok(a.join(',') !== b.join(','), 'duas raízes deram exatamente o mesmo placar');
   });
 

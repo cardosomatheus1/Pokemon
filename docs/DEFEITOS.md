@@ -134,8 +134,9 @@ volta a reprovar o portão.
 
 ---
 
-## D-003 — o corte duro de tempo é suave
+## D-003 — o corte duro de tempo é suave ✅ CORRIGIDO
 
+**Corrigido em:** F0.6
 **Encontrado por:** F0.3d, ao escrever o teste da lacuna L-016
 **Dono:** F0.6 (é o bloco que reexamina a distribuição de duração)
 **Gravidade:** nenhuma hoje, mas contradiz uma invariante escrita na Spec
@@ -182,3 +183,27 @@ Duas opções, e a escolha é de desenho:
 A segunda parece mais honesta com o comportamento, mas é decisão de F0.6, não
 deste bloco. O que não pode continuar é a Spec afirmar uma coisa e o motor
 fazer outra.
+
+### Como foi corrigido (F0.6)
+
+**Escolhida a opção 1, truncar.** Um teto que não segura não é teto, e o nome já
+dizia "hard". O laço descarta a ação agendada além do corte e a batalha encerra
+em `MAX_TIME` exatos, com o desempate por % de vida que já existia:
+
+```js
+if (best >= CONF.MAX_TIME){ t = CONF.MAX_TIME; break; }
+```
+
+A opção 2 — reescrever a invariante — foi descartada porque trocaria uma
+garantia forte por uma descrição do que o código fazia. Invariante que se
+adapta ao código não é invariante.
+
+**Nenhuma rodada do pack em uso mudou.** Os 20 goldens passaram byte a byte, o
+que confirma a medição do F0.3d: com a tempestade ligada nenhuma batalha chega
+perto do corte, e o caminho só era alcançável no cenário de imunidade mútua que
+o elenco de Kanto não produz.
+
+O teste que **afirmava o defeito de propósito** (`test/invariantes.mjs` → `L-016
+· o corte duro`) ficou vermelho na hora da correção, como fora escrito para
+fazer, e virou a invariante que a Spec §4.6 sempre pediu: `duration <= MAX_TIME`,
+com igualdade exata no cenário construído. O defeito S36 planta a regressão.

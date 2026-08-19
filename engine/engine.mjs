@@ -273,6 +273,23 @@ function simular(chart, fighters, seed, record){
       continue;
     }
 
+    /* --- D-003 -------------------------------------------------------------
+       O laço testava `t < MAX_TIME` ANTES de executar a ação, e a ação
+       executada podia estar agendada depois do corte — a batalha terminava em
+       56,47 s com MAX_TIME de 56 s. A Spec §4.6 lista "nenhuma batalha excede
+       hard cap" como invariante, então o motor contradizia um documento.
+
+       Das duas saídas registradas em DEFEITOS.md — truncar, ou reescrever a
+       invariante para "nenhuma ação NOVA é agendada depois do corte" — vale a
+       primeira: um teto que não segura não é teto, e o nome já dizia "hard".
+       A ação agendada além do corte é descartada e a batalha encerra em
+       MAX_TIME exatos, com o desempate por % de vida que já existe.
+
+       Não muda nenhuma rodada do pack em uso: a tempestade encerra tudo bem
+       antes dos 56 s, e o corte só era alcançável no cenário de imunidade
+       mútua que o elenco não produz. Os goldens provam. */
+    if (best >= CONF.MAX_TIME){ t = CONF.MAX_TIME; break; }
+
     t = best;
     const A = fighters[k];
 

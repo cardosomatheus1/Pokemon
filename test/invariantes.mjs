@@ -178,17 +178,20 @@ export function suite() {
       let alcancou = 0;
       for (let i = 0; i < 200; i++) {
         const r = E.simular(f, 900000 + i, true);
-        /* D-003 · o corte é SUAVE, não duro. O laço testa `t < MAX_TIME` antes
-           de agir, então a última ação pode ser agendada logo abaixo do corte
-           e levar `t` para além dele — até um intervalo de ataque depois.
-           Este teste AFIRMA O DEFEITO de propósito: quando alguém endurecer o
-           corte, ele fica vermelho e aponta para docs/DEFEITOS.md. */
-        const folga = E.CONF.BASE_CD * 1.3;
-        ok(r.duration > E.CONF.MAX_TIME,
-          `a batalha parou em ${r.duration.toFixed(2)}s, dentro do corte — D-003 foi corrigido? ` +
-          `Se sim, troque esta asserção por <= MAX_TIME e feche o defeito.`);
-        ok(r.duration <= E.CONF.MAX_TIME + folga,
-          `estouro de ${(r.duration - E.CONF.MAX_TIME).toFixed(2)}s passa do intervalo de ação`);
+        /* D-003 CORRIGIDO no F0.6. Esta asserção afirmava o defeito de
+           propósito — "a duração PASSA do corte" — para ficar vermelha no dia
+           em que alguém o endurecesse. Ficou, e virou a invariante que a Spec
+           §4.6 sempre pediu: nenhuma batalha excede o corte. Ponto.
+
+           A igualdade é esperada e não é caso de borda: quando a ação seguinte
+           cai depois do corte, ela é descartada e a batalha encerra em
+           MAX_TIME exatos. */
+        ok(r.duration <= E.CONF.MAX_TIME,
+          `a batalha durou ${r.duration.toFixed(2)}s, além do corte de ${E.CONF.MAX_TIME}s — ` +
+          `D-003 regrediu`);
+        ok(r.duration === E.CONF.MAX_TIME,
+          `a batalha parou em ${r.duration.toFixed(2)}s; neste cenário nada além do corte a encerra, ` +
+          `então ela deveria parar exatamente em ${E.CONF.MAX_TIME}s`);
         ok(r.winner >= 0, `corte de tempo devolveu ${r.winner} em vez de um vencedor`);
         alcancou++;
       }

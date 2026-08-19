@@ -100,7 +100,7 @@ explicitamente, para que a ausência seja decisão e não esquecimento.
 ```bash
 npm run portoes      # suíte com o portão de navegador + sabotagem
 npm test             # suíte (pula Q5 se não houver navegador)
-npm run sabotagem    # Q2 — leva ~9 min
+npm run sabotagem    # Q2 — leva ~35 min desde o F0.6
 npm run test:gerar   # regrava fixtures E linha de base visual
 npm run snapshot     # regera o instantâneo do protótipo (paridade)
 ```
@@ -119,6 +119,11 @@ commit**, com a diferença explicada na mensagem. Fixture regravada sem explica�
 `visual-base.json` guarda impressão digital de 32×32 em RGB, não PNG: a captura
 conteria arte de terceiros, e comparar PNG exigiria dependência. Os sprites são
 bloqueados durante a captura, então a linha de base mede a **nossa** interface.
+
+`margem.json` (F0.6) não é fotografia: é **medição**, com 300 rodadas × 8.000
+simulações. A suíte roda um lote curto a cada execução e confere que continua
+compatível com o arquivado. Fixture de medição se regrava quando a medição muda
+de propósito — e o número novo vai na mensagem do commit, ao lado do antigo.
 
 ## Commits
 

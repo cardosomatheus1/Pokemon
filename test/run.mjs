@@ -12,13 +12,17 @@ import * as estado from './estado.mjs';
 import * as modulos from './modulos.mjs';
 import * as conteudo from './conteudo.mjs';
 import * as semente from './semente.mjs';
+import * as margem from './margem.mjs';
 import * as visual from './visual.mjs';
 
 if (process.argv.includes('--gerar')) {
   console.log('gerando fixtures a partir do motor atual...');
   const g = golden.gerar();
   const b = estatistica.gerar();
+  const mg = margem.gerar();
   console.log(`  golden: ${g.length} rodadas`);
+  console.log(`  margem: ${mg.rodadas} rodadas x ${mg.sims} sims · buffável ${(mg.buffavel.margem*100).toFixed(2)}% · ` +
+              `resto ${(mg.neutro.margem*100).toFixed(2)}% · diferença ${(mg.diferenca*100).toFixed(2)} pontos`);
   console.log(`  baseline: ${b.rodadas} rodadas · duração média ${b.duracaoMedia.toFixed(2)}s · ` +
               `melhor ${b.melhor.nome} ${(b.melhor.taxa*100).toFixed(2)}% · amplitude ${b.amplitude.toFixed(1)}x`);
   if (visual.disponivel()) {
@@ -55,7 +59,7 @@ else console.log('  · Q5 visual pulado (sem navegador) — use npm run portoes 
 const suites = [
   ...(semGolden ? [] : [golden.suite()]),
   invariantes.suite(), estatistica.suite(),
-  fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(), semente.suite(),
+  fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(), semente.suite(), margem.suite(),
   ...(visual.disponivel() && !semVisual
      ? [visual.suite(rVisual), visual.suiteBase(baseAtual, baseGravada),
         visual.suiteAmbientes(digitaisNav, RAIZES_Q3), visual.suiteRodadaViva(rVisual)]

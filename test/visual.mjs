@@ -221,8 +221,14 @@ export async function rodar() {
     }, 250);
     setTimeout(() => { clearInterval(t); r(false); }, 45000);
   }));
+  /* Lido AINDA NA FASE DE APOSTAS, de propósito: o clima é sorteado antes da
+     pool (para garantir 1 lutador do tipo favorecido) e precisa ficar secreto
+     até as apostas fecharem. Se o selo ou o efeito de partícula aparecerem
+     agora, o apostador vê o bônus antes de escolher — e o §4.3 vira letra
+     morta. Ver a lacuna L-022 para o canal que AINDA está aberto. */
   const st = await pg.evaluate(() => ({
     bootSumiu: !document.querySelector('#boot'),
+    climaVazado: !!document.querySelector('#weatherBadge')?.classList.contains('show'),
     fase: document.querySelector('#phase')?.textContent,
     lutadores: document.querySelectorAll('.mon').length,
     placas: document.querySelectorAll('.plate').length,
@@ -348,6 +354,13 @@ export function suite(r) {
     ok(r.folhas > 50, `só ${r.folhas} folhas pedidas — o carregamento de sprite não rodou`);
     ok(r.comSprite === 12, `${r.comSprite} lutadores com sprite aplicado, esperado 12`);
   });
+  s.teste('o clima não vaza durante a fase de apostas', () => {
+    ok(!r.climaVazado,
+      'o selo de clima estava visível durante as apostas. O clima é sorteado ANTES da pool ' +
+      '(para garantir 1 lutador do tipo favorecido) e precisa ficar secreto até o fechamento — ' +
+      'senão o apostador vê o bônus antes de escolher.');
+  });
+
   s.teste('a batalha começa e o relógio corre', () => {
     ok(r.aoVivo, 'a rodada não chegou à fase AO VIVO');
     ok(parseFloat(r.relogio) > 0, `relógio da batalha em ${r.relogio} — a linha do tempo não avançou`);
