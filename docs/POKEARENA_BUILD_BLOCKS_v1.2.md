@@ -489,7 +489,9 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 
 **Q9:** todo evento com campos obrigatórios, verificado por teste.
 
-**Saída:** os seis critérios do §4.8 marcados com evidência, **e o F0.11 fechado** — a v0.9 não é tagueada com um canal de informação aberto. **Fim da Fase 0.**
+**Saída:** os dez critérios do §4.8 marcados com evidência, **e o F0.11 e o F0.12 fechados** — a v0.9 não é tagueada com um canal de informação aberto nem dependendo de CDN de terceiros para abrir. **Fim da Fase 0.**
+
+> **Um dos dez critérios do §4.8 não é código.** O último item é *"a consulta de enquadramento regulatório da §0.5.1 tiver sido feita e a resposta estiver registrada neste documento"* — trilha `jurídico`, lacuna **L-012**, sem dono nomeado até hoje. Nenhum bloco fecha isso escrevendo software, e ele não está em cima de ninguém dentro do time de código. **A v0.9 não pode ser tagueada sem ele**, e é o item de maior prazo de todos os que faltam.
 
 ---
 
@@ -512,6 +514,28 @@ Medido em 400 rodadas, estratificando a margem pelo número de lutadores daquele
 **Q6:** informação é superfície. Testar que nenhum campo enviado ao cliente antes do fechamento das apostas permite reconstruir o clima.
 
 **Saída:** o EV do apostador informado medido e negativo, com o número publicado — e, se alguma opção de fechamento for adotada, os goldens regravados no mesmo commit.
+
+---
+
+### F0.12 — Resolução de asset e cache local
+
+**Tam.** P · **Método** INV · **Portões** Q1 Q2 Q5 · **Depende de** F0.4
+
+> **Proposto ao levantar o que falta para fechar a base.** A lacuna **L-017** tinha o F0.4 como dono e ficou órfã: o F0.4 entregou metade dela — a função de sprite virou responsabilidade do ContentPack, fechando a L-014 — e fechou sem dizer que o resto continuava aberto. O resto é trabalho de app e de ferramenta, não de camada de conteúdo.
+
+**O risco que ele fecha.** O app busca ~200 folhas de sprite do `raw.githubusercontent.com` a cada sessão, com espelho no jsDelivr. Isso já custou três versões ao projeto (v0.6.1 a v0.6.3), e a hipótese registrada para os sprites terem sumido "sem nada ter mudado no código" — acúmulo de limite de requisições — continua válida. Também impede o jogo de rodar com egresso restrito: o portão Q5 só funciona porque o arnês intercepta as requisições e as serve pelo Node.
+
+**Escopo:** ordem de resolução `local → origem → espelho`. Um script baixa as folhas para um diretório **fora do versionamento**. O ponto de extensão já existe: quem decide o endereço é `pack.sprite(esp)`.
+
+**Sabotagem:** apagar o diretório local (precisa cair na origem, não quebrar); derrubar origem e espelho com o local presente (o jogo tem que rodar inteiro); trocar uma folha local por outra arte (o resgate busca a MESMA coisa em outro endereço, nunca outra coisa — lição da v0.6.1, e é isto que o teste precisa afirmar).
+
+**Q5:** o portão de navegador roda **sem interceptação de rede**, contra o diretório local. Hoje ele depende do arnês servir os sprites; enquanto depender, ninguém sabe se o jogo abre numa máquina com egresso fechado.
+
+**Q6:** sem superfície nova — não versionamos arte de terceiros e o script não executa nada do que baixa.
+
+**Saída:** o jogo roda com a rede externa desligada. `npm run portoes` deixa de precisar do intermediário.
+
+> **Não versionar as folhas.** São arte de terceiros, mesma razão pela qual o `battle-theme.mp3` ficou de fora. O script baixa; o repositório não guarda.
 
 ---
 

@@ -231,7 +231,18 @@ para cobrir, segundo o comentário do próprio protótipo.
 
 ### L-017 — a dependência de CDN de terceiros em tempo de execução
 
-**Dono:** F0.4 · **Notada em:** F0.2, ao verificar os sprites no navegador
+**Dono:** F0.12 · **Notada em:** F0.2, ao verificar os sprites no navegador
+
+> **Esta lacuna ficou órfã e ninguém percebeu na hora.** O dono era o F0.4, que
+> fechou sem ela. O F0.4 entregou metade do que está escrito abaixo — a função
+> de sprite virou responsabilidade do ContentPack, e isso fechou a L-014 — mas
+> **não** entregou a cascata `local → origem → espelho` nem o script de download.
+> A outra metade é trabalho de app e de ferramenta, não de camada de conteúdo, e
+> teria misturado dois assuntos num bloco só; o erro não foi deixar de fazer, foi
+> fechar o F0.4 sem dizer que a lacuna continuava aberta e sem dono.
+>
+> Descoberto ao levantar o que falta para fechar a base. Dono novo: **F0.12**,
+> proposto no mesmo commit.
 
 O app busca as folhas de sprite direto do `raw.githubusercontent.com` a cada
 sessão, com espelho no jsDelivr. Uma rodada carrega ~200 folhas.
@@ -245,9 +256,11 @@ Também impede o app de rodar em ambiente com egresso restrito: a verificação
 visual do F0.2 só funcionou porque o harness intercepta as requisições e as serve
 pelo Node.
 
-**O que fazer em F0.4:** resolução de asset passa a ser responsabilidade do
-ContentPack, com ordem `local → origem → espelho`. Um script baixa as folhas para
-um diretório **fora do versionamento**.
+**O que fazer em F0.12:** a resolução de asset ganha a ordem
+`local → origem → espelho`. Um script baixa as folhas para um diretório **fora do
+versionamento**. O ponto de extensão já existe desde o F0.4: quem decide o
+endereço é `pack.sprite(esp)`, e o pack sintético dos testes já prova que o motor
+não presume HTTP — devolve um data URI e a rodada roda.
 
 > **Não versionar as folhas.** São arte de terceiros, mesma razão pela qual o
 > `battle-theme.mp3` ficou de fora. O script baixa; o repositório não guarda.
