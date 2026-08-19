@@ -197,7 +197,7 @@ const DEFEITOS = [
 
   { id:'S32', arquivo:PRECO, nome:'a suavização de Laplace some',
     real:'"o +1 não faz diferença com 20.000 simulações" — até alguém não vencer nenhuma',
-    de:'    const p = (wins[i] + 1) / (sims + n);', para:'    const p = wins[i] / sims;' },
+    de:'    const prob = (wins[i] + 1) / (sims + n);', para:'    const prob = wins[i] / sims;' },
 
   { id:'S30', arquivo:FASES, nome:'a batalha usa a sub-seed do elenco',
     real:'ramo trocado por engano — batalha e sorteio deixam de ser independentes',
@@ -223,6 +223,28 @@ const DEFEITOS = [
     real:'alguém "simplifica" o descarte da ação agendada além do corte',
     de:'    if (best >= CONF.MAX_TIME){ t = CONF.MAX_TIME; break; }\n\n',
     para:'' },
+
+  /* --- defeitos do F0.7: o estimador ------------------------------------ */
+  { id:'S37', arquivo:MOTOR, nome:'a amostra do Monte Carlo volta a 20.000',
+    real:'"150 mil é exagero, ninguém vai notar" — o argumento que subdimensiona a cauda em 8x',
+    de:'  SIMS:         154000,', para:'  SIMS:         20000, ' },
+
+  { id:'S38', arquivo:PRECO, nome:'a odd é arredondada para cima em vez de receber a margem',
+    real:'"arredondar para cima é mais generoso" — e a margem da casa vira negativa',
+    de:'    const bruta = justa * (1 - margem);', para:'    const bruta = Math.ceil(justa);' },
+
+  { id:'S39', arquivo:PRECO, nome:'o erro relativo é publicado com a fórmula errada',
+    real:'sqrt esquecido — o campo continua existindo e passa a mentir',
+    de:'    const erroRelativo = Math.sqrt((1 - prob) / (sims * prob));',
+    para:'    const erroRelativo = (1 - prob) / (sims * prob);' },
+
+  { id:'S40', arquivo:PRECO, nome:'o registro perde a versão do motor',
+    real:'campo removido por parecer inútil — e o preço deixa de ser auditável meses depois',
+    de:'    versaoMotor: M.versao,', para:'    versaoMotor: null,' },
+
+  { id:'S41', arquivo:MOTOR, nome:'volta um teto de odd, sem aparecer na interface',
+    real:'"limita o passivo" — e transforma 8% de margem em 68% no azarão, calado',
+    de:'  ODD_MAX:      null,', para:'  ODD_MAX:      20,  ' },
 ];
 
 /* A sabotagem mede se a SUÍTE pega o defeito, então roda sem o portão de

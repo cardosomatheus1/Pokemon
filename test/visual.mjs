@@ -99,7 +99,20 @@ export async function capturarBase() {
     /* sprite bloqueado: a linha de base é da nossa interface */
     await pg.route(/(githubusercontent|jsdelivr|pokemonshowdown)/, r => r.fulfill({ status: 204 }));
     await pg.goto(`http://127.0.0.1:${porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
-    await pg.waitForTimeout(4000);
+    /* Esperar ESTADO, não relógio.
+       A espera fixa de 4 s funcionou enquanto a rodada custava 0,7 s. O F0.7
+       subiu o Monte Carlo para 154.000 simulações (~5 s), e a captura passou a
+       cair no meio do "calculando odds…" — 6 telas fora da linha de base numa
+       execução, 9 na seguinte. Linha de base que depende de quanto a máquina
+       demora não é linha de base; é sorte.
+
+       A condição é a fase de apostas ABERTA com a lista de odds montada: é o
+       primeiro instante em que a interface está inteira e parada. */
+    await pg.waitForFunction(() => {
+      const f = document.querySelector('#phase')?.textContent;
+      return f && f !== '—' && document.querySelectorAll('.pick').length > 0;
+    }, { timeout: 90000, polling: 250 }).catch(() => {});
+    await pg.waitForTimeout(1200);   // deixa a transição de opacidade terminar
     const telas = {
       inicio:   () => pg.evaluate(() => { document.querySelectorAll('.view').forEach(v=>v.classList.remove('on')); document.querySelector('#viewHome')?.classList.add('on'); }),
       arena:    () => pg.evaluate(() => { document.querySelectorAll('.view').forEach(v=>v.classList.remove('on')); document.querySelector('#viewArena')?.classList.add('on'); }),

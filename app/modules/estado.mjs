@@ -28,7 +28,7 @@ export const S = {
   clock:    0,        // relógio da fase atual
   battleT:  0,        // relógio do replay
   fighters: [],       // elenco da rodada, com stats já calculados
-  odds:     [],       // resultado do Monte Carlo
+  odds:     null,     // registro de precificação da rodada (Spec §4.4.5)
   battle:   null,     // {winner, events, duration}
   evPtr:    0,        // ponteiro de leitura da linha do tempo
   champ:    -1,

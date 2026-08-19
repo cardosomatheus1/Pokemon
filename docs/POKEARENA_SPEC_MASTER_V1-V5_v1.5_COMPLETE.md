@@ -515,19 +515,28 @@ Dois jogadores em clientes diferentes veriam x54 e x66 pelo mesmo lutador, na me
 ### 4.4.4 Baseline da v0.9
 
 ```text
-SIMS_MIN = 150.000                 # dimensionado pela cauda, não pela mediana
+SIMS_MIN = 154.000                 # dimensionado pela cauda, não pela mediana
 LAPLACE  = obrigatório
 ```
+
+> **Corrigido no F0.7, de 150.000 para 154.000.** A tabela do §4.4.2 deriva
+> **153.750** simulações para erro relativo de 2 % no pior lutador do elenco
+> (p = 0,016). O baseline anterior arredondava para baixo, e o arredondamento
+> custava o alvo: medido, 150.000 entrega **ε = 2,02 %**, e o critério de saída
+> da v0.9 pede *abaixo* de 2 %. A diferença de custo entre os dois números é de
+> 0,1 s por rodada — não havia troca a fazer, havia só uma conta a respeitar.
 
 **O custo é irrelevante e isso precisa estar escrito**, senão o parâmetro fica em 20.000 por receio de conta de servidor. Ao benchmark do §12 do Estudo de Unit Economics (~23 µs/batalha), com uma Arena global por minuto:
 
 | Sims/rodada | Rodadas/mês | CPU-h/mês a 23 µs | CPU-h/mês a 37 µs |
 |---:|---:|---:|---:|
 | 20.000 | 43.200 | 5,5 | 8,9 |
-| 150.000 | 43.200 | **41,4** | **66,6** |
-| 150.000 | 129.600 (3 arenas/min) | 124,2 | 199,8 |
+| 154.000 | 43.200 | **42,5** | **68,4** |
+| 154.000 | 129.600 (3 arenas/min) | 127,5 | 205,1 |
 
-Por rodada, 150.000 sims custam ~3,5 s a 23 µs e ~5,7 s a 37 µs — cabe folgadamente antes de abrir a janela de 30 s, e é paralelizável por lotes independentes. A conclusão do §12 daquele estudo ("o Monte Carlo não será o custo principal do negócio") **sobrevive ao aumento de 7,5×**.
+Por rodada, 154.000 sims custam ~3,5 s a 23 µs e ~5,7 s a 37 µs — cabe folgadamente antes de abrir a janela de 30 s, e é paralelizável por lotes independentes. A conclusão do §12 daquele estudo ("o Monte Carlo não será o custo principal do negócio") **sobrevive ao aumento de 7,7×**.
+
+**Medido no F0.7**, no hardware de desenvolvimento: **4,9 s por rodada**, a 32 µs/batalha — dentro da faixa prevista acima e bem abaixo do teto de 8 s que o bloco impôs.
 
 ### 4.4.5 Registro obrigatório por rodada
 

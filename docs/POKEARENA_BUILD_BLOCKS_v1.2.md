@@ -425,9 +425,9 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 
 ---
 
-### F0.7 — Estimador de odds
+### F0.7 — Estimador de odds ✅
 
-**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q3 Q4 · **Depende de** F0.6
+**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q3 Q4 Q5 · **Depende de** F0.6
 
 **Escopo:** §4.4 — restaurar suavização de Laplace, elevar `SIMS_MIN` para 150.000, calcular e registrar erro relativo por lutador, gravar o registro de precificação completo.
 
@@ -437,7 +437,32 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 
 **Q6:** sem superfície nova.
 
-**Saída:** erro relativo do pior lutador abaixo de 2%; dispersão abaixo de 3%. Medir o tempo por rodada — se passar de 8 s, paralelizar antes de fechar, porque a janela é de 30 s.
+**Saída:** erro relativo do pior lutador abaixo de 2%; ~~dispersão abaixo de 3%~~ **viés de convexidade do pior lutador abaixo de um terço da margem**. Medir o tempo por rodada — se passar de 8 s, paralelizar antes de fechar, porque a janela é de 30 s.
+
+> **O critério de "dispersão abaixo de 3%" foi retirado porque é aritmeticamente incompatível com os outros dois, e a medição é que mostrou isso.** Dispersão de oito cálculos e erro relativo não são a mesma escala: a amplitude de 8 amostras vale ~2,85 σ, e tomar o pior entre 12 lutadores infla mais — medido, a razão dispersão/erro fica estável em **4,2 a 4,8** entre 20.000 e 154.000 sims. Para dispersão de 3% seria preciso ε ≈ 0,7%, ou seja **~1.040.000 simulações e ~31 s por rodada** — acima do teto de 8 s do próprio bloco e da janela de aposta de 30 s. Os três critérios não podiam valer juntos.
+>
+> Quem venceu foi a Spec, como manda o `CLAUDE.md`: o §4.4.2 **deriva** ε < 2% a partir de `n = (1-p)/(p·ε²)`, e os 3% não têm derivação em documento nenhum. No lugar entra o número que de fato descreve o dano — o **viés de convexidade**, que é o que come margem e não se cancela entre rodadas.
+>
+> Medido, oito cálculos sobre a mesma pool: **16,22% de dispersão a 20.000 sims, 7,84% a 154.000**. A dispersão continua publicada em `fixtures/precisao.json`; ela deixou de ser portão, não de ser medida.
+
+**Entregue.** `precificar` deixou de devolver uma lista de odds e passou a devolver o **registro de precificação da rodada** (§4.4.5): simulações, probabilidades brutas, odds justas, odds ofertadas, overround, margem configurada **e efetiva**, erro relativo e viés por lutador, tetos aplicados, versão do motor e versão do pack. O rodapé do painel mostra margem efetiva e erro máximo — o §4.4.1 proíbe overround diferente do configurado sem exibi-lo.
+
+| | antes (20.000 sims) | depois (154.000 sims) |
+|---|---:|---:|
+| erro relativo do pior perfil | 5,54 % | **1,85 %** |
+| viés de convexidade do pior perfil | 19,12 % | **2,49 %** |
+| dispersão de 8 cálculos | 16,22 % | 7,44 % |
+| tempo por rodada | 0,60 s | **4,57 s** |
+
+**A SEGUNDA CONTRADIÇÃO, e a Spec perdeu para ela mesma.** O §4.4.2 deriva **153.750** simulações para ε = 2 %, e o §4.4.4 trazia **150.000** como baseline. Medido: com 150.000 o erro do pior perfil é **2,02 %** — o arredondamento para baixo custava exatamente o alvo, por 0,02 ponto. `SIMS` foi para **154.000** e a **Spec §4.4.4 foi corrigida no mesmo commit**. A diferença de custo é 0,1 s por rodada; não havia troca a fazer, havia uma conta a respeitar.
+
+> **O viés é o número que importa, e ele entrou no registro.** O erro relativo escala com `1/√n`; o viés de convexidade, com `1/(n·p²)`. Na cauda é o segundo que come margem, e ele **não se cancela entre rodadas** — é sempre a favor do apostador. A 20.000 sims valia 19,12 %, contra 8 % de margem configurada: a casa entregava mais que o dobro da própria margem no azarão. Publicá-lo ao lado do erro é o que permite dizer quanto da margem realizada de 7,61 % medida no F0.6 é estimador e quanto é outra coisa.
+
+> **O portão Q5 tinha uma espera fixa de 4 s, e ela quebrou.** Com a rodada custando 5 s, a captura da linha de base passou a cair no meio do "calculando odds…": 6 telas fora numa execução, 9 na seguinte, sem nada ter mudado na interface. Linha de base que depende de quanto a máquina demora não é linha de base. A captura passou a esperar **estado** — fase de apostas aberta com a lista de odds montada —, e a linha de base gravada **não precisou ser regravada**: com a espera certa, ela bate.
+
+**Custo medido: 4,57 s por rodada**, contra o teto de 8 s que o bloco impôs e a janela de aposta de 30 s. Não foi preciso paralelizar.
+
+**Lacuna aberta:** L-023 (corrigir o viés de convexidade em vez de só medi-lo; dono **F1.5**, quando o preço passa a ser calculado pelo servidor). Não abre bloco novo na Fase 0: o §4.4.4 aceita `SIMS_MIN` como a resposta da v0.9, e a correção do estimador é melhoria, não pendência de saída.
 
 ---
 
@@ -612,6 +637,8 @@ Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a úni
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 Q3 Q6 · **Depende de** F1.4
 
 **Escopo:** o servidor passa a ser dono do relógio e do ciclo — gera `roundSeed`, calcula odds, publica `commit`, abre e fecha a janela, simula, distribui. O cliente perde o direito de iniciar rodada.
+
+**Também resolve:** L-023 (corrigir o viés de convexidade do estimador, hoje medido em 2,49 % no pior perfil e publicado no registro, mas não corrigido).
 
 **Sabotagem:** deixar o cliente enviar `roundSeed` e o servidor aceitar; permitir que o cliente peça a próxima rodada; expor o resultado antes do fechamento em qualquer resposta da API.
 

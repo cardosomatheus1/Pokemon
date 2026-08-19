@@ -13,6 +13,7 @@ import * as modulos from './modulos.mjs';
 import * as conteudo from './conteudo.mjs';
 import * as semente from './semente.mjs';
 import * as margem from './margem.mjs';
+import * as precisao from './precisao.mjs';
 import * as visual from './visual.mjs';
 
 if (process.argv.includes('--gerar')) {
@@ -20,7 +21,11 @@ if (process.argv.includes('--gerar')) {
   const g = golden.gerar();
   const b = estatistica.gerar();
   const mg = margem.gerar();
+  const pr = precisao.gerar();
   console.log(`  golden: ${g.length} rodadas`);
+  console.log(`  precisão: ${pr.sims} sims x ${pr.repeticoes} cálculos · ` +
+              `${(pr.msPorCalculo/1000).toFixed(2)}s cada · erro previsto do pior ` +
+              `${(pr.erroPrevistoPior*100).toFixed(2)}% · dispersão ${(pr.dispersaoPior*100).toFixed(2)}%`);
   console.log(`  margem: ${mg.rodadas} rodadas x ${mg.sims} sims · buffável ${(mg.buffavel.margem*100).toFixed(2)}% · ` +
               `resto ${(mg.neutro.margem*100).toFixed(2)}% · diferença ${(mg.diferenca*100).toFixed(2)} pontos`);
   console.log(`  baseline: ${b.rodadas} rodadas · duração média ${b.duracaoMedia.toFixed(2)}s · ` +
@@ -59,7 +64,7 @@ else console.log('  · Q5 visual pulado (sem navegador) — use npm run portoes 
 const suites = [
   ...(semGolden ? [] : [golden.suite()]),
   invariantes.suite(), estatistica.suite(),
-  fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(), semente.suite(), margem.suite(),
+  fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(), semente.suite(), margem.suite(), precisao.suite(),
   ...(visual.disponivel() && !semVisual
      ? [visual.suite(rVisual), visual.suiteBase(baseAtual, baseGravada),
         visual.suiteAmbientes(digitaisNav, RAIZES_Q3), visual.suiteRodadaViva(rVisual)]

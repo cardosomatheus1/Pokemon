@@ -138,7 +138,7 @@ function placeBet(idx, row){
     return;
   }
   if (S.myBet) S.bal += S.myBet.amount;                    // troca de aposta: devolve a anterior
-  const o = S.odds.find(x => x.idx === idx);
+  const o = S.odds.lutadores.find(x => x.idx === idx);
   S.bal -= amount;
   S.myBet = {idx, amount, odd:o.odd};
   saveBal();

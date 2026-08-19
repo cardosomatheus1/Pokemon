@@ -1,4 +1,4 @@
-# Arnês — blocos F0.1 a F0.6
+# Arnês — blocos F0.1 a F0.7
 
 Portões cobertos: **Q1** (comportamento), **Q2** (sabotagem), **Q3** (invariantes),
 **Q4** (regressão estatística), **Q5** (visual) e **Q6** (validação de pack como
@@ -28,11 +28,12 @@ npm run snapshot        # regera o instantâneo do protótipo para a paridade
 | `modulos.mjs` | Q1/Q3 | limite de tamanho, tabela de camadas, dependência numa direção só, símbolo usado sem importar, atribuição a binding importado |
 | `conteudo.mjs` | Q1/Q3/Q6 | Content Layer: pack sintético gera rodada válida, pack inválido é recusado na porta, pack malformado não executa nada, e nenhum identificador da franquia sobra em `engine/` |
 | `pack-sintetico.mjs` | — | 12 criaturas e 5 tipos inventados. Existe para provar que o motor não sabe o que é um Pokémon |
+| `precisao.mjs` | Q4 | precisão do estimador: erro relativo e viés de convexidade por lutador, registro de precificação do §4.4.5, e a dispersão de 8 cálculos sobre a mesma pool |
 | `margem.mjs` | Q4 | margem realizada por grupo de tipo OBSERVÁVEL. É o teste que fecha o defeito do clima fora do preço: antes, quem tinha tipo buffável saía a −0,61% e o resto a +14,96% |
 | `semente.mjs` | Q1/Q3/Q6 | a árvore do §P3: a mesma raiz reproduz a rodada, dois ramos nunca coincidem, o preço sai da raiz, e a raiz não vem de relógio, contador nem da rodada anterior |
 | `rodada-digital.mjs` | — | reconstrói a rodada a partir da raiz. Importado pelo Node **e** pelo Chromium: é o que faz "dois ambientes JS" ser comparação de verdade, e é a referência contra a qual a rodada real do app é conferida |
 | `visual.mjs` | Q5/Q3 | sobe servidor próprio, abre o app num Chromium de verdade, reprova em `pageerror`, compara impressão digital 32×32 RGB de 4 telas × 3 larguras, e confere o determinismo da rodada entre Node e navegador |
-| `sabotagem.mjs` | Q2 | planta 36 defeitos numa cópia do repositório e exige vermelho, com e sem os golden tests |
+| `sabotagem.mjs` | Q2 | planta 41 defeitos numa cópia do repositório e exige vermelho, com e sem os golden tests |
 
 ## Por que a sabotagem existe
 
@@ -49,7 +50,7 @@ O F0.2 resolveu isso rodando cada sabotagem **duas vezes**, com e sem os goldens
 (`SEM_GOLDEN=1`). A coluna que interessa no relatório é "sem golden": defeito que só
 o golden pega é sinalizado como cobertura de propriedade fraca naquela área.
 
-Estado atual (F0.6): **36 defeitos plantados**, nenhum dependendo só do
+Estado atual (F0.7): **41 defeitos plantados**, nenhum dependendo só do
 golden. Um deles — S20, cor do tema alterada — só é pego pelo navegador, e é
 justamente por isso que o Q5 virou portão.
 
@@ -66,9 +67,16 @@ pego por nada, porque nenhuma rodada do lote chega perto do corte.
 ## Quanto tempo custa
 
 `npm run portoes` roda a suíte com o navegador e depois a sabotagem. Desde o
-F0.6 a suíte leva ~28 s (o lote de margem é o pedaço caro) e a sabotagem roda
-72 execuções — as 36 com e sem golden —, ou seja **~35 min**. A medição grande
-de margem (300 × 8.000) fica fora da suíte, em `npm run test:gerar`.
+F0.7 a suíte leva ~33 s e a sabotagem roda 82 execuções — as 41 com e sem
+golden —, ou seja **~45 min**. As duas medições caras ficam fora da suíte, em
+`npm run test:gerar`: margem (300 × 8.000 simulações) e precisão (8 cálculos de
+154.000).
+
+**A espera do portão Q5 é por ESTADO, não por relógio.** A captura da linha de
+base tinha uma espera fixa de 4 s; quando o F0.7 levou a rodada de 0,6 s para
+4,6 s, ela passou a cair no meio do "calculando odds…" e acusava 6 a 9 telas
+fora sem nada ter mudado. Agora ela espera a fase de apostas abrir com a lista
+de odds montada.
 
 ## Divergências em relação ao protótipo
 
@@ -83,11 +91,13 @@ da base v0.8, e **não mudaram no F0.2**. A correção do D-001 só afetava o ca
 rápido, que os goldens não usam — a previsão de que mudariam estava errada, e a
 suíte provou isso.
 
-**Nem o F0.4, nem o F0.5, nem o F0.6 mudaram golden.** O F0.4 move dado de
+**Do F0.4 ao F0.7, nenhum golden mudou.** O F0.4 move dado de
 lugar; o F0.5 muda de onde vêm as sementes, não o que o motor faz com elas; e o
 F0.6 muda o PREÇO, que nenhuma fixture cobria — a previsão do bloco de que os
-goldens mudariam estava errada, e a medição corrigiu. A fixture nova do F0.6 é
-`margem.json`, com 300 rodadas × 8.000 simulações.
+goldens mudariam estava errada, e a medição corrigiu. O F0.7 muda o ESTIMADOR,
+que também nenhuma fixture de batalha cobria. As fixtures novas são de MEDIÇÃO,
+não de fotografia: `margem.json` (300 rodadas × 8.000) e `precisao.json`
+(8 cálculos × 154.000).
 
 **O F0.4 não mudou fixture nenhuma.** A Content Layer move dado de lugar;
 se um golden tivesse mudado, teria mudado comportamento junto — e o bloco teria

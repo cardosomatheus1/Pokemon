@@ -50,7 +50,7 @@ export function medir(rodadas = RODADAS, sims = SIMS, verdade = VERDADE, semente
     /* o preço que o jogador vê */
     const wins = new Uint32Array(elenco.length);
     simularLote(E, elenco, raiz, 0, sims, wins);
-    const preco = precificar(wins, sims, E.CONF.MARGIN);
+    const preco = precificar(wins, sims, E.M).lutadores;
 
     /* a verdade: a luta real acontece com o clima real */
     const real = clima.type ? E.aplicarClima(elenco, clima) : elenco;

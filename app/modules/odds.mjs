@@ -48,7 +48,7 @@ function computeOdds(fighters, sims, onProgress, raiz){
       }
       if (onProgress) onProgress(done / sims);
       if (done < sims) requestAnimationFrame(step);
-      else resolve(precificar(wins, sims, CONF.MARGIN));
+      else resolve(precificar(wins, sims, M));
     }
     step();
   });
@@ -62,7 +62,7 @@ function computeOdds(fighters, sims, onProgress, raiz){
 /* ------------------------- PAINEL DE ODDS ------------------------- */
 function refreshOddsTable(){
   const body = $('#oddsBody');
-  const rows = S.odds.slice().sort((a,b) => a.odd - b.odd);
+  const rows = S.odds.lutadores.slice().sort((a,b) => a.odd - b.odd);
   body.innerHTML = rows.map(o => {
     const e = S.ents[o.idx], f = S.fighters[o.idx];
     const dead = e && !e.alive;
@@ -73,11 +73,18 @@ function refreshOddsTable(){
       <td class="od">${dead ? 'OUT' : 'x'+o.odd.toFixed(2)}</td>
     </tr>`;
   }).join('');
-  $('#oddNote').textContent = `${CONF.SIMS/1000}k sims · ${(CONF.MARGIN*100)|0}% casa`;
+  /* O rodapé passa a mostrar a margem EFETIVA e o pior erro relativo. É o
+     §4.4.1 na tela: overround diferente do configurado não pode ficar
+     escondido, e o erro do estimador é o que separa "a casa cobra 8 %" de
+     "a casa cobra 8 % com uma barra de erro que você não vê". */
+  const R = S.odds;
+  $('#oddNote').textContent =
+    `${(R.sims/1000)|0}k sims · casa ${(R.margemEfetiva*100).toFixed(1)}% · ` +
+    `erro máx ${(R.erroPior*100).toFixed(1)}%`;
 }
 
 function buildPickList(){
-  const rows = S.odds.slice().sort((a,b) => a.odd - b.odd);
+  const rows = S.odds.lutadores.slice().sort((a,b) => a.odd - b.odd);
   return rows.map(o => {
     const f = S.fighters[o.idx];
     return `<div class="pick" data-i="${o.idx}">

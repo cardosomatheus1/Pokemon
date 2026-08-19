@@ -24,6 +24,7 @@ import packKanto from '../content/pokemon_kanto_v1.mjs';
    comparação de verdade, e não de dois códigos parecidos. */
 import { digital, rodada } from './rodada-digital.mjs';
 import { precificar, simularLote } from '../engine/preco.mjs';
+import { M } from './motor.mjs';
 
 const E = criarMotor(packKanto);
 
@@ -177,7 +178,7 @@ export function suite() {
     simularLote(E, elenco, 2026, 0, 800, a);
     simularLote(E, elenco, 2026, 0, 800, b);
     igual(a.join(','), b.join(','), 'dois lotes idênticos deram placares diferentes');
-    const pa = precificar(a, 800, 0.08), pb = precificar(b, 800, 0.08);
+    const pa = precificar(a, 800, M), pb = precificar(b, 800, M);
     igual(JSON.stringify(pa), JSON.stringify(pb), 'a mesma contagem gerou preços diferentes');
   });
 
@@ -208,12 +209,13 @@ export function suite() {
 
   s.teste('a odd sai da frequência com margem e suavização', () => {
     const wins = new Uint32Array([50, 30, 20, 0]);
-    const p = precificar(wins, 100, 0.08);
+    const r = precificar(wins, 100, M);
     /* Laplace: (0+1)/(100+4) — quem não venceu nenhuma não vira odd infinita */
-    igual(p[3].prob, 1 / 104, 'a suavização de Laplace saiu do lugar');
-    igual(p[0].prob, 51 / 104, 'a probabilidade não bate com a contagem');
-    igual(p[0].odd, +((104 / 51) * 0.92).toFixed(2), 'a margem não foi aplicada');
-    ok(p.every(x => x.odd >= 1.05), 'alguma odd ficou abaixo do piso de 1,05');
+    igual(r.lutadores[3].prob, 1 / 104, 'a suavização de Laplace saiu do lugar');
+    igual(r.lutadores[0].prob, 51 / 104, 'a probabilidade não bate com a contagem');
+    igual(r.lutadores[0].odd, +((104 / 51) * 0.92).toFixed(2), 'a margem não foi aplicada');
+    ok(r.lutadores.every(x => x.odd >= E.CONF.ODD_MIN),
+      `alguma odd ficou abaixo do piso de ${E.CONF.ODD_MIN}`);
   });
 
   /* ------------------------------------------------- Q6 imprevisibilidade */

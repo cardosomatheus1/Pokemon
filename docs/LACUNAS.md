@@ -359,6 +359,38 @@ passa a distinguir uma vantagem real de ruído, e o F0.11 — proposto no mesmo
 commit — decide entre tirar a garantia, sortear o clima depois da pool, ou
 condicionar o preço à mesma informação que o apostador tem.
 
+### L-023 — o viés de convexidade é medido, mas não corrigido
+
+**Dono:** F1.5 · **Notada em:** F0.7
+
+`odd = 1/p` é convexa, então `E[1/p̂] > 1/p`: o erro amostral **não se cancela**
+entre rodadas, é sistemático e sempre a favor do apostador. O termo de segunda
+ordem, como fração da odd justa, é `(1-p)/(n·p²)`.
+
+Com os 20.000 sims herdados valia **19,12 %** no pior perfil — mais que o dobro
+da margem configurada. O F0.7 subiu a amostra para 154.000 e ele caiu para
+**2,49 %**. Continua sendo ~31 % da margem de 8 %, entregue na cauda.
+
+O F0.7 **publica** o viés por lutador no registro de precificação (§4.4.5), o que
+permite atribuir a margem realizada. Não o **corrige**.
+
+**Por que não cabe agora.** Corrigir é uma linha —
+`justa_corrigida = justa / (1 + (1-p̂)/(n·p̂))` — e é justamente por ser barato
+que não deve entrar de contrabando: mudar o estimador muda TODA odd exibida, e
+o escopo do F0.7 é `restaurar Laplace, elevar SIMS_MIN, registrar erro,
+gravar o registro`. Nada ali diz "trocar o estimador". Além disso a correção
+analítica é de primeira ordem e precisa ser validada contra uma simulação de
+referência antes de virar preço — medição que exige amostra grande e tempo.
+
+**Por que não abre bloco na Fase 0.** O §4.4.4 aceita `SIMS_MIN` como a resposta
+da v0.9 e o critério de saída do §4.8 fala em erro relativo registrado, não em
+viés corrigido. É melhoria, não pendência de saída.
+
+**O que a destrava:** F1.5, quando o preço passa a ser calculado pelo servidor.
+Ali o custo de uma simulação de referência deixa de competir com a janela de
+30 s do cliente, e o registro de precificação já carrega o campo para comparar
+antes e depois.
+
 ## Conteúdo e identidade
 
 ### L-008 — o jogo não tem trilha sonora própria

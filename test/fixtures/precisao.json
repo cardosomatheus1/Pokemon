@@ -1,0 +1,107 @@
+{
+  "sims": 154000,
+  "repeticoes": 8,
+  "msPorCalculo": 4571.0660815,
+  "dispersaoPior": 0.07444116406579504,
+  "lutadorPior": "Dugtrio",
+  "erroPrevistoPior": 0.01845804089699865,
+  "margemEfetiva": 0.08004668065145348,
+  "porLutador": [
+    {
+      "nome": "Dugtrio",
+      "min": 47.42,
+      "max": 50.95,
+      "dispersao": 0.07444116406579504,
+      "probMedia": 0.018710392696672986,
+      "erroPrevisto": 0.01845804089699865
+    },
+    {
+      "nome": "Cloyster",
+      "min": 10.15,
+      "max": 10.54,
+      "dispersao": 0.038423645320196924,
+      "probMedia": 0.08927226449887023,
+      "erroPrevisto": 0.008139475721999587
+    },
+    {
+      "nome": "Tangela",
+      "min": 21.79,
+      "max": 22.62,
+      "dispersao": 0.03809086737035346,
+      "probMedia": 0.04122568371295743,
+      "erroPrevisto": 0.012289541290153569
+    },
+    {
+      "nome": "Onix",
+      "min": 16.95,
+      "max": 17.51,
+      "dispersao": 0.03303834808259601,
+      "probMedia": 0.05338950860971872,
+      "erroPrevisto": 0.01073051840304078
+    },
+    {
+      "nome": "Farfetch'd",
+      "min": 21.97,
+      "max": 22.66,
+      "dispersao": 0.03140646335912614,
+      "probMedia": 0.0411161143287536,
+      "erroPrevisto": 0.012306563188283045
+    },
+    {
+      "nome": "Dodrio",
+      "min": 10.37,
+      "max": 10.66,
+      "dispersao": 0.027965284474445608,
+      "probMedia": 0.08713363244422513,
+      "erroPrevisto": 0.008248309794042476
+    },
+    {
+      "nome": "Arcanine",
+      "min": 7.84,
+      "max": 8.05,
+      "dispersao": 0.026785714285714395,
+      "probMedia": 0.1160591382489676,
+      "erroPrevisto": 0.007032656769677584
+    },
+    {
+      "nome": "Magmar",
+      "min": 11.2,
+      "max": 11.5,
+      "dispersao": 0.02678571428571435,
+      "probMedia": 0.08085571254187984,
+      "erroPrevisto": 0.008591856777967376
+    },
+    {
+      "nome": "Exeggutor",
+      "min": 11.71,
+      "max": 12.01,
+      "dispersao": 0.02561912894961562,
+      "probMedia": 0.07747367088278835,
+      "erroPrevisto": 0.008793584184925932
+    },
+    {
+      "nome": "Snorlax",
+      "min": 5.79,
+      "max": 5.93,
+      "dispersao": 0.02417962003454226,
+      "probMedia": 0.1564926758953848,
+      "erroPrevisto": 0.005916233424725369
+    },
+    {
+      "nome": "Alakazam",
+      "min": 11.95,
+      "max": 12.23,
+      "dispersao": 0.023430962343096332,
+      "probMedia": 0.07617182427343323,
+      "erroPrevisto": 0.0088745723170505
+    },
+    {
+      "nome": "Lapras",
+      "min": 5.62,
+      "max": 5.75,
+      "dispersao": 0.02313167259786475,
+      "probMedia": 0.1620993818663481,
+      "erroPrevisto": 0.005793672206507612
+    }
+  ]
+}

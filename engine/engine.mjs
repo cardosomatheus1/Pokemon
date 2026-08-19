@@ -17,6 +17,11 @@
 
 import { validarPack } from './pack.mjs';
 
+/* Versão do motor, gravada no registro de precificação de cada rodada (§4.4.5).
+   Sem ela, um preço auditado meses depois não diz contra qual código foi
+   gerado. Sobe quando o comportamento do motor muda de propósito. */
+const VERSAO = '0.9.0-F0.7';
+
 const CONF = {
   LEVEL:        50,     // nível de todo mundo
   HP_MULT:      2.1,    // vida x2.1 — rodada gira em torno de 20-40s
@@ -75,8 +80,36 @@ const CONF = {
   STORM_MAXPCT: 0.15,   // dano máximo por tick, em % do HP máximo
   MAX_TIME:     56,     // corte duro — a partir daqui ninguém mais vive
 
-  SIMS:         20000,  // simulações de Monte Carlo pras odds
+  /* --- PRECIFICAÇÃO (Spec §4.4) ---------------------------------------
+     O tamanho da amostra é ditado pelo AZARÃO, não pelo favorito. O erro
+     relativo de uma proporção estimada por n ensaios é sqrt((1-p)/(n·p)); com
+     o pior lutador do elenco medido em p = 0,016, atingir 2 % exige 153.750
+     simulações. Os 20.000 herdados da base v0.8 dimensionavam a faixa média e
+     subdimensionavam a cauda em quase 8×.
+
+     São 154.000 e não os 150.000 que o §4.4.4 trazia como baseline: a própria
+     tabela do §4.4.2 deriva 153.750 para ε = 2 %, e arredondar PARA BAIXO
+     entrega ε = 2,02 % — perde o alvo por 0,02 ponto. Medido, não estimado.
+     A Spec foi corrigida junto, no mesmo commit; a diferença de custo é 0,1 s.
+
+     E o erro não é ruído cosmético: `odd = 1/p` é convexa, então E[1/p̂] > 1/p
+     e o desvio não se cancela entre rodadas. Com 20.000 sims o viés sozinho
+     entregava +19,12 % de odd a mais no pior lutador — mais que o dobro da
+     margem da casa, sempre na mesma direção. Com 154.000 ele cai para 2,49 %.
+
+     O custo está medido e é irrelevante: ~4,9 s por rodada neste hardware
+     (32 µs/batalha), contra uma janela de aposta de 30 s. Escrever isso aqui
+     é de propósito — o parâmetro ficaria em 20.000 por receio de conta de
+     servidor, e o §4.4.4 da Spec desmonta o receio com números.             */
+  SIMS:         154000, // simulações de Monte Carlo pras odds
   MARGIN:       0.08,   // margem da casa (8%)
+  ODD_MIN:      1.05,   // piso da odd ofertada
+  /* Teto de odd DEGRADA a oferta: com teto x20 a margem no pior lutador vira
+     68 %, contra os 8 % declarados. O instrumento certo para conter passivo é
+     teto de PAYOUT, que preserva a odd e limita só o tamanho da aposta — e ele
+     é escopo do F0.8. Por isso aqui é `null`: sem teto por padrão. Se algum dia
+     for usado, o §4.4.6 exige que apareça na interface e no registro.        */
+  ODD_MAX:      null,
   BET_WINDOW:   30,     // segundos de aposta
   RESULT_HOLD:  8,      // segundos mostrando o vencedor
   ARENA_SIZE:   12,     // lutadores por rodada
@@ -425,7 +458,7 @@ function criarMotor(pack){
   const elenco = pack.especies.filter(p => pack.elenco.includes(p.dex));
 
   return {
-    pack, CONF, elenco,
+    pack, CONF, elenco, versao: VERSAO,
     efeito:        (mt, dt)            => efeito(chart, mt, dt),
     dano:          (A,D,mv,R,a,d)      => dano(chart, A, D, mv, R, a, d),
     simular:       (f, seed, gravar)   => simular(chart, f, seed, gravar),
@@ -443,4 +476,4 @@ function criarMotor(pack){
   };
 }
 
-export { criarMotor, CONF, rng, statAt, stormRate };
+export { criarMotor, CONF, VERSAO, rng, statAt, stormRate };

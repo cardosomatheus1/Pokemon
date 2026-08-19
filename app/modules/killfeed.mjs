@@ -122,7 +122,7 @@ function mostrarPodio(){
   const rank = rankingAbates().filter(r => r.k > 0).slice(0, 3);
   const box = $('#kfList');
   if (!box || !rank.length) return;
-  const oddDe = i => { const o = S.odds.find(x => x.idx === i); return o ? 'x' + o.odd.toFixed(2) : '—'; };
+  const oddDe = i => { const o = S.odds.lutadores.find(x => x.idx === i); return o ? 'x' + o.odd.toFixed(2) : '—'; };
   box.insertAdjacentHTML('afterend', `
     <div class="kfpodium" id="kfPodium">
       <div class="t">Pódio de abates da rodada</div>
