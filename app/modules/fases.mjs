@@ -4,13 +4,13 @@
  * S.state. Chama todo o resto; por isso é a camada mais alta antes do laço. */
 
 import { $, log } from './dom.mjs';
-import { APOSTA_MIN, emReais, registrarAposta, valorAposta } from './carteira.mjs';
+import { emReais, registrarAposta } from './carteira.mjs';
 import { CONF, CUR, MOEDA, aplicarClima, sortearPool, rng, sortearClima, simular } from './motor.mjs';
 import { tiposDaPool } from '../../engine/engine.mjs';
 /* A árvore de sementes não passa pela ligação do motor: ela não depende de
    ContentPack nenhum. É infraestrutura, como o DOM. */
 import { derivar, novaRaiz, sementes } from '../../engine/seed.mjs';
-import { avaliarAposta, passivoVazio, registrarTicket } from '../../engine/exposicao.mjs';
+import { passivoVazio } from '../../engine/exposicao.mjs';
 import { abrirRodada, revelar } from '../../engine/commit.mjs';
 import { emitir } from './telemetria.mjs';
 import { S } from './estado.mjs';
@@ -19,7 +19,7 @@ import { arenaDaRodada } from './arenas.mjs';
 import { buildEntities, overlay, preloadSheets, selRing } from './rodada.mjs';
 import { buildPickList, computeOdds, refreshOddsTable } from './odds.mjs';
 import { bursts, fxs, sched, shots } from './efeitos.mjs';
-import { conferirAbates, limparPodio, mostrarPodio, renderKillfeed, resetKillfeed } from './killfeed.mjs';
+import { conferirAbates, conferirColocacao, limparPodio, mostrarPodio, renderKillfeed, renderPodio, resetKillfeed } from './killfeed.mjs';
 import { darXP, recordBetPlaced, recordBetResult, saveProfile, tituloDe } from './perfil.mjs';
 import { ensureDaily, progDesafio } from './desafios.mjs';
 import { entryRings, puffs } from './render.mjs';
@@ -28,8 +28,12 @@ import { imgTag } from './sprites.mjs';
 import { music, sfx } from './audio.mjs';
 import { posSelRing, reiniciarMovimento } from './coreografia.mjs';
 import { atualizarSaldo } from './controles.mjs';
-import { creditarRecompensa, devolverAposta, pagarAposta, perderAposta, reservarAposta } from './banco.mjs';
+import { creditarRecompensa, pagarAposta, perderAposta } from './banco.mjs';
 import { updatePlate } from './eventos.mjs';
+import { placeBet } from './aposta.mjs';
+import { renderBattleBanner } from './banner.mjs';
+import { margemConfigurada } from './adm.mjs';
+import { colocacaoDe, ordemDeQuedas } from './colocacao.mjs';
 
 /* ------------------------- FASES ------------------------- */
 function setPhase(s){
@@ -111,7 +115,7 @@ async function newRound(){
   // acima). Ele só é revelado depois que as apostas fecham (ver
   // startFight). É de propósito: ninguém aposta sabendo do bônus
   // climático de antemão.
-  S.odds = await computeOdds(S.fighters, CONF.SIMS, undefined, S.seeds.raiz);
+  S.odds = await computeOdds(S.fighters, CONF.SIMS, undefined, S.seeds.raiz, margemConfigurada());
   /* Passivo zerado a cada rodada: o teto do §4.4.6 é POR RODADA. */
   S.passivo = passivoVazio(S.odds, CONF);
 
@@ -122,6 +126,7 @@ async function newRound(){
   refreshOddsTable();
   S.ents.forEach(updatePlate);
   resetKillfeed();          // placar zerado com a pool nova
+  renderBattleBanner();     // vitrine do jogador, sem aposta ainda
 
   log(`<span class="l-sys">&gt; nova rodada · commit ${S.commit.commit.slice(0,16)}… · 12 sorteados de 76</span>`);
   emitir('round_viewed', { commit: S.commit.commit });
@@ -144,77 +149,14 @@ async function newRound(){
    (contorno dourado + pokébola), o próprio bicho na arena (brilho) e o
    anel dourado no chão. Roda a cada aposta — inclusive na troca, que
    precisa apagar a marcação anterior. */
-function markMyPlate(){
-  S.ents.forEach((e,i) => {
-    const meu = !!S.myBet && S.myBet.idx === i;
-    e.plate.classList.toggle('mine', meu);
-    e.el.classList.toggle('mine', meu);
-  });
-  if (selRing) selRing.classList.toggle('on', !!S.myBet);
-  posSelRing();
-  renderKillfeed();         // marca a sua linha no ranking de abates
-}
-
-/* O anel acompanha o lutador quadro a quadro, colado nos pés dele. */
-
-
-function placeBet(idx, row){
-  if (S.state !== 'betting') return;
-  const pedido = valorAposta();
-  if (pedido < APOSTA_MIN){
-    $('#betInfo').innerHTML = `<b>Saldo insuficiente.</b> A aposta mínima é ${CUR} ${APOSTA_MIN} `
-      + `(${emReais(APOSTA_MIN)}). Complete um desafio diário ou compre ${MOEDA}.`;
-    return;
-  }
-
-  /* --- TETOS DE EXPOSIÇÃO (Spec §4.4.6) -----------------------------
-     O corte acontece AQUI, antes de confirmar — nunca no settlement. E
-     quando corta, diz qual limite, quanto cabe e por quê: o §4.4.6
-     proíbe rejeição silenciosa, e o portão Q5 do F0.8 captura a
-     mensagem na tela.
-
-     A troca de aposta devolve o passivo da anterior antes de avaliar a
-     nova; senão trocar de lutador dez vezes encheria o passivo de todos
-     eles sem nenhuma aposta viva.                                     */
-  if (S.myBet) S.passivo[S.myBet.idx] -= S.myBet.amount * S.myBet.odd;
-  const veredito = avaliarAposta(S.odds, S.passivo, idx, pedido, CONF);
-  if (!veredito.aceito){
-    if (S.myBet) S.passivo[S.myBet.idx] += S.myBet.amount * S.myBet.odd;   // desfaz a devolução
-    $('#betInfo').innerHTML = `<b>${veredito.mensagem}</b>`;
-    return;
-  }
-  const amount = veredito.valor;
-
-  /* Troca de aposta: a reserva anterior volta INTEIRA aos buckets de onde saiu
-     (§5.5) antes de a nova ser reservada. Devolver "o valor" em vez da
-     composição transformaria bônus em transferível a cada troca. */
-  if (S.myBet) devolverAposta(S.myBet.composicao, 'aposta');
-  const reserva = reservarAposta(amount, 'aposta');
-  if (!reserva.ok){
-    if (S.myBet) reservarAposta(S.myBet.amount, 'aposta');   // desfaz a devolução
-    S.passivo[idx] -= 0;
-    $('#betInfo').innerHTML = `<b>Saldo insuficiente.</b>`;
-    return;
-  }
-  const o = S.odds.lutadores.find(x => x.idx === idx);
-  emitir(S.myBet ? 'bet_changed' : 'bet_selected', { lutador: S.fighters[idx].n, odd: o.odd });
-  S.myBet = {idx, amount, odd:o.odd, composicao: reserva.composicao};
-  emitir('bet_confirmed', { valor: amount, odd: o.odd, composicao: reserva.composicao });
-  registrarTicket(S.passivo, idx, amount, o.odd);
-  atualizarSaldo();
-  recordBetPlaced(amount, S.fighters[idx]);
-  markMyPlate();
-  document.querySelectorAll('.pick').forEach(p => p.classList.toggle('sel', +p.dataset.i === idx));
-  const corte = veredito.cortado
-    ? `<br><span class="tiny" id="avisoCorte" style="color:var(--gold)">${veredito.mensagem}</span>`
-    : '';
-  $('#betInfo').innerHTML =
-    `<b>${CUR} ${amount.toLocaleString('pt-BR')}</b> em <b>${S.fighters[idx].n}</b> (x${o.odd.toFixed(2)})<br>
-     retorno se vencer: <b style="color:var(--gold)">${CUR} ${Math.floor(amount*o.odd).toLocaleString('pt-BR')}</b>
-     <span class="tiny">(${emReais(Math.floor(amount*o.odd))})</span>${corte}`;
-}
-
 function startFight(){
+  /* D-008 · A APOSTA SÓ ENTRA NA ESTATÍSTICA AGORA, quando a janela fecha.
+     Era contada a cada clique: trocar de lutador três vezes contava três
+     apostas e triplicava o total apostado no perfil. Com o cancelamento do
+     V1.15 ficaria pior — contaria aposta que o jogador desfez. O defeito é
+     nosso e veio do v0.8; a v1.0 do porte já o tinha corrigido assim. */
+  if (S.myBet) recordBetPlaced(S.myBet.amount, S.fighters[S.myBet.idx]);
+
   setPhase('countdown');
   overlay.innerHTML = `<div id="count">3</div>`;
 
@@ -323,16 +265,20 @@ const CHEER_LINES = [
    primeiro a cair é o 12º, o último a cair é o 2º, quem sobra é o 1º.
    É o que dá o "desempenho" do XP — assim quem escolheu bem e foi
    longe ganha mais do que quem caiu de cara, mesmo os dois perdendo. */
+/* A posição final sai da MESMA travessia que alimenta o quadro ao vivo
+   (`colocacao.mjs`). Havia aqui uma segunda cópia do laço.
+   
+   Ela não estava errada — conferido: o evento de killstreak do nosso motor é
+   `{t, streak, a, lvl, kind, dur, mult}`, sem `ko` e sem `d`, então a cópia
+   daqui nunca contou um anúncio de sequência como queda. O problema era ser
+   uma cópia: duas travessias do mesmo dado divergem no dia em que o formato do
+   evento mudar, e a que estiver errada será a que ninguém olha. A versão única
+   ainda protege explicitamente contra os dois casos (`streak` e queda
+   repetida), em vez de depender do formato continuar como está. */
 function posicaoFinal(idx){
   if (idx === S.champ) return 1;
-  const ordem = [];
-  for (const e of S.battle.events){
-    if (e.storm){ for (const h of e.hits) if (h.ko) ordem.push(h.i); }
-    else if (e.ko) ordem.push(e.d);
-  }
-  const i = ordem.indexOf(idx);
-  if (i === -1) return 2;                    // sobreviveu ao tempo, mas não venceu
-  return S.fighters.length - i;                // 1º eliminado -> último lugar
+  const pos = colocacaoDe(idx, ordemDeQuedas(S.battle.events), S.fighters.length);
+  return pos === null ? 2 : pos;             // sobreviveu ao tempo, mas não venceu
 }
 
 /* O desafio de variedade não é incremental: ele conta quantos Pokémon
@@ -451,6 +397,8 @@ function finish(){
   // confere o placar de abates contra o registro da simulação e fecha
   // a rodada com o pódio dos três que mais abateram
   conferirAbates();
+  conferirColocacao();   // mesma conferência, para a colocação
+  renderBattleBanner();  // vitória/derrota no banner, já com a colocação fechada
   mostrarPodio();
   /* §4.7: o desfecho da rodada e o do SEU palpite são eventos diferentes.
      `player_pick_ko` é o que permite medir frustração sem perguntar nada. */

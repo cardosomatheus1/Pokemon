@@ -26,6 +26,10 @@ import * as progressao from './progressao.mjs';
 import * as tema from './tema.mjs';
 import * as arenas from './arenas.mjs';
 import * as portao from './portao.mjs';
+import * as colocacao from './colocacao.mjs';
+import * as banner from './banner.mjs';
+import * as shiny from './shiny.mjs';
+import * as adm from './adm.mjs';
 import * as visual from './visual.mjs';
 
 if (process.argv.includes('--gerar')) {
@@ -134,7 +138,7 @@ const suites = [
   ...(semGolden ? [] : [golden.suite()]),
   /* baratas: varredura de texto e lotes pequenos */
   fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(),
-  carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(), telemetria.suite(), commit.suite(), saida.suite(), progressao.suite(), tema.suite(), arenas.suite(), portao.suite(),
+  carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(), telemetria.suite(), commit.suite(), saida.suite(), progressao.suite(), tema.suite(), arenas.suite(), portao.suite(), colocacao.suite(), banner.suite(), shiny.suite(), adm.suite(),
   /* médias: lotes de simulação curtos */
   semente.suite(), estatistica.suite(), precisao.suite(), invariantes.suite(),
   ...(visual.disponivel() && !semVisual

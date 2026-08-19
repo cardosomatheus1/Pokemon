@@ -19,6 +19,7 @@
  */
 
 import { S } from './estado.mjs';
+import { BALLS } from './bolas-dados.mjs';
 import { drawWeatherGround } from './clima.mjs';
 
 /* =====================================================================
@@ -123,16 +124,87 @@ function aplicarCenario(c){
 
 const cenarioAtual = () => cenario;
 
-function drawBall(c,x,y,top){
-  const r = 6;
+/* Desenho de UMA pokébola, vetorial. O sinal é recortado na metade de cima,
+   e é ele que torna o modelo reconhecível num círculo de 13 pixels — cor
+   sozinha não chega, a Timer e a Premier são as duas quase brancas.
+   O catálogo e o sorteio vivem em `bolas-dados.mjs`; aqui só se pinta. */
+function drawBall(c, x, y, b, escala){
+  const k = escala || 1;
+  const r = 6.5 * k;
+  b = b || BALLS[0];
   c.save();
-  c.fillStyle = 'rgba(0,0,0,.22)'; ell(c,x,y+r-1,r,r*0.4); c.fill();
-  c.beginPath(); c.arc(x,y,r,Math.PI,0); c.closePath(); c.fillStyle = top; c.fill();
-  c.beginPath(); c.arc(x,y,r,0,Math.PI); c.closePath(); c.fillStyle = '#f4f4f4'; c.fill();
-  c.fillStyle = '#141414'; c.fillRect(x-r, y-1, r*2, 2);
-  c.beginPath(); c.arc(x,y,2.4,0,Math.PI*2); c.fillStyle = '#141414'; c.fill();
-  c.beginPath(); c.arc(x,y,1.4,0,Math.PI*2); c.fillStyle = '#f4f4f4'; c.fill();
-  c.strokeStyle = 'rgba(0,0,0,.55)'; c.lineWidth = 1;
+  // sombra no chão
+  c.fillStyle = 'rgba(0,0,0,.28)'; ell(c, x, y+r-1, r*0.95, r*0.38); c.fill();
+
+  // metades
+  c.beginPath(); c.arc(x,y,r,Math.PI,0); c.closePath(); c.fillStyle = b.top; c.fill();
+  c.beginPath(); c.arc(x,y,r,0,Math.PI); c.closePath(); c.fillStyle = '#f0f0f0'; c.fill();
+
+  // sinal do modelo, recortado na metade de cima
+  c.save();
+  c.beginPath(); c.arc(x,y,r,Math.PI,0); c.closePath(); c.clip();
+  c.fillStyle = b.ac;
+  switch (b.sinal){
+    case 'faixas':
+      c.fillRect(x-r*0.72, y-r, r*0.30, r); c.fillRect(x+r*0.42, y-r, r*0.30, r); break;
+    case 'M':
+      c.fillRect(x-r*0.55, y-r*0.75, r*0.20, r*0.70);
+      c.fillRect(x+r*0.35, y-r*0.75, r*0.20, r*0.70);
+      c.fillRect(x-r*0.20, y-r*0.55, r*0.18, r*0.36);
+      c.fillRect(x+r*0.05, y-r*0.55, r*0.18, r*0.36); break;
+    case 'aro':
+      c.strokeStyle = b.ac; c.lineWidth = r*0.24;
+      c.beginPath(); c.arc(x,y,r*0.66,Math.PI,0); c.stroke(); break;
+    case 'dusk':
+      c.fillStyle = '#0f1512'; c.beginPath();
+      c.moveTo(x-r,y); c.lineTo(x,y-r); c.lineTo(x+r,y); c.fill();
+      c.fillStyle = b.ac; ell(c, x, y-r*0.42, r*0.24, r*0.24); c.fill(); break;
+    case 'luxo':
+      c.fillStyle = b.ac; c.fillRect(x-r, y-r*0.30, r*2, r*0.20);
+      c.fillStyle = '#e5443b'; ell(c, x, y-r*0.62, r*0.30, r*0.22); c.fill(); break;
+    case 'raio':
+      c.beginPath(); c.moveTo(x+r*0.10, y-r*0.85); c.lineTo(x-r*0.42, y-r*0.20);
+      c.lineTo(x-r*0.06, y-r*0.24); c.lineTo(x-r*0.28, y-r*0.02);
+      c.lineTo(x+r*0.44, y-r*0.52); c.lineTo(x+r*0.06, y-r*0.48); c.fill(); break;
+    case 'rede':
+      c.strokeStyle = b.ac; c.lineWidth = Math.max(0.7, r*0.13);
+      for (let i=-3;i<=3;i++){
+        c.beginPath(); c.moveTo(x+i*r*0.42, y); c.lineTo(x+i*r*0.42 + r*0.5, y-r); c.stroke();
+        c.beginPath(); c.moveTo(x+i*r*0.42, y); c.lineTo(x+i*r*0.42 - r*0.5, y-r); c.stroke();
+      } break;
+    case 'gotas':
+      ell(c, x-r*0.42, y-r*0.42, r*0.22, r*0.28); c.fill();
+      ell(c, x+r*0.34, y-r*0.30, r*0.18, r*0.24); c.fill();
+      ell(c, x, y-r*0.70, r*0.16, r*0.20); c.fill(); break;
+    case 'folha':
+      c.beginPath(); c.moveTo(x, y-r*0.86);
+      c.quadraticCurveTo(x+r*0.62, y-r*0.56, x, y-r*0.10);
+      c.quadraticCurveTo(x-r*0.62, y-r*0.56, x, y-r*0.86); c.fill(); break;
+    case 'coracao':
+      c.beginPath(); c.moveTo(x, y-r*0.16);
+      c.quadraticCurveTo(x-r*0.72, y-r*0.62, x-r*0.30, y-r*0.82);
+      c.quadraticCurveTo(x, y-r*0.94, x, y-r*0.56);
+      c.quadraticCurveTo(x, y-r*0.94, x+r*0.30, y-r*0.82);
+      c.quadraticCurveTo(x+r*0.72, y-r*0.62, x, y-r*0.16); c.fill(); break;
+    case 'lua':
+      c.beginPath(); c.arc(x, y-r*0.46, r*0.34, 0, Math.PI*2); c.fill();
+      c.fillStyle = b.top;
+      c.beginPath(); c.arc(x+r*0.16, y-r*0.54, r*0.30, 0, Math.PI*2); c.fill(); break;
+    case 'ponto':
+      ell(c, x-r*0.44, y-r*0.44, r*0.17, r*0.17); c.fill();
+      ell(c, x+r*0.44, y-r*0.44, r*0.17, r*0.17); c.fill();
+      ell(c, x, y-r*0.72, r*0.17, r*0.17); c.fill(); break;
+  }
+  c.restore();
+
+  // faixa central, botão e contorno
+  c.fillStyle = '#151515'; c.fillRect(x-r, y-r*0.17, r*2, r*0.34);
+  c.beginPath(); c.arc(x,y,r*0.40,0,Math.PI*2); c.fillStyle = '#151515'; c.fill();
+  c.beginPath(); c.arc(x,y,r*0.24,0,Math.PI*2); c.fillStyle = '#f7f7f7'; c.fill();
+  // brilho
+  c.fillStyle = 'rgba(255,255,255,.42)';
+  ell(c, x - r*0.36, y - r*0.50, r*0.26, r*0.16); c.fill();
+  c.strokeStyle = 'rgba(0,0,0,.55)'; c.lineWidth = Math.max(1, k);
   c.beginPath(); c.arc(x,y,r,0,Math.PI*2); c.stroke();
   c.restore();
 }
@@ -193,7 +265,7 @@ function drawMap(time, dt = 0){
   const closed = !S.released;
   for (const e of S.ents){
     if (!e.alive) continue;
-    if (closed){ drawBall(map, e.x|0, (e.y-7)|0, e.ballCol); continue; }
+    if (closed){ drawBall(map, e.x|0, (e.y-7)|0, e.bola); continue; }
     // sombra proporcional ao tamanho do bicho (Gyarados faz mais sombra
     // que Pikachu), e um tico maior enquanto ele está atacando
     const r = e.meta.w[0] * e.scale * 0.30;
@@ -222,6 +294,7 @@ export {
   W,
   aplicarCenario,
   cenarioAtual,
+  drawBall,
   drawEntryRings,
   drawMap,
   ell,

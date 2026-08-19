@@ -18,7 +18,7 @@
 import { createServer } from 'node:http';
 import { readFileSync, existsSync } from 'node:fs';
 import { extname, join, sep } from 'node:path';
-import { criarSuite, ok } from './harness.mjs';
+import { criarSuite, igual, ok } from './harness.mjs';
 import { digital as digitalNode, rodada as rodadaNode } from './rodada-digital.mjs';
 import { sortearArena } from '../app/modules/arenas-dados.mjs';
 
@@ -336,6 +336,55 @@ export async function rodar() {
     };
   }).catch(e => ({ erro: String(e).split('\n')[0] }));
 
+  /* --- Q5 do V1.15: CANCELAR A APOSTA DEVOLVE AS DUAS COISAS -------------
+     Dinheiro e passivo. Teste de unidade prova que `liberarTicket` é o inverso
+     exato de `registrarTicket`; só o navegador prova que o botão chama os dois.
+     Liberar só o dinheiro deixa o mercado daquele lutador travado pelo resto da
+     rodada — e o jogador vê "mercado fechado" sem nada explicando por quê. */
+  const cancelamento = await pg.evaluate(async () => {
+    const { S } = await import('/app/modules/estado.mjs');
+    const banco = await import('/app/modules/banco.mjs');
+    if (!S.myBet) return { erro: 'sem aposta viva para cancelar' };
+    const idx = S.myBet.idx, valor = S.myBet.amount;
+    const antesSaldo = banco.saldo(), antesPassivo = S.passivo[idx];
+    const botao = document.querySelector('#btnCancelBet');
+    if (!botao) return { erro: 'o botão de cancelar não está na tela' };
+    botao.click();
+    return {
+      idx, valor, antesSaldo, antesPassivo,
+      depoisSaldo: banco.saldo(), depoisPassivo: S.passivo[idx],
+      apostaViva: !!S.myBet,
+      selecionados: document.querySelectorAll('.pick.sel').length,
+      aviso: document.querySelector('#betInfo')?.textContent ?? '',
+    };
+  }).catch(e => ({ erro: String(e).split('\n')[0] }));
+
+  /* --- Q5 do V1.15: a colocação e o banner estão LIGADOS ------------------
+     Quarta e quinta vez que a lição aparece (S30, S53, S65, S69, S77/S78): o
+     módulo puro pode estar perfeito e ninguém tê-lo chamado. */
+  const painel = await pg.evaluate(async () => {
+    const { S } = await import('/app/modules/estado.mjs');
+    const adm = await import('/app/modules/adm.mjs');
+    /* O PIN não é controle de acesso (ver adm-dados.mjs), então o teste abre o
+       painel pela função. O que interessa aqui é o que ele MOSTRA. */
+    adm.admAbrir();
+    const linhas = [...document.querySelectorAll('#admMargem .admLinha')].map(l => l.textContent);
+    return {
+      colocacaoLinhas: document.querySelectorAll('#pdList .pdrow').length,
+      colocacaoPos: [...document.querySelectorAll('#pdList .pdrow .pos, #pdList .pdrow .tro')].length,
+      bannerCena: document.querySelector('#battleBanner .bnCena')?.className ?? '',
+      bannerNome: document.querySelector('#battleBanner .bnNome')?.className ?? '',
+      admAberto: document.querySelector('#viewAdm')?.classList.contains('on') ?? false,
+      admMargem: linhas.join(' | '),
+      margemRegistro: S.odds ? S.odds.margemConfigurada : null,
+      lutadores: S.fighters.length,
+    };
+  }).catch(e => ({ erro: String(e).split('\n')[0] }));
+  await pg.evaluate(() => {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+    document.querySelector('#viewArena')?.classList.add('on');
+  });
+
   /* --- Q5 do V1.13: o tema troca de verdade ------------------------------
      A promessa do bloco é que trocar de tema muda o site inteiro sem tocar em
      lógica de jogo. Teste de unidade confere que os tokens existem; só o
@@ -365,6 +414,20 @@ export async function rodar() {
     return { antes, depois, guardado, atributo: raiz.dataset.tema, quantos: TEMAS.length };
   }).catch(e => ({ erro: String(e).split('\n')[0] }));
 
+  /* --- Q5 do V1.15 (D-008): A APOSTA É CONTADA UMA VEZ, no fecho da janela --
+     Contar no clique conta troca de lutador e conta aposta cancelada. O defeito
+     é aritmético e invisível: o perfil mostra "12 apostas" para quem fez 4.
+     Nenhum teste estático o alcança — quem conta é o fluxo. */
+  const contagem = await pg.evaluate(async () => {
+    const { S } = await import('/app/modules/estado.mjs');
+    const antes = S.profile.betsCount;
+    const linhas = [...document.querySelectorAll('.pick')];
+    if (linhas.length < 3) return { erro: 'lista de apostas curta demais' };
+    /* três cliques: escolhe, troca, troca de novo. Uma aposta viva no fim. */
+    linhas[0].click(); linhas[1].click(); linhas[2].click();
+    return { antes, apostaViva: !!S.myBet };
+  }).catch(e => ({ erro: String(e).split('\n')[0] }));
+
   await pg.$eval('#btnStart', el => el.click()).catch(() => {});
   const aoVivo = await pg.waitForFunction(
     () => document.querySelector('#phase')?.textContent === 'AO VIVO',
@@ -374,6 +437,39 @@ export async function rodar() {
      linha do tempo de verdade. */
   if (aoVivo) await pg.waitForTimeout(4000);
   const relogio = await pg.evaluate(() => document.querySelector('#clock')?.textContent);
+
+  /* --- Q5 do V1.15: O QUADRO DE COLOCAÇÃO ESTÁ VIVO, e não só correto no fim.
+     A conferência do fim da rodada (`conferirColocacao`) recalcula tudo dos
+     eventos e corrige — então uma colocação que NÃO seja alimentada pelo gancho
+     do abate termina certa e passa a rodada inteira errada. Só uma leitura DO
+     MEIO DA LUTA distingue os dois casos. */
+  /* Esperar a PRIMEIRA QUEDA, e não um relógio. Quatro segundos de luta não
+     garantem nenhum nocaute — a rodada dura ~31 s e o primeiro abate cai onde
+     cai. Teste que depende de quando a máquina chega lá não é teste; é sorte,
+     e foi a lição da captura da linha de base no F0.7. */
+  /* O PREDICADO NÃO PODE SER `async`. Uma função assíncrona devolve sempre uma
+     Promise, e Promise é valor verdadeiro — o `waitForFunction` resolveria na
+     primeira sondagem, antes de qualquer queda. Foi o que aconteceu aqui: a
+     espera "acusou queda" com zero caídos.
+
+     O sinal é o placar de abates na tela, e ele serve por ser INDEPENDENTE do
+     que está sendo testado: o defeito S89 tira a ordem de quedas do gancho sem
+     tocar na contagem de abates, então o placar continua andando enquanto o
+     quadro de colocação congela. Esperar pelo próprio quadro seria circular. */
+  const houveQueda = aoVivo && await pg.waitForFunction(
+    () => (+(document.querySelector('#kfTotal')?.textContent || 0)) > 0,
+    { timeout: 45000, polling: 400 }).then(() => true).catch(() => false);
+
+  const colocacaoViva = await pg.evaluate(async () => {
+    const { S } = await import('/app/modules/estado.mjs');
+    return {
+      fase: S.state,
+      mortos: (S.ents || []).filter(e => !e.alive).length,
+      caidosNoQuadro: document.querySelectorAll('#pdList .pdrow.caiu').length,
+      linhas: document.querySelectorAll('#pdList .pdrow').length,
+      contagemDepois: S.profile.betsCount,
+    };
+  }).catch(e => ({ erro: String(e).split('\n')[0] }));
   const erroDepois = erros.length;
 
   /* --- a rodada que o APP montou -------------------------------------------
@@ -401,7 +497,7 @@ export async function rodar() {
   }).catch(() => null);
 
   await b.close(); s.close();
-  return { erros, conhecidos, apostas, aoVivo, relogio, folhas: cache.size, erroDepois, jogo, corte, tema, ...st };
+  return { erros, conhecidos, apostas, aoVivo, relogio, folhas: cache.size, erroDepois, jogo, corte, cancelamento, painel, contagem, colocacaoViva, houveQueda, tema, ...st };
 }
 
 /* Q3 · A RODADA DO APP SAI DA RAIZ.
@@ -590,6 +686,76 @@ export function suite(r) {
     if (r.conhecidos.length) console.log(`      (${r.conhecidos.length} ocorrência(s) de defeito já registrado)`);
   });
   s.teste('o boot concluiu', () => ok(r.bootSumiu, 'a tela de boot não saiu'));
+
+  /* --- V1.15 -------------------------------------------------------------- */
+
+  s.teste('cancelar a aposta devolve o dinheiro E o passivo', () => {
+    const c = r.cancelamento;
+    ok(c && !c.erro, `não deu para cancelar: ${c?.erro}`);
+    ok(!c.apostaViva, 'a aposta continuou viva depois de cancelar');
+    igual(c.depoisSaldo, c.antesSaldo + c.valor,
+      `o saldo não voltou: ${c.antesSaldo} + ${c.valor} deveria dar ${c.antesSaldo + c.valor}`);
+    /* O valor exato do passivo liberado é `valor × odd`, e o teste de unidade
+       já afirma a igualdade. Aqui basta provar que a liberação ACONTECEU: o
+       modo de falha real é o botão devolver só o dinheiro. */
+    ok(c.depoisPassivo < c.antesPassivo,
+      `o passivo não foi liberado: continuou em ${c.depoisPassivo} (era ${c.antesPassivo}) — ` +
+      `o mercado deste lutador ficaria travado pelo resto da rodada`);
+    igual(c.depoisPassivo, 0, 'o passivo do lutador não voltou a zero depois do único ticket ser cancelado');
+    igual(c.selecionados, 0, 'a linha do lutador continuou marcada depois de cancelar');
+    ok(/cancelada/i.test(c.aviso), `a tela não avisou o cancelamento: "${c.aviso.slice(0, 60)}"`);
+  });
+
+  s.teste('o quadro de colocação lista os doze, do 1º ao 12º', () => {
+    const p = r.painel;
+    ok(p && !p.erro, `não deu para ler o painel: ${p?.erro}`);
+    igual(p.colocacaoLinhas, p.lutadores,
+      `${p.colocacaoLinhas} linhas de colocação para ${p.lutadores} lutadores`);
+    igual(p.colocacaoPos, p.lutadores, 'alguma linha ficou sem posição nem troféu');
+  });
+
+  s.teste('o banner de batalha está no ar, com cenário e efeito escolhidos', () => {
+    const p = r.painel;
+    ok(/\bcn-\w+/.test(p.bannerCena),
+      `o banner não tem cenário aplicado (className "${p.bannerCena}")`);
+    ok(/\bef-\w+/.test(p.bannerNome),
+      `o nome do jogador não tem efeito aplicado (className "${p.bannerNome}")`);
+  });
+
+  /* A GARANTIA DO C1, na tela: o painel pode MUDAR a margem, não pode criar uma
+     odd secreta. O valor que ele mostra tem de ser o mesmo do registro §4.4.5. */
+  s.teste('D-008 · três cliques de aposta contam UMA aposta', () => {
+    const c = r.contagem, v = r.colocacaoViva;
+    ok(c && !c.erro, `não deu para exercitar a contagem: ${c?.erro}`);
+    ok(v && !v.erro, `não deu para reler o perfil: ${v?.erro}`);
+    ok(c.apostaViva, 'os cliques não deixaram aposta viva — o cenário não foi exercitado');
+    igual(v.contagemDepois, c.antes + 1,
+      `três cliques (escolher + trocar + trocar) contaram ${v.contagemDepois - c.antes} apostas. ` +
+      `A aposta só entra na estatística quando a janela FECHA — ver D-008.`);
+  });
+
+  s.teste('a colocação está viva durante a luta, não só correta no fim', () => {
+    const v = r.colocacaoViva;
+    ok(v && !v.erro, `não deu para ler a colocação viva: ${v?.erro}`);
+    igual(v.linhas, 12, `${v.linhas} linhas no quadro durante a luta`);
+    ok(r.houveQueda, 'nenhuma queda em 45 s de luta — o cenário não foi exercitado');
+    ok(v.mortos > 0, `a espera acusou queda mas ${v.mortos} lutadores estão caídos`);
+    igual(v.caidosNoQuadro, v.mortos,
+      `${v.mortos} lutadores caídos e ${v.caidosNoQuadro} marcados no quadro. A ordem de quedas ` +
+      `precisa vir do MESMO gancho que credita o abate — a conferência do fim corrige tudo e ` +
+      `esconderia isto.`);
+  });
+
+  s.teste('o painel de ADM abre e mostra a MESMA margem do registro', () => {
+    const p = r.painel;
+    ok(p.admAberto, 'o painel de ADM não abriu');
+    ok(p.margemRegistro !== null && p.margemRegistro !== undefined,
+      'a rodada não tem margem no registro do §4.4.5');
+    const esperado = (p.margemRegistro * 100).toFixed(2) + '%';
+    ok(p.admMargem.includes(esperado),
+      `o painel não mostra a margem da rodada (${esperado}). Mostrou: ${p.admMargem}`);
+  });
+
   s.teste('a fase de apostas abriu', () => ok(r.apostas, 'o app não chegou a nenhuma fase'));
   s.teste('elenco completo em cena', () => {
     ok(r.lutadores === 12, `${r.lutadores} lutadores na arena, esperado 12`);

@@ -613,3 +613,27 @@ Vale a pena? Provavelmente sim, e o lugar é o V1.17, que já vai mexer em skin 
 arena. Hoje a unidade cromática de cada cenário sai da paleta e do que cerca a
 ilha; um véu por cima resolveria o caso em que o sprite do lutador destoa do
 bioma — que é o problema que o campo parecia querer resolver.
+
+---
+
+### L-028 — o porte fechou; o que ele deixou aberto
+
+**Dono:** nenhum bloco novo · **Estado:** informativo
+
+O V1.15 fechou o porte da v1.0 do amigo. Fora dele ficaram, por decisão
+registrada:
+
+| O quê | Onde está | Por quê |
+|---|---|---|
+| **Baús** | V1.16, nosso roadmap | Decisão do dono do projeto; bloqueado pelo D-007 |
+| **Fragmentos por rodada** | junto com os baús | É a moeda de entrada do baú, não faz sentido sozinha |
+| **Simulador de baús no painel** | junto com os baús | Portar o simulador seria portar a economia junto |
+| **Campo `brilho` das arenas** | L-027 | Ele documentou e nunca construiu |
+
+**Nada mais dele ficou de fora.** A varredura que sustenta isso é a mesma do
+inventário: as funções que existem na v1.0 e não existiam na v0.8, conferidas uma
+a uma contra o que entrou nos blocos V1.13 a V1.15.
+
+**A partir daqui ele trabalha em cima da nossa versão**, e a tabela de precedência
+do `PORTE_v1.0.md` deixa de ser necessária — ela existia para reconciliar dois
+ramos que andaram em paralelo.

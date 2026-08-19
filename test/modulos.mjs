@@ -41,6 +41,26 @@ const CAMADA = {
   'progressao.mjs': 0,
   /* Tema: mexe no <html> e no localStorage, não depende de módulo nenhum. */
   'tema.mjs': 0,
+  /* Aritmética das posições: pura, sem DOM. Quem desenha é o killfeed, que já
+     é dono do placar da rodada — a ordem de quedas precisa vir do MESMO gancho
+     que credita o abate. */
+  'colocacao.mjs': 0,
+  /* Catálogo de cosméticos do banner: dez cenários e oito efeitos, todos
+     gradiente e sombra. Dado puro, sem DOM. */
+  'banner-dados.mjs': 0,
+  /* Os 24 modelos de pokébola e o sorteio da rodada: dado e aritmética, sem
+     canvas. Quem pinta é o render. */
+  'bolas-dados.mjs': 0,
+  /* Catálogo de avatares de treinador. Puro porque o baixador de assets, que
+     roda no Node, precisa saber o que baixar — ver o vazamento que o portão de
+     egresso fechado pegou no V1.15. */
+  'avatares-dados.mjs': 0,
+  /* Estado dos cosméticos shiny e a regra de desbloqueio. Puro: recebe o
+     perfil e responde, sem importar de onde ele veio. Fica na base porque
+     `sprites.mjs` (camada 1) precisa do caminho do recolor. */
+  'shiny-dados.mjs': 0,
+  /* Configuração do painel e a validação da margem. Puro; a tela é adm.mjs. */
+  'adm-dados.mjs': 0,
   /* Catálogo de arenas: escolhe a arena da rodada a partir da árvore de
      sementes. Não desenha e não toca o DOM, então mora na base — é o que
      permite testá-lo no Node. */
@@ -66,6 +86,15 @@ const CAMADA = {
   'carteira.mjs': 4,
   'navegacao.mjs': 4,
   'controles.mjs': 4,
+  /* A aposta saiu de `fases.mjs` no V1.15: as fases são a máquina de estados
+     da rodada, a aposta é onde o dinheiro do jogador encontra o teto do §4.4.6.
+     Mesma camada — `fases` chama `aposta`, nunca o contrário. */
+  /* Vitrine da rodada: lê perfil e estado, devolve HTML. Não decide nada. */
+  'banner.mjs': 4,
+  /* Painel de ADM: lê tudo e escreve na configuração dele. Camada mais alta,
+     porque toca perfil, carteira, telemetria e navegação. */
+  'adm.mjs': 4,
+  'aposta.mjs': 4,
   'fases.mjs': 4,
   'loop.mjs': 5,
 };

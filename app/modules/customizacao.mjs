@@ -5,11 +5,16 @@
 import { $ } from './dom.mjs';
 import { CUR, elenco, especies, tipoCores, tipoNomes, nomeExibido, slugExterno } from './motor.mjs';
 import { DEPOSIT_PACKAGES, simulateDeposit } from './carteira.mjs';
-import { PROFILE_DEFAULT, loadProfile, nivelDe, progressoNivel, saveProfile, tituloDe, topOf } from './perfil.mjs';
+import { PROFILE_DEFAULT, avatarURL, cascataTreinador, loadProfile, nivelDe, progressoNivel, saveProfile, tituloDe, topOf, trainerURL } from './perfil.mjs';
 import { S } from './estado.mjs';
 import { TEMAS, aplicarTema, temaAtual } from './tema.mjs';
 import { TYPE_BADGES, renderBadges } from './medalhas.mjs';
 import { dexImg, dexURL } from './sprites.mjs';
+import { BN_CENAS, BN_EFEITOS, PADRAO_BANNER } from './banner-dados.mjs';
+import { TRAINER_AVATARS } from './avatares-dados.mjs';
+import { NIVEIS_POR_VAGA, alternar, desbloquear, gifShinyAtivo, skinShinyAtiva,
+         vagasLivres, vagasNoNivel, vagasUsadas } from './shiny-dados.mjs';
+import { renderBattleBanner } from './banner.mjs';
 import { ensureDaily } from './desafios.mjs';
 import { goView, renderSession } from './navegacao.mjs';
 import { atualizarSaldo } from './controles.mjs';
@@ -24,23 +29,12 @@ import { reiniciarCarteira, saldo } from './banco.mjs';
    de treinador não existir na fonte, o onerror troca por um Pokémon —
    assim a customização nunca aparece quebrada.
    ===================================================================== */
-const TRAINER_AVATARS = [
-  {id:'red',      nm:'Red'},      {id:'blue',     nm:'Blue'},
-  {id:'leaf',     nm:'Leaf'},     {id:'lance',    nm:'Lance'},
-  {id:'brock',    nm:'Brock'},    {id:'misty',    nm:'Misty'},
-  {id:'erika',    nm:'Erika'},    {id:'sabrina',  nm:'Sabrina'},
-  {id:'koga',     nm:'Koga'},     {id:'blaine',   nm:'Blaine'},
-  {id:'giovanni', nm:'Giovanni'}, {id:'ltsurge',  nm:'Surge'},
-  {id:'oak',      nm:'Oak'},      {id:'agatha',   nm:'Agatha'},
-  {id:'bruno',    nm:'Bruno'},    {id:'lorelei',  nm:'Lorelei'},
-];
 const BANNER_SCENES = [
   {id:'praia',   nm:'Praia'},   {id:'floresta', nm:'Floresta'},
   {id:'oceano',  nm:'Oceano'},  {id:'vulcao',   nm:'Vulcão'},
   {id:'ceu',     nm:'Céu'},     {id:'caverna',  nm:'Caverna'},
   {id:'noite',   nm:'Noite'},   {id:'campeao',  nm:'Campeão'},
 ];
-const trainerURL = id => `https://play.pokemonshowdown.com/sprites/trainers/${id}.png`;
 
 /* Retratos da Pokédex: mesma história das folhas da arena — o raw do
    GitHub cai/é bloqueado, então a CDN vem primeiro e o Showdown fecha a
@@ -62,10 +56,6 @@ function slugDoDex(dex){
   return e ? e.n : 'pikachu';
 }
 
-function avatarURL(){
-  const a = S.profile.avatar || PROFILE_DEFAULT.avatar;
-  return a.kind === 'mon' ? dexURL(a.id) : trainerURL(a.id);
-}
 
 /* Pokémon oferecidos na customização: os 76 do elenco ativo, com os
    que você mais usou na frente — customizar com o seu predileto é o
@@ -96,11 +86,12 @@ function renderBanner(){
 function renderCustom(){
   const a = S.profile.avatar || PROFILE_DEFAULT.avatar;
   const b = S.profile.banner || PROFILE_DEFAULT.banner;
+  const bt = S.profile.battle || PADRAO_BANNER;
   const mons = customMons();
 
   $('#pickTrainer').innerHTML = TRAINER_AVATARS.map(t => `
     <div class="opt ${a.kind==='trainer'&&a.id===t.id?'on':''}" data-av="trainer" data-id="${t.id}">
-      <img src="${trainerURL(t.id)}" alt="" onerror="this.closest('.opt').remove()">
+      <img src="${trainerURL(t.id)}"${cascataTreinador(t.id)} alt="">
       <div class="cap">${t.nm}</div>
     </div>`).join('');
 
@@ -108,6 +99,24 @@ function renderCustom(){
     <div class="opt ${a.kind==='mon'&&+a.id===m.dex?'on':''}" data-av="mon" data-id="${m.dex}">
       ${dexImg(m.dex, m.n, 'loading="lazy"')}
       <div class="cap">${nomeExibido(m.n)}</div>
+    </div>`).join('');
+
+  /* A amostra do cenário precisa de `position:relative;overflow:hidden`: os
+     enfeites são `::after` absolutos, e sem âncora eles escapam do quadrinho e
+     tomam o modal inteiro — o sol do Pôr do Sol virava uma esfera gigante
+     cobrindo o botão Salvar. Defeito que a v1.0 do porte já tinha achado e
+     consertado; herdamos o conserto junto com a arte. */
+  $('#pickCena').innerHTML = BN_CENAS.map(x => `
+    <div class="opt ${bt.cena===x.id?'on':''}" data-bcena="${x.id}">
+      <div class="swatch cn-${x.id}" style="position:relative;overflow:hidden"></div>
+      <div class="cap">${x.nm}</div>
+    </div>`).join('');
+
+  $('#pickEfeito').innerHTML = BN_EFEITOS.map(x => `
+    <div class="opt ${bt.efeito===x.id?'on':''}" data-befeito="${x.id}">
+      <div class="swatch" style="display:flex;align-items:center;justify-content:center;
+        background:var(--panel)"><span class="bnNome ef-${x.id}" style="font-size:.6rem">${x.ico}</span></div>
+      <div class="cap">${x.nm}</div>
     </div>`).join('');
 
   $('#pickScene').innerHTML = BANNER_SCENES.map(s => `
@@ -121,6 +130,54 @@ function renderCustom(){
       ${dexImg(m.dex, m.n, 'loading="lazy"')}
       <div class="cap">${nomeExibido(m.n)}</div>
     </div>`).join('');
+
+  renderShiny();
+}
+
+/* LABORATÓRIO SHINY.
+ *
+ * Duas ações distintas na mesma grade, e a diferença precisa ficar óbvia:
+ *   · quem ainda NÃO tem gasta uma vaga para desbloquear (ação irreversível
+ *     dentro daquela vaga, então pede confirmação)
+ *   · quem JÁ tem alterna GIF e SKIN separadamente, sem custo nenhum
+ *
+ * A lista sai dos Pokémon em que o jogador já apostou. Desbloquear um bicho que
+ * ele nunca viu não seria conquista — seria catálogo. */
+function renderShiny(){
+  const grade = $('#pickShiny'); if (!grade) return;
+  const nivel = nivelDe(S.profile.xp || 0);
+  const livres = vagasLivres(S.profile, nivel);
+  const total = vagasNoNivel(nivel);
+
+  $('#shinyVagas').textContent = total
+    ? `${livres} de ${total} vaga${total > 1 ? 's' : ''} livre${livres === 1 ? '' : 's'}`
+    : '—';
+  $('#shinyNota').innerHTML = total
+    ? `Uma vaga a cada ${NIVEIS_POR_VAGA} níveis. Desbloquear dá o GIF e a skin de arena juntos; ` +
+      `equipar cada um é separado, e desequipar não perde a conquista.`
+    : `A primeira vaga chega no nível ${NIVEIS_POR_VAGA}. Cada ${NIVEIS_POR_VAGA} níveis dão mais uma.`;
+
+  const mons = customMons();
+  grade.innerHTML = mons.slice(0, 60).map(m => {
+    const tem = (S.profile.shiny.gifs || []).includes(m.dex);
+    const g = gifShinyAtivo(S.profile, m.dex), k = skinShinyAtiva(S.profile, m.dex);
+    if (!tem) return `
+      <div class="opt shiny ${livres > 0 ? '' : 'bloqueado'}" data-shiny-novo="${m.dex}">
+        ${dexImg(m.dex, m.n, 'loading="lazy"', true)}
+        <span class="sflag">${livres > 0 ? 'usar vaga' : 'sem vaga'}</span>
+        <div class="cap">${nomeExibido(m.n)}</div>
+      </div>`;
+    return `
+      <div class="opt shiny on" data-shiny-tem="${m.dex}">
+        ${dexImg(m.dex, m.n, 'loading="lazy"', g)}
+        <span class="sflag">conquistado</span>
+        <div class="cap">${nomeExibido(m.n)}</div>
+        <div class="sbtns">
+          <button class="sbtn ${g ? 'on' : ''}" data-shiny-gif="${m.dex}">GIF</button>
+          <button class="sbtn ${k ? 'on' : ''}" data-shiny-skin="${m.dex}">Arena</button>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 function renderDaily(){
@@ -219,13 +276,47 @@ $('#profileModal').addEventListener('click', ev => {
   if (opt.dataset.av)          S.profile.avatar = {kind:opt.dataset.av, id: opt.dataset.av==='mon' ? +opt.dataset.id : opt.dataset.id};
   else if (opt.dataset.scene)  S.profile.banner = {...S.profile.banner, scene: opt.dataset.scene};
   else if (opt.dataset.bmon)   S.profile.banner = {...S.profile.banner, dex: +opt.dataset.bmon};
+  else if (opt.dataset.bcena)  S.profile.battle = {...S.profile.battle, cena: opt.dataset.bcena};
+  else if (opt.dataset.befeito)S.profile.battle = {...S.profile.battle, efeito: opt.dataset.befeito};
   else return;
   saveProfile(S.profile);
-  renderBanner(); renderSession();
+  renderBanner(); renderSession(); renderBattleBanner();
   // marca a opção escolhida sem redesenhar a grade inteira (não perde o scroll)
   const grid = opt.parentElement;
   grid.querySelectorAll('.opt').forEach(o => o.classList.remove('on'));
   opt.classList.add('on');
+});
+
+/* O LABORATÓRIO SHINY TEM HANDLER PRÓPRIO, e não entra no delegador de `.opt`
+   acima: ali o clique em qualquer lugar do cartão escolhe o item, e aqui há
+   dois botões DENTRO do cartão com significados diferentes. Misturar os dois
+   faria "equipar a skin" também trocar o avatar. */
+$('#pickShiny').addEventListener('click', ev => {
+  const bg = ev.target.closest('[data-shiny-gif]');
+  const bk = ev.target.closest('[data-shiny-skin]');
+  if (bg || bk){
+    alternar(S.profile, bg ? 'gif' : 'skin', +(bg || bk).dataset[bg ? 'shinyGif' : 'shinySkin']);
+    saveProfile(S.profile); renderShiny(); renderBattleBanner(); renderBanner();
+    return;
+  }
+  const novo = ev.target.closest('[data-shiny-novo]');
+  if (!novo) return;
+  const dex = +novo.dataset.shinyNovo;
+  const nivel = nivelDe(S.profile.xp || 0);
+  if (vagasLivres(S.profile, nivel) < 1){
+    /* Sem vaga não é erro do jogador: é informação. Dizer QUANTO falta é o que
+       transforma "não pode" em "ainda não". */
+    const faltam = NIVEIS_POR_VAGA - (nivel % NIVEIS_POR_VAGA);
+    $('#shinyNota').innerHTML =
+      `<b style="color:var(--gold)">Sem vaga livre.</b> A próxima chega em ${faltam} nível${faltam>1?'s':''} ` +
+      `— você está no ${nivel}, e cada ${NIVEIS_POR_VAGA} níveis dão uma.`;
+    return;
+  }
+  const nome = (especies.find(e => e.dex === dex) || {}).n || dex;
+  if (!confirm(`Usar uma vaga de cosmético shiny em ${nomeExibido(nome)}?\n\n` +
+               `Você tem ${vagasLivres(S.profile, nivel)} livre(s). A vaga não volta.`)) return;
+  desbloquear(S.profile, dex, nivel);
+  saveProfile(S.profile); renderShiny(); renderBattleBanner();
 });
 
 $('#btnProfReset').onclick = () => {
@@ -241,7 +332,6 @@ $('#pkgList').addEventListener('click', e => {
 });
 
 export {
-  avatarURL,
   renderProfile,
   trainerURL,
 };

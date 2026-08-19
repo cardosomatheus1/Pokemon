@@ -111,9 +111,11 @@ body{
 .stage{width:min(430px,100%);flex:0 0 auto;display:flex;flex-direction:column;gap:8px}
 .col{width:270px;flex:0 0 auto;display:flex;flex-direction:column;gap:10px}
 .col.kf{width:232px}
+.col.bn{width:238px}
 /* Abaixo de 1300px a coluna do killfeed não cabe mais ao lado das outras
    três; em vez de espremer tudo, ela desce e ocupa a mesma largura do
    palco, mantendo a leitura. */
+@media (max-width:1820px){ .col.bn{width:min(430px,100%)} }
 @media (max-width:1300px){ .col.kf{width:min(430px,100%)} }
 @media (max-width:1000px){
   .app{flex-direction:column;align-items:center}
@@ -472,6 +474,12 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 .corner-badge.pop{animation:badgePop .5s ease-out}
 @keyframes badgePop{0%{transform:scale(.7) translateY(-6px)}60%{transform:scale(1.08) translateY(0)}100%{transform:scale(1) translateY(0)}}
 .corner-badge.storm{top:auto;bottom:8px;left:8px;border-color:#e05a4a;color:#ffb4a8;max-width:none}
+/* Botão de cancelar aposta (V1.15). Discreto de propósito: desfazer é direito
+   do jogador, não chamada para ação — competir em destaque com o painel de
+   retorno empurraria para o cancelamento. */
+.btn.cancelBet{display:block;width:100%;margin-top:8px;padding:6px 0;font-size:.66rem;
+  background:rgba(255,77,109,.10);border:1px solid rgba(255,77,109,.35);color:#ffb4a8}
+.btn.cancelBet:hover{background:rgba(255,77,109,.20);border-color:var(--red);color:#fff}
 /* O selo de arena fica do lado OPOSTO ao de clima: os dois podem estar no ar
    ao mesmo tempo durante a luta, e empilhados um cobria o outro. */
 .corner-badge.arena{left:auto;right:8px;text-align:right;max-width:132px}
@@ -684,6 +692,46 @@ input[type=range]{width:100%;accent-color:var(--gold)}
    o número de abates fica alinhado à direita, que é o que o olho procura.
    ===================================================================== */
 #kfList{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
+
+/* ---- QUADRO DE COLOCAÇÃO (V1.15) ----
+   A pele neon do V1.13 já trouxe as regras `.pdrow` de acento; faltava a base
+   de layout, que mora aqui junto da do killfeed porque as duas listas têm a
+   mesma anatomia — posição, retrato, nome, estado. */
+#pdList{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
+.pdrow{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:7px;
+  background:var(--panel2);border:1px solid transparent;transition:.25s}
+.pdrow .pos{flex:0 0 17px;text-align:center;font-family:var(--px);font-size:.56rem;color:var(--dim)}
+.pdrow .tro{flex:0 0 17px;text-align:center;font-size:.72rem;line-height:1}
+/* o emoji do troféu é sempre dourado; prata e bronze saem por filtro */
+.pdrow .tro.t2{filter:grayscale(1) brightness(1.35)}
+.pdrow .tro.t3{filter:sepia(1) saturate(2.6) hue-rotate(-18deg) brightness(.92)}
+.pdrow .face{flex:0 0 24px;width:24px;height:24px;border-radius:6px;overflow:hidden;
+  background:#1b2233;display:flex;align-items:center;justify-content:center}
+.pdrow .face img{width:34px;height:34px;object-fit:contain;image-rendering:pixelated;margin-top:-7px}
+.pdrow .nm{flex:1;min-width:0;font-size:.68rem;color:var(--txt);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pdrow .st{flex:0 0 auto;font-family:var(--px);font-size:.55rem;color:var(--dim)}
+.pdrow.p1{background:linear-gradient(90deg,#3a2c05,var(--panel2));border-color:var(--gold)}
+.pdrow.p1 .st{color:var(--gold)}
+.pdrow.p2{background:linear-gradient(90deg,#262b35,var(--panel2));border-color:#b9c4d6}
+.pdrow.p3{background:linear-gradient(90deg,#33210f,var(--panel2));border-color:#c98a55}
+.pdrow.caiu{opacity:.42}
+.pdrow.caiu .nm{text-decoration:line-through;color:var(--dim)}
+.pdrow.caiu .st{color:var(--red)}
+.pdrow.mine{box-shadow:inset 3px 0 0 var(--gold)}
+
+/* ---- enfeites do 1º lugar (vale para abates e colocação) ---- */
+.kfrow.m1, .pdrow.p1{position:relative;overflow:hidden}
+.kfrow.m1::after, .pdrow.p1::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,transparent 40%,rgba(255,225,140,.22) 50%,transparent 60%);
+  animation:brilhoLider 2.8s linear infinite}
+@keyframes brilhoLider{0%{transform:translateX(-115%)}100%{transform:translateX(115%)}}
+.kfrow.m1 .face, .pdrow.p1 .face{box-shadow:0 0 0 1px var(--gold), 0 0 7px rgba(var(--goldRGB),.6)}
+.pdrow.campeao{animation:campeaoPulse 1.6s ease-in-out infinite}
+@keyframes campeaoPulse{50%{box-shadow:0 0 12px rgba(var(--goldRGB),.5), inset 3px 0 0 var(--gold)}}
+.crown{font-size:.66rem;margin-left:2px}
+
+/* pódio no fim da rodada */
 .kfrow{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:7px;
   background:var(--panel2);border:1px solid transparent;transition:.25s}
 .kfrow .pos{flex:0 0 17px;text-align:center;font-family:var(--px);font-size:.56rem;
@@ -1371,8 +1419,16 @@ td.od{text-shadow:0 0 8px rgba(var(--goldRGB),.6)}
 .kfrow .ko{text-shadow:0 0 8px rgba(var(--goldRGB),.6)}
 .kfrow .face,.pdrow .face{background:rgba(0,0,0,.45);border-radius:7px}
 
-/* A regra de #battleBanner ficou para o V1.15, que traz o elemento. Estilo sem
-   elemento é regra morta, e regra morta é a que ninguém sabe se pode apagar. */
+/* A regra de #battleBanner era do V1.15, e ele chegou. */
+/* Pele neon do banner de batalha — ficou de fora do V1.13 junto com o
+   elemento, e volta agora com ele. */
+#battleBanner{border:1px solid rgba(var(--goldRGB),.34);border-radius:16px;
+  box-shadow:0 12px 34px rgba(0,0,0,.55), 0 0 26px rgba(var(--goldRGB),.12)}
+.bnVazio{background:radial-gradient(75% 65% at 50% 50%, rgba(4,7,16,.88), rgba(4,7,16,.66));
+  -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.bnVazio p{color:#dbe6f7;text-shadow:0 2px 6px rgba(0,0,0,.95)}
+.bnVazio .ic{filter:drop-shadow(0 0 10px rgba(var(--goldRGB),.7));opacity:.85}
+.bnNv{text-shadow:0 2px 6px rgba(0,0,0,.95)}
 #profBanner{border:1px solid rgba(var(--goldRGB),.34);border-radius:14px}
 #profHead .lvl .tag{font-family:var(--dsp);font-weight:700;
   background:linear-gradient(160deg,var(--gold),var(--neon2));
@@ -1380,6 +1436,113 @@ td.od{text-shadow:0 0 8px rgba(var(--goldRGB),.6)}
 #profXpBar{background:rgba(0,0,0,.5);border:1px solid var(--line)}
 #profXpBar i{background:linear-gradient(90deg,var(--gold),var(--neon2));
   box-shadow:0 0 12px rgba(var(--goldRGB),.7)}
+
+/* =====================================================================
+   BANNER DE BATALHA (V1.15)
+   ---------------------------------------------------------------------
+   A vitrine do jogador durante a rodada: cenário escolhido, efeito de nome,
+   avatar de treinador e o lutador em que ele apostou.
+
+   NENHUM ASSET NOVO. Os dez cenários são gradiente e `::after` — os quatro
+   neon (`cidade`, `portal`, `nucleo`, `grade`) chegaram com o V1.13 junto da
+   identidade; os seis restantes entram aqui. Mesma história dos oito efeitos
+   de nome: três vieram com a pele, cinco vêm agora.
+
+   O CENÁRIO E O EFEITO NÃO USAM TOKEN DE TEMA, e isso é decisão, não descuido.
+   "Chama" é laranja porque o jogador escolheu Chama; um efeito que muda de cor
+   com o tema deixa de ser o efeito que a pessoa escolheu. A varredura de cor
+   solta do V1.13 abre exceção por seletor (`.cn-*`, `.ef-*`, `.sc-*`)
+   exatamente por isso.
+   ===================================================================== */
+#battleBanner{position:relative;border-radius:14px;overflow:hidden;
+  border:2px solid var(--line);height:352px;
+  box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.bnCena{position:absolute;inset:0}
+.bnVeu{position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(8,11,18,.55) 0%,transparent 26%,transparent 52%,rgba(8,11,18,.88) 100%)}
+.bnTopo{position:absolute;top:0;left:0;right:0;padding:9px 10px 0;text-align:center}
+.bnNome{font-family:var(--px);font-size:.74rem;line-height:1.5;
+  display:inline-block;padding:3px 9px;border-radius:7px;position:relative}
+.bnNv{display:block;font-family:var(--px);font-size:.55rem;color:#dfe6f2;
+  margin-top:3px;text-shadow:0 1px 3px rgba(0,0,0,.9)}
+.bnTreinador{position:absolute;left:9px;bottom:9px;width:66px;height:66px;
+  object-fit:contain;image-rendering:pixelated;
+  filter:drop-shadow(0 3px 5px rgba(0,0,0,.75))}
+.bnMon{position:absolute;right:6px;bottom:14px;width:118px;height:118px;
+  object-fit:contain;image-rendering:pixelated;
+  filter:drop-shadow(0 4px 7px rgba(0,0,0,.7));
+  animation:bnFlutua 2.6s ease-in-out infinite}
+@keyframes bnFlutua{50%{transform:translateY(-5px)}}
+.bnRodape{position:absolute;left:0;right:0;bottom:0;padding:6px 10px;
+  font-size:.62rem;color:#cfd6e6;text-align:center;
+  background:linear-gradient(180deg,transparent,rgba(6,9,15,.92))}
+.bnRodape b{color:var(--gold)}
+.bnVazio{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:6px;text-align:center;padding:16px}
+.bnVazio .ic{font-size:30px;opacity:.65}
+.bnVazio p{font-size:.68rem;color:#b9c2d4;line-height:1.5}
+
+/* derrota: o Pokémon apaga, o treinador e a vitrine ficam */
+#battleBanner.ko .bnMon{filter:grayscale(1) brightness(.6) drop-shadow(0 4px 7px rgba(0,0,0,.7));
+  animation:none;transform:rotate(12deg)}
+#battleBanner.ko::after{content:'K.O.';position:absolute;right:44px;bottom:64px;
+  font-family:var(--px);font-size:16px;color:var(--red);
+  border:3px solid var(--red);border-radius:6px;padding:2px 8px;
+  background:rgba(18,8,10,.6);transform:rotate(-16deg)}
+#battleBanner.win{border-color:var(--gold);box-shadow:0 0 22px rgba(var(--goldRGB),.45)}
+#battleBanner.win .bnMon{animation:bnComemora .7s ease-in-out infinite}
+@keyframes bnComemora{50%{transform:translateY(-9px) scale(1.05)}}
+
+/* ---- os seis cenários que faltavam ---- */
+.cn-campo{background:linear-gradient(180deg,#7ec8f2 0%,#bfe6f7 40%,#6fbf4a 40%,#3f8a2c 100%)}
+.cn-campo::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 22% 18%,rgba(255,248,200,.85),transparent 16%)}
+.cn-deserto{background:linear-gradient(180deg,#f2b25c 0%,#f7d79a 38%,#e0b571 38%,#c08f4c 100%)}
+.cn-deserto::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(100deg,rgba(255,255,255,.10) 0 3px,transparent 3px 12px);
+  animation:areiaVoa 5s linear infinite}
+@keyframes areiaVoa{100%{background-position:-70px 0}}
+.cn-cachoeira{background:linear-gradient(180deg,#2e6b52 0%,#48916a 34%,#2f7fb0 34%,#175a86 100%)}
+.cn-cachoeira::after{content:'';position:absolute;left:56%;top:0;bottom:38%;width:26%;
+  pointer-events:none;border-radius:0 0 40% 40%;
+  background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(190,235,255,.35));
+  animation:aguaCai 1.1s linear infinite}
+@keyframes aguaCai{0%{background-position:0 0}100%{background-position:0 26px}}
+.cn-caverna{background:linear-gradient(180deg,#14161f 0%,#262b3a 46%,#3a3145 46%,#191b24 100%)}
+.cn-caverna::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 50% 30%,rgba(120,190,255,.28),transparent 42%);
+  animation:brilhoCaverna 3.4s ease-in-out infinite}
+@keyframes brilhoCaverna{50%{opacity:.5}}
+.cn-noturna{background:linear-gradient(180deg,#0d1330 0%,#1e2a52 42%,#20402f 42%,#0f2118 100%)}
+.cn-noturna::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 76% 16%,rgba(236,242,255,.95),transparent 5%),
+             radial-gradient(circle at 20% 24%,rgba(255,255,255,.55),transparent 2%),
+             radial-gradient(circle at 42% 12%,rgba(255,255,255,.45),transparent 1.6%)}
+.cn-poente{background:linear-gradient(180deg,#f2704a 0%,#f7b06a 30%,#f5d9a0 46%,#2b7fb8 46%,#17537d 100%)}
+.cn-poente::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 50% 42%,rgba(255,230,150,.9),transparent 18%)}
+
+/* ---- os cinco efeitos de nome que faltavam ---- */
+.ef-chama{color:#fff2c4;background:linear-gradient(180deg,rgba(120,30,0,.55),rgba(60,10,0,.75));
+  box-shadow:0 0 12px rgba(255,120,30,.75), inset 0 0 8px rgba(255,170,60,.45);
+  border:1px solid #ff8a2a;text-shadow:0 0 7px #ff7a1a;animation:efChama 1.5s ease-in-out infinite}
+@keyframes efChama{50%{box-shadow:0 0 20px rgba(255,150,50,.95), inset 0 0 12px rgba(255,200,90,.6)}}
+.ef-gelo{color:#e8fbff;background:linear-gradient(180deg,rgba(20,70,110,.55),rgba(8,30,55,.8));
+  box-shadow:0 0 12px rgba(120,220,255,.7), inset 0 0 8px rgba(180,240,255,.4);
+  border:1px solid #7fd8f5;text-shadow:0 0 7px #6fd0f0;animation:efGelo 2.4s ease-in-out infinite}
+@keyframes efGelo{50%{box-shadow:0 0 20px rgba(150,235,255,.95), inset 0 0 12px rgba(220,250,255,.55)}}
+.ef-veneno{color:#f2dcff;background:linear-gradient(180deg,rgba(70,20,90,.6),rgba(30,6,45,.82));
+  box-shadow:0 0 12px rgba(190,90,230,.7), inset 0 0 8px rgba(220,140,255,.4);
+  border:1px solid #c76ae0;text-shadow:0 0 7px #b44ad8;animation:efVeneno 1.9s ease-in-out infinite}
+@keyframes efVeneno{50%{box-shadow:0 0 20px rgba(210,120,255,.95), inset 0 0 12px rgba(235,180,255,.55)}}
+.ef-trovao{color:#fffbe0;background:linear-gradient(180deg,rgba(90,75,10,.55),rgba(40,32,4,.8));
+  box-shadow:0 0 12px rgba(255,225,80,.75), inset 0 0 8px rgba(255,240,150,.45);
+  border:1px solid #f5d24a;text-shadow:0 0 7px #f0c419;animation:efTrovao .9s steps(3) infinite}
+@keyframes efTrovao{0%,72%,100%{filter:none}80%{filter:brightness(1.55)}88%{filter:brightness(1)}}
+.ef-fantasma{color:#e6dcff;background:linear-gradient(180deg,rgba(40,20,70,.6),rgba(14,6,28,.85));
+  box-shadow:0 0 12px rgba(140,110,220,.6), inset 0 0 8px rgba(170,150,240,.35);
+  border:1px solid #8f7ad8;text-shadow:0 0 8px #7a5fd0;animation:efFantasma 3s ease-in-out infinite}
+@keyframes efFantasma{50%{opacity:.72;transform:translateY(-2px)}}
 
 /* ---------- BOOT ---------- */
 #boot{background:
@@ -1848,6 +2011,15 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   box-shadow:0 0 10px rgba(var(--goldRGB),.7)}
 .opt.shiny:not(.on){opacity:.55;filter:saturate(.4)}
 .opt.shiny img{filter:drop-shadow(0 0 7px rgba(var(--goldRGB),.55))}
+/* Os dois botões de equipar, dentro do cartão. Ficam discretos até estarem
+   ligados — o cartão já diz "conquistado"; os botões dizem "no ar". */
+.opt.shiny .sbtns{display:flex;gap:4px;margin-top:5px}
+.opt.shiny .sbtn{flex:1;font-family:var(--px);font-size:.42rem;padding:3px 0;
+  border-radius:5px;border:1px solid var(--line);background:var(--panel2);
+  color:var(--dim);cursor:pointer;letter-spacing:.06em}
+.opt.shiny .sbtn.on{color:var(--onAccent);background:var(--gold);border-color:var(--gold)}
+.opt.shiny.bloqueado{opacity:.30;filter:grayscale(1)}
+.opt.shiny.bloqueado .sflag{color:var(--dim)}
 
 /* =====================================================================
    PAINEL DE ADM — ferramenta, não vitrine
@@ -2081,6 +2253,11 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 <div id="viewArena" class="view on">
 <div class="app">
 
+  <!-- ===== COLUNA: BANNER DO TREINADOR ===== -->
+  <div class="col bn">
+    <div id="battleBanner"></div>
+  </div>
+
   <!-- ===== COLUNA ESQUERDA: carteira + odds ===== -->
   <div class="col">
     <div class="card">
@@ -2153,17 +2330,56 @@ body.tremeTela{animation:tremeTela .7s ease-out}
     </div>
   </div>
 
-  <!-- ===== COLUNA: KILLFEED ===== -->
+  <!-- ===== COLUNA: ABATES + COLOCAÇÃO ===== -->
   <div class="col kf">
     <div class="card">
       <h3>Abates <span id="kfTotal" style="color:var(--dim)">0</span></h3>
       <div id="kfList"></div>
       <div class="tiny" id="kfNote">O ranking zera a cada nova rodada.</div>
     </div>
+    <!-- A colocação fica EMPILHADA na mesma coluna, e não numa quinta.
+         A v1.0 do porte lhe deu coluna própria; com as quatro que já temos
+         (carteira/odds, arena, log, abates) a quinta empurraria a linha para
+         além da largura e o corpo da página passaria a rolar na horizontal. -->
+    <div class="card">
+      <h3>Colocação <span id="pdTotal" style="color:var(--dim)">—</span></h3>
+      <div id="pdList"></div>
+      <div class="tiny" id="pdNote">Do 1º ao 12º, atualizado conforme caem.</div>
+    </div>
   </div>
 
 </div>
 </div><!-- /viewArena -->
+
+<!-- ===== PAINEL DE ADM — abre só por #adm, nada no menu aponta para cá ===== -->
+<div id="viewAdm" class="view">
+  <div class="page adm">
+    <h2>Painel de ADM</h2>
+    <div class="admAviso">
+      <b>Isto não é controle de acesso.</b> O projeto é um arquivo que roda no navegador,
+      sem servidor — o PIN está no código-fonte e qualquer pessoa que abrir o HTML o encontra.
+      Ele existe para não abrir sem querer, não para impedir ninguém. Quando existir servidor,
+      isto precisa virar rota autenticada de verdade, com autorização por papel e registro de
+      operador (F1.11). E nada de valor econômico real liga daqui sem o checkpoint do §25.1.
+    </div>
+    <div id="admCorpo">
+      <h3>Conta</h3>
+      <div id="admSaldos" class="admBloco"></div>
+
+      <h3>Margem da casa</h3>
+      <div id="admMargem" class="admBloco"></div>
+
+      <h3>Preço da rodada — registro do §4.4.5</h3>
+      <div id="admOdds" class="admBloco"></div>
+
+      <h3>Laboratório shiny</h3>
+      <div id="admShinyLab" class="admBloco"></div>
+
+      <h3>Estatísticas</h3>
+      <div id="admEstat" class="admBloco"></div>
+    </div>
+  </div>
+</div>
 
 <!-- ===== MODAL: CADASTRO / LOGIN ===== -->
 <div class="modal-backdrop" id="authModal">
@@ -2243,10 +2459,18 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <div class="pick-grid" id="pickTrainer"></div>
       <div class="sec-t">Avatar — Pokémon</div>
       <div class="pick-grid" id="pickMon"></div>
-      <div class="sec-t">Cenário do banner</div>
+      <div class="sec-t">Banner de batalha — cenário</div>
+      <div class="pick-grid" id="pickCena"></div>
+      <div class="sec-t">Banner de batalha — efeito de nome</div>
+      <div class="pick-grid" id="pickEfeito"></div>
+      <div class="sec-t">Cenário do banner do perfil</div>
       <div class="pick-grid" id="pickScene"></div>
       <div class="sec-t">Pokémon do banner</div>
       <div class="pick-grid" id="pickBannerMon"></div>
+
+      <div class="sec-t">Cosméticos shiny <span id="shinyVagas" style="color:var(--dim)"></span></div>
+      <div class="tiny" id="shinyNota" style="margin-bottom:9px"></div>
+      <div class="pick-grid" id="pickShiny"></div>
     </div>
 
     <div class="row" style="margin-top:10px">
@@ -2325,6 +2549,8 @@ import { reiniciarMovimento, stepMovement } from './modules/coreografia.mjs';
 import { PMD, SPRITE_MAX_H, conferirFolha, dexImg, dexURL, dirOf, folhasFalhas, folhasOk, imgTag, sheetURL, urlFolha } from './modules/sprites.mjs';
 import { CX, CY, GRASS_RX, GRASS_RY, H, W, drawMap, entryRings, isleNorm, puffs } from './modules/render.mjs';
 import { ARENAS, aplicarArena } from './modules/arenas.mjs';
+import { renderBattleBanner } from './modules/banner.mjs';
+import { admChecarHash } from './modules/adm.mjs';
 import { MOVE_FX, bursts, drawFx, fxSheet, fxs, later, pushFx, sched, shots } from './modules/efeitos.mjs';
 import { hideWeatherBadge, initWeatherFx, showWeatherBadge } from './modules/clima.mjs';
 
@@ -2466,6 +2692,10 @@ aplicarTema(temaAtual());
 emitir('session_started');
 addEventListener('pagehide', () => emitir('session_ended'));
 
+/* O painel de ADM abre pelo endereço, e só. Escutar o `hashchange` além da
+   conferência inicial cobre quem cola `#adm` com a página já aberta. */
+addEventListener('hashchange', admChecarHash);
+
 (async function boot(){
   atualizarSaldo();
   $('#btnAuto').classList.add('on');
@@ -2476,9 +2706,11 @@ addEventListener('pagehide', () => emitir('session_ended'));
   /* Um cenário antes do primeiro quadro. `drawMap` não desenha sem cenário
      aplicado, e o boot pinta o mapa antes de a primeira rodada existir. */
   aplicarArena(ARENAS[0]);
+  renderBattleBanner();
   drawMap(0);
   await newRound();
   $('#boot').remove();
+  admChecarHash();
   requestAnimationFrame(frame);
 })();
 

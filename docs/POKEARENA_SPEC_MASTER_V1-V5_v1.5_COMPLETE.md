@@ -679,6 +679,7 @@ round_viewed
 bet_selected
 bet_changed
 bet_confirmed
+bet_cancelled
 bet_skipped
 battle_started
 player_pick_ko

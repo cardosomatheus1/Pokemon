@@ -62,9 +62,35 @@ export function simularLote(M, fighters, raiz, de, ate, wins) {
  * quem não vence nenhuma simulação vira odd infinita, e isso é situação real —
  * o pior lutador do elenco tem taxa medida de 1,61 %.
  */
-export function precificar(wins, sims, M) {
+/* A MARGEM É PARÂMETRO DA RODADA DESDE O V1.15, e não constante do motor.
+ *
+ * O painel de ADM precisa mexer nela — e ele faz isso de propósito, mostrando a
+ * MESMA margem ao lado das odds, para que o painel não crie odd secreta. Só
+ * que `CONF` é constante congelada, e a margem aparece em três lugares que se
+ * conferem: `margemConfigurada` e `margemEfetiva` no registro do §4.4.5, e a
+ * fixture `margem.json`, que afirma 8 % em 300 rodadas × 8.000 simulações.
+ *
+ * Margem mutável em tempo de execução derrubaria a medição — não por estar
+ * errada, mas por a fixture passar a medir outra coisa. O encaixe é este:
+ * quem precifica DECLARA a margem daquela rodada, ela vai gravada no registro,
+ * e a fixture mede a margem configurada NAQUELA rodada.
+ *
+ * O padrão continua sendo `CONF.MARGIN`: nada muda para quem não passa nada. */
+/* Margem inválida cai no padrão em vez de produzir preço absurdo.
+ *
+ * Os limites não são arbitrários: margem negativa faz a casa PAGAR para
+ * operar, e margem >= 1 zera toda odd. Entre eles, o teto de 0,5 é um freio de
+ * plausibilidade — 50 % é muito além de qualquer casa real, e um dedo a mais no
+ * campo do painel não deve virar preço publicado. */
+export const MARGEM_MAX = 0.5;
+
+export function margemValida(v, padrao) {
+  return (typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= MARGEM_MAX) ? v : padrao;
+}
+
+export function precificar(wins, sims, M, opcoes) {
   const n = wins.length;
-  const margem  = M.CONF.MARGIN;
+  const margem = margemValida(opcoes?.margem, M.CONF.MARGIN);
   const oddMin  = M.CONF.ODD_MIN;
   const oddMax  = M.CONF.ODD_MAX;
 

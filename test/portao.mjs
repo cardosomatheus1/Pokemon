@@ -134,6 +134,59 @@ export function suite() {
     console.log('  · portao: conferência da lista real pulada (caixa de areia da sabotagem)');
     return s;
   }
+  /* D-010 · AFIRMA O DEFEITO DE PROPÓSITO — ver docs/DEFEITOS.md.
+   *
+   * O limite da linha de base é `média > 3` OU `pico > 60`. O V1.15 acrescentou
+   * à tela da arena um card inteiro de colocação — doze linhas com retrato,
+   * nome e estado — e a diferença medida foi **média 0,85 · pico 56**: 7 % sob
+   * o limite, num componente inteiro.
+   *
+   * Não é que o portão seja cego à periferia: uma mudança GROSSEIRA na mesma
+   * coluna (cinco colunas da amostra achatadas em cinza) marca pico 123 e
+   * reprova. O que ele não separa é COMPONENTE NOVO de RUÍDO quando o
+   * componente respeita a paleta em volta — e respeitar a paleta é exatamente o
+   * que um card bem desenhado faz.
+   *
+   * Este teste reproduz a magnitude MEDIDA e exige que ela passe. Fica vermelho
+   * no dia em que o portão ficar mais fino — que é como o T2 descobre que
+   * fechou. Mesmo padrão do D-001 e do D-003.
+   *
+   * Puro: perturba um vetor em memória, sem navegador. */
+  s.teste('D-010 · um componente inteiro cabe sob o limite da linha de base', async () => {
+    const { compararBase } = await import('./visual.mjs');
+    const { readFileSync } = await import('node:fs');
+    const base = JSON.parse(readFileSync(
+      new URL('./fixtures/visual-base.json', import.meta.url), 'utf8'));
+    const LADO = 32, alvo = 'arena@largo';
+    const alterada = { ...base, [alvo]: base[alvo].slice() };
+    const v = alterada[alvo];
+
+    /* Magnitude do V1.15, reconstruída: um punhado de pixels na coluna da
+       direita mexendo até 56 pontos, o resto intocado. Dá média ~0,85 — que é o
+       que um card novo em paleta parecida produz. */
+    let mexidos = 0;
+    for (let y = 0; y < LADO && mexidos < 15; y += 2){
+      const i = (y * LADO + (LADO - 3)) * 3;
+      for (let c = 0; c < 3; c++) v[i + c] = Math.min(255, v[i + c] + 56);
+      mexidos++;
+    }
+
+    let som = 0, pico = 0;
+    for (let i = 0; i < v.length; i++){
+      const d = Math.abs(v[i] - base[alvo][i]); som += d; if (d > pico) pico = d;
+    }
+    const media = som / v.length;
+    ok(pico >= 50 && media < 3,
+      `a perturbação sintética (média ${media.toFixed(2)}, pico ${pico}) não reproduz mais a ` +
+      `magnitude medida no V1.15 (média 0,85, pico 56) — reescreva o teste antes de confiar nele`);
+
+    const falhas = compararBase(alterada, base);
+    ok(falhas.length === 0,
+      `a linha de base PEGOU a magnitude que o card do V1.15 produziu: ${falhas.join(' · ')}.\n` +
+      `      Isso é BOM — o D-010 foi corrigido. Tire este teste e marque o defeito\n` +
+      `      como corrigido em docs/DEFEITOS.md.`);
+  });
+
   s.teste('a lista real de defeitos não tem âncora perdida, ambígua ou inócua', async () => {
     const { DEFEITOS } = await import('./defeitos-plantados.mjs');
     const { readFileSync } = await import('node:fs');

@@ -21,7 +21,12 @@ import { CONF, VERSAO_MOTOR, pack } from './motor.mjs';
    telemetria com vocabulário livre vira lixo em três meses. */
 export const EVENTOS = [
   'session_started', 'round_viewed', 'bet_selected', 'bet_changed', 'bet_confirmed',
-  'bet_skipped', 'battle_started', 'player_pick_ko', 'battle_completed',
+  /* `bet_cancelled` entrou no V1.15 junto com o cancelamento, e a Spec §4.7 foi
+     corrigida no mesmo commit — a lista dela é de antes de a ação existir.
+     Cancelamento não é ruído de interface: é a diferença entre "o jogador
+     desistiu" e "o jogador nunca olhou", e o painel econômico do F1.11 precisa
+     saber qual dos dois aconteceu. */
+  'bet_cancelled', 'bet_skipped', 'battle_started', 'player_pick_ko', 'battle_completed',
   'result_viewed', 'profile_opened', 'wallet_opened', 'challenge_completed',
   'session_ended',
 ];

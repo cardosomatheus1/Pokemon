@@ -8,7 +8,8 @@ import { CUR } from './motor.mjs';
 import { S } from './estado.mjs';
 import { emitir } from './telemetria.mjs';
 import { saldo } from './banco.mjs';
-import { avatarURL, renderProfile, trainerURL } from './customizacao.mjs';
+import { renderProfile } from './customizacao.mjs';
+import { avatarURL, trainerURL } from './perfil.mjs';
 import { progressoNivel, saveProfile, tituloDe } from './perfil.mjs';
 import { renderDeposit } from './carteira.mjs';
 

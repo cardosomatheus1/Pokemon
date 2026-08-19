@@ -7,6 +7,8 @@ import { CX, CY, GRASS_RX, GRASS_RY, H, W } from './render.mjs';
 import { MOVE_FX, fxSheet } from './efeitos.mjs';
 import { PMD, SPRITE_MAX_H, conferirFolha, folhasFalhas, folhasOk, sheetURL, urlFolha } from './sprites.mjs';
 import { S } from './estado.mjs';
+import { sortearBolas } from './bolas-dados.mjs';
+import { skinShinyAtiva } from './shiny-dados.mjs';
 import { place } from './coreografia.mjs';
 import { rng } from './motor.mjs';
 
@@ -32,7 +34,7 @@ function preloadSheets(){
       if (!(PMD[f.dex] && PMD[f.dex][k])) continue;
       // conferirFolha já faz o pedido (e o resgate no espelho, se precisar);
       // o Set interno evita repetir o mesmo arquivo a cada rodada
-      conferirFolha(sheetURL(f.dex, k));
+      conferirFolha(sheetURL(f.dex, k, skinShinyAtiva(S.profile, f.dex)));
     }
     // e as folhas de efeito dos golpes que este lutador tem
     for (const mv of f.moves){
@@ -60,9 +62,6 @@ function diagnosticoFolhas(){
   }, 8000);
 }
 
-// cores das pokébolas de spawn (poké, great, ultra, master, premier…)
-const SPAWN_BALLS = ['#e5443b','#3f6fd8','#f0c419','#7b3fa0','#f5f5f5','#2f8f6b',
-                     '#ef94b8','#4fb3d9','#1a1a1a','#e08030','#a8d05a','#8b5cf6'];
 
 /* weatherType: tipo que precisa aparecer garantido na pool (ex.: 'fire'
    se o clima sorteado em segredo foi Sol Forte). Passar null/undefined
@@ -77,6 +76,9 @@ function buildEntities(layoutSeed){
   selRing.innerHTML = '<i></i>';
   monLayer.appendChild(selRing);
   const R = rng(layoutSeed || 1);
+  /* Doze modelos distintos, sorteados do ramo visual — nunca duas iguais na
+     mesma arena. Antes eram doze cores fixas por índice, iguais toda rodada. */
+  const bolas = sortearBolas(layoutSeed || 1, S.fighters.length);
 
   S.fighters.forEach((f,i) => {
     // posição inicial: círculo dentro da grama (como as pokébolas do vídeo)
@@ -108,7 +110,7 @@ function buildEntities(layoutSeed){
       f, el, body, bub, plate, fill: plate.querySelector('.fill'), meta, scale,
       x, y, tx:x, ty:y, alive:true, hp:f.maxHp,
       wander: 0.5 + R()*2, bubbleUntil:-1, rageUntil:-1,
-      ballCol: SPAWN_BALLS[i % SPAWN_BALLS.length],
+      bola: bolas[i % bolas.length],
       homeAng: ang,                       // centro da zona deste lutador
       homeR: 0.52 + (i % 3) * 0.16,       // 3 anéis, pra não ficarem todos na borda
 
@@ -147,7 +149,15 @@ function setAnim(e, key, once){
   e.el.style.aspectRatio = fw + ' / ' + fh;
   e.el.style.height = 'auto';
 
-  e.body.style.backgroundImage = `url(${urlFolha(sheetURL(e.f.dex, key))})`;
+  /* A skin shiny é só outro caminho da MESMA folha; nada mais no desenho da
+     arena precisa saber que ela está ligada.
+
+     O caminho fica GUARDADO na entidade porque o resgate por folha precisa
+     saber quem está usando o quê, e ele mora em `sprites.mjs`, que é camada 1 e
+     não pode consultar perfil para recalcular. Recalcular lá daria sempre o
+     caminho normal, e o resgate deixaria de alcançar quem está de shiny. */
+  e.folha = sheetURL(e.f.dex, key, skinShinyAtiva(S.profile, e.f.dex));
+  e.body.style.backgroundImage = `url(${urlFolha(e.folha)})`;
   e.body.style.backgroundSize = (cols * 100) + '% ' + (8 * 100) + '%';
   drawFrame(e);
 }

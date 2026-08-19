@@ -64,7 +64,7 @@ Medido por varredura de funções, ids de DOM e blocos de CSS.
 Não é teimosia de processo: cada um destes muda uma garantia que já está sob
 teste, e trazer o código como está apagaria a garantia sem ninguém notar.
 
-### C1 · O painel de ADM mexe em `CONF.MARGIN`
+### C1 · O painel de ADM mexe em `CONF.MARGIN` ✅
 
 Ele documenta a decisão bem: a margem do painel é a **mesma** exibida ao lado das
 odds, de propósito, para o painel não criar odd secreta.
@@ -95,13 +95,13 @@ cinco sementes, medição de independência entre prêmios consecutivos,
 autossustento de 4,7 %, e o desenho da garantia com pior caso em 20.000
 jogadores simulados. Em `prototype-v1.0/IDENTIDADE-VISUAL.md`.
 
-### C3 · Cancelar aposta libera passivo
+### C3 · Cancelar aposta libera passivo ✅
 
 O F0.8 registra passivo por lutador na confirmação. Cancelar sem devolver o
 passivo trava o mercado daquele lutador pelo resto da rodada; devolver sem
 cuidado abre a corrida que o teste do §4.4.6 fecha.
 
-### C4 · Skin shiny troca o sprite dentro da luta
+### C4 · Skin shiny troca o sprite dentro da luta ✅
 
 O `sprite()` é do ContentPack desde o F0.4, e o F0.12 baixa a arte para `assets/`.
 Shiny são **mais 304 folhas** (76 × 4) e mais 76 GIFs. O baixador cobre o que o
@@ -178,11 +178,17 @@ As três artes que ele criou (`portal-arena.jpg`, `cidade-neon.jpg`,
 1. ~~**D-006**~~ ✅ — o defeito, corrigido.
 2. ~~**V1.13 Identidade visual**~~ ✅ — a maior peça e a de menor risco lógico.
 3. ~~**V1.14 Arenas variadas**~~ ✅ — render, depois do tema (compartilham a pele).
-4. **V1.15 Colocação, pódio e banner de batalha** — sem conflito.
-5. **V1.17 Shinys** — a fonte do cosmético vira decisão do bloco, já que o baú
-   saiu do porte.
-6. **V1.18 Painel de ADM** — por último: resolve C1. Sem o simulador de baús.
-8. **Cancelar aposta** entra no V1.15, que é o bloco que mexe na tela de aposta.
+4. ~~**V1.15 Colocação, pódio e banner de batalha**~~ ✅ — junto com os dois abaixo.
+5. ~~**V1.17 Shinys**~~ ✅ — absorvido no V1.15. Fonte escolhida: nível do
+   treinador, com escolha do jogador.
+6. ~~**V1.18 Painel de ADM**~~ ✅ — absorvido no V1.15. C1 resolvido: a margem
+   virou parâmetro da rodada.
+8. ~~**Cancelar aposta**~~ ✅ — no V1.15, com `liberarTicket` no motor de
+   exposição.
+
+> **Os três últimos viraram um bloco só**, por decisão do dono do projeto: todos
+> eram camada de produto, sem risco de motor, e a cerimônia por bloco é custo
+> fixo. Ver o V1.15 no `BUILD_BLOCKS`.
 
 Os seis blocos estão escritos em `POKEARENA_BUILD_BLOCKS`, com escopo, método,
 portões e sabotagem, como os outros.

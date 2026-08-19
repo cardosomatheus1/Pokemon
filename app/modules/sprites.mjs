@@ -60,14 +60,23 @@ import { log } from './dom.mjs';
    sem carregar interface junto. */
 import { PMD, IDLE_USES_WALK, ANIM_FILE, PMD_BASE, PMD_ESPELHO } from './sprites-dados.mjs';
 import { atributoCascata, candidatos } from './assets.mjs';
+import { SHINY_PMD } from './shiny-dados.mjs';
 
 // tamanho na tela: 1 pixel de sprite = 1 unidade do mapa, com teto —
 // assim o Gyarados continua sendo um bicho enorme e o Pikachu um bichinho
 const SPRITE_MAX_H = 76;
 
-function sheetURL(dex, key){
+/* A SKIN SHINY ENTRA COMO UM TRECHO A MAIS NO CAMINHO, e só isso.
+   `AnimData.xml` e as dimensões das folhas shiny são idênticos aos da folha
+   normal — é recolor, não outro desenho —, então a tabela PMD, a geometria e a
+   coreografia continuam valendo sem uma alteração. Ver a medição registrada em
+   `shiny-dados.mjs`.
+
+   O parâmetro é booleano e vem de FORA: este módulo é infraestrutura (camada 1)
+   e não pode conhecer perfil, que é camada 4. Quem desenha decide. */
+function sheetURL(dex, key, shiny){
   const k = (key === 'i' && IDLE_USES_WALK.has(dex)) ? 'w' : key;
-  return String(dex).padStart(4,'0') + '/' + ANIM_FILE[k] + '-Anim.png';
+  return String(dex).padStart(4,'0') + '/' + (shiny ? SHINY_PMD : '') + ANIM_FILE[k] + '-Anim.png';
 }
 
 /* Resgate POR FOLHA, sem nunca trocar o estilo da arte.
@@ -88,8 +97,7 @@ function urlFolha(path){ return folhaSrc[path] || candidatos(PMD_BASE + path, nu
    resgate só valeria a partir da próxima animação. */
 function refrescarFolha(path){
   for (const e of (S.ents || [])){
-    if (!e.anim) continue;
-    if (sheetURL(e.f.dex, e.anim) !== path) continue;
+    if (!e.anim || e.folha !== path) continue;
     e.body.style.backgroundImage = `url(${urlFolha(path)})`;
   }
 }
@@ -155,18 +163,21 @@ function imgTag(p, extra){
    precisava disso sem poder depender da camada de perfil.
    ATENÇÃO: ver defeito D-002 — chamadores passam nome exibido onde se espera
    slug cru, e nomes com apóstrofo quebram o onerror embutido. */
+/* O SHINY É UM SUBCAMINHO DO MESMO REPOSITÓRIO — `sprites/pokemon/shiny/` —,
+   não outra fonte de arte. Mesma regra da folha da arena, e é o que permite
+   tratá-lo como resgate do mesmo desenho em vez de substituição. */
 const DEX_MIRRORS = [
-  dex => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${dex}.png`,
-  dex => `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${dex}.png`,
+  (dex, sh) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sh ? 'shiny/' : ''}${dex}.png`,
+  (dex, sh) => `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${sh ? 'shiny/' : ''}${dex}.png`,
 ];
 
-const dexURL = dex => candidatos(DEX_MIRRORS[0](dex), null)[0];
+const dexURL = (dex, shiny) => candidatos(DEX_MIRRORS[0](dex, shiny), null)[0];
 
-function dexImg(dex, slug, extra){
+function dexImg(dex, slug, extra, shiny){
   /* A cópia local entra na frente da cadeia que já existia. Os endereços
      seguintes continuam sendo O MESMO desenho em outro lugar. */
-  const urls = [candidatos(DEX_MIRRORS[0](dex), null)[0], ...DEX_MIRRORS.map(f => f(dex)),
-    `https://play.pokemonshowdown.com/sprites/gen5/${slugExterno(slug)}.png`];
+  const urls = [candidatos(DEX_MIRRORS[0](dex, shiny), null)[0], ...DEX_MIRRORS.map(f => f(dex, shiny)),
+    `https://play.pokemonshowdown.com/sprites/gen5${shiny ? '-shiny' : ''}/${slugExterno(slug)}.png`];
   const cadeia = urls.slice(1).reduceRight(
     (acc, u) => `this.onerror=function(){${acc}};this.src='${u}';`,
     `this.onerror=null;this.style.opacity=.25;`);
@@ -174,6 +185,7 @@ function dexImg(dex, slug, extra){
 }
 
 export {
+  DEX_MIRRORS,
   PMD,
   SPRITE_MAX_H,
   conferirFolha,

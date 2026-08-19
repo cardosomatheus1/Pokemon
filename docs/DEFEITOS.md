@@ -436,3 +436,118 @@ O que não pode continuar é o Estudo afirmar 80 e o código emitir 525.
 `test/invariantes.mjs` → `D-007 · a emissão semanal dos desafios estoura o
 orçamento`. Ele afirma o defeito **de propósito**: fica **vermelho** no dia em
 que alguém corrigir a emissão, e é assim que o F1.10 descobre que fechou.
+
+---
+
+## D-008 — a aposta era contada a cada clique, não no fecho da janela ✅ CORRIGIDO
+
+**Achado em:** V1.15, ao trazer o cancelamento · **Bloco dono:** V1.15 · **Corrigido no mesmo bloco**
+
+`app/modules/fases.mjs` chamava `recordBetPlaced` dentro de `placeBet`, ou seja,
+a cada clique. Trocar de lutador três vezes contava **três apostas** e
+triplicava `totalBet` no perfil.
+
+O defeito veio do v0.8 e é nosso. A v1.0 do porte já o tinha corrigido, movendo
+a contagem para `startFight` — e é a correção certa, porque a aposta só é um
+fato quando a janela fecha.
+
+**Por que virou urgente agora:** o cancelamento do V1.15 piora o defeito de
+"conta demais" para "conta o que não existe". Uma aposta cancelada entrava na
+estatística do jogador e no total apostado.
+
+**Correção:** `recordBetPlaced` saiu de `placeBet` e entra em `startFight`,
+condicionada a haver aposta viva.
+
+**Teste:** portão Q5 — três cliques (escolher, trocar, trocar) precisam contar
+**uma** aposta. O defeito **S86** planta a regressão, e ele escapou da suíte
+estática na primeira execução: quem conta é o fluxo, e só o navegador o percorre.
+
+---
+
+## D-009 — três dos dezesseis avatares de treinador nunca existiram ✅ CORRIGIDO
+
+**Achado em:** V1.15, pelo portão de egresso fechado · **Bloco dono:** V1.15 · **Corrigido no mesmo bloco**
+
+`leaf`, `agatha` e `lorelei` respondem **404** no endereço usado. Os arquivos
+estão lá, sob `leaf-gen3`, `agatha-gen1` e `lorelei-gen1`.
+
+**Como ficou escondido:** o `<img>` da grade tinha
+`onerror="this.closest('.opt').remove()"`. A opção quebrada simplesmente sumia.
+Ninguém via erro no console, e ninguém via os três avatares — a tela prometia
+dezesseis e mostrava treze.
+
+**Correção:** os ids apontam para o **mesmo personagem em outro endereço**, que
+é a regra do resgate do `CLAUDE.md`. A diferença aqui é literal: não se trocou
+Leaf por outro treinador, trocou-se o caminho do arquivo da Leaf.
+
+**Achado de tabela:** o vazamento de rede que expôs isto existia desde antes —
+`trainerURL` devolvia o endereço do Showdown cru, sem cascata, e o baixador não
+conhecia a família. O portão do F0.12 nunca o viu porque abre o jogo **sem
+sessão**, e sem sessão nenhum avatar é pedido. O banner de batalha do V1.15
+passou a desenhá-lo já no boot, e as quatro requisições apareceram.
+
+> **A lição é do F0.12 outra vez:** dependência que ninguém exercita não é
+> dependência ausente — é dependência que ainda não foi vista.
+
+---
+
+## D-010 — um componente inteiro cabe sob o limite da linha de base visual
+
+**Achado em:** V1.15 · **Bloco dono:** **T2** (proposto no `BUILD_BLOCKS`) ·
+**Estado:** ⚠️ REGISTRADO, NÃO CORRIGIDO
+
+### A medição
+
+O V1.15 acrescentou à tela da arena um card inteiro de colocação — doze linhas
+com retrato, nome e estado. Medido contra a linha de base de então:
+
+```
+arena@largo      média 0,85   pico  56
+arena@medio      média 0,01   pico   3
+arena@estreito   média 0,00   pico   0
+```
+
+O limite do portão é `média > 3` **ou** `pico > 60`. **Um componente inteiro
+passou 7 % sob o limite.**
+
+### O que NÃO é o defeito
+
+Não é cegueira à periferia, e vale corrigir o diagnóstico porque a primeira
+versão deste verbete dizia isso. Uma mudança **grosseira** na mesma coluna —
+cinco colunas da amostra achatadas em cinza — marca **pico 123** e reprova. O
+portão enxerga a lateral.
+
+### O que É o defeito
+
+Ele não separa **componente novo** de **ruído de renderização** quando o
+componente respeita a paleta em volta. E respeitar a paleta é exatamente o que
+um card bem desenhado faz: fundo de painel, texto em `--dim`, mesma borda. Num
+quadro de 32×32, um card assim mexe poucos pixels e mexe pouco em cada um.
+
+As larguras menores agravam: a coluna desce para fora do viewport, e a captura é
+da janela, não da página inteira — daí `pico 3` e `pico 0`.
+
+### Por que isso importa
+
+O cabeçalho do `test/visual.mjs` afirma que a digital é *"sensível a mudança de
+layout, cor e conteúdo"*. Para um componente em paleta harmônica, não é. Portão
+que promete mais do que entrega é pior que portão ausente: alguém confia nele.
+
+### O que o T2 tem que decidir
+
+Três caminhos, e a escolha é de custo:
+
+1. **Digital maior** — 64×64 quadruplica o arquivo e afina o pico;
+2. **Captura de página inteira** em vez de viewport — resolve o sumiço nas
+   larguras menores, e muda as doze telas de uma vez;
+3. **Digital por REGIÃO** — uma por coluna, comparadas separadamente. Mais
+   trabalho, e é a única que dá diagnóstico ("mudou a coluna de colocação") em
+   vez de um número só.
+
+### O teste que afirma o defeito
+
+`test/portao.mjs` → `D-010 · um componente inteiro cabe sob o limite da linha de
+base`. Ele reconstrói a magnitude **medida** (média ~0,85, pico 56) e exige que
+`compararBase` **não** reclame — e confere antes que a perturbação sintética
+ainda reproduz essa magnitude, para o teste não passar por ter virado outra
+coisa. Fica **vermelho** no dia em que o portão ficar mais fino.

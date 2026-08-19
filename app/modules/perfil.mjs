@@ -4,6 +4,9 @@
  * apostar. XP vem de participação, nunca do valor apostado. */
 
 import { S } from './estado.mjs';
+import { dexURL } from './sprites.mjs';
+import { urlTreinadorOrigem } from './avatares-dados.mjs';
+import { atributoCascata, candidatos } from './assets.mjs';
 import { nivelDe, progressoNivel, xpParaNivel } from './progressao.mjs';
 import { ensureDaily } from './desafios.mjs';
 
@@ -27,6 +30,15 @@ const PROFILE_DEFAULT = {
   winMons:{},     // vitórias por Pokémon
   avatar:{kind:'trainer', id:'red'},
   banner:{scene:'praia', dex:9},
+  /* Cosméticos do BANNER DE BATALHA (V1.15) — cenário e efeito de nome.
+     Separado de `banner`, que é o banner do PERFIL: são duas telas, duas
+     escolhas, e juntá-las obrigaria a mudar as duas ao mesmo tempo. */
+  battle:{cena:'cidade', efeito:'neon'},
+  /* Cosméticos shiny (V1.15). `gifs`/`skins` guardam o que foi DESBLOQUEADO;
+     `onGif`/`onSkin` guardam o que está EQUIPADO. Dois estados de propósito:
+     quem desbloqueou pode querer o visual normal de volta sem perder a
+     conquista. Ver a fonte do desbloqueio em `shiny-dados.mjs`. */
+  shiny:{gifs:[], skins:[], onGif:{}, onSkin:{}},
   xp:0,           // experiência acumulada do treinador
   pin:null,       // PIN local opcional (não é segurança de verdade)
   histBets:[],    // histórico de apostas (ganhos e perdas)
@@ -43,6 +55,19 @@ function loadProfile(){
       const d = PROFILE_DEFAULT[k];
       p[k] = (typeof d === 'object') ? JSON.parse(JSON.stringify(d)) : d;
     }
+  }
+  /* COMPLETAR TAMBÉM POR DENTRO, e só para os objetos que ganharam campos
+     depois de existirem. O laço acima só preenche chave de topo ausente: um
+     `shiny` gravado por uma versão que ainda não tinha `onSkin` passaria
+     inteiro, e o primeiro `s.onSkin[dex] = true` lançaria. É a diferença entre
+     "o campo existe" e "o campo está completo". */
+  for (const k of ['shiny', 'battle']){
+    const d = PROFILE_DEFAULT[k];
+    if (!d || typeof d !== 'object') continue;
+    if (typeof p[k] !== 'object' || p[k] === null) { p[k] = JSON.parse(JSON.stringify(d)); continue; }
+    for (const sub in d)
+      if (p[k][sub] === undefined || p[k][sub] === null)
+        p[k][sub] = (typeof d[sub] === 'object') ? JSON.parse(JSON.stringify(d[sub])) : d[sub];
   }
   if (!p.since) p.since = Date.now();
   return p;
@@ -133,7 +158,29 @@ function darXP(partes){
   return {partes, total, antes, depois, subiu: depois.nivel > antes.nivel};
 }
 
+/* O ENDEREÇO DO AVATAR MORA AQUI, e não na customização, desde o V1.15.
+ *
+ * Ele é lido por dois lugares: a tela de customização (que o escolhe) e o
+ * banner de batalha (que o mostra na arena). Deixá-lo na customização obrigaria
+ * o banner a importar a tela que o configura — e a tela precisa redesenhar o
+ * banner ao salvar, o que fecharia um ciclo. O dono do dado é o perfil. */
+/* A cópia local na frente, origem como resgate — a cascata do F0.12. Sem isto
+   o avatar sai para a rede mesmo com o arquivo em disco. */
+const trainerURL = id => candidatos(urlTreinadorOrigem(id), null)[0];
+
+function avatarURL(){
+  const a = S.profile.avatar || PROFILE_DEFAULT.avatar;
+  return a.kind === 'mon' ? dexURL(a.id) : trainerURL(a.id);
+}
+
+/* Atributo `onerror` que percorre o resto da cascata, para os `<img>` escritos
+   como texto. */
+const cascataTreinador = id => atributoCascata(urlTreinadorOrigem(id), null);
+
 export {
+  avatarURL,
+  cascataTreinador,
+  trainerURL,
   PROFILE_DEFAULT,
   nivelDe,
   progressoNivel,

@@ -24,7 +24,7 @@ import { imgTag } from './sprites.mjs';
    real segue secreto até as apostas fecharem — o que mudou é que o preço passa
    a saber que ele existe.
 ---------------------------------------------------------------------- */
-function computeOdds(fighters, sims, onProgress, raiz){
+function computeOdds(fighters, sims, onProgress, raiz, margem){
   return new Promise(resolve => {
     const wins = new Uint32Array(fighters.length);
     let done = 0;
@@ -49,7 +49,11 @@ function computeOdds(fighters, sims, onProgress, raiz){
       }
       if (onProgress) onProgress(done / sims);
       if (done < sims) requestAnimationFrame(step);
-      else resolve(precificar(wins, sims, M));
+      /* A margem da rodada vem de fora — do painel de ADM, quando ele declara
+         uma. `undefined` faz `precificar` cair na do motor. Ela vai gravada no
+         registro do §4.4.5 e é a MESMA que a tela mostra: o painel muda o
+         preço, nunca cria odd secreta. */
+      else resolve(precificar(wins, sims, M, { margem }));
     }
     step();
   });

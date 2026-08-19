@@ -103,3 +103,31 @@ export function registrarTicket(passivo, idx, valor, odd) {
   passivo[idx] += payout;
   return true;
 }
+
+/* O INVERSO EXATO DE `registrarTicket` — cancelar aposta e trocar de lutador.
+ *
+ * O V1.15 traz o cancelamento, e ele mexe no lugar mais perigoso do §4.4.6.
+ * Os dois sentidos falham, e falham calados:
+ *
+ *   liberar de menos   o passivo daquele lutador nunca volta, e o mercado dele
+ *                      fica travado o resto da rodada por causa de uma aposta
+ *                      que não existe mais. O jogador vê "mercado fechado" sem
+ *                      nada explicando por quê.
+ *   liberar de mais    abre espaço que não foi devolvido, e o teto vaza pela
+ *                      porta do cancelamento — cancelar vira o jeito de
+ *                      apostar acima do limite.
+ *
+ * TRAVA EM ZERO em vez de aceitar negativo. Passivo negativo é espaço que não
+ * existe, e ele apareceria de duas formas: erro de ponto flutuante depois de
+ * muitas trocas, ou liberação de um ticket que nunca foi registrado. Nos dois
+ * casos zero é a resposta segura — nunca crédito.
+ *
+ * A guarda do teto é a mesma do registro, pelo mesmo motivo do D-004: guarda
+ * que se pode esquecer não é guarda.
+ */
+export function liberarTicket(passivo, idx, valor, odd) {
+  if (typeof passivo.teto !== 'number')
+    throw new Error('passivo sem teto: use passivoVazio(registro, conf)');
+  passivo[idx] = Math.max(0, passivo[idx] - valor * odd);
+  return passivo[idx];
+}

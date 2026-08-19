@@ -46,6 +46,13 @@ const PROGR  = 'app/modules/progressao.mjs';
 const TEMA   = 'app/modules/tema.mjs';
 const ARENAD = 'app/modules/arenas-dados.mjs';
 const ANCORAS= 'test/ancoras.mjs';
+const APOSTA = 'app/modules/aposta.mjs';
+const EXPOENG= 'engine/exposicao.mjs';
+const KILLF  = 'app/modules/killfeed.mjs';
+const COLOC  = 'app/modules/colocacao.mjs';
+const BANNERD= 'app/modules/banner-dados.mjs';
+const SHINYD = 'app/modules/shiny-dados.mjs';
+const ADMD   = 'app/modules/adm-dados.mjs';
 const RUNNER = 'test/run.mjs';
 const ARENAP = 'app/modules/arenas.mjs';
 
@@ -451,4 +458,67 @@ export const DEFEITOS = [
   { id:'S82', arquivo:RUNNER, nome:'uma execução de navegador some do paralelo',
     real:'linha comentada para "testar mais rápido" e esquecida — o portão encolhe em silêncio',
     de:'    visual.rodarTemaSemModulos(),', para:'    Promise.resolve(null),' },
+
+  /* ---------- V1.15: cancelar aposta ---------- */
+
+  { id:'S83', arquivo:EXPOENG, nome:'liberar o passivo deixa saldo negativo',
+    real:'`Math.max` removido por parecer defensivo demais — e passivo negativo é espaço que não existe',
+    de:'  passivo[idx] = Math.max(0, passivo[idx] - valor * odd);',
+    para:'  passivo[idx] = passivo[idx] - valor * odd;' },
+
+  { id:'S84', arquivo:APOSTA, nome:'cancelar devolve o dinheiro e esquece o passivo',
+    real:'"o passivo zera na próxima rodada" — e o mercado daquele lutador trava até lá',
+    de:'  liberarTicket(S.passivo, idx, amount, odd);\n', para:'' },
+
+  { id:'S85', arquivo:APOSTA, nome:'cancelar devolve o VALOR, não a composição',
+    real:'assinatura confundida numa refatoração — e bônus vira transferível a cada cancelamento',
+    de:"  devolverAposta(composicao, 'cancelamento');",
+    para:"  devolverAposta([{ balde: 'transferivel', valor: amount }], 'cancelamento');" },
+
+  { id:'S86', arquivo:FASES, nome:'a aposta volta a ser contada no clique',
+    real:'D-008 revertido — trocar de lutador três vezes conta três apostas, e cancelada conta também',
+    de:'  if (S.myBet) recordBetPlaced(S.myBet.amount, S.fighters[S.myBet.idx]);\n', para:'' },
+
+  /* ---------- V1.15: colocação ---------- */
+
+  { id:'S87', arquivo:COLOC, nome:'killstreak volta a contar como queda',
+    real:'a checagem some numa simplificação — e alguém "cai" duas vezes, deslocando a colocação inteira',
+    de:'    if (ev.streak) continue;\n', para:'' },
+
+  { id:'S88', arquivo:COLOC, nome:'a queda por tempestade deixa de contar',
+    real:'"morte sem autor não é queda" — e a colocação fica com buraco',
+    de:'    if (ev.storm) { for (const h of ev.hits) if (h.ko) poe(h.i); continue; }',
+    para:'    if (ev.storm) continue;' },
+
+  { id:'S89', arquivo:KILLF, nome:'a ordem de quedas deixa de vir do gancho do abate',
+    real:'"a conferência do fim corrige" — e o quadro ao vivo mostra outra coisa a rodada inteira',
+    de:'  if (vitima !== undefined && vitima !== null && !ordemQuedas.includes(vitima))\n    ordemQuedas.push(vitima);\n',
+    para:'' },
+
+  /* ---------- V1.15: cosméticos ---------- */
+
+  { id:'S90', arquivo:BANNERD, nome:'cosmético desconhecido deixa o banner sem pele',
+    real:'validação removida — perfil de versão antiga abre com cenário inexistente',
+    de:'  return lista.some(x => x.id === id) ? id : lista[0].id;',
+    para:'  return id;' },
+
+  { id:'S91', arquivo:SHINYD, nome:'desbloquear o mesmo shiny duas vezes gasta duas vagas',
+    real:'checagem de duplicata removida — o jogador perde uma conquista sem nada avisar',
+    de:'  if (s.gifs.includes(d)) return false;\n', para:'' },
+
+  { id:'S92', arquivo:SHINYD, nome:'o shiny deixa de exigir vaga',
+    real:'"é só cosmético" — e a progressão que o desbloqueio representa some',
+    de:'  if (vagasLivres(perfil, nivel) < 1) return false;\n', para:'' },
+
+  /* ---------- V1.15: painel de ADM e a margem da rodada (C1) ---------- */
+
+  { id:'S93', arquivo:PRECO, nome:'a margem da rodada aceita qualquer número',
+    real:'validação removida — um dedo a mais no campo do painel vira preço publicado',
+    de:'  const margem = margemValida(opcoes?.margem, M.CONF.MARGIN);',
+    para:'  const margem = opcoes?.margem ?? M.CONF.MARGIN;' },
+
+  { id:'S94', arquivo:ADMD, nome:'margem ausente e margem zero se confundem',
+    real:'`typeof` trocado por verdade/falsidade — e o painel zera a margem sem ninguém pedir',
+    de:"  (conf && typeof conf.margem === 'number') ? conf.margem : undefined;",
+    para:'  (conf && conf.margem) ? conf.margem : undefined;' },
 ];

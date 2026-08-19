@@ -6,6 +6,7 @@
 import { $, log } from './dom.mjs';
 import { dexImg } from './sprites.mjs';
 import { S } from './estado.mjs';
+import { ordemDeQuedas, rankingColocacao } from './colocacao.mjs';
 
 /* =====================================================================
    KILLFEED — ranking de abates da rodada
@@ -33,22 +34,92 @@ import { S } from './estado.mjs';
 let kills = [];          // abates por lutador (índice = posição na pool)
 let killsArena = 0;      // mortes sem autor (tempestade)
 let kfOrdem = [];        // ordem de chegada, para desempate estável
+/* Ordem de ELIMINAÇÃO — o primeiro a cair é o último colocado.
+   Vive aqui, e não num módulo próprio, por decisão de projeto: ela precisa vir
+   do MESMO gancho que credita o abate. Dois contadores paralelos divergem, e a
+   divergência só aparece na tela do jogador. A aritmética é do `colocacao.mjs`,
+   que é puro e testável no Node; o que mora aqui é o acúmulo ao vivo. */
+let ordemQuedas = [];
 
 function resetKillfeed(){
   kills = new Array(S.fighters.length).fill(0);
   killsArena = 0;
   kfOrdem = [];
+  ordemQuedas = [];
   renderKillfeed();
+  renderPodio();
 }
 
 /* Registra UM abate. `autor` null = morte da arena (tempestade). */
 function marcarAbate(autor, vitima){
+  /* Queda e abate saem da MESMA chamada: se um registrou, o outro registrou.
+     Morte por tempestade não tem autor, mas tira o lutador da arena — por isso
+     a ordem de quedas é atualizada antes do `if`, e não dentro dele. */
+  if (vitima !== undefined && vitima !== null && !ordemQuedas.includes(vitima))
+    ordemQuedas.push(vitima);
   if (autor === null || autor === undefined){ killsArena++; }
   else {
     kills[autor] = (kills[autor] || 0) + 1;
     if (!kfOrdem.includes(autor)) kfOrdem.push(autor);   // quem chegou antes ao placar
   }
   renderKillfeed(autor);
+  renderPodio();
+}
+
+/* O quadro de colocação, do 1º ao 12º.
+ *
+ * O TROFÉU SÓ APARECE COM A POSIÇÃO FECHADA — no fim da rodada, ou para quem já
+ * caiu, cuja colocação não muda mais. Entre os vivos a ordem é prévia por vida
+ * restante, e o rótulo diz "em disputa" em vez de vender previsão como
+ * resultado. */
+function renderPodio(){
+  const lista = $('#pdList'); if (!lista) return;
+  if (!S.fighters.length){ lista.innerHTML = ''; return; }
+  const fim = S.state === 'result';
+  const rank = rankingColocacao(S.fighters.length, ordemQuedas,
+    i => { const e = S.ents[i]; return e ? e.hp / S.fighters[i].maxHp : 1; });
+
+  lista.innerHTML = rank.map(r => {
+    const f = S.fighters[r.i];
+    const top = r.pos <= 3;
+    const fechado = fim || !r.vivo;
+    const tro = top && fechado ? `<span class="tro t${r.pos}">🏆</span>` : `<span class="pos">${r.pos}º</span>`;
+    const campeao = fim && r.pos === 1 ? ' campeao' : '';
+    return `<div class="pdrow${top && fechado ? ' p' + r.pos : ''}${r.vivo ? '' : ' caiu'}${campeao}${
+        S.myBet && S.myBet.idx === r.i ? ' mine' : ''}" data-i="${r.i}">
+      ${tro}
+      <span class="face">${dexImg(f.dex, f.n)}</span>
+      <span class="nm">${f.n}${campeao ? ' <b class="crown">👑</b>' : ''}</span>
+      <span class="st">${r.vivo ? (fim ? '' : Math.round(r.hp * 100) + '%') : 'K.O.'}</span>
+    </div>`;
+  }).join('');
+
+  const caidos = ordemQuedas.length;
+  $('#pdTotal').textContent = fim ? 'encerrada' : (caidos ? caidos + ' fora' : 'em disputa');
+  $('#pdNote').innerHTML = fim
+    ? `Campeão: <b style="color:var(--gold)">${S.fighters[rank[0].i]?.n ?? '—'}</b>.`
+    : 'Do 1º ao 12º, atualizado conforme caem.';
+}
+
+/* Conferência de fim de rodada, igual à dos abates: recalcula a ordem do zero a
+   partir dos eventos e compara com a acumulada ao vivo. Divergência vai para o
+   log em vez de passar despercebida — contador incremental sem conferência é
+   dessincronia esperando acontecer. */
+function conferirColocacao(){
+  const ref = ordemDeQuedas(S.battle.events);
+  const bate = ref.length === ordemQuedas.length && ref.every((v, i) => v === ordemQuedas[i]);
+  if (!bate){
+    log('<span class="l-crit">⚠️ divergência na colocação — corrigida pelo registro da simulação.</span>');
+    ordemQuedas = ref;
+  }
+  /* REGRA 8, o empate por tempestade: quando ela derruba todos no mesmo
+     instante, o campeão também consta entre os caídos — ele foi declarado
+     vencedor pelo desempate por vida. Sai da lista de quedas e assume o topo,
+     senão nenhuma linha ficaria em 1º. */
+  const kc = ordemQuedas.indexOf(S.champ);
+  if (kc !== -1) ordemQuedas.splice(kc, 1);
+  renderPodio();
+  return bate;
 }
 
 /* Ordena por abates (desc); empate resolve por quem marcou primeiro, e
@@ -140,9 +211,11 @@ function limparPodio(){ const p = $('#kfPodium'); if (p) p.remove(); }
 
 export {
   conferirAbates,
+  conferirColocacao,
   limparPodio,
   marcarAbate,
   mostrarPodio,
+  renderPodio,
   renderKillfeed,
   resetKillfeed,
 };

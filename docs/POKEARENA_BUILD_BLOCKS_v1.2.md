@@ -763,13 +763,149 @@ A lista de defeitos saiu para `test/defeitos-plantados.mjs`, para poder ser **li
 
 ---
 
-### V1.15 — Colocação, pódio e banner de batalha
+### V1.15 — Fecho do porte: pós-rodada, cosmético e painel ✅
 
-**Tam.** M · **Método** GL+INV · **Portões** Q1 Q2 Q5 · **Depende de** V1.13
+**Tam.** GG · **Método** GL+INV · **Portões** Q1 Q2 Q3 Q5 Q6 · **Depende de** V1.14
 
-**Escopo:** colocação por rodada, pódio, banner de batalha com cosméticos, e o **cancelar aposta**.
+> **Três blocos viraram um, por decisão do dono do projeto.** V1.15 (colocação,
+> pódio, banner, cancelar aposta), V1.17 (shinys) e V1.18 (painel de ADM) eram
+> todos camada de produto, sem risco de motor — a análise de paridade já provara
+> que o motor dele é byte-idêntico ao nosso. A cerimônia por bloco (documento,
+> DEFEITOS/LACUNAS, regravar fixture, mensagem de commit) é custo **fixo**, e
+> pagá-la três vezes por trabalho da mesma natureza era o que fazia o ciclo
+> parecer lento. O escopo continua um: **fechar o porte**. O que não entra
+> continua não entrando — baús seguem fora (V1.16).
 
-> **Cancelar aposta é o pedaço perigoso, e por isso mora aqui.** O F0.8 registra passivo por lutador na confirmação: cancelar sem devolver trava o mercado daquele lutador pelo resto da rodada; devolver sem cuidado reabre a corrida que o teste do §4.4.6 fecha. E a carteira precisa de um tipo de ledger próprio — `BET_RELEASE` já existe e serve.
+**Escopo:** tudo o que resta do trabalho dele, exceto baús.
+
+**Três critérios de saída, um por bloco original:**
+
+1. **Pós-rodada** — colocação ao vivo do 1º ao 12º, banner de batalha com
+   cosméticos, e **cancelar aposta**.
+2. **Cosmético** — shinys (GIF de vitrine e skin de arena), com a fonte do
+   desbloqueio **declarada**.
+3. **Painel** — `#adm` com conta, margem, registro de preço, laboratório shiny e
+   estatísticas. **Sem simulador de baús.**
+
+**Mais um achado do V1.14:** as **24 pokébolas**, doze por rodada sem repetir.
+Ficaram de fora do escopo daquele bloco e não tinham dono; entram aqui porque
+este bloco é o que fecha o porte, e deixá-las de fora deixaria o porte aberto.
+
+---
+
+#### 1 · Cancelar aposta — a peça perigosa
+
+O F0.8 registra passivo por lutador na confirmação. **Cancelar devolve DUAS
+coisas, e as duas são obrigatórias:**
+
+| | sem isso | |
+|---|---|---|
+| `liberarTicket` | o passivo nunca volta | o mercado daquele lutador fica travado o resto da rodada por causa de uma aposta que não existe mais |
+| `devolverAposta(composicao)` | devolve "o valor" | bônus vira transferível a cada cancelamento, e a proveniência do §5.5 deixa de valer |
+
+`engine/exposicao.mjs` ganhou `liberarTicket`, o **inverso exato** de
+`registrarTicket`, com trava em zero: passivo negativo é espaço que não existe.
+O teste afirma o ida-e-volta em cem valores por lutador, e que o mercado reabre
+com **exatamente** o mesmo limite de antes.
+
+> **BOTÃO EXPLÍCITO, e não "clicar de novo no mesmo lutador".** A v1.0 do porte
+> fez assim e teve de consertar a ordem das checagens: com a ficha "Tudo" o saldo
+> ia a zero e o clique caía no "saldo insuficiente" antes de alcançar o
+> cancelamento — o dinheiro parecia ter sumido. A nossa interface de fichas usa o
+> clique no mesmo lutador para REAJUSTAR, que é ação normal aqui, e empilhar
+> cancelar em cima traria a ambiguidade de volta. A lição dele fica preservada
+> por construção: o botão nunca depende de saldo.
+
+`bet_cancelled` entrou no §4.7 da Spec **no mesmo commit** — a lista era de antes
+de a ação existir, e cancelamento não é ruído de interface: é a diferença entre
+"o jogador desistiu" e "o jogador nunca olhou".
+
+**`fases.mjs` passou de 600 linhas e foi dividido por RESPONSABILIDADE**, não por
+tamanho: `aposta.mjs` é o único ponto do app em que dinheiro do jogador encontra
+o teto do §4.4.6; as fases são a máquina de estados da rodada.
+
+#### 2 · Colocação — uma fonte de verdade
+
+A ordem de quedas vem do **mesmo gancho** que credita o abate. Dois contadores
+paralelos divergem, e a divergência só aparece na tela do jogador. `fases.mjs`
+tinha uma segunda travessia dos eventos para a posição final — conferido: não
+estava errada, o evento de killstreak do nosso motor não carrega `ko`. O problema
+era ser cópia.
+
+#### 3 · Banner de batalha — dez cenários, oito efeitos, zero bytes
+
+Gradiente e `::after`; nenhum asset novo. Quatro cenários e três efeitos vieram
+com a identidade do V1.13, os demais entram aqui. O catálogo e o CSS precisam
+fechar **nos dois sentidos**: entrada sem classe deixa o jogador escolher um
+cenário que não desenha; classe sem entrada é CSS inalcançável.
+
+#### 4 · Shinys — e a fonte, que não vinha pronta
+
+No trabalho dele o shiny saía do baú. Com os baús fora do porte, o cosmético
+precisava de outra origem. **Escolhido: nível do treinador, com escolha do
+jogador** — uma vaga a cada 5 níveis, o jogador escolhe qual Pokémon a ocupa.
+
+Três razões, e nenhuma é estética:
+
+1. **Não toca a economia.** O D-007 registra que a emissão dos desafios já
+   estoura em 6,5× o orçamento do Estudo. Fonte que custasse moeda entraria numa
+   conta que hoje não fecha.
+2. **Não é caixa.** O §11.3 lista "loot box paga sem transparência" entre os
+   pilares a evitar. Aqui não há sorteio: o jogador sabe quando ganha a vaga.
+3. **É um gatilho, não um sistema.** Trocar a fonte depois — para o baú, quando
+   ele existir pelo nosso desenho — é mudar uma função.
+
+A arte é o **mesmo desenho recolorido** (`0000/0001/` no SpriteCollab), com a
+medição do autor da v1.0 registrada: canal alfa idêntico e contagem de pixels por
+cor batendo exatamente. Trocar para shiny é trocar o caminho da URL.
+
+#### 5 · Painel de ADM — e o conflito C1, resolvido
+
+**A margem virou parâmetro da rodada**, e não escrita em `CONF`. Constante
+congelada mutável em tempo de execução faria a fixture `margem.json` medir uma
+coisa e a rodada valer outra, sem nada avisando. Agora quem precifica **declara**
+a margem daquela rodada, ela vai gravada no registro do §4.4.5, e o painel mostra
+**o mesmo valor** que a tela mostra ao lado das odds: o painel pode mudar o
+preço, nunca criar odd secreta.
+
+Vale a partir da **próxima** rodada — mudar o preço de uma rodada com aposta viva
+alteraria o retorno de um ticket confirmado, e o §4.4.6 proíbe retroação.
+
+**Q6:** o PIN está no código-fonte e não é controle de acesso. O aviso disso, em
+vermelho no topo, **é parte da entrega** — painel que finge ser seguro é pior que
+painel aberto: o segundo ninguém confia, o primeiro alguém confia. O teste afirma
+que o aviso continua lá, que nada no menu aponta para o painel, e que **nenhum
+módulo escreve em `CONF.MARGIN`**.
+
+---
+
+**MEDIDO NO FECHAMENTO**
+
+```
+suíte        299/299 verde, com navegador
+sabotagem    94 defeitos plantados
+linha de base regravada: só a tela `arena` mudou, nas três larguras
+             (média 15,6 a 19,9 · pico 206 a 218); as outras nove,
+             byte a byte idênticas
+```
+
+**Q2 · doze defeitos novos (S83–S94), e DOIS escaparam na primeira execução.**
+Os dois eram lacuna real de teste, não falso alarme:
+
+- **S86** (a aposta volta a ser contada no clique) — nada via. Quem conta é o
+  fluxo, e só o navegador o percorre. Virou teste Q5: três cliques contam uma
+  aposta.
+- **S89** (a ordem de quedas deixa de vir do gancho do abate) — a conferência do
+  fim da rodada **corrigia tudo**, então o quadro terminava certo depois de
+  passar a rodada inteira errado. Virou teste Q5 lido **do meio da luta**.
+
+> **O segundo é o mais instrutivo do bloco.** Uma conferência de fecho boa o
+> bastante esconde um defeito de tempo real. Não bastava testar o resultado: era
+> preciso testar *quando*.
+
+**Fora do escopo, registrado:** **D-008** e **D-009** (achados e corrigidos aqui,
+porque o próprio escopo dependia deles), **D-010** (a linha de base não separa
+componente novo de ruído — dono **T2**), **L-028**.
 
 ### V1.16 — Baús: NÃO ENTRA NO PORTE
 
@@ -792,29 +928,46 @@ tudo em `prototype-v1.0/IDENTIDADE-VISUAL.md`.
 > Herdar a implementação junto com a economia significaria herdar a decisão sem
 > tomá-la. Os números ficam; a economia é nossa.
 
-**Consequência para o porte:** o V1.17 (Shinys) dependia daqui, porque o baú era
-a fonte dos cosméticos. Ele passa a depender do V1.15, e a fonte do shiny vira
-uma decisão do próprio bloco.
+**Consequência para o porte:** os shinys dependiam daqui, porque o baú era a
+fonte dos cosméticos. Eles entraram no V1.15, e a fonte virou decisão daquele
+bloco: **nível do treinador, com escolha do jogador**. Trocar para o baú, quando
+ele existir pelo nosso desenho, é mudar uma função — não o sistema.
 
-### V1.17 — Shinys
+> **O V1.16 está bloqueado pelo D-007**, e não por falta de método. O baú da v1.0
+> emite **1,45 PC-B por rodada**: 55 rodadas/semana consomem sozinhas os 80 PC-B
+> agregados do Estudo Econômico, e 21 rodadas/semana consomem os 30 que sobram
+> para desafios/rescue/missões. Não dá para calibrar o nosso contra um orçamento
+> que a nossa própria implementação já estoura em 6,5×. Ver **L-026**.
 
-**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q5 · **Depende de** V1.15
+---
 
-**Escopo:** GIF cosmético e skin de arena. Desbloqueado e equipado como estados distintos.
+### T2 — A linha de base visual mais fina
 
-> **A fonte do shiny é decisão deste bloco, e não vem pronta.** No trabalho dele o shiny saía do baú; com os baús fora do porte, o cosmético precisa de outra origem — conquista, nível, medalha, ou o baú quando ele existir pelo nosso desenho. O bloco entrega o cosmético funcionando e **declara** a fonte escolhida; trocá-la depois é mudar um gatilho, não o sistema.
+**Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Depende de** V1.15 ·
+**Trilha `T`** (ferramenta: só `test/` e `tools/`)
 
-> **Toca no F0.12:** shiny são **mais 304 folhas** (76 × 4) e 76 GIFs. O baixador cobre o que o pack pede, e skin shiny muda o que o pack pede — `pack.sprite()` passa a receber o estado do cosmético.
+**Escopo:** o **D-010**. A digital de 32×32 não separa componente novo de ruído
+de renderização quando o componente respeita a paleta em volta — o card de
+colocação do V1.15 mediu **média 0,85 · pico 56** contra um limite de
+`média > 3` ou `pico > 60`.
 
-### V1.18 — Painel de ADM
+**Não é cegueira à periferia**, e o verbete do D-010 registra a correção desse
+diagnóstico: uma mudança grosseira na mesma coluna marca pico 123 e reprova.
 
-**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q6 · **Depende de** V1.17
+**Três caminhos, e a escolha é de custo:** digital de 64×64; captura de página
+inteira em vez de viewport (resolve o sumiço nas larguras menores, e regrava as
+doze telas de uma vez); ou digital **por região**, uma por coluna — a única que
+dá diagnóstico em vez de um número só.
 
-**Escopo:** o painel em `#adm`, com conta, laboratório shiny, odds e estatísticas. **Sem o simulador de baús** — os baús não entram no porte.
+**Sabotagem:** afrouxar o limite em vez de afinar a resolução; comparar só a
+média e largar o pico; regravar a linha de base dentro do próprio portão.
 
-> **O conflito que este bloco resolve.** O painel mexe em `CONF.MARGIN` — e ele documentou bem por quê: a margem do painel é a **mesma** exibida ao lado das odds, para o painel não criar odd secreta. Só que `CONF` virou constante congelada do motor, e a margem agora aparece em três lugares que se conferem: `margemConfigurada` e `margemEfetiva` no registro do §4.4.5, e a fixture `margem.json`, que afirma 8 % em 300 rodadas × 8.000 simulações. **O encaixe certo é a margem virar parâmetro da rodada**, gravada no registro, com a fixture medindo a margem configurada naquela rodada.
+**Q5:** o bloco MEXE no portão Q5, então não pode se verificar por ele. A prova é
+o teste `D-010` de `test/portao.mjs`, que hoje afirma o defeito e fica vermelho
+quando ele fechar.
 
-**Q6:** o PIN no código-fonte **não é controle de acesso**, e o painel dele já diz isso em vermelho no topo. O teste precisa afirmar que o aviso existe — e o `CLAUDE.md` §25.1 continua valendo: nada de valor econômico real sem o checkpoint.
+**Saída:** um componente inteiro na coluna lateral reprova a linha de base.
+
 
 ---
 

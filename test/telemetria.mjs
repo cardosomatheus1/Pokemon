@@ -24,17 +24,22 @@ const EVENTOS = (fonte.match(/export const EVENTOS = \[([\s\S]*?)\];/)[1]
 const CAMPOS = (fonte.match(/export const CAMPOS_COMUNS = \[([\s\S]*?)\];/)[1]
   .match(/'([\w]+)'/g) || []).map(x => x.slice(1, -1));
 
-const DO_SPEC = [
-  'session_started', 'round_viewed', 'bet_selected', 'bet_changed', 'bet_confirmed',
-  'bet_skipped', 'battle_started', 'player_pick_ko', 'battle_completed',
-  'result_viewed', 'profile_opened', 'wallet_opened', 'challenge_completed',
-  'session_ended',
-];
+/* A LISTA DO §4.7 TAMBÉM VEM DA FONTE, e isso é conserto de uma incoerência
+   deste próprio arquivo: o comentário acima diz "lidos da fonte, não
+   redigitados", e logo abaixo havia uma cópia da lista da Spec, redigitada.
+   Ela envelheceu na primeira vez que a Spec mudou — o V1.15 acrescentou
+   `bet_cancelled` ao §4.7 e este teste reprovou apontando para o lugar errado,
+   como se o código estivesse errado em vez da cópia. */
+const SPEC = readFileSync(
+  new URL('../docs/POKEARENA_SPEC_MASTER_V1-V5_v1.5_COMPLETE.md', import.meta.url), 'utf8');
+const DO_SPEC = (SPEC.match(/## 4\.7 Telemetria mínima[\s\S]*?```text\n([\s\S]*?)```/)?.[1] ?? '')
+  .split('\n').map(l => l.trim()).filter(Boolean);
 
 export function suite() {
   const s = criarSuite('telemetria');
 
-  s.teste('os 14 eventos do §4.7 estão declarados, e nenhum a mais', () => {
+  s.teste('os eventos declarados são exatamente os do §4.7 da Spec', () => {
+    ok(DO_SPEC.length >= 14, `só ${DO_SPEC.length} eventos lidos do §4.7 — a varredura perdeu o bloco`);
     igual(EVENTOS.join(','), DO_SPEC.join(','),
       'a lista de eventos divergiu do §4.7. Vocabulário livre de telemetria ' +
       'vira lixo em três meses.');

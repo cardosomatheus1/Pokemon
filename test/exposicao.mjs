@@ -23,7 +23,8 @@ import * as E from './motor.mjs';
 import { tiposDaPool } from '../engine/engine.mjs';
 import { derivar, sementes } from '../engine/seed.mjs';
 import { precificar, simularLote } from '../engine/preco.mjs';
-import { avaliarAposta, passivoVazio, registrarTicket, passivoDaRodada } from '../engine/exposicao.mjs';
+import { avaliarAposta, liberarTicket, passivoVazio, registrarTicket, passivoDaRodada } from '../engine/exposicao.mjs';
+import { MARGEM_MAX } from '../engine/preco.mjs';
 import { criarSuite, ok, igual } from './harness.mjs';
 
 const APOSTA_MIN = 50;
@@ -299,6 +300,141 @@ export function suite() {
     igual(p[alvo.idx], antes,
       'o passivo do ticket já confirmado mudou quando o teto apertou — ' +
       'o §4.4.6 proíbe aplicação retroativa');
+  });
+
+  /* --- CANCELAR APOSTA (V1.15) -------------------------------------------
+   *
+   * Cancelar é o oposto exato de confirmar, e o perigo mora nos dois sentidos:
+   *
+   *   liberar de menos  → o passivo daquele lutador nunca volta, e o mercado
+   *                       dele fica travado pelo resto da rodada por causa de
+   *                       uma aposta que não existe mais
+   *   liberar de mais   → abre espaço que não foi devolvido, e o teto do
+   *                       §4.4.6 vaza pela porta do cancelamento
+   *
+   * O ida-e-volta EXATO é o que fecha os dois de uma vez.                  */
+
+  s.teste('liberar desfaz registrar exatamente, em cem valores diferentes', () => {
+    const r = reg();
+    for (const l of r.lutadores) {
+      const p = passivoVazio(r, CONF);
+      const base = p[l.idx];
+      for (let k = 1; k <= 100; k++) {
+        const v = Math.max(1, Math.floor(l.stakeMax * k / 100));
+        ok(registrarTicket(p, l.idx, v, l.odd), `ticket ${v} recusado no preparo`);
+        liberarTicket(p, l.idx, v, l.odd);
+        igual(p[l.idx], base,
+          `passivo de ${l.nome} não voltou ao valor original depois de liberar ${v}`);
+      }
+    }
+  });
+
+  s.teste('cancelar reabre o mercado com exatamente o mesmo limite de antes', () => {
+    const r = reg();
+    const alvo = r.lutadores.reduce((a, b) => (b.odd > a.odd ? b : a));
+    const p = passivoVazio(r, CONF);
+
+    const limiteInicial = avaliarAposta(r, p, alvo.idx, 1e9, CONF).limite;
+    /* satura o lutador até o mercado dele fechar */
+    let posto = 0;
+    while (true) {
+      const v = avaliarAposta(r, p, alvo.idx, 1e9, CONF);
+      if (!v.aceito) break;
+      registrarTicket(p, alvo.idx, v.valor, alvo.odd); posto += v.valor;
+    }
+    ok(!avaliarAposta(r, p, alvo.idx, 1, CONF).aceito, 'o mercado não chegou a fechar');
+
+    liberarTicket(p, alvo.idx, posto, alvo.odd);
+    const depois = avaliarAposta(r, p, alvo.idx, 1e9, CONF);
+    ok(depois.aceito, 'o mercado continuou fechado depois de cancelar tudo');
+    igual(depois.limite, limiteInicial,
+      'o limite depois do cancelamento não bate com o de antes da aposta');
+  });
+
+  /* Erro de ponto flutuante ao longo de uma rodada com muitas trocas poderia
+     deixar o passivo em -1e-12. Negativo é espaço que não existe. */
+  s.teste('o passivo nunca fica negativo, nem liberando mais do que foi posto', () => {
+    const r = reg();
+    const p = passivoVazio(r, CONF);
+    const l = r.lutadores[0];
+    registrarTicket(p, l.idx, 100, l.odd);
+    liberarTicket(p, l.idx, 100, l.odd);
+    liberarTicket(p, l.idx, 999999, l.odd);       // liberação indevida
+    ok(p[l.idx] >= 0, `passivo ficou em ${p[l.idx]}`);
+    igual(p[l.idx], 0, 'liberar a mais deveria travar em zero, não abrir crédito');
+  });
+
+  /* Mesma guarda de `registrarTicket`, e pelo mesmo motivo: guarda que se pode
+     esquecer não é guarda. Ver o D-004 e o teste da corrida acima. */
+  /* --- C1: A MARGEM DA RODADA (V1.15) ------------------------------------
+     O painel de ADM mexe na margem, e ela vai gravada no registro do §4.4.5.
+     O risco é o painel criar odd secreta: mostrar 8 % ao lado das odds e
+     precificar com outra coisa. O registro é a prova, e estes testes afirmam
+     que ele não mente. */
+  s.teste('a margem declarada na rodada é a que o registro publica', () => {
+    const { elenco: el } = rodadaComPreco();
+    const wins = new Float64Array(el.length).fill(100);
+    for (const m of [0, 0.02, 0.08, 0.15, 0.5]) {
+      const r = precificar(wins, 1200, E.M, { margem: m });
+      igual(r.margemConfigurada, m, `o registro publicou margem diferente da declarada (${m})`);
+    }
+  });
+
+  s.teste('margem maior aperta a odd de todo lutador, sem exceção', () => {
+    const { elenco: el } = rodadaComPreco();
+    const wins = new Float64Array(el.length).fill(0).map((_, i) => 50 + i * 17);
+    const baixa = precificar(wins, 1200, E.M, { margem: 0.02 }).lutadores;
+    const alta  = precificar(wins, 1200, E.M, { margem: 0.20 }).lutadores;
+    for (let i = 0; i < baixa.length; i++)
+      ok(alta[i].odd <= baixa[i].odd,
+        `lutador ${i}: odd subiu com margem maior (${alta[i].odd} > ${baixa[i].odd})`);
+  });
+
+  /* Margem inválida não pode virar preço. Negativa faz a casa PAGAR para
+     operar; >= 1 zera toda odd; e o campo do painel é digitado por humano. */
+  s.teste('margem inválida cai no padrão, nunca em preço absurdo', () => {
+    const { elenco: el } = rodadaComPreco();
+    const wins = new Float64Array(el.length).fill(100);
+    const padrao = precificar(wins, 1200, E.M).margemConfigurada;
+    igual(padrao, E.CONF.MARGIN, 'sem opção, a margem deixou de ser a do motor');
+    for (const ruim of [-0.1, 1, 1.5, NaN, Infinity, '0.2', null, undefined, MARGEM_MAX + 0.01])
+      igual(precificar(wins, 1200, E.M, { margem: ruim }).margemConfigurada, padrao,
+        `margem ${String(ruim)} não caiu no padrão`);
+  });
+
+  s.teste('a margem efetiva do registro acompanha a configurada', () => {
+    const { elenco: el } = rodadaComPreco();
+    const wins = new Float64Array(el.length).fill(0).map((_, i) => 40 + i * 23);
+    let anterior = -1;
+    for (const m of [0.02, 0.08, 0.20]) {
+      const r = precificar(wins, 4000, E.M, { margem: m });
+      ok(r.margemEfetiva > anterior,
+        `margem efetiva não subiu ao subir a configurada (${m}: ${r.margemEfetiva})`);
+      anterior = r.margemEfetiva;
+    }
+  });
+
+  s.teste('liberar num passivo sem teto falha alto', () => {
+    let lancou = false;
+    try { liberarTicket(new Float64Array(3), 0, 10, 2); } catch { lancou = true; }
+    ok(lancou, 'liberou num passivo que não veio de passivoVazio');
+  });
+
+  /* A TROCA DE APOSTA É UM CANCELAMENTO SEGUIDO DE UMA CONFIRMAÇÃO, e trocar
+     dez vezes não pode acumular passivo de dez lutadores. */
+  s.teste('trocar de lutador dez vezes deixa passivo em um só', () => {
+    const r = reg();
+    const p = passivoVazio(r, CONF);
+    let atual = null;
+    for (let k = 0; k < 10; k++) {
+      const l = r.lutadores[k % r.lutadores.length];
+      const v = Math.min(200, l.stakeMax);
+      if (atual) liberarTicket(p, atual.idx, atual.valor, atual.odd);
+      registrarTicket(p, l.idx, v, l.odd);
+      atual = { idx: l.idx, valor: v, odd: l.odd };
+    }
+    const comPassivo = [...p].filter(v => v > 0).length;
+    igual(comPassivo, 1, `${comPassivo} lutadores com passivo depois de dez trocas`);
   });
 
   return s;

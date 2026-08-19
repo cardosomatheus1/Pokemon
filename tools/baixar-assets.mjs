@@ -24,6 +24,8 @@ const { PMD, ANIM_FILE, IDLE_USES_WALK, PMD_BASE, PMD_ESPELHO } =
   await import('../app/modules/sprites-dados.mjs');
 const { MOVE_FX, FX_BASE, FX_ESPELHO } = await import('../app/modules/efeitos-dados.mjs');
 const pack = (await import('../content/pokemon_kanto_v1.mjs')).default;
+const { TRAINER_AVATARS, urlTreinadorOrigem } = await import('../app/modules/avatares-dados.mjs');
+const { SHINY_PMD } = await import('../app/modules/shiny-dados.mjs');
 
 /* DUAS famílias desde o V1.13, e a divisão é deliberada: Orbitron veste a
    plataforma (letrado, topbar, títulos, botões) e Press Start 2P veste o jogo
@@ -44,7 +46,16 @@ function alvos() {
     /* retrato do dex, usado na customização e no pódio */
     lista.push({ url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${esp.dex}.png`,
                  espelho: `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${esp.dex}.png` });
+    /* variante shiny do retrato — mesmo repositório, subpasta `shiny/` */
+    lista.push({ url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${esp.dex}.png`,
+                 espelho: `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/shiny/${esp.dex}.png` });
   }
+  /* AVATARES DE TREINADOR (V1.15). Dezesseis arquivos, e eles já eram pedidos
+     antes — pela topbar e pela tela de customização. O portão de egresso
+     fechado nunca os viu porque abre o jogo sem sessão; o banner de batalha
+     passou a desenhar o avatar já no boot e o vazamento apareceu. */
+  for (const t of TRAINER_AVATARS) lista.push({ url: urlTreinadorOrigem(t.id), espelho: null });
+
   /* folhas de EFEITO: outro repositório, mesma história. Foi o portão de
      egresso fechado que mostrou que elas existiam — 70 requisições saíam para
      fora mesmo com todas as folhas de sprite em disco. */
@@ -57,8 +68,15 @@ function alvos() {
     for (const k of ['w', 'i', 'a', 'h']) {
       if (!meta[k]) continue;
       const chave = (k === 'i' && IDLE_USES_WALK.has(esp.dex)) ? 'w' : k;
-      const path = String(esp.dex).padStart(4, '0') + '/' + ANIM_FILE[chave] + '-Anim.png';
-      lista.push({ url: PMD_BASE + path, espelho: PMD_ESPELHO + path });
+      const base = String(esp.dex).padStart(4, '0') + '/';
+      const arq = ANIM_FILE[chave] + '-Anim.png';
+      lista.push({ url: PMD_BASE + base + arq, espelho: PMD_ESPELHO + base + arq });
+      /* SKIN SHINY (V1.15): a MESMA folha recolorida, em `0000/0001/`. O
+         BUILD_BLOCKS já previa que o baixador cobre o que o pack pede, e skin
+         shiny muda o que o pack pede. Sem isto, o jogador com skin equipada e
+         a rede desligada veria o bicho sumir da arena. */
+      lista.push({ url: PMD_BASE + base + SHINY_PMD + arq,
+                   espelho: PMD_ESPELHO + base + SHINY_PMD + arq });
     }
   }
   /* dedup por url: a mesma folha serve mais de uma animação */
