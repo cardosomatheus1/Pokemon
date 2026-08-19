@@ -2,3 +2,7 @@ node_modules/
 tools/.snapshot-prototipo.mjs
 engine/*.bak
 assets/
+
+# Capturas do passo OLHAR (tools/olhar-telas.mjs). São para leitura humana
+# durante o bloco, não artefato do projeto — mesma razão de assets/.
+.telas/

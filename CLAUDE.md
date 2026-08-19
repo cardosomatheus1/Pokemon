@@ -64,8 +64,10 @@ vermelho quando alguém corrigir. Ver `D-001` em `test/invariantes.mjs`.
               decorativo — volte para o passo 2
 4. CONSTRUIR  o escopo, e nada além
 5. VERIFICAR  portões do bloco + suíte inteira
-6. FECHAR     um commit, critério de saída marcado
-7. RELATAR    o que mudou, o que foi para DEFEITOS/LACUNAS
+6. OLHAR      se o bloco mexeu em tela: capture e LEIA as telas afetadas.
+              Verde não é legível — ver Q5, as duas metades.
+7. FECHAR     um commit, critério de saída marcado
+8. RELATAR    o que mudou, o que foi para DEFEITOS/LACUNAS, com as capturas
 ```
 
 ### Os nove portões
@@ -78,6 +80,37 @@ concorrência · `Q9` telemetria.
 nem atribuição a binding importado — os dois derrubam o app em execução e
 passaram verdes pela suíte inteira mais de uma vez. O portão abre o jogo num
 navegador de verdade e reprova em qualquer `pageerror`.
+
+**Q5 tem DUAS metades, e a segunda é olhar.** O portão automatizado prova que a
+página *funciona*; ele não prova que ela está *legível*. São perguntas
+diferentes, e a segunda não tem como ser respondida por número.
+
+No V1.15 três defeitos passaram por **299 testes verdes**: um rótulo de texto
+transbordando o cartão e cobrindo a arte, uma coluna inteira empurrada para fora
+da dobra por um `max-width` que ficou para trás, e um campo de formulário
+estreito demais para o próprio placeholder. Nenhum deles é erro de execução;
+todos são erros de leitura.
+
+Por isso **todo bloco que mexe em tela fecha com inspeção visual**:
+
+```
+1. capture as telas afetadas em PNG, nas larguras que o layout muda de forma
+   (hoje: 1920, 1440, 1100, 420 — inclua uma acima do `max-width` do `.app`)
+2. OLHE cada uma. Não é conferir que abriu: é ler o que está escrito.
+3. anexe as capturas ao relatório do bloco
+```
+
+**Quando a tela mudar de arranjo, e não só de conteúdo, use um crítico cego** —
+é o portão Q7, e ele existe para isto. O crítico recebe as imagens e uma barra
+**nomeada**; não recebe o que foi construído, nem o que se espera ouvir. Barra
+vaga é o modo de falha nº 1 da metodologia GL: o crítico inventa a comparação e
+aprova tudo.
+
+A barra que está em uso, e que se pode reusar: **TESTE DOS 3 SEGUNDOS** — um
+apostador que nunca viu o produto responde, sem instrução e sem rolar, quanto
+tempo falta, em quem apostar e qual o retorno, quanto tem e quanto vai apostar,
+e o que está acontecendo agora. Nota por pergunta e por largura, com o lugar
+exato da tela onde o olho responde. *Nota sem localização não vale.*
 
 **Q1 e Q2 são obrigatórios em todos os blocos.** Os demais conforme o bloco
 declara. Um bloco sem superfície nova escreve `Q6: sem superfície nova` —

@@ -12,6 +12,7 @@
     "test:gerar": "node test/run.mjs --gerar",
     "sabotagem": "node test/sabotagem.mjs",
     "sabotagem:tocados": "node test/sabotagem.mjs --tocados",
+    "olhar": "node tools/olhar-telas.mjs",
     "portoes": "npm run repetir && npm run sabotagem",
     "repetir": "node tools/repetir-portao.mjs",
     "serve": "node prototype/serve.js"

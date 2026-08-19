@@ -985,6 +985,44 @@ quando ele fechar.
 > LEGÍVEL.** São perguntas diferentes, e hoje só a primeira tem rede.
 
 
+### Trilha `R` — reorganização da tela principal
+
+**Origem:** L-029, o crítico cego. **Método** GL (a barra existe e é buscável:
+TESTE DOS 3 SEGUNDOS). **Portões** Q1 Q2 Q5 Q7.
+
+> **Ordem por nota ganha, não por esforço.** O crítico deu nota por pergunta e
+> por largura; cada bloco abaixo é o menor conjunto de mudanças que sobe um
+> conjunto de notas. Fazer fora de ordem é gastar o bloco caro antes do barato.
+
+**R1 — Faixa de estado.** `Tam.` P. Faixa fixa no topo, ~56 px, em toda largura:
+a palavra da fase, o relógio (número grande + barra que esvazia) e o saldo.
+*Sobe P1 de 0–1 para 5 e P4 de 1–2 para 5 nas quatro larguras, e resolve metade
+de P3.* É a maior nota por menor custo de toda a trilha — **começa por aqui**.
+
+**R2 — Lista única de lutadores.** `Tam.` M. Funde `ODDS AO VIVO` e o cartão
+`QUEM VENCE?` num componente clicável com os **doze**, mostrando a probabilidade
+real e a margem de erro que hoje só o painel de ADM publica. *Sobe P2, e é o
+único bloco que faz o argumento de venda aparecer na tela do cliente.*
+
+**R3 — "Seu lutador" durante a luta.** `Tam.` M. O bloco de aposta vira, na fase
+de luta, um cartão do seu lutador: sprite, vida, posição em texto, retorno se
+vencer — e um marcador persistente sobre o sprite dele na arena. *Sobe P5 de 0–2
+para 4–5.* Hoje o espaço está ocupado por controles mortos.
+
+**R4 — Tirar o desenvolvimento da tela do jogador.** `Tam.` P. `DEV`, hash de
+commit e o aviso do `battle-theme.mp3` saem do build do jogador e vão para trás
+do PIN do painel. **Q6:** não é segurança — é credibilidade.
+
+**R5 — Reflow em vez de amputação.** `Tam.` G. Abaixo de 1280 a tela reordena em
+vez de cortar o centro. *Sobe todas as notas de 1100 e 420, que são as piores da
+tabela.* Último por ser o mais caro, e porque R1–R3 já mudam o que reflowar.
+
+**Sabotagem da trilha:** relógio que some ao rolar; lista que corta lutadores sem
+dizer quantos faltam; probabilidade publicada diferente da do registro §4.4.5;
+marcador do "seu lutador" que sobrevive à troca de aposta.
+
+---
+
 ---
 
 # FASE 1 — V1 Arena Online

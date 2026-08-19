@@ -637,3 +637,75 @@ a uma contra o que entrou nos blocos V1.13 a V1.15.
 **A partir daqui ele trabalha em cima da nossa versão**, e a tabela de precedência
 do `PORTE_v1.0.md` deixa de ser necessária — ela existia para reconciliar dois
 ramos que andaram em paralelo.
+
+---
+
+### L-029 — a tela principal reprova no teste dos 3 segundos
+
+**Dono:** trilha `R` (proposta abaixo) · **Achado por:** crítico cego, portão Q7
+
+Primeira aplicação do Q7 ao produto. Um crítico recebeu dez capturas em quatro
+larguras e uma barra nomeada — **TESTE DOS 3 SEGUNDOS**: um apostador novo, sem
+instrução e sem rolar, responde quanto tempo falta (P1), em quem apostar e com
+que retorno (P2), quanto tem e quanto vai apostar (P3), o que está acontecendo
+(P4) e, na luta, se o lutador dele está vivo e em que posição (P5). Nota de 0 a 5
+por pergunta e por largura, com **o lugar exato da tela** onde o olho responde —
+nota sem localização não valia.
+
+Ele não sabia o que tinha sido construído, nem por quem, nem o que se esperava
+ouvir.
+
+```
+              1920   1440   1100    420
+P1 tempo        1      1      0      0
+P2 em quem      3      3      1      0
+P3 quanto       4      4      4      3
+P4 o que é      2      2      1      1
+P5 vivo/pos    2/3    2/0    0/0    0/0
+```
+
+**Os cinco, em ordem de gravidade:**
+
+1. **Abaixo de 1440 o objeto da aposta sai da tela.** A 1100 px a arena, o cartão
+   de escolha, o relógio e o botão de iniciar estão TODOS abaixo da dobra, e nada
+   sinaliza que há algo lá. O layout degrada por *amputação do centro*, não por
+   reordenação: a coluna que some é a única clicável. Numa janela de 30 s, o
+   jogador gasta o começo dela rolando para descobrir onde se clica.
+2. **Não existe relógio.** O produto inteiro é uma janela de 30 s e o cronômetro
+   é um sufixo de ~7 px (`QUEM VENCE? — 29s`) dentro de um cabeçalho, sem barra e
+   sem rótulo. É o menor texto de uma tela com tipografia display sobrando em
+   cinco lugares. Um número grande e uma barra que esvazia **reduzem** ansiedade
+   — prazo previsível é o contrário de pressão artificial (cap. 28).
+3. **Duas listas concorrentes, nenhuma completa — e a probabilidade real só
+   existe no painel de ADM.** `ODDS AO VIVO` mostra **100 % nas doze linhas**
+   durante a aposta (é vida, não chance — lê como defeito); o cartão clicável
+   mostra **8 de 12** sem dizer que faltam quatro; e o `p 5,96 % ±1,01 %` por
+   lutador, que é o argumento de venda do produto, está na tela de depuração.
+   **É problema de posicionamento, não de layout:** vendemos odd auditável e
+   escondemos a auditoria do cliente.
+4. **Durante a luta não dá para saber se VOCÊ está vivo.** São ~30 s sem nenhuma
+   ação disponível: a tela tem uma função só, responder P5, e não responde. Os 12
+   sprites do campo são anônimos, o seu é marcado por um chip de 10 px com texto
+   de 6 px, e a colocação está fora da tela em 1440.
+5. **A tela do jogador exibe erro de build, hash de commit e painel `DEV`.**
+   `⚠ trilha não encontrada — coloque battle-theme.mp3…`, `commit 5dbaccab…`,
+   `Velocidade do replay 1.0x`. Ocupa a quarta coluna de cinco em 1920 — espaço
+   nobre gasto para reduzir credibilidade num produto que pede confiança.
+
+**O que ele mandou NÃO mexer**, e vale tanto quanto a crítica: as fichas de valor
+(único elemento nota 4 nas quatro larguras); a confirmação de aposta repetida em
+quatro lugares (parece redundância num diff, é o que faz o jogador confiar que a
+aposta entrou); o botão `Cancelar aposta e ficar de fora` com texto por extenso;
+o `ODDS AO VIVO` durante a luta com os eliminados riscados; e o aviso do painel
+de ADM sobre o PIN.
+
+**Uma correção ao relatório dele:** ele apontou a arte do Coliseu e do Campo
+Gelado como "borrada". Não é. O `#overlay` da fase de aposta tem
+`backdrop-filter: blur(4px)` desde o V1.13, de propósito, para o cartão de
+escolha ficar em foco — ele comparou telas de fases diferentes. **Mas o achado
+por baixo do erro é bom:** o jogador passa metade da rodada sem ver a arena que o
+V1.14 construiu, e ninguém tinha reparado.
+
+**Por que isto é lacuna e não defeito:** nada aqui está quebrado. A tela funciona,
+e os 299 testes que dizem isso continuam certos. O que ela não faz é ser lida em
+três segundos — e isso é trabalho de desenho, com escopo próprio, não conserto.
