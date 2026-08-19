@@ -20,6 +20,7 @@
  *   · nenhum teto é aplicado retroativamente a ticket já confirmado.
  */
 import * as E from './motor.mjs';
+import { tiposDaPool } from '../engine/engine.mjs';
 import { derivar, sementes } from '../engine/seed.mjs';
 import { precificar, simularLote } from '../engine/preco.mjs';
 import { avaliarAposta, passivoVazio, registrarTicket, passivoDaRodada } from '../engine/exposicao.mjs';
@@ -33,8 +34,8 @@ const APOSTA_MIN = 50;
 function rodadaComPreco(semente = 0xF08) {
   const raiz = derivar(semente, 'exposicao');
   const s = sementes(raiz);
-  const clima = E.sortearClima(s.ambiente);
-  const elenco = E.sortearPool(clima.type, s.elenco);
+  const elenco = E.sortearPool(s.elenco);
+  const clima = E.sortearClima(s.ambiente, tiposDaPool(elenco));
   const wins = new Uint32Array(elenco.length);
   simularLote(E.M, elenco, raiz, 0, 3000, wins);
   return { elenco, registro: precificar(wins, 3000, E.M) };
@@ -42,8 +43,12 @@ function rodadaComPreco(semente = 0xF08) {
 
 export function suite() {
   const s = criarSuite('exposicao');
-  const { registro } = rodadaComPreco();
   const CONF = E.CONF;
+  /* Preguiçoso de propósito: construir a suíte não pode custar simulação. Ver
+     a nota em test/margem.mjs — a sabotagem roda a suíte mais de cem vezes, e
+     medição paga na construção é paga mesmo quando a execução para antes. */
+  let cache = null;
+  const reg = () => (cache ??= rodadaComPreco().registro);
 
   s.teste('os dois tetos existem e o de rodada é dez vezes o de ticket', () => {
     ok(CONF.MAX_PAYOUT_POR_TICKET > 0, 'MAX_PAYOUT_POR_TICKET não existe');
@@ -52,7 +57,7 @@ export function suite() {
   });
 
   s.teste('o registro publica o stake máximo por lutador', () => {
-    for (const l of registro.lutadores) {
+    for (const l of reg().lutadores) {
       ok(Number.isFinite(l.stakeMax) && l.stakeMax > 0, `${l.idx} sem stakeMax`);
       /* stake_max_i = payout_max / odd_i, arredondado para baixo: arredondar
          para cima deixaria o payout estourar o teto por centavos. */
@@ -62,35 +67,35 @@ export function suite() {
         `apostar o stakeMax em ${l.idx} já estoura o teto de payout`);
     }
     /* Quem paga mais aceita menos: é a forma do instrumento. */
-    const ordenado = [...registro.lutadores].sort((a, b) => a.odd - b.odd);
+    const ordenado = [...reg().lutadores].sort((a, b) => a.odd - b.odd);
     for (let i = 1; i < ordenado.length; i++)
       ok(ordenado[i].stakeMax <= ordenado[i-1].stakeMax,
         'odd maior precisa ter stake máximo menor ou igual');
   });
 
   s.teste('o registro declara os dois tetos aplicados', () => {
-    igual(registro.tetoPayoutPorTicket, CONF.MAX_PAYOUT_POR_TICKET,
+    igual(reg().tetoPayoutPorTicket, CONF.MAX_PAYOUT_POR_TICKET,
       'o registro não diz qual teto de payout valeu nesta rodada');
-    igual(registro.tetoPassivoPorRodada, CONF.MAX_LIABILITY_POR_RODADA,
+    igual(reg().tetoPassivoPorRodada, CONF.MAX_LIABILITY_POR_RODADA,
       'o registro não diz qual teto de passivo valeu nesta rodada');
   });
 
   /* ------------------------------------------------ o corte, antes de tudo */
 
   s.teste('aposta dentro do teto passa inteira', () => {
-    const p = passivoVazio(registro, CONF);
-    const alvo = registro.lutadores.reduce((a, b) => (b.odd < a.odd ? b : a));  // favorito
-    const r = avaliarAposta(registro, p, alvo.idx, 100, CONF);
+    const p = passivoVazio(reg(), CONF);
+    const alvo = reg().lutadores.reduce((a, b) => (b.odd < a.odd ? b : a));  // favorito
+    const r = avaliarAposta(reg(), p, alvo.idx, 100, CONF);
     ok(r.aceito, `aposta de 100 no favorito recusada: ${r.mensagem}`);
     igual(r.valor, 100, 'a aposta foi cortada sem precisar');
     igual(r.cortado, false, 'aposta dentro do teto marcada como cortada');
   });
 
   s.teste('aposta acima do teto é CORTADA, não recusada', () => {
-    const p = passivoVazio(registro, CONF);
-    const azarao = registro.lutadores.reduce((a, b) => (b.odd > a.odd ? b : a));
+    const p = passivoVazio(reg(), CONF);
+    const azarao = reg().lutadores.reduce((a, b) => (b.odd > a.odd ? b : a));
     const pedido = azarao.stakeMax * 3;
-    const r = avaliarAposta(registro, p, azarao.idx, pedido, CONF);
+    const r = avaliarAposta(reg(), p, azarao.idx, pedido, CONF);
     ok(r.aceito, 'a aposta foi recusada em vez de cortada — o §4.4.6 manda cortar');
     igual(r.cortado, true, 'o corte aconteceu e não foi sinalizado');
     igual(r.valor, azarao.stakeMax, 'o corte não parou no stake máximo');
@@ -101,9 +106,9 @@ export function suite() {
      por quê. Rejeição silenciosa reprova o bloco." Aqui a checagem é do
      CONTEÚDO da mensagem; a captura na tela é do teste visual. */
   s.teste('a mensagem de corte diz qual limite, quanto cabe e por quê', () => {
-    const p = passivoVazio(registro, CONF);
-    const azarao = registro.lutadores.reduce((a, b) => (b.odd > a.odd ? b : a));
-    const r = avaliarAposta(registro, p, azarao.idx, azarao.stakeMax * 5, CONF);
+    const p = passivoVazio(reg(), CONF);
+    const azarao = reg().lutadores.reduce((a, b) => (b.odd > a.odd ? b : a));
+    const r = avaliarAposta(reg(), p, azarao.idx, azarao.stakeMax * 5, CONF);
     const m = r.mensagem;
     ok(typeof m === 'string' && m.length > 0, 'corte sem mensagem — rejeição silenciosa');
     ok(m.includes(String(azarao.stakeMax)) || m.includes(azarao.stakeMax.toLocaleString('pt-BR')),
@@ -117,8 +122,8 @@ export function suite() {
   /* -------------------------------------------------- passivo por rodada */
 
   s.teste('o passivo acumula por lutador, não por rodada inteira', () => {
-    const p = passivoVazio(registro, CONF);
-    const a = registro.lutadores[0], b = registro.lutadores[1];
+    const p = passivoVazio(reg(), CONF);
+    const a = reg().lutadores[0], b = reg().lutadores[1];
     registrarTicket(p, a.idx, 100, a.odd);
     registrarTicket(p, b.idx, 100, b.odd);
     ok(Math.abs(p[a.idx] - 100 * a.odd) < 1e-9, 'o passivo do lutador 0 não bate');
@@ -129,16 +134,16 @@ export function suite() {
   });
 
   s.teste('o mercado de um lutador fecha ao saturar o passivo', () => {
-    const p = passivoVazio(registro, CONF);
-    const alvo = registro.lutadores.reduce((a, b) => (b.odd > a.odd ? b : a));
+    const p = passivoVazio(reg(), CONF);
+    const alvo = reg().lutadores.reduce((a, b) => (b.odd > a.odd ? b : a));
     /* enche o passivo dele até o teto, ticket a ticket */
     let voltas = 0;
     while (voltas++ < 1000) {
-      const r = avaliarAposta(registro, p, alvo.idx, alvo.stakeMax, CONF);
+      const r = avaliarAposta(reg(), p, alvo.idx, alvo.stakeMax, CONF);
       if (!r.aceito) break;
       registrarTicket(p, alvo.idx, r.valor, alvo.odd);
     }
-    const r = avaliarAposta(registro, p, alvo.idx, APOSTA_MIN, CONF);
+    const r = avaliarAposta(reg(), p, alvo.idx, APOSTA_MIN, CONF);
     ok(!r.aceito, 'o mercado não fechou depois de saturar o passivo');
     igual(r.motivo, 'MAX_LIABILITY_POR_RODADA', 'o fechamento não nomeou o limite');
     ok(/fechad|esgotad|saturad/i.test(r.mensagem),
@@ -146,8 +151,8 @@ export function suite() {
     ok(p[alvo.idx] <= CONF.MAX_LIABILITY_POR_RODADA,
       `o passivo do lutador chegou a ${p[alvo.idx]}, acima do teto`);
     /* e os OUTROS mercados continuam abertos: o teto é por lutador */
-    const outro = registro.lutadores.find(l => l.idx !== alvo.idx);
-    ok(avaliarAposta(registro, p, outro.idx, APOSTA_MIN, CONF).aceito,
+    const outro = reg().lutadores.find(l => l.idx !== alvo.idx);
+    ok(avaliarAposta(reg(), p, outro.idx, APOSTA_MIN, CONF).aceito,
       'fechar um mercado fechou os outros junto');
   });
 
@@ -159,13 +164,13 @@ export function suite() {
      de sabotagem. Erro de limite não se pega por amostragem; se pega pedindo
      exatamente o limite, e exatamente um a mais. */
   s.teste('pedir um a mais que o stake máximo é cortado, em todos os lutadores', () => {
-    for (const l of registro.lutadores) {
-      const p = passivoVazio(registro, CONF);
-      const exato = avaliarAposta(registro, p, l.idx, l.stakeMax, CONF);
+    for (const l of reg().lutadores) {
+      const p = passivoVazio(reg(), CONF);
+      const exato = avaliarAposta(reg(), p, l.idx, l.stakeMax, CONF);
       igual(exato.valor, l.stakeMax, `pedir exatamente o stake máximo de ${l.idx} foi cortado`);
       igual(exato.cortado, false, `o stake máximo exato de ${l.idx} foi marcado como corte`);
 
-      const umAMais = avaliarAposta(registro, p, l.idx, l.stakeMax + 1, CONF);
+      const umAMais = avaliarAposta(reg(), p, l.idx, l.stakeMax + 1, CONF);
       igual(umAMais.valor, l.stakeMax,
         `pedi ${l.stakeMax + 1} em x${l.odd.toFixed(2)} e passaram ${umAMais.valor}`);
       igual(umAMais.cortado, true, `o corte de um a mais em ${l.idx} não foi sinalizado`);
@@ -177,12 +182,12 @@ export function suite() {
 
   /* A mesma sonda na outra borda: o passivo da rodada. */
   s.teste('pedir um a mais que o espaço restante no passivo é cortado', () => {
-    for (const l of registro.lutadores) {
-      const p = passivoVazio(registro, CONF);
+    for (const l of reg().lutadores) {
+      const p = passivoVazio(reg(), CONF);
       /* deixa espaço para menos de um ticket cheio */
       const espaco = Math.floor(l.stakeMax / 2);
       p[l.idx] = CONF.MAX_LIABILITY_POR_RODADA - espaco * l.odd;
-      const r = avaliarAposta(registro, p, l.idx, espaco + 1, CONF);
+      const r = avaliarAposta(reg(), p, l.idx, espaco + 1, CONF);
       ok(r.aceito, `mercado fechou com espaço para ${espaco}`);
       ok(p[l.idx] + r.valor * l.odd <= CONF.MAX_LIABILITY_POR_RODADA + 1e-9,
         `pedi ${espaco + 1} e passaram ${r.valor}: o passivo iria a ` +
@@ -191,14 +196,14 @@ export function suite() {
   });
 
   s.teste('nenhum ticket confirmado excede MAX_PAYOUT_POR_TICKET', () => {
-    const p = passivoVazio(registro, CONF);
+    const p = passivoVazio(reg(), CONF);
     const R = (n => { let a = n; return () => (a = (a * 1103515245 + 12345) & 0x7fffffff) / 0x80000000; })(7);
     for (let i = 0; i < 4000; i++) {
-      const idx = (R() * registro.lutadores.length) | 0;
+      const idx = (R() * reg().lutadores.length) | 0;
       const pedido = Math.floor(R() * 200000) + 1;
-      const r = avaliarAposta(registro, p, idx, pedido, CONF);
+      const r = avaliarAposta(reg(), p, idx, pedido, CONF);
       if (!r.aceito) continue;
-      const odd = registro.lutadores[idx].odd;
+      const odd = reg().lutadores[idx].odd;
       ok(r.valor * odd <= CONF.MAX_PAYOUT_POR_TICKET + 1e-9,
         `ticket de ${r.valor} em x${odd} pagaria ${r.valor*odd}, acima do teto`);
       registrarTicket(p, idx, r.valor, odd);
@@ -206,12 +211,12 @@ export function suite() {
   });
 
   s.teste('nenhuma rodada excede MAX_LIABILITY_POR_RODADA', () => {
-    const p = passivoVazio(registro, CONF);
+    const p = passivoVazio(reg(), CONF);
     const R = (n => { let a = n; return () => (a = (a * 1103515245 + 12345) & 0x7fffffff) / 0x80000000; })(99);
     for (let i = 0; i < 6000; i++) {
-      const idx = (R() * registro.lutadores.length) | 0;
-      const r = avaliarAposta(registro, p, idx, Math.floor(R() * 90000) + 1, CONF);
-      if (r.aceito) registrarTicket(p, idx, r.valor, registro.lutadores[idx].odd);
+      const idx = (R() * reg().lutadores.length) | 0;
+      const r = avaliarAposta(reg(), p, idx, Math.floor(R() * 90000) + 1, CONF);
+      if (r.aceito) registrarTicket(p, idx, r.valor, reg().lutadores[idx].odd);
       ok(passivoDaRodada(p) <= CONF.MAX_LIABILITY_POR_RODADA + 1e-9,
         `passivo da rodada chegou a ${passivoDaRodada(p)}, acima do teto`);
     }
@@ -222,11 +227,11 @@ export function suite() {
   s.teste('não dá para burlar o teto dividindo em vários tickets', () => {
     /* O ataque óbvio: se o teto fosse por ticket e o passivo não acumulasse,
        bastaria repetir o stake máximo até o infinito. */
-    const p = passivoVazio(registro, CONF);
-    const alvo = registro.lutadores.reduce((a, b) => (b.odd > a.odd ? b : a));
+    const p = passivoVazio(reg(), CONF);
+    const alvo = reg().lutadores.reduce((a, b) => (b.odd > a.odd ? b : a));
     let total = 0;
     for (let i = 0; i < 500; i++) {
-      const r = avaliarAposta(registro, p, alvo.idx, alvo.stakeMax, CONF);
+      const r = avaliarAposta(reg(), p, alvo.idx, alvo.stakeMax, CONF);
       if (!r.aceito) break;
       registrarTicket(p, alvo.idx, r.valor, alvo.odd);
       total += r.valor;
@@ -236,18 +241,18 @@ export function suite() {
   });
 
   s.teste('stake negativo, zero, NaN e Infinity não passam', () => {
-    const p = passivoVazio(registro, CONF);
+    const p = passivoVazio(reg(), CONF);
     for (const v of [-1, -100000, 0, NaN, Infinity, -Infinity, '500', null, undefined]) {
-      const r = avaliarAposta(registro, p, 0, v, CONF);
+      const r = avaliarAposta(reg(), p, 0, v, CONF);
       ok(!r.aceito, `stake ${String(v)} foi aceito`);
       ok(r.motivo === 'VALOR_INVALIDO', `stake ${String(v)} recusado pelo motivo errado: ${r.motivo}`);
     }
   });
 
   s.teste('lutador inexistente não gera aposta', () => {
-    const p = passivoVazio(registro, CONF);
+    const p = passivoVazio(reg(), CONF);
     for (const idx of [-1, 999, 1.5, NaN, null, undefined, '0'])
-      ok(!avaliarAposta(registro, p, idx, 100, CONF).aceito,
+      ok(!avaliarAposta(reg(), p, idx, 100, CONF).aceito,
         `aposta aceita no lutador inexistente ${String(idx)}`);
   });
 
@@ -256,14 +261,14 @@ export function suite() {
      do registro — quem avalia contra um passivo velho e registra contra o novo
      é exatamente o que abre a brecha. */
   s.teste('duas confirmações no mesmo instante não estouram o teto', () => {
-    const p = passivoVazio(registro, CONF);
-    const alvo = registro.lutadores.reduce((a, b) => (b.odd > a.odd ? b : a));
+    const p = passivoVazio(reg(), CONF);
+    const alvo = reg().lutadores.reduce((a, b) => (b.odd > a.odd ? b : a));
     /* enche até faltar espaço para um ticket e meio */
     const cabe = Math.floor((CONF.MAX_LIABILITY_POR_RODADA * 0.9) / alvo.odd);
     registrarTicket(p, alvo.idx, cabe, alvo.odd);
     /* duas avaliações contra o MESMO passivo — é a corrida */
-    const a = avaliarAposta(registro, p, alvo.idx, alvo.stakeMax, CONF);
-    const b = avaliarAposta(registro, p, alvo.idx, alvo.stakeMax, CONF);
+    const a = avaliarAposta(reg(), p, alvo.idx, alvo.stakeMax, CONF);
+    const b = avaliarAposta(reg(), p, alvo.idx, alvo.stakeMax, CONF);
     /* e as duas confirmações acontecendo em sequência. `registrarTicket`
        precisa recusar a segunda se ela não couber mais. */
     const ok1 = registrarTicket(p, alvo.idx, a.valor, alvo.odd);
@@ -283,13 +288,13 @@ export function suite() {
   });
 
   s.teste('nenhum teto é aplicado retroativamente a ticket confirmado', () => {
-    const p = passivoVazio(registro, CONF);
-    const alvo = registro.lutadores[0];
+    const p = passivoVazio(reg(), CONF);
+    const alvo = reg().lutadores[0];
     registrarTicket(p, alvo.idx, alvo.stakeMax, alvo.odd);
     const antes = p[alvo.idx];
     /* teto derrubado no meio da rodada — o ticket confirmado não muda */
     const apertado = { ...CONF, MAX_PAYOUT_POR_TICKET: 10, MAX_LIABILITY_POR_RODADA: 100 };
-    const r = avaliarAposta(registro, p, alvo.idx, 1000, apertado);
+    const r = avaliarAposta(reg(), p, alvo.idx, 1000, apertado);
     ok(!r.aceito, 'o teto novo não vale para aposta NOVA');
     igual(p[alvo.idx], antes,
       'o passivo do ticket já confirmado mudou quando o teto apertou — ' +

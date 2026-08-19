@@ -15,7 +15,7 @@
  * pendurar o processo.
  */
 import { readFileSync, readdirSync } from 'node:fs';
-import { criarMotor } from '../engine/engine.mjs';
+import { criarMotor, tiposDaPool } from '../engine/engine.mjs';
 import { validarPack } from '../engine/pack.mjs';
 import packSintetico from './pack-sintetico.mjs';
 import packKanto from '../content/pokemon_kanto_v1.mjs';
@@ -86,7 +86,7 @@ export function suite() {
 
   s.teste('o pack sintético monta uma rodada válida', () => {
     const E = criarMotor(packSintetico);
-    const pool = E.sortearPool(null);
+    const pool = E.sortearPool(7);
     igual(pool.length, 12, 'a arena não recebeu 12 lutadores');
     const nomes = new Set();
     for (const f of pool) {
@@ -103,7 +103,7 @@ export function suite() {
 
   s.teste('a rodada do pack sintético sempre termina com vencedor', () => {
     const E = criarMotor(packSintetico);
-    const pool = E.sortearPool(null);
+    const pool = E.sortearPool(7);
     for (let seed = 1; seed <= 300; seed++) {
       const w = E.simular(pool, seed, false);
       ok(Number.isInteger(w) && w >= 0 && w < pool.length,
@@ -111,15 +111,14 @@ export function suite() {
     }
   });
 
-  s.teste('o clima do pack sintético garante o tipo favorecido na pool', () => {
+  s.teste('o clima do pack sintético sempre tem quem buffar', () => {
     const E = criarMotor(packSintetico);
-    for (const c of packSintetico.clima) {
-      if (!c.type) continue;
-      for (let i = 0; i < 30; i++) {
-        const pool = E.sortearPool(c.type);
-        ok(pool.some(f => f.types.includes(c.type)),
-          `clima ${c.key} sorteou pool sem nenhum ${c.type}`);
-      }
+    for (let i = 1; i <= 60; i++) {
+      const pool = E.sortearPool(i);
+      const clima = E.sortearClima(i * 13 + 1, tiposDaPool(pool));
+      if (!clima.type) continue;
+      ok(pool.some(f => f.types.includes(clima.type)),
+        `clima ${clima.key} saiu numa pool sem nenhum ${clima.type}`);
     }
   });
 
@@ -163,7 +162,7 @@ export function suite() {
       try { motor = criarMotor(ruim); } catch { continue; }   // recusado na porta: certo
       /* Chegou aqui = o validador aceitou. Então tem que aguentar a rodada
          inteira, sem exceção e sem lutador quebrado. */
-      const pool = motor.sortearPool(null);
+      const pool = motor.sortearPool(7);
       igual(pool.length, 12, `${nome}: pack aceito montou pool de ${pool.length}`);
       for (let seed = 1; seed <= 50; seed++) {
         const w = motor.simular(pool, seed, false);
@@ -193,7 +192,7 @@ export function suite() {
        servidor da V2 só existindo. */
     Object.defineProperty(p, 'armadilha', { enumerable: true, get() { throw new Error('lido'); } });
     const E = criarMotor(p);
-    const pool = E.sortearPool(null);
+    const pool = E.sortearPool(7);
     igual(pool.length, 12, 'o pack com campos extras não montou rodada');
     ok(pool.every(f => f.moves.every(m => m.efeitoColateral === undefined || m.p > 0)),
       'campo extra de golpe virou comportamento');

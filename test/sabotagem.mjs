@@ -30,8 +30,8 @@
  * Uso: node test/sabotagem.mjs
  */
 import { readFileSync, writeFileSync, cpSync, rmSync, mkdtempSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
-import { tmpdir } from 'node:os';
+import { execFile, execFileSync } from 'node:child_process';
+import { cpus, tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const MOTOR  = 'engine/engine.mjs';
@@ -53,6 +53,7 @@ const EXPO   = 'engine/exposicao.mjs';
 const PAINEL = 'app/modules/odds.mjs';
 const BOLSO  = 'engine/carteira.mjs';
 const BANCO  = 'app/modules/banco.mjs';
+const INFO   = 'test/informacao.mjs';
 
 const DEFEITOS = [
   /* Desde o F0.4 a tabela de tipos é DADO DO PACK, não do motor. O defeito é o
@@ -161,8 +162,8 @@ const DEFEITOS = [
 
   { id:'S23', arquivo:MOTOR, nome:'identificador da franquia hard-coded fora do pack',
     real:'atalho para um caso especial: "só este Pokémon precisa disso"',
-    de:'function sortearPool(pack, elenco, weatherType, sementeElenco){',
-    para:"function sortearPool(pack, elenco, weatherType, sementeElenco){\n  const favorito = 'pikachu';" },
+    de:'function sortearPool(pack, elenco, sementeElenco){',
+    para:"function sortearPool(pack, elenco, sementeElenco){\n  const favorito = 'pikachu';" },
 
   { id:'S24', arquivo:VALID, nome:'validação de pack aceita elenco menor que a arena',
     real:'limite afrouxado para deixar um pack de teste passar',
@@ -215,8 +216,8 @@ const DEFEITOS = [
 
   { id:'S34', arquivo:PRECO, nome:'o preço usa uma distribuição de clima diferente da luta',
     real:'sub-seed de ambiente fixa numa refatoração — todas as simulações veem o mesmo clima',
-    de:"    const clima = M.sortearClima(derivarIndice(raiz, 'ambiente', i));",
-    para:"    const clima = M.sortearClima(derivarIndice(raiz, 'ambiente', 0));" },
+    de:"    const clima = M.sortearClima(derivarIndice(raiz, 'ambiente', i), tipos);",
+    para:"    const clima = M.sortearClima(derivarIndice(raiz, 'ambiente', 0), tipos);" },
 
   { id:'S35', arquivo:CLIMA, nome:'o clima é revelado antes de as apostas fecharem',
     real:'selo mostrado cedo demais — o apostador passa a ver o bônus antes de escolher',
@@ -306,19 +307,57 @@ const DEFEITOS = [
   { id:'S53', arquivo:BANCO, nome:'o boot deixa de reconciliar a carteira',
     real:'"o arquivo é nosso, confia" — e saldo adulterado entra sem ninguém ver',
     de:'  if (!rec.ok) reconstruir(w);', para:'' },
+
+  /* --- defeitos do F0.11: o canal de informação ------------------------- */
+  { id:'S54', arquivo:MOTOR, nome:'o clima deixa de ser filtrado pela pool',
+    real:'filtro removido por "a tabela já é a distribuição certa" — e volta a sair clima sem ninguém para buffar',
+    de:"  const elegiveis = tiposPresentes\n    ? tabela.filter(c => !c.type || tiposPresentes.has(c.type))\n    : tabela;",
+    para:'  const elegiveis = tabela;' },
+
+  { id:'S55', arquivo:PRECO, nome:'o preço deixa de condicionar o clima à pool',
+    real:'parâmetro esquecido — preço e luta voltam a ver distribuições diferentes',
+    de:"    const clima = M.sortearClima(derivarIndice(raiz, 'ambiente', i), tipos);",
+    para:"    const clima = M.sortearClima(derivarIndice(raiz, 'ambiente', i));" },
+
+  { id:'S56', arquivo:INFO, nome:'o apostador bayesiano recebe o clima real',
+    real:'atalho no teste — a medição passa a provar o oposto do que diz medir',
+    de:'    const post = posterior(tabela, pool);',
+    para:'    const post = CLIMAS.map(c => ({ key: c.key, p: c.key === climaReal.key ? 1 : 0 }));' },
 ];
 
-/* A sabotagem mede se a SUÍTE pega o defeito, então roda sem o portão de
-   navegador: ele custa ~40 s por execução e são duas execuções por defeito.
-   Defeito que escapa das duas é reexecutado COM o navegador, porque aí a
-   pergunta muda — não é mais "a suíte pega?", é "alguém pega?". */
-function rodar(semGolden, comVisual) {
+/* --- COMO A SABOTAGEM RODA, E POR QUE ASSIM -----------------------------
+ *
+ * Ela roda sem o portão de navegador: ele custa ~40 s por execução e são duas
+ * execuções por defeito. Defeito que escapa das duas é reexecutado COM o
+ * navegador, porque aí a pergunta muda — não é mais "a suíte pega?", é "alguém
+ * pega?".
+ *
+ * TRÊS COISAS QUE TIRARAM ESTE PORTÃO DE ~95 min:
+ *
+ * 1. PARADA ANTECIPADA (`PARAR_CEDO=1`). Aqui a pergunta é binária: a suíte
+ *    fica vermelha ou não. Rodar as dez suítes seguintes depois da primeira
+ *    falha é trabalho jogado fora, 56 vezes. As suítes também passaram a rodar
+ *    em ordem de CUSTO, da mais barata para a mais cara — um defeito que a
+ *    carteira pega custa 0,3 s em vez de 40 s.
+ *
+ * 2. SEGUNDA EXECUÇÃO POR DEDUÇÃO. A coluna "sem golden" existe para revelar
+ *    defeito que só o golden byte-exato pega. Mas se a suíte ficou vermelha por
+ *    uma suíte QUE NÃO É o golden, então rodar de novo sem o golden dá vermelho
+ *    de novo — é dedução, não estimativa. A segunda execução só acontece quando
+ *    quem pegou foi o golden.
+ *
+ * 3. EM PARALELO, uma caixa de areia por trabalhador. Nada disso enfraquece o
+ *    portão: as mesmas suítes rodam, com os mesmos dados, na mesma máquina.
+ */
+function rodar(caixa, semGolden, comVisual) {
   const env = { ...process.env,
+    PARAR_CEDO: comVisual ? '' : '1',
     ...(semGolden ? { SEM_GOLDEN: '1' } : {}),
     ...(comVisual ? {} : { SEM_VISUAL: '1' }) };
-  try { execFileSync('node', ['test/run.mjs'], { encoding:'utf8', stdio:'pipe', env, cwd:CAIXA });
-        return { vermelha:false, saida:'' }; }
-  catch (e) { return { vermelha:true, saida:(e.stdout||'') + (e.stderr||'') }; }
+  return new Promise(res => {
+    execFile('node', ['test/run.mjs'], { encoding:'utf8', env, cwd:caixa, maxBuffer: 32*1024*1024 },
+      (err, stdout, stderr) => res({ vermelha: !!err, saida: (stdout||'') + (stderr||'') }));
+  });
 }
 
 const suitesQuePegaram = saida => {
@@ -331,65 +370,89 @@ const suitesQuePegaram = saida => {
 };
 
 const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES, LIGACAO, PACK, VALID,
-                  SEMENTE, FASES, PRECO, CLIMA, EXPO, PAINEL, BOLSO, BANCO];
+                  SEMENTE, FASES, PRECO, CLIMA, EXPO, PAINEL, BOLSO, BANCO, INFO];
 const originais = new Map();
 for (const f of ARQUIVOS) originais.set(f, readFileSync(f, 'utf8'));
 
-/* A cópia leva tudo o que a suíte precisa e nada de .git. */
-const CAIXA = mkdtempSync(join(tmpdir(), 'pokearena-sabotagem-'));
-/* content/ entrou no F0.4 (o motor não roda sem pack) e tools/ carrega o
-   gerador do instantâneo que o teste de paridade executa. */
-for (const dir of ['engine', 'app', 'test', 'prototype', 'content', 'tools'])
-  cpSync(dir, join(CAIXA, dir), { recursive: true });
-cpSync('package.json', join(CAIXA, 'package.json'));
-console.log(`caixa de areia: ${CAIXA}\n`);
+/* Uma caixa por trabalhador. A árvore de trabalho fica intocada do começo ao
+   fim, e matar este processo a qualquer momento não deixa rastro. */
+const N_TRAB = Math.max(1, Math.min(cpus().length, 4));
+const CAIXAS = [];
+for (let i = 0; i < N_TRAB; i++) {
+  const c = mkdtempSync(join(tmpdir(), 'pokearena-sabotagem-'));
+  for (const dir of ['engine', 'app', 'test', 'prototype', 'content', 'tools'])
+    cpSync(dir, join(c, dir), { recursive: true });
+  cpSync('package.json', join(c, 'package.json'));
+  CAIXAS.push(c);
+}
+console.log(`${N_TRAB} caixa(s) de areia em ${tmpdir()}\n`);
 
 console.log('Q2 · SABOTAGEM\n');
-if (rodar(false, false).vermelha) { console.error('ABORTADO: a suíte já está vermelha.'); process.exit(2); }
+if ((await rodar(CAIXAS[0], false, false)).vermelha) {
+  console.error('ABORTADO: a suíte já está vermelha.'); process.exit(2);
+}
 console.log('linha de base: VERDE\n');
 
-
-const res = [];
-for (const d of DEFEITOS) {
+async function avaliar(d, caixa) {
   const src = originais.get(d.arquivo);
-  if (!src.includes(d.de)) { res.push({ ...d, status:'ÂNCORA PERDIDA', com:'-', sem:'-' }); continue; }
-  writeFileSync(join(CAIXA, d.arquivo), src.replace(d.de, d.para));
-  let comG = rodar(false, false);
-  let semG = rodar(true, false);
+  if (!src.includes(d.de)) return { ...d, status:'ÂNCORA PERDIDA', com:'-', sem:'-' };
+  const alvo = join(caixa, d.arquivo);
+  writeFileSync(alvo, src.replace(d.de, d.para));
+  try {
+    let comG = await rodar(caixa, false, false);
+    let pegouPor = comG.vermelha ? suitesQuePegaram(comG.saida) : [];
 
-  /* CONFIRMAÇÃO DO CASO SUSPEITO.
-     "Vermelho com golden, verde sem golden" é o sinal que este relatório existe
-     para dar — cobertura de propriedade fraca naquela área. Mas é TAMBÉM o que
-     uma falha transitória produz, e aí o relatório conta como captura algo que
-     ninguém pega. Aconteceu no F0.9 com o S35, que em caixa limpa passa nos
-     dois modos.
+    /* Dedução: vermelho por suíte que não é o golden => vermelho sem o golden
+       também. Só quando o golden é o único que pega é preciso confirmar. */
+    let semVermelha = comG.vermelha && pegouPor.some(n => n !== 'golden');
+    let semPor = pegouPor.filter(n => n !== 'golden');
+    let instavel = false;
 
-     Como o caso é raro, confirmar custa pouco: repete o par uma vez. Se a
-     repetição discordar, o defeito é marcado INSTÁVEL e NÃO conta como pego —
-     dúvida sobre cobertura tem que aparecer como dúvida. */
-  let instavel = false;
-  if (comG.vermelha && !semG.vermelha) {
-    const comG2 = rodar(false, false);
-    const semG2 = rodar(true, false);
-    if (comG2.vermelha !== comG.vermelha || semG2.vermelha !== semG.vermelha) {
-      instavel = true;
-      comG = comG2; semG = semG2;
+    if (comG.vermelha && !semVermelha) {
+      const semG = await rodar(caixa, true, false);
+      semVermelha = semG.vermelha;
+      semPor = semG.vermelha ? suitesQuePegaram(semG.saida) : [];
+      /* CONFIRMAÇÃO DO CASO SUSPEITO. "Vermelho com golden, verde sem" é o sinal
+         que este relatório existe para dar — e é TAMBÉM o que uma falha
+         transitória produz. Aconteceu no F0.9 com o S35, que em caixa limpa
+         passa nos dois modos. Como o caso é raro, confirmar custa pouco. */
+      if (!semG.vermelha) {
+        const comG2 = await rodar(caixa, false, false);
+        if (!comG2.vermelha) { instavel = true; comG = comG2; pegouPor = []; }
+      }
     }
-  }
 
-  let navegador = '';
-  if (!comG.vermelha) {              // escapou da suíte: o navegador pega?
-    const v = rodar(false, true);
-    navegador = v.vermelha ? 'só o navegador' : '';
+    let navegador = '';
+    if (!comG.vermelha) {
+      navegador = (await rodar(caixa, false, true)).vermelha ? 'só o navegador' : '';
+    }
+    return { ...d, instavel,
+      status: instavel ? 'INSTÁVEL' : (comG.vermelha || navegador ? 'PEGOU' : 'PASSOU'),
+      com: comG.vermelha ? pegouPor.join(',') : navegador,
+      sem: comG.vermelha ? (semVermelha ? semPor.join(',') : 'NADA') : navegador };
+  } finally {
+    writeFileSync(alvo, src);   // desfaz dentro da caixa
   }
-  writeFileSync(join(CAIXA, d.arquivo), src);   // desfaz dentro da caixa
-  res.push({ ...d, instavel,
-    status: instavel ? 'INSTÁVEL' : (comG.vermelha ? 'PEGOU' : (navegador ? 'PEGOU' : 'PASSOU')),
-    com: comG.vermelha ? suitesQuePegaram(comG.saida).join(',') : navegador,
-    sem: comG.vermelha ? (semG.vermelha ? suitesQuePegaram(semG.saida).join(',') : 'NADA') : navegador });
 }
 
-rmSync(CAIXA, { recursive:true, force:true });
+/* Fila simples: cada caixa puxa o próximo defeito quando termina o seu. */
+const fila = DEFEITOS.slice();
+const res = [];
+let feitos = 0;
+await Promise.all(CAIXAS.map(async caixa => {
+  for (;;) {
+    const d = fila.shift();
+    if (!d) return;
+    res.push(await avaliar(d, caixa));
+    process.stdout.write(`\r  ${++feitos}/${DEFEITOS.length} avaliados`);
+  }
+}));
+console.log('\n');
+/* A fila devolve fora de ordem; o relatório é lido por id. */
+const ordem = new Map(DEFEITOS.map((d, i) => [d.id, i]));
+res.sort((a, b) => ordem.get(a.id) - ordem.get(b.id));
+
+for (const c of CAIXAS) rmSync(c, { recursive:true, force:true });
 
 console.log('id   defeito                                 status    sem golden, pego por');
 console.log('─'.repeat(96));
@@ -417,4 +480,4 @@ if (instaveis.length) {
 if (escaparam.length) process.exit(1);
 console.log(`Q2 VERDE — ${DEFEITOS.length}/${DEFEITOS.length} detectados` +
             (soGolden.length ? `, mas ${soGolden.length} dependem do golden.` : ', nenhum dependente só do golden.'));
-console.log('caixa de areia removida; a árvore de trabalho não foi tocada.');
+console.log(`caixas de areia removidas; a árvore de trabalho não foi tocada.`);

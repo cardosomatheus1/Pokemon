@@ -184,6 +184,49 @@ portão rodar mais de uma vez antes de fechar bloco.
 
 ---
 
+## D-005 — o teste do relógio dependia da velocidade da máquina ✅ CORRIGIDO
+
+**Corrigido em:** F0.11
+**Encontrado por:** paralelizar a sabotagem — quatro execuções simultâneas
+**Gravidade:** falso alarme, e falso alarme é caro: ele desqualifica o portão
+
+### O que acontecia
+
+O teste `a raiz não sai do relógio`, escrito no F0.5, esperava a virada do
+milissegundo e então exigia **pelo menos 50 raízes tiradas dentro dele**:
+
+```js
+while (Date.now() === t0 && r.length < 2000) r.push(novaRaiz());
+ok(r.length >= 50, `só ${r.length} raízes num milissegundo inteiro`);
+```
+
+Com a máquina livre, cabiam milhares. Com quatro sabotagens em paralelo,
+cabiam **11** — e a suíte ficava vermelha com o código inteiramente correto.
+
+### Por que isso é defeito, e não rigor
+
+A propriedade afirmada é *"a raiz não sai do relógio"*. Quantas raízes cabem
+num milissegundo não é propriedade do gerador: é propriedade da CPU. O teste
+media a máquina e chamava aquilo de criptografia.
+
+E o custo é maior que uma falha isolada: a sabotagem interpreta vermelho como
+"o defeito plantado foi pego". Um teste que fica vermelho sozinho, sob carga,
+transforma o relatório inteiro em ruído — foi assim que o S35 apareceu como
+capturado no F0.9 sem o ser.
+
+### Correção
+
+A verificação passou a não ter orçamento de tempo. Tira 3.000 raízes anotando
+o instante de cada uma, e afirma duas coisas independentes:
+
+- raízes que compartilham o **mesmo instante lido** precisam ser diferentes;
+- raízes **seguidas** não podem ficar próximas em valor — menos de 1 % a uma
+  distância inferior a 2^16, contra ~0,003 % esperados por acaso.
+
+Nenhuma das duas depende de quantas cabem num milissegundo.
+
+---
+
 ## D-003 — o corte duro de tempo é suave ✅ CORRIGIDO
 
 **Corrigido em:** F0.6

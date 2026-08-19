@@ -37,8 +37,8 @@ const REPETICOES = 8;
 function poolDeReferencia(semente = 0xF07) {
   const raiz = derivar(semente, 'precisao');
   const s = sementes(raiz);
-  const clima = E.sortearClima(s.ambiente);
-  return { raiz, elenco: E.sortearPool(clima.type, s.elenco) };
+  const elenco = E.sortearPool(s.elenco);
+  return { raiz, elenco };
 }
 
 /* Oito cálculos INDEPENDENTES sobre a mesma pool: mesma entrada, sementes

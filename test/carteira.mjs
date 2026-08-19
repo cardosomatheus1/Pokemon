@@ -169,6 +169,31 @@ export function suite() {
        reconciliar(w).problemas.join('; '));
   });
 
+  /* O TESTE DA PEÇA, não do encaixe. O lote aleatório acima passa pela API
+     alta — `reservar` já recusa antes de tentar —, então remover a checagem de
+     negativo dentro de `lancar` não muda nada por aquele caminho. Foi o defeito
+     S49, que escapou por isso. A guarda precisa ser exercitada onde ela mora. */
+  s.teste('lançar direto nunca deixa bucket negativo', () => {
+    const w = comSaldo(100, 50, 0);
+    for (const [conta, bucket, delta] of [
+      ['disponivel', 'transferivel', -101], ['disponivel', 'bonus', -51],
+      ['reservado', 'transferivel', -1],    ['disponivel', 'competitivo', -1],
+      ['disponivel', 'pendente', -1],
+    ]) {
+      const antes = JSON.stringify({ d: w.disponivel, r: w.reservado });
+      const ledgerAntes = w.ledger.length;
+      const r = lancar(w, 'ADMIN_ADJUSTMENT', { [conta]: { [bucket]: delta } }, 'x');
+      ok(!r.ok, `${conta}.${bucket} aceitou ${delta} e ficaria negativo`);
+      igual(JSON.stringify({ d: w.disponivel, r: w.reservado }), antes,
+        `a recusa de ${conta}.${bucket} mexeu no saldo`);
+      igual(w.ledger.length, ledgerAntes, `a recusa de ${conta}.${bucket} gravou no ledger`);
+    }
+    /* e um lançamento que zera EXATAMENTE precisa passar — a borda é <= 0, não < 0 */
+    ok(lancar(w, 'ADMIN_ADJUSTMENT', { disponivel: { transferivel: -100 } }, 'x').ok,
+      'zerar um bucket foi recusado; a guarda é para negativo, não para zero');
+    igual(w.disponivel.transferivel, 0, 'o bucket não zerou');
+  });
+
   s.teste('reservar mais do que existe é recusado, e não deixa rastro', () => {
     const w = comSaldo(100, 0, 0);
     const antesLedger = w.ledger.length;

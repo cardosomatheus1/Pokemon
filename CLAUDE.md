@@ -100,7 +100,7 @@ explicitamente, para que a ausência seja decisão e não esquecimento.
 ```bash
 npm run portoes      # suíte com o portão de navegador + sabotagem
 npm test             # suíte (pula Q5 se não houver navegador)
-npm run sabotagem    # Q2 — leva ~35 min desde o F0.6
+npm run sabotagem    # Q2 — ~6 min em 4 cores desde o F0.11
 npm run test:gerar   # regrava fixtures E linha de base visual
 npm run snapshot     # regera o instantâneo do protótipo (paridade)
 ```

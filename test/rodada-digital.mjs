@@ -6,7 +6,7 @@
  * ambientes estaria comparando duas coisas escritas separadamente, e provaria
  * bem menos do que parece.
  */
-import { criarMotor } from '../engine/engine.mjs';
+import { criarMotor, tiposDaPool } from '../engine/engine.mjs';
 import { sementes } from '../engine/seed.mjs';
 import pack from '../content/pokemon_kanto_v1.mjs';
 
@@ -14,8 +14,10 @@ const E = criarMotor(pack);
 
 export function rodada(raiz) {
   const s = sementes(raiz);
-  const clima  = E.sortearClima(s.ambiente);
-  const elenco = E.sortearPool(clima.type, s.elenco);
+  /* Pool primeiro, clima depois (F0.11): a pool não conhece o clima, então não
+     carrega informação sobre ele. */
+  const elenco = E.sortearPool(s.elenco);
+  const clima  = E.sortearClima(s.ambiente, tiposDaPool(elenco));
   const batalha = E.simular(E.aplicarClima(elenco, clima), s.batalha, true);
   return { sementes: s, clima, elenco, batalha };
 }

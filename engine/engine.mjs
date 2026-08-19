@@ -404,12 +404,37 @@ function simular(chart, fighters, seed, record){
 }
 
 
-function sortearClima(tabela, seed){
+/* Sorteia o clima ENTRE OS QUE A POOL SUPORTA (F0.11).
+ *
+ * Antes era o contrário: sorteava-se o clima primeiro e a pool era obrigada a
+ * conter um lutador do tipo favorecido. A garantia funcionava, e vazava — ver
+ * um único lutador de Gelo entre 12 é evidência de Nevasca, e o clima só devia
+ * ser conhecido depois que as apostas fecham.
+ *
+ * Invertida a ordem, o vazamento não é reduzido: ele deixa de existir. A pool é
+ * sorteada sem saber do clima, então não carrega informação nenhuma sobre ele.
+ * E a garantia continua valendo — clima sem ninguém para buffar simplesmente
+ * não entra no sorteio.
+ *
+ * `tiposPresentes` ausente = tabela inteira, que é o comportamento para quem
+ * chama sem pool (testes de distribuição). */
+function sortearClima(tabela, seed, tiposPresentes){
+  const elegiveis = tiposPresentes
+    ? tabela.filter(c => !c.type || tiposPresentes.has(c.type))
+    : tabela;
+  const lista = elegiveis.length ? elegiveis : tabela.filter(c => !c.type);
   const R = rng(seed);
-  const total = tabela.reduce((s,w)=>s+w.w,0);
+  const total = lista.reduce((s,w)=>s+w.w,0);
   let roll = R() * total;
-  for (const w of tabela){ if (roll < w.w) return w; roll -= w.w; }
-  return tabela[0];
+  for (const w of lista){ if (roll < w.w) return w; roll -= w.w; }
+  return lista[0];
+}
+
+/* Os tipos presentes numa lista de lutadores já montada. */
+export function tiposDaPool(fighters){
+  const t = new Set();
+  for (const f of fighters) for (const x of f.types) t.add(x);
+  return t;
 }
 
 
@@ -429,28 +454,17 @@ function aplicarClima(fList, weather){
    dois embaralhamentos vinham de Math.random, e era isso que tornava a rodada
    irreconstituível: mesmo guardando a seed da batalha, ninguém remontava os 12
    que caíram na arena. */
-function sortearPool(pack, elenco, weatherType, sementeElenco){
+/* A pool NÃO conhece o clima (F0.11). Embaralha e corta, e mais nada.
+ *
+ * A versão anterior recebia o tipo favorecido e garantia um lutador dele na
+ * pool, o que fazia a pool carregar informação sobre um clima que só devia ser
+ * conhecido depois do fechamento das apostas. Quem garante agora é o sorteio do
+ * clima, que só considera os climas que a pool suporta. */
+function sortearPool(pack, elenco, sementeElenco){
   const R = rng(sementeElenco >>> 0);
   const src = elenco.slice();
   for (let i=src.length-1;i>0;i--){ const j = R()*(i+1)|0; [src[i],src[j]]=[src[j],src[i]]; }
-
-  let list;
-  if (weatherType){
-    const gi = src.findIndex(p => p.t.includes(weatherType));
-    if (gi === -1){
-      // validarPack garante que todo clima favorecido tem alguém do tipo
-      // no elenco; isto é a rede para o caso de o pack mudar em runtime
-      list = src.slice(0, CONF.ARENA_SIZE);
-    } else {
-      const guaranteed = src.splice(gi, 1)[0];
-      list = [guaranteed, ...src.slice(0, CONF.ARENA_SIZE - 1)];
-      // reembaralha pra o garantido não cair sempre na mesma posição
-      for (let i=list.length-1;i>0;i--){ const j = R()*(i+1)|0; [list[i],list[j]]=[list[j],list[i]]; }
-    }
-  } else {
-    list = src.slice(0, CONF.ARENA_SIZE);
-  }
-  return montarElenco(pack, list);
+  return montarElenco(pack, src.slice(0, CONF.ARENA_SIZE));
 }
 
 
@@ -475,8 +489,8 @@ function criarMotor(pack){
     simular:       (f, seed, gravar)   => simular(chart, f, seed, gravar),
     montarElenco:  (lista)             => montarElenco(pack, lista),
     atribuirGolpes:(esp)               => atribuirGolpes(pack.golpes, esp),
-    sortearPool:   (tipoClima, semente) => sortearPool(pack, elenco, tipoClima, semente),
-    sortearClima:  (seed)              => sortearClima(pack.clima, seed),
+    sortearPool:   (semente)            => sortearPool(pack, elenco, semente),
+    sortearClima:  (seed, tipos)       => sortearClima(pack.clima, seed, tipos),
     aplicarClima:  (lista, clima)      => aplicarClima(lista, clima),
     nomeExibido:   (slug)              => pack.nomeExibido(slug),
     slugExterno:   (slug)              => pack.slugExterno(slug),

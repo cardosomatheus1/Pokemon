@@ -1,107 +1,107 @@
 {
   "sims": 154000,
   "repeticoes": 8,
-  "msPorCalculo": 4571.0660815,
-  "dispersaoPior": 0.07444116406579504,
+  "msPorCalculo": 4746.63843775,
+  "dispersaoPior": 0.06587202007528228,
   "lutadorPior": "Dugtrio",
-  "erroPrevistoPior": 0.01845804089699865,
-  "margemEfetiva": 0.08004668065145348,
+  "erroPrevistoPior": 0.018536793660127247,
+  "margemEfetiva": 0.08009874307140386,
   "porLutador": [
     {
       "nome": "Dugtrio",
-      "min": 47.42,
-      "max": 50.95,
-      "dispersao": 0.07444116406579504,
-      "probMedia": 0.018710392696672986,
-      "erroPrevisto": 0.01845804089699865
-    },
-    {
-      "nome": "Cloyster",
-      "min": 10.15,
-      "max": 10.54,
-      "dispersao": 0.038423645320196924,
-      "probMedia": 0.08927226449887023,
-      "erroPrevisto": 0.008139475721999587
-    },
-    {
-      "nome": "Tangela",
-      "min": 21.79,
-      "max": 22.62,
-      "dispersao": 0.03809086737035346,
-      "probMedia": 0.04122568371295743,
-      "erroPrevisto": 0.012289541290153569
-    },
-    {
-      "nome": "Onix",
-      "min": 16.95,
-      "max": 17.51,
-      "dispersao": 0.03303834808259601,
-      "probMedia": 0.05338950860971872,
-      "erroPrevisto": 0.01073051840304078
-    },
-    {
-      "nome": "Farfetch'd",
-      "min": 21.97,
-      "max": 22.66,
-      "dispersao": 0.03140646335912614,
-      "probMedia": 0.0411161143287536,
-      "erroPrevisto": 0.012306563188283045
-    },
-    {
-      "nome": "Dodrio",
-      "min": 10.37,
-      "max": 10.66,
-      "dispersao": 0.027965284474445608,
-      "probMedia": 0.08713363244422513,
-      "erroPrevisto": 0.008248309794042476
-    },
-    {
-      "nome": "Arcanine",
-      "min": 7.84,
-      "max": 8.05,
-      "dispersao": 0.026785714285714395,
-      "probMedia": 0.1160591382489676,
-      "erroPrevisto": 0.007032656769677584
-    },
-    {
-      "nome": "Magmar",
-      "min": 11.2,
-      "max": 11.5,
-      "dispersao": 0.02678571428571435,
-      "probMedia": 0.08085571254187984,
-      "erroPrevisto": 0.008591856777967376
+      "min": 47.82,
+      "max": 50.97,
+      "dispersao": 0.06587202007528228,
+      "probMedia": 0.018553749058514923,
+      "erroPrevisto": 0.018536793660127247
     },
     {
       "nome": "Exeggutor",
-      "min": 11.71,
-      "max": 12.01,
-      "dispersao": 0.02561912894961562,
-      "probMedia": 0.07747367088278835,
-      "erroPrevisto": 0.008793584184925932
+      "min": 11.62,
+      "max": 12.15,
+      "dispersao": 0.04561101549053367,
+      "probMedia": 0.07727076461574423,
+      "erroPrevisto": 0.008806301596292443
     },
     {
-      "nome": "Snorlax",
-      "min": 5.79,
-      "max": 5.93,
-      "dispersao": 0.02417962003454226,
-      "probMedia": 0.1564926758953848,
-      "erroPrevisto": 0.005916233424725369
+      "nome": "Tangela",
+      "min": 22.08,
+      "max": 22.9,
+      "dispersao": 0.03713768115942031,
+      "probMedia": 0.04109988182739007,
+      "erroPrevisto": 0.012309121310539682
     },
     {
       "nome": "Alakazam",
-      "min": 11.95,
-      "max": 12.23,
-      "dispersao": 0.023430962343096332,
-      "probMedia": 0.07617182427343323,
-      "erroPrevisto": 0.0088745723170505
+      "min": 12.04,
+      "max": 12.43,
+      "dispersao": 0.03239202657807314,
+      "probMedia": 0.07574653273770876,
+      "erroPrevisto": 0.008901652125847252
+    },
+    {
+      "nome": "Farfetch'd",
+      "min": 22.25,
+      "max": 22.91,
+      "dispersao": 0.02966292134831461,
+      "probMedia": 0.04080445030257382,
+      "erroPrevisto": 0.012355244759796845
+    },
+    {
+      "nome": "Onix",
+      "min": 16.91,
+      "max": 17.41,
+      "dispersao": 0.02956830277942046,
+      "probMedia": 0.0537945095187388,
+      "erroPrevisto": 0.01068751093966775
+    },
+    {
+      "nome": "Arcanine",
+      "min": 7.81,
+      "max": 8.02,
+      "dispersao": 0.026888604353393082,
+      "probMedia": 0.11655828766589618,
+      "erroPrevisto": 0.007015611355119904
+    },
+    {
+      "nome": "Dodrio",
+      "min": 10.49,
+      "max": 10.72,
+      "dispersao": 0.021925643469971442,
+      "probMedia": 0.08694046567799912,
+      "erroPrevisto": 0.008258183221952643
+    },
+    {
+      "nome": "Cloyster",
+      "min": 10.2,
+      "max": 10.42,
+      "dispersao": 0.021568627450980458,
+      "probMedia": 0.08941916863621016,
+      "erroPrevisto": 0.008131912866799635
+    },
+    {
+      "nome": "Magmar",
+      "min": 11.22,
+      "max": 11.45,
+      "dispersao": 0.02049910873440273,
+      "probMedia": 0.0812168856972184,
+      "erroPrevisto": 0.008570998264355804
+    },
+    {
+      "nome": "Snorlax",
+      "min": 5.84,
+      "max": 5.95,
+      "dispersao": 0.01883561643835622,
+      "probMedia": 0.15634820663324936,
+      "erroPrevisto": 0.005919458709838123
     },
     {
       "nome": "Lapras",
-      "min": 5.62,
-      "max": 5.75,
-      "dispersao": 0.02313167259786475,
-      "probMedia": 0.1620993818663481,
-      "erroPrevisto": 0.005793672206507612
+      "min": 5.64,
+      "max": 5.71,
+      "dispersao": 0.012411347517730547,
+      "probMedia": 0.1622470976287562,
+      "erroPrevisto": 0.005790442305746062
     }
   ]
 }

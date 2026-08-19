@@ -329,9 +329,9 @@ por espécie (os 14 de 66 nunca atribuídos, do baseline do F0.1).
 > **Correção de registro:** este verbete nasceu com dono F1.3, por engano — F1.3
 > é autenticação real, não balanceamento. Corrigido no F0.6.
 
-### L-022 — a garantia de tipo na pool é um canal de informação sobre o clima
+### L-022 — a garantia de tipo na pool é um canal de informação sobre o clima ✅ FECHADA
 
-**Dono:** F0.11 · **Notada em:** F0.6
+**Fechada em:** F0.11 · **Notada em:** F0.6
 
 Depois do F0.6 a margem por grupo **observável** fecha em 8 %. Condicionada ao
 clima que de fato saiu, ela continua torta: **−45 % para quem foi buffado**
@@ -358,6 +358,17 @@ estimador vem primeiro**, e isso é o F0.7.
 passa a distinguir uma vantagem real de ruído, e o F0.11 — proposto no mesmo
 commit — decide entre tirar a garantia, sortear o clima depois da pool, ou
 condicionar o preço à mesma informação que o apostador tem.
+
+**Como fechou.** Escolhida a segunda opção: a pool é sorteada sem conhecer o
+clima, e o clima sai entre os que a pool suporta. Medido em 300 rodadas, a
+vantagem do apostador bayesiano foi de **+1,52 % ± 2,80** para
+**−0,83 % ± 0,86**, e as rodadas em que a informação mudava a aposta caíram de
+**108 para 12**.
+
+O canal não foi eliminado — foi **invertido e encolhido**. Uma pool sem Gelo
+agora diz que Nevasca é impossível. Qualquer acoplamento entre pool e clima
+vaza; zerar exigiria clima independente da pool, e aí o efeito climático
+simplesmente não aconteceria em parte das rodadas.
 
 ### L-023 — o viés de convexidade é medido, mas não corrigido
 

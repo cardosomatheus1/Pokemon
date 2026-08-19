@@ -14,6 +14,7 @@
  * F0.6 em clima dentro do modelo; mudar aqui agora misturaria dois blocos.
  */
 import { derivarIndice } from './seed.mjs';
+import { tiposDaPool } from './engine.mjs';
 
 /* Simula as batalhas de índice [de, ate) e acumula as vitórias.
  *
@@ -31,8 +32,13 @@ import { derivarIndice } from './seed.mjs';
  * O clima da luta real continua secreto até as apostas fecharem. O que muda é
  * que o preço passa a levar em conta que ELE EXISTE. */
 export function simularLote(M, fighters, raiz, de, ate, wins) {
+  /* A MESMA condicional da luta real (F0.11): o clima é sorteado entre os que
+     ESTA pool suporta. Sortear da tabela inteira aqui e da tabela condicionada
+     lá recriaria a divergência que o F0.6 fechou — preço e luta precisam ver a
+     mesma distribuição. */
+  const tipos = tiposDaPool(fighters);
   for (let i = de; i < ate; i++) {
-    const clima = M.sortearClima(derivarIndice(raiz, 'ambiente', i));
+    const clima = M.sortearClima(derivarIndice(raiz, 'ambiente', i), tipos);
     /* Clima sem tipo favorecido não muda ninguém; copiar 12 lutadores à toa
        custaria caro num laço de 20.000 voltas. */
     const f = clima.type ? M.aplicarClima(fighters, clima) : fighters;

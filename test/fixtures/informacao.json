@@ -1,0 +1,19 @@
+{
+  "rodadas": 300,
+  "simsPreco": 4000,
+  "simsPorClima": 2500,
+  "informado": {
+    "ev": 0.06617714968152866,
+    "ic95": 0.027391427990764352
+  },
+  "semInfo": {
+    "ev": 0.07452636677282377,
+    "ic95": 0.02757719188665507
+  },
+  "vantagem": {
+    "ev": -0.008349217091295116,
+    "ic95": 0.008632352493904665,
+    "rodadasEmQueMudou": 12
+  },
+  "confiancaMediaNoClimaCerto": 0.26610183517832847
+}

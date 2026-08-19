@@ -554,7 +554,7 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 
 ---
 
-### F0.11 — Vazamento de informação pela pool
+### F0.11 — Vazamento de informação pela pool ✅
 
 **Tam.** P · **Método** INV · **Portões** Q1 Q2 Q4 Q6 · **Depende de** F0.7
 
@@ -573,6 +573,30 @@ Medido em 400 rodadas, estratificando a margem pelo número de lutadores daquele
 **Q6:** informação é superfície. Testar que nenhum campo enviado ao cliente antes do fechamento das apostas permite reconstruir o clima.
 
 **Saída:** o EV do apostador informado medido e negativo, com o número publicado — e, se alguma opção de fechamento for adotada, os goldens regravados no mesmo commit.
+
+**Entregue.** Um apostador bayesiano completo: verossimilhança `P(contagem do tipo T | clima)` amostrada do próprio sorteio de pool, posterior por Bayes, escolha pelo maior valor esperado, e retorno medido contra a probabilidade de vitória sob o clima que **de fato** saiu.
+
+> **A primeira medição respondeu à pergunta errada, e descobrir isso foi metade do bloco.** O apostador informado deu **+21,4 %** de EV — e um apostador **cego**, que aposta no azarão sem olhar para nada, deu **+2,5 %**. Apostador cego não lucra contra uma casa com 8 % de margem: o que ele colhia era o **viés de convexidade do estimador** (L-023), que infla a odd do azarão e cresce com `1/(n·p²)`. Com amostra pequena ele domina tudo e afoga o efeito procurado.
+>
+> A medida certa é **pareada**: o mesmo apostador, com e sem o canal, sobre a mesma rodada e o mesmo preço. O viés entra igual nos dois lados e some na diferença.
+
+**Medido, 300 rodadas — antes e depois do fechamento:**
+
+| | esquema antigo | esquema novo |
+|---|---:|---:|
+| vantagem do apostador informado | +1,52 % ± 2,80 | **−0,83 % ± 0,86** |
+| rodadas em que ele mudou a aposta | 108 de 300 | **12 de 300** |
+| confiança do posterior no clima certo | 29,6 % | 26,5 % (acaso: 25,0 %) |
+
+**A decisão, e ela não foi a que a régua pedia.** Pelo critério do bloco, o esquema antigo já passava: `+1,52 % ± 2,80` cruza o zero, então a exploração não estava demonstrada. Mas intervalo largo não é segurança — é ausência de medida —, e o ponto estimado era positivo em 19 % da margem da casa. Como a v0.9 é uma versão que se tagueia e o F0.10 exige não tagueá-la com canal aberto, **o canal foi fechado**, pela opção (b) do próprio bloco.
+
+**Como fechou: a pool vem primeiro, e o clima depois.** Antes, sorteava-se o clima e a pool era obrigada a conter um lutador do tipo favorecido. Agora, sorteia-se a pool sem conhecer o clima, e o clima sai **entre os que a pool suporta**. A garantia continua valendo — clima sem ninguém para buffar não entra no sorteio.
+
+> **E o canal não foi eliminado: foi invertido, e encolhido.** Antes, ver um Gelo entre 12 era evidência de Nevasca; agora, uma pool **sem** Gelo diz que Nevasca é impossível. Qualquer acoplamento entre pool e clima vaza; o que muda é o tamanho. Zerar exigiria clima independente da pool — e aí Nevasca cairia numa rodada sem nenhum Gelo, com o efeito climático simplesmente não acontecendo. **O que decide não é o sinal, é o que ele faz com a aposta:** o sinal residual mudou a escolha em 12 de 300 rodadas, e nelas a vantagem foi negativa.
+
+> **A sabotagem paralela pagou por si três vezes.** Além de derrubar o portão de ~95 min para menos de 6, ela expôs: (a) um teste do F0.5 que exigia 50 raízes dentro de um milissegundo e ficava vermelho sob carga com o código certo — **D-005**; (b) `S49`, que remove a guarda de saldo negativo e escapava porque o lote aleatório passa pela API alta, que já recusa antes; (c) `S55`, que escapou de **duas** redes antes de cair — a margem estatística absorve a divergência, e conferir `sortearClima` direto testava a função certa pelo caminho errado. O que pegou foi comparar o lote real com uma referência condicionada escrita no teste.
+
+**Fixtures regravadas:** `margem.json` (a distribuição marginal de clima mudou, porque agora ela é condicionada à pool: diferença entre grupos de −0,44 para −0,64 pontos, ambas dentro do ruído) e `precisao.json` (a pool de referência mudou de composição: dispersão de 7,44 % para 6,59 %). **Goldens e baseline estatístico inalterados** — a mudança é de sorteio, não de batalha. A linha de base visual foi **restaurada** em vez de regravada: a interface não mudou, e regravar sem motivo é churn que esconde regressão.
 
 ---
 

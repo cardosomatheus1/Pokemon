@@ -6,6 +6,7 @@
 import { $, log } from './dom.mjs';
 import { APOSTA_MIN, emReais, registrarAposta, valorAposta } from './carteira.mjs';
 import { CONF, CUR, MOEDA, aplicarClima, sortearPool, rng, sortearClima, simular } from './motor.mjs';
+import { tiposDaPool } from '../../engine/engine.mjs';
 /* A árvore de sementes não passa pela ligação do motor: ela não depende de
    ContentPack nenhum. É infraestrutura, como o DOM. */
 import { derivar, novaRaiz, sementes } from '../../engine/seed.mjs';
@@ -76,8 +77,15 @@ async function newRound(){
      de a aposta abrir.                                              */
   S.seeds = sementes(novaRaiz());
 
-  S.weather = sortearClima(S.seeds.ambiente);
-  S.fighters = sortearPool(S.weather.type, S.seeds.elenco);
+  /* --- A POOL VEM PRIMEIRO, E O CLIMA DEPOIS (F0.11) -----------------
+     Era o contrário: sorteava-se o clima e a pool era obrigada a conter
+     um lutador do tipo favorecido. A garantia vazava — ver um único
+     lutador de Gelo entre 12 é evidência de Nevasca, e o clima só devia
+     ser conhecido depois que as apostas fecham. Invertida a ordem, a
+     pool não sabe do clima e não tem o que vazar; a garantia continua
+     valendo porque o clima é sorteado só entre os que a pool suporta. */
+  S.fighters = sortearPool(S.seeds.elenco);
+  S.weather = sortearClima(S.seeds.ambiente, tiposDaPool(S.fighters));
 
   overlay.classList.remove('hide');
   overlay.innerHTML = `<div class="banner">calculando odds…</div>`;

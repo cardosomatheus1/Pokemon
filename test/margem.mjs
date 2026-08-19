@@ -21,9 +21,10 @@
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import * as E from './motor.mjs';
+import { tiposDaPool } from '../engine/engine.mjs';
 import { derivar, derivarIndice, sementes } from '../engine/seed.mjs';
 import { precificar, simularLote } from '../engine/preco.mjs';
-import { criarSuite, ok } from './harness.mjs';
+import { criarSuite, ok, igual } from './harness.mjs';
 
 const ARQ = new URL('./fixtures/margem.json', import.meta.url);
 
@@ -44,8 +45,8 @@ export function medir(rodadas = RODADAS, sims = SIMS, verdade = VERDADE, semente
   for (let r = 0; r < rodadas; r++) {
     const raiz = derivar(semente, 'rodada' + r);
     const s = sementes(raiz);
-    const clima  = E.sortearClima(s.ambiente);
-    const elenco = E.sortearPool(clima.type, s.elenco);
+    const elenco = E.sortearPool(s.elenco);
+    const clima  = E.sortearClima(s.ambiente, tiposDaPool(elenco));
 
     /* o preço que o jogador vê */
     const wins = new Uint32Array(elenco.length);
@@ -88,24 +89,30 @@ export function gerar() {
 
 export function suite() {
   const s = criarSuite('margem');
-  const m = medir();
+  /* PREGUIÇOSO DE PROPÓSITO. Antes a medição rodava ao CONSTRUIR a suíte, e
+     construir a suíte acontece antes de qualquer teste correr — então os 13 s
+     deste lote eram pagos mesmo quando a execução parava na primeira falha, lá
+     na segunda suíte. Com a sabotagem rodando a suíte 112 vezes, isso sozinho
+     custava 24 minutos de trabalho jogado fora. */
+  let medido = null;
+  const M = () => (medido ??= medir());
 
   s.teste('a diferença entre grupos de tipo cabe no ruído', () => {
     /* Soma dos dois intervalos: se a diferença medida cabe nela, os dois grupos
        são indistinguíveis com esta amostra. Antes da correção a diferença era
        de 15,58 pontos contra um ruído de ~3 — não cabia nem de longe. */
-    const ruido = m.buffavel.ic95 + m.neutro.ic95;
-    ok(Math.abs(m.diferenca) <= ruido,
-      `buffável ${(m.buffavel.margem*100).toFixed(2)}% ± ${(m.buffavel.ic95*100).toFixed(2)}, ` +
-      `resto ${(m.neutro.margem*100).toFixed(2)}% ± ${(m.neutro.ic95*100).toFixed(2)}: ` +
-      `diferença de ${(m.diferenca*100).toFixed(2)} pontos contra ruído de ${(ruido*100).toFixed(2)}. ` +
+    const ruido = M().buffavel.ic95 + M().neutro.ic95;
+    ok(Math.abs(M().diferenca) <= ruido,
+      `buffável ${(M().buffavel.margem*100).toFixed(2)}% ± ${(M().buffavel.ic95*100).toFixed(2)}, ` +
+      `resto ${(M().neutro.margem*100).toFixed(2)}% ± ${(M().neutro.ic95*100).toFixed(2)}: ` +
+      `diferença de ${(M().diferenca*100).toFixed(2)} pontos contra ruído de ${(ruido*100).toFixed(2)}. ` +
       `O clima voltou a ficar fora do preço?`);
   });
 
   s.teste('nenhum grupo de tipo tem margem negativa', () => {
     for (const g of ['buffavel', 'neutro'])
-      ok(m[g].margem + m[g].ic95 > 0,
-        `o grupo ${g} tem margem ${(m[g].margem*100).toFixed(2)}% ± ${(m[g].ic95*100).toFixed(2)} — ` +
+      ok(M()[g].margem + M()[g].ic95 > 0,
+        `o grupo ${g} tem margem ${(M()[g].margem*100).toFixed(2)}% ± ${(M()[g].ic95*100).toFixed(2)} — ` +
         `a casa paga para aceitar essas apostas`);
   });
 
@@ -115,8 +122,8 @@ export function suite() {
        margem realizada fica sistematicamente ABAIXO da configurada. É o viés
        de Jensen, medido em +19,22 % no pior lutador com 20.000 simulações, e
        corrigi-lo é escopo do F0.7 — não deste bloco. */
-    ok(Math.abs(m.geral.margem - alvo) <= m.geral.ic95 + 0.03,
-      `margem geral ${(m.geral.margem*100).toFixed(2)}% ± ${(m.geral.ic95*100).toFixed(2)} ` +
+    ok(Math.abs(M().geral.margem - alvo) <= M().geral.ic95 + 0.03,
+      `margem geral ${(M().geral.margem*100).toFixed(2)}% ± ${(M().geral.ic95*100).toFixed(2)} ` +
       `contra ${(alvo*100).toFixed(0)}% configurados`);
   });
 
@@ -127,8 +134,8 @@ export function suite() {
        DIFIRAM. Um preço que ignora o clima é indistinguível do de antes. */
     const raiz = derivar(0xF06, 'controle');
     const s0 = sementes(raiz);
-    const clima = E.sortearClima(s0.ambiente);
-    const elenco = E.sortearPool(clima.type, s0.elenco);
+    const elenco = E.sortearPool(s0.elenco);
+    const clima = E.sortearClima(s0.ambiente, tiposDaPool(elenco));
     const comClima = new Uint32Array(elenco.length);
     simularLote(E, elenco, raiz, 0, 1500, comClima);
     const semClima = new Uint32Array(elenco.length);
@@ -141,14 +148,56 @@ export function suite() {
       'o sorteio de clima do Monte Carlo sumiu');
   });
 
+  /* S55 escapou de duas redes antes desta, e o motivo de cada escape ensina
+     onde o teste tinha que estar.
+     · A margem estatística absorve a divergência: ela só aparece em pools às
+       quais falta um tipo buffável, e a tolerância engole.
+     · Conferir `sortearClima(semente, tipos)` direto não serve: o defeito está
+       em `simularLote` ESQUECER de passar `tipos`, e o teste passava `tipos`
+       ele mesmo. Testava a função certa pelo caminho errado.
+
+     O que prova é comparar o lote real com uma REFERÊNCIA condicionada,
+     escrita aqui. Mesmas sub-seeds, mesma pool: os placares têm que bater
+     exatamente. E é preciso uma pool à qual FALTE um tipo buffável, senão
+     condicionar e não condicionar dão a mesma coisa e o teste é vazio. */
+  s.teste('o lote de preço sorteia clima condicionado à pool', () => {
+    const TIPOS_BUFF = [...TIPOS_BUFFAVEIS];
+    let achou = null;
+    for (let r = 0; r < 400 && !achou; r++) {
+      const semente = derivar(0xF06, 'pool-incompleta' + r);
+      const elenco = E.sortearPool(semente);
+      const tipos = tiposDaPool(elenco);
+      if (TIPOS_BUFF.some(t => !tipos.has(t))) achou = { semente, elenco, tipos };
+    }
+    ok(achou, 'nenhuma pool sem algum tipo buffável em 400 sorteios — o teste ficaria vazio');
+    const { elenco, tipos } = achou;
+    const raiz = derivar(0xF06, 'lote-condicionado');
+
+    const real = new Uint32Array(elenco.length);
+    simularLote(E.M, elenco, raiz, 0, 600, real);
+
+    /* referência: exatamente o que simularLote deve fazer */
+    const ref = new Uint32Array(elenco.length);
+    for (let i = 0; i < 600; i++) {
+      const c = E.sortearClima(derivarIndice(raiz, 'ambiente', i), tipos);
+      const lista = c.type ? E.aplicarClima(elenco, c) : elenco;
+      const w = E.simular(lista, derivarIndice(raiz, 'simulacao', i), false);
+      if (w >= 0) ref[w]++;
+    }
+    igual(real.join(','), ref.join(','),
+      `o lote de preço divergiu da referência condicionada numa pool sem ` +
+      `${TIPOS_BUFF.filter(t => !tipos.has(t)).join('/')}. Preço e luta voltaram a ` +
+      `ver distribuições de clima diferentes — é o defeito que o F0.6 fechou.`);
+  });
+
   s.teste('a medição arquivada continua de pé', () => {
     ok(existsSync(ARQ), 'fixtures/margem.json não existe — rode npm run test:gerar');
     const base = JSON.parse(readFileSync(ARQ, 'utf8'));
     ok(Math.abs(base.diferenca) < 0.04,
       `a medição arquivada tem diferença de ${(base.diferenca*100).toFixed(2)} pontos entre grupos`);
-    ok(Math.abs(m.diferenca - base.diferenca) < 0.06,
+    ok(Math.abs(M().diferenca - base.diferenca) < 0.06,
       `a diferença entre grupos saiu de ${(base.diferenca*100).toFixed(2)} para ` +
-      `${(m.diferenca*100).toFixed(2)} pontos desde a última gravação`);
+      `${(M().diferenca*100).toFixed(2)} pontos desde a última gravação`);
   });
 
   return s;

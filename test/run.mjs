@@ -17,6 +17,7 @@ import * as precisao from './precisao.mjs';
 import * as exposicao from './exposicao.mjs';
 import * as carteira from './carteira.mjs';
 import * as banco from './banco.mjs';
+import * as informacao from './informacao.mjs';
 import * as visual from './visual.mjs';
 
 if (process.argv.includes('--gerar')) {
@@ -25,10 +26,14 @@ if (process.argv.includes('--gerar')) {
   const b = estatistica.gerar();
   const mg = margem.gerar();
   const pr = precisao.gerar();
+  const inf = informacao.gerar();
   console.log(`  golden: ${g.length} rodadas`);
   console.log(`  precisão: ${pr.sims} sims x ${pr.repeticoes} cálculos · ` +
               `${(pr.msPorCalculo/1000).toFixed(2)}s cada · erro previsto do pior ` +
               `${(pr.erroPrevistoPior*100).toFixed(2)}% · dispersão ${(pr.dispersaoPior*100).toFixed(2)}%`);
+  console.log(`  informação: ${inf.rodadas} rodadas · vantagem do apostador informado ` +
+              `${(inf.vantagem.ev*100).toFixed(2)}% ± ${(inf.vantagem.ic95*100).toFixed(2)} · ` +
+              `mudou a aposta em ${inf.vantagem.rodadasEmQueMudou} rodadas`);
   console.log(`  margem: ${mg.rodadas} rodadas x ${mg.sims} sims · buffável ${(mg.buffavel.margem*100).toFixed(2)}% · ` +
               `resto ${(mg.neutro.margem*100).toFixed(2)}% · diferença ${(mg.diferenca*100).toFixed(2)} pontos`);
   console.log(`  baseline: ${b.rodadas} rodadas · duração média ${b.duracaoMedia.toFixed(2)}s · ` +
@@ -64,22 +69,43 @@ if (visual.disponivel() && !semVisual) {
 else if (exigeVisual && !semVisual) { console.error('\nQ5 indisponível: instale playwright-core (ver tools/README.md)'); process.exit(2); }
 else console.log('  · Q5 visual pulado (sem navegador) — use npm run portoes para exigir\n');
 
+/* PARAR_CEDO=1 encerra na primeira suíte que falhar.
+ *
+ * Serve à sabotagem, e só a ela: lá a pergunta é binária — "a suíte fica
+ * vermelha?" — e rodar as outras dez depois da primeira falha é trabalho
+ * jogado fora, 56 vezes. Numa execução normal a lista inteira de falhas é o
+ * que interessa, então o modo fica desligado por padrão.
+ *
+ * A ORDEM ABAIXO É POR CUSTO, do mais barato para o mais caro. Medido:
+ * golden 0,07 s, conteudo 0,14 s, carteira 0,16 s, exposicao 0,26 s,
+ * semente 0,6 s, estatistica 0,8 s, precisao 1,9 s, invariantes 4,1 s,
+ * informacao 12,9 s, margem 13,2 s. Com parada antecipada, um defeito que a
+ * carteira pega custa 0,3 s em vez de 40 s. Isso não enfraquece nada: as
+ * mesmas suítes rodam, na mesma máquina, com os mesmos dados. */
+const pararCedo = process.env.PARAR_CEDO === '1';
+
 const suites = [
   ...(semGolden ? [] : [golden.suite()]),
-  invariantes.suite(), estatistica.suite(),
-  fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(), semente.suite(), margem.suite(), precisao.suite(), exposicao.suite(), carteira.suite(), banco.suite(),
+  /* baratas: varredura de texto e lotes pequenos */
+  fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(),
+  carteira.suite(), banco.suite(), exposicao.suite(),
+  /* médias: lotes de simulação curtos */
+  semente.suite(), estatistica.suite(), precisao.suite(), invariantes.suite(),
   ...(visual.disponivel() && !semVisual
      ? [visual.suite(rVisual), visual.suiteBase(baseAtual, baseGravada),
         visual.suiteAmbientes(digitaisNav, RAIZES_Q3), visual.suiteRodadaViva(rVisual)]
-     : []), await paridade.suite(),
+     : []),
+  await paridade.suite(),
+  /* caras: medições estatísticas grandes, por último de propósito */
+  informacao.suite(), margem.suite(),
 ];
 let total = 0, falhas = [];
 for (const s of suites) {
-  process.stdout.write(`${s.rodar ? '' : ''}`);
   const r = await s.rodar();
   total += r.total;
   falhas.push(...r.falhas.map(f => ({ ...f, suite: r.nome })));
   console.log(`  ${r.nome}: ${r.total - r.falhas.length}/${r.total}`);
+  if (pararCedo && r.falhas.length) { console.log('  · parada antecipada (PARAR_CEDO=1)'); break; }
 }
 console.log('');
 if (falhas.length) {

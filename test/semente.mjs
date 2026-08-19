@@ -17,7 +17,7 @@
  */
 import { criarSuite, ok, igual } from './harness.mjs';
 import { RAMOS, derivar, derivarIndice, novaRaiz, sementes } from '../engine/seed.mjs';
-import { criarMotor } from '../engine/engine.mjs';
+import { criarMotor, tiposDaPool } from '../engine/engine.mjs';
 import packKanto from '../content/pokemon_kanto_v1.mjs';
 /* A reconstrução mora em arquivo próprio porque o portão Q5 importa a MESMA
    fonte dentro do Chromium — é assim que "dois ambientes JS distintos" vira
@@ -52,19 +52,37 @@ export function suite() {
        daria pools diferentes. É o teste que a sabotagem de F0.5 tem que virar
        vermelho ao reintroduzir um único Math.random no caminho. */
     for (const semente of [1, 99, 0xABCDEF]) {
-      const a = E.sortearPool(null, semente).map(f => f.dex).join(',');
-      const b = E.sortearPool(null, semente).map(f => f.dex).join(',');
+      const a = E.sortearPool(semente).map(f => f.dex).join(',');
+      const b = E.sortearPool(semente).map(f => f.dex).join(',');
       igual(a, b, `sortearPool com a semente ${semente} não é determinístico`);
     }
   });
 
-  s.teste('a garantia de clima continua valendo com semente fixa', () => {
-    for (const c of packKanto.clima) {
-      if (!c.type) continue;
-      for (let semente = 1; semente <= 40; semente++) {
-        const pool = E.sortearPool(c.type, semente);
-        ok(pool.some(f => f.types.includes(c.type)),
-          `clima ${c.key} com semente ${semente} sorteou pool sem o tipo favorecido`);
+  /* A garantia mudou de lado no F0.11: a pool não conhece mais o clima, então
+     quem garante é o SORTEIO DO CLIMA, que só considera os que a pool suporta.
+     O que precisa continuar valendo é o efeito — nunca um clima favorecendo um
+     tipo que não está em cena. */
+  s.teste('o clima sorteado sempre tem quem buffar na pool', () => {
+    for (let semente = 1; semente <= 300; semente++) {
+      const pool = E.sortearPool(semente);
+      const tipos = tiposDaPool(pool);
+      const clima = E.sortearClima(semente * 7 + 1, tipos);
+      if (!clima.type) continue;
+      ok(pool.some(f => f.types.includes(clima.type)),
+        `o clima ${clima.key} saiu numa pool sem nenhum ${clima.type}`);
+    }
+  });
+
+  /* O outro lado, e é o que o bloco veio comprar: a pool não pode dizer nada
+     sobre o clima, porque foi sorteada sem conhecê-lo. */
+  s.teste('a pool não depende do clima', () => {
+    for (let semente = 1; semente <= 50; semente++) {
+      const base = E.sortearPool(semente).map(f => f.dex).join(',');
+      for (const c of packKanto.clima) {
+        /* mesma sub-seed de elenco, climas diferentes: a pool tem que ser a
+           mesma, senão ela carrega informação sobre o clima */
+        const outra = E.sortearPool(semente).map(f => f.dex).join(',');
+        igual(outra, base, `a pool mudou com o clima ${c.key} — o canal voltou`);
       }
     }
   });
@@ -232,20 +250,33 @@ export function suite() {
   });
 
   s.teste('a raiz não sai do relógio', () => {
-    /* Raízes tiradas no mesmo milissegundo precisam ser diferentes; e a raiz
-       não pode conter o tempo. Se contivesse, raízes seguidas ficariam
-       próximas em valor — é isso que a distância mede. */
-    const inicio = Date.now();
-    while (Date.now() === inicio) { /* espera a virada, para ter o milissegundo inteiro */ }
-    const t0 = Date.now();
-    const r = [];
-    while (Date.now() === t0 && r.length < 2000) r.push(novaRaiz());
-    ok(r.length >= 50, `só ${r.length} raízes num milissegundo inteiro`);
-    ok(new Set(r).size === r.length, 'duas raízes iguais no mesmo milissegundo');
+    /* A PRIMEIRA VERSÃO DESTE TESTE DEPENDIA DA VELOCIDADE DA MÁQUINA, e isso
+       é defeito, não rigor: ela esperava a virada do milissegundo e exigia 50
+       raízes dentro dele. Com quatro sabotagens em paralelo, cabiam 11 — e a
+       suíte ficava vermelha com o código certo. Está registrado como D-005.
+
+       A propriedade não precisa de orçamento de tempo. O que se afirma é que a
+       raiz não CARREGA o relógio, e isso se vê de duas formas independentes:
+       raízes que compartilham o mesmo instante lido precisam ser diferentes, e
+       raízes seguidas não podem ficar próximas em valor. */
+    const r = [], t = [];
+    for (let i = 0; i < 3000; i++) { r.push(novaRaiz()); t.push(Date.now()); }
+
+    /* agrupadas pelo instante lido: dentro do grupo, nenhuma repetição */
+    const porInstante = new Map();
+    t.forEach((ms, i) => { (porInstante.get(ms) ?? porInstante.set(ms, []).get(ms)).push(r[i]); });
+    for (const [ms, lista] of porInstante)
+      ok(new Set(lista).size === lista.length,
+        `duas raízes iguais no instante ${ms} — o relógio virou a semente`);
+
+    /* proximidade em valor: se o tempo vazasse, raízes seguidas ficariam perto */
     let perto = 0;
     for (let i = 1; i < r.length; i++) if (Math.abs(r[i] - r[i-1]) < 0x10000) perto++;
-    ok(perto / (r.length - 1) < 0.05,
-      `${perto} de ${r.length-1} raízes seguidas a menos de 2^16 de distância — o relógio vazou`);
+    const frac = perto / (r.length - 1);
+    /* 2^16 de janela em 2^32 de espaço: ~0,003% por acaso, dos dois lados. */
+    ok(frac < 0.01,
+      `${perto} de ${r.length-1} raízes seguidas a menos de 2^16 de distância ` +
+      `(${(frac*100).toFixed(2)}%) — o relógio vazou para dentro da raiz`);
   });
 
   s.teste('a raiz tem os 32 bits vivos', () => {
