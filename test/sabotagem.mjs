@@ -49,6 +49,8 @@ const SEMENTE= 'engine/seed.mjs';
 const FASES  = 'app/modules/fases.mjs';
 const PRECO  = 'engine/preco.mjs';
 const CLIMA  = 'app/modules/clima.mjs';
+const EXPO   = 'engine/exposicao.mjs';
+const PAINEL = 'app/modules/odds.mjs';
 
 const DEFEITOS = [
   /* Desde o F0.4 a tabela de tipos é DADO DO PACK, não do motor. O defeito é o
@@ -245,6 +247,35 @@ const DEFEITOS = [
   { id:'S41', arquivo:MOTOR, nome:'volta um teto de odd, sem aparecer na interface',
     real:'"limita o passivo" — e transforma 8% de margem em 68% no azarão, calado',
     de:'  ODD_MAX:      null,', para:'  ODD_MAX:      20,  ' },
+
+  /* --- defeitos do F0.8: os tetos de exposição -------------------------- */
+  { id:'S42', arquivo:EXPO, nome:'o teto por ticket é afrouxado em 1',
+    real:'"um a mais não faz diferença" — o clássico erro de limite, e o passivo estoura',
+    de:'  if (valor <= limite)', para:'  if (valor <= limite + 1)' },
+
+  { id:'S43', arquivo:EXPO, nome:'a confirmação deixa de reconferir o passivo',
+    real:'"a avaliação já checou" — e duas confirmações no último instante furam o teto',
+    de:'  if (passivo[idx] + payout > passivo.teto) return false;', para:'' },
+
+  { id:'S44', arquivo:EXPO, nome:'o corte vira recusa silenciosa',
+    real:'mensagem esvaziada numa limpeza — o jogador vê a aposta encolher sem saber por quê',
+    de:'  return { aceito: true, valor: limite, cortado: true, motivo, mensagem, limite };',
+    para:"  return { aceito: true, valor: limite, cortado: false, motivo, mensagem: '', limite };" },
+
+  { id:'S45', arquivo:PRECO, nome:'o stake máximo é arredondado para cima',
+    real:'"floor perde centavos" — e cada ticket passa alguns PC do teto',
+    de:'      stakeMax: Math.floor(M.CONF.MAX_PAYOUT_POR_TICKET / (+comTeto.toFixed(2))),',
+    para:'      stakeMax: Math.ceil(M.CONF.MAX_PAYOUT_POR_TICKET / (+comTeto.toFixed(2))),' },
+
+  { id:'S46', arquivo:EXPO, nome:'o passivo da rodada vira soma em vez de pior caso',
+    real:'"somar é mais conservador" — fecha mercado sem necessidade e mede risco errado',
+    de:'  let pior = 0;\n  for (const v of passivo) if (v > pior) pior = v;\n  return pior;',
+    para:'  let soma = 0;\n  for (const v of passivo) soma += v;\n  return soma;' },
+
+  { id:'S47', arquivo:PAINEL, nome:'o limite some da lista de apostas',
+    real:'coluna removida por "poluir a tela" — e o teto passa a existir só na recusa',
+    de:"      <span class=\"lim tiny\">${fechado ? 'mercado fechado'\n        : `até ${CUR} ${cabe.toLocaleString('pt-BR')}`}</span>\n",
+    para:'' },
 ];
 
 /* A sabotagem mede se a SUÍTE pega o defeito, então roda sem o portão de
@@ -270,7 +301,7 @@ const suitesQuePegaram = saida => {
 };
 
 const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES, LIGACAO, PACK, VALID,
-                  SEMENTE, FASES, PRECO, CLIMA];
+                  SEMENTE, FASES, PRECO, CLIMA, EXPO, PAINEL];
 const originais = new Map();
 for (const f of ARQUIVOS) originais.set(f, readFileSync(f, 'utf8'));
 

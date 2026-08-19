@@ -19,7 +19,7 @@ const ESPERADO = [
   /* F0.5: a árvore de sementes, num campo só. Justificativa no próprio
      estado.mjs — reatribuída por rodada, lida por precificação, montagem e
      batalha. */
-  'seeds',
+  'seeds','passivo',
   'state','clock','battleT','fighters','odds','battle','evPtr','champ','weather','released',
   'shake','ents',
   'bal','chipVal','myBet',
@@ -56,17 +56,17 @@ export function suite() {
       ok(!mod.includes(proibido),
         `estado.mjs referencia ${proibido} — deixa de ser inerte e passa a impor ordem de carga`);
     }
-    ok(S.bal === 0 && S.profile === null && S.seeds === null,
+    ok(S.bal === 0 && S.profile === null && S.seeds === null && S.passivo === null,
       'campos que dependem de função precisam nascer inertes e ser preenchidos no boot');
   });
 
   s.teste('a superfície compartilhada não cresceu', () => {
-    /* O teto continua em 20 depois do F0.5, e isso não foi sorte: `seeds`
-       entrou e `moveRng` saiu. A árvore de sementes é UM campo (raiz e cinco
-       ramos juntos), e o PRNG da coreografia deixou de ser estado
-       compartilhado — virou fluxo com dono, em sorte.mjs. Trocar um campo por
-       outro é o resultado que se espera de um bloco; crescer não é. */
-    ok(ESPERADO.length <= 20,
+    /* O teto ficou em 20 no F0.5 — `seeds` entrou e `moveRng` saiu — e subiu
+       para 21 no F0.8, com `passivo`. A entrada é obrigatória e não tinha como
+       ficar local: a aposta ESCREVE o passivo e a interface LÊ, duas fronteiras
+       diferentes, e em módulo ES não se atribui a binding importado. Subir o
+       teto é decisão, e ela fica escrita aqui. */
+    ok(ESPERADO.length <= 21,
       `a superfície tem ${ESPERADO.length} campos. Cada entrada precisa ser REATRIBUÍDA por ` +
       `mais de um módulo — mutação de conteúdo (push num array const) atravessa binding ` +
       `importado e não justifica entrar aqui.`);

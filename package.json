@@ -1,6 +1,6 @@
 {
   "name": "pokearena",
-  "version": "0.9.0-F0.7",
+  "version": "0.9.0-F0.8",
   "private": true,
   "type": "module",
   "description": "PokéArena — battle royale de apostas com moeda simulada",

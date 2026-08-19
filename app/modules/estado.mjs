@@ -29,6 +29,10 @@ export const S = {
   battleT:  0,        // relógio do replay
   fighters: [],       // elenco da rodada, com stats já calculados
   odds:     null,     // registro de precificação da rodada (Spec §4.4.5)
+  /* Passivo por lutador nesta rodada — quanto a casa paga se cada um vencer.
+     Entra em `S` porque a aposta escreve e a interface lê: duas fronteiras.
+     Zerado a cada rodada, porque o teto do §4.4.6 é por rodada. */
+  passivo:  null,
   battle:   null,     // {winner, events, duration}
   evPtr:    0,        // ponteiro de leitura da linha do tempo
   champ:    -1,

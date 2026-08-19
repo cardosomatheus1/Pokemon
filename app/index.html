@@ -243,6 +243,11 @@ body{
 .pick img{width:22px;height:22px;object-fit:contain;image-rendering:pixelated}
 .pick .n{flex:1}
 .pick .o{font-family:var(--px);font-size:8px;color:var(--gold)}
+/* Teto de exposição (§4.4.6): o stake máximo daquele lutador fica visível ANTES
+   da aposta, e mercado fechado se anuncia. Rejeição silenciosa reprova o F0.8. */
+.pick .lim{color:var(--dim);min-width:74px;text-align:right}
+.pick.fechado{opacity:.55;cursor:not-allowed}
+.pick.fechado .lim{color:var(--red)}
 
 #count{font-family:var(--px);font-size:52px;color:#fff;text-shadow:4px 4px 0 #3b4cca}
 #count.go{font-size:26px;color:var(--gold);text-shadow:3px 3px 0 #b3300f}

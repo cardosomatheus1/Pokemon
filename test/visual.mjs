@@ -261,6 +261,33 @@ export async function rodar() {
   /* click() do Playwright checa "acionabilidade" e falha se o overlay de
      apostas cobrir o botão. O portão quer disparar o caminho do jogador, não
      testar hit-testing — então dispara direto no elemento. */
+  /* --- Q5 do F0.8: o corte precisa APARECER -------------------------------
+     O §4.4.6 é explícito: *"a UI mostra o stake máximo disponível para aquele
+     lutador e o motivo — nunca rejeita silenciosamente"*. Teste de unidade
+     confere o texto da mensagem; só o navegador confere que ela chega à tela.
+
+     O roteiro é o do jogador: enche a carteira, escolhe "max", clica no
+     azarão — aquele cuja odd faz o payout estourar o teto de 50.000 — e lê o
+     que apareceu.                                                          */
+  const corte = await pg.evaluate(async () => {
+    const { S } = await import('/app/modules/estado.mjs');
+    if (!S.odds || !S.passivo) return { erro: 'rodada sem preço' };
+    const azarao = S.odds.lutadores.reduce((a, b) => (b.odd > a.odd ? b : a));
+    const preciso = azarao.stakeMax * 4;
+    S.bal = preciso + 1000;
+    S.chipVal = preciso;
+    const linha = document.querySelector(`.pick[data-i="${azarao.idx}"]`);
+    if (!linha) return { erro: 'lista de apostas sem o azarão' };
+    linha.click();
+    return {
+      idx: azarao.idx, odd: azarao.odd, stakeMax: azarao.stakeMax, pedido: preciso,
+      aviso: document.querySelector('#avisoCorte')?.textContent ?? '',
+      painel: document.querySelector('#betInfo')?.textContent ?? '',
+      limiteNaLista: document.querySelector(`.pick[data-i="${azarao.idx}"] .lim`)?.textContent ?? '',
+      apostado: S.myBet ? S.myBet.amount : null,
+    };
+  }).catch(e => ({ erro: String(e).split('\n')[0] }));
+
   await pg.$eval('#btnStart', el => el.click()).catch(() => {});
   const aoVivo = await pg.waitForFunction(
     () => document.querySelector('#phase')?.textContent === 'AO VIVO',
@@ -296,7 +323,7 @@ export async function rodar() {
   }).catch(() => null);
 
   await b.close(); s.close();
-  return { erros, conhecidos, apostas, aoVivo, relogio, folhas: cache.size, erroDepois, jogo, ...st };
+  return { erros, conhecidos, apostas, aoVivo, relogio, folhas: cache.size, erroDepois, jogo, corte, ...st };
 }
 
 /* Q3 · A RODADA DO APP SAI DA RAIZ.
@@ -367,6 +394,28 @@ export function suite(r) {
     ok(r.folhas > 50, `só ${r.folhas} folhas pedidas — o carregamento de sprite não rodou`);
     ok(r.comSprite === 12, `${r.comSprite} lutadores com sprite aplicado, esperado 12`);
   });
+  s.teste('o corte por teto de payout aparece na tela', () => {
+    const c = r.corte;
+    ok(c && !c.erro, `não deu para exercitar o corte: ${c?.erro}`);
+    ok(c.apostado === c.stakeMax,
+      `pedi ${c.pedido} e o app confirmou ${c.apostado}; o stake máximo é ${c.stakeMax}. ` +
+      `O corte tem que acontecer ANTES de confirmar (§4.4.6).`);
+    ok(c.aviso.length > 0,
+      'a aposta foi cortada e nenhum aviso apareceu — rejeição silenciosa reprova o bloco');
+    ok(c.aviso.includes(c.stakeMax.toLocaleString('pt-BR')) || c.aviso.includes(String(c.stakeMax)),
+      `o aviso não diz quanto cabe (${c.stakeMax}): "${c.aviso}"`);
+    ok(/payout|retorno/i.test(c.aviso), `o aviso não diz por quê: "${c.aviso}"`);
+  });
+
+  s.teste('a lista de apostas mostra o stake máximo antes da aposta', () => {
+    const c = r.corte;
+    ok(c && !c.erro, `sem dados de corte: ${c?.erro}`);
+    ok(c.limiteNaLista.length > 0,
+      'a linha do lutador não mostra limite nenhum — o §4.4.6 pede o stake máximo à vista');
+    ok(/até|fechado/i.test(c.limiteNaLista),
+      `a linha mostra "${c.limiteNaLista}", que não comunica limite nem fechamento`);
+  });
+
   s.teste('o clima não vaza durante a fase de apostas', () => {
     ok(!r.climaVazado,
       'o selo de clima estava visível durante as apostas. O clima é sorteado ANTES da pool ' +

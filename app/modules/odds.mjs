@@ -5,8 +5,9 @@
  * uma vez, senão quem abre a página em segundo plano nunca vê as odds saírem. */
 
 import { $ } from './dom.mjs';
-import { CONF, M } from './motor.mjs';
+import { CONF, CUR, M } from './motor.mjs';
 import { precificar, simularLote } from '../../engine/preco.mjs';
+import { avaliarAposta } from '../../engine/exposicao.mjs';
 import { S } from './estado.mjs';
 import { imgTag } from './sprites.mjs';
 
@@ -87,10 +88,18 @@ function buildPickList(){
   const rows = S.odds.lutadores.slice().sort((a,b) => a.odd - b.odd);
   return rows.map(o => {
     const f = S.fighters[o.idx];
-    return `<div class="pick" data-i="${o.idx}">
+    /* §4.4.6: a interface mostra o stake máximo daquele lutador e, quando o
+       mercado fecha por passivo, diz isso — nunca rejeita em silêncio. O
+       limite é consultado ao vivo porque ele encolhe conforme o passivo sobe. */
+    const v = S.passivo ? avaliarAposta(S.odds, S.passivo, o.idx, 1, CONF) : null;
+    const fechado = v && !v.aceito;
+    const cabe = v && v.aceito ? v.limite : 0;
+    return `<div class="pick ${fechado ? 'fechado' : ''}" data-i="${o.idx}">
       ${imgTag(f)}
       <span class="n">${f.n}</span>
       <span class="o">x${o.odd.toFixed(2)}</span>
+      <span class="lim tiny">${fechado ? 'mercado fechado'
+        : `até ${CUR} ${cabe.toLocaleString('pt-BR')}`}</span>
     </div>`;
   }).join('');
 }

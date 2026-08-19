@@ -110,6 +110,17 @@ const CONF = {
      é escopo do F0.8. Por isso aqui é `null`: sem teto por padrão. Se algum dia
      for usado, o §4.4.6 exige que apareça na interface e no registro.        */
   ODD_MAX:      null,
+
+  /* --- EXPOSIÇÃO (Spec §4.4.6) ----------------------------------------
+     Teto de PAYOUT, não de odd. Um teto de odd em x20 transformaria a margem
+     declarada de 8 % em 68 % no azarão — protegeria o passivo às custas do
+     apostador, e contra o P1. Teto de payout preserva a odd e limita só o
+     tamanho da aposta: stake_max_i = MAX_PAYOUT_POR_TICKET / odd_i.
+
+     O passivo da rodada é o PIOR CASO, não a soma: só um lutador vence, então
+     a casa nunca paga as duas pontas.                                      */
+  MAX_PAYOUT_POR_TICKET:    50000,
+  MAX_LIABILITY_POR_RODADA: 500000,   // 10 × o teto por ticket
   BET_WINDOW:   30,     // segundos de aposta
   RESULT_HOLD:  8,      // segundos mostrando o vencedor
   ARENA_SIZE:   12,     // lutadores por rodada

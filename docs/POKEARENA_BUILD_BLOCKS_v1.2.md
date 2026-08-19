@@ -466,7 +466,7 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 
 ---
 
-### F0.8 — Tetos de exposição
+### F0.8 — Tetos de exposição ✅
 
 **Tam.** P · **Método** GL+INV · **Portões** Q1 Q2 Q3 Q5 Q6 · **Depende de** F0.7
 
@@ -481,6 +481,20 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 **Q7 (GL):** barra = painel de odds ao vivo de uma casa de apostas nomeada, na parte de comunicar limite e retorno. Só a comunicação; a regra é INV.
 
 **Saída:** as duas invariantes de exposição do §4.6 verdes.
+
+**Entregue.** `engine/exposicao.mjs`, puro e sem DOM — em V1 a mesma função roda no servidor. `MAX_PAYOUT_POR_TICKET = 50.000`, `MAX_LIABILITY_POR_RODADA = 500.000` (10×), `stake_max_i = ⌊payout_max / odd_i⌋`. O registro de precificação passou a publicar `stakeMax` por lutador e os dois tetos aplicados, fechando os campos que o F0.7 tinha deixado em `null`.
+
+**As duas invariantes do §4.6 saíram da lista de "não verificáveis":** `nenhum ticket confirmado excede MAX_PAYOUT_POR_TICKET` e `nenhuma rodada excede MAX_LIABILITY_POR_RODADA`, as duas por lote aleatorizado de milhares de tickets. A suíte agora imprime as verificadas ao lado das pendentes — ausência que não é nomeada vira pergunta.
+
+**O passivo da rodada é o PIOR CASO, não a soma.** Só um lutador vence, então a casa nunca paga as duas pontas; somar superestimaria o risco e fecharia mercado sem necessidade. O defeito S46 planta a troca.
+
+> **O teste da corrida derrubou o desenho da API, e essa foi a parte útil do bloco.** A primeira versão recebia `conf` como parâmetro **opcional** de `registrarTicket`. O teste do §4.4.6 — duas confirmações no mesmo lutador, no último instante — estourou o teto em **549.952 contra 500.000**, porque a chamada sem `conf` simplesmente não conferia nada. **Guarda que se pode esquecer não é guarda.** O teto passou a vir carimbado no próprio objeto de passivo, e não há mais como registrar sem saber contra qual teto.
+
+**Q5 — a mensagem, não a regra.** O portão de navegador enche a carteira, escolhe "max", clica no azarão e lê a tela: a aposta precisa ter sido **cortada antes de confirmar**, o aviso precisa dizer **quanto cabe** e **por quê**, e a linha de cada lutador precisa mostrar o stake máximo **antes** da aposta — ou "mercado fechado", quando o passivo satura. Rejeição silenciosa reprova o bloco, e agora há um teste que a reprova de fato (S44, S47).
+
+**Q6 — as três formas de furar o teto**, todas testadas: manipular o stake no cliente (negativo, zero, `NaN`, `Infinity`, string, `null`); dividir em vários tickets (500 tickets no stake máximo continuam dentro do passivo); e a corrida entre duas confirmações.
+
+> **A sabotagem achou o defeito clássico de limite, e a lição é sobre o formato do teste.** S42 afrouxa o teto em **uma unidade** — `valor <= limite` vira `valor <= limite + 1` — e **passou despercebido**. O lote aleatório de 4.000 tickets cobria uma faixa larga de valores e quase nunca caía exatamente em `stakeMax + 1`. **Erro de limite não se pega por amostragem.** Entraram duas sondas de borda, uma por teto: para cada lutador, pedir exatamente o limite (não pode ser cortado) e exatamente um a mais (tem que ser). Com elas, S42 fica vermelho.
 
 ---
 

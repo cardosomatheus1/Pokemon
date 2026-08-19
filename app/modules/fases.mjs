@@ -9,6 +9,7 @@ import { CONF, CUR, MOEDA, aplicarClima, sortearPool, rng, sortearClima, simular
 /* A árvore de sementes não passa pela ligação do motor: ela não depende de
    ContentPack nenhum. É infraestrutura, como o DOM. */
 import { derivar, novaRaiz, sementes } from '../../engine/seed.mjs';
+import { avaliarAposta, passivoVazio, registrarTicket } from '../../engine/exposicao.mjs';
 import { S } from './estado.mjs';
 import { coreo, enfeite, semearVisual } from './sorte.mjs';
 import { buildEntities, overlay, preloadSheets, selRing } from './rodada.mjs';
@@ -86,6 +87,8 @@ async function newRound(){
   // startFight). É de propósito: ninguém aposta sabendo do bônus
   // climático de antemão.
   S.odds = await computeOdds(S.fighters, CONF.SIMS, undefined, S.seeds.raiz);
+  /* Passivo zerado a cada rodada: o teto do §4.4.6 é POR RODADA. */
+  S.passivo = passivoVazio(S.odds, CONF);
 
   semearVisual(S.seeds.visual); reiniciarMovimento();
   buildEntities(S.seeds.visual);
@@ -131,24 +134,47 @@ function markMyPlate(){
 
 function placeBet(idx, row){
   if (S.state !== 'betting') return;
-  const amount = valorAposta();
-  if (amount < APOSTA_MIN){
+  const pedido = valorAposta();
+  if (pedido < APOSTA_MIN){
     $('#betInfo').innerHTML = `<b>Saldo insuficiente.</b> A aposta mínima é ${CUR} ${APOSTA_MIN} `
       + `(${emReais(APOSTA_MIN)}). Complete um desafio diário ou compre ${MOEDA}.`;
     return;
   }
+
+  /* --- TETOS DE EXPOSIÇÃO (Spec §4.4.6) -----------------------------
+     O corte acontece AQUI, antes de confirmar — nunca no settlement. E
+     quando corta, diz qual limite, quanto cabe e por quê: o §4.4.6
+     proíbe rejeição silenciosa, e o portão Q5 do F0.8 captura a
+     mensagem na tela.
+
+     A troca de aposta devolve o passivo da anterior antes de avaliar a
+     nova; senão trocar de lutador dez vezes encheria o passivo de todos
+     eles sem nenhuma aposta viva.                                     */
+  if (S.myBet) S.passivo[S.myBet.idx] -= S.myBet.amount * S.myBet.odd;
+  const veredito = avaliarAposta(S.odds, S.passivo, idx, pedido, CONF);
+  if (!veredito.aceito){
+    if (S.myBet) S.passivo[S.myBet.idx] += S.myBet.amount * S.myBet.odd;   // desfaz a devolução
+    $('#betInfo').innerHTML = `<b>${veredito.mensagem}</b>`;
+    return;
+  }
+  const amount = veredito.valor;
+
   if (S.myBet) S.bal += S.myBet.amount;                    // troca de aposta: devolve a anterior
   const o = S.odds.lutadores.find(x => x.idx === idx);
   S.bal -= amount;
   S.myBet = {idx, amount, odd:o.odd};
+  registrarTicket(S.passivo, idx, amount, o.odd);
   saveBal();
   recordBetPlaced(amount, S.fighters[idx]);
   markMyPlate();
   document.querySelectorAll('.pick').forEach(p => p.classList.toggle('sel', +p.dataset.i === idx));
+  const corte = veredito.cortado
+    ? `<br><span class="tiny" id="avisoCorte" style="color:var(--gold)">${veredito.mensagem}</span>`
+    : '';
   $('#betInfo').innerHTML =
     `<b>${CUR} ${amount.toLocaleString('pt-BR')}</b> em <b>${S.fighters[idx].n}</b> (x${o.odd.toFixed(2)})<br>
      retorno se vencer: <b style="color:var(--gold)">${CUR} ${Math.floor(amount*o.odd).toLocaleString('pt-BR')}</b>
-     <span class="tiny">(${emReais(Math.floor(amount*o.odd))})</span>`;
+     <span class="tiny">(${emReais(Math.floor(amount*o.odd))})</span>${corte}`;
 }
 
 function startFight(){

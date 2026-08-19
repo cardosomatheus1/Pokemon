@@ -14,6 +14,7 @@ import * as conteudo from './conteudo.mjs';
 import * as semente from './semente.mjs';
 import * as margem from './margem.mjs';
 import * as precisao from './precisao.mjs';
+import * as exposicao from './exposicao.mjs';
 import * as visual from './visual.mjs';
 
 if (process.argv.includes('--gerar')) {
@@ -64,7 +65,7 @@ else console.log('  · Q5 visual pulado (sem navegador) — use npm run portoes 
 const suites = [
   ...(semGolden ? [] : [golden.suite()]),
   invariantes.suite(), estatistica.suite(),
-  fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(), semente.suite(), margem.suite(), precisao.suite(),
+  fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(), semente.suite(), margem.suite(), precisao.suite(), exposicao.suite(),
   ...(visual.disponivel() && !semVisual
      ? [visual.suite(rVisual), visual.suiteBase(baseAtual, baseGravada),
         visual.suiteAmbientes(digitaisNav, RAIZES_Q3), visual.suiteRodadaViva(rVisual)]
@@ -85,5 +86,7 @@ if (falhas.length) {
   process.exit(1);
 }
 console.log(`VERDE — ${total}/${total} passaram`);
+console.log('\nInvariantes da Spec §4.6 já verificadas:');
+for (const n of invariantes.JA_VERIFICADAS) console.log('  ✓ ' + n);
 console.log('\nInvariantes da Spec §4.6 ainda não verificáveis neste bloco:');
 for (const n of invariantes.NAO_APLICAVEIS_AINDA) console.log('  · ' + n);

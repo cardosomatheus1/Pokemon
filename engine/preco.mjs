@@ -86,6 +86,9 @@ export function precificar(wins, sims, M) {
       fair: +justa.toFixed(2),
       odd: +comTeto.toFixed(2),
       erroRelativo, viesConvexidade,
+      /* Quanto cabe num ticket neste lutador (§4.4.6). Arredondado para BAIXO:
+         para cima, o payout estouraria o teto por centavos. */
+      stakeMax: Math.floor(M.CONF.MAX_PAYOUT_POR_TICKET / (+comTeto.toFixed(2))),
       /* Qual limite mordeu, se algum. `null` é resposta, não ausência: o §4.4.6
          exige que teto aplicado apareça no registro E na interface. */
       limite: comTeto < comPiso ? 'ODD_MAX' : (comPiso > bruta ? 'ODD_MIN' : null),
@@ -106,10 +109,8 @@ export function precificar(wins, sims, M) {
     erroPior: Math.max(...lutadores.map(l => l.erroRelativo)),
     viesPior: Math.max(...lutadores.map(l => l.viesConvexidade)),
     tetoOdd: oddMax,
-    /* Preenchidos pelo F0.8, que é quem cria os tetos de exposição. `null` aqui
-       é declaração de que ainda não existem, não esquecimento. */
-    tetoPayoutPorTicket: null,
-    tetoPassivoPorRodada: null,
+    tetoPayoutPorTicket:  M.CONF.MAX_PAYOUT_POR_TICKET,
+    tetoPassivoPorRodada: M.CONF.MAX_LIABILITY_POR_RODADA,
     /* Versões: um preço auditado meses depois precisa dizer contra qual código
        e contra qual pack foi gerado. */
     versaoMotor: M.versao,

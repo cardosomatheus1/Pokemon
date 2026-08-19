@@ -13,8 +13,14 @@ export const NAO_APLICAVEIS_AINDA = [
   'saldo nunca fica negativo            -> F0.9',
   'payout ocorre uma única vez          -> F1.7',
   'aposta fechada não pode ser alterada -> F1.7',
-  'nenhum ticket excede MAX_PAYOUT      -> F0.8',
-  'nenhuma rodada excede MAX_LIABILITY  -> F0.8',
+];
+
+/* Verificadas depois que a lista foi escrita — ficam nomeadas para que a
+   ausência delas acima seja leitura fácil, e não pergunta. */
+export const JA_VERIFICADAS = [
+  'nenhum ticket excede MAX_PAYOUT      -> F0.8, em test/exposicao.mjs',
+  'nenhuma rodada excede MAX_LIABILITY  -> F0.8, em test/exposicao.mjs',
+  'nenhuma batalha excede hard cap      -> F0.6, D-003, aqui em L-016',
 ];
 
 export function suite() {
