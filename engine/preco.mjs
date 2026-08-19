@@ -40,7 +40,7 @@ export function simularLote(M, fighters, raiz, de, ate, wins) {
   for (let i = de; i < ate; i++) {
     const clima = M.sortearClima(derivarIndice(raiz, 'ambiente', i), tipos);
     /* Clima sem tipo favorecido não muda ninguém; copiar 12 lutadores à toa
-       custaria caro num laço de 20.000 voltas. */
+       custaria caro num laço de CONF.SIMS voltas. */
     const f = clima.type ? M.aplicarClima(fighters, clima) : fighters;
     const w = M.simular(f, derivarIndice(raiz, 'simulacao', i), false);
     if (w >= 0) wins[w]++;

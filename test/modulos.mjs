@@ -31,6 +31,10 @@ const CAMADA = {
   /* Fachada da carteira: só depende do estado e do motor de carteira. */
   'banco.mjs': 0,
   'dom.mjs': 0,
+  /* O número de simulações, lido do motor e escrito nos marcadores da página.
+     Camada 0 porque só depende de `motor.mjs`: quem precisa dele é o boot, e o
+     boot é a primeira coisa que roda. Ver o D-011. */
+  'sims.mjs': 0,
   'estado.mjs': 0,
   /* Dados puros de arte e a cascata de endereço: nenhum dos dois toca o DOM. */
   'sprites-dados.mjs': 0,

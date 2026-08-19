@@ -6,6 +6,7 @@
 import { $ } from './dom.mjs';
 import { CUR } from './motor.mjs';
 import { S } from './estado.mjs';
+import { simsLongo } from './sims.mjs';
 import { emitir } from './telemetria.mjs';
 import { saldo } from './banco.mjs';
 import { renderProfile } from './customizacao.mjs';
@@ -44,7 +45,7 @@ function renderHero(){
        <div><b>${saldo().toLocaleString('pt-BR')}</b><span>${CUR} saldo</span></div>`
     : `<div><b>76</b><span>lutadores</span></div>
        <div><b>12</b><span>por rodada</span></div>
-       <div><b>20.000</b><span>simulações/odd</span></div>
+       <div><b>${simsLongo()}</b><span>simulações/odd</span></div>
        <div><b>30s</b><span>para apostar</span></div>`;
 }
 

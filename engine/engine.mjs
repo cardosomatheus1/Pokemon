@@ -249,7 +249,7 @@ function simular(chart, fighters, seed, record){
   /* --- killstreak: sequência de abates e buff temporário por lutador ---
      buffKind: 0 = nenhum, 1 = ofensivo, 2 = defensivo, 3 = velocidade.
      Guardado em arrays tipados (não em objetos) porque isto roda dentro
-     das 20.000 simulações das odds — alocar objeto por lutador aqui
+     das simulações das odds — alocar objeto por lutador aqui
      multiplicaria o custo por nada. */
   const streak    = new Int8Array(n);
   const lastKill  = new Float64Array(n).fill(-999);

@@ -54,6 +54,8 @@ const COLOC  = 'app/modules/colocacao.mjs';
 const BANNERD= 'app/modules/banner-dados.mjs';
 const SHINYD = 'app/modules/shiny-dados.mjs';
 const ADMD   = 'app/modules/adm-dados.mjs';
+const SIMS   = 'app/modules/sims.mjs';
+const VISUAL = 'test/visual.mjs';
 const RUNNER = 'test/run.mjs';
 const ARENAP = 'app/modules/arenas.mjs';
 
@@ -530,4 +532,24 @@ export const DEFEITOS = [
     real:'`typeof` trocado por verdade/falsidade — e o painel zera a margem sem ninguém pedir',
     de:"  (conf && typeof conf.margem === 'number') ? conf.margem : undefined;",
     para:'  (conf && conf.margem) ? conf.margem : undefined;' },
+  /* ---------- T2: a linha de base visual por região ---------- */
+
+  { id:'S95', arquivo:VISUAL, nome:'a linha de base volta a comparar a tela inteira',
+    real:'"uma região só é mais simples" — e um componente em paleta harmônica some na média',
+    de:'export const GRADE = 8;', para:'export const GRADE = 1;' },
+
+  { id:'S96', arquivo:VISUAL, nome:'o limite da linha de base é afrouxado em vez de afinado',
+    real:'a saída mais fácil quando o portão reprova: subir o número até calar',
+    de:'export const LIM_MEDIA_REGIAO = 2;', para:'export const LIM_MEDIA_REGIAO = 40;' },
+
+  /* ---------- D-011: o número de simulações ---------- */
+
+  { id:'S97', arquivo:SIMS, nome:'o número de simulações da tela vira constante redigitada',
+    real:'foi exatamente assim que o D-011 nasceu — o F0.7 mudou CONF.SIMS e o texto ficou',
+    de:'export const simsLongo = () => CONF.SIMS.toLocaleString(\'pt-BR\');',
+    para:"export const simsLongo = () => '20.000';" },
+
+  { id:'S98', arquivo:SIMS, nome:'o marcador do número de simulações nunca é preenchido',
+    real:'laço removido numa limpeza — e a promessa de auditoria fica um buraco na página',
+    de:'  for (const el of alvos)\n', para:'  for (const el of [])\n' },
 ];

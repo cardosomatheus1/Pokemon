@@ -247,6 +247,63 @@ export function suite() {
     }
   });
 
+  /* D-011 · NENHUM TEXTO VISÍVEL REDIGITA UMA CONSTANTE DO MOTOR.
+   *
+   * O F0.7 subiu `CONF.SIMS` de 20.000 para 154.000 e quatro textos ficaram
+   * onde estavam — a tela de Regras afirmava um número e o painel da rodada
+   * afirmava outro, na mesma sessão. Numa página cuja promessa escrita é "odd
+   * auditável", errar o número da própria auditoria gasta exatamente a confiança
+   * que o produto usa como diferencial.
+   *
+   * O teste não confere se o número está CERTO — confere se ele foi
+   * REDIGITADO. Um número certo hoje é o mesmo defeito amanhã: foi assim que
+   * este nasceu. Texto visível tem que trazer o marcador que o boot preenche.
+   *
+   * A varredura ignora o que está dentro de <script> e de comentário: lá o
+   * número em prosa é história ("os 20.000 herdados da base v0.8"), e história
+   * não envelhece. */
+  s.teste('nenhum texto visível redigita o número de simulações', () => {
+    const bruto = readFileSync(new URL('../app/index.html', import.meta.url).pathname, 'utf8');
+    const visivel = bruto
+      .replace(/<script[\s\S]*?<\/script>/g, ' ')
+      .replace(/<!--[\s\S]*?-->/g, ' ');
+    const achados = [...visivel.matchAll(/([\d][\d.,]*)\s*(simulaç\w*|batalhas)/gi)]
+      .map(m => m[0].trim());
+    ok(achados.length === 0,
+      `${achados.length} texto(s) visível(is) redigitam o número de simulações: ` +
+      `${achados.join(' · ')}. Use o marcador que o boot preenche com CONF.SIMS ` +
+      `(ver app/modules/sims.mjs) — número copiado envelhece na primeira vez que ` +
+      `a constante muda, que foi exatamente o D-011.`);
+  });
+
+  /* O outro lado: o marcador tem que EXISTIR. Um teste que só proíbe o número
+     redigitado é passado com louvor por uma página que apagou a frase inteira —
+     e a frase é a promessa de auditoria do §P1. */
+  s.teste('as quatro telas que citam o Monte Carlo trazem o marcador', () => {
+    const bruto = readFileSync(new URL('../app/index.html', import.meta.url).pathname, 'utf8');
+    const n = (bruto.match(/class="sims"/g) || []).length;
+    ok(n >= 4,
+      `${n} marcador(es) .sims em app/index.html, esperado ao menos 4 ` +
+      `(boot, home, como funciona, regras) — ver D-011`);
+  });
+
+  /* Os módulos da interface também escrevem texto. O mesmo teste, na mesma
+     regra — aqui sem o recorte de <script>, porque o arquivo inteiro é código:
+     o que se procura é número em literal de template que vira tela. */
+  s.teste('nenhum módulo da interface redigita o número de simulações', () => {
+    const APP = new URL('../app/modules/', import.meta.url);
+    for (const f of readdirSync(APP).filter(x => x.endsWith('.mjs'))) {
+      const txt = readFileSync(new URL(f, APP), 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, ' ')
+        .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+      const achados = [...txt.matchAll(/([\d][\d.,]*)\s*(simulaç\w*|batalhas)/gi)]
+        .map(m => m[0].trim());
+      ok(achados.length === 0,
+        `app/modules/${f} redigita o número de simulações: ${achados.join(' · ')} — ` +
+        `leia CONF.SIMS (D-011)`);
+    }
+  });
+
   s.teste('o motor não importa nada de content/', () => {
     for (const f of readdirSync(ENGINE).filter(x => x.endsWith('.mjs'))) {
       const txt = readFileSync(new URL(f, ENGINE), 'utf8');

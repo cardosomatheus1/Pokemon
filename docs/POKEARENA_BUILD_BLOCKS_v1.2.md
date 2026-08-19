@@ -904,8 +904,8 @@ Os dois eram lacuna real de teste, não falso alarme:
 > preciso testar *quando*.
 
 **Fora do escopo, registrado:** **D-008** e **D-009** (achados e corrigidos aqui,
-porque o próprio escopo dependia deles), **D-010** (a linha de base não separa
-componente novo de ruído — dono **T2**), **L-028**.
+porque o próprio escopo dependia deles), **D-010** (a linha de base não separava
+componente novo de ruído — fechado no **T2**), **L-028**.
 
 ### V1.19 — Baús: NÃO ENTRA NO PORTE
 
@@ -941,39 +941,36 @@ ele existir pelo nosso desenho, é mudar uma função — não o sistema.
 
 ---
 
-### T2 — A linha de base visual mais fina
+### T2 — A linha de base visual mais fina ✅
 
 **Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Depende de** V1.15 ·
 **Trilha `T`** (ferramenta: só `test/` e `tools/`)
 
-**Escopo:** o **D-010**. A digital de 32×32 não separa componente novo de ruído
-de renderização quando o componente respeita a paleta em volta — o card de
-colocação do V1.15 mediu **média 0,85 · pico 56** contra um limite de
-`média > 3` ou `pico > 60`.
+**Escopo:** o **D-010**. Fechado. O verbete em `docs/DEFEITOS.md` tem a medição
+inteira; o resumo:
 
-**Não é cegueira à periferia**, e o verbete do D-010 registra a correção desse
-diagnóstico: uma mudança grosseira na mesma coluna marca pico 123 e reprova.
+**A comparação passou a ser por REGIÃO** — a mesma digital de 32×32, comparada em
+8×8 regiões de 4×4 px. A grade saiu de medição, não de escolha: duas capturas da
+mesma interface dão pior média de região **0,38**, e o componente do V1.15 dá
+**7,00** na mesma métrica. Dezoito vezes de separação; o limite de 2 fica no meio,
+5× acima do ruído e 3,5× abaixo do sinal. O relatório passa a dizer **qual
+região** — diagnóstico, não um número.
 
-**Comece pela largura, que é o mais barato.** A linha de base captura em 1440,
-1000 e 480 px, e o `.app` da arena tem `max-width: 1790px` desde o V1.15 — o
-layout de cinco colunas **só existe acima de 1420 px, e nenhuma largura capturada
-chega lá**. Medido: corrigir o `max-width`, que reposiciona uma coluna inteira,
-moveu a digital em média 0,03 · pico 2. Uma quarta largura acima de 1790 cobre o
-layout completo sem tocar em mais nada.
+**Uma quarta largura**, `panoramico` 1920×1000, acima dos 1560 px em que o `.app`
+para de crescer. Doze telas viraram dezesseis. O teste lê o `max-width` do CSS de
+verdade, então quem subi-lo amanhã encontra o teste vermelho.
 
-**Depois, se ainda precisar:** digital de 64×64; captura de página inteira em vez
-de viewport (resolve o sumiço nas larguras menores, e regrava as doze telas de
-uma vez); ou digital **por região**, uma por coluna — a única que dá diagnóstico
-em vez de um número só.
+**O limite de pico saiu.** O plano era apertá-lo de 60 para 30; a sabotagem
+mostrou que virara botão morto — a média da região trepida antes, e devolver o
+pico a 60 não acendeu teste nenhum. O número ficou no relatório, o limite não.
 
-**Sabotagem:** afrouxar o limite em vez de afinar a resolução; comparar só a
-média e largar o pico; regravar a linha de base dentro do próprio portão.
+**A sabotagem escreveu um teste.** `GRADE = 1` — a comparação de volta à tela
+inteira — deixou o teste do componente do V1.15 vermelho mesmo assim: quem o
+pegava era o pico. A grade estava passando sem prova, e ganhou o caso que só ela
+pega: um bloco em Δ22, invisível ao portão antigo e média 22 na região.
 
-**Q5:** o bloco MEXE no portão Q5, então não pode se verificar por ele. A prova é
-o teste `D-010` de `test/portao.mjs`, que hoje afirma o defeito e fica vermelho
-quando ele fechar.
-
-**Saída:** um componente inteiro na coluna lateral reprova a linha de base.
+**Saída (cumprida):** um componente inteiro na coluna lateral reprova a linha de
+base — e um em paleta quase idêntica também.
 
 > **O V1.15 deu ao T2 três provas a mais, todas achadas com o olho e nenhuma
 > pelos portões:** um rótulo de texto transbordando o cartão (`CONQUISTADO` num
@@ -982,8 +979,11 @@ quando ele fechar.
 > demais para o próprio placeholder. As três passaram por 299 testes verdes.
 >
 > **O portão Q5 prova que a página FUNCIONA; ele não prova que ela está
-> LEGÍVEL.** São perguntas diferentes, e hoje só a primeira tem rede.
+> LEGÍVEL.** São perguntas diferentes, e o T2 fecha só a primeira metade da
+> segunda: ele mede *que* mudou e *onde*, não se ficou bom. Essa continua sendo
+> a pergunta do crítico cego (Q7) e do `npm run olhar`.
 
+---
 
 ### V1.16 — Trilha `R`: a tela principal reorganizada ✅
 

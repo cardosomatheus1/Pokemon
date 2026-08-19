@@ -2237,7 +2237,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 
 <div id="boot">
   <div class="b1">ARENA ROYALE</div>
-  <div class="b2" id="bootMsg">simulando 20.000 batalhas para calcular as odds…</div>
+  <div class="b2" id="bootMsg">simulando <b class="sims"></b> batalhas para calcular as odds…</div>
 </div>
 
 <header class="topbar">
@@ -2255,7 +2255,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   <section class="hero">
     <div class="hero-in">
       <h1>Aposte na arena.<br><span>Assista à batalha.</span></h1>
-      <p>Doze lutadores sorteados a cada rodada, odds calculadas por 20.000 simulações
+      <p>Doze lutadores sorteados a cada rodada, odds calculadas por <b class="sims"></b> simulações
          do mesmo motor que roda a luta, e resultado determinístico — qualquer um pode
          conferir. Sem dinheiro real: o PokéCash é moeda simulada.</p>
       <div class="row" style="gap:8px;flex-wrap:wrap">
@@ -2302,7 +2302,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
            O clima já é sorteado nesse momento, em segredo, e garante que exista
            ao menos um Pokémon do tipo favorecido na pool.</p></div></div>
       <div class="step"><b>2</b><div><h4>As odds são calculadas</h4>
-        <p>O servidor roda 20.000 batalhas completas com o motor real e transforma
+        <p>O servidor roda <b class="sims"></b> batalhas completas com o motor real e transforma
            frequência de vitória em odd, já descontada a margem da casa. As odds
            <em>não</em> conhecem o clima — ele ainda não foi revelado.</p></div></div>
       <div class="step"><b>3</b><div><h4>Você aposta</h4>
@@ -2340,7 +2340,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
          declara ter 18 anos ou mais.</p></div>
     <div class="rule"><h4>3. Como a odd é formada</h4>
       <p>Odd = (1 ÷ probabilidade de vitória) × (1 − margem da casa). A
-         probabilidade vem de 20.000 simulações do motor de combate. A margem é
+         probabilidade vem de <b class="sims"></b> simulações do motor de combate. A margem é
          fixa e está declarada no painel da rodada.</p></div>
     <div class="rule"><h4>4. Janela de apostas</h4>
       <p>Trinta segundos por rodada. Apostas só são aceitas dentro da janela.
@@ -2686,6 +2686,7 @@ import { ARENAS, aplicarArena } from './modules/arenas.mjs';
 import { renderBattleBanner } from './modules/banner.mjs';
 import { admChecarHash } from './modules/adm.mjs';
 import { atualizarEu } from './modules/faixa.mjs';
+import { preencherSims, simsCurto } from './modules/sims.mjs';
 import { MOVE_FX, bursts, drawFx, fxSheet, fxs, later, pushFx, sched, shots } from './modules/efeitos.mjs';
 import { hideWeatherBadge, initWeatherFx, showWeatherBadge } from './modules/clima.mjs';
 
@@ -2702,11 +2703,11 @@ import { hideWeatherBadge, initWeatherFx, showWeatherBadge } from './modules/cli
       -> em produção: o servidor sorteia a seed, manda pra todo mundo,
          e todo mundo assiste sincronizado. Ninguém vê o resultado antes.
 
-   2) As ODDS saem de Monte Carlo: o mesmo motor roda 20.000 batalhas
+   2) As ODDS saem de Monte Carlo: o mesmo motor roda CONF.SIMS batalhas
       antes de abrir as apostas e conta quem ganhou quantas vezes.
       odd = (1 / probabilidade) * (1 - margem_da_casa)
       Não é número aleatório de enfeite: se o Tyranitar aparece x2.10,
-      é porque ele venceu ~44% das 20.000 simulações.
+      é porque ele venceu ~44% das simulações.
 
    3) O combate usa a fórmula de dano dos jogos, tabela de tipos completa
       (18 tipos), STAB, crítico, precisão e ataque físico/especial.
@@ -2803,10 +2804,10 @@ import { hideWeatherBadge, initWeatherFx, showWeatherBadge } from './modules/cli
 // Fórmula de dano dos jogos (nível 50), com STAB, tipo, crítico e roll 85–100%.
 // aMul/dMul são os multiplicadores de killstreak (1 quando não há buff).
 // Passados como número solto de propósito: clonar os objetos aqui custaria
-// caro, já que isto roda milhões de vezes nas 20.000 simulações das odds.
+// caro, já que isto roda milhões de vezes nas simulações das odds.
 
 /* Roda uma batalha inteira. `record=false` é o modo rápido usado pelas
-   20.000 simulações das odds (não guarda nada, só devolve o vencedor). */
+   simulações das odds (não guarda nada, só devolve o vencedor). */
 
 /* ------------------------- BOOT ------------------------- */
 /* Estado que depende de função declarada acima. estado.mjs guarda só valores
@@ -2830,6 +2831,10 @@ addEventListener('pagehide', () => emitir('session_ended'));
 /* O painel de ADM abre pelo endereço, e só. Escutar o `hashchange` além da
    conferência inicial cobre quem cola `#adm` com a página já aberta. */
 addEventListener('hashchange', admChecarHash);
+
+/* O número de simulações entra ANTES de qualquer tela, inclusive a de boot —
+   ela é a primeira que o jogador lê, e o marcador nasce vazio (D-011). */
+preencherSims();
 
 (async function boot(){
   atualizarSaldo();

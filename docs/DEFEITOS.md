@@ -491,12 +491,11 @@ passou a desenhá-lo já no boot, e as quatro requisições apareceram.
 
 ---
 
-## D-010 — um componente inteiro cabe sob o limite da linha de base visual
+## D-010 — um componente inteiro cabe sob o limite da linha de base visual ✅ CORRIGIDO
 
-**Achado em:** V1.15 · **Bloco dono:** **T2** (proposto no `BUILD_BLOCKS`) ·
-**Estado:** ⚠️ REGISTRADO, NÃO CORRIGIDO
+**Achado em:** V1.15 · **Bloco dono:** **T2** · **Corrigido no:** T2
 
-### A medição
+### A medição original
 
 O V1.15 acrescentou à tela da arena um card inteiro de colocação — doze linhas
 com retrato, nome e estado. Medido contra a linha de base de então:
@@ -507,109 +506,153 @@ arena@medio      média 0,01   pico   3
 arena@estreito   média 0,00   pico   0
 ```
 
-O limite do portão é `média > 3` **ou** `pico > 60`. **Um componente inteiro
+O limite do portão era `média > 3` **ou** `pico > 60`. **Um componente inteiro
 passou 7 % sob o limite.**
 
-### O que NÃO é o defeito
+### O que NÃO era o defeito
 
-Não é cegueira à periferia, e vale corrigir o diagnóstico porque a primeira
+Não era cegueira à periferia, e valeu corrigir o diagnóstico porque a primeira
 versão deste verbete dizia isso. Uma mudança **grosseira** na mesma coluna —
-cinco colunas da amostra achatadas em cinza — marca **pico 123** e reprova. O
-portão enxerga a lateral.
+cinco colunas da amostra achatadas em cinza — marcava **pico 123** e reprovava.
+O portão enxergava a lateral.
 
-### O que É o defeito
+### O que ERA o defeito
 
-Ele não separa **componente novo** de **ruído de renderização** quando o
+Ele não separava **componente novo** de **ruído de renderização** quando o
 componente respeita a paleta em volta. E respeitar a paleta é exatamente o que
 um card bem desenhado faz: fundo de painel, texto em `--dim`, mesma borda. Num
-quadro de 32×32, um card assim mexe poucos pixels e mexe pouco em cada um.
+quadro de 32×32, um card assim mexe poucos pixels e mexe pouco em cada um — e a
+média da tela inteira dilui o pouco que ele mexe em muito que ele não mexe.
 
-As larguras menores agravam: a coluna desce para fora do viewport, e a captura é
-da janela, não da página inteira — daí `pico 3` e `pico 0`.
+Somava-se a segunda metade: **as larguras**. A linha de base capturava em 1440,
+1100 e 700 px, e o `.app` da arena tem `max-width: 1560px` — o arranjo completo,
+com as goteiras dos dois lados, não existia em nenhuma largura capturada. Medido:
+mexer no próprio `max-width`, que reposiciona uma coluna inteira, movia a digital
+em **média 0,03 · pico 2**.
 
-### Por que isso importa
+### A correção, metade 1 — a comparação passa a ser por REGIÃO
 
-O cabeçalho do `test/visual.mjs` afirma que a digital é *"sensível a mudança de
-layout, cor e conteúdo"*. Para um componente em paleta harmônica, não é. Portão
-que promete mais do que entrega é pior que portão ausente: alguém confia nele.
+A digital continua 32×32 em RGB; o arquivo não cresceu. O que mudou é que ela é
+comparada em **8×8 regiões de 4×4 px**, cada uma com o seu próprio limite. Um
+componente ocupa uma região; medir por região é medir onde ele está.
 
-### O que o T2 tem que decidir
+A grade e o limite são **medidos, não escolhidos**. Duas capturas da mesma
+interface, quatro larguras, quatro telas:
 
-Três caminhos, e a escolha é de custo:
+| grade | pior média de região (ruído) | mesma métrica no componente do V1.15 |
+|---|---|---|
+| 1×1 | 0,04 | 0,82 |
+| 2×2 | 0,07 | 1,75 |
+| 4×4 | 0,15 | 3,50 |
+| **8×8** | **0,38** | **7,00** |
 
-1. **Digital maior** — 64×64 quadruplica o arquivo e afina o pico;
-2. **Captura de página inteira** em vez de viewport — resolve o sumiço nas
-   larguras menores, e muda as doze telas de uma vez;
-3. **Digital por REGIÃO** — uma por coluna, comparadas separadamente. Mais
-   trabalho, e é a única que dá diagnóstico ("mudou a coluna de colocação") em
-   vez de um número só.
+A 8×8 é a que mais separa: **18× entre ruído e sinal**. O limite de `média de
+região > 2` fica 5× acima do ruído medido e 3,5× abaixo do sinal — folga dos
+dois lados, que é o que impede tanto o falso positivo quanto o afrouxamento
+silencioso.
 
-### A terceira prova, e a mais acionável: as LARGURAS
+E o relatório passa a dizer **onde**: `arena@largo: 8 de 64 regiões fora — região
+7,2 (média 7,0, pico 56)`. Isso é diagnóstico; `média 0,9` era um número.
 
-A linha de base captura em **1440, 1000 e 480** px. O `.app` da arena tem
-`max-width: 1790px` desde o V1.15 — ou seja, **o layout de cinco colunas só
-existe acima de 1420 px, e nenhuma largura capturada chega lá.**
+### A correção, metade 2 — uma quarta largura, acima do `max-width`
 
-Medido: corrigir o `max-width` de 1420 para 1790, o que reposiciona uma coluna
-inteira na tela, moveu a linha de base em **média 0,03 · pico 2** — ruído de
-renderização. A correção é invisível ao portão porque acontece numa largura que
-ele não olha.
+`panoramico` (1920×1000) fica acima dos 1560 px em que o `.app` para de crescer.
+A linha de base foi de 12 para 16 telas.
 
-**Isto é mais barato de resolver que a resolução da digital:** acrescentar uma
-quarta largura acima de 1790 cobre o layout completo sem tocar em nada mais.
+O teste que garante isso **lê o `max-width` do CSS de verdade** em vez de repetir
+o número: quem subir o `max-width` amanhã encontra o teste vermelho, e não uma
+cobertura que calou.
 
-### O teste que afirma o defeito
+### O limite de pico saiu, e a medição é que o tirou
 
-`test/portao.mjs` → `D-010 · um componente inteiro cabe sob o limite da linha de
-base`. Ele reconstrói a magnitude **medida** (média ~0,85, pico 56) e exige que
-`compararBase` **não** reclame — e confere antes que a perturbação sintética
-ainda reproduz essa magnitude, para o teste não passar por ter virado outra
-coisa. Fica **vermelho** no dia em que o portão ficar mais fino.
+O plano era apertar o pico de 60 para 30 (o pior pico de ruído observado foi 3).
+A sabotagem mostrou que ele virara **botão morto**: numa célula de 4×4 px são 48
+valores, e um único pixel mexendo 33 pontos já leva a média da região a passar de
+2 — a faixa exclusiva do pico seria um pixel entre 30 e 32. Devolver o pico a 60
+não acendeu teste nenhum. O número continua no relatório — diagnóstico não é
+limite —, mas deixou de ser portão.
+
+### Os testes, e por que são três
+
+Em `test/portao.mjs`, e andam juntos de propósito:
+
+1. **`um componente inteiro na coluna lateral reprova`** — a magnitude medida do
+   V1.15 (média global 0,85 · pico 56), que agora tem que ser pega. É o teste que
+   afirmava o defeito, com a afirmação invertida.
+2. **`um componente em paleta quase idêntica reprova`** — nasceu **da
+   sabotagem**. Pôr `GRADE = 1` deixou o teste 1 vermelho mesmo assim: quem o
+   pegava era o pico, não a grade, e a grade estava passando sem prova. Este é o
+   caso que **só ela** pega — um bloco de 8×4 px em Δ22, invisível ao portão
+   antigo (média global 0,7, pico 22) e média 22 na região.
+3. **`ruído de renderização não reprova`** — o preço dos outros dois. Apertar o
+   limite até tudo reprovar passaria os dois primeiros sozinho, e é exatamente a
+   sabotagem que o T2 declarou. O ruído no formato medido tem que continuar
+   passando.
+
+Em `test/visual.mjs` → `suiteBase`: `alguma largura capturada fica acima do
+max-width do .app`.
 
 ---
 
-## D-011 — a tela diz 20.000 simulações; o motor roda 154.000
+## D-011 — a tela diz 20.000 simulações; o motor roda 154.000 ✅ CORRIGIDO
 
 **Achado em:** inspeção visual pós-V1.15 · **Bloco dono:** **F0.7** (é dele a
-mudança que deixou o texto para trás) · **Estado:** ⚠️ REGISTRADO, NÃO CORRIGIDO
+mudança que deixou o texto para trás) · **Corrigido no:** T2 (junto com o D-010,
+por serem o mesmo defeito de método: número copiado envelhece)
 
 O F0.7 subiu `CONF.SIMS` de 20.000 para **154.000**, dimensionado pela cauda
-(§4.4.2) — e o texto da interface ficou onde estava. Sete lugares:
+(§4.4.2) — e o texto da interface ficou onde estava. Cinco lugares visíveis, não
+quatro; o quinto só apareceu com a varredura:
 
 ```
-app/index.html:2116  boot .............. "simulando 20.000 batalhas…"   VISÍVEL
-app/index.html:2134  home .............. "odds calculadas por 20.000…"  VISÍVEL
-app/index.html:2181  como funciona ..... "roda 20.000 batalhas…"        VISÍVEL
-app/index.html:2219  regras ............ "vem de 20.000 simulações…"    VISÍVEL
-app/index.html:2570, 2671, 2674 ........ comentários de código
+app/index.html  boot .............. "simulando 20.000 batalhas…"    VISÍVEL
+app/index.html  home .............. "odds calculadas por 20.000…"   VISÍVEL
+app/index.html  como funciona ..... "roda 20.000 batalhas…"         VISÍVEL
+app/index.html  regras ............ "vem de 20.000 simulações…"     VISÍVEL
+navegacao.mjs   cartões da home ... "20.000 simulações/odd"         VISÍVEL  <- este
++ sete comentários de código em app/ e engine/
 ```
 
-### Por que isto é grave neste projeto especificamente
+### Por que isto era grave neste projeto especificamente
 
 O painel da rodada mostra **"154K SIMS · CASA 8.0%"** ao lado das odds, e o
-painel de ADM publica `SIMULAÇÕES 154.000` no registro do §4.4.5. Ou seja: a
-tela de Regras afirma um número e a tela da arena afirma outro, na mesma sessão.
+painel de ADM publica `SIMULAÇÕES 154.000` no registro do §4.4.5. Ou seja: a tela
+de Regras afirmava um número e a tela da arena afirmava outro, na mesma sessão.
 
 **"Odd auditável" é a promessa escrita na tela de Regras.** Uma página que erra o
 número da própria auditoria gasta exatamente a confiança que o produto usa como
 diferencial — e o §P1 põe transparência como pilar, não como enfeite.
 
-### Por que não foi corrigido aqui
+### A correção: a página deixou de ter o número
 
-Não é do escopo de nenhum bloco aberto, e a regra do `CLAUDE.md` vale para
-correção fácil como vale para difícil: um bloco constrói só o que está no escopo
-dele. São quatro trechos de texto e três comentários — trabalho de minutos, e é
-justamente por parecer trivial que corrigir em silêncio seria o erro.
+Trocar os cinco textos teria sido trabalho de minutos e teria durado até a
+próxima vez que a constante mudasse. O que não dura é o número copiado; o que
+dura é a página não tê-lo.
 
-### Como corrigir sem repetir o problema
+`app/modules/sims.mjs` (camada 0) lê `CONF.SIMS` e preenche os marcadores
+`<b class="sims"></b>` no boot, antes de qualquer tela — inclusive a de boot, que
+é a primeira que o jogador lê. `data-sims="k"` pede a forma curta.
 
-**O número não pode ser redigitado.** A correção certa injeta `CONF.SIMS` nos
-quatro textos no carregamento, como o painel de odds já faz. Texto que repete uma
-constante do motor envelhece na primeira vez que a constante muda — foi o que
-aconteceu aqui, e foi o que aconteceu com a lista do §4.7 em `test/telemetria.mjs`.
+Os comentários de código que afirmavam 20.000 como fato de hoje passaram a citar
+`CONF.SIMS` ou a omitir o número. Os que registram **história** ficaram: "os
+20.000 herdados da base v0.8 dimensionavam a faixa média" é medição datada, e
+medição datada não envelhece.
 
-### O teste
+### Os testes, e por que são três
 
-`test/conteudo.mjs` ganha a varredura: nenhum texto visível pode afirmar um
-número de simulações diferente de `CONF.SIMS`. Ele fica **vermelho hoje** — é a
-forma de o F0.7 saber que ainda deve isso.
+1. `test/conteudo.mjs` → **`nenhum texto visível redigita o número de
+   simulações`**. Varre `app/index.html` fora de `<script>` e de comentário, e
+   todos os módulos de `app/modules/` fora de comentário. Ficou **vermelho** na
+   primeira execução, com os quatro trechos do HTML.
+2. `test/conteudo.mjs` → **`as quatro telas que citam o Monte Carlo trazem o
+   marcador`**. O outro lado: proibir o número redigitado é passado com louvor
+   por uma página que apagou a frase inteira.
+3. `test/visual.mjs` → **`o número de simulações na tela é o que o motor roda`**.
+   O Q5, e é o que prova a peça: um marcador que ninguém preenche passa nos dois
+   testes estáticos e deixa a página com um buraco onde estava a promessa de
+   auditoria. **Testar a declaração não testa a peça** — a lição do S30, S53,
+   S65, S69, S77, S78, S86 e S89, agora também aqui.
+
+> Ele conta **três** marcadores vivos, e não os quatro do HTML: o quarto mora
+> dentro do `#boot`, que é removido assim que a primeira rodada fica pronta.
+

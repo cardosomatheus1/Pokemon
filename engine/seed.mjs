@@ -5,7 +5,7 @@
  * raiz é guardar a rodada inteira.
  *
  * Antes do F0.5 eram cinco `Math.random()` soltos, e nada era reproduzível:
- * nem a pool, nem o clima, nem as 20.000 simulações que formam o preço. Isso
+ * nem a pool, nem o clima, nem as simulações que formam o preço. Isso
  * não é detalhe de arrumação — é o que impede a auditoria do §25.2, onde a
  * casa publica o compromisso antes e a raiz depois, e qualquer um recalcula.
  *
@@ -45,8 +45,8 @@ export function derivar(raiz, rotulo) {
   return misturar(misturar(raiz >>> 0) ^ hashRotulo(String(rotulo)));
 }
 
-/* Sub-seed indexada, para as 20.000 simulações do Monte Carlo. O rótulo é
-   derivado uma vez e o índice entra misturado — evita 20.000 hashes de string
+/* Sub-seed indexada, para as simulações do Monte Carlo. O rótulo é
+   derivado uma vez e o índice entra misturado — evita um hash de string por
    no caminho quente sem abrir mão da dispersão. */
 export function derivarIndice(raiz, rotulo, i) {
   return misturar(derivar(raiz, rotulo) ^ misturar(i >>> 0));

@@ -21,6 +21,8 @@ import { extname, join, sep } from 'node:path';
 import { criarSuite, igual, ok } from './harness.mjs';
 import { digital as digitalNode, rodada as rodadaNode } from './rodada-digital.mjs';
 import { sortearArena } from '../app/modules/arenas-dados.mjs';
+import { CONF as MOTOR_CONF } from '../engine/engine.mjs';
+const CONF_SIMS = MOTOR_CONF.SIMS;
 
 const RAIZ = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const PW = '/tmp/pw/node_modules/playwright-core/index.mjs';
@@ -114,7 +116,19 @@ async function impressao(pg) {
   }, { b64: png, lado: LADO });
 }
 
+/* AS LARGURAS DA LINHA DE BASE (T2).
+ *
+ * Eram três: 1440, 1100 e 700. O `.app` da arena tem `max-width: 1560px`, então
+ * o arranjo COMPLETO — as tres zonas com folga dos dois lados — nao existia em
+ * nenhuma largura capturada. Medido no D-010: mexer no proprio `max-width`, que
+ * reposiciona uma coluna inteira, moveu a digital em media 0,03 · pico 2. Nao
+ * porque o portao seja cego: porque a mudanca acontecia numa largura que ele
+ * nao olhava.
+ *
+ * `panoramico` fica ACIMA do `max-width`, que e onde as goteiras aparecem e o
+ * arranjo para de crescer. */
 const LARGURAS = [
+  { nome: 'panoramico', w: 1920, h: 1000 },
   { nome: 'largo',  w: 1440, h: 900 },
   { nome: 'medio',  w: 1100, h: 900 },
   { nome: 'estreito', w: 700, h: 900 },
@@ -206,17 +220,77 @@ const primeiraDiferenca = (a, b) => {
   return `posição ${i}: "${a.slice(i, i + 60)}" contra "${b.slice(i, i + 60)}"`;
 };
 
+/* A COMPARAÇÃO É POR REGIÃO, e não pela tela inteira (T2, fecha o D-010).
+ *
+ * A versão anterior media média e pico sobre os 3.072 valores da digital de uma
+ * vez. Um card inteiro de colocação — doze linhas com retrato, nome e estado —
+ * mediu **média 0,85 · pico 56** contra um limite de `média > 3` ou `pico > 60`:
+ * passou 7 % por baixo. Não por cegueira à periferia (uma mudança grosseira na
+ * mesma coluna marca pico 123 e reprova), mas porque um componente que RESPEITA
+ * A PALETA em volta mexe pouco em cada pixel — e a média da tela inteira dilui o
+ * pouco que ele mexe em muito que ele não mexe.
+ *
+ * Um componente ocupa uma REGIÃO. Medir por região é medir onde ele está.
+ *
+ * A grade e os limites são medidos, não escolhidos. Duas capturas da MESMA
+ * interface, nas quatro larguras, nas quatro telas:
+ *
+ *   grade    pior média de região (ruído)   mesma métrica no componente
+ *   1x1                 0,04                          0,82
+ *   2x2                 0,07                          1,75
+ *   4x4                 0,15                          3,50
+ *   8x8                 0,38                          7,00     <- escolhida
+ *
+ * A 8x8 é a que mais separa: 18x entre ruído e sinal. O limite de 2 fica 5x
+ * acima do ruído medido e 3,5x abaixo do sinal — folga dos dois lados, que é o
+ * que impede tanto o falso positivo quanto o afrouxamento silencioso.
+ *
+ * O LIMITE DE PICO SAIU, e a medição é que o tirou. Numa célula de 4x4 px são
+ * 48 valores: um único pixel mexendo 33 pontos já leva a média da região a
+ * passar de 2. Qualquer pico que importe já é pego pela média — o limite de pico
+ * só cobriria a faixa de um pixel entre 30 e 32, e um limite que ninguém
+ * consegue acionar é botão morto no painel. A sabotagem provou: devolver o pico
+ * a 60 não acendeu teste nenhum.
+ *
+ * O NÚMERO continua no relatório, porque diagnóstico não é limite: "média 7,0,
+ * pico 56" diz componente; "média 7,0, pico 8" diz tom de fundo inteiro.
+ *
+ * E o relatório passa a dizer ONDE. "arena@largo: região 7,2" é diagnóstico;
+ * "arena@largo: média 0,9" é um número. */
+export const GRADE = 8;            // 8x8 regiões de 4x4 px na digital de 32x32
+export const LIM_MEDIA_REGIAO = 2;
+
+/* Cada região da digital, com média e pico da diferença. Exportada porque é o
+   que a medição do T2 usa — e porque um teste que refaz a conta por fora
+   testaria a cópia, não a peça. */
+export function diferencaPorRegiao(a, b, grade = GRADE) {
+  const cel = LADO / grade, out = [];
+  for (let ry = 0; ry < grade; ry++) for (let rx = 0; rx < grade; rx++) {
+    let soma = 0, pico = 0, n = 0;
+    for (let y = ry * cel; y < (ry + 1) * cel; y++)
+      for (let x = rx * cel; x < (rx + 1) * cel; x++) {
+        const i = (y * LADO + x) * 3;
+        for (let c = 0; c < 3; c++) {
+          const d = Math.abs(a[i + c] - b[i + c]); soma += d; if (d > pico) pico = d; n++;
+        }
+      }
+    out.push({ rx, ry, media: soma / n, pico });
+  }
+  return out;
+}
+
 export function compararBase(atual, base) {
   const falhas = [];
   for (const chave of Object.keys(base)) {
     const a = atual[chave], b = base[chave];
     if (!a) { falhas.push(`${chave}: captura não produzida`); continue; }
-    let soma = 0, pior = 0;
-    for (let i = 0; i < b.length; i++) { const d = Math.abs(a[i] - b[i]); soma += d; if (d > pior) pior = d; }
-    const medio = soma / b.length;
-    /* tolerância: média baixa aceita ruído de renderização; o pico existe para
-       pegar mudança localizada que a média dilui. */
-    if (medio > 3 || pior > 60) falhas.push(`${chave}: diferença média ${medio.toFixed(1)}, pico ${pior}`);
+    const fora = diferencaPorRegiao(a, b).filter(r => r.media > LIM_MEDIA_REGIAO);
+    if (!fora.length) continue;
+    /* a pior região primeiro: é a que diz o que mudou */
+    fora.sort((x, y) => y.media - x.media);
+    const onde = fora.slice(0, 3)
+      .map(r => `região ${r.rx},${r.ry} (média ${r.media.toFixed(1)}, pico ${r.pico})`).join('; ');
+    falhas.push(`${chave}: ${fora.length} de ${GRADE * GRADE} regiões fora — ${onde}`);
   }
   for (const chave of Object.keys(atual)) if (!(chave in base)) falhas.push(`${chave}: tela nova, sem linha de base`);
   return falhas;
@@ -277,6 +351,8 @@ export async function rodar() {
     /* O CONTRÁRIO do clima, lido no MESMO instante para deixar isso explícito:
        a arena não dá bônus nenhum, então o selo dela tem que estar no ar já na
        fase de aposta. Selo apagado aqui é o V1.14 desligado. */
+    /* D-011: os marcadores do número de simulações, como o jogador os lê. */
+    simsNaTela: [...document.querySelectorAll('.sims')].map(e => e.textContent.trim()),
     arenaNaTela: document.querySelector('#arenaBadge')?.textContent ?? '',
     arenaSeloVisivel: !!document.querySelector('#arenaBadge')?.classList.contains('show'),
     fase: document.querySelector('#phase')?.textContent,
@@ -654,6 +730,31 @@ export function suiteRodadaViva(r) {
      que o resultado chegou ao selo. Trocar `S.seeds.visual` por
      `S.seeds.elenco` numa linha de `fases.mjs` continuaria verde em tudo o
      mais. */
+  /* D-011 · O NÚMERO NA TELA É O DO MOTOR, E FOI PREENCHIDO DE VERDADE.
+   *
+   * O teste estático em `test/conteudo.mjs` prova que o número não está
+   * REDIGITADO. Prova nenhuma de que ele está ESCRITO: um marcador que ninguém
+   * preenche passa naquele teste com louvor e deixa a página com um buraco onde
+   * estava a promessa de auditoria. Testar a declaração não testa a peça.
+   *
+   * Aqui é a peça: quatro marcadores, todos com o valor de `CONF.SIMS`. */
+  s.teste('o número de simulações na tela é o que o motor roda', () => {
+    /* TRÊS, e não os quatro do HTML: o quarto vive dentro do `#boot`, que é
+       removido assim que a primeira rodada fica pronta. Quem conta os quatro é
+       o teste estático em `test/conteudo.mjs` — este conta os que sobrevivem
+       ao boot, que são os que o jogador lê depois. */
+    ok(r.simsNaTela.length >= 3,
+      `${r.simsNaTela.length} marcador(es) .sims vivos na página, esperado ao menos 3 ` +
+      `(home, como funciona, regras)`);
+    const esperado = CONF_SIMS.toLocaleString('pt-BR');
+    const vazios = r.simsNaTela.filter(t => !t).length;
+    ok(vazios === 0,
+      `${vazios} marcador(es) .sims ficaram vazios — preencherSims() não rodou`);
+    const errados = r.simsNaTela.filter(t => t !== esperado);
+    ok(errados.length === 0,
+      `marcador(es) fora de CONF.SIMS (${esperado}): ${[...new Set(errados)].join(' · ')}`);
+  });
+
   s.teste('a arena anunciada é a que a raiz reproduz', () => {
     ok(r.arenaSeloVisivel,
       'o selo de arena não está no ar na fase de aposta — a arena não dá bônus, não há o que esconder');
@@ -674,8 +775,32 @@ export function suiteBase(atual, base) {
       `\n      Se a mudança é intencional, regrave com npm run test:gerar e explique no commit.`);
   });
   s.teste('a linha de base cobre as telas e larguras declaradas', () => {
-    ok(Object.keys(base).length === 12,
-      `linha de base tem ${Object.keys(base).length} entradas, esperado 12 (4 telas x 3 larguras)`);
+    const esperado = 4 * LARGURAS.length;
+    ok(Object.keys(base).length === esperado,
+      `linha de base tem ${Object.keys(base).length} entradas, ` +
+      `esperado ${esperado} (4 telas x ${LARGURAS.length} larguras)`);
+  });
+
+  /* O PORTÃO TEM QUE OLHAR ONDE O ARRANJO TERMINA DE CRESCER (T2).
+   *
+   * Metade do D-010 era isto: o `.app` para de crescer no `max-width`, e nenhuma
+   * largura capturada chegava lá. Mexer numa coluna inteira acima desse ponto
+   * movia a digital em média 0,03 — invisível, porque acontecia numa largura que
+   * o portão não olhava.
+   *
+   * O teste lê o `max-width` do CSS de verdade em vez de repetir o número aqui:
+   * quem subir o `max-width` amanhã encontra este teste vermelho, e não uma
+   * cobertura que calou. */
+  s.teste('alguma largura capturada fica acima do max-width do .app', () => {
+    const css = readFileSync(new URL('../app/index.html', import.meta.url).pathname, 'utf8');
+    const m = css.match(/\.app\s*\{[^}]*max-width:\s*(\d+)px/);
+    ok(m, 'não achei o max-width do .app em app/index.html — o teste perdeu a âncora');
+    const teto = Number(m[1]);
+    const acima = LARGURAS.filter(L => L.w > teto);
+    ok(acima.length > 0,
+      `o .app para de crescer em ${teto}px e a maior largura capturada é ` +
+      `${Math.max(...LARGURAS.map(L => L.w))}px — o arranjo completo, com as ` +
+      `goteiras dos dois lados, não aparece em nenhuma captura (D-010)`);
   });
   return s;
 }
