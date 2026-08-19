@@ -106,7 +106,13 @@ body{
 }
 
 /* ============ LAYOUT ============ */
-.app{display:flex;gap:14px;align-items:flex-start;width:100%;max-width:1420px;
+/* 1790 e não 1420, e a diferença é o BANNER DE BATALHA.
+   O v0.8 tinha quatro colunas e cabia em 1420. O V1.15 acrescentou a quinta, e
+   as cinco somam ~1496 com os vãos — o limite antigo empurrava a coluna de
+   abates e colocação para baixo da dobra, onde ninguém a vê durante a luta.
+   A v1.0 do porte já tinha subido este número pelo mesmo motivo; a linha ficou
+   para trás quando trouxemos as colunas. */
+.app{display:flex;gap:14px;align-items:flex-start;width:100%;max-width:1790px;
   justify-content:center;margin:0 auto;flex-wrap:wrap}
 .stage{width:min(430px,100%);flex:0 0 auto;display:flex;flex-direction:column;gap:8px}
 .col{width:270px;flex:0 0 auto;display:flex;flex-direction:column;gap:10px}
@@ -2004,7 +2010,12 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 
 /* cartão de cosmético shiny: precisa dizer, de relance, se está ligado */
 .opt.shiny{position:relative}
-.opt.shiny .sflag{position:absolute;top:4px;right:4px;font-size:.44rem;letter-spacing:.1em;
+/* O rótulo cabe no cartão, ou não é rótulo. Com `CONQUISTADO` por extenso ele
+   vazava dos dois lados de um cartão de ~62px e cobria o sprite — só se vê
+   olhando a tela, e é por isso que o D-010 ganhou dono. */
+.opt.shiny .sflag{position:absolute;top:3px;right:3px;max-width:calc(100% - 6px);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:.40rem;letter-spacing:.06em;
   text-transform:uppercase;font-family:var(--dsp);font-weight:700;padding:2px 5px;
   border-radius:5px;background:rgba(0,0,0,.6);color:var(--dim);border:1px solid var(--line)}
 .opt.shiny.on .sflag{color:var(--onAccent);background:var(--gold);border-color:var(--gold);

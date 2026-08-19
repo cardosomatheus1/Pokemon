@@ -100,7 +100,8 @@ function admMargem(){
           'o mesmo valor que a tela mostra ao lado das odds') +
     `<div class="row" style="margin-top:9px">
        <input type="number" id="admMargemVal" step="0.01" min="0" max="${MARGEM_MAX}"
-              value="${c.margem === null ? '' : c.margem}" placeholder="ex.: 0.08" style="max-width:130px">
+              value="${c.margem === null ? '' : c.margem}" placeholder="ex.: 0.08"
+              style="flex:0 0 150px;padding:8px 10px">
        <button class="btn" id="admMargemOk">Aplicar</button>
        <button class="btn" id="admMargemOff">Usar a do motor</button>
      </div>
@@ -154,7 +155,7 @@ function admShinyLab(){
       const g = gifShinyAtivo(p, e.dex), k = skinShinyAtiva(p, e.dex);
       return `<div class="opt shiny ${tem ? 'on' : ''}" data-adm-shiny="${e.dex}">
         ${dexImg(e.dex, e.n, 'loading="lazy"', g)}
-        <span class="sflag">${tem ? (g ? 'GIF' : '') + (k ? ' arena' : '') || 'guardado' : 'conceder'}</span>
+        <span class="sflag">${tem ? ((g ? 'GIF' : '') + (k ? ' arena' : '')).trim() || 'guardado' : 'conceder'}</span>
         <div class="cap">${nomeExibido(e.n)}</div></div>`;
     }).join('') + '</div>';
 

@@ -141,8 +141,11 @@ function renderCustom(){
  *     dentro daquela vaga, então pede confirmação)
  *   · quem JÁ tem alterna GIF e SKIN separadamente, sem custo nenhum
  *
- * A lista sai dos Pokémon em que o jogador já apostou. Desbloquear um bicho que
- * ele nunca viu não seria conquista — seria catálogo. */
+ * A lista é o elenco inteiro, ORDENADO pelos que o jogador mais apostou — o
+ * mesmo `customMons()` do avatar e do banner. (O comentário anterior dizia "sai
+ * dos Pokémon em que ele já apostou", e isso não é o que a função faz.
+ * Restringir seria uma regra a mais para o jogador descobrir sozinho, e a
+ * conquista já está na vaga, não na lista.) */
 function renderShiny(){
   const grade = $('#pickShiny'); if (!grade) return;
   const nivel = nivelDe(S.profile.xp || 0);
@@ -164,13 +167,13 @@ function renderShiny(){
     if (!tem) return `
       <div class="opt shiny ${livres > 0 ? '' : 'bloqueado'}" data-shiny-novo="${m.dex}">
         ${dexImg(m.dex, m.n, 'loading="lazy"', true)}
-        <span class="sflag">${livres > 0 ? 'usar vaga' : 'sem vaga'}</span>
+        <span class="sflag">${livres > 0 ? '+ vaga' : 'sem vaga'}</span>
         <div class="cap">${nomeExibido(m.n)}</div>
       </div>`;
     return `
       <div class="opt shiny on" data-shiny-tem="${m.dex}">
         ${dexImg(m.dex, m.n, 'loading="lazy"', g)}
-        <span class="sflag">conquistado</span>
+        <span class="sflag">✓ seu</span>
         <div class="cap">${nomeExibido(m.n)}</div>
         <div class="sbtns">
           <button class="sbtn ${g ? 'on' : ''}" data-shiny-gif="${m.dex}">GIF</button>

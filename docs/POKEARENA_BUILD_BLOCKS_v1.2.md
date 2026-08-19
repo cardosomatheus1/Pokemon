@@ -954,10 +954,17 @@ colocação do V1.15 mediu **média 0,85 · pico 56** contra um limite de
 **Não é cegueira à periferia**, e o verbete do D-010 registra a correção desse
 diagnóstico: uma mudança grosseira na mesma coluna marca pico 123 e reprova.
 
-**Três caminhos, e a escolha é de custo:** digital de 64×64; captura de página
-inteira em vez de viewport (resolve o sumiço nas larguras menores, e regrava as
-doze telas de uma vez); ou digital **por região**, uma por coluna — a única que
-dá diagnóstico em vez de um número só.
+**Comece pela largura, que é o mais barato.** A linha de base captura em 1440,
+1000 e 480 px, e o `.app` da arena tem `max-width: 1790px` desde o V1.15 — o
+layout de cinco colunas **só existe acima de 1420 px, e nenhuma largura capturada
+chega lá**. Medido: corrigir o `max-width`, que reposiciona uma coluna inteira,
+moveu a digital em média 0,03 · pico 2. Uma quarta largura acima de 1790 cobre o
+layout completo sem tocar em mais nada.
+
+**Depois, se ainda precisar:** digital de 64×64; captura de página inteira em vez
+de viewport (resolve o sumiço nas larguras menores, e regrava as doze telas de
+uma vez); ou digital **por região**, uma por coluna — a única que dá diagnóstico
+em vez de um número só.
 
 **Sabotagem:** afrouxar o limite em vez de afinar a resolução; comparar só a
 média e largar o pico; regravar a linha de base dentro do próprio portão.
@@ -967,6 +974,15 @@ o teste `D-010` de `test/portao.mjs`, que hoje afirma o defeito e fica vermelho
 quando ele fechar.
 
 **Saída:** um componente inteiro na coluna lateral reprova a linha de base.
+
+> **O V1.15 deu ao T2 três provas a mais, todas achadas com o olho e nenhuma
+> pelos portões:** um rótulo de texto transbordando o cartão (`CONQUISTADO` num
+> cartão de 62 px), uma coluna inteira empurrada para fora da dobra por um
+> `max-width` que ficou para trás no porte, e um campo de formulário estreito
+> demais para o próprio placeholder. As três passaram por 299 testes verdes.
+>
+> **O portão Q5 prova que a página FUNCIONA; ele não prova que ela está
+> LEGÍVEL.** São perguntas diferentes, e hoje só a primeira tem rede.
 
 
 ---

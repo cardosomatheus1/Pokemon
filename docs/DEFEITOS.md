@@ -544,6 +544,20 @@ Três caminhos, e a escolha é de custo:
    trabalho, e é a única que dá diagnóstico ("mudou a coluna de colocação") em
    vez de um número só.
 
+### A terceira prova, e a mais acionável: as LARGURAS
+
+A linha de base captura em **1440, 1000 e 480** px. O `.app` da arena tem
+`max-width: 1790px` desde o V1.15 — ou seja, **o layout de cinco colunas só
+existe acima de 1420 px, e nenhuma largura capturada chega lá.**
+
+Medido: corrigir o `max-width` de 1420 para 1790, o que reposiciona uma coluna
+inteira na tela, moveu a linha de base em **média 0,03 · pico 2** — ruído de
+renderização. A correção é invisível ao portão porque acontece numa largura que
+ele não olha.
+
+**Isto é mais barato de resolver que a resolução da digital:** acrescentar uma
+quarta largura acima de 1790 cobre o layout completo sem tocar em nada mais.
+
 ### O teste que afirma o defeito
 
 `test/portao.mjs` → `D-010 · um componente inteiro cabe sob o limite da linha de
@@ -551,3 +565,51 @@ base`. Ele reconstrói a magnitude **medida** (média ~0,85, pico 56) e exige qu
 `compararBase` **não** reclame — e confere antes que a perturbação sintética
 ainda reproduz essa magnitude, para o teste não passar por ter virado outra
 coisa. Fica **vermelho** no dia em que o portão ficar mais fino.
+
+---
+
+## D-011 — a tela diz 20.000 simulações; o motor roda 154.000
+
+**Achado em:** inspeção visual pós-V1.15 · **Bloco dono:** **F0.7** (é dele a
+mudança que deixou o texto para trás) · **Estado:** ⚠️ REGISTRADO, NÃO CORRIGIDO
+
+O F0.7 subiu `CONF.SIMS` de 20.000 para **154.000**, dimensionado pela cauda
+(§4.4.2) — e o texto da interface ficou onde estava. Sete lugares:
+
+```
+app/index.html:2116  boot .............. "simulando 20.000 batalhas…"   VISÍVEL
+app/index.html:2134  home .............. "odds calculadas por 20.000…"  VISÍVEL
+app/index.html:2181  como funciona ..... "roda 20.000 batalhas…"        VISÍVEL
+app/index.html:2219  regras ............ "vem de 20.000 simulações…"    VISÍVEL
+app/index.html:2570, 2671, 2674 ........ comentários de código
+```
+
+### Por que isto é grave neste projeto especificamente
+
+O painel da rodada mostra **"154K SIMS · CASA 8.0%"** ao lado das odds, e o
+painel de ADM publica `SIMULAÇÕES 154.000` no registro do §4.4.5. Ou seja: a
+tela de Regras afirma um número e a tela da arena afirma outro, na mesma sessão.
+
+**"Odd auditável" é a promessa escrita na tela de Regras.** Uma página que erra o
+número da própria auditoria gasta exatamente a confiança que o produto usa como
+diferencial — e o §P1 põe transparência como pilar, não como enfeite.
+
+### Por que não foi corrigido aqui
+
+Não é do escopo de nenhum bloco aberto, e a regra do `CLAUDE.md` vale para
+correção fácil como vale para difícil: um bloco constrói só o que está no escopo
+dele. São quatro trechos de texto e três comentários — trabalho de minutos, e é
+justamente por parecer trivial que corrigir em silêncio seria o erro.
+
+### Como corrigir sem repetir o problema
+
+**O número não pode ser redigitado.** A correção certa injeta `CONF.SIMS` nos
+quatro textos no carregamento, como o painel de odds já faz. Texto que repete uma
+constante do motor envelhece na primeira vez que a constante muda — foi o que
+aconteceu aqui, e foi o que aconteceu com a lista do §4.7 em `test/telemetria.mjs`.
+
+### O teste
+
+`test/conteudo.mjs` ganha a varredura: nenhum texto visível pode afirmar um
+número de simulações diferente de `CONF.SIMS`. Ele fica **vermelho hoje** — é a
+forma de o F0.7 saber que ainda deve isso.
