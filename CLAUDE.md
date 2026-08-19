@@ -98,14 +98,38 @@ explicitamente, para que a ausência seja decisão e não esquecimento.
 ## Comandos
 
 ```bash
-npm run portoes      # suíte DUAS vezes com navegador + sabotagem
-npm run repetir      # só a repetição — instável reprova como vermelho
-npm run assets       # baixa a arte para assets/, fora do versionamento
-npm test             # suíte (pula Q5 se não houver navegador)
-npm run sabotagem    # Q2 — ~6 min em 4 cores desde o F0.11
-npm run test:gerar   # regrava fixtures E linha de base visual
-npm run snapshot     # regera o instantâneo do protótipo (paridade)
+npm run portoes            # suíte DUAS vezes com navegador + sabotagem
+npm run repetir            # só a repetição — instável reprova como vermelho
+npm run assets             # baixa a arte para assets/, fora do versionamento
+npm test                   # suíte (pula Q5 se não houver navegador)
+npm run sabotagem          # Q2 completo — obrigatório para fechar bloco
+npm run sabotagem:tocados  # Q2 parcial, DURANTE a construção (ver abaixo)
+npm run test:gerar         # regrava fixtures E linha de base visual
+npm run snapshot           # regera o instantâneo do protótipo (paridade)
 ```
+
+### `sabotagem:tocados` acelera a construção, e não fecha bloco nenhum
+
+Roda só os defeitos ancorados em arquivo que o `git status` mostra alterado.
+Medido no V1.14: **15 de 78 defeitos, 2,3 min em vez de 12**. Serve para saber
+se os defeitos NOVOS do bloco funcionam, sem pagar o portão inteiro a cada
+tentativa.
+
+**Não substitui o `npm run sabotagem`.** Um bloco que mexe no `render.mjs` pode
+quebrar um defeito ancorado na `coreografia.mjs`, e só a execução completa vê
+isso — foi exatamente o que aconteceu com o S15 no V1.14. O modo grita isso no
+começo e no fim, e o `npm run portoes` continua rodando o portão inteiro.
+
+### O pré-voo
+
+Antes de montar caixa de areia, a sabotagem confere que cada defeito ainda tem
+onde ser plantado: âncora presente **exatamente uma vez**, arquivo legível, `de`
+diferente de `para`, id único. Aborta em 0,1 s se algo estiver errado.
+
+Existe porque o V1.14 gastou **19 dos seus 53 minutos de portão** com duas
+falhas dessa classe. Âncora perdida quase sempre significa que um bloco moveu o
+trecho — **realve o defeito para onde o comportamento mora hoje, não apague o
+defeito.**
 
 **Zero dependências no repositório.** O portão Q5 precisa de `playwright-core`,
 instalado **fora** do projeto — ver `tools/README.md`. `npm test` pula Q5 com

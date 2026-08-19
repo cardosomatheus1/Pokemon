@@ -25,6 +25,7 @@ import * as saida from './saida-v09.mjs';
 import * as progressao from './progressao.mjs';
 import * as tema from './tema.mjs';
 import * as arenas from './arenas.mjs';
+import * as portao from './portao.mjs';
 import * as visual from './visual.mjs';
 
 if (process.argv.includes('--gerar')) {
@@ -72,14 +73,44 @@ let rVisual = null, baseAtual = null, baseGravada = null, digitaisNav = null, rS
    raízes comparadas — fixas, para que a falha seja reproduzível. */
 const RAIZES_Q3 = [1, 42, 0xC0FFEE, 0xFFFFFFFF, 987654321];
 if (visual.disponivel() && !semVisual) {
-  rVisual = await visual.rodar();
-  baseAtual = await visual.capturarBase();
+  const temLocal = visual.temAssetsLocais();
+  if (!temLocal && exigeLocal) {
+    console.error('\nassets locais ausentes: rode npm run assets (ver tools/README.md)'); process.exit(2);
+  }
+  /* AS CINCO EXECUÇÕES DE NAVEGADOR SÃO INDEPENDENTES, E ROLAVAM EM FILA.
+   *
+   * Cada uma sobe o seu próprio servidor em porta efêmera e o seu próprio
+   * Chromium; nenhuma lê o resultado da outra. Medido antes desta mudança:
+   * suíte 122 s com navegador, 55 s sem — os 67 s de diferença eram quase
+   * todos partida a frio, cinco vezes, uma depois da outra, numa máquina de
+   * quatro núcleos.
+   *
+   * Nada é pulado nem afrouxado: as mesmas cinco execuções, com os mesmos
+   * dados, na mesma máquina. Só deixam de esperar umas pelas outras.
+   *
+   * `Promise.all` e não `allSettled` de propósito: falha de navegador tem que
+   * derrubar a execução, e não virar um `null` que a suíte lê como "pulado". */
+  [rVisual, baseAtual, digitaisNav, rTemaCedo, rSemRede] = await Promise.all([
+    visual.rodar(),
+    visual.capturarBase(),
+    visual.digitaisNoNavegador(RAIZES_Q3),
+    visual.rodarTemaSemModulos(),
+    temLocal ? visual.rodarSemRede() : Promise.resolve(null),
+  ]);
   baseGravada = JSON.parse(readFileSync(new URL('./fixtures/visual-base.json', import.meta.url), 'utf8'));
-  digitaisNav = await visual.digitaisNoNavegador(RAIZES_Q3);
-  rTemaCedo = await visual.rodarTemaSemModulos();
-  if (visual.temAssetsLocais()) rSemRede = await visual.rodarSemRede();
-  else if (exigeLocal) { console.error('\nassets locais ausentes: rode npm run assets (ver tools/README.md)'); process.exit(2); }
-  else console.log('  · teste de egresso fechado pulado (sem assets locais) — use npm run assets\n');
+  if (!temLocal) console.log('  · teste de egresso fechado pulado (sem assets locais) — use npm run assets\n');
+
+  /* RESULTADO AUSENTE NÃO PODE VIRAR SUÍTE AUSENTE.
+     Antes, cada `await` alimentava uma variável e a lista de suítes montava o
+     que existisse. Em paralelo, um erro engolido daria `undefined` e a suíte
+     correspondente simplesmente não apareceria no relatório — portão que some
+     em silêncio é a definição de portão decorativo. */
+  const faltando = [['visual', rVisual], ['linha de base', baseAtual],
+                    ['ambientes', digitaisNav], ['tema-cedo', rTemaCedo]]
+    .filter(([, v]) => !v).map(([n]) => n);
+  if (faltando.length) {
+    console.error(`\nQ5 incompleto: sem resultado de ${faltando.join(', ')}.`); process.exit(2);
+  }
 }
 else if (exigeVisual && !semVisual) { console.error('\nQ5 indisponível: instale playwright-core (ver tools/README.md)'); process.exit(2); }
 else console.log('  · Q5 visual pulado (sem navegador) — use npm run portoes para exigir\n');
@@ -103,7 +134,7 @@ const suites = [
   ...(semGolden ? [] : [golden.suite()]),
   /* baratas: varredura de texto e lotes pequenos */
   fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(),
-  carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(), telemetria.suite(), commit.suite(), saida.suite(), progressao.suite(), tema.suite(), arenas.suite(),
+  carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(), telemetria.suite(), commit.suite(), saida.suite(), progressao.suite(), tema.suite(), arenas.suite(), portao.suite(),
   /* médias: lotes de simulação curtos */
   semente.suite(), estatistica.suite(), precisao.suite(), invariantes.suite(),
   ...(visual.disponivel() && !semVisual

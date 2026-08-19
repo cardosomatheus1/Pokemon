@@ -728,6 +728,41 @@ treinador novo), que era nosso e ele encontrou.
 
 **Fora do escopo, registrado e não corrigido:** **D-007** (os desafios diários emitem ~525 PC-B/semana contra os 80 agregados do Estudo Econômico, 6,5×), **L-026** (o baú não tem contra o que ser calibrado enquanto o D-007 durar) e **L-027** (o campo `brilho` do catálogo dele, documentado e nunca construído — portamos os quatro campos que existem e não inventamos o quinto).
 
+### T1 — O custo do portão ✅
+
+**Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Depende de** V1.14
+
+> **Trilha `T` — blocos de ferramenta.** Tocam só `test/` e `tools/`, nunca o
+> comportamento do jogo. Existem porque o portão é infraestrutura: quando ele
+> fica caro ou mentiroso, todo bloco seguinte paga. Um bloco `T` que altere um
+> byte de `app/`, `engine/` ou `content/` está fora do próprio escopo.
+
+**Escopo:** as três mudanças que a medição do V1.14 apontou. **Q6: sem superfície nova** — nada aqui é alcançável por usuário.
+
+**A medição que motivou o bloco.** O portão do V1.14 levou **52m39s** em 8 execuções, e **19 desses minutos — 36% — foram uma classe só de erro**: âncora de sabotagem. Uma execução morreu com `TypeError` no defeito 70 porque a lista de arquivos era escrita à mão e não conhecia dois módulos novos; outra rodou 12 minutos inteiros para revelar que o S15 tinha perdido a âncora. As duas informações se leem estaticamente, em 0,1 s.
+
+**1 · Pré-voo.** `test/ancoras.mjs` confere, antes de montar caixa nenhuma, que cada defeito tem âncora presente **exatamente uma vez**, arquivo legível, `de` diferente de `para` e id único. **Aborta**, não avisa e segue: defeito sem âncora conta como "não pego" no relatório, e portão que segue com defeito decorativo mente sobre a própria cobertura.
+
+> Contar, e não perguntar se existe. Âncora que casa duas vezes planta na primeira — que pode não ser a pretendida —, e aí o defeito passa a testar outra coisa sem ninguém saber.
+
+A lista de defeitos saiu para `test/defeitos-plantados.mjs`, para poder ser **lida sem ser executada**: `sabotagem.mjs` é um script com efeito colateral, e importá-lo de um teste rodaria o portão inteiro.
+
+**2 · `--tocados`.** Roda só os defeitos ancorados em arquivo que o `git status --porcelain` mostra alterado — `--porcelain` e não `git diff`, porque durante a construção o caso comum é arquivo recém-criado. Medido: **15 de 78 no V1.14, 2,3 min em vez de 12**. Sem arquivos tocados, devolve **tudo**: filtro que devolve demais custa tempo, filtro que devolve de menos entrega relatório verde sobre defeito que ninguém plantou. Serve à construção e grita, no começo e no fim, que não fecha o Q2.
+
+**3 · Os cinco navegadores em paralelo.** `visual.rodar()`, `capturarBase()`, `digitaisNoNavegador()`, `rodarTemaSemModulos()` e `rodarSemRede()` são independentes — cada uma sobe o próprio servidor em porta efêmera e o próprio Chromium — e rolavam em fila numa máquina de quatro núcleos. Medido: **122 s → 94 s** (a suíte sem navegador leva 55 s, então os 67 s de navegador viraram 39 s). `Promise.all` e não `allSettled`: falha tem que derrubar a execução, não virar um `null` que a suíte lê como "pulado" — e um guarda explícito reprova se qualquer um dos quatro resultados obrigatórios vier vazio.
+
+**Q2 · quatro defeitos novos (S79–S82), e um deles achou um erro meu no mesmo dia.**
+
+> **A primeira execução veio com os quatro "pegos por `portao`", inclusive o S82, que mexe em `run.mjs` e não tem nada a ver com âncora.** O motivo: eu tinha posto no `test/portao.mjs` uma conferência das âncoras da lista **real**, e dentro da caixa de areia o `de` do defeito plantado deixou de existir *por construção*. Qualquer defeito ficaria vermelho ali. A coluna "pego por" existe justamente para revelar área com cobertura fraca — um teste que pega tudo por tautologia **apaga** essa informação, e teria apagado para os 82.
+>
+> Corrigido marcando a caixa (`EM_SANDBOX=1`) e não registrando aquele teste ali. **O pulo é decisão, não esquecimento:** dentro da caixa a âncora perturbada é o comportamento esperado, fora dela o teste roda sempre, e a sabotagem ainda faz a mesma conferência no próprio pré-voo. Não há janela sem cobertura. Depois da correção o S82 voltou a aparecer como "só o navegador", que é a verdade.
+>
+> É o portão fazendo o trabalho dele contra quem o escreveu, e é a razão de Q2 ser obrigatório em todos os blocos.
+
+**Saída:** o portão do próximo bloco custa ~20 min de relógio em vez de ~53, sem uma suíte a menos, um defeito a menos ou uma asserção afrouxada.
+
+---
+
 ### V1.15 — Colocação, pódio e banner de batalha
 
 **Tam.** M · **Método** GL+INV · **Portões** Q1 Q2 Q5 · **Depende de** V1.13
