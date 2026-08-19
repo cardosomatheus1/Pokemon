@@ -18,6 +18,7 @@ import * as exposicao from './exposicao.mjs';
 import * as carteira from './carteira.mjs';
 import * as banco from './banco.mjs';
 import * as informacao from './informacao.mjs';
+import * as assets from './assets.mjs';
 import * as visual from './visual.mjs';
 
 if (process.argv.includes('--gerar')) {
@@ -55,8 +56,12 @@ const semGolden = process.env.SEM_GOLDEN === '1';
 /* Q5 exige navegador. `npm test` pula com aviso; `npm run portoes` exige,
    porque portão que pula em silêncio é decorativo. */
 const exigeVisual = process.env.EXIGE_VISUAL === '1';
+/* EXIGE_LOCAL=1 obriga a cópia local dos assets a existir. `npm run portoes`
+   exige; `npm test` avisa e segue. Portão que pula em silêncio é decorativo —
+   mesmo argumento do Q5. */
+const exigeLocal = process.env.EXIGE_LOCAL === '1';
 const semVisual = process.env.SEM_VISUAL === '1';   // usado pela sabotagem
-let rVisual = null, baseAtual = null, baseGravada = null, digitaisNav = null;
+let rVisual = null, baseAtual = null, baseGravada = null, digitaisNav = null, rSemRede = null;
 /* Q3 do F0.5 pede a mesma rodada reproduzida em dois ambientes JS. Estas são as
    raízes comparadas — fixas, para que a falha seja reproduzível. */
 const RAIZES_Q3 = [1, 42, 0xC0FFEE, 0xFFFFFFFF, 987654321];
@@ -65,6 +70,9 @@ if (visual.disponivel() && !semVisual) {
   baseAtual = await visual.capturarBase();
   baseGravada = JSON.parse(readFileSync(new URL('./fixtures/visual-base.json', import.meta.url), 'utf8'));
   digitaisNav = await visual.digitaisNoNavegador(RAIZES_Q3);
+  if (visual.temAssetsLocais()) rSemRede = await visual.rodarSemRede();
+  else if (exigeLocal) { console.error('\nassets locais ausentes: rode npm run assets (ver tools/README.md)'); process.exit(2); }
+  else console.log('  · teste de egresso fechado pulado (sem assets locais) — use npm run assets\n');
 }
 else if (exigeVisual && !semVisual) { console.error('\nQ5 indisponível: instale playwright-core (ver tools/README.md)'); process.exit(2); }
 else console.log('  · Q5 visual pulado (sem navegador) — use npm run portoes para exigir\n');
@@ -88,12 +96,13 @@ const suites = [
   ...(semGolden ? [] : [golden.suite()]),
   /* baratas: varredura de texto e lotes pequenos */
   fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(),
-  carteira.suite(), banco.suite(), exposicao.suite(),
+  carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(),
   /* médias: lotes de simulação curtos */
   semente.suite(), estatistica.suite(), precisao.suite(), invariantes.suite(),
   ...(visual.disponivel() && !semVisual
      ? [visual.suite(rVisual), visual.suiteBase(baseAtual, baseGravada),
-        visual.suiteAmbientes(digitaisNav, RAIZES_Q3), visual.suiteRodadaViva(rVisual)]
+        visual.suiteAmbientes(digitaisNav, RAIZES_Q3), visual.suiteRodadaViva(rVisual),
+        ...(rSemRede ? [visual.suiteSemRede(rSemRede)] : [])]
      : []),
   await paridade.suite(),
   /* caras: medições estatísticas grandes, por último de propósito */

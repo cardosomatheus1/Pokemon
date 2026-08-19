@@ -1,3 +1,4 @@
 node_modules/
 tools/.snapshot-prototipo.mjs
 engine/*.bak
+assets/

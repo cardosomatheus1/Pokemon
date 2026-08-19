@@ -600,7 +600,7 @@ Medido em 400 rodadas, estratificando a margem pelo número de lutadores daquele
 
 ---
 
-### F0.12 — Resolução de asset e cache local
+### F0.12 — Resolução de asset e cache local ✅
 
 **Tam.** P · **Método** INV · **Portões** Q1 Q2 Q5 · **Depende de** F0.4
 
@@ -617,6 +617,18 @@ Medido em 400 rodadas, estratificando a margem pelo número de lutadores daquele
 **Q6:** sem superfície nova — não versionamos arte de terceiros e o script não executa nada do que baixa.
 
 **Saída:** o jogo roda com a rede externa desligada. `npm run portoes` deixa de precisar do intermediário.
+
+**Entregue.** `app/modules/assets.mjs` implementa a cascata `local → origem → espelho`, e `tools/baixar-assets.mjs` baixa **666 arquivos** para `assets/`, fora do versionamento. Medido: o jogo abre, sorteia a rodada e desenha os 12 lutadores com **zero requisições externas**.
+
+> **O portão de egresso fechado revelou uma dependência que ninguém tinha contado.** Com todas as 449 folhas de *sprite* em disco, ainda saíam **148 requisições**: 70 para `PMDCollab/RawAsset` (as folhas de **efeito**, outro repositório), 41 para o espelho delas, 12 para retratos do Showdown, e 1 para o **Google Fonts**. A dependência de CDN era maior do que a lacuna L-017 descrevia, e só apareceu porque alguém tentou desligar a rede. Isso é o argumento inteiro do bloco: o arnês interceptava as requisições e as servia pelo Node, o que **escondia** a dependência em vez de testá-la.
+
+**A regra da v0.6.1 virou asserção.** Do `CLAUDE.md`: *"o resgate busca a MESMA coisa em outro endereço, nunca outra coisa"*. O teste percorre os candidatos de cada asset e exige que todos terminem no mesmo arquivo — o defeito **S58** troca o espelho por outra arte e fica vermelho.
+
+**Também saiu daqui:** `sprites-dados.mjs` e `efeitos-dados.mjs`, os dados puros de arte. O baixador precisa saber **quais** arquivos o jogo pede sem carregar meia interface junto; antes, qualquer ferramenta que quisesse essa lista teria que importar um módulo que fala com o `document`.
+
+**A fonte também.** `@import` de CSS não sabe cair para outro endereço, então o `@import` virou um `<link>` com resgate: a cópia local primeiro, o Google Fonts como reserva. Trocar de fonte mudaria a identidade visual em silêncio — a mesma classe de erro da v0.6.1, noutra roupa.
+
+**`npm run portoes` passou a exigir a cópia local** (`EXIGE_LOCAL=1`), pelo mesmo motivo que já exigia o navegador: portão que pula em silêncio é decorativo. `npm test` avisa e segue.
 
 > **Não versionar as folhas.** São arte de terceiros, mesma razão pela qual o `battle-theme.mp3` ficou de fora. O script baixa; o repositório não guarda.
 

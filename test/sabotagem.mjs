@@ -29,7 +29,7 @@
  *
  * Uso: node test/sabotagem.mjs
  */
-import { readFileSync, writeFileSync, cpSync, rmSync, mkdtempSync } from 'node:fs';
+import { existsSync, readFileSync, symlinkSync, writeFileSync, cpSync, rmSync, mkdtempSync } from 'node:fs';
 import { execFile, execFileSync } from 'node:child_process';
 import { cpus, tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -54,6 +54,8 @@ const PAINEL = 'app/modules/odds.mjs';
 const BOLSO  = 'engine/carteira.mjs';
 const BANCO  = 'app/modules/banco.mjs';
 const INFO   = 'test/informacao.mjs';
+const ASSETS = 'app/modules/assets.mjs';
+const FX     = 'app/modules/efeitos.mjs';
 
 const DEFEITOS = [
   /* Desde o F0.4 a tabela de tipos é DADO DO PACK, não do motor. O defeito é o
@@ -323,6 +325,22 @@ const DEFEITOS = [
     real:'atalho no teste — a medição passa a provar o oposto do que diz medir',
     de:'    const post = posterior(tabela, pool);',
     para:'    const post = CLIMAS.map(c => ({ key: c.key, p: c.key === climaReal.key ? 1 : 0 }));' },
+
+  /* --- defeitos do F0.12: a cascata de asset ---------------------------- */
+  { id:'S57', arquivo:ASSETS, nome:'a cascata começa pela rede, não pelo disco',
+    real:'ordem invertida numa arrumação — o jogo sai para fora com o arquivo em disco',
+    de:'  return [base + caminhoLocal(url), url, ...(espelho ? [espelho] : [])];',
+    para:'  return [url, base + caminhoLocal(url), ...(espelho ? [espelho] : [])];' },
+
+  { id:'S58', arquivo:ASSETS, nome:'o resgate busca OUTRA arte',
+    real:'"qualquer sprite serve, é só um efeito" — foi o erro que custou três versões na v0.6.1',
+    de:'export function candidatos(url, espelho, base = \'../\') {',
+    para:"export function candidatos(url, espelho, base = '../') {\n  espelho = 'https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/0001/Walk-Anim.png';" },
+
+  { id:'S59', arquivo:FX, nome:'a folha de efeito volta a ir direto para a rede',
+    real:'cascata desfeita ao mexer no CORS — 70 requisições por rodada voltam a sair',
+    de:'  const lista = candidatos(FX_BASE + path, FX_ESPELHO + path);',
+    para:'  const lista = [FX_BASE + path, FX_ESPELHO + path];' },
 ];
 
 /* --- COMO A SABOTAGEM RODA, E POR QUE ASSIM -----------------------------
@@ -370,7 +388,7 @@ const suitesQuePegaram = saida => {
 };
 
 const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES, LIGACAO, PACK, VALID,
-                  SEMENTE, FASES, PRECO, CLIMA, EXPO, PAINEL, BOLSO, BANCO, INFO];
+                  SEMENTE, FASES, PRECO, CLIMA, EXPO, PAINEL, BOLSO, BANCO, INFO, ASSETS];
 const originais = new Map();
 for (const f of ARQUIVOS) originais.set(f, readFileSync(f, 'utf8'));
 
@@ -383,6 +401,12 @@ for (let i = 0; i < N_TRAB; i++) {
   for (const dir of ['engine', 'app', 'test', 'prototype', 'content', 'tools'])
     cpSync(dir, join(c, dir), { recursive: true });
   cpSync('package.json', join(c, 'package.json'));
+  /* `.gitignore` entra porque test/assets.mjs afirma que a arte não é
+     versionada, e essa afirmação se lê nele. `assets/` entra por link
+     simbólico: são ~10 MB e copiá-los quatro vezes por execução é desperdício
+     puro — nenhum defeito plantado mexe em arte. */
+  cpSync('.gitignore', join(c, '.gitignore'));
+  if (existsSync('assets')) symlinkSync(join(process.cwd(), 'assets'), join(c, 'assets'), 'dir');
   CAIXAS.push(c);
 }
 console.log(`${N_TRAB} caixa(s) de areia em ${tmpdir()}\n`);

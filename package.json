@@ -1,16 +1,17 @@
 {
   "name": "pokearena",
-  "version": "0.9.0-F0.11",
+  "version": "0.9.0-F0.12",
   "private": true,
   "type": "module",
   "description": "PokéArena — battle royale de apostas com moeda simulada",
   "scripts": {
     "snapshot": "node tools/snapshot-prototipo.mjs",
+    "assets": "node tools/baixar-assets.mjs",
     "test": "node test/run.mjs",
     "test:sem-golden": "SEM_GOLDEN=1 node test/run.mjs",
     "test:gerar": "node test/run.mjs --gerar",
     "sabotagem": "node test/sabotagem.mjs",
-    "portoes": "EXIGE_VISUAL=1 npm test && npm run sabotagem",
+    "portoes": "EXIGE_VISUAL=1 EXIGE_LOCAL=1 npm test && npm run sabotagem",
     "serve": "node prototype/serve.js"
   }
 }

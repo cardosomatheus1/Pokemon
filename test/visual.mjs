@@ -30,6 +30,11 @@ const MIME = { '.html':'text/html; charset=utf-8', '.mjs':'text/javascript',
 
 export const disponivel = () => existsSync(PW) && existsSync(CHROME);
 
+/* A cópia local dos assets existe? O F0.12 a torna o primeiro candidato da
+   cascata; sem ela o jogo continua funcionando pela rede, mas o teste de
+   egresso fechado não tem o que provar. */
+export const temAssetsLocais = () => existsSync(new URL('../assets', import.meta.url).pathname);
+
 function servidor() {
   return new Promise(res => {
     const s = createServer((q, r) => {
@@ -246,8 +251,11 @@ export async function rodar() {
     lutadores: document.querySelectorAll('.mon').length,
     placas: document.querySelectorAll('.plate').length,
     odds: document.querySelectorAll('.pick').length,
+    /* `http` não serve mais como marca de "carregou": desde o F0.12 a folha
+       vem primeiro da cópia LOCAL, cujo caminho é relativo. O que importa é ter
+       folha aplicada, venha de onde vier. */
     comSprite: [...document.querySelectorAll('.mon .body')]
-      .filter(e => e.style.backgroundImage.includes('http')).length,
+      .filter(e => /url\(/.test(e.style.backgroundImage)).length,
   }));
   /* polling explícito: o padrão do Playwright é requestAnimationFrame, que o
      navegador estrangula quando a página não está em primeiro plano. */
@@ -341,6 +349,73 @@ export async function rodar() {
  * `S.seeds.batalha` por `S.seeds.elenco` numa linha de `fases.mjs` não muda
  * nada que a suíte estática enxergue — foi o defeito S30, e é ele que este
  * teste existe para pegar.                                                  */
+/* Q5 · O JOGO ABRE COM A REDE EXTERNA DESLIGADA (F0.12).
+ *
+ * Até aqui o portão de navegador só funcionava porque o arnês interceptava as
+ * requisições de sprite e as servia pelo Node. Isso escondia a dependência em
+ * vez de testá-la: ninguém sabia se o jogo abre numa máquina com egresso
+ * fechado, porque nunca se tentou.
+ *
+ * Aqui NADA é servido: toda requisição a host externo é ABORTADA, como um
+ * firewall faria. O jogo tem que subir, sortear a rodada e mostrar os lutadores
+ * usando só a cópia local.                                                   */
+export async function rodarSemRede() {
+  const { chromium } = await import(PW);
+  const { s, porta } = await servidor();
+  const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+  const pg = await (await b.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+  const erros = [], bloqueadas = [];
+  pg.on('pageerror', e => erros.push(String(e).split('\n')[0]));
+  await pg.route(/^https?:\/\//, rota => {
+    const url = rota.request().url();
+    if (url.startsWith(`http://127.0.0.1:${porta}/`)) return rota.continue();
+    bloqueadas.push(url);
+    return rota.abort();
+  });
+  await pg.goto(`http://127.0.0.1:${porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
+  await pg.evaluate(() => {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+    document.querySelector('#viewArena')?.classList.add('on');
+  });
+  const pronto = await pg.waitForFunction(
+    () => document.querySelectorAll('.pick').length > 0,
+    { timeout: 90000, polling: 300 }).then(() => true).catch(() => false);
+  await pg.waitForTimeout(2500);
+  const st = await pg.evaluate(() => ({
+    lutadores: document.querySelectorAll('.mon').length,
+    comFolha: [...document.querySelectorAll('.mon .body')]
+      .filter(e => e.style.backgroundImage.includes('assets/')).length,
+    retratos: document.querySelectorAll('.pick img').length,
+    retratosLocais: [...document.querySelectorAll('.pick img')]
+      .filter(i => i.currentSrc.includes('/assets/') && i.naturalWidth > 0).length,
+  }));
+  await b.close(); s.close();
+  return { erros, bloqueadas, pronto, ...st };
+}
+
+export function suiteSemRede(r) {
+  const s = criarSuite('sem-rede');
+  s.teste('o jogo abre com a rede externa desligada', () => {
+    ok(r.erros.length === 0, `erro de página com a rede desligada: ${r.erros[0]}`);
+    ok(r.pronto, 'a fase de apostas não abriu sem rede');
+    ok(r.lutadores === 12, `${r.lutadores} lutadores em cena, esperados 12`);
+  });
+  s.teste('nenhuma requisição externa é feita', () => {
+    ok(r.bloqueadas.length === 0,
+      `${r.bloqueadas.length} requisição(ões) saíram para fora mesmo com a cópia local ` +
+      `presente. A primeira: ${r.bloqueadas[0]}. A cascata começa no local — se ela ` +
+      `sai para a rede com o arquivo em disco, a ordem está invertida.`);
+  });
+  s.teste('a arte vem do disco, e é a mesma arte', () => {
+    ok(r.comFolha > 0, 'nenhum lutador desenhou com folha local');
+    ok(r.retratosLocais === r.retratos && r.retratos > 0,
+      `${r.retratosLocais} de ${r.retratos} retratos carregaram do disco. ` +
+      `Retrato que não carrega é arte faltando, não arte substituída — o resgate ` +
+      `busca a MESMA coisa em outro endereço, nunca outra coisa.`);
+  });
+  return s;
+}
+
 export function suiteRodadaViva(r) {
   const s = criarSuite('rodada-viva');
   s.teste('a rodada montada pelo app é a que a raiz reproduz', () => {

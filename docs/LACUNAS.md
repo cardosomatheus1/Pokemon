@@ -229,9 +229,21 @@ para 50 não é detectado por nada.
 que force a batalha a alcançar o corte. É justamente o cenário que o corte existe
 para cobrir, segundo o comentário do próprio protótipo.
 
-### L-017 — a dependência de CDN de terceiros em tempo de execução
+### L-017 — a dependência de CDN de terceiros em tempo de execução ✅ FECHADA
 
-**Dono:** F0.12 · **Notada em:** F0.2, ao verificar os sprites no navegador
+**Fechada em:** F0.12 · **Notada em:** F0.2, ao verificar os sprites no navegador
+
+**Como fechou, e a lacuna estava SUBESTIMADA.** A cascata `local → origem →
+espelho` entrou em `app/modules/assets.mjs`, e `tools/baixar-assets.mjs` baixa
+666 arquivos para `assets/`, fora do versionamento. Medido: zero requisições
+externas com a rede desligada.
+
+O verbete falava em "~200 folhas de sprite". Com as 449 folhas de sprite já em
+disco, o portão de egresso fechado mostrou **148 requisições ainda saindo**: as
+folhas de EFEITO (outro repositório), os retratos do dex e a fonte de pixel do
+Google Fonts. A conta certa só apareceu quando alguém tentou desligar a rede —
+até então o arnês interceptava e servia pelo Node, o que escondia a dependência
+em vez de medi-la.
 
 > **Esta lacuna ficou órfã e ninguém percebeu na hora.** O dono era o F0.4, que
 > fechou sem ela. O F0.4 entregou metade do que está escrito abaixo — a função

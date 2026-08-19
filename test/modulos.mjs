@@ -32,6 +32,10 @@ const CAMADA = {
   'banco.mjs': 0,
   'dom.mjs': 0,
   'estado.mjs': 0,
+  /* Dados puros de arte e a cascata de endereço: nenhum dos dois toca o DOM. */
+  'sprites-dados.mjs': 0,
+  'assets.mjs': 0,
+  'efeitos-dados.mjs': 0,
   'sprites.mjs': 1,
   'audio.mjs': 1,
   'render.mjs': 2,
