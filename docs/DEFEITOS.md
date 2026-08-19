@@ -134,6 +134,56 @@ volta a reprovar o portão.
 
 ---
 
+## D-004 — o teste do corte por teto encheu a carteira por um campo morto ✅ CORRIGIDO
+
+**Corrigido em:** F0.9, no commit seguinte
+**Encontrado por:** execução repetida do portão Q5 depois de fechar o F0.9
+**Gravidade:** o portão Q5 do F0.8 estava parcialmente cego, e o defeito entrou no repositório
+
+### O que aconteceu
+
+O teste `o corte por teto de payout aparece na tela`, escrito no F0.8, enchia a
+carteira com `S.bal = preciso + 1000` antes de clicar no azarão.
+
+O F0.9 **removeu `S.bal` do mundo**. A linha continuou existindo e virou
+atribuição a um campo que ninguém lê: o saldo seguia em 1.000, a aposta saía em
+1.000, e o teste só falhava quando o stake máximo do azarão passava de 1.000 —
+ou seja, **dependia da odd sorteada naquela rodada**.
+
+Medido: verde em duas execuções de cada três.
+
+### Por que passou
+
+Duas causas somadas.
+
+A primeira é técnica: nenhum teste estático pega atribuição a um campo
+inexistente de um objeto — `S.bal = x` é JavaScript válido. A varredura de
+`test/carteira.mjs` proíbe **ler** `S.bal` nos módulos do app, e não olhava para
+`test/`.
+
+A segunda é de processo, e é minha: **fechei o F0.9 rodando o portão uma vez
+só**. Um teste que passa em dois de três não se distingue de um teste que passa,
+se ninguém rodar duas vezes.
+
+### Como entrou no repositório
+
+O comando de fechamento era `node test/run.mjs | grep -E "VERDE|VERMELHO" &&
+git commit`. O `grep` casou com a palavra **VERMELHO** e devolveu sucesso, então
+o `&&` seguiu e o commit aconteceu **com a suíte vermelha** — contra a regra
+central do projeto. O erro foi meu, no encadeamento do comando, e está aqui
+porque errar em silêncio é o que este arquivo existe para impedir.
+
+### Correção
+
+O teste passa a creditar pela API (`banco.creditarCompra`), que é o único
+caminho que move dinheiro desde o F0.9. Três execuções seguidas do portão
+completo: verde nas três.
+
+**Fica como lacuna L-025** a varredura de `S.bal` alcançar também `test/`, e o
+portão rodar mais de uma vez antes de fechar bloco.
+
+---
+
 ## D-003 — o corte duro de tempo é suave ✅ CORRIGIDO
 
 **Corrigido em:** F0.6

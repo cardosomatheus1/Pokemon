@@ -415,6 +415,31 @@ que ninguém prometeu.
 de ser simulada. A estrutura já está pronta para receber: o bucket existe, está
 fora da ordem de consumo, e os tipos estão nomeados na Spec.
 
+### L-025 — o portão fecha bloco com uma execução só
+
+**Dono:** F0.10 · **Notada em:** F0.9, ao investigar o D-004
+
+O defeito D-004 passava em **duas de cada três** execuções do portão Q5, e
+entrou no repositório porque o bloco foi fechado rodando o portão uma vez.
+
+Duas coisas faltam, e as duas são baratas:
+
+1. **A varredura de `S.bal` não alcança `test/`.** `test/carteira.mjs` proíbe os
+   módulos do app de citar o campo morto; o próprio arnês ficou de fora, e foi
+   exatamente ali que a linha sobreviveu.
+2. **O portão não repete.** Teste que passa em dois de três é indistinguível de
+   teste que passa, se ninguém rodar duas vezes. O portão Q5 tem componentes
+   dependentes de sorteio (a odd do azarão muda a cada rodada), então uma
+   execução não é evidência suficiente.
+
+**Por que não cabe agora.** Repetir o portão inteiro triplica um passo que já
+leva ~40 s com navegador, e escolher *o que* repetir exige saber quais testes
+dependem de sorteio — levantamento que não cabe no fim de um bloco de carteira.
+
+**O que a destrava:** F0.10 fecha a v0.9 e é o bloco que verifica o §4.8 item a
+item. Um critério de saída que se verifica uma vez só tem o mesmo problema, em
+escala maior — então a repetição precisa existir antes daquela verificação valer.
+
 ## Conteúdo e identidade
 
 ### L-008 — o jogo não tem trilha sonora própria

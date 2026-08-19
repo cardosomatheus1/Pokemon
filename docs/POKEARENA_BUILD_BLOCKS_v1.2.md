@@ -540,6 +540,8 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 
 **Escopo:** interfaces de commit-reveal do §4.5 (o protocolo, não a criptografia definitiva); os 14 eventos do §4.7; verificação do §4.8 item a item.
 
+**Também resolve:** L-025 (o portão fecha bloco com uma execução só, e o D-004 entrou no repositório por isso).
+
 **Sabotagem:** publicar um `commit` que não confere com a `roundSeed` revelada; revelar a seed antes do fechamento; omitir um campo obrigatório de um evento.
 
 **Q6:** o `commit` não pode vazar a seed; a seed de uma rodada não pode permitir prever a próxima. Registrar explicitamente que o esquema definitivo exige revisão criptográfica — a v0.9 entrega interface, não segurança caseira.

@@ -271,10 +271,18 @@ export async function rodar() {
      que apareceu.                                                          */
   const corte = await pg.evaluate(async () => {
     const { S } = await import('/app/modules/estado.mjs');
+    const banco = await import('/app/modules/banco.mjs');
     if (!S.odds || !S.passivo) return { erro: 'rodada sem preço' };
     const azarao = S.odds.lutadores.reduce((a, b) => (b.odd > a.odd ? b : a));
     const preciso = azarao.stakeMax * 4;
-    S.bal = preciso + 1000;
+    /* Encher a carteira PELA API, e não escrevendo saldo.
+       Este teste nasceu no F0.8 fazendo `S.bal = preciso + 1000`. O F0.9 tirou
+       `S.bal` do mundo, e a linha virou atribuição a um campo que ninguém lê:
+       o saldo continuava em 1.000, a aposta saía em 1.000, e o teste só falhava
+       quando o stake máximo do azarão passava de 1.000 — ou seja, dependia da
+       odd sorteada. Passou verde em duas de três execuções, e foi assim que
+       chegou a um commit. */
+    banco.creditarCompra(preciso + 1000, 'teste-q5');
     S.chipVal = preciso;
     const linha = document.querySelector(`.pick[data-i="${azarao.idx}"]`);
     if (!linha) return { erro: 'lista de apostas sem o azarão' };
