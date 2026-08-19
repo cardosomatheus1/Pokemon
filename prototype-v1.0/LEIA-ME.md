@@ -1,8 +1,9 @@
 > **Congelado como REFERÊNCIA do porte.** Esta é a v1.0 do trabalho paralelo,
-> construída sobre o protótipo v0.8. Ela não roda a partir daqui — a arte de
-> terceiros (`assets/`, `battle-theme.mp3`) foi removida, pelo mesmo motivo de
-> sempre: material de terceiros não entra no repositório. O inventário do que
-> ela tem, e o plano de trazer tudo, estão em `docs/PORTE_v1.0.md`.
+> construída sobre o protótipo v0.8. Ela não roda a partir daqui: o
+> `battle-theme.mp3` é de terceiros e ficou de fora, e as três imagens que ela
+> usava foram para `arte/`, que é o lugar delas — são nossas, e entram no
+> versionamento. O inventário do que ela tem, e o plano de trazer tudo, estão
+> em `docs/PORTE_v1.0.md`.
 
 # PokéArena — base v0.8
 

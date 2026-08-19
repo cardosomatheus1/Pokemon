@@ -692,21 +692,38 @@ treinador novo), que era nosso e ele encontrou.
 
 > **Cancelar aposta é o pedaço perigoso, e por isso mora aqui.** O F0.8 registra passivo por lutador na confirmação: cancelar sem devolver trava o mercado daquele lutador pelo resto da rodada; devolver sem cuidado reabre a corrida que o teste do §4.4.6 fecha. E a carteira precisa de um tipo de ledger próprio — `BET_RELEASE` já existe e serve.
 
-### V1.16 — Inventário e baús
+### V1.16 — Baús: NÃO ENTRA NO PORTE
 
-**Tam.** G · **Método** INV · **Portões** Q1 Q2 Q3 Q4 Q6 · **Depende de** V1.15
+**Decisão do dono do projeto.** Os baús ficam no **nosso** roadmap, com o
+**nosso** cálculo econômico. A implementação dele não é portada.
 
-**Escopo:** as três moedas novas (fragmento de chave, essência shiny, núcleo prisma), os baús com a tabela calibrada, e a garantia (pity).
+O que ele produziu continua valendo como **insumo**, e é insumo bom: 3.000.000
+de aberturas com qui-quadrado em cinco sementes independentes, medição de que o
+prêmio anterior não influencia o seguinte, autossustento de 4,7 % medido, e o
+desenho da garantia (pity) com pior caso em 20.000 jogadores simulados. Está
+tudo em `prototype-v1.0/IDENTIDADE-VISUAL.md`.
 
-> **A decisão econômica que o porte não pode adivinhar:** PokéCash de baú é PC-T ou PC-B? Ele mediu 3,91 PC por baú, ~34 rodadas para a aposta mínima. Em PC-T seria dinheiro sacável nascendo de graça, e o §5.5 existe para impedir exatamente isso. **Proposta: PC-B, com tipo de ledger próprio**; as três moedas novas são inventário e não carteira, porque não compram aposta.
+> **Por que não portar mesmo com os números prontos.** A tabela dele resolve a
+> distribuição, e a distribuição é a parte fácil. A parte difícil é a decisão
+> que o §5.5 obriga a tomar: PokéCash de baú é PC-T ou PC-B? Em PC-T seria
+> dinheiro sacável nascendo de graça, que é exatamente o que a proveniência da
+> carteira existe para impedir. E as três moedas novas — fragmento, essência,
+> prisma — mudam a superfície econômica inteira.
+>
+> Herdar a implementação junto com a economia significaria herdar a decisão sem
+> tomá-la. Os números ficam; a economia é nossa.
 
-**Q4:** reproduzir a calibração dele — 3.000.000 de aberturas, qui-quadrado em cinco sementes — com o nosso PRNG semeado, e arquivar como fixture de medição.
+**Consequência para o porte:** o V1.17 (Shinys) dependia daqui, porque o baú era
+a fonte dos cosméticos. Ele passa a depender do V1.15, e a fonte do shiny vira
+uma decisão do próprio bloco.
 
 ### V1.17 — Shinys
 
-**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q5 · **Depende de** V1.16
+**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q5 · **Depende de** V1.15
 
 **Escopo:** GIF cosmético e skin de arena. Desbloqueado e equipado como estados distintos.
+
+> **A fonte do shiny é decisão deste bloco, e não vem pronta.** No trabalho dele o shiny saía do baú; com os baús fora do porte, o cosmético precisa de outra origem — conquista, nível, medalha, ou o baú quando ele existir pelo nosso desenho. O bloco entrega o cosmético funcionando e **declara** a fonte escolhida; trocá-la depois é mudar um gatilho, não o sistema.
 
 > **Toca no F0.12:** shiny são **mais 304 folhas** (76 × 4) e 76 GIFs. O baixador cobre o que o pack pede, e skin shiny muda o que o pack pede — `pack.sprite()` passa a receber o estado do cosmético.
 
@@ -714,7 +731,7 @@ treinador novo), que era nosso e ele encontrou.
 
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 Q6 · **Depende de** V1.17
 
-**Escopo:** o painel em `#adm`, com conta, laboratório shiny, simulador de baús, odds e estatísticas.
+**Escopo:** o painel em `#adm`, com conta, laboratório shiny, odds e estatísticas. **Sem o simulador de baús** — os baús não entram no porte.
 
 > **O conflito que este bloco resolve.** O painel mexe em `CONF.MARGIN` — e ele documentou bem por quê: a margem do painel é a **mesma** exibida ao lado das odds, para o painel não criar odd secreta. Só que `CONF` virou constante congelada do motor, e a margem agora aparece em três lugares que se conferem: `margemConfigurada` e `margemEfetiva` no registro do §4.4.5, e a fixture `margem.json`, que afirma 8 % em 300 rodadas × 8.000 simulações. **O encaixe certo é a margem virar parâmetro da rodada**, gravada no registro, com a fixture medindo a margem configurada naquela rodada.
 

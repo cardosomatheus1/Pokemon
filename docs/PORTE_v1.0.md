@@ -50,7 +50,7 @@ Medido por varredura de funções, ids de DOM e blocos de CSS.
 | 2 | **Bug do XP** (pré-existente) | 1 linha | **Nós temos o mesmo defeito** → D-006 |
 | 3 | **Arenas variadas** — 6 biomas sorteados | 12 funções de desenho | Camada de render + linha de base visual |
 | 4 | **Shinys** — GIF cosmético e skin de arena | 6 funções | ContentPack (`sprite()`) e a cópia local do F0.12 |
-| 5 | **Baús** — economia calibrada, pity | 11 funções, 1 tela | **Carteira do §5.5** — moedas novas, tipos de ledger |
+| 5 | **Baús** — economia calibrada, pity | 11 funções, 1 tela | **NÃO ENTRA NO PORTE** — decisão do dono. Ficam no nosso roadmap, com o nosso cálculo |
 | 6 | **Painel de ADM** — `#adm`, PIN 7777 | 15 funções, 1 tela | **`CONF.MARGIN` mutável** vs. registro de precificação |
 | 7 | **Colocação e pódio** — banner de batalha | 6 funções | — |
 | 8 | **Fragmentos por rodada** | 1 função | Carteira |
@@ -78,19 +78,22 @@ medição — não por estar errada, mas por a fixture medir outra coisa.
 **O encaixe certo:** a margem passa a ser parâmetro da rodada, gravada no
 registro, e a fixture mede a margem *configurada naquela rodada*.
 
-### C2 · Baús criam três moedas que o §5.5 não tem
+### C2 · Baús — resolvido tirando do porte
 
-Fragmento de chave, Essência Shiny e Núcleo Prisma. A carteira do F0.9 tem quatro
-buckets com proveniência e uma **lista fechada** de tipos de ledger — de
-propósito: `lancar` recusa tipo desconhecido, e há teste para isso.
+**Decisão do dono: os baús ficam no nosso roadmap, com o nosso cálculo.** A
+implementação dele não é portada.
 
-E há uma decisão econômica embutida: PokéCash de baú é PC-T ou PC-B? Ele mede
-3,91 PC por baú e ~34 rodadas para a aposta mínima. Se cair em PC-T, é dinheiro
-sacável nascendo de graça — o §5.5 existe para impedir exatamente isso.
+E é a decisão certa pelo motivo que este verbete já apontava. A tabela dele
+resolve a distribuição, que é a parte fácil. A parte difícil é o que o §5.5
+obriga a decidir: PokéCash de baú é PC-T ou PC-B? Em PC-T seria dinheiro sacável
+nascendo de graça — exatamente o que a proveniência da carteira existe para
+impedir. Herdar a implementação junto com a economia seria herdar a decisão sem
+tomá-la.
 
-**O encaixe certo:** as três moedas novas são **inventário**, não carteira (não
-compram aposta); o PokéCash de baú entra como **PC-B**, com tipo de ledger
-próprio.
+**O que fica como insumo, e é bom:** 3.000.000 de aberturas com qui-quadrado em
+cinco sementes, medição de independência entre prêmios consecutivos,
+autossustento de 4,7 %, e o desenho da garantia com pior caso em 20.000
+jogadores simulados. Em `prototype-v1.0/IDENTIDADE-VISUAL.md`.
 
 ### C3 · Cancelar aposta libera passivo
 
@@ -128,9 +131,19 @@ roda a partir dali; serve para consultar código durante o porte, como
 `prototype/` serve de referência do v0.8 desde o F0.1.
 
 As três artes que ele criou (`portal-arena.jpg`, `cidade-neon.jpg`,
-`nucleo-orbe.jpg`) **não entram no repositório**. Entram em `assets/`, fora do
-versionamento, e o `tools/baixar-assets.mjs` do F0.12 é onde elas passam a ser
-buscadas — o que exige combinar com ele um endereço de origem.
+`nucleo-orbe.jpg`) **entram no repositório**, em `arte/`.
+
+> **Eu tinha aplicado a regra errada e tirado as três.** A regra do `CLAUDE.md`
+> é *não versionar material de terceiros* — as folhas do PMDCollab, os GIFs do
+> Showdown, o `battle-theme.mp3`. Estas foram **geradas para este projeto**, e
+> ele escreve isso na própria documentação: *"não somam nenhuma dependência de
+> terceiro"*. Arte nossa fora do repositório não é disciplina, é trabalho
+> perdido.
+>
+> A separação virou explícita, com `arte/README.md` a explicando: **`arte/` é
+> nossa e entra no git; `assets/` é de terceiros e não entra.** Confundir as
+> duas custa dos dois lados — versionar arte de terceiros é problema de licença,
+> e deixar a nossa de fora é perder trabalho.
 
 ## Ordem proposta
 
@@ -138,21 +151,20 @@ buscadas — o que exige combinar com ele um endereço de origem.
 2. **V1.13 Identidade visual** — a maior peça e a de menor risco lógico.
 3. **V1.14 Arenas variadas** — render, depois do tema (compartilham a pele).
 4. **V1.15 Colocação, pódio e banner de batalha** — sem conflito.
-5. **V1.16 Inventário e baús** — resolve C2, e é onde a economia nova nasce.
-6. **V1.17 Shinys** — depende de V1.16 (o baú é a fonte) e de C4.
-7. **V1.18 Painel de ADM** — por último: resolve C1 e precisa de tudo acima.
+5. **V1.17 Shinys** — a fonte do cosmético vira decisão do bloco, já que o baú
+   saiu do porte.
+6. **V1.18 Painel de ADM** — por último: resolve C1. Sem o simulador de baús.
 8. **Cancelar aposta** entra no V1.15, que é o bloco que mexe na tela de aposta.
 
 Os seis blocos estão escritos em `POKEARENA_BUILD_BLOCKS`, com escopo, método,
 portões e sabotagem, como os outros.
 
-## Uma coisa a combinar com ele antes da próxima rodada
+## O portão de egresso fechado continua fechado
 
-As três artes que ele criou precisam de **um endereço de origem** para o
-baixador do F0.12 buscar. Hoje elas só existem no zip. Enquanto não houver, o
-porte do V1.13 usa as artes localmente e o teste de egresso fechado não as
-cobre — o que seria a primeira exceção silenciosa naquele portão, e é
-justamente o que ele não pode ter.
+As três artes serem nossas resolve o que eu tinha levantado como pendência: elas
+já estão no repositório, servidas da mesma origem que o resto do jogo, então o
+teste do F0.12 — que aborta **toda** requisição externa — segue valendo sem
+exceção nenhuma. Não há endereço de origem a combinar.
 
 > **Por que o tema vem antes das arenas e dos baús:** a pele é o que dá coerência
 > visual a tudo o que vier depois. Portar baú com a pele antiga significaria

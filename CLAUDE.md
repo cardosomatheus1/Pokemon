@@ -146,7 +146,11 @@ Branch de trabalho: `claude/pok-arena-repo-setup-qgcn76`.
 - Substituir arte, som ou dado por outro de fonte diferente quando o original
   falhar. **O resgate busca a mesma coisa em outro endereço, nunca outra coisa** —
   lição registrada da v0.6.1.
-- Versionar material de terceiros. `battle-theme.mp3` está fora por isso.
+- Versionar material de **terceiros**. `battle-theme.mp3` está fora por isso, e
+  as folhas de sprite também — elas vêm por `npm run assets` para `assets/`,
+  que não entra no git. **Arte NOSSA é o contrário: entra, em `arte/`.** Aplicar
+  a regra ao contrário custou quase três imagens no porte da v1.0; ver
+  `arte/README.md`.
 - Ligar qualquer feature de valor econômico real sem o checkpoint do §25.1.
 
 ## Sempre
