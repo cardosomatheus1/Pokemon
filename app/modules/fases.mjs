@@ -15,6 +15,7 @@ import { abrirRodada, revelar } from '../../engine/commit.mjs';
 import { emitir } from './telemetria.mjs';
 import { S } from './estado.mjs';
 import { coreo, enfeite, semearVisual } from './sorte.mjs';
+import { arenaDaRodada } from './arenas.mjs';
 import { buildEntities, overlay, preloadSheets, selRing } from './rodada.mjs';
 import { buildPickList, computeOdds, refreshOddsTable } from './odds.mjs';
 import { bursts, fxs, sched, shots } from './efeitos.mjs';
@@ -95,6 +96,12 @@ async function newRound(){
      valendo porque o clima é sorteado só entre os que a pool suporta. */
   S.fighters = sortearPool(S.seeds.elenco);
   S.weather = sortearClima(S.seeds.ambiente, tiposDaPool(S.fighters));
+
+  /* A ARENA, AO CONTRÁRIO DO CLIMA, É ANUNCIADA DE CARA.
+     Ela sai do ramo `visual` (§P3) e não dá bônus nenhum: esconder um cenário
+     que não muda preço só tiraria da tela informação inócua. O clima continua
+     em segredo até `startFight`, porque aquele mexe em stat. */
+  arenaDaRodada(S.seeds.visual);
 
   overlay.classList.remove('hide');
   overlay.innerHTML = `<div class="banner">calculando odds…</div>`;

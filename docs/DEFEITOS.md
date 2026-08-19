@@ -358,3 +358,81 @@ O teste que **afirmava o defeito de propósito** (`test/invariantes.mjs` → `L-
 · o corte duro`) ficou vermelho na hora da correção, como fora escrito para
 fazer, e virou a invariante que a Spec §4.6 sempre pediu: `duration <= MAX_TIME`,
 com igualdade exata no cenário construído. O defeito S36 planta a regressão.
+
+---
+
+## D-007 — os desafios diários emitem 6,5× o orçamento agregado do Estudo Econômico
+
+**Achado em:** V1.14 (fora do escopo — a pergunta era outra) ·
+**Bloco dono:** **F1.10** (Perfil, desafios e login streak) ·
+**Estado:** ⚠️ REGISTRADO, NÃO CORRIGIDO
+
+### O que está quebrado
+
+`app/modules/desafios.mjs` sorteia **três** desafios por dia e paga cada um por
+`creditarRecompensa('CHALLENGE_REWARD', c.dia, …)`, que cai no balde `bonus` —
+ou seja, **PC-B**. Os oito desafios do pool valem 20/30/25/25/30/25/25/20, média
+25. Três por dia, sete dias:
+
+```
+3 × 25 × 7  =  ~525 PC-B por semana, por conta
+```
+
+O `POKEARENA_ECONOMY_STUDY_v1.2` (linha 340) fixa:
+
+```text
+routine_pc_b_budget = até 80 PC-B/semana por conta
+soft_issuance_ceiling = 500 PC-B
+```
+
+e a linha 344 é explícita em que os 80 são **teto agregado** de todas as fontes
+rotineiras, dos quais a trilha de login usa até 50 e sobram **até 30 para
+desafios/rescue/missões**.
+
+| | PC-B/semana | contra o orçamento |
+|---|---:|---:|
+| medido no código | ~525 | — |
+| teto agregado documentado | 80 | **6,5×** |
+| sub-teto de desafios | 30 | **17,5×** |
+
+### Por que isso importa, e não é só um número fora do lugar
+
+A simulação do próprio Estudo (10 mil agentes × 52 semanas) mostra emissão
+irrestrita levando a oferta PC-B de 2,0 M para 26,4 M. Com o
+`soft_issuance_ceiling = 500` ela estabiliza em ~5,35 M, e só 46,5 % da
+recompensa nominal chega a ser emitida. **O teto por carteira é o que segura o
+modelo — e ele não existe no código.** Sem ele, 525/semana é emissão real.
+
+### Como o defeito nasceu
+
+Não foi descuido: o comentário do próprio módulo (linha 23) diz *"Agora os três
+somam ~75 (R$ 7,50), pouco mais de uma…"*. Foi uma calibragem deliberada de UX,
+feita na v0.7 — **antes** de o orçamento do Estudo Econômico existir. Hoje os
+dois documentos se contradizem e o código segue o mais permissivo, que é sempre
+o pior lado para errar numa economia.
+
+### O que trava enquanto não fechar
+
+**O baú.** A decisão do dono do projeto é que os baús ficam no nosso roadmap com
+o nosso cálculo (ver `BUILD_BLOCKS` → V1.16). O baú da v1.0 emite 1,45 PC-B por
+rodada — 55 rodadas/semana consomem sozinhas os 80 agregados, 21 rodadas/semana
+consomem os 30 que sobram. Não dá para calibrar um baú contra um orçamento que
+a nossa própria implementação já estoura em 6,5×. **Reconciliar vem primeiro.**
+
+### A decisão que o F1.10 tem que tomar
+
+Uma das duas, e explicitamente:
+
+1. **Baixar a emissão** para caber nos 30 PC-B/semana, e aceitar o custo de UX
+   que a calibragem da v0.7 estava evitando; ou
+2. **Corrigir o Estudo Econômico**, com medição nova que justifique o número
+   maior — e aí o `soft_issuance_ceiling` por carteira deixa de ser opcional,
+   porque é ele que impede a oferta de fugir.
+
+O que não pode continuar é o Estudo afirmar 80 e o código emitir 525.
+
+### O teste que afirma o defeito
+
+`test/invariantes.mjs` → `D-007 · a emissão semanal dos desafios estoura o
+orçamento`. Ele afirma o defeito **de propósito**: fica **vermelho** no dia em
+que alguém corrigir a emissão, e é assim que o F1.10 descobre que fechou.

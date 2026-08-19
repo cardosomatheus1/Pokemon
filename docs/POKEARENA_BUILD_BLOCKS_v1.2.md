@@ -693,13 +693,40 @@ treinador novo), que era nosso e ele encontrou.
 
 **Fixtures:** só `visual-base.json`. Nenhum golden, nenhuma medição — o bloco não toca em lógica, que é exatamente o que ele promete.
 
-### V1.14 — Arenas variadas
+### V1.14 — Arenas variadas ✅
 
 **Tam.** M · **Método** GL+INV · **Portões** Q1 Q2 Q3 Q5 · **Depende de** V1.13
 
-**Escopo:** os seis biomas sorteados e o selo de arena. O sorteio entra na árvore de sementes (§P3) como ramo do `visual` — arena sorteada fora da raiz quebraria a reprodutibilidade que o F0.5 comprou.
+**Escopo:** os **cinco** biomas sorteados e o selo de arena. O sorteio entra na árvore de sementes (§P3) como ramo do `visual` — arena sorteada fora da raiz quebraria a reprodutibilidade que o F0.5 comprou.
+
+> **Eram cinco, não seis.** O escopo dizia "seis biomas" e o inventário do porte repetia o número; o `ARENAS` da v1.0 tem cinco entradas — Ilha Tropical, Campo Gelado, Coliseu, Praia e Cratera Vulcânica. Contagem minha, errada, corrigida aqui e no `PORTE_v1.0`. Inventar um sexto para fechar o número seria trocar o que ele fez por outra coisa, que é exatamente o que a regra do resgate proíbe.
 
 **Sabotagem:** sortear a arena com `Math.random`; deixar o bioma influenciar a batalha (ele é cosmético e precisa continuar sendo).
+
+**Entregue.** `app/modules/arenas-dados.mjs` (catálogo e sorteio, sem DOM) e `app/modules/arenas.mjs` (as cinco pinturas), o selo `#arenaBadge` no canto oposto ao de clima, e a inversão de dependência no `render.mjs`.
+
+> **A silhueta não muda, e isso é o que faz o bloco caber.** Movimento, zona de cada lutador e limite de deslocamento saem da superelipse do `render.mjs`. Trocar o contorno por arena significaria recalibrar a coreografia cinco vezes — e abriria a porta para lutador andando fora do mapa. O que muda é a **pele**.
+
+**A separação em dois módulos não é arrumação, é o que torna o bloco testável.** A escolha da arena é aritmética e roda no Node (`arenas-dados.mjs`, camada 0, sem uma linha de DOM); a pintura precisa de canvas e só se verifica no navegador (`arenas.mjs`, camada 3). É o mesmo par de `sprites-dados`/`sprites` e `efeitos-dados`/`efeitos`.
+
+**O render deixou de saber o que é uma arena.** Ele guarda a geometria e recebe `{estatico, fundo, poeira}` por injeção — o caminho contrário fecharia um ciclo, porque a pintura precisa da geometria para desenhar. Sem cenário aplicado o `drawMap` não desenha nada, o que é a resposta certa: significa que alguém pintou antes de a rodada escolher a arena.
+
+> **Por que o selo aparece já na aposta, e o de clima não.** O clima dá bônus de stat e por isso fica em segredo até as apostas fecharem (§4.3, e o canal que o F0.11 mediu). A arena não dá nada. Esconder um cenário que não muda preço nenhum só tiraria informação inócua de quem está escolhendo — e o teste lê os dois selos **no mesmo instante**, para que a assimetria seja afirmada e não presumida.
+
+**Q5 · a linha de base ganhou raiz fixa, e é a mudança mais importante do bloco.** Cinco arenas sorteadas por rodada tornariam a captura diferente a cada execução: `npm run repetir` acusaria instabilidade sem defeito nenhum, e instável é pior que vermelho — vermelho constante tem endereço. A resposta não foi tirar a arena da captura (aí ela deixaria de ser medida), e sim tirar o acaso: a captura substitui `crypto.getRandomValues`, a única fonte imprevisível do jogo, por um contador. Tudo depois disso continua sendo código de produção rodando de verdade, só que da **mesma raiz** toda vez. Mesmo princípio de bloquear as folhas de sprite.
+
+**Q3 · a arena é cosmética, e há prova binária.** A batalha sai de `S.seeds.batalha` e a arena de `visual`: raízes que dão arenas diferentes com o mesmo ramo de batalha produzem a mesma batalha. E nenhum arquivo de `engine/` conhece bioma — a varredura procura a chave entre aspas, o campo de objeto e o nome de exibição, não a palavra solta, porque o `engine.mjs` explica killstreak como "bola de neve" e um teste que proíbe metáfora vira obstáculo, não invariante.
+
+**Q2 · seis defeitos novos (S73–S78), e dois deles escapam da suíte de propósito.** S77 (o selo não acende) e S78 (a arena sai de `S.seeds.elenco`) deixam o catálogo perfeito e o desenho correto; o que quebra é o encaixe. **Quarta vez que a lição aparece** — S30, S53, S65, S69 — e a rede continua sendo a mesma: o navegador lê o selo vivo e o Node recalcula a arena a partir da raiz que o app usou.
+
+**Fixtures:** `visual-base.json`, regravada. Nenhum golden e nenhuma medição mudam — o bloco não toca em lógica, e o teste que prova isso é o de que a batalha não se move junto com a arena.
+
+**Duas coisas quebraram no próprio portão Q2, e as duas eram armadilhas antigas.**
+
+- **O S15 quase virou defeito sem âncora.** Ele plantava "módulo usa símbolo do motor sem importar" removendo o `import { rng }` do `render.mjs` — e o V1.14 tirou de lá o desenho semeado. O defeito continuaria na lista, verde, provando nada. Realvo para `arenas.mjs`, que é quem usa o símbolo hoje.
+- **A lista de arquivos da sabotagem era uma segunda fonte de verdade.** Escrita à mão, ela não conhecia os dois módulos novos, e a execução morreu com um `TypeError` no defeito 70 — vinte minutos de trabalho jogados fora. Agora ela **deriva** da própria lista de defeitos, e a dessincronização deixa de ser possível. O relatório também passou a imprimir o status: "ESCAPOU" e "ÂNCORA PERDIDA" são problemas diferentes, e chamar os dois de "passou despercebido" custou um diagnóstico errado.
+
+**Fora do escopo, registrado e não corrigido:** **D-007** (os desafios diários emitem ~525 PC-B/semana contra os 80 agregados do Estudo Econômico, 6,5×), **L-026** (o baú não tem contra o que ser calibrado enquanto o D-007 durar) e **L-027** (o campo `brilho` do catálogo dele, documentado e nunca construído — portamos os quatro campos que existem e não inventamos o quinto).
 
 ### V1.15 — Colocação, pódio e banner de batalha
 

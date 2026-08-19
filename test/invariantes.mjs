@@ -4,10 +4,18 @@
  * A Spec §4.6 lista 11 invariantes. Cinco delas são de carteira/aposta e só
  * passam a ser verificáveis a partir de F0.9 e F1.4; estão marcadas abaixo e
  * NÃO são silenciosamente omitidas. */
+import { readFileSync } from 'node:fs';
 import * as E from './motor.mjs';
 import { criarSuite, ok, rngTeste, elencoDeterministico } from './harness.mjs';
 
 const RODADAS = 2000;
+
+/* Os números do POKEARENA_ECONOMY_STUDY_v1.2, linhas 340 e 344. Copiados aqui
+   porque o teste do D-007 os compara — mudá-los no documento sem mudá-los aqui
+   deixaria o teste medindo um orçamento que não existe mais. */
+const ORCAMENTO_AGREGADO  = 80;   // PC-B/semana, TODAS as fontes rotineiras
+const ORCAMENTO_DESAFIOS  = 30;   // o que sobra depois da trilha de login
+const POR_DIA             = 3;    // desafios sorteados por dia, em desafios.mjs
 
 export const NAO_APLICAVEIS_AINDA = [
   'payout ocorre uma única vez          -> F1.7',
@@ -219,6 +227,33 @@ export function suite() {
       if (E.simular(f, 950000 + i, true).duration >= E.CONF.MAX_TIME - 2) perto++;
     ok(perto === 0,
       `${perto} de 500 rodadas chegaram perto do corte duro — a tempestade parou de encerrar antes`);
+  });
+
+  /* D-007 · AFIRMA O DEFEITO DE PROPÓSITO — ver docs/DEFEITOS.md.
+   *
+   * Os desafios diários emitem ~525 PC-B por semana; o Estudo Econômico fixa um
+   * teto AGREGADO de 80 e reserva até 30 para desafios. É contradição entre a
+   * nossa implementação e o nosso próprio documento, e ela trava o desenho do
+   * baú (V1.16), que não tem contra o que ser calibrado enquanto durar.
+   *
+   * Este teste fica VERMELHO no dia em que alguém corrigir a emissão. É de
+   * propósito, e é como o F1.10 descobre que fechou — o mesmo padrão do D-001
+   * e do D-003.
+   *
+   * A leitura é por texto, e não por importação: `desafios.mjs` puxa DOM por
+   * `controles.mjs` e não sobe no Node. Ler a fonte mede o mesmo número. */
+  s.teste('D-007 · a emissão semanal dos desafios estoura o orçamento do Estudo', () => {
+    const txt = readFileSync(new URL('../app/modules/desafios.mjs', import.meta.url), 'utf8');
+    const dias = [...txt.matchAll(/\bdia:\s*(\d+)/g)].map(m => +m[1]);
+    ok(dias.length >= 8, `só ${dias.length} recompensas lidas do pool — a varredura perdeu o formato`);
+    const media = dias.reduce((a, b) => a + b, 0) / dias.length;
+    const porSemana = media * POR_DIA * 7;
+
+    ok(porSemana > ORCAMENTO_AGREGADO,
+      `a emissão semanal caiu para ${porSemana.toFixed(0)} PC-B, dentro dos ` +
+      `${ORCAMENTO_AGREGADO} agregados: D-007 foi CORRIGIDO. ` +
+      `Tire este teste, marque o defeito como corrigido em docs/DEFEITOS.md e ` +
+      `confira se o sub-teto de ${ORCAMENTO_DESAFIOS} PC-B/semana também fecha.`);
   });
 
   return s;

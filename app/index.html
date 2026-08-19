@@ -472,6 +472,9 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 .corner-badge.pop{animation:badgePop .5s ease-out}
 @keyframes badgePop{0%{transform:scale(.7) translateY(-6px)}60%{transform:scale(1.08) translateY(0)}100%{transform:scale(1) translateY(0)}}
 .corner-badge.storm{top:auto;bottom:8px;left:8px;border-color:#e05a4a;color:#ffb4a8;max-width:none}
+/* O selo de arena fica do lado OPOSTO ao de clima: os dois podem estar no ar
+   ao mesmo tempo durante a luta, e empilhados um cobria o outro. */
+.corner-badge.arena{left:auto;right:8px;text-align:right;max-width:132px}
 
 /* ============ MODAIS (perfil / depósito) ============ */
 .modal-backdrop{position:fixed;inset:0;background:rgba(6,10,18,.72);z-index:50;
@@ -1340,6 +1343,13 @@ body::after{
   box-shadow:0 0 18px rgba(var(--goldRGB),.2)}
 .corner-badge b{font-family:var(--dsp);font-weight:700;letter-spacing:.06em;
   text-shadow:0 0 8px rgba(var(--goldRGB),.6)}
+/* A arena usa o acento secundário, e não o principal: clima e arena são duas
+   informações diferentes no mesmo canto da tela, e a cor é o que as separa
+   antes de o jogador ler o texto. Token, não hex — a v1.0 usava um verde fixo
+   que ficaria fora dos dois temas. */
+.corner-badge.arena{border-color:rgba(var(--neon2RGB),.4);
+  box-shadow:0 0 18px rgba(var(--neon2RGB),.2)}
+.corner-badge.arena b{color:var(--neon2);text-shadow:0 0 8px rgba(var(--neon2RGB),.6)}
 
 .wallet{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
   box-shadow:inset 0 0 16px rgba(var(--goldRGB),.08)}
@@ -2104,6 +2114,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <canvas id="fxCanvas" width="300" height="400"></canvas>
       <div id="uiLayer"></div>
       <div id="weatherBadge" class="corner-badge"></div>
+      <div id="arenaBadge" class="corner-badge arena"></div>
       <div id="stormBadge" class="corner-badge storm">🌪️ <b style="display:inline">Tempestade ativa</b></div>
       <div id="streakToast"></div>
       <div id="koToast"></div>
@@ -2313,6 +2324,7 @@ import { conferirAbates, limparPodio, mostrarPodio, renderKillfeed, resetKillfee
 import { reiniciarMovimento, stepMovement } from './modules/coreografia.mjs';
 import { PMD, SPRITE_MAX_H, conferirFolha, dexImg, dexURL, dirOf, folhasFalhas, folhasOk, imgTag, sheetURL, urlFolha } from './modules/sprites.mjs';
 import { CX, CY, GRASS_RX, GRASS_RY, H, W, drawMap, entryRings, isleNorm, puffs } from './modules/render.mjs';
+import { ARENAS, aplicarArena } from './modules/arenas.mjs';
 import { MOVE_FX, bursts, drawFx, fxSheet, fxs, later, pushFx, sched, shots } from './modules/efeitos.mjs';
 import { hideWeatherBadge, initWeatherFx, showWeatherBadge } from './modules/clima.mjs';
 
@@ -2461,6 +2473,9 @@ addEventListener('pagehide', () => emitir('session_ended'));
   renderSession();
   // quem ainda não entrou cai na home; quem já tem sessão vai direto à arena
   goView(sessaoAtiva() ? 'viewArena' : 'viewHome');
+  /* Um cenário antes do primeiro quadro. `drawMap` não desenha sem cenário
+     aplicado, e o boot pinta o mapa antes de a primeira rodada existir. */
+  aplicarArena(ARENAS[0]);
   drawMap(0);
   await newRound();
   $('#boot').remove();

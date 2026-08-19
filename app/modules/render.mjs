@@ -3,12 +3,21 @@
  * Fronteira: desenha o que existe. Não decide nada da rodada, não toca em
  * economia, não sabe o que é uma aposta.
  *
- * Executa no carregamento: obtém os dois contextos de canvas e pré-desenha a
- * camada estática da ilha. Isso exige que o DOM já exista — garantido porque o
- * módulo é importado por um script no fim do <body>.
+ * Desde o V1.14 também não sabe QUAL cenário está no ar. Ele guarda a
+ * GEOMETRIA — a superelipse da ilha, que a coreografia inteira usa para
+ * calcular zona e limite de deslocamento — e recebe a pele de fora, por
+ * `aplicarCenario`. É por isso que a arena pode variar sem recalibrar
+ * movimento: a silhueta nunca muda, só a pintura.
+ *
+ * O caminho contrário — render importar o catálogo de arenas — fecharia um
+ * ciclo, porque a pintura precisa desta geometria para desenhar.
+ *
+ * Executa no carregamento: obtém os dois contextos de canvas. A camada
+ * estática só nasce quando alguém aplica um cenário. Isso exige que o DOM já
+ * exista — garantido porque o módulo é importado por um script no fim do
+ * <body>.
  */
 
-import { rng } from './motor.mjs';
 import { S } from './estado.mjs';
 import { drawWeatherGround } from './clima.mjs';
 
@@ -29,10 +38,10 @@ const GRASS_RX = 134, GRASS_RY = 176; // grama
 // 2.8 dá o formato de "retângulo arredondado" da referência.
 const NSHAPE = 2.8;
 
-// camada estática (praia + grama + detalhes + pokébolas do cenário)
+// camada estática do cenário: redesenhada uma vez por rodada, quando a arena
+// muda. Nasce vazia — quem a preenche é `aplicarCenario`.
 const island = document.createElement('canvas');
 island.width = W; island.height = H;
-buildIsland(island.getContext('2d'));
 
 // Math.max(0,...) é só um cinto de segurança: sob configurações MUITO
 // fora do padrão de produção (velocidades/temporizadores artificiais de
@@ -59,81 +68,60 @@ function isleNorm(x,y,rx,ry,n=NSHAPE){
   return Math.pow(Math.pow(Math.abs((x-CX)/rx), n) + Math.pow(Math.abs((y-CY)/ry), n), 1/n);
 }
 
-function buildIsland(c){
-  c.imageSmoothingEnabled = false;
-  c.clearRect(0,0,W,H);
+/* --- HELPERS DE PELE, usados pelas arenas -----------------------------
+   Vivem aqui e não em `arenas.mjs` porque todos falam a mesma geometria:
+   a superelipse da ilha. Duplicá-los do outro lado seria duplicar a chance de
+   uma arena desenhar fora do mapa.                                        */
 
-  // praia
-  isle(c,CX,CY,SAND_RX,SAND_RY); c.fillStyle = '#efdda6'; c.fill();
-  isle(c,CX,CY,SAND_RX-5,SAND_RY-6); c.fillStyle = '#e3cd92'; c.fill();
-
-  // grama
-  isle(c,CX,CY,GRASS_RX,GRASS_RY); c.fillStyle = '#4f9c30'; c.fill();
-  isle(c,CX,CY,GRASS_RX-3,GRASS_RY-4); c.fillStyle = '#6fc247'; c.fill();
-
-  const R = rng(20260814); // seed fixa: o cenário é sempre o mesmo
-  const inGrass = (x,y,m=6) => isleNorm(x,y,GRASS_RX-m,GRASS_RY-m) <= 1;
-
-  // tufos de capim (o "ruído" que dá cara de tileset de GBA)
-  for (let i=0;i<1100;i++){
+/* Espalha `n` elementos pela grama, descartando o que cai fora. O descarte é
+   por dentro do laço de propósito: gerar só pontos válidos exigiria inverter
+   a superelipse, e a rejeição custa menos que isso a cada rodada. */
+function espalhar(R, n, margem, fn){
+  for (let i=0;i<n;i++){
     const x = CX + (R()*2-1)*GRASS_RX, y = CY + (R()*2-1)*GRASS_RY;
-    if (!inGrass(x,y)) continue;
-    const r = R();
-    c.fillStyle = r < .45 ? 'rgba(58,138,42,.75)'
-                : r < .80 ? 'rgba(140,212,102,.60)'
-                          : 'rgba(84,176,60,.70)';
-    const w = 2 + (R()*3|0);
-    c.fillRect(x|0, y|0, w, 1);
-    if (R() < .45) c.fillRect((x|0)+1, (y|0)-1, 1, 1);
-    if (R() < .25) c.fillRect((x|0)-1, (y|0)+1, 1, 1);
+    if (isleNorm(x,y,GRASS_RX-margem,GRASS_RY-margem) > 1) continue;
+    fn(x, y, R);
   }
-  // manchas de grama mais escura, pra quebrar o verde chapado
-  for (let i=0;i<34;i++){
-    const x = CX + (R()*2-1)*GRASS_RX, y = CY + (R()*2-1)*GRASS_RY;
-    if (!inGrass(x,y,20)) continue;
-    c.fillStyle = 'rgba(70,160,48,.35)';
-    ell(c,x,y, 9+R()*14, 6+R()*9); c.fill();
-  }
-  // florzinhas
-  for (let i=0;i<90;i++){
-    const x = CX + (R()*2-1)*GRASS_RX, y = CY + (R()*2-1)*GRASS_RY;
-    if (!inGrass(x,y,14)) continue;
-    const col = ['#f4e04d','#f27676','#f2a2d8','#ffffff'][R()*4|0];
-    c.fillStyle = '#3f8a2c'; c.fillRect(x|0, (y|0)+2, 1, 2);
-    c.fillStyle = col; c.fillRect(x|0, y|0, 2, 2);
-  }
-  // pedrinhas
-  for (let i=0;i<38;i++){
-    const x = CX + (R()*2-1)*GRASS_RX, y = CY + (R()*2-1)*GRASS_RY;
-    if (!inGrass(x,y,10)) continue;
-    c.fillStyle = '#8a939a'; c.fillRect(x|0, y|0, 5, 4);
-    c.fillStyle = '#b9c1c6'; c.fillRect(x|0, y|0, 5, 2);
-    c.fillStyle = '#6d757b'; c.fillRect(x|0, (y|0)+3, 5, 1);
-  }
-  // arbustos
-  for (let i=0;i<20;i++){
-    const x = CX + (R()*2-1)*GRASS_RX, y = CY + (R()*2-1)*GRASS_RY;
-    if (!inGrass(x,y,18)) continue;
-    c.fillStyle = 'rgba(0,0,0,.16)'; ell(c,x,y+3,7,3); c.fill();
-    c.fillStyle = '#2f7a22'; ell(c,x,y,7,5.5); c.fill();
-    c.fillStyle = '#47a233'; ell(c,x,y-1,6,4.5); c.fill();
-    c.fillStyle = '#6cc44a'; ell(c,x-1.5,y-2,3,2); c.fill();
-  }
-  // detalhe na areia
-  const e2 = 2/NSHAPE;
-  for (let i=0;i<340;i++){
-    const t = R()*Math.PI*2, k = 1.01 + R()*0.13;
-    const ct = Math.cos(t), st = Math.sin(t);
-    const x = CX + GRASS_RX*k * Math.sign(ct)*Math.pow(Math.abs(ct), e2);
-    const y = CY + GRASS_RY*k * Math.sign(st)*Math.pow(Math.abs(st), e2);
-    c.fillStyle = R() < .5 ? 'rgba(206,182,126,.55)' : 'rgba(250,238,196,.5)';
-    c.fillRect(x|0, y|0, 2, 1);
-  }
-
-  // (as pokébolas que ficavam espalhadas de enfeite pela grama foram
-  // removidas — as únicas pokébolas na arena agora são as 12 de spawn,
-  // que marcam onde cada lutador realmente vai aparecer)
 }
+/* A borda da ilha (praia) em duas cores. */
+function piso(c, corA, corB){
+  isle(c,CX,CY,SAND_RX,SAND_RY);     c.fillStyle = corA; c.fill();
+  isle(c,CX,CY,SAND_RX-5,SAND_RY-6); c.fillStyle = corB; c.fill();
+}
+/* O miolo jogável, também em duas cores. */
+function miolo(c, corA, corB){
+  isle(c,CX,CY,GRASS_RX,GRASS_RY);   c.fillStyle = corA; c.fill();
+  isle(c,CX,CY,GRASS_RX-3,GRASS_RY-4); c.fillStyle = corB; c.fill();
+}
+/* Um ponto sobre a superelipse a `k` vezes o raio — serve para pôr coisa
+   na margem sem cada arena refazer a trigonometria. */
+function naBorda(R, k){
+  const t = R()*Math.PI*2, e2 = 2/NSHAPE;
+  const ct = Math.cos(t), st = Math.sin(t);
+  return {
+    x: CX + GRASS_RX*k * Math.sign(ct)*Math.pow(Math.abs(ct), e2),
+    y: CY + GRASS_RY*k * Math.sign(st)*Math.pow(Math.abs(st), e2),
+  };
+}
+
+/* --- O CENÁRIO DA RODADA ----------------------------------------------
+   Injeção, não importação: o render recebe `{estatico, fundo, poeira}` de
+   quem sabe qual arena saiu. Assim o catálogo pode crescer sem tocar aqui, e
+   este arquivo continua sem saber que biomas existem.
+
+   `estatico` roda UMA vez por rodada, para uma camada guardada; `fundo` roda
+   a cada quadro, porque o que cerca a ilha é animado (onda, brasa, tocha). */
+let cenario = null;
+
+function aplicarCenario(c){
+  cenario = c;
+  const ctx = island.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0,0,W,H);
+  c.estatico(ctx);
+}
+
+const cenarioAtual = () => cenario;
 
 function drawBall(c,x,y,top){
   const r = 6;
@@ -181,21 +169,11 @@ function drawEntryRings(dt){
 }
 
 function drawMap(time, dt = 0){
-  // mar
-  map.fillStyle = '#2f74d6'; map.fillRect(0,0,W,H);
-  map.fillStyle = '#2963bd';
-  for (let y=0; y<H; y+=8) map.fillRect(0, y + ((time*6)%8|0), W, 3);
-
-  // ondas concêntricas que "batem" na praia
-  const phase = (time * 7) % 13;
-  map.lineWidth = 2;
-  for (let k=0;k<7;k++){
-    const g = 5 + k*13 + phase;
-    map.strokeStyle = `rgba(255,255,255,${0.30 - k*0.035})`;
-    isle(map, CX, CY, SAND_RX+g, SAND_RY+g); map.stroke();
-  }
-  map.strokeStyle = 'rgba(255,255,255,.75)'; map.lineWidth = 3;
-  isle(map, CX, CY, SAND_RX+2, SAND_RY+2); map.stroke();
+  /* O que cerca a ilha é do cenário: mar, lago de lava, pedra de arquibancada.
+     Sem cenário aplicado não há o que pintar — e é isso mesmo que se quer ver,
+     porque significa que alguém desenhou antes de a rodada escolher a arena. */
+  if (!cenario) return;
+  cenario.fundo(time);
 
   map.drawImage(island, 0, 0);
 
@@ -206,7 +184,7 @@ function drawMap(time, dt = 0){
     const k = p.age / p.life;
     if (k >= 1){ puffs.splice(i,1); continue; }
     map.globalAlpha = (1-k) * 0.45;
-    map.fillStyle = '#efe2bd';
+    map.fillStyle = cenario.poeira;
     ell(map, p.x + p.vx*p.age*18, p.y - k*2.5, 1.5 + k*4.5, 1 + k*2); map.fill();
     map.globalAlpha = 1;
   }
@@ -238,12 +216,23 @@ export {
   GRASS_RX,
   GRASS_RY,
   H,
+  NSHAPE,
+  SAND_RX,
+  SAND_RY,
   W,
+  aplicarCenario,
+  cenarioAtual,
   drawEntryRings,
   drawMap,
+  ell,
   entryRings,
+  espalhar,
   fx,
+  isle,
   isleNorm,
   map,
+  miolo,
+  naBorda,
+  piso,
   puffs,
 };

@@ -48,7 +48,7 @@ Medido por varredura de funções, ids de DOM e blocos de CSS.
 |---|---|---|---|
 | 1 | **Identidade Neon/Cyberpunk** — 2 temas, tokens, pele | 1.031 linhas de CSS novas + 215 de tokens, 3 imagens, fonte Orbitron | ✅ **PORTADO no V1.13** |
 | 2 | **Bug do XP** (pré-existente) | 1 linha | **Nós temos o mesmo defeito** → D-006 |
-| 3 | **Arenas variadas** — 6 biomas sorteados | 12 funções de desenho | Camada de render + linha de base visual |
+| 3 | **Arenas variadas** — 5 biomas sorteados | 10 funções de desenho + 4 helpers | Camada de render + linha de base visual |
 | 4 | **Shinys** — GIF cosmético e skin de arena | 6 funções | ContentPack (`sprite()`) e a cópia local do F0.12 |
 | 5 | **Baús** — economia calibrada, pity | 11 funções, 1 tela | **NÃO ENTRA NO PORTE** — decisão do dono. Ficam no nosso roadmap, com o nosso cálculo |
 | 6 | **Painel de ADM** — `#adm`, PIN 7777 | 15 funções, 1 tela | **`CONF.MARGIN` mutável** vs. registro de precificação |
@@ -107,10 +107,18 @@ O `sprite()` é do ContentPack desde o F0.4, e o F0.12 baixa a arte para `assets
 Shiny são **mais 304 folhas** (76 × 4) e mais 76 GIFs. O baixador cobre o que o
 pack pede; skin shiny muda o que o pack pede.
 
-### C5 · Tema e arenas mudam a linha de base visual
+### C5 · Tema e arenas mudam a linha de base visual ✅
 
 12 telas gravadas. Regravar é o certo — é mudança intencional —, e a regra do
 `CLAUDE.md` exige explicar a diferença no mesmo commit.
+
+> **Resolvido no V1.14, e o problema era maior do que "regravar".** Regravar
+> uma vez não resolve arena sorteada: a captura mudaria de cenário a cada
+> execução e o `npm run repetir` acusaria instabilidade sem defeito nenhum. A
+> captura passou a fixar a raiz da rodada — substitui `crypto.getRandomValues`
+> por um contador —, e aí ela volta a medir a nossa interface em vez de medir
+> qual arena saiu. Contagem corrigida no mesmo passo: são **cinco** arenas, não
+> seis.
 
 ---
 
@@ -122,6 +130,26 @@ pack pede; skin shiny muda o que o pack pede.
   já resolve pelo caller, e isto é rede.
 
 ---
+
+## A regra de precedência do porte
+
+**Decisão do dono do projeto, registrada aqui para valer nos blocos que faltam:**
+
+> Onde algo que ele propôs interferir com algo que planejamos, **a nossa decisão
+> tem preferência.** A arte dele entra; a economia é nossa, e segue o nosso
+> roadmap e o nosso cálculo.
+
+Ela já mudou três coisas neste porte, e é bom que estejam nomeadas:
+
+| Ele fez | Nós ficamos com | Por quê |
+|---|---|---|
+| Baú com tabela calibrada | Só os **números**, como insumo | A distribuição é a parte fácil; a decisão do §5.5 (PC-T ou PC-B) é a difícil, e herdar a implementação seria herdar a decisão sem tomá-la |
+| Selo de arena em verde `#8fe3a0` fixo | `var(--neon2)` | Hex solto ficaria fora dos dois temas do V1.13 — é o defeito S68 entrando pela porta dos fundos |
+| Ilha tropical reescrita, um `R()` a menos por tufo | A **nossa** ilha, byte a byte | A dele desloca os 1.100 tufos e tudo depois. A original é a v0.8; não havia motivo para trocá-la |
+
+**Depois que estes blocos fecharem, voltamos para o nosso roadmap.** O porte é
+uma dívida a quitar, não uma mudança de rumo — e a próxima vez ele trabalha em
+cima da nossa versão, o que faz esta tabela deixar de ser necessária.
 
 ## Onde a referência está guardada
 
@@ -149,7 +177,7 @@ As três artes que ele criou (`portal-arena.jpg`, `cidade-neon.jpg`,
 
 1. ~~**D-006**~~ ✅ — o defeito, corrigido.
 2. ~~**V1.13 Identidade visual**~~ ✅ — a maior peça e a de menor risco lógico.
-3. **V1.14 Arenas variadas** — render, depois do tema (compartilham a pele).
+3. ~~**V1.14 Arenas variadas**~~ ✅ — render, depois do tema (compartilham a pele).
 4. **V1.15 Colocação, pódio e banner de batalha** — sem conflito.
 5. **V1.17 Shinys** — a fonte do cosmético vira decisão do bloco, já que o baú
    saiu do porte.

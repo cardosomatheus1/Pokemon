@@ -20,6 +20,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { extname, join, sep } from 'node:path';
 import { criarSuite, ok } from './harness.mjs';
 import { digital as digitalNode, rodada as rodadaNode } from './rodada-digital.mjs';
+import { sortearArena } from '../app/modules/arenas-dados.mjs';
 
 const RAIZ = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const PW = '/tmp/pw/node_modules/playwright-core/index.mjs';
@@ -72,6 +73,31 @@ function servidor() {
  * NOSSA interface, e sprite que chega da rede tornaria o resultado instável.  */
 const LADO = 32;
 
+/* A RAIZ DA RODADA, FIXADA — só para a linha de base.
+ *
+ * O V1.14 sorteia uma de cinco arenas por rodada, e a tela da arena é metade
+ * da captura. Uma linha de base que muda de cenário a cada execução não é
+ * linha de base: `npm run repetir` acusaria instabilidade sem nenhum defeito,
+ * e instável é pior que vermelho — vermelho constante tem endereço.
+ *
+ * A resposta NÃO é excluir a arena da captura (aí a arena deixaria de ser
+ * medida), e sim tirar o acaso: substituímos a única fonte imprevisível do
+ * jogo — `crypto.getRandomValues`, de onde sai a raiz (§P3) — por um contador.
+ * Tudo o que vem depois continua sendo o código de produção, rodando de
+ * verdade: pool, clima, preço, arena e layout saem da árvore de sementes como
+ * sempre, só que da MESMA raiz toda vez.
+ *
+ * É o mesmo princípio de bloquear as folhas de sprite: a linha de base mede a
+ * NOSSA interface, e o que vem de fora dela só adiciona ruído.
+ */
+function RAIZ_FIXA() {
+  let n = 0x5EED1234 >>> 0;
+  crypto.getRandomValues = a => {
+    for (let i = 0; i < a.length; i++) { n = (Math.imul(n, 1664525) + 1013904223) >>> 0; a[i] = n; }
+    return a;
+  };
+}
+
 async function impressao(pg) {
   const png = (await pg.screenshot()).toString('base64');
   return pg.evaluate(async ({ b64, lado }) => {
@@ -103,6 +129,7 @@ export async function capturarBase() {
     const pg = await (await b.newContext({ viewport: { width: L.w, height: L.h } })).newPage();
     /* sprite bloqueado: a linha de base é da nossa interface */
     await pg.route(/(githubusercontent|jsdelivr|pokemonshowdown)/, r => r.fulfill({ status: 204 }));
+    await pg.addInitScript(RAIZ_FIXA);
     await pg.goto(`http://127.0.0.1:${porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
     /* Esperar ESTADO, não relógio.
        A espera fixa de 4 s funcionou enquanto a rodada custava 0,7 s. O F0.7
@@ -247,6 +274,11 @@ export async function rodar() {
   const st = await pg.evaluate(() => ({
     bootSumiu: !document.querySelector('#boot'),
     climaVazado: !!document.querySelector('#weatherBadge')?.classList.contains('show'),
+    /* O CONTRÁRIO do clima, lido no MESMO instante para deixar isso explícito:
+       a arena não dá bônus nenhum, então o selo dela tem que estar no ar já na
+       fase de aposta. Selo apagado aqui é o V1.14 desligado. */
+    arenaNaTela: document.querySelector('#arenaBadge')?.textContent ?? '',
+    arenaSeloVisivel: !!document.querySelector('#arenaBadge')?.classList.contains('show'),
     fase: document.querySelector('#phase')?.textContent,
     lutadores: document.querySelectorAll('.mon').length,
     placas: document.querySelectorAll('.plate').length,
@@ -358,6 +390,7 @@ export async function rodar() {
     if (!S.seeds || !S.battle) return null;
     return {
       raiz: S.seeds.raiz,
+      visual: S.seeds.visual,
       clima: S.weather?.key,
       elenco: S.fighters.map(f => [f.dex, f.n, f.maxHp, f.atk, f.def, f.spa, f.spd, f.spe,
                                    f.moves.map(m => m.n)]),
@@ -507,6 +540,22 @@ export function suiteRodadaViva(r) {
       `batalha: app venceu ${r.jogo.vencedor} em ${r.jogo.nEventos} eventos, ` +
       `a raiz reproduz ${esperado.batalha.winner} em ${esperado.batalha.events.length} — ` +
       `o ramo batalha não é o usado`);
+  });
+
+  /* V1.14 · A ARENA NA TELA É A QUE A RAIZ REPRODUZ.
+     Quarta vez que a mesma lição aparece (S30, S53, S65, S69): testar a peça
+     não testa o encaixe. `test/arenas.mjs` prova que o sorteio sai do rótulo
+     certo; só aqui se prova que o app CHAMOU o sorteio, com o ramo `visual`, e
+     que o resultado chegou ao selo. Trocar `S.seeds.visual` por
+     `S.seeds.elenco` numa linha de `fases.mjs` continuaria verde em tudo o
+     mais. */
+  s.teste('a arena anunciada é a que a raiz reproduz', () => {
+    ok(r.arenaSeloVisivel,
+      'o selo de arena não está no ar na fase de aposta — a arena não dá bônus, não há o que esconder');
+    const esperada = sortearArena(r.jogo.visual);
+    ok(r.arenaNaTela.includes(esperada.nome),
+      `selo mostra "${r.arenaNaTela.trim()}", a raiz reproduz "${esperada.nome}" — ` +
+      `o ramo visual não é o usado no sorteio da arena`);
   });
   return s;
 }

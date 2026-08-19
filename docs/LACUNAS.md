@@ -568,3 +568,48 @@ fechar.
 Spec §0.5.1. É a única pendência do projeto capaz de reordenar o roadmap
 econômico inteiro. Está listada como entrada de arquitetura da v0.9 e ainda não
 tem data.
+
+---
+
+### L-026 — o baú não tem contra o que ser calibrado
+
+**Dono:** V1.16 (o baú pelo nosso desenho) · **Destrava quando:** D-007 fechar
+
+Decisão do dono do projeto: os baús ficam no **nosso** roadmap, com o **nosso**
+cálculo. A implementação da v1.0 não é portada; os números dela ficam como
+insumo, e são bons — 3.000.000 de aberturas, qui-quadrado em cinco sementes,
+autossustento de 4,7 % medido, pity com pior caso em 20.000 jogadores.
+
+**O que impede desenhar agora não é falta de método, é falta de orçamento.** O
+baú dele emite **1,45 PC-B por rodada**: 55 rodadas/semana consomem sozinhas os
+80 PC-B agregados do Estudo Econômico, e 21 rodadas/semana consomem os 30 que
+sobram para desafios/rescue/missões. Calibrar o nosso contra esse orçamento não
+faz sentido enquanto os nossos próprios desafios já o estouram em 6,5× — é o
+**D-007**, e ele vem primeiro.
+
+Três coisas o V1.16 vai ter que decidir, e nenhuma delas vem pronta do trabalho
+dele:
+
+1. **PC-T ou PC-B?** Em PC-T seria dinheiro sacável nascendo de graça, que é
+   exatamente o que a proveniência do §5.5 existe para impedir.
+2. **As três moedas novas** — fragmento, essência, prisma — mudam a superfície
+   econômica inteira, e cada uma é uma decisão de §5.5 por si.
+3. **O §11.3 lista "loot box paga sem transparência"** entre os pilares a
+   evitar. O baú dele é gratuito (fragmento por participação), então não cai na
+   proibição — mas ela fecha a porta para a monetização óbvia, e isso precisa
+   estar dito antes de alguém desenhar contando com ela.
+
+### L-027 — o véu de cor por arena foi documentado e não construído
+
+**Dono:** V1.17 (Shinys — skin de arena) · **Destrava:** nada; é acabamento
+
+O catálogo da v1.0 documenta cinco campos por arena e implementa quatro. O
+quinto, `brilho` — *"véu de cor por cima, para dar unidade ao conjunto"* —
+aparece só no comentário. O V1.14 portou os quatro que existem e **não inventou
+o quinto**: a regra do resgate vale para desenho também — o porte busca a mesma
+coisa, nunca outra coisa.
+
+Vale a pena? Provavelmente sim, e o lugar é o V1.17, que já vai mexer em skin de
+arena. Hoje a unidade cromática de cada cenário sai da paleta e do que cerca a
+ilha; um véu por cima resolveria o caso em que o sprite do lutador destoa do
+bioma — que é o problema que o campo parecia querer resolver.

@@ -60,6 +60,8 @@ const COMMIT = 'engine/commit.mjs';
 const TELEM  = 'app/modules/telemetria.mjs';
 const PROGR  = 'app/modules/progressao.mjs';
 const TEMA   = 'app/modules/tema.mjs';
+const ARENAD = 'app/modules/arenas-dados.mjs';
+const ARENAP = 'app/modules/arenas.mjs';
 
 const DEFEITOS = [
   /* Desde o F0.4 a tabela de tipos é DADO DO PACK, não do motor. O defeito é o
@@ -128,7 +130,11 @@ const DEFEITOS = [
     de:'  profile:  null,', para:'  profile:  null,\n  cacheQualquer: {},' },
 
   /* --- defeitos do F0.3b: o grafo de módulos ---------------------------- */
-  { id:'S15', arquivo:RENDER, nome:'módulo usa símbolo do motor sem importar',
+  /* Este defeito morava no `render.mjs` até o V1.14, que tirou de lá o desenho
+     semeado — a ilha virou uma das cinco pinturas de `arenas.mjs`, e com ela o
+     `rng`. O bloco quase deixou um defeito sem âncora: ele continuaria na
+     lista, verde, provando nada. Realvo para o módulo que hoje usa o símbolo. */
+  { id:'S15', arquivo:ARENAP, nome:'módulo usa símbolo do motor sem importar',
     real:'import perdido num merge — foi exatamente o que aconteceu ao extrair',
     de:"import { rng } from './motor.mjs';\n", para:'' },
 
@@ -410,6 +416,33 @@ const DEFEITOS = [
     real:'"salvar depois" — e o tema volta ao padrão a cada recarga',
     de:"  try { localStorage.setItem(CHAVE, t); } catch { /* modo privado: aplica sem guardar */ }",
     para:'  /* nada */' },
+
+  { id:'S73', arquivo:ARENAD, nome:'a arena volta a sair de Math.random',
+    real:'"é só cenário, não precisa de semente" — e a rodada deixa de ser reproduzível pela metade',
+    de:"  const R = rng(derivar(sementeVisual, 'arena'));", para:'  const R = Math.random;' },
+
+  { id:'S74', arquivo:ARENAD, nome:'a arena passa a andar junto com o enfeite',
+    real:'rótulo trocado numa cópia — e acrescentar uma partícula muda a arena da rodada',
+    de:"derivar(sementeVisual, 'arena')", para:"derivar(sementeVisual, 'enfeite')" },
+
+  { id:'S75', arquivo:ARENAD, nome:'uma arena fica inalcançável',
+    real:'peso zerado para "desativar temporariamente" — e ninguém nota que sumiu',
+    de:"emoji:'🏛️', peso:20,", para:"emoji:'🏛️', peso:0," },
+
+  { id:'S76', arquivo:ARENAP, nome:'uma arena fica sem pintura',
+    real:'entrada apagada numa arrumação do mapa — a rodada abre com o cenário em branco',
+    de:'  praia:    { estatico: praiaAreia,     fundo: marPraia     },', para:'' },
+
+  /* Os dois seguintes são de LIGAÇÃO, e nenhum teste estático os alcança:
+     o catálogo continua perfeito, o desenho continua correto, e o que quebra
+     é o encaixe. É a lição do S30/S53/S65/S69 — quem pega é o navegador. */
+  { id:'S77', arquivo:ARENAP, nome:'o selo de arena não acende',
+    real:'linha perdida numa refatoração — a arena muda e o jogador não é avisado',
+    de:"    b.classList.add('show');", para:'    /* nada */' },
+
+  { id:'S78', arquivo:FASES, nome:'a arena sai do ramo errado da árvore',
+    real:'`visual` trocado por `elenco` num autocompletar — tudo continua determinístico, e errado',
+    de:'  arenaDaRodada(S.seeds.visual);', para:'  arenaDaRodada(S.seeds.elenco);' },
 ];
 
 /* --- COMO A SABOTAGEM RODA, E POR QUE ASSIM -----------------------------
@@ -456,8 +489,12 @@ const suitesQuePegaram = saida => {
   return nomes.length ? nomes : ['(não carrega)'];
 };
 
-const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES, LIGACAO, PACK, VALID,
-                  SEMENTE, FASES, PRECO, CLIMA, EXPO, PAINEL, BOLSO, BANCO, INFO, ASSETS, COMMIT, TELEM, PROGR, TEMA];
+/* Os arquivos a guardar saem da PRÓPRIA lista de defeitos.
+   Escrita à mão, esta lista era uma segunda fonte de verdade — e o V1.14
+   provou o custo: dois arquivos novos entraram em `DEFEITOS`, ninguém os
+   acrescentou aqui, e a execução morreu com um TypeError no defeito 70 depois
+   de vinte minutos de trabalho jogados fora. Derivar não pode dessincronizar. */
+const ARQUIVOS = [...new Set(DEFEITOS.map(d => d.arquivo))];
 const originais = new Map();
 for (const f of ARQUIVOS) originais.set(f, readFileSync(f, 'utf8'));
 
@@ -492,6 +529,7 @@ console.log('linha de base: VERDE\n');
 
 async function avaliar(d, caixa) {
   const src = originais.get(d.arquivo);
+  if (src === undefined) return { ...d, status:'ARQUIVO AUSENTE', com:'-', sem:'-' };
   if (!src.includes(d.de)) return { ...d, status:'ÂNCORA PERDIDA', com:'-', sem:'-' };
   const alvo = join(caixa, d.arquivo);
   writeFileSync(alvo, src.replace(d.de, d.para));
@@ -562,8 +600,14 @@ const soGolden  = res.filter(r => r.status === 'PEGOU' && r.sem === 'NADA');
 
 console.log('');
 if (escaparam.length) {
-  console.log(`Q2 VERMELHO — ${escaparam.length}/${DEFEITOS.length} passaram despercebidos:`);
-  for (const r of escaparam) console.log(`  · ${r.id} ${r.nome} — ${r.real}`);
+  console.log(`Q2 VERMELHO — ${escaparam.length}/${DEFEITOS.length} não foram pegos:`);
+  /* O STATUS ENTRA NA LINHA, e não é detalhe. "ESCAPOU" e "ÂNCORA PERDIDA" são
+     problemas diferentes: no primeiro o defeito foi plantado e a suíte não
+     viu; no segundo ele nem chegou a ser plantado, porque o trecho onde ele
+     morava deixou de existir. Chamar os dois de "passou despercebido" custou
+     um diagnóstico errado no V1.14. */
+  for (const r of escaparam)
+    console.log(`  · ${r.id} [${r.status}] ${r.nome} — ${r.real}`);
 }
 if (soGolden.length) {
   console.log(`\n⚠ ${soGolden.length} defeito(s) só o golden pega — cobertura de propriedade fraca:`);

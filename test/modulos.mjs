@@ -41,6 +41,10 @@ const CAMADA = {
   'progressao.mjs': 0,
   /* Tema: mexe no <html> e no localStorage, não depende de módulo nenhum. */
   'tema.mjs': 0,
+  /* Catálogo de arenas: escolhe a arena da rodada a partir da árvore de
+     sementes. Não desenha e não toca o DOM, então mora na base — é o que
+     permite testá-lo no Node. */
+  'arenas-dados.mjs': 0,
   'sprites.mjs': 1,
   'audio.mjs': 1,
   'render.mjs': 2,
@@ -48,6 +52,10 @@ const CAMADA = {
   'clima.mjs': 2,
   'odds.mjs': 2,
   'killfeed.mjs': 2,
+  /* Pintura das arenas: usa a geometria do render para desenhar, então fica
+     ACIMA dele. A direção importa — o render recebe o cenário por injeção e
+     não importa o catálogo, senão os dois se fechariam num ciclo. */
+  'arenas.mjs': 3,
   'rodada.mjs': 3,
   'coreografia.mjs': 3,
   'eventos.mjs': 3,
