@@ -28,6 +28,7 @@ npm run snapshot        # regera o instantâneo do protótipo para a paridade
 | `modulos.mjs` | Q1/Q3 | limite de tamanho, tabela de camadas, dependência numa direção só, símbolo usado sem importar, atribuição a binding importado |
 | `conteudo.mjs` | Q1/Q3/Q6 | Content Layer: pack sintético gera rodada válida, pack inválido é recusado na porta, pack malformado não executa nada, e nenhum identificador da franquia sobra em `engine/` |
 | `pack-sintetico.mjs` | — | 12 criaturas e 5 tipos inventados. Existe para provar que o motor não sabe o que é um Pokémon |
+| `tema.mjs` | Q1/Q3 | a promessa dos tokens: nenhuma cor de acento solta fora dos cosméticos, as duas variantes definindo os mesmos tokens, e a arte nossa vindo de `arte/` |
 | `commit.mjs` | Q1/Q6 | commit-reveal do §4.5, e a busca por força bruta que prova que o sal é quem protege |
 | `telemetria.mjs` | Q9 | os 14 eventos do §4.7: declarados, emitidos, e com os campos comuns PREENCHIDOS |
 | `saida-v09.mjs` | — | o §4.8 item a item, com a evidência de cada um apontada. Imprime o quadro a cada execução |
@@ -41,7 +42,7 @@ npm run snapshot        # regera o instantâneo do protótipo para a paridade
 | `semente.mjs` | Q1/Q3/Q6 | a árvore do §P3: a mesma raiz reproduz a rodada, dois ramos nunca coincidem, o preço sai da raiz, e a raiz não vem de relógio, contador nem da rodada anterior |
 | `rodada-digital.mjs` | — | reconstrói a rodada a partir da raiz. Importado pelo Node **e** pelo Chromium: é o que faz "dois ambientes JS" ser comparação de verdade, e é a referência contra a qual a rodada real do app é conferida |
 | `visual.mjs` | Q5/Q3 | sobe servidor próprio, abre o app num Chromium de verdade, reprova em `pageerror`, compara impressão digital 32×32 RGB de 4 telas × 3 larguras, e confere o determinismo da rodada entre Node e navegador |
-| `sabotagem.mjs` | Q2 | planta 66 defeitos numa cópia do repositório e exige vermelho, com e sem os golden tests |
+| `sabotagem.mjs` | Q2 | planta 72 defeitos numa cópia do repositório e exige vermelho, com e sem os golden tests |
 
 ## Resultado instável não conta como captura
 
@@ -69,8 +70,8 @@ O F0.2 resolveu isso rodando cada sabotagem **duas vezes**, com e sem os goldens
 (`SEM_GOLDEN=1`). A coluna que interessa no relatório é "sem golden": defeito que só
 o golden pega é sinalizado como cobertura de propriedade fraca naquela área.
 
-Estado atual (F0.10, fim da Fase 0): **66 defeitos plantados**, nenhum
-dependendo só do golden. Um deles — S20, cor do tema alterada — só é pego pelo navegador, e é
+Estado atual (V1.13): **72 defeitos plantados**, nenhum dependendo só do
+golden. Um deles — S20, cor do tema alterada — só é pego pelo navegador, e é
 justamente por isso que o Q5 virou portão.
 
 A execução acontece numa **cópia do repositório em `/tmp`**. As duas primeiras

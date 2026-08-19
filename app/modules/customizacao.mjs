@@ -7,6 +7,7 @@ import { CUR, elenco, especies, tipoCores, tipoNomes, nomeExibido, slugExterno }
 import { DEPOSIT_PACKAGES, simulateDeposit } from './carteira.mjs';
 import { PROFILE_DEFAULT, loadProfile, nivelDe, progressoNivel, saveProfile, tituloDe, topOf } from './perfil.mjs';
 import { S } from './estado.mjs';
+import { TEMAS, aplicarTema, temaAtual } from './tema.mjs';
 import { TYPE_BADGES, renderBadges } from './medalhas.mjs';
 import { dexImg, dexURL } from './sprites.mjs';
 import { ensureDaily } from './desafios.mjs';
@@ -184,6 +185,18 @@ function renderProfile(){
   renderBadges();
   renderDaily();
   renderCustom();
+  /* Seletor de tema. Cada opção mostra as duas cores do próprio tema, e não um
+     nome — quem escolhe pele escolhe pelo olho. */
+  const alvoTema = $('#pickTema');
+  if (alvoTema){
+    const atual = temaAtual();
+    alvoTema.innerHTML = TEMAS.map(t => `
+      <button class="tema-op ${t.id === atual ? 'on' : ''}" data-tema="${t.id}"
+              style="--t1:${t.c1};--t2:${t.c2};--tbg:${t.bg}" title="${t.nm}">
+        <span class="tema-am"></span><span class="tema-nm">${t.nm}</span>
+      </button>`).join('');
+  }
+
 }
 
 
@@ -192,6 +205,15 @@ function renderProfile(){
    cada render, então prender o clique em cada opção daria listener órfão
    toda vez que a lista fosse redesenhada. */
 $('#profileModal').addEventListener('click', ev => {
+  /* Tema primeiro: ele não é `.opt` porque não guarda nada no perfil — a
+     escolha mora em `ar_tema`, e vale para o navegador inteiro, não para a
+     conta. Trocar de treinador não devia trocar a pele do site. */
+  const opTema = ev.target.closest('.tema-op');
+  if (opTema){
+    aplicarTema(opTema.dataset.tema);
+    for (const b of $('#pickTema').children) b.classList.toggle('on', b === opTema);
+    return;
+  }
   const opt = ev.target.closest('.opt');
   if (!opt) return;
   if (opt.dataset.av)          S.profile.avatar = {kind:opt.dataset.av, id: opt.dataset.av==='mon' ? +opt.dataset.id : opt.dataset.id};

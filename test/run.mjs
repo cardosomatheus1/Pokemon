@@ -23,6 +23,7 @@ import * as telemetria from './telemetria.mjs';
 import * as commit from './commit.mjs';
 import * as saida from './saida-v09.mjs';
 import * as progressao from './progressao.mjs';
+import * as tema from './tema.mjs';
 import * as visual from './visual.mjs';
 
 if (process.argv.includes('--gerar')) {
@@ -65,7 +66,7 @@ const exigeVisual = process.env.EXIGE_VISUAL === '1';
    mesmo argumento do Q5. */
 const exigeLocal = process.env.EXIGE_LOCAL === '1';
 const semVisual = process.env.SEM_VISUAL === '1';   // usado pela sabotagem
-let rVisual = null, baseAtual = null, baseGravada = null, digitaisNav = null, rSemRede = null;
+let rVisual = null, baseAtual = null, baseGravada = null, digitaisNav = null, rSemRede = null, rTemaCedo = null;
 /* Q3 do F0.5 pede a mesma rodada reproduzida em dois ambientes JS. Estas são as
    raízes comparadas — fixas, para que a falha seja reproduzível. */
 const RAIZES_Q3 = [1, 42, 0xC0FFEE, 0xFFFFFFFF, 987654321];
@@ -74,6 +75,7 @@ if (visual.disponivel() && !semVisual) {
   baseAtual = await visual.capturarBase();
   baseGravada = JSON.parse(readFileSync(new URL('./fixtures/visual-base.json', import.meta.url), 'utf8'));
   digitaisNav = await visual.digitaisNoNavegador(RAIZES_Q3);
+  rTemaCedo = await visual.rodarTemaSemModulos();
   if (visual.temAssetsLocais()) rSemRede = await visual.rodarSemRede();
   else if (exigeLocal) { console.error('\nassets locais ausentes: rode npm run assets (ver tools/README.md)'); process.exit(2); }
   else console.log('  · teste de egresso fechado pulado (sem assets locais) — use npm run assets\n');
@@ -100,12 +102,13 @@ const suites = [
   ...(semGolden ? [] : [golden.suite()]),
   /* baratas: varredura de texto e lotes pequenos */
   fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(),
-  carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(), telemetria.suite(), commit.suite(), saida.suite(), progressao.suite(),
+  carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(), telemetria.suite(), commit.suite(), saida.suite(), progressao.suite(), tema.suite(),
   /* médias: lotes de simulação curtos */
   semente.suite(), estatistica.suite(), precisao.suite(), invariantes.suite(),
   ...(visual.disponivel() && !semVisual
      ? [visual.suite(rVisual), visual.suiteBase(baseAtual, baseGravada),
         visual.suiteAmbientes(digitaisNav, RAIZES_Q3), visual.suiteRodadaViva(rVisual),
+        visual.suiteTemaCedo(rTemaCedo),
         ...(rSemRede ? [visual.suiteSemRede(rSemRede)] : [])]
      : []),
   await paridade.suite(),

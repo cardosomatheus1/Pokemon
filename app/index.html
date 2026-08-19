@@ -1,10 +1,20 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-tema="hyper">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<link rel="stylesheet" href="../assets/fonts_googleapis_com/css2" onerror="this.onerror=null;this.href='https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'">
-<title>PokéArena — base v0.8</title>
+<script>
+/* Tema antes de qualquer pintura. Se isto ficasse no fim do <body>, a página
+   piscaria no tema errado por um quadro antes de trocar — e um quadro é o
+   suficiente para parecer defeito. É a única coisa inline do projeto, e o
+   motivo está aqui. */
+(function(){ try{
+  var t = localStorage.getItem('ar_tema');
+  if (t === 'hyper' || t === 'shadow') document.documentElement.dataset.tema = t;
+}catch(e){} })();
+</script>
+<link rel="stylesheet" href="../assets/fonts_googleapis_com/css2" onerror="this.onerror=null;this.href='https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@500;700;900&display=swap'">
+<title>PokéArena — base v1.0</title>
 <style>
 /* A fonte de pixel vem de fora, e `@import` não sabe cair para outro endereço.
    A cópia local entra primeiro; o `<link>` no <head> faz o resgate para o
@@ -12,17 +22,74 @@
    identidade visual em silêncio — é a mesma classe de erro da v0.6.1, e o
    resgate busca a MESMA fonte em outro endereço. */
 
-:root{
-  --px: 'Press Start 2P', 'Courier New', monospace;
-  --bg: #12141c;
-  --panel: #1c202c;
-  --panel2: #141821;
-  --line: #2e3547;
-  --txt: #e9edf5;
-  --dim: #8a94ab;
-  --gold: #f5c542;
-  --green: #46c96a;
-  --red: #e5484d;
+/* =====================================================================
+   IDENTIDADE VISUAL — NEON / CYBERPUNK
+   ---------------------------------------------------------------------
+   Toda a pele do site sai destes tokens. Os nomes antigos (--gold,
+   --panel, --line…) foram mantidos DE PROPÓSITO: são quase setenta
+   referências espalhadas por arena, HUD, killfeed e carteira, e trocar
+   o VALOR em vez do NOME converte o site inteiro sem encostar em uma
+   única linha de lógica de jogo. Hoje --gold significa "a cor de acento
+   do tema", não amarelo.
+
+   --goldRGB existe porque uns vinte lugares usam rgba() com a cor de
+   acento em opacidade variável; sem o trio cru não dá para trocar.
+   --onAccent é a cor do texto que vai POR CIMA do acento (botão cheio).
+
+   Duas variantes, escolhidas no perfil e guardadas em ar_tema:
+     hyper  — Hyper Core   : ciano elétrico + violeta, núcleo de energia
+     shadow — Shadow Arena : violeta + magenta, lendário na penumbra
+   ===================================================================== */
+:root,
+html[data-tema="hyper"]{
+  --px:  'Press Start 2P', 'Courier New', monospace;
+  --dsp: 'Orbitron', 'Segoe UI', system-ui, sans-serif;
+
+  --bg:       #070a12;
+  --bg2:      #0c1424;
+  --panel:    rgba(17,27,46,.72);
+  --panel2:   rgba(10,17,31,.78);
+  --solid:    #101a2c;
+  --line:     rgba(var(--goldRGB),.20);
+
+  --txt:      #e6f4ff;
+  --dim:      #7f92b5;
+
+  --gold:     #00e5ff;
+  --goldRGB:  0,229,255;
+  --onAccent: #04151c;
+
+  --neon2:    #a06bff;
+  --neon2RGB: 160,107,255;
+
+  --green:    #3df2a6;
+  --red:      #ff4d6d;
+
+  --scan:     rgba(var(--goldRGB),.045);
+}
+
+html[data-tema="shadow"]{
+  --bg:       #08060f;
+  --bg2:      #150c26;
+  --panel:    rgba(30,19,52,.72);
+  --panel2:   rgba(19,11,34,.80);
+  --solid:    #1b1231;
+  --line:     rgba(var(--goldRGB),.22);
+
+  --txt:      #f3ebff;
+  --dim:      #9184b3;
+
+  --gold:     #b57bff;
+  --goldRGB:  181,123,255;
+  --onAccent: #150826;
+
+  --neon2:    #ff3ea5;
+  --neon2RGB: 255,62,165;
+
+  --green:    #4ce6b0;
+  --red:      #ff5a86;
+
+  --scan:     rgba(var(--goldRGB),.05);
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -79,16 +146,16 @@ body{
    elemento) e o ícone entra DENTRO da placa, à direita.               */
 .plate.mine{
   border-color:var(--gold);
-  box-shadow:0 0 0 1px var(--gold), 0 0 7px rgba(245,197,66,.55);
+  box-shadow:0 0 0 1px var(--gold), 0 0 7px rgba(var(--goldRGB),.55);
   z-index:2}
 .plate.mine .nm{padding-left:12px}
 .plate .ball-mark{
   position:absolute;left:2px;top:50%;transform:translateY(-50%);
   width:8px;height:8px;border-radius:50%;display:none;
   background:linear-gradient(#e5443b 0 47%, #0d1420 47% 53%, #f5f5f5 53% 100%);
-  border:1px solid #0d1420;box-shadow:0 0 3px rgba(245,197,66,.9)}
+  border:1px solid #0d1420;box-shadow:0 0 3px rgba(var(--goldRGB),.9)}
 .plate.mine .ball-mark{display:block;animation:ballPulse 1.6s ease-in-out infinite}
-@keyframes ballPulse{0%,100%{box-shadow:0 0 3px rgba(245,197,66,.9)}50%{box-shadow:0 0 7px rgba(245,197,66,1)}}
+@keyframes ballPulse{0%,100%{box-shadow:0 0 3px rgba(var(--goldRGB),.9)}50%{box-shadow:0 0 7px rgba(var(--goldRGB),1)}}
 /* nocauteado ganha prioridade sobre o realce dourado */
 .plate.mine.dead{box-shadow:none;border-color:#0d1420}
 .plate.mine.dead .ball-mark{animation:none;filter:grayscale(1)}
@@ -179,13 +246,13 @@ body{
   width:46px;height:22px;margin:0;display:none;z-index:0}
 #selRing.on{display:block}
 #selRing i{position:absolute;inset:0;border-radius:50%;
-  border:2px solid var(--gold);box-shadow:0 0 8px rgba(245,197,66,.85), inset 0 0 6px rgba(245,197,66,.5);
+  border:2px solid var(--gold);box-shadow:0 0 8px rgba(var(--goldRGB),.85), inset 0 0 6px rgba(var(--goldRGB),.5);
   animation:ringPulse 1.5s ease-in-out infinite}
 @keyframes ringPulse{
   0%,100%{transform:scale(1);opacity:.95}
   50%{transform:scale(1.14);opacity:.55}
 }
-.mon.mine .body{filter:drop-shadow(0 1px 0 rgba(0,0,0,.25)) drop-shadow(0 0 5px rgba(245,197,66,.85))}
+.mon.mine .body{filter:drop-shadow(0 1px 0 rgba(0,0,0,.25)) drop-shadow(0 0 5px rgba(var(--goldRGB),.85))}
 
 /* ---- aura de fúria: killstreak ativo (vem DEPOIS de .mine pra vencer) ---- */
 .mon.rage .body{filter:drop-shadow(0 0 5px #ff3b30) drop-shadow(0 0 11px rgba(255,120,40,.9)) brightness(1.12);
@@ -244,7 +311,7 @@ body{
 .pick{display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;
   border-bottom:1px solid rgba(255,255,255,.05);font-size:.82rem}
 .pick:hover{background:rgba(255,255,255,.07)}
-.pick.sel{background:rgba(245,197,66,.16);box-shadow:inset 3px 0 0 var(--gold)}
+.pick.sel{background:rgba(var(--goldRGB),.16);box-shadow:inset 3px 0 0 var(--gold)}
 .pick img{width:22px;height:22px;object-fit:contain;image-rendering:pixelated}
 .pick .n{flex:1}
 .pick .o{font-family:var(--px);font-size:8px;color:var(--gold)}
@@ -277,8 +344,8 @@ body{
   background:#fff6df;border-color:var(--gold);color:#3a2c05;
   animation:bannerGlow 1.2s ease-in-out infinite}
 @keyframes bannerGlow{
-  0%,100%{box-shadow:0 4px 0 rgba(0,0,0,.35), 0 0 0 rgba(245,197,66,0)}
-  50%{box-shadow:0 4px 0 rgba(0,0,0,.35), 0 0 18px rgba(245,197,66,.65)}
+  0%,100%{box-shadow:0 4px 0 rgba(0,0,0,.35), 0 0 0 rgba(var(--goldRGB),0)}
+  50%{box-shadow:0 4px 0 rgba(0,0,0,.35), 0 0 18px rgba(var(--goldRGB),.65)}
 }
 #winBox.win img{animation:winBounce .6s cubic-bezier(.22,1.4,.36,1) both}
 @keyframes winBounce{
@@ -452,7 +519,7 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 .sc-ceu{background:linear-gradient(180deg,#2b5fa8 0%,#7ec8f2 45%,#f5d9a0 100%)}
 .sc-noite{background:linear-gradient(180deg,#0b1026 0%,#1e2a52 55%,#3a3f75 100%)}
 .sc-caverna{background:linear-gradient(180deg,#16121c 0%,#3a2c46 55%,#5d4a2e 100%)}
-.sc-campeao{background:linear-gradient(180deg,#3b2c05 0%,#8a6a12 45%,#f5c542 100%)}
+.sc-campeao{background:linear-gradient(180deg,#3b2c05 0%,#8a6a12 45%,var(--gold) 100%)}
 /* sol/lua e "nuvens" desenhados com gradiente radial, sem imagem */
 .sc-praia::after,.sc-ceu::after{content:'';position:absolute;left:16px;top:12px;width:26px;height:26px;
   border-radius:50%;background:#fff4c2;box-shadow:0 0 22px 8px rgba(255,240,180,.75)}
@@ -510,8 +577,8 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 .badge.t2 .ico{filter:none;text-shadow:0 0 7px rgba(215,225,240,.6)}
 .badge.t2 .nm{color:#dfe6f2}.badge.t2 .tier{color:#cdd6e5}.badge.t2 .pg i{background:#cdd6e5}
 .badge.t3{border-color:var(--gold);background:linear-gradient(180deg,#33280a,var(--panel2));
-  box-shadow:0 0 12px rgba(245,197,66,.32)}
-.badge.t3 .ico{filter:none;text-shadow:0 0 10px rgba(245,197,66,.85);animation:badgeBob 2.6s ease-in-out infinite}
+  box-shadow:0 0 12px rgba(var(--goldRGB),.32)}
+.badge.t3 .ico{filter:none;text-shadow:0 0 10px rgba(var(--goldRGB),.85);animation:badgeBob 2.6s ease-in-out infinite}
 .badge.t3 .nm{color:#f7e2a6}.badge.t3 .tier{color:var(--gold)}.badge.t3 .pg i{background:var(--gold)}
 .badge.t4{border-color:#63d7ff;background:linear-gradient(180deg,#0e2b38,var(--panel2));
   box-shadow:0 0 16px rgba(99,215,255,.45)}
@@ -534,7 +601,7 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 .nav{background:none;border:1px solid transparent;border-radius:7px;color:var(--dim);
   padding:6px 11px;font-size:.74rem;cursor:pointer;transition:.15s;white-space:nowrap}
 .nav:hover{color:var(--txt);border-color:var(--line)}
-.nav.on{color:var(--gold);border-color:var(--gold);background:rgba(245,197,66,.08);font-weight:700}
+.nav.on{color:var(--gold);border-color:var(--gold);background:rgba(var(--goldRGB),.08);font-weight:700}
 .view{display:none;width:100%}
 .view.on{display:block}
 /* .app deixou de ser filha direta do body (que centralizava por flex),
@@ -782,7 +849,7 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 .opt{background:var(--panel2);border:2px solid var(--line);border-radius:9px;padding:5px 3px;
   cursor:pointer;text-align:center;transition:.15s}
 .opt:hover{border-color:var(--gold)}
-.opt.on{border-color:var(--gold);box-shadow:0 0 9px rgba(245,197,66,.5)}
+.opt.on{border-color:var(--gold);box-shadow:0 0 9px rgba(var(--goldRGB),.5)}
 .opt img{width:38px;height:38px;object-fit:contain;image-rendering:pixelated;display:block;margin:0 auto}
 .opt .cap{font-size:.55rem;color:var(--dim);margin-top:3px;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis}
@@ -813,6 +880,1051 @@ input[type=range]{width:100%;accent-color:var(--gold)}
   border-bottom:1px dashed rgba(255,255,255,.06);color:var(--dim);font-size:.7rem}
 #depToast.show{animation:toastPop .3s ease-out}
 @keyframes toastPop{0%{opacity:0;transform:translateY(-4px)}100%{opacity:1;transform:translateY(0)}}
+
+/* =====================================================================
+   PELE NEON / CYBERPUNK
+   ---------------------------------------------------------------------
+   Este bloco é a "roupa" do site e vem DEPOIS de todo o CSS original de
+   propósito: ele só sobrescreve aparência (cor, borda, brilho, fundo) e
+   não toca em uma única regra de posicionamento da arena, do HUD ou do
+   killfeed. Apagar este bloco devolve o visual antigo sem quebrar nada —
+   foi escrito assim justamente para a troca de tema ser reversível.
+
+   Referência: guia Neon/Cyberpunk do Gemini (fundo quase preto, painéis
+   de vidro, bordas ciano translúcidas, botão vazado brilhante), com dois
+   acabamentos próprios: a atmosfera de cidade e a moldura de HUD, que
+   são o que amarram a estética às artes de fundo.
+   ===================================================================== */
+
+/* ---------- ATMOSFERA: cidade, malha digital e varredura ----------
+   Tudo em pseudo-elementos fixos e sem clique: não entram no fluxo,
+   então nenhuma medida de layout muda por causa deles. */
+body{
+  background:
+    radial-gradient(1100px 620px at 50% -8%, rgba(var(--goldRGB),.13) 0%, transparent 62%),
+    radial-gradient(880px 540px at 88% 4%,  rgba(var(--neon2RGB),.12) 0%, transparent 60%),
+    radial-gradient(760px 520px at 8% 22%,  rgba(var(--neon2RGB),.08) 0%, transparent 62%),
+    linear-gradient(180deg, var(--bg2) 0%, var(--bg) 46%, var(--bg) 100%);
+  background-attachment:fixed;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    linear-gradient(rgba(var(--goldRGB),.055) 1px, transparent 1px) 0 0/56px 56px,
+    linear-gradient(90deg, rgba(var(--goldRGB),.055) 1px, transparent 1px) 0 0/56px 56px;
+  -webkit-mask-image:radial-gradient(125% 88% at 50% 0%, #000 0%, transparent 74%);
+          mask-image:radial-gradient(125% 88% at 50% 0%, #000 0%, transparent 74%);
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:repeating-linear-gradient(180deg, var(--scan) 0 1px, transparent 1px 3px);
+}
+
+/* ---------- LETRADO — a marca em CSS ----------
+   Os PNGs de letrado não vieram junto das artes, então a marca é feita
+   em tipo + brilho: escala sozinha, troca de cor com o tema e não pesa
+   um byte de download. O "Poké" é branco e o "Arena" recebe o acento,
+   que é a leitura das artes do Gemini e do GPT. */
+.letrado{
+  font-family:var(--dsp);font-weight:900;letter-spacing:.02em;
+  line-height:1;white-space:nowrap;display:inline-flex;align-items:baseline;
+  text-transform:none;
+}
+.letrado i{font-style:normal;color:#fff;
+  text-shadow:0 0 6px rgba(255,255,255,.55), 0 0 18px rgba(var(--goldRGB),.55)}
+.letrado b{font-weight:900;
+  background:linear-gradient(180deg,#fff 8%,var(--gold) 55%,var(--neon2) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 8px rgba(var(--goldRGB),.75))
+         drop-shadow(0 0 20px rgba(var(--neon2RGB),.45))}
+
+/* pulso lento do letrado: o "neon respirando" das artes de referência */
+.letrado.vivo i{animation:letrPulsa 3.4s ease-in-out infinite}
+.letrado.vivo b{animation:letrPulsa 3.4s ease-in-out infinite .25s}
+@keyframes letrPulsa{50%{filter:brightness(1.16) drop-shadow(0 0 12px rgba(var(--goldRGB),.9))}}
+
+/* marca-d'água da pokébola cyber ao lado do letrado (puro CSS) */
+.pokemark{
+  /* display explícito: <span> é inline, e largura/altura não valem em
+     inline não-substituído. No .brand isso passava porque o pai é flex e
+     o filho vira bloco de graça; no fecho do baú, que é um bloco
+     absoluto comum, a marca saía com 6px de largura. */
+  display:inline-block;
+  position:relative;flex:0 0 auto;width:26px;height:26px;border-radius:50%;
+  border:2px solid var(--gold);
+  background:
+    linear-gradient(180deg, rgba(var(--neon2RGB),.55) 0 46%, transparent 46%),
+    radial-gradient(circle at 50% 50%, rgba(var(--goldRGB),.25), transparent 70%);
+  box-shadow:0 0 10px rgba(var(--goldRGB),.7), inset 0 0 8px rgba(var(--goldRGB),.35);
+}
+.pokemark::before{content:'';position:absolute;left:0;right:0;top:50%;height:2px;
+  transform:translateY(-50%);background:var(--gold);box-shadow:0 0 6px var(--gold)}
+.pokemark::after{content:'';position:absolute;left:50%;top:50%;width:9px;height:9px;
+  transform:translate(-50%,-50%);border-radius:50%;
+  border:2px solid var(--gold);background:var(--bg);
+  box-shadow:0 0 8px var(--gold)}
+
+/* ---------- TOPBAR ---------- */
+.topbar{
+  /* A topbar é item flex do body (coluna, height:100%), então o navegador
+     PODE encolhê-la quando o conteúdo da página passa da viewport — e é o
+     que acontecia: caixa de 22px com conteúdo de 145px. Antes isso não
+     aparecia porque o excesso vazava à vista; com o overflow:hidden que a
+     linha de luz precisa, viraria corte. flex:0 0 auto trata a causa e
+     devolve a altura natural em qualquer largura de tela. */
+  flex:0 0 auto;
+  max-width:1790px;padding:10px 16px;border-radius:14px;
+  background:linear-gradient(180deg, rgba(var(--goldRGB),.05), transparent), var(--panel);
+  border:1px solid var(--line);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  box-shadow:0 8px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);
+  margin-bottom:14px;position:relative;overflow:hidden;
+}
+/* fio de luz correndo na base da topbar */
+.topbar::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),var(--neon2),transparent);
+  opacity:.75}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--dsp);
+  font-size:1.02rem;color:var(--txt)}
+.brand small{font-family:'Segoe UI',sans-serif;color:var(--dim);
+  letter-spacing:.04em;text-transform:uppercase;font-size:.56rem}
+
+.nav{font-family:var(--dsp);font-weight:500;letter-spacing:.06em;
+  text-transform:uppercase;font-size:.66rem;border-radius:8px}
+.nav:hover{color:var(--txt);border-color:rgba(var(--goldRGB),.35);
+  background:rgba(var(--goldRGB),.06)}
+.nav.on{color:var(--gold);border-color:rgba(var(--goldRGB),.65);
+  background:rgba(var(--goldRGB),.10);font-weight:700;
+  box-shadow:0 0 12px rgba(var(--goldRGB),.30), inset 0 0 10px rgba(var(--goldRGB),.10);
+  text-shadow:0 0 8px rgba(var(--goldRGB),.7)}
+
+.tbtn{background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.tbtn:hover{border-color:var(--gold);color:var(--gold);
+  box-shadow:0 0 12px rgba(var(--goldRGB),.35)}
+.tbtn.gold{background:rgba(var(--goldRGB),.12);border-color:var(--gold);
+  color:var(--gold);text-shadow:0 0 8px rgba(var(--goldRGB),.7);
+  box-shadow:0 0 12px rgba(var(--goldRGB),.4)}
+
+.who-chip{background:var(--panel2);border-color:var(--line);border-radius:10px}
+.who-chip:hover{border-color:rgba(var(--goldRGB),.5);
+  box-shadow:0 0 12px rgba(var(--goldRGB),.25)}
+.who-chip img{background:rgba(0,0,0,.35);box-shadow:0 0 0 1px var(--line)}
+.who-chip .i span{font-family:var(--dsp);font-weight:700;letter-spacing:.05em}
+
+/* ---------- BOTÕES ----------
+   O botão vazado neon que o guia pede. Sem text-transform global: os
+   rótulos longos da carteira e da arena não caberiam em maiúsculas com
+   entreletras, e quebrar o layout de colunas estreitas seria o preço.
+   Quem recebe o tratamento completo é o .btn.cta, usado só nas chamadas
+   grandes do portal, onde há espaço de sobra. */
+.btn{
+  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015)), var(--panel2);
+  border:1px solid var(--line);border-radius:9px;
+  transition:background .15s, border-color .15s, box-shadow .15s, color .15s;
+}
+.btn:hover{
+  background:linear-gradient(180deg, rgba(var(--goldRGB),.10), rgba(255,255,255,.02)), var(--panel2);
+  border-color:rgba(var(--goldRGB),.55);color:#fff;
+  box-shadow:0 0 14px rgba(var(--goldRGB),.25);
+}
+.btn.gold{
+  background:rgba(var(--goldRGB),.10);border:1px solid var(--gold);
+  color:var(--gold);font-weight:700;
+  text-shadow:0 0 8px rgba(var(--goldRGB),.65);
+  box-shadow:0 0 12px rgba(var(--goldRGB),.35), inset 0 0 12px rgba(var(--goldRGB),.12);
+}
+.btn.gold:hover{
+  background:rgba(var(--goldRGB),.20);color:#fff;
+  box-shadow:0 0 22px rgba(var(--goldRGB),.6), inset 0 0 16px rgba(var(--goldRGB),.22);
+}
+.btn.pri{background:rgba(255,77,109,.14);border-color:var(--red);color:#ffb9c6;
+  box-shadow:0 0 12px rgba(255,77,109,.3)}
+.btn.pri:hover{background:rgba(255,77,109,.26);color:#fff;
+  box-shadow:0 0 20px rgba(255,77,109,.55)}
+.btn.on{background:rgba(61,242,166,.16);border-color:var(--green);color:var(--green);
+  text-shadow:0 0 8px rgba(61,242,166,.6);box-shadow:0 0 14px rgba(61,242,166,.35)}
+
+/* chamada principal: aqui sim, o botão vazado maiúsculo do guia */
+.btn.cta{
+  flex:0 0 auto;font-family:var(--dsp);font-weight:700;
+  text-transform:uppercase;letter-spacing:.12em;font-size:.74rem;
+  padding:13px 26px;border-radius:11px;
+  background:transparent;border:2px solid var(--gold);color:var(--gold);
+  text-shadow:0 0 10px rgba(var(--goldRGB),.8);
+  box-shadow:0 0 16px rgba(var(--goldRGB),.5), inset 0 0 16px rgba(var(--goldRGB),.18);
+  position:relative;overflow:hidden;
+}
+.btn.cta:hover{background:rgba(var(--goldRGB),.14);color:#fff;
+  box-shadow:0 0 30px rgba(var(--goldRGB),.8), inset 0 0 22px rgba(var(--goldRGB),.3)}
+/* brilho que atravessa o botão, o "scan" das interfaces cyberpunk */
+.btn.cta::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.28) 50%,transparent 58%);
+  transform:translateX(-120%);animation:ctaScan 3.6s ease-in-out infinite}
+@keyframes ctaScan{0%,62%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+.btn.cta.ghost{border-color:var(--line);color:var(--dim);
+  text-shadow:none;box-shadow:none}
+.btn.cta.ghost:hover{border-color:var(--neon2);color:var(--neon2);
+  background:rgba(var(--neon2RGB),.10);
+  box-shadow:0 0 18px rgba(var(--neon2RGB),.45)}
+.btn.cta.ghost::after{display:none}
+
+/* ---------- VIDRO: painéis, cartões e modais ---------- */
+.card, .feat, .step, .rule, .modal, .hero-stats div, .stat-box, .opt, .chip{
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+}
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,.045), transparent), var(--panel);
+  border:1px solid var(--line);border-radius:14px;
+  box-shadow:0 6px 26px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.05),
+             0 0 18px rgba(var(--goldRGB),.06);
+  position:relative;
+}
+.card h3{font-family:var(--dsp);font-weight:700;color:var(--gold);
+  letter-spacing:.13em;text-shadow:0 0 8px rgba(var(--goldRGB),.45);opacity:.92}
+/* cantoneira de HUD: dois traços no canto superior esquerdo do cartão */
+.card::before{content:'';position:absolute;left:-1px;top:-1px;width:16px;height:16px;
+  border-left:2px solid var(--gold);border-top:2px solid var(--gold);
+  border-radius:14px 0 0 0;opacity:.7;pointer-events:none;
+  box-shadow:-1px -1px 8px rgba(var(--goldRGB),.5)}
+.card::after{content:'';position:absolute;right:-1px;bottom:-1px;width:16px;height:16px;
+  border-right:2px solid var(--neon2);border-bottom:2px solid var(--neon2);
+  border-radius:0 0 14px 0;opacity:.55;pointer-events:none;
+  box-shadow:1px 1px 8px rgba(var(--neon2RGB),.45)}
+
+.modal{
+  background:linear-gradient(180deg, rgba(255,255,255,.05), transparent), var(--panel);
+  border:1px solid rgba(var(--goldRGB),.34);border-radius:16px;
+  box-shadow:0 24px 70px rgba(0,0,0,.7), 0 0 40px rgba(var(--goldRGB),.14),
+             inset 0 1px 0 rgba(255,255,255,.06);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+}
+.modal h2{font-family:var(--dsp);font-weight:700;color:var(--gold);
+  letter-spacing:.08em;text-shadow:0 0 10px rgba(var(--goldRGB),.6)}
+.modal-backdrop{background:rgba(3,6,14,.78);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.modal input[type=text]{background:rgba(0,0,0,.4);border:1px solid var(--line);
+  border-radius:8px;color:var(--txt)}
+.modal input[type=text]:focus{outline:none;border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(var(--goldRGB),.14), 0 0 14px rgba(var(--goldRGB),.3)}
+
+.stat-box{background:var(--panel2);border:1px solid var(--line);border-radius:10px}
+.stat-box b{font-family:var(--dsp);font-weight:700;color:var(--gold);
+  text-shadow:0 0 10px rgba(var(--goldRGB),.55)}
+
+.opt{border-radius:10px;background:var(--panel2)}
+.opt.on{box-shadow:0 0 14px rgba(var(--goldRGB),.55), inset 0 0 12px rgba(var(--goldRGB),.14);
+  background:rgba(var(--goldRGB),.08)}
+.chip{border-radius:9px;background:var(--panel2)}
+.chip:hover{border-color:rgba(var(--goldRGB),.6);
+  box-shadow:0 0 12px rgba(var(--goldRGB),.3)}
+.chip.on{background:var(--gold);border-color:var(--gold);color:var(--onAccent);
+  box-shadow:0 0 16px rgba(var(--goldRGB),.6)}
+.tab{font-family:var(--dsp);font-weight:500;letter-spacing:.04em}
+.tab.on{box-shadow:0 0 14px rgba(var(--goldRGB),.45)}
+
+/* ---------- INÍCIO: hero com a cidade neon ----------
+   A arte entra como camada de fundo com máscara e véu por cima: o texto
+   nunca fica sobre pixel claro, então a leitura não depende da imagem
+   carregar. Se o arquivo faltar, sobra o gradiente e a seção continua
+   legível — por isso o véu é pintado no elemento, e não na imagem. */
+.hero{
+  position:relative;overflow:hidden;isolation:isolate;
+  max-width:1180px;margin:0 auto 22px;border-radius:20px;
+  padding:60px 22px 46px;
+  border:1px solid rgba(var(--goldRGB),.28);
+  background:var(--bg2);
+  box-shadow:0 20px 60px rgba(0,0,0,.6), 0 0 44px rgba(var(--goldRGB),.10);
+}
+.hero-art{
+  position:absolute;inset:0;z-index:-2;
+  background:url('../arte/cidade-neon.jpg') center 32% / cover no-repeat;
+  opacity:.5;filter:saturate(1.15) contrast(1.05);
+  transform:scale(1.04);
+  animation:heroDrift 26s ease-in-out infinite alternate;
+}
+@keyframes heroDrift{100%{transform:scale(1.11) translateY(-12px)}}
+.hero::before{
+  content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:
+    linear-gradient(180deg, rgba(4,7,16,.62) 0%, rgba(4,7,16,.80) 55%, var(--bg) 100%),
+    radial-gradient(70% 60% at 50% 42%, rgba(var(--goldRGB),.20), transparent 70%);
+}
+.hero::after{
+  content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:repeating-linear-gradient(180deg, rgba(0,0,0,.22) 0 1px, transparent 1px 3px);
+  opacity:.5;
+}
+.hero-in{position:relative;max-width:780px}
+.hero-mark{display:flex;justify-content:center;margin-bottom:18px}
+.hero-mark .letrado{font-size:clamp(2.1rem,7vw,3.9rem)}
+.hero h1{
+  font-family:var(--dsp);font-weight:700;letter-spacing:.02em;
+  font-size:clamp(1.05rem,2.6vw,1.6rem);line-height:1.6;
+  text-transform:uppercase;color:#fff;
+  text-shadow:0 0 16px rgba(var(--goldRGB),.45);
+}
+.hero h1 span{color:var(--gold);text-shadow:0 0 18px rgba(var(--goldRGB),.9)}
+.hero p{color:#b9c9e4;font-size:.88rem;max-width:640px;margin:14px auto 22px}
+.hero-stats div{
+  background:var(--panel2);border:1px solid var(--line);border-radius:11px;
+  box-shadow:inset 0 0 14px rgba(var(--goldRGB),.08);
+}
+.hero-stats b{font-family:var(--dsp);font-weight:700;color:var(--gold);
+  text-shadow:0 0 12px rgba(var(--goldRGB),.7)}
+.hero-stats span{letter-spacing:.1em;text-transform:uppercase;font-size:.54rem}
+
+/* faixa de "ticker" cyberpunk sob o hero */
+.hero-tick{
+  position:absolute;left:0;right:0;bottom:0;height:26px;overflow:hidden;
+  border-top:1px solid rgba(var(--goldRGB),.25);
+  background:linear-gradient(90deg, rgba(var(--goldRGB),.10), rgba(var(--neon2RGB),.10));
+  display:flex;align-items:center;
+}
+.hero-tick i{
+  font-style:normal;white-space:nowrap;font-family:var(--dsp);font-size:.56rem;
+  letter-spacing:.28em;text-transform:uppercase;color:rgba(var(--goldRGB),.75);
+  animation:tickRun 26s linear infinite;padding-left:100%;
+}
+@keyframes tickRun{100%{transform:translateX(-100%)}}
+
+/* ---------- cartões de recurso ---------- */
+.grid3{max-width:1180px;padding:0 0 26px}
+.feat{
+  background:linear-gradient(180deg, rgba(255,255,255,.045), transparent), var(--panel);
+  border:1px solid var(--line);border-radius:14px;position:relative;overflow:hidden;
+  transition:border-color .2s, box-shadow .2s, transform .2s;
+}
+.feat::before{content:'';position:absolute;left:0;right:0;top:0;height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--neon2));opacity:.75}
+.feat:hover{border-color:rgba(var(--goldRGB),.55);transform:translateY(-3px);
+  box-shadow:0 12px 34px rgba(0,0,0,.5), 0 0 26px rgba(var(--goldRGB),.20)}
+.feat span{filter:drop-shadow(0 0 10px rgba(var(--goldRGB),.7))}
+.feat h4{font-family:var(--dsp);font-weight:700;color:#fff;letter-spacing:.03em}
+
+.cta{
+  max-width:1180px;border-radius:18px;position:relative;overflow:hidden;
+  background:linear-gradient(180deg, rgba(var(--neon2RGB),.14), rgba(var(--goldRGB),.06)), var(--panel);
+  border:1px solid rgba(var(--goldRGB),.34);
+  box-shadow:0 16px 46px rgba(0,0,0,.5), 0 0 34px rgba(var(--goldRGB),.12);
+  padding:34px 20px;
+}
+.cta::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(rgba(var(--goldRGB),.05) 1px, transparent 1px) 0 0/34px 34px,
+    linear-gradient(90deg, rgba(var(--goldRGB),.05) 1px, transparent 1px) 0 0/34px 34px;
+  -webkit-mask-image:radial-gradient(90% 120% at 50% 0%, #000, transparent 75%);
+          mask-image:radial-gradient(90% 120% at 50% 0%, #000, transparent 75%)}
+.cta h3{font-family:var(--dsp);font-weight:700;font-size:1.05rem;color:#fff;
+  letter-spacing:.04em;text-transform:uppercase;
+  text-shadow:0 0 16px rgba(var(--goldRGB),.6)}
+.cta p{color:#a9bcd8}
+
+/* ---------- PÁGINAS DE TEXTO ---------- */
+.page{max-width:900px}
+.page h2{
+  font-family:var(--dsp);font-weight:900;font-size:1.5rem;letter-spacing:.05em;
+  text-transform:uppercase;color:#fff;
+  text-shadow:0 0 14px rgba(var(--goldRGB),.55);
+  padding-bottom:12px;margin-bottom:22px;position:relative;
+}
+.page h2::after{content:'';position:absolute;left:0;bottom:0;width:120px;height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--neon2),transparent);
+  box-shadow:0 0 12px rgba(var(--goldRGB),.8)}
+.page h3{font-family:var(--dsp);font-weight:700;color:var(--gold);
+  letter-spacing:.04em;text-shadow:0 0 10px rgba(var(--goldRGB),.45)}
+.page p{color:#9db0cf}
+
+.step{
+  background:linear-gradient(180deg, rgba(255,255,255,.04), transparent), var(--panel);
+  border:1px solid var(--line);border-radius:13px;
+  transition:border-color .2s, box-shadow .2s;
+}
+.step:hover{border-color:rgba(var(--goldRGB),.45);
+  box-shadow:0 0 24px rgba(var(--goldRGB),.14)}
+.step>b{
+  font-family:var(--dsp);font-weight:900;
+  background:linear-gradient(160deg,var(--gold),var(--neon2));
+  color:var(--onAccent);
+  box-shadow:0 0 16px rgba(var(--goldRGB),.55);
+}
+.step h4{font-family:var(--dsp);font-weight:700;color:#fff;letter-spacing:.02em}
+.step p{color:#9db0cf}
+
+.rule{
+  background:linear-gradient(180deg, rgba(255,255,255,.04), transparent), var(--panel);
+  border:1px solid var(--line);border-radius:12px;
+  border-left:3px solid rgba(var(--goldRGB),.6);
+}
+.rule h4{font-family:var(--dsp);font-weight:700;color:var(--gold);
+  letter-spacing:.03em;text-shadow:0 0 9px rgba(var(--goldRGB),.4)}
+.rule p{color:#9db0cf}
+.warn{
+  background:rgba(255,77,109,.10);border:1px solid rgba(255,77,109,.45);
+  color:#ffc2cd;border-radius:12px;
+  box-shadow:0 0 20px rgba(255,77,109,.18);
+}
+
+/* =====================================================================
+   ARENA — moldura de HUD e grade holográfica
+   ---------------------------------------------------------------------
+   Nada aqui encosta no canvas: a batalha continua sendo desenhada
+   exatamente como antes. O que muda é a moldura em volta e uma camada
+   de vidro POR CIMA do canvas, com pointer-events:none e z-index 3 —
+   acima dos sprites (z-index 2) e abaixo dos avisos de killstreak e
+   clima (z-index 6), que precisam continuar nítidos.
+
+   A grade é deliberadamente fraca (5% de opacidade): o objetivo é dar a
+   leitura de "arena projetada", não competir com os lutadores. Foi o
+   limite encontrado onde o efeito aparece sem atrapalhar quem assiste.
+   ===================================================================== */
+#hud{
+  background:linear-gradient(180deg, rgba(var(--goldRGB),.14), rgba(0,0,0,.35));
+  border:1px solid rgba(var(--goldRGB),.34);border-bottom:none;
+  border-radius:14px 14px 0 0;
+  box-shadow:0 0 24px rgba(var(--goldRGB),.14), inset 0 1px 0 rgba(255,255,255,.06);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+}
+.plate{border:1px solid rgba(0,0,0,.55);border-radius:3px;
+  background:rgba(0,0,0,.45)}
+.plate .fill{box-shadow:inset 0 0 8px rgba(255,255,255,.25)}
+.plate .nm{color:#06131c;text-shadow:0 1px 0 rgba(255,255,255,.4)}
+.plate.mine{box-shadow:0 0 0 1px var(--gold), 0 0 12px rgba(var(--goldRGB),.75)}
+
+#arena{
+  border:1px solid rgba(var(--goldRGB),.34);border-top:none;
+  border-radius:0 0 14px 14px;
+  box-shadow:0 12px 40px rgba(0,0,0,.55), 0 0 30px rgba(var(--goldRGB),.10);
+}
+/* grade holográfica + vinheta, por cima do canvas e sem captar clique */
+#arena::after{
+  content:'';position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:
+    linear-gradient(rgba(var(--goldRGB),.05) 1px, transparent 1px) 0 0/32px 32px,
+    linear-gradient(90deg, rgba(var(--goldRGB),.05) 1px, transparent 1px) 0 0/32px 32px,
+    radial-gradient(120% 90% at 50% 50%, transparent 52%, rgba(3,6,14,.55) 100%),
+    linear-gradient(180deg, rgba(var(--neon2RGB),.10) 0%, transparent 22%);
+}
+
+.stage{position:relative}
+/* cantoneiras do palco, o "enquadramento de HUD" das artes de referência */
+.stage::before,.stage::after{content:'';position:absolute;width:22px;height:22px;
+  pointer-events:none;z-index:4;opacity:.85}
+.stage::before{left:-4px;top:-4px;border-left:2px solid var(--gold);
+  border-top:2px solid var(--gold);border-radius:8px 0 0 0;
+  box-shadow:-1px -1px 10px rgba(var(--goldRGB),.6)}
+.stage::after{right:-4px;bottom:-4px;border-right:2px solid var(--neon2);
+  border-bottom:2px solid var(--neon2);border-radius:0 0 8px 0;
+  box-shadow:1px 1px 10px rgba(var(--neon2RGB),.6)}
+
+#overlay{background:rgba(4,7,16,.62);
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+#pickBox{background:var(--panel);border:1px solid rgba(var(--goldRGB),.4);
+  border-radius:12px;
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:0 16px 44px rgba(0,0,0,.6), 0 0 26px rgba(var(--goldRGB),.18)}
+#pickBox .ttl{border-bottom:1px solid rgba(var(--goldRGB),.28);
+  text-shadow:0 0 8px rgba(var(--goldRGB),.7);
+  background:linear-gradient(180deg, rgba(var(--goldRGB),.12), transparent)}
+.pick.sel{box-shadow:inset 3px 0 0 var(--gold), 0 0 16px rgba(var(--goldRGB),.2) inset}
+.pick .o{text-shadow:0 0 8px rgba(var(--goldRGB),.7)}
+#count{text-shadow:0 0 18px rgba(var(--goldRGB),.9), 0 0 40px rgba(var(--neon2RGB),.6)}
+#count.go{text-shadow:0 0 18px rgba(var(--goldRGB),1), 0 0 44px rgba(var(--neon2RGB),.7)}
+.banner{background:rgba(6,12,22,.92);border:2px solid var(--gold);color:var(--gold);
+  border-radius:10px;text-shadow:0 0 10px rgba(var(--goldRGB),.8);
+  box-shadow:0 0 24px rgba(var(--goldRGB),.4)}
+
+.corner-badge{background:var(--panel);border:1px solid rgba(var(--goldRGB),.4);
+  border-radius:10px;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  box-shadow:0 0 18px rgba(var(--goldRGB),.2)}
+.corner-badge b{font-family:var(--dsp);font-weight:700;letter-spacing:.06em;
+  text-shadow:0 0 8px rgba(var(--goldRGB),.6)}
+
+.wallet{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  box-shadow:inset 0 0 16px rgba(var(--goldRGB),.08)}
+.wallet b{text-shadow:0 0 10px rgba(var(--goldRGB),.7)}
+#log{background:rgba(3,7,14,.72);border:1px solid var(--line);border-radius:10px;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  box-shadow:inset 0 0 24px rgba(var(--goldRGB),.06)}
+td.od{text-shadow:0 0 8px rgba(var(--goldRGB),.6)}
+
+.kfrow,.pdrow{background:var(--panel2);border-radius:8px}
+.kfrow.m1,.pdrow.p1{background:linear-gradient(90deg, rgba(var(--goldRGB),.22), var(--panel2));
+  border-color:var(--gold);box-shadow:0 0 16px rgba(var(--goldRGB),.25)}
+.kfrow.m2,.pdrow.p2{background:linear-gradient(90deg, rgba(var(--neon2RGB),.18), var(--panel2));
+  border-color:rgba(var(--neon2RGB),.65)}
+.kfrow.m2 .pos,.kfrow.m2 .ko{color:var(--neon2)}
+.kfrow.m3,.pdrow.p3{background:linear-gradient(90deg, rgba(255,255,255,.09), var(--panel2));
+  border-color:rgba(255,255,255,.35)}
+.kfrow.m3 .pos,.kfrow.m3 .ko{color:#cfe0f5}
+.kfrow .ko{text-shadow:0 0 8px rgba(var(--goldRGB),.6)}
+.kfrow .face,.pdrow .face{background:rgba(0,0,0,.45);border-radius:7px}
+
+/* A regra de #battleBanner ficou para o V1.15, que traz o elemento. Estilo sem
+   elemento é regra morta, e regra morta é a que ninguém sabe se pode apagar. */
+#profBanner{border:1px solid rgba(var(--goldRGB),.34);border-radius:14px}
+#profHead .lvl .tag{font-family:var(--dsp);font-weight:700;
+  background:linear-gradient(160deg,var(--gold),var(--neon2));
+  box-shadow:0 0 12px rgba(var(--goldRGB),.5)}
+#profXpBar{background:rgba(0,0,0,.5);border:1px solid var(--line)}
+#profXpBar i{background:linear-gradient(90deg,var(--gold),var(--neon2));
+  box-shadow:0 0 12px rgba(var(--goldRGB),.7)}
+
+/* ---------- BOOT ---------- */
+#boot{background:
+    radial-gradient(80% 60% at 50% 40%, rgba(var(--goldRGB),.12), transparent 70%),
+    var(--bg)}
+#boot .b1{font-family:var(--dsp);font-weight:900;font-size:2rem;letter-spacing:.06em;
+  color:transparent;
+  background:linear-gradient(180deg,#fff 10%,var(--gold) 60%,var(--neon2) 100%);
+  -webkit-background-clip:text;background-clip:text;
+  filter:drop-shadow(0 0 14px rgba(var(--goldRGB),.8))}
+#boot .b2{letter-spacing:.06em}
+
+/* =====================================================================
+   PORTAL DE ACESSO — a tela de login
+   ---------------------------------------------------------------------
+   É o MESMO modal de sempre: os ids (authName, authPin, authAge,
+   btnAuthGo, btnAuthSwap) e todo o JS de sessão continuam intactos. O
+   que muda é que o fundo do modal deixa de ser um véu cinza e vira a
+   arte do portal em tela cheia. Nenhum filho novo foi pendurado no
+   .modal-backdrop — a arte mora em pseudo-elementos, senão ela entraria
+   como item do flex e desalinharia o cartão.
+   ===================================================================== */
+#authModal{background:rgba(3,6,14,.88)}
+#authModal::before{
+  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:url('../arte/portal-arena.jpg') center 42% / cover no-repeat;
+  opacity:.45;filter:saturate(1.2) contrast(1.05);
+  animation:portalRespira 30s ease-in-out infinite alternate;
+}
+@keyframes portalRespira{0%{transform:scale(1.02)}100%{transform:scale(1.12)}}
+#authModal::after{
+  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(72% 62% at 50% 40%, transparent 0%, rgba(3,6,14,.5) 58%, rgba(3,6,14,.94) 100%),
+    repeating-linear-gradient(180deg, rgba(0,0,0,.26) 0 1px, transparent 1px 3px);
+}
+#authModal .modal{
+  position:relative;z-index:1;max-width:452px;padding:26px 24px 22px;
+  border:1px solid rgba(var(--goldRGB),.45);
+  box-shadow:0 30px 90px rgba(0,0,0,.8), 0 0 60px rgba(var(--goldRGB),.24),
+             inset 0 1px 0 rgba(255,255,255,.08);
+}
+.portal-head{text-align:center;margin-bottom:18px;padding-bottom:16px;
+  border-bottom:1px solid rgba(var(--goldRGB),.22);position:relative}
+.portal-head::after{content:'';position:absolute;left:50%;bottom:-1px;
+  transform:translateX(-50%);width:130px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  box-shadow:0 0 12px var(--gold)}
+.portal-head .letrado{font-size:clamp(1.7rem,6vw,2.35rem)}
+.portal-sub{display:block;margin-top:9px;font-family:var(--dsp);font-weight:500;
+  font-size:.56rem;letter-spacing:.34em;text-transform:uppercase;
+  color:rgba(var(--goldRGB),.85)}
+#authModal .modal h2{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase}
+#authModal label.tiny{font-family:var(--dsp);font-weight:500;font-size:.58rem;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-top:2px}
+#authModal #authAgeRow{text-transform:none;letter-spacing:0;font-family:'Segoe UI',sans-serif;
+  font-size:.66rem}
+#authModal input[type=text]{
+  font-family:var(--dsp);font-weight:500;letter-spacing:.05em;
+  padding:11px 12px;background:rgba(0,0,0,.5);
+}
+
+/* =====================================================================
+   SELETOR DE TEMA — prévia lado a lado
+   ---------------------------------------------------------------------
+   Cada cartão desenha a si mesmo com as cores DO TEMA QUE REPRESENTA
+   (via --pv1/--pv2/--pvbg), e não com as do tema ativo. Assim dá para
+   comparar os dois sem precisar aplicar um para ver como fica.
+   ===================================================================== */
+#pickTema{grid-template-columns:repeat(auto-fill,minmax(134px,1fr));max-height:none}
+#pickTema .opt{padding:0;overflow:hidden;text-align:left}
+#pickTema .cap{padding:7px 9px 8px;font-family:var(--dsp);font-weight:700;
+  font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--txt);
+  text-align:center;white-space:normal}
+#pickTema .opt.on .cap{color:var(--gold);text-shadow:0 0 9px rgba(var(--goldRGB),.65)}
+
+.tema-sw{
+  position:relative;height:86px;padding:10px 11px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:space-between;
+  background:
+    radial-gradient(80% 70% at 20% 0%, color-mix(in srgb, var(--pv1) 22%, transparent), transparent 65%),
+    radial-gradient(80% 70% at 100% 100%, color-mix(in srgb, var(--pv2) 26%, transparent), transparent 65%),
+    var(--pvbg);
+}
+.tema-sw::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(color-mix(in srgb, var(--pv1) 12%, transparent) 1px, transparent 1px) 0 0/16px 16px,
+    linear-gradient(90deg, color-mix(in srgb, var(--pv1) 12%, transparent) 1px, transparent 1px) 0 0/16px 16px}
+.tema-mark{position:relative;font-family:var(--dsp);font-weight:900;font-size:.66rem;
+  line-height:1;letter-spacing:.01em}
+.tema-mark i{font-style:normal;color:#fff;text-shadow:0 0 6px rgba(255,255,255,.6)}
+.tema-mark b{color:var(--pv1);text-shadow:0 0 8px var(--pv1)}
+.tema-bar{position:relative;height:3px;border-radius:2px;
+  background:linear-gradient(90deg,var(--pv1),var(--pv2));
+  box-shadow:0 0 8px var(--pv1)}
+.tema-btn{position:relative;align-self:flex-start;font-family:var(--dsp);font-weight:700;
+  font-size:.46rem;letter-spacing:.16em;text-transform:uppercase;
+  padding:4px 9px;border-radius:6px;color:var(--pv1);
+  border:1px solid var(--pv1);
+  box-shadow:0 0 9px color-mix(in srgb, var(--pv1) 55%, transparent),
+             inset 0 0 9px color-mix(in srgb, var(--pv1) 25%, transparent)}
+
+/* ---------- redução de movimento ----------
+   Quem pede menos animação no sistema recebe o mesmo visual sem os
+   laços que ficam rodando para sempre. Os efeitos de estado da batalha
+   continuam, porque ali a animação carrega informação. */
+@media (prefers-reduced-motion: reduce){
+  .letrado.vivo i,.letrado.vivo b,.hero-art,.btn.cta::after,
+  .hero-tick i,#authModal::before{animation:none}
+}
+
+/* ---------- telas estreitas ---------- */
+@media (max-width:760px){
+  .hero{padding:44px 16px 40px;border-radius:16px}
+  .hero-mark .letrado{font-size:clamp(1.7rem,11vw,2.6rem)}
+  .topbar{padding:10px 12px}
+  .brand{font-size:.86rem}
+  .btn.cta{width:100%;justify-content:center}
+}
+
+
+/* =====================================================================
+   COSMÉTICOS NEON — cenários e efeitos de nome do banner de batalha
+   ---------------------------------------------------------------------
+   Os quatro cenários novos usam as artes locais do projeto; os efeitos
+   de nome continuam 100% procedurais. Todos entram como opções NOVAS:
+   nenhuma classe antiga foi renomeada, então quem já tinha 'campo' e
+   'chama' salvos abre a página com exatamente o mesmo banner de ontem.
+   ===================================================================== */
+.cn-cidade{background:url('../arte/cidade-neon.jpg') center 38%/cover no-repeat}
+.cn-portal{background:url('../arte/portal-arena.jpg') center 45%/cover no-repeat}
+.cn-nucleo{background:url('../arte/nucleo-orbe.jpg') center center/cover no-repeat}
+.cn-cidade::after,.cn-portal::after,.cn-nucleo::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(180deg, rgba(0,0,0,.20) 0 1px, transparent 1px 3px);
+  animation:cnVarre 7s linear infinite}
+@keyframes cnVarre{100%{background-position:0 46px}}
+
+/* grade synthwave: horizonte, sol e piso em fuga — só gradiente */
+.cn-grade{background:
+  linear-gradient(180deg,#150b2e 0%,#3d1a5c 38%,#0c0620 40%,#070312 100%)}
+.cn-grade::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 38%, #ff3ea5 0 7%, rgba(255,62,165,.35) 8%, transparent 22%),
+    repeating-linear-gradient(180deg, transparent 0 12px, rgba(0,229,255,.35) 12px 13px),
+    repeating-linear-gradient(90deg, transparent 0 26px, rgba(0,229,255,.22) 26px 27px);
+  -webkit-mask-image:linear-gradient(180deg,#000 0 40%,#000 40%,#000 100%);
+          mask-image:linear-gradient(180deg,#000 0 40%,#000 40%,#000 100%)}
+
+/* --- efeitos de nome no estilo da identidade --- */
+.ef-neon{color:#eafcff;background:linear-gradient(180deg,rgba(0,60,80,.55),rgba(3,14,26,.82));
+  box-shadow:0 0 14px rgba(0,229,255,.8), inset 0 0 10px rgba(0,229,255,.35);
+  border:1px solid #00e5ff;text-shadow:0 0 8px #00e5ff, 0 0 20px rgba(160,107,255,.7);
+  animation:efNeon 2.2s ease-in-out infinite}
+@keyframes efNeon{50%{box-shadow:0 0 24px rgba(0,229,255,1), inset 0 0 16px rgba(160,107,255,.55)}}
+
+/* glitch: o "apagão" curto de tubo velho, em passos secos */
+.ef-glitch{color:#fff;background:linear-gradient(180deg,rgba(40,0,50,.6),rgba(10,0,18,.85));
+  box-shadow:0 0 12px rgba(255,62,165,.7), inset 0 0 8px rgba(0,229,255,.35);
+  border:1px solid #ff3ea5;
+  text-shadow:1.5px 0 #00e5ff, -1.5px 0 #ff3ea5;
+  animation:efGlitch 2.6s steps(1) infinite}
+@keyframes efGlitch{
+  0%,86%{transform:translateX(0);opacity:1}
+  88%{transform:translateX(-2px);opacity:.75;text-shadow:3px 0 #00e5ff, -3px 0 #ff3ea5}
+  90%{transform:translateX(2px);opacity:1}
+  92%{transform:translateX(-1px);text-shadow:1.5px 0 #00e5ff, -1.5px 0 #ff3ea5}
+  94%,100%{transform:translateX(0)}}
+
+/* holograma: varredura subindo por dentro do rótulo */
+.ef-holo{color:#dff6ff;background:linear-gradient(180deg,rgba(0,50,90,.5),rgba(4,12,30,.8));
+  box-shadow:0 0 14px rgba(120,190,255,.7), inset 0 0 10px rgba(160,107,255,.4);
+  border:1px solid #7fd8f5;text-shadow:0 0 8px #63d7ff;
+  position:relative;overflow:hidden}
+.ef-holo::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,transparent 40%,rgba(190,235,255,.5) 50%,transparent 60%);
+  animation:efHolo 2.4s linear infinite}
+@keyframes efHolo{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+
+/* na amostra de 38px a arte precisa aparecer inteira, não um recorte */
+.opt .swatch.cn-cidade,.opt .swatch.cn-portal,.opt .swatch.cn-nucleo{
+  background-size:cover;background-position:center}
+
+/* cenários neon do banner de PERFIL — mesmas artes dos .cn-*, que são
+   nossas e locais; o .sc- existe separado porque o banner de perfil tem
+   altura e enquadramento próprios. */
+.sc-cidade{background:url('../arte/cidade-neon.jpg') center 40%/cover no-repeat}
+.sc-portal{background:url('../arte/portal-arena.jpg') center 42%/cover no-repeat}
+.sc-nucleo{background:url('../arte/nucleo-orbe.jpg') center center/cover no-repeat}
+.sc-grade{background:
+  linear-gradient(180deg,#150b2e 0%,#3d1a5c 42%,#0c0620 44%,#070312 100%)}
+.sc-grade::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 40%, #ff3ea5 0 6%, rgba(255,62,165,.3) 7%, transparent 20%),
+    repeating-linear-gradient(180deg, transparent 0 10px, rgba(0,229,255,.3) 10px 11px),
+    repeating-linear-gradient(90deg, transparent 0 22px, rgba(0,229,255,.18) 22px 23px)}
+
+/* O estado vazio do banner passou a cair sobre arte fotográfica, e não
+   mais sobre um gradiente liso: sem um véu próprio o texto sumia nos
+   pontos claros da cidade. O véu fica no estado vazio, não no cenário,
+   para não apagar a arte quando há lutador em cena. */
+.bnVazio{background:radial-gradient(75% 65% at 50% 50%, rgba(4,7,16,.88), rgba(4,7,16,.66));
+  -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.bnVazio p{color:#dbe6f7;text-shadow:0 2px 6px rgba(0,0,0,.95)}
+.bnVazio .ic{filter:drop-shadow(0 0 10px rgba(var(--goldRGB),.7));opacity:.85}
+.bnNv{text-shadow:0 2px 6px rgba(0,0,0,.95)}
+
+/* O Pokémon de vitrine não está lutando: flutua igual, mas um pouco
+   menor e mais discreto que o lutador apostado, para a diferença entre
+   "meu lutador da rodada" e "meu Pokémon de vitrine" ser lida de
+   relance, sem precisar de legenda. */
+.bnMon.vitrine{width:104px;height:104px;opacity:.92;
+  filter:drop-shadow(0 4px 7px rgba(0,0,0,.7)) saturate(.96)}
+.bnEstado{display:inline-block;padding:2px 10px;border-radius:999px;
+  font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;
+  font-family:var(--dsp);font-weight:500;color:rgba(var(--goldRGB),.9);
+  background:rgba(var(--goldRGB),.10);border:1px solid rgba(var(--goldRGB),.3)}
+
+/* =====================================================================
+   BAÚS — arte e animação
+   ---------------------------------------------------------------------
+   O baú é desenhado em CSS, não é imagem: acompanha o tema (troca de
+   cor sozinho entre Hyper Core e Shadow Arena), escala em qualquer tela
+   e não soma um arquivo para baixar. A marca do PokéArena aparece duas
+   vezes — a pokébola no fecho e o letrado na frente.
+   ===================================================================== */
+.page.baus{max-width:1000px}
+.bauIntro{margin-bottom:20px}
+
+.bauSaldo{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.bauMoeda{flex:1 1 110px;background:var(--panel2);border:1px solid var(--line);
+  border-radius:11px;padding:10px 12px;text-align:center;
+  box-shadow:inset 0 0 16px rgba(var(--goldRGB),.07)}
+.bauMoeda b{display:block;font-family:var(--dsp);font-weight:700;font-size:1.05rem;
+  color:var(--gold);text-shadow:0 0 12px rgba(var(--goldRGB),.65)}
+.bauMoeda b small{font-size:.6rem;color:var(--dim);text-shadow:none;font-weight:500}
+.bauMoeda span{font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.bauMoeda.ess b{color:#ffd76a;text-shadow:0 0 12px rgba(255,215,106,.7)}
+.bauMoeda.pri b{color:#7ad7ff;text-shadow:0 0 12px rgba(122,215,255,.7)}
+
+.bauAviso{font-size:.78rem;color:var(--dim);margin-bottom:16px;line-height:1.6}
+.bauAviso b{color:var(--txt)}
+
+.bauGrade{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:34px;
+  perspective:900px}
+@media (max-width:620px){ .bauGrade{grid-template-columns:1fr;gap:22px} }
+.bauGrade.travado{opacity:.42;pointer-events:none;filter:grayscale(.6)}
+
+.bau{background:none;border:none;cursor:pointer;padding:8px 0 0;position:relative;
+  display:flex;flex-direction:column;align-items:center;
+  transition:transform .35s cubic-bezier(.2,.9,.3,1.4), opacity .35s}
+.bau:hover{transform:translateY(-8px) scale(1.04)}
+.bauGrade.abrindo .bau{pointer-events:none}
+.bau.sai{opacity:0;transform:scale(.7) translateY(24px)}
+.bau.treme{animation:bauTreme 1.15s cubic-bezier(.36,.07,.19,.97)}
+.bau.estoura{animation:bauEstoura .34s ease-out forwards}
+
+/* a chacoalhada cresce: começa quase parada e termina violenta */
+@keyframes bauTreme{
+  0%,100%{transform:translateX(0) rotate(0)}
+  10%{transform:translateX(-1px) rotate(-.4deg)}
+  20%{transform:translateX(1px) rotate(.4deg)}
+  35%{transform:translateX(-2px) rotate(-1deg)}
+  50%{transform:translateX(2px) rotate(1deg)}
+  62%{transform:translateX(-4px) rotate(-2deg) scale(1.02)}
+  74%{transform:translateX(4px) rotate(2deg) scale(1.03)}
+  84%{transform:translateX(-6px) rotate(-3deg) scale(1.05)}
+  92%{transform:translateX(6px) rotate(3deg) scale(1.06)}
+}
+@keyframes bauEstoura{
+  0%{transform:scale(1.06)}
+  55%{transform:scale(1.3);filter:brightness(2.4)}
+  100%{transform:scale(1.9);opacity:0;filter:brightness(4)}
+}
+
+.bauCorpo{position:relative;width:100%;max-width:170px;aspect-ratio:1/.92;
+  border-radius:12px;overflow:hidden;
+  background:linear-gradient(160deg, rgba(var(--goldRGB),.16), rgba(var(--neon2RGB),.16)), var(--solid);
+  border:2px solid rgba(var(--goldRGB),.55);
+  box-shadow:0 12px 30px rgba(0,0,0,.55), 0 0 26px rgba(var(--goldRGB),.28),
+             inset 0 0 22px rgba(var(--goldRGB),.14)}
+/* tampa: a faixa de cima, separada por um fio de luz */
+.bauTampa{position:absolute;left:0;right:0;top:0;height:38%;
+  background:linear-gradient(180deg, rgba(var(--goldRGB),.24), rgba(0,0,0,.25));
+  border-bottom:2px solid rgba(var(--goldRGB),.75);
+  box-shadow:0 2px 14px rgba(var(--goldRGB),.5)}
+.bauFecho{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);z-index:3}
+.bauFecho .pokemark{width:36px;height:36px}
+.bauFrente{position:absolute;left:0;right:0;bottom:0;height:62%;
+  display:flex;align-items:center;justify-content:center;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 13px, rgba(var(--goldRGB),.09) 13px 14px),
+    linear-gradient(180deg, transparent, rgba(0,0,0,.4))}
+.bauMarca{font-family:var(--dsp);font-weight:900;font-size:.62rem;letter-spacing:.02em;
+  transform:translateY(14px)}
+.bauMarca i{font-style:normal;color:#fff;text-shadow:0 0 6px rgba(255,255,255,.6)}
+.bauMarca b{color:var(--gold);text-shadow:0 0 9px rgba(var(--goldRGB),.9)}
+/* luz que vaza por dentro enquanto chacoalha */
+.bauLuz{position:absolute;left:0;right:0;top:36%;height:4px;opacity:0;
+  background:linear-gradient(90deg,transparent,#fff,transparent);
+  box-shadow:0 0 22px 8px rgba(var(--goldRGB),.9)}
+.bau.treme .bauLuz{animation:bauVaza 1.15s ease-in forwards}
+@keyframes bauVaza{0%{opacity:0}55%{opacity:.5}100%{opacity:1;height:12px}}
+.bauPe{width:62%;height:12px;margin-top:-4px;border-radius:50%;
+  background:radial-gradient(ellipse at center, rgba(var(--goldRGB),.35), transparent 70%)}
+
+/* flash de corte entre o baú e o prêmio */
+.bauFlash{position:fixed;inset:0;z-index:80;pointer-events:none;background:#fff;
+  animation:flashSai .48s ease-out forwards}
+.bauFlash.grande{background:radial-gradient(circle at 50% 45%, #fff 0%, var(--gold) 40%, var(--neon2) 75%, transparent 100%);
+  animation:flashSai .9s ease-out forwards}
+@keyframes flashSai{0%{opacity:0}12%{opacity:1}100%{opacity:0}}
+body.tremeTela{animation:tremeTela .7s ease-out}
+@keyframes tremeTela{
+  0%,100%{transform:translate(0,0)}
+  15%{transform:translate(-7px,3px)}30%{transform:translate(6px,-4px)}
+  45%{transform:translate(-5px,-2px)}60%{transform:translate(4px,3px)}
+  80%{transform:translate(-2px,1px)}
+}
+
+/* ---------- revelação ---------- */
+.bauOverlay{position:fixed;inset:0;z-index:70;display:none;align-items:center;
+  justify-content:center;padding:18px;background:rgba(3,6,14,.86);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.bauOverlay.on{display:flex}
+.bauPremioBox{position:relative;width:100%;max-width:430px;text-align:center;
+  padding:30px 24px 24px;border-radius:18px;overflow:hidden;
+  background:linear-gradient(180deg, rgba(255,255,255,.06), transparent), var(--panel);
+  border:1px solid rgba(var(--goldRGB),.4);
+  box-shadow:0 30px 80px rgba(0,0,0,.75), 0 0 40px rgba(var(--goldRGB),.2);
+  animation:premioEntra .42s cubic-bezier(.2,.9,.3,1.5)}
+@keyframes premioEntra{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+.bauPremioBox h3{font-family:var(--dsp);font-weight:900;font-size:1.3rem;color:#fff;
+  margin:14px 0 6px;text-shadow:0 0 16px rgba(var(--goldRGB),.7)}
+.bauPremioBox .pSub{font-size:.76rem;color:var(--dim);line-height:1.6;margin-bottom:18px}
+.bauPremioBox .btn.cta{width:100%;justify-content:center}
+.pIcone{font-size:56px;line-height:1;filter:drop-shadow(0 0 16px rgba(var(--goldRGB),.7))}
+.pIcone.r1{filter:drop-shadow(0 0 20px rgba(var(--neon2RGB),.85))}
+.pIcone.r2{filter:drop-shadow(0 0 26px rgba(122,215,255,.95))}
+
+/* raro: moldura viva, raios girando e o bicho grande */
+.bauPremioBox.lendario{border-color:var(--gold);
+  box-shadow:0 30px 90px rgba(0,0,0,.8), 0 0 70px rgba(var(--goldRGB),.65);
+  animation:premioEntra .42s cubic-bezier(.2,.9,.3,1.5), lendarioPulsa 1.5s ease-in-out .42s infinite}
+@keyframes lendarioPulsa{50%{box-shadow:0 30px 90px rgba(0,0,0,.8), 0 0 110px rgba(var(--goldRGB),.9)}}
+.pShiny{position:relative;height:170px;display:flex;align-items:center;justify-content:center}
+.pShinyMon{position:relative;z-index:2;width:132px;height:132px;object-fit:contain;
+  image-rendering:pixelated;
+  filter:drop-shadow(0 0 18px rgba(var(--goldRGB),1)) drop-shadow(0 0 40px rgba(var(--neon2RGB),.8));
+  animation:shinyFlutua 2.2s ease-in-out infinite}
+@keyframes shinyFlutua{50%{transform:translateY(-10px) scale(1.04)}}
+.pRaios{position:absolute;inset:-30%;z-index:1;
+  background:conic-gradient(from 0deg,
+    transparent 0deg, rgba(var(--goldRGB),.5) 8deg, transparent 16deg,
+    transparent 45deg, rgba(var(--neon2RGB),.45) 53deg, transparent 61deg,
+    transparent 90deg, rgba(var(--goldRGB),.5) 98deg, transparent 106deg,
+    transparent 135deg, rgba(var(--neon2RGB),.45) 143deg, transparent 151deg,
+    transparent 180deg, rgba(var(--goldRGB),.5) 188deg, transparent 196deg,
+    transparent 225deg, rgba(var(--neon2RGB),.45) 233deg, transparent 241deg,
+    transparent 270deg, rgba(var(--goldRGB),.5) 278deg, transparent 286deg,
+    transparent 315deg, rgba(var(--neon2RGB),.45) 323deg, transparent 331deg);
+  -webkit-mask-image:radial-gradient(circle, #000 20%, transparent 68%);
+          mask-image:radial-gradient(circle, #000 20%, transparent 68%);
+  animation:raiosGiram 9s linear infinite}
+@keyframes raiosGiram{100%{transform:rotate(360deg)}}
+.pFaixa{display:inline-block;margin-top:4px;padding:5px 16px;border-radius:999px;
+  font-family:var(--dsp);font-weight:900;font-size:.62rem;letter-spacing:.22em;
+  color:var(--onAccent);background:linear-gradient(90deg,var(--gold),var(--neon2));
+  box-shadow:0 0 24px rgba(var(--goldRGB),.8)}
+
+/* baú vazio: o R da Equipe Rocket em neon */
+.pRocket{height:130px;display:flex;align-items:center;justify-content:center}
+.rocketR{width:96px;height:96px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-family:var(--dsp);font-weight:900;font-size:52px;
+  color:#ff3b5c;background:rgba(255,255,255,.92);
+  box-shadow:0 0 26px rgba(255,59,92,.6), inset 0 0 18px rgba(255,59,92,.25);
+  animation:rocketGira 3.5s ease-in-out infinite}
+@keyframes rocketGira{50%{transform:rotate(-9deg) scale(1.05)}}
+
+/* ---------- garantias ---------- */
+.bauGarantias{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:12px;margin-bottom:30px}
+.garantia{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:15px}
+.garantia.pronta{border-color:var(--gold);box-shadow:0 0 22px rgba(var(--goldRGB),.28)}
+.garantia .gtop{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.garantia .gtop b{font-family:var(--dsp);font-weight:700;font-size:.8rem;color:var(--txt)}
+.garantia .gtop span{font-family:var(--dsp);font-size:.72rem;color:var(--gold)}
+.gbar{height:7px;border-radius:5px;background:rgba(0,0,0,.5);border:1px solid var(--line);
+  overflow:hidden;margin-bottom:9px}
+.gbar i{display:block;height:100%;background:linear-gradient(90deg,#ffd76a,#ff9f4a);
+  box-shadow:0 0 12px rgba(255,215,106,.8);transition:width .4s}
+.gbar.pri i{background:linear-gradient(90deg,#7ad7ff,var(--neon2));
+  box-shadow:0 0 12px rgba(122,215,255,.8)}
+.garantia p{font-size:.72rem;color:var(--dim);line-height:1.55;margin-bottom:11px}
+.garantia p b{color:var(--txt)}
+.garantia .btn{width:100%}
+.garantia .btn:disabled{opacity:.4;cursor:not-allowed}
+
+.bauHist{display:flex;flex-direction:column;gap:4px}
+.bhrow{padding:6px 11px;border-radius:8px;background:var(--panel2);
+  border-left:3px solid var(--line);font-size:.72rem;color:var(--dim)}
+.bhrow.r1{border-left-color:var(--neon2);color:var(--txt)}
+.bhrow.r2{border-left-color:#7ad7ff;color:var(--txt)}
+.bhrow.r3,.bhrow.r4{border-left-color:var(--gold);color:var(--gold);
+  background:linear-gradient(90deg,rgba(var(--goldRGB),.14),var(--panel2));font-weight:700}
+
+@media (prefers-reduced-motion: reduce){
+  .bau.treme{animation-duration:.4s}
+  .pRaios,.rocketR,.pShinyMon,.bauPremioBox.lendario{animation:none}
+  body.tremeTela{animation:none}
+}
+
+/* ---------- baú, versão com volume ----------
+   A caixa lisa da primeira tentativa não lia como baú: sem tampa
+   arredondada, sem ferragem e com o fecho pequeno demais, virava um
+   retângulo com um logo. Aqui a tampa é abaulada, duas cintas descem
+   pelas laterais e a pokébola do fecho monta em cima da emenda, que é
+   onde o olho procura a abertura. */
+.bauCorpo{
+  border-radius:14px 14px 10px 10px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.07) 0%, transparent 34%),
+    linear-gradient(160deg, rgba(var(--goldRGB),.18), rgba(var(--neon2RGB),.20)),
+    var(--solid);
+}
+.bauTampa{
+  height:42%;border-radius:12px 12px 26px 26px/12px 12px 16px 16px;
+  background:
+    radial-gradient(120% 150% at 50% 120%, rgba(var(--goldRGB),.34), transparent 62%),
+    linear-gradient(180deg, rgba(var(--goldRGB),.30), rgba(0,0,0,.30));
+  border-bottom:2px solid rgba(var(--goldRGB),.9);
+  box-shadow:0 3px 20px rgba(var(--goldRGB),.55), inset 0 2px 0 rgba(255,255,255,.18);
+}
+/* reflexo curvo em cima, que é o que dá o abaulado */
+.bauBrilhoTampa{position:absolute;left:14%;right:14%;top:12%;height:22%;border-radius:50%;
+  background:linear-gradient(180deg, rgba(255,255,255,.30), transparent);
+  filter:blur(1px)}
+.bauFrente{height:58%;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 15px, rgba(var(--goldRGB),.10) 15px 16px),
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.45));
+  align-items:flex-end;padding-bottom:12px}
+.bauMarca{transform:none;font-size:.66rem}
+/* cintas de metal */
+.bauCinta{position:absolute;top:6%;bottom:6%;width:11px;border-radius:3px;
+  background:linear-gradient(90deg, rgba(255,255,255,.05), rgba(var(--goldRGB),.34), rgba(255,255,255,.05));
+  box-shadow:0 0 12px rgba(var(--goldRGB),.4), inset 0 0 6px rgba(0,0,0,.5)}
+.bauCinta.e{left:13%}
+.bauCinta.d{right:13%}
+/* o fecho monta na emenda entre tampa e frente */
+.bauFecho{top:42%;z-index:4}
+.bauFecho .pokemark{width:44px;height:44px;border-width:3px;
+  box-shadow:0 0 18px rgba(var(--goldRGB),.95), inset 0 0 12px rgba(var(--goldRGB),.5)}
+.bau:hover .bauFecho .pokemark{animation:fechoPulsa 1.1s ease-in-out infinite}
+@keyframes fechoPulsa{50%{box-shadow:0 0 28px rgba(var(--goldRGB),1), inset 0 0 16px rgba(var(--goldRGB),.7)}}
+/* a luz vaza pela emenda, na altura certa */
+.bauLuz{top:42%;margin-top:-2px}
+.bauPe{width:70%;height:14px;margin-top:-6px}
+
+/* cartão de cosmético shiny: precisa dizer, de relance, se está ligado */
+.opt.shiny{position:relative}
+.opt.shiny .sflag{position:absolute;top:4px;right:4px;font-size:.44rem;letter-spacing:.1em;
+  text-transform:uppercase;font-family:var(--dsp);font-weight:700;padding:2px 5px;
+  border-radius:5px;background:rgba(0,0,0,.6);color:var(--dim);border:1px solid var(--line)}
+.opt.shiny.on .sflag{color:var(--onAccent);background:var(--gold);border-color:var(--gold);
+  box-shadow:0 0 10px rgba(var(--goldRGB),.7)}
+.opt.shiny:not(.on){opacity:.55;filter:saturate(.4)}
+.opt.shiny img{filter:drop-shadow(0 0 7px rgba(var(--goldRGB),.55))}
+
+/* =====================================================================
+   PAINEL DE ADM — ferramenta, não vitrine
+   ---------------------------------------------------------------------
+   Densidade alta de propósito: aqui o objetivo é caber informação e
+   botão na tela, não impressionar. Segue o tema para não parecer outro
+   produto, mas sem os enfeites que gastam espaço.
+   ===================================================================== */
+.page.adm{max-width:1080px}
+.admAviso{background:rgba(255,77,109,.10);border:1px solid rgba(255,77,109,.45);
+  color:#ffc2cd;border-radius:12px;padding:13px 15px;font-size:.75rem;line-height:1.6;
+  margin-bottom:22px}
+.admAviso b{color:#fff}
+.admBloco{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:14px;margin-bottom:20px}
+.admLinha{display:flex;align-items:center;gap:12px;padding:7px 0;
+  border-bottom:1px dashed rgba(255,255,255,.07);flex-wrap:wrap}
+.admLinha:last-child{border-bottom:none}
+.admLinha>span{flex:0 0 106px;font-size:.72rem;color:var(--dim);
+  letter-spacing:.08em;text-transform:uppercase}
+.admLinha>b{flex:0 0 110px;font-family:var(--dsp);font-weight:700;color:var(--gold);
+  font-size:.9rem;text-shadow:0 0 10px rgba(var(--goldRGB),.5)}
+.admBtns{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+.admBtns .btn{flex:0 0 auto;padding:6px 12px;font-size:.7rem}
+.admBtns .btn.on{background:rgba(61,242,166,.16);border-color:var(--green);color:var(--green)}
+
+.admSlider{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.admSlider>span{flex:0 0 120px;font-size:.72rem;color:var(--dim);
+  letter-spacing:.08em;text-transform:uppercase}
+.admSlider input[type=range]{flex:1;min-width:180px}
+.admSlider select{flex:1;min-width:200px;background:var(--panel2);color:var(--txt);
+  border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:.8rem}
+.admSlider>b{font-family:var(--dsp);font-weight:700;color:var(--gold);min-width:52px;text-align:right}
+
+.admNota{font-size:.74rem;color:var(--dim);line-height:1.65;margin:10px 0}
+.admNota b{color:var(--txt)}
+.admNota .alerta{color:#ffb020}
+
+.admPar{display:flex;gap:14px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
+.admLado{position:relative;flex:1 1 150px;max-width:190px;text-align:center;padding:14px 8px 8px;
+  border-radius:12px;background:var(--panel2);border:1px solid var(--line)}
+.admLado.sh{border-color:var(--gold);box-shadow:0 0 20px rgba(var(--goldRGB),.3)}
+.admTag{position:absolute;top:5px;left:50%;transform:translateX(-50%);
+  font-family:var(--dsp);font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--dim)}
+.admTag.on{color:var(--gold);text-shadow:0 0 8px rgba(var(--goldRGB),.8)}
+.admMon{width:108px;height:108px;object-fit:contain;image-rendering:pixelated;margin-top:10px}
+.admUrl{font-family:'Consolas',monospace;font-size:.66rem;color:var(--dim);
+  padding:4px 0;word-break:break-all}
+.admUrl code{color:var(--gold)}
+
+.admGrid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin-bottom:12px}
+.admKpi{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:11px;text-align:center}
+.admKpi b{display:block;font-family:var(--dsp);font-weight:700;font-size:1.1rem;color:var(--gold)}
+.admKpi span{font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.admKpi.bom b{color:var(--green)}
+.admKpi.ruim b{color:var(--red)}
+
+.admChart{width:100%;height:120px;margin:8px 0}
+.admChart .linha{fill:none;stroke:var(--gold);stroke-width:2;
+  filter:drop-shadow(0 0 6px rgba(var(--goldRGB),.8));vector-effect:non-scaling-stroke}
+.admChart .zero{stroke:rgba(255,255,255,.2);stroke-width:1;stroke-dasharray:4 4;
+  vector-effect:non-scaling-stroke}
+
+.admSim{margin-top:10px}
+.admTab{width:100%;border-collapse:collapse;font-size:.72rem}
+.admTab th{text-align:left;color:var(--dim);font-weight:500;font-size:.6rem;
+  letter-spacing:.1em;text-transform:uppercase;padding:5px 6px;
+  border-bottom:1px solid var(--line)}
+.admTab td{padding:4px 6px;border-bottom:1px dashed rgba(255,255,255,.06)}
+.admTab tr.raro td{color:var(--gold);font-weight:700}
+.admTab td.ok{color:var(--green)}
+.admTab td.aten{color:#ffb020}
+
+/* --- seletor de tema (V1.13) ---------------------------------------------
+   A amostra mostra as duas cores do próprio tema, não o nome: quem escolhe
+   pele escolhe pelo olho. */
+.tema-grade{display:flex;gap:9px;flex-wrap:wrap}
+.tema-op{display:flex;align-items:center;gap:8px;padding:7px 11px 7px 7px;cursor:pointer;
+  background:var(--tbg);border:1px solid var(--line);border-radius:11px;color:var(--txt);
+  font:inherit;font-size:.72rem;transition:border-color .16s, box-shadow .16s}
+.tema-op:hover{border-color:rgba(var(--goldRGB),.5)}
+.tema-op.on{border-color:var(--t1);box-shadow:0 0 0 1px var(--t1), 0 0 16px -4px var(--t1)}
+.tema-am{width:26px;height:26px;border-radius:8px;flex:none;
+  background:linear-gradient(135deg, var(--t1) 0%, var(--t1) 48%, var(--t2) 52%, var(--t2) 100%)}
+.tema-nm{font-family:var(--dsp);letter-spacing:.02em}
 </style>
 </head>
 <body>
@@ -1109,7 +2221,12 @@ input[type=range]{width:100%;accent-color:var(--gold)}
     </div>
 
     <div class="pane" id="paneCustom">
-      <label class="tiny" style="display:block;margin-bottom:4px">Nome do treinador</label>
+      <div class="sec-t">Tema da plataforma</div>
+      <div class="tiny" style="margin-bottom:7px">Muda a pele do site inteiro. O jogo
+        continua igual — troca a cor, não a regra.</div>
+      <div id="pickTema" class="tema-grade"></div>
+
+      <label class="tiny" style="display:block;margin:11px 0 4px">Nome do treinador</label>
       <input type="text" id="profName" maxlength="18">
       <div class="sec-t">Avatar — treinadores</div>
       <div class="pick-grid" id="pickTrainer"></div>
@@ -1186,6 +2303,7 @@ import { loadProfile } from './modules/perfil.mjs';
 import { newRound } from './modules/fases.mjs';
 import { atualizarSaldo } from './modules/controles.mjs';
 import { emitir } from './modules/telemetria.mjs';
+import { aplicarTema, temaAtual } from './modules/tema.mjs';
 import { carregar as carregarCarteira } from './modules/banco.mjs';
 import { applyEvent } from './modules/eventos.mjs';
 import { alternarSom, aplicarVolume, audio, bgm, music, musicOn, sfx, somLigado } from './modules/audio.mjs';
@@ -1330,6 +2448,9 @@ S.profile = loadProfile();
 /* §4.7: a sessão abre e fecha com evento. `pagehide` e não `unload` — o
    segundo não dispara em navegador móvel, e sessão que nunca fecha é métrica
    de retenção mentindo para cima. */
+/* O <head> já pintou o tema antes do primeiro quadro; isto o normaliza pela
+   mesma função que a troca usa, para não existirem dois caminhos de verdade. */
+aplicarTema(temaAtual());
 emitir('session_started');
 addEventListener('pagehide', () => emitir('session_ended'));
 

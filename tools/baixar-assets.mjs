@@ -25,11 +25,15 @@ const { PMD, ANIM_FILE, IDLE_USES_WALK, PMD_BASE, PMD_ESPELHO } =
 const { MOVE_FX, FX_BASE, FX_ESPELHO } = await import('../app/modules/efeitos-dados.mjs');
 const pack = (await import('../content/pokemon_kanto_v1.mjs')).default;
 
-/* A fonte de pixel vem do Google Fonts. Baixar a folha de estilo E o arquivo
-   .woff2 que ela aponta é o que permite abrir com egresso fechado sem trocar a
-   tipografia — trocar a fonte mudaria a identidade visual, e identidade visual
-   trocada em silêncio é o erro da v0.6.1 noutra roupa. */
-const FONTE_CSS = 'https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap';
+/* DUAS famílias desde o V1.13, e a divisão é deliberada: Orbitron veste a
+   plataforma (letrado, topbar, títulos, botões) e Press Start 2P veste o jogo
+   (HUD de vida, odds, contagem, killfeed, log). A pixelada continua sendo a
+   alma da arena; a outra é o chrome em volta dela.
+
+   Baixar a folha de estilo E os .woff2 que ela aponta é o que permite abrir com
+   egresso fechado sem trocar a tipografia — e tipografia trocada em silêncio é
+   o erro da v0.6.1 noutra roupa. */
+const FONTE_CSS = 'https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@500;700;900&display=swap';
 
 /* Todo endereço que o jogo pode pedir, com o espelho de cada um. */
 function alvos() {

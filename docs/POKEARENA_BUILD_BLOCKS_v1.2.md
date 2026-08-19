@@ -664,7 +664,7 @@ completo, medido, está em **`docs/PORTE_v1.0.md`**.
 **Já trazido, fora de bloco:** o defeito **D-006** (barra de XP negativa no
 treinador novo), que era nosso e ele encontrou.
 
-### V1.13 — Identidade visual Neon/Cyberpunk
+### V1.13 — Identidade visual Neon/Cyberpunk ✅
 
 **Tam.** G · **Método** GL+INV · **Portões** Q1 Q2 Q5 · **Depende de** F0.12
 
@@ -675,6 +675,23 @@ treinador novo), que era nosso e ele encontrou.
 **Q5:** a linha de base visual das 12 telas **é regravada de propósito**, com a diferença explicada no commit. É a primeira regravação visual desde o F0.3d.
 
 **Saída:** trocar de tema muda o site inteiro sem tocar em uma linha de lógica de jogo — que é a promessa que os tokens fazem.
+
+**Entregue.** Os dois blocos de token (`:root, html[data-tema="hyper"]` e `html[data-tema="shadow"]`), 1.030 linhas de pele, `app/modules/tema.mjs`, o seletor no perfil, o script anti-FOUC no `<head>` e a fonte Orbitron — esta última baixada para a cópia local, senão o portão de egresso fechado do F0.12 reprovaria, como deve.
+
+> **A estratégia dele era a certa, e é o que fez isto caber num bloco: manter os NOMES dos tokens e trocar os VALORES.** `--gold` continua sendo `--gold` em cerca de setenta referências espalhadas por arena, HUD, killfeed e carteira — hoje ele significa "a cor de acento do tema", não amarelo. Trocar o valor converte tudo de uma vez; trocar o nome exigiria caçar setenta lugares.
+
+**A varredura tem UMA exceção, e ela é a parte interessante do teste.** A pele da plataforma sai de token porque ela **é** o tema. Os cosméticos não: "Neon", "Glitch" e "Grade Synth" são efeitos que o jogador escolhe pelo nome, e a cor específica é a identidade deles — um efeito Neon que muda de cor com o tema deixa de ser o efeito que a pessoa escolheu. A exceção é por **seletor** (`.cn-*`, `.ef-*`, `.sc-*`) e não por arquivo, de propósito: cor solta numa regra de plataforma continua reprovando mesmo dentro do bloco de pele.
+
+> **`--line` e `--scan` passaram a DERIVAR do acento** em vez de repetir o valor dele em cru. Escritos com o número solto, mudar o acento deixaria os dois para trás — e ninguém veria, porque eles são o acento em opacidade baixa.
+
+**Q5 · linha de base regravada, 12 telas.** É a primeira regravação visual desde o F0.3d, e é intencional: o site inteiro mudou de cor. Diferença média de 10,2 a 17,7 pontos, pico de 233.
+
+**O portão ganhou dois testes de navegador**, e o segundo nasceu de um escape:
+
+- **trocar o tema muda o site, e a mudança chega à tela** — não basta o token mudar; a cor calculada de um elemento real precisa mudar junto. Token que não chega à tela é token decorativo.
+- **o tema vale antes de qualquer módulo rodar** — o defeito **S69** esvaziou o corpo do script inline deixando o texto no lugar, e o teste textual passou por baixo. **Terceira vez que a lição aparece: testar a declaração não testa a peça.** A prova é bloquear *todos* os módulos e carregar mesmo assim: se o tema guardado aparece no `<html>` sem uma linha de módulo ter rodado, o `<head>` fez o trabalho.
+
+**Fixtures:** só `visual-base.json`. Nenhum golden, nenhuma medição — o bloco não toca em lógica, que é exatamente o que ele promete.
 
 ### V1.14 — Arenas variadas
 

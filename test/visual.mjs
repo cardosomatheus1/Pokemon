@@ -304,6 +304,35 @@ export async function rodar() {
     };
   }).catch(e => ({ erro: String(e).split('\n')[0] }));
 
+  /* --- Q5 do V1.13: o tema troca de verdade ------------------------------
+     A promessa do bloco é que trocar de tema muda o site inteiro sem tocar em
+     lógica de jogo. Teste de unidade confere que os tokens existem; só o
+     navegador confere que o valor CALCULADO muda — e que ele muda em quem usa
+     o token, não só na declaração. */
+  const tema = await pg.evaluate(async () => {
+    const { TEMAS, aplicarTema } = await import('/app/modules/tema.mjs');
+    const raiz = document.documentElement;
+    const lido = () => {
+      const cs = getComputedStyle(raiz);
+      const alvo = document.querySelector('.pick .o') || document.querySelector('#oddNote');
+      return {
+        gold: cs.getPropertyValue('--gold').trim(),
+        goldRGB: cs.getPropertyValue('--goldRGB').trim(),
+        bg: cs.getPropertyValue('--bg').trim(),
+        line: cs.getPropertyValue('--line').trim(),
+        /* a cor que de fato chega a um elemento — token que muda sem chegar na
+           tela é token decorativo */
+        naTela: alvo ? getComputedStyle(alvo).color : null,
+      };
+    };
+    const antes = lido();
+    aplicarTema('shadow');
+    const depois = lido();
+    const guardado = localStorage.getItem('ar_tema');
+    aplicarTema(antes.gold === TEMAS[0].c1 ? 'hyper' : 'shadow');
+    return { antes, depois, guardado, atributo: raiz.dataset.tema, quantos: TEMAS.length };
+  }).catch(e => ({ erro: String(e).split('\n')[0] }));
+
   await pg.$eval('#btnStart', el => el.click()).catch(() => {});
   const aoVivo = await pg.waitForFunction(
     () => document.querySelector('#phase')?.textContent === 'AO VIVO',
@@ -339,7 +368,7 @@ export async function rodar() {
   }).catch(() => null);
 
   await b.close(); s.close();
-  return { erros, conhecidos, apostas, aoVivo, relogio, folhas: cache.size, erroDepois, jogo, corte, ...st };
+  return { erros, conhecidos, apostas, aoVivo, relogio, folhas: cache.size, erroDepois, jogo, corte, tema, ...st };
 }
 
 /* Q3 · A RODADA DO APP SAI DA RAIZ.
@@ -391,6 +420,51 @@ export async function rodarSemRede() {
   }));
   await b.close(); s.close();
   return { erros, bloqueadas, pronto, ...st };
+}
+
+/* Q5 · O TEMA É APLICADO SEM NENHUM MÓDULO RODAR (V1.13).
+ *
+ * O teste textual em `test/tema.mjs` confere que o script existe no `<head>` —
+ * e o defeito S69 esvaziou o CORPO dele deixando o texto no lugar, passando por
+ * baixo. Terceira vez que a lição aparece: **testar a declaração não testa a
+ * peça.**
+ *
+ * A prova é bloquear TODOS os módulos e carregar mesmo assim. Se o tema
+ * guardado aparece no `<html>` sem uma linha de JavaScript de módulo ter
+ * rodado, o script do `<head>` fez o trabalho. Se não aparece, a página
+ * piscaria no tema errado até o boot chegar — e um quadro é o suficiente para
+ * parecer defeito.
+ */
+export async function rodarTemaSemModulos(temaAlvo = 'shadow') {
+  const { chromium } = await import(PW);
+  const { s, porta } = await servidor();
+  const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+  const pg = await b.newPage();
+  await pg.addInitScript(t => { try { localStorage.setItem('ar_tema', t); } catch {} }, temaAlvo);
+  /* nada de módulo: só o HTML, o CSS e o script inline do <head> */
+  let modulosBloqueados = 0;
+  await pg.route('**/modules/**', r => { modulosBloqueados++; return r.abort(); });
+  await pg.goto(`http://127.0.0.1:${porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
+  const lido = await pg.evaluate(() => ({
+    atributo: document.documentElement.dataset.tema,
+    gold: getComputedStyle(document.documentElement).getPropertyValue('--gold').trim(),
+  }));
+  await b.close(); s.close();
+  return { ...lido, modulosBloqueados, temaAlvo };
+}
+
+export function suiteTemaCedo(r) {
+  const s = criarSuite('tema-cedo');
+  s.teste('o tema guardado vale antes de qualquer módulo rodar', () => {
+    ok(r.modulosBloqueados > 0,
+      'nenhum módulo foi bloqueado — o teste não provou nada sobre a primeira pintura');
+    ok(r.atributo === r.temaAlvo,
+      `com todos os módulos bloqueados o <html> ficou em "${r.atributo}", e o tema ` +
+      `guardado era "${r.temaAlvo}". O script do <head> não aplicou o tema, então a ` +
+      `página pisca no tema errado até o boot chegar.`);
+    ok(r.gold && r.gold.length > 0, 'nenhum token de acento resolveu na primeira pintura');
+  });
+  return s;
 }
 
 export function suiteSemRede(r) {
@@ -477,6 +551,20 @@ export function suite(r) {
     ok(r.folhas > 50, `só ${r.folhas} folhas pedidas — o carregamento de sprite não rodou`);
     ok(r.comSprite === 12, `${r.comSprite} lutadores com sprite aplicado, esperado 12`);
   });
+  s.teste('trocar o tema muda o site, e a mudança chega à tela', () => {
+    const t = r.tema;
+    ok(t && !t.erro, `não deu para exercitar a troca de tema: ${t?.erro}`);
+    ok(t.quantos >= 2, 'há menos de dois temas — não há o que trocar');
+    for (const tok of ['gold', 'goldRGB', 'bg', 'line'])
+      ok(t.antes[tok] !== t.depois[tok],
+        `o token --${tok} não mudou ao trocar de tema: "${t.antes[tok]}" nos dois`);
+    ok(t.antes.naTela && t.antes.naTela !== t.depois.naTela,
+      `o token muda mas a cor que chega ao elemento não: "${t.antes.naTela}" nos dois. ` +
+      `Token que não chega à tela é token decorativo.`);
+    ok(t.guardado === 'shadow', `o tema escolhido não foi guardado (ar_tema = ${t.guardado})`);
+    ok(t.atributo, 'o <html> ficou sem data-tema depois da troca');
+  });
+
   s.teste('o corte por teto de payout aparece na tela', () => {
     const c = r.corte;
     ok(c && !c.erro, `não deu para exercitar o corte: ${c?.erro}`);

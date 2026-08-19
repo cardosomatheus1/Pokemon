@@ -46,7 +46,7 @@ Medido por varredura de funções, ids de DOM e blocos de CSS.
 
 | # | Família | Tamanho | Conflita com o que fizemos? |
 |---|---|---|---|
-| 1 | **Identidade Neon/Cyberpunk** — 2 temas, tokens, pele | 1.031 linhas de CSS novas + 215 de tokens, 3 imagens, fonte Orbitron | Linha de base visual (12 telas) — regravação intencional |
+| 1 | **Identidade Neon/Cyberpunk** — 2 temas, tokens, pele | 1.031 linhas de CSS novas + 215 de tokens, 3 imagens, fonte Orbitron | ✅ **PORTADO no V1.13** |
 | 2 | **Bug do XP** (pré-existente) | 1 linha | **Nós temos o mesmo defeito** → D-006 |
 | 3 | **Arenas variadas** — 6 biomas sorteados | 12 funções de desenho | Camada de render + linha de base visual |
 | 4 | **Shinys** — GIF cosmético e skin de arena | 6 funções | ContentPack (`sprite()`) e a cópia local do F0.12 |
@@ -147,8 +147,8 @@ As três artes que ele criou (`portal-arena.jpg`, `cidade-neon.jpg`,
 
 ## Ordem proposta
 
-1. **D-006** — o defeito, agora.
-2. **V1.13 Identidade visual** — a maior peça e a de menor risco lógico.
+1. ~~**D-006**~~ ✅ — o defeito, corrigido.
+2. ~~**V1.13 Identidade visual**~~ ✅ — a maior peça e a de menor risco lógico.
 3. **V1.14 Arenas variadas** — render, depois do tema (compartilham a pele).
 4. **V1.15 Colocação, pódio e banner de batalha** — sem conflito.
 5. **V1.17 Shinys** — a fonte do cosmético vira decisão do bloco, já que o baú

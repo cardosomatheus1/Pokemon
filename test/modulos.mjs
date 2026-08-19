@@ -39,6 +39,8 @@ const CAMADA = {
   'telemetria.mjs': 0,
   /* Curva de nível: aritmética pura, sem import nenhum. */
   'progressao.mjs': 0,
+  /* Tema: mexe no <html> e no localStorage, não depende de módulo nenhum. */
+  'tema.mjs': 0,
   'sprites.mjs': 1,
   'audio.mjs': 1,
   'render.mjs': 2,

@@ -59,6 +59,7 @@ const FX     = 'app/modules/efeitos.mjs';
 const COMMIT = 'engine/commit.mjs';
 const TELEM  = 'app/modules/telemetria.mjs';
 const PROGR  = 'app/modules/progressao.mjs';
+const TEMA   = 'app/modules/tema.mjs';
 
 const DEFEITOS = [
   /* Desde o F0.4 a tabela de tipos é DADO DO PACK, não do motor. O defeito é o
@@ -153,7 +154,7 @@ const DEFEITOS = [
   /* --- defeito do F0.3d: mudança visual não intencional ------------------ */
   { id:'S20', arquivo:APP, nome:'cor do tema alterada sem intenção',
     real:'ajuste de CSS que ninguém revisou; nenhuma suíte de lógica vê',
-    de:'  --gold: #f5c542;', para:'  --gold: #7fd8ff;' },
+    de:'  --gold:     #00e5ff;', para:'  --gold:     #7f4dff;' },
 
   /* --- defeitos do F0.4: a Content Layer -------------------------------- */
   { id:'S21', arquivo:PACK, nome:'espécie perde um tipo',
@@ -384,6 +385,31 @@ const DEFEITOS = [
     real:'alguém "simplifica" o piso do nível 1 de volta para a fórmula pura',
     de:'const xpParaNivel = n => (n <= 1 ? 0 : Math.floor(100 * Math.pow(n, 1.5)));',
     para:'const xpParaNivel = n => Math.floor(100 * Math.pow(n, 1.5));' },
+
+  /* --- defeitos do V1.13: a identidade visual --------------------------- */
+  { id:'S68', arquivo:APP, nome:'cor de acento volta a ser hex solto',
+    real:'"é só um brilho, não vale token" — e a peça fica amarela no tema ciano',
+    de:'.pick.sel{background:rgba(var(--goldRGB),.16);',
+    para:'.pick.sel{background:rgba(245,197,66,.16);' },
+
+  { id:'S69', arquivo:APP, nome:'o tema deixa de ser aplicado antes da primeira pintura',
+    real:'script inline movido para o fim do body numa arrumação — e a página pisca',
+    de:"  if (t === 'hyper' || t === 'shadow') document.documentElement.dataset.tema = t;",
+    para:'  void t;' },
+
+  { id:'S70', arquivo:TEMA, nome:'tema desconhecido deixa o site sem cor',
+    real:'validação removida — localStorage adulterado ou tema retirado da lista derruba a pele',
+    de:"export const temaValido = id => (TEMAS.some(t => t.id === id) ? id : PADRAO);",
+    para:'export const temaValido = id => id;' },
+
+  { id:'S71', arquivo:APP, nome:'uma variante para de definir um token',
+    real:'token novo entra só no tema padrão — a outra variante herda em silêncio',
+    de:'  --onAccent: #150826;', para:'' },
+
+  { id:'S72', arquivo:TEMA, nome:'a escolha de tema deixa de ser guardada',
+    real:'"salvar depois" — e o tema volta ao padrão a cada recarga',
+    de:"  try { localStorage.setItem(CHAVE, t); } catch { /* modo privado: aplica sem guardar */ }",
+    para:'  /* nada */' },
 ];
 
 /* --- COMO A SABOTAGEM RODA, E POR QUE ASSIM -----------------------------
@@ -431,7 +457,7 @@ const suitesQuePegaram = saida => {
 };
 
 const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES, LIGACAO, PACK, VALID,
-                  SEMENTE, FASES, PRECO, CLIMA, EXPO, PAINEL, BOLSO, BANCO, INFO, ASSETS, COMMIT, TELEM, PROGR];
+                  SEMENTE, FASES, PRECO, CLIMA, EXPO, PAINEL, BOLSO, BANCO, INFO, ASSETS, COMMIT, TELEM, PROGR, TEMA];
 const originais = new Map();
 for (const f of ARQUIVOS) originais.set(f, readFileSync(f, 'utf8'));
 
@@ -441,9 +467,11 @@ const N_TRAB = Math.max(1, Math.min(cpus().length, 4));
 const CAIXAS = [];
 for (let i = 0; i < N_TRAB; i++) {
   const c = mkdtempSync(join(tmpdir(), 'pokearena-sabotagem-'));
-  /* `docs/` entra desde o F0.10: test/saida-v09.mjs confere o §4.8 contra a
-     Spec e o registro das lacunas, e sem eles a suíte não roda na caixa. */
-  for (const dir of ['engine', 'app', 'test', 'prototype', 'content', 'tools', 'docs'])
+  /* `docs/` entra desde o F0.10 (test/saida-v09.mjs confere o §4.8 contra a
+     Spec e o registro das lacunas) e `arte/` desde o V1.13 (test/tema.mjs
+     confere que a arte referenciada pelo CSS existe). Sem eles a suíte nem
+     roda na caixa — e caixa que não roda a suíte reprova tudo por igual. */
+  for (const dir of ['engine', 'app', 'test', 'prototype', 'content', 'tools', 'docs', 'arte'])
     cpSync(dir, join(c, dir), { recursive: true });
   cpSync('package.json', join(c, 'package.json'));
   /* `.gitignore` entra porque test/assets.mjs afirma que a arte não é
