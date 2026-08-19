@@ -391,6 +391,30 @@ Ali o custo de uma simulação de referência deixa de competir com a janela de
 30 s do cliente, e o registro de precificação já carrega o campo para comparar
 antes e depois.
 
+### L-024 — o bucket `pendente` existe e nada o preenche
+
+**Dono:** F1.4 · **Notada em:** F0.9
+
+O §5.5 define `pending_transferable`: PC-T comprado e ainda sob hold, que **não
+pode entrar em mercado transferível** enquanto não liquidar. O bucket existe na
+carteira do F0.9 e fica fora da ordem de consumo, que é o comportamento certo.
+
+O que não existe é quem o preencha: `PC_T_PURCHASE_PENDING`,
+`PC_T_PURCHASE_CLEARED`, `PC_T_PURCHASE_REVERSED`, `CHARGEBACK_DEBIT`,
+`TRANSFER_HOLD_APPLIED` e `TRANSFER_HOLD_RELEASED` são tipos de ledger que só
+fazem sentido com **compra de verdade** — gateway, prazo de liquidação, risco de
+estorno. Na v0.9 a compra é simulada e credita direto em `transferivel`.
+
+**Por que não cabe agora.** Simular hold sem gateway é inventar prazo: o número
+de dias, o gatilho de liberação e a regra de estorno saem do contrato com o
+adquirente, não de escolha nossa. Codificar um palpite agora significaria
+reescrever quando o contrato existir — e, pior, apresentar ao jogador um prazo
+que ninguém prometeu.
+
+**O que a destrava:** F1.4, o wallet ledger no servidor, é onde a compra deixa
+de ser simulada. A estrutura já está pronta para receber: o bucket existe, está
+fora da ordem de consumo, e os tipos estão nomeados na Spec.
+
 ## Conteúdo e identidade
 
 ### L-008 — o jogo não tem trilha sonora própria

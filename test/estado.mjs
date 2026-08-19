@@ -22,7 +22,7 @@ const ESPERADO = [
   'seeds','passivo',
   'state','clock','battleT','fighters','odds','battle','evPtr','champ','weather','released',
   'shake','ents',
-  'bal','chipVal','myBet',
+  'carteira','chipVal','myBet',
   'auto','speed','musicVol','profile',
 ];
 
@@ -56,7 +56,7 @@ export function suite() {
       ok(!mod.includes(proibido),
         `estado.mjs referencia ${proibido} — deixa de ser inerte e passa a impor ordem de carga`);
     }
-    ok(S.bal === 0 && S.profile === null && S.seeds === null && S.passivo === null,
+    ok(S.carteira === null && S.profile === null && S.seeds === null && S.passivo === null,
       'campos que dependem de função precisam nascer inertes e ser preenchidos no boot');
   });
 

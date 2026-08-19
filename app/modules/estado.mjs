@@ -50,7 +50,10 @@ export const S = {
   ents:     [],       // entidades em cena: posição, elemento, hp
 
   /* --- aposta e carteira ------------------------------------------------- */
-  bal:      0,        // saldo em PokéCash; carregado no boot
+  /* A carteira do §5.5 — quatro buckets e ledger append-only. Substituiu o
+     antigo `bal`, que era um número que oito lugares somavam e subtraíam.
+     Ninguém escreve aqui direto: quem move dinheiro é app/modules/banco.mjs. */
+  carteira: null,
   chipVal:  50,       // ficha selecionada; mínimo = menor pacote
   myBet:    null,     // {idx, amount, odd}
 

@@ -1179,7 +1179,8 @@ import { frame } from './modules/loop.mjs';
 import { goView, renderSession, sessaoAtiva } from './modules/navegacao.mjs';
 import { loadProfile } from './modules/perfil.mjs';
 import { newRound } from './modules/fases.mjs';
-import { saveBal } from './modules/controles.mjs';
+import { atualizarSaldo } from './modules/controles.mjs';
+import { carregar as carregarCarteira } from './modules/banco.mjs';
 import { applyEvent } from './modules/eventos.mjs';
 import { alternarSom, aplicarVolume, audio, bgm, music, musicOn, sfx, somLigado } from './modules/audio.mjs';
 import { buildEntities, koToast, overlay, preloadSheets, selRing, uiLayer, updatePlate } from './modules/rodada.mjs';
@@ -1313,13 +1314,15 @@ import { hideWeatherBadge, initWeatherFx, showWeatherBadge } from './modules/cli
 /* ------------------------- BOOT ------------------------- */
 /* Estado que depende de função declarada acima. estado.mjs guarda só valores
    inertes, de propósito: assim ele não impõe ordem de carga a ninguém. */
-S.bal     = +(localStorage.getItem('ar_bal') || 1000);
+/* A carteira carrega do ledger e reconcilia: saldo adulterado é detectado, não
+   aceito em silêncio (§5.5 e portão Q6 do F0.9). */
+carregarCarteira();
 S.profile = loadProfile();
 /* O fluxo visual não precisa mais ser semeado aqui: sorte.mjs nasce com
    sementes fixas e é re-semeado a cada rodada pelo ramo `visual` da árvore. */
 
 (async function boot(){
-  saveBal();
+  atualizarSaldo();
   $('#btnAuto').classList.add('on');
   ensureDaily();          // garante os 3 desafios do dia já no carregamento
   renderSession();

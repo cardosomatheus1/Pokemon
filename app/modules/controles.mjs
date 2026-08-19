@@ -5,22 +5,26 @@
 import { $ } from './dom.mjs';
 import { S } from './estado.mjs';
 import { atualizarFichas, emReais } from './carteira.mjs';
+import { saldo } from './banco.mjs';
 import { closeModal, renderSession } from './navegacao.mjs';
 import { renderProfile } from './customizacao.mjs';
 import { saveProfile } from './perfil.mjs';
 
 /* ------------------------- CONTROLES ------------------------- */
-function saveBal(){ localStorage.setItem('ar_bal', S.bal); atualizarSaldo(); }
+/* `saveBal` sumiu no F0.9. Persistir virou responsabilidade de banco.mjs, que
+   grava junto com o lançamento no ledger — salvar saldo sem lançamento é
+   exatamente o que o §5.5 proíbe. O que sobrou aqui é redesenhar. */
 
 /* Um só lugar redesenha o saldo — carteira, cabeçalho e o equivalente em
    reais. Antes só o número da esquerda era atualizado, e agora que o
    valor aparece em quatro lugares isso viraria dessincronia garantida. */
 function atualizarSaldo(){
-  const fmt = S.bal.toLocaleString('pt-BR');
+  const s = saldo();
+  const fmt = s.toLocaleString('pt-BR');
   const el = $('#bal'); if (el) el.textContent = fmt;
-  const br = $('#balBrl'); if (br) br.textContent = emReais(S.bal);
+  const br = $('#balBrl'); if (br) br.textContent = emReais(s);
   const wb = $('#wBal'); if (wb) wb.textContent = fmt;
-  const wr = $('#wBalBrl'); if (wr) wr.textContent = emReais(S.bal);
+  const wr = $('#wBalBrl'); if (wr) wr.textContent = emReais(s);
   atualizarFichas();
 }
 
@@ -45,5 +49,4 @@ document.querySelectorAll('#profileModal .tab').forEach(b => b.onclick = () => {
 
 export {
   atualizarSaldo,
-  saveBal,
 };

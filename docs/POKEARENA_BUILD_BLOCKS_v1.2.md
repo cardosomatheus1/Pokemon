@@ -498,11 +498,13 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 
 ---
 
-### F0.9 — Carteira com API e proveniência
+### F0.9 — Carteira com API e proveniência ✅
 
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 Q3 Q6 Q8 · **Depende de** F0.8
 
 **Escopo:** a carteira ganha API própria e ledger append-only local, com os buckets do §5.5 e `stake_breakdown` no ticket. Ainda local, ainda sem servidor.
+
+**Lacuna aberta:** L-024 (o bucket `pendente` existe e nada o preenche; dono F1.4, quando a compra deixa de ser simulada).
 
 **Sabotagem:** escrever saldo direto, sem passar pelo ledger (a reconciliação precisa pegar); fazer payout de aposta em PC-B cair no bucket PC-T; permitir saldo negativo; apagar uma entrada do ledger.
 
@@ -513,6 +515,22 @@ A linha de base não guarda PNG. Guarda **impressão digital**: a captura volta 
 **Saída:** nenhum ponto do código escreve saldo sem passar pela API; recalcular pelo ledger dá o mesmo número.
 
 > Fazer local agora é o que torna F1.4 uma troca de implementação em vez de uma reescrita.
+
+**Entregue.** `engine/carteira.mjs` — puro, sem DOM e sem `localStorage` — com os quatro buckets do §5.5, ledger append-only e `stake_breakdown` na reserva. `app/modules/banco.mjs` é a fachada do app: persiste, reconcilia no boot e traduz "o jogador ganhou" em lançamentos. **`S.bal` deixou de existir.**
+
+**O teste que vale mais que o código.** *"Apostar bônus devolve BÔNUS, nunca transferível"* — é a brecha que o §5.5 fecha em uma frase: sem proveniência, as odds da Arena viram conversor automático de bônus gratuito em saldo sacável, e o orçamento de PC-B do Estudo de Economia vaza inteiro para a ponta que custa dinheiro de verdade. O ledger grava `BET_PAYOUT_BONUS` e `BET_PAYOUT_TRANSFERABLE` **separados**: um registro que diz só "BET_PAYOUT" não prova nada meses depois.
+
+**A ordem de consumo é decisão deste bloco, e o §5.5 não a define.** Escolhida: **bônus → competitivo → transferível**. Sem uma ordem, `stake_breakdown` é indeterminado; com esta, gasta-se primeiro o que o jogador não pôs dinheiro para ter, e o saldo dele próprio dura mais. `pendente` fica fora — PC-T sob hold não entra em mercado transferível (§5.5) — e isso virou a lacuna **L-024**.
+
+**O critério de saída virou teste, não promessa.** *"Nenhum ponto do código escreve saldo sem passar pela API"* é uma afirmação sobre o repositório, então quem a verifica varre o repositório: nenhum módulo além de `banco.mjs` pode escrever em `S.carteira`, citar `S.bal` ou persistir saldo direto. Sem isso, o próximo bloco reintroduz um `S.bal += x` e a suíte continua verde.
+
+**Q6 — adulteração detectada, e o limite dito em voz alta.** Inflar o saldo no `localStorage` é apanhado pela reconciliação do boot, que recalcula tudo pelo ledger e reconstrói. Um atacante local determinado reescreve o ledger junto, e nenhuma reconciliação resolve isso: **a defesa de verdade é o ledger viver no servidor, em F1.4**. O que se entrega aqui é que a adulteração ingênua não passe calada.
+
+**Q8 — concorrência.** Duas reservas de 700 sobre 1.000 de saldo: a segunda é recusada. Mil reservas seguidas, e o total (disponível + reservado) nunca sai de 10.000. A defesa é a reserva ser atômica — decidir e debitar no mesmo lançamento.
+
+> **A sabotagem achou a mesma classe de furo do F0.5, e duas vezes já não é azar.** S53 remove a reconciliação do **boot** e passou por toda a suíte: `reconciliar` continuava correta, e `test/carteira.mjs` continuava provando que ela funciona. **Testar a peça não testa o encaixe** — exatamente o que o S30 mostrou quando a árvore de sementes estava certa e o app não estava ligado nela. Entrou `test/banco.mjs`, que exercita o caminho real com um `localStorage` mínimo: inflar o número guardado e apagar entrada do ledger têm que ser reconstruídos no boot, com diagnóstico.
+
+> **E o relatório da sabotagem estava mentindo.** S35 apareceu como "✓ PEGOU / NADA" — capturado apenas pelo golden. Em caixa limpa ele passa nos **dois** modos: a execução vermelha foi transitória, e o relatório atribuiu a falha ao defeito plantado. Contar uma falha instável como captura é pior que reportar um escape, porque esconde o buraco em vez de mostrá-lo. O caso "vermelho com golden, verde sem" agora é **reconfirmado** com uma segunda execução do par; se as duas discordarem, o defeito é marcado `INSTÁVEL` e **não conta como pego** — dúvida sobre cobertura tem que aparecer como dúvida.
 
 ---
 

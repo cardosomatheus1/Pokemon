@@ -6,6 +6,7 @@
 import { $ } from './dom.mjs';
 import { CUR } from './motor.mjs';
 import { S } from './estado.mjs';
+import { saldo } from './banco.mjs';
 import { avatarURL, renderProfile, trainerURL } from './customizacao.mjs';
 import { progressoNivel, saveProfile, tituloDe } from './perfil.mjs';
 import { renderDeposit } from './carteira.mjs';
@@ -38,7 +39,7 @@ function renderHero(){
     ? `<div><b>NV ${np.nivel}</b><span>${tituloDe(np.nivel)}</span></div>
        <div><b>${S.profile.betsCount}</b><span>rodadas</span></div>
        <div><b>${S.profile.winsCount}</b><span>vitórias</span></div>
-       <div><b>${S.bal.toLocaleString('pt-BR')}</b><span>${CUR} saldo</span></div>`
+       <div><b>${saldo().toLocaleString('pt-BR')}</b><span>${CUR} saldo</span></div>`
     : `<div><b>76</b><span>lutadores</span></div>
        <div><b>12</b><span>por rodada</span></div>
        <div><b>20.000</b><span>simulações/odd</span></div>

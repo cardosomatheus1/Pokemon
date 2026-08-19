@@ -7,7 +7,8 @@ import { $ } from './dom.mjs';
 import { CUR, MOEDA } from './motor.mjs';
 import { S } from './estado.mjs';
 import { alternarSom, aplicarVolume, music } from './audio.mjs';
-import { atualizarSaldo, saveBal } from './controles.mjs';
+import { atualizarSaldo } from './controles.mjs';
+import { creditarCompra, saldo } from './banco.mjs';
 import { closeModal, openModal } from './navegacao.mjs';
 import { newRound, startFight } from './fases.mjs';
 import { saveProfile } from './perfil.mjs';
@@ -59,7 +60,7 @@ function renderDeposit(){
 }
 
 function simulateDeposit(pkg){
-  S.bal += pkg.pc; saveBal();
+  creditarCompra(pkg.pc, 'pacote:' + pkg.brl); atualizarSaldo();
   const list = loadDeposits();
   list.push({ date: Date.now(), brl: pkg.brl, pc: pkg.pc });
   saveDeposits(list);
@@ -140,11 +141,11 @@ const CHIP_VALUES = [50, 100, 300, 500, 1000];
 function atualizarFichas(){
   const row = $('#chipRow'); if (!row) return;
   row.innerHTML = CHIP_VALUES.map(v => `
-      <button class="chip ${S.chipVal === v ? 'on' : ''} ${v > S.bal ? 'off' : ''}" data-v="${v}">
+      <button class="chip ${S.chipVal === v ? 'on' : ''} ${v > saldo() ? 'off' : ''}" data-v="${v}">
         <b>${v.toLocaleString('pt-BR')}</b><span>${emReais(v)}</span>
       </button>`).join('') +
-    `<button class="chip ${S.chipVal === 'max' ? 'on' : ''} ${S.bal < APOSTA_MIN ? 'off' : ''}" data-v="max">
-        <b>Tudo</b><span>${emReais(S.bal)}</span></button>`;
+    `<button class="chip ${S.chipVal === 'max' ? 'on' : ''} ${saldo() < APOSTA_MIN ? 'off' : ''}" data-v="max">
+        <b>Tudo</b><span>${emReais(saldo())}</span></button>`;
 
   row.querySelectorAll('.chip').forEach(b => b.onclick = () => {
     if (b.classList.contains('off')) return;
@@ -156,7 +157,7 @@ function atualizarFichas(){
   const dica = $('#chipHint');
   if (dica){
     const v = valorAposta();
-    dica.innerHTML = S.bal < APOSTA_MIN
+    dica.innerHTML = saldo() < APOSTA_MIN
       ? `Saldo abaixo da aposta mínima de ${CUR} ${APOSTA_MIN}. Complete um desafio diário ou compre ${MOEDA}.`
       : `Apostando <b>${CUR} ${v.toLocaleString('pt-BR')}</b> (${emReais(v)}) por rodada.`;
   }
@@ -164,8 +165,8 @@ function atualizarFichas(){
 
 /* valor efetivo da aposta, já limitado ao saldo */
 function valorAposta(){
-  const v = S.chipVal === 'max' ? S.bal : S.chipVal;
-  return Math.max(0, Math.min(v, S.bal));
+  const v = S.chipVal === 'max' ? saldo() : S.chipVal;
+  return Math.max(0, Math.min(v, saldo()));
 }
 
 function usarValorPersonalizado(){
@@ -176,8 +177,8 @@ function usarValorPersonalizado(){
     dica.innerHTML = `<span style="color:var(--red)">A aposta mínima é ${CUR} ${APOSTA_MIN} (${emReais(APOSTA_MIN)}).</span>`;
     return;
   }
-  if (v > S.bal){
-    dica.innerHTML = `<span style="color:var(--red)">Saldo insuficiente: você tem ${CUR} ${S.bal.toLocaleString('pt-BR')}.</span>`;
+  if (v > saldo()){
+    dica.innerHTML = `<span style="color:var(--red)">Saldo insuficiente: você tem ${CUR} ${saldo().toLocaleString('pt-BR')}.</span>`;
     return;
   }
   S.chipVal = v;
@@ -232,7 +233,7 @@ $('#vol').oninput = e => {
 };
 $('#spd').oninput = e => { S.speed = +e.target.value; $('#spdVal').textContent = S.speed.toFixed(1) + 'x'; };
 
-$('#btnTopUp').onclick = () => { S.bal += 1000; saveBal(); $('#betInfo').textContent = `+${CUR} 1.000 de teste.`; };
+$('#btnTopUp').onclick = () => { creditarCompra(1000, 'dev'); atualizarSaldo(); $('#betInfo').textContent = `+${CUR} 1.000 de teste.`; };
 
 export {
   APOSTA_MIN,

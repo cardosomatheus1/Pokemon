@@ -51,6 +51,8 @@ const PRECO  = 'engine/preco.mjs';
 const CLIMA  = 'app/modules/clima.mjs';
 const EXPO   = 'engine/exposicao.mjs';
 const PAINEL = 'app/modules/odds.mjs';
+const BOLSO  = 'engine/carteira.mjs';
+const BANCO  = 'app/modules/banco.mjs';
 
 const DEFEITOS = [
   /* Desde o F0.4 a tabela de tipos é DADO DO PACK, não do motor. O defeito é o
@@ -107,8 +109,8 @@ const DEFEITOS = [
     para:"import { S } from './modules/estado.mjs';\nlet champ = -1;" },
 
   { id:'S12', arquivo:ESTADO, nome:'estado.mjs deixa de ser inerte',
-    real:'alguém inicializa o saldo direto no módulo de estado',
-    de:'  bal:      0,', para:"  bal:      +(localStorage.getItem('ar_bal') || 1000)," },
+    real:'alguém inicializa a carteira direto no módulo de estado',
+    de:'  carteira: null,', para:"  carteira: JSON.parse(localStorage.getItem('ar_carteira') || 'null')," },
 
   { id:'S13', arquivo:ESTADO, nome:'campo some da superfície declarada',
     real:'remoção de campo durante refatoração, sem atualizar quem lê',
@@ -276,6 +278,34 @@ const DEFEITOS = [
     real:'coluna removida por "poluir a tela" — e o teto passa a existir só na recusa',
     de:"      <span class=\"lim tiny\">${fechado ? 'mercado fechado'\n        : `até ${CUR} ${cabe.toLocaleString('pt-BR')}`}</span>\n",
     para:'' },
+
+  /* --- defeitos do F0.9: a carteira e o ledger -------------------------- */
+  { id:'S48', arquivo:BOLSO, nome:'payout de aposta em bônus cai no bucket transferível',
+    real:'"é tudo saldo" — e a Arena vira conversor de bônus gratuito em dinheiro sacável',
+    de:"    bonus:        'BET_PAYOUT_BONUS',", para:"    bonus:        'BET_PAYOUT_TRANSFERABLE'," },
+
+  { id:'S49', arquivo:BOLSO, nome:'saldo pode ficar negativo',
+    real:'checagem removida por "nunca acontece" — e acontece na primeira troca de aposta',
+    de:'        return { ok: false, motivo: `${conta}.${b} ficaria em ${proposta[conta][b]}` };',
+    para:'        void 0;' },
+
+  { id:'S50', arquivo:BOLSO, nome:'o saldo muda sem entrada no ledger',
+    real:'atalho de performance — e a reconciliação deixa de significar qualquer coisa',
+    de:'  w.ledger.push(entrada);', para:'  void entrada;' },
+
+  { id:'S51', arquivo:BOLSO, nome:'a reconciliação para de conferir a sequência',
+    real:'"a sequência é redundante" — e apagar uma entrada do ledger passa a ser invisível',
+    de:"    if (e.seq !== ++seq) problemas.push(`sequência quebrada: esperava ${seq}, veio ${e.seq}`);",
+    para:'    ++seq;' },
+
+  { id:'S52', arquivo:BOLSO, nome:'a ordem de consumo gasta o transferível primeiro',
+    real:'ordem invertida numa refatoração — o saldo do jogador queima antes do bônus',
+    de:"export const ORDEM_CONSUMO = ['bonus', 'competitivo', 'transferivel'];",
+    para:"export const ORDEM_CONSUMO = ['transferivel', 'competitivo', 'bonus'];" },
+
+  { id:'S53', arquivo:BANCO, nome:'o boot deixa de reconciliar a carteira',
+    real:'"o arquivo é nosso, confia" — e saldo adulterado entra sem ninguém ver',
+    de:'  if (!rec.ok) reconstruir(w);', para:'' },
 ];
 
 /* A sabotagem mede se a SUÍTE pega o defeito, então roda sem o portão de
@@ -301,7 +331,7 @@ const suitesQuePegaram = saida => {
 };
 
 const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES, LIGACAO, PACK, VALID,
-                  SEMENTE, FASES, PRECO, CLIMA, EXPO, PAINEL];
+                  SEMENTE, FASES, PRECO, CLIMA, EXPO, PAINEL, BOLSO, BANCO];
 const originais = new Map();
 for (const f of ARQUIVOS) originais.set(f, readFileSync(f, 'utf8'));
 
@@ -324,16 +354,37 @@ for (const d of DEFEITOS) {
   const src = originais.get(d.arquivo);
   if (!src.includes(d.de)) { res.push({ ...d, status:'ÂNCORA PERDIDA', com:'-', sem:'-' }); continue; }
   writeFileSync(join(CAIXA, d.arquivo), src.replace(d.de, d.para));
-  const comG = rodar(false, false);
-  const semG = rodar(true, false);
+  let comG = rodar(false, false);
+  let semG = rodar(true, false);
+
+  /* CONFIRMAÇÃO DO CASO SUSPEITO.
+     "Vermelho com golden, verde sem golden" é o sinal que este relatório existe
+     para dar — cobertura de propriedade fraca naquela área. Mas é TAMBÉM o que
+     uma falha transitória produz, e aí o relatório conta como captura algo que
+     ninguém pega. Aconteceu no F0.9 com o S35, que em caixa limpa passa nos
+     dois modos.
+
+     Como o caso é raro, confirmar custa pouco: repete o par uma vez. Se a
+     repetição discordar, o defeito é marcado INSTÁVEL e NÃO conta como pego —
+     dúvida sobre cobertura tem que aparecer como dúvida. */
+  let instavel = false;
+  if (comG.vermelha && !semG.vermelha) {
+    const comG2 = rodar(false, false);
+    const semG2 = rodar(true, false);
+    if (comG2.vermelha !== comG.vermelha || semG2.vermelha !== semG.vermelha) {
+      instavel = true;
+      comG = comG2; semG = semG2;
+    }
+  }
+
   let navegador = '';
   if (!comG.vermelha) {              // escapou da suíte: o navegador pega?
     const v = rodar(false, true);
     navegador = v.vermelha ? 'só o navegador' : '';
   }
   writeFileSync(join(CAIXA, d.arquivo), src);   // desfaz dentro da caixa
-  res.push({ ...d,
-    status: comG.vermelha ? 'PEGOU' : (navegador ? 'PEGOU' : 'PASSOU'),
+  res.push({ ...d, instavel,
+    status: instavel ? 'INSTÁVEL' : (comG.vermelha ? 'PEGOU' : (navegador ? 'PEGOU' : 'PASSOU')),
     com: comG.vermelha ? suitesQuePegaram(comG.saida).join(',') : navegador,
     sem: comG.vermelha ? (semG.vermelha ? suitesQuePegaram(semG.saida).join(',') : 'NADA') : navegador });
 }
@@ -343,9 +394,10 @@ rmSync(CAIXA, { recursive:true, force:true });
 console.log('id   defeito                                 status    sem golden, pego por');
 console.log('─'.repeat(96));
 for (const r of res)
-  console.log(`${r.id.padEnd(4)} ${r.nome.padEnd(39)} ${(r.status==='PEGOU'?'✓':'✗')} ${r.status.padEnd(7)} ${r.sem}`);
+  console.log(`${r.id.padEnd(4)} ${r.nome.padEnd(39)} ${(r.status==='PEGOU'?'✓':'✗')} ${r.status.padEnd(8)} ${r.sem}`);
 
 const escaparam = res.filter(r => r.status !== 'PEGOU');
+const instaveis = res.filter(r => r.instavel);
 const soGolden  = res.filter(r => r.status === 'PEGOU' && r.sem === 'NADA');
 
 console.log('');
@@ -356,6 +408,11 @@ if (escaparam.length) {
 if (soGolden.length) {
   console.log(`\n⚠ ${soGolden.length} defeito(s) só o golden pega — cobertura de propriedade fraca:`);
   for (const r of soGolden) console.log(`  · ${r.id} ${r.nome}`);
+}
+if (instaveis.length) {
+  console.log(`\n⚠ ${instaveis.length} defeito(s) com resultado INSTÁVEL entre execuções.`);
+  console.log('  Não contam como pegos: dúvida sobre cobertura tem que aparecer como dúvida.');
+  for (const r of instaveis) console.log(`  · ${r.id} ${r.nome}`);
 }
 if (escaparam.length) process.exit(1);
 console.log(`Q2 VERDE — ${DEFEITOS.length}/${DEFEITOS.length} detectados` +

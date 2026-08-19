@@ -28,6 +28,8 @@ const CAMADA = {
   /* Fluxo visual da rodada. Depende só da ligação do motor e da árvore de
      sementes, então mora na base junto com ela. */
   'sorte.mjs': 0,
+  /* Fachada da carteira: só depende do estado e do motor de carteira. */
+  'banco.mjs': 0,
   'dom.mjs': 0,
   'estado.mjs': 0,
   'sprites.mjs': 1,

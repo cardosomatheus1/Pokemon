@@ -11,7 +11,8 @@ import { TYPE_BADGES, renderBadges } from './medalhas.mjs';
 import { dexImg, dexURL } from './sprites.mjs';
 import { ensureDaily } from './desafios.mjs';
 import { goView, renderSession } from './navegacao.mjs';
-import { saveBal } from './controles.mjs';
+import { atualizarSaldo } from './controles.mjs';
+import { reiniciarCarteira, saldo } from './banco.mjs';
 
 /* =====================================================================
    CUSTOMIZAÇÃO — avatar e banner
@@ -169,7 +170,7 @@ function renderProfile(){
       : `<div class="hi"><div class="t"><b>—</b><span>ainda sem tipo favorito</span></div></div>`);
 
   $('#profStats').innerHTML = `
-    <div class="stat-box"><b>${S.bal.toLocaleString('pt-BR')}</b><span>${CUR} saldo atual</span></div>
+    <div class="stat-box"><b>${saldo().toLocaleString('pt-BR')}</b><span>${CUR} saldo atual</span></div>
     <div class="stat-box"><b>NV ${nivelDe(S.profile.xp||0)}</b><span>${tituloDe(nivelDe(S.profile.xp||0))}</span></div>
     <div class="stat-box"><b>${S.profile.betsCount}</b><span>rodadas disputadas</span></div>
     <div class="stat-box"><b>${S.profile.winsCount}</b><span>vitórias</span></div>
@@ -208,7 +209,7 @@ $('#profileModal').addEventListener('click', ev => {
 $('#btnProfReset').onclick = () => {
   if (!confirm('Resetar todo o perfil e o saldo?')) return;
   localStorage.removeItem('ar_profile'); localStorage.removeItem('ar_deposits');
-  localStorage.setItem('ar_bal','1000'); S.bal=1000; saveBal();
+  reiniciarCarteira(); atualizarSaldo();
   S.profile = loadProfile(); localStorage.removeItem('ar_session');
   renderProfile(); renderSession(); goView('viewHome');
 };

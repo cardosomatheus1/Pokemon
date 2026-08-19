@@ -1,4 +1,4 @@
-# Arnês — blocos F0.1 a F0.8
+# Arnês — blocos F0.1 a F0.9
 
 Portões cobertos: **Q1** (comportamento), **Q2** (sabotagem), **Q3** (invariantes),
 **Q4** (regressão estatística), **Q5** (visual) e **Q6** (validação de pack como
@@ -28,13 +28,26 @@ npm run snapshot        # regera o instantâneo do protótipo para a paridade
 | `modulos.mjs` | Q1/Q3 | limite de tamanho, tabela de camadas, dependência numa direção só, símbolo usado sem importar, atribuição a binding importado |
 | `conteudo.mjs` | Q1/Q3/Q6 | Content Layer: pack sintético gera rodada válida, pack inválido é recusado na porta, pack malformado não executa nada, e nenhum identificador da franquia sobra em `engine/` |
 | `pack-sintetico.mjs` | — | 12 criaturas e 5 tipos inventados. Existe para provar que o motor não sabe o que é um Pokémon |
+| `banco.mjs` | Q6 | o BOOT da carteira, com `localStorage` mínimo: adulteração e ledger truncado precisam ser reconstruídos. Existe porque `carteira.mjs` prova que a reconciliação funciona, e isso não prova que alguém a chama |
+| `carteira.mjs` | Q1/Q3/Q6/Q8 | buckets e ledger do §5.5: apostar bônus devolve bônus, saldo nunca negativo, adulteração detectada pela reconciliação, e duas reservas não gastam o mesmo PC |
 | `exposicao.mjs` | Q1/Q3/Q6 | tetos de payout e de passivo: corte antes da confirmação, mercado que fecha ao saturar, e as três formas de furar o teto — stake manipulado, tickets divididos, corrida entre confirmações |
 | `precisao.mjs` | Q4 | precisão do estimador: erro relativo e viés de convexidade por lutador, registro de precificação do §4.4.5, e a dispersão de 8 cálculos sobre a mesma pool |
 | `margem.mjs` | Q4 | margem realizada por grupo de tipo OBSERVÁVEL. É o teste que fecha o defeito do clima fora do preço: antes, quem tinha tipo buffável saía a −0,61% e o resto a +14,96% |
 | `semente.mjs` | Q1/Q3/Q6 | a árvore do §P3: a mesma raiz reproduz a rodada, dois ramos nunca coincidem, o preço sai da raiz, e a raiz não vem de relógio, contador nem da rodada anterior |
 | `rodada-digital.mjs` | — | reconstrói a rodada a partir da raiz. Importado pelo Node **e** pelo Chromium: é o que faz "dois ambientes JS" ser comparação de verdade, e é a referência contra a qual a rodada real do app é conferida |
 | `visual.mjs` | Q5/Q3 | sobe servidor próprio, abre o app num Chromium de verdade, reprova em `pageerror`, compara impressão digital 32×32 RGB de 4 telas × 3 larguras, e confere o determinismo da rodada entre Node e navegador |
-| `sabotagem.mjs` | Q2 | planta 47 defeitos numa cópia do repositório e exige vermelho, com e sem os golden tests |
+| `sabotagem.mjs` | Q2 | planta 53 defeitos numa cópia do repositório e exige vermelho, com e sem os golden tests |
+
+## Resultado instável não conta como captura
+
+"Vermelho com golden, verde sem golden" é o sinal que este relatório existe para
+dar — cobertura fraca naquela área. É **também** o que uma falha transitória
+produz. No F0.9 o defeito S35 apareceu como capturado e, em caixa limpa, passava
+nos dois modos: a execução vermelha tinha sido um acidente.
+
+Contar falha instável como captura é pior que reportar um escape, porque esconde
+o buraco. O caso suspeito agora é reconfirmado com uma segunda execução do par;
+discordando, o defeito vira `INSTÁVEL` e não conta como pego.
 
 ## Por que a sabotagem existe
 
@@ -51,7 +64,7 @@ O F0.2 resolveu isso rodando cada sabotagem **duas vezes**, com e sem os goldens
 (`SEM_GOLDEN=1`). A coluna que interessa no relatório é "sem golden": defeito que só
 o golden pega é sinalizado como cobertura de propriedade fraca naquela área.
 
-Estado atual (F0.8): **47 defeitos plantados**, nenhum dependendo só do
+Estado atual (F0.9): **53 defeitos plantados**, nenhum dependendo só do
 golden. Um deles — S20, cor do tema alterada — só é pego pelo navegador, e é
 justamente por isso que o Q5 virou portão.
 
@@ -68,8 +81,8 @@ pego por nada, porque nenhuma rodada do lote chega perto do corte.
 ## Quanto tempo custa
 
 `npm run portoes` roda a suíte com o navegador e depois a sabotagem. Desde o
-F0.8 a suíte leva ~35 s e a sabotagem roda 94 execuções — as 47 com e sem
-golden —, ou seja **~55 min**. As duas medições caras ficam fora da suíte, em
+F0.9 a suíte leva ~36 s e a sabotagem roda 106 execuções — as 53 com e sem
+golden —, ou seja **~65 min**. As duas medições caras ficam fora da suíte, em
 `npm run test:gerar`: margem (300 × 8.000 simulações) e precisão (8 cálculos de
 154.000).
 

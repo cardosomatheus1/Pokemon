@@ -15,6 +15,8 @@ import * as semente from './semente.mjs';
 import * as margem from './margem.mjs';
 import * as precisao from './precisao.mjs';
 import * as exposicao from './exposicao.mjs';
+import * as carteira from './carteira.mjs';
+import * as banco from './banco.mjs';
 import * as visual from './visual.mjs';
 
 if (process.argv.includes('--gerar')) {
@@ -65,7 +67,7 @@ else console.log('  · Q5 visual pulado (sem navegador) — use npm run portoes 
 const suites = [
   ...(semGolden ? [] : [golden.suite()]),
   invariantes.suite(), estatistica.suite(),
-  fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(), semente.suite(), margem.suite(), precisao.suite(), exposicao.suite(),
+  fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(), semente.suite(), margem.suite(), precisao.suite(), exposicao.suite(), carteira.suite(), banco.suite(),
   ...(visual.disponivel() && !semVisual
      ? [visual.suite(rVisual), visual.suiteBase(baseAtual, baseGravada),
         visual.suiteAmbientes(digitaisNav, RAIZES_Q3), visual.suiteRodadaViva(rVisual)]

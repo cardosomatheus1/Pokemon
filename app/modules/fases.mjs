@@ -23,7 +23,8 @@ import { hideWeatherBadge, initWeatherFx, showWeatherBadge } from './clima.mjs';
 import { imgTag } from './sprites.mjs';
 import { music, sfx } from './audio.mjs';
 import { posSelRing, reiniciarMovimento } from './coreografia.mjs';
-import { saveBal } from './controles.mjs';
+import { atualizarSaldo } from './controles.mjs';
+import { creditarRecompensa, devolverAposta, pagarAposta, perderAposta, reservarAposta } from './banco.mjs';
 import { updatePlate } from './eventos.mjs';
 
 /* ------------------------- FASES ------------------------- */
@@ -159,12 +160,21 @@ function placeBet(idx, row){
   }
   const amount = veredito.valor;
 
-  if (S.myBet) S.bal += S.myBet.amount;                    // troca de aposta: devolve a anterior
+  /* Troca de aposta: a reserva anterior volta INTEIRA aos buckets de onde saiu
+     (§5.5) antes de a nova ser reservada. Devolver "o valor" em vez da
+     composição transformaria bônus em transferível a cada troca. */
+  if (S.myBet) devolverAposta(S.myBet.composicao, 'aposta');
+  const reserva = reservarAposta(amount, 'aposta');
+  if (!reserva.ok){
+    if (S.myBet) reservarAposta(S.myBet.amount, 'aposta');   // desfaz a devolução
+    S.passivo[idx] -= 0;
+    $('#betInfo').innerHTML = `<b>Saldo insuficiente.</b>`;
+    return;
+  }
   const o = S.odds.lutadores.find(x => x.idx === idx);
-  S.bal -= amount;
-  S.myBet = {idx, amount, odd:o.odd};
+  S.myBet = {idx, amount, odd:o.odd, composicao: reserva.composicao};
   registrarTicket(S.passivo, idx, amount, o.odd);
-  saveBal();
+  atualizarSaldo();
   recordBetPlaced(amount, S.fighters[idx]);
   markMyPlate();
   document.querySelectorAll('.pick').forEach(p => p.classList.toggle('sel', +p.dataset.i === idx));
@@ -308,7 +318,7 @@ function atualizaVariedade(){
     c.prog = Math.min(c.meta, n);
     if (c.prog >= c.meta && !c.pago){
       c.feito = true; c.pago = true;
-      S.profile.xp += c.xp; S.bal += c.dia; saveBal();
+      S.profile.xp += c.xp; creditarRecompensa('CHALLENGE_REWARD', c.dia, 'desafio:' + c.id); atualizarSaldo();
       S.profile.dailyDone = (S.profile.dailyDone || 0) + 1;
     }
   }
@@ -420,7 +430,10 @@ function finish(){
     /* ---------- VITÓRIA ---------- */
     const win = Math.floor(S.myBet.amount * S.myBet.odd);
     const lucro = win - S.myBet.amount;
-    S.bal += win; saveBal();
+    /* Payout herda a origem da stake (§5.5): o que foi apostado em bônus volta
+       como bônus. É isto que impede a Arena de virar conversor de bônus
+       gratuito em saldo transferível. */
+    pagarAposta(S.myBet.composicao, S.myBet.odd, 'aposta'); atualizarSaldo();
     recordBetResult(true, S.myBet.amount, win, f);
     $('#betInfo').innerHTML = `<b style="color:var(--green)">Ganhou ${CUR} ${win.toLocaleString('pt-BR')}!</b> (${emReais(win)})`;
     registrarAposta({t:Date.now(), mon:f.n, amount:S.myBet.amount, odd:S.myBet.odd,
@@ -441,6 +454,10 @@ function finish(){
 
   } else if (S.myBet){
     /* ---------- DERROTA ---------- */
+    /* A stake perdida sai do RESERVADO e não volta para disponível. Antes do
+       F0.9 ela já tinha sido debitada do saldo na hora da aposta e ninguém
+       fechava o lançamento — o dinheiro simplesmente sumia do ledger. */
+    perderAposta(S.myBet.composicao, 'aposta'); atualizarSaldo();
     // mostra o SEU lutador caído, não o vencedor: o que interessa aqui
     // é "o que aconteceu com o meu", e o vencedor vira só uma linha.
     const meu = S.fighters[S.myBet.idx];

@@ -4,7 +4,8 @@
 
 import { S } from './estado.mjs';
 import { tipoNomes, rng } from './motor.mjs';
-import { saveBal } from './controles.mjs';
+import { atualizarSaldo } from './controles.mjs';
+import { creditarRecompensa } from './banco.mjs';
 import { saveProfile } from './perfil.mjs';
 
 /* =====================================================================
@@ -83,7 +84,7 @@ function progDesafio(id, quanto, tipo){
       if (!c.pago){
         c.pago = true;
         S.profile.xp += c.xp;
-        S.bal += c.dia; saveBal();
+        creditarRecompensa('CHALLENGE_REWARD', c.dia, 'desafio:' + c.id); atualizarSaldo();
         S.profile.dailyDone = (S.profile.dailyDone || 0) + 1;
       }
       concluidos.push(c);
