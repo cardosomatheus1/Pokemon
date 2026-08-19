@@ -22,6 +22,7 @@ import * as assets from './assets.mjs';
 import * as telemetria from './telemetria.mjs';
 import * as commit from './commit.mjs';
 import * as saida from './saida-v09.mjs';
+import * as progressao from './progressao.mjs';
 import * as visual from './visual.mjs';
 
 if (process.argv.includes('--gerar')) {
@@ -99,7 +100,7 @@ const suites = [
   ...(semGolden ? [] : [golden.suite()]),
   /* baratas: varredura de texto e lotes pequenos */
   fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(),
-  carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(), telemetria.suite(), commit.suite(), saida.suite(),
+  carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(), telemetria.suite(), commit.suite(), saida.suite(), progressao.suite(),
   /* médias: lotes de simulação curtos */
   semente.suite(), estatistica.suite(), precisao.suite(), invariantes.suite(),
   ...(visual.disponivel() && !semVisual

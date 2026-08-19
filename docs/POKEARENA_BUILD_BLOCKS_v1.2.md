@@ -646,6 +646,82 @@ Medido em 400 rodadas, estratificando a margem pelo número de lutadores daquele
 
 ---
 
+---
+
+# PORTE DA v1.0 — trabalho paralelo
+
+Um segundo desenvolvedor construiu a v1.0 **sobre o protótipo v0.8 congelado**,
+em arquivo único, enquanto a Fase 0 reconstruía o jogo em blocos. O inventário
+completo, medido, está em **`docs/PORTE_v1.0.md`**.
+
+> **O motor não foi tocado.** O extrator de paridade comparou as 26 declarações
+> dos dois lados: 32.302 bytes cada, diferença de 6 linhas numa função só
+> (`showdownSlug`, endurecida). Nenhum golden muda, nenhuma fixture de batalha
+> muda, e nada dos blocos F0.1 a F0.12 entra em conflito com o motor. **Tudo o
+> que ele fez está na camada de produto** — e é por isso que o porte cabe em
+> blocos em vez de virar merge.
+
+**Já trazido, fora de bloco:** o defeito **D-006** (barra de XP negativa no
+treinador novo), que era nosso e ele encontrou.
+
+### V1.13 — Identidade visual Neon/Cyberpunk
+
+**Tam.** G · **Método** GL+INV · **Portões** Q1 Q2 Q5 · **Depende de** F0.12
+
+**Escopo:** os tokens (`--goldRGB`, `--onAccent`, `--gold` como acento), as duas variantes (`hyper`, `shadow`) em `html[data-tema]`, o bloco de pele (1.031 linhas), a fonte Orbitron, as três artes de `assets/` e o script anti-FOUC no `<head>`.
+
+**Sabotagem:** cor nova entrando como hex solto em vez de token (o teste precisa pegar); tema guardado sem ser aplicado antes da primeira pintura; variante removida do seletor sem sair da lista.
+
+**Q5:** a linha de base visual das 12 telas **é regravada de propósito**, com a diferença explicada no commit. É a primeira regravação visual desde o F0.3d.
+
+**Saída:** trocar de tema muda o site inteiro sem tocar em uma linha de lógica de jogo — que é a promessa que os tokens fazem.
+
+### V1.14 — Arenas variadas
+
+**Tam.** M · **Método** GL+INV · **Portões** Q1 Q2 Q3 Q5 · **Depende de** V1.13
+
+**Escopo:** os seis biomas sorteados e o selo de arena. O sorteio entra na árvore de sementes (§P3) como ramo do `visual` — arena sorteada fora da raiz quebraria a reprodutibilidade que o F0.5 comprou.
+
+**Sabotagem:** sortear a arena com `Math.random`; deixar o bioma influenciar a batalha (ele é cosmético e precisa continuar sendo).
+
+### V1.15 — Colocação, pódio e banner de batalha
+
+**Tam.** M · **Método** GL+INV · **Portões** Q1 Q2 Q5 · **Depende de** V1.13
+
+**Escopo:** colocação por rodada, pódio, banner de batalha com cosméticos, e o **cancelar aposta**.
+
+> **Cancelar aposta é o pedaço perigoso, e por isso mora aqui.** O F0.8 registra passivo por lutador na confirmação: cancelar sem devolver trava o mercado daquele lutador pelo resto da rodada; devolver sem cuidado reabre a corrida que o teste do §4.4.6 fecha. E a carteira precisa de um tipo de ledger próprio — `BET_RELEASE` já existe e serve.
+
+### V1.16 — Inventário e baús
+
+**Tam.** G · **Método** INV · **Portões** Q1 Q2 Q3 Q4 Q6 · **Depende de** V1.15
+
+**Escopo:** as três moedas novas (fragmento de chave, essência shiny, núcleo prisma), os baús com a tabela calibrada, e a garantia (pity).
+
+> **A decisão econômica que o porte não pode adivinhar:** PokéCash de baú é PC-T ou PC-B? Ele mediu 3,91 PC por baú, ~34 rodadas para a aposta mínima. Em PC-T seria dinheiro sacável nascendo de graça, e o §5.5 existe para impedir exatamente isso. **Proposta: PC-B, com tipo de ledger próprio**; as três moedas novas são inventário e não carteira, porque não compram aposta.
+
+**Q4:** reproduzir a calibração dele — 3.000.000 de aberturas, qui-quadrado em cinco sementes — com o nosso PRNG semeado, e arquivar como fixture de medição.
+
+### V1.17 — Shinys
+
+**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q5 · **Depende de** V1.16
+
+**Escopo:** GIF cosmético e skin de arena. Desbloqueado e equipado como estados distintos.
+
+> **Toca no F0.12:** shiny são **mais 304 folhas** (76 × 4) e 76 GIFs. O baixador cobre o que o pack pede, e skin shiny muda o que o pack pede — `pack.sprite()` passa a receber o estado do cosmético.
+
+### V1.18 — Painel de ADM
+
+**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q6 · **Depende de** V1.17
+
+**Escopo:** o painel em `#adm`, com conta, laboratório shiny, simulador de baús, odds e estatísticas.
+
+> **O conflito que este bloco resolve.** O painel mexe em `CONF.MARGIN` — e ele documentou bem por quê: a margem do painel é a **mesma** exibida ao lado das odds, para o painel não criar odd secreta. Só que `CONF` virou constante congelada do motor, e a margem agora aparece em três lugares que se conferem: `margemConfigurada` e `margemEfetiva` no registro do §4.4.5, e a fixture `margem.json`, que afirma 8 % em 300 rodadas × 8.000 simulações. **O encaixe certo é a margem virar parâmetro da rodada**, gravada no registro, com a fixture medindo a margem configurada naquela rodada.
+
+**Q6:** o PIN no código-fonte **não é controle de acesso**, e o painel dele já diz isso em vermelho no topo. O teste precisa afirmar que o aviso existe — e o `CLAUDE.md` §25.1 continua valendo: nada de valor econômico real sem o checkpoint.
+
+---
+
 # FASE 1 — V1 Arena Online
 
 Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a única em que proteção do jogador é requisito de entrega. É também onde Q6 deixa de ser formalidade: a partir de F1.1 existe superfície exposta.

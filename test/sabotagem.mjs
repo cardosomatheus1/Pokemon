@@ -58,6 +58,7 @@ const ASSETS = 'app/modules/assets.mjs';
 const FX     = 'app/modules/efeitos.mjs';
 const COMMIT = 'engine/commit.mjs';
 const TELEM  = 'app/modules/telemetria.mjs';
+const PROGR  = 'app/modules/progressao.mjs';
 
 const DEFEITOS = [
   /* Desde o F0.4 a tabela de tipos é DADO DO PACK, não do motor. O defeito é o
@@ -377,6 +378,12 @@ const DEFEITOS = [
     real:'"é só para segmentar melhor" — e classe de dispositivo vira impressão digital',
     de:"  const w = globalThis.innerWidth || 0;",
     para:"  const w = globalThis.innerWidth || 0; const ua = globalThis.navigator?.userAgent;" },
+
+  /* --- defeito do porte da v1.0 ----------------------------------------- */
+  { id:'S67', arquivo:PROGR, nome:'D-006 revertido: a barra do treinador novo volta a ser negativa',
+    real:'alguém "simplifica" o piso do nível 1 de volta para a fórmula pura',
+    de:'const xpParaNivel = n => (n <= 1 ? 0 : Math.floor(100 * Math.pow(n, 1.5)));',
+    para:'const xpParaNivel = n => Math.floor(100 * Math.pow(n, 1.5));' },
 ];
 
 /* --- COMO A SABOTAGEM RODA, E POR QUE ASSIM -----------------------------
@@ -424,7 +431,7 @@ const suitesQuePegaram = saida => {
 };
 
 const ARQUIVOS = [MOTOR, APP, ESTADO, RENDER, DOM, EFEITOS, COREO, SPRITES, LIGACAO, PACK, VALID,
-                  SEMENTE, FASES, PRECO, CLIMA, EXPO, PAINEL, BOLSO, BANCO, INFO, ASSETS, COMMIT, TELEM];
+                  SEMENTE, FASES, PRECO, CLIMA, EXPO, PAINEL, BOLSO, BANCO, INFO, ASSETS, COMMIT, TELEM, PROGR];
 const originais = new Map();
 for (const f of ARQUIVOS) originais.set(f, readFileSync(f, 'utf8'));
 

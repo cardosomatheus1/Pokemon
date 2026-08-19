@@ -4,6 +4,7 @@
  * apostar. XP vem de participação, nunca do valor apostado. */
 
 import { S } from './estado.mjs';
+import { nivelDe, progressoNivel, xpParaNivel } from './progressao.mjs';
 import { ensureDaily } from './desafios.mjs';
 
 /* =====================================================================
@@ -106,17 +107,8 @@ function topOf(obj){
    Dá níveis rápidos no começo (recompensa imediata) e desacelera
    depois, sem virar parede.
    ===================================================================== */
-const xpParaNivel = n => Math.floor(100 * Math.pow(n, 1.5));
-function nivelDe(xp){
-  let n = 1;
-  while (n < 200 && xp >= xpParaNivel(n + 1)) n++;
-  return n;
-}
-function progressoNivel(xp){
-  const n = nivelDe(xp);
-  const ini = xpParaNivel(n), fim = xpParaNivel(n + 1);
-  return {nivel:n, ini, fim, atual:xp - ini, falta:fim - xp, pct:((xp-ini)/(fim-ini))*100};
-}
+/* A curva de nível saiu para `progressao.mjs` — pura, e testável sem DOM.
+   Ver a nota lá, e o defeito D-006. */
 
 /* Título do treinador por faixa de nível — recompensa simbólica que já
    existe de graça e dá identidade ao progresso. */
@@ -143,10 +135,11 @@ function darXP(partes){
 
 export {
   PROFILE_DEFAULT,
-  darXP,
-  loadProfile,
   nivelDe,
   progressoNivel,
+  xpParaNivel,
+  darXP,
+  loadProfile,
   recordBetPlaced,
   recordBetResult,
   saveProfile,

@@ -37,6 +37,8 @@ const CAMADA = {
   'assets.mjs': 0,
   'efeitos-dados.mjs': 0,
   'telemetria.mjs': 0,
+  /* Curva de nível: aritmética pura, sem import nenhum. */
+  'progressao.mjs': 0,
   'sprites.mjs': 1,
   'audio.mjs': 1,
   'render.mjs': 2,

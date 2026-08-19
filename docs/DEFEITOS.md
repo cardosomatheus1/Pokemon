@@ -227,6 +227,64 @@ Nenhuma das duas depende de quantas cabem num milissegundo.
 
 ---
 
+## D-006 — a barra de XP do treinador novo é negativa ✅ CORRIGIDO
+
+**Corrigido em:** porte da v1.0
+**Encontrado por:** o trabalho paralelo da v1.0 — ver `docs/PORTE_v1.0.md`
+**Gravidade:** cosmético, e visível para 100 % dos jogadores novos
+
+### O que acontecia
+
+```js
+const xpParaNivel = n => Math.floor(100 * Math.pow(n, 1.5));
+```
+
+`xpParaNivel(1)` devolvia **100** em vez de 0. Como todo treinador nasce com
+`xp: 0`, o cálculo de progresso dava:
+
+| XP | O que a tela mostrava |
+|---|---|
+| 0 | NV1 **−100 / 182** (−54,9 %) |
+| 50 | NV1 **−50 / 182** (−27,5 %) |
+| 100 | NV1 0 / 182 (0 %) |
+
+A primeira coisa que um jogador novo via no próprio perfil era uma barra
+negativa.
+
+### Por que passou por toda a Fase 0
+
+Doze blocos, 214 testes, e nenhum olhava para o perfil. O que se testou até aqui
+foi motor, semente, preço, exposição, carteira, assets e telemetria — as coisas
+com dinheiro ou determinismo em jogo. **Defeito de tela precisa de teste de
+tela**, e não havia nenhum.
+
+Não é coincidência que quem o achou estava trabalhando na aparência: cada linha
+de trabalho enxerga a classe de defeito que ela toca.
+
+### Correção
+
+```js
+const xpParaNivel = n => (n <= 1 ? 0 : Math.floor(100 * Math.pow(n, 1.5)));
+```
+
+**Ninguém muda de nível com isso, e está provado por varredura completa.** O
+outro uso de `xpParaNivel` é dentro de `nivelDe`, que chama sempre com `n + 1`
+a partir de `n = 1` — a função nunca recebe 1 ali. Varridos os inteiros de 0 a
+3.000.000 de XP: **zero divergências** de nível entre a curva antiga e a nova.
+
+O denominador do nível 1 sobe de 182 para 282, que é o tamanho real dele: a
+barra passou a ser honesta sobre quanto falta.
+
+### O que mais saiu daqui
+
+A curva estava dentro de `perfil.mjs`, que puxa `desafios → controles →
+carteira → render` e abre um canvas. Testá-la exigia levantar meia interface, e
+**defeito que exige teatro para ser testado é defeito que não é testado**. A
+aritmética saiu para `app/modules/progressao.mjs`, sem import nenhum — mesmo
+movimento de `sprites-dados.mjs` e `efeitos-dados.mjs` no F0.12.
+
+---
+
 ## D-003 — o corte duro de tempo é suave ✅ CORRIGIDO
 
 **Corrigido em:** F0.6
