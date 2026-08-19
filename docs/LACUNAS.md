@@ -573,7 +573,7 @@ tem data.
 
 ### L-026 — o baú não tem contra o que ser calibrado
 
-**Dono:** V1.16 (o baú pelo nosso desenho) · **Destrava quando:** D-007 fechar
+**Dono:** V1.19 (o baú pelo nosso desenho) · **Destrava quando:** D-007 fechar
 
 Decisão do dono do projeto: os baús ficam no **nosso** roadmap, com o **nosso**
 cálculo. A implementação da v1.0 não é portada; os números dela ficam como
@@ -587,7 +587,7 @@ sobram para desafios/rescue/missões. Calibrar o nosso contra esse orçamento n�
 faz sentido enquanto os nossos próprios desafios já o estouram em 6,5× — é o
 **D-007**, e ele vem primeiro.
 
-Três coisas o V1.16 vai ter que decidir, e nenhuma delas vem pronta do trabalho
+Três coisas o V1.19 vai ter que decidir, e nenhuma delas vem pronta do trabalho
 dele:
 
 1. **PC-T ou PC-B?** Em PC-T seria dinheiro sacável nascendo de graça, que é
@@ -625,7 +625,7 @@ registrada:
 
 | O quê | Onde está | Por quê |
 |---|---|---|
-| **Baús** | V1.16, nosso roadmap | Decisão do dono do projeto; bloqueado pelo D-007 |
+| **Baús** | V1.19, nosso roadmap | Decisão do dono do projeto; bloqueado pelo D-007 |
 | **Fragmentos por rodada** | junto com os baús | É a moeda de entrada do baú, não faz sentido sozinha |
 | **Simulador de baús no painel** | junto com os baús | Portar o simulador seria portar a economia junto |
 | **Campo `brilho` das arenas** | L-027 | Ele documentou e nunca construiu |
@@ -709,3 +709,45 @@ V1.14 construiu, e ninguém tinha reparado.
 **Por que isto é lacuna e não defeito:** nada aqui está quebrado. A tela funciona,
 e os 299 testes que dizem isso continuam certos. O que ela não faz é ser lida em
 três segundos — e isso é trabalho de desenho, com escopo próprio, não conserto.
+
+---
+
+### L-030 — o que a segunda passada do crítico deixou aberto
+
+**Dono:** trilha `R`, blocos futuros · **Achado por:** crítico cego, Q7, segunda medição
+
+O V1.16 fechou os cinco piores. O crítico mediu de novo e listou dezessete; o que
+sobrou, por ordem de gravidade:
+
+1. **`R$` ao lado de cada valor.** Cada ficha carrega "R$ 5,00 / R$ 10,00 …", o
+   saldo carrega "R$ 100,00", o retorno diz "263 (R$ 26,30)". Isso ensina uma
+   taxa fixa de 10 PC = R$ 1,00 e faz a perda ser **sentida em reais**. É
+   incompatível com a promessa de moeda simulada e é decisão de interface, não de
+   backend. **Precisa de decisão do dono do projeto antes de mexer** — a
+   conversão também serve para o jogador dimensionar o que gasta.
+2. **A grade de HP na fase de aposta.** Doze barras verde-saturado — a cor mais
+   brilhante do produto — sem título, mostrando 100 % de vida de quem ainda não
+   brigou. Rouba a primeira fixação do painel de odds. Na luta ela é ótima.
+3. **"até 9.505" inverte a intuição de odds.** O favorito a 17,5 % tem teto dez
+   vezes maior que a zebra a 1,7 %. Vem do teto de payout do §4.4.6 e é honesto —
+   mas aparece sem uma palavra de explicação, em corpo maior que o multiplicador
+   que ele contradiz.
+4. **"%" muda de significado entre as fases**, no mesmo slot: 17,5 % é chance na
+   aposta, 91 % é vida na luta. Quem apostou a 7,1 % e vê 91 % pode concluir que
+   as chances explodiram.
+5. **A barra do cronômetro não tem trilho** — sem o comprimento total à vista,
+   18 px não se lê como "resta um sexto".
+6. **A CTA central não muda depois da aposta confirmada.**
+7. **O bracket decorativo atravessa a primeira letra** de todos os títulos de
+   painel.
+8. **O rodapé de auditoria reprova em contraste** — 3,73:1 contra o piso de
+   4,5:1 da WCAG AA, e é justamente a frase que sustenta o discurso do produto.
+9. **A variante shiny piora a leitura do campo** — as paletas alternativas têm
+   menos contraste contra o piso da cratera.
+10. **O perfil mostra NV 54 com 0 rodadas disputadas** (é o perfil de teste da
+    captura, mas a incoerência aparece).
+
+**E uma ressalva metodológica dele que vale registrar:** nenhuma das capturas de
+luta tinha aposta viva, então **P5 não foi avaliado por inteiro** — a posição dá
+para julgar, a identidade do "seu lutador" na arena não. A ferramenta
+`npm run olhar` precisa de um roteiro de luta COM aposta.

@@ -774,7 +774,7 @@ A lista de defeitos saiu para `test/defeitos-plantados.mjs`, para poder ser **li
 > DEFEITOS/LACUNAS, regravar fixture, mensagem de commit) é custo **fixo**, e
 > pagá-la três vezes por trabalho da mesma natureza era o que fazia o ciclo
 > parecer lento. O escopo continua um: **fechar o porte**. O que não entra
-> continua não entrando — baús seguem fora (V1.16).
+> continua não entrando — baús seguem fora (V1.19).
 
 **Escopo:** tudo o que resta do trabalho dele, exceto baús.
 
@@ -907,7 +907,7 @@ Os dois eram lacuna real de teste, não falso alarme:
 porque o próprio escopo dependia deles), **D-010** (a linha de base não separa
 componente novo de ruído — dono **T2**), **L-028**.
 
-### V1.16 — Baús: NÃO ENTRA NO PORTE
+### V1.19 — Baús: NÃO ENTRA NO PORTE
 
 **Decisão do dono do projeto.** Os baús ficam no **nosso** roadmap, com o
 **nosso** cálculo econômico. A implementação dele não é portada.
@@ -933,7 +933,7 @@ fonte dos cosméticos. Eles entraram no V1.15, e a fonte virou decisão daquele
 bloco: **nível do treinador, com escolha do jogador**. Trocar para o baú, quando
 ele existir pelo nosso desenho, é mudar uma função — não o sistema.
 
-> **O V1.16 está bloqueado pelo D-007**, e não por falta de método. O baú da v1.0
+> **O V1.19 está bloqueado pelo D-007**, e não por falta de método. O baú da v1.0
 > emite **1,45 PC-B por rodada**: 55 rodadas/semana consomem sozinhas os 80 PC-B
 > agregados do Estudo Econômico, e 21 rodadas/semana consomem os 30 que sobram
 > para desafios/rescue/missões. Não dá para calibrar o nosso contra um orçamento
@@ -985,41 +985,157 @@ quando ele fechar.
 > LEGÍVEL.** São perguntas diferentes, e hoje só a primeira tem rede.
 
 
-### Trilha `R` — reorganização da tela principal
+### V1.16 — Trilha `R`: a tela principal reorganizada ✅
 
-**Origem:** L-029, o crítico cego. **Método** GL (a barra existe e é buscável:
-TESTE DOS 3 SEGUNDOS). **Portões** Q1 Q2 Q5 Q7.
+**Tam.** G · **Método** GL+INV · **Portões** Q1 Q2 Q5 Q6 Q7 · **Depende de** V1.15
 
-> **Ordem por nota ganha, não por esforço.** O crítico deu nota por pergunta e
-> por largura; cada bloco abaixo é o menor conjunto de mudanças que sobe um
-> conjunto de notas. Fazer fora de ordem é gastar o bloco caro antes do barato.
+> **Os cinco blocos da trilha `R` viraram um.** R1 a R5 mexiam todos no mesmo
+> arranjo — separá-los significaria cinco regravações de linha de base, cinco
+> portões completos e quatro estados intermediários em que a tela ficaria pior
+> que antes. O escopo continua um: **a tela principal é lida em três segundos**.
 
-**R1 — Faixa de estado.** `Tam.` P. Faixa fixa no topo, ~56 px, em toda largura:
-a palavra da fase, o relógio (número grande + barra que esvazia) e o saldo.
-*Sobe P1 de 0–1 para 5 e P4 de 1–2 para 5 nas quatro larguras, e resolve metade
-de P3.* É a maior nota por menor custo de toda a trilha — **começa por aqui**.
+**A barra:** TESTE DOS 3 SEGUNDOS, medida pelo crítico cego (L-029) antes e
+depois. É a mesma barra, aplicada duas vezes — é isso que a torna comparável.
 
-**R2 — Lista única de lutadores.** `Tam.` M. Funde `ODDS AO VIVO` e o cartão
-`QUEM VENCE?` num componente clicável com os **doze**, mostrando a probabilidade
-real e a margem de erro que hoje só o painel de ADM publica. *Sobe P2, e é o
-único bloco que faz o argumento de venda aparecer na tela do cliente.*
+---
 
-**R3 — "Seu lutador" durante a luta.** `Tam.` M. O bloco de aposta vira, na fase
-de luta, um cartão do seu lutador: sprite, vida, posição em texto, retorno se
-vencer — e um marcador persistente sobre o sprite dele na arena. *Sobe P5 de 0–2
-para 4–5.* Hoje o espaço está ocupado por controles mortos.
+#### O diagnóstico: o problema não era falta de espaço
 
-**R4 — Tirar o desenvolvimento da tela do jogador.** `Tam.` P. `DEV`, hash de
-commit e o aviso do `battle-theme.mp3` saem do build do jogador e vão para trás
-do PIN do painel. **Q6:** não é segurança — é credibilidade.
+Eram **cinco colunas de largura fixa** — 238 + 270 + 430 + 270 + 232 = 1440, ou
+1496 com os vãos — dentro de um container de 1790. Elas quebravam **em cascata**:
+abaixo de 1440 a coluna de colocação descia; abaixo de 1100 a **arena inteira**
+saía da tela. O layout degradava por **amputação do centro**, e o centro é o
+objeto da aposta.
 
-**R5 — Reflow em vez de amputação.** `Tam.` G. Abaixo de 1280 a tela reordena em
-vez de cortar o centro. *Sobe todas as notas de 1100 e 420, que são as piores da
-tabela.* Último por ser o mais caro, e porque R1–R3 já mudam o que reflowar.
+O "espaço vazio" que aparecia não era sobra: era o rastro das colunas que tinham
+quebrado para baixo.
 
-**Sabotagem da trilha:** relógio que some ao rolar; lista que corta lutadores sem
-dizer quantos faltam; probabilidade publicada diferente da do registro §4.4.5;
-marcador do "seu lutador" que sobrevive à troca de aposta.
+#### O arranjo: três zonas que reflowam
+
+```
+FAIXA fixa    [avatar]  APOSTAS · 29s ▓▓▓▓░░ · 1.000 PC · R$ 100,00
+┌────────────┬──────────────┬─────────────┐
+│  AÇÃO 300  │  ARENA 430   │ LUTADORES   │  = 1070 (1098 com os vãos)
+│  fichas    │  canvas 3:4  │  340        │
+│  controles │  teto 54vh   │  OS DOZE    │
+│  ticker    │              │  prob · odd │
+│  → na luta │              │  → na luta  │
+│  SEU       │              │  vira       │
+│  LUTADOR   │              │  COLOCAÇÃO  │
+└────────────┴──────────────┴─────────────┘
+≤1130: uma coluna — arena, ação, lutadores. A arena ganha teto de altura
+       para que o que vem depois comece dentro da tela.
+```
+
+**Cabe em 1100**, que era a largura onde o layout antigo perdia a arena.
+
+#### As cinco mudanças, e o que cada uma comprou
+
+**1 · Faixa de estado.** Fase, relógio e saldo, fixos no topo, em toda largura.
+O relógio era um sufixo de ~7 px (`QUEM VENCE? — 29s`) **dentro do canvas**, sem
+barra e sem rótulo — o menor texto de uma tela com tipografia display sobrando em
+cinco lugares. A fase tinha quatro pistas espalhadas e **contraditórias**: o
+rótulo `APOSTAS`, a pílula "Escolha seu lutador!", o banner dizendo "ASSISTINDO
+ESTA RODADA" (o oposto) e um botão "Iniciar rodada" sugerindo que nada começara.
+
+> **O número grande e a barra não são pressão — são o contrário dela.** Prazo
+> previsível reduz ansiedade: quem sabe que tem 23 segundos decide com calma,
+> quem não sabe decide com medo ou é surpreendido. O vermelho abaixo de 10 s é o
+> aviso que permite **desistir** a tempo, não o que apressa a apostar. Proteção
+> do jogador é requisito (cap. 28), e aqui ela se cumpre mostrando mais.
+
+**2 · Uma lista, com os doze, e com a PROBABILIDADE.** Eram **três** listas dos
+mesmos doze lutadores: `ODDS AO VIVO` (12 linhas, não clicável), o cartão
+`QUEM VENCE?` (clicável, **8 linhas**, sem dizer que faltavam quatro) e `ABATES`.
+A mais visível não era a acionável.
+
+> **A mudança que mais importa do bloco:** o `p 5,96 % ± 1,01 %` por lutador —
+> que o §4.4.5 já calculava e gravava no registro — só aparecia no **painel de
+> ADM**. A tela do cliente mostrava "100 %" em doze linhas, que é vida e não
+> chance, e lê como defeito. Vendíamos odd auditável e escondíamos a auditoria
+> de quem aposta. Agora a chance e a margem de erro estão na linha de cada
+> lutador, ao lado da odd.
+
+**3 · "Seu lutador" durante a luta.** São ~30 s sem nenhuma ação disponível, e a
+zona de ação mantinha ali as fichas, o campo de valor e a frase "escolha um
+lutador na arena durante a fase de apostas" — controles mortos na coluna nobre.
+Agora vira o cartão do seu lutador: retrato, vida, posição em texto e retorno.
+
+**4 · O desenvolvimento saiu da tela do jogador.** `DEV`, o hash do commit, o
+aviso do `battle-theme.mp3` e o botão "+1.000 de teste" foram para trás do PIN.
+Um botão que cria dinheiro do nada ao lado do saldo é o oposto do que a
+proveniência do §5.5 promete, mesmo em moeda simulada.
+
+**5 · Reflow, não amputação.** Abaixo de 1130 as três zonas viram uma coluna na
+ordem da decisão — ver a arena, escolher, apostar —, com teto de altura no canvas
+para que a lista comece dentro da tela.
+
+#### O equilíbrio de altura, que é de onde vinha o vazio
+
+Depois de juntar as colunas, a do meio ficou com quase o dobro da altura das
+outras: canvas 573 px + HUD + ticker + botões. **Duas mudanças fecharam a
+diferença** — os controles da rodada foram para a zona de ação (que é o que eles
+são) e o ticker do log foi junto; a arena ganhou teto de `min(54vh, 510px)`.
+
+---
+
+#### O vazio, medido — e a segunda passada do crítico
+
+A primeira versão do arranjo ainda reprovava, e o crítico mediu por pixel em vez
+de estimar: em 1920, as calhas laterais somavam **800 px (41,7 % da largura)** e
+o rodapé outros 220 — **metade do viewport era fundo**. Em 1100 eram **640 px de
+1100 (58 %)**, e era esse desperdício que empurrava a lista de odds para fora da
+tela: nota **0** em "em quem eu aposto".
+
+A causa era minha: pus três colunas de largura fixa num container de 1120 px, o
+que é *um container centrado que ignora a viewport* — não um layout responsivo.
+
+**Três correções, e as três vieram da medição:**
+
+| | antes | depois |
+|---|---|---|
+| Colunas | `300px 430px 340px` em 1120 | `minmax()` em `fr`, até 1560 |
+| Canvas | travado em 427 px, **cortado** na vertical | cresce com a altura, `min(72vh, 760px)` |
+| Colapso | 1130 px | 1000 px — em 1100 as três ainda cabem |
+
+**E a tipografia estava invertida.** Medido: saldo 17 px, "QUEM VENCE?" 14,
+timer 11, **probabilidade 6, multiplicador 5**. A carteira era renderizada 3,4×
+maior que o preço — a interface dizia "o importante é quanto você tem", não "o
+importante é o preço". Probabilidade e odd passaram a ser os maiores números da
+linha.
+
+**Duas correções de proteção do jogador entraram junto**, e nenhuma é cosmética:
+a ficha **"Tudo" é all-in** e tinha o mesmo tamanho, a mesma cor e a mesma borda
+que "50", sem confirmação — agora tem as duas coisas; e as duas instruções da
+tela se contradiziam ("escolha na arena" × "escolha na lista →", com a seta
+apontando para o lado errado em uma coluna).
+
+---
+
+**MEDIDO NO FECHAMENTO**
+
+```
+suíte      300/300 com navegador, estável em 2/2 execuções
+sabotagem  94/94
+telas      quatro larguras, zero rolagem horizontal, zero erro de página
+calhas     1920: de 800 px para ~180 · 1100: de 640 px para 0
+```
+
+**Q2 · o S89 foi REALVADO, e o motivo é o desenho ter melhorado.** Ele plantava
+"a ordem de quedas deixa de vir do gancho do abate", contando com a conferência
+do fim para corrigir — mas a lista única passou a derivar a colocação
+**diretamente dos eventos**, e o alvo deixou de existir. O risco novo é pior, e é
+para ele que o defeito aponta agora: derivar dos eventos **inteiros** em vez de
+só os já reproduzidos faz a lista mostrar a colocação final durante a luta. Não é
+desalinhamento de tela — é **vazar o vencedor**, no produto cujo §4.5 existe para
+provar que o resultado não era conhecido antes.
+
+**Q7 · o crítico cego avaliou duas vezes, com a mesma barra.** É a única forma
+de a nota significar alguma coisa: barra que muda entre as medições compara
+coisas diferentes.
+
+**Fixtures:** `visual-base.json`, regravada — a tela da arena mudou de arranjo de
+propósito, e é a maior mudança visual desde o V1.13.
 
 ---
 

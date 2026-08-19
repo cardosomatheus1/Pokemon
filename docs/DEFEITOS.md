@@ -414,7 +414,7 @@ o pior lado para errar numa economia.
 ### O que trava enquanto não fechar
 
 **O baú.** A decisão do dono do projeto é que os baús ficam no nosso roadmap com
-o nosso cálculo (ver `BUILD_BLOCKS` → V1.16). O baú da v1.0 emite 1,45 PC-B por
+o nosso cálculo (ver `BUILD_BLOCKS` → V1.19). O baú da v1.0 emite 1,45 PC-B por
 rodada — 55 rodadas/semana consomem sozinhas os 80 agregados, 21 rodadas/semana
 consomem os 30 que sobram. Não dá para calibrar um baú contra um orçamento que
 a nossa própria implementação já estoura em 6,5×. **Reconciliar vem primeiro.**

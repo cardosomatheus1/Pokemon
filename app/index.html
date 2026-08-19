@@ -106,26 +106,96 @@ body{
 }
 
 /* ============ LAYOUT ============ */
-/* 1790 e não 1420, e a diferença é o BANNER DE BATALHA.
-   O v0.8 tinha quatro colunas e cabia em 1420. O V1.15 acrescentou a quinta, e
-   as cinco somam ~1496 com os vãos — o limite antigo empurrava a coluna de
-   abates e colocação para baixo da dobra, onde ninguém a vê durante a luta.
-   A v1.0 do porte já tinha subido este número pelo mesmo motivo; a linha ficou
-   para trás quando trouxemos as colunas. */
-.app{display:flex;gap:14px;align-items:flex-start;width:100%;max-width:1790px;
-  justify-content:center;margin:0 auto;flex-wrap:wrap}
-.stage{width:min(430px,100%);flex:0 0 auto;display:flex;flex-direction:column;gap:8px}
-.col{width:270px;flex:0 0 auto;display:flex;flex-direction:column;gap:10px}
-.col.kf{width:232px}
-.col.bn{width:238px}
-/* Abaixo de 1300px a coluna do killfeed não cabe mais ao lado das outras
-   três; em vez de espremer tudo, ela desce e ocupa a mesma largura do
-   palco, mantendo a leitura. */
-@media (max-width:1820px){ .col.bn{width:min(430px,100%)} }
-@media (max-width:1300px){ .col.kf{width:min(430px,100%)} }
+/* ===================================================================
+   O LAYOUT DA ARENA — TRÊS ZONAS, e elas REFLOWAM em vez de sumir.
+   -------------------------------------------------------------------
+   Antes eram cinco colunas de largura fixa (238+270+430+270+232 = 1440,
+   1496 com os vãos). Elas quebravam em cascata: abaixo de 1440 a coluna
+   de colocação descia, abaixo de 1100 a ARENA INTEIRA saía da tela — e a
+   arena é o objeto da aposta. O layout degradava por amputação do centro.
+
+   Agora são três zonas de 300 + 430 + 340 = 1070 (1098 com os vãos), o
+   que cabe em 1100. Abaixo disso viram uma coluna, na ordem em que o
+   jogador precisa delas — arena, lutadores, aposta —, e a arena ganha
+   teto de altura para que a lista comece dentro da tela.
+   =================================================================== */
+.app{display:grid;gap:14px;width:100%;max-width:1560px;margin:0 auto;
+  grid-template-columns:minmax(250px,1fr) minmax(360px,1.35fr) minmax(300px,1.15fr);
+  grid-template-areas:"acao arena lista";align-items:start}
+/* TETO DE ALTURA NA ARENA. O canvas 3:4 em 430px de largura dá 573px, e com
+   HUD, ticker e botões a coluna do meio passava de 700 — quase o dobro das
+   outras duas. O vazio que sobrava embaixo delas era o desequilíbrio, não
+   falta de conteúdo. */
+/* O canvas CRESCE com a altura disponível em vez de ficar travado. Ele estava
+   fixo em 427px de largura mesmo com 800px de sobra em 1920, e nas telas baixas
+   era CORTADO na vertical — o jogador perdia a faixa de baixo do campo durante
+   os 30 s em que assistir é a única coisa a fazer. */
+#arena{max-height:min(72vh,760px);margin:0 auto}
+.zona{min-width:0;display:flex;flex-direction:column;gap:10px}
+.zona.acao{grid-area:acao}
+.zona.arena{grid-area:arena}
+.zona.lista{grid-area:lista}
+
+/* Uma coluna. A ordem é a da decisão: ver a arena, escolher o lutador,
+   definir o valor. As fichas ficam logo abaixo da arena — desfazer e
+   reajustar não podem exigir rolagem. */
 @media (max-width:1000px){
-  .app{flex-direction:column;align-items:center}
-  .col{width:min(430px,100%)}
+  .app{grid-template-columns:min(430px,100%);
+       grid-template-areas:"arena" "acao" "lista";justify-content:center}
+  /* teto de altura: sem ele o canvas 3:4 empurra tudo para fora da tela */
+  #arena{max-height:42vh}
+}
+@media (max-width:520px){ #arena{max-height:34vh} }
+
+/* ---- FAIXA DE ESTADO ----
+   Fixa no topo. Carrega as três respostas mais perecíveis da tela, e é a
+   razão de o relógio ter deixado de ser um sufixo de 7px dentro de um
+   cabeçalho decorativo. */
+/* A FAIXA VESTE OS COSMÉTICOS DO JOGADOR. O banner de batalha de 340px saiu da
+   tela principal — ele respondia zero das cinco perguntas e comia 38% do
+   celular —, mas os dez cenários e oito efeitos do V1.15 não podiam sumir
+   junto: o jogador os escolhe e precisa vê-los. O cenário vira o fundo da
+   faixa, em opacidade baixa, e o efeito veste o nome. O banner inteiro
+   continua no perfil, que é onde alguém de fato o olha. */
+.fa-cena{position:absolute;inset:0;border-radius:12px;overflow:hidden;opacity:.28;
+  pointer-events:none;z-index:-1}
+#faixa{position:sticky;top:8px;z-index:20;display:grid;isolation:isolate;
+  grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;
+  max-width:1560px;margin:0 auto 12px;padding:8px 14px;border-radius:12px}
+.fa-eu{display:flex;align-items:center;gap:8px;min-width:0}
+.fa-eu img{width:34px;height:34px;border-radius:8px;object-fit:contain;
+  image-rendering:pixelated;flex:0 0 34px}
+.fa-eu div{min-width:0;line-height:1.25}
+.fa-eu b{display:block;font-size:.74rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  padding:1px 6px;border-radius:6px}
+.fa-eu span{font-family:var(--px);font-size:.5rem}
+.fa-fase{display:flex;align-items:center;gap:12px;justify-self:center}
+.fa-fase>b{font-family:var(--px);font-size:.72rem;letter-spacing:.08em;white-space:nowrap}
+.fa-cron{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+/* O NÚMERO É GRANDE DE PROPÓSITO, e a barra também: prazo previsível
+   REDUZ ansiedade. Não é urgência artificial — é o contrário dela. */
+#faSeg{font-family:var(--px);font-size:1.05rem;line-height:1}
+.fa-cron i{display:block;width:104px;height:5px;border-radius:3px;overflow:hidden}
+.fa-cron u{display:block;height:100%;width:100%;text-decoration:none;
+  transition:width .25s linear}
+.fa-saldo{justify-self:end;text-align:right;line-height:1.25;white-space:nowrap}
+.fa-saldo b{font-family:var(--px);font-size:.86rem}
+.fa-saldo span{display:block;font-size:.56rem;letter-spacing:.08em}
+.fa-saldo .linkbtn{font-size:.6rem}
+@media (max-width:560px){
+  #faixa{grid-template-columns:auto 1fr;gap:8px;padding:7px 10px}
+  .fa-eu{grid-row:1}
+  .fa-fase{justify-self:end}
+  .fa-saldo{grid-column:1/-1;justify-self:start;text-align:left}
+}
+
+/* ---- TICKER DO LOG ----
+   Duas linhas sob a arena, expansível ao clicar. Ocupava uma coluna
+   inteira de cinco para mostrar texto que rola sozinho. */
+#ticker{max-height:56px;overflow:hidden;transition:max-height .25s;cursor:pointer;
+  border-radius:10px;padding:4px 2px}
+#ticker.aberto{max-height:220px;overflow:auto}
+
 }
 
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
@@ -315,7 +385,23 @@ body{
   border:2px solid #3a465c;border-radius:8px;overflow:hidden}
 #pickBox .ttl{font-family:var(--px);font-size:7px;color:var(--gold);text-align:center;
   padding:8px 6px;border-bottom:1px solid #2c3548}
-#pickList{max-height:min(46vh,300px);overflow-y:auto}
+/* OS DOZE, SEMPRE. O corte em 300px foi o que fez a lista mostrar oito e não
+   dizer que faltavam quatro — quatro lutadores com odd publicada e sem linha
+   clicável. Se a tela for baixa demais, ela rola DENTRO do bloco, e o
+   cabeçalho declara o total. */
+#pickList{max-height:none;overflow:visible}
+@media (max-height:760px){ #pickList{max-height:62vh;overflow-y:auto} }
+/* A PROBABILIDADE E A ODD SÃO OS MAIORES NÚMEROS DA LINHA. Mediu-se o
+   contrário: saldo 17px, probabilidade 6px, multiplicador 5px — a interface
+   dizia "o importante é quanto você tem", não "o importante é o preço". */
+.pick .p{margin-left:auto;font-family:var(--px);font-size:.78rem;white-space:nowrap}
+.pick .p i{font-style:normal;font-size:.5rem;opacity:.65;margin-left:3px}
+.pick .o{font-family:var(--px);font-size:.8rem}
+.pick .lim{opacity:.75}
+.pick .pos{flex:0 0 26px;text-align:center;font-family:var(--px);font-size:.56rem}
+.pick .o{flex:0 0 auto}
+.pick .lim{flex:0 0 auto;min-width:74px;text-align:right}
+.pick.viva .n{flex:1}
 .pick{display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;
   border-bottom:1px solid rgba(255,255,255,.05);font-size:.82rem}
 .pick:hover{background:rgba(255,255,255,.07)}
@@ -434,7 +520,8 @@ tr.out td{color:#5d6579;text-decoration:line-through}
 td.od{text-align:right;font-family:var(--px);font-size:8px;color:var(--gold)}
 td.hpc{text-align:right;font-size:.68rem;color:var(--dim);width:42px}
 
-#log{height:300px;min-height:120px;overflow-y:auto;resize:vertical;
+/* No ticker o log não tem altura própria: quem manda é o #ticker. */
+#log{height:auto;max-height:none;overflow:visible;
   background:#0c0f16;border:1px solid var(--line);border-radius:8px;padding:8px;
   font-family:'Consolas',monospace;font-size:.74rem;line-height:1.5}
 #log div{margin-bottom:4px;padding-bottom:4px;border-bottom:1px dashed rgba(255,255,255,.06)}
@@ -797,6 +884,10 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 .linkbtn:hover{text-decoration:underline}
 
 .chips{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+/* A ficha de all-in não é par visual das outras. */
+.chip[data-v="max"]{border-color:rgba(255,77,109,.45)}
+.chip[data-v="max"] b{color:#ffb4a8}
+.chip[data-v="max"].on{background:rgba(255,77,109,.18);border-color:var(--red)}
 .chip{display:flex;flex-direction:column;align-items:center;gap:1px;
   background:var(--panel2);border:1px solid var(--line);border-radius:8px;
   color:var(--txt);padding:6px 2px;cursor:pointer;transition:.15s}
@@ -1390,6 +1481,28 @@ body::after{
 .banner{background:rgba(6,12,22,.92);border:2px solid var(--gold);color:var(--gold);
   border-radius:10px;text-shadow:0 0 10px rgba(var(--goldRGB),.8);
   box-shadow:0 0 24px rgba(var(--goldRGB),.4)}
+
+/* pele da faixa de estado e do ticker (V1.16) */
+#faixa{background:var(--panel);border:1px solid rgba(var(--goldRGB),.35);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  box-shadow:0 6px 20px rgba(0,0,0,.45), 0 0 22px rgba(var(--goldRGB),.10)}
+.fa-eu b{color:var(--txt)}
+.fa-eu span{color:var(--gold)}
+.fa-eu img{background:rgba(0,0,0,.4);border:1px solid var(--line)}
+.fa-fase>b{color:var(--gold);text-shadow:0 0 10px rgba(var(--goldRGB),.7)}
+#faSeg{color:var(--txt);text-shadow:0 0 12px rgba(var(--goldRGB),.6)}
+.fa-cron i{background:rgba(0,0,0,.55);border:1px solid var(--line)}
+.fa-cron u{background:linear-gradient(90deg,var(--gold),var(--neon2));
+  box-shadow:0 0 10px rgba(var(--goldRGB),.8)}
+/* Sob 10 s a barra vira vermelha. É informação, não pressão: o jogador
+   precisa saber que o prazo está no fim para poder DESISTIR a tempo. */
+.fa-cron.curto u{background:var(--red);box-shadow:0 0 10px rgba(255,77,109,.8)}
+.fa-cron.curto ~ #faSeg,#faSeg.curto{color:var(--red)}
+.fa-saldo b{color:var(--gold);text-shadow:0 0 10px rgba(var(--goldRGB),.6)}
+.fa-saldo span{color:var(--dim)}
+#ticker{background:rgba(3,7,14,.72);border:1px solid var(--line);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#ticker #log{border:none;background:none;box-shadow:none;resize:none;max-height:none}
 
 .corner-badge{background:var(--panel);border:1px solid rgba(var(--goldRGB),.4);
   border-radius:10px;
@@ -2262,39 +2375,77 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 </div>
 
 <div id="viewArena" class="view on">
+
+<!-- ===== FAIXA DE ESTADO — fixa, presente em toda largura =====
+     Fase, relógio e saldo. As três perguntas que o apostador faz primeiro
+     ("o que está acontecendo", "quanto falta", "quanto eu tenho") estavam
+     espalhadas por quatro blocos e contradiziam umas às outras. Aqui elas
+     ficam juntas e não saem da tela ao rolar. -->
+<div id="faixa">
+  <div class="fa-cena"></div>
+  <div class="fa-eu">
+    <img id="faAvatar" alt="">
+    <div><b id="faNome" class="bnNome">Treinador</b><span id="faNv">NV 1</span></div>
+  </div>
+  <div class="fa-fase">
+    <b id="phase">—</b>
+    <div class="fa-cron"><span id="faSeg">—</span><i><u id="faBarra"></u></i></div>
+  </div>
+  <div class="fa-saldo">
+    <b id="bal">0</b><span id="balBrl">R$ 0,00</span>
+    <button class="linkbtn" id="btnWallet">carteira →</button>
+  </div>
+</div>
+
 <div class="app">
 
-  <!-- ===== COLUNA: BANNER DO TREINADOR ===== -->
-  <div class="col bn">
-    <div id="battleBanner"></div>
-  </div>
-
-  <!-- ===== COLUNA ESQUERDA: carteira + odds ===== -->
-  <div class="col">
-    <div class="card">
-      <h3>Carteira <span id="phase" style="color:var(--gold)">—</span></h3>
-      <div class="wallet"><b id="bal">0</b><span>💵 PokéCash</span></div>
-      <div class="walletSub"><span id="balBrl">R$ 0,00</span>
-        <button class="linkbtn" id="btnWallet">Carteira e histórico →</button></div>
+  <!-- ===== ZONA AÇÃO — o que o jogador FAZ agora =====
+       Na aposta: fichas e confirmação. Na luta: o seu lutador.
+       É o mesmo espaço em dois modos, porque durante a luta os controles de
+       aposta estão mortos e a única pergunta viva é "eu ainda estou nessa?". -->
+  <div class="zona acao">
+    <div class="card" id="cardAposta">
+      <h3>Sua aposta</h3>
       <div class="chips" id="chipRow"></div>
-      <div class="customBet">
-        <span class="cb-cur">💵</span>
-        <input type="number" id="betCustom" min="50" step="10" placeholder="valor personalizado (mín. 50)">
+      <div class="row" style="margin-top:6px">
+        <input type="number" id="betCustom" min="50" step="10" placeholder="outro valor (mín. 50)">
         <button class="btn" id="btnCustomBet">Usar</button>
       </div>
       <div class="tiny" id="chipHint"></div>
-      <div id="betInfo">Escolha um lutador na arena durante a fase de apostas.</div>
-      <div class="row" style="margin-top:8px"><button class="btn" id="btnTopUp">🔧 +1.000 (teste rápido)</button></div>
+      <div id="betInfo">Escolha o valor aqui e o lutador na lista.</div>
     </div>
 
-    <div class="card">
-      <h3>Odds ao vivo <span id="oddNote" style="color:var(--dim)">—</span></h3>
-      <table><tbody id="oddsBody"></tbody></table>
+    <!-- Os controles da rodada moram na zona de AÇÃO, que é o que eles são.
+         Ficavam sob o canvas, o que empurrava a coluna do meio para quase o
+         dobro da altura das outras duas — o vazio que sobrava embaixo delas
+         era esse desequilíbrio. -->
+    <div class="card" id="cardControles">
+      <div class="row">
+        <button class="btn pri" id="btnStart">Iniciar rodada</button>
+        <button class="btn" id="btnAuto">Auto: ON</button>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <button class="btn" id="btnSound" style="flex:0 0 46px" title="Som">🔊</button>
+        <input type="range" id="vol" min="0" max="1" step="0.02" value="0.5" title="volume">
+      </div>
+    </div>
+
+    <!-- O log virou TICKER de duas linhas, que crescem ao clicar. Ele ocupava
+         uma coluna inteira de cinco para mostrar texto que rola sozinho; sob a
+         arena ficava cortado pela borda inferior da tela. -->
+    <div id="ticker" title="clique para expandir">
+      <div id="log"><div class="l-sys">&gt; aguardando…</div></div>
+    </div>
+
+    <!-- só aparece durante a luta -->
+    <div class="card" id="cardMeu" hidden>
+      <h3>Seu lutador</h3>
+      <div id="meuLutador"></div>
     </div>
   </div>
 
-  <!-- ===== CENTRO: arena ===== -->
-  <div class="stage">
+  <!-- ===== ZONA ARENA — o objeto da aposta. Nunca sai da tela. ===== -->
+  <div class="zona arena">
     <div id="hud"></div>
     <div id="arena">
       <canvas id="mapCanvas" width="300" height="400"></canvas>
@@ -2308,54 +2459,19 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <div id="koToast"></div>
       <div id="overlay"><div class="banner">carregando…</div></div>
     </div>
-    <div class="row">
-      <button class="btn pri" id="btnStart">Iniciar rodada</button>
-      <button class="btn" id="btnAuto">Auto: ON</button>
-      <button class="btn" id="btnSound" style="flex:0 0 46px" title="Som">🔊</button>
-    </div>
-    <div class="row" style="gap:8px;padding:0 2px">
-      <span style="font-size:.7rem;color:var(--dim);white-space:nowrap">🎵 volume</span>
-      <input type="range" id="vol" min="0" max="1" step="0.02" value="0.5">
-    </div>
-
-    <!-- trilha da batalha: começa na contagem regressiva -->
     <audio id="bgm" src="battle-theme.mp3" loop preload="auto"></audio>
   </div>
 
-  <!-- ===== COLUNA DIREITA: log ===== -->
-  <div class="col">
-    <div class="card">
-      <h3>Log da batalha <span id="clock" style="color:var(--dim)">0.0s</span></h3>
-      <div id="log"><div class="l-sys">&gt; aguardando…</div></div>
-      <div class="tiny">Arraste o canto inferior direito para aumentar a caixa.</div>
-    </div>
-    <div class="card">
-      <h3>Dev</h3>
-      <div class="row" style="justify-content:space-between;font-size:.75rem">
-        <span>Velocidade do replay</span><b id="spdVal">1.0x</b>
-      </div>
-      <input type="range" id="spd" min="0.4" max="3" step="0.1" value="1">
-      <div class="tiny">Controle local de teste. Em produção o relógio é do servidor —
-      todo mundo vê a mesma coisa no mesmo instante. Elenco: sorteado a cada rodada
-      dentre os 76 de Kanto.</div>
-    </div>
-  </div>
-
-  <!-- ===== COLUNA: ABATES + COLOCAÇÃO ===== -->
-  <div class="col kf">
-    <div class="card">
-      <h3>Abates <span id="kfTotal" style="color:var(--dim)">0</span></h3>
-      <div id="kfList"></div>
-      <div class="tiny" id="kfNote">O ranking zera a cada nova rodada.</div>
-    </div>
-    <!-- A colocação fica EMPILHADA na mesma coluna, e não numa quinta.
-         A v1.0 do porte lhe deu coluna própria; com as quatro que já temos
-         (carteira/odds, arena, log, abates) a quinta empurraria a linha para
-         além da largura e o corpo da página passaria a rolar na horizontal. -->
-    <div class="card">
-      <h3>Colocação <span id="pdTotal" style="color:var(--dim)">—</span></h3>
-      <div id="pdList"></div>
-      <div class="tiny" id="pdNote">Do 1º ao 12º, atualizado conforme caem.</div>
+  <!-- ===== ZONA LUTADORES — UMA lista, dois modos =====
+       Na aposta: probabilidade, odd e limite — e é clicável.
+       Na luta: posição, vida e abates.
+       Eram três listas concorrentes (odds, escolha, abates) mostrando os mesmos
+       doze lutadores, e a mais visível não era a clicável. -->
+  <div class="zona lista">
+    <div class="card" id="cardLista">
+      <h3><span id="listaTtl">Quem vence?</span> <span id="listaSub">—</span></h3>
+      <div id="pickList"></div>
+      <div class="tiny" id="oddNote">—</div>
     </div>
   </div>
 
@@ -2388,6 +2504,9 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 
       <h3>Estatísticas</h3>
       <div id="admEstat" class="admBloco"></div>
+
+      <h3>Dev</h3>
+      <div id="admDev" class="admBloco"></div>
     </div>
   </div>
 </div>
@@ -2470,6 +2589,10 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <div class="pick-grid" id="pickTrainer"></div>
       <div class="sec-t">Avatar — Pokémon</div>
       <div class="pick-grid" id="pickMon"></div>
+      <div class="sec-t">Banner de batalha</div>
+      <!-- Prévia em tamanho real do que os cosméticos abaixo montam. Ele saiu
+           da tela principal no V1.16 e vive aqui, que é onde alguém o olha. -->
+      <div id="battleBanner" style="margin-bottom:12px"></div>
       <div class="sec-t">Banner de batalha — cenário</div>
       <div class="pick-grid" id="pickCena"></div>
       <div class="sec-t">Banner de batalha — efeito de nome</div>
@@ -2562,6 +2685,7 @@ import { CX, CY, GRASS_RX, GRASS_RY, H, W, drawMap, entryRings, isleNorm, puffs 
 import { ARENAS, aplicarArena } from './modules/arenas.mjs';
 import { renderBattleBanner } from './modules/banner.mjs';
 import { admChecarHash } from './modules/adm.mjs';
+import { atualizarEu } from './modules/faixa.mjs';
 import { MOVE_FX, bursts, drawFx, fxSheet, fxs, later, pushFx, sched, shots } from './modules/efeitos.mjs';
 import { hideWeatherBadge, initWeatherFx, showWeatherBadge } from './modules/clima.mjs';
 
@@ -2717,7 +2841,11 @@ addEventListener('hashchange', admChecarHash);
   /* Um cenário antes do primeiro quadro. `drawMap` não desenha sem cenário
      aplicado, e o boot pinta o mapa antes de a primeira rodada existir. */
   aplicarArena(ARENAS[0]);
+  atualizarEu();
   renderBattleBanner();
+  /* O log virou ticker de duas linhas; um clique abre. Ele ocupava uma coluna
+     inteira de cinco para mostrar texto que rola sozinho. */
+  $('#ticker')?.addEventListener('click', () => $('#ticker').classList.toggle('aberto'));
   drawMap(0);
   await newRound();
   $('#boot').remove();

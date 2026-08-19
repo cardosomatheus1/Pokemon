@@ -370,10 +370,15 @@ export async function rodar() {
     adm.admAbrir();
     const linhas = [...document.querySelectorAll('#admMargem .admLinha')].map(l => l.textContent);
     return {
-      colocacaoLinhas: document.querySelectorAll('#pdList .pdrow').length,
-      colocacaoPos: [...document.querySelectorAll('#pdList .pdrow .pos, #pdList .pdrow .tro')].length,
-      bannerCena: document.querySelector('#battleBanner .bnCena')?.className ?? '',
-      bannerNome: document.querySelector('#battleBanner .bnNome')?.className ?? '',
+      /* A colocação vive na LISTA ÚNICA desde o V1.16 — eram três listas dos
+         mesmos doze, e a mais visível não era a clicável. */
+      colocacaoLinhas: document.querySelectorAll('#pickList .pick').length,
+      colocacaoPos: [...document.querySelectorAll('#pickList .pick .p')].length,
+      /* Os cosméticos vestem a FAIXA desde o V1.16: o banner de 340 px saiu da
+         tela principal e o cenário e o efeito de nome foram para lá. O banner
+         inteiro continua no perfil. */
+      bannerCena: document.querySelector('#faixa .fa-cena')?.className ?? '',
+      bannerNome: document.querySelector('#faNome')?.className ?? '',
       admAberto: document.querySelector('#viewAdm')?.classList.contains('on') ?? false,
       admMargem: linhas.join(' | '),
       margemRegistro: S.odds ? S.odds.margemConfigurada : null,
@@ -436,7 +441,9 @@ export async function rodar() {
      prova que a fase virou, o relógio andando prova que o replay consome a
      linha do tempo de verdade. */
   if (aoVivo) await pg.waitForTimeout(4000);
-  const relogio = await pg.evaluate(() => document.querySelector('#clock')?.textContent);
+  /* O relógio vive na faixa fixa desde o V1.16 — era um sufixo de 7 px dentro
+     do canvas. */
+  const relogio = await pg.evaluate(() => document.querySelector('#faSeg')?.textContent);
 
   /* --- Q5 do V1.15: O QUADRO DE COLOCAÇÃO ESTÁ VIVO, e não só correto no fim.
      A conferência do fim da rodada (`conferirColocacao`) recalcula tudo dos
@@ -456,8 +463,10 @@ export async function rodar() {
      que está sendo testado: o defeito S89 tira a ordem de quedas do gancho sem
      tocar na contagem de abates, então o placar continua andando enquanto o
      quadro de colocação congela. Esperar pelo próprio quadro seria circular. */
+  /* Sinal de queda que sobrevive à fusão das listas (V1.16): linhas marcadas
+     como caídas dentro da lista única. `#kfTotal` deixou de existir. */
   const houveQueda = aoVivo && await pg.waitForFunction(
-    () => (+(document.querySelector('#kfTotal')?.textContent || 0)) > 0,
+    () => document.querySelectorAll('#pickList .pick.fechado').length > 0,
     { timeout: 45000, polling: 400 }).then(() => true).catch(() => false);
 
   const colocacaoViva = await pg.evaluate(async () => {
@@ -465,8 +474,8 @@ export async function rodar() {
     return {
       fase: S.state,
       mortos: (S.ents || []).filter(e => !e.alive).length,
-      caidosNoQuadro: document.querySelectorAll('#pdList .pdrow.caiu').length,
-      linhas: document.querySelectorAll('#pdList .pdrow').length,
+      caidosNoQuadro: document.querySelectorAll('#pickList .pick.fechado').length,
+      linhas: document.querySelectorAll('#pickList .pick').length,
       contagemDepois: S.profile.betsCount,
     };
   }).catch(e => ({ erro: String(e).split('\n')[0] }));

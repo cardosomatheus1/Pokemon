@@ -5,6 +5,7 @@
 import { $ } from './dom.mjs';
 import { CONF } from './motor.mjs';
 import { S } from './estado.mjs';
+import { relogio } from './faixa.mjs';
 import { enfeite } from './sorte.mjs';
 import { applyEvent } from './eventos.mjs';
 import { drawFx, sched } from './efeitos.mjs';
@@ -21,10 +22,13 @@ function frame(now){
   const dt = raw * (S.state === 'fighting' ? S.speed : 1);
   S.clock += raw;
 
+  /* O relógio vive na faixa fixa desde o V1.16, e é atualizado a cada quadro
+     nas fases em que ele significa alguma coisa. Antes era um sufixo de 7px
+     dentro de um cabeçalho, dentro do canvas — ver L-029. */
+  if (S.state === 'betting' || S.state === 'fighting') relogio();
+
   if (S.state === 'betting'){
-    const left = Math.max(0, CONF.BET_WINDOW - S.clock);
-    const t = $('#pickTtl'); if (t) t.textContent = `QUEM VENCE? — ${left.toFixed(0)}s`;
-    if (left <= 0) startFight();
+    if (CONF.BET_WINDOW - S.clock <= 0) startFight();
   }
   else if (S.state === 'countdown'){
     const c = $('#count');
@@ -47,7 +51,8 @@ function frame(now){
   }
   else if (S.state === 'fighting'){
     S.battleT += dt;
-    $('#clock').textContent = S.battleT.toFixed(1) + 's';
+    /* o relógio da batalha vive na faixa desde o V1.16 */
+    const c = $('#clock'); if (c) c.textContent = S.battleT.toFixed(1) + 's';
     while (S.evPtr < S.battle.events.length && S.battle.events[S.evPtr].t <= S.battleT){
       applyEvent(S.battle.events[S.evPtr++]);
     }

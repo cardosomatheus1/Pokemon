@@ -13,6 +13,7 @@ import { dirOf } from './sprites.mjs';
 import { drawFrame, floatText, koToast, selRing, setAnim, uiLayer, updatePlate } from './rodada.mjs';
 import { marcarAbate } from './killfeed.mjs';
 import { refreshOddsTable } from './odds.mjs';
+import { renderMeuLutador } from './meu-lutador.mjs';
 import { sfx } from './audio.mjs';
 
 /* ------------------------- APLICAR UM EVENTO ------------------------- */
@@ -146,6 +147,7 @@ function aplicarDano(ev, A, D, ang){
     marcarAbate(ev.a, ev.d);      // crédito ao atacante deste evento
     sfx('ko');
     refreshOddsTable();
+    renderMeuLutador();
   }
 }
 

@@ -72,6 +72,11 @@ const CAMADA = {
   'clima.mjs': 2,
   'odds.mjs': 2,
   'killfeed.mjs': 2,
+  /* O cartão do seu lutador durante a luta. Lê estado, colocação e sprites e
+     devolve HTML — nada acima da camada 1. Fica em 2 e não em 4 porque
+     `eventos.mjs` (3) o redesenha a cada evento do replay, e a dependência
+     precisa apontar para baixo. */
+  'meu-lutador.mjs': 2,
   /* Pintura das arenas: usa a geometria do render para desenhar, então fica
      ACIMA dele. A direção importa — o render recebe o cenário por injeção e
      não importa o catálogo, senão os dois se fechariam num ciclo. */
@@ -90,6 +95,9 @@ const CAMADA = {
      da rodada, a aposta é onde o dinheiro do jogador encontra o teto do §4.4.6.
      Mesma camada — `fases` chama `aposta`, nunca o contrário. */
   /* Vitrine da rodada: lê perfil e estado, devolve HTML. Não decide nada. */
+  /* A faixa de estado: lê fase, relógio e perfil e escreve no topo da tela.
+     Não decide nada da rodada. */
+  'faixa.mjs': 4,
   'banner.mjs': 4,
   /* Painel de ADM: lê tudo e escreve na configuração dele. Camada mais alta,
      porque toca perfil, carteira, telemetria e navegação. */

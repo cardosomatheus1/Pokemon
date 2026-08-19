@@ -105,8 +105,11 @@ async function tela(nome, largura, altura, roteiro) {
 
 const emLuta = async pg => {
   await pg.$eval('#btnStart', el => el.click()).catch(() => {});
-  await pg.waitForFunction(() => (+(document.querySelector('#kfTotal')?.textContent || 0)) >= 2,
-    { timeout: 60000, polling: 400 }).catch(() => avisos.push('a luta não chegou a dois abates'));
+  /* Espera por QUEDAS NA LISTA, e não por um placar de abates: o V1.16 fundiu
+     as três listas numa só e `#kfTotal` deixou de existir. Sinal que sobrevive
+     à fusão: linhas marcadas como caídas dentro da própria lista. */
+  await pg.waitForFunction(() => document.querySelectorAll('#pickList .pick.fechado').length >= 2,
+    { timeout: 60000, polling: 400 }).catch(() => avisos.push('a luta não chegou a duas quedas'));
   await pg.waitForTimeout(400);
 };
 

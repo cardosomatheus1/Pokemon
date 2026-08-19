@@ -231,11 +231,22 @@ $('#vol').oninput = e => {
   S.musicVol = +e.target.value;
   aplicarVolume(S.musicVol);
 };
-$('#spd').oninput = e => { S.speed = +e.target.value; $('#spdVal').textContent = S.speed.toFixed(1) + 'x'; };
+/* O controle de velocidade do replay saiu da tela do jogador no V1.16 e vive no
+   painel de ADM. Ele mostrava a um apostador que a velocidade da luta é
+   ajustável localmente, na mesma tela em que se aposta — e o `?.` existe porque
+   o elemento só está no DOM quando o painel está aberto. */
+const ligarVelocidade = () => {
+  const el = $('#spd'); if (!el) return;
+  el.oninput = e => { S.speed = +e.target.value; $('#spdVal').textContent = S.speed.toFixed(1) + 'x'; };
+};
+ligarVelocidade();
 
-$('#btnTopUp').onclick = () => { creditarCompra(1000, 'dev'); atualizarSaldo(); $('#betInfo').textContent = `+${CUR} 1.000 de teste.`; };
+/* O "+1.000 de teste" saiu da tela do jogador no V1.16 e vive no painel de ADM.
+   Um botão que cria dinheiro do nada, ao lado do saldo, é o oposto do que a
+   proveniência do §5.5 promete — mesmo sendo moeda simulada. */
 
 export {
+  ligarVelocidade,
   APOSTA_MIN,
   DEPOSIT_PACKAGES,
   atualizarFichas,

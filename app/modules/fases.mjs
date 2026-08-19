@@ -32,15 +32,25 @@ import { creditarRecompensa, pagarAposta, perderAposta } from './banco.mjs';
 import { updatePlate } from './eventos.mjs';
 import { placeBet } from './aposta.mjs';
 import { renderBattleBanner } from './banner.mjs';
+import { atualizarEu, atualizarFase, relogio } from './faixa.mjs';
+import { renderMeuLutador } from './meu-lutador.mjs';
 import { margemConfigurada } from './adm.mjs';
 import { colocacaoDe, ordemDeQuedas } from './colocacao.mjs';
 
 /* ------------------------- FASES ------------------------- */
 function setPhase(s){
   S.state = s; S.clock = 0;
-  $('#phase').textContent =
-    s === 'betting' ? 'APOSTAS' : s === 'countdown' ? 'PREPARAR' :
-    s === 'fighting' ? 'AO VIVO' : s === 'result' ? 'RESULTADO' : '—';
+  /* A fase é declarada num lugar só, na faixa fixa. Antes o jogador tinha de
+     sintetizá-la de quatro pistas espalhadas e contraditórias — ver L-029. */
+  atualizarFase();
+  relogio();
+  renderMeuLutador();   // a zona de ação troca de modo junto com a fase
+  refreshOddsTable();   // e a lista de lutadores também
+  /* Controle morto não fica na tela ligado. Durante a luta não há rodada para
+     iniciar, e um botão aceso sugerindo que há é o mesmo tipo de contradição
+     que fazia a fase ter quatro pistas discordantes (L-029). */
+  const iniciar = $('#btnStart');
+  if (iniciar) iniciar.disabled = (s === 'countdown' || s === 'fighting');
 }
 
 /* newRound() é assíncrona (espera o Monte Carlo). Sem essa trava, o
@@ -126,17 +136,20 @@ async function newRound(){
   refreshOddsTable();
   S.ents.forEach(updatePlate);
   resetKillfeed();          // placar zerado com a pool nova
-  renderBattleBanner();     // vitrine do jogador, sem aposta ainda
+  atualizarEu();            // avatar e nível na faixa
+  renderBattleBanner();     // vitrine do jogador no perfil
 
   log(`<span class="l-sys">&gt; nova rodada · commit ${S.commit.commit.slice(0,16)}… · 12 sorteados de 76</span>`);
   emitir('round_viewed', { commit: S.commit.commit });
 
-  overlay.innerHTML = `
-    <div class="banner">Escolha seu lutador!</div>
-    <div id="pickBox">
-      <div class="ttl" id="pickTtl">QUEM VENCE? — ${CONF.BET_WINDOW}s</div>
-      <div id="pickList">${buildPickList()}</div>
-    </div>`;
+  /* O OVERLAY NÃO REPETE MAIS A LISTA. Ele mostrava oito dos doze lutadores,
+     por cima da arena e sem dizer que faltavam quatro, enquanto a lista
+     completa ficava ao lado sem ser clicável — a mais visível não era a
+     acionável. Agora ele só diz o que fazer, e some rápido. */
+  /* UMA instrução, e ela aponta para onde a lista de fato está. Havia duas
+     frases discordantes: o painel dizia "escolha na arena", o canvas dizia
+     "escolha na lista →" — e em uma coluna a seta apontava para o lado errado. */
+  overlay.innerHTML = `<div class="banner">Escolha seu lutador na lista de odds</div>`;
   $('#pickList').addEventListener('click', ev => {
     const row = ev.target.closest('.pick'); if (!row) return;
     placeBet(+row.dataset.i, row);

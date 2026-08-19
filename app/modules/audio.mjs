@@ -77,9 +77,12 @@ let bgmSrcTry = 0;
 bgm.addEventListener('error', () => {
   bgmSrcTry++;
   if (bgmSrcTry < BGM_SOURCES.length){ bgm.src = BGM_SOURCES[bgmSrcTry]; bgm.load(); }
-  else log(`<span class="l-sys">⚠️ trilha não encontrada — coloque <b>battle-theme.mp3</b> na mesma pasta do index.html. Os efeitos de combate seguem normais.</span>`);
+  /* O aviso de trilha ausente saiu do log do jogador no V1.16: era instrução de
+     instalação dirigida a um desenvolvedor, na mesma tela em que se pede
+     confiança nas odds — e aparecia truncado no ticker de duas linhas. Quem
+     precisa dele é quem roda o projeto, e para isso o console serve. */
+  else console.info('battle-theme.mp3 ausente — os efeitos de combate seguem normais.');
 });
-if (bgm.error) bgm.dispatchEvent(new Event('error'));
 
 /* o loop nativo do <audio> falha quando o servidor não manda Range e o
    `duration` vira Infinity; este é o cinto de segurança */

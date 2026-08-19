@@ -16,6 +16,7 @@ import { ADM_PIN, CHAVE_ADM, MARGEM_MAX, lerConf, margemDaRodada } from './adm-d
 import { goView } from './navegacao.mjs';
 import { creditarCompra, reiniciarCarteira, saldo, ultimoDiagnostico } from './banco.mjs';
 import { atualizarSaldo } from './controles.mjs';
+import { ligarVelocidade } from './carteira.mjs';
 import { PROFILE_DEFAULT, loadProfile, nivelDe, saveProfile } from './perfil.mjs';
 import { alternar, desbloquear, gifShinyAtivo, skinShinyAtiva, vagasNoNivel } from './shiny-dados.mjs';
 import { dexImg } from './sprites.mjs';
@@ -56,7 +57,7 @@ export function admChecarHash(){
 
 export function admRender(){
   if (!$('#admCorpo')) return;
-  admSaldos(); admMargem(); admOdds(); admShinyLab(); admEstat();
+  admSaldos(); admMargem(); admOdds(); admShinyLab(); admEstat(); admDev();
 }
 
 const pct = v => (v * 100).toFixed(2) + '%';
@@ -171,6 +172,21 @@ function admShinyLab(){
     }
     saveProfile(S.profile); admRender();
   });
+}
+
+/* O QUE SAIU DA TELA DO JOGADOR NO V1.16 e mora aqui: velocidade do replay,
+   diagnóstico de trilha e o commit da rodada. Nada disso é para quem aposta —
+   é instrução de desenvolvedor e hash de build, e ocupava a quarta coluna de
+   cinco numa tela que pede confiança em números. */
+function admDev(){
+  const el = $('#admDev'); if (!el) return;
+  el.innerHTML =
+    linha('Velocidade do replay', `${(S.speed ?? 1).toFixed(1)}x`, 'só local; em produção o relógio é do servidor') +
+    `<input type="range" id="spd" min="0.4" max="3" step="0.1" value="${S.speed ?? 1}" style="width:100%">
+     <div class="tiny" style="margin-top:4px">Controle local de teste. Em produção todo mundo vê a
+       mesma coisa no mesmo instante.</div>
+     <div class="admLinha"><span>Replay</span><b id="spdVal">${(S.speed ?? 1).toFixed(1)}x</b></div>`;
+  ligarVelocidade();
 }
 
 function admEstat(){

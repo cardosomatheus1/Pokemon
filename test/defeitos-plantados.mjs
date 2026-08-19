@@ -46,6 +46,7 @@ const PROGR  = 'app/modules/progressao.mjs';
 const TEMA   = 'app/modules/tema.mjs';
 const ARENAD = 'app/modules/arenas-dados.mjs';
 const ANCORAS= 'test/ancoras.mjs';
+const ODDS   = 'app/modules/odds.mjs';
 const APOSTA = 'app/modules/aposta.mjs';
 const EXPOENG= 'engine/exposicao.mjs';
 const KILLF  = 'app/modules/killfeed.mjs';
@@ -490,10 +491,18 @@ export const DEFEITOS = [
     de:'    if (ev.storm) { for (const h of ev.hits) if (h.ko) poe(h.i); continue; }',
     para:'    if (ev.storm) continue;' },
 
-  { id:'S89', arquivo:KILLF, nome:'a ordem de quedas deixa de vir do gancho do abate',
-    real:'"a conferência do fim corrige" — e o quadro ao vivo mostra outra coisa a rodada inteira',
-    de:'  if (vitima !== undefined && vitima !== null && !ordemQuedas.includes(vitima))\n    ordemQuedas.push(vitima);\n',
-    para:'' },
+  /* REALVADO NO V1.16, e o motivo é o desenho ter melhorado. O defeito original
+     tirava a ordem de quedas do gancho do abate, contando com a conferência do
+     fim para "corrigir" — mas a lista única passou a derivar a colocação
+     diretamente dos eventos, e o alvo deixou de existir.
+     O risco NOVO é pior: derivar dos eventos INTEIROS em vez de só os já
+     reproduzidos faz a lista mostrar a colocação FINAL durante a luta. Não é
+     desalinhamento de tela — é vazar o vencedor antes da hora, no produto cujo
+     §4.5 existe para provar que o resultado não é conhecido antes. */
+  { id:'S89', arquivo:ODDS, nome:'a colocação ao vivo revela o resultado final',
+    real:'`slice` esquecido numa simplificação — e a lista entrega o vencedor no primeiro segundo',
+    de:'  const ordem = ordemDeQuedas(S.battle ? S.battle.events.slice(0, S.evPtr) : []);',
+    para:'  const ordem = ordemDeQuedas(S.battle ? S.battle.events : []);' },
 
   /* ---------- V1.15: cosméticos ---------- */
 

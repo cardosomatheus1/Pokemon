@@ -95,8 +95,8 @@ function renderPodio(){
   }).join('');
 
   const caidos = ordemQuedas.length;
-  $('#pdTotal').textContent = fim ? 'encerrada' : (caidos ? caidos + ' fora' : 'em disputa');
-  $('#pdNote').innerHTML = fim
+  const tot = $('#pdTotal'); if (tot) tot.textContent = fim ? 'encerrada' : (caidos ? caidos + ' fora' : 'em disputa');
+  const nota = $('#pdNote'); if (nota) nota.innerHTML = fim
     ? `Campeão: <b style="color:var(--gold)">${S.fighters[rank[0].i]?.n ?? '—'}</b>.`
     : 'Do 1º ao 12º, atualizado conforme caem.';
 }
@@ -125,6 +125,11 @@ function conferirColocacao(){
 /* Ordena por abates (desc); empate resolve por quem marcou primeiro, e
    depois pela posição na pool — assim a lista não fica "dançando" a
    cada render entre lutadores empatados. */
+/* Abates de UM lutador. Exposto porque a lista de lutadores (odds.mjs) mostra a
+   coluna de abates durante a luta, e o placar continua sendo daqui — não existe
+   uma segunda contagem do outro lado. */
+const abatesDe = i => kills[i] || 0;
+
 function rankingAbates(){
   return S.fighters.map((f, i) => ({f, i, k: kills[i] || 0}))
     .sort((a, b) => b.k - a.k
@@ -150,9 +155,9 @@ function renderKillfeed(destacar){
   }).join('');
 
   const total = kills.reduce((a, b) => a + b, 0);
-  $('#kfTotal').textContent = total + (killsArena ? ' +' + killsArena + ' arena' : '');
+  const tot = $('#kfTotal'); if (tot) tot.textContent = total + (killsArena ? ' +' + killsArena + ' arena' : '');
 
-  $('#kfNote').innerHTML = killsArena
+  const nota = $('#kfNote'); if (nota) nota.innerHTML = killsArena
     ? `<b>${killsArena}</b> queda(s) pela tempestade não entram no ranking — não têm autor.`
     : 'O ranking zera a cada nova rodada.';
 
@@ -191,7 +196,7 @@ function conferirAbates(){
    quando as apostas fecharam. Mostra o que rendeu o quê. */
 function mostrarPodio(){
   const rank = rankingAbates().filter(r => r.k > 0).slice(0, 3);
-  const box = $('#kfList');
+  const box = $('#kfList'); if (!box) return;
   if (!box || !rank.length) return;
   const oddDe = i => { const o = S.odds.lutadores.find(x => x.idx === i); return o ? 'x' + o.odd.toFixed(2) : '—'; };
   box.insertAdjacentHTML('afterend', `
@@ -210,6 +215,7 @@ function mostrarPodio(){
 function limparPodio(){ const p = $('#kfPodium'); if (p) p.remove(); }
 
 export {
+  abatesDe,
   conferirAbates,
   conferirColocacao,
   limparPodio,
