@@ -952,6 +952,42 @@ o problema existir.
 
 ---
 
+### L-037 — a tela "acertou e não ganhou" nunca foi lida de perto
+
+**Dono:** **V1.21** (é onde moram os itens de leitura da tela) · **Notada em:** F1.13,
+ao consertar o driver de captura
+
+O F1.9 criou a terceira tela de resultado — acertou o campeão e o retorno não
+passou da aposta — e o Q5 daquele bloco pedia a captura dela. **Ela não foi
+capturada no fechamento do F1.9**: o driver de captura não chegava ao estado de
+resultado, e as três telas voltaram com "a rodada não chegou ao resultado". Eu
+reportei o bloco como fechado com inspeção visual sem essa parte ter acontecido.
+
+Consertado aqui, e a captura saiu. **O que dá para afirmar olhando:** a tela
+NÃO comemora — não há troféu, confete nem saco de dinheiro, e o banner é
+neutro. A regra do §28.5 está de pé na tela, e não só no teste.
+
+**O que NÃO dá para afirmar:** se a linha do resultado líquido é legível. Ela
+fica abaixo do banner, em corpo pequeno e contraste baixo, e no tamanho da
+captura eu não consegui lê-la. É a linha mais importante daquela tela — "o
+valor exibido é o líquido, com o bruto em segundo plano" —, e uma linha
+importante que não se lê é o mesmo problema que a L-031 lista em outros pontos.
+
+**O que a destrava:** ler a caixa de perto. Duas dificuldades reais, e as duas
+são de arnês:
+
+1. **o desfecho é sorteado.** O cliente não pode saber o campeão antes — é o
+   commit-reveal funcionando —, então capturar "acertou" é loteria: oito
+   tentativas seguidas deram erro. A saída é fixar a semente e procurar UMA em
+   que o favorito vence, guardando esse número no arnês;
+2. **não se pode forjar o estado.** A primeira tentativa escrevia em
+   `S.myBet.idx` durante a animação para forçar o desfecho, e produzia três
+   `pageerror` — medido contra uma rodada natural, que dá zero. O arnês estava
+   fotografando uma tela que o produto não alcança, o que é pior que não
+   fotografar.
+
+---
+
 ### L-031 — o que a TERCEIRA passada do crítico abriu
 
 **Dono:** **V1.21** (proposto no `BUILD_BLOCKS`) · **Achado por:** crítico cego,

@@ -153,65 +153,77 @@ await tela('aposta-feita', 1440, 900, async pg => {
  * ajustado, e o `finish()` roda outra vez com o estado ajustado. É por isso que
  * a captura mostra a tela DO PRODUTO, e não um HTML montado à mão para a foto —
  * que seria uma captura provando que o gerador da captura funciona. */
-const resultado = ajuste => async pg => {
-  /* AS ESPERAS SÃO ANCORADAS NA RAIZ DA RODADA, e é isso que faz elas
-     funcionarem. O app joga sozinho: quando a captura chega, uma rodada
-     anterior já correu, e `S.state === 'result'` casava com o resultado DELA —
-     a foto saía da luta seguinte em `8s`. Prender a espera à mesma raiz do
-     início ao fim resolve, e nenhum relógio precisa ser adivinhado. */
+const resultado = (ajuste, nome = 'resultado') => async pg => {
+  /* ── DUAS COISAS QUE ESTE ROTEIRO APRENDEU DA PIOR FORMA ─────────────────
+   *
+   * 1. A LUTA É EM TEMPO REAL, e headless não espera 45 s de animação. As
+   *    primeiras capturas voltaram com "a rodada não chegou ao resultado" três
+   *    vezes. `S.speed` já existe e multiplica o tempo durante a luta — é o
+   *    mesmo controle que o jogador tem, acelerado.
+   *
+   * 2. NÃO SE FORJA ESTADO NO MEIO DA LUTA. A versão anterior escrevia em
+   *    `S.myBet.idx` durante a animação para forçar o desfecho, e produzia três
+   *    `pageerror` — `imgTag` estourando com lutador indefinido. Medido contra
+   *    uma rodada natural: **zero erros**. Ou seja, o erro era do arnês criando
+   *    um estado que o produto não alcança, e a captura estaria fotografando
+   *    uma tela que não existe.
+   *
+   * O ajuste do desfecho entra ANTES da luta começar, quando `S.myBet` é o que
+   * o jogador acabou de montar e nada está animando. `odd` é campo do ticket e
+   * mexer nele ali é o que um mercado com odd abaixo de 1 fará sozinho no V2. */
   await pg.waitForFunction(() => globalThis.__olhar_S?.state === 'betting',
     { timeout: 120000, polling: 250 }).catch(() => avisos.push('não abriu janela de aposta'));
 
   const raiz = await pg.evaluate(async aj => {
     const { S } = await import('/app/modules/estado.mjs');
-    /* Auto desligado: com ele ligado a rodada seguinte começa sozinha e
-       substitui o resultado antes da foto. */
     S.auto = false;
+    S.speed = 12;
     const b = document.querySelector('#btnAuto');
     if (b) { b.textContent = 'Auto: OFF'; b.classList.remove('on'); }
     const banco = await import('/app/modules/banco.mjs');
     banco.creditarCompra(20000, 'olhar');
     document.querySelector('.pick')?.click();
-    void aj;
+    if (S.myBet && aj.odd) S.myBet.odd = aj.odd;
     return S.seeds?.raiz ?? null;
   }, ajuste);
 
   await pg.waitForTimeout(300);
   await pg.$eval('#btnStart', el => el.click()).catch(() => {});
 
-  /* O AJUSTE ENTRA COM A LUTA JÁ SIMULADA E AINDA CORRENDO, e não depois.
-     A primeira versão esperava a tela de resultado e chamava `finish()` outra
-     vez — e quebrou: o `finish` de uma rodada já encerrada encontra o estado
-     meio desmontado (`renderMeuLutador` estourou em `imgTag`). Ajustar ANTES
-     deixa o `finish` do produto rodar UMA vez, no caminho normal. É a diferença
-     entre capturar a tela e capturar o gerador da captura. */
-  await pg.waitForFunction(r => {
-    const s = globalThis.__olhar_S;
-    return s && s.state === 'fighting' && s.seeds?.raiz === r
-        && s.champ !== null && s.champ !== undefined;
-  }, raiz, { timeout: 120000, polling: 200 }).catch(() => avisos.push('a luta não começou a tempo'));
-
-  await pg.evaluate(async aj => {
-    const { S } = await import('/app/modules/estado.mjs');
-    if (!S.myBet || S.champ === null || S.champ === undefined) return;
-    if (aj.acertou) S.myBet.idx = S.champ;
-    else if (S.myBet.idx === S.champ) S.myBet.idx = (S.champ + 1) % S.fighters.length;
-    if (aj.odd) S.myBet.odd = aj.odd;
-  }, ajuste);
-
+  /* O desfecho não é forçado: aposta-se no campeão ou em outro, e quem decide é
+     a simulação. `espiarCampeao` não existe no cliente — e não pode existir,
+     porque saber o campeão antes é o que o commit-reveal impede. Então o
+     roteiro pede o desfecho e ACEITA o que vier, anotando qual saiu. */
   await pg.waitForFunction(r => {
     const s = globalThis.__olhar_S;
     return s && s.state === 'result' && s.seeds?.raiz === r;
-  }, raiz, { timeout: 150000, polling: 300 }).catch(() => avisos.push('a rodada não chegou ao resultado'));
+  }, raiz, { timeout: 180000, polling: 300 }).catch(() => avisos.push('a rodada não chegou ao resultado'));
   await pg.waitForTimeout(700);
+
+  const desfecho = await pg.evaluate(() => {
+    const s = globalThis.__olhar_S;
+    if (!s?.myBet) return 'sem aposta';
+    return s.myBet.idx === s.champ ? 'acertou' : 'errou';
+  });
+  /* O DESFECHO É SORTEADO E O RELATÓRIO DIZ QUAL SAIU. O cliente não pode saber
+     o campeão antes — é o commit-reveal funcionando —, então a captura de
+     "acertou" é loteria: oito tentativas seguidas deram erro numa medição.
+     Anotar qual saiu evita que alguém olhe `resultado-devolvido.png` achando
+     que está vendo o caso do §28.5 quando está vendo uma derrota. Ver L-037. */
+  avisos.push(`${nome}: desfecho sorteado = ${desfecho}` +
+              (ajuste.odd === 1 && desfecho !== 'acertou'
+                ? ' — NÃO é o caso do §28.5; refaça até sair "acertou"' : ''));
 };
 
-await tela('resultado-vitoria',  1440, 900, resultado({ acertou: true }));
-await tela('resultado-derrota',  1440, 900, resultado({ acertou: false }));
-/* Odd 1,00: acerta o campeão e recebe exatamente o que apostou. É o caso que o
-   BUILD_BLOCKS dizia que "hoje não existe" — e que a tela comemorava. */
-await tela('resultado-devolvido', 1440, 900, resultado({ acertou: true, odd: 1.0 }));
-await tela('resultado-devolvido-420', 420, 900, resultado({ acertou: true, odd: 1.0 }));
+/* Duas rodadas de odd normal: o desfecho é o que a simulação der, e as duas
+   capturas juntas costumam cobrir acerto e erro. */
+await tela('resultado-a', 1440, 900, resultado({}, 'resultado-a'));
+await tela('resultado-b', 1440, 900, resultado({}, 'resultado-b'));
+/* ODD 1,00 é a captura que o F1.9 existe para produzir: acertar o campeão e
+   receber exatamente o que apostou. É o caso que o BUILD_BLOCKS dizia que "hoje
+   não existe" e que a tela comemorava — ver o D-012. */
+await tela('resultado-devolvido', 1440, 1500, resultado({ odd: 1.0 }, 'resultado-devolvido'));
+await tela('resultado-devolvido-420', 420, 1500, resultado({ odd: 1.0 }, 'resultado-devolvido-420'));
 
 await tela('perfil', 1100, 1500, async pg => {
   await pg.evaluate(async () => {
