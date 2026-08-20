@@ -83,6 +83,7 @@ const NAVEG  = 'app/modules/navegacao.mjs';
 const RODADA = 'app/modules/rodada.mjs';
 const SRVLAC = 'server/laco.mjs';
 const SALAC  = 'app/modules/sala.mjs';
+const CONTXT = 'app/modules/conexao-texto.mjs';
 
 export const DEFEITOS = [
   /* Desde o F0.4 a tabela de tipos é DADO DO PACK, não do motor. O defeito é o
@@ -1406,6 +1407,28 @@ export const DEFEITOS = [
     real:'derivar de outra coisa — e o cliente monta uma pool que o settlement não conhece',
     de:"      sementeElenco: derivar(atual.raiz, 'elenco'),",
     para:"      sementeElenco: derivar(atual.abreEm, 'elenco')," },
+
+  /* ── F1.14 · O TEXTO DA CONEXÃO (§5.9) ────────────────────────────────── */
+
+  { id:'S247', arquivo:CONTXT, nome:'a queda de rede passa a falar em aposta perdida',
+    real:'"melhor avisar" — e o jogador aposta de novo achando que a primeira sumiu',
+    de:"    frase: 'Não conseguimos falar com o servidor. Continuamos tentando — sua ' +\n           'aposta e seu saldo estão guardados lá, e voltam com a conexão.',",
+    para:"    frase: 'Conexão perdida. Sua aposta pode ter sido cancelada.'," },
+
+  { id:'S248', arquivo:CONTXT, nome:'conectando e sem rede dizem a mesma coisa',
+    real:'"os dois são falta de conexão" — e some a diferença entre esperar e desistir',
+    de:"    titulo: 'Sem conexão',",
+    para:"    titulo: 'Conectando'," },
+
+  { id:'S249', arquivo:CONTXT, nome:'estado desconhecido deixa a tela muda',
+    real:'"não vai acontecer" — e a tela fica em branco no momento em que ele mais precisa de uma palavra',
+    de:'export const textoDaConexao = estado => TEXTOS[estado] ?? DESCONHECIDO;',
+    para:'export const textoDaConexao = estado => TEXTOS[estado] ?? { frase: "", visivel: false };' },
+
+  { id:'S250', arquivo:CONTXT, nome:'o estado normal passa a ocupar a tela',
+    real:'"o jogador gosta de saber que está conectado" — e o aviso permanente rouba espaço da rodada',
+    de:"    visivel: false,\n    tentando: false,\n  },\n\n  [ESTADO_SALA.CONECTANDO]:",
+    para:"    visivel: true,\n    tentando: false,\n  },\n\n  [ESTADO_SALA.CONECTANDO]:" },
 
   { id:'S224', arquivo:FECHO, nome:'o fecho para de seguir os imports do filho',
     real:'somar só o arquivo do script — mudar o que ele importa deixa de invalidar',

@@ -52,6 +52,10 @@ const CAMADA = {
      transporte que soubesse o que transporta seria o lugar errado para a
      regra. */
   'sala.mjs': 0,
+  /* O texto da conexão: puro, e importa só os NOMES dos estados da sala. Fica
+     na camada 0 junto com ela — o §5.9 exige coisas sobre texto, e texto se
+     confere sem abrir navegador. Mesma razão do `protecao-texto.mjs`. */
+  'conexao-texto.mjs': 0,
   /* Rótulos e a frase da recusa do §28.3. Puro: nada de DOM, nada de rede.
      Separado da tela porque o §28.3 exige coisas sobre TEXTO, e texto se
      confere sem abrir navegador. */
