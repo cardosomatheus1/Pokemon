@@ -156,6 +156,62 @@ foi parcial nas duas pontas, e nome que não casa com suíte nenhuma **reprova**
 vez de rodar vazio. Execução vazia com a palavra VERDE é a falha mais silenciosa
 que este arnês pode ter, e é o defeito `S109`.
 
+### O Q2 reavalia o que pôde mudar, e reaproveita o resto
+
+O portão reavaliava os 208 defeitos a cada bloco: **~100 min medidos**, crescendo
+em dois eixos ao mesmo tempo — bloco novo traz defeitos novos *e* engrossa a
+suíte que cada defeito roda. Acelerar a execução mudaria a constante e deixaria
+a curva de pé; em três blocos voltaria a doer.
+
+O que derruba a curva é a observação de que **o veredito de um defeito é função
+de três coisas e de mais nada**:
+
+```
+a definição do defeito   (arquivo, de, para)
+o conteúdo do arquivo onde ele é plantado
+o fecho da suíte que o pegou   (tudo que ela lê e executa)
+```
+
+Iguais byte a byte aos da última avaliação, reavaliar devolve a mesma resposta.
+`test/fixtures/q2-veredito.json` guarda a chave que amarra as três, e
+`test/fecho.mjs` calcula o fecho.
+
+**Isto não é amostragem, e a diferença é o que faz este modo fechar bloco.** O
+`--tocados` PULA defeitos: responde sobre uma fatia e cala sobre o resto. Aqui os
+208 seguem respondidos — cada um foi reavaliado agora, ou nada de que ele depende
+mudou. O relatório diz quantos de cada, e a frase é verificável linha a linha.
+
+O custo passa a ser proporcional ao **tamanho da mudança**, e não ao tamanho do
+projeto.
+
+Duas regras que sustentam isso, e as duas têm teste no `portao.mjs`:
+
+- **só se guarda `PEGOU`.** Reaproveitar um `PASSOU` seria o portão herdando a
+  própria falha: o defeito escaparia hoje porque escapou ontem;
+- **dúvida no fecho resolve para `TUDO`.** Suíte que dispara processo filho tem
+  fecho universal — errar para mais custa uma reavaliação, errar para menos faz
+  o portão mentir.
+
+`npm run sabotagem:completo` ignora o cache. É o que roda antes de uma tag.
+
+### Duas reduções que só podem CONDENAR
+
+O mesmo raciocínio aparece em mais dois lugares, e a regra é sempre a mesma:
+
+> **vermelho numa configuração reduzida é vermelho na completa; verde não conclui
+> nada.**
+
+- a **onda 1** roda só as suítes que podem pegar aquele defeito — o captor da
+  execução passada e as de nome derivado do arquivo. Vermelho ali encerra o
+  mutante; verde cai no caminho completo;
+- `SABOTAGEM_ESTREITA=1` roda a suíte visual em **uma** largura (34 s) em vez de
+  quatro (65 s). Verde estreito **sempre** reexecuta com as quatro antes de
+  qualquer veredito — um mutante que só quebra o arranjo em 420 px não pode
+  voltar como `PASSOU`.
+
+O que nenhuma delas pode fazer é produzir um verde. Quem reprova o portão é
+sempre a execução completa.
+
 ### `sabotagem:tocados` acelera a construção, e não fecha bloco nenhum
 
 Roda só os defeitos ancorados em arquivo que o `git status` mostra alterado.

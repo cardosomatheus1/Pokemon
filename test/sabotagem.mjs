@@ -31,6 +31,8 @@
  */
 import { existsSync, readFileSync, symlinkSync, writeFileSync, cpSync, rmSync, mkdtempSync } from 'node:fs';
 import { execFile, execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { fechoDaSuite, digitalDoFecho, TUDO } from './fecho.mjs';
 import { cpus, tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -76,8 +78,9 @@ import { conferirAncoras, filtrarTocados } from './ancoras.mjs';
  * cobertura fraca: é ausência de cobertura com relatório verde. */
 const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,contraste';
 
-function rodar(caixa, semGolden, comVisual) {
+function rodar(caixa, semGolden, comVisual, recorte = null, estreita = false) {
   const env = { ...process.env,
+    ...(estreita ? { SABOTAGEM_ESTREITA: '1' } : {}),
     /* Marca a caixa de areia. Um teste que confira as âncoras da lista real
        ficaria vermelho para TODOS os defeitos aqui dentro — o `de` do defeito
        plantado deixou de existir por construção —, e a coluna "pego por"
@@ -87,7 +90,9 @@ function rodar(caixa, semGolden, comVisual) {
     ...(semGolden ? { SEM_GOLDEN: '1' } : {}),
     ...(comVisual ? {} : { SEM_VISUAL: '1' }) };
   return new Promise(res => {
-    const args = comVisual ? ['test/run.mjs', `--so=${SUITES_NAVEGADOR}`] : ['test/run.mjs'];
+    const args = recorte ? ['test/run.mjs', `--so=${recorte}`]
+              : comVisual ? ['test/run.mjs', `--so=${SUITES_NAVEGADOR}`]
+              : ['test/run.mjs'];
     execFile('node', args, { encoding:'utf8', env, cwd:caixa, maxBuffer: 32*1024*1024 },
       (err, stdout, stderr) => res({ vermelha: !!err, saida: (stdout||'') + (stderr||'') }));
   });
@@ -205,19 +210,204 @@ for (let i = 0; i < N_TRAB; i++) {
 }
 console.log(`${N_TRAB} caixa(s) de areia em ${tmpdir()}\n`);
 
+/* Os nomes de suíte saem da PRÓPRIA linha de base, e não de um regex sobre os
+   imports do `run.mjs`. Nome de suíte não é nome de arquivo: `visual-base`,
+   `tema-cedo` e `ambientes` nascem dentro de outros módulos, e derivá-los do
+   nome do arquivo perderia justamente as caras. Derivar não pode
+   dessincronizar — é a mesma regra do ARQUIVOS e do DIRS_VERSIONADOS. */
+const SUITES_REAIS = new Set();
+
 console.log('Q2 · SABOTAGEM\n');
-if ((await rodar(CAIXAS[0], false, false)).vermelha) {
+const base = await rodar(CAIXAS[0], false, false);
+if (base.vermelha) {
   console.error('ABORTADO: a suíte já está vermelha.'); process.exit(2);
 }
-console.log('linha de base: VERDE\n');
+for (const m of base.saida.matchAll(/^\s{2}([\w-]+): \d+\/\d+$/gm)) SUITES_REAIS.add(m[1]);
+console.log(`linha de base: VERDE (${SUITES_REAIS.size} suítes nomeadas)\n`);
+
+/* ── O ÍNDICE DE CAPTURA — o que torna este portão viável em escala ─────────
+ *
+ * O PROBLEMA MEDIDO. Cada defeito rodava a suíte INTEIRA até alguma coisa ficar
+ * vermelha, e depois, se nada ficasse, subia o Chromium. Com 208 defeitos e 37
+ * suítes isso deu **~70 min**. E cresce em DOIS eixos ao mesmo tempo: bloco novo
+ * traz defeitos novos E engrossa a suíte que cada defeito roda. É quadrático, e
+ * em mais três blocos passa de duas horas.
+ *
+ * O QUE SE JOGAVA FORA. O relatório sempre disse qual suíte pegou cada defeito
+ * — a coluna "pego por" — e o processo terminava sem guardar isso. Na execução
+ * seguinte o portão redescobria, defeito por defeito, o que já sabia.
+ *
+ * A DEDUÇÃO, E ELA É EXATA:
+ *
+ *     uma suíte vermelha ⟹ `npm test` vermelho
+ *
+ * Não é aproximação nem amostragem. Se a suíte que pegou o defeito da última vez
+ * pega de novo, o veredito "PEGOU" é o MESMO veredito que a execução inteira
+ * daria — obtido em ~0,5 s em vez de 55 s. É por isso que este atalho não
+ * enfraquece o portão, enquanto o `--so` na mão enfraquecia: aquele PULAVA
+ * defeitos; este roda todos.
+ *
+ * A DIREÇÃO CONTRÁRIA NÃO VALE, e o código trata isso como lei: suíte recortada
+ * VERDE não prova nada. Nesse caso o defeito cai no caminho completo de sempre.
+ * Ou seja:
+ *
+ *     **o índice só pode acelerar; ele não tem como deixar o portão mais
+ *     permissivo.** O caminho rápido só sabe dizer PEGOU. Quem diz PASSOU —
+ *     e portanto quem reprova o portão — é sempre a execução completa.
+ *
+ * É a lição do S109 aplicada de propósito: execução vazia com a palavra VERDE é
+ * a falha mais silenciosa que este arnês pode ter, então o atalho não tem como
+ * produzir um verde.
+ *
+ * TRÊS GUARDAS, e cada uma existe por um modo de falha concreto:
+ *   · nome de suíte que não existe mais no índice → entrada ignorada, caminho
+ *     completo. Índice velho custa tempo, nunca cobertura;
+ *   · entrada `golden` → sempre caminho completo, porque a coluna "sem golden"
+ *     é uma pergunta sobre qualidade de teste e o atalho não a responderia;
+ *   · o relatório DIZ quantos vieram do índice e quais mudaram de captor.
+ *     Captor que muda é sinal de que a cobertura se moveu, e isso merece ser
+ *     visto em vez de silenciosamente reaproveitado.
+ */
+const CAMINHO_INDICE = 'test/fixtures/captura.json';
+
+/* ── O CACHE DE VEREDITOS — o que tira a curva do portão ────────────────────
+ *
+ * Reavaliar 208 defeitos custava ~100 min, e o número cresce com o projeto em
+ * dois eixos: bloco novo traz defeitos novos E engrossa a suíte que cada um
+ * roda. Acelerar a execução muda a constante e deixa a curva de pé.
+ *
+ * O que derruba a curva é a observação de que **o veredito de um defeito é
+ * função de três coisas e de mais nada**: a definição do defeito, o conteúdo do
+ * arquivo onde ele é plantado, e o comportamento da suíte que o pegou. Se as
+ * três estão byte a byte iguais às da última avaliação, reavaliar devolve a
+ * mesma resposta — gastando minutos para reimprimi-la.
+ *
+ * **ISTO NÃO É AMOSTRAGEM, e a diferença é o que faz este modo fechar bloco.**
+ * O `--tocados` PULA defeitos: ele responde sobre uma fatia e cala sobre o
+ * resto, e por isso grita que não é o portão. Aqui os 208 continuam
+ * respondidos: cada um foi reavaliado agora, ou nada de que ele depende mudou
+ * desde a avaliação anterior. A frase que o relatório precisa poder dizer é
+ * essa, e ela é verificável linha a linha.
+ *
+ * O custo passa a ser proporcional ao TAMANHO DA MUDANÇA, e não ao tamanho do
+ * projeto — que é a única forma de isto continuar viável em cinquenta blocos.
+ *
+ * `--completo` ignora o cache. É o que roda antes de uma tag, e é o que
+ * reconstrói a confiança na cadeia inteira de tempos em tempos. */
+const CAMINHO_VEREDITOS = 'test/fixtures/q2-veredito.json';
+const IGNORAR_CACHE = process.argv.includes('--completo');
+
+const VEREDITOS = (() => {
+  if (IGNORAR_CACHE || !existsSync(CAMINHO_VEREDITOS)) return {};
+  try { return JSON.parse(readFileSync(CAMINHO_VEREDITOS, 'utf8')); } catch { return {}; }
+})();
+
+/* A digital de cada arquivo versionado, numa passada só. Calcular por defeito
+   releria os mesmos arquivos 208 vezes. */
+const HASHES = new Map();
+for (const f of execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'],
+                             { encoding: 'utf8' }).split('\n').filter(Boolean)) {
+  try { HASHES.set(f, createHash('sha1').update(readFileSync(f)).digest('hex').slice(0, 12)); }
+  catch { /* arquivo listado e ausente: some do mapa, e isso já muda a chave */ }
+}
+
+const digitalDeFecho = new Map();
+function chaveDe(d, captor) {
+  if (!captor) return null;               /* sem captor conhecido não há o que reusar */
+  if (!digitalDeFecho.has(captor))
+    digitalDeFecho.set(captor, digitalDoFecho(fechoDaSuite(captor), HASHES));
+  return createHash('sha1').update([
+    d.id, d.arquivo, d.de, d.para,
+    HASHES.get(d.arquivo) ?? 'ausente',
+    captor,
+    digitalDeFecho.get(captor),
+    process.version,
+  ].join('\u0000')).digest('hex');
+}
+
+
+const INDICE = (() => {
+  if (!existsSync(CAMINHO_INDICE)) return {};
+  try { return JSON.parse(readFileSync(CAMINHO_INDICE, 'utf8')); }
+  catch { return {}; }   /* índice ilegível é índice ausente, nunca um erro fatal */
+})();
+
+const NAVEGADOR = new Set(SUITES_NAVEGADOR.split(','));
+
+/* ── AFINIDADE: por onde COMEÇAR quando não há índice ──────────────────────
+ *
+ * O índice só existe depois da primeira execução completa, e é justamente ela
+ * que precisava custar 100 min. A afinidade resolve o arranque: a maioria das
+ * suítes deste projeto tem o nome do módulo que testa — `limites.mjs` é pega
+ * por `limites`, `server/auth.mjs` por `auth`, `engine/preco.mjs` por `preco`.
+ *
+ * ISTO É UM PALPITE, E PODE ESTAR ERRADO SEM CUSTO NENHUM. Ele muda só a ORDEM
+ * em que as suítes são tentadas; quem decide o veredito continua sendo a
+ * execução completa quando nada da primeira onda fica vermelho. Palpite errado
+ * custa 0,5 s; palpite certo economiza 96 s. */
+function afinidade(arquivo) {
+  const base = arquivo.split('/').pop().replace(/\.mjs$/, '');
+  const nomes = [base, `${base}-servidor`, base.replace(/-dados$/, '')];
+  /* Arquivo do app não é importado por suíte nenhuma: ele é servido a um
+     navegador. Quem pode vê-lo são as suítes de navegador — e as que leem
+     código-fonte como texto, que a onda 2 cobre. */
+  if (/^(app|arte)\//.test(arquivo) || arquivo.endsWith('.html'))
+    nomes.push(...SUITES_NAVEGADOR.split(','));
+  return [...new Set(nomes)].filter(n => SUITES_REAIS.has(n) || NAVEGADOR.has(n));
+}
+
+/* A entrada só é usável se nomear UMA suíte que existe e não for o golden. */
+function entradaUsavel(id) {
+  const nome = INDICE[id];
+  if (typeof nome !== 'string' || nome === 'golden') return null;
+  if (!SUITES_REAIS.has(nome) && !NAVEGADOR.has(nome)) return null;
+  return nome;
+}
 
 async function avaliar(d, caixa) {
   const src = originais.get(d.arquivo);
   if (src === undefined) return { ...d, status:'ARQUIVO AUSENTE', com:'-', sem:'-' };
   if (!src.includes(d.de)) return { ...d, status:'ÂNCORA PERDIDA', com:'-', sem:'-' };
+  /* REAPROVEITAMENTO. A chave amarra a definição do defeito, o conteúdo do
+     arquivo mutado e a digital do fecho da suíte que o pegou. Iguais às da
+     última avaliação ⟹ mesmo código, mesmos dados, mesmo veredito. */
+  const cache = VEREDITOS[d.id];
+  const captorGuardado = String(cache?.com ?? '').replace(/^navegador: /, '').split(',')[0];
+  /* O CAPTOR PRECISA CONTINUAR EXISTINDO. É o que substitui `run.mjs` no fecho
+     comum: acrescentar suíte não pode invalidar nada, mas REMOVER a suíte que
+     pegou o defeito invalida — o veredito guardado se apoiava nela. */
+  if (cache && cache.chave && (SUITES_REAIS.has(captorGuardado) || NAVEGADOR.has(captorGuardado))
+      && cache.chave === chaveDe(d, captorGuardado))
+    return { ...d, ...cache, reusado: true, instavel: false };
+
   const alvo = join(caixa, d.arquivo);
   writeFileSync(alvo, src.replace(d.de, d.para));
   try {
+    /* ── ONDA 1: as suítes que PODEM pegar, e só elas ─────────────────────
+     *
+     * O que fazia o portão custar 100 min não era a suíte ser lenta: era varrer
+     * as 46 na ORDEM FIXA até alguma ficar vermelha. Medido: um mutante pego
+     * pela `carteira` custava 0,5 s; um pego pela `margem`, 96 s; a média por
+     * mutante deu 115 s.
+     *
+     * A onda 1 roda só as candidatas — o captor da execução passada, se houver,
+     * e as suítes cujo nome deriva do arquivo mutado. Vermelho aqui encerra o
+     * mutante, e o veredito é EXATAMENTE o mesmo que a execução inteira daria:
+     * uma suíte vermelha implica `npm test` vermelho.
+     *
+     * Verde aqui não conclui nada e cai na onda 2. É a regra de direção única
+     * de todo este arquivo: **o atalho só sabe dizer PEGOU.** */
+    const previsto = entradaUsavel(d.id);
+    const onda1 = [...new Set([...(previsto ? [previsto] : []), ...afinidade(d.arquivo)])];
+    if (onda1.length) {
+      const precisaNav = onda1.some(n => NAVEGADOR.has(n));
+      const r = await rodar(caixa, false, precisaNav, onda1.join(','), precisaNav);
+      const pegou = r.vermelha ? suitesQuePegaram(r.saida).filter(n => onda1.includes(n)) : [];
+      if (pegou.length)
+        return { ...d, instavel: false, status: 'PEGOU', viaIndice: true,
+                 com: pegou.join(','), sem: pegou.join(',') };
+    }
+
     /* TENTATIVA MEDIDA E DESCARTADA: começar pelo navegador quando o defeito
      * mora em `app/`.
      *
@@ -259,11 +449,31 @@ async function avaliar(d, caixa) {
       }
     }
 
-    let navegador = '';
+    /* A PASSADA DO NAVEGADOR GUARDA QUAL SUÍTE PEGOU, e não só que alguma pegou.
+       O relatório dizia 'só o navegador' e perdia o nome — e são justamente
+       estes os defeitos mais caros do portão, os únicos que pagam a partida do
+       Chromium. Sem o nome, eles nunca entram no índice de captura e continuam
+       pagando o preço cheio para sempre. */
+    /* ── A PASSADA DO NAVEGADOR, ESTREITA PRIMEIRO ────────────────────────
+     *
+     * A suíte visual carrega a página em quatro larguras, e cada carga espera
+     * ~5 s de Monte Carlo: 65 s por mutante. Medido, uma largura custa 34 s.
+     *
+     * Roda a estreita primeiro pela MESMA dedução que rege o arquivo inteiro:
+     * vermelho numa configuração reduzida é vermelho na completa. Verde nela
+     * não conclui nada — e por isso, quando ela sai verde, a completa roda
+     * antes de qualquer veredito. **Nenhum PASSOU sai daqui sem as quatro
+     * larguras terem sido olhadas.** */
+    let navegador = '', navPor = [];
     if (!comG.vermelha) {
-      navegador = (await rodar(caixa, false, true)).vermelha ? 'só o navegador' : '';
+      let nav = await rodar(caixa, false, true, null, true);
+      if (!nav.vermelha) nav = await rodar(caixa, false, true, null, false);
+      if (nav.vermelha) {
+        navPor = suitesQuePegaram(nav.saida);
+        navegador = navPor.length ? `navegador: ${navPor.join(',')}` : 'só o navegador';
+      }
     }
-    return { ...d, instavel,
+    return { ...d, instavel, viaIndice: false,
       status: instavel ? 'INSTÁVEL' : (comG.vermelha || navegador ? 'PEGOU' : 'PASSOU'),
       com: comG.vermelha ? pegouPor.join(',') : navegador,
       sem: comG.vermelha ? (semVermelha ? semPor.join(',') : 'NADA') : navegador };
@@ -295,6 +505,69 @@ console.log('id   defeito                                 status    sem golden, 
 console.log('─'.repeat(96));
 for (const r of res)
   console.log(`${r.id.padEnd(4)} ${r.nome.padEnd(39)} ${(r.status==='PEGOU'?'✓':'✗')} ${r.status.padEnd(8)} ${r.sem}`);
+
+/* ── REGRAVAR O ÍNDICE ─────────────────────────────────────────────────────
+ *
+ * Só a execução COMPLETA regrava. O modo incremental vê uma fatia dos defeitos,
+ * e deixá-lo escrever apagaria o captor de todos os outros — o índice viraria
+ * um retrato do último bloco em vez do portão inteiro.
+ *
+ * Guardado em `test/fixtures/` porque é exatamente isso: comportamento medido e
+ * arquivado. Diferente das outras fixtures num ponto que importa — ele não
+ * pode esconder regressão nenhuma, porque nada é julgado por ele. Se estiver
+ * errado, o portão só fica mais lento. */
+/* Os vereditos vão para o disco em toda execução que não seja parcial. Guardar
+   no incremental gravaria a chave de uma fatia e apagaria o resto. */
+if (!INCREMENTAL) {
+  const guardados = {};
+  for (const r of res) {
+    if (r.status !== 'PEGOU') continue;      /* só se guarda o que passou */
+    const captor = String(r.com).replace(/^navegador: /, '').split(',')[0];
+    const chave = chaveDe(r, captor);
+    if (chave) guardados[r.id] = { chave, status: r.status, com: r.com, sem: r.sem };
+  }
+  writeFileSync(CAMINHO_VEREDITOS,
+    JSON.stringify(Object.fromEntries(Object.entries(guardados).sort()), null, 0) + '\n');
+
+  const reusados = res.filter(r => r.reusado).length;
+  console.log(`\nvereditos: ${res.length - reusados} reavaliados agora, ${reusados} reaproveitados.`);
+  if (reusados)
+    console.log('  Reaproveitado NÃO é pulado: para cada um deles, a definição do ' +
+                'defeito,\n  o arquivo mutado e todo o fecho da suíte que o pegou estão ' +
+                'byte a byte\n  iguais aos da avaliação anterior. Os 208 seguem respondidos.');
+  if (IGNORAR_CACHE) console.log('  (--completo: o cache foi ignorado nesta execução)');
+}
+
+if (!INCREMENTAL) {
+  const antes = { ...INDICE };
+  const novo = {};
+  for (const r of res) {
+    if (r.status !== 'PEGOU') continue;
+    /* A PRIMEIRA suíte da lista, e nunca o golden: o golden é fixture, e um
+       defeito que só ele pega já aparece no aviso de cobertura fraca. */
+    const captor = r.viaIndice ? r.com
+      : String(r.com).replace(/^navegador: /, '').split(',')
+          .find(n => n && n !== 'golden' && n !== 'só o navegador') || '';
+    if (captor) novo[r.id] = captor;
+  }
+  const mudaram = Object.keys(novo).filter(id => antes[id] && antes[id] !== novo[id]);
+  const perderam = Object.keys(antes).filter(id => !novo[id]);
+  writeFileSync(CAMINHO_INDICE,
+    JSON.stringify(Object.fromEntries(Object.entries(novo).sort()), null, 0) + '\n');
+
+  const doIndice = res.filter(r => r.viaIndice).length;
+  console.log(`\níndice de captura: ${doIndice}/${res.length} resolvidos pelo atalho, ` +
+              `${res.length - doIndice} pelo caminho completo.`);
+  if (mudaram.length) {
+    /* CAPTOR QUE MUDA É INFORMAÇÃO, e não ruído: quer dizer que a suíte que
+       cobria aquele comportamento deixou de cobrir e outra assumiu. Vale
+       aparecer, porque às vezes a segunda cobre por acidente. */
+    console.log(`⚠ ${mudaram.length} defeito(s) mudaram de captor:`);
+    for (const id of mudaram) console.log(`  · ${id}: ${antes[id]} → ${novo[id]}`);
+  }
+  if (perderam.length)
+    console.log(`⚠ ${perderam.length} defeito(s) saíram do índice (não pegos ou removidos).`);
+}
 
 const escaparam = res.filter(r => r.status !== 'PEGOU');
 const instaveis = res.filter(r => r.instavel);

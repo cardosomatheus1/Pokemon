@@ -127,12 +127,37 @@ async function impressao(pg) {
  *
  * `panoramico` fica ACIMA do `max-width`, que e onde as goteiras aparecem e o
  * arranjo para de crescer. */
-const LARGURAS = [
+const LARGURAS_TODAS = [
   { nome: 'panoramico', w: 1920, h: 1000 },
   { nome: 'largo',  w: 1440, h: 900 },
   { nome: 'medio',  w: 1100, h: 900 },
   { nome: 'estreito', w: 700, h: 900 },
 ];
+
+/* ── A PASSADA ESTREITA DA SABOTAGEM ───────────────────────────────────────
+ *
+ * Cada carga de página espera ~5 s de Monte Carlo, e quatro larguras × quatro
+ * telas fazem a suíte custar ~65 s. Multiplicado pelos mutantes que só o
+ * navegador pega, era isso que empurrava o portão Q2 para 100 min.
+ *
+ * `SABOTAGEM_ESTREITA=1` roda UMA largura. A redução é legítima por causa da
+ * mesma dedução que rege o portão inteiro:
+ *
+ *     **vermelho numa configuração reduzida é vermelho na completa.**
+ *
+ * Uma largura que reprova é uma prova de que a suíte pega o mutante. O que a
+ * redução NÃO pode fazer é concluir o contrário: verde em uma largura não é
+ * verde nas quatro, e por isso a sabotagem só usa este modo para tentar
+ * CONDENAR — quando ele sai verde, o mutante é reavaliado com as quatro antes
+ * de qualquer veredito.
+ *
+ * A largura escolhida é `largo`: é a de referência do projeto, e a única em que
+ * as três zonas do arranjo existem ao mesmo tempo.
+ *
+ * A variável NÃO tem efeito fora da sabotagem: `npm test` e `npm run portoes`
+ * nunca a definem, e o teste do portão confere que ela não vaza. */
+const ESTREITA = process.env.SABOTAGEM_ESTREITA === '1';
+const LARGURAS = ESTREITA ? LARGURAS_TODAS.filter(L => L.nome === 'largo') : LARGURAS_TODAS;
 
 export async function capturarBase() {
   const { chromium } = await import(PW);

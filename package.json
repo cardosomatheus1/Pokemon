@@ -13,6 +13,7 @@
     "gerar:visual": "node test/run.mjs --gerar --so=visual",
     "rapido": "node test/run.mjs --so=golden,fonte-unica,estado,modulos,conteudo,carteira,banco,exposicao,assets,telemetria,commit,saida-v09,progressao,tema,arenas,portao,colocacao,banner,shiny,adm,semente",
     "sabotagem": "node test/sabotagem.mjs",
+    "sabotagem:completo": "node test/sabotagem.mjs --completo",
     "sabotagem:tocados": "node test/sabotagem.mjs --tocados",
     "olhar": "node tools/olhar-telas.mjs",
     "portoes": "npm run repetir && npm run sabotagem",

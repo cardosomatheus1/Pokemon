@@ -203,6 +203,191 @@ export function suite() {
       'voltou a existir uma lista de pastas escrita à mão em sabotagem.mjs');
   });
 
+  /* ── O ÍNDICE DE CAPTURA SÓ PODE ACELERAR ────────────────────────────────
+   *
+   * O atalho que faz o Q2 sair de ~90 min para minutos apoia-se numa dedução
+   * exata — *uma suíte vermelha implica `npm test` vermelho* — e numa regra de
+   * direção única: **o caminho rápido só sabe dizer PEGOU.** Verde no recorte
+   * não conclui nada e cai no caminho completo.
+   *
+   * Se essa direção se inverter um dia, o portão passa a poder declarar VERDE
+   * sem ter perguntado — que é o S109 com outra roupa, e é a falha mais cara
+   * que este arnês tem. Por isso a regra é testada como texto: ela não é uma
+   * convenção, é uma propriedade do código. */
+  s.teste('o atalho do índice não tem como produzir PASSOU nem VERDE', async () => {
+    const { readFileSync } = await import('node:fs');
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+
+    const bloco = txt.match(/if \(onda1\.length\) \{[\s\S]*?\n    \}/);
+    ok(bloco, 'a onda 1 sumiu do sabotagem.mjs — âncora perdida');
+    const corpo = bloco[0];
+
+    const status = [...corpo.matchAll(/status:\s*'([^']+)'/g)].map(m => m[1]);
+    ok(status.length > 0, 'o atalho não declara status nenhum');
+    igual(status.filter(x => x !== 'PEGOU').length, 0,
+      `o atalho do índice declara ${status.join(', ')}. Ele só pode dizer PEGOU: ` +
+      `quem reprova o portão tem que ser sempre a execução completa, senão o ` +
+      `índice vira um jeito de o Q2 ficar verde sem ter perguntado.`);
+
+    ok(/r\.vermelha \?/.test(corpo) || /if \(r\.vermelha/.test(corpo),
+      'a onda 1 devolve resultado sem exigir que o recorte tenha ficado VERMELHO');
+    ok(/filter\(n => onda1\.includes\(n\)\)/.test(corpo),
+      'a onda 1 aceita qualquer vermelho do recorte. Precisa ser uma das suítes ' +
+      'da própria onda que ficou vermelha — um recorte que morre por nome ' +
+      'inexistente também é "vermelho", e contaria como captura sem ter ' +
+      'capturado nada.');
+    ok(/if \(pegou\.length\)/.test(corpo),
+      'a onda 1 conclui sem conferir que alguma suíte da onda foi a que reprovou');
+  });
+
+  s.teste('entrada de índice inválida cai no caminho completo, e nunca some', async () => {
+    const { readFileSync } = await import('node:fs');
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+    const fn = txt.match(/function entradaUsavel\(id\) \{[\s\S]*?\n\}/);
+    ok(fn, 'a guarda `entradaUsavel` sumiu — âncora perdida');
+    ok(/=== 'golden'/.test(fn[0]),
+      'a guarda deixou de recusar `golden`. A coluna "sem golden" é uma pergunta ' +
+      'sobre qualidade de teste, e o atalho não a responde — defeito indexado no ' +
+      'golden precisa do caminho completo.');
+    ok(/SUITES_REAIS\.has\(nome\)/.test(fn[0]),
+      'a guarda deixou de conferir que a suíte existe. Índice velho tem que ' +
+      'custar tempo, nunca cobertura.');
+    ok(/return null/.test(fn[0]),
+      'a guarda não devolve `null` — sem isso não há caminho completo para cair');
+  });
+
+  /* A PASSADA ESTREITA SÓ PODE CONDENAR, nunca absolver.
+   *
+   * `SABOTAGEM_ESTREITA=1` faz a suíte visual rodar UMA largura em vez de
+   * quatro: 34 s em vez de 65 s por mutante. Vale porque vermelho numa
+   * configuração reduzida é vermelho na completa.
+   *
+   * O contrário não vale, e é aqui que o portão se perderia: verde em uma
+   * largura NÃO é verde nas quatro. Um mutante que só quebra o arranjo em
+   * 420 px voltaria como PASSOU — o portão diria "ninguém pega isto" quando a
+   * verdade é "ninguém olhou naquela largura". */
+  s.teste('a passada estreita do navegador nunca decide sozinha um PASSOU', async () => {
+    const { readFileSync } = await import('node:fs');
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+    const bloco = txt.match(/if \(!comG\.vermelha\) \{[\s\S]*?\n    \}/);
+    ok(bloco, 'a passada do navegador sumiu — âncora perdida');
+    ok(/if \(!nav\.vermelha\) nav = await rodar\([^)]*false\)/.test(bloco[0]),
+      'a passada estreita saiu verde e o código NÃO reexecuta com as quatro ' +
+      'larguras. Verde estreito não é verde: um mutante que só quebra o arranjo ' +
+      'em 420 px voltaria como PASSOU, e o portão diria "ninguém pega isto" ' +
+      'quando a verdade é "ninguém olhou naquela largura".');
+  });
+
+  s.teste('a largura estreita não vaza para fora da sabotagem', async () => {
+    const { readFileSync } = await import('node:fs');
+    /* `npm test` e `npm run portoes` não podem definir a variável: o portão de
+       fechamento tem que olhar as quatro larguras sempre. */
+    const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url).pathname, 'utf8'));
+    for (const [nome, cmd] of Object.entries(pkg.scripts || {}))
+      ok(!/SABOTAGEM_ESTREITA/.test(cmd),
+        `o script \`${nome}\` define SABOTAGEM_ESTREITA. Ela é da sabotagem e de ` +
+        `mais ninguém — fora dali, uma largura no lugar de quatro é cobertura ` +
+        `visual silenciosamente reduzida.`);
+    igual(process.env.SABOTAGEM_ESTREITA ?? '', '',
+      'a suíte está rodando com SABOTAGEM_ESTREITA ligada — a linha de base ' +
+      'visual estaria medindo uma largura de quatro');
+  });
+
+  /* ── O CACHE DE VEREDITOS ────────────────────────────────────────────────
+   *
+   * É o que tira a curva do portão: em vez de reavaliar 208 defeitos a cada
+   * bloco, reavalia os que PODEM ter mudado de resposta. A regra é que o
+   * veredito é função de três coisas — definição do defeito, conteúdo do
+   * arquivo mutado, e fecho da suíte que o pegou — e a chave amarra as três.
+   *
+   * Três formas de isso virar mentira, e um teste para cada:
+   *   · guardar um PASSOU (o portão passaria a herdar a própria falha);
+   *   · a chave deixar de incluir o fecho (mudança na suíte não invalidaria);
+   *   · o arnês mudar sem invalidar nada. */
+  s.teste('o cache guarda apenas defeitos PEGOS', async () => {
+    const { readFileSync } = await import('node:fs');
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+    const bloco = txt.match(/for \(const r of res\) \{[\s\S]*?guardados\[r\.id\][^\n]*\n/);
+    ok(bloco, 'a gravação de vereditos sumiu — âncora perdida');
+    ok(/r\.status !== 'PEGOU'\) continue/.test(bloco[0]),
+      'o cache passou a guardar defeito não PEGO. Um PASSOU reaproveitado é o ' +
+      'portão herdando a própria falha: o defeito escaparia hoje porque escapou ' +
+      'ontem, e ninguém reavaliaria.');
+  });
+
+  s.teste('a chave do cache amarra o fecho da suíte que pegou', async () => {
+    const { readFileSync } = await import('node:fs');
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+    const fn = txt.match(/function chaveDe\(d, captor\) \{[\s\S]*?\n\}/);
+    ok(fn, 'a função `chaveDe` sumiu — âncora perdida');
+    for (const [trecho, porque] of [
+      ['d.arquivo', 'sem o caminho do arquivo, dois defeitos em arquivos diferentes colidem'],
+      ['d.de', 'sem o trecho original, mudar o defeito não invalidaria o veredito'],
+      ['d.para', 'sem a mutação, trocar o que o defeito faz não invalidaria'],
+      ['HASHES.get(d.arquivo)', 'sem o conteúdo do arquivo mutado, editar o código não invalidaria'],
+      ['digitalDeFecho.get(captor)', 'sem o fecho da suíte, mudar o TESTE não invalidaria — e o ' +
+        'portão reaproveitaria um veredito de uma suíte que não existe mais assim'],
+      ['process.version', 'sem a versão do Node, trocar de runtime herdaria vereditos'],
+    ]) ok(fn[0].includes(trecho), `a chave do cache não inclui \`${trecho}\`: ${porque}`);
+    ok(/if \(!captor\) return null/.test(fn[0]),
+      'sem captor conhecido a chave precisa ser nula — não há fecho de que depender, ' +
+      'e reaproveitar seria reaproveitar às cegas');
+  });
+
+  s.teste('mudar o arnês invalida todo veredito guardado', async () => {
+    const { ARNES, fechoDaSuite, TUDO } = await import('./fecho.mjs');
+    for (const a of ['test/harness.mjs', 'test/sabotagem.mjs'])
+      ok(ARNES.includes(a),
+        `${a} não está no fecho comum. Mudar o arnês muda COMO a pergunta é ` +
+        `feita, e nenhum veredito anterior sobrevive a isso.`);
+    /* E O QUE NÃO PODE ESTAR, que é o erro que quase matou o cache: os dois
+       arquivos que TODO bloco mexe. Com eles no fecho comum, todo bloco
+       invalidaria os 208 vereditos e o cache nunca pagaria nada. */
+    for (const [a, porque] of [
+      ['test/defeitos-plantados.mjs', 'ele muda toda vez que um bloco acrescenta ' +
+        'um defeito, e a definição do defeito já entra na chave por conta própria'],
+      ['test/run.mjs', 'ele muda toda vez que um bloco registra uma suíte nova, e ' +
+        'suíte a mais não pode invalidar um PEGOU — só pode pegar mais'],
+    ]) ok(!ARNES.includes(a), `${a} está no fecho comum: ${porque}`);
+    /* E o fecho de uma suíte qualquer tem que carregar o arnês junto. */
+    const f = fechoDaSuite('limites');
+    ok(f === TUDO || ARNES.every(a => f.has(a)),
+      'o fecho de uma suíte não inclui o arnês');
+  });
+
+  s.teste('suíte que dispara processo tem fecho universal', async () => {
+    const { fechoDaSuite, TUDO } = await import('./fecho.mjs');
+    /* `concorrencia` roda `tools/q8-worker.mjs` como processo de verdade: o que
+       o filho toca não se lê estaticamente. Dúvida resolve para TUDO — errar
+       para mais custa uma reavaliação; errar para menos faz o portão mentir. */
+    igual(fechoDaSuite('concorrencia'), TUDO,
+      'uma suíte que dispara processo ganhou fecho restrito. O filho pode tocar ' +
+      'em qualquer arquivo, e nada estático revela o quê.');
+  });
+
+  s.teste('só a execução COMPLETA regrava o índice', async () => {
+    const { readFileSync } = await import('node:fs');
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+    const grava = txt.indexOf('writeFileSync(CAMINHO_INDICE');
+    ok(grava > 0, 'o índice deixou de ser gravado — âncora perdida');
+    const antes = txt.slice(0, grava);
+    const guarda = antes.lastIndexOf('if (!INCREMENTAL)');
+    ok(guarda > 0 && guarda > antes.lastIndexOf('\n}\n'),
+      'a gravação do índice não está sob `if (!INCREMENTAL)`. O modo incremental ' +
+      'vê uma fatia dos defeitos: deixá-lo escrever apagaria o captor de todos os ' +
+      'outros, e o índice viraria o retrato do último bloco.');
+  });
+
   /* AS DUAS LISTAS DE SUÍTES DE NAVEGADOR TÊM QUE FECHAR (T3).
    *
    * `run.mjs` tem `COM_NAVEGADOR` — quem, se pedido, obriga o Chromium a subir.
