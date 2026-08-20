@@ -347,30 +347,45 @@ export function suite() {
   });
 
   /* ------------------------------------------------------------------ *
-   * E O GUARDA QUE VALE ANTES E DEPOIS DO F1.15.
+   * O QUE PODE E O QUE NÃO PODE SAIR COM A JANELA ABERTA.
    *
-   * `misturar()` é o finalizador do splitmix32 e é BIJETIVA: cada passo se
-   * desfaz — o `+` subtraindo, o `imul` pelo inverso modular, o `xor-shift`
-   * por iteração. Confirmado em 200.000/200.000 casos ao medir o D-018.
+   * Este guarda mudou de forma no F1.14, e o motivo é uma premissa que caiu.
    *
-   * Consequência: publicar QUALQUER semente de ramo devolve a raiz em O(1),
-   * sem busca nenhuma. O F1.14 quase publicou `sementeElenco` para o cliente
-   * montar a pool sem esperar o reveal, e a medição matou a ideia antes de
-   * virar código.
+   * Enquanto a raiz tinha 32 bits, `misturar()` era bijetiva e **qualquer**
+   * semente de ramo publicada devolvia a raiz em O(1) — confirmado em
+   * 200.000/200.000 casos. O guarda então proibia todas.
    *
-   * Este guarda continua valendo depois do F1.15 — com raiz de 128 bits, uma
-   * semente publicada não devolve a raiz, mas devolve o RAMO, e o ramo do
-   * clima é segredo até o fechamento (§4.5, §P3).
+   * O F1.15 trocou a raiz por 128 bits com o ramo saindo de SHA-256. Medido:
+   * varrer o espaço custa 5,3×10²⁴ anos nesta máquina, um bit de diferença na
+   * raiz muda 16,1 dos 32 bits do ramo (difusão perfeita é 16), zero colisões
+   * em 2.000 pares. Publicar um ramo deixou de devolver a raiz.
+   *
+   * O QUE CONTINUA PROIBIDO NÃO É "RAMO", É "RAMO QUE DECIDE RESULTADO":
+   * `ambiente` escolhe o clima, que dá bônus de stat, e `batalha` é a luta.
+   * Quem os lê aposta sabendo o resultado, com raiz larga ou estreita.
    * ------------------------------------------------------------------ */
-  s.teste('nenhuma semente de ramo é publicada com a janela aberta', () => {
+  s.teste('a janela aberta não publica ramo que decide resultado', () => {
     const txt = readFileSync(new URL('../server/scheduler.mjs', import.meta.url), 'utf8');
     const paraCliente = txt.slice(txt.indexOf('function paraCliente'));
-    const publico = paraCliente.slice(0, paraCliente.indexOf('return publico'));
-    const suspeitos = [...publico.matchAll(/\b(semente\w*|derivar\s*\()/g)].map(m => m[0]);
-    igual(suspeitos.length, 0,
-      `\`paraCliente()\` menciona ${suspeitos.join(', ')}. Semente de ramo publicada ` +
-      `devolve a raiz em O(1) — \`misturar()\` é bijetiva. É a ideia que o F1.14 ` +
-      `teve e a medição matou; ver D-018.`);
+    const aberto = paraCliente.slice(0, paraCliente.indexOf("if (atual.status !== ESTADOS.ABERTA)"));
+
+    for (const ramo of ['ambiente', 'batalha', 'recompensa']) {
+      ok(!aberto.includes(`'${ramo}'`),
+        `\`paraCliente()\` deriva o ramo \`${ramo}\` com a janela ABERTA. ` +
+        `\`ambiente\` decide o clima, que dá bônus de stat; \`batalha\` é a luta. ` +
+        `Quem os lê aposta sabendo o resultado — é o §4.5 inteiro.`);
+    }
+    ok(!/\braiz\s*:/.test(aberto) && !aberto.includes('atual.raiz,\n'),
+      'a raiz sai inteira com a janela aberta');
+
+    /* O CONTRAPESO: as duas cosméticas PRECISAM sair, senão o cliente em modo
+       servidor não monta pool nem arena antes do fechamento. Sem esta metade,
+       o teste seria satisfeito por um `paraCliente()` que não publica nada. */
+    for (const ramo of ['elenco', 'visual'])
+      ok(aberto.includes(`'${ramo}'`),
+        `\`paraCliente()\` parou de publicar a semente de \`${ramo}\`. O cliente ` +
+        `em modo servidor precisa dela DURANTE a janela — sem ela não há pool ` +
+        `nem arena para desenhar, e o F1.15 provou que publicá-la é seguro.`);
   });
 
   return s;

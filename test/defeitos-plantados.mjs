@@ -1395,6 +1395,18 @@ export const DEFEITOS = [
     de:'      if (bruto !== null) {',
     para:'      if (true) {' },
 
+  /* ── F1.14 · AS SEMENTES COSMÉTICAS NA ABERTURA ───────────────────────── */
+
+  { id:'S245', arquivo:SRVSCH, nome:'a semente do AMBIENTE vaza na abertura',
+    real:'"publicamos elenco e visual, o ambiente é parecido" — e o clima dá bônus de stat antes da aposta fechar',
+    de:"      sementeVisual: derivar(atual.raiz, 'visual'),",
+    para:"      sementeVisual: derivar(atual.raiz, 'visual'),\n      sementeAmbiente: derivar(atual.raiz, 'ambiente')," },
+
+  { id:'S246', arquivo:SRVSCH, nome:'a semente publicada não é a da rodada',
+    real:'derivar de outra coisa — e o cliente monta uma pool que o settlement não conhece',
+    de:"      sementeElenco: derivar(atual.raiz, 'elenco'),",
+    para:"      sementeElenco: derivar(atual.abreEm, 'elenco')," },
+
   { id:'S224', arquivo:FECHO, nome:'o fecho para de seguir os imports do filho',
     real:'somar só o arquivo do script — mudar o que ele importa deixa de invalidar',
     de:'    for (const d of [...importsDe(a), ...din, ...filhos]) if (!vistos.has(d)) fila.push(d);',

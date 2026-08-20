@@ -18,13 +18,14 @@
  *      nasce sem ninguém lembrar de conferi-lo.
  *   3. Semente vinda do cliente é IGNORADA, não usada.
  */
-import { lerRaiz } from '../engine/seed.mjs';
+import { lerRaiz, derivar } from '../engine/seed.mjs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { abrirBanco, migrar } from '../server/banco.mjs';
 import {
   criarScheduler, ESTADOS, FASE_MS,
 } from '../server/scheduler.mjs';
 import { digital as digitalNode } from './rodada-digital.mjs';
+import { M } from '../server/rodada.mjs';
 
 const SIMS_TESTE = 800;   // lote curto: o que se testa aqui é o CICLO, não o preço
 
@@ -113,6 +114,72 @@ export function suite() {
     ok(await conferir(f.round_seed_commit, lerRaiz(f.round_seed_reveal), f.round_seed_sal),
       'o commit publicado não bate com a semente revelada. É a promessa do §4.5 ' +
       'quebrada exatamente onde ela é verificável.');
+  });
+
+  /* ── F1.14 · AS SEMENTES COSMÉTICAS SAEM NA ABERTURA ────────────────────
+   *
+   * O cliente em modo servidor precisa montar a pool e a arena DURANTE a janela
+   * de aposta, e as duas saem de ramos da raiz — que é segredo até o
+   * fechamento. Publicar os ramos resolve, e por muito tempo isso foi
+   * impossível: com a raiz de 32 bits, `misturar()` era bijetiva e qualquer
+   * ramo publicado devolvia a raiz em **O(1)**. A ideia foi tentada no F1.14 e
+   * morreu na medição — está no D-018.
+   *
+   * O F1.15 destravou. Com a raiz de 128 bits e o ramo saindo de SHA-256,
+   * medido: varrer o espaço custa 5,3×10²⁴ anos na taxa desta máquina, um bit
+   * de diferença na raiz muda 16,1 dos 32 bits do ramo (a difusão perfeita é
+   * 16), e zero colisões em 2.000 pares.
+   *
+   * O QUE CONTINUA SEGREDO É O QUE MEXE EM RESULTADO: `ambiente` decide o
+   * clima, que dá bônus de stat, e `batalha` é a luta. Os dois só saem depois
+   * do fechamento, junto da raiz. */
+  s.teste('a abertura publica as sementes COSMÉTICAS, e só elas', () => {
+    const { sched } = novo();
+    sched.abrirRodada();
+    const p = sched.paraCliente();
+    igual(p.fase, ESTADOS.ABERTA, 'a rodada não está aberta');
+
+    ok(Number.isInteger(p.sementeElenco) && Number.isInteger(p.sementeVisual),
+      'a abertura não publicou as sementes de elenco e visual — sem elas o ' +
+      'cliente em modo servidor não tem como montar a pool nem a arena antes ' +
+      'do fechamento');
+
+    for (const proibido of ['sementeAmbiente', 'sementeBatalha', 'raiz', 'revelado'])
+      ok(p[proibido] === undefined,
+        `\`${proibido}\` saiu com a janela de aposta ABERTA. O ramo do ambiente ` +
+        `decide o clima, que dá bônus de stat; o da batalha é a luta. Quem os ` +
+        `lê aposta sabendo o resultado — é o §4.5 inteiro.`);
+  });
+
+  s.teste('a semente publicada é a MESMA que a raiz revelada produz', () => {
+    const { sched, avancar } = novo();
+    sched.abrirRodada();
+    const aberto = sched.paraCliente();
+    avancar(FASE_MS.APOSTA + 1); sched.tick();
+    const fechado = sched.paraCliente();
+
+    igual(aberto.sementeElenco, derivar(fechado.revelado.raiz, 'elenco'),
+      'a semente de elenco publicada na abertura não é a que a raiz revelada ' +
+      'produz. O cliente montou uma pool e o servidor jogou outra — e a ' +
+      'auditoria não pegaria, porque ela confere a raiz, não o que foi mostrado.');
+    igual(aberto.sementeVisual, derivar(fechado.revelado.raiz, 'visual'),
+      'a semente visual publicada não é a que a raiz revelada produz');
+  });
+
+  s.teste('a pool que o cliente monta da semente é a que o servidor publicou', () => {
+    /* A PARIDADE QUE FAZ O DESENHO INTEIRO FUNCIONAR. O cliente não recebe
+       lista de lutadores para desenhar: ele recebe a SEMENTE e roda o mesmo
+       `sortearPool` do servidor. Se os dois divergirem, o jogador aposta numa
+       lista e o settlement paga por outra. */
+    const { sched } = novo();
+    sched.abrirRodada();
+    const p = sched.paraCliente();
+    const doCliente = M.sortearPool(p.sementeElenco).map(f => f.dex);
+    const doServidor = p.lutadores.map(l => l.dex);
+    igual(doCliente.join(','), doServidor.join(','),
+      `o cliente montaria [${doCliente.slice(0, 4).join(',')}…] e o servidor ` +
+      `publicou [${doServidor.slice(0, 4).join(',')}…]. O jogador apostaria numa ` +
+      `lista e o settlement pagaria por outra.`);
   });
 
   /* --- o cliente perde o poder ------------------------------------------- */

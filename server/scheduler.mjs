@@ -27,7 +27,7 @@
  */
 import { randomUUID, randomBytes, createHash } from 'node:crypto';
 import { montarRodadaServidor, M, VERSAO_MOTOR } from './rodada.mjs';
-import { sementes, novaRaiz as raizNova } from '../engine/seed.mjs';
+import { sementes, novaRaiz as raizNova, derivar } from '../engine/seed.mjs';
 import { mensagemCommit } from '../engine/commit.mjs';
 import { CONF } from '../engine/engine.mjs';
 import { travarApostas } from './aposta.mjs';
@@ -191,6 +191,24 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
       erroPior: atual.preco.erroPior,
       abreEm: atual.abreEm,
       travaEm: atual.travaEm,
+      /* AS DUAS SEMENTES COSMÉTICAS, e a escolha de publicá-las é do F1.14.
+       *
+       * O cliente em modo servidor monta a pool e a arena DURANTE a janela de
+       * aposta, e as duas saem de ramos da raiz. Publicar os ramos era
+       * impossível até o F1.15: com raiz de 32 bits, `misturar()` é bijetiva e
+       * um ramo publicado devolvia a raiz em O(1) — a ideia foi tentada e
+       * morreu na medição, está no D-018.
+       *
+       * Com raiz de 128 bits e ramo saindo de SHA-256, medido: varrer custa
+       * 5,3×10²⁴ anos, e um bit de diferença na raiz muda 16,1 dos 32 bits do
+       * ramo (difusão perfeita é 16).
+       *
+       * SÓ AS COSMÉTICAS. `ambiente` decide o clima, que dá bônus de stat, e
+       * `batalha` é a luta — os dois continuam saindo só depois do fechamento,
+       * junto da raiz. A lista branca desta função é o que garante isso: campo
+       * novo não aparece aqui até alguém escrevê-lo. */
+      sementeElenco: derivar(atual.raiz, 'elenco'),
+      sementeVisual: derivar(atual.raiz, 'visual'),
       lutadores: atual.preco.lutadores.map(l => ({
         slot: l.idx, dex: l.dex, nome: l.nome,
         prob: l.prob, erroRelativo: l.erroRelativo,
