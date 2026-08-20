@@ -428,8 +428,13 @@ function garantirBase(semGolden, comVisual, estreita) {
           console.error('  O portão usa esta configuração para julgar. Vermelho aqui não é');
           console.error('  captura: é a configuração quebrada, e todo defeito avaliado nela');
           console.error('  voltaria como PEGOU sem ter sido pego. É o D-015.\n');
-          for (const l of r.saida.split('\n').filter(x => /VERMELHO|\[\w/.test(x)).slice(0, 6))
-            console.error(`  ${l.trim()}`);
+          /* A MENSAGEM VAI JUNTO DO TÍTULO. A primeira versão filtrava só as
+             linhas com `[suite]`, e o relatório do runner põe o PORQUÊ na linha
+             seguinte, indentada. Abortar dizendo "tal teste falhou" sem dizer o
+             que ele viu obriga quem lê a reproduzir uma condição de carga que
+             só o portão cria — foi o que custou duas tentativas aqui. */
+          for (const l of r.saida.split('\n').filter(x => /VERMELHO|^\s{2}\[|^\s{6}\S/.test(x)).slice(0, 12))
+            console.error(`  ${l.replace(/\s+$/, '')}`);
           process.exit(2);
         }
         return true;
