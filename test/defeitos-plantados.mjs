@@ -84,6 +84,7 @@ const RODADA = 'app/modules/rodada.mjs';
 const SRVLAC = 'server/laco.mjs';
 const SALAC  = 'app/modules/sala.mjs';
 const CONTXT = 'app/modules/conexao-texto.mjs';
+const MODOSRV= 'app/modules/modo-servidor.mjs';
 
 export const DEFEITOS = [
   /* Desde o F0.4 a tabela de tipos é DADO DO PACK, não do motor. O defeito é o
@@ -1429,6 +1430,28 @@ export const DEFEITOS = [
     real:'"o jogador gosta de saber que está conectado" — e o aviso permanente rouba espaço da rodada',
     de:"    visivel: false,\n    tentando: false,\n  },\n\n  [ESTADO_SALA.CONECTANDO]:",
     para:"    visivel: true,\n    tentando: false,\n  },\n\n  [ESTADO_SALA.CONECTANDO]:" },
+
+  /* ── F1.14 · O MODO SERVIDOR DO CLIENTE ───────────────────────────────── */
+
+  { id:'S251', arquivo:MODOSRV, nome:'a espera pela rodada desiste e devolve nada',
+    real:'"não veio, segue o jogo" — e o app cai para o sorteio local, que é o defeito que o bloco existe para impedir',
+    de:'  return new Promise(res => esperandoAbertura.push(res));',
+    para:'  return Promise.resolve(ultima);' },
+
+  { id:'S252', arquivo:MODOSRV, nome:'desligar entrega uma rodada a quem esperava',
+    real:'"limpar a fila é resolver a fila" — e o app desenha a rodada de um modo que já foi desligado',
+    de:'  esperandoAbertura.length = 0;',
+    para:'  while (esperandoAbertura.length) esperandoAbertura.shift()(ultima);' },
+
+  { id:'S253', arquivo:MODOSRV, nome:'o índice do lutador deixa de ser o slot do servidor',
+    real:'renumerar na tradução — e o jogador aposta num lutador e recebe por outro',
+    de:'      idx: l.slot, dex: l.dex, nome: l.nome,',
+    para:'      idx: i, dex: l.dex, nome: l.nome,' },
+
+  { id:'S254', arquivo:MODOSRV, nome:'a tela passa a mostrar a margem configurada',
+    real:'"o nome do campo é esse" — e a tela mostra a intenção em vez do preço que o §4.4.5 manda auditar',
+    de:'    margemConfigurada: rodada.margemEfetiva,',
+    para:'    margemConfigurada: rodada.margemConfigurada,' },
 
   { id:'S224', arquivo:FECHO, nome:'o fecho para de seguir os imports do filho',
     real:'somar só o arquivo do script — mudar o que ele importa deixa de invalidar',

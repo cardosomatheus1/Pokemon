@@ -56,6 +56,10 @@ const CAMADA = {
      na camada 0 junto com ela — o §5.9 exige coisas sobre texto, e texto se
      confere sem abrir navegador. Mesma razão do `protecao-texto.mjs`. */
   'conexao-texto.mjs': 0,
+  /* O modo servidor: importa a sala (camada 0) e mais nada do app. Não desenha,
+     não decide regra, não conhece DOM — traduz o que a sala entrega e guarda a
+     última rodada. Camada 0 porque quem interpreta é quem escuta. */
+  'modo-servidor.mjs': 0,
   /* Rótulos e a frase da recusa do §28.3. Puro: nada de DOM, nada de rede.
      Separado da tela porque o §28.3 exige coisas sobre TEXTO, e texto se
      confere sem abrir navegador. */
