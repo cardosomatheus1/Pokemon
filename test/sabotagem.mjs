@@ -257,7 +257,24 @@ const basesValidadas = new Map();
 console.log('Q2 · SABOTAGEM\n');
 const base = await rodar(CAIXAS[0], false, false);
 if (base.vermelha) {
-  console.error('ABORTADO: a suíte já está vermelha.'); process.exit(2);
+  /* O ABORT PRECISA DIZER O QUE QUEBROU.
+   *
+   * Ele dizia só "a suíte já está vermelha", e quem lesse isso tinha que
+   * reproduzir a caixa de areia à mão para descobrir o resto — foi o que
+   * aconteceu logo depois do F1.14, e é a mesma lacuna que custou três
+   * tentativas no D-016: o portão sabia a mensagem e não a imprimia.
+   *
+   * `PARAR_CEDO` está ligado nesta passada, então a saída termina exatamente
+   * na primeira falha. O rabo dela é o diagnóstico inteiro. */
+  console.error('\nABORTADO: a suíte já está vermelha DENTRO DA CAIXA DE AREIA.');
+  console.error('A árvore de trabalho pode estar verde e esta não — a caixa só');
+  console.error('recebe o que o `git ls-files` lista. Falhas:\n');
+  const linhas = base.saida.split('\n');
+  const falhas = linhas.filter(l => /^\s{2}\[[\w-]+\]|^VERMELHO|^\s{6}\S/.test(l));
+  console.error((falhas.length ? falhas : linhas.slice(-25)).join('\n'));
+  console.error(`\ncaixa: ${CAIXAS[0]}`);
+  console.error('reproduza com: cd <caixa> && EM_SANDBOX=1 PARAR_CEDO=1 SEM_VISUAL=1 node test/run.mjs\n');
+  process.exit(2);
 }
 for (const m of base.saida.matchAll(/^\s{2}([\w-]+): \d+\/\d+$/gm)) SUITES_REAIS.add(m[1]);
 console.log(`linha de base: VERDE (${SUITES_REAIS.size} suítes nomeadas)\n`);
