@@ -163,6 +163,15 @@ em dois eixos ao mesmo tempo — bloco novo traz defeitos novos *e* engrossa a
 suíte que cada defeito roda. Acelerar a execução mudaria a constante e deixaria
 a curva de pé; em três blocos voltaria a doer.
 
+```
+Q2 do zero, sem cache          31 min      (era ~100)
+Q2 sem nada ter mudado        4 min 09 s
+reaproveitados               194 de 208
+```
+
+Os 14 reavaliados com o repositório intocado são exatamente os 14 de fecho
+universal — ver **L-035** e o bloco **T4**, que existe para derrubá-los.
+
 O que derruba a curva é a observação de que **o veredito de um defeito é função
 de três coisas e de mais nada**:
 

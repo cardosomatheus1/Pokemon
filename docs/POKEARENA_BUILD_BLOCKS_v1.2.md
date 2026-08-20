@@ -1186,9 +1186,16 @@ enfeite:
 | defeitos com captor de fecho universal | **14 de 202** | menor |
 | dos quais, por processo filho | **10** (`portao` 9, `concorrencia` 1) | 0 |
 | dos quais, por `(não carrega)` | **4** | 0 |
-| Q2 quente, nada alterado | **4 min** | ? |
+| Q2 quente, nada alterado | **4 min 09 s** | < 1 min |
 | Q2 quente, alterando só `server/` | a medir | ? |
-| Q2 do zero | **38 min** | ~igual (o cache não participa) |
+| Q2 do zero | **31 min** | ~igual (o cache não participa) |
+
+**A medição confirmou o modelo exatamente.** Com o repositório intocado, o Q2
+reavaliou **14** defeitos — os mesmos 14 que têm captor de fecho universal, um a
+um. Nenhum a mais, nenhum a menos. É o que dá confiança de que o alvo deste
+bloco está certo: os 4 min da execução quente são, quase inteiros, esses 14
+pagando o caminho completo (`portao` roda a suíte em caixa de areia; os
+`(não carrega)` derrubam o carregamento e não nomeiam suíte).
 
 A terceira linha é a que importa de verdade: é ela que descreve o dia a dia de um
 bloco. Se ela não melhorar, o bloco não valeu — e o relatório tem que dizer isso
