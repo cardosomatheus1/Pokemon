@@ -1783,7 +1783,7 @@ navegador do arnês de dois processos que a L-032 construiu.
 
 ---
 
-### F1.15 — A raiz da rodada sai de 32 bits
+### F1.15 — A raiz da rodada sai de 32 bits ✅
 
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 Q3 Q4 Q6 · **Depende de** nada
 · **BLOQUEIA A TAG DA v0.9** · **VEM ANTES da segunda metade do F1.14**

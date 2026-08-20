@@ -26,6 +26,7 @@ import { criarSuite, ok, igual } from './harness.mjs';
 import { criarLaco } from '../server/laco.mjs';
 import { criarScheduler, ESTADOS, FASE_MS } from '../server/scheduler.mjs';
 import { criarSala } from '../server/transporte.mjs';
+import { raizValida } from '../engine/seed.mjs';
 import { abrirBanco, migrar } from '../server/banco.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import { API_VERSAO, CABECALHO_VERSAO } from '../server/contrato.mjs';
@@ -240,7 +241,9 @@ export function suite() {
     try {
       ate(c, ESTADOS.TRAVADA);
       const d = c.eventos().at(-1).dados;
-      ok(d.revelado && Number.isInteger(d.revelado.raiz) && d.revelado.sal,
+      /* F1.15 · a raiz é hex de 32 caracteres, não inteiro. `Number.isInteger`
+         aqui passaria a reprovar a raiz certa. */
+      ok(d.revelado && raizValida(d.revelado.raiz) && d.revelado.sal,
         'a semente não foi revelada depois do fechamento. O commit-reveal do ' +
         '§4.5 só vale se o reveal chegar a quem assistiu.');
     } finally { c.fechar(); }

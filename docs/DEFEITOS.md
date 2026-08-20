@@ -989,7 +989,7 @@ porque **derivar não pode dessincronizar**. Isso é um bloco, não um remendo.
 
 ---
 
-## D-018 — a raiz da rodada cabe num brute force, e o commit-reveal é decorativo
+## D-018 — a raiz da rodada cabia num brute force ✅ CORRIGIDO no F1.15
 
 **Achado em:** F1.14 · **Bloco dono:** **F1.15** (proposto no `BUILD_BLOCKS`
 neste commit) · **Gravidade:** o mais grave que este projeto já registrou
@@ -1089,6 +1089,37 @@ de hoje — os 154.000 não são segredo, só precisam estar bem espalhados.
 **Nenhuma feature de valor econômico real pode ser ligada** — o §25.1 já dizia
 isso, e agora há um motivo concreto e medido. O item entra na lista de saída da
 v0.9 junto do L-012.
+
+### ✅ Fechado no F1.15
+
+A raiz passou a ter **128 bits**, em hex. Os ramos continuam de 32 — o que
+quebrava não era a largura do ramo, era os cinco descerem de um segredo
+varrível.
+
+`derivar()` despacha **por tipo**: `number` segue no splitmix32, `string` vai
+para SHA-256. A versão da raiz é o tipo dela, e é isso que mantém toda rodada já
+publicada recalculável — §25.2 não pode quebrar retroativamente.
+
+O que o bloco encontrou e que não estava previsto:
+
+- **`(raiz >>> 0)` na mensagem do commit devolve 0** para raiz larga. Todo commit
+  sairia sobre a raiz zero, igual em todas as rodadas — e conferiria, porque
+  compromisso e verificação passam pela mesma função. Era o item nº 1 da
+  sabotagem do bloco, vivo no código.
+- **Essa linha estava DUPLICADA** em `engine/commit.mjs` e
+  `server/scheduler.mjs`. Duas fontes para o formato do compromisso, com um só
+  sintoma possível: uma auditoria que não fecha, meses depois. Agora é uma.
+- **A rota de auditoria só aceitava raiz numérica.** As rodadas do esquema NOVO
+  nasceriam inauditáveis, e a suíte inteira ficava verde porque nenhum teste
+  pedia hex.
+- **`lerRaiz()`**: a coluna é TEXT e cada leitor decidia sozinho como convertê-la.
+  `Number('1bfd…')` é `NaN`, e o sintoma seria a auditoria acusando o servidor
+  de ter mentido.
+
+Os dois testes que afirmavam este defeito de propósito ficaram vermelhos quando
+o bloco fechou — que era o combinado — e sumiram no mesmo commit. No lugar
+deles entrou o ataque: dada a pool publicada, não existe busca que devolva a
+raiz.
 
 ---
 

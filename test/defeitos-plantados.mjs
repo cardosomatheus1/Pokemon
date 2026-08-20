@@ -218,10 +218,29 @@ export const DEFEITOS = [
     de:'  for (const r of RAMOS) out[r] = derivar(raiz, r);',
     para:'  RAMOS.forEach((r, i) => { out[r] = derivar(raiz, String(i)); });' },
 
+  /* REALVADO NO F1.15: a raiz passou de 32 para 128 bits, e o trecho mudou de
+     forma. O defeito segue o COMPORTAMENTO — raiz saindo do relógio — e não o
+     endereço antigo. O `para` produz hex de 32 caracteres para que o defeito
+     seja pego pela imprevisibilidade, e não por um erro de formato. */
   { id:'S28', arquivo:SEMENTE, nome:'a raiz passa a sair do relógio',
     real:'CSPRNG trocado por algo "que sempre existe" — e a raiz vira adivinhável',
-    de:'  return c.getRandomValues(new Uint32Array(1))[0] >>> 0;',
-    para:'  return (Date.now() * 65537) >>> 0;' },
+    de:'  const p = c.getRandomValues(new Uint32Array(PALAVRAS_RAIZ));',
+    para:'  const p = [Date.now() >>> 0, 0, 0, 0];' },
+
+  { id:'S242', arquivo:SEMENTE, nome:'a raiz larga volta a caber em 32 bits',
+    real:'"um número basta" — e o D-018 inteiro volta: a pool publicada determina a raiz de novo',
+    de:'const PALAVRAS_RAIZ = BITS_RAIZ / 32;',
+    para:'const PALAVRAS_RAIZ = 1;' },
+
+  { id:'S243', arquivo:SEMENTE, nome:'a raiz larga é estreitada na árvore de sementes',
+    real:'`raiz >>> 0` numa raiz em hex devolve 0 — toda rodada nasce com a mesma árvore',
+    de:"  const out = { raiz: typeof raiz === 'string' ? raiz : raiz >>> 0 };",
+    para:'  const out = { raiz: raiz >>> 0 };' },
+
+  { id:'S244', arquivo:SEMENTE, nome:'o ramo largo deixa de ser hash e volta a ser bijetivo',
+    real:'"misturar é mais barato" — e publicar um ramo devolve a raiz em O(1)',
+    de:'  const v = sha256Palavras(chave)[0] >>> 0;',
+    para:'  const v = misturar(misturar(raiz.length) ^ hashRotulo(chave));' },
 
   { id:'S29', arquivo:PRECO, nome:'o Monte Carlo volta a sortear sozinho',
     real:'sub-seed derivada trocada por semente solta — o preço deixa de ser auditável',
@@ -862,10 +881,18 @@ export const DEFEITOS = [
     real:'condição afrouxada — e o §4.5 vira letra morta na hora de provar que vale',
     de:'    if (atual.status !== ESTADOS.ABERTA) {', para:'    if (true) {' },
 
-  { id:'S154', arquivo:SRVSCH, nome:'o commit deixa de conferir com o reveal',
+  /* REALVADO NO F1.15: a linha morava duplicada no scheduler, e virou fonte
+     única em `engine/commit.mjs`. O defeito segue o comportamento, não o
+     endereço antigo — é a regra do pré-voo. */
+  { id:'S154', arquivo:COMMIT, nome:'o commit deixa de conferir com o reveal',
     real:'mensagem "equivalente" — e o compromisso publicado não se valida',
-    de:"const MENSAGEM_COMMIT = (raiz, sal) => `pokearena|v1|${(raiz >>> 0).toString(16)}|${sal}`;",
-    para:"const MENSAGEM_COMMIT = (raiz, sal) => `${raiz}|${sal}`;" },
+    de:"export const mensagemCommit = (raiz, sal) =>\n  `pokearena|v1|${typeof raiz === 'string' ? raiz : (raiz >>> 0).toString(16)}|${sal}`;",
+    para:"export const mensagemCommit = (raiz, sal) => `${raiz}|${sal}`;" },
+
+  { id:'S241', arquivo:COMMIT, nome:'a raiz larga é estreitada na mensagem do commit',
+    real:'`raiz >>> 0` numa raiz de 128 bits devolve 0 — todo commit sai igual, sobre a raiz zero',
+    de:"  `pokearena|v1|${typeof raiz === 'string' ? raiz : (raiz >>> 0).toString(16)}|${sal}`;",
+    para:'  `pokearena|v1|${(raiz >>> 0).toString(16)}|${sal}`;' },
 
   { id:'S155', arquivo:SRVSCH, nome:'duas rodadas passam a existir ao mesmo tempo',
     real:'guarda removida — o cliente pediria a próxima até sair uma que lhe agrade',

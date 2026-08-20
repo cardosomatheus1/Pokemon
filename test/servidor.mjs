@@ -238,6 +238,47 @@ export async function suite() {
     });
   });
 
+  /* ── F1.15 · A AUDITORIA PRECISA DOS DOIS ESQUEMAS ─────────────────────
+   *
+   * Depois do F1.15 há rodadas dos dois tipos no histórico: as antigas com raiz
+   * numérica de 32 bits, as novas com hex de 128. Estas rotas existem para
+   * qualquer um recalcular uma rodada publicada (§25.2).
+   *
+   * Aceitar só o formato novo tornaria as antigas inauditáveis. Aceitar só o
+   * antigo tornaria as NOVAS inauditáveis — e é com esse defeito que o bloco
+   * quase saiu, porque a suíte inteira ficava verde sem ninguém pedir hex. */
+  s.teste('a auditoria aceita raiz dos DOIS esquemas', async () => {
+    await comServidor(async porta => {
+      const larga = 'a3f1'.repeat(8);                    // hex de 32 caracteres
+      const nova = await pedir(porta, `/api/rodada/digital?raiz=${larga}`,
+        { headers: { 'x-api-versao': API_VERSAO } });
+      igual(nova.status, 200,
+        `raiz de 128 bits recusada (${nova.status}): as rodadas do esquema NOVO ` +
+        `ficariam sem como ser recalculadas, e a auditoria do §25.2 é o produto`);
+      /* `pedir` devolve o corpo como TEXTO neste arquivo — `json()` é o
+         conversor local. A primeira versão deste teste leu `corpo.raiz` direto
+         e recebeu `undefined`. */
+      igual(json(nova.corpo)?.raiz, larga, 'a rota devolveu outra raiz');
+
+      const velha = await pedir(porta, '/api/rodada/digital?raiz=12345678',
+        { headers: { 'x-api-versao': API_VERSAO } });
+      igual(velha.status, 200, 'raiz numérica recusada — as rodadas antigas ficam inauditáveis');
+      igual(json(velha.corpo)?.raiz, 12345678, 'a raiz antiga voltou com outro tipo');
+
+      /* AS DUAS PRECISAM DAR RODADAS DIFERENTES. Sem isto, uma implementação
+         que ignorasse a raiz e devolvesse sempre a mesma coisa passaria. */
+      ok(json(nova.corpo)?.digital !== json(velha.corpo)?.digital,
+        'as duas raízes produziram a MESMA rodada — a raiz não está sendo usada');
+
+      /* E o hex mal formado continua recusado: 31 e 33 dígitos, e não-hex. */
+      for (const v of ['a3f1'.repeat(8).slice(1), 'a3f1'.repeat(8) + '0', 'z'.repeat(32)]) {
+        const r = await pedir(porta, `/api/rodada/digital?raiz=${v}`,
+          { headers: { 'x-api-versao': API_VERSAO } });
+        igual(r.status, 400, `hex inválido "${v.slice(0, 12)}…" foi aceito`);
+      }
+    });
+  });
+
   s.teste('caminho desconhecido dá 404 sem revelar estrutura', async () => {
     await comServidor(async porta => {
       const r = await pedir(porta, '/api/nao/existe',

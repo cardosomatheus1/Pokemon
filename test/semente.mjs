@@ -16,7 +16,7 @@
  *      quem prevê a raiz sabe o vencedor antes de apostar.
  */
 import { criarSuite, ok, igual } from './harness.mjs';
-import { RAMOS, derivar, derivarIndice, novaRaiz, sementes } from '../engine/seed.mjs';
+import { RAMOS, derivar, derivarIndice, novaRaiz, sementes, BITS_RAIZ } from '../engine/seed.mjs';
 import { criarMotor, tiposDaPool } from '../engine/engine.mjs';
 import packKanto from '../content/pokemon_kanto_v1.mjs';
 /* A reconstrução mora em arquivo próprio porque o portão Q5 importa a MESMA
@@ -238,13 +238,84 @@ export function suite() {
 
   /* ------------------------------------------------- Q6 imprevisibilidade */
 
+  /* ── F1.15 · O FORMATO DA DERIVAÇÃO É FIXADO, E É A AUDITORIA QUE EXIGE ──
+   *
+   * O §25.2 diz que qualquer um recalcula uma rodada publicada. Isso só vale
+   * enquanto a derivação der o MESMO número amanhã — e nada, até aqui,
+   * impedia que ela mudasse.
+   *
+   * Quatro defeitos plantados escaparam da suíte por esse buraco (S154, S241,
+   * S243, S244), e os quatro pela mesma razão: **mudar o formato mantém
+   * compromisso e verificação consistentes ENTRE SI**. `conferir()` chama
+   * `comprometer()`, os dois passam pela mesma função, e um teste de ida e
+   * volta continua verde com o formato errado. O que ele não vê é que a rodada
+   * publicada ontem deixou de fechar.
+   *
+   * A FIXTURE NÃO PROVA QUE A DERIVAÇÃO ESTÁ CERTA, e isso precisa estar dito:
+   * ela foi gravada com esta mesma implementação, então ela se aprovaria. O que
+   * ela prova é que a derivação NÃO MUDOU. A correção do hash vem de outro
+   * lugar — `test/hash.mjs`, contra os vetores do NIST e contra o
+   * `crypto.subtle` da plataforma. Uma coisa afirma o valor, a outra afirma a
+   * estabilidade. */
+  s.teste('a derivação de cada raiz continua a mesma da fixture', async () => {
+    const { readFileSync } = await import('node:fs');
+    const f = JSON.parse(readFileSync(new URL('./fixtures/semente-larga.json', import.meta.url), 'utf8'));
+    const { mensagemCommit } = await import('../engine/commit.mjs');
+    for (const [chave, esp] of Object.entries(f.raizes)) {
+      const raiz = esp.tipo === 'number' ? Number(chave) : chave;
+      const s2 = sementes(raiz);
+      igual(s2.raiz, esp.raizDaArvore,
+        `\`sementes(${chave.slice(0, 12)}…).raiz\` mudou: era ${esp.raizDaArvore}, ` +
+        `veio ${s2.raiz}. Se a raiz larga foi estreitada aqui, a árvore continua ` +
+        `certa e o CLIENTE compromete a raiz errada.`);
+      for (const [ramo, v] of Object.entries(esp.ramos))
+        igual(s2[ramo], v,
+          `o ramo \`${ramo}\` da raiz ${chave.slice(0, 12)}… mudou: era ${v}, veio ${s2[ramo]}. ` +
+          `Toda rodada publicada com esta raiz deixou de ser recalculável, e a ` +
+          `auditoria do §25.2 passa a acusar o servidor de ter mentido.`);
+      igual(mensagemCommit(raiz, f.sal), esp.mensagem,
+        `a mensagem do commit mudou de formato para a raiz ${chave.slice(0, 12)}…: ` +
+        `era "${esp.mensagem}", virou "${mensagemCommit(raiz, f.sal)}". Commit e ` +
+        `verificação continuam concordando entre si — e param de concordar com ` +
+        `o que foi publicado ontem.`);
+    }
+  });
+
+  /* O CONTRAPESO: raízes diferentes precisam dar commits diferentes.
+   *
+   * `(raiz >>> 0)` numa raiz em hex devolve **0**, e todo commit sairia sobre a
+   * raiz zero — igual em todas as rodadas. Commit e reveal continuariam
+   * conferindo, porque os dois passam pela mesma função; o que morre é o
+   * commit-reveal inteiro, que existe para amarrar UMA rodada. */
+  s.teste('raízes diferentes dão mensagens de commit diferentes', async () => {
+    const { mensagemCommit } = await import('../engine/commit.mjs');
+    const sal = 'ab'.repeat(16);
+    const vistas = new Set();
+    for (let i = 0; i < 200; i++) vistas.add(mensagemCommit(novaRaiz(), sal));
+    igual(vistas.size, 200,
+      `200 raízes diferentes produziram só ${vistas.size} mensagens distintas. ` +
+      `A raiz está sendo estreitada antes de entrar no compromisso, e o ` +
+      `commit-reveal do §4.5 deixa de amarrar rodada nenhuma.`);
+  });
+
+  /* ── F1.15 · A RAIZ TEM 128 BITS, E ESTES TESTES FORAM REESCRITOS ───────
+   *
+   * Eles mediam um inteiro de 32 bits: `r[i] - r[i-1]`, `v >>> b`. Com raiz em
+   * hex, subtrair strings dá `NaN` — e `NaN < x` é `false`, então o teste do
+   * relógio PASSAVA sem medir nada. Verde que não mede é pior que vermelho, e
+   * foi por isso que os três foram refeitos juntos em vez de remendados.
+   *
+   * O que eles provam continua o mesmo; muda só como se lê a raiz. */
+  const comoNumero = hex => BigInt('0x' + hex);
+
   s.teste('a raiz não sai de um contador', () => {
     const r = Array.from({ length: 3000 }, novaRaiz);
     const difs = new Set();
-    for (let i = 1; i < r.length; i++) difs.add((r[i] - r[i-1]) | 0);
+    for (let i = 1; i < r.length; i++)
+      difs.add(String(comoNumero(r[i]) - comoNumero(r[i - 1])));
     ok(difs.size > 2900, `só ${difs.size} diferenças distintas em 3.000 raízes — parece contador`);
     let crescentes = 0;
-    for (let i = 1; i < r.length; i++) if (r[i] > r[i-1]) crescentes++;
+    for (let i = 1; i < r.length; i++) if (comoNumero(r[i]) > comoNumero(r[i - 1])) crescentes++;
     const frac = crescentes / (r.length - 1);
     ok(frac > 0.4 && frac < 0.6, `${(frac*100).toFixed(1)}% das raízes crescem — sequência ordenada`);
   });
@@ -269,21 +340,36 @@ export function suite() {
       ok(new Set(lista).size === lista.length,
         `duas raízes iguais no instante ${ms} — o relógio virou a semente`);
 
-    /* proximidade em valor: se o tempo vazasse, raízes seguidas ficariam perto */
+    /* PROXIMIDADE EM VALOR: se o tempo vazasse, raízes seguidas ficariam perto.
+       A janela cresce junto com o espaço — 2^96 em 2^128 é a mesma fração que
+       2^16 em 2^32 era. Com `BigInt` porque 128 bits não cabem em `Number`, e
+       `Math.abs` sobre strings devolvia `NaN`: a comparação era sempre falsa e
+       o teste passava sem medir nada. */
+    const JANELA = 2n ** 96n;
     let perto = 0;
-    for (let i = 1; i < r.length; i++) if (Math.abs(r[i] - r[i-1]) < 0x10000) perto++;
+    for (let i = 1; i < r.length; i++) {
+      const a = comoNumero(r[i]), b = comoNumero(r[i - 1]);
+      if ((a > b ? a - b : b - a) < JANELA) perto++;
+    }
     const frac = perto / (r.length - 1);
-    /* 2^16 de janela em 2^32 de espaço: ~0,003% por acaso, dos dois lados. */
     ok(frac < 0.01,
-      `${perto} de ${r.length-1} raízes seguidas a menos de 2^16 de distância ` +
+      `${perto} de ${r.length-1} raízes seguidas a menos de 2^96 de distância ` +
       `(${(frac*100).toFixed(2)}%) — o relógio vazou para dentro da raiz`);
   });
 
-  s.teste('a raiz tem os 32 bits vivos', () => {
-    const uns = new Array(32).fill(0), N = 4000;
+  s.teste('a raiz tem os 128 bits vivos', () => {
+    /* 128 e não 32: é o tamanho novo, e cada bit precisa estar vivo. Um bit
+       morto reduz o espaço pela metade, e o D-018 é sobre o tamanho do espaço.
+       A leitura é por dígito hex — quatro bits de cada vez, sem `>>>`, que só
+       enxerga 32. */
+    const uns = new Array(BITS_RAIZ).fill(0), N = 4000;
     for (let i = 0; i < N; i++) {
       const v = novaRaiz();
-      for (let b = 0; b < 32; b++) if ((v >>> b) & 1) uns[b]++;
+      igual(v.length, BITS_RAIZ / 4, `a raiz tem ${v.length} dígitos hex`);
+      for (let d = 0; d < v.length; d++) {
+        const nib = parseInt(v[d], 16);
+        for (let b = 0; b < 4; b++) if ((nib >> b) & 1) uns[d * 4 + b]++;
+      }
     }
     uns.forEach((c, b) => ok(c / N > 0.44 && c / N < 0.56,
       `o bit ${b} vale 1 em ${(c/N*100).toFixed(1)}% das raízes — não é uniforme`));

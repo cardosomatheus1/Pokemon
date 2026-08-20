@@ -17,6 +17,7 @@ import { API_VERSAO, CABECALHO_VERSAO, ERROS, SEM_VERSAO, versaoAceita } from '.
 import { lerConfig } from './config.mjs';
 import { VERSAO_MOTOR, montarRodadaServidor } from './rodada.mjs';
 import { digital } from '../test/rodada-digital.mjs';
+import { RAIZ_LARGA } from '../engine/seed.mjs';
 import { abrirBanco, migrar } from './banco.mjs';
 import { criarScheduler } from './scheduler.mjs';
 import { criarSala } from './transporte.mjs';
@@ -94,14 +95,14 @@ export function criarServidor(opcoes = {}) {
   /* A digital da rodada: a prova de paridade, exposta como rota porque é ela
      que o teste do F1.1 usa para comparar servidor e cliente. */
   registrar('GET', '/api/rodada/digital', ({ query }) => {
-    const raiz = inteiro(query.get('raiz'));
-    if (raiz === null) return erro(400, ERROS.ENTRADA_INVALIDA, 'raiz precisa ser um inteiro sem sinal');
+    const raiz = raizDaQuery(query.get('raiz'));
+    if (raiz === null) return erro(400, ERROS.ENTRADA_INVALIDA, RAIZ_ESPERADA);
     return { corpo: { raiz, digital: digital(raiz), versaoMotor: VERSAO_MOTOR } };
   });
 
   registrar('GET', '/api/rodada/preco', ({ query }) => {
-    const raiz = inteiro(query.get('raiz'));
-    if (raiz === null) return erro(400, ERROS.ENTRADA_INVALIDA, 'raiz precisa ser um inteiro sem sinal');
+    const raiz = raizDaQuery(query.get('raiz'));
+    if (raiz === null) return erro(400, ERROS.ENTRADA_INVALIDA, RAIZ_ESPERADA);
     /* `sims` é aceito para o TESTE poder pedir um lote curto, e tem teto — sem
        ele um `?sims=1e9` é uma negação de serviço de um caractere. */
     const sims = query.has('sims') ? inteiro(query.get('sims')) : undefined;
@@ -276,6 +277,24 @@ function aplicarCors(req, res, config) {
 
 /* Inteiro sem sinal, ou `null`. `Number()` sozinho aceita `'  12  '`, `'0x1f'`,
    `'1e3'` e `''` — e cada um deles é uma raiz diferente da que o cliente usou. */
+/* A RAIZ DA QUERY ACEITA OS DOIS FORMATOS, e é a auditoria que exige isso.
+ *
+ * Estas duas rotas existem para qualquer um recalcular uma rodada publicada
+ * (§25.2). Depois do F1.15 há rodadas dos dois esquemas no histórico: as
+ * antigas com raiz numérica de 32 bits, as novas com hex de 128. Aceitar só o
+ * formato novo tornaria as antigas inauditáveis; aceitar só o antigo tornaria
+ * as NOVAS inauditáveis, que é o defeito com que este bloco quase saiu.
+ *
+ * O tipo devolvido é o que o `derivar` usa para escolher o esquema — a mesma
+ * regra dos dois lados, e é o `lerRaiz` do motor que a define. */
+const RAIZ_ESPERADA = 'raiz precisa ser um inteiro sem sinal ou hex de 32 caracteres';
+
+function raizDaQuery(v) {
+  if (typeof v !== 'string') return null;
+  if (RAIZ_LARGA.test(v)) return v;
+  return inteiro(v);
+}
+
 function inteiro(v) {
   if (typeof v !== 'string' || !/^\d{1,10}$/.test(v)) return null;
   const n = Number(v);

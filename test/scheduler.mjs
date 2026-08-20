@@ -18,6 +18,7 @@
  *      nasce sem ninguém lembrar de conferi-lo.
  *   3. Semente vinda do cliente é IGNORADA, não usada.
  */
+import { lerRaiz } from '../engine/seed.mjs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { abrirBanco, migrar } from '../server/banco.mjs';
 import {
@@ -106,7 +107,10 @@ export function suite() {
     const f = db.prepare(`SELECT round_seed_commit, round_seed_reveal, round_seed_sal
                           FROM rounds WHERE id=?`).get(r.id);
     const { conferir } = await import('../engine/commit.mjs');
-    ok(await conferir(f.round_seed_commit, Number(f.round_seed_reveal), f.round_seed_sal),
+    /* `lerRaiz` e não `Number`: a coluna é TEXT e o TIPO é a versão da raiz.
+       `Number('1bfd…')` é `NaN`, e o sintoma seria o commit não conferir — ou
+       seja, a auditoria acusando o servidor de ter mentido. */
+    ok(await conferir(f.round_seed_commit, lerRaiz(f.round_seed_reveal), f.round_seed_sal),
       'o commit publicado não bate com a semente revelada. É a promessa do §4.5 ' +
       'quebrada exatamente onde ela é verificável.');
   });
@@ -211,7 +215,7 @@ export function suite() {
     const f = db.prepare(`SELECT round_seed_reveal, champion_species_id FROM rounds WHERE id=?`).get(r.id);
     /* A prova do §P3 atravessando o servidor: qualquer um refaz a rodada a
        partir da semente publicada e chega ao MESMO campeão. */
-    const daSemente = sched.campeaoDaRaiz(Number(f.round_seed_reveal));
+    const daSemente = sched.campeaoDaRaiz(lerRaiz(f.round_seed_reveal));
     igual(f.champion_species_id, daSemente,
       'o campeão gravado não é o que a semente publicada reproduz — a auditoria ' +
       'do §25.2 daria um resultado diferente do que o jogador viu');

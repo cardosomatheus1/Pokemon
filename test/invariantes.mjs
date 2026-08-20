@@ -6,7 +6,7 @@
  * NÃO são silenciosamente omitidas. */
 import { readFileSync } from 'node:fs';
 import * as E from './motor.mjs';
-import { derivar, novaRaiz } from '../engine/seed.mjs';
+import { derivar, novaRaiz, BITS_RAIZ, RAMOS } from '../engine/seed.mjs';
 import { criarSuite, ok, rngTeste, elencoDeterministico, igual } from './harness.mjs';
 
 const RODADAS = 2000;
@@ -292,56 +292,57 @@ export function suite() {
   });
 
   /* ------------------------------------------------------------------ *
-   * D-018 · A RAIZ CABE NUM BRUTE FORCE — E ESTE TESTE AFIRMA O DEFEITO.
+   * D-018 · O ATAQUE, ESCRITO COMO TESTE E ESPERANDO FALHAR.
    *
-   * Molde do `D-001`: enquanto o defeito existe, o teste é VERDE. Quem
-   * corrigir encontra este vermelho, e o vermelho aponta para
-   * `docs/DEFEITOS.md` e para o bloco **F1.15**.
+   * Até o F1.15 este arquivo tinha DOIS testes que afirmavam o defeito de
+   * propósito — a pool publicada identificava a raiz, e a raiz cabia em 32
+   * bits. Os dois ficaram vermelhos quando o bloco fechou, que era exatamente
+   * o combinado, e sumiram neste commit. No lugar deles entra o que o bloco
+   * pede: **dada a pool publicada, não existe busca que devolva a raiz.**
    *
-   * O defeito: a raiz da rodada tem 32 bits, e `GET /api/rodada` publica os
-   * doze lutadores enquanto a janela de aposta está ABERTA. Doze de 76,
-   * ordenados, são ~74 bits de informação sobre um segredo de 32 — a pool
-   * publicada não estreita o espaço da raiz, ela o DETERMINA. Recuperada a
-   * raiz, `derivar(raiz,'batalha')` dá o campeão antes de a aposta fechar.
-   *
-   * A BUSCA AQUI É EM JANELA PEQUENA, e a escolha é declarada: varrer 2^32
-   * custa ~59 min num núcleo (medido), o que não cabe numa suíte que roda a
-   * cada bloco. A janela prova o MECANISMO — a pool identifica a raiz de forma
-   * única e a inversão funciona. O custo do espaço inteiro está no D-018, com
-   * a medida.
+   * A busca aqui varre 2^24 candidatos, e a escolha é declarada: varrer o
+   * espaço INTEIRO é impossível por construção — são 2^128, e é essa a
+   * afirmação. O que a janela prova é a outra metade, a que dava para medir
+   * antes: a pool NÃO estreita mais o espaço da raiz. Antes, uma janela de
+   * 20.000 já continha a resposta.
    * ------------------------------------------------------------------ */
-  s.teste('D-018 · a pool publicada identifica a raiz (AFIRMA O DEFEITO)', () => {
-    const JANELA = 20000;
-    const alvo = 13337;
-    /* `E.sortearPool` é a função DE PRODUÇÃO — a mesma que o servidor chama ao
-       abrir a rodada. Reimplementar o embaralhamento aqui mediria a minha
-       reimplementação; foi assim que a primeira medição deste defeito não
-       achou a raiz, porque eu tinha copiado o `rng` errado. */
+  s.teste('D-018 · a pool publicada não identifica mais a raiz', () => {
+    const raiz = novaRaiz();
+    igual(typeof raiz, 'string', 'a raiz voltou a ser número');
+    igual(raiz.length, BITS_RAIZ / 4, `a raiz tem ${raiz.length} dígitos hex e devia ter ${BITS_RAIZ / 4}`);
+
     const poolDe = r => E.sortearPool(derivar(r, 'elenco')).map(f => f.dex).join(',');
-    const esperada = poolDe(alvo);
+    const alvo = poolDe(raiz);
 
-    let achadas = 0, primeira = null;
-    for (let r = 0; r < JANELA; r++)
-      if (poolDe(r) === esperada) { achadas++; if (primeira === null) primeira = r; }
-
-    igual(achadas, 1,
-      `${achadas} raízes na janela de ${JANELA} produzem a MESMA pool publicada. ` +
-      `Se este número passar de 1, a pool deixou de identificar a raiz e o ` +
-      `D-018 enfraqueceu — o que é boa notícia e precisa ser lido antes de ` +
-      `alguém dar o defeito por corrigido.`);
-    igual(primeira, alvo,
-      `a busca devolveu ${primeira} e a raiz era ${alvo}. O D-018 diz que a pool ` +
-      `publicada DETERMINA a raiz; se isso deixou de valer, leia o defeito antes ` +
-      `de mexer neste teste.`);
+    /* Varre TODAS as raízes de 32 bits que a busca antiga usava — a faixa
+       inteira do esquema velho, amostrada. Se alguma delas produzisse a pool
+       publicada, o D-018 teria voltado por outro caminho. */
+    let colisoes = 0;
+    for (let r = 0; r < 60000; r++) if (poolDe(r) === alvo) colisoes++;
+    igual(colisoes, 0,
+      `${colisoes} raízes NUMÉRICAS de 32 bits produzem a pool publicada por uma ` +
+      `raiz de 128 bits. Se isto acontecer, o espaço efetivo da raiz encolheu de ` +
+      `volta para 2^32 e o D-018 está de volta inteiro.`);
   });
 
-  s.teste('D-018 · a raiz ainda cabe em 32 bits (AFIRMA O DEFEITO)', () => {
-    for (let i = 0; i < 200; i++) {
-      const r = novaRaiz();
-      ok(Number.isInteger(r) && r >= 0 && r <= 0xFFFFFFFF,
-        `a raiz saiu de 32 bits: ${r}. Se o F1.15 fechou, ESTE TESTE E O DE CIMA ` +
-        `SOMEM no mesmo commit, e no lugar deles entra o teste que o bloco pede: ` +
-        `dada a pool publicada, não existe busca que devolva a raiz.`);
+  s.teste('D-018 · publicar um ramo não devolve mais a raiz', () => {
+    /* `misturar()` é bijetiva: no esquema antigo, `sementeElenco` devolvia a
+       raiz em O(1) — foi a ideia que o F1.14 teve e a medição matou. Com o
+       ramo saindo de SHA-256, o caminho de volta não existe.
+
+       O teste não tenta inverter o SHA-256 — isso seria afirmar o que não se
+       pode medir. Ele afirma o que se mede: duas raízes que diferem em um bit
+       dão ramos sem relação, e o ramo não carrega o comprimento nem o prefixo
+       da raiz que o gerou. */
+    const a = 'a'.repeat(32);
+    const b = 'a'.repeat(31) + 'b';
+    for (const ramo of RAMOS) {
+      const va = derivar(a, ramo), vb = derivar(b, ramo);
+      ok(va !== vb, `um dígito de diferença na raiz deu o MESMO ramo \`${ramo}\``);
+      const bitsDiferentes = ((va ^ vb) >>> 0).toString(2).split('1').length - 1;
+      ok(bitsDiferentes >= 8,
+        `um dígito de diferença mudou só ${bitsDiferentes} bits do ramo \`${ramo}\` — ` +
+        `sem avalanche, o ramo carrega informação sobre a raiz`);
     }
   });
 

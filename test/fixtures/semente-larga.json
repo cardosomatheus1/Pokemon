@@ -1,0 +1,101 @@
+{
+ "sal": "00112233445566778899aabbccddeeff",
+ "raizes": {
+  "1": {
+   "tipo": "number",
+   "raizDaArvore": 1,
+   "ramos": {
+    "elenco": 647220046,
+    "ambiente": 1108763800,
+    "batalha": 2466068291,
+    "visual": 4104576686,
+    "recompensa": 2798359919
+   },
+   "mensagem": "pokearena|v1|1|00112233445566778899aabbccddeeff"
+  },
+  "42": {
+   "tipo": "number",
+   "raizDaArvore": 42,
+   "ramos": {
+    "elenco": 1340838040,
+    "ambiente": 2764898105,
+    "batalha": 1518158477,
+    "visual": 2530210447,
+    "recompensa": 1010705510
+   },
+   "mensagem": "pokearena|v1|2a|00112233445566778899aabbccddeeff"
+  },
+  "12345678": {
+   "tipo": "number",
+   "raizDaArvore": 12345678,
+   "ramos": {
+    "elenco": 1460334333,
+    "ambiente": 731361381,
+    "batalha": 4116082090,
+    "visual": 1940616490,
+    "recompensa": 3580632960
+   },
+   "mensagem": "pokearena|v1|bc614e|00112233445566778899aabbccddeeff"
+  },
+  "00000000000000000000000000000000": {
+   "tipo": "string",
+   "raizDaArvore": "00000000000000000000000000000000",
+   "ramos": {
+    "elenco": 819269344,
+    "ambiente": 1311688932,
+    "batalha": 1540015182,
+    "visual": 1907031002,
+    "recompensa": 3683177133
+   },
+   "mensagem": "pokearena|v1|00000000000000000000000000000000|00112233445566778899aabbccddeeff"
+  },
+  "ffffffffffffffffffffffffffffffff": {
+   "tipo": "string",
+   "raizDaArvore": "ffffffffffffffffffffffffffffffff",
+   "ramos": {
+    "elenco": 3946750178,
+    "ambiente": 2105964469,
+    "batalha": 396679768,
+    "visual": 3321248075,
+    "recompensa": 3768836689
+   },
+   "mensagem": "pokearena|v1|ffffffffffffffffffffffffffffffff|00112233445566778899aabbccddeeff"
+  },
+  "0123456789abcdef0123456789abcdef": {
+   "tipo": "string",
+   "raizDaArvore": "0123456789abcdef0123456789abcdef",
+   "ramos": {
+    "elenco": 1676953499,
+    "ambiente": 2299599979,
+    "batalha": 1402673939,
+    "visual": 2040788108,
+    "recompensa": 2400929383
+   },
+   "mensagem": "pokearena|v1|0123456789abcdef0123456789abcdef|00112233445566778899aabbccddeeff"
+  },
+  "a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1": {
+   "tipo": "string",
+   "raizDaArvore": "a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1",
+   "ramos": {
+    "elenco": 3958141581,
+    "ambiente": 1775861778,
+    "batalha": 2510561167,
+    "visual": 3653491167,
+    "recompensa": 2612642074
+   },
+   "mensagem": "pokearena|v1|a3f1a3f1a3f1a3f1a3f1a3f1a3f1a3f1|00112233445566778899aabbccddeeff"
+  },
+  "4294967295": {
+   "tipo": "number",
+   "raizDaArvore": 4294967295,
+   "ramos": {
+    "elenco": 2111360062,
+    "ambiente": 4249212972,
+    "batalha": 1607664121,
+    "visual": 1213772979,
+    "recompensa": 660328561
+   },
+   "mensagem": "pokearena|v1|ffffffff|00112233445566778899aabbccddeeff"
+  }
+ }
+}

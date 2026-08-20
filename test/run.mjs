@@ -41,6 +41,7 @@ import * as protecao from './protecao.mjs';
 import * as resultado from './resultado.mjs';
 import * as rotas from './rotas.mjs';
 import * as protecaoTela from './protecao-tela.mjs';
+import * as hash from './hash.mjs';
 import * as laco from './laco.mjs';
 import * as salaCliente from './sala-cliente.mjs';
 import * as lacoServidor from './laco-servidor.mjs';
@@ -221,7 +222,7 @@ const todas = [
   fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(), emissao.suite(),
   carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(), telemetria.suite(), commit.suite(), saida.suite(), progressao.suite(), tema.suite(), arenas.suite(), portao.suite(), colocacao.suite(), banner.suite(), shiny.suite(), adm.suite(),
   /* médias: lotes de simulação curtos */
-  await servidor.suite(), bancoServidor.suite(), auth.suite(), carteiraServidor.suite(), scheduler.suite(), transporte.suite(), apostaServidor.suite(), concorrencia.suite(), limites.suite(), protecao.suite(), resultado.suite(), await rotas.suite(), await protecaoTela.suite(), laco.suite(), salaCliente.suite(), await lacoServidor.suite(),
+  await servidor.suite(), bancoServidor.suite(), auth.suite(), carteiraServidor.suite(), scheduler.suite(), transporte.suite(), apostaServidor.suite(), concorrencia.suite(), limites.suite(), protecao.suite(), resultado.suite(), await rotas.suite(), await protecaoTela.suite(), await hash.suite(), laco.suite(), salaCliente.suite(), await lacoServidor.suite(),
   semente.suite(), estatistica.suite(), precisao.suite(), invariantes.suite(),
   /* `rVisual` e não `visual.disponivel()`: com `--so` fora das suítes de
      navegador o Chromium nem sobe, e a condição antiga montaria suítes com

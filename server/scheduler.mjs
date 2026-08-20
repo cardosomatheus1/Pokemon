@@ -25,9 +25,10 @@
  * alguém acrescentar amanhã — e o campo novo é justamente o que ninguém lembra
  * de conferir. Aqui, campo novo não aparece até alguém o escrever nesta função.
  */
-import { randomUUID, randomInt, randomBytes, createHash } from 'node:crypto';
+import { randomUUID, randomBytes, createHash } from 'node:crypto';
 import { montarRodadaServidor, M, VERSAO_MOTOR } from './rodada.mjs';
-import { sementes } from '../engine/seed.mjs';
+import { sementes, novaRaiz as raizNova } from '../engine/seed.mjs';
+import { mensagemCommit } from '../engine/commit.mjs';
 import { CONF } from '../engine/engine.mjs';
 import { travarApostas } from './aposta.mjs';
 
@@ -52,10 +53,19 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
   let atual = null;      // a rodada em memória, com o segredo
   const segredos = new Map();
 
-  /* A SEMENTE VEM DE `randomInt` DO `node:crypto`, e nunca de fora.
-     `Math.random()` seria previsível o bastante para alguém que observe algumas
-     rodadas — e a semente é a luta inteira. */
-  const novaRaiz = () => randomInt(0, 0xFFFFFFFF);
+  /* A SEMENTE VEM DO CSPRNG, e nunca de fora. `Math.random()` seria previsível
+     o bastante para alguém que observe algumas rodadas — e a semente é a luta
+     inteira.
+
+     F1.15 · 128 BITS, e não 32. A raiz de 32 bits era recuperável a partir da
+     pool publicada: doze lutadores entre 76, ordenados, carregam ~74 bits de
+     informação sobre ela, e varrer 2^32 leva ~59 min num núcleo — de UMA vez,
+     porque o mapa não depende da rodada. Com a janela aberta, dava para saber
+     o campeão. É o D-018.
+
+     A função mora no `engine/seed.mjs` porque o cliente precisa da MESMA — é a
+     paridade do F1.1 continuando a valer. */
+  const novaRaiz = () => raizNova();
 
   function abrirRodada(_pedido = {}) {
     /* O ARGUMENTO EXISTE E É IGNORADO, de propósito.
@@ -234,7 +244,15 @@ function simularDaRaiz(raiz) {
  * motor rejeita, e a promessa do §4.5 quebraria justamente na hora de provar
  * que ela vale. O teste `o commit publicado CONFERE com a semente revelada`
  * existe para isso, e usa o `conferir` do motor — não uma cópia. */
-const MENSAGEM_COMMIT = (raiz, sal) => `pokearena|v1|${(raiz >>> 0).toString(16)}|${sal}`;
+/* O FORMATO VEM DO `engine/commit.mjs`, e não de uma cópia literal.
+ *
+ * Esta linha era um duplicado exato da de lá — o servidor precisa da versão
+ * SÍNCRONA do hash (o `comprometer()` do engine é async pela WebCrypto), e a
+ * cópia parecia inofensiva. Não é: duas fontes para o formato do commit fazem
+ * cliente e servidor comprometerem coisas diferentes, e o único sintoma é uma
+ * auditoria que não fecha meses depois. O que é síncrono aqui é o HASH, e só
+ * ele. */
+const MENSAGEM_COMMIT = mensagemCommit;
 
 function comprometerSync(raiz) {
   const sal = randomBytes(16).toString('hex');

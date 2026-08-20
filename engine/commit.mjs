@@ -28,6 +28,8 @@ function subtle() {
   return c.subtle;
 }
 
+import { raizValida } from './seed.mjs';
+
 /* Sal por rodada, do mesmo CSPRNG da raiz. Novo a cada rodada de propósito:
    sal fixo faria commits de rodadas diferentes com a mesma raiz colidirem, e
    um atacante montaria uma tabela. */
@@ -39,11 +41,26 @@ export function novoSal() {
 }
 
 /* A mensagem comprometida. Formato explícito e separado por `|` para que dois
-   pares (raiz, sal) diferentes nunca produzam a mesma string. */
-const mensagem = (raiz, sal) => `pokearena|v1|${(raiz >>> 0).toString(16)}|${sal}`;
+   pares (raiz, sal) diferentes nunca produzam a mesma string.
+ *
+ * EXPORTADA, E É O ÚNICO LUGAR ONDE ELA EXISTE. O `server/scheduler.mjs`
+ * mantinha uma cópia literal desta linha, porque ele precisa da versão síncrona
+ * do hash. Duas fontes para o formato do commit é a forma mais barata de
+ * cliente e servidor comprometerem coisas diferentes — e o único sintoma seria
+ * uma auditoria que não fecha, meses depois.
+ *
+ * F1.15 · A RAIZ ENTRA COMO ELA É. `(raiz >>> 0)` numa raiz larga devolve **0**:
+ * todo commit sairia sobre a raiz zero, igual em todas as rodadas, e o
+ * commit-reveal viraria decoração. É o primeiro item da sabotagem do bloco.
+ *
+ * O ramo numérico fica intacto, byte a byte, porque as rodadas já publicadas
+ * precisam continuar conferindo — §25.2. */
+export const mensagemCommit = (raiz, sal) =>
+  `pokearena|v1|${typeof raiz === 'string' ? raiz : (raiz >>> 0).toString(16)}|${sal}`;
+const mensagem = mensagemCommit;
 
 export async function comprometer(raiz, sal) {
-  if (!Number.isInteger(raiz) || raiz < 0 || raiz > 0xFFFFFFFF)
+  if (!raizValida(raiz))
     throw new Error(`raiz inválida para commit: ${raiz}`);
   if (typeof sal !== 'string' || sal.length < TAM_SAL * 2)
     throw new Error('sal ausente ou curto demais: sem ele o commit é invertível por força bruta');
