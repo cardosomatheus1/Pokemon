@@ -3,7 +3,7 @@
 Você acabou de entrar num projeto que tem método próprio, e o método é a parte
 que não é óbvia. Este documento é a hora e meia que te economiza uma semana.
 
-Leia nesta ordem: **este arquivo → `CLAUDE.md` → `docs/POKEARENA_DOCUMENT_INDEX_v1.4.md`.**
+Leia nesta ordem: **este arquivo → `CLAUDE.md` → `docs/POKEARENA_DOCUMENT_INDEX_v1.5.md`.**
 
 ---
 
@@ -46,13 +46,13 @@ navegador com aviso.
 ## 3. Os comandos que você vai usar todo dia
 
 ```bash
-npm run rapido             # as suítes sem navegador .......... 7 s
+npm run rapido             # 21 suítes sem navegador ......... 10 s  (ver D-017)
 node test/run.mjs --so=carteira,exposicao   # só o que interessa  0,8 s
-npm test                   # a suíte inteira ................. ~3 min
+npm test                   # a suíte inteira, 596 testes ..... ~4 min
 npm run gerar:visual       # regrava só a linha de base visual . 49 s
 npm run olhar              # captura as telas em PNG .......... ~5 min
 npm run sabotagem:tocados  # Q2 só dos arquivos que você mexeu
-npm run sabotagem          # O PORTÃO Q2 ...... 4 min quente, 30 min frio
+npm run sabotagem          # O PORTÃO Q2 ...... 4 min quente, 44 min frio
 npm run sabotagem:completo # Q2 ignorando o cache — antes de uma tag
 npm run portoes            # O PORTÃO DE FECHAMENTO
 ```
@@ -67,8 +67,8 @@ Ele custava **~100 min** e crescia em dois eixos: bloco novo traz defeitos novos
 *e* engrossa a suíte que cada defeito roda. Hoje:
 
 ```
-Q2 do zero, sem cache        ~30 min
-Q2 sem nada ter mudado      4 min 09 s      194 de 208 reaproveitados
+Q2 do zero, sem cache        44 min          239 defeitos plantados
+Q2 sem nada ter mudado      4 min 09 s      194 de 208 reaproveitados (medido em 208)
 ```
 
 A regra é que o veredito de um defeito é função de **três coisas e de mais
@@ -77,8 +77,13 @@ da suíte que o pegou (tudo que ela lê e executa). Iguais byte a byte aos da
 última avaliação, reavaliar devolve a mesma resposta.
 
 **Isto não é amostragem.** O `--tocados` PULA defeitos e por isso grita que não é
-o portão. Aqui os 208 seguem respondidos: cada um foi reavaliado agora, ou nada
+o portão. Aqui todos seguem respondidos: cada um foi reavaliado agora, ou nada
 de que ele depende mudou. O relatório diz quantos de cada.
+
+**E há teto de tempo por mutante.** O S234 foi o primeiro defeito da história do
+projeto que **trava** em vez de falhar, e a execução ficou pendurada sem
+veredito. Estourar o teto conta como vermelho: um portão que pendura é pior que
+um vermelho, porque vermelho tem endereço.
 
 Três coisas que você precisa saber antes de mexer nisso, e todas têm teste em
 `test/portao.mjs`:
@@ -86,6 +91,9 @@ Três coisas que você precisa saber antes de mexer nisso, e todas têm teste em
 - **só se guarda `PEGOU`.** Reaproveitar um `PASSOU` seria o portão herdando a
   própria falha;
 - **dúvida no fecho resolve para `TUDO`** (`test/fecho.mjs`);
+- **um defeito que passa pode ser MUTANTE EQUIVALENTE**, e três deste projeto
+  eram. Antes de escrever teste novo, leia se o guarda que você mutou não tem
+  outro logo abaixo dando a mesma resposta (**L-038**);
 - **toda configuração que julga precisa da própria linha de base verde.** O
   portão valida cada uma na primeira vez que a usa e aborta nomeando a
   quebrada. Sem isso ele dá `PEGOU` falso — e `PEGOU` falso é pior que `PASSOU`
@@ -267,8 +275,9 @@ precisa de aleatoriedade, ela sai de um ramo nomeado da árvore. **Nunca de
 
 ## 10. O servidor
 
-**`F1.1` a `F1.9` estão construídos.** O ciclo econômico e a proteção do jogador
-rodam no servidor:
+**`F1.1` a `F1.9`, `F1.13` e metade do `F1.14` estão construídos.** O ciclo
+econômico e a proteção do jogador rodam no servidor, e o serviço **anda
+sozinho**: sem cliente nenhum conectado, a rodada abre, fecha, simula e encerra.
 
 ```
 server/contrato.mjs    a versão da API e os códigos de erro
@@ -283,7 +292,23 @@ server/aposta.mjs      aposta, lock e settlement
 server/limites.mjs     os limites do §28.3 e a assimetria de mudança
 server/protecao.mjs    pausa, autoexclusão, marketing, reality check e risco
 server/rotas.mjs       a superfície HTTP sobre tudo acima
+server/laco.mjs        o motor que gira o scheduler e avisa a sala
 ```
+
+**O laço existe porque durante oito blocos ele não existiu.** Do F1.5 ao F1.13 o
+backend teve scheduler autoritativo, sala com retomada, aposta e settlement — e
+**nada em produção chamava `tick()`, nada nunca chamou `transmitir()`**. Um
+servidor subido pelo `principal.mjs` respondia `{ rodada: null }` para sempre.
+Terceira vez que o projeto encontra esta forma de defeito: **testar a peça não
+testa o encaixe**. Ele liga com o `ouvir()`, e não com a fábrica — quem abre
+porta está servindo jogo, e ligar à mão seria a garantia que depende de
+lembrança.
+
+**A porta da sala vive numa MESA SEPARADA da de rotas.** Rota comum devolve
+`{ status, corpo }` e nunca vê o `res` — é o `responder()` que aplica os
+cabeçalhos de segurança. Com o `res` no contexto de todas, qualquer rota poderia
+contorná-lo, e a que contornasse não pareceria diferente no diff. Quem escreve
+no socket está numa lista de dois nomes.
 
 **ROTA NOVA NASCE PRIVADA.** A sessão é conferida no despacho e
 `ROTAS_PUBLICAS` é a exceção declarada. O desenho oposto — cada rota conferindo
@@ -301,6 +326,7 @@ No cliente, três módulos novos:
 app/modules/api.mjs            a única porta do app para o servidor
 app/modules/protecao-tela.mjs  a tela de limites e pausa (§28.7)
 app/modules/protecao-texto.mjs os rótulos e a frase da recusa, puros
+app/modules/sala.mjs           o fluxo do servidor e a reconexão
 ```
 
 `api.mjs` **não lança**: falha de rede vira `{ ok:false, indisponivel:true }`.
@@ -321,9 +347,21 @@ uma função dessas e usar de boa-fé.
 22.5; `node:crypto` faz senha (scrypt), sessão (HMAC) e commit. Nenhum
 `node_modules`.
 
-**SSE e não WebSocket.** O Node não traz servidor WebSocket, o tráfego é de uma
-via, e SSE traz reconexão automática e `Last-Event-ID` de graça. A escolha está
-declarada em `server/transporte.mjs`, com o que se perde.
+**SSE e não WebSocket.** O Node não traz servidor WebSocket e o tráfego é de uma
+via. A escolha está declarada em `server/transporte.mjs`, com o que se perde.
+
+**Mas o cliente lê o SSE com `fetch`, e não com `EventSource`** — e essa é uma
+premissa do F1.6 que mudou. `EventSource` **não aceita cabeçalho nenhum**, e a
+sessão viaja em `authorization: Bearer`; com ele, o token teria que ir na URL, e
+token em query string entra em log de acesso, em `Referer` e no histórico. O
+formato na rede continua SSE e o servidor não muda uma linha. O que se perde é a
+reconexão automática — que teria que ser escrita de qualquer forma, porque o
+§5.9 pede uma TELA de reconexão e o `EventSource` reconecta por baixo sem contar
+para ninguém.
+
+**Fechar o servidor fecha a sala primeiro.** `servidor.close()` espera as
+conexões abertas terminarem, e um SSE por definição não termina: sem despejar a
+sala, um deploy nunca conclui enquanto houver uma aba aberta.
 
 ```bash
 npm run servidor     # sobe o serviço
@@ -333,26 +371,78 @@ O contrato está em **`docs/API.md`** — leia antes de escrever cliente.
 
 ### O que vem a seguir
 
-**F1.13** — a montagem do serviço. É a lacuna **L-033**, aberta no F1.8: os
-módulos do F1.3 ao F1.9 estão prontos e testados, e o `servidor.mjs` continua
-com as três rotas do F1.1. Nada do backend é alcançável por HTTP, e o cliente
-ainda fala com `app/modules/banco.mjs`. É o bloco que liga os dois.
+**F1.15 — a raiz da rodada sai de 32 bits.** É o **D-018**, e é a coisa mais
+séria registrada neste projeto: **com a janela de aposta aberta, dá para saber o
+campeão**. Só com o que a rota pública devolve.
 
-**F1.10** (perfil e desafios no servidor), **F1.11** (admin e painel econômico) e
-**F1.12** (ContentPack original) fecham a Fase 1.
+A cadeia é curta. A raiz tem 32 bits; `GET /api/rodada` publica os doze
+lutadores enquanto a janela está aberta — tem que publicar, é a rodada —, e os
+doze saem de `sortearPool(derivar(raiz,'elenco'))`. Doze de 76, ordenados, são
+~74 bits de informação sobre um segredo de 32: a pool publicada não estreita o
+espaço da raiz, ela o **determina**.
 
-O porte da versão anterior está fechado (V1.13 a V1.20, mais T1–T3 de
+```
+pool publicada    99,134,42,94,128,136,139,53,57,114,126,91
+raiz recuperada   12.345.678 em 10,2 s
+campeão previsto  dex 94, com a janela ABERTA, odd 1,94
+```
+
+Medido: 1,21 M raízes/s num núcleo de JS — o espaço inteiro em ~59 min num
+núcleo, ~7 em oito, segundos numa GPU. E o custo é de UMA vez, porque o mapa
+`sementeElenco → doze dex` não depende da rodada.
+
+O commit-reveal está implementado **corretamente** e é **decorativo**: ele prova
+que a casa não trocou o resultado depois, e a ameaça é o apostador saber antes.
+Não é bug de implementação — é o tamanho do segredo.
+
+Se você for mexer em semente: **`misturar()` é bijetiva**. Publicar qualquer
+semente de ramo devolve a raiz em O(1), sem busca nenhuma (confirmado em
+200.000/200.000 casos). A ideia de publicar `sementeElenco` para o cliente
+montar a pool sem esperar o reveal já foi tentada e morreu na medição.
+
+**F1.14 — o laço de jogo contra o servidor. Metade construída, metade parada de
+propósito.**
+
+A primeira metade está no ar e é inerte: `server/laco.mjs` gira o scheduler e
+anuncia à sala, `GET /api/sala` é a porta, `app/modules/sala.mjs` lê o fluxo. A
+segunda metade — o cliente reconstruindo a rodada a partir de `revelado.raiz` e
+a aposta indo por `/api/aposta` — **espera o F1.15**, porque construir sobre uma
+raiz de 32 bits que vai virar 128 é retrabalho garantido.
+
+Há um teste que **afirma a ausência de propósito** (molde do `D-001`): quem
+ligar `hidratar()` no boot encontra `o app ainda NÃO liga o modo servidor`
+vermelho. O vermelho é o lembrete de que a rodada e a aposta precisam ir junto —
+ligar só a carteira daria duas fontes para o mesmo dinheiro.
+
+**Depois:** **F1.10** (perfil e desafios no servidor), **F1.11** (admin e painel
+econômico) e **F1.12** (ContentPack original) fecham a Fase 1. **T5** é trilha de
+ferramenta: pré-voo que reprova defeito plantado inútil em segundos, e o
+`npm run rapido` derivando a lista em vez de mantê-la.
+
+O porte da versão anterior está fechado (V1.13 a V1.20, mais T1–T4 de
 ferramenta).
+
+**Uma armadilha que já pegou três defeitos plantados neste projeto:** *mutante
+equivalente*. Você planta a mutação, o comportamento não muda, e o teste fica
+verde para sempre. Os três tinham a mesma forma — **guarda redundante sobre
+guarda que já basta** — e só apareceram depois de o portão inteiro rodar. Está
+em **L-038**. Defesa em profundidade é boa e fica; o que muda é onde se planta o
+defeito.
 
 **Aberto agora:**
 
 | item | o que é | dono |
 |---|---|---|
-| **L-033** | o backend inteiro existe e nada dele responde por HTTP | **F1.13** |
+| **D-018** | com a janela aberta dá para saber o campeão | **F1.15** ⛔ bloqueia a tag da v0.9 |
+| **L-036** | o cliente ainda guarda a própria carteira (metade feita) | **F1.14** |
+| **L-038** | três mutantes equivalentes, todos com a mesma forma | **T5** |
+| **D-017** | `npm run rapido` cobre 21 das 35 suítes sem navegador | **T5** |
 | **L-031** | os 9 itens da terceira passada do crítico cego (1920 estica em vez de agrupar) | **V1.21** |
 | **L-034** | `recovery_deposit` e `odd_hour` não têm de onde medir | **§25.1** e **F1.11** |
-| **L-024** | o bucket `pendente` existe e nada o preenche | **F1.13** |
+| **L-024** | o bucket `pendente` existe e nada o preenche | **F1.4** |
 | **L-011** | os limiares de risco são chute educado até haver coorte | **F1.11** |
+| **L-029** | a tela principal reprova no teste dos 3 segundos | trilha **R** |
+| **L-001..004, L-021** | balanceamento do elenco: 14 golpes órfãos, amplitude de 16,6× | **F1.12** |
 | **L-012** | consulta de enquadramento regulatório | ⏳ não se resolve com software |
 | **L-010** | política de publicidade e afiliados | ⏳ sem dono |
 

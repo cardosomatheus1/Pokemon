@@ -828,7 +828,7 @@ constraint é a rede que sobrevive à migração, e o custo dela é zero.
 ---
 
 
-### L-033 — o backend inteiro existe e nada dele é alcançável por HTTP
+### L-033 — o backend inteiro existe e nada dele é alcançável por HTTP ✅ FECHADA
 
 **Dono:** **F1.13** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** F1.8
 
@@ -858,6 +858,29 @@ Duas consequências concretas, e as duas são de portão:
 telas de limites e de autoexclusão do §28.7 ("acessíveis a partir da carteira e
 do perfil, em no máximo dois níveis") saem com ele, e é lá que o Q7 dessas telas
 acontece.
+
+**FECHADA no F1.14, e não no F1.13 — a diferença importa.** O F1.13a deu porta a
+tudo e cobriu as duas consequências nomeadas acima:
+
+| consequência | onde ela é medida hoje |
+|---|---|
+| Q6 do F1.8 pela rota | `test/rotas.mjs` · `o limite do §28.3 bloqueia a APOSTA PELA ROTA`, `o cooldown de aumento NÃO pode ser encurtado pela rota` |
+| Q6 do F1.9 pela rota | `test/rotas.mjs` · `a pausa do §28.4 bloqueia a aposta PELA ROTA`, `NÃO existe rota que encerre uma pausa` |
+| a tela de limites do §28.7 | `app/modules/protecao-tela.mjs` · `test/protecao-tela.mjs` |
+
+**O que faltava e ninguém tinha notado:** ter porta não é a mesma coisa que ter
+serviço. Depois do F1.13a as rotas existiam e **nada girava atrás delas** — nada
+chamava `tick()`, nada nunca chamou `transmitir()`, e `GET /api/rodada`
+respondia `{ rodada: null }` num servidor de verdade. A lacuna dizia "nada é
+alcançável por HTTP"; a resposta completa exigia que houvesse o que alcançar.
+
+O `server/laco.mjs` e a porta `GET /api/sala` (F1.14, primeira metade) são essa
+parte. O teste que fecha a lacuna é `um servidor que só subiu já tem rodada, sem
+ninguém pedir`, em `test/laco.mjs` — o `principal.mjs` inteiro, sem uma linha a
+mais para alguém lembrar de escrever.
+
+**O que NÃO é desta lacuna:** ligar o cliente às rotas. Isso é a segunda metade
+do F1.14, e está na **L-036**.
 
 ---
 
