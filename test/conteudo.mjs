@@ -304,6 +304,29 @@ export function suite() {
     }
   });
 
+  /* S108 · O RÓTULO NÃO PODE CONTRADIZER O CAMPO.
+   *
+   * `betsCount` conta APOSTAS FECHADAS. Quem assiste sem apostar sobe de nível e
+   * não entra na conta — então "rodadas" produz o absurdo que o crítico cego
+   * achou: um perfil de NV 54 com 0 rodadas disputadas. O campo estava certo; o
+   * rótulo é que mentia.
+   *
+   * Estático porque o defeito é textual e mora em dois arquivos: um teste de
+   * navegador precisaria de sessão ativa E de perfil aberto para ver os dois. */
+  s.teste('nenhum rótulo chama betsCount de rodada', () => {
+    const APP = new URL('../app/modules/', import.meta.url);
+    for (const f of readdirSync(APP).filter(x => x.endsWith('.mjs'))) {
+      const txt = readFileSync(new URL(f, APP), 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, ' ');
+      /* `betsCount` seguido, na mesma linha, de um rótulo com "rodada" */
+      const mau = [...txt.matchAll(/betsCount[^\n]*?rodadas?/gi)].map(m => m[0].slice(0, 80));
+      ok(mau.length === 0,
+        `app/modules/${f} rotula betsCount como rodada: ${mau.join(' · ')}\n` +
+        `      O campo conta apostas fechadas — quem assiste sem apostar sobe de ` +
+        `nível e não entra nele.`);
+    }
+  });
+
   s.teste('o motor não importa nada de content/', () => {
     for (const f of readdirSync(ENGINE).filter(x => x.endsWith('.mjs'))) {
       const txt = readFileSync(new URL(f, ENGINE), 'utf8');

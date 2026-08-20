@@ -638,6 +638,6 @@ export const DEFEITOS = [
      runner sem ninguém notar. */
   { id:'S113', arquivo:SABOT, nome:'a passada com navegador deixa de rodar uma suíte de navegador',
     real:'lista encolhida numa limpeza — defeito que só aquela suíte pega volta como PASSOU',
-    de:"const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,contraste';",
-    para:"const SUITES_NAVEGADOR = 'visual-base,ambientes,rodada-viva,tema-cedo';" },
+    de:"const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,contraste';",
+    para:"const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,contraste';" },
 ];

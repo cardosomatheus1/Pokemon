@@ -188,9 +188,12 @@ export function suite() {
     ok(daSabotagem, 'sabotagem.mjs sem a lista SUITES_NAVEGADOR — o teste perdeu a âncora');
     const A = doRunner[1].split(',').map(x => x.trim().replace(/^'|'$/g, '')).filter(Boolean);
     const B = daSabotagem[1].split(',').map(x => x.trim()).filter(Boolean);
-    /* `sem-rede` só existe quando há assets locais, então ela pode faltar em B
-       sem que isso seja divergência — é a única exceção, e é declarada. */
-    const faltando = A.filter(n => n !== 'sem-rede' && !B.includes(n));
+    /* SEM EXCEÇÃO. A primeira versão deste teste dispensava o `sem-rede` "porque
+       ela só existe quando há assets locais" — e foi exatamente por essa fresta
+       que o S59, o vazamento de rede, voltou como PASSOU no Q2 completo. Se a
+       suíte não estiver disponível ela simplesmente não roda; pedi-la a mais não
+       custa nada, e deixá-la de fora custou um portão. */
+    const faltando = A.filter(n => !B.includes(n));
     ok(faltando.length === 0,
       `a sabotagem não roda ${faltando.join(', ')} na passada com navegador. ` +
       `Um defeito que só essa suíte pega voltaria como PASSOU — o portão diria ` +

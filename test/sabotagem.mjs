@@ -68,10 +68,13 @@ import { conferirAncoras, filtrarTocados } from './ancoras.mjs';
  * primeira passada, e rodá-las outra vez não podia mudar a resposta: elas não
  * enxergam o navegador. Agora ela roda só as seis que enxergam.
  *
- * A lista é a mesma do `run.mjs`, e é o único lugar onde as duas precisam
- * concordar — se uma suíte de navegador nova não entrar aqui, ela deixa de rodar
- * nesta passada e a coluna "pego por" fica pobre, não errada. */
-const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,contraste';
+ * A lista é a mesma do `run.mjs`, e as duas TÊM que fechar. Escrevi este
+ * comentário dizendo que uma divergência deixaria "a coluna pego por pobre, não
+ * errada", e estava errado: o Q2 completo mostrou o `S59` — o vazamento de rede
+ * — voltando como PASSOU, porque eu tinha deixado o `sem-rede` de fora. É o
+ * portão que pegou o vazamento de avatar do V1.15. Suíte que não roda não é
+ * cobertura fraca: é ausência de cobertura com relatório verde. */
+const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,contraste';
 
 function rodar(caixa, semGolden, comVisual) {
   const env = { ...process.env,

@@ -502,6 +502,44 @@ export async function rodar() {
     };
   }).catch(e => ({ erro: String(e).split('\n')[0] }));
 
+  /* --- Q5 do V1.20: O QUE A TELA AFIRMA COM A APOSTA VIVA ----------------
+   *
+   * ESTES TESTES NASCERAM DE UM Q2 VERMELHO, e a lição é a mais cara do bloco:
+   * seis defeitos do V1.20 (S99, S101, S102, S105, S107, S108) voltaram como
+   * PASSOU no portão completo. Eu tinha escrito as correções e os defeitos, e
+   * confiado na LINHA DE BASE para pegá-los — e ela captura quatro telas
+   * estáticas, sem aposta feita. Estado que só existe depois de apostar não
+   * aparece em nenhuma delas.
+   *
+   * Defeito plantado sem teste que o pegue é a definição de portão decorativo,
+   * e a sabotagem é literalmente a peça que existe para dizer isso. Ela disse. */
+  const comAposta = await pg.evaluate(async () => {
+    const { S } = await import('/app/modules/estado.mjs');
+    if (!S.myBet) return { erro: 'sem aposta viva' };
+    const meu = S.fighters[S.myBet.idx];
+    const banner = document.querySelector('#overlay .banner');
+    const marcado = document.querySelector('.mon.mine .body');
+    return {
+      /* S99 — a chamada central tem que refletir a aposta, e não seguir
+         mandando escolher com a aposta já confirmada na tela ao lado. */
+      cta: banner?.textContent ?? '',
+      ctaNomeia: !!banner && banner.textContent.includes(meu.n),
+      overlayApostado: !!document.querySelector('#overlay.apostado'),
+      /* S105 — o contorno tem que sobreviver ao estado `.mine`, que substitui
+         o `filter` inteiro. Foi assim que ele nasceu ausente. */
+      filtroDoMeu: marcado ? getComputedStyle(marcado).filter : null,
+      /* S107 — nenhuma anotação em reais em cima de PokéCash. */
+      textoDaAposta: document.querySelector('#betInfo')?.textContent ?? '',
+      textoDasFichas: document.querySelector('#chipRow')?.textContent ?? '',
+      saldoNaFaixa: document.querySelector('.fa-saldo')?.textContent ?? '',
+    };
+  }).catch(e => ({ erro: String(e).split('\n')[0] }));
+
+  /* S101/S102 — a faixa de coluna diz o que o `%` significa, e ela TROCA com a
+     fase. Lida nas duas, porque o defeito tem um lado em cada. */
+  const colunasAposta = await pg.evaluate(() =>
+    document.querySelector('#listaCols')?.textContent ?? '').catch(() => '');
+
   /* --- Q5 do V1.15: CANCELAR A APOSTA DEVOLVE AS DUAS COISAS -------------
      Dinheiro e passivo. Teste de unidade prova que `liberarTicket` é o inverso
      exato de `registrarTicket`; só o navegador prova que o botão chama os dois.
@@ -643,6 +681,10 @@ export async function rodar() {
       caidosNoQuadro: document.querySelectorAll('#pickList .pick.fechado').length,
       linhas: document.querySelectorAll('#pickList .pick').length,
       contagemDepois: S.profile.betsCount,
+      /* S102 — o outro lado da faixa de coluna. Na luta o `%` é VIDA, e é o
+         lado em que a leitura otimista acontece: quem apostou a 7,1 % e vê
+         91 % conclui que as chances explodiram. */
+      colunas: document.querySelector('#listaCols')?.textContent ?? '',
     };
   }).catch(e => ({ erro: String(e).split('\n')[0] }));
   const erroDepois = erros.length;
@@ -672,7 +714,7 @@ export async function rodar() {
   }).catch(() => null);
 
   await b.close(); s.close();
-  return { erros, conhecidos, apostas, aoVivo, relogio, folhas: cache.size, erroDepois, jogo, corte, cancelamento, painel, contagem, colocacaoViva, houveQueda, tema, ...st };
+  return { erros, conhecidos, apostas, aoVivo, relogio, folhas: cache.size, erroDepois, jogo, corte, cancelamento, comAposta, colunasAposta, painel, contagem, colocacaoViva, houveQueda, tema, ...st };
 }
 
 /* Q3 · A RODADA DO APP SAI DA RAIZ.
@@ -996,6 +1038,16 @@ export function suite(r) {
 
   /* A GARANTIA DO C1, na tela: o painel pode MUDAR a margem, não pode criar uma
      odd secreta. O valor que ele mostra tem de ser o mesmo do registro §4.4.5. */
+  s.teste('S102 · a faixa de coluna nomeia o que o número é, na luta', () => {
+    const c = (r.colocacaoViva?.colunas || '').toLowerCase();
+    ok(c.includes('vida'),
+      `a faixa de coluna durante a luta diz "${r.colocacaoViva?.colunas}" e não nomeia ` +
+      `a vida. É o lado em que a leitura otimista acontece: quem apostou a 7,1 % ` +
+      `e vê 91 % conclui que as chances explodiram.`);
+    ok(!c.includes('chance'),
+      `a faixa ficou com o texto da fase de aposta durante a luta: "${r.colocacaoViva?.colunas}"`);
+  });
+
   s.teste('D-008 · três cliques de aposta contam UMA aposta', () => {
     const c = r.contagem, v = r.colocacaoViva;
     ok(c && !c.erro, `não deu para exercitar a contagem: ${c?.erro}`);
@@ -1004,6 +1056,59 @@ export function suite(r) {
     igual(v.contagemDepois, c.antes + 1,
       `três cliques (escolher + trocar + trocar) contaram ${v.contagemDepois - c.antes} apostas. ` +
       `A aposta só entra na estatística quando a janela FECHA — ver D-008.`);
+  });
+
+  /* --- V1.20 · O QUE A TELA AFIRMA COM A APOSTA VIVA ---------------------
+   *
+   * Seis defeitos deste bloco voltaram PASSOU no Q2 completo porque eu confiei
+   * na linha de base, que fotografa quatro telas SEM aposta. Estes são os
+   * testes que faltavam. */
+
+  s.teste('S99 · a chamada central reflete a aposta confirmada', () => {
+    const a = r.comAposta;
+    ok(a && !a.erro, `sem estado de aposta para ler: ${a?.erro}`);
+    ok(a.ctaNomeia,
+      `com a aposta confirmada a arena ainda diz "${a.cta.trim()}" — instrução que ` +
+      `não sai depois de cumprida ensina que a tela não está prestando atenção`);
+    ok(a.overlayApostado,
+      'o overlay não entrou no estado de aposta feita: o véu continua na frente da luta');
+  });
+
+  s.teste('S105 · o contorno sobrevive ao estado do lutador marcado', () => {
+    const a = r.comAposta;
+    ok(a && !a.erro, `sem estado de aposta para ler: ${a?.erro}`);
+    ok(a.filtroDoMeu, 'nenhum .mon.mine na tela — a marcação do meu lutador não aplicou');
+    const quantas = (a.filtroDoMeu.match(/drop-shadow/g) || []).length;
+    /* Três: o halo, a sombra de contato e o brilho dourado do `.mine`. Duas
+       significa que o `filter` do estado substituiu o contorno em vez de
+       compor com ele — que é exatamente como ele nasceu ausente. */
+    ok(quantas >= 3,
+      `o lutador marcado tem ${quantas} sombra(s) (filter "${a.filtroDoMeu}"): o estado ` +
+      `.mine substituiu o contorno em vez de compor com var(--contorno)`);
+  });
+
+  s.teste('S107 · nenhuma anotação em reais em cima do PokéCash', () => {
+    const a = r.comAposta;
+    ok(a && !a.erro, `sem estado de aposta para ler: ${a?.erro}`);
+    const onde = [
+      ['aviso da aposta', a.textoDaAposta],
+      ['fichas', a.textoDasFichas],
+      ['saldo na faixa', a.saldoNaFaixa],
+    ].filter(([, t]) => /R\$/.test(t));
+    ok(onde.length === 0,
+      `${onde.map(([n]) => n).join(', ')} voltaram a anotar em reais. ` +
+      `A taxa fixa de 10 PC = R$ 1,00 faz a PERDA ser sentida em reais, que é o ` +
+      `que uma moeda simulada não deveria conseguir fazer (§P1, cap. 28). ` +
+      `Decisão do dono do projeto no V1.20.`);
+  });
+
+  s.teste('S101 · a faixa de coluna nomeia o que o número é, na aposta', () => {
+    const c = (r.colunasAposta || '').toLowerCase();
+    ok(c.includes('chance'),
+      `a faixa de coluna na fase de aposta diz "${r.colunasAposta}" e não nomeia a ` +
+      `chance — o mesmo slot mostra 17,5 % (chance) e 91 % (vida) em fases ` +
+      `diferentes, e sem rótulo os dois se leem como a mesma grandeza`);
+    ok(c.includes('odd'), `a faixa não nomeia a odd: "${r.colunasAposta}"`);
   });
 
   s.teste('a colocação está viva durante a luta, não só correta no fim', () => {
