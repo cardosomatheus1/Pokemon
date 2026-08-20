@@ -19,7 +19,7 @@
  * disparada pelo próprio pedido de autoexclusão — que é exatamente o que um
  * funil de retenção otimizado faria sozinho.
  */
-import { criarSuite, ok, igual } from './harness.mjs';
+import { criarSuite, ok, igual, stakeQueCabe } from './harness.mjs';
 import { abrirBanco, migrar } from '../server/banco.mjs';
 import { cadastrar, entrar } from '../server/auth.mjs';
 import { creditar } from '../server/carteira.mjs';
@@ -303,8 +303,13 @@ export function suite() {
     c.sched.abrirRodada();
     /* Aposta grande e constante NÃO é chasing: é apostador de stake alta.
        Confundir os dois faz o sistema intervir em quem não mudou nada. */
+    /* O VALOR SAI DA RODADA, e não de um número escolhido à mão: apostar 500
+       fixo é apostar contra o sorteio, e o teto do §4.4.6 recusava em 0,7% das
+       raízes — ver D-021. O que este teste mede é stake CONSTANTE, e constante
+       ele continua sendo. */
+    const stake = stakeQueCabe(c.sched, 0, 500);
     for (let i = 0; i < 5; i++) {
-      apostar(c.db, { sched: c.sched, userId: c.u.id, slot: 0, valor: 500, agora: c.agoraDe() });
+      apostar(c.db, { sched: c.sched, userId: c.u.id, slot: 0, valor: stake, agora: c.agoraDe() });
       c.avancar(60_000);
     }
     ok(!sinaisDeRisco(c.db, { userId: c.u.id, agora: c.agoraDe() }).includes('chasing'),

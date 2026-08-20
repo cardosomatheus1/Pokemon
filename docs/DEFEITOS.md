@@ -1186,3 +1186,59 @@ inteiro positivo é **400**, com mensagem que diz como remover. Dois testes em
 `test/rotas.mjs`: o caso ilegível (quatro entradas mais o corpo truncado) e o
 contrapeso da remoção — sem ele, o teste seria satisfeito por uma rota que
 recusa tudo.
+
+---
+
+## D-021 — testes apostavam valor fixo contra uma rodada de raiz aleatória ✅ CORRIGIDO
+
+**Achado em:** F1.14, caçando a linha de base instável do portão ·
+**Corrigido no mesmo commit**
+
+O portão Q2 abortou com `a suíte já está vermelha` numa execução e passou verde
+na seguinte, sem nada relevante ter mudado entre as duas. **Instável é pior que
+vermelho** — vermelho tem endereço, instável escolhe quando aparecer, e escolheu
+o pior lugar possível: a linha de base, que aborta o Q2 inteiro.
+
+### A caça, e por que ela precisou de três etapas
+
+`npm run repetir` na caixa de areia, 12 vezes: **1 vermelha em 11**, em
+`[protecao] chasing é aumento de stake APÓS PERDA`. A suíte sozinha, 25 vezes:
+todas verdes — ou seja, não era contenção nem ordem.
+
+A única fonte de aleatoriedade ali é a **raiz da rodada**. Rodando o cenário do
+teste 200 vezes com raízes de verdade, o sinal `chasing` nunca acendeu — mas
+apareceram **15 exceções `teto_de_payout`**. O teste não capturava a exceção, e
+o `ok()` que ele mostrava no relatório nunca chegava a rodar.
+
+### A causa, medida
+
+O teto de payout do §4.4.6 depende da **odd**, a odd depende da **raiz**, e a
+raiz é sorteada. Apostar valor fixo é apostar contra o sorteio:
+
+| valor | rodadas recusadas por `teto_de_payout` (de 300) |
+|---|---|
+| 50, 100, 200, 300 | 0 — 0,0% |
+| 500 | 2 — 0,7% |
+| 1.000 | 21 — 7,0% |
+
+Dois pontos expostos em 20 chamadas com valor fixo: `test/protecao.mjs` (500) e
+`test/limites.mjs` (1.000).
+
+### A correção
+
+`stakeQueCabe(sched, slot, desejado)` no arnês: o teste **pergunta à rodada**
+quanto cabe, em vez de escolher um número. `stakeMax` já é publicado por
+`paraCliente()` e é exatamente o número que o §4.4.6 usa para recusar.
+
+E onde o valor importa para o que o teste mede, ele **declara o que precisa**:
+o teste da perda cobra `perda > 200` antes de apostar. Medido em 3.600 slots, o
+menor `stakeMax` foi **212** e cinco ficaram abaixo de 300 — cortar em
+`stakeMax` quase nunca desce abaixo do limite, e "quase nunca" não é nunca. Sem
+a afirmação, a rodada que aceitasse menos de 200 faria o teste medir outra coisa
+**em silêncio**.
+
+### O que fica de lição
+
+Um teste que não captura exceção mostra no relatório a asserção que ele NÃO
+alcançou. Foi por isso que a caça começou olhando `chasing` — um sinal que nunca
+acendeu.

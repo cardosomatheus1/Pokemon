@@ -25,7 +25,7 @@
  * pode não desenhar.
  */
 import { readFileSync } from 'node:fs';
-import { criarSuite, ok, igual } from './harness.mjs';
+import { criarSuite, ok, igual, stakeQueCabe } from './harness.mjs';
 import { abrirBanco, migrar } from '../server/banco.mjs';
 import { cadastrar } from '../server/auth.mjs';
 import { creditar } from '../server/carteira.mjs';
@@ -277,8 +277,11 @@ export function suite() {
     const rodadaId = c.sched.rodadaAtual().id;
     const vencedor = c.db.prepare(
       `SELECT slot FROM round_fighters WHERE round_id=? AND species_id=?`).get(rodadaId, campeao);
-    apostar(c.db, { sched: c.sched, userId: c.u.id, slot: vencedor.slot, valor: 1000,
-                    agora: c.agoraDe() });
+    /* D-021 · o valor sai da rodada. Apostar 1.000 fixo era recusado pelo teto
+       do §4.4.6 em até 7% das raízes, e o que o teste mede — vitória não conta
+       como perda — vale para qualquer valor acima do limite de 200. */
+    apostar(c.db, { sched: c.sched, userId: c.u.id, slot: vencedor.slot,
+                    valor: stakeQueCabe(c.sched, vencedor.slot, 1000), agora: c.agoraDe() });
     c.avancar(FASE_MS.APOSTA + FASE_MS.PREPARO + FASE_MS.LUTA + 3);
     c.sched.tick(); c.sched.tick(); c.sched.tick();
     liquidarRodada(c.db, { sched: c.sched, roundId: rodadaId, agora: c.agoraDe() });
@@ -298,8 +301,17 @@ export function suite() {
     const perdedor = c.db.prepare(
       `SELECT slot FROM round_fighters WHERE round_id=? AND species_id<>? LIMIT 1`)
       .get(rodadaId, campeao);
-    apostar(c.db, { sched: c.sched, userId: c.u.id, slot: perdedor.slot, valor: 300,
-                    agora: c.agoraDe() });
+    /* D-021 · o valor sai da rodada, e o teste DECLARA o que precisa dele.
+       Medido em 3.600 slots: o menor `stakeMax` foi 212 e cinco ficaram abaixo
+       de 300 — ou seja, cortar em `stakeMax` quase nunca desce abaixo do limite
+       de 200, mas "quase nunca" não é nunca. Sem esta afirmação, a rodada que
+       aceitasse menos de 200 faria o teste medir outra coisa em silêncio. */
+    const perda = stakeQueCabe(c.sched, perdedor.slot, 300);
+    ok(perda > 200,
+      `a rodada só aceita ${perda} neste slot, e este teste precisa de uma perda ` +
+      `MAIOR que o limite diário de 200 para medir o que ele mede`);
+    apostar(c.db, { sched: c.sched, userId: c.u.id, slot: perdedor.slot,
+                    valor: perda, agora: c.agoraDe() });
     c.avancar(FASE_MS.APOSTA + FASE_MS.PREPARO + FASE_MS.LUTA + 3);
     c.sched.tick(); c.sched.tick(); c.sched.tick();
     liquidarRodada(c.db, { sched: c.sched, roundId: rodadaId, agora: c.agoraDe() });

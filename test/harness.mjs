@@ -52,3 +52,25 @@ export function elencoDeterministico(elenco, montarElenco, seed, n = 12) {
   }
   return montarElenco(src.slice(0, n));
 }
+
+/* ── D-021 · QUANTO A RODADA ACEITA NESTE SLOT ─────────────────────────────
+ *
+ * O teto de payout do §4.4.6 depende da ODD, a odd depende da raiz, e a raiz é
+ * sorteada a cada rodada. Um teste que aposta valor fixo está apostando contra
+ * o sorteio — e às vezes perde:
+ *
+ *     valor    rodadas recusadas por `teto_de_payout` (de 300)
+ *       300      0    0,0%
+ *       500      2    0,7%
+ *     1.000     21    7,0%
+ *
+ * Foi essa a instabilidade que deixou a linha de base do portão vermelha uma
+ * vez em onze — e linha de base instável aborta o Q2 inteiro, que é o pior
+ * lugar possível para um teste escolher quando falhar.
+ *
+ * Perguntar à rodada quanto cabe torna o teste determinístico sem mudar o que
+ * ele mede: `stakeMax` é publicado por `paraCliente()`, e é exatamente o número
+ * que o §4.4.6 usa para recusar. */
+export const stakeQueCabe = (sched, slot, desejado) =>
+  Math.min(desejado, sched.paraCliente().lutadores[slot].stakeMax);
+
