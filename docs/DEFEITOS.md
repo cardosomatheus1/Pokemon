@@ -986,3 +986,95 @@ junto com a correção, que é derivar a lista em vez de mantê-la.
 puro, fora do escopo de um bloco que muda o laço de jogo. E a correção certa
 não é acrescentar catorze nomes à lista — é fazer a lista deixar de existir,
 porque **derivar não pode dessincronizar**. Isso é um bloco, não um remendo.
+
+---
+
+## D-018 — a raiz da rodada cabe num brute force, e o commit-reveal é decorativo
+
+**Achado em:** F1.14 · **Bloco dono:** **F1.15** (proposto no `BUILD_BLOCKS`
+neste commit) · **Gravidade:** o mais grave que este projeto já registrou
+
+> **Com a janela de aposta ABERTA, dá para saber o campeão.** Só com o que a
+> rota pública devolve, sem sessão, sem privilégio, sem bug de implementação.
+
+### A cadeia, e ela é curta
+
+A raiz da rodada tem **32 bits** — `randomInt(0, 0xFFFFFFFF)` no servidor,
+`crypto.getRandomValues(new Uint32Array(1))` no cliente. Dela descem os cinco
+ramos do §P3 por `derivar()`, que é o finalizador do splitmix32.
+
+`GET /api/rodada` publica os doze lutadores **enquanto a janela está aberta** —
+tem que publicar, é a rodada. E os doze saem de `sortearPool(derivar(raiz,
+'elenco'))`, um embaralhamento de Fisher–Yates sobre 76 espécies.
+
+Doze de 76, ordenados, são cerca de **74 bits de informação** sobre um segredo
+de **32**. A pool publicada não estreita o espaço da raiz: ela o **determina**.
+
+```
+pool publicada → busca as 2^32 raízes → a raiz → derivar(raiz,'batalha') → o campeão
+```
+
+### Medido, e não argumentado
+
+```
+raiz escolhida        12.345.678        (faixa baixa, para a demonstração caber)
+pool publicada        99,134,42,94,128,136,139,53,57,114,126,91
+raiz recuperada       12.345.678        em 10,2 s
+campeão previsto      dex 94            com a janela ABERTA
+odd publicada dele    1,94
+```
+
+Taxa medida: **1,21 M raízes/s num núcleo de JavaScript**. O espaço inteiro sai
+em **~59 min num núcleo**, ~7 min em oito, e a busca é **embaraçosamente
+paralela** — cada raiz é independente de todas as outras. Em C com SIMD são
+minutos; numa GPU, segundos.
+
+**E o custo é de UMA VEZ.** O mapa `sementeElenco → doze dex` não depende da
+rodada. Quem o tabular uma vez responde qualquer rodada futura em tempo de
+consulta. A janela de 30 s do §5.5 não protege nada contra alguém que fez o
+trabalho ontem.
+
+### O que isto quer dizer para o §4.5
+
+O commit-reveal está implementado corretamente e é **decorativo**. Ele prova que
+a casa não trocou o resultado depois — e não era essa a ameaça. A ameaça é o
+apostador saber antes, e ele sabe.
+
+Vale dizer o que **não** é a causa: não é o commit, não é o `comprometer()`, não
+é o sal, não é o scheduler. Todos estão certos. A causa é o tamanho do segredo.
+
+### A tentativa que este defeito matou antes de nascer
+
+O F1.14 ia publicar `sementeElenco` e `sementeVisual` na abertura, para o
+cliente montar a pool e a arena sem esperar o reveal. Medido antes de escrever:
+**`misturar()` é bijetiva** — é o finalizador do splitmix32, e cada passo dele
+se desfaz (o `+` subtraindo, o `imul` pelo inverso modular, o `xor-shift` por
+iteração). Confirmado em 200.000/200.000 casos.
+
+Publicar QUALQUER semente de ramo devolve a raiz em **O(1)**, sem busca nenhuma:
+
+```
+raiz real 3141592653 · recuperada de sementeElenco: 3141592653 · IGUAIS
+```
+
+Ou seja: a ideia trocaria uma hora de GPU por uma linha de aritmética. Ela foi
+descartada, e o registro fica porque a próxima pessoa vai ter a mesma ideia.
+
+### A correção, e por que ela é um bloco e não um remendo
+
+**A raiz precisa sair de 32 bits.** 128 é o tamanho óbvio, e os ramos podem
+continuar de 32 — o que quebra hoje não é a largura do ramo, é o fato de os
+cinco descerem de um segredo estreito o bastante para ser varrido. Com raiz
+larga, recuperar `sementeElenco` por força bruta continua possível e passa a não
+servir para nada: ela não leva a `sementeBatalha`.
+
+Isso toca `engine/seed.mjs`, `novaRaiz`, `derivar` (que precisa de um hash de
+verdade, síncrono e sem dependência), toda fixture que fixa raiz como número, os
+golden, a paridade, `?raiz=` na rota de preço, a coluna do banco e o cliente.
+É um bloco G, e é o **F1.15**.
+
+### Enquanto ele não fecha
+
+**Nenhuma feature de valor econômico real pode ser ligada** — o §25.1 já dizia
+isso, e agora há um motivo concreto e medido. O item entra na lista de saída da
+v0.9 junto do L-012.

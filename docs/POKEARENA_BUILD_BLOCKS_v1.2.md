@@ -1783,6 +1783,50 @@ navegador do arnês de dois processos que a L-032 construiu.
 
 ---
 
+### F1.15 — A raiz da rodada sai de 32 bits
+
+**Tam.** G · **Método** INV · **Portões** Q1 Q2 Q3 Q4 Q6 · **Depende de** F1.14
+· **BLOQUEIA A TAG DA v0.9**
+
+**Por que ele existe:** o **D-018**. Com a janela de aposta aberta dá para saber
+o campeão, usando só o que a rota pública devolve. A raiz tem 32 bits, a pool
+publicada de doze lutadores entre 76 carrega ~74 bits de informação sobre ela, e
+a busca é embaraçosamente paralela — 59 min num núcleo de JS, medido, e de UMA
+vez, porque o mapa não depende da rodada.
+
+O commit-reveal está implementado certo e é decorativo: ele prova que a casa não
+trocou o resultado depois, e a ameaça é o apostador saber antes.
+
+**Escopo:** a raiz passa a ter 128 bits. Os cinco ramos do §P3 continuam de 32 —
+o que quebra hoje não é a largura do ramo, é os cinco descerem de um segredo
+varrível. `derivar()` passa a ser um hash de verdade, **síncrono e sem
+dependência** (o `comprometer()` já usa SHA-256, mas é assíncrono; aqui não pode
+ser, porque `derivar` roda dentro do laço de quadro).
+
+Alcança: `engine/seed.mjs`, `novaRaiz` nos dois lados, a coluna
+`round_seed_reveal`, `?raiz=` da rota de preço, toda fixture que fixa raiz como
+número, os golden byte a byte, a paridade cliente-servidor e o cliente.
+
+**O que NÃO está no escopo:** trocar o gerador da batalha. O `rng` de 32 bits
+dentro da simulação continua — ele não é segredo, ele é reprodutibilidade.
+
+**Sabotagem:** deixar a raiz nova caber em 32 bits em algum caminho (a coluna, o
+JSON, o `>>> 0` esquecido num lugar); fazer dois ramos coincidirem para raízes
+diferentes; fazer o `derivar` novo perder a avalanche; deixar a rodada publicada
+antiga deixar de ser recalculável — a auditoria do §25.2 não pode quebrar
+retroativamente.
+
+**Q4:** a regressão estatística inteira roda de novo. Raiz nova é distribuição
+nova, e "parece igual" não é medida.
+
+**Q6:** o teste que fecha o bloco é o ataque do D-018, escrito como teste e
+esperando FALHAR: dada a pool publicada, não existe busca que devolva a raiz.
+
+**Saída:** o D-018 fecha, e o item entra na lista de saída da v0.9 ao lado do
+L-012.
+
+---
+
 ### F1.10 — Perfil, desafios e login streak
 
 **Tam.** M · **Método** GL+INV · **Portões** Q1 Q2 Q3 Q5 Q6 Q9 · **Depende de** F1.9
