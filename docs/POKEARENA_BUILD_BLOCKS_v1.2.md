@@ -1785,7 +1785,7 @@ navegador do arnês de dois processos que a L-032 construiu.
 
 ### F1.15 — A raiz da rodada sai de 32 bits
 
-**Tam.** G · **Método** INV · **Portões** Q1 Q2 Q3 Q4 Q6 · **Depende de** nada
+**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q3 Q4 Q6 · **Depende de** nada
 · **BLOQUEIA A TAG DA v0.9** · **VEM ANTES da segunda metade do F1.14**
 
 **A ordem é decisão, e o motivo é concreto.** A metade que falta do F1.14 é o
@@ -1810,9 +1810,38 @@ varrível. `derivar()` passa a ser um hash de verdade, **síncrono e sem
 dependência** (o `comprometer()` já usa SHA-256, mas é assíncrono; aqui não pode
 ser, porque `derivar` roda dentro do laço de quadro).
 
-Alcança: `engine/seed.mjs`, `novaRaiz` nos dois lados, a coluna
-`round_seed_reveal`, `?raiz=` da rota de preço, toda fixture que fixa raiz como
-número, os golden byte a byte, a paridade cliente-servidor e o cliente.
+**Alcance medido, e ele é menor do que parece.** Levantado lendo o repositório
+antes de escrever qualquer linha:
+
+```
+engine/seed.mjs          novaRaiz, derivar, derivarIndice, sementes
+server/scheduler.mjs     `randomInt(0, 0xFFFFFFFF)` — a raiz do servidor
+app/modules/fases.mjs    `sementes(novaRaiz())` — a raiz do cliente
+server/rotas.mjs         `?raiz=` da rota de preço, hoje `inteiro()`
+banco                    `round_seed_reveal` já é TEXT — não muda
+test/semente.mjs         avalanche, unicidade, 20.000 raízes distintas
+test/commit.mjs          `abrirRodada(novaRaiz())`
+test/rodada-digital.mjs  `digital(raiz)`, a paridade do F1.1
+```
+
+**O que NÃO é alcançado, e isto é o que derruba o bloco de G para M:**
+
+- **`test/fixtures/golden.json` não tem raiz nenhuma.** Ele fixa SEMENTES DE
+  BATALHA, que continuam de 32 bits — `simular(f, seed)` não muda. Os 20 goldens
+  byte a byte seguem valendo sem regravação.
+- **`margem.json`, `precisao.json`, `informacao.json`, `baseline.json` são
+  agregados**, não raízes fixadas. Os ramos continuam uniformes em 32 bits, então
+  a distribuição não se move. Se um deles mudar, é sinal de que o `derivar` novo
+  tem viés — e aí o número novo vai na mensagem do commit, ao lado do antigo,
+  como manda o `CLAUDE.md`.
+
+**O caminho quente exige cuidado, e ele tem número.** `derivarIndice(raiz,
+'simulacao', i)` é chamado **154.000 vezes por rodada** dentro do
+`engine/preco.mjs`. Trocar isso por 154.000 SHA-256 seria trocar milissegundos
+por segundos no cálculo de odd. A saída é que o hash caro roda **uma vez por
+ramo** — `derivar(raiz, rotulo)` memoizado — e a expansão por índice continua
+sendo a mistura barata de hoje. Seguro: os 154.000 não são segredo, eles só
+precisam ser bem espalhados, e o que precisa ser imprevisível é a raiz.
 
 **O que NÃO está no escopo:** trocar o gerador da batalha. O `rng` de 32 bits
 dentro da simulação continua — ele não é segredo, ele é reprodutibilidade.

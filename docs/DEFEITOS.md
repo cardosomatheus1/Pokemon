@@ -1068,10 +1068,21 @@ cinco descerem de um segredo estreito o bastante para ser varrido. Com raiz
 larga, recuperar `sementeElenco` por força bruta continua possível e passa a não
 servir para nada: ela não leva a `sementeBatalha`.
 
-Isso toca `engine/seed.mjs`, `novaRaiz`, `derivar` (que precisa de um hash de
-verdade, síncrono e sem dependência), toda fixture que fixa raiz como número, os
-golden, a paridade, `?raiz=` na rota de preço, a coluna do banco e o cliente.
-É um bloco G, e é o **F1.15**.
+Isso toca `engine/seed.mjs`, `novaRaiz` nos dois lados, `derivar` (que precisa
+de um hash de verdade, síncrono e sem dependência), `?raiz=` na rota de preço e
+a paridade. É o **F1.15**.
+
+**O alcance foi medido, e é menor do que a primeira leitura sugeriu.** O
+`golden.json` não guarda raiz nenhuma — ele fixa *sementes de batalha*, que
+continuam de 32 bits, e os 20 goldens byte a byte seguem valendo sem regravação.
+As fixtures de medição (`margem`, `precisao`, `informacao`, `baseline`) são
+agregados, e a distribuição dos ramos não muda. A coluna `round_seed_reveal` já
+é TEXT. Isso derruba o bloco de G para **M**.
+
+O cuidado que sobra tem número: `derivarIndice(raiz,'simulacao',i)` roda
+**154.000 vezes por rodada** no `engine/preco.mjs`. O hash caro precisa rodar uma
+vez por ramo, memoizado, e a expansão por índice continua sendo a mistura barata
+de hoje — os 154.000 não são segredo, só precisam estar bem espalhados.
 
 ### Enquanto ele não fecha
 

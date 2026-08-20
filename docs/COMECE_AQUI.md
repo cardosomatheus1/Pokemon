@@ -395,6 +395,12 @@ O commit-reveal está implementado **corretamente** e é **decorativo**: ele pro
 que a casa não trocou o resultado depois, e a ameaça é o apostador saber antes.
 Não é bug de implementação — é o tamanho do segredo.
 
+O bloco é **M**, e não G: o `golden.json` fixa *sementes de batalha* e não
+raízes, então os 20 goldens byte a byte não se movem; as fixtures de medição são
+agregados. O cuidado que sobra tem número —
+`derivarIndice(raiz,'simulacao',i)` roda 154.000 vezes por rodada, então o hash
+caro roda uma vez por ramo e a expansão por índice continua barata.
+
 Se você for mexer em semente: **`misturar()` é bijetiva**. Publicar qualquer
 semente de ramo devolve a raiz em O(1), sem busca nenhuma (confirmado em
 200.000/200.000 casos). A ideia de publicar `sementeElenco` para o cliente
