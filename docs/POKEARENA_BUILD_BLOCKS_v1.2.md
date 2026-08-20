@@ -1459,7 +1459,7 @@ Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a úni
 
 ---
 
-### F1.8 — Proteção do jogador: limites
+### F1.8 — Proteção do jogador: limites ✅
 
 **Tam.** M · **Método** GL+INV · **Portões** Q1 Q2 Q3 Q5 Q6 Q9 · **Depende de** F1.7
 
@@ -1477,7 +1477,7 @@ Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a úni
 
 ---
 
-### F1.9 — Proteção do jogador: pausa, autoexclusão e risco
+### F1.9 — Proteção do jogador: pausa, autoexclusão e risco ✅
 
 **Tam.** G · **Método** GL+INV · **Portões** Q1 Q2 Q3 Q5 Q6 Q9 · **Depende de** F1.8
 
@@ -1500,6 +1500,66 @@ Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a úni
 **Q7 (GL):** barra = a seção de jogo responsável de um operador licenciado nomeado, comparando honestidade da comunicação, não estética.
 
 **Saída:** os oito critérios de aceitação do §28.11 marcados.
+
+---
+
+> ## F1.8 e F1.9 — a proteção do jogador saiu do papel
+>
+> **O capítulo 28 tinha três tabelas vazias e nenhuma regra.** Agora tem
+> `server/limites.mjs` (§28.3), `server/protecao.mjs` (§28.4 a §28.7) e
+> `engine/resultado.mjs` (§28.5), com 55 testes e 27 defeitos plantados.
+>
+> **As duas garantias centrais são a MESMA garantia, e ela é uma ausência.** O
+> cooldown de 24 h para aumentar limite e a irreversibilidade da autoexclusão
+> não são conferências que recusam: são caminhos que não existem.
+> `definirLimite` não tem por onde receber um prazo, e `protecao.mjs` não
+> exporta nada que encerre uma pausa. O teste do F1.9 cobra a AUSÊNCIA da função
+> — porque o F1.11 traz painel administrativo, e função exportada é convite.
+>
+> **A tela de resultado passou a perguntar outra coisa.** Era
+> `S.myBet.idx === S.champ` — "acertei o campeão?". Virou `res.comemora` — "eu
+> ganhei dinheiro?". São perguntas diferentes, e é a diferença entre elas que o
+> §28.5 existe para nomear. **O caso que o BUILD_BLOCKS dizia "hoje não existe"
+> existe:** `floor(30 × 1,03)` devolve exatamente 30, e a tela soltava confete.
+> Uma terceira tela nasceu para ele — acertou e não ganhou —, sem festa e com o
+> líquido em destaque.
+>
+> **A Spec foi corrigida no mesmo commit.** O §28.5 dizia "retorno menor que o
+> valor apostado"; passou a dizer "menor **ou igual**". Confete em dinheiro de
+> volta é a mesma perda disfarçada de ganho em dose menor.
+>
+> **O Q2 pegou dois testes meus que eram decorativos**, e os dois são a mesma
+> classe de erro:
+> - o teste do cooldown comparava `efetivoEm` com `agora + COOLDOWN_MS` — a
+>   MESMA constante que a sabotagem encolhia. Vinte testes verdes e o cooldown
+>   de 24 minutos passando. Agora a constante é comparada com o texto do §28.3,
+>   como o `emissao.mjs` faz com o Estudo Econômico;
+> - nada exercitava o caminho settlement → limite de perda. Testar
+>   `registrarPerda` sozinho não prova que alguém a chama com o número certo, e
+>   o defeito "lança o stake em vez do líquido" passou por dezenove testes.
+>   **Testar a peça não testa o encaixe** — é a terceira vez que esta frase
+>   aparece nestes documentos.
+>
+> **O teste de camadas pegou uma dependência invertida antes do navegador.** O
+> §28.7 pede o retorno líquido ao lado da odd, e `odds.mjs` (camada 2) passou a
+> precisar do valor da aposta, que morava em `carteira.mjs` (camada 4).
+> `valorAposta` e `APOSTA_MIN` desceram para `banco.mjs` (camada 0) — a
+> alternativa era recalcular a regra em dois lugares, e aí a lista prometeria um
+> retorno que a caixa de aposta não confirma.
+>
+> **A varredura de SQL do F1.2 pegou o módulo novo.** `protecao.mjs` montava um
+> `IN (?,?,?)` por interpolação para consultar o grupo de contas de uma pessoa.
+> Trocado por uma consulta por conta — o grupo tem o tamanho de uma pessoa — em
+> vez de afrouxar o padrão que reprovava.
+>
+> **Aberto, com dono:**
+> - **L-033** — o backend inteiro existe e nada dele é alcançável por HTTP. O
+>   `servidor.mjs` continua com as três rotas do F1.1. **Bloco novo F1.13**,
+>   proposto neste commit: é por isso que o Q6 "burlar o limite pela API" e a
+>   tela de limites do §28.7 não puderam sair aqui.
+> - **L-034** — `recovery_deposit` e `odd_hour` estão na lista dos sete sinais e
+>   não têm de onde medir. Um espera a compra de PC-T, o outro espera semanas de
+>   histórico.
 
 ---
 
@@ -1546,6 +1606,46 @@ Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a úni
 **Q7 (GL):** barra = a apresentação de elenco e identidade visual de um jogo de criaturas nomeado e lançado. É o bloco mais puramente GL do projeto: a correção é trivial, a qualidade é tudo.
 
 **Saída:** as duas primeiras coortes de retenção medidas no pack que será lançado. **Fim da Fase 1.**
+
+---
+
+### F1.13 — A montagem do serviço: as rotas e o cliente ligado
+
+**Tam.** G · **Método** INV · **Portões** Q1 Q2 Q3 Q5 Q6 Q8 Q9 · **Depende de** F1.9
+
+**Por que ele existe:** proposto no F1.8, ao fechar a **L-033**. Do F1.3 ao F1.9
+foram construídos autenticação, carteira, scheduler, transporte, aposta, limites
+e proteção — e o `servidor.mjs` continua com as três rotas do F1.1. Cada bloco
+fez a sua peça e nenhum tinha a montagem no escopo; o roteiro ia do transporte
+direto ao perfil. É a lacuna mais cara da fase justamente por não ser de
+ninguém.
+
+**Escopo:** as rotas de `/api/auth`, `/api/carteira`, `/api/rodada`,
+`/api/aposta`, `/api/limites` e `/api/protecao` sobre os módulos que já existem;
+a sala SSE do F1.6 pendurada no servidor; sessão por cabeçalho em todas elas; e
+o cliente falando com o servidor no lugar de `app/modules/banco.mjs`. As telas
+de limites e de autoexclusão do §28.7 saem aqui — "acessíveis a partir da
+carteira e do perfil", em no máximo dois níveis.
+
+**Sabotagem:** aceitar rota sem sessão; aceitar a odd vinda do corpo do pedido;
+deixar uma rota nova nascer sem a conferência de versão do contrato; deixar o
+limite ou a pausa valerem só na tela e não na rota; devolver `stack trace` numa
+resposta de erro.
+
+**Q6:** é o bloco que abre a superfície inteira. Burlar o limite chamando a rota
+direto; contornar a autoexclusão por API; ler carteira, aposta ou eventos de
+proteção de outro usuário; enumerar conta pela diferença de resposta do login.
+São os Q6 que o F1.8 e o F1.9 não puderam exercer por não haver rota — e cada
+garantia precisa do teste na ROTA, porque rota nova é caminho novo.
+
+**Q5:** o jogo inteiro passa a depender da rede. Capturar o app com o servidor
+no ar, com ele fora do ar, e durante uma reconexão.
+
+**Q9:** os eventos que hoje nascem no cliente passam a ter destino; nenhum
+evento de proteção pode ser amostrado no caminho.
+
+**Saída:** o jogo roda contra o servidor, a **L-033** fecha, e as telas de
+proteção do §28.7 existem.
 
 ---
 
@@ -2039,7 +2139,7 @@ Cada gate exige dados de produção da fase anterior. Nenhum é dispensável por
 A Fase 0 é serial por construção — é a fase que constrói a rede. A partir da Fase 1 há paralelismo real:
 
 ```text
-Fase 1   F1.1 ─ F1.2 ─ F1.3 ─ F1.4 ─ F1.5 ─ F1.6 ─ F1.7 ─┬─ F1.8 ─ F1.9
+Fase 1   F1.1 ─ F1.2 ─ F1.3 ─ F1.4 ─ F1.5 ─ F1.6 ─ F1.7 ─┬─ F1.8 ─ F1.9 ─ F1.13
                                                           ├─ F1.10
                                                           └─ F1.11 ─ F1.12
 

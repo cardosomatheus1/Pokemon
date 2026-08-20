@@ -11,6 +11,7 @@ import { tiposDaPool } from '../../engine/engine.mjs';
    ContentPack nenhum. É infraestrutura, como o DOM. */
 import { derivar, novaRaiz, sementes } from '../../engine/seed.mjs';
 import { passivoVazio } from '../../engine/exposicao.mjs';
+import { resultadoDaAposta, rotuloLiquido } from '../../engine/resultado.mjs';
 import { abrirRodada, revelar } from '../../engine/commit.mjs';
 import { emitir } from './telemetria.mjs';
 import { S } from './estado.mjs';
@@ -445,58 +446,95 @@ function finish(){
 
   overlay.classList.remove('hide');
 
-  if (S.myBet && S.myBet.idx === S.champ){
-    /* ---------- VITÓRIA ---------- */
-    const win = Math.floor(S.myBet.amount * S.myBet.odd);
-    const lucro = win - S.myBet.amount;
-    /* Payout herda a origem da stake (§5.5): o que foi apostado em bônus volta
-       como bônus. É isto que impede a Arena de virar conversor de bônus
-       gratuito em saldo transferível. */
-    pagarAposta(S.myBet.composicao, S.myBet.odd, 'aposta'); atualizarSaldo();
-    recordBetResult(true, S.myBet.amount, win, f);
-    $('#betInfo').innerHTML = `<b style="color:var(--green)">Ganhou ${CUR} ${win.toLocaleString('pt-BR')}!</b>`;
-    registrarAposta({t:Date.now(), mon:f.n, amount:S.myBet.amount, odd:S.myBet.odd,
-                     won:true, payout:win, pos:1});
-    log(`<span class="l-win">💵 +${win.toLocaleString('pt-BR')} ${MOEDA} (x${S.myBet.odd.toFixed(2)}) — lucro de ${lucro.toLocaleString('pt-BR')}!</span>`);
+  if (S.myBet){
+    /* ── §28.5: A FESTA PERGUNTA AO RESULTADO ECONÔMICO, NÃO AO PALPITE ────
+     *
+     * Antes deste bloco a condição era `S.myBet.idx === S.champ` — "acertei o
+     * campeão?". São perguntas diferentes, e é a diferença entre elas que o
+     * §28.5 existe para nomear: com `floor(30 × 1,03)` o jogador acerta o
+     * campeão, recebe os mesmos 30 de volta, e a tela soltava confete.
+     *
+     * A decisão sai de `resultadoDaAposta`, no motor, e não daqui. Há outras
+     * três superfícies com a mesma pergunta — KillFeed, histórico e carteira —
+     * e a quarta ainda vai ser escrita. */
+    const acertou = S.myBet.idx === S.champ;
+    const retorno = acertou ? Math.floor(S.myBet.amount * S.myBet.odd) : 0;
+    const res = resultadoDaAposta({ aposta: S.myBet.amount, retorno });
 
-    overlay.innerHTML = `<div id="winBox" class="win">
-        <div class="trophy">🏆</div>
-        <div class="moneybag">💰</div>
-        ${imgTag(f)}
-        <div class="banner" style="margin-top:8px">${f.n} venceu!</div>
-        <div class="payout">+${CUR} ${win.toLocaleString('pt-BR')}
-          <small>x${S.myBet.odd.toFixed(2)} · lucro de ${lucro.toLocaleString('pt-BR')} ${MOEDA}</small>
-        </div>
-        ${blocoXP(xpInfo, feitos)}
-      </div>`;
-    dropConfetti($('#winBox')); animaXP();
+    if (acertou){
+      /* Payout herda a origem da stake (§5.5): o que foi apostado em bônus volta
+         como bônus. É isto que impede a Arena de virar conversor de bônus
+         gratuito em saldo transferível. */
+      pagarAposta(S.myBet.composicao, S.myBet.odd, 'aposta');
+    } else {
+      /* A stake perdida sai do RESERVADO e não volta para disponível. Antes do
+         F0.9 ela já tinha sido debitada do saldo na hora da aposta e ninguém
+         fechava o lançamento — o dinheiro simplesmente sumia do ledger. */
+      perderAposta(S.myBet.composicao, 'aposta');
+    }
+    atualizarSaldo();
 
-  } else if (S.myBet){
-    /* ---------- DERROTA ---------- */
-    /* A stake perdida sai do RESERVADO e não volta para disponível. Antes do
-       F0.9 ela já tinha sido debitada do saldo na hora da aposta e ninguém
-       fechava o lançamento — o dinheiro simplesmente sumia do ledger. */
-    perderAposta(S.myBet.composicao, 'aposta'); atualizarSaldo();
-    // mostra o SEU lutador caído, não o vencedor: o que interessa aqui
-    // é "o que aconteceu com o meu", e o vencedor vira só uma linha.
-    const meu = S.fighters[S.myBet.idx];
-    recordBetResult(false, S.myBet.amount, 0, meu);
-    $('#betInfo').innerHTML = `<b style="color:var(--red)">Perdeu ${CUR} ${S.myBet.amount.toLocaleString('pt-BR')}.</b>`;
-    registrarAposta({t:Date.now(), mon:meu.n, amount:S.myBet.amount, odd:S.myBet.odd,
-                     won:false, payout:0, pos:minhaPos});
-    log(`<span class="l-ko">💸 −${S.myBet.amount.toLocaleString('pt-BR')} ${MOEDA} · você tinha ${meu.n}</span>`);
+    const alvo = acertou ? f : S.fighters[S.myBet.idx];
+    recordBetResult(acertou, S.myBet.amount, retorno, alvo);
+    registrarAposta({t:Date.now(), mon:alvo.n, amount:S.myBet.amount, odd:S.myBet.odd,
+                     won:acertou, payout:retorno, pos: acertou ? 1 : minhaPos});
 
-    const cheer = CHEER_LINES[(enfeite()*CHEER_LINES.length)|0];
-    overlay.innerHTML = `<div id="winBox" class="lose">
-        ${imgTag(meu)}
-        <div class="kostamp">K.O.</div>
-        <div class="banner" style="margin-top:8px">${f.n} venceu a rodada</div>
-        <div class="loss">−${CUR} ${S.myBet.amount.toLocaleString('pt-BR')}
-          <small>você tinha ${meu.n}</small>
-        </div>
-        <div class="cheer">${cheer}</div>
-        ${blocoXP(xpInfo, feitos)}
-      </div>`;
+    /* O LÍQUIDO EM DESTAQUE E O BRUTO EM SEGUNDO PLANO, nesta ordem e em todos
+       os três desfechos: "o valor exibido na tela de resultado é o líquido". */
+    $('#betInfo').innerHTML = res.comemora
+      ? `<b style="color:var(--green)">${rotuloLiquido(res.liquido)} ${MOEDA} no saldo.</b>`
+      : `<b style="color:var(--red)">${rotuloLiquido(res.liquido)} ${MOEDA} no saldo.</b>`;
+
+    if (res.comemora){
+      /* ---------- GANHO ECONÔMICO — e só aqui há coreografia ---------- */
+      log(`<span class="l-win">💵 ${rotuloLiquido(res.liquido)} ${MOEDA} (x${S.myBet.odd.toFixed(2)}) — retorno de ${retorno.toLocaleString('pt-BR')}</span>`);
+      overlay.innerHTML = `<div id="winBox" class="win">
+          <div class="trophy">🏆</div>
+          <div class="moneybag">💰</div>
+          ${imgTag(f)}
+          <div class="banner" style="margin-top:8px">${f.n} venceu!</div>
+          <div class="payout">${rotuloLiquido(res.liquido)} ${CUR}
+            <small>retorno de ${CUR} ${retorno.toLocaleString('pt-BR')} sobre ${CUR} ${S.myBet.amount.toLocaleString('pt-BR')} · x${S.myBet.odd.toFixed(2)}</small>
+          </div>
+          ${blocoXP(xpInfo, feitos)}
+        </div>`;
+      dropConfetti($('#winBox'));
+
+    } else if (acertou){
+      /* ---------- ACERTOU E NÃO GANHOU ----------
+       * O caso que não existia na tela e é a razão do §28.5. Sem festa, sem
+       * "quase lá" — o §28.7 proíbe linguagem que sugira que o resultado é
+       * influenciável —, e com o número que importa em destaque. */
+      log(`<span class="l-ko">↩︎ ${rotuloLiquido(res.liquido)} ${MOEDA} · retorno igual ou menor que a aposta</span>`);
+      overlay.innerHTML = `<div id="winBox" class="lose">
+          ${imgTag(f)}
+          <div class="banner" style="margin-top:8px">${f.n} venceu!</div>
+          <div class="loss">${rotuloLiquido(res.liquido)} ${CUR}
+            <small>o retorno de ${CUR} ${retorno.toLocaleString('pt-BR')} ${
+              res.desfecho === 'devolvido' ? 'foi igual ao' : 'ficou abaixo do'
+            } valor apostado</small>
+          </div>
+          ${blocoXP(xpInfo, feitos)}
+        </div>`;
+
+    } else {
+      /* ---------- DERROTA ---------- */
+      // mostra o SEU lutador caído, não o vencedor: o que interessa aqui
+      // é "o que aconteceu com o meu", e o vencedor vira só uma linha.
+      const meu = alvo;
+      log(`<span class="l-ko">💸 ${rotuloLiquido(res.liquido)} ${MOEDA} · você tinha ${meu.n}</span>`);
+      const cheer = CHEER_LINES[(enfeite()*CHEER_LINES.length)|0];
+      overlay.innerHTML = `<div id="winBox" class="lose">
+          ${imgTag(meu)}
+          <div class="kostamp">K.O.</div>
+          <div class="banner" style="margin-top:8px">${f.n} venceu a rodada</div>
+          <div class="loss">${rotuloLiquido(res.liquido)} ${CUR}
+            <small>você tinha ${meu.n}</small>
+          </div>
+          <div class="cheer">${cheer}</div>
+          ${blocoXP(xpInfo, feitos)}
+        </div>`;
+    }
     animaXP();
 
   } else {
@@ -507,7 +545,9 @@ function finish(){
         <div class="banner" style="margin-top:8px">${f.n} venceu!</div>
         <div class="neutral">Você não apostou nesta rodada.</div>
       </div>`;
-    dropConfetti($('#winBox'));
+    /* SEM CONFETE AQUI, e é decisão do F1.9. Quem não apostou não ganhou nada,
+       e a festa depois de uma rodada pulada é o produto dizendo "você perdeu a
+       festa" — que é a família de mensagem que o §28.7 proíbe. */
   }
   refreshOddsTable();
 }

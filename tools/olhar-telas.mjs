@@ -65,6 +65,12 @@ const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox']
 const erros = [];
 const avisos = [];
 
+/* O `waitForFunction` roda no navegador e não pode importar módulo; por isso o
+   estado é espelhado numa global ANTES de qualquer captura. Fica só aqui, na
+   ferramenta — o app não sabe que ela existe. */
+const ESPELHAR_ESTADO = `import('/app/modules/estado.mjs')
+  .then(m => { globalThis.__olhar_S = m.S; }).catch(() => {});`;
+
 async function abrir(largura, altura, preparar) {
   const ctx = await b.newContext({ viewport: { width: largura, height: altura } });
   const pg = await ctx.newPage();
@@ -72,6 +78,7 @@ async function abrir(largura, altura, preparar) {
   /* SESSÃO ATIVA: sem ela o boot cai na home e a arena nunca aparece. Custou uma
      rodada inteira de capturas descobrir isso. */
   await pg.addInitScript(() => { try { localStorage.setItem('ar_session', '1'); } catch {} });
+  await pg.addInitScript(ESPELHAR_ESTADO);
   if (RAIZ_FIXA) await pg.addInitScript(() => {
     let n = 0x51117777 >>> 0;
     crypto.getRandomValues = a => {
@@ -133,6 +140,78 @@ await tela('aposta-feita', 1440, 900, async pg => {
   });
   await pg.waitForTimeout(600);
 });
+
+/* ── AS TRÊS TELAS DE RESULTADO (F1.9, §28.5) ──────────────────────────────
+ *
+ * O Q5 do F1.9 pede as três, e a terceira é a razão do bloco: **retorno
+ * positivo MENOR OU IGUAL à aposta**. Ela não acontece sozinha nesta base — as
+ * odds da Arena são todas maiores que 1 —, então é preciso forçá-la, e forçar é
+ * legítimo: o caso existe em produção com `floor(30 × 1,03)`, e vai existir de
+ * sobra quando o mercado mútuo do V2 chegar.
+ *
+ * O ROTEIRO APOSTA DE VERDADE e deixa a rodada correr; só o desfecho é
+ * ajustado, e o `finish()` roda outra vez com o estado ajustado. É por isso que
+ * a captura mostra a tela DO PRODUTO, e não um HTML montado à mão para a foto —
+ * que seria uma captura provando que o gerador da captura funciona. */
+const resultado = ajuste => async pg => {
+  /* AS ESPERAS SÃO ANCORADAS NA RAIZ DA RODADA, e é isso que faz elas
+     funcionarem. O app joga sozinho: quando a captura chega, uma rodada
+     anterior já correu, e `S.state === 'result'` casava com o resultado DELA —
+     a foto saía da luta seguinte em `8s`. Prender a espera à mesma raiz do
+     início ao fim resolve, e nenhum relógio precisa ser adivinhado. */
+  await pg.waitForFunction(() => globalThis.__olhar_S?.state === 'betting',
+    { timeout: 120000, polling: 250 }).catch(() => avisos.push('não abriu janela de aposta'));
+
+  const raiz = await pg.evaluate(async aj => {
+    const { S } = await import('/app/modules/estado.mjs');
+    /* Auto desligado: com ele ligado a rodada seguinte começa sozinha e
+       substitui o resultado antes da foto. */
+    S.auto = false;
+    const b = document.querySelector('#btnAuto');
+    if (b) { b.textContent = 'Auto: OFF'; b.classList.remove('on'); }
+    const banco = await import('/app/modules/banco.mjs');
+    banco.creditarCompra(20000, 'olhar');
+    document.querySelector('.pick')?.click();
+    void aj;
+    return S.seeds?.raiz ?? null;
+  }, ajuste);
+
+  await pg.waitForTimeout(300);
+  await pg.$eval('#btnStart', el => el.click()).catch(() => {});
+
+  /* O AJUSTE ENTRA COM A LUTA JÁ SIMULADA E AINDA CORRENDO, e não depois.
+     A primeira versão esperava a tela de resultado e chamava `finish()` outra
+     vez — e quebrou: o `finish` de uma rodada já encerrada encontra o estado
+     meio desmontado (`renderMeuLutador` estourou em `imgTag`). Ajustar ANTES
+     deixa o `finish` do produto rodar UMA vez, no caminho normal. É a diferença
+     entre capturar a tela e capturar o gerador da captura. */
+  await pg.waitForFunction(r => {
+    const s = globalThis.__olhar_S;
+    return s && s.state === 'fighting' && s.seeds?.raiz === r
+        && s.champ !== null && s.champ !== undefined;
+  }, raiz, { timeout: 120000, polling: 200 }).catch(() => avisos.push('a luta não começou a tempo'));
+
+  await pg.evaluate(async aj => {
+    const { S } = await import('/app/modules/estado.mjs');
+    if (!S.myBet || S.champ === null || S.champ === undefined) return;
+    if (aj.acertou) S.myBet.idx = S.champ;
+    else if (S.myBet.idx === S.champ) S.myBet.idx = (S.champ + 1) % S.fighters.length;
+    if (aj.odd) S.myBet.odd = aj.odd;
+  }, ajuste);
+
+  await pg.waitForFunction(r => {
+    const s = globalThis.__olhar_S;
+    return s && s.state === 'result' && s.seeds?.raiz === r;
+  }, raiz, { timeout: 150000, polling: 300 }).catch(() => avisos.push('a rodada não chegou ao resultado'));
+  await pg.waitForTimeout(700);
+};
+
+await tela('resultado-vitoria',  1440, 900, resultado({ acertou: true }));
+await tela('resultado-derrota',  1440, 900, resultado({ acertou: false }));
+/* Odd 1,00: acerta o campeão e recebe exatamente o que apostou. É o caso que o
+   BUILD_BLOCKS dizia que "hoje não existe" — e que a tela comemorava. */
+await tela('resultado-devolvido', 1440, 900, resultado({ acertou: true, odd: 1.0 }));
+await tela('resultado-devolvido-420', 420, 900, resultado({ acertou: true, odd: 1.0 }));
 
 await tela('perfil', 1100, 1500, async pg => {
   await pg.evaluate(async () => {

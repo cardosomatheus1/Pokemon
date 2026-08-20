@@ -8,7 +8,7 @@ import { CUR, MOEDA } from './motor.mjs';
 import { S } from './estado.mjs';
 import { alternarSom, aplicarVolume, music } from './audio.mjs';
 import { atualizarSaldo } from './controles.mjs';
-import { creditarCompra, saldo } from './banco.mjs';
+import { APOSTA_MIN, creditarCompra, saldo, valorAposta } from './banco.mjs';
 import { closeModal, openModal } from './navegacao.mjs';
 import { newRound, startFight } from './fases.mjs';
 import { saveProfile } from './perfil.mjs';
@@ -156,7 +156,6 @@ function renderHistDep(limite){
    Ficha maior que o saldo aparece desabilitada em vez de sumir: some
    com a opção e a pessoa não entende por que a grade mudou; desabilitada
    ela mostra que existe e que falta saldo.                            */
-const APOSTA_MIN = 50;
 const CHIP_VALUES = [50, 100, 300, 500, 1000];
 
 function atualizarFichas(){
@@ -182,12 +181,6 @@ function atualizarFichas(){
       ? `Saldo abaixo da aposta mínima de ${CUR} ${APOSTA_MIN}. Complete um desafio diário ou compre ${MOEDA}.`
       : `Apostando <b>${CUR} ${v.toLocaleString('pt-BR')}</b> por rodada.`;
   }
-}
-
-/* valor efetivo da aposta, já limitado ao saldo */
-function valorAposta(){
-  const v = S.chipVal === 'max' ? saldo() : S.chipVal;
-  return Math.max(0, Math.min(v, saldo()));
 }
 
 function usarValorPersonalizado(){
@@ -268,11 +261,9 @@ ligarVelocidade();
 
 export {
   ligarVelocidade,
-  APOSTA_MIN,
   DEPOSIT_PACKAGES,
   atualizarFichas,
   registrarAposta,
   renderDeposit,
   simulateDeposit,
-  valorAposta,
 };

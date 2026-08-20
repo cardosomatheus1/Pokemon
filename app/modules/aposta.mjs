@@ -11,7 +11,8 @@
  * paga resultado — o pagamento continua em `fases.mjs`, junto do fim da rodada.
  */
 import { $ } from './dom.mjs';
-import { APOSTA_MIN, valorAposta } from './carteira.mjs';
+import { retornoLiquidoEstimado } from '../../engine/resultado.mjs';
+import { APOSTA_MIN, valorAposta } from './banco.mjs';
 import { CONF, CUR, MOEDA } from './motor.mjs';
 import { avaliarAposta, liberarTicket, registrarTicket } from '../../engine/exposicao.mjs';
 import { emitir } from './telemetria.mjs';
@@ -121,6 +122,7 @@ function placeBet(idx, row){
   $('#betInfo').innerHTML =
     `<b>${CUR} ${amount.toLocaleString('pt-BR')}</b> em <b>${S.fighters[idx].n}</b> (x${o.odd.toFixed(2)})<br>
      retorno se vencer: <b style="color:var(--gold)">${CUR} ${Math.floor(amount*o.odd).toLocaleString('pt-BR')}</b>
+     <span class="tiny">(lucro de ${CUR} ${retornoLiquidoEstimado(amount, o.odd).toLocaleString('pt-BR')})</span>
 ${corte}
      <button class="btn cancelBet" id="btnCancelBet">✕ Cancelar aposta e ficar de fora</button>`;
   $('#btnCancelBet').onclick = cancelarAposta;

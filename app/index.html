@@ -481,6 +481,14 @@ body{
    limite e da chance. 8px de fonte pixel contra 12,5px de chance invertia a
    ordem de leitura da coluna que dá nome ao produto. */
 .pick .o{font-family:var(--px);font-size:11px;color:var(--gold)}
+/* §28.7: a odd NÃO PODE APARECER SOZINHA — "exibir odd sem exibir, no mesmo
+   lugar, o valor de retorno líquido". O multiplicador é abstrato; o lucro em PC
+   é a pergunta que o jogador está fazendo, e ele tem 29 s para respondê-la.
+   Fica DEBAIXO da odd, na mesma célula, para que os dois sejam um número só e
+   não duas colunas competindo. */
+.pick .o .liq{display:block;font-family:'Segoe UI',system-ui,sans-serif;font-style:normal;
+  font-size:.58rem;color:var(--dim);letter-spacing:0}
+.pick .o:empty{display:none}
 /* Teto de exposição (§4.4.6): o stake máximo daquele lutador fica visível ANTES
    da aposta, e mercado fechado se anuncia. Rejeição silenciosa reprova o F0.8. */
 /* O LIMITE É TERCIÁRIO E TEM QUE PARECER TERCIÁRIO. Ele é o número mais LARGO

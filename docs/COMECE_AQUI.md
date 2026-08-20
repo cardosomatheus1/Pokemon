@@ -234,7 +234,8 @@ precisa de aleatoriedade, ela sai de um ramo nomeado da árvore. **Nunca de
 
 ## 10. O servidor
 
-**`F1.1` a `F1.7` estão construídos.** O ciclo econômico roda no servidor:
+**`F1.1` a `F1.9` estão construídos.** O ciclo econômico e a proteção do jogador
+rodam no servidor:
 
 ```
 server/contrato.mjs    a versão da API e os códigos de erro
@@ -246,7 +247,17 @@ server/carteira.mjs    ledger append-only, idempotente, atômico
 server/scheduler.mjs   dono do relógio: gera, precifica, abre, fecha, simula
 server/transporte.mjs  SSE — a sala, o estado e a reconexão
 server/aposta.mjs      aposta, lock e settlement
+server/limites.mjs     os limites do §28.3 e a assimetria de mudança
+server/protecao.mjs    pausa, autoexclusão, marketing, reality check e risco
 ```
+
+**Duas garantias deste backend são AUSÊNCIAS, e é de propósito.** O cooldown de
+24 h para aumentar limite não pode ser encurtado, e a autoexclusão não pode ser
+encerrada por ninguém. Nos dois casos a defesa não é um `if` que recusa: é não
+existir o caminho. `definirLimite` não tem por onde receber um prazo, e
+`protecao.mjs` não exporta nada que encerre uma pausa — há um teste que cobra
+exatamente essa ausência, porque o painel administrativo do F1.11 vai procurar
+uma função dessas e usar de boa-fé.
 
 **Zero dependências vale aqui também.** `node:sqlite` é embutido desde o Node
 22.5; `node:crypto` faz senha (scrypt), sessão (HMAC) e commit. Nenhum
@@ -264,9 +275,13 @@ O contrato está em **`docs/API.md`** — leia antes de escrever cliente.
 
 ### O que vem a seguir
 
-**F1.8** (limites do jogador) e **F1.9** (pausa e autoexclusão) — as três tabelas
-do capítulo 28 já existem desde o F1.2, vazias, esperando. **F1.10** destrava o
-**D-007**, e o D-007 destrava os baús.
+**F1.13** — a montagem do serviço. É a lacuna **L-033**, aberta no F1.8: os
+módulos do F1.3 ao F1.9 estão prontos e testados, e o `servidor.mjs` continua
+com as três rotas do F1.1. Nada do backend é alcançável por HTTP, e o cliente
+ainda fala com `app/modules/banco.mjs`. É o bloco que liga os dois.
+
+**F1.10** (perfil e desafios no servidor), **F1.11** (admin e painel econômico) e
+**F1.12** (ContentPack original) fecham a Fase 1.
 
 O porte da versão anterior está fechado (V1.13 a V1.20, mais T1–T3 de
 ferramenta).
@@ -275,10 +290,11 @@ ferramenta).
 
 | item | o que é | dono |
 |---|---|---|
-| **D-007** | desafios diários emitem 6,5× o orçamento agregado do Estudo Econômico | **F1.10** |
-| **L-032** | a idempotência tem duas redes e a suíte só alcança uma (`node:sqlite` é síncrono) | **F1.6** |
+| **L-033** | o backend inteiro existe e nada dele responde por HTTP | **F1.13** |
 | **L-031** | os 9 itens da terceira passada do crítico cego (1920 estica em vez de agrupar) | **V1.21** |
-| **L-026** | o baú não tem contra o que ser calibrado enquanto D-007 durar | **V1.19** |
+| **L-034** | `recovery_deposit` e `odd_hour` não têm de onde medir | **§25.1** e **F1.11** |
+| **L-024** | o bucket `pendente` existe e nada o preenche | **F1.13** |
+| **L-011** | os limiares de risco são chute educado até haver coorte | **F1.11** |
 | **L-012** | consulta de enquadramento regulatório | ⏳ não se resolve com software |
 | **L-010** | política de publicidade e afiliados | ⏳ sem dono |
 

@@ -80,6 +80,24 @@ export const saldo = () => (S.carteira ? totalDisponivel(S.carteira) : 0);
    o contrário do que o teto quer. */
 export const saldoBonus = () => (S.carteira ? S.carteira.disponivel.bonus : 0);
 
+/* A APOSTA MÍNIMA E O VALOR EFETIVO DA APOSTA.
+ *
+ * Desceram de `carteira.mjs` (camada 4) para cá (camada 0) no F1.9, e por
+ * necessidade de grafo: o §28.7 pede que a LISTA DE ODDS mostre o retorno
+ * líquido ao lado da odd, e `odds.mjs` é camada 2 — importar a carteira dali
+ * seria dependência invertida, e o teste de camadas pegou na primeira execução.
+ *
+ * A alternativa era recalcular o valor em `odds.mjs`. Seria a mesma regra em
+ * dois lugares, e a lista prometeria um retorno que a caixa de aposta não
+ * confirma no dia em que uma das duas mudasse. */
+export const APOSTA_MIN = 50;
+
+/* Valor efetivo da aposta, já limitado ao saldo. */
+export const valorAposta = () => {
+  const v = S.chipVal === 'max' ? saldo() : S.chipVal;
+  return Math.max(0, Math.min(v, saldo()));
+};
+
 function aplicar(fn) {
   const r = fn();
   if (r && r.ok !== false) salvar();

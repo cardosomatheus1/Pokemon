@@ -12,6 +12,12 @@ import { S } from './estado.mjs';
 import { ordemDeQuedas, rankingColocacao } from './colocacao.mjs';
 import { abatesDe } from './killfeed.mjs';
 import { imgTag } from './sprites.mjs';
+/* §28.7: "exibir odd sem exibir, no mesmo lugar, o valor de retorno líquido".
+   O valor vem de `valorAposta` e não de uma cópia da regra — o teto pelo saldo
+   é parte da resposta, e duas contas para o mesmo número é como a lista
+   prometer um retorno que a caixa de aposta não confirma. */
+import { valorAposta } from './banco.mjs';
+import { retornoLiquidoEstimado, rotuloLiquido } from '../../engine/resultado.mjs';
 
 /* ------------------------- ODDS (MONTE CARLO) -------------------------
    Roda CONF.SIMS batalhas e transforma frequência de vitória em odd.
@@ -78,6 +84,10 @@ function computeOdds(fighters, sims, onProgress, raiz, margem){
  */
 function buildPickList(){
   const rows = S.odds.lutadores.slice().sort((a,b) => a.odd - b.odd);
+  /* Uma leitura só, fora do laço: `valorAposta` consulta o saldo, e doze
+     consultas para o mesmo número seriam doze respostas iguais e uma chance de
+     serem diferentes. */
+  const aposta = valorAposta();
   return rows.map(o => {
     const f = S.fighters[o.idx];
     /* §4.4.6: a interface mostra o stake máximo daquele lutador e, quando o
@@ -92,7 +102,8 @@ function buildPickList(){
       <span class="n">${f.n}</span>
       <span class="p" title="chance de vencer, medida em ${S.odds.sims.toLocaleString('pt-BR')} simulações">${
         (o.prob*100).toFixed(1)}%<i>±${(o.erroRelativo*100).toFixed(1)}</i></span>
-      <span class="o">x${o.odd.toFixed(2)}</span>
+      <span class="o">x${o.odd.toFixed(2)}<i class="liq">${
+        fechado || aposta < 1 ? '' : rotuloLiquido(retornoLiquidoEstimado(aposta, o.odd))}</i></span>
       <span class="lim tiny" title="teto de aposta neste lutador: o §4.4.6 limita o PAGAMENTO por bilhete, então quanto maior a odd, menor o valor que cabe">${
         fechado ? 'mercado fechado'
         : `máx ${cabe.toLocaleString('pt-BR')}`}</span>

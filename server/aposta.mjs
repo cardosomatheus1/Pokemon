@@ -29,6 +29,9 @@ import { randomUUID } from 'node:crypto';
 import { CONF } from '../engine/engine.mjs';
 import { ESTADOS } from './scheduler.mjs';
 import { reservarNoBanco, liberarNoBanco, liquidarNoBanco } from './carteira.mjs';
+import { avaliarAposta, avaliarRodada, registrarRodada, registrarPerda,
+         registrarBloqueio, ERRO_LIMITE } from './limites.mjs';
+import { podeAgir, ERRO_PROTECAO } from './protecao.mjs';
 
 export const ERRO_APOSTA = {
   JANELA_FECHADA:  'janela_fechada',
@@ -41,8 +44,17 @@ export const ERRO_APOSTA = {
   RODADA:          'rodada_invalida',
 };
 
-const erro = (codigo, mensagem) => Object.assign(new Error(mensagem), { codigo });
+const erro = (codigo, mensagem, extra) => Object.assign(new Error(mensagem), { codigo, ...extra });
 const inteiroPositivo = v => typeof v === 'number' && Number.isInteger(v) && v > 0;
+
+/* A recusa em português, com as TRÊS coisas que o §28.3 exige. Fica aqui e não
+   no cliente porque a Spec também diz que a recusa "nunca oferece um caminho
+   alternativo de gasto na mesma tela" — e é mais fácil garantir isso quando o
+   texto nasce ao lado da regra. */
+function mensagemDeLimite(v) {
+  const quando = v.voltaEm ? `; volta em ${new Date(v.voltaEm).toISOString()}` : '';
+  return `limite ${v.limite}: ${v.usado} de ${v.teto} (${v.comoLiberar})${quando}`;
+}
 
 /* ── APOSTAR (e trocar, que é a mesma coisa) ───────────────────────────────*/
 
@@ -62,9 +74,51 @@ export function apostar(db, { sched, userId, slot, valor, agora = Date.now() }) 
   if (!conta || conta.status !== 'ativo')
     throw erro(ERRO_APOSTA.CONTA, 'esta conta não pode apostar');
 
+  /* A PAUSA DO §28.4 VEM ANTES DO LIMITE DO §28.3, e a ordem não é estética:
+     durante um cool-off o limite é irrelevante — nenhuma aposta cabe. Perguntar
+     o limite primeiro devolveria "seu limite por rodada é 200" a quem pediu
+     para parar de jogar, que é a resposta errada para a pergunta certa.
+
+     E ela é lida do BANCO a cada aposta, nunca de sessão: autoexclusão que mora
+     na sessão cai no logout, e "deixar a autoexclusão cair no logout" é item da
+     lista de sabotagem do F1.9. */
+  const pausa = podeAgir(db, { userId, acao: 'apostar', agora });
+  if (!pausa.ok)
+    throw erro(ERRO_PROTECAO.PAUSADO,
+      pausa.pausa?.ate
+        ? `conta em ${pausa.motivo} até ${new Date(pausa.pausa.ate).toISOString()}`
+        : 'conta em autoexclusão permanente',
+      { pausa: pausa.pausa });
+
   if (!Number.isInteger(slot) || slot < 0 || slot > 11)
     throw erro(ERRO_APOSTA.SLOT, 'lutador inválido');
   if (!inteiroPositivo(valor)) throw erro(ERRO_APOSTA.VALOR, 'valor inválido');
+
+  /* OS LIMITES DO §28.3 VALEM AQUI, no mesmo caminho que aceita a aposta, e não
+     numa tela que o cliente pode não desenhar. Proteção do jogador é requisito,
+     não conformidade — e requisito que mora no cliente é requisito do jogador.
+
+     A recusa CARREGA a avaliação inteira: qual limite, quanto foi usado contra
+     quanto, e quando volta. A Spec pede as três coisas, e quem chama não tem
+     como recalculá-las depois de receber só um código. */
+  const jaTem = db.prepare(
+    `SELECT * FROM bets WHERE user_id = ? AND round_id = ? AND status = 'aberta'`)
+    .get(userId, rodada.id);
+
+  /* Rodada NOVA conta como rodada; trocar de lutador não. Contar a troca faria
+     `max_rounds_dia` medir indecisão em vez de exposição — e o jogador que
+     hesita seria punido mais que o que não pensa. */
+  const veredito = jaTem ? avaliarAposta(db, { userId, valor, agora })
+    : (r => r.ok ? avaliarAposta(db, { userId, valor, agora }) : r)(
+        avaliarRodada(db, { userId, agora }));
+  if (!veredito.ok) {
+    /* O EVENTO É GRAVADO ANTES DE LANÇAR, e não num `catch` de quem chama.
+       Bloqueio que só existe se alguém lembrar de registrá-lo é bloqueio que
+       some da série no dia em que uma rota nova esquecer — e a série de
+       bloqueios é o que o §28.6 lê como `limit_pressure`. */
+    registrarBloqueio(db, { userId, veredito, contexto: 'aposta', agora });
+    throw erro(ERRO_LIMITE.BLOQUEADO, mensagemDeLimite(veredito), { limite: veredito });
+  }
 
   /* A ODD SAI DA TABELA, e é a que o servidor gravou na abertura da rodada.
      É isto que "odd auditável" significa na prática: o ticket carrega o preço
@@ -79,10 +133,6 @@ export function apostar(db, { sched, userId, slot, valor, agora = Date.now() }) 
   if (Math.floor(valor * oferta.offered_odd) > CONF.MAX_PAYOUT_POR_TICKET)
     throw erro(ERRO_APOSTA.TETO,
       `o retorno passaria do teto por bilhete (${CONF.MAX_PAYOUT_POR_TICKET})`);
-
-  const jaTem = db.prepare(
-    `SELECT * FROM bets WHERE user_id = ? AND round_id = ? AND status = 'aberta'`)
-    .get(userId, rodada.id);
 
   /* TROCAR É DESFAZER E REFAZER, e nesta ordem.
      Reservar antes de liberar cobraria as duas ao mesmo tempo, e quem apostou
@@ -124,6 +174,10 @@ export function apostar(db, { sched, userId, slot, valor, agora = Date.now() }) 
        VALUES (?,?,?,?,?,?,?,'aberta',?,?)`)
       .run(id, userId, rodada.id, slot, oferta.species_id, valor, oferta.offered_odd,
            JSON.stringify(reserva.composicao), agora);
+    /* A rodada só conta DEPOIS de o ticket existir. Contar antes faria uma
+       recusa de saldo consumir uma rodada do limite diário — cobrar exposição
+       de quem não se expôs. */
+    registrarRodada(db, { userId, agora });
   }
   return { id, slot, odd: oferta.offered_odd, valor, composicao: reserva.composicao };
 }
@@ -186,9 +240,14 @@ export function liquidarRodada(db, { sched, roundId, agora = Date.now() }) {
     const composicao = JSON.parse(t.stake_breakdown);
     liquidarNoBanco(db, { userId: t.user_id, composicao, ganhou, odd: t.odd,
                           ref: t.id, idem: `settle-${t.id}`, agora });
+    const retorno = ganhou ? Math.floor(t.stake * t.odd) : 0;
     db.prepare(`UPDATE bets SET status=?, payout=?, settled_at=? WHERE id=?`)
-      .run(ganhou ? 'ganha' : 'perdida',
-           ganhou ? Math.floor(t.stake * t.odd) : 0, agora, t.id);
+      .run(ganhou ? 'ganha' : 'perdida', retorno, agora, t.id);
+    /* O QUE `max_loss` MEDE É ISTO, e é aqui que ele se sabe: `aposta - retorno`.
+       LÍQUIDO, e não volume — quem apostou 1000 e recebeu 950 perdeu 50. Lançar
+       o stake no momento da aposta faria o limite contar volume, que é o que a
+       Spec diz explicitamente para não contar. */
+    registrarPerda(db, { userId: t.user_id, valor: t.stake - retorno, agora });
     ganhou ? pagos++ : perdidos++;
   }
   return { pagos, perdidos, total: tickets.length };

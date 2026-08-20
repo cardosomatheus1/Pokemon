@@ -828,6 +828,63 @@ constraint é a rede que sobrevive à migração, e o custo dela é zero.
 ---
 
 
+### L-033 — o backend inteiro existe e nada dele é alcançável por HTTP
+
+**Dono:** **F1.13** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** F1.8
+
+Os módulos do F1.3 ao F1.9 estão construídos e testados: autenticação, carteira,
+scheduler, transporte, aposta, limites, proteção. O `servidor.mjs` continua com
+as **três rotas do F1.1** — `/saude`, `/api/rodada/digital`, `/api/rodada/preco`.
+Nada mais tem porta.
+
+Cada bloco construiu a sua peça e nenhum montou o serviço. Não é descuido de um
+bloco: **nenhum bloco tinha isso no escopo**, e o roteiro da Fase 1 vai do
+transporte (F1.6) direto ao perfil (F1.10) sem passar pela montagem.
+
+Duas consequências concretas, e as duas são de portão:
+
+1. **O Q6 do F1.8 e do F1.9 não pôde ser exercido como o bloco pede.** "Burlar o
+   limite chamando a API direto" e "contornar a autoexclusão por API direta"
+   pressupõem uma API. As duas garantias existem na fronteira do domínio — a
+   `apostar()` recusa —, e é ali que elas foram testadas. **A rota vai precisar
+   do mesmo teste quando nascer**, porque rota nova é caminho novo.
+2. **A tela de limites do §28.3 não tem como existir.** O cliente hoje é
+   offline e fala com `app/modules/banco.mjs`; uma tela de limites contra o
+   armazenamento local ou duplicaria a regra no cliente — que é exatamente o
+   item "deixar o limite valer só na interface e não no servidor" da lista de
+   sabotagem do F1.8 — ou seria uma tela morta.
+
+**O que a destrava:** o F1.13, que expõe as rotas e liga o cliente a elas. As
+telas de limites e de autoexclusão do §28.7 ("acessíveis a partir da carteira e
+do perfil, em no máximo dois níveis") saem com ele, e é lá que o Q7 dessas telas
+acontece.
+
+---
+
+### L-034 — dois dos sete sinais de risco não têm de onde medir
+
+**Dono:** `recovery_deposit` → **F2.x, o gate do §25.1** · `odd_hour` → **F1.11**
+· **Notada em:** F1.9
+
+`sinaisDeRisco` mede cinco dos sete do §28.6. Os outros dois estão na lista
+`SINAIS` — ela é o contrato do documento e não pode encolher — e não acendem:
+
+- **`recovery_deposit`** é "compra de PC-T logo após perda relevante". Não existe
+  compra de PC-T, e ela não pode existir antes do checkpoint do §25.1. Medir
+  antes seria medir zero e chamar de calmaria.
+- **`odd_hour`** é "deslocamento sistemático do horário de jogo". Precisa de
+  semanas do histórico da PRÓPRIA conta para haver horário habitual de que se
+  deslocar — o §28.6 é explícito em que a base é a conta, não a população. Com
+  contas de dias, qualquer horário é o primeiro horário.
+
+Os três limiares que já medem (`chasing`, `velocity`, `depth`) são chute educado,
+e isso já está na **L-011**. Esta lacuna é sobre os dois que nem chute têm.
+
+**O que a destrava:** dados. O F1.11 traz o painel e a série temporal por conta;
+o `odd_hour` é calculável no dia em que houver quatro semanas de histórico.
+
+---
+
 ### L-031 — o que a TERCEIRA passada do crítico abriu
 
 **Dono:** **V1.21** (proposto no `BUILD_BLOCKS`) · **Achado por:** crítico cego,

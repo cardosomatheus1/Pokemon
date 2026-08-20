@@ -674,3 +674,111 @@ medição datada não envelhece.
 > Ele conta **três** marcadores vivos, e não os quatro do HTML: o quarto mora
 > dentro do `#boot`, que é removido assim que a primeira rodada fica pronta.
 
+---
+
+## D-012 — a tela de resultado comemorava retorno igual ou menor que a aposta ✅ CORRIGIDO
+
+**Achado em:** F1.9, ao implementar o §28.5 · **Bloco dono:** **F1.9** · **Corrigido no:** F1.9
+
+O `BUILD_BLOCKS` do F1.9 chamava este caso de "o caso que hoje não existe". Ele
+existe:
+
+```
+aposta 30 · odd 1,03 · floor(30 × 1,03) = 30
+```
+
+O jogador acerta o campeão, recebe exatamente o que apostou, e a tela mostrava
+troféu, saco de dinheiro, confete e **`+PC 30`** em corpo grande. É a *perda
+disfarçada de ganho* que o §28.5 existe para nomear, e ela chegou por aritmética,
+não por desenho.
+
+A condição da festa era `S.myBet.idx === S.champ` — **"acertei o campeão?"**. A
+pergunta certa é **"eu ganhei dinheiro?"**, e as duas só coincidem enquanto toda
+odd for maior que 1. Não são: o mercado mútuo do V2 tem odd abaixo de 1 por
+construção sempre que o bolo se concentra num lutador.
+
+### A correção
+
+A decisão saiu da tela e virou `engine/resultado.mjs`, com uma pergunta só —
+`comemora: liquido > 0`. A tela de resultado, o KillFeed, o histórico e a
+carteira passam a ter uma fonte; a quarta superfície, que ainda vai ser escrita,
+nasce certa.
+
+Uma terceira tela nasceu para o caso — **acertou e não ganhou** —, sem
+coreografia, com o líquido em destaque e o bruto em segundo plano, e sem
+nenhuma variante de "quase lá" (o §28.7 proíbe linguagem que sugira que o
+resultado é influenciável).
+
+**A Spec foi corrigida no mesmo commit.** O §28.5 dizia "retorno menor que o
+valor apostado"; passou a dizer "menor **ou igual**".
+
+### O teste que trava
+
+`test/resultado.mjs` — `retorno IGUAL à aposta não comemora` e `retorno MENOR
+que a aposta não comemora`. Mais duas varreduras estáticas sobre
+`app/modules/fases.mjs`: a tela precisa chamar `resultadoDaAposta`, e **nenhum
+`dropConfetti` pode existir num caminho que não consultou `comemora`**. Defeitos
+plantados: `S195` (a condição volta a ser o palpite), `S196` (a fronteira vira
+`>= 0`) e `S197` (o bruto volta ao destaque).
+
+---
+
+## D-013 — o teste do cooldown comparava a constante consigo mesma ✅ CORRIGIDO
+
+**Achado em:** F1.8, pelo portão Q2 · **Bloco dono:** **F1.8** · **Corrigido no:** F1.8
+
+Vinte testes cobriam a assimetria do §28.3 e nenhum via o cooldown encolher,
+porque todos escreviam a mesma coisa:
+
+```js
+ok(r.efetivoEm >= c.agoraDe() + COOLDOWN_MS)   // importado de limites.mjs
+```
+
+O defeito plantado `S186` troca `24 * 60 * 60 * 1000` por `24 * 60 * 1000` — 24
+minutos. A constante encolhe, o teste encolhe junto, e os dois continuam
+concordando. **A suíte inteira ficou verde com o cooldown do §28.3 valendo 24
+minutos.**
+
+É a mesma classe do **D-007**: dois lugares concordando entre si e discordando
+da fonte. Lá era o código contra o Estudo Econômico; aqui é o teste contra a
+Spec.
+
+### A correção
+
+Um teste que lê o número **do documento**, como `test/emissao.mjs` faz com o
+Estudo:
+
+```js
+const m = spec.match(/aumentar limite\s*->\s*pedido registrado \+ cooldown de (\d+)\s*h/);
+igual(COOLDOWN_MS, Number(m[1]) * 60 * 60 * 1000);
+```
+
+Se a âncora sumir do documento, o teste reprova em vez de passar vazio.
+
+---
+
+## D-014 — nada exercitava o caminho do settlement até o limite de perda ✅ CORRIGIDO
+
+**Achado em:** F1.8, pelo portão Q2 · **Bloco dono:** **F1.8** · **Corrigido no:** F1.8
+
+`max_loss` conta perda **líquida**. Dezenove testes chamavam `registrarPerda`
+direto com o número certo e provavam que a função soma direito — e nenhum
+provava que **alguém a chama com o número certo**.
+
+O defeito `S193` troca, no settlement, `t.stake - retorno` por `t.stake`. O
+jogador aposta 1.000, ganha 1.850, e o limite de perda diária de 200 passa a
+bloquear a próxima aposta: perda contada por VOLUME, que é exatamente o que a
+Spec §28.3 escreve para não fazer. **Passou verde.**
+
+> **Testar a peça não testa o encaixe.** Terceira vez que esta frase entra
+> nestes documentos — F1.4, F1.7 e agora F1.8.
+
+### O teste que trava
+
+Dois, e o segundo é o contrapeso do primeiro:
+
+- `a VITÓRIA no settlement não conta como perda no limite diário` — aposta de
+  verdade, rodada de verdade, `liquidarRodada` de verdade, e a avaliação do
+  limite depois;
+- `a DERROTA no settlement conta a perda inteira` — sem ele, um settlement que
+  não lançasse **nada** passaria no primeiro.

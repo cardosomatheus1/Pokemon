@@ -44,6 +44,22 @@ export function abrirBanco(caminho) {
    se dessincroniza. */
 export const BUCKETS = ['transferivel', 'pendente', 'bonus', 'competitivo'];
 
+/* Os limites do §28.3, pelo mesmo motivo dos buckets: o CHECK da tabela e o
+   módulo que os aplica precisam concordar, e concordar por cópia é como se
+   dessincroniza. `max_deposit` NÃO está aqui — a Spec diz que ele "só existe
+   quando houver compra de PC-T", e limite que não pode ser exercido é promessa
+   de tela. Ele entra no bloco que ligar a compra.
+
+   Todos são "quanto maior, mais permissivo". A assimetria do §28.3 depende
+   disso, e um limite futuro que inverta a ordem precisa dizer isso aqui em vez
+   de deixar `limites.mjs` adivinhar. */
+export const TIPOS_LIMITE = [
+  'max_stake_per_round',   // por rodada
+  'max_loss_dia', 'max_loss_semana', 'max_loss_mes',   // perda LÍQUIDA
+  'max_rounds_dia',        // frequência, não valor
+  'max_session_time',      // minutos de sessão
+];
+
 const emAspas = lista => lista.map(x => `'${x}'`).join(',');
 
 /* ── AS MIGRAÇÕES ───────────────────────────────────────────────────────────
@@ -276,6 +292,143 @@ export const MIGRACOES = [
                        'daily_challenges', 'wallet_ledger', 'carteiras', 'bets',
                        'round_fighters', 'rounds', 'trainer_profiles', 'users'])
         db.exec(`DROP TABLE IF EXISTS ${t}`);
+    },
+  },
+
+  /* ── 2 · OS LIMITES DO §28.3 GANHAM FORMA (F1.8) ─────────────────────────
+   *
+   * A `player_limits` do esquema-v1 foi criada em F1.2 com quatro tipos
+   * chutados (`deposito_diario`, `aposta_diaria`, `tempo_diario`,
+   * `perda_diaria`) e `valor > 0` obrigatório. Nenhum dos dois sobrevive ao
+   * §28.3: os tipos são outros, e **remover um limite precisa ser gravável** —
+   * é a terceira linha da assimetria, e ela vira `valor NULL`.
+   *
+   * A tabela é RECRIADA e não alterada. Ela nunca recebeu escrita (o F1.2 a
+   * criou vazia de propósito, ver o comentário lá em cima), então recriar não
+   * perde dado nenhum e deixa o CHECK certo desde a primeira linha. Se um dia
+   * ela tiver dados, esta migração precisa virar cópia — e é por isso que a
+   * nota está aqui, e não no commit.
+   */
+  {
+    nome: 'limites-28.3',
+    sobe: db => {
+      db.exec(`DROP TABLE IF EXISTS player_limits`);
+
+      /* O HISTÓRICO É A TABELA. Cada mudança é uma linha com o instante em que
+         passou a valer; o limite de hoje é a linha mais recente com
+         `vigente_em <= agora`. Guardar só o valor atual apagaria justamente o
+         que o §28.6 lê como `limit_pressure`. */
+      db.exec(`
+        CREATE TABLE player_limits (
+          user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          tipo       TEXT NOT NULL CHECK (tipo IN (${emAspas(TIPOS_LIMITE)})),
+          valor      INTEGER CHECK (valor IS NULL OR valor > 0),
+          vigente_em INTEGER NOT NULL,
+          criado_em  INTEGER NOT NULL,
+          PRIMARY KEY (user_id, tipo, vigente_em)
+        )`);
+
+      /* UM PEDIDO PENDENTE POR (usuário, tipo), e a chave primária é quem
+         garante. Dois pedidos vivos para o mesmo limite seriam dois prazos, e
+         o jogador confirmaria o que vencesse primeiro — que é o encurtamento
+         que o §28.3 proíbe, entrando pela porta do modelo de dados. */
+      db.exec(`
+        CREATE TABLE limit_requests (
+          user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          tipo       TEXT NOT NULL CHECK (tipo IN (${emAspas(TIPOS_LIMITE)})),
+          valor      INTEGER CHECK (valor IS NULL OR valor > 0),
+          pedido_em  INTEGER NOT NULL,
+          efetivo_em INTEGER NOT NULL,
+          PRIMARY KEY (user_id, tipo),
+          CHECK (efetivo_em > pedido_em)
+        )`);
+
+      /* O QUE OS LIMITES MEDEM. Separada do ledger de propósito: o ledger é
+         dinheiro e é append-only por gatilho; isto é exposição, e inclui
+         evento que não move dinheiro nenhum (uma rodada jogada). Misturar as
+         duas coisas faria a auditoria financeira ler comportamento. */
+      db.exec(`
+        CREATE TABLE player_activity (
+          id        TEXT PRIMARY KEY,
+          user_id   TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          tipo      TEXT NOT NULL CHECK (tipo IN ('perda','rodada')),
+          valor     INTEGER NOT NULL,
+          criado_em INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE INDEX idx_activity_user ON player_activity(user_id, criado_em)`);
+    },
+    desce: db => {
+      for (const t of ['player_activity', 'limit_requests', 'player_limits'])
+        db.exec(`DROP TABLE IF EXISTS ${t}`);
+      /* Volta EXATAMENTE a `player_limits` do esquema-v1: descer e subir de novo
+         tem que reconstruir o mesmo banco, e "quase igual" quebra isso. */
+      db.exec(`
+        CREATE TABLE player_limits (
+          user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          tipo       TEXT NOT NULL CHECK (tipo IN ('deposito_diario','aposta_diaria','tempo_diario','perda_diaria')),
+          valor      INTEGER NOT NULL CHECK (valor > 0),
+          vigente_em INTEGER NOT NULL,
+          criado_em  INTEGER NOT NULL,
+          PRIMARY KEY (user_id, tipo, vigente_em)
+        )`);
+    },
+  },
+
+  /* ── 3 · PAUSA, AUTOEXCLUSÃO E IDENTIDADE (F1.9) ─────────────────────────
+   *
+   * A `self_exclusions` do esquema-v1 sabe COMEÇAR uma pausa e não sabe
+   * terminá-la — e terminar é onde mora a regra: "ao expirar, a reentrada é
+   * ativa (o jogador precisa pedir), nunca automática". Sem uma coluna para o
+   * pedido e outra para a concessão, a pausa cairia sozinha ao vencer o prazo,
+   * que é o produto decidindo pelo jogador que ele quer voltar.
+   *
+   * `identidade_ligada` é a tabela que faz a autoexclusão valer por PESSOA e
+   * não por conta. Ela não guarda documento nem impressão de dispositivo:
+   * guarda que duas contas foram ligadas e por qual CLASSE de sinal. Guardar o
+   * sinal em si transformaria a tabela de proteção num alvo — e o §28 é
+   * requisito de proteção, não de vigilância.
+   */
+  {
+    nome: 'protecao-28.4',
+    sobe: db => {
+      db.exec(`ALTER TABLE self_exclusions ADD COLUMN reentrada_pedida_em INTEGER`);
+      db.exec(`ALTER TABLE self_exclusions ADD COLUMN reentrada_em INTEGER`);
+      db.exec(`CREATE INDEX idx_pausa_user ON self_exclusions(user_id, ate)`);
+
+      /* A ligação NÃO TEM DIREÇÃO: `conta_a < conta_b` por convenção de escrita,
+         e a consulta olha os dois lados. Sem a ordem canônica, (A,B) e (B,A)
+         seriam duas linhas e o `UNIQUE` não seguraria nada. */
+      db.exec(`
+        CREATE TABLE identidade_ligada (
+          conta_a   TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          conta_b   TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          sinal     TEXT NOT NULL,
+          criado_em INTEGER NOT NULL,
+          PRIMARY KEY (conta_a, conta_b, sinal),
+          CHECK (conta_a < conta_b)
+        )`);
+
+      /* Os campos do §28.9 que faltavam em `users`. `protection_status` é
+         DERIVADO das pausas e existe como cache legível pelo painel do F1.11;
+         a verdade continua sendo `self_exclusions`, e é ela que `pausaAtiva`
+         consulta. Cache que vira fonte é a próxima classe de defeito. */
+      db.exec(`ALTER TABLE users ADD COLUMN protection_status TEXT NOT NULL DEFAULT 'normal'`);
+      db.exec(`ALTER TABLE users ADD COLUMN age_verification_status TEXT NOT NULL DEFAULT 'declared'`);
+      /* §28.9: "bets.blocked_by_limit — quando a aposta foi recusada por
+         limite". Fica no ticket para o painel poder contar recusa ao lado de
+         aposta aceita, que é a comparação que diz se o limite está apertado
+         demais ou de menos. */
+      db.exec(`ALTER TABLE bets ADD COLUMN blocked_by_limit TEXT`);
+    },
+    desce: db => {
+      db.exec(`DROP TABLE IF EXISTS identidade_ligada`);
+      db.exec(`DROP INDEX IF EXISTS idx_pausa_user`);
+      for (const [t, c] of [['self_exclusions', 'reentrada_pedida_em'],
+                            ['self_exclusions', 'reentrada_em'],
+                            ['users', 'protection_status'],
+                            ['users', 'age_verification_status'],
+                            ['bets', 'blocked_by_limit']])
+        db.exec(`ALTER TABLE ${t} DROP COLUMN ${c}`);
     },
   },
 ];

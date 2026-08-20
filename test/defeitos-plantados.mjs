@@ -71,6 +71,9 @@ const DESAF  = 'app/modules/desafios.mjs';
 const SRVSCH = 'server/scheduler.mjs';
 const SRVTRA = 'server/transporte.mjs';
 const SRVAPO = 'server/aposta.mjs';
+const SRVLIM = 'server/limites.mjs';
+const SRVPRO = 'server/protecao.mjs';
+const RESULT = 'engine/resultado.mjs';
 const CARTEIRA= 'app/modules/carteira.mjs';
 const NAVEG  = 'app/modules/navegacao.mjs';
 const RODADA = 'app/modules/rodada.mjs';
@@ -1002,4 +1005,142 @@ export const DEFEITOS = [
     real:'"falta o valor da recompensa nesta lista" — é o D-007 inteiro de volta, x21 por semana',
     de:"{id:'rodadas',  txt:'Participe de {n} rodada{s}',            metas:[3,5,8], xp:60}",
     para:"{id:'rodadas',  txt:'Participe de {n} rodada{s}',            metas:[3,5,8], xp:60, dia:25}" },
+
+  /* ---------- F1.8: os limites do §28.3 ----------
+     A assimetria é o bloco inteiro, e cada linha dela ganha um defeito. Todos
+     são erros que alguém comete DE VERDADE: "reduzir e aumentar é a mesma
+     operação", "depois do prazo pode entrar sozinho", "remover não é aumento",
+     "o cooldown é parâmetro". Nenhum deles é erro de execução — todos passariam
+     por uma revisão distraída e por qualquer teste que só olhe o valor final. */
+
+  { id:'S182', arquivo:SRVLIM, nome:'aumentar limite passa a valer na hora',
+    real:'"por que só a redução é imediata?" — é o jogador em perseguição de perda elevando o teto no pior momento',
+    de:'  if (!aumento) {', para:'  if (true) {' },
+
+  { id:'S183', arquivo:SRVLIM, nome:'reduzir limite passa a esperar 24 h',
+    real:'a assimetria invertida — quem está se protegendo espera um dia para se proteger',
+    de:'  const aumento = permissividade(valor) > permissividade(atual);',
+    para:'  const aumento = permissividade(valor) !== permissividade(atual);' },
+
+  { id:'S184', arquivo:SRVLIM, nome:'remover limite deixa de ser tratado como aumento',
+    real:'`null` vira zero numa comparação numérica — e a porta dos fundos abre: remove e recria no valor que quiser',
+    de:'const permissividade = v => (v === null || v === undefined ? Infinity : v);',
+    para:'const permissividade = v => (v === undefined ? Infinity : v ?? 0);' },
+
+  { id:'S185', arquivo:SRVLIM, nome:'o cooldown vira parâmetro de fora',
+    real:'"o suporte precisa liberar em casos excepcionais" — a Spec proíbe, e a única garantia é não ter por onde receber',
+    de:'  const efetivoEm = agora + COOLDOWN_MS;',
+    para:'  const efetivoEm = agora + (arguments[1].cooldownMs ?? COOLDOWN_MS);' },
+
+  { id:'S186', arquivo:SRVLIM, nome:'o cooldown encolhe para vinte e quatro minutos',
+    real:'`60 * 1000` no lugar de `60 * 60 * 1000` — separa o impulso da decisão por tempo nenhum',
+    de:'export const COOLDOWN_MS = 24 * 60 * 60 * 1000;',
+    para:'export const COOLDOWN_MS = 24 * 60 * 1000;' },
+
+  { id:'S187', arquivo:SRVLIM, nome:'repedir o mesmo aumento reinicia o prazo',
+    real:'"pedido novo, prazo novo" — insistir passa a castigar, e o prazo deixa de ser do pedido',
+    de:'  if (pend && permissividade(pend.valor) === permissividade(valor)) {',
+    para:'  if (false) {' },
+
+  { id:'S188', arquivo:SRVLIM, nome:'a perda passa a contar VOLUME apostado',
+    real:'"soma o que ele apostou" — quem apostou 1000 e recebeu 950 perdeu 50, e seria bloqueado por 1000',
+    de:"    const perdido = Math.max(0, somaNaJanela(db, userId, 'perda', JANELA[tipo], agora));",
+    para:"    const perdido = db.prepare(`SELECT COALESCE(SUM(MAX(valor,0)),0) AS s FROM player_activity WHERE user_id = ? AND tipo = 'perda'`).get(userId).s;" },
+
+  { id:'S189', arquivo:SRVLIM, nome:'a janela de perda deixa de virar',
+    real:'"o limite é do jogador, não do dia" — limite que não solta é autoexclusão disfarçada, e ela tem outro fluxo',
+    de:"  if (janela === 'dia')\n    return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());",
+    para:'  if (janela === \'dia\') return 0;' },
+
+  { id:'S190', arquivo:SRVLIM, nome:'a recusa vira um `false` seco',
+    real:'"o cliente monta a mensagem" — a Spec pede QUAL, QUANTO e QUANDO, e nada disso sobrevive à viagem',
+    de:'const bloqueio = (limite, usado, teto, voltaEm, comoLiberar) => ({\n  ok: false, limite, usado, teto, restante: Math.max(0, teto - usado), voltaEm, comoLiberar,\n});',
+    para:'const bloqueio = () => ({ ok: false });' },
+
+  { id:'S191', arquivo:SRVAPO, nome:'o limite deixa de ser conferido ao apostar',
+    real:'"a tela já não deixa passar" — e a tela é do jogador; proteção que mora no cliente é opcional',
+    de:'  if (!veredito.ok)', para:'  if (false)' },
+
+  { id:'S192', arquivo:SRVLIM, nome:'o limite por rodada erra a própria fronteira',
+    real:'`>=` no lugar de `>` — apostar exatamente o limite escolhido é recusado',
+    de:'  if (porRodada !== undefined && typeof valor === \'number\' && valor > porRodada)',
+    para:'  if (porRodada !== undefined && typeof valor === \'number\' && valor >= porRodada)' },
+
+  { id:'S194', arquivo:SRVAPO, nome:'o evento de bloqueio passa a ser amostrado',
+    real:'"cinco recusas iguais seguidas, um evento basta" — o §17 pede o bloco de proteção sem amostragem',
+    de:"    registrarBloqueio(db, { userId, veredito, contexto: 'aposta', agora });",
+    para:"    if (Math.random() < 0.2) registrarBloqueio(db, { userId, veredito, contexto: 'aposta', agora });" },
+
+  { id:'S193', arquivo:SRVAPO, nome:'o settlement lança o stake em vez da perda líquida',
+    real:'"o que ele arriscou foi o stake" — é o S188 pela outra ponta, e some do módulo de limites',
+    de:'    registrarPerda(db, { userId: t.user_id, valor: t.stake - retorno, agora });',
+    para:'    registrarPerda(db, { userId: t.user_id, valor: t.stake, agora });' },
+
+  /* ---------- F1.9: pausa, autoexclusão e honestidade do resultado ----------
+     A lista de sabotagem deste bloco é, segundo o próprio BUILD_BLOCKS, "a mais
+     importante da fase". Cada item dela vira um defeito aqui, e nenhum é
+     rebuscado: são as seis formas de a proteção cair sozinha. */
+
+  { id:'S195', arquivo:FASES, nome:'a tela comemora retorno menor que a aposta',
+    real:'a condição volta a ser "acertei o campeão?" — é a perda disfarçada de ganho, e é o §28.5 inteiro',
+    de:'    if (res.comemora){', para:'    if (acertou){' },
+
+  { id:'S196', arquivo:RESULT, nome:'a fronteira da festa vira `>= 0`',
+    real:'"empate também é vitória" — confete em dinheiro de volta é a mesma mentira em dose menor',
+    de:'    comemora: liquido > 0,', para:'    comemora: liquido >= 0,' },
+
+  { id:'S197', arquivo:RESULT, nome:'a tela de resultado passa a destacar o BRUTO',
+    real:'"o número grande vende melhor" — a Spec pede o líquido em destaque e o bruto em segundo plano',
+    de:'    liquido,\n    bruto: retorno,', para:'    bruto: retorno,\n    liquido,' },
+
+  { id:'S198', arquivo:SRVPRO, nome:'a autoexclusão cai sozinha ao vencer o prazo',
+    real:'"o prazo acabou, ele pode voltar" — a Spec pede reentrada ATIVA, e voltar sozinho decide pelo jogador',
+    de:"    return tipo === 'self_exclusion';                      // vencida, à espera do pedido",
+    para:'    return false;' },
+
+  { id:'S199', arquivo:SRVPRO, nome:'a pausa passa a ser a mais RECENTE, e não a mais longa',
+    real:'ordenação inocente — um cool-off de 24 h por cima encurta uma autoexclusão de 180 dias',
+    de:'  vigentes.sort((x, y) => (y.ate === null) - (x.ate === null) || y.ate - x.ate);',
+    para:'  vigentes.sort((x, y) => y.de - x.de);' },
+
+  { id:'S200', arquivo:SRVPRO, nome:'a autoexclusão deixa de propagar para contas ligadas',
+    real:'"cada conta é uma conta" — a segunda conta é o contorno mais usado que existe',
+    de:'  const grupo = [userId, ...contasLigadas(db, userId)];',
+    para:'  const grupo = [userId];' },
+
+  { id:'S201', arquivo:SRVPRO, nome:'a reentrada pode ser concedida antes do prazo',
+    real:'"o suporte precisa poder liberar" — a Spec: nenhum canal encurta autoexclusão',
+    de:'  if (p.ate === null || agora < p.ate)', para:'  if (false)' },
+
+  { id:'S202', arquivo:SRVPRO, nome:'a reentrada entra sem o jogador ter pedido',
+    real:'"o prazo venceu, libera" — reentrada automática é o produto decidindo por quem pediu para parar',
+    de:'  if (!p.reentrada_pedida_em)', para:'  if (false)' },
+
+  { id:'S203', arquivo:SRVPRO, nome:'marketing volta a chegar a conta em pausa',
+    real:'"é só um lembrete, não é oferta" — a Spec pede NENHUMA comunicação, em nenhum canal',
+    de:'  if (!podeReceberMarketing(db, userId, agora)) {', para:'  if (false) {' },
+
+  { id:'S204', arquivo:SRVPRO, nome:'ação não classificada é LIBERADA durante a pausa',
+    real:'"não está na lista, então pode" — feature nova nasce furando a autoexclusão',
+    de:"    return { ok: false, motivo: 'acao_nao_classificada', pausa: p };",
+    para:'    return { ok: true };' },
+
+  { id:'S205', arquivo:SRVPRO, nome:'`chasing` passa a acusar stake alta em vez de aumento',
+    real:'trocar a conjunção por um limiar de valor — o sistema intervém em quem não mudou nada',
+    de:'    seguidos = perdeuAntes && apostas[i].stake > apostas[i - 1].stake ? seguidos + 1 : 0;',
+    para:'    seguidos = apostas[i].stake >= 500 ? seguidos + 1 : 0;' },
+
+  { id:'S206', arquivo:SRVPRO, nome:'a intervenção deixa de registrar o sinal que a disparou',
+    real:'"o nível já diz o bastante" — sem o sinal não há como demonstrar depois que o sistema agiu',
+    de:"  evento(db, userId, 'intervencao', { intervencaoId, nivel, sinal, desfecho }, agora);",
+    para:"  evento(db, userId, 'intervencao', { intervencaoId, nivel }, agora);" },
+
+  { id:'S207', arquivo:SRVPRO, nome:'o reality check nunca reinicia depois de confirmado',
+    real:'"o intervalo é da sessão" — o aviso vira um laço e o jogador aprende a fechá-lo sem ler',
+    de:"      WHERE user_id = ? AND tipo = 'reality_check_confirmado' AND criado_em >= ?`)\n    .get(userId, s.inicio).q ?? s.inicio;",
+    para:"      WHERE user_id = ? AND tipo = 'reality_check_confirmado' AND criado_em < ?`)\n    .get(userId, s.inicio).q ?? s.inicio;" },
+
+  { id:'S208', arquivo:SRVAPO, nome:'a aposta deixa de conferir a pausa',
+    real:'"a tela não deixa entrar" — autoexclusão que mora no cliente cai no primeiro logout',
+    de:'  if (!pausa.ok)', para:'  if (false)' },
 ];

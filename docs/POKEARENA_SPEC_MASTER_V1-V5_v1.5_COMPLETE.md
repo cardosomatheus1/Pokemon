@@ -3672,7 +3672,7 @@ O PokéArena tem tela de campeão, confete, troféu, KillFeed e pódio. É espet
 
 Regras:
 
-- retorno menor que o valor apostado **nunca** aciona a coreografia de vitória;
+- retorno menor **ou igual** ao valor apostado **nunca** aciona a coreografia de vitória. O "ou igual" foi acrescentado no F1.9, quando a implementação encontrou o caso: `floor(aposta × odd)` com odd de 1,03 e aposta de 30 devolve exatamente 30, e confete em dinheiro de volta é a mesma perda disfarçada de ganho em dose menor;
 - o valor exibido na tela de resultado é o **líquido** (`retorno - aposta`), com o bruto em segundo plano;
 - carteira e perfil mostram posição líquida em 7 e 30 dias, com o mesmo destaque dado a ganhos;
 - nenhum contador de "sequência de vitórias" pode ignorar o saldo líquido do período.
