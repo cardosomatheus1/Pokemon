@@ -195,7 +195,10 @@ const DIRS_VERSIONADOS = [...new Set(
 
 const N_TRAB = Math.max(1, Math.min(cpus().length, 4));
 const CAIXAS = [];
-for (let i = 0; i < N_TRAB; i++) {
+/* UMA CAIXA A MAIS, E ELA NUNCA RECEBE MUTANTE. É onde as linhas de base por
+   configuração rodam — ver `garantirBase`. Validar numa caixa com defeito
+   plantado mediria o defeito, não a configuração. */
+for (let i = 0; i < N_TRAB + 1; i++) {
   const c = mkdtempSync(join(tmpdir(), 'pokearena-sabotagem-'));
   for (const dir of DIRS_VERSIONADOS)
     cpSync(dir, join(c, dir), { recursive: true });
@@ -208,6 +211,7 @@ for (let i = 0; i < N_TRAB; i++) {
   if (existsSync('assets')) symlinkSync(join(process.cwd(), 'assets'), join(c, 'assets'), 'dir');
   CAIXAS.push(c);
 }
+const CAIXA_BASE = CAIXAS.pop();
 console.log(`${N_TRAB} caixa(s) de areia em ${tmpdir()}\n`);
 
 /* Os nomes de suíte saem da PRÓPRIA linha de base, e não de um regex sobre os
@@ -217,6 +221,10 @@ console.log(`${N_TRAB} caixa(s) de areia em ${tmpdir()}\n`);
    dessincronizar — é a mesma regra do ARQUIVOS e do DIRS_VERSIONADOS. */
 const SUITES_REAIS = new Set();
 
+/* Preenchido logo abaixo com a configuração da linha de base inicial; ver
+   `garantirBase`. */
+const basesValidadas = new Map();
+
 console.log('Q2 · SABOTAGEM\n');
 const base = await rodar(CAIXAS[0], false, false);
 if (base.vermelha) {
@@ -224,6 +232,9 @@ if (base.vermelha) {
 }
 for (const m of base.saida.matchAll(/^\s{2}([\w-]+): \d+\/\d+$/gm)) SUITES_REAIS.add(m[1]);
 console.log(`linha de base: VERDE (${SUITES_REAIS.size} suítes nomeadas)\n`);
+/* Esta é a configuração `com-golden/sem-navegador`, e ela acabou de ser
+   validada — entra no mapa para não rodar duas vezes. */
+basesValidadas.set('com-golden/sem-navegador', Promise.resolve(true));
 
 /* ── O ÍNDICE DE CAPTURA — o que torna este portão viável em escala ─────────
  *
@@ -376,6 +387,59 @@ function entradaUsavel(id) {
   return nome;
 }
 
+/* ── LINHA DE BASE POR CONFIGURAÇÃO ────────────────────────────────────────
+ *
+ * O portão validava UMA configuração como verde — sem navegador, quatro
+ * larguras — e JULGAVA em quatro: sem navegador, sem golden, navegador
+ * estreito, navegador completo. Nas três não validadas ele acreditava em
+ * qualquer vermelho.
+ *
+ * Foi por essa fresta que o **D-015** entrou: a passada estreita deixava a
+ * `visual-base` vermelha para todo mutante — a base gravada tem quatro larguras
+ * e a captura estreita tem uma —, e o portão leu isso como captura. Uma
+ * execução inteira voltou `VERDE — 208/208` com PEGOU falso em todo defeito que
+ * chegava ao navegador.
+ *
+ * A regra que fecha a fresta, e ela vale para qualquer redução futura:
+ *
+ *     **toda configuração usada para julgar precisa da própria base verde.**
+ *
+ * Com ela, o D-015 teria abortado em 15 s dizendo qual configuração estava
+ * quebrada, em vez de inflar o relatório.
+ *
+ * É PREGUIÇOSO DE PROPÓSITO. Validar as quatro sempre custaria ~3 min por
+ * execução, e a execução quente inteira leva 4 — o cache deixaria de pagar.
+ * Cada configuração é validada na primeira vez que for USADA, e uma execução
+ * que não chega ao navegador não paga navegador nenhum. */
+
+function garantirBase(semGolden, comVisual, estreita) {
+  const chave = `${semGolden ? 'sem-golden' : 'com-golden'}/${
+    comVisual ? (estreita ? 'navegador-estreito' : 'navegador-completo') : 'sem-navegador'}`;
+  if (!basesValidadas.has(chave)) {
+    basesValidadas.set(chave, rodar(CAIXA_BASE, semGolden, comVisual, null, estreita)
+      .then(r => {
+        if (r.vermelha) {
+          console.error(`\nABORTADO: a suíte já está vermelha na configuração ` +
+                        `**${chave}**, SEM nenhum defeito plantado.\n`);
+          console.error('  O portão usa esta configuração para julgar. Vermelho aqui não é');
+          console.error('  captura: é a configuração quebrada, e todo defeito avaliado nela');
+          console.error('  voltaria como PEGOU sem ter sido pego. É o D-015.\n');
+          for (const l of r.saida.split('\n').filter(x => /VERMELHO|\[\w/.test(x)).slice(0, 6))
+            console.error(`  ${l.trim()}`);
+          process.exit(2);
+        }
+        return true;
+      }));
+  }
+  return basesValidadas.get(chave);
+}
+
+/* Julga: valida a configuração antes de usá-la, e só então roda com o mutante. */
+async function julgar(caixa, semGolden, comVisual, recorte = null, estreita = false) {
+  await garantirBase(semGolden, comVisual, estreita);
+  return rodar(caixa, semGolden, comVisual, recorte, estreita);
+}
+
 async function avaliar(d, caixa) {
   const src = originais.get(d.arquivo);
   if (src === undefined) return { ...d, status:'ARQUIVO AUSENTE', com:'-', sem:'-' };
@@ -413,7 +477,7 @@ async function avaliar(d, caixa) {
     const onda1 = [...new Set([...(previsto ? [previsto] : []), ...afinidade(d.arquivo)])];
     if (onda1.length) {
       const precisaNav = onda1.some(n => NAVEGADOR.has(n));
-      const r = await rodar(caixa, false, precisaNav, onda1.join(','), precisaNav);
+      const r = await julgar(caixa, false, precisaNav, onda1.join(','), precisaNav);
       const pegou = r.vermelha ? suitesQuePegaram(r.saida).filter(n => onda1.includes(n)) : [];
       if (pegou.length)
         return { ...d, instavel: false, status: 'PEGOU', viaIndice: true,
@@ -438,7 +502,7 @@ async function avaliar(d, caixa) {
      * mesma ideia. O que sobrou dela e funciona está na segunda passada abaixo:
      * quando a suíte sai verde sem navegador, a passada COM navegador roda só as
      * suítes que precisam dele, em vez da suíte inteira outra vez. */
-    let comG = await rodar(caixa, false, false);
+    let comG = await julgar(caixa, false, false);
     let pegouPor = comG.vermelha ? suitesQuePegaram(comG.saida) : [];
 
     /* Dedução: vermelho por suíte que não é o golden => vermelho sem o golden
@@ -448,7 +512,7 @@ async function avaliar(d, caixa) {
     let instavel = false;
 
     if (comG.vermelha && !semVermelha) {
-      const semG = await rodar(caixa, true, false);
+      const semG = await julgar(caixa, true, false);
       semVermelha = semG.vermelha;
       semPor = semG.vermelha ? suitesQuePegaram(semG.saida) : [];
       /* CONFIRMAÇÃO DO CASO SUSPEITO. "Vermelho com golden, verde sem" é o sinal
@@ -456,7 +520,7 @@ async function avaliar(d, caixa) {
          transitória produz. Aconteceu no F0.9 com o S35, que em caixa limpa
          passa nos dois modos. Como o caso é raro, confirmar custa pouco. */
       if (!semG.vermelha) {
-        const comG2 = await rodar(caixa, false, false);
+        const comG2 = await julgar(caixa, false, false);
         if (!comG2.vermelha) { instavel = true; comG = comG2; pegouPor = []; }
       }
     }
@@ -478,8 +542,8 @@ async function avaliar(d, caixa) {
      * larguras terem sido olhadas.** */
     let navegador = '', navPor = [];
     if (!comG.vermelha) {
-      let nav = await rodar(caixa, false, true, null, true);
-      if (!nav.vermelha) nav = await rodar(caixa, false, true, null, false);
+      let nav = await julgar(caixa, false, true, null, true);
+      if (!nav.vermelha) nav = await julgar(caixa, false, true, null, false);
       if (nav.vermelha) {
         navPor = suitesQuePegaram(nav.saida);
         navegador = navPor.length ? `navegador: ${navPor.join(',')}` : 'só o navegador';

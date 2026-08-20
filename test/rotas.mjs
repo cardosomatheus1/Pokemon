@@ -130,6 +130,35 @@ export async function suite() {
     });
   });
 
+  /* --- a conta nasce jogável, e nasce com o número do MOTOR --------------- */
+
+  /* O F1.13 revelou que o cadastro não creditava nada: o grant morava só em
+     `app/modules/banco.mjs`, e com o cliente falando com o servidor a conta
+     nova nasceria com zero. O teste afirma as três coisas que importam — que
+     credita, QUANTO credita, e em qual bolso.
+
+     O "quanto" vem de `engine/carteira.mjs`, e não de um número escrito aqui:
+     copiar o valor para dentro do teste deixaria os dois concordando entre si e
+     discordando da fonte, que é como o D-007 nasceu. */
+  s.teste('conta nova nasce com o saldo inicial do motor, em transferível', async () => {
+    const { SALDO_INICIAL } = await import('../engine/carteira.mjs');
+    await comServico(async ({ porta }) => {
+      const u = await conta(porta);
+      const c = await pedir(porta, '/api/carteira', { sessao: u.sessao });
+      igual(c.corpo.saldos.transferivel, SALDO_INICIAL,
+        `conta nova nasceu com ${c.corpo.saldos.transferivel} e o motor diz ` +
+        `${SALDO_INICIAL}. Número copiado no servidor faz o cliente e o servidor ` +
+        `discordarem de quanto vale começar — e o Estudo Econômico mede a ruína ` +
+        `a partir desse número.`);
+      /* O BOLSO IMPORTA TANTO QUANTO O VALOR (§5.5): o payout herda a origem da
+         stake. Nascer em `bonus` faria todo ganho da conta nova voltar como
+         bônus, e o jogador nunca teria saldo transferível — uma economia
+         diferente da que o Estudo mediu, sem ninguém ter decidido isso. */
+      igual(c.corpo.saldos.bonus, 0,
+        `o grant de boas-vindas caiu em \`bonus\`: ${JSON.stringify(c.corpo.saldos)}`);
+    });
+  });
+
   /* --- 2. NADA ATRAVESSA DE UMA CONTA PARA OUTRA ------------------------- */
 
   s.teste('a carteira devolvida é a de QUEM PEDIU, e não a pedida', async () => {

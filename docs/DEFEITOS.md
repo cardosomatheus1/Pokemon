@@ -831,7 +831,43 @@ o `PEGOU` só podia ser falso.
 
 ### O teste que trava
 
-`test/portao.mjs` — `a suíte visual sai VERDE na passada estreita quando nada
-está errado`. Ele roda a `visual-base` com `SABOTAGEM_ESTREITA=1` num processo
-filho e reprova se ela ficar vermelha. É o único jeito de pegar esta classe: o
-defeito só existe quando a variável está ligada, e a suíte normal nunca a liga.
+`test/portao.mjs` — `quem julga a linha de base gravada conta as quatro
+larguras`, varredura estática das duas metades: quem julga a BASE conta contra
+`LARGURAS_TODAS`, quem julga a CAPTURA conta contra `LARGURAS`.
+
+A primeira versão do teste subia um processo filho com a suíte visual. Duas
+coisas quebraram: no sandbox o filho herda `SEM_VISUAL=1`, a suíte não existe, o
+`--so` aborta, e a linha de base do portão inteiro ficou vermelha; e, se
+funcionasse, cobraria 35 s de navegador em toda execução barata — desfazendo o
+que a mudança de estratégia do Q2 tinha acabado de comprar.
+
+### A regra que fecha a CLASSE, e não só este caso
+
+O portão validava UMA configuração como verde e JULGAVA em quatro. Nas três não
+validadas ele acreditava em qualquer vermelho. Agora:
+
+> **toda configuração usada para julgar precisa da própria linha de base verde.**
+
+`garantirBase` valida cada configuração na primeira vez que ela é usada, numa
+caixa de areia que nunca recebe mutante, e aborta nomeando a configuração
+quebrada. É preguiçoso porque validar as quatro sempre custaria ~3 min e a
+execução quente inteira leva 4.
+
+Verificado com o mecanismo real: uma quebra plantada só na configuração estreita
+fez o portão abortar com *"a suíte já está vermelha na configuração
+com-golden/navegador-estreito, SEM nenhum defeito plantado"*.
+
+### O que ele estava escondendo
+
+Dois defeitos que **escapavam de verdade**, e voltavam como pegos:
+
+- **S217** — o saldo inicial da rota divergindo do motor. A suíte de rotas nunca
+  afirmava QUANTO uma conta nova nasce;
+- **S215** — na versão original, decorativa (a chave de idempotência já era
+  única por cadastro). Substituída pelo defeito que tem consequência: o grant
+  caindo em `bonus` em vez de `transferivel`. Pelo §5.5 o payout herda a origem
+  da stake, então a conta nunca mais teria saldo transferível — outra economia,
+  sem ninguém ter decidido.
+
+Os dois agora têm teste: `conta nova nasce com o saldo inicial do motor, em
+transferível`, com o valor lido de `engine/carteira.mjs` e não copiado.

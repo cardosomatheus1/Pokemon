@@ -203,6 +203,22 @@ Duas regras que sustentam isso, e as duas têm teste no `portao.mjs`:
 
 `npm run sabotagem:completo` ignora o cache. É o que roda antes de uma tag.
 
+### Toda configuração que julga precisa da própria linha de base
+
+O portão validava UMA configuração como verde — sem navegador, quatro larguras —
+e **julgava em quatro**. Nas outras três ele acreditava em qualquer vermelho, e
+foi por aí que o **D-015** entrou: a passada estreita deixava a `visual-base`
+vermelha para todo mutante, e uma execução inteira voltou `VERDE — 208/208` com
+`PEGOU` falso em tudo que chegava ao navegador.
+
+`PEGOU` falso é pior que `PASSOU` falso: o segundo manda investigar, o primeiro
+manda seguir em frente **e esconde os defeitos que de fato escapam** — dois
+estavam escondidos ali.
+
+`garantirBase` valida cada configuração na primeira vez que ela é usada, numa
+caixa que nunca recebe mutante, e aborta nomeando a configuração. Preguiçoso de
+propósito: validar as quatro sempre custaria ~3 min, e a execução quente leva 4.
+
 ### Duas reduções que só podem CONDENAR
 
 O mesmo raciocínio aparece em mais dois lugares, e a regra é sempre a mesma:

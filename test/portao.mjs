@@ -277,7 +277,7 @@ export function suite() {
       .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
     const bloco = txt.match(/if \(!comG\.vermelha\) \{[\s\S]*?\n    \}/);
     ok(bloco, 'a passada do navegador sumiu — âncora perdida');
-    ok(/if \(!nav\.vermelha\) nav = await rodar\([^)]*false\)/.test(bloco[0]),
+    ok(/if \(!nav\.vermelha\) nav = await julgar\([^)]*false\)/.test(bloco[0]),
       'a passada estreita saiu verde e o código NÃO reexecuta com as quatro ' +
       'larguras. Verde estreito não é verde: um mutante que só quebra o arranjo ' +
       'em 420 px voltaria como PASSOU, e o portão diria "ninguém pega isto" ' +
@@ -305,6 +305,44 @@ export function suite() {
    * A distinção que o teste crava: quem julga a BASE GRAVADA conta contra
    * `LARGURAS_TODAS`; quem julga a CAPTURA DESTA EXECUÇÃO conta contra
    * `LARGURAS`. Confundir as duas é o defeito. */
+  /* TODA CONFIGURAÇÃO QUE JULGA PRECISA DA PRÓPRIA BASE VERDE.
+   *
+   * É o D-015 generalizado, e a fresta por onde ele entrou: o portão validava
+   * UMA configuração e julgava em quatro. Nas três não validadas, qualquer
+   * vermelho passava por captura — e um mutante inerte voltou como PEGOU.
+   *
+   * A regra vale para toda redução futura, e é por isso que o teste cobra a
+   * FORMA e não os casos: nenhuma execução que decide veredito pode chamar
+   * `rodar` direto, sem passar pela validação. */
+  s.teste('nenhum julgamento roda numa configuração sem base validada', async () => {
+    const { readFileSync } = await import('node:fs');
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+
+    const fn = txt.match(/async function julgar\([\s\S]*?\n\}/);
+    ok(fn, 'a função `julgar` sumiu — âncora perdida');
+    ok(/await garantirBase\(/.test(fn[0]),
+      '`julgar` deixou de validar a configuração antes de usá-la');
+
+    const g = txt.match(/function garantirBase\([\s\S]*?\n\}\n/);
+    ok(g, 'a função `garantirBase` sumiu — âncora perdida');
+    ok(/CAIXA_BASE/.test(g[0]),
+      'a base é medida numa caixa com mutante plantado — isso mede o defeito, ' +
+      'não a configuração');
+    ok(/process\.exit\(2\)/.test(g[0]),
+      'configuração quebrada não aborta. Seguir com ela é dar PEGOU a todo ' +
+      'defeito avaliado nela, que é exatamente o D-015.');
+
+    /* E o corpo do `avaliar` não pode chamar `rodar` pelas costas. */
+    const av = txt.match(/async function avaliar\(d, caixa\)[\s\S]*?\n\}\n/);
+    ok(av, 'a função `avaliar` sumiu — âncora perdida');
+    const diretos = [...av[0].matchAll(/await rodar\(/g)].length;
+    igual(diretos, 0,
+      `${diretos} chamada(s) a \`rodar\` direto dentro de \`avaliar\`. Todo ` +
+      `julgamento passa por \`julgar\`, senão a configuração nova nasce sem base ` +
+      `validada — e o portão volta a acreditar em vermelho que não é captura.`);
+  });
+
   s.teste('quem julga a linha de base gravada conta as quatro larguras', async () => {
     const { readFileSync } = await import('node:fs');
     const txt = readFileSync(new URL('./visual.mjs', import.meta.url).pathname, 'utf8')

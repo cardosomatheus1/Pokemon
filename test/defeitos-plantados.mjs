@@ -1189,10 +1189,19 @@ export const DEFEITOS = [
     de:'    return { corpo: { rodada: sched.paraCliente() } };',
     para:'    return { corpo: { rodada: r } };' },
 
-  { id:'S215', arquivo:SRVROT, nome:'o grant de boas-vindas é creditado a cada cadastro',
-    real:'a chave de idempotência sai — e reenviar o cadastro emite moeda de novo',
-    de:'                     valor: SALDO_INICIAL, idem: `welcome-${u.id}`, agora });',
-    para:'                     valor: SALDO_INICIAL, idem: `welcome-${u.id}-${agora}`, agora });' },
+  /* A PRIMEIRA VERSÃO DESTE DEFEITO ERA DECORATIVA, e o portão corrigido pegou.
+     Ela tirava a idempotência da chave (`welcome-<id>-<agora>`) esperando
+     emissão dupla. Não há: o id do usuário é novo a cada cadastro, então a
+     chave já era única e a rede de idempotência aqui é cinto de segurança, não
+     estrutura. Mutante sem efeito não mede cobertura nenhuma.
+
+     O defeito real é o BOLSO. O payout herda a origem da stake (§5.5): nascer
+     em `bonus` faria todo ganho da conta nova voltar como bônus, e o jogador
+     nunca teria saldo transferível — outra economia, sem ninguém ter decidido. */
+  { id:'S215', arquivo:SRVROT, nome:'o grant de boas-vindas cai no bolso errado',
+    real:'"bônus é mais seguro" — e o §5.5 faz todo ganho da conta voltar como bônus, para sempre',
+    de:"      creditar(db, { userId: u.id, tipo: 'WELCOME_GRANT', bucket: 'transferivel',",
+    para:"      creditar(db, { userId: u.id, tipo: 'WELCOME_GRANT', bucket: 'bonus'," },
 
   { id:'S216', arquivo:SRVROT, nome:'nasce uma rota que encerra a pausa',
     real:'"o suporte precisa poder liberar" — é a irreversibilidade do §28.4 desfeita por um caminho novo',
