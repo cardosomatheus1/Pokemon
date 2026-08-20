@@ -885,6 +885,46 @@ o `odd_hour` é calculável no dia em que houver quatro semanas de histórico.
 
 ---
 
+### L-035 — suíte que dispara processo filho invalida o cache do Q2 inteiro
+
+**Dono:** **T4** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** a
+mudança de estratégia do Q2
+
+O cache de vereditos derrubou o portão Q2 de ~100 min para **4 min** quando nada
+muda, porque um veredito só é reavaliado quando alguma coisa de que ele depende
+mudou. Isso depende de saber de que a suíte depende — e `test/fecho.mjs` sabe,
+**menos quando a suíte dispara um processo**:
+
+```
+portao         TUDO      roda `node test/run.mjs` numa caixa de areia
+concorrencia   TUDO      roda `tools/q8-worker.mjs`, oito processos de verdade
+```
+
+`TUDO` é o fecho universal: qualquer mudança em qualquer arquivo invalida os
+vereditos dos defeitos que essas duas pegam. **É decisão, e é a decisão certa**
+— o que um processo filho toca não se lê estaticamente, e a regra do arquivo é
+que toda dúvida resolve para `TUDO`, porque errar para mais custa uma
+reavaliação e errar para menos faz o portão mentir.
+
+**Medido: 14 dos 202 defeitos indexados** têm captor de fecho universal —
+`portao` 9, `concorrencia` 1, e **quatro que a medição revelou**: defeitos cuja
+mutação quebra o carregamento do módulo. Nesses, a execução morre antes de
+qualquer teste, nenhuma suíte é nomeada, e sem nome de captor não há fecho de que
+depender. Continua sendo vermelho — o defeito É pego —, mas eles pagam o caminho
+completo para sempre.
+
+**O que está adiado não é a correção, é a precisão.** Hoje o custo é pequeno:
+189 dos 208 defeitos continuaram reaproveitados. O incômodo é a direção — cada
+bloco novo que escrever um teste com processo filho joga mais defeitos no balde
+universal, e o teto desce sozinho.
+
+**O que a destrava:** seguir o filho quando o caminho dele é literal — somar ao
+fecho do pai o fecho do script disparado, e continuar em `TUDO` quando o caminho
+vem de variável. É o **T4**, e ele carrega um risco que precisa estar dito: é um
+bloco que faz o fecho ENCOLHER, que é a direção errada de errar.
+
+---
+
 ### L-031 — o que a TERCEIRA passada do crítico abriu
 
 **Dono:** **V1.21** (proposto no `BUILD_BLOCKS`) · **Achado por:** crítico cego,

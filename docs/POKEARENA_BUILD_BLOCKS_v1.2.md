@@ -1100,6 +1100,104 @@ ele existir pelo nosso desenho, é mudar uma função — não o sistema.
 
 ---
 
+### T4 — O fecho alcança o processo filho
+
+**Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/` e `tools/`)
+· **Depende de** o cache de vereditos do Q2 (`test/fecho.mjs`)
+
+**Por que ele existe.** O cache de vereditos derrubou o Q2 de ~100 min para 4 min
+quando nada muda, e o custo passou a acompanhar o tamanho da mudança. Mas ele tem
+um teto conhecido, e ele está escrito no `fecho.mjs`: **suíte que dispara processo
+filho recebe fecho universal.**
+
+```
+portao         TUDO      roda `node test/run.mjs` em caixa de areia
+concorrencia   TUDO      roda `tools/q8-worker.mjs`, oito processos de verdade
+```
+
+**Medido: 14 dos 202 defeitos indexados têm captor de fecho universal** —
+`portao` 9, `concorrencia` 1, e quatro que a medição revelou e ninguém tinha
+nomeado (abaixo). Fecho universal quer dizer que **qualquer** mudança em
+**qualquer** arquivo invalida esses vereditos.
+
+Hoje custa pouco: 189 de 208 continuaram reaproveitados. O problema é a direção
+— toda vez que um bloco novo escrever um teste que dispara processo, mais
+defeitos caem no balde universal, e o teto desce sozinho.
+
+**O QUARTO CASO, que a medição achou e que não é processo filho.** Quatro
+defeitos voltam com captor `(não carrega)`: a mutação quebra o carregamento do
+módulo, a execução inteira morre antes de qualquer teste, e nenhuma suíte é
+nomeada. Sem nome de captor não há fecho de que depender, então eles pagam o
+caminho completo em toda execução, para sempre.
+
+Continua sendo vermelho — o defeito É pego —, mas é outra coisa, e o relatório já
+distingue as duas desde o V1.14. O que falta é o cache saber lidar: um defeito
+que derruba o carregamento depende do arquivo mutado e de mais nada relevante, e
+esse é um fecho pequeno e fácil de defender.
+
+**Escopo:** seguir o filho quando o caminho dele é literal.
+
+```text
+execFileSync('git', [...])                 binário externo    → não é dependência
+execFile('node', ['tools/q8-worker.mjs'])  script do repo     → soma o fecho DELE
+execFile('node', [variavel])               não resolvido      → continua TUDO
+```
+
+A diferença entre as três linhas é o bloco inteiro. Disparar `git` não cria
+dependência de arquivo nenhum do projeto; disparar um script do repositório cria
+a dependência do fecho daquele script; e o que não se resolve continua universal.
+
+**O QUE TORNA ESTE BLOCO PERIGOSO, e precisa estar dito antes de começar:** ele
+faz o fecho ENCOLHER, que é a direção errada de errar. O `fecho.mjs` é escrito
+com a regra "toda dúvida resolve para `TUDO`" porque errar para mais custa uma
+reavaliação e errar para menos faz o portão reaproveitar um veredito que já não
+vale. Um bloco que encolhe fechos tem que provar, teste a teste, que só encolheu
+onde tinha certeza.
+
+**Sabotagem:**
+- fazer o seguidor aceitar caminho vindo de variável como se fosse literal
+  (é o caso que **tem** que continuar `TUDO`);
+- fazer `execFileSync('git', ...)` — ou qualquer binário externo — encolher o
+  fecho para o do arquivo errado;
+- perder os imports transitivos do filho: o fecho de `concorrencia` tem que
+  conter `server/banco.mjs` e `server/carteira.mjs`, que o `q8-worker` importa,
+  e não só o `q8-worker.mjs`;
+- fazer o fecho do filho ignorar o `ARNES`;
+- trocar a busca do caminho do script por uma que case com o primeiro argumento
+  (que é `node`, e não o script);
+- dar ao defeito `(não carrega)` um fecho pequeno **sem** garantir que ele
+  continue sendo reavaliado quando o arquivo mutado muda.
+
+**Q1:** `fechoDaSuite('concorrencia')` deixa de ser `TUDO` e passa a conter o
+fecho do `q8-worker`; `fechoDaSuite('portao')` idem para o `run.mjs`; e uma
+suíte de mentira que dispare um caminho não literal continua `TUDO`.
+
+**Q2:** os defeitos plantados acima, e mais um no próprio `fecho.mjs` que faça o
+seguidor devolver conjunto vazio em vez de `TUDO` quando não resolve — o modo de
+falha mais caro possível, porque ele parece funcionar.
+
+**Q6: sem superfície nova** — a trilha `T` não toca em código de produção.
+
+**A MEDIÇÃO QUE O BLOCO PRECISA APRESENTAR**, e ela é o critério de saída, não
+enfeite:
+
+| número | antes (medido) | depois |
+|---|---|---|
+| defeitos com captor de fecho universal | **14 de 202** | menor |
+| dos quais, por processo filho | **10** (`portao` 9, `concorrencia` 1) | 0 |
+| dos quais, por `(não carrega)` | **4** | 0 |
+| Q2 quente, nada alterado | **4 min** | ? |
+| Q2 quente, alterando só `server/` | a medir | ? |
+| Q2 do zero | **38 min** | ~igual (o cache não participa) |
+
+A terceira linha é a que importa de verdade: é ela que descreve o dia a dia de um
+bloco. Se ela não melhorar, o bloco não valeu — e o relatório tem que dizer isso
+em vez de exibir as outras duas.
+
+**Saída:** a **L-035** fecha, e o teto do cache sobe.
+
+---
+
 ### T2 — A linha de base visual mais fina ✅
 
 **Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Depende de** V1.15 ·
