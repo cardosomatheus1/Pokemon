@@ -1165,10 +1165,25 @@ export const DEFEITOS = [
     de:"  'GET /api/carteira': ({ db, userId }) =>\n    ({ corpo: { userId, saldos: saldos(db, userId) } }),",
     para:"  'GET /api/carteira': ({ db, userId, query }) =>\n    ({ corpo: { userId: query.get('userId') || userId,\n                saldos: saldos(db, query.get('userId') || userId) } })," },
 
-  { id:'S211', arquivo:SRVROT, nome:'o corpo do pedido é espalhado para o domínio',
-    real:'`...corpo` no lugar dos campos — e `cooldownMs` do cliente encurta o cooldown do §28.3',
-    de:'      return { corpo: definirLimite(db, { userId, tipo: corpo?.tipo,\n                                          valor: corpo?.valor === null ? null : inteiro(corpo?.valor),\n                                          agora }) };',
-    para:'      return { corpo: definirLimite(db, { ...corpo, userId, agora }) };' },
+  /* O S211 NASCEU EQUIVALENTE, E A INVESTIGAÇÃO ACHOU UM DEFEITO DE VERDADE.
+   *
+   * Ele trocava a leitura campo a campo por `...corpo`, com o dano declarado
+   * "`cooldownMs` do cliente encurta o cooldown". Medido: `definirLimite` lê
+   * apenas `{ userId, tipo, valor, agora }` e `validar()` já recusa valor não
+   * inteiro — os campos a mais são ignorados, e o mutante ficava IDÊNTICO.
+   * Quarta ocorrência da forma da L-038: guarda redundante sobre guarda que já
+   * basta.
+   *
+   * Mas a medição mostrou o mutante ficando MELHOR que o original em três
+   * entradas (`'500'`, `12.5`, corpo sem `valor`), e isso é sinal de que o
+   * código limpo é que estava errado — era o **D-020**, corrigido.
+   *
+   * Reapontado para o que a rota de fato passou a garantir. */
+  { id:'S211', arquivo:SRVROT, nome:'valor ilegível de limite volta a virar remoção',
+    real:'"`inteiro()` já devolve null, e null é remoção" — e o corpo truncado afrouxa o limite de quem foi se proteger',
+    de:"        if (valor === null)\n          return erro(400, ERRO_LIMITE.VALOR,\n            'valor precisa ser inteiro positivo; use null para remover o limite');",
+    para:'        if (false) return null;' },
+
 
   /* A PRIMEIRA VERSÃO DESTE DEFEITO ERA DECORATIVA, e a medição pegou.
      Ela trocava os campos por `...corpo`, esperando que a odd do cliente
@@ -1347,6 +1362,11 @@ export const DEFEITOS = [
     real:'"nenhum defeito trava" — e o primeiro que travar pendura o portão sem veredito',
     de:'                             timeout: TETO_MUTANTE_MS, killSignal: \'SIGKILL\' },',
     para:'                             },' },
+
+  { id:'S240', arquivo:SRVROT, nome:'a remoção explícita de limite deixa de existir',
+    real:'"ilegível é erro, então null também" — e o §28.3 desenha a remoção, não a impossibilidade',
+    de:'      if (bruto !== null) {',
+    para:'      if (true) {' },
 
   { id:'S224', arquivo:FECHO, nome:'o fecho para de seguir os imports do filho',
     real:'somar só o arquivo do script — mudar o que ele importa deixa de invalidar',

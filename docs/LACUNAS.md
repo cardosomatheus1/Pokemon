@@ -965,6 +965,8 @@ aplicada, comportamento idêntico, teste verde para sempre:
 | S222 | `caminho literal?` no fecho | `existsSync` logo abaixo |
 | S234 | `clearTimeout` no `sair()` | `if (!ligada)` no `conectar()` e no `recuar()` |
 | S238 | `quadro.startsWith(':')` | `if (!tipo \|\| !dados) return` |
+| S211 | leitura campo a campo na rota | `validar()` no domínio já recusa |
+| S125 | `--others` no `ls-files` da caixa | árvore limpa: as duas listas coincidem |
 
 A forma é sempre a mesma: **guarda redundante sobre guarda que já basta**. Os
 dois só divergem em entradas onde o mutante ACERTA — e por isso nenhum teste
@@ -975,8 +977,22 @@ sala fantasma é exatamente o que se quer num caminho que corrompe a tela do
 jogador. O que estava errado era onde o defeito foi plantado, e os três foram
 reapontados para o guarda que de fato segura alguma coisa.
 
-**O que isto custa hoje:** os três só foram descobertos porque o Q2 completo
-rodou e devolveu `PASSOU`. Dois deles custaram um portão inteiro cada — 44 min
+**Cinco, não três — e o quinto tem outra roupa.** O S125 não é guarda redundante
+sobre guarda: é a mesma ENTRADA vista por dois caminhos que só divergem num
+estado que a suíte não cria. Numa árvore limpa, `git ls-files` e
+`git ls-files --others` devolvem o mesmo conjunto, e o mutante fica idêntico —
+ele só é observável durante um bloco em construção, que é justamente quando o
+portão costuma rodar. Generalizando: **mutante equivalente é equivalente SOB O
+ESTADO QUE O TESTE MONTA**, e às vezes o que falta não é o teste, é o estado.
+
+**E um deles não era equivalente — era um defeito nosso.** Ao medir se o S211
+era explorável, o mutante saiu MELHOR que o original em três entradas. Mutante
+que melhora o produto é sinal de que o código limpo está errado, e estava: era
+o **D-020**, valor ilegível virando pedido de remoção de limite. A investigação
+de mutante equivalente vale por si.
+
+**O que isto custa hoje:** os três primeiros só foram descobertos porque o Q2
+completo rodou e devolveu `PASSOU`. Dois deles custaram um portão inteiro cada — 44 min
 na primeira vez. Um mutante equivalente é indistinguível de um teste faltando
 até alguém sentar e ler os dois guardas.
 

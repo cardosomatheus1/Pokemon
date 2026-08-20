@@ -1129,3 +1129,60 @@ vem com a guarda que faltava: **nada em `server/`, `engine/`, `content/` ou
 `digital(raiz)` de qualquer forma — a raiz deixa de ser um número. Mover o
 arquivo em outro commit faria o diff do F1.15 misturar a mudança de endereço com
 a de tipo, e uma esconderia a outra.
+
+---
+
+## D-020 — valor ilegível de limite virava PEDIDO DE REMOÇÃO ✅ CORRIGIDO
+
+**Achado em:** F1.14, investigando por que o S211 escapava do portão ·
+**Corrigido no mesmo commit** · **Spec §28.3**
+
+```js
+valor: corpo?.valor === null ? null : inteiro(corpo?.valor)
+```
+
+`inteiro()` devolve `null` para tudo que não é inteiro. E `null` é o sentinela
+de **remoção** do §28.3. As duas coisas juntas, na mesma expressão:
+
+| o cliente manda | o domínio recebia | o que acontecia |
+|---|---|---|
+| `valor: 500` | `500` | limite definido ✔ |
+| `valor: '500'` | `null` | **pedido de remoção do limite** |
+| `valor: 12.5` | `null` | **pedido de remoção do limite** |
+| `{ tipo }` sem `valor` | `null` | **pedido de remoção do limite** |
+| `valor: null` | `null` | pedido de remoção ✔ |
+
+**A direção da falha é o que torna isto grave.** Quem manda um valor que a rota
+não entende está tentando **se limitar**, e saía de lá com um pedido de
+**afrouxamento** em andamento. O §28.3 exige que afrouxar seja deliberado —
+pedido, 24 h de cooldown e confirmação ativa. "Não consegui ler o que você
+mandou" não é decisão de ninguém.
+
+**Latente com o nosso cliente, vivo na API.** `app/modules/protecao-tela.mjs`
+valida antes de mandar (`Math.floor(Number(...))` e recusa não inteiro), então a
+tela de hoje não dispara. Mas isto é uma API HTTP: outro cliente, um corpo
+truncado numa retentativa, ou a tela de amanhã caem nele.
+
+### Como apareceu, e o método que o revelou
+
+O portão Q2 devolveu `S211 [PASSOU]` — o defeito que troca a leitura campo a
+campo por `...corpo`. Ao medir se ele era explorável, o resultado veio ao
+contrário do esperado: **com o defeito plantado o comportamento ficava MELHOR**
+(400 em vez de remoção) em três entradas.
+
+> Mutante que melhora o produto é sinal de que o código limpo está errado.
+
+O S211 em si era **mutante equivalente** — `definirLimite` lê só
+`{ userId, tipo, valor, agora }` e `validar()` já recusa valor não inteiro, então
+os campos a mais do `...corpo` são ignorados. Quarta ocorrência da forma da
+**L-038**. Ele foi reapontado para o guarda que a correção criou, e um defeito
+novo (**S240**) cobre o outro lado: a remoção explícita não pode deixar de
+funcionar.
+
+### A correção
+
+`null` explícito continua sendo remoção; qualquer outra coisa que não seja
+inteiro positivo é **400**, com mensagem que diz como remover. Dois testes em
+`test/rotas.mjs`: o caso ilegível (quatro entradas mais o corpo truncado) e o
+contrapeso da remoção — sem ele, o teste seria satisfeito por uma rota que
+recusa tudo.

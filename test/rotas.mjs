@@ -196,6 +196,40 @@ export async function suite() {
 
   /* O ENUMERADOR DE CONTAS. A resposta do login não pode dizer se o e-mail
      existe — quem descobre a lista de e-mails descobre a lista de clientes. */
+  /* O TERCEIRO CASO, que a primeira versão não cobria e o portão achou.
+   *
+   * O `auth.mjs` já iguala senha-errada e e-mail-inexistente: mesmo código,
+   * mesma mensagem, e o hash fantasma iguala o TEMPO. Comparar esses dois
+   * prova pouco — eles saem iguais mesmo com a defesa desta camada removida,
+   * e foi por isso que o **S213 escapou** de um teste que existia.
+   *
+   * O que distingue é a conta que EXISTE e não está ativa: ali o domínio lança
+   * outro erro (`conta_congelada`, "esta conta não está ativa"), e é o `catch`
+   * sem variável desta rota que impede a diferença de sair. Com o defeito
+   * plantado: conta congelada devolve "esta conta não está ativa" e conta
+   * inexistente devolve "e-mail ou senha inválidos" — a tela de login vira
+   * consulta de clientes. */
+  s.teste('o login não distingue conta CONGELADA de conta que não existe', async () => {
+    await comServico(async ({ porta, s: srv }) => {
+      await conta(porta, 'congelada');
+      srv.db.prepare(`UPDATE users SET status='congelado' WHERE email='congelada@exemplo.test'`).run();
+
+      const congelada = await pedir(porta, '/api/auth/entrar', { metodo: 'POST',
+        corpo: { email: 'congelada@exemplo.test', senha: SENHA } });
+      const inexistente = await pedir(porta, '/api/auth/entrar', { metodo: 'POST',
+        corpo: { email: 'nao-existe@exemplo.test', senha: SENHA } });
+
+      igual(congelada.status, inexistente.status,
+        `conta congelada respondeu ${congelada.status} e conta inexistente ` +
+        `${inexistente.status} — o status já enumera contas`);
+      igual(JSON.stringify(congelada.corpo), JSON.stringify(inexistente.corpo),
+        `conta congelada: ${JSON.stringify(congelada.corpo)}\n` +
+        `conta inexistente: ${JSON.stringify(inexistente.corpo)}\n` +
+        `A diferença diz que a primeira EXISTE. A tela de login vira consulta ` +
+        `de clientes, e quem tiver a lista de e-mails descobre quem é jogador.`);
+    });
+  });
+
   s.teste('o login não deixa descobrir quem tem conta', async () => {
     await comServico(async ({ porta }) => {
       await conta(porta, 'existe');
@@ -226,6 +260,63 @@ export async function suite() {
       ok(r.corpo?.limite?.limite === 'max_stake_per_round' &&
          typeof r.corpo?.limite?.teto === 'number',
         `a recusa da rota não carrega a avaliação: ${JSON.stringify(r.corpo)}`);
+    });
+  });
+
+  /* ── D-020 · VALOR ILEGÍVEL NÃO PODE VIRAR REMOÇÃO ──────────────────────
+   *
+   * `inteiro()` devolve `null` para tudo que não é inteiro, e `null` é o
+   * sentinela de REMOÇÃO do §28.3. As duas coisas juntas faziam
+   * `{ tipo, valor: '500' }` — ou um corpo truncado, sem `valor` nenhum —
+   * virar um PEDIDO DE REMOÇÃO do limite.
+   *
+   * Achado ao investigar por que o S211 escapava: com o defeito plantado o
+   * comportamento ficava MELHOR (400 em vez de remoção), que é o sinal de que
+   * o código limpo é que estava errado.
+   *
+   * A direção da falha é o que a torna grave: quem manda um valor que a rota
+   * não entende está tentando SE LIMITAR, e sai de lá com um pedido de
+   * afrouxamento em andamento. O §28.3 exige que afrouxar seja deliberado. */
+  s.teste('D-020 · valor ilegível no limite é ERRO, e nunca remoção', async () => {
+    await comServico(async ({ porta }) => {
+      const { sessao } = await conta(porta);
+      for (const valor of ['500', 12.5, true, 'abc']) {
+        const r = await pedir(porta, '/api/limites', { metodo: 'POST', sessao,
+          corpo: { tipo: 'max_loss_dia', valor } });
+        igual(r.status, 400,
+          `\`valor: ${JSON.stringify(valor)}\` respondeu ${r.status} ` +
+          `${JSON.stringify(r.corpo)}. Valor ilegível tem que ser recusado — ` +
+          `virar remoção põe o jogador que tentou se limitar com um pedido de ` +
+          `afrouxamento em andamento.`);
+      }
+      /* O CORPO TRUNCADO, que é o caso que ninguém manda de propósito. */
+      const semValor = await pedir(porta, '/api/limites', { metodo: 'POST', sessao,
+        corpo: { tipo: 'max_loss_dia' } });
+      igual(semValor.status, 400,
+        `pedido SEM o campo \`valor\` respondeu ${semValor.status} ` +
+        `${JSON.stringify(semValor.corpo)} — um corpo truncado pediu remoção de ` +
+        `limite em nome do jogador.`);
+
+      /* E O CONTRAPESO: `null` EXPLÍCITO continua sendo remoção, que é o que o
+         §28.3 desenha. Sem ele, este teste seria satisfeito por uma rota que
+         recusa tudo.
+
+         O limite precisa EXISTIR antes: remover o que não existe não é
+         afrouxamento — `permissividade(null)` e `permissividade(undefined)`
+         são os dois `Infinity` —, então sai na hora e o teste mediria a coisa
+         errada. A primeira versão deste contrapeso caiu exatamente aí. */
+      const definiu = await pedir(porta, '/api/limites', { metodo: 'POST', sessao,
+        corpo: { tipo: 'max_loss_dia', valor: 500 } });
+      igual(definiu.status, 200, `não deu para definir o limite: ${JSON.stringify(definiu.corpo)}`);
+      igual(definiu.corpo.vigente, true, 'reduzir/definir limite não valeu na hora');
+
+      const remover = await pedir(porta, '/api/limites', { metodo: 'POST', sessao,
+        corpo: { tipo: 'max_loss_dia', valor: null } });
+      igual(remover.status, 200,
+        `\`valor: null\` foi recusado — remover limite deixou de ser possível, ` +
+        `e o §28.3 desenha a remoção como aumento, não como impossibilidade`);
+      igual(remover.corpo.vigente, false,
+        'a remoção entrou em vigor na hora, sem as 24 h do §28.3');
     });
   });
 

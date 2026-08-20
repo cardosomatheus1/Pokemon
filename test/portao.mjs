@@ -486,6 +486,39 @@ export function suite() {
    * custaria dez minutos de suíte pendurada de propósito, a cada execução do
    * portão. O que se pode conferir em milissegundos é que o teto está no lugar
    * onde ele age. */
+  /* ── A CAIXA DE AREIA PRECISA VER O QUE AINDA NÃO FOI COMMITADO ─────────
+   *
+   * `git ls-files` puro só lista o que já está no índice. A pasta de um bloco
+   * em construção não está — e foi assim que `server/` ficou de fora na
+   * primeira versão desta derivação, com o portão abortando em "a suíte já
+   * está vermelha" depois de montar as caixas.
+   *
+   * O S125 existe para isso e ESCAPOU do portão numa árvore limpa: sem arquivo
+   * não commitado, `ls-files` puro e `ls-files --others` devolvem o mesmo
+   * conjunto, e o mutante fica idêntico. É a quinta ocorrência da forma da
+   * L-038 numa roupa diferente — aqui a redundância não é entre dois guardas,
+   * é entre duas ENTRADAS que só divergem num estado que a suíte não cria.
+   *
+   * O teste é estático, e a alternativa foi medida e recusada: criar um
+   * repositório git de mentira com arquivo não commitado, montar uma caixa e
+   * conferir o conteúdo custaria segundos a cada suíte, para provar o que a
+   * bandeira já diz. */
+  s.teste('a caixa de areia lista o não commitado também', async () => {
+    const { readFileSync } = await import('node:fs');
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8');
+    /* A chamada de `ls-files`, e não a primeira `execFileSync('git', …)` do
+       arquivo — essa é o `git status --porcelain` do `--tocados`. A primeira
+       versão deste teste casou com ela e reprovou o código certo. */
+    const chamada = txt.match(/execFileSync\('git', \['ls-files'[^\]]*\]/s)?.[0] ?? '';
+    ok(chamada, 'a caixa de areia não deriva mais a lista de pastas do `git ls-files`');
+    for (const bandeira of ['--cached', '--others', '--exclude-standard'])
+      ok(chamada.includes(bandeira),
+        `a listagem da caixa de areia perdeu \`${bandeira}\`: ${chamada}. Sem ` +
+        `\`--others\` a pasta do bloco em construção não entra na caixa, e o ` +
+        `portão aborta por motivo errado; sem \`--exclude-standard\` entram os ` +
+        `10 MB de \`assets/\` que o .gitignore mantém fora.`);
+  });
+
   s.teste('o portão tem teto de tempo por mutante', async () => {
     const { readFileSync } = await import('node:fs');
     const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8');

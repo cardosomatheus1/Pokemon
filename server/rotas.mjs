@@ -187,9 +187,31 @@ export const ROTAS = {
      qualquer canal. Pela rota, "qualquer canal" é um campo a mais no JSON. */
   'POST /api/limites': ({ db, corpo, userId, agora }) => {
     try {
-      return { corpo: definirLimite(db, { userId, tipo: corpo?.tipo,
-                                          valor: corpo?.valor === null ? null : inteiro(corpo?.valor),
-                                          agora }) };
+      /* D-020 · `null` EXPLÍCITO É REMOÇÃO; ILEGÍVEL É ERRO.
+       *
+       * `inteiro()` devolve `null` para tudo que não é inteiro, e `null` é o
+       * sentinela de remoção do §28.3. Juntas, as duas coisas faziam
+       * `valor: '500'` — ou um corpo truncado, sem `valor` nenhum — virar
+       * PEDIDO DE REMOÇÃO do limite.
+       *
+       * A direção da falha é o que a tornava grave: quem manda um valor que a
+       * rota não entende está tentando SE LIMITAR, e saía de lá com um pedido
+       * de afrouxamento em andamento. O §28.3 exige que afrouxar seja
+       * deliberado, e "não consegui ler o que você mandou" não é decisão de
+       * ninguém.
+       *
+       * Achado ao investigar por que o S211 escapava do portão: com o defeito
+       * plantado o comportamento ficava MELHOR, que é o sinal de que o código
+       * limpo é que estava errado. */
+      const bruto = corpo?.valor;
+      let valor = null;
+      if (bruto !== null) {
+        valor = inteiro(bruto);
+        if (valor === null)
+          return erro(400, ERRO_LIMITE.VALOR,
+            'valor precisa ser inteiro positivo; use null para remover o limite');
+      }
+      return { corpo: definirLimite(db, { userId, tipo: corpo?.tipo, valor, agora }) };
     } catch (e) { return daExcecao(e); }
   },
 
