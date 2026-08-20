@@ -192,8 +192,19 @@ export async function suite() {
       throw e;
     });
     const porta = await s2.ouvir(0);
+    /* A SESSÃO ENTROU AQUI NO F1.13, e a mudança deste teste é a prova de que a
+       regra nova funciona: a partir daquele bloco, **rota nova nasce PRIVADA**.
+       A conferência mora no despacho e a lista de públicas é a exceção
+       declarada, então esta rota de mentira — registrada à mão, fora da tabela
+       — passou a exigir sessão sem ninguém ter mexido nela.
+
+       O teste ganha um token em vez de a regra ganhar uma exceção: o que ele
+       mede é o caminho de erro 500, e não a autenticação. */
+    const { abrirSessao } = await import('../server/auth.mjs');
+    const sessao = abrirSessao({ segredo: s2.config.segredoSessao, userId: 'teste' });
     try {
-      const r = await pedir(porta, '/api/_estoura', { headers: { 'x-api-versao': API_VERSAO } });
+      const r = await pedir(porta, '/api/_estoura', { headers: {
+        'x-api-versao': API_VERSAO, authorization: `Bearer ${sessao}` } });
       igual(r.status, 500, `a rota que lança devia dar 500, deu ${r.status}`);
       ok(!/\bat \/|node:internal|\.mjs:\d+/.test(r.corpo),
         `a resposta de erro carrega stack trace:\n      ${r.corpo.slice(0, 300)}`);

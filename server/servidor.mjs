@@ -17,6 +17,10 @@ import { API_VERSAO, CABECALHO_VERSAO, ERROS, SEM_VERSAO, versaoAceita } from '.
 import { lerConfig } from './config.mjs';
 import { VERSAO_MOTOR, montarRodadaServidor } from './rodada.mjs';
 import { digital } from '../test/rodada-digital.mjs';
+import { abrirBanco, migrar } from './banco.mjs';
+import { criarScheduler } from './scheduler.mjs';
+import { criarSala } from './transporte.mjs';
+import { ROTAS, ROTAS_PUBLICAS, usuarioDa } from './rotas.mjs';
 
 /* CABEÇALHOS DE SEGURANÇA, em toda resposta, inclusive nas de erro.
  *
@@ -41,6 +45,20 @@ export function criarServidor(opcoes = {}) {
 
   const rotas = new Map();
   const registrar = (metodo, caminho, fn) => rotas.set(`${metodo} ${caminho}`, fn);
+
+  /* ── O SERVIÇO COMPLETO (F1.13) ─────────────────────────────────────────
+   *
+   * Banco, scheduler e sala nascem AQUI e são passados para as rotas. Cada um
+   * já existia desde o F1.2/F1.5/F1.6 e nenhum tinha porta: era a L-033.
+   *
+   * `banco: ':memory:'` é o que o teste usa. Em produção vem da configuração, e
+   * o mesmo arquivo serve todas as instâncias — a atomicidade que o F1.4 provou
+   * com oito processos de verdade é o que torna isso seguro. */
+  const db = abrirBanco(opcoes.banco ?? config.banco ?? ':memory:');
+  migrar(db);
+  const relogio = opcoes.relogio ?? Date.now;
+  const sched = criarScheduler({ db, sims: opcoes.sims, relogio, ambiente: config.ambiente });
+  const sala = criarSala();
 
   /* --- as rotas do F1.1 --------------------------------------------------- */
 
@@ -70,6 +88,16 @@ export function criarServidor(opcoes = {}) {
     return { corpo: montarRodadaServidor(raiz, sims) };
   });
 
+  /* AS ROTAS DO F1.13, montadas a partir da tabela. Registrar por laço e não à
+     mão: uma rota que existe na tabela e não no servidor é uma rota morta, e
+     uma que existe no servidor e não na tabela escapa da conferência de sessão
+     que o despacho faz pela lista. Derivar não pode dessincronizar. */
+  for (const [chave, fn] of Object.entries(ROTAS)) {
+    const [metodo, caminho] = chave.split(' ');
+    registrar(metodo, caminho, ctx => fn({ ...ctx, db, sched, sala, relogio,
+                                           agora: relogio() }));
+  }
+
   /* --- o laço ------------------------------------------------------------- */
 
   const servidor = createServer(async (req, res) => {
@@ -94,17 +122,32 @@ export function criarServidor(opcoes = {}) {
             erro: 'versão da API incompatível', versaoAceita: API_VERSAO });
       }
 
-      const fn = rotas.get(`${req.method} ${caminho}`);
+      const chave = `${req.method} ${caminho}`;
+      const fn = rotas.get(chave);
       /* A mensagem de 404 NÃO ecoa o caminho pedido. Eco de entrada do usuário
          numa resposta é o começo de metade dos problemas de injeção, e aqui não
          serve para nada: quem pediu já sabe o que pediu. */
       if (!fn) return responder(res, 404, { codigo: ERROS.NAO_ENCONTRADO, erro: 'caminho desconhecido' });
 
+      /* A SESSÃO É CONFERIDA AQUI, PARA TODAS, e a lista de públicas é a
+         exceção declarada. O desenho oposto — cada rota conferindo a própria —
+         é aquele em que a rota nova nasce ABERTA, porque quem a escreveu não
+         sabia que precisava lembrar. Mesma razão dos cabeçalhos de segurança
+         serem aplicados na saída e da versão ser conferida antes do
+         roteamento: garantia que depende de lembrança é garantia ausente. */
+      let userId = null;
+      if (!ROTAS_PUBLICAS.includes(chave) && !SEM_VERSAO.includes(caminho)) {
+        userId = usuarioDa(req, config, relogio());
+        if (!userId)
+          return responder(res, 401, { codigo: ERROS.NAO_AUTORIZADO,
+            erro: 'sessão ausente ou inválida' });
+      }
+
       const corpo = await lerCorpo(req);
       if (corpo === Symbol.for('grande'))
         return responder(res, 413, { codigo: ERROS.ENTRADA_INVALIDA, erro: 'corpo grande demais' });
 
-      const saida = await fn({ query: url.searchParams, corpo, req, config });
+      const saida = await fn({ query: url.searchParams, corpo, req, config, userId });
       if (saida?.status && saida.status >= 400) return responder(res, saida.status, saida.corpo);
       return responder(res, saida?.status || 200, saida?.corpo ?? null);
 
@@ -121,9 +164,13 @@ export function criarServidor(opcoes = {}) {
     servidor,
     config,
     registrar,
+    /* Expostos para o TESTE poder abrir rodada e olhar o banco sem passar pela
+       rede. Não há rota que faça isso: abrir rodada é do scheduler, e o §5.4 é
+       explícito em que o cliente perdeu o direito de pedir a próxima. */
+    db, sched, sala,
     ouvir: porta => new Promise(r =>
       servidor.listen(porta ?? config.porta, '127.0.0.1', () => r(servidor.address().port))),
-    fechar: () => new Promise(r => servidor.close(r)),
+    fechar: () => new Promise(r => servidor.close(() => { try { db.close(); } catch {} r(); })),
   };
 }
 

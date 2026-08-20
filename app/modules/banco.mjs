@@ -14,12 +14,13 @@
 import { S } from './estado.mjs';
 import {
   carteiraVazia, creditar, liberar, liquidarGanho, liquidarPerda,
-  reconciliar, reconstruir, reservar, totalDisponivel,
-} from '../../engine/carteira.mjs';
+  reconciliar, reconstruir, reservar, totalDisponivel, SALDO_INICIAL } from '../../engine/carteira.mjs';
 
 const CHAVE = 'ar_carteira';
 const CHAVE_ANTIGA = 'ar_bal';
-const SALDO_INICIAL = 1000;
+/* Veio para `engine/carteira.mjs` no F1.13: o servidor passou a ser o segundo
+   leitor, e cópia entre cliente e servidor é a forma mais barata de os dois
+   discordarem sobre quanto vale começar a jogar. */
 
 /* Diagnóstico do último carregamento, para a interface poder dizer algo em vez
    de corrigir em silêncio. */

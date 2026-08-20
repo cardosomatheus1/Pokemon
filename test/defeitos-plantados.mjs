@@ -73,6 +73,7 @@ const SRVTRA = 'server/transporte.mjs';
 const SRVAPO = 'server/aposta.mjs';
 const SRVLIM = 'server/limites.mjs';
 const SRVPRO = 'server/protecao.mjs';
+const SRVROT = 'server/rotas.mjs';
 const RESULT = 'engine/resultado.mjs';
 const CARTEIRA= 'app/modules/carteira.mjs';
 const NAVEG  = 'app/modules/navegacao.mjs';
@@ -1143,4 +1144,63 @@ export const DEFEITOS = [
   { id:'S208', arquivo:SRVAPO, nome:'a aposta deixa de conferir a pausa',
     real:'"a tela não deixa entrar" — autoexclusão que mora no cliente cai no primeiro logout',
     de:'  if (!pausa.ok)', para:'  if (false)' },
+
+  /* ---------- F1.13: a montagem do serviço ----------
+     Rota nova é caminho novo, e é o caminho que perde a regra. Cada defeito
+     aqui é uma garantia que o domínio JÁ tinha e que a rota pode desfazer sem
+     tocar no domínio — que é exatamente por que eles precisam existir. */
+
+  { id:'S209', arquivo:SRV, nome:'a sessão deixa de ser conferida no despacho',
+    real:'"cada rota confere a sua" — e a rota NOVA nasce aberta, porque quem a escreveu não sabia que precisava lembrar',
+    de:'      if (!ROTAS_PUBLICAS.includes(chave) && !SEM_VERSAO.includes(caminho)) {',
+    para:'      if (false) {' },
+
+  { id:'S210', arquivo:SRVROT, nome:'o usuário passa a vir do corpo do pedido',
+    real:'"o admin precisa consultar outra conta" — é a carteira de qualquer um para quem souber um id',
+    de:"  'GET /api/carteira': ({ db, userId }) =>\n    ({ corpo: { userId, saldos: saldos(db, userId) } }),",
+    para:"  'GET /api/carteira': ({ db, userId, query }) =>\n    ({ corpo: { userId: query.get('userId') || userId,\n                saldos: saldos(db, query.get('userId') || userId) } })," },
+
+  { id:'S211', arquivo:SRVROT, nome:'o corpo do pedido é espalhado para o domínio',
+    real:'`...corpo` no lugar dos campos — e `cooldownMs` do cliente encurta o cooldown do §28.3',
+    de:'      return { corpo: definirLimite(db, { userId, tipo: corpo?.tipo,\n                                          valor: corpo?.valor === null ? null : inteiro(corpo?.valor),\n                                          agora }) };',
+    para:'      return { corpo: definirLimite(db, { ...corpo, userId, agora }) };' },
+
+  /* A PRIMEIRA VERSÃO DESTE DEFEITO ERA DECORATIVA, e a medição pegou.
+     Ela trocava os campos por `...corpo`, esperando que a odd do cliente
+     chegasse ao domínio. Não chega: `apostar()` desestrutura só nomes
+     conhecidos, e `odd` não é um deles — a defesa do F1.7 é ESTRUTURAL, e o
+     mutante não tinha efeito nenhum. Pior: o portão devolveu PEGOU mesmo assim,
+     por uma suíte de navegador instável (ver D-015).
+
+     O defeito real é a rota SOBRESCREVER a odd na resposta, que é o erro que
+     alguém comete de verdade ao "devolver o que o cliente mandou". */
+  { id:'S212', arquivo:SRVROT, nome:'a rota devolve a odd do cliente no lugar da publicada',
+    real:'"o cliente já calculou, é só ecoar" — e o ticket exibido deixa de ser o ticket gravado',
+    de:'      return { corpo: t };',
+    para:'      return { corpo: { ...t, odd: corpo?.odd ?? t.odd } };' },
+
+  { id:'S213', arquivo:SRVROT, nome:'o login distingue conta que existe de conta que não existe',
+    real:'"a mensagem ajuda o usuário" — e transforma a tela de login numa consulta de clientes',
+    de:"    } catch {",
+    para:"    } catch (e) {\n      if (e?.codigo) return erro(401, ERROS.NAO_AUTORIZADO, e.message);" },
+
+  { id:'S214', arquivo:SRVROT, nome:'a rota de rodada devolve o estado interno inteiro',
+    real:'"é mais simples mandar tudo" — e a semente vai junto antes do lock',
+    de:'    return { corpo: { rodada: sched.paraCliente() } };',
+    para:'    return { corpo: { rodada: r } };' },
+
+  { id:'S215', arquivo:SRVROT, nome:'o grant de boas-vindas é creditado a cada cadastro',
+    real:'a chave de idempotência sai — e reenviar o cadastro emite moeda de novo',
+    de:'                     valor: SALDO_INICIAL, idem: `welcome-${u.id}`, agora });',
+    para:'                     valor: SALDO_INICIAL, idem: `welcome-${u.id}-${agora}`, agora });' },
+
+  { id:'S216', arquivo:SRVROT, nome:'nasce uma rota que encerra a pausa',
+    real:'"o suporte precisa poder liberar" — é a irreversibilidade do §28.4 desfeita por um caminho novo',
+    de:"  'POST /api/protecao/reentrada/confirmar': ({ db, userId, agora }) => {",
+    para:"  'POST /api/protecao/encerrar': ({ db, userId, agora }) => {\n    return { corpo: { encerrada: true } };\n  },\n\n  'POST /api/protecao/reentrada/confirmar': ({ db, userId, agora }) => {" },
+
+  { id:'S217', arquivo:SRVROT, nome:'o saldo inicial da rota diverge do motor',
+    real:'número copiado no lugar do importado — cliente e servidor discordam de quanto vale começar',
+    de:'                     valor: SALDO_INICIAL, idem: `welcome-${u.id}`, agora });',
+    para:'                     valor: 5000, idem: `welcome-${u.id}`, agora });' },
 ];

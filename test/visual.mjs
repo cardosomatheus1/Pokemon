@@ -306,8 +306,19 @@ export function diferencaPorRegiao(a, b, grade = GRADE) {
 
 export function compararBase(atual, base) {
   const falhas = [];
+  /* NA PASSADA ESTREITA, A BASE TEM LARGURAS QUE NÃO FORAM CAPTURADAS, e cobrar
+     captura delas faria a suíte ficar vermelha para QUALQUER mutante — o que
+     transforma o portão numa máquina de PEGOU falso. Foi o defeito D-015, e ele
+     inflou uma execução inteira do Q2 antes de a medição pegar.
+
+     Ignorar a largura ausente é legítimo AQUI e só aqui: o modo estreito existe
+     para tentar CONDENAR, e verde nele nunca conclui nada — a sabotagem sempre
+     reexecuta com as quatro antes de qualquer veredito. Fora do modo estreito, a
+     captura ausente continua sendo falha, e tem que continuar. */
+  const larguras = new Set(LARGURAS.map(L => L.nome));
   for (const chave of Object.keys(base)) {
     const a = atual[chave], b = base[chave];
+    if (!a && ESTREITA && !larguras.has(chave.split('@')[1])) continue;
     if (!a) { falhas.push(`${chave}: captura não produzida`); continue; }
     const fora = diferencaPorRegiao(a, b).filter(r => r.media > LIM_MEDIA_REGIAO);
     if (!fora.length) continue;
@@ -979,11 +990,16 @@ export function suiteBase(atual, base) {
       `${falhas.length} tela(s) fora da linha de base:\n      ` + falhas.join('\n      ') +
       `\n      Se a mudança é intencional, regrave com npm run test:gerar e explique no commit.`);
   });
+  /* ESTE TESTE JULGA A BASE GRAVADA, e não a captura desta execução — por isso
+     ele conta contra `LARGURAS_TODAS` e não contra `LARGURAS`. A primeira versão
+     usava `LARGURAS`, e na passada estreita ela vale 1: a base de 16 entradas
+     era comparada com um esperado de 4 e a suíte ficava vermelha para qualquer
+     mutante. É o D-015, e ele inflou um Q2 inteiro. */
   s.teste('a linha de base cobre as telas e larguras declaradas', () => {
-    const esperado = 4 * LARGURAS.length;
+    const esperado = 4 * LARGURAS_TODAS.length;
     ok(Object.keys(base).length === esperado,
       `linha de base tem ${Object.keys(base).length} entradas, ` +
-      `esperado ${esperado} (4 telas x ${LARGURAS.length} larguras)`);
+      `esperado ${esperado} (4 telas x ${LARGURAS_TODAS.length} larguras)`);
   });
 
   /* O PORTÃO TEM QUE OLHAR ONDE O ARRANJO TERMINA DE CRESCER (T2).
@@ -1001,10 +1017,10 @@ export function suiteBase(atual, base) {
     const m = css.match(/\.app\s*\{[^}]*max-width:\s*(\d+)px/);
     ok(m, 'não achei o max-width do .app em app/index.html — o teste perdeu a âncora');
     const teto = Number(m[1]);
-    const acima = LARGURAS.filter(L => L.w > teto);
+    const acima = LARGURAS_TODAS.filter(L => L.w > teto);
     ok(acima.length > 0,
       `o .app para de crescer em ${teto}px e a maior largura capturada é ` +
-      `${Math.max(...LARGURAS.map(L => L.w))}px — o arranjo completo, com as ` +
+      `${Math.max(...LARGURAS_TODAS.map(L => L.w))}px — o arranjo completo, com as ` +
       `goteiras dos dois lados, não aparece em nenhuma captura (D-010)`);
   });
   return s;

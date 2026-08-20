@@ -284,6 +284,48 @@ export function suite() {
       'quando a verdade é "ninguém olhou naquela largura".');
   });
 
+  /* D-015: A PASSADA ESTREITA FICAVA VERMELHA PARA QUALQUER MUTANTE.
+   *
+   * `SABOTAGEM_ESTREITA=1` captura uma largura; a linha de base gravada tem
+   * quatro. Dois testes da `visual-base` cobravam a base contra o número de
+   * larguras DESTA execução, e ficavam vermelhos sempre — o que dava PEGOU
+   * falso a todo defeito que chegasse ao navegador, e inflou um Q2 inteiro.
+   *
+   * Um portão que diz PEGOU sem ter pego é pior que um que diz PASSOU: o
+   * segundo manda investigar, o primeiro manda seguir em frente — e esconde os
+   * defeitos que de fato escapam.
+   *
+   * A CONFERÊNCIA É ESTÁTICA, e a primeira versão dela não era: ela subia um
+   * processo filho com a suíte visual. Duas coisas quebraram. No sandbox o
+   * filho herda `SEM_VISUAL=1`, a suíte não existe, e o `--so` aborta — a
+   * linha de base do portão inteiro ficou vermelha. E, se funcionasse, cobraria
+   * 35 s de navegador em toda execução barata, desfazendo exatamente o que a
+   * mudança de estratégia do Q2 comprou.
+   *
+   * A distinção que o teste crava: quem julga a BASE GRAVADA conta contra
+   * `LARGURAS_TODAS`; quem julga a CAPTURA DESTA EXECUÇÃO conta contra
+   * `LARGURAS`. Confundir as duas é o defeito. */
+  s.teste('quem julga a linha de base gravada conta as quatro larguras', async () => {
+    const { readFileSync } = await import('node:fs');
+    const txt = readFileSync(new URL('./visual.mjs', import.meta.url).pathname, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+
+    const bloco = txt.match(/a linha de base cobre as telas e larguras declaradas[\s\S]*?\n  \}\);/);
+    ok(bloco, 'o teste de cobertura da linha de base sumiu — âncora perdida');
+    ok(/LARGURAS_TODAS\.length/.test(bloco[0]) && !/[^_]LARGURAS\.length/.test(bloco[0]),
+      'o teste que julga a BASE GRAVADA conta contra `LARGURAS`, que vale 1 na ' +
+      'passada estreita. A base tem 16 entradas e o esperado vira 4: a suíte ' +
+      'fica vermelha para QUALQUER mutante, e o portão passa a dar PEGOU falso ' +
+      'a todo defeito que chega ao navegador (D-015).');
+
+    ok(/if \(!a && ESTREITA && !larguras\.has\(/.test(txt),
+      '`compararBase` voltou a cobrar captura de largura que a passada estreita ' +
+      'não produziu — mesmo defeito pela outra ponta.');
+    ok(/if \(!a\) \{ falhas\.push/.test(txt),
+      'a captura ausente deixou de ser falha FORA do modo estreito. Ali ela ' +
+      'precisa continuar sendo: tela que não foi capturada é tela que ninguém olhou.');
+  });
+
   s.teste('a largura estreita não vaza para fora da sabotagem', async () => {
     const { readFileSync } = await import('node:fs');
     /* `npm test` e `npm run portoes` não podem definir a variável: o portão de

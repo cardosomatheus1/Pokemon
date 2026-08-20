@@ -782,3 +782,56 @@ Dois, e o segundo é o contrapeso do primeiro:
   limite depois;
 - `a DERROTA no settlement conta a perda inteira` — sem ele, um settlement que
   não lançasse **nada** passaria no primeiro.
+
+---
+
+## D-015 — a passada estreita da sabotagem dava PEGOU falso a todo defeito de navegador ✅ CORRIGIDO
+
+**Achado em:** F1.13, ao conferir uma captura que não fazia sentido ·
+**Bloco dono:** a mudança de estratégia do Q2 · **Corrigido no:** F1.13
+
+`SABOTAGEM_ESTREITA=1` foi criado para a suíte visual rodar **uma** largura em
+vez de quatro — 34 s em vez de 65 s por mutante. A linha de base gravada tem as
+quatro. E dois testes da `visual-base` cobravam a base contra o número de
+larguras **desta execução**:
+
+```js
+const esperado = 4 * LARGURAS.length;          // 4 na passada estreita
+ok(Object.keys(base).length === esperado);     // a base tem 16 → VERMELHO
+```
+
+Resultado: **a `visual-base` ficava vermelha para qualquer mutante**, e a
+sabotagem lia isso como captura. Todo defeito que sobrevivia às suítes sem
+navegador ganhava um `PEGOU` — pelo motivo errado.
+
+### Por que isto é pior que um PASSOU falso
+
+Um `PASSOU` falso manda investigar. Um `PEGOU` falso manda seguir em frente, e
+ainda **esconde os defeitos que de fato escapam**: um mutante que nenhuma suíte
+pega volta como pego, e a cobertura que não existe aparece como cobertura.
+
+Uma execução completa do Q2 foi reportada como `VERDE — 208/208` sob este
+defeito. **Aquele veredito não valia**, e foi refeito.
+
+### Como apareceu
+
+Não foi um teste que pegou: foi conferir uma linha do relatório que não fazia
+sentido. O `S212` — mutação na rota de aposta — voltou como pego por
+`navegador: visual-base`, e mutar `server/rotas.mjs` não tem como mexer na
+linha de base visual do cliente. Ao investigar, o `S212` também se revelou
+**decorativo** (a mutação não tinha efeito nenhum), o que fechou o diagnóstico:
+o `PEGOU` só podia ser falso.
+
+### A correção
+
+- `compararBase` ignora, **e só no modo estreito**, a largura que não foi
+  capturada. Fora dele, captura ausente continua sendo falha;
+- os dois testes que julgam a BASE GRAVADA passam a contar contra
+  `LARGURAS_TODAS`, que é o que eles sempre quiseram dizer.
+
+### O teste que trava
+
+`test/portao.mjs` — `a suíte visual sai VERDE na passada estreita quando nada
+está errado`. Ele roda a `visual-base` com `SABOTAGEM_ESTREITA=1` num processo
+filho e reprova se ela ficar vermelha. É o único jeito de pegar esta classe: o
+defeito só existe quando a variável está ligada, e a suíte normal nunca a liga.

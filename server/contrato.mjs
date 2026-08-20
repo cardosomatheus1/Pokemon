@@ -40,5 +40,9 @@ export const ERROS = {
   VERSAO_INCOMPATIVEL: 'versao_incompativel',
   ENTRADA_INVALIDA:    'entrada_invalida',
   NAO_ENCONTRADO:      'nao_encontrado',
+  /* F1.13: a superfície ganhou rotas privadas, e a recusa por sessão precisa de
+     código próprio. Sem ele o cliente não distingue "entre de novo" de "esse
+     pedido está errado", e trata as duas do mesmo jeito — que é reenviar. */
+  NAO_AUTORIZADO:      'nao_autorizado',
   INTERNO:             'interno',
 };

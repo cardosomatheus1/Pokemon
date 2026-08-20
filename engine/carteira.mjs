@@ -33,6 +33,19 @@ export const BUCKETS = ['transferivel', 'pendente', 'bonus', 'competitivo'];
  * Registrado como lacuna L-024, porque a decisão é econômica e não tem dono. */
 export const ORDEM_CONSUMO = ['bonus', 'competitivo', 'transferivel'];
 
+/* O SALDO COM QUE UMA CONTA COMEÇA.
+ *
+ * Estava só em `app/modules/banco.mjs`, e ficou visível no F1.13: quando o
+ * cliente parou de usar o banco local e passou a falar com o servidor, conta
+ * nova nasceu com zero e o jogo não começava. O número é o mesmo da v0.8 — é
+ * porte, não decisão nova —, e ele sobe para o motor porque agora tem DOIS
+ * leitores, e dois leitores com cópias é como se dessincroniza.
+ *
+ * O Estudo Econômico mede a ruína a partir dele: 1.000 PC com aposta mínima de
+ * 50 sempre no favorito arruina em 100% das simulações, mediana de 128 rodadas.
+ * Mexer aqui é mexer naquela medição, e o §28.8 depende dela. */
+export const SALDO_INICIAL = 1000;
+
 /* Tipos do §5.5 que a v0.9 usa. A lista completa da Spec cobre Liga, Exchange e
    compra com dinheiro real, que não existem nesta versão — usar um tipo que o
    produto ainda não tem seria inventar histórico. */
