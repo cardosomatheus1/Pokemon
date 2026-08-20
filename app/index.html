@@ -586,6 +586,34 @@ body{
 #winBox .cheer{font-family:var(--px);font-size:7.5px;color:var(--gold);
   margin-top:10px;line-height:1.7}
 
+/* ---------------- ACERTOU E NÃO GANHOU (§28.5) ----------------
+   O terceiro desfecho, criado no F1.9: o palpite estava certo e o retorno não
+   passou da aposta. Ele reusava a caixa de DERROTA, e ler a captura de perto
+   mostrou o custo disso (L-037):
+
+     · o líquido "0" saía em VERMELHO DE PERDA. Zero não é perda — é o dinheiro
+       de volta —, e pintar de vermelho exagera o resultado na direção oposta à
+       que o §28.5 corrige. Errar para o lado pessimista continua sendo errar;
+     · a linha que EXPLICA o zero saía em 7px, herdados de `.loss small`. Ali
+       ela é decoração; aqui ela é o sentido inteiro da tela.
+
+   A moldura é neutra: não é festa nem K.O. */
+#winBox.devolvido .banner{background:#1a2230;border-color:var(--dim);color:#dbe3f2}
+/* A LINHA DO LÍQUIDO GANHA PAINEL PRÓPRIO, e a razão é a captura: em corpo
+   legível a frase ficou mais larga que a caixa e vazou por cima da arena, que é
+   fundo desenhado e de contraste imprevisível. Painel com largura máxima resolve
+   as duas coisas — a frase quebra dentro dele, e lê sobre qualquer arena. */
+#winBox .liquido{display:inline-block;max-width:min(92vw,420px);
+  margin:9px auto 0;padding:10px 14px;border-radius:10px;
+  background:rgba(10,14,22,.86);border:1px solid rgba(255,255,255,.12);
+  font-family:var(--px);font-size:16px;color:#dbe3f2;
+  text-shadow:2px 2px 0 rgba(0,0,0,.45)}
+/* Perda parcial é perda, e volta ao vermelho: recebeu algo, e menos do que pôs. */
+#winBox .liquido.negativo{color:var(--red)}
+#winBox .liquido small{display:block;font-size:.74rem;font-family:'Segoe UI',system-ui,sans-serif;
+  color:#e2e8f5;margin-top:8px;text-shadow:none;line-height:1.5;letter-spacing:0;
+  white-space:normal}
+
 /* ---------------- SEM APOSTA (espectador) ---------------- */
 #winBox .neutral{font-size:.78rem;color:var(--dim);margin-top:7px}
 

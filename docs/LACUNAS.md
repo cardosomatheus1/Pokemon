@@ -957,7 +957,7 @@ o problema existir.
 
 ---
 
-### L-037 — a tela "acertou e não ganhou" nunca foi lida de perto
+### L-037 — a tela "acertou e não ganhou" nunca foi lida de perto ✅ FECHADA
 
 **Dono:** **V1.21** (é onde moram os itens de leitura da tela) · **Notada em:** F1.13,
 ao consertar o driver de captura
@@ -978,30 +978,49 @@ captura eu não consegui lê-la. É a linha mais importante daquela tela — "o
 valor exibido é o líquido, com o bruto em segundo plano" —, e uma linha
 importante que não se lê é o mesmo problema que a L-031 lista em outros pontos.
 
-**Meio caminho andado, e medido:** as raízes **2, 4, 5, 6 e 9** têm o favorito
-como campeão — procuradas offline com os 154.000 sims de verdade, não com um
-lote curto. Elas estão no `olhar-telas.mjs` e o roteiro planta a primeira antes
-de a rodada nascer.
+**Fechada.** A captura virou determinística e a caixa foi lida.
 
-**O que NÃO está verificado:** a captura com a raiz plantada não produziu aposta
-na conferência — o `crypto.getRandomValues` é consumido em algum ponto do boot
-antes de `novaRaiz()`, e o primeiro inteiro plantado vai para outro lugar.
-Descobrir qual é o trabalho que sobra. O arnês **reporta o desfecho sorteado**
-em todas as capturas, então ele não pode enganar em silêncio: uma
-`resultado-devolvido.png` com desfecho "errou" vem anotada como tal.
+**O que travava era o arnês, e o diagnóstico estava errado.** Eu tinha
+registrado que a semente fixa "não funciona porque o `getRandomValues` é
+consumido antes de `novaRaiz()`". Rastreando o consumo de verdade:
 
-**O que a destrava:** ler a caixa de perto. Duas dificuldades reais, e as duas
-são de arnês:
+```
+Uint8Array(8)    id de sessão da telemetria
+Uint32Array(1)   ← a raiz da rodada
+Uint8Array(16)   o sal do commit
+```
 
-1. **o desfecho é sorteado.** O cliente não pode saber o campeão antes — é o
-   commit-reveal funcionando —, então capturar "acertou" é loteria: oito
-   tentativas seguidas deram erro. A saída é fixar a semente e procurar UMA em
-   que o favorito vence, guardando esse número no arnês;
-2. **não se pode forjar o estado.** A primeira tentativa escrevia em
-   `S.myBet.idx` durante a animação para forçar o desfecho, e produzia três
-   `pageerror` — medido contra uma rodada natural, que dá zero. O arnês estava
-   fotografando uma tela que o produto não alcança, o que é pior que não
-   fotografar.
+O primeiro inteiro de 32 bits **é** a raiz. O mecanismo estava certo desde o
+começo; o que estava errado era a minha verificação, que clicava no lutador
+antes de a lista existir e concluía "sem aposta". As raízes **2, 4, 5, 6 e 9**
+têm o favorito como campeão — medidas com os 154.000 sims reais —, e com a raiz
+2 plantada a captura acerta na primeira tentativa, sempre.
+
+**O que ler a caixa mostrou, e nenhum teste tinha visto:**
+
+```
+destaque:    "0 💵"   14px, cor rgb(255,77,109) — o VERMELHO DE PERDA
+explicação:  "o retorno de 💵 50 foi igual ao valor apostado"   7px
+```
+
+Três coisas erradas na tela que o F1.9 criou:
+
+1. **zero líquido pintado de vermelho de perda.** Zero não é perda: é o dinheiro
+   de volta. O §28.5 existe para impedir que a tela exagere para o lado
+   otimista — exagerar para o pessimista é errar do mesmo jeito;
+2. **a explicação em 7px**, herdada de `.loss small`. Na caixa de derrota
+   aquela linha é decoração; nesta ela é o sentido inteiro da tela;
+3. **a caixa reusava a classe `lose`**, e com ela a moldura vermelha de K.O.
+   para um desfecho que não é derrota.
+
+E, ao corrigir o corpo da fonte, apareceu a quarta: em tamanho legível a frase
+ficava mais larga que a caixa e vazava por cima da arena, que é fundo desenhado
+e de contraste imprevisível.
+
+**A correção:** moldura própria (`.devolvido`, neutra), painel com largura
+máxima para a frase quebrar dentro dele, e o texto reescrito para dizer a conta
+— *"Você apostou 💵 50 e recebeu 💵 50 — o mesmo valor de volta."* O vermelho
+fica só para `perda_parcial`, que é perda de verdade.
 
 ---
 

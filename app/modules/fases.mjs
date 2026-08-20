@@ -506,13 +506,17 @@ function finish(){
        * "quase lá" — o §28.7 proíbe linguagem que sugira que o resultado é
        * influenciável —, e com o número que importa em destaque. */
       log(`<span class="l-ko">↩︎ ${rotuloLiquido(res.liquido)} ${MOEDA} · retorno igual ou menor que a aposta</span>`);
-      overlay.innerHTML = `<div id="winBox" class="lose">
+      /* MOLDURA PRÓPRIA, e não a da derrota. Reusar `lose` pintava o líquido
+         zero de vermelho de perda — e zero não é perda, é o dinheiro de volta.
+         Exagerar para o lado pessimista é errar do mesmo jeito. Ver L-037. */
+      overlay.innerHTML = `<div id="winBox" class="devolvido">
           ${imgTag(f)}
           <div class="banner" style="margin-top:8px">${f.n} venceu!</div>
-          <div class="loss">${rotuloLiquido(res.liquido)} ${CUR}
-            <small>o retorno de ${CUR} ${retorno.toLocaleString('pt-BR')} ${
-              res.desfecho === 'devolvido' ? 'foi igual ao' : 'ficou abaixo do'
-            } valor apostado</small>
+          <div class="liquido${res.liquido < 0 ? ' negativo' : ''}">${rotuloLiquido(res.liquido)} ${CUR}
+            <small>Você apostou ${CUR} ${S.myBet.amount.toLocaleString('pt-BR')} e recebeu ${
+              CUR} ${retorno.toLocaleString('pt-BR')} — ${
+              res.desfecho === 'devolvido' ? 'o mesmo valor de volta'
+                                           : 'menos do que apostou'}.</small>
           </div>
           ${blocoXP(xpInfo, feitos)}
         </div>`;

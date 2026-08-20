@@ -79,6 +79,19 @@ async function abrir(largura, altura, preparar) {
      rodada inteira de capturas descobrir isso. */
   await pg.addInitScript(() => { try { localStorage.setItem('ar_session', '1'); } catch {} });
   await pg.addInitScript(ESPELHAR_ESTADO);
+  /* A RAIZ DA RODADA É PLANTADA NO BOOT quando a captura pede o caso do §28.5.
+     Medido: o consumo de `crypto.getRandomValues` na partida do app é
+     `Uint8Array(8)` (id de sessão) → **`Uint32Array(1)` (a raiz)** →
+     `Uint8Array(16)` (o sal do commit). O primeiro inteiro de 32 bits é a raiz,
+     e é só ele que este roteiro troca — o resto passa direto. */
+  if (preparar === 'favoritoVence') await pg.addInitScript(r => {
+    const orig = crypto.getRandomValues.bind(crypto);
+    let usada = false;
+    crypto.getRandomValues = a => {
+      if (!usada && a instanceof Uint32Array && a.length === 1) { usada = true; a[0] = r; return a; }
+      return orig(a);
+    };
+  }, RAIZES_FAVORITO_VENCE[0]);
   if (RAIZ_FIXA) await pg.addInitScript(() => {
     let n = 0x51117777 >>> 0;
     crypto.getRandomValues = a => {
@@ -86,7 +99,7 @@ async function abrir(largura, altura, preparar) {
       return a;
     };
   });
-  if (preparar) await preparar(pg);
+  if (typeof preparar === 'function') await preparar(pg);
   await pg.goto(`http://127.0.0.1:${srv.porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
   /* Esperar ESTADO, não relógio: a rodada custa ~5 s de Monte Carlo e a espera
      fixa pegaria o meio do "calculando odds" numa máquina mais lenta. */
@@ -98,8 +111,8 @@ async function abrir(largura, altura, preparar) {
   return { ctx, pg };
 }
 
-async function tela(nome, largura, altura, roteiro) {
-  const { ctx, pg } = await abrir(largura, altura);
+async function tela(nome, largura, altura, roteiro, preparar) {
+  const { ctx, pg } = await abrir(largura, altura, preparar);
   if (roteiro) await roteiro(pg);
   await pg.screenshot({ path: join(SAIDA, nome + '.png') });
   /* Rolagem horizontal é defeito de layout, sempre — e é barato conferir aqui,
@@ -186,26 +199,14 @@ const resultado = (ajuste, nome = 'resultado') => async pg => {
    * O ajuste do desfecho entra ANTES da luta começar, quando `S.myBet` é o que
    * o jogador acabou de montar e nada está animando. `odd` é campo do ticket e
    * mexer nele ali é o que um mercado com odd abaixo de 1 fará sozinho no V2. */
-  /* A RAIZ É PLANTADA ANTES DA RODADA NASCER, e por isso o roteiro pede uma
-     rodada nova depois de plantar: a que está aberta já sorteou a dela. */
-  if (ajuste.favoritoVence)
-    await pg.evaluate(r => {
-      const orig = crypto.getRandomValues.bind(crypto);
-      let usada = false;
-      crypto.getRandomValues = a => {
-        if (!usada && a.length === 1 && a instanceof Uint32Array) { usada = true; a[0] = r; return a; }
-        return orig(a);
-      };
-    }, RAIZES_FAVORITO_VENCE[0]);
 
-  await pg.waitForFunction(() => globalThis.__olhar_S?.state === 'betting',
+  /* A ESPERA É PELA LISTA, e não só pelo estado. Os lutadores aparecem alguns
+     quadros depois de a fase virar `betting`, e clicar antes disso não aposta
+     em ninguém — foi o que fez a primeira verificação deste roteiro dizer
+     "sem aposta" e me convencer, errado, de que a semente fixa não funcionava. */
+  await pg.waitForFunction(() =>
+    globalThis.__olhar_S?.state === 'betting' && document.querySelectorAll('.pick').length > 0,
     { timeout: 120000, polling: 250 }).catch(() => avisos.push('não abriu janela de aposta'));
-
-  if (ajuste.favoritoVence) {
-    await pg.evaluate(async () => (await import('/app/modules/fases.mjs')).newRound());
-    await pg.waitForFunction(() => globalThis.__olhar_S?.state === 'betting',
-      { timeout: 120000, polling: 250 }).catch(() => {});
-  }
 
   const raiz = await pg.evaluate(async aj => {
     const { S } = await import('/app/modules/estado.mjs');
@@ -255,8 +256,8 @@ await tela('resultado-b', 1440, 900, resultado({}, 'resultado-b'));
 /* ODD 1,00 é a captura que o F1.9 existe para produzir: acertar o campeão e
    receber exatamente o que apostou. É o caso que o BUILD_BLOCKS dizia que "hoje
    não existe" e que a tela comemorava — ver o D-012. */
-await tela('resultado-devolvido', 1440, 1500, resultado({ odd: 1.0, favoritoVence: true }, 'resultado-devolvido'));
-await tela('resultado-devolvido-420', 420, 1500, resultado({ odd: 1.0, favoritoVence: true }, 'resultado-devolvido-420'));
+await tela('resultado-devolvido', 1440, 1500, resultado({ odd: 1.0 }, 'resultado-devolvido'), 'favoritoVence');
+await tela('resultado-devolvido-420', 420, 1500, resultado({ odd: 1.0 }, 'resultado-devolvido-420'), 'favoritoVence');
 
 await tela('perfil', 1100, 1500, async pg => {
   await pg.evaluate(async () => {
