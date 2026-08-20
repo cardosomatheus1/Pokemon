@@ -1242,3 +1242,58 @@ a afirmação, a rodada que aceitasse menos de 200 faria o teste medir outra coi
 Um teste que não captura exceção mostra no relatório a asserção que ele NÃO
 alcançou. Foi por isso que a caça começou olhando `chasing` — um sinal que nunca
 acendeu.
+
+---
+
+## D-022 — a sonda `sem-rede` espera o Monte Carlo e o teto media a máquina ✅ CORRIGIDO
+
+**Achado em:** F1.15 (o portão abortou ao validar uma configuração) ·
+**Corrigido no mesmo commit** · **Família do D-016**
+
+O portão abortou assim:
+
+```
+ABORTADO: a suíte já está vermelha na configuração com-golden/navegador-estreito,
+SEM nenhum defeito plantado.
+  [sem-rede] o jogo abre com a rede externa desligada
+      a fase de apostas não abriu sem rede
+```
+
+**O abort está certo, e é o D-015 funcionando.** `garantirBase` recusa julgar
+numa configuração que já está vermelha — sem ela, todo defeito avaliado ali
+voltaria `PEGOU` sem ter sido pego.
+
+### O que foi medido
+
+| condição | resultado |
+|---|---|
+| configuração estreita, isolada, 6× | 6 verdes |
+| configuração estreita, com 4 laços de CPU, 3× | 3 verdes |
+| dentro do portão | 1 vermelha |
+
+Nove verdes e uma vermelha, sem reprodução fora do portão.
+
+### A causa provável, e por que ela é específica
+
+A espera aguarda `.pick` aparecer — e `.pick` só aparece depois de o cliente
+terminar **154.000 simulações de Monte Carlo** dentro do Chromium, numa thread
+só. O portão roda até **cinco Chromiums ao mesmo tempo**. O teto era de 90 s.
+
+Laço de CPU em bash não reproduz isso: o escalonador reparte tempo, mas cinco
+Chromiums disputam também memória e GPU de software.
+
+### A correção, e as duas metades dela
+
+**O teto não é medida de nada** — ele existe para o teste falhar em vez de
+pendurar a suíte. Quem impede o portão de ficar pendurado é o teto por mutante
+de 10 min que o F1.14 acrescentou; então este pode ser largo. 90 s → 240 s. Um
+verde lento continua verde; um vermelho de verdade — o app que não abre sem
+rede — não chega perto disso.
+
+**E a mensagem passa a dizer quanto esperou.** `a fase de apostas não abriu` não
+distingue "o app quebrou" de "faltaram dois segundos", e a diferença é toda a
+investigação. Agora ela diz o número e o que ele significa.
+
+É a terceira vez que o projeto paga por uma sonda de navegador cujo teto media a
+máquina, e a segunda vez em dois dias que a correção é *dizer o número em vez de
+adivinhar*.

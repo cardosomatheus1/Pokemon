@@ -820,9 +820,27 @@ export async function rodarSemRede() {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
     document.querySelector('#viewArena')?.classList.add('on');
   });
+  /* O TETO NÃO É MEDIDA DE NADA, e por isso é generoso.
+   *
+   * Esta espera aguarda o Monte Carlo de 154.000 simulações terminar DENTRO do
+   * Chromium. O portão roda até cinco Chromiums ao mesmo tempo, e foi assim que
+   * ela estourou uma vez: a configuração `com-golden/navegador-estreito` voltou
+   * vermelha, o `garantirBase` recusou julgar nela — corretamente — e o portão
+   * abortou. Nove execuções isoladas depois, todas verdes.
+   *
+   * O teto existe para o teste FALHAR em vez de pendurar a suíte, e quem impede
+   * o portão de ficar pendurado é o teto por mutante de 10 min que o F1.14
+   * acrescentou. Então este pode ser largo: um verde lento continua verde, e um
+   * vermelho de verdade — o app que não abre sem rede — não chega perto disso.
+   *
+   * E ELE PASSA A DIZER QUANTO ESPEROU. "a fase de apostas não abriu" não
+   * distingue "o app quebrou" de "faltaram dois segundos", e a diferença é toda
+   * a investigação. */
+  const t0 = Date.now();
   const pronto = await pg.waitForFunction(
     () => document.querySelectorAll('.pick').length > 0,
-    { timeout: 90000, polling: 300 }).then(() => true).catch(() => false);
+    { timeout: 240000, polling: 300 }).then(() => true).catch(() => false);
+  const msEspera = Date.now() - t0;
 
   /* ESPERA A ARTE CHEGAR, e não 2,5 segundos.
    *
@@ -853,7 +871,7 @@ export async function rodarSemRede() {
       .filter(i => i.currentSrc.includes('/assets/') && i.naturalWidth > 0).length,
   }));
   await b.close(); s.close();
-  return { erros, bloqueadas, pronto, ...st };
+  return { erros, bloqueadas, pronto, msEspera, ...st };
 }
 
 /* Q5 · O TEMA É APLICADO SEM NENHUM MÓDULO RODAR (V1.13).
@@ -905,7 +923,11 @@ export function suiteSemRede(r) {
   const s = criarSuite('sem-rede');
   s.teste('o jogo abre com a rede externa desligada', () => {
     ok(r.erros.length === 0, `erro de página com a rede desligada: ${r.erros[0]}`);
-    ok(r.pronto, 'a fase de apostas não abriu sem rede');
+    ok(r.pronto,
+      `a fase de apostas não abriu sem rede — esperei ${(r.msEspera / 1000).toFixed(1)} s ` +
+      `e a lista de apostas continuou vazia. Se este número estiver perto do teto, ` +
+      `foi carga: a espera aguarda 154.000 simulações dentro do Chromium, e o portão ` +
+      `roda até cinco deles ao mesmo tempo. Se estiver longe, o app não abriu mesmo.`);
     ok(r.lutadores === 12, `${r.lutadores} lutadores em cena, esperados 12`);
   });
   s.teste('nenhuma requisição externa é feita', () => {
