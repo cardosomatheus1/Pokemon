@@ -1668,6 +1668,47 @@ Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a úni
 
 ---
 
+### F1.14 — O laço de jogo contra o servidor
+
+**Tam.** G · **Método** INV+GL · **Portões** Q1 Q2 Q3 Q5 Q6 Q8 Q9 · **Depende de** F1.13
+
+**Por que ele existe:** o F1.13 foi escrito como um bloco só e não é. As rotas
+são adição pura — nada do que existia mudou de comportamento, e a suíte passou
+de 546 para 559 sem uma regressão. Trocar o laço de jogo é o oposto: `S.carteira`
+sai de `localStorage` e passa a vir do servidor, a rodada deixa de ser sorteada
+no cliente, e cada tela que mostra saldo passa a ter três estados onde hoje tem
+um — carregando, carregado e sem rede.
+
+**Escopo:** `app/modules/banco.mjs` passa a falar com `/api/carteira`; a rodada
+vem do scheduler pela sala SSE do F1.6 em vez de `newRound()` local; aposta e
+cancelamento vão por `/api/aposta`; e o app ganha o estado de reconexão que o
+§5.9 descreve.
+
+**O QUE TORNA ESTE BLOCO CARO, e precisa estar dito antes de começar:** a linha
+de base visual inteira se refaz. Hoje ela fotografa um app que desenha saldo no
+primeiro quadro; depois dele, o primeiro quadro não tem saldo nenhum. Não é
+regressão — é a tela mudando de natureza —, e a regravação precisa vir com a
+explicação no commit, como manda o `CLAUDE.md`.
+
+**Sabotagem:** deixar o cliente sortear a própria rodada quando a rede cair;
+aceitar saldo vindo do `localStorage` quando o servidor não responde; fazer a
+reconexão perder aposta em andamento; deixar a tela mostrar saldo velho como se
+fosse atual.
+
+**Q6:** o cliente deixa de ser fonte de qualquer verdade econômica. Nenhuma
+aposta, nenhum saldo e nenhuma odd pode sobreviver a `localStorage.clear()`.
+
+**Q5:** as três telas novas que hoje não existem — carregando, sem rede, e
+reconectando. O §5.9 pede que a reconexão não perca o que estava acontecendo.
+
+**Q8:** duas abas do mesmo jogador contra o mesmo servidor. É a versão de
+navegador do arnês de dois processos que a L-032 construiu.
+
+**Saída:** `localStorage.clear()` não muda nada do que o jogador tem, e a
+**L-036** fecha.
+
+---
+
 ### F1.10 — Perfil, desafios e login streak
 
 **Tam.** M · **Método** GL+INV · **Portões** Q1 Q2 Q3 Q5 Q6 Q9 · **Depende de** F1.9
@@ -1749,8 +1790,16 @@ no ar, com ele fora do ar, e durante uma reconexão.
 **Q9:** os eventos que hoje nascem no cliente passam a ter destino; nenhum
 evento de proteção pode ser amostrado no caminho.
 
-**Saída:** o jogo roda contra o servidor, a **L-033** fecha, e as telas de
-proteção do §28.7 existem.
+**Saída:** as rotas existem, as telas de proteção do §28.7 existem, e a
+**L-033** fecha na parte que era dela: o backend deixou de ser inalcançável.
+
+**O bloco foi PARTIDO EM DOIS durante a execução, e a divisão está registrada
+na L-036.** Ele foi escrito como um bloco só — rotas mais cliente — e as duas
+metades têm risco diferente demais para caberem juntas: as rotas são adição
+pura (nada do que existia mudou de comportamento), e trocar o laço de jogo do
+armazenamento local pelo servidor muda TODA tela que mostra saldo, refaz a
+linha de base visual inteira e cria os estados de rede que o app nunca teve. A
+segunda metade é o **F1.14**.
 
 ---
 

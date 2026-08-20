@@ -74,6 +74,8 @@ const SRVAPO = 'server/aposta.mjs';
 const SRVLIM = 'server/limites.mjs';
 const SRVPRO = 'server/protecao.mjs';
 const SRVROT = 'server/rotas.mjs';
+const APIC   = 'app/modules/api.mjs';
+const PTXT   = 'app/modules/protecao-texto.mjs';
 const RESULT = 'engine/resultado.mjs';
 const CARTEIRA= 'app/modules/carteira.mjs';
 const NAVEG  = 'app/modules/navegacao.mjs';
@@ -1212,4 +1214,30 @@ export const DEFEITOS = [
     real:'número copiado no lugar do importado — cliente e servidor discordam de quanto vale começar',
     de:'                     valor: SALDO_INICIAL, idem: `welcome-${u.id}`, agora });',
     para:'                     valor: 5000, idem: `welcome-${u.id}`, agora });' },
+
+  /* ---------- F1.13: a tela de proteção (§28.7) ----------
+     O capítulo 28 tem uma seção que não é sobre regra de negócio: é sobre o que
+     a interface pode e não pode fazer. Ela existe porque as regras de proteção
+     sobrevivem ou morrem na tela — um limite que o jogador não acha é um limite
+     que ele não usa. */
+
+  { id:'S218', arquivo:PTXT, nome:'a recusa por limite passa a oferecer depósito',
+    real:'"a tela de saldo insuficiente tem esse botão" — é o padrão escuro que o §28.7 nomeia',
+    de:'  return `${nome} (${v.limite}): você usou ${v.usado} de ${v.teto}.${volta}${como}`.trim();',
+    para:'  return `${nome}: limite atingido. Depositar mais para continuar jogando.`;' },
+
+  { id:'S219', arquivo:PTXT, nome:'a recusa deixa de dizer quando o limite volta',
+    real:'"a mensagem fica mais curta" — e vira uma parede sem porta',
+    de:"  const volta = v.voltaEm ? ` Volta em ${quando(v.voltaEm)}.` : '';",
+    para:"  const volta = '';" },
+
+  { id:'S220', arquivo:APIC, nome:'a falha de rede volta a virar exceção',
+    real:'"o try/catch atrapalha o diagnóstico" — e uma promessa rejeitada no clique derruba a tela',
+    de:"      return { ok: false, indisponivel: true, status: 0, corpo: null, motivo: String(e?.message || e) };",
+    para:'      throw e;' },
+
+  { id:'S221', arquivo:APIC, nome:'o cliente para de declarar a versão do contrato',
+    real:'"o servidor aceita mesmo assim" — e o handshake que o F1.1 criou deixa de existir',
+    de:'          [CABECALHO_VERSAO]: API_VERSAO,',
+    para:'' },
 ];

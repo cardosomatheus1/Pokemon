@@ -36,6 +36,20 @@ const CAMADA = {
      boot é a primeira coisa que roda. Ver o D-011. */
   'sims.mjs': 0,
   'estado.mjs': 0,
+  /* F1.13. `api.mjs` é a única porta do app para o servidor: monta requisição,
+     declara a versão do contrato e devolve `{ok, corpo}`. Camada 0 porque não
+     depende de módulo nenhum do app — só do `contrato.mjs`, que vive fora desta
+     pasta, do mesmo jeito que `motor.mjs` só depende do motor.
+
+     Ele NÃO decide regra nenhuma, e a camada é o que sustenta isso: se um dia
+     ele precisar importar `banco.mjs` ou `estado.mjs` para "resolver" alguma
+     coisa, o teste de camadas reprova — e a reprovação é a pergunta certa.
+     Regra que migra para o cliente é regra que o jogador controla. */
+  'api.mjs': 0,
+  /* Rótulos e a frase da recusa do §28.3. Puro: nada de DOM, nada de rede.
+     Separado da tela porque o §28.3 exige coisas sobre TEXTO, e texto se
+     confere sem abrir navegador. */
+  'protecao-texto.mjs': 0,
   /* Dados puros de arte e a cascata de endereço: nenhum dos dois toca o DOM. */
   'sprites-dados.mjs': 0,
   'assets.mjs': 0,
@@ -93,6 +107,12 @@ const CAMADA = {
   'medalhas.mjs': 4,
   'customizacao.mjs': 4,
   'carteira.mjs': 4,
+  /* A tela de limites e pausa (§28.7). Camada 4 — aplicação — porque desenha,
+     ouve clique e fala com o servidor. Nenhuma regra de proteção mora nela: a
+     assimetria, o cooldown e a irreversibilidade são do servidor, e a tela só
+     as EXPLICA antes do clique. Um limite que valesse aqui sumiria quando o
+     jogador abrisse outra aba. */
+  'protecao-tela.mjs': 4,
   'navegacao.mjs': 4,
   'controles.mjs': 4,
   /* A aposta saiu de `fases.mjs` no V1.15: as fases são a máquina de estados

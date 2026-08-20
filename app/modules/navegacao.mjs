@@ -126,6 +126,11 @@ $('#btnHeroSignup').onclick = () => abrirAuth(sessaoAtiva() ? 'login' : 'signup'
 document.addEventListener('click', ev => {
   const b = ev.target.closest('[data-fechar]');
   if (b) closeModal(b.dataset.fechar);
+  /* `data-abrir` entrou no F1.13 pelo mesmo motivo do `data-fechar`: a tela de
+     proteção é alcançável da carteira E do perfil (§28.7), e dois `onclick`
+     embutidos precisariam de duas variáveis globais. */
+  const a = ev.target.closest('[data-abrir]');
+  if (a) openModal(a.dataset.abrir);
 });
 function openModal(id){
   $(id).classList.add('show');
@@ -133,6 +138,10 @@ function openModal(id){
      OLHA, e não só o que ele aposta, é o que separa produto de cassino. */
   if (id === '#profileModal') emitir('profile_opened');
   if (id === '#walletModal')  emitir('wallet_opened');
+  /* A tela de proteção é montada ao abrir, e não no boot: ela consulta o
+     servidor, e consultar no boot faria o app esperar a rede para desenhar a
+     arena — que é a tela que o jogador veio ver. */
+  if (id === '#protecaoModal') import('./protecao-tela.mjs').then(m => m.abrirProtecao());
 }
 function closeModal(id){ $(id).classList.remove('show'); }
 

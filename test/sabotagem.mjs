@@ -474,11 +474,23 @@ async function avaliar(d, caixa) {
      * Verde aqui não conclui nada e cai na onda 2. É a regra de direção única
      * de todo este arquivo: **o atalho só sabe dizer PEGOU.** */
     const previsto = entradaUsavel(d.id);
-    const onda1 = [...new Set([...(previsto ? [previsto] : []), ...afinidade(d.arquivo)])];
-    if (onda1.length) {
-      const precisaNav = onda1.some(n => NAVEGADOR.has(n));
-      const r = await julgar(caixa, false, precisaNav, onda1.join(','), precisaNav);
-      const pegou = r.vermelha ? suitesQuePegaram(r.saida).filter(n => onda1.includes(n)) : [];
+    const candidatas = [...new Set([...(previsto ? [previsto] : []), ...afinidade(d.arquivo)])];
+
+    /* AS BARATAS PRIMEIRO, E SOZINHAS. A primeira versão rodava as candidatas
+       todas juntas — e para qualquer arquivo de `app/` a afinidade inclui as
+       suítes de navegador, então o Chromium subia (34 s) mesmo quando uma suíte
+       de 0,5 s pegava o mutante. Pior que o tempo: a coluna "pego por" saía
+       nomeando a suíte de navegador, e o índice gravava ELA como captor —
+       fixando o custo caro para sempre.
+
+       Foi assim que os defeitos da tela de proteção voltaram atribuídos a
+       `visual` quando a `protecao-tela` os pegava em meio segundo. */
+    for (const grupo of [candidatas.filter(n => !NAVEGADOR.has(n)),
+                         candidatas.filter(n => NAVEGADOR.has(n))]) {
+      if (!grupo.length) continue;
+      const nav = NAVEGADOR.has(grupo[0]);
+      const r = await julgar(caixa, false, nav, grupo.join(','), nav);
+      const pegou = r.vermelha ? suitesQuePegaram(r.saida).filter(n => grupo.includes(n)) : [];
       if (pegou.length)
         return { ...d, instavel: false, status: 'PEGOU', viaIndice: true,
                  com: pegou.join(','), sem: pegou.join(',') };

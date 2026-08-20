@@ -220,7 +220,7 @@ export function suite() {
       .replace(/\/\*[\s\S]*?\*\//g, ' ')
       .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
 
-    const bloco = txt.match(/if \(onda1\.length\) \{[\s\S]*?\n    \}/);
+    const bloco = txt.match(/for \(const grupo of \[candidatas[\s\S]*?\n    \}/);
     ok(bloco, 'a onda 1 sumiu do sabotagem.mjs — âncora perdida');
     const corpo = bloco[0];
 
@@ -233,11 +233,16 @@ export function suite() {
 
     ok(/r\.vermelha \?/.test(corpo) || /if \(r\.vermelha/.test(corpo),
       'a onda 1 devolve resultado sem exigir que o recorte tenha ficado VERMELHO');
-    ok(/filter\(n => onda1\.includes\(n\)\)/.test(corpo),
+    ok(/filter\(n => grupo\.includes\(n\)\)/.test(corpo),
       'a onda 1 aceita qualquer vermelho do recorte. Precisa ser uma das suítes ' +
-      'da própria onda que ficou vermelha — um recorte que morre por nome ' +
+      'do próprio grupo que ficou vermelha — um recorte que morre por nome ' +
       'inexistente também é "vermelho", e contaria como captura sem ter ' +
       'capturado nada.');
+    /* AS BARATAS ANTES DAS DE NAVEGADOR, e o teste cobra a ordem: junta-las faz
+       o Chromium subir para todo arquivo de `app/`, e faz o índice gravar a
+       suíte cara como captor — fixando o custo. */
+    ok(/candidatas\.filter\(n => !NAVEGADOR\.has\(n\)\),[\s\S]{0,80}candidatas\.filter\(n => NAVEGADOR\.has\(n\)\)/.test(corpo),
+      'a onda 1 voltou a misturar suítes baratas e de navegador no mesmo recorte');
     ok(/if \(pegou\.length\)/.test(corpo),
       'a onda 1 conclui sem conferir que alguma suíte da onda foi a que reprovou');
   });

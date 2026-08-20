@@ -227,6 +227,22 @@ await tela('perfil', 1100, 1500, async pg => {
   await pg.waitForTimeout(800);
 });
 
+/* A TELA DE PROTEÇÃO (§28.7), nas duas larguras que importam para ela: a de
+   mesa e a estreita. Ela é a tela que o jogador procura quando quer parar, e a
+   Spec pede que esteja a no máximo dois níveis da carteira — capturar as duas
+   é o jeito de conferir que ela cabe, e não só que ela abre. */
+for (const [nome, w, h] of [['protecao', 1440, 1200], ['protecao-420', 420, 1200]])
+  await tela(nome, w, h, async pg => {
+    await pg.evaluate(async () => {
+      const nav = await import('/app/modules/navegacao.mjs');
+      nav.openModal('#protecaoModal');
+    });
+    /* Sem servidor no ar, a tela mostra o estado de indisponibilidade — e é
+       justamente esse estado que precisa ser legível: é o que o jogador vê
+       quando a rede cai no momento em que ele foi ali se proteger. */
+    await pg.waitForTimeout(1200);
+  });
+
 await tela('adm', 1440, 1400, async pg => {
   await pg.evaluate(async () => (await import('/app/modules/adm.mjs')).admAbrir());
   await pg.waitForTimeout(800);

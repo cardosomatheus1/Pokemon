@@ -925,6 +925,33 @@ bloco que faz o fecho ENCOLHER, que é a direção errada de errar.
 
 ---
 
+### L-036 — o cliente ainda guarda a própria carteira
+
+**Dono:** **F1.14** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** F1.13
+
+O F1.13 pôs de pé as rotas e as telas de proteção do §28.7. O que ele **não**
+fez é o laço de jogo: `app/modules/banco.mjs` continua guardando a carteira em
+`localStorage`, a rodada continua sendo sorteada no cliente, e a aposta continua
+sendo local. O servidor sabe fazer as três coisas desde o F1.4, F1.5 e F1.7 — e
+agora tem rota para elas — e ninguém as chama.
+
+**Por que não coube junto, e a razão não é tamanho:** as duas metades têm risco
+oposto. As rotas são adição pura — nada do que existia mudou, e a suíte foi de
+546 para 559 sem regressão. O laço de jogo muda a natureza de toda tela que
+mostra saldo: o primeiro quadro deixa de ter saldo, a linha de base visual
+inteira se refaz, e nascem três estados que o app nunca teve — carregando, sem
+rede, reconectando.
+
+Juntar as duas faria a regravação da linha de base acontecer no mesmo commit em
+que as rotas nascem, e aí não haveria como saber qual das duas mudou a tela. É
+a regra do `CLAUDE.md` sobre fixture regravada sem explicação, aplicada antes de
+o problema existir.
+
+**O que a destrava:** o F1.14, e o critério de saída dele é uma frase:
+`localStorage.clear()` não muda nada do que o jogador tem.
+
+---
+
 ### L-031 — o que a TERCEIRA passada do crítico abriu
 
 **Dono:** **V1.21** (proposto no `BUILD_BLOCKS`) · **Achado por:** crítico cego,

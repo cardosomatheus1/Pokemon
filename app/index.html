@@ -2761,6 +2761,9 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <button class="btn" id="btnProfReset" style="background:#4a2020;border-color:#7a3a3a">Resetar perfil</button>
     </div>
   </div>
+    <button class="btn ghost" data-abrir="#protecaoModal" id="btnProtecaoPerfil">
+      🛡️ Limites e pausa
+    </button>
 </div>
 
 <!-- ===== MODAL: CARTEIRA ===== -->
@@ -2787,6 +2790,20 @@ body.tremeTela{animation:tremeTela .7s ease-out}
     <div class="pane on" id="wpGanhos"><div id="histGanhos"></div></div>
     <div class="pane" id="wpPerdas"><div id="histPerdas"></div></div>
     <div class="pane" id="wpDep"><div id="histDep"></div></div>
+
+    <!-- §28.7: "limites e autoexclusão acessíveis a partir da carteira e do
+         perfil", e nunca atrás de mais de dois níveis de menu. A carteira é o
+         nível 1; este botão abre o nível 2. -->
+    <button class="btn ghost" data-abrir="#protecaoModal" id="btnProtecaoCarteira">
+      🛡️ Limites e pausa
+    </button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="protecaoModal">
+  <div class="modal wide">
+    <h2>🛡️ Limites e pausa <button class="xbtn" data-fechar="#protecaoModal">✕</button></h2>
+    <div id="ptCorpo"></div>
   </div>
 </div>
 
