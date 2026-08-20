@@ -76,6 +76,7 @@ const SRVPRO = 'server/protecao.mjs';
 const SRVROT = 'server/rotas.mjs';
 const APIC   = 'app/modules/api.mjs';
 const PTXT   = 'app/modules/protecao-texto.mjs';
+const FECHO  = 'test/fecho.mjs';
 const RESULT = 'engine/resultado.mjs';
 const CARTEIRA= 'app/modules/carteira.mjs';
 const NAVEG  = 'app/modules/navegacao.mjs';
@@ -1240,4 +1241,35 @@ export const DEFEITOS = [
     real:'"o servidor aceita mesmo assim" — e o handshake que o F1.1 criou deixa de existir',
     de:'          [CABECALHO_VERSAO]: API_VERSAO,',
     para:'' },
+
+  /* ---------- T4: o fecho segue o filho ----------
+     Este bloco faz o fecho ENCOLHER, que é a direção errada de errar: errar
+     para mais custa uma reavaliação, errar para menos faz o portão reaproveitar
+     um veredito morto. Os defeitos aqui guardam o que TEM que continuar
+     universal, e não o que encolheu. */
+
+  { id:'S222', arquivo:FECHO, nome:'caminho de script por variável passa a ser resolvido',
+    real:'"quase sempre é um caminho" — e o portão reaproveita veredito de um filho que ele não leu',
+    de:"    if (!/^['\"][^'\"]+['\"]$/.test(primeiro)) return null;            // caminho por variável",
+    para:'    if (false) return null;' },
+
+  { id:'S223', arquivo:FECHO, nome:'comando desconhecido deixa de virar fecho universal',
+    real:'"se não é `node`, ignora" — e um `deno`/`python` disparado some do fecho inteiro',
+    de:"    if (comando !== 'node') return null;                            // comando que não sei classificar",
+    para:'    if (comando !== \'node\') continue;' },
+
+  { id:'S224', arquivo:FECHO, nome:'o fecho para de seguir os imports do filho',
+    real:'somar só o arquivo do script — mudar o que ele importa deixa de invalidar',
+    de:'    for (const d of [...importsDe(a), ...din, ...filhos]) if (!vistos.has(d)) fila.push(d);',
+    para:'    for (const d of [...importsDe(a), ...din]) if (!vistos.has(d)) fila.push(d);' },
+
+  { id:'S225', arquivo:FECHO, nome:'o defeito que não carrega perde o arquivo do fecho',
+    real:'"o arnês basta" — e editar o arquivo mutado deixa de invalidar o veredito dele',
+    de:'    return new Set([...ARNES, arquivoMutado]);',
+    para:'    return new Set([...ARNES]);' },
+
+  { id:'S226', arquivo:FECHO, nome:'um binário externo entra na lista errada',
+    real:'"`node` é externo também" — e disparar o próprio runner deixa de contar',
+    de:"const BINARIOS_EXTERNOS = new Set(['git', 'sh', 'bash', 'npm', 'npx', 'chmod', 'cp', 'rm']);",
+    para:"const BINARIOS_EXTERNOS = new Set(['git', 'sh', 'bash', 'npm', 'npx', 'chmod', 'cp', 'rm', 'node']);" },
 ];

@@ -709,10 +709,32 @@ export async function rodar() {
     () => document.querySelectorAll('#pickList .pick.fechado').length > 0,
     { timeout: 45000, polling: 400 }).then(() => true).catch(() => false);
 
-  const colocacaoViva = await pg.evaluate(async () => {
+  /* ESPERA O QUADRO ALCANÇAR O ESTADO, e não os dois num instante qualquer.
+   *
+   * `S.ents` muda no instante da queda; a lista só no quadro seguinte. Ler os
+   * dois no mesmo `evaluate` parecia atômico e não é — o que se compara é
+   * estado de AGORA com DOM do último `requestAnimationFrame`. Sob a carga do
+   * portão (quatro caixas de areia, cada uma com um Chromium) o rAF atrasa, os
+   * dois divergem por uma queda, e a suíte fica vermelha sem nada estar errado.
+   *
+   * Custou 28 minutos de portão: a configuração de navegador só é validada
+   * quando o primeiro mutante chega nela, e ela abortou lá. É o D-016.
+   *
+   * A ESPERA NÃO ENFRAQUECE O QUE O TESTE PEGA. O defeito que ele existe para
+   * pegar — S89, a ordem de quedas saindo do gancho que credita o abate — deixa
+   * o quadro CONGELADO: ele nunca alcança, e a espera estoura. Um quadro que
+   * está só um frame atrasado alcança em milissegundos. */
+  const alcancou = aoVivo && await pg.waitForFunction(async () => {
+    const { S } = await import('/app/modules/estado.mjs');
+    const mortos = (S.ents || []).filter(e => !e.alive).length;
+    return document.querySelectorAll('#pickList .pick.fechado').length === mortos;
+  }, { timeout: 8000, polling: 100 }).then(() => true).catch(() => false);
+
+  const colocacaoViva = await pg.evaluate(async (alc) => {
     const { S } = await import('/app/modules/estado.mjs');
     return {
       fase: S.state,
+      alcancou: alc,
       mortos: (S.ents || []).filter(e => !e.alive).length,
       caidosNoQuadro: document.querySelectorAll('#pickList .pick.fechado').length,
       linhas: document.querySelectorAll('#pickList .pick').length,
@@ -722,7 +744,7 @@ export async function rodar() {
          91 % conclui que as chances explodiram. */
       colunas: document.querySelector('#listaCols')?.textContent ?? '',
     };
-  }).catch(e => ({ erro: String(e).split('\n')[0] }));
+  }, alcancou).catch(e => ({ erro: String(e).split('\n')[0] }));
   const erroDepois = erros.length;
 
   /* --- a rodada que o APP montou -------------------------------------------
@@ -1158,10 +1180,15 @@ export function suite(r) {
     igual(v.linhas, 12, `${v.linhas} linhas no quadro durante a luta`);
     ok(r.houveQueda, 'nenhuma queda em 45 s de luta — o cenário não foi exercitado');
     ok(v.mortos > 0, `a espera acusou queda mas ${v.mortos} lutadores estão caídos`);
+    ok(v.alcancou,
+      `o quadro de colocação não alcançou o estado em 8 s: ${v.mortos} lutadores ` +
+      `caídos e ${v.caidosNoQuadro} marcados. Quadro que não alcança é quadro ` +
+      `CONGELADO — a ordem de quedas precisa vir do MESMO gancho que credita o ` +
+      `abate, e a conferência do fim corrige tudo e esconderia isto.`);
     igual(v.caidosNoQuadro, v.mortos,
-      `${v.mortos} lutadores caídos e ${v.caidosNoQuadro} marcados no quadro. A ordem de quedas ` +
-      `precisa vir do MESMO gancho que credita o abate — a conferência do fim corrige tudo e ` +
-      `esconderia isto.`);
+      `${v.mortos} lutadores caídos e ${v.caidosNoQuadro} marcados no quadro, ` +
+      `depois de o quadro ter alcançado. Isso não é atraso de renderização: é ` +
+      `divergência de verdade.`);
   });
 
   s.teste('o painel de ADM abre e mostra a MESMA margem do registro', () => {

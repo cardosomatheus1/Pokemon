@@ -871,3 +871,56 @@ Dois defeitos que **escapavam de verdade**, e voltavam como pegos:
 
 Os dois agora têm teste: `conta nova nasce com o saldo inicial do motor, em
 transferível`, com o valor lido de `engine/carteira.mjs` e não copiado.
+
+---
+
+## D-016 — o quadro de colocação era comparado com o estado do quadro seguinte ✅ CORRIGIDO
+
+**Achado em:** T4, pelo portão abortando · **Bloco dono:** **F0.10** (é dele a
+sonda de colocação viva) · **Corrigido no:** T4
+
+`test/visual.mjs` esperava por uma queda e então lia, no mesmo `evaluate`, duas
+coisas:
+
+```js
+mortos:         (S.ents || []).filter(e => !e.alive).length,   // estado de AGORA
+caidosNoQuadro: document.querySelectorAll('#pickList .pick.fechado').length,
+```
+
+Parece atômico e não é. `S.ents` muda **no instante** da queda; a lista só é
+redesenhada no `requestAnimationFrame` seguinte. O que a igualdade comparava era
+o estado de agora com o DOM do último quadro.
+
+Na máquina do desenvolvedor os dois coincidem quase sempre. Sob a carga que o
+**próprio portão** cria — quatro caixas de areia, cada uma com um Chromium — o
+rAF atrasa, os dois divergem por uma queda, e a suíte fica vermelha sem nada
+estar errado.
+
+### Por que ele foi caro
+
+O portão validou a configuração de navegador quando o primeiro mutante chegou
+nela — e abortou ali, **aos 28 minutos**, com "a suíte já está vermelha na
+configuração com-golden/navegador-completo".
+
+O aborto está certo: é a regra do D-015 funcionando, e ela impediu 200 e poucos
+`PEGOU` falsos. O que estava errado era o custo de descobrir.
+
+### A correção, e o que ela NÃO enfraquece
+
+A sonda passa a **esperar o quadro alcançar o estado** (8 s de teto) em vez de
+comparar os dois num instante qualquer.
+
+Isso preserva o que o teste existe para pegar. O defeito `S89` — a ordem de
+quedas saindo do gancho que credita o abate — deixa o quadro **congelado**: ele
+nunca alcança, e a espera estoura. Um quadro apenas um frame atrasado alcança em
+milissegundos. A igualdade continua sendo afirmada **depois** de o quadro ter
+alcançado, e ali ela não é mais sobre tempo: é sobre verdade.
+
+### E o custo de descobrir também foi corrigido
+
+Numa execução em que mais de 50 defeitos serão reavaliados, as três
+configurações de julgamento são validadas **antes** do laço começar: ~100 s de
+custo, e o erro volta em ~100 s em vez de 28 min. Numa execução quente, com
+poucas reavaliações, a validação continua preguiçosa — pagar navegador para
+validar uma configuração que ninguém vai usar seria desfazer o que o cache
+comprou.

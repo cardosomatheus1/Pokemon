@@ -60,6 +60,12 @@ import { dirname, relative, resolve } from 'node:path';
    invalida o veredito. É o que as suítes que varrem diretórios recebem. */
 export const TUDO = '*';
 
+/* O nome que o relatório dá ao defeito cuja mutação impede o módulo de
+   carregar: a execução morre antes de qualquer teste, e nenhuma suíte é
+   nomeada. Ele vem de `sabotagem.mjs`, e as duas pontas precisam concordar —
+   por isso é constante e não literal solto. */
+export const CAPTOR_NAO_CARREGA = '(não carrega)';
+
 /* Arquivos de que TODO veredito depende: mudar o arnês muda COMO a pergunta é
  * feita, e nenhum veredito anterior sobrevive a isso.
  *
@@ -127,14 +133,56 @@ function importsDe(arq) {
   return out;
 }
 
-/* OPACA DE VERDADE: dispara processo. O filho pode tocar em qualquer coisa, e
-   nada estático revela o quê.
+/* ── PROCESSO FILHO (T4) ────────────────────────────────────────────────────
+ *
+ * Disparar processo dava fecho `TUDO`: o filho pode tocar em qualquer arquivo, e
+ * nada estático revela o quê. Medido, isso deixava 14 dos 202 defeitos
+ * reavaliando a cada bloco — `portao` 9, `concorrencia` 1, e quatro sem captor.
+ *
+ * Só que na maior parte das vezes o caminho do filho ESTÁ ali, literal:
+ *
+ *     execFile('node', ['tools/q8-worker.mjs', ...])   resolvível → soma o fecho DELE
+ *     execFileSync('git', ['ls-files'])                binário externo → nada
+ *     execFile('node', [variavel])                     irresolvível → TUDO
+ *
+ * A terceira linha é a que sustenta as outras duas. **Este é um bloco que faz o
+ * fecho ENCOLHER**, que é a direção errada de errar — errar para mais custa uma
+ * reavaliação, errar para menos faz o portão reaproveitar um veredito morto. Por
+ * isso tudo que não se lê com certeza continua universal. */
 
-   `readdirSync` e `import(variável)` NÃO caem aqui: os dois são resolvíveis, e
-   resolvê-los é o que separa "o defeito de `app/` reavalia a cada bloco de
-   backend" de "ele só reavalia quando `app/` muda". Tratá-los como opacos
-   custava exatamente os minutos que este arquivo existe para economizar. */
-const OPACA = /execFileSync|execFile\(|spawn\(/;
+/* Binários do sistema: disparar `git` não cria dependência de arquivo nenhum
+   deste repositório. A lista é curta e explícita — nome que não estiver aqui e
+   não for um caminho do projeto resolve para `TUDO`. */
+const BINARIOS_EXTERNOS = new Set(['git', 'sh', 'bash', 'npm', 'npx', 'chmod', 'cp', 'rm']);
+
+/* Argumentos do `node` que não são o script: `--no-warnings`, `--import x`… */
+const BANDEIRA = /^--/;
+
+/* Extrai os scripts DO PROJETO disparados por um arquivo. Devolve `null` quando
+   encontra um disparo que não consegue ler — e `null` vira `TUDO` em quem
+   chama. */
+function scriptsDisparados(arq, txt) {
+  const fora = [];
+  for (const m of txt.matchAll(/(?:execFile|execFileSync|spawn|spawnSync)\(\s*([^,]+),\s*\[([^\]]*)\]/g)) {
+    const comando = m[1].trim().replace(/^['"]|['"]$/g, '');
+    if (!/^['"]?[\w.\/-]+['"]?$/.test(m[1].trim())) return null;   // comando por variável
+    if (BINARIOS_EXTERNOS.has(comando)) continue;                   // não é deste projeto
+    if (comando !== 'node') return null;                            // comando que não sei classificar
+    /* O script é o primeiro argumento que não é bandeira. */
+    const args = m[2].split(',').map(a => a.trim()).filter(Boolean);
+    const primeiro = args.find(a => !BANDEIRA.test(a.replace(/^['"]|['"]$/g, '')));
+    if (!primeiro) return null;
+    if (!/^['"][^'"]+['"]$/.test(primeiro)) return null;            // caminho por variável
+    const caminho = primeiro.slice(1, -1);
+    if (!existsSync(resolve(RAIZ, caminho))) return null;
+    fora.push(resolve(RAIZ, caminho));
+  }
+  return fora;
+}
+
+/* O que sobra de verdadeiramente opaco: disparo que `scriptsDisparados` não
+   consegue ler devolve `null`, e quem chama resolve para `TUDO`. */
+const OPACA = /(?:^|[^\w.])(?:exec|fork)\(/;
 
 /* `readdirSync(new URL('../app/modules/', ...))` vira o PREFIXO `app/modules/`.
    Prefixo e não lista: módulo novo na pasta invalida sem ninguém lembrar de
@@ -180,6 +228,15 @@ function importsPorVariavel(arq, txt) {
 export function fechoDaSuite(nome) {
   const entrada = MODULO_DA_SUITE[nome] || `test/${nome}.mjs`;
   if (!existsSync(entrada)) return TUDO;      /* suíte que não sei localizar */
+  return fechoDeArquivo(entrada, NAVEGADORAS.has(nome));
+}
+
+/* O fecho a partir de um arquivo qualquer. Separado de `fechoDaSuite` para o
+   teste poder medir o comportamento em arquivos de mentira — provar que um
+   disparo irresolvível continua devolvendo `TUDO` exige um arquivo com esse
+   disparo, e plantá-lo numa suíte de verdade seria pior. */
+export function fechoDeArquivo(entrada, navegadora = false) {
+  if (!existsSync(entrada)) return TUDO;
 
   const vistos = new Set(), fila = [resolve(entrada)];
   const prefixos = new Set();
@@ -197,7 +254,12 @@ export function fechoDaSuite(nome) {
     for (const p of pref) prefixos.add(p);
     const din = importsPorVariavel(a, txt);
     if (din === null) return TUDO;
-    for (const d of [...importsDe(a), ...din]) if (!vistos.has(d)) fila.push(d);
+    /* O FILHO ENTRA NA FILA, e não só na lista: o que importa é o fecho DELE.
+       Somar o arquivo do script sem seguir os imports dele reaproveitaria
+       veredito de um filho que mudou por dentro. */
+    const filhos = scriptsDisparados(a, txt);
+    if (filhos === null) return TUDO;
+    for (const d of [...importsDe(a), ...din, ...filhos]) if (!vistos.has(d)) fila.push(d);
   }
 
   const fora = new Set([...ARNES, ...[...prefixos].filter(Boolean)]);
@@ -207,7 +269,7 @@ export function fechoDaSuite(nome) {
   }
   /* O navegador enxerga o app inteiro. Prefixos, e não arquivos: um módulo novo
      em `app/modules/` precisa invalidar sem ninguém lembrar de listá-lo. */
-  if (NAVEGADORAS.has(nome)) { fora.add('app/'); fora.add('arte/'); }
+  if (navegadora) { fora.add('app/'); fora.add('arte/'); }
   return fora;
 }
 
@@ -226,4 +288,20 @@ export function digitalDoFecho(fecho, hashes) {
   for (const caminho of [...hashes.keys()].sort())
     if (casa(caminho)) partes.push(`${caminho}:${hashes.get(caminho)}`);
   return partes.join('\n');
+}
+
+/* ── O FECHO DE UM CAPTOR ───────────────────────────────────────────────────
+ *
+ * Ponto único por onde a sabotagem pergunta "de que depende este veredito?".
+ * Existe porque nem todo captor é uma suíte: `(não carrega)` é o relatório
+ * dizendo que a execução morreu antes de nomear alguma.
+ *
+ * Para esse caso o fecho é o ARQUIVO MUTADO mais o arnês, e nada mais. É
+ * defensável: a mutação impede o módulo de carregar, e as duas coisas que podem
+ * mudar essa resposta são o próprio arquivo — que pode voltar a carregar, ou
+ * quebrar de outro jeito — e o modo como a pergunta é feita. */
+export function fechoDeCaptor(captor, arquivoMutado) {
+  if (captor === CAPTOR_NAO_CARREGA)
+    return new Set([...ARNES, arquivoMutado]);
+  return fechoDaSuite(captor);
 }

@@ -418,10 +418,17 @@ export function suite() {
       ['d.de', 'sem o trecho original, mudar o defeito não invalidaria o veredito'],
       ['d.para', 'sem a mutação, trocar o que o defeito faz não invalidaria'],
       ['HASHES.get(d.arquivo)', 'sem o conteúdo do arquivo mutado, editar o código não invalidaria'],
-      ['digitalDeFecho.get(captor)', 'sem o fecho da suíte, mudar o TESTE não invalidaria — e o ' +
-        'portão reaproveitaria um veredito de uma suíte que não existe mais assim'],
+      ['digitalDeFecho.get(chaveFecho)', 'sem o fecho da suíte, mudar o TESTE não ' +
+        'invalidaria — e o portão reaproveitaria um veredito de uma suíte que não ' +
+        'existe mais assim'],
       ['process.version', 'sem a versão do Node, trocar de runtime herdaria vereditos'],
     ]) ok(fn[0].includes(trecho), `a chave do cache não inclui \`${trecho}\`: ${porque}`);
+    /* `(não carrega)` tem fecho derivado do ARQUIVO, então a digital dele não
+       pode ser compartilhada entre dois defeitos em arquivos diferentes. */
+    ok(/CAPTOR_NAO_CARREGA \? `\$\{captor\}\|\$\{d\.arquivo\}`/.test(fn[0]),
+      'o fecho de `(não carrega)` é derivado do arquivo mutado, e a chave da ' +
+      'digital não distingue arquivos — dois defeitos em arquivos diferentes ' +
+      'compartilhariam a mesma digital de fecho');
     ok(/if \(!captor\) return null/.test(fn[0]),
       'sem captor conhecido a chave precisa ser nula — não há fecho de que depender, ' +
       'e reaproveitar seria reaproveitar às cegas');
@@ -464,14 +471,106 @@ export function suite() {
       'reaproveitar vereditos de uma linha de base que mudou.');
   });
 
+  /* ── T4: O FECHO SEGUE O FILHO QUANDO O CAMINHO É LITERAL ────────────────
+   *
+   * Antes do T4, disparar processo dava fecho `TUDO` — qualquer mudança em
+   * qualquer arquivo invalidava aqueles vereditos. Medido: 14 de 202 defeitos.
+   *
+   * ESTE É UM BLOCO QUE FAZ O FECHO ENCOLHER, que é a direção errada de errar:
+   * errar para mais custa uma reavaliação, errar para menos faz o portão
+   * reaproveitar um veredito que já não vale. Por isso os testes cobram mais o
+   * que CONTINUA universal do que o que encolheu. */
+  s.teste('o fecho segue o script disparado com caminho literal', async () => {
+    const { fechoDaSuite, TUDO } = await import('./fecho.mjs');
+    const f = fechoDaSuite('concorrencia');
+    ok(f !== TUDO,
+      '`concorrencia` continua com fecho universal. Ela dispara ' +
+      '`tools/q8-worker.mjs`, que é um caminho literal e resolvível.');
+    ok(f.has('tools/q8-worker.mjs'),
+      'o fecho não inclui o script disparado');
+    /* E O FECHO DO FILHO, e não só o arquivo dele: o `q8-worker` importa a
+       carteira e o banco do servidor, e mudar QUALQUER um dos dois muda o que
+       o teste de concorrência mede. */
+    for (const dep of ['server/carteira.mjs', 'server/banco.mjs'])
+      ok(f.has(dep),
+        `o fecho não inclui \`${dep}\`, que o processo filho importa. Seguir só ` +
+        `o arquivo do script e não o fecho dele é reaproveitar veredito de um ` +
+        `filho que mudou.`);
+  });
+
+  s.teste('binário externo não vira dependência do projeto', async () => {
+    const { fechoDaSuite, TUDO } = await import('./fecho.mjs');
+    /* `portao` roda `git ls-files` e `node test/run.mjs`. O `git` é binário do
+       sistema e não acrescenta dependência de arquivo nenhum daqui; o
+       `run.mjs` é nosso e acrescenta o fecho dele. */
+    const f = fechoDaSuite('portao');
+    ok(f === TUDO || f.has('test/run.mjs'),
+      'o fecho do `portao` não inclui o `run.mjs`, que ele dispara');
+  });
+
+  s.teste('caminho de script vindo de VARIÁVEL mantém o fecho universal', async () => {
+    const { fechoDeArquivo, TUDO } = await import('./fecho.mjs');
+    const { writeFileSync, mkdtempSync, rmSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const dir = mkdtempSync(join(tmpdir(), 'fecho-teste-'));
+    try {
+      const alvo = join(dir, 'suite-de-mentira.mjs');
+      writeFileSync(alvo, `
+        import { execFile } from 'node:child_process';
+        const script = process.env.QUAL_SCRIPT;
+        execFile('node', [script], () => {});
+      `);
+      igual(fechoDeArquivo(alvo), TUDO,
+        'um script disparado por VARIÁVEL foi resolvido. Não há como saber o que ' +
+        'ele toca, e adivinhar aqui é o portão reaproveitando veredito às cegas — ' +
+        'toda dúvida resolve para TUDO.');
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  /* O QUARTO CASO DO T4: o defeito que derruba o CARREGAMENTO.
+   *
+   * A mutação quebra o módulo, a execução morre antes de qualquer teste, e
+   * nenhuma suíte é nomeada — o relatório diz `(não carrega)`. Continua sendo
+   * vermelho (o defeito É pego), mas sem nome de captor não havia fecho de que
+   * depender, e esses quatro pagavam o caminho completo para sempre.
+   *
+   * O fecho deles é pequeno e fácil de defender: um defeito que impede o
+   * módulo de carregar depende do ARQUIVO MUTADO, e do arnês. Nenhuma suíte
+   * específica precisa entrar, porque não foi uma suíte que o pegou — foi a
+   * execução inteira que morreu. */
+  s.teste('defeito que não carrega tem fecho pequeno, e não universal', async () => {
+    const { fechoDeCaptor, TUDO, ARNES, CAPTOR_NAO_CARREGA } = await import('./fecho.mjs');
+    const f = fechoDeCaptor(CAPTOR_NAO_CARREGA, 'server/limites.mjs');
+    ok(f !== TUDO,
+      '`(não carrega)` continua com fecho universal. São 4 dos 14 defeitos que ' +
+      'reavaliam a cada bloco, e o fecho deles é o mais fácil de defender.');
+    ok(f.has('server/limites.mjs'),
+      'o fecho não inclui o arquivo mutado. Mudar o arquivo tem que invalidar: ' +
+      'o módulo pode passar a carregar, ou a quebrar de outro jeito.');
+    for (const a of ARNES)
+      ok(f.has(a), `o fecho de \`(não carrega)\` não inclui \`${a}\``);
+  });
+
   s.teste('suíte que dispara processo tem fecho universal', async () => {
     const { fechoDaSuite, TUDO } = await import('./fecho.mjs');
-    /* `concorrencia` roda `tools/q8-worker.mjs` como processo de verdade: o que
-       o filho toca não se lê estaticamente. Dúvida resolve para TUDO — errar
-       para mais custa uma reavaliação; errar para menos faz o portão mentir. */
-    igual(fechoDaSuite('concorrencia'), TUDO,
-      'uma suíte que dispara processo ganhou fecho restrito. O filho pode tocar ' +
-      'em qualquer arquivo, e nada estático revela o quê.');
+    /* Depois do T4 o fecho SEGUE o filho quando o caminho é literal. O que
+       continua universal é o irresolvível — e é isso que este teste guarda:
+       um arquivo que dispara processo sem caminho legível. */
+    const { fechoDeArquivo } = await import('./fecho.mjs');
+    const { writeFileSync, mkdtempSync, rmSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const dir = mkdtempSync(join(tmpdir(), 'fecho-teste2-'));
+    try {
+      const alvo = join(dir, 'opaca.mjs');
+      writeFileSync(alvo, `import { spawn } from 'node:child_process';
+        spawn(process.argv[2], []);`);
+      igual(fechoDeArquivo(alvo), TUDO,
+        'um arquivo que dispara processo sem caminho legível ganhou fecho ' +
+        'restrito. O filho pode tocar em qualquer coisa, e nada estático ' +
+        'revela o quê.');
+    } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 
   s.teste('só a execução COMPLETA regrava o índice', async () => {

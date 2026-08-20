@@ -153,6 +153,21 @@ await tela('aposta-feita', 1440, 900, async pg => {
  * ajustado, e o `finish()` roda outra vez com o estado ajustado. É por isso que
  * a captura mostra a tela DO PRODUTO, e não um HTML montado à mão para a foto —
  * que seria uma captura provando que o gerador da captura funciona. */
+/* ── A RAIZ EM QUE O FAVORITO VENCE ────────────────────────────────────────
+ *
+ * A captura do §28.5 — acertar o campeão e o retorno não passar da aposta —
+ * dependia de sorte: o cliente não pode saber o campeão antes (é o
+ * commit-reveal funcionando), então apostar no favorito acerta em ~1 de 6, e
+ * uma medição deu oito erros seguidos.
+ *
+ * Estas raízes foram procuradas offline, com os 154.000 sims de verdade, e em
+ * todas o favorito É o campeão. Fixando a raiz, a captura vira determinística.
+ *
+ * `novaRaiz()` lê `crypto.getRandomValues(new Uint32Array(1))[0]`, então
+ * plantar a raiz é plantar esse primeiro inteiro. Não é o app sabendo o
+ * campeão: é o ARNÊS escolhendo qual rodada fotografar, do lado de fora. */
+const RAIZES_FAVORITO_VENCE = [2, 4, 5, 6, 9];
+
 const resultado = (ajuste, nome = 'resultado') => async pg => {
   /* ── DUAS COISAS QUE ESTE ROTEIRO APRENDEU DA PIOR FORMA ─────────────────
    *
@@ -171,8 +186,26 @@ const resultado = (ajuste, nome = 'resultado') => async pg => {
    * O ajuste do desfecho entra ANTES da luta começar, quando `S.myBet` é o que
    * o jogador acabou de montar e nada está animando. `odd` é campo do ticket e
    * mexer nele ali é o que um mercado com odd abaixo de 1 fará sozinho no V2. */
+  /* A RAIZ É PLANTADA ANTES DA RODADA NASCER, e por isso o roteiro pede uma
+     rodada nova depois de plantar: a que está aberta já sorteou a dela. */
+  if (ajuste.favoritoVence)
+    await pg.evaluate(r => {
+      const orig = crypto.getRandomValues.bind(crypto);
+      let usada = false;
+      crypto.getRandomValues = a => {
+        if (!usada && a.length === 1 && a instanceof Uint32Array) { usada = true; a[0] = r; return a; }
+        return orig(a);
+      };
+    }, RAIZES_FAVORITO_VENCE[0]);
+
   await pg.waitForFunction(() => globalThis.__olhar_S?.state === 'betting',
     { timeout: 120000, polling: 250 }).catch(() => avisos.push('não abriu janela de aposta'));
+
+  if (ajuste.favoritoVence) {
+    await pg.evaluate(async () => (await import('/app/modules/fases.mjs')).newRound());
+    await pg.waitForFunction(() => globalThis.__olhar_S?.state === 'betting',
+      { timeout: 120000, polling: 250 }).catch(() => {});
+  }
 
   const raiz = await pg.evaluate(async aj => {
     const { S } = await import('/app/modules/estado.mjs');
@@ -222,8 +255,8 @@ await tela('resultado-b', 1440, 900, resultado({}, 'resultado-b'));
 /* ODD 1,00 é a captura que o F1.9 existe para produzir: acertar o campeão e
    receber exatamente o que apostou. É o caso que o BUILD_BLOCKS dizia que "hoje
    não existe" e que a tela comemorava — ver o D-012. */
-await tela('resultado-devolvido', 1440, 1500, resultado({ odd: 1.0 }, 'resultado-devolvido'));
-await tela('resultado-devolvido-420', 420, 1500, resultado({ odd: 1.0 }, 'resultado-devolvido-420'));
+await tela('resultado-devolvido', 1440, 1500, resultado({ odd: 1.0, favoritoVence: true }, 'resultado-devolvido'));
+await tela('resultado-devolvido-420', 420, 1500, resultado({ odd: 1.0, favoritoVence: true }, 'resultado-devolvido-420'));
 
 await tela('perfil', 1100, 1500, async pg => {
   await pg.evaluate(async () => {

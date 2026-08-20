@@ -32,7 +32,7 @@
 import { existsSync, readFileSync, symlinkSync, writeFileSync, cpSync, rmSync, mkdtempSync } from 'node:fs';
 import { execFile, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { fechoDaSuite, digitalDoFecho, TUDO } from './fecho.mjs';
+import { fechoDeCaptor, digitalDoFecho, TUDO, CAPTOR_NAO_CARREGA } from './fecho.mjs';
 import { cpus, tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -337,13 +337,17 @@ for (const f of execFileSync('git', ['ls-files', '--cached', '--others', '--excl
 const digitalDeFecho = new Map();
 function chaveDe(d, captor) {
   if (!captor) return null;               /* sem captor conhecido não há o que reusar */
-  if (!digitalDeFecho.has(captor))
-    digitalDeFecho.set(captor, digitalDoFecho(fechoDaSuite(captor), HASHES));
+  /* A chave do fecho inclui o ARQUIVO quando o captor é `(não carrega)`: aquele
+     fecho é derivado do arquivo mutado, então dois defeitos em arquivos
+     diferentes não podem compartilhar a digital. */
+  const chaveFecho = captor === CAPTOR_NAO_CARREGA ? `${captor}|${d.arquivo}` : captor;
+  if (!digitalDeFecho.has(chaveFecho))
+    digitalDeFecho.set(chaveFecho, digitalDoFecho(fechoDeCaptor(captor, d.arquivo), HASHES));
   return createHash('sha1').update([
     d.id, d.arquivo, d.de, d.para,
     HASHES.get(d.arquivo) ?? 'ausente',
     captor,
-    digitalDeFecho.get(captor),
+    digitalDeFecho.get(chaveFecho),
     process.version,
   ].join('\u0000')).digest('hex');
 }
@@ -434,6 +438,30 @@ function garantirBase(semGolden, comVisual, estreita) {
   return basesValidadas.get(chave);
 }
 
+/* NUMA EXECUÇÃO GRANDE, AS CONFIGURAÇÕES SÃO VALIDADAS ANTES DE COMEÇAR.
+ *
+ * A validação é preguiçosa por economia: numa execução quente, com quase tudo
+ * reaproveitado, não faz sentido pagar 65 s de navegador para validar uma
+ * configuração que ninguém vai usar.
+ *
+ * Só que numa execução COMPLETA a configuração de navegador vai ser usada com
+ * certeza — e descobrir que ela está quebrada só quando o primeiro mutante
+ * chega lá custou **28 minutos** de portão no D-016. Quando o trabalho é
+ * grande, validar tudo na frente custa ~100 s e devolve o erro em 100 s.
+ *
+ * O limiar não precisa ser fino: é a diferença entre "algumas reavaliações" e
+ * "o portão inteiro". */
+const VALIDAR_TUDO_ACIMA_DE = 50;
+
+async function validarConfiguracoesUsadas() {
+  await Promise.all([
+    garantirBase(false, false, false),
+    garantirBase(false, true, true),
+    garantirBase(false, true, false),
+  ]);
+  console.log('configurações de julgamento: todas VERDES\n');
+}
+
 /* Julga: valida a configuração antes de usá-la, e só então roda com o mutante. */
 async function julgar(caixa, semGolden, comVisual, recorte = null, estreita = false) {
   await garantirBase(semGolden, comVisual, estreita);
@@ -452,7 +480,9 @@ async function avaliar(d, caixa) {
   /* O CAPTOR PRECISA CONTINUAR EXISTINDO. É o que substitui `run.mjs` no fecho
      comum: acrescentar suíte não pode invalidar nada, mas REMOVER a suíte que
      pegou o defeito invalida — o veredito guardado se apoiava nela. */
-  if (cache && cache.chave && (SUITES_REAIS.has(captorGuardado) || NAVEGADOR.has(captorGuardado))
+  if (cache && cache.chave
+      && (SUITES_REAIS.has(captorGuardado) || NAVEGADOR.has(captorGuardado)
+          || captorGuardado === CAPTOR_NAO_CARREGA)
       && cache.chave === chaveDe(d, captorGuardado))
     return { ...d, ...cache, reusado: true, instavel: false };
 
@@ -572,6 +602,18 @@ async function avaliar(d, caixa) {
 
 /* Fila simples: cada caixa puxa o próximo defeito quando termina o seu. */
 const fila = ALVOS.slice();
+/* Só depois de saber quantos serão de fato avaliados: uma execução quente com
+   três reavaliações não paga o navegador. */
+const aReavaliar = ALVOS.filter(d => {
+  const c = VEREDITOS[d.id];
+  const cap = String(c?.com ?? '').replace(/^navegador: /, '').split(',')[0];
+  return !(c?.chave && cap && c.chave === chaveDe(d, cap));
+}).length;
+if (aReavaliar > VALIDAR_TUDO_ACIMA_DE) {
+  console.log(`${aReavaliar} defeitos a reavaliar — validando as configurações antes de começar.`);
+  await validarConfiguracoesUsadas();
+}
+
 const res = [];
 let feitos = 0;
 await Promise.all(CAIXAS.map(async caixa => {

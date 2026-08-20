@@ -1100,7 +1100,7 @@ ele existir pelo nosso desenho, é mudar uma função — não o sistema.
 
 ---
 
-### T4 — O fecho alcança o processo filho
+### T4 — O fecho alcança o processo filho ✅
 
 **Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/` e `tools/`)
 · **Depende de** o cache de vereditos do Q2 (`test/fecho.mjs`)
@@ -1202,6 +1202,36 @@ bloco. Se ela não melhorar, o bloco não valeu — e o relatório tem que dizer
 em vez de exibir as outras duas.
 
 **Saída:** a **L-035** fecha, e o teto do cache sobe.
+
+---
+
+> ## T4 — o que ele fez, e o que ele recusou a fazer
+>
+> **Três disparos, três respostas, e a terceira é o que sustenta as outras:**
+>
+> ```
+> execFile('node', ['tools/q8-worker.mjs', …])   resolvível     → soma o fecho DELE
+> execFileSync('git', ['ls-files'])              binário externo → não é dependência
+> execFile('node', [variavel])                   irresolvível    → continua TUDO
+> ```
+>
+> O fecho segue o filho **e os imports dele**: `concorrencia` saiu de `TUDO`
+> para 9 entradas, e entre elas estão `server/carteira.mjs` e `server/banco.mjs`,
+> que o `q8-worker` importa. Somar só o arquivo do script reaproveitaria veredito
+> de um filho que mudou por dentro — é o defeito `S224`.
+>
+> **O quarto caso não era processo filho, e só apareceu ao medir.** Quatro
+> defeitos voltavam com captor `(não carrega)`: a mutação impede o módulo de
+> carregar, a execução morre antes de qualquer teste, e nenhuma suíte é nomeada.
+> Sem nome de captor não havia fecho de que depender. O fecho deles é o **arquivo
+> mutado mais o arnês**, e é defensável — as duas únicas coisas que mudam essa
+> resposta são o próprio arquivo e o modo como a pergunta é feita.
+>
+> **O que o bloco recusou a fazer.** Comando que não é `node` nem binário da
+> lista continua `TUDO`; caminho vindo de variável continua `TUDO`; disparo que
+> o leitor não consegue ler continua `TUDO`. Cinco defeitos plantados guardam
+> exatamente essas recusas — porque num bloco que encolhe fecho, o perigo não é
+> encolher de menos.
 
 ---
 
@@ -1755,7 +1785,7 @@ navegador do arnês de dois processos que a L-032 construiu.
 
 ---
 
-### F1.13 — A montagem do serviço: as rotas e o cliente ligado
+### F1.13 — A montagem do serviço: as rotas e o cliente ligado ✅
 
 **Tam.** G · **Método** INV · **Portões** Q1 Q2 Q3 Q5 Q6 Q8 Q9 · **Depende de** F1.9
 

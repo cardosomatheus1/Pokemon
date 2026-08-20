@@ -885,7 +885,7 @@ o `odd_hour` é calculável no dia em que houver quatro semanas de histórico.
 
 ---
 
-### L-035 — suíte que dispara processo filho invalida o cache do Q2 inteiro
+### L-035 — suíte que dispara processo filho invalida o cache do Q2 inteiro ✅ FECHADA
 
 **Dono:** **T4** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** a
 mudança de estratégia do Q2
@@ -918,10 +918,15 @@ completo para sempre.
 bloco novo que escrever um teste com processo filho joga mais defeitos no balde
 universal, e o teto desce sozinho.
 
-**O que a destrava:** seguir o filho quando o caminho dele é literal — somar ao
-fecho do pai o fecho do script disparado, e continuar em `TUDO` quando o caminho
-vem de variável. É o **T4**, e ele carrega um risco que precisa estar dito: é um
-bloco que faz o fecho ENCOLHER, que é a direção errada de errar.
+**Fechada pelo T4.** O fecho segue o script disparado quando o caminho é
+literal, e segue os imports dele junto: `concorrencia` saiu de `TUDO` para 9
+entradas, com `server/carteira.mjs` e `server/banco.mjs` entre elas. O caso
+`(não carrega)` ganhou fecho próprio — o arquivo mutado mais o arnês.
+
+O que continua universal, e por decisão: comando que não é `node` nem binário
+conhecido, caminho vindo de variável, e disparo que o leitor não consegue ler.
+Cinco defeitos plantados guardam essas recusas, porque num bloco que encolhe
+fecho o perigo não é encolher de menos.
 
 ---
 
@@ -972,6 +977,18 @@ fica abaixo do banner, em corpo pequeno e contraste baixo, e no tamanho da
 captura eu não consegui lê-la. É a linha mais importante daquela tela — "o
 valor exibido é o líquido, com o bruto em segundo plano" —, e uma linha
 importante que não se lê é o mesmo problema que a L-031 lista em outros pontos.
+
+**Meio caminho andado, e medido:** as raízes **2, 4, 5, 6 e 9** têm o favorito
+como campeão — procuradas offline com os 154.000 sims de verdade, não com um
+lote curto. Elas estão no `olhar-telas.mjs` e o roteiro planta a primeira antes
+de a rodada nascer.
+
+**O que NÃO está verificado:** a captura com a raiz plantada não produziu aposta
+na conferência — o `crypto.getRandomValues` é consumido em algum ponto do boot
+antes de `novaRaiz()`, e o primeiro inteiro plantado vai para outro lugar.
+Descobrir qual é o trabalho que sobra. O arnês **reporta o desfecho sorteado**
+em todas as capturas, então ele não pode enganar em silêncio: uma
+`resultado-devolvido.png` com desfecho "errou" vem anotada como tal.
 
 **O que a destrava:** ler a caixa de perto. Duas dificuldades reais, e as duas
 são de arnês:
