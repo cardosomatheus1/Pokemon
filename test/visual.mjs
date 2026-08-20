@@ -813,7 +813,27 @@ export async function rodarSemRede() {
   const pronto = await pg.waitForFunction(
     () => document.querySelectorAll('.pick').length > 0,
     { timeout: 90000, polling: 300 }).then(() => true).catch(() => false);
-  await pg.waitForTimeout(2500);
+
+  /* ESPERA A ARTE CHEGAR, e não 2,5 segundos.
+   *
+   * A espera fixa media outra coisa sob carga: o portão roda até cinco caixas
+   * de areia ao mesmo tempo, cada uma com um Chromium, e a leitura acontecia
+   * antes de os retratos terminarem de carregar do disco. As duas afirmações
+   * desta suíte — "a arte vem do disco" e "é a mesma arte" — ficavam vermelhas
+   * sem nada estar errado, e o portão ABORTAVA nomeando a configuração.
+   *
+   * A condição é a própria afirmação do teste: todo retrato veio de `assets/` e
+   * tem largura natural. Se a arte NÃO vier do disco — que é o defeito que esta
+   * suíte existe para pegar — a condição nunca fecha e a espera estoura. Mesma
+   * lição do D-016: relógio fixo mede a máquina, condição mede o produto. */
+  await pg.waitForFunction(() => {
+    const rs = [...document.querySelectorAll('.pick img')];
+    return rs.length > 0
+      && rs.every(i => i.currentSrc.includes('/assets/') && i.naturalWidth > 0)
+      && [...document.querySelectorAll('.mon .body')]
+           .some(e => e.style.backgroundImage.includes('assets/'));
+  }, { timeout: 30000, polling: 200 }).catch(() => { /* o teste abaixo reprova com o número */ });
+
   const st = await pg.evaluate(() => ({
     lutadores: document.querySelectorAll('.mon').length,
     comFolha: [...document.querySelectorAll('.mon .body')]

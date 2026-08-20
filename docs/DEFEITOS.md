@@ -874,7 +874,7 @@ transferível`, com o valor lido de `engine/carteira.mjs` e não copiado.
 
 ---
 
-## D-016 — o quadro de colocação era comparado com o estado do quadro seguinte ✅ CORRIGIDO
+## D-016 — duas sondas de navegador mediam o relógio, e não o produto ✅ CORRIGIDO
 
 **Achado em:** T4, pelo portão abortando · **Bloco dono:** **F0.10** (é dele a
 sonda de colocação viva) · **Corrigido no:** T4
@@ -924,3 +924,25 @@ custo, e o erro volta em ~100 s em vez de 28 min. Numa execução quente, com
 poucas reavaliações, a validação continua preguiçosa — pagar navegador para
 validar uma configuração que ninguém vai usar seria desfazer o que o cache
 comprou.
+
+### A SEGUNDA sonda, achada pelo mesmo caminho
+
+Com a primeira corrigida, o portão abortou de novo — agora na configuração
+`navegador-estreito`, com `sem-rede` vermelha em duas afirmações: *"o jogo abre
+com a rede externa desligada"* e *"a arte vem do disco, e é a mesma arte"*.
+
+Ela passava sozinha, passava com as sete suítes de navegador juntas, e passava
+numa réplica da caixa de areia. **Só falhava quando o portão a rodava** — e a
+diferença é que ali há até cinco Chromiums vivos ao mesmo tempo.
+
+A causa é a mesma em outra roupa: depois de esperar a lista de lutadores, a
+sonda dormia **2,5 s fixos** e lia. Sob carga, os retratos ainda não tinham
+terminado de carregar do disco, e a leitura media a máquina em vez do produto.
+
+A espera agora é pela própria afirmação do teste — todo retrato veio de
+`assets/` e tem largura natural. Se a arte NÃO vier do disco, que é o defeito
+que a suíte existe para pegar, a condição nunca fecha e a espera estoura.
+
+> **Relógio fixo mede a máquina; condição mede o produto.** Duas sondas caíram
+> nisso, e as duas só apareceram porque o portão passou a validar cada
+> configuração antes de julgar nela.

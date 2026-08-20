@@ -46,18 +46,51 @@ navegador com aviso.
 ## 3. Os comandos que você vai usar todo dia
 
 ```bash
-npm run rapido             # 21 suítes, sem navegador ......... 7 s
+npm run rapido             # as suítes sem navegador .......... 7 s
 node test/run.mjs --so=carteira,exposicao   # só o que interessa  0,8 s
-npm test                   # a suíte inteira ................. ~2,5 min
+npm test                   # a suíte inteira ................. ~3 min
 npm run gerar:visual       # regrava só a linha de base visual . 49 s
-npm run olhar              # captura as 11 telas em PNG ....... ~2 min
+npm run olhar              # captura as telas em PNG .......... ~5 min
 npm run sabotagem:tocados  # Q2 só dos arquivos que você mexeu
-npm run portoes            # O PORTÃO DE FECHAMENTO .......... ~25 min
+npm run sabotagem          # O PORTÃO Q2 ...... 4 min quente, 30 min frio
+npm run sabotagem:completo # Q2 ignorando o cache — antes de uma tag
+npm run portoes            # O PORTÃO DE FECHAMENTO
 ```
 
 **`--so` acelera a CONSTRUÇÃO e não fecha bloco nenhum.** `npm run portoes`
 recusa a bandeira de propósito. Portão que parece inteiro sem ser é pior que
 portão ausente.
+
+### O Q2 não reavalia o que não pôde mudar, e é isso que o mantém em minutos
+
+Ele custava **~100 min** e crescia em dois eixos: bloco novo traz defeitos novos
+*e* engrossa a suíte que cada defeito roda. Hoje:
+
+```
+Q2 do zero, sem cache        ~30 min
+Q2 sem nada ter mudado      4 min 09 s      194 de 208 reaproveitados
+```
+
+A regra é que o veredito de um defeito é função de **três coisas e de mais
+nada**: a definição dele, o conteúdo do arquivo onde ele é plantado, e o fecho
+da suíte que o pegou (tudo que ela lê e executa). Iguais byte a byte aos da
+última avaliação, reavaliar devolve a mesma resposta.
+
+**Isto não é amostragem.** O `--tocados` PULA defeitos e por isso grita que não é
+o portão. Aqui os 208 seguem respondidos: cada um foi reavaliado agora, ou nada
+de que ele depende mudou. O relatório diz quantos de cada.
+
+Três coisas que você precisa saber antes de mexer nisso, e todas têm teste em
+`test/portao.mjs`:
+
+- **só se guarda `PEGOU`.** Reaproveitar um `PASSOU` seria o portão herdando a
+  própria falha;
+- **dúvida no fecho resolve para `TUDO`** (`test/fecho.mjs`);
+- **toda configuração que julga precisa da própria linha de base verde.** O
+  portão valida cada uma na primeira vez que a usa e aborta nomeando a
+  quebrada. Sem isso ele dá `PEGOU` falso — e `PEGOU` falso é pior que `PASSOU`
+  falso, porque manda seguir em frente **e esconde os defeitos que escapam**.
+  Ver `D-015`.
 
 ---
 
@@ -249,7 +282,32 @@ server/transporte.mjs  SSE — a sala, o estado e a reconexão
 server/aposta.mjs      aposta, lock e settlement
 server/limites.mjs     os limites do §28.3 e a assimetria de mudança
 server/protecao.mjs    pausa, autoexclusão, marketing, reality check e risco
+server/rotas.mjs       a superfície HTTP sobre tudo acima
 ```
+
+**ROTA NOVA NASCE PRIVADA.** A sessão é conferida no despacho e
+`ROTAS_PUBLICAS` é a exceção declarada. O desenho oposto — cada rota conferindo
+a sua — é aquele em que a rota nova nasce aberta, porque quem a escreveu não
+sabia que precisava lembrar.
+
+E o **usuário sai da sessão, nunca do pedido**: nenhuma rota lê `userId` do
+corpo ou da query. O corpo é lido campo a campo e nunca espalhado com
+`...corpo` — é o que impede um `cooldownMs` no JSON de encurtar o cooldown do
+§28.3.
+
+No cliente, três módulos novos:
+
+```
+app/modules/api.mjs            a única porta do app para o servidor
+app/modules/protecao-tela.mjs  a tela de limites e pausa (§28.7)
+app/modules/protecao-texto.mjs os rótulos e a frase da recusa, puros
+```
+
+`api.mjs` **não lança**: falha de rede vira `{ ok:false, indisponivel:true }`.
+E resposta sem JSON também — porque sem backend no ar o app é servido por um
+servidor de arquivos estático, que responde 404 em HTML a `/api/...`. Tratar
+isso como recusa fazia a tela dizer "você precisa entrar na sua conta" para quem
+não tinha servidor nenhum do outro lado.
 
 **Duas garantias deste backend são AUSÊNCIAS, e é de propósito.** O cooldown de
 24 h para aumentar limite não pode ser encurtado, e a autoexclusão não pode ser
