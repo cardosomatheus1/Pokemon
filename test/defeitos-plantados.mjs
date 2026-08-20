@@ -81,6 +81,8 @@ const RESULT = 'engine/resultado.mjs';
 const CARTEIRA= 'app/modules/carteira.mjs';
 const NAVEG  = 'app/modules/navegacao.mjs';
 const RODADA = 'app/modules/rodada.mjs';
+const SRVLAC = 'server/laco.mjs';
+const SALAC  = 'app/modules/sala.mjs';
 
 export const DEFEITOS = [
   /* Desde o F0.4 a tabela de tipos é DADO DO PACK, não do motor. O defeito é o
@@ -1263,6 +1265,88 @@ export const DEFEITOS = [
     real:'"se não é `node`, ignora" — e um `deno`/`python` disparado some do fecho inteiro',
     de:"    if (comando !== 'node') return null;                            // comando que não sei classificar",
     para:'    if (comando !== \'node\') continue;' },
+
+  /* ── F1.14 · O LAÇO DO SERVIDOR ────────────────────────────────────────── */
+
+  { id:'S227', arquivo:SRVLAC, nome:'o laço transmite a cada passo, e não quando muda',
+    real:'"na dúvida, avisa" — quatro eventos por segundo por conexão dizendo o que ela já sabe',
+    de:"      if (ultimo?.id !== r.id || ultimo.fase !== r.status) anunciar('fase', r);",
+    para:"      anunciar('fase', r);" },
+
+  { id:'S228', arquivo:SRVLAC, nome:'a rodada nova abre por cima da que está em luta',
+    real:'esquecer a condição de fim — e quem apostou apostou numa rodada que já não existe',
+    de:'      if (!r || (fim(r.status) && ultimo?.id === r.id && ultimo.fase === r.status)) {',
+    para:'      if (!r || true) {' },
+
+  { id:'S229', arquivo:SRVLAC, nome:'o anúncio manda a rodada por dentro',
+    real:'"o objeto já está aqui" — e a semente vai junto com a janela de aposta aberta',
+    de:"    sala.transmitir(tipo, sched.paraCliente());",
+    para:"    sala.transmitir(tipo, sched.rodadaAtual());" },
+
+  { id:'S230', arquivo:SRVLAC, nome:'a exceção do passo sobe para o temporizador',
+    real:'sem try, um erro derruba o setInterval e o jogo para de pé, respondendo a tudo',
+    de:'      ultimoErro = e;',
+    para:'      ultimoErro = e; throw e;' },
+
+  { id:'S231', arquivo:SRVLAC, nome:'iniciar duas vezes deixa dois laços girando',
+    real:'"iniciar é idempotente, óbvio" — e cada fase é transmitida em dobro',
+    de:'    if (timer) return timer;              // idempotente: dois laços no mesmo',
+    para:'    if (false) return timer;' },
+
+  /* ── F1.14 · A SALA DO LADO DO CLIENTE ────────────────────────────────── */
+
+  { id:'S232', arquivo:SALAC, nome:'a espera entre tentativas deixa de crescer',
+    real:'"250 ms está bom" — e mil abas voltando juntas derrubam o servidor que acabou de subir',
+    de:'export const esperaPadrao = n => Math.min(ESPERA_BASE * 2 ** n, ESPERA_TETO);',
+    para:'export const esperaPadrao = n => ESPERA_BASE;' },
+
+  { id:'S233', arquivo:SALAC, nome:'a espera perde o teto',
+    real:'crescer é bom, então crescer sempre é melhor — e quem ficou 10 min fora espera mais 10',
+    de:'export const esperaPadrao = n => Math.min(ESPERA_BASE * 2 ** n, ESPERA_TETO);',
+    para:'export const esperaPadrao = n => ESPERA_BASE * 2 ** n;' },
+
+  /* A primeira versão do S234 tirava o `clearTimeout` do `sair()` e PASSOU: o
+     `conectar()` confere `ligada` na entrada e o `recuar()` confere de novo, e
+     o temporizador vazado acorda para não fazer nada. Três guardas
+     independentes é defesa em profundidade boa — e mutante equivalente para
+     qualquer uma delas sozinha. Reapontado para o erro que de fato produz sala
+     fantasma, e que é o mais plausível dos três: "sair é abortar e limpar o
+     temporizador", esquecendo que o abort volta pelo `catch`. */
+  { id:'S234', arquivo:SALAC, nome:'sair esquece de baixar a bandeira',
+    real:'"sair é abortar e limpar o timer" — e o abort volta pelo catch, que reconecta',
+    de:'      ligada = false;\n      if (agendado) clearTimeout(agendado);',
+    para:'      if (agendado) clearTimeout(agendado);' },
+
+  { id:'S235', arquivo:SALAC, nome:'a reconexão esquece o último id visto',
+    real:'"o estado inteiro resolve" — e o histórico do §5.9 deixa de servir para o que foi construído',
+    de:"          ...(ultimoId ? { 'last-event-id': String(ultimoId) } : {}),",
+    para:'          ...({}),' },
+
+  { id:'S236', arquivo:SALAC, nome:'o quadro é entregue por chegada de pacote',
+    real:'"chegou, entrega" — e o JSON cortado no meio pela rede quebra por um motivo que não é o verdadeiro',
+    de:"      while ((i = resto.indexOf('\\n\\n')) >= 0) {",
+    para:"      while (resto.length && (i = resto.length) >= 0) {" },
+
+  { id:'S237', arquivo:SALAC, nome:'conectar não zera a contagem de tentativas',
+    real:'esquecer o reset — e a queda seguinte já nasce esperando o teto do recuo',
+    de:'      tentativas = 0;                       // conectou: o recuo recomeça do zero',
+    para:'      tentativas = tentativas;' },
+
+  /* O S238 nasceu apontado para o `startsWith(':')` e PASSOU: um batimento não
+     casa `event:` nem `data:`, então o guarda logo abaixo o descarta do mesmo
+     jeito. Terceiro mutante equivalente deste bloco, e os três têm a mesma
+     forma — guarda redundante sobre guarda que já basta. Ver o registro em
+     `docs/LACUNAS.md`, L-038. Reapontado para o guarda que de fato segura
+     alguma coisa. */
+  { id:'S238', arquivo:SALAC, nome:'um quadro ilegível derruba a leitura',
+    real:'"se o JSON quebrar, quebrou" — e o evento bom que vinha atrás na mesma conexão some',
+    de:'    try { corpo = JSON.parse(dados[1]); } catch { return; }',
+    para:'    corpo = JSON.parse(dados[1]);' },
+
+  { id:'S239', arquivo:SABOT, nome:'o portão perde o teto por mutante',
+    real:'"nenhum defeito trava" — e o primeiro que travar pendura o portão sem veredito',
+    de:'                             timeout: TETO_MUTANTE_MS, killSignal: \'SIGKILL\' },',
+    para:'                             },' },
 
   { id:'S224', arquivo:FECHO, nome:'o fecho para de seguir os imports do filho',
     real:'somar só o arquivo do script — mudar o que ele importa deixa de invalidar',

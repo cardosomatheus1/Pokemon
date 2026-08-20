@@ -946,3 +946,43 @@ que a suíte existe para pegar, a condição nunca fecha e a espera estoura.
 > **Relógio fixo mede a máquina; condição mede o produto.** Duas sondas caíram
 > nisso, e as duas só apareceram porque o portão passou a validar cada
 > configuração antes de julgar nela.
+
+---
+
+## D-017 — `npm run rapido` cobre 21 suítes das 35 que não precisam de navegador
+
+**Achado em:** F1.14 · **Bloco dono:** **T5** · **Medido:** 261 de 596 testes
+
+A lista está escrita à mão no `package.json`:
+
+```
+"rapido": "node test/run.mjs --so=golden,fonte-unica,estado,modulos,conteudo,
+           carteira,banco,exposicao,assets,telemetria,commit,saida-v09,
+           progressao,tema,arenas,portao,colocacao,banner,shiny,adm,semente"
+```
+
+Ela foi escrita quando o projeto tinha 21 suítes sem navegador. Hoje tem 35, e
+as 14 que faltam são **todas as do servidor** — `servidor`, `auth`,
+`banco-servidor`, `carteira-servidor`, `scheduler`, `transporte`,
+`aposta-servidor`, `concorrencia`, `limites`, `protecao`, `resultado`, `rotas`,
+`laco`, `sala-cliente`. Ou seja: o atalho que se usa durante a construção não
+roda nada do que os últimos catorze blocos construíram.
+
+**Por que isto é um defeito e não uma preferência:** o comando se chama
+`rapido`, imprime `VERDE — 261/261`, e não diz que ficou de fora do que não
+rodou. É exatamente o modo de falha que o `--so` tem e que o `S109` existe para
+impedir — atalho que mente sobre o que cobriu. A diferença é que o `--so` grita
+que foi parcial nas duas pontas, e o `rapido` não grita nada, porque ele não
+sabe que é parcial: para ele aquela lista É o conjunto.
+
+**Como se mede:** `npm run rapido` devolve 261; `npm test` devolve 596. A conta
+não fecha por 335 testes, e nenhum dos dois números diz isso.
+
+**Teste que trava:** nenhum, ainda. Um teste que afirmasse "a lista do `rapido`
+tem toda suíte sem navegador" ficaria vermelho hoje — e é o T5 que o escreve,
+junto com a correção, que é derivar a lista em vez de mantê-la.
+
+**Por que não foi corrigido no F1.14:** é `package.json` e `run.mjs`, arnês
+puro, fora do escopo de um bloco que muda o laço de jogo. E a correção certa
+não é acrescentar catorze nomes à lista — é fazer a lista deixar de existir,
+porque **derivar não pode dessincronizar**. Isso é um bloco, não um remendo.

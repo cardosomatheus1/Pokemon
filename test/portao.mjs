@@ -471,6 +471,39 @@ export function suite() {
       'reaproveitar vereditos de uma linha de base que mudou.');
   });
 
+  /* ── UM PORTÃO QUE PENDURA É PIOR QUE UM VERMELHO (F1.14) ───────────────
+   *
+   * Até o F1.14 todo defeito plantado falhava ou passava. O S234 — a sala
+   * fantasma do cliente — foi o primeiro a TRAVAR: ele reconectava para sempre,
+   * e `servidor.close()` esperava uma conexão SSE que por definição não
+   * termina. A execução ficou pendurada, sem saída e sem veredito.
+   *
+   * A causa era de produção e está consertada. A lacuna do portão não era, e é
+   * a que este teste guarda: vermelho tem endereço, pendurado consome a máquina
+   * até alguém notar — e mata o valor de rodar o portão sem olhar.
+   *
+   * O TESTE É ESTÁTICO, e a escolha é declarada: provar o teto de verdade
+   * custaria dez minutos de suíte pendurada de propósito, a cada execução do
+   * portão. O que se pode conferir em milissegundos é que o teto está no lugar
+   * onde ele age. */
+  s.teste('o portão tem teto de tempo por mutante', async () => {
+    const { readFileSync } = await import('node:fs');
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8');
+    const chamada = txt.match(/execFile\('node', args, \{[^}]*\}/s)?.[0] ?? '';
+    ok(/timeout:/.test(chamada),
+      'o `execFile` que roda a suíte mutada não tem `timeout`. Um mutante que ' +
+      'pendura a suíte pendura o portão inteiro, e o portão não volta.');
+    ok(/killSignal:\s*'SIGKILL'/.test(chamada),
+      'sem `killSignal: SIGKILL` o teto não fecha: o `SIGTERM` padrão não ' +
+      'derruba um Chromium travado, e o processo fica.');
+    const teto = Number(txt.match(/TETO_MUTANTE_MS = ([\d *]+);/)?.[1]
+      ?.split('*').reduce((a, b) => a * Number(b), 1));
+    ok(teto >= 5 * 60_000 && teto <= 30 * 60_000,
+      `o teto por mutante é de ${teto} ms. Abaixo de cinco minutos ele reprova ` +
+      `execução lenta como se fosse defeito; acima de trinta ele deixa de ser ` +
+      `teto — a suíte completa com navegador não passa de cinco.`);
+  });
+
   /* ── T4: O FECHO SEGUE O FILHO QUANDO O CAMINHO É LITERAL ────────────────
    *
    * Antes do T4, disparar processo dava fecho `TUDO` — qualquer mudança em

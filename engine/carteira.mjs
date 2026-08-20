@@ -108,6 +108,29 @@ export function creditar(w, tipo, bucket, valor, ref) {
   return lancar(w, tipo, { disponivel: { [bucket]: valor } }, ref);
 }
 
+/* A CARTEIRA COMO PROJEÇÃO DE SALDOS (F1.14).
+ *
+ * No modo servidor o cliente não CONSTRÓI carteira: ele recebe os saldos
+ * prontos e precisa de um objeto com a forma que o resto do app já lê. Montar
+ * isso na fachada seria a fachada conhecendo o formato interno — que é
+ * exatamente o que `test/carteira.mjs` proíbe, e com razão: foi assim que a
+ * regra da carteira vazou para dez lugares na v0.7.
+ *
+ * NÃO TEM LEDGER, e a ausência é honesta: o ledger de verdade está no servidor
+ * e pode ter milhares de linhas. Uma projeção sem ledger diz "não sei o
+ * histórico"; uma projeção com ledger inventado mentiria sobre ele.
+ */
+export function carteiraDeSaldos(saldos = {}) {
+  const w = carteiraVazia();
+  for (const b of BUCKETS) {
+    const d = saldos[b], r = saldos['reservado_' + b];
+    if (Number.isInteger(d) && d >= 0) w.disponivel[b] = d;
+    if (Number.isInteger(r) && r >= 0) w.reservado[b] = r;
+  }
+  w.projecao = true;   /* quem ler sabe que o ledger não está aqui */
+  return w;
+}
+
 export const totalDisponivel = w =>
   ORDEM_CONSUMO.reduce((a, b) => a + w.disponivel[b], 0);
 

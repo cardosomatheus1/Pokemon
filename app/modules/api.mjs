@@ -80,5 +80,17 @@ export function criarApi({ base = '', armazem = globalThis.localStorage } = {}) 
 
 /* A instância do app. Base vazia: o cliente é servido pelo mesmo domínio, e por
    isso não precisa de CORS — que é a razão de a lista de origens do servidor
-   nascer vazia. */
-export const api = criarApi({});
+   nascer vazia.
+
+   `let` e não `const` porque o teste precisa apontá-la para um servidor em porta
+   efêmera. A alternativa seria cada módulo receber a api por parâmetro, e aí
+   dez módulos ganhariam um argumento que só o teste usa — desenho torcido para
+   agradar ao teste. */
+export let api = criarApi({});
+
+/* Reaponta a instância do app. Chamado pelo boot quando houver base
+   configurável, e pelo teste para falar com um servidor efêmero. */
+export function configurarApi(opcoes) {
+  api = criarApi(opcoes);
+  return api;
+}

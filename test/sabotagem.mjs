@@ -37,6 +37,9 @@ import { cpus, tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { DEFEITOS } from './defeitos-plantados.mjs';
+
+/* Ver a explicação longa no `execFile` abaixo. */
+const TETO_MUTANTE_MS = 10 * 60 * 1000;
 import { conferirAncoras, filtrarTocados } from './ancoras.mjs';
 
 /* --- COMO A SABOTAGEM RODA, E POR QUE ASSIM -----------------------------
@@ -93,8 +96,34 @@ function rodar(caixa, semGolden, comVisual, recorte = null, estreita = false) {
     const args = recorte ? ['test/run.mjs', `--so=${recorte}`]
               : comVisual ? ['test/run.mjs', `--so=${SUITES_NAVEGADOR}`]
               : ['test/run.mjs'];
-    execFile('node', args, { encoding:'utf8', env, cwd:caixa, maxBuffer: 32*1024*1024 },
-      (err, stdout, stderr) => res({ vermelha: !!err, saida: (stdout||'') + (stderr||'') }));
+    /* TETO DE TEMPO POR MUTANTE, e ele é do PORTÃO e não do teste.
+     *
+     * Até o F1.14 nenhum defeito plantado travava: todos falhavam ou passavam.
+     * O primeiro que travou foi o S234 — a sala fantasma do cliente reconectava
+     * para sempre, e `servidor.close()` esperava uma conexão SSE que, por
+     * definição, não termina. A execução ficou pendurada, sem saída e sem
+     * veredito.
+     *
+     * A causa era de produção e foi consertada (ver `servidor.mjs`), mas a
+     * lacuna do portão não: **um portão que pendura é pior que um vermelho**.
+     * Vermelho tem endereço; pendurado consome a máquina até alguém notar, e
+     * mata o valor de rodar o portão sem olhar.
+     *
+     * Estourar o teto conta como VERMELHO, e é a resposta certa: o mutante
+     * mudou o comportamento a ponto de a suíte não terminar. O `killSignal`
+     * é explícito porque o padrão (`SIGTERM`) não derruba um Chromium travado.
+     *
+     * O teto é generoso — dez minutos é mais que o dobro da suíte completa com
+     * navegador na máquina mais lenta que este projeto já mediu. Ele não é uma
+     * medida de desempenho; é o limite entre "demorou" e "não vai voltar". */
+    execFile('node', args, { encoding:'utf8', env, cwd:caixa, maxBuffer: 32*1024*1024,
+                             timeout: TETO_MUTANTE_MS, killSignal: 'SIGKILL' },
+      (err, stdout, stderr) => res({
+        vermelha: !!err,
+        pendurou: err?.killed === true,
+        saida: (stdout||'') + (stderr||'') +
+               (err?.killed ? `\n  [portão] a suíte não terminou em ${TETO_MUTANTE_MS/60000} min — conta como VERMELHO\n` : ''),
+      }));
   });
 }
 

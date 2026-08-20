@@ -12,9 +12,11 @@
  * bloco uma troca de implementação em vez de uma reescrita.
  */
 import { S } from './estado.mjs';
+import { api } from './api.mjs';
 import {
   carteiraVazia, creditar, liberar, liquidarGanho, liquidarPerda,
-  reconciliar, reconstruir, reservar, totalDisponivel, SALDO_INICIAL } from '../../engine/carteira.mjs';
+  reconciliar, reconstruir, reservar, totalDisponivel, SALDO_INICIAL,
+  carteiraDeSaldos } from '../../engine/carteira.mjs';
 
 const CHAVE = 'ar_carteira';
 const CHAVE_ANTIGA = 'ar_bal';
@@ -25,6 +27,50 @@ const CHAVE_ANTIGA = 'ar_bal';
 /* Diagnóstico do último carregamento, para a interface poder dizer algo em vez
    de corrigir em silêncio. */
 export let ultimoDiagnostico = { origem: 'novo', problemas: [] };
+
+/* ── O MODO SERVIDOR (F1.14) ────────────────────────────────────────────────
+ *
+ * Com sessão, o cliente deixa de ser fonte de qualquer verdade econômica: a
+ * carteira é uma PROJEÇÃO do que o servidor diz, e `localStorage` guarda no
+ * máximo a credencial. É o critério de saída do bloco, e ele é uma frase:
+ *
+ *     `localStorage.clear()` não muda nada do que o jogador tem.
+ *
+ * ── OS DOIS MODOS SÃO COMPLETOS, E ISSO É DECISÃO ──────────────────────────
+ *
+ * Sem sessão o app continua jogando sozinho, com a carteira local — ele nasceu
+ * offline-first e não há motivo para deixar de sê-lo. O que não pode existir é
+ * o meio-termo: saldo vindo do servidor e aposta ainda local seriam duas fontes
+ * para o mesmo dinheiro, que é pior que qualquer um dos dois modos inteiros.
+ *
+ * Por isso `modoServidor()` é uma pergunta só, feita num lugar só, e o resto do
+ * módulo obedece a ela.
+ *
+ * ── A LEITURA CONTINUA SÍNCRONA, E ISSO NÃO É PREGUIÇA ─────────────────────
+ *
+ * `saldo()` é chamado no meio de desenho de tela por dez módulos. Torná-lo
+ * assíncrono espalharia `await` por toda a interface para responder uma
+ * pergunta que ela faz dezenas de vezes por quadro. A projeção resolve: quem
+ * escreve fala com o servidor e reidrata; quem lê lê a projeção. */
+
+export const modoServidor = () => api.temSessao();
+
+/* Traz a carteira do servidor para a projeção. Devolve `false` quando não deu —
+   e NÃO inventa saldo: uma projeção vazia é honesta, um saldo chutado não. */
+export async function hidratar() {
+  if (!modoServidor()) return false;
+  const r = await api.get('/api/carteira');
+  if (!r.ok) return false;
+  /* A FORMA DA CARTEIRA É DO MOTOR, e montá-la aqui seria a fachada conhecendo
+     o formato interno — o que `test/carteira.mjs` proíbe, e com razão: foi
+     assim que a regra vazou para dez lugares na v0.7.
+
+     O ledger não vem junto: ele está no servidor e pode ter milhares de linhas.
+     A tela de histórico o busca por conta quando precisa. */
+  S.carteira = carteiraDeSaldos(r.corpo.saldos);
+  ultimoDiagnostico = { origem: 'servidor', problemas: [] };
+  return true;
+}
 
 export function carregar() {
   const bruto = localStorage.getItem(CHAVE);

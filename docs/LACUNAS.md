@@ -930,6 +930,46 @@ fecho o perigo não é encolher de menos.
 
 ---
 
+### L-038 — três mutantes equivalentes, e todos com a mesma forma
+
+**Dono:** **T5** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** F1.14
+
+Três defeitos plantados neste bloco nasceram **equivalentes** — mutação
+aplicada, comportamento idêntico, teste verde para sempre:
+
+| | guarda mutado | guarda que já bastava |
+|---|---|---|
+| S222 | `caminho literal?` no fecho | `existsSync` logo abaixo |
+| S234 | `clearTimeout` no `sair()` | `if (!ligada)` no `conectar()` e no `recuar()` |
+| S238 | `quadro.startsWith(':')` | `if (!tipo \|\| !dados) return` |
+
+A forma é sempre a mesma: **guarda redundante sobre guarda que já basta**. Os
+dois só divergem em entradas onde o mutante ACERTA — e por isso nenhum teste
+pode separá-los, hoje nem nunca.
+
+**A defesa em profundidade fica.** Ela é boa: três guardas independentes contra
+sala fantasma é exatamente o que se quer num caminho que corrompe a tela do
+jogador. O que estava errado era onde o defeito foi plantado, e os três foram
+reapontados para o guarda que de fato segura alguma coisa.
+
+**O que isto custa hoje:** os três só foram descobertos porque o Q2 completo
+rodou e devolveu `PASSOU`. Dois deles custaram um portão inteiro cada — 44 min
+na primeira vez. Um mutante equivalente é indistinguível de um teste faltando
+até alguém sentar e ler os dois guardas.
+
+**O que a destrava:** um passo de pré-voo que rode cada defeito NOVO contra a
+suíte antes de o portão inteiro começar, e reprove o que passar — o mesmo lugar
+onde hoje se confere âncora. Custa segundos por defeito novo e devolve a
+resposta no minuto zero em vez de no minuto 44. Não elimina o mutante
+equivalente (nada elimina — é indecidível em geral), mas move a descoberta para
+antes do custo.
+
+**Por que não coube no F1.14:** o bloco já estava mexendo no `sabotagem.mjs`
+para o teto por mutante, e duas mudanças no arnês do portão no mesmo commit
+seriam duas coisas para desconfiar quando o portão desse errado.
+
+---
+
 ### L-036 — o cliente ainda guarda a própria carteira
 
 **Dono:** **F1.14** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** F1.13
@@ -952,7 +992,23 @@ que as rotas nascem, e aí não haveria como saber qual das duas mudou a tela. �
 a regra do `CLAUDE.md` sobre fixture regravada sem explicação, aplicada antes de
 o problema existir.
 
-**O que a destrava:** o F1.14, e o critério de saída dele é uma frase:
+**Meio caminho andado, e a metade feita é a inerte.** `app/modules/banco.mjs`
+ganhou `modoServidor()` e `hidratar()`: com sessão, a carteira vira projeção do
+que o servidor diz. O critério de saída já é medido — `test/laco-servidor.mjs`,
+`limpar o armazenamento local não muda o saldo do jogador` — e passa, medido
+pelo MÓDULO que o app carrega, não pela rota.
+
+**O app não liga isso ainda, e há um teste afirmando a ausência de propósito**
+(molde do `D-001`): quem chamar `hidratar()` no boot encontra
+`o app ainda NÃO liga o modo servidor` vermelho. O vermelho é o lembrete de que
+a rodada e a aposta precisam ir junto — ligar só a carteira daria duas fontes
+para o mesmo dinheiro, que é pior que qualquer um dos dois modos inteiros.
+
+**O que falta:** a rodada vindo do scheduler pela sala SSE em vez de
+`newRound()` local, e a aposta indo por `/api/aposta`. É a metade que refaz a
+linha de base visual inteira, porque o primeiro quadro deixa de ter saldo.
+
+**O que a destrava:** o resto do F1.14, e o critério de saída dele é uma frase:
 `localStorage.clear()` não muda nada do que o jogador tem.
 
 ---

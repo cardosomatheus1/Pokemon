@@ -1100,6 +1100,50 @@ ele existir pelo nosso desenho, é mudar uma função — não o sistema.
 
 ---
 
+### T5 — O pré-voo responde antes do portão
+
+**Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/` e `tools/`)
+· **Depende de** o pré-voo de âncoras (`test/ancoras.mjs`)
+
+**Por que ele existe.** Hoje o portão só descobre que um defeito NOVO é
+decorativo depois de rodar os 239 — 44 min na execução fria. O F1.14 pagou isso
+três vezes seguidas, e as três pelo mesmo motivo (**L-038**): mutante
+equivalente, guarda redundante sobre guarda que já basta.
+
+O pré-voo de âncoras já provou que a resposta certa é a barata: ele custa 0,1 s
+e evitou 19 dos 53 minutos de portão do V1.14. Falta o irmão dele — o defeito
+que TEM âncora e mesmo assim não vale nada.
+
+**Escopo:**
+
+1. **Defeito novo roda contra a suíte antes do portão começar.** "Novo" é o que
+   não tem veredito no cache — a informação já está no `q2-veredito.json`.
+   Verde ali reprova o pré-voo com o nome do defeito, e não conta como cobertura.
+2. **A lista do `npm run rapido` para de ser escrita à mão.** Ela nomeia 21
+   suítes e o projeto tem 35 sem navegador: as 14 mais novas — todas as do
+   servidor, incluindo `laco` e `sala-cliente` — nunca rodam ali. É o defeito
+   **D-017**, e ele é da mesma família do `--so`: atalho que mente sobre o que
+   cobriu. A correção é derivar (`--sem-navegador`), porque derivar não pode
+   dessincronizar.
+3. O relatório do Q2 passa a dizer **quantos defeitos são novos** naquela
+   execução, ao lado de quantos foram reaproveitados.
+
+**Fora do escopo, e declarado:** detectar mutante equivalente em geral é
+indecidível, e nada aqui promete isso. O que o bloco compra é a hora em que a
+descoberta acontece — minuto zero em vez de minuto 44.
+
+**Sabotagem:** fazer o pré-voo aceitar um defeito novo que passa; fazer "novo"
+significar "sem âncora" em vez de "sem veredito"; deixar o `--sem-navegador`
+derivar a lista de um lugar que não é a lista de suítes; fazer o relatório somar
+novos e reaproveitados no mesmo número.
+
+**Q6:** sem superfície nova.
+
+**Saída:** um defeito plantado que não é pego por nada reprova em segundos, com
+o nome dele, e `npm run rapido` roda toda suíte que não precisa de navegador.
+
+---
+
 ### T4 — O fecho alcança o processo filho ✅
 
 **Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/` e `tools/`)

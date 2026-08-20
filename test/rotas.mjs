@@ -43,6 +43,12 @@ async function comServico(fn, opcoes = {}) {
     config: { ambiente: 'teste', silencioso: true },
     banco: ':memory:',
     sims: 500,
+    /* O LAÇO FICA DESLIGADO AQUI, e é o único lugar do projeto onde ele fica.
+       Estes testes abrem a rodada com a própria mão para poder colocá-la na
+       fase que cada um precisa; com o laço girando, `abrirRodada()` encontra
+       uma rodada já aberta e recusa. Em produção ele liga sozinho — ver
+       `test/laco.mjs`, que cobra exatamente isso. */
+    laco: false,
     relogio: () => agora,
     ...opcoes,
   });

@@ -46,6 +46,12 @@ const CAMADA = {
      coisa, o teste de camadas reprova — e a reprovação é a pergunta certa.
      Regra que migra para o cliente é regra que o jogador controla. */
   'api.mjs': 0,
+  /* O fluxo da sala: `fetch` e `ReadableStream`, e mais nada. Não conhece
+     rodada, aposta nem saldo — entrega evento e diz em que estado está a
+     conexão. Camada 0 porque quem interpreta o evento é quem escuta, e um
+     transporte que soubesse o que transporta seria o lugar errado para a
+     regra. */
+  'sala.mjs': 0,
   /* Rótulos e a frase da recusa do §28.3. Puro: nada de DOM, nada de rede.
      Separado da tela porque o §28.3 exige coisas sobre TEXTO, e texto se
      confere sem abrir navegador. */

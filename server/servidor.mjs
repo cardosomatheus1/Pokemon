@@ -20,6 +20,7 @@ import { digital } from '../test/rodada-digital.mjs';
 import { abrirBanco, migrar } from './banco.mjs';
 import { criarScheduler } from './scheduler.mjs';
 import { criarSala } from './transporte.mjs';
+import { criarLaco } from './laco.mjs';
 import { ROTAS, ROTAS_PUBLICAS, usuarioDa } from './rotas.mjs';
 
 /* CABEÇALHOS DE SEGURANÇA, em toda resposta, inclusive nas de erro.
@@ -46,6 +47,20 @@ export function criarServidor(opcoes = {}) {
   const rotas = new Map();
   const registrar = (metodo, caminho, fn) => rotas.set(`${metodo} ${caminho}`, fn);
 
+  /* ── A MESA DE FLUXOS, SEPARADA DA DE ROTAS (F1.14) ─────────────────────
+   *
+   * Uma rota comum devolve `{ status, corpo }` e o `responder()` escreve — é
+   * ele que aplica os cabeçalhos de segurança, e é por isso que nenhuma rota
+   * pode escrever sozinha. Um fluxo SSE precisa do `res`: ele fica aberto por
+   * minutos, escrevendo aos poucos.
+   *
+   * Duas mesas, e não um `res` no contexto de todas: com o `res` disponível,
+   * qualquer rota PODE contornar o `responder()`, e a que contornar não vai
+   * parecer diferente das outras no diff. Aqui, quem escreve no socket está
+   * numa lista de dois nomes que se lê de uma vez. */
+  const fluxos = new Map();
+  const registrarFluxo = (metodo, caminho, fn) => fluxos.set(`${metodo} ${caminho}`, fn);
+
   /* ── O SERVIÇO COMPLETO (F1.13) ─────────────────────────────────────────
    *
    * Banco, scheduler e sala nascem AQUI e são passados para as rotas. Cada um
@@ -59,6 +74,13 @@ export function criarServidor(opcoes = {}) {
   const relogio = opcoes.relogio ?? Date.now;
   const sched = criarScheduler({ db, sims: opcoes.sims, relogio, ambiente: config.ambiente });
   const sala = criarSala();
+
+  /* O LAÇO. Ele existe aqui, e não no `principal.mjs`, porque a alternativa é
+     produção ter que lembrar de ligá-lo — e do F1.5 ao F1.13 ninguém lembrou:
+     o scheduler estava pronto, a sala estava pronta, e `GET /api/rodada`
+     respondia `null` para sempre porque nada girava. */
+  const laco = criarLaco({ sched, sala,
+    aoErro: e => { if (!config.silencioso) console.error('[laço]', e); } });
 
   /* --- as rotas do F1.1 --------------------------------------------------- */
 
@@ -98,6 +120,14 @@ export function criarServidor(opcoes = {}) {
                                            agora: relogio() }));
   }
 
+  /* A PORTA DA SALA (F1.14). Rota de fluxo, e privada como toda rota nova: a
+     sessão é conferida no despacho, pela lista, e esta não está na de públicas.
+
+     O `userId` vai junto porque a sala filtra por ele — é como o F1.7 manda o
+     resultado de UMA aposta só para o dono dela, e nunca para a sala. */
+  registrarFluxo('GET', '/api/sala', ({ req, res, userId }) =>
+    sala.entrar(req, res, { estadoInicial: sched.paraCliente(), userId }));
+
   /* --- o laço ------------------------------------------------------------- */
 
   const servidor = createServer(async (req, res) => {
@@ -127,7 +157,8 @@ export function criarServidor(opcoes = {}) {
       /* A mensagem de 404 NÃO ecoa o caminho pedido. Eco de entrada do usuário
          numa resposta é o começo de metade dos problemas de injeção, e aqui não
          serve para nada: quem pediu já sabe o que pediu. */
-      if (!fn) return responder(res, 404, { codigo: ERROS.NAO_ENCONTRADO, erro: 'caminho desconhecido' });
+      if (!fn && !fluxos.has(chave))
+        return responder(res, 404, { codigo: ERROS.NAO_ENCONTRADO, erro: 'caminho desconhecido' });
 
       /* A SESSÃO É CONFERIDA AQUI, PARA TODAS, e a lista de públicas é a
          exceção declarada. O desenho oposto — cada rota conferindo a própria —
@@ -141,6 +172,18 @@ export function criarServidor(opcoes = {}) {
         if (!userId)
           return responder(res, 401, { codigo: ERROS.NAO_AUTORIZADO,
             erro: 'sessão ausente ou inválida' });
+      }
+
+      /* O FLUXO SAI AQUI, depois da versão e da sessão e antes do corpo — um
+         SSE não tem corpo, e esperar por um que não vem seria segurar a
+         conexão à toa. Os cabeçalhos de segurança são aplicados ANTES de
+         entregar o socket: o `writeHead` da sala passa os dela por cima, e sem
+         isto a única resposta do servidor sem eles seria justamente a que fica
+         aberta por minutos. */
+      const fluxo = fluxos.get(chave);
+      if (fluxo) {
+        for (const [k, v] of Object.entries(SEGURANCA)) res.setHeader(k, v);
+        return fluxo({ req, res, userId, query: url.searchParams, config });
       }
 
       const corpo = await lerCorpo(req);
@@ -168,9 +211,39 @@ export function criarServidor(opcoes = {}) {
        rede. Não há rota que faça isso: abrir rodada é do scheduler, e o §5.4 é
        explícito em que o cliente perdeu o direito de pedir a próxima. */
     db, sched, sala,
+    laco,
+    /* O LAÇO LIGA COM A PORTA, e não com a fábrica: uma instância criada só
+       para inspecionar o banco não deve começar a girar rodadas. Quem abre
+       porta está servindo jogo. `laco: false` é para o teste que precisa abrir
+       a rodada com a própria mão. */
     ouvir: porta => new Promise(r =>
-      servidor.listen(porta ?? config.porta, '127.0.0.1', () => r(servidor.address().port))),
-    fechar: () => new Promise(r => servidor.close(() => { try { db.close(); } catch {} r(); })),
+      servidor.listen(porta ?? config.porta, '127.0.0.1', () => {
+        if (opcoes.laco !== false) laco.iniciar();
+        r(servidor.address().port);
+      })),
+    /* PARAR O LAÇO ANTES DE FECHAR O BANCO. Na ordem inversa ele tickaria um
+       scheduler cujo banco já não existe, e o erro sairia em silêncio a cada
+       250 ms — pelo `aoErro`, que é justamente onde ninguém olha. */
+    /* FECHAR TAMBÉM FECHA A SALA, e a ordem é: laço, sala, porta, banco.
+     *
+     * `servidor.close()` espera as conexões abertas terminarem, e um SSE **não
+     * termina** — é a definição dele. Sem despejar a sala antes, um deploy
+     * nunca conclui enquanto houver um jogador com a aba aberta, e o processo
+     * velho fica de pé segurando a porta.
+     *
+     * Foi um MUTANTE que mostrou isto, e vale registrar como: o defeito da sala
+     * fantasma (S234) deixou um cliente reconectando para sempre, e a suíte
+     * inteira TRAVOU em vez de ficar vermelha — o primeiro defeito da história
+     * do projeto que pendura o portão em vez de reprová-lo. O sintoma era do
+     * teste; a causa era esta, e é de produção. */
+    fechar: () => { laco.parar(); sala.fecharTodas();
+      return new Promise(r => {
+        servidor.close(() => { try { db.close(); } catch {} r(); });
+        /* `res.end()` termina a RESPOSTA e o socket fica vivo pelo keep-alive,
+           esperando um pedido que não vem — e `close()` continua esperando.
+           `closeAllConnections` é a única coisa que de fato solta a porta. */
+        servidor.closeAllConnections?.();
+      }); },
   };
 }
 

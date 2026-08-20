@@ -6,3 +6,9 @@ assets/
 # Capturas do passo OLHAR (tools/olhar-telas.mjs). São para leitura humana
 # durante o bloco, não artefato do projeto — mesma razão de assets/.
 .telas/
+
+# Cache de vereditos do portão Q2. É medição local e muda a cada execução;
+# versioná-lo tornaria ilegível o diff de todo bloco. A chave já amarra
+# definição, arquivo e fecho, então cache frio custa tempo e nunca correção.
+test/fixtures/q2-veredito.json
+test/fixtures/captura.json
