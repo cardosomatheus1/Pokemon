@@ -6,6 +6,7 @@
  * NÃO são silenciosamente omitidas. */
 import { readFileSync } from 'node:fs';
 import * as E from './motor.mjs';
+import { derivar, novaRaiz } from '../engine/seed.mjs';
 import { criarSuite, ok, rngTeste, elencoDeterministico, igual } from './harness.mjs';
 
 const RODADAS = 2000;
@@ -288,6 +289,87 @@ export function suite() {
       `o pool voltou a declarar recompensa em moeda por desafio: ${campos.join(', ')}. ` +
       `São 21 conclusões por semana; qualquer valor aqui multiplica por 21 contra ` +
       `um orçamento de ${ORCAMENTO_DESAFIOS}.`);
+  });
+
+  /* ------------------------------------------------------------------ *
+   * D-018 · A RAIZ CABE NUM BRUTE FORCE — E ESTE TESTE AFIRMA O DEFEITO.
+   *
+   * Molde do `D-001`: enquanto o defeito existe, o teste é VERDE. Quem
+   * corrigir encontra este vermelho, e o vermelho aponta para
+   * `docs/DEFEITOS.md` e para o bloco **F1.15**.
+   *
+   * O defeito: a raiz da rodada tem 32 bits, e `GET /api/rodada` publica os
+   * doze lutadores enquanto a janela de aposta está ABERTA. Doze de 76,
+   * ordenados, são ~74 bits de informação sobre um segredo de 32 — a pool
+   * publicada não estreita o espaço da raiz, ela o DETERMINA. Recuperada a
+   * raiz, `derivar(raiz,'batalha')` dá o campeão antes de a aposta fechar.
+   *
+   * A BUSCA AQUI É EM JANELA PEQUENA, e a escolha é declarada: varrer 2^32
+   * custa ~59 min num núcleo (medido), o que não cabe numa suíte que roda a
+   * cada bloco. A janela prova o MECANISMO — a pool identifica a raiz de forma
+   * única e a inversão funciona. O custo do espaço inteiro está no D-018, com
+   * a medida.
+   * ------------------------------------------------------------------ */
+  s.teste('D-018 · a pool publicada identifica a raiz (AFIRMA O DEFEITO)', () => {
+    const JANELA = 20000;
+    const alvo = 13337;
+    /* `E.sortearPool` é a função DE PRODUÇÃO — a mesma que o servidor chama ao
+       abrir a rodada. Reimplementar o embaralhamento aqui mediria a minha
+       reimplementação; foi assim que a primeira medição deste defeito não
+       achou a raiz, porque eu tinha copiado o `rng` errado. */
+    const poolDe = r => E.sortearPool(derivar(r, 'elenco')).map(f => f.dex).join(',');
+    const esperada = poolDe(alvo);
+
+    let achadas = 0, primeira = null;
+    for (let r = 0; r < JANELA; r++)
+      if (poolDe(r) === esperada) { achadas++; if (primeira === null) primeira = r; }
+
+    igual(achadas, 1,
+      `${achadas} raízes na janela de ${JANELA} produzem a MESMA pool publicada. ` +
+      `Se este número passar de 1, a pool deixou de identificar a raiz e o ` +
+      `D-018 enfraqueceu — o que é boa notícia e precisa ser lido antes de ` +
+      `alguém dar o defeito por corrigido.`);
+    igual(primeira, alvo,
+      `a busca devolveu ${primeira} e a raiz era ${alvo}. O D-018 diz que a pool ` +
+      `publicada DETERMINA a raiz; se isso deixou de valer, leia o defeito antes ` +
+      `de mexer neste teste.`);
+  });
+
+  s.teste('D-018 · a raiz ainda cabe em 32 bits (AFIRMA O DEFEITO)', () => {
+    for (let i = 0; i < 200; i++) {
+      const r = novaRaiz();
+      ok(Number.isInteger(r) && r >= 0 && r <= 0xFFFFFFFF,
+        `a raiz saiu de 32 bits: ${r}. Se o F1.15 fechou, ESTE TESTE E O DE CIMA ` +
+        `SOMEM no mesmo commit, e no lugar deles entra o teste que o bloco pede: ` +
+        `dada a pool publicada, não existe busca que devolva a raiz.`);
+    }
+  });
+
+  /* ------------------------------------------------------------------ *
+   * E O GUARDA QUE VALE ANTES E DEPOIS DO F1.15.
+   *
+   * `misturar()` é o finalizador do splitmix32 e é BIJETIVA: cada passo se
+   * desfaz — o `+` subtraindo, o `imul` pelo inverso modular, o `xor-shift`
+   * por iteração. Confirmado em 200.000/200.000 casos ao medir o D-018.
+   *
+   * Consequência: publicar QUALQUER semente de ramo devolve a raiz em O(1),
+   * sem busca nenhuma. O F1.14 quase publicou `sementeElenco` para o cliente
+   * montar a pool sem esperar o reveal, e a medição matou a ideia antes de
+   * virar código.
+   *
+   * Este guarda continua valendo depois do F1.15 — com raiz de 128 bits, uma
+   * semente publicada não devolve a raiz, mas devolve o RAMO, e o ramo do
+   * clima é segredo até o fechamento (§4.5, §P3).
+   * ------------------------------------------------------------------ */
+  s.teste('nenhuma semente de ramo é publicada com a janela aberta', () => {
+    const txt = readFileSync(new URL('../server/scheduler.mjs', import.meta.url), 'utf8');
+    const paraCliente = txt.slice(txt.indexOf('function paraCliente'));
+    const publico = paraCliente.slice(0, paraCliente.indexOf('return publico'));
+    const suspeitos = [...publico.matchAll(/\b(semente\w*|derivar\s*\()/g)].map(m => m[0]);
+    igual(suspeitos.length, 0,
+      `\`paraCliente()\` menciona ${suspeitos.join(', ')}. Semente de ramo publicada ` +
+      `devolve a raiz em O(1) — \`misturar()\` é bijetiva. É a ideia que o F1.14 ` +
+      `teve e a medição matou; ver D-018.`);
   });
 
   return s;

@@ -1089,3 +1089,43 @@ de hoje — os 154.000 não são segredo, só precisam estar bem espalhados.
 **Nenhuma feature de valor econômico real pode ser ligada** — o §25.1 já dizia
 isso, e agora há um motivo concreto e medido. O item entra na lista de saída da
 v0.9 junto do L-012.
+
+---
+
+## D-019 — o servidor de produção importa um arquivo de `test/`
+
+**Achado em:** F1.14 (lendo os pontos de contato do F1.15) · **Bloco dono:**
+**F1.15** · **Gravidade:** latente — não quebra hoje
+
+```
+server/servidor.mjs:19    import { digital } from '../test/rodada-digital.mjs';
+```
+
+É a única ocorrência em todo o código de produção (`server/`, `engine/`,
+`content/`, `app/`), e não existe guarda contra ela.
+
+**Por que existe:** `rodada-digital.mjs` é um módulo legítimo e compartilhado —
+ele reconstrói a rodada a partir da raiz e roda nos dois ambientes, Node e
+Chromium, para o teste de determinismo. O comentário dele explica bem por que é
+fonte única. O que está errado é o **endereço**: ele é código de motor morando
+na pasta de teste, e a rota `GET /api/rodada/digital` o expõe em produção.
+
+**Por que é latente e não vivo:** hoje o repositório inteiro é a unidade de
+entrega — não há `Dockerfile`, `Procfile` nem campo `files` no `package.json`.
+Um deploy que empacote o conjunto natural (`server/`, `engine/`, `content/`,
+`app/`) falha no `import` antes de abrir a porta, e o sintoma aparece no
+primeiro deploy real, que é o pior momento para descobri-lo.
+
+**Efeito colateral que já custa hoje:** `test/` entra no fecho do
+`server/servidor.mjs`. Mexer num arquivo de teste invalida veredito de defeito
+plantado no servidor, sem que nada do servidor tenha mudado.
+
+**A correção:** mover para `engine/rodada-digital.mjs`, que é onde ele mora
+conceitualmente — reconstruir a rodada a partir da raiz é motor, não teste. E
+vem com a guarda que faltava: **nada em `server/`, `engine/`, `content/` ou
+`app/` importa de `test/`**. Sem a guarda, a próxima ocorrência nasce igual.
+
+**Por que no F1.15 e não agora:** aquele bloco reescreve a assinatura de
+`digital(raiz)` de qualquer forma — a raiz deixa de ser um número. Mover o
+arquivo em outro commit faria o diff do F1.15 misturar a mudança de endereço com
+a de tipo, e uma esconderia a outra.
