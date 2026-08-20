@@ -137,9 +137,24 @@ npm run assets             # baixa a arte para assets/, fora do versionamento
 npm test                   # suíte (pula Q5 se não houver navegador)
 npm run sabotagem          # Q2 completo — obrigatório para fechar bloco
 npm run sabotagem:tocados  # Q2 parcial, DURANTE a construção (ver abaixo)
-npm run test:gerar         # regrava fixtures E linha de base visual
+npm run test:gerar         # regrava fixtures E linha de base visual (~5 min)
+npm run gerar:visual       # SÓ a linha de base visual — 49 s (T3)
+npm run rapido             # as 21 suítes sem navegador — 7 s (T3)
 npm run snapshot           # regera o instantâneo do protótipo (paridade)
 ```
+
+### O recorte `--so` acelera a construção, e não fecha bloco nenhum
+
+`node test/run.mjs --so=contraste,visual` roda só as suítes nomeadas; a mesma
+bandeira no `--gerar` regrava só as fixtures nomeadas. Medido no T3: o laço de
+construção caiu de **2,5 min para 0,8 s**, e a regravação da linha de base de
+**5 min para 49 s** — porque o Chromium não sobe quando o recorte não pede suíte
+que precise dele.
+
+**Ele não fecha bloco.** `npm run portoes` recusa a bandeira, o recorte grita que
+foi parcial nas duas pontas, e nome que não casa com suíte nenhuma **reprova** em
+vez de rodar vazio. Execução vazia com a palavra VERDE é a falha mais silenciosa
+que este arnês pode ter, e é o defeito `S109`.
 
 ### `sabotagem:tocados` acelera a construção, e não fecha bloco nenhum
 

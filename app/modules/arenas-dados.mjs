@@ -24,13 +24,42 @@ import { derivar } from '../../engine/seed.mjs';
 /* `poeira` é a cor da poeirinha que cada pisada levanta — dado, não desenho:
    quem pinta é o render, que só precisa da cor. Areia clara na ilha, rocha
    escura no vulcão; usar a mesma nas cinco entregava pisada bege na lava. */
+/* `brilho` é o VÉU DE COR por cima do conjunto — o quinto campo que o catálogo
+   da v1.0 documentava e nunca construiu (L-027, fechada no V1.20).
+   
+   Ele resolve um problema concreto e mensurável: os sprites vêm de uma folha
+   única, com a mesma luz, e são colados sobre cinco cenários de temperatura de
+   cor muito diferente. Na Cratera, um Lapras azul-claro flutua acima do chão
+   como decalque; no Campo Gelado, um Arcanine laranja faz o mesmo. Um véu
+   fraco por cima de TUDO — chão e lutadores juntos — devolve a unidade sem
+   repintar sprite nenhum, que é o que o comentário original queria dizer.
+
+   FRACO de propósito, e o número é medido, não escolhido: acima de ~0,10 de
+   alfa o véu começa a comer o contraste entre o lutador e o piso, que é
+   exatamente o que o item 9 da L-030 cobra na variante shiny. Ver
+   `test/contraste.mjs` e a medição no verbete da L-027.
+
+   `mistura` é o modo de composição. `soft-light` escurece e clareia ao mesmo
+   tempo conforme o que está embaixo — ele UNIFICA sem achatar. `multiply`
+   apagaria as sombras do chão; `overlay` estoura os claros do gelo. */
 export const ARENAS = [
-  { key:'tropical', nome:'Ilha Tropical',    emoji:'🏝️', peso:20, poeira:'#efe2bd' },
-  { key:'neve',     nome:'Campo Gelado',     emoji:'❄️', peso:20, poeira:'#e8f4fb' },
-  { key:'coliseu',  nome:'Coliseu',          emoji:'🏛️', peso:20, poeira:'#e6d7b6' },
-  { key:'praia',    nome:'Praia',            emoji:'🏖️', peso:20, poeira:'#f7e8c0' },
-  { key:'vulcao',   nome:'Cratera Vulcânica', emoji:'🌋', peso:20, poeira:'#6b524a' },
+  { key:'tropical', nome:'Ilha Tropical',    emoji:'🏝️', peso:20, poeira:'#efe2bd',
+    brilho:'#ffd98a', veu:0.07, mistura:'soft-light' },
+  { key:'neve',     nome:'Campo Gelado',     emoji:'❄️', peso:20, poeira:'#e8f4fb',
+    brilho:'#bcdcff', veu:0.08, mistura:'soft-light' },
+  { key:'coliseu',  nome:'Coliseu',          emoji:'🏛️', peso:20, poeira:'#e6d7b6',
+    brilho:'#e8c98f', veu:0.06, mistura:'soft-light' },
+  { key:'praia',    nome:'Praia',            emoji:'🏖️', peso:20, poeira:'#f7e8c0',
+    brilho:'#ffe3a6', veu:0.07, mistura:'soft-light' },
+  { key:'vulcao',   nome:'Cratera Vulcânica', emoji:'🌋', peso:20, poeira:'#6b524a',
+    brilho:'#ff8a4a', veu:0.09, mistura:'soft-light' },
 ];
+
+/* O TETO DO VÉU É REGRA, não convenção. Um véu forte é a maneira mais fácil de
+   "dar unidade" e a mais fácil de tornar o campo ilegível — e ninguém repara,
+   porque fica bonito. O teste `test/arenas.mjs` exige que toda arena tenha véu
+   e que nenhum passe daqui. */
+export const VEU_MAX = 0.10;
 
 /* O RÓTULO É A DECISÃO DE PROJETO, não o número.
  *

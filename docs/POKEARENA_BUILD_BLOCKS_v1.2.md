@@ -907,6 +907,165 @@ Os dois eram lacuna real de teste, não falso alarme:
 porque o próprio escopo dependia deles), **D-010** (a linha de base não separava
 componente novo de ruído — fechado no **T2**), **L-028**.
 
+### V1.20 — Trilha `R`: o acabamento da tela principal ✅
+
+**Tam.** M · **Método** GL+INV · **Portões** Q1 Q2 Q5 Q7 · **Depende de** V1.16, T2
+
+**Escopo:** a **L-030** inteira — os dez itens da segunda passada do crítico
+cego — mais a **L-027**, o véu de cor por arena, que estava sem bloco desde que
+o V1.17 foi absorvido pelo V1.16. As duas fechadas; o detalhe item a item está
+em `docs/LACUNAS.md`.
+
+O V1.16 reorganizou o ARRANJO. Este resolveu o que sobra depois que o arranjo
+está certo: **o que cada número quer dizer, em que ordem o olho os encontra, e o
+que a tela afirma quando o estado muda.** São defeitos de LEITURA, e nenhum era
+erro de execução — todos passaram pela suíte inteira verde.
+
+**A decisão do dono:** o `R$` saiu. Ficou só o **preço dos pacotes** da loja
+simulada, que é o produto à venda e não a tradução de um saldo.
+
+**O que o olho pegou e o teste não pegaria:**
+
+- **A primeira solução do item 4 estava errada, e a captura provou.** Pôr
+  "CHANCE" em cima de cada número resolvia o significado e custava uma linha por
+  lutador — o que empurrou a **odd**, o segundo número mais importante da tela,
+  para o menor corpo da linha. Virou faixa de coluna: o rótulo aparece uma vez,
+  no topo, onde o olho entra.
+- **A confirmação da aposta caiu em cima do selo de arena** e saiu cortada no
+  meio da palavra. O selo tem z-index maior. Mudou para o único canto livre dos
+  três selos.
+- **"na lista ao lado"** é verdade em três das quatro larguras e mentira em
+  420 px, onde a lista desce. É o mesmo defeito que o V1.16 tirou da seta do
+  overlay, voltando pela porta do texto.
+- **A cantoneira de BAIXO tinha o mesmo problema da de cima**, e apareceu no
+  mesmo olhar.
+
+**O que o crítico cego pegou e nem o olho nem o teste pegaram (Q7, terceira
+passada, mesma barra):** em 420 px a lista de odds ficava **fora da dobra**, e
+dois textos mandavam o jogador ir até ela — a única ação que o produto pede,
+invisível no celular. Corrigido dentro do bloco por ser regressão e não
+acabamento: a ordem em coluna única passou a mudar com a fase.
+
+Notas da terceira medição: **1920 → 6,25 · 1440 → 7,00 · 420 → 5,50**. O resto
+do que ele achou virou **L-031**, dono **V1.21** — e o item mais duro dele é que
+**1920 é a pior das larguras por ser a maior**: o layout estica em vez de
+agrupar.
+
+**Duas medições novas viraram ferramenta permanente:**
+
+- `test/contraste.mjs` — piso WCAG AA medido **no pixel**, não no token: a cor
+  que o jogador vê é `--panel` com alfa sobre `--bg` com gradiente por cima. O
+  rodapé de auditoria marcava **3,55:1** contra o piso de 4,5:1.
+- a separação lutador/piso, medida na cratera com a luta correndo, que confirmou
+  a queixa sobre o shiny **e a inverteu** (1,26 → 1,99, contra 1,43 → 1,75 na
+  variante normal).
+
+**Q6: sem superfície nova.**
+
+**Saída (cumprida):** o crítico cego responde as cinco perguntas em 1920 e em
+420 e localiza cada resposta na tela.
+
+---
+
+### T3 — O ciclo que cabe numa sentada ✅
+
+**Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/` e `tools/`)
+
+**O dono do projeto levantou, com razão, que um bloco leva horas** — e a maior
+parte delas é máquina esperando por trabalho que não precisava ser feito. Medido
+no V1.20:
+
+| peça | custo | vezes | total |
+|---|---|---|---|
+| `npm run sabotagem` (108 defeitos) | ~20 min | 3 | **60 min** |
+| `npm test` com navegador | ~2,5 min | ~15 | **37 min** |
+| `npm run test:gerar` | ~5 min | 4 | **20 min** |
+| `npm run olhar` | ~2 min | 5 | 10 min |
+
+**O que foi feito, e o que cada coisa passou a custar:**
+
+**1. `--so=<lista>` no gerador.** `--gerar` regravava TUDO — golden, precisão
+(154.000 × 8), informação (300 rodadas), margem (300 × 8.000) e a linha de base
+de 10.000 rodadas — quatro minutos de Monte Carlo para reescrever UM arquivo.
+
+```
+npm run test:gerar                    ~5 min
+npm run gerar:visual                    49 s      <- medido
+```
+
+**2. `--so=<lista>` na suíte.** E, com ele, o Chromium não sobe quando o recorte
+não pede suíte que precise dele — que é o que faz a diferença ser de duas ordens
+de grandeza:
+
+```
+npm test              (27 suítes, 5 navegadores)   ~2,5 min
+npm run rapido        (21 suítes, sem navegador)     6,9 s   <- medido, 236 testes
+node test/run.mjs --so=carteira,exposicao            0,8 s   <- medido
+```
+
+**3. Defeito de interface começa pelo navegador.** Dos 12 defeitos novos do
+V1.20, **10 só o navegador pega** — e para cada um o portão rodava a suíte
+inteira SEM navegador (55 s, tudo verde, zero informação) e só então de novo COM.
+Quando o defeito mora em `app/`, a ordem se inverte. A passada sem navegador é
+**guardada e não descartada**: se ela também pegar, alimenta o caminho normal em
+vez de ser refeita — descartá-la custaria uma terceira execução justamente no
+caso em que a aposta errou.
+
+**A metade que importa: o portão de fechamento não encolheu.** `npm run portoes`
+continua rodando a suíte inteira, duas vezes, com navegador e sabotagem completa,
+e **recusa `--so` explicitamente** (`EXIGE_VISUAL=1` + recorte = saída 2). O modo
+parcial acelera a CONSTRUÇÃO; ele não fecha bloco nenhum. É a mesma disciplina do
+`sabotagem:tocados`, do T1, e é por isso que aquele não corrompeu o portão.
+
+**O recorte GRITA que foi parcial**, nas duas pontas da execução, e **nome que
+não casa com suíte nenhuma REPROVA** em vez de rodar vazio — que é a falha mais
+silenciosa que este arnês poderia ter: zero testes e a palavra VERDE.
+
+**Sabotagem:** `S109` (nome inexistente roda vazio), `S110` (o aviso de parcial
+some), `S111` (o portão de fechamento aceita o recorte), `S112` (a suíte deixa de
+expor o próprio nome), `S113` (o caminho do navegador some com a passada sem
+navegador).
+
+**Q5: sem tela nova.** **Q6: sem superfície nova.**
+
+**Saída (cumprida):** o laço de construção caiu de ~2,5 min para **0,8–7 s**, a
+regravação da linha de base de ~5 min para **49 s**, e o portão de fechamento
+continua exatamente do mesmo tamanho.
+
+---
+
+### V1.21 — Trilha `R`: densidade e estados
+
+**Tam.** M · **Método** GL+INV · **Portões** Q1 Q2 Q5 Q7 · **Depende de** V1.20
+
+**Escopo:** a **L-031** — os nove itens que a terceira passada do crítico cego
+abriu. O eixo é um só, e é o item 2 dela: **em 1920 o layout estica em vez de
+agrupar.** Medido pela mesma barra, 1920 tira 6,25 e 1440 tira 7,00 — a maior
+largura é a pior, porque nada cresce de corpo e tudo se afasta.
+
+Os outros oito orbitam isso: identidade duplicada ocupando o topo, a coluna
+esquerda se rearranjando inteira entre estados, a arena vazia durante a aposta,
+a hierarquia de cor invertida nos dois botões de controle.
+
+**Dois itens precisam de MEDIÇÃO antes de virar correção**, e o bloco não pode
+inverter a ordem:
+- a placa de vida vazia e sem nome durante a luta — pode ser sprite que não
+  chegou, pode ser defeito;
+- o retorno em dinheiro antes da aposta — mostrar `263` ao lado de `x5,26` em
+  doze linhas pode responder a pergunta ou pode virar a terceira coluna de
+  números na mesma linha. **Mede-se com o crítico, não se decide na prancheta.**
+
+**Sabotagem:** a ordem em coluna única voltar a ser fixa; o rótulo de direção do
+relógio sumir; a identidade duplicada voltar; a cor primária voltar para o botão
+secundário.
+
+**Q6: sem superfície nova.**
+
+**Saída:** 1920 deixa de ser a pior largura da barra — nota igual ou acima de
+1440, com a localização de cada resposta.
+
+---
+
 ### V1.19 — Baús: NÃO ENTRA NO PORTE
 
 **Decisão do dono do projeto.** Os baús ficam no **nosso** roadmap, com o

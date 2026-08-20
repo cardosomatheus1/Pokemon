@@ -1,6 +1,6 @@
 {
   "name": "pokearena",
-  "version": "1.0.0-V1.16",
+  "version": "1.0.0-V1.20",
   "private": true,
   "type": "module",
   "description": "PokéArena — battle royale de apostas com moeda simulada",
@@ -10,6 +10,8 @@
     "test": "node test/run.mjs",
     "test:sem-golden": "SEM_GOLDEN=1 node test/run.mjs",
     "test:gerar": "node test/run.mjs --gerar",
+    "gerar:visual": "node test/run.mjs --gerar --so=visual",
+    "rapido": "node test/run.mjs --so=golden,fonte-unica,estado,modulos,conteudo,carteira,banco,exposicao,assets,telemetria,commit,saida-v09,progressao,tema,arenas,portao,colocacao,banner,shiny,adm,semente",
     "sabotagem": "node test/sabotagem.mjs",
     "sabotagem:tocados": "node test/sabotagem.mjs --tocados",
     "olhar": "node tools/olhar-telas.mjs",

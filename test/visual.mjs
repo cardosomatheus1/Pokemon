@@ -20,7 +20,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { extname, join, sep } from 'node:path';
 import { criarSuite, igual, ok } from './harness.mjs';
 import { digital as digitalNode, rodada as rodadaNode } from './rodada-digital.mjs';
-import { sortearArena } from '../app/modules/arenas-dados.mjs';
+import { VEU_MAX, sortearArena } from '../app/modules/arenas-dados.mjs';
 import { CONF as MOTOR_CONF } from '../engine/engine.mjs';
 const CONF_SIMS = MOTOR_CONF.SIMS;
 
@@ -353,6 +353,31 @@ export async function rodar() {
        fase de aposta. Selo apagado aqui é o V1.14 desligado. */
     /* D-011: os marcadores do número de simulações, como o jogador os lê. */
     simsNaTela: [...document.querySelectorAll('.sims')].map(e => e.textContent.trim()),
+    /* L-027: o véu está APLICADO, e não só declarado no catálogo. Ler o
+       `style` inline provaria que alguém escreveu a propriedade; o que se lê
+       aqui é o computado, que é o que o navegador de fato vai pintar. */
+    veu: (() => {
+      const el = document.querySelector('#veuArena');
+      if (!el) return { existe:false };
+      const cs = getComputedStyle(el);
+      return { existe:true, cor:cs.backgroundColor, alfa:parseFloat(cs.opacity),
+               mistura:cs.mixBlendMode, cliques:cs.pointerEvents,
+               z:parseInt(cs.zIndex, 10) };
+    })(),
+    /* L-030 item 9: o contorno que separa o lutador do piso. Lido no
+       COMPUTADO e em três estados, porque o risco real não é escrever a
+       regra — é `.mine` e `.rage` substituírem o `filter` inteiro e apagarem
+       o contorno junto, que é como ele nasceu ausente. */
+    contorno: (() => {
+      const um = document.querySelector('.mon .body');
+      if (!um) return { existe:false };
+      const f = getComputedStyle(um).filter;
+      const marcados = [...document.querySelectorAll('.mon')].slice(0, 3).map(m => {
+        const b = m.querySelector('.body');
+        return b ? getComputedStyle(b).filter : '';
+      });
+      return { existe:true, filtro:f, amostras:marcados };
+    })(),
     arenaNaTela: document.querySelector('#arenaBadge')?.textContent ?? '',
     arenaSeloVisivel: !!document.querySelector('#arenaBadge')?.classList.contains('show'),
     fase: document.querySelector('#phase')?.textContent,
@@ -364,6 +389,71 @@ export async function rodar() {
        folha aplicada, venha de onde vier. */
     comSprite: [...document.querySelectorAll('.mon .body')]
       .filter(e => /url\(/.test(e.style.backgroundImage)).length,
+
+    /* L-030 item 8 · CONTRASTE, medido no pixel e não no token.
+     *
+     * A cor de fundo que o jogador vê é `--panel` com alfa sobre `--bg`, com
+     * gradiente por cima. Ler o valor declarado responderia sobre o token; a
+     * pergunta é sobre o que dá para ler. Então: sobe a árvore compondo alfa
+     * até achar opacidade 1, que é onde a pilha para.
+     *
+     * `background-image` não entra na conta — gradiente não tem uma cor só.
+     * Isso torna a medida CONSERVADORA onde há gradiente claro por cima (o
+     * contraste real fica melhor que o medido) e exata onde não há. Preferimos
+     * errar para o lado de exigir demais. */
+    contrastes: (() => {
+      const cor = t => {
+        const m = t.match(/rgba?\(([^)]+)\)/);
+        if (!m) return null;
+        const p = m[1].split(',').map(x => parseFloat(x));
+        return { r:p[0], g:p[1], b:p[2], a: p.length > 3 ? p[3] : 1 };
+      };
+      const sobre = (f, t) => [0,1,2].map(i =>
+        Math.round(f[i] * f[3] + t[i] * (1 - f[3])));
+      const fundoDe = el => {
+        let pilha = [], n = el;
+        while (n && n !== document.documentElement.parentNode){
+          const c = cor(getComputedStyle(n).backgroundColor);
+          if (c && c.a > 0){ pilha.push([c.r, c.g, c.b, c.a]); if (c.a >= 1) break; }
+          n = n.parentElement;
+        }
+        if (!pilha.length) return [0, 0, 0];
+        let base = pilha[pilha.length - 1].slice(0, 3);
+        for (let i = pilha.length - 2; i >= 0; i--) base = sobre(pilha[i], base);
+        return base;
+      };
+      const ALVOS = [
+        { sel:'#oddNote',    nome:'rodapé de auditoria da lista de odds' },
+        { sel:'.pick .lim',  nome:'limite por lutador na lista' },
+        { sel:'#chipHint',   nome:'dica de valor da aposta' },
+        { sel:'.fa-eu span', nome:'nível do treinador na faixa' },
+        { sel:'.card h3',    nome:'título de painel' },
+        { sel:'#faSeg',      nome:'relógio da fase' },
+        /* Achados pelo crítico cego na terceira passada: o link para a carteira
+           era "o texto de menor contraste da tela inteira", e é o caminho para
+           o dinheiro do jogador. O rótulo do relógio e a faixa de coluna
+           entraram junto porque nasceram no mesmo bloco. */
+        { sel:'#btnWallet',  nome:'link para a carteira' },
+        { sel:'.fa-cron .rot', nome:'rótulo de direção do relógio' },
+        { sel:'.colunas .c2', nome:'rótulo de coluna da lista' },
+        { sel:'.fa-saldo span', nome:'unidade do saldo na faixa' },
+      ];
+      const out = [];
+      for (const a of ALVOS){
+        const el = document.querySelector(a.sel);
+        if (!el) continue;
+        const cs = getComputedStyle(el);
+        const f = cor(cs.color); if (!f) continue;
+        const fundo = fundoDe(el);
+        const frente = f.a >= 1 ? [f.r, f.g, f.b] : sobre([f.r, f.g, f.b, f.a], fundo);
+        const px = parseFloat(cs.fontSize);
+        const peso = parseInt(cs.fontWeight, 10) || 400;
+        out.push({ nome:a.nome, frente, fundo, px,
+          grande: px >= 18.66 || (px >= 14 && peso >= 700),
+          amostra: (el.textContent || '').trim().slice(0, 60) });
+      }
+      return out;
+    })(),
   }));
   /* polling explícito: o padrão do Playwright é requestAnimationFrame, que o
      navegador estrangula quando a página não está em primeiro plano. */
@@ -755,6 +845,54 @@ export function suiteRodadaViva(r) {
       `marcador(es) fora de CONF.SIMS (${esperado}): ${[...new Set(errados)].join(' · ')}`);
   });
 
+  /* L-027 · O VÉU ESTÁ NO AR — a peça, não a declaração.
+   *
+   * O teste em `test/arenas.mjs` prova que o catálogo tem o campo e que o
+   * módulo escreve as três propriedades. Nenhum dos dois prova que a camada
+   * existe na página com valor diferente de zero: um `#veuArena` esquecido
+   * fora do `#arena`, ou um seletor CSS que não casa, passa nos dois. */
+  /* L-030 item 9 · O CONTORNO ESTÁ NO SPRITE.
+   *
+   * A queixa era sobre a variante shiny ter menos contraste contra o piso da
+   * cratera. A paleta shiny é arte de terceiro e não se repinta — o que é nosso
+   * é a SEPARAÇÃO. Medido, na cratera, com a luta correndo:
+   *
+   *     mediana de contraste lutador/piso     sem contorno    com contorno
+   *     normal                                   1,43:1          1,75:1
+   *     shiny                                    1,26:1          1,99:1
+   *
+   * A medição confirma a queixa (shiny ERA pior que normal) e a inverte: o halo
+   * escuro rende mais onde o sprite é mais claro, que é o caso das paletas
+   * alternativas. */
+  s.teste('o lutador tem contorno que o separa do piso', () => {
+    const c = r.contorno;
+    ok(c.existe, 'nenhum .mon .body na tela para medir o contorno');
+    ok(/drop-shadow/.test(c.filtro),
+      `o sprite não tem contorno nenhum (filter "${c.filtro}") — ele vira decalque sobre o piso`);
+    /* Duas sombras: o halo colado na silhueta e a sombra de contato. Uma só
+       não separa — foi o que existiu até o V1.20, e a 22 px não se via. */
+    const quantas = (c.filtro.match(/drop-shadow/g) || []).length;
+    ok(quantas >= 2,
+      `só ${quantas} sombra(s) no sprite: falta o halo colado na silhueta ou a sombra de contato`);
+    const sem = c.amostras.filter(f => !/drop-shadow/.test(f));
+    ok(sem.length === 0,
+      `${sem.length} lutador(es) sem contorno — algum estado substituiu o filter inteiro ` +
+      `em vez de compor com var(--contorno)`);
+  });
+
+  s.teste('o véu da arena está aplicado, dentro do teto', () => {
+    const v = r.veu;
+    ok(v.existe, 'a camada #veuArena não está na página');
+    ok(v.alfa > 0, `véu com opacidade ${v.alfa} — declarado e não aplicado é a L-027 de volta`);
+    ok(v.alfa <= VEU_MAX + 1e-9,
+      `véu com opacidade ${v.alfa}, acima do teto de ${VEU_MAX} — ver o item 9 da L-030`);
+    ok(v.mistura !== 'normal',
+      `modo de mistura "${v.mistura}": sem mistura o véu TINGE em vez de unificar`);
+    ok(v.cliques === 'none', 'o véu está recebendo clique — ele pinta a cena, não interage');
+    ok(v.cor && v.cor !== 'rgba(0, 0, 0, 0)',
+      `véu sem cor ("${v.cor}") — a arena não passou o `+'`--veuCor`');
+  });
+
   s.teste('a arena anunciada é a que a raiz reproduz', () => {
     ok(r.arenaSeloVisivel,
       'o selo de arena não está no ar na fase de aposta — a arena não dá bônus, não há o que esconder');
@@ -932,8 +1070,13 @@ export function suite(r) {
     ok(c && !c.erro, `sem dados de corte: ${c?.erro}`);
     ok(c.limiteNaLista.length > 0,
       'a linha do lutador não mostra limite nenhum — o §4.4.6 pede o stake máximo à vista');
-    ok(/até|fechado/i.test(c.limiteNaLista),
+    /* "até" saiu no V1.20: lido depressa, "até 9.505" é o teto do que se GANHA,
+       e o §4.4.6 limita o que se APOSTA. O teste pede a ideia, não a palavra —
+       mas pede um número junto, senão "stake máx" sozinho passaria. */
+    ok(/(stake|limite|máx|fechado)/i.test(c.limiteNaLista),
       `a linha mostra "${c.limiteNaLista}", que não comunica limite nem fechamento`);
+    ok(/fechado/i.test(c.limiteNaLista) || /\d/.test(c.limiteNaLista),
+      `a linha mostra "${c.limiteNaLista}" sem valor — rótulo de limite sem número não é limite`);
   });
 
   s.teste('o clima não vaza durante a fase de apostas', () => {

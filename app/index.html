@@ -139,9 +139,18 @@ body{
 /* Uma coluna. A ordem é a da decisão: ver a arena, escolher o lutador,
    definir o valor. As fichas ficam logo abaixo da arena — desfazer e
    reajustar não podem exigir rolagem. */
+/* A ORDEM EM COLUNA ÚNICA MUDA COM A FASE, e o crítico cego é que provou por quê.
+   Em 420 px a ordem era arena · aposta · lista, e a LISTA — que é o produto, a
+   única ação que a tela pede — ficava fora da dobra. Pior: dois textos mandavam
+   ir até ela ("escolha um lutador na lista"), apontando para o vazio.
+   O espaço nobre estava com a arena, que durante a aposta é justamente o painel
+   que menos diz: os lutadores só entram quando a luta começa.
+   Na aposta: lista, aposta, arena. Na luta a arena volta para cima, porque aí
+   ela é o acontecimento e não há mais o que decidir. */
 @media (max-width:1000px){
   .app{grid-template-columns:min(430px,100%);
-       grid-template-areas:"arena" "acao" "lista";justify-content:center}
+       grid-template-areas:"lista" "acao" "arena";justify-content:center}
+  .app.luta{grid-template-areas:"arena" "lista" "acao"}
   /* teto de altura: sem ele o canvas 3:4 empurra tudo para fora da tela */
   #arena{max-height:42vh}
 }
@@ -171,17 +180,24 @@ body{
 .fa-eu span{font-family:var(--px);font-size:.5rem}
 .fa-fase{display:flex;align-items:center;gap:12px;justify-self:center}
 .fa-fase>b{font-family:var(--px);font-size:.72rem;letter-spacing:.08em;white-space:nowrap}
-.fa-cron{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.fa-cron{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
 /* O NÚMERO É GRANDE DE PROPÓSITO, e a barra também: prazo previsível
    REDUZ ansiedade. Não é urgência artificial — é o contrário dela. */
 #faSeg{font-family:var(--px);font-size:1.05rem;line-height:1}
+.fa-cron .rot{font-family:var(--dsp);font-size:.52rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--dim);line-height:1}
 .fa-cron i{display:block;width:104px;height:5px;border-radius:3px;overflow:hidden}
 .fa-cron u{display:block;height:100%;width:100%;text-decoration:none;
   transition:width .25s linear}
 .fa-saldo{justify-self:end;text-align:right;line-height:1.25;white-space:nowrap}
 .fa-saldo b{font-family:var(--px);font-size:.86rem}
 .fa-saldo span{display:block;font-size:.56rem;letter-spacing:.08em}
-.fa-saldo .linkbtn{font-size:.6rem}
+/* O CAMINHO PARA O DINHEIRO NÃO PODE SER O MENOR TEXTO DA TELA. Ele passa no
+   contraste (medido: ver test/contraste.mjs), mas 0,6rem encostado na borda
+   arredondada do cartão ainda se lê como decoração — o crítico cego o
+   descreveu como ilegível olhando, com o número dizendo que estava bom. */
+.fa-saldo .linkbtn{font-size:.72rem;padding:2px 0;text-decoration:underline;
+  text-underline-offset:3px;text-decoration-color:rgba(var(--goldRGB),.45)}
 @media (max-width:560px){
   #faixa{grid-template-columns:auto 1fr;gap:8px;padding:7px 10px}
   .fa-eu{grid-row:1}
@@ -198,7 +214,10 @@ body{
 
 }
 
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+/* O padding da direita é maior que o da esquerda de propósito: é onde a
+   cantoneira inferior mora, e texto que enche a linha terminava dentro dela. */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:12px 16px 12px 12px}
 .card h3{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);
   margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
 
@@ -206,6 +225,12 @@ body{
 #hud{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;
   background:#2b3a52;border:2px solid #16202f;border-bottom:none;
   border-radius:10px 10px 0 0;padding:5px}
+/* A GRADE DE VIDA DORME NA FASE DE APOSTA (L-030, item 2).
+   Some de vez em vez de esmaecer: doze barras a 30 % continuam sendo doze
+   barras, e continuariam disputando a primeira fixação do olho com o painel de
+   odds. O que ela diria ali — "ninguém apanhou ainda" — não é informação. */
+#hud.dormindo{display:none}
+
 .plate{position:relative;height:16px;border:1px solid #0d1420;border-radius:2px;
   background:#4a3f36;overflow:hidden}
 .plate .fill{position:absolute;inset:0;width:100%;background:#7bd85a;
@@ -300,10 +325,29 @@ body{
            animação (andar 32x40 -> atacar 80x80) não faz ele saltar.
    .body  = o quadro em si, recortado da folha por background-position. */
 .mon{position:absolute;transform:translate(-50%,-50%);will-change:left,top}
+/* O CONTORNO SEPARA O LUTADOR DO PISO, e é o que fecha o item 9 da L-030.
+ *
+ * A queixa do crítico cego era sobre a variante SHINY: "as paletas alternativas
+ * têm menos contraste contra o piso da cratera". A tentação é mexer na paleta —
+ * e não dá: a folha shiny é arte de terceiro, o recolor é DELES, e repintar
+ * sprite alheio é a mesma classe de erro que trocar a fonte da arte (v0.6.1).
+ *
+ * O que é NOSSO é a separação. `drop-shadow(0 0 1px preto)` desenha um halo
+ * escuro colado na silhueta: ele não muda a cor do bicho, muda a borda entre o
+ * bicho e o que está atrás. Isso vale para QUALQUER paleta em QUALQUER arena,
+ * em vez de calibrar shiny por shiny — e resolve de quebra o Lapras azul-claro
+ * na cratera, que é o mesmo defeito na variante normal.
+ *
+ * A sombra de contato (`0 3px 4px`) é a segunda metade: sem ela o lutador
+ * flutua. Era `0 1px 0` a 25 %, que a 22 px de sprite não se vê.
+ *
+ * Numa variável porque `.mine` e `.rage` substituem o `filter` inteiro — e
+ * quando substituíam, apagavam o contorno junto. */
 .mon .body{width:100%;height:100%;background-repeat:no-repeat;
   image-rendering:pixelated;transform-origin:50% 72%;
   will-change:background-position;
-  filter:drop-shadow(0 1px 0 rgba(0,0,0,.25))}
+  --contorno:drop-shadow(0 0 1px rgba(0,0,0,.9)) drop-shadow(0 3px 4px rgba(0,0,0,.45));
+  filter:var(--contorno)}
 
 /* nocaute: tomba de lado */
 .mon.ko .body{animation:koFall .7s ease-in forwards}
@@ -330,10 +374,10 @@ body{
   0%,100%{transform:scale(1);opacity:.95}
   50%{transform:scale(1.14);opacity:.55}
 }
-.mon.mine .body{filter:drop-shadow(0 1px 0 rgba(0,0,0,.25)) drop-shadow(0 0 5px rgba(var(--goldRGB),.85))}
+.mon.mine .body{filter:var(--contorno) drop-shadow(0 0 5px rgba(var(--goldRGB),.85))}
 
 /* ---- aura de fúria: killstreak ativo (vem DEPOIS de .mine pra vencer) ---- */
-.mon.rage .body{filter:drop-shadow(0 0 5px #ff3b30) drop-shadow(0 0 11px rgba(255,120,40,.9)) brightness(1.12);
+.mon.rage .body{filter:var(--contorno) drop-shadow(0 0 5px #ff3b30) drop-shadow(0 0 11px rgba(255,120,40,.9)) brightness(1.12);
   animation:ragePulse .7s ease-in-out infinite}
 @keyframes ragePulse{50%{filter:drop-shadow(0 0 8px #ff3b30) drop-shadow(0 0 16px rgba(255,150,60,1)) brightness(1.22)}}
 
@@ -372,6 +416,13 @@ body{
 }
 
 /* ============ OVERLAY (apostas / contagem / resultado) ============ */
+/* O véu fica ACIMA das camadas de jogo e ABAIXO do overlay e dos selos: ele
+   pinta a cena, não a interface. Sem ele o `--veuAlfa` é 0 e a camada é
+   literalmente invisível — o padrão é não fazer nada. */
+#veuArena{position:absolute;inset:0;z-index:4;pointer-events:none;
+  background:var(--veuCor,transparent);opacity:var(--veuAlfa,0);
+  mix-blend-mode:var(--veuMistura,soft-light)}
+
 #overlay{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:10px;padding:14px;
   background:rgba(6,10,18,.55);backdrop-filter:blur(1px)}
@@ -396,6 +447,24 @@ body{
    dizia "o importante é quanto você tem", não "o importante é o preço". */
 .pick .p{margin-left:auto;font-family:var(--px);font-size:.78rem;white-space:nowrap}
 .pick .p i{font-style:normal;font-size:.5rem;opacity:.65;margin-left:3px}
+/* O RÓTULO DA UNIDADE, colado no valor (L-030, item 4). Pequeno e em caixa
+   baixa de propósito: ele não disputa com o número, só impede que 17,5 % e
+   91 % sejam lidos como a mesma grandeza por ocuparem o mesmo lugar. */
+/* O RÓTULO NÃO SE REPETE DOZE VEZES (revisão do V1.20, olhando a captura).
+   A primeira versão punha "CHANCE" em cima de cada número: resolvia o
+   significado e custava uma linha por lutador, o que empurrou a odd — o segundo
+   número mais importante da tela — para o menor corpo da linha. O rótulo mora
+   agora numa faixa de coluna, uma vez, no topo da lista, onde o olho entra. */
+.pick .p u{display:none}
+
+.colunas{display:flex;align-items:center;gap:8px;padding:2px 8px 6px;
+  font-family:var(--dsp);font-size:.52rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--line);
+  margin-bottom:4px}
+.colunas .c1{flex:1}
+.colunas .c2{flex:0 0 auto;min-width:58px;text-align:right}
+.colunas .c3{flex:0 0 auto;min-width:42px;text-align:right}
+.colunas .c4{flex:0 0 auto;min-width:74px;text-align:right}
 .pick .o{font-family:var(--px);font-size:.8rem}
 .pick .lim{opacity:.75}
 .pick .pos{flex:0 0 26px;text-align:center;font-family:var(--px);font-size:.56rem}
@@ -408,10 +477,20 @@ body{
 .pick.sel{background:rgba(var(--goldRGB),.16);box-shadow:inset 3px 0 0 var(--gold)}
 .pick img{width:22px;height:22px;object-fit:contain;image-rendering:pixelated}
 .pick .n{flex:1}
-.pick .o{font-family:var(--px);font-size:8px;color:var(--gold)}
+/* A ODD É O SEGUNDO NÚMERO DA TELA e estava no menor corpo da linha, atrás do
+   limite e da chance. 8px de fonte pixel contra 12,5px de chance invertia a
+   ordem de leitura da coluna que dá nome ao produto. */
+.pick .o{font-family:var(--px);font-size:11px;color:var(--gold)}
 /* Teto de exposição (§4.4.6): o stake máximo daquele lutador fica visível ANTES
    da aposta, e mercado fechado se anuncia. Rejeição silenciosa reprova o F0.8. */
-.pick .lim{color:var(--dim);min-width:74px;text-align:right}
+/* O LIMITE É TERCIÁRIO E TEM QUE PARECER TERCIÁRIO. Ele é o número mais LARGO
+   da linha, então sem recuo de corpo ele domina a linha só pelo comprimento —
+   e a linha é sobre a odd. Contraste mantido no piso da AA (ver contraste.mjs);
+   o que muda é o tamanho, não a legibilidade. */
+.pick .lim{color:var(--dim);min-width:74px;text-align:right;font-size:.6rem;
+  /* `.tiny` traz `margin-top:8px` para parágrafos de rodapé; dentro de uma
+     linha de grade isso derruba o valor meia linha abaixo dos irmãos. */
+  margin-top:0}
 .pick.fechado{opacity:.55;cursor:not-allowed}
 .pick.fechado .lim{color:var(--red)}
 
@@ -537,7 +616,12 @@ td.hpc{text-align:right;font-size:.68rem;color:var(--dim);width:42px}
 .btn.pri{background:#c0392b;border-color:#e05a4a}
 .btn.pri:hover{background:#d1442f}
 .btn.on{background:var(--green);border-color:var(--green);color:#08200f}
-.tiny{font-size:.66rem;color:#69718a;line-height:1.5;margin-top:8px}
+/* O TEXTO AUXILIAR PASSA NO PISO DA WCAG AA (L-030, item 8).
+   Era `#69718a`, que sobre o painel dá 3,55:1 contra o piso de 4,5:1 — e o
+   `#oddNote`, a frase que sustenta o discurso de odd auditável, era justamente
+   o texto menos legível do painel. `--dim` mede 5,46:1 e já existe. Ver
+   test/contraste.mjs, que mede no pixel e não no token. */
+.tiny{font-size:.66rem;color:var(--dim);line-height:1.5;margin-top:8px}
 input[type=range]{width:100%;accent-color:var(--gold)}
 
 #boot{position:fixed;inset:0;background:var(--bg);z-index:99;display:flex;
@@ -879,6 +963,9 @@ input[type=range]{width:100%;accent-color:var(--gold)}
    ===================================================================== */
 .walletSub{display:flex;justify-content:space-between;align-items:center;
   margin:-4px 0 9px;font-size:.66rem;color:var(--dim)}
+.rotulo-vol{margin-top:0;font-size:.58rem;letter-spacing:.08em;
+  text-transform:uppercase;flex:0 0 auto}
+
 .linkbtn{background:none;border:none;color:var(--gold);font-size:.66rem;
   cursor:pointer;padding:0}
 .linkbtn:hover{text-decoration:underline}
@@ -1228,17 +1315,34 @@ body::after{
              0 0 18px rgba(var(--goldRGB),.06);
   position:relative;
 }
+/* A CANTONEIRA PARA ANTES DA PRIMEIRA LETRA (L-030, item 7).
+   O `::before` do cartão desenha 16 px de traço no canto, com um halo de 8 px
+   por cima — e o `h3` começava nos 12 px do padding, dentro do halo. Resultado:
+   o "S" de SUA APOSTA e o "Q" de QUEM VENCE? saíam riscados em todos os painéis
+   ao mesmo tempo, que é o tipo de defeito que se para de ver por repetição.
+   O recuo é do TÍTULO e não do conteúdo: mover o cartão inteiro pagaria 8 px de
+   coluna em todas as larguras para resolver 16 px de canto. */
 .card h3{font-family:var(--dsp);font-weight:700;color:var(--gold);
-  letter-spacing:.13em;text-shadow:0 0 8px rgba(var(--goldRGB),.45);opacity:.92}
+  letter-spacing:.13em;text-shadow:0 0 8px rgba(var(--goldRGB),.45);opacity:.92;
+  padding-left:14px}
 /* cantoneira de HUD: dois traços no canto superior esquerdo do cartão */
-.card::before{content:'';position:absolute;left:-1px;top:-1px;width:16px;height:16px;
+/* A CANTONEIRA ENCOLHEU E O HALO TAMBÉM (L-030, item 7).
+   Não bastou recuar o título: o `box-shadow` de 8 px espalhava o brilho da
+   quina até dentro da primeira letra, então "SUA APOSTA" e "QUEM VENCE?" saíam
+   com o S e o Q riscados — em todos os painéis ao mesmo tempo, que é o tipo de
+   defeito que se para de ver por repetição. 12 px de traço com 4 px de halo
+   terminam em x=15; o título começa em x=26. */
+.card::before{content:'';position:absolute;left:-1px;top:-1px;width:12px;height:12px;
   border-left:2px solid var(--gold);border-top:2px solid var(--gold);
-  border-radius:14px 0 0 0;opacity:.7;pointer-events:none;
-  box-shadow:-1px -1px 8px rgba(var(--goldRGB),.5)}
-.card::after{content:'';position:absolute;right:-1px;bottom:-1px;width:16px;height:16px;
+  border-radius:12px 0 0 0;opacity:.7;pointer-events:none;
+  box-shadow:-1px -1px 4px rgba(var(--goldRGB),.45)}
+/* A cantoneira de baixo tem o MESMO problema da de cima, e apareceu no mesmo
+   olhar: o texto de "Seu lutador" enche a linha e a última palavra ia parar
+   dentro do halo da quina. Mesmo tratamento — 12 px de traço, 4 px de halo. */
+.card::after{content:'';position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;
   border-right:2px solid var(--neon2);border-bottom:2px solid var(--neon2);
-  border-radius:0 0 14px 0;opacity:.55;pointer-events:none;
-  box-shadow:1px 1px 8px rgba(var(--neon2RGB),.45)}
+  border-radius:0 0 12px 0;opacity:.55;pointer-events:none;
+  box-shadow:1px 1px 4px rgba(var(--neon2RGB),.45)}
 
 .modal{
   background:linear-gradient(180deg, rgba(255,255,255,.05), transparent), var(--panel);
@@ -1481,6 +1585,20 @@ body::after{
 .banner{background:rgba(6,12,22,.92);border:2px solid var(--gold);color:var(--gold);
   border-radius:10px;text-shadow:0 0 10px rgba(var(--goldRGB),.8);
   box-shadow:0 0 24px rgba(var(--goldRGB),.4)}
+/* APOSTA FEITA: o véu sai da frente e o aviso vira confirmação (L-030, item 6).
+   Enquanto a instrução era fixa, ela seguia mandando escolher com a aposta já
+   confirmada e o botão de cancelar na tela ao lado. */
+/* CANTO INFERIOR DIREITO, e a escolha é por eliminação: o selo de clima ocupa
+   o superior esquerdo, o de arena o superior direito, e o de tempestade o
+   inferior esquerdo. A primeira versão caiu em cima do selo de arena — que tem
+   z-index maior — e a confirmação saiu cortada no meio da palavra. */
+#overlay.apostado{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;
+  align-items:flex-end;justify-content:flex-end;pointer-events:none}
+#overlay.apostado .banner{border-color:var(--neon2);color:var(--neon2);
+  background:rgba(6,12,22,.86);box-shadow:0 0 20px rgba(var(--neon2RGB),.45);
+  text-shadow:0 0 10px rgba(var(--neon2RGB),.7)}
+.banner i{display:block;font-style:normal;font-size:.72em;opacity:.7;margin-top:4px;
+  letter-spacing:.02em}
 
 /* pele da faixa de estado e do ticker (V1.16) */
 #faixa{background:var(--panel);border:1px solid rgba(var(--goldRGB),.35);
@@ -1491,7 +1609,12 @@ body::after{
 .fa-eu img{background:rgba(0,0,0,.4);border:1px solid var(--line)}
 .fa-fase>b{color:var(--gold);text-shadow:0 0 10px rgba(var(--goldRGB),.7)}
 #faSeg{color:var(--txt);text-shadow:0 0 12px rgba(var(--goldRGB),.6)}
-.fa-cron i{background:rgba(0,0,0,.55);border:1px solid var(--line)}
+/* O TRILHO PRECISA SER VISÍVEL PARA A BARRA QUERER DIZER ALGO (L-030, item 5).
+   `rgba(0,0,0,.55)` sobre um fundo já escuro desaparecia: sem o comprimento
+   TOTAL à vista, 18 px de barra não se leem como "resta um sexto" — leem-se
+   como "uma barra pequena". A fração é a informação; o trilho é o denominador. */
+.fa-cron i{background:rgba(255,255,255,.16);border:1px solid rgba(var(--goldRGB),.45);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
 .fa-cron u{background:linear-gradient(90deg,var(--gold),var(--neon2));
   box-shadow:0 0 10px rgba(var(--goldRGB),.8)}
 /* Sob 10 s a barra vira vermelha. É informação, não pressão: o jogador
@@ -2241,7 +2364,11 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 </div>
 
 <header class="topbar">
-  <div class="brand">⚔️ PokéArena <small>base v0.8 · Kanto · 76 lutadores</small></div>
+  <!-- "76 LUTADORES" no topo contra "12 LUTADORES" na lista dava dois números
+       para a mesma palavra, em 3 segundos, sem dizer qual valia. O elenco é o
+       catálogo; a rodada é o recorte. E `base v0.8` é número de versão nosso,
+       que o apostador não tem o que fazer com. -->
+  <div class="brand">⚔️ PokéArena <small>Kanto · elenco de 76</small></div>
   <nav class="mainnav" id="mainnav">
     <button class="nav" data-view="viewHome">Início</button>
     <button class="nav on" data-view="viewArena">Arenas</button>
@@ -2389,10 +2516,12 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   </div>
   <div class="fa-fase">
     <b id="phase">—</b>
-    <div class="fa-cron"><span id="faSeg">—</span><i><u id="faBarra"></u></i></div>
+    <!-- O rótulo diz a DIREÇÃO do relógio. "APOSTAS 29s" não dizia se eram 29 s
+         restantes ou decorridos — a barra sugeria, e sugerir não é responder. -->
+    <div class="fa-cron"><span class="rot" id="faRot">restam</span><span id="faSeg">—</span><i><u id="faBarra"></u></i></div>
   </div>
   <div class="fa-saldo">
-    <b id="bal">0</b><span id="balBrl">R$ 0,00</span>
+    <b id="bal">0</b><span id="balBrl">PokéCash</span>
     <button class="linkbtn" id="btnWallet">carteira →</button>
   </div>
 </div>
@@ -2408,7 +2537,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <h3>Sua aposta</h3>
       <div class="chips" id="chipRow"></div>
       <div class="row" style="margin-top:6px">
-        <input type="number" id="betCustom" min="50" step="10" placeholder="outro valor (mín. 50)">
+        <input type="number" id="betCustom" min="50" step="10" placeholder="outro valor (mín. 50)" aria-label="valor da aposta">
         <button class="btn" id="btnCustomBet">Usar</button>
       </div>
       <div class="tiny" id="chipHint"></div>
@@ -2426,7 +2555,12 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       </div>
       <div class="row" style="margin-top:6px">
         <button class="btn" id="btnSound" style="flex:0 0 46px" title="Som">🔊</button>
-        <input type="range" id="vol" min="0" max="1" step="0.02" value="0.5" title="volume">
+        <!-- Uma barra ciano preenchida a 65 %, sem rótulo, ao lado de uma caixa de
+             apostas: o crítico cego não soube dizer se era volume, velocidade da
+             luta ou valor apostado. Ambiguidade barata de resolver e cara de ter. -->
+        <input type="range" id="vol" min="0" max="1" step="0.02" value="0.5"
+               title="volume da trilha" aria-label="volume da trilha">
+        <span class="tiny rotulo-vol">volume</span>
       </div>
     </div>
 
@@ -2457,6 +2591,9 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <div id="stormBadge" class="corner-badge storm">🌪️ <b style="display:inline">Tempestade ativa</b></div>
       <div id="streakToast"></div>
       <div id="koToast"></div>
+      <!-- O VÉU DE COR DA ARENA (L-027). Por cima de tudo e sem receber clique:
+           ele une o lutador ao cenário, não participa da interação. -->
+      <div id="veuArena" aria-hidden="true"></div>
       <div id="overlay"><div class="banner">carregando…</div></div>
     </div>
     <audio id="bgm" src="battle-theme.mp3" loop preload="auto"></audio>
@@ -2470,6 +2607,10 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   <div class="zona lista">
     <div class="card" id="cardLista">
       <h3><span id="listaTtl">Quem vence?</span> <span id="listaSub">—</span></h3>
+      <!-- A faixa de coluna diz o que cada número é, UMA vez. O `%` mudava de
+           significado entre as fases no mesmo lugar da linha — chance na aposta,
+           vida na luta — e nada dizia qual (L-030, item 4). -->
+      <div class="colunas" id="listaCols"></div>
       <div id="pickList"></div>
       <div class="tiny" id="oddNote">—</div>
     </div>
@@ -2623,7 +2764,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <div class="wbal-main">
         <span class="lbl">Saldo disponível</span>
         <b id="wBal">0</b>
-        <span class="brl" id="wBalBrl">R$ 0,00</span>
+        <span class="brl" id="wBalBrl">PokéCash</span>
       </div>
       <button class="btn gold" id="btnWalletDep">Depositar</button>
     </div>

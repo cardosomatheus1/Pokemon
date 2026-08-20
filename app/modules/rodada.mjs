@@ -69,6 +69,13 @@ function diagnosticoFolhas(){
 
 function buildEntities(layoutSeed){
   monLayer.innerHTML = ''; uiLayer.innerHTML = ''; hud.innerHTML = '';
+  /* A GRADE DE VIDA SÓ ACENDE QUANDO HÁ VIDA PARA MOSTRAR (L-030, item 2).
+     Na fase de aposta ela mostrava doze barras em verde saturado — a cor mais
+     brilhante do produto — todas em 100 %, de lutadores que ainda não brigaram.
+     Roubava a primeira fixação do olho do painel de odds, que é onde a única
+     decisão da tela mora, para dizer "ninguém apanhou ainda". Na luta ela é
+     ótima e continua igual; quem a acende é `startFight`. */
+  hud.classList.add('dormindo');
   S.ents = [];
   // anel de seleção: primeiro filho, então fica atrás de todos os bichos
   selRing = document.createElement('div');

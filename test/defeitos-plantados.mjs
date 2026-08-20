@@ -57,7 +57,12 @@ const ADMD   = 'app/modules/adm-dados.mjs';
 const SIMS   = 'app/modules/sims.mjs';
 const VISUAL = 'test/visual.mjs';
 const RUNNER = 'test/run.mjs';
+const SABOT  = 'test/sabotagem.mjs';
+const ARNES  = 'test/harness.mjs';
 const ARENAP = 'app/modules/arenas.mjs';
+const CARTEIRA= 'app/modules/carteira.mjs';
+const NAVEG  = 'app/modules/navegacao.mjs';
+const RODADA = 'app/modules/rodada.mjs';
 
 export const DEFEITOS = [
   /* Desde o F0.4 a tabela de tipos é DADO DO PACK, não do motor. O defeito é o
@@ -283,10 +288,13 @@ export const DEFEITOS = [
     de:'  let pior = 0;\n  for (const v of passivo) if (v > pior) pior = v;\n  return pior;',
     para:'  let soma = 0;\n  for (const v of passivo) soma += v;\n  return soma;' },
 
+  /* REALVADO NO V1.20: a coluna continua no mesmo lugar, o texto é que mudou —
+     `até 9.505` virou `stake máx 9.505` porque "até" lia como teto de PRÊMIO.
+     O defeito é o mesmo (a coluna some), a âncora é que acompanhou o texto. */
   { id:'S47', arquivo:PAINEL, nome:'o limite some da lista de apostas',
     real:'coluna removida por "poluir a tela" — e o teto passa a existir só na recusa',
-    de:"      <span class=\"lim tiny\">${fechado ? 'mercado fechado'\n        : `até ${CUR} ${cabe.toLocaleString('pt-BR')}`}</span>\n",
-    para:'' },
+    de:"        fechado ? 'mercado fechado'\n        : `máx ${cabe.toLocaleString('pt-BR')}`}</span>\n",
+    para:"        ''}</span>\n" },
 
   /* --- defeitos do F0.9: a carteira e o ledger -------------------------- */
   { id:'S48', arquivo:BOLSO, nome:'payout de aposta em bônus cai no bucket transferível',
@@ -552,4 +560,84 @@ export const DEFEITOS = [
   { id:'S98', arquivo:SIMS, nome:'o marcador do número de simulações nunca é preenchido',
     real:'laço removido numa limpeza — e a promessa de auditoria fica um buraco na página',
     de:'  for (const el of alvos)\n', para:'  for (const el of [])\n' },
+  /* ---------- V1.20: o acabamento da tela principal (L-030, L-027) ---------- */
+
+  { id:'S99', arquivo:APOSTA, nome:'a chamada central ignora a aposta confirmada',
+    real:'"é só um texto fixo" — e a tela manda escolher com a aposta já feita',
+    de:'  if (S.myBet){\n    const f = S.fighters[S.myBet.idx];',
+    para:'  if (false){\n    const f = S.fighters[S.myBet.idx];' },
+
+  { id:'S100', arquivo:FASES, nome:'a grade de vida fica acesa na fase de aposta',
+    real:'condição invertida — doze barras verdes em 100% roubam a primeira fixação',
+    de:"  $('#hud')?.classList.toggle('dormindo', s === 'betting');",
+    para:"  $('#hud')?.classList.toggle('dormindo', s !== 'betting');" },
+
+  /* A faixa de coluna é UMA, com dois textos. Os dois defeitos apagam um lado
+     cada: com a faixa vazia numa fase, `17,5 %` de chance e `91 %` de vida
+     voltam a ocupar o mesmo lugar sem nada dizendo qual é qual. */
+  { id:'S101', arquivo:ODDS, nome:'a faixa de coluna some da fase de aposta',
+    real:'"o título já diz quem vence" — e 17,5% de chance vira irmão de 91% de vida',
+    de:'<span class="c2">chance</span>', para:'<span class="c2"></span>' },
+
+  { id:'S102', arquivo:ODDS, nome:'a faixa de coluna some da luta',
+    real:'idem, do outro lado — e é o lado em que a leitura otimista acontece',
+    de:'<span class="c2">vida</span>', para:'<span class="c2"></span>' },
+
+  { id:'S103', arquivo:ARENAD, nome:'o véu da arena passa do teto',
+    real:'"assim une melhor" — e come o contraste entre o lutador e o piso',
+    de:"brilho:'#ff8a4a', veu:0.09", para:"brilho:'#ff8a4a', veu:0.55" },
+
+  { id:'S104', arquivo:ARENAP, nome:'o véu é declarado e não aplicado',
+    real:'exatamente a forma da L-027: o campo existe no catálogo e ninguém o lê',
+    de:"    arena.style.setProperty('--veuAlfa', String(a.veu ?? 0));",
+    para:"    arena.style.setProperty('--veuAlfa', '0');" },
+
+  { id:'S105', arquivo:APP, nome:'um estado do lutador apaga o contorno',
+    real:'`filter` substituído inteiro em vez de composto — foi como ele nasceu ausente',
+    de:'.mon.mine .body{filter:var(--contorno) drop-shadow(0 0 5px rgba(var(--goldRGB),.85))}',
+    para:'.mon.mine .body{filter:drop-shadow(0 0 5px rgba(var(--goldRGB),.85))}' },
+
+  { id:'S106', arquivo:APP, nome:'o texto auxiliar volta a reprovar no contraste',
+    real:'"o cinza mais escuro fica mais elegante" — e some a frase da auditoria',
+    de:'.tiny{font-size:.66rem;color:var(--dim);line-height:1.5;margin-top:8px}',
+    para:'.tiny{font-size:.66rem;color:#69718a;line-height:1.5;margin-top:8px}' },
+
+  { id:'S107', arquivo:CARTEIRA, nome:'o R$ volta a anotar cada valor em PokéCash',
+    real:'"ajuda a dimensionar" — e a perda passa a ser sentida em reais (§P1, cap. 28)',
+    de:"        <b>${v.toLocaleString('pt-BR')}</b><span>${MOEDA}</span>",
+    para:"        <b>${v.toLocaleString('pt-BR')}</b><span>R$ ${(v/PC_POR_REAL).toFixed(2)}</span>" },
+
+  { id:'S108', arquivo:NAVEG, nome:'o cartão da home volta a chamar aposta de rodada',
+    real:'rótulo restaurado sem olhar o campo — NV 54 com 0 rodadas de novo',
+    de:'<span>apostas</span>', para:'<span>rodadas</span>' },
+  /* ---------- T3: o recorte da suíte e do gerador ---------- */
+
+  { id:'S109', arquivo:RUNNER, nome:'o recorte aceita nome inexistente e roda vazio',
+    real:'"filtra o que casar" — e `--so=cartira` sai VERDE com zero testes',
+    de:'    console.error(`\\n--so não conhece a suíte: ${orfas.join(\', \')}.\\n` +\n                  `Disponíveis: ${todas.map(x => x.nome).join(\', \')}`);\n    process.exit(2);\n',
+    para:'' },
+
+  { id:'S110', arquivo:RUNNER, nome:'a execução parcial deixa de se anunciar',
+    real:'"o aviso polui a saída" — e portão parcial passa a parecer portão inteiro',
+    de:"  console.log(`\\n⚠  EXECUÇÃO PARCIAL — só ${oQue}.`);",
+    para:'  ;' },
+
+  { id:'S111', arquivo:RUNNER, nome:'o portão de fechamento passa a aceitar o recorte',
+    real:'"é a mesma suíte" — e o bloco fecha com um sexto dela',
+    de:"if (SO && process.env.EXIGE_VISUAL === '1') {",
+    para:'if (false) {' },
+
+  { id:'S112', arquivo:ARNES, nome:'a suíte deixa de expor o próprio nome',
+    real:'campo removido por "não é usado" — e o recorte casa com nada',
+    de:'    nome,\n    teste:', para:'    teste:' },
+
+  /* REALVADO no próprio T3: a versão anterior deste defeito ancorava no caminho
+     "navegador primeiro", que foi MEDIDO e DESCARTADO no mesmo bloco (ver a nota
+     em sabotagem.mjs). O risco novo é o que sobrou da ideia: a passada com
+     navegador roda só as suítes que precisam dele, e a lista pode divergir da do
+     runner sem ninguém notar. */
+  { id:'S113', arquivo:SABOT, nome:'a passada com navegador deixa de rodar uma suíte de navegador',
+    real:'lista encolhida numa limpeza — defeito que só aquela suíte pega volta como PASSOU',
+    de:"const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,contraste';",
+    para:"const SUITES_NAVEGADOR = 'visual-base,ambientes,rodada-viva,tema-cedo';" },
 ];

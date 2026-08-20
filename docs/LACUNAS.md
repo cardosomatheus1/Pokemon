@@ -599,20 +599,48 @@ dele:
    proibição — mas ela fecha a porta para a monetização óbvia, e isso precisa
    estar dito antes de alguém desenhar contando com ela.
 
-### L-027 — o véu de cor por arena foi documentado e não construído
+### L-027 — o véu de cor por arena foi documentado e não construído ✅ FECHADA
 
-**Dono:** V1.17 (Shinys — skin de arena) · **Destrava:** nada; é acabamento
+**Dono:** V1.20 · **Fechada no:** V1.20
 
-O catálogo da v1.0 documenta cinco campos por arena e implementa quatro. O
+O catálogo da v1.0 documentava cinco campos por arena e implementava quatro. O
 quinto, `brilho` — *"véu de cor por cima, para dar unidade ao conjunto"* —
-aparece só no comentário. O V1.14 portou os quatro que existem e **não inventou
-o quinto**: a regra do resgate vale para desenho também — o porte busca a mesma
-coisa, nunca outra coisa.
+aparecia só no comentário. O V1.14 portou os quatro que existem e **não inventou
+o quinto**: a regra do resgate vale para desenho também.
 
-Vale a pena? Provavelmente sim, e o lugar é o V1.17, que já vai mexer em skin de
-arena. Hoje a unidade cromática de cada cenário sai da paleta e do que cerca a
-ilha; um véu por cima resolveria o caso em que o sprite do lutador destoa do
-bioma — que é o problema que o campo parecia querer resolver.
+### Como ficou
+
+Três campos, não um: `brilho` (a cor), `veu` (a força) e `mistura` (o modo de
+composição). O véu é uma camada de CSS sobre o `#arena` inteiro — chão,
+lutadores e efeitos juntos —, e não pintura no canvas do mapa. **Unidade que não
+alcança o lutador não é unidade:** seria um filtro no fundo com o decalque
+continuando decalque em cima dele, que é exatamente o problema que o campo
+parecia querer resolver.
+
+| arena | cor | força | mistura |
+|---|---|---|---|
+| Ilha Tropical | `#ffd98a` | 0,07 | soft-light |
+| Campo Gelado | `#bcdcff` | 0,08 | soft-light |
+| Coliseu | `#e8c98f` | 0,06 | soft-light |
+| Praia | `#ffe3a6` | 0,07 | soft-light |
+| Cratera Vulcânica | `#ff8a4a` | 0,09 | soft-light |
+
+`soft-light` escurece e clareia conforme o que está embaixo — ele UNIFICA sem
+achatar. `multiply` apagaria as sombras do chão; `overlay` estouraria os claros
+do gelo. Os dois foram testados no bloco.
+
+### O teto é regra, e o motivo é o item 9 da L-030
+
+`VEU_MAX = 0,10`. Véu forte é a maneira mais fácil de dar unidade cromática e a
+mais fácil de tornar o campo ilegível — e quase ninguém reprova, porque fica
+bonito. Subir o véu para "unificar melhor" agravaria exatamente o item que ele
+deveria ajudar. O teste `test/arenas.mjs` exige véu em toda arena e nenhum acima
+do teto; o Q5 confere no COMPUTADO que a camada está no ar, porque catálogo com
+campo e módulo que escreve a propriedade são duas coisas que passam com o
+seletor CSS errado.
+
+**Sabotagem:** `S103` (véu acima do teto) e `S104` (véu declarado e não
+aplicado — literalmente a forma desta lacuna).
 
 ---
 
@@ -628,7 +656,7 @@ registrada:
 | **Baús** | V1.19, nosso roadmap | Decisão do dono do projeto; bloqueado pelo D-007 |
 | **Fragmentos por rodada** | junto com os baús | É a moeda de entrada do baú, não faz sentido sozinha |
 | **Simulador de baús no painel** | junto com os baús | Portar o simulador seria portar a economia junto |
-| **Campo `brilho` das arenas** | L-027 | Ele documentou e nunca construiu |
+| **Campo `brilho` das arenas** | L-027 ✅ | Ele documentou e nunca construiu; construído no V1.20 |
 
 **Nada mais dele ficou de fora.** A varredura que sustenta isso é a mesma do
 inventário: as funções que existem na v1.0 e não existiam na v0.8, conferidas uma
@@ -712,42 +740,147 @@ três segundos — e isso é trabalho de desenho, com escopo próprio, não cons
 
 ---
 
-### L-030 — o que a segunda passada do crítico deixou aberto
+### L-031 — o que a TERCEIRA passada do crítico abriu
 
-**Dono:** trilha `R`, blocos futuros · **Achado por:** crítico cego, Q7, segunda medição
+**Dono:** **V1.21** (proposto no `BUILD_BLOCKS`) · **Achado por:** crítico cego,
+Q7, terceira medição, mesma barra
 
-O V1.16 fechou os cinco piores. O crítico mediu de novo e listou dezessete; o que
-sobrou, por ordem de gravidade:
+O V1.20 fechou os dez itens da L-030 e o crítico mediu de novo com o TESTE DOS 3
+SEGUNDOS. Notas: **1920 → 6,25 · 1440 → 7,00 · 420 → 5,50** (P1–P4).
 
-1. **`R$` ao lado de cada valor.** Cada ficha carrega "R$ 5,00 / R$ 10,00 …", o
-   saldo carrega "R$ 100,00", o retorno diz "263 (R$ 26,30)". Isso ensina uma
-   taxa fixa de 10 PC = R$ 1,00 e faz a perda ser **sentida em reais**. É
-   incompatível com a promessa de moeda simulada e é decisão de interface, não de
-   backend. **Precisa de decisão do dono do projeto antes de mexer** — a
-   conversão também serve para o jogador dimensionar o que gasta.
-2. **A grade de HP na fase de aposta.** Doze barras verde-saturado — a cor mais
-   brilhante do produto — sem título, mostrando 100 % de vida de quem ainda não
-   brigou. Rouba a primeira fixação do painel de odds. Na luta ela é ótima.
-3. **"até 9.505" inverte a intuição de odds.** O favorito a 17,5 % tem teto dez
-   vezes maior que a zebra a 1,7 %. Vem do teto de payout do §4.4.6 e é honesto —
-   mas aparece sem uma palavra de explicação, em corpo maior que o multiplicador
-   que ele contradiz.
-4. **"%" muda de significado entre as fases**, no mesmo slot: 17,5 % é chance na
-   aposta, 91 % é vida na luta. Quem apostou a 7,1 % e vê 91 % pode concluir que
-   as chances explodiram.
-5. **A barra do cronômetro não tem trilho** — sem o comprimento total à vista,
-   18 px não se lê como "resta um sexto".
-6. **A CTA central não muda depois da aposta confirmada.**
-7. **O bracket decorativo atravessa a primeira letra** de todos os títulos de
-   painel.
-8. **O rodapé de auditoria reprova em contraste** — 3,73:1 contra o piso de
-   4,5:1 da WCAG AA, e é justamente a frase que sustenta o discurso do produto.
-9. **A variante shiny piora a leitura do campo** — as paletas alternativas têm
-   menos contraste contra o piso da cratera.
-10. **O perfil mostra NV 54 com 0 rodadas disputadas** (é o perfil de teste da
-    captura, mas a incoerência aparece).
+**Um achado dele foi corrigido dentro do V1.20 porque era regressão, não
+acabamento:** em 420 px a lista de odds ficava fora da dobra, e dois textos
+mandavam o jogador ir até ela. Era a única ação que o produto pede, invisível no
+celular. A ordem em coluna única passou a mudar com a fase.
 
-**E uma ressalva metodológica dele que vale registrar:** nenhuma das capturas de
-luta tinha aposta viva, então **P5 não foi avaliado por inteiro** — a posição dá
-para julgar, a identidade do "seu lutador" na arena não. A ferramenta
-`npm run olhar` precisa de um roteiro de luta COM aposta.
+O que sobrou, por ordem de gravidade:
+
+1. **A arena fica vazia durante a aposta, e lê como página que não carregou.**
+   É o maior elemento da tela, e os lutadores só entram quando a luta começa. O
+   crítico descreveu "fundo marrom desfocado com manchas". Não é defeito de
+   execução — é o desenho da fase. A pergunta é se a entrada dos lutadores deve
+   antecipar a luta.
+2. **Em 1920 o layout ESTICA em vez de agrupar.** Nada cresce de corpo, então
+   tudo fica pequeno e disperso: saldo e caixa de aposta ficam a 1.500 px um do
+   outro. É a pior das três larguras **por ser a maior** — 6,25 contra 7,00 em
+   1440. O `max-width` do `.app` resolveu o transbordo do V1.16 e não resolveu a
+   densidade.
+3. **`Iniciar rodada` em vermelho-vinho ao lado de `Auto: ON` em verde.** A ação
+   primária tem cor de cancelar e a secundária tem cor de confirmar — hierarquia
+   de cor invertida. E os dois se contradizem: se está em automático, para que
+   serve iniciar?
+4. **A identidade do jogador aparece duas vezes em 70 px.** `Treinador / NV 1` no
+   header e `Treinador / NV 1 · Novato` no cartão logo abaixo, com o mesmo
+   avatar, ocupando o topo — que é onde moram tempo, saldo e ação.
+5. **A coluna esquerda se rearranja inteira quando a luta começa.** `Iniciar
+   rodada` sobe, `SUA APOSTA` some, `SEU LUTADOR` nasce no meio. O olho tem que
+   reaprender a tela no momento em que menos tem tempo.
+6. **O retorno em dinheiro só existe DEPOIS de apostar.** Antes, a lista oferece
+   `x5.26`; a linha `retorno se vencer: 263` só aparece com a aposta feita. A
+   pergunta "quanto ganho se acertar" fica para o jogador resolver de cabeça,
+   com um relógio de 29 s correndo.
+7. **`±0,6` colado no `%`, minúsculo e sem explicação em lugar nenhum da tela.**
+   É a margem de erro do estimador — informação que sustenta a promessa de odd
+   auditável — e lê como ruído grudado no número mais importante da lista.
+8. **Uma placa de vida aparece vazia e sem nome** no topo do painel central
+   durante a luta. Pode ser lutador cujo sprite não chegou; pode ser defeito.
+   **Precisa de medição antes de virar correção.**
+9. **O emoji `💵` é usado como ícone de moeda inline E como botão no header** —
+   o mesmo grafismo com dois significados, e em corpo pequeno vira um borrão.
+
+**Um item da lista dele NÃO é defeito do produto:** o saldo pular de `20.950`
+para `1.000` entre `aposta-feita.png` e `luta.png`. São contextos de navegador
+diferentes na mesma execução do `npm run olhar` — artefato da ferramenta, não da
+tela. Fica registrado aqui para o próximo crítico não gastar o achado de novo.
+
+---
+
+### L-030 — o que a segunda passada do crítico deixou aberto ✅ FECHADA
+
+**Dono:** V1.20 · **Achado por:** crítico cego, Q7, segunda medição ·
+**Fechada no:** V1.20
+
+Os dez itens, e o que foi feito com cada um:
+
+**1. `R$` ao lado de cada valor — DECISÃO DO DONO, e ele decidiu tirar.**
+Perguntado entre tirar de tudo, manter só no depósito ou manter como estava, o
+dono escolheu **tirar de tudo**. Cada ficha dizia "50 / R$ 5,00", o saldo dizia
+"1.000 / R$ 100,00", o retorno dizia "263 (R$ 26,30)" — ensinava a taxa de 10 PC
+= R$ 1,00 como se fosse regra e fazia a PERDA ser sentida em reais, que é o que
+uma moeda simulada não deveria conseguir fazer (§P1, cap. 28).
+
+> **O que ficou em reais, e por quê:** o **preço dos pacotes** da loja simulada.
+> Ali o real não traduz um saldo — ele é o produto, e a tela já se declara
+> simulada. Tirar o preço da loja não deixaria a moeda mais simulada; deixaria a
+> loja sem preço. `emReais` foi **deletada**, não comentada: função exportada que
+> ninguém chama é convite para a anotação voltar sem decisão.
+
+**2. A grade de HP na fase de aposta.** `#hud.dormindo{display:none}`. Some de
+vez em vez de esmaecer: doze barras a 30 % continuam sendo doze barras e
+continuariam disputando a primeira fixação com o painel de odds. Na luta ela
+volta igual.
+
+**3. "até 9.505" invertia a intuição de odds.** Virou `máx 9.505`, com a
+explicação inteira no `title` e o rótulo `stake máx` na faixa de coluna. "Até",
+lido depressa, é o teto do que se GANHA; o §4.4.6 limita o que se APOSTA.
+
+**4. O `%` mudava de significado entre as fases.** Resolvido por **faixa de
+coluna**, e a primeira tentativa foi descartada olhando a captura: pôr "CHANCE"
+em cima de cada número resolvia o significado e custava uma linha por lutador,
+o que empurrou a **odd** — o segundo número mais importante da tela — para o
+menor corpo da linha. A faixa diz `lutador · chance · odd · stake máx` uma vez,
+no topo, e troca para `lutador · vida · odd · abates` na luta.
+
+**5. A barra do cronômetro não tinha trilho.** Tinha, em `rgba(0,0,0,.55)` sobre
+fundo escuro — invisível. Sem o comprimento total à vista, 18 px não se leem
+como "resta um sexto". O trilho é o denominador da fração.
+
+**6. A CTA central não mudava depois da aposta confirmada.** Duas coisas erradas
+de uma vez: o painel dizia "escolha na arena" e o canvas dizia "escolha na lista
+de odds" — duas instruções para a mesma ação apontando para lugares diferentes —
+e nenhuma saía depois de cumprida. Agora `atualizarCTA()` deriva do estado, num
+lugar só. **Dois defeitos apareceram só na captura:** a confirmação caiu em cima
+do selo de arena (que tem z-index maior) e saiu cortada no meio da palavra —
+mudou para o canto inferior direito, o único livre dos três selos; e o texto do
+painel dizia "na lista **ao lado**", verdade em três das quatro larguras e
+mentira em 420 px, onde a lista desce.
+
+**7. O bracket decorativo atravessava a primeira letra.** Não bastou recuar o
+título: o `box-shadow` de 8 px espalhava o brilho da quina para dentro da letra.
+Cantoneira de 12 px com halo de 4 px, e o título recuado 14 px. A cantoneira de
+BAIXO tinha o mesmo problema, e apareceu no mesmo olhar — a última palavra de
+"Seu lutador" terminava dentro dela.
+
+**8. O rodapé de auditoria reprovava em contraste.** Medido: **3,55:1** contra o
+piso de 4,5:1 da WCAG AA. Passou a usar `--dim`, que mede **5,46:1** e já
+existia. Ganhou suíte própria — `test/contraste.mjs` —, que mede **no pixel**:
+a cor que o jogador vê é `--panel` com alfa sobre `--bg` com gradiente por cima,
+e ler o token responderia outra pergunta.
+
+**9. A variante shiny piorava a leitura do campo.** A paleta shiny é arte de
+terceiro e não se repinta — o que é nosso é a **separação**. Medido na cratera,
+com a luta correndo:
+
+| mediana de contraste lutador/piso | sem contorno | com contorno |
+|---|---|---|
+| normal | 1,43:1 | **1,75:1** |
+| shiny | 1,26:1 | **1,99:1** |
+
+A medição **confirma a queixa** (shiny ERA pior que normal) e a inverte: o halo
+escuro rende mais onde o sprite é mais claro, que é o caso das paletas
+alternativas. E resolve de quebra o Lapras azul-claro na cratera, que é o mesmo
+defeito na variante normal.
+
+**10. O perfil mostrava NV 54 com 0 rodadas.** O campo é `betsCount` e conta
+APOSTAS FECHADAS; quem assiste sem apostar sobe de nível e não entra na conta. O
+rótulo é que mentia. "rodadas" → "apostas", "rodadas disputadas" → "apostas
+fechadas".
+
+### A ressalva metodológica dele, e o que foi feito
+
+Nenhuma captura de luta tinha aposta viva, então **P5 não tinha sido avaliado por
+inteiro**. `npm run olhar` já produz `aposta-feita.png` e `luta.png` com aposta,
+e a terceira passada do crítico cego recebeu as duas.
+
+---
+

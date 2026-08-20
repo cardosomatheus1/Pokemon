@@ -543,6 +543,16 @@ let atual = null;
 function aplicarArena(a){
   atual = a;
   aplicarCenario({ ...PINTURA[a.key], poeira: a.poeira });
+  /* O VÉU DE COR (L-027). Uma camada só, por cima de TUDO — chão, lutadores e
+     efeitos — porque unidade que não alcança o lutador não é unidade: é um
+     filtro no fundo com o decalque continuando decalque em cima dele.
+     Por isso é CSS no `#arena` e não pintura no canvas do mapa. */
+  const arena = $('#arena');
+  if (arena && a.brilho){
+    arena.style.setProperty('--veuCor', a.brilho);
+    arena.style.setProperty('--veuAlfa', String(a.veu ?? 0));
+    arena.style.setProperty('--veuMistura', a.mistura || 'soft-light');
+  }
   const b = $('#arenaBadge');
   if (b){
     b.innerHTML = `${a.emoji} <b style="display:inline">${a.nome}</b>`;

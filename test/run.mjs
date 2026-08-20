@@ -26,37 +26,91 @@ import * as progressao from './progressao.mjs';
 import * as tema from './tema.mjs';
 import * as arenas from './arenas.mjs';
 import * as portao from './portao.mjs';
+import * as contraste from './contraste.mjs';
 import * as colocacao from './colocacao.mjs';
 import * as banner from './banner.mjs';
 import * as shiny from './shiny.mjs';
 import * as adm from './adm.mjs';
 import * as visual from './visual.mjs';
 
+/* `--so=a,b,c` — o RECORTE (T3).
+ *
+ * O V1.20 mediu o custo do ciclo e achou dois desperdícios estruturais. Este
+ * resolve o maior deles: `--gerar` regravava TUDO — golden, precisão
+ * (154.000 x 8), informação (300 rodadas), margem (300 x 8.000) e a linha de
+ * base de 10.000 rodadas — quatro minutos de Monte Carlo para reescrever UM
+ * arquivo. Um bloco que mexe só em tela precisava só da linha de base visual, e
+ * pagou os quatro minutos quatro vezes.
+ *
+ * A MESMA BANDEIRA recorta a suíte: `node test/run.mjs --so=contraste,visual`
+ * roda só o que interessa enquanto se constrói.
+ *
+ * E ELE GRITA QUE FOI PARCIAL, nas duas pontas. Portão que parece inteiro sem
+ * ser é pior que portão ausente — é a mesma lição do `sabotagem:tocados`, e é
+ * por isso que o `npm run portoes` recusa a bandeira. */
+const argSo = process.argv.find(a => a.startsWith('--so='));
+const SO = argSo ? argSo.slice(5).split(',').map(x => x.trim()).filter(Boolean) : null;
+const querSo = nome => !SO || SO.includes(nome);
+
+if (SO && process.env.EXIGE_VISUAL === '1') {
+  console.error('\n--so não vale no portão de fechamento. Rode npm run portoes inteiro.');
+  process.exit(2);
+}
+
+function avisoParcial(oQue) {
+  console.log(`\n⚠  EXECUÇÃO PARCIAL — só ${oQue}.`);
+  console.log('   Isto NÃO é a suíte. Rode sem --so antes de fechar o bloco.\n');
+}
+
 if (process.argv.includes('--gerar')) {
+  if (SO) avisoParcial(SO.join(', '));
   console.log('gerando fixtures a partir do motor atual...');
-  const g = golden.gerar();
-  const b = estatistica.gerar();
-  const mg = margem.gerar();
-  const pr = precisao.gerar();
-  const inf = informacao.gerar();
-  console.log(`  golden: ${g.length} rodadas`);
-  console.log(`  precisão: ${pr.sims} sims x ${pr.repeticoes} cálculos · ` +
-              `${(pr.msPorCalculo/1000).toFixed(2)}s cada · erro previsto do pior ` +
-              `${(pr.erroPrevistoPior*100).toFixed(2)}% · dispersão ${(pr.dispersaoPior*100).toFixed(2)}%`);
-  console.log(`  informação: ${inf.rodadas} rodadas · vantagem do apostador informado ` +
-              `${(inf.vantagem.ev*100).toFixed(2)}% ± ${(inf.vantagem.ic95*100).toFixed(2)} · ` +
-              `mudou a aposta em ${inf.vantagem.rodadasEmQueMudou} rodadas`);
-  console.log(`  margem: ${mg.rodadas} rodadas x ${mg.sims} sims · buffável ${(mg.buffavel.margem*100).toFixed(2)}% · ` +
-              `resto ${(mg.neutro.margem*100).toFixed(2)}% · diferença ${(mg.diferenca*100).toFixed(2)} pontos`);
-  console.log(`  baseline: ${b.rodadas} rodadas · duração média ${b.duracaoMedia.toFixed(2)}s · ` +
-              `melhor ${b.melhor.nome} ${(b.melhor.taxa*100).toFixed(2)}% · amplitude ${b.amplitude.toFixed(1)}x`);
-  if (visual.disponivel()) {
-    const base = await visual.capturarBase();
-    writeFileSync(new URL('./fixtures/visual-base.json', import.meta.url), JSON.stringify(base));
-    console.log(`  linha de base visual: ${Object.keys(base).length} telas`);
-  } else {
-    console.log('  linha de base visual NÃO regravada — sem navegador');
+  /* Cada fixture atrás do seu nome. O custo entre parênteses é medido e está
+     aqui para quem for escolher o recorte saber o que está comprando. */
+  if (querSo('golden')) {                                   // ~0,1 s
+    const g = golden.gerar();
+    console.log(`  golden: ${g.length} rodadas`);
   }
+  if (querSo('precisao')) {                                 // ~37 s
+    const pr = precisao.gerar();
+    console.log(`  precisão: ${pr.sims} sims x ${pr.repeticoes} cálculos · ` +
+                `${(pr.msPorCalculo/1000).toFixed(2)}s cada · erro previsto do pior ` +
+                `${(pr.erroPrevistoPior*100).toFixed(2)}% · dispersão ${(pr.dispersaoPior*100).toFixed(2)}%`);
+  }
+  if (querSo('informacao')) {                               // ~60 s
+    const inf = informacao.gerar();
+    console.log(`  informação: ${inf.rodadas} rodadas · vantagem do apostador informado ` +
+                `${(inf.vantagem.ev*100).toFixed(2)}% ± ${(inf.vantagem.ic95*100).toFixed(2)} · ` +
+                `mudou a aposta em ${inf.vantagem.rodadasEmQueMudou} rodadas`);
+  }
+  if (querSo('margem')) {                                   // ~70 s
+    const mg = margem.gerar();
+    console.log(`  margem: ${mg.rodadas} rodadas x ${mg.sims} sims · buffável ${(mg.buffavel.margem*100).toFixed(2)}% · ` +
+                `resto ${(mg.neutro.margem*100).toFixed(2)}% · diferença ${(mg.diferenca*100).toFixed(2)} pontos`);
+  }
+  if (querSo('estatistica')) {                              // ~50 s
+    const b = estatistica.gerar();
+    console.log(`  baseline: ${b.rodadas} rodadas · duração média ${b.duracaoMedia.toFixed(2)}s · ` +
+                `melhor ${b.melhor.nome} ${(b.melhor.taxa*100).toFixed(2)}% · amplitude ${b.amplitude.toFixed(1)}x`);
+  }
+  if (querSo('visual')) {                                   // ~40 s
+    if (visual.disponivel()) {
+      const base = await visual.capturarBase();
+      writeFileSync(new URL('./fixtures/visual-base.json', import.meta.url), JSON.stringify(base));
+      console.log(`  linha de base visual: ${Object.keys(base).length} telas`);
+    } else {
+      console.log('  linha de base visual NÃO regravada — sem navegador');
+    }
+  }
+  /* Nome que não casa com fixture nenhuma sai com zero regravado e VERDE, que é
+     a forma mais silenciosa de não fazer nada. */
+  const CONHECIDAS = ['golden','precisao','informacao','margem','estatistica','visual'];
+  const orfas = (SO || []).filter(n => !CONHECIDAS.includes(n));
+  if (orfas.length) {
+    console.error(`\n--so não conhece: ${orfas.join(', ')}. Fixtures: ${CONHECIDAS.join(', ')}`);
+    process.exit(2);
+  }
+  if (SO) avisoParcial(SO.join(', '));
   process.exit(0);
 }
 
@@ -76,7 +130,13 @@ let rVisual = null, baseAtual = null, baseGravada = null, digitaisNav = null, rS
 /* Q3 do F0.5 pede a mesma rodada reproduzida em dois ambientes JS. Estas são as
    raízes comparadas — fixas, para que a falha seja reproduzível. */
 const RAIZES_Q3 = [1, 42, 0xC0FFEE, 0xFFFFFFFF, 987654321];
-if (visual.disponivel() && !semVisual) {
+/* AS SUÍTES QUE PRECISAM DE NAVEGADOR. Com `--so` fora desta lista, as cinco
+   partidas de Chromium não acontecem — é o que faz `--so=carteira` custar 0,2 s
+   em vez de 95 s. */
+const COM_NAVEGADOR = ['visual','visual-base','ambientes','rodada-viva','tema-cedo','sem-rede','contraste'];
+const precisaNavegador = !SO || SO.some(n => COM_NAVEGADOR.includes(n));
+
+if (visual.disponivel() && !semVisual && precisaNavegador) {
   const temLocal = visual.temAssetsLocais();
   if (!temLocal && exigeLocal) {
     console.error('\nassets locais ausentes: rode npm run assets (ver tools/README.md)'); process.exit(2);
@@ -116,6 +176,7 @@ if (visual.disponivel() && !semVisual) {
     console.error(`\nQ5 incompleto: sem resultado de ${faltando.join(', ')}.`); process.exit(2);
   }
 }
+else if (!precisaNavegador) console.log('  · navegador não iniciado — o recorte não pediu suíte que precise dele\n');
 else if (exigeVisual && !semVisual) { console.error('\nQ5 indisponível: instale playwright-core (ver tools/README.md)'); process.exit(2); }
 else console.log('  · Q5 visual pulado (sem navegador) — use npm run portoes para exigir\n');
 
@@ -134,23 +195,43 @@ else console.log('  · Q5 visual pulado (sem navegador) — use npm run portoes 
  * mesmas suítes rodam, na mesma máquina, com os mesmos dados. */
 const pararCedo = process.env.PARAR_CEDO === '1';
 
-const suites = [
+/* O recorte da SUÍTE. Cada suíte já sabe o próprio nome (`criarSuite`), então o
+   filtro é uma linha — e ele vem DEPOIS da montagem, para que um nome errado
+   não passe como execução vazia e verde. */
+const todas = [
   ...(semGolden ? [] : [golden.suite()]),
   /* baratas: varredura de texto e lotes pequenos */
   fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(),
   carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(), telemetria.suite(), commit.suite(), saida.suite(), progressao.suite(), tema.suite(), arenas.suite(), portao.suite(), colocacao.suite(), banner.suite(), shiny.suite(), adm.suite(),
   /* médias: lotes de simulação curtos */
   semente.suite(), estatistica.suite(), precisao.suite(), invariantes.suite(),
-  ...(visual.disponivel() && !semVisual
+  /* `rVisual` e não `visual.disponivel()`: com `--so` fora das suítes de
+     navegador o Chromium nem sobe, e a condição antiga montaria suítes com
+     resultado nulo. */
+  ...(rVisual && baseAtual && !semVisual
      ? [visual.suite(rVisual), visual.suiteBase(baseAtual, baseGravada),
         visual.suiteAmbientes(digitaisNav, RAIZES_Q3), visual.suiteRodadaViva(rVisual),
         visual.suiteTemaCedo(rTemaCedo),
+        /* O contraste é medido no navegador e julgado por aritmética pura —
+           por isso a suíte mora fora do visual.mjs e recebe as medidas. */
+        contraste.suite(rVisual.contrastes),
         ...(rSemRede ? [visual.suiteSemRede(rSemRede)] : [])]
      : []),
   await paridade.suite(),
   /* caras: medições estatísticas grandes, por último de propósito */
   informacao.suite(), margem.suite(),
 ];
+
+const suites = SO ? todas.filter(x => querSo(x.nome)) : todas;
+if (SO) {
+  const orfas = SO.filter(n => !todas.some(x => x.nome === n));
+  if (orfas.length) {
+    console.error(`\n--so não conhece a suíte: ${orfas.join(', ')}.\n` +
+                  `Disponíveis: ${todas.map(x => x.nome).join(', ')}`);
+    process.exit(2);
+  }
+  avisoParcial(`${suites.length} de ${todas.length} suítes — ${SO.join(', ')}`);
+}
 let total = 0, falhas = [];
 for (const s of suites) {
   const r = await s.rodar();

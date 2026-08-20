@@ -11,7 +11,7 @@
  * paga resultado — o pagamento continua em `fases.mjs`, junto do fim da rodada.
  */
 import { $ } from './dom.mjs';
-import { APOSTA_MIN, emReais, valorAposta } from './carteira.mjs';
+import { APOSTA_MIN, valorAposta } from './carteira.mjs';
 import { CONF, CUR, MOEDA } from './motor.mjs';
 import { avaliarAposta, liberarTicket, registrarTicket } from '../../engine/exposicao.mjs';
 import { emitir } from './telemetria.mjs';
@@ -22,6 +22,37 @@ import { devolverAposta, reservarAposta } from './banco.mjs';
 import { posSelRing } from './coreografia.mjs';
 import { renderKillfeed } from './killfeed.mjs';
 import { renderBattleBanner } from './banner.mjs';
+
+/* A CHAMADA CENTRAL DIZ O QUE ESTÁ VALENDO, E MUDA QUANDO O ESTADO MUDA.
+ *
+ * Duas coisas erradas de uma vez, medidas pelo crítico cego (L-030, itens 6 e a
+ * segunda metade do 1):
+ *
+ *   · o painel dizia "escolha um lutador **na arena**" e o canvas dizia
+ *     "escolha seu lutador **na lista de odds**". Duas instruções para a mesma
+ *     ação, apontando para lugares diferentes, na mesma tela;
+ *   · e nenhuma das duas mudava depois da aposta confirmada. O jogador via a
+ *     linha do Magneton acesa, o retorno calculado, o botão de cancelar — e o
+ *     centro da tela ainda mandando ele escolher.
+ *
+ * Instrução que não sai depois de cumprida ensina que a tela não está prestando
+ * atenção. Aqui ela passa a ser derivada do estado, num lugar só, e quem muda o
+ * estado chama isto. */
+function atualizarCTA(){
+  const overlay = $('#overlay'); if (!overlay) return;
+  const banner = overlay.querySelector('.banner') || overlay;
+  if (S.state !== 'betting'){ overlay.classList.remove('on'); return; }
+  if (S.myBet){
+    const f = S.fighters[S.myBet.idx];
+    banner.innerHTML =
+      `<b>${f.n}</b> é a sua aposta · x${S.myBet.odd.toFixed(2)}` +
+      `<i>toque em outro para trocar</i>`;
+    overlay.classList.add('apostado');
+  } else {
+    banner.innerHTML = 'Escolha seu lutador na lista de odds<i>a rodada corre sozinha depois</i>';
+    overlay.classList.remove('apostado');
+  }
+}
 
 function markMyPlate(){
   S.ents.forEach((e,i) => {
@@ -40,7 +71,7 @@ function placeBet(idx, row){
   const pedido = valorAposta();
   if (pedido < APOSTA_MIN){
     $('#betInfo').innerHTML = `<b>Saldo insuficiente.</b> A aposta mínima é ${CUR} ${APOSTA_MIN} `
-      + `(${emReais(APOSTA_MIN)}). Complete um desafio diário ou compre ${MOEDA}.`;
+      + `. Complete um desafio diário ou compre ${MOEDA}.`;
     return;
   }
 
@@ -82,6 +113,7 @@ function placeBet(idx, row){
   /* `recordBetPlaced` NÃO entra aqui — ver D-008 e a chamada em `startFight`.
      Contar no clique conta aposta trocada e aposta cancelada. */
   markMyPlate();
+  atualizarCTA();
   document.querySelectorAll('.pick').forEach(p => p.classList.toggle('sel', +p.dataset.i === idx));
   const corte = veredito.cortado
     ? `<br><span class="tiny" id="avisoCorte" style="color:var(--gold)">${veredito.mensagem}</span>`
@@ -89,7 +121,7 @@ function placeBet(idx, row){
   $('#betInfo').innerHTML =
     `<b>${CUR} ${amount.toLocaleString('pt-BR')}</b> em <b>${S.fighters[idx].n}</b> (x${o.odd.toFixed(2)})<br>
      retorno se vencer: <b style="color:var(--gold)">${CUR} ${Math.floor(amount*o.odd).toLocaleString('pt-BR')}</b>
-     <span class="tiny">(${emReais(Math.floor(amount*o.odd))})</span>${corte}
+${corte}
      <button class="btn cancelBet" id="btnCancelBet">✕ Cancelar aposta e ficar de fora</button>`;
   $('#btnCancelBet').onclick = cancelarAposta;
 }
@@ -126,12 +158,14 @@ function cancelarAposta(){
   emitir('bet_cancelled', { lutador: S.fighters[idx].n, odd, valor: amount });
   atualizarSaldo();
   markMyPlate();
+  atualizarCTA();
   document.querySelectorAll('.pick').forEach(p => p.classList.remove('sel'));
   $('#betInfo').innerHTML = 'Aposta cancelada — valor devolvido. '
     + 'Você pode escolher outro lutador ou ficar de fora desta rodada.';
 }
 
 export {
+  atualizarCTA,
   cancelarAposta,
   markMyPlate,
   placeBet,

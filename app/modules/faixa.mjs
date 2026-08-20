@@ -39,10 +39,12 @@ const NOME_DA_FASE = {
    assiste, e um relógio regressivo sugeriria uma ação que não existe. */
 function relogio(){
   const seg = $('#faSeg'), barra = $('#faBarra'), caixa = barra?.parentElement;
+  const rot = $('#faRot');
   if (!seg || !barra) return;
 
   if (S.state === 'betting'){
     const resta = Math.max(0, CONF.BET_WINDOW - S.clock);
+    if (rot) rot.textContent = 'restam';
     seg.textContent = resta.toFixed(0) + 's';
     barra.style.width = (resta / CONF.BET_WINDOW * 100) + '%';
     /* Abaixo de 10 s o vermelho entra. É informação e não pressão: é o aviso
@@ -54,10 +56,15 @@ function relogio(){
   }
   caixa?.classList.remove('curto'); seg.classList.remove('curto');
   if (S.state === 'fighting'){
-    seg.textContent = S.clock.toFixed(1) + 's';
+    /* SEM DECIMAL. A aposta contava "29s" e a luta contava "9.9s": dois formatos
+       para a mesma unidade, no mesmo lugar, e o décimo não decide nada aqui —
+       durante a luta não há prazo a cumprir. */
+    if (rot) rot.textContent = 'de luta';
+    seg.textContent = S.clock.toFixed(0) + 's';
     barra.style.width = Math.min(100, S.clock / CONF.MAX_TIME * 100) + '%';
     return;
   }
+  if (rot) rot.textContent = S.state === 'result' ? 'rodada' : 'preparando';
   seg.textContent = S.state === 'result' ? '—' : '…';
   barra.style.width = '100%';
 }

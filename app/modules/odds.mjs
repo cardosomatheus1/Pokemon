@@ -5,7 +5,7 @@
  * uma vez, senão quem abre a página em segundo plano nunca vê as odds saírem. */
 
 import { $ } from './dom.mjs';
-import { CONF, CUR, M } from './motor.mjs';
+import { CONF, M } from './motor.mjs';
 import { precificar, simularLote } from '../../engine/preco.mjs';
 import { avaliarAposta } from '../../engine/exposicao.mjs';
 import { S } from './estado.mjs';
@@ -93,8 +93,9 @@ function buildPickList(){
       <span class="p" title="chance de vencer, medida em ${S.odds.sims.toLocaleString('pt-BR')} simulações">${
         (o.prob*100).toFixed(1)}%<i>±${(o.erroRelativo*100).toFixed(1)}</i></span>
       <span class="o">x${o.odd.toFixed(2)}</span>
-      <span class="lim tiny">${fechado ? 'mercado fechado'
-        : `até ${CUR} ${cabe.toLocaleString('pt-BR')}`}</span>
+      <span class="lim tiny" title="teto de aposta neste lutador: o §4.4.6 limita o PAGAMENTO por bilhete, então quanto maior a odd, menor o valor que cabe">${
+        fechado ? 'mercado fechado'
+        : `máx ${cabe.toLocaleString('pt-BR')}`}</span>
     </div>`;
   }).join('');
 }
@@ -121,6 +122,27 @@ function buildLiveList(){
   }).join('');
 }
 
+/* O RÓTULO DENTRO DO NÚMERO, e não só no cabeçalho (L-030, item 4).
+ *
+ * O mesmo slot mostrava `17,5 %` na aposta e `91 %` na luta: chance num
+ * momento, vida no outro, sem nada dizendo qual. Quem apostou a 7,1 % e vê 91 %
+ * lê que as chances explodiram. É a leitura mais otimista possível do pior
+ * número da tela, e ela nasce de uma economia de duas palavras.
+ *
+ * `<u>` porque é um marcador de unidade grudado no valor — quem lê o número tem
+ * que encontrar a palavra sem procurar. */
+
+/* O TETO DE PAYOUT DEIXOU DE PARECER PRÊMIO (L-030, item 3).
+ *
+ * Dizia `até 9.505` no favorito e `até 927` na zebra, em corpo maior que o
+ * multiplicador que aquilo contradiz — e "até" lido depressa é o teto do que se
+ * GANHA, não do que se APOSTA. Como o §4.4.6 limita o pagamento por bilhete e
+ * não a odd, o favorito a 17,5 % aceita dez vezes mais stake que a zebra a
+ * 1,7 %: a intuição de odds sai invertida sem uma palavra de explicação.
+ *
+ * `stake máx` diz a mesma coisa e diz do que se trata. A explicação inteira fica
+ * no `title`, para quem parar em cima. */
+
 /* Desenha a lista no modo certo para a fase, e ajusta o cabeçalho. Um só ponto
    de entrada: quem chama não precisa saber em que fase está. */
 function refreshOddsTable(){
@@ -129,11 +151,22 @@ function refreshOddsTable(){
   alvo.innerHTML = naLuta ? buildLiveList() : buildPickList();
   alvo.classList.toggle('naLuta', naLuta);
 
+  /* A FAIXA DE COLUNA — o rótulo de cada número, uma vez, onde o olho entra.
+     A primeira tentativa do V1.20 repetia "chance" em cada uma das doze linhas:
+     resolvia o significado e custava uma linha por lutador, empurrando a odd
+     para o menor corpo da tela. Ver a captura que reprovou isso. */
+  const cols = $('#listaCols');
+  if (cols) cols.innerHTML = naLuta
+    ? `<span class="c1">lutador</span><span class="c2">vida</span>` +
+      `<span class="c3">odd</span><span class="c4">abates</span>`
+    : `<span class="c1">lutador</span><span class="c2">chance</span>` +
+      `<span class="c3">odd</span><span class="c4">aposta máx</span>`;
+
   const t = $('#listaTtl'), sub = $('#listaSub');
   if (t)   t.textContent = naLuta ? 'Colocação' : 'Quem vence?';
   if (sub) sub.textContent = naLuta
-    ? (S.state === 'result' ? 'encerrada' : `${S.fighters.length - vivos()} fora`)
-    : `${S.fighters.length} lutadores`;
+    ? (S.state === 'result' ? 'encerrada' : `${S.fighters.length - vivos()} K.O.`)
+    : `${S.fighters.length} nesta rodada`;
 
   /* O rodapé mostra a margem EFETIVA e o pior erro relativo. É o §4.4.1 na
      tela: overround diferente do configurado não pode ficar escondido, e o erro

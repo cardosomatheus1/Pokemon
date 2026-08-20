@@ -230,10 +230,14 @@ function renderProfile(){
            <div class="t"><b>${tipoNomes[favType.k] || favType.k}</b><span>tipo favorito · ${favType.v}x</span></div></div>`
       : `<div class="hi"><div class="t"><b>—</b><span>ainda sem tipo favorito</span></div></div>`);
 
+  /* `betsCount` conta APOSTAS FECHADAS, não rodadas assistidas: quem assiste
+     sem apostar sobe de nível e não entra nesta conta. O rótulo dizia "rodadas
+     disputadas" e produzia o absurdo que o crítico cego achou — um perfil de
+     NV 54 com 0 rodadas (L-030, item 10). */
   $('#profStats').innerHTML = `
     <div class="stat-box"><b>${saldo().toLocaleString('pt-BR')}</b><span>${CUR} saldo atual</span></div>
     <div class="stat-box"><b>NV ${nivelDe(S.profile.xp||0)}</b><span>${tituloDe(nivelDe(S.profile.xp||0))}</span></div>
-    <div class="stat-box"><b>${S.profile.betsCount}</b><span>rodadas disputadas</span></div>
+    <div class="stat-box"><b>${S.profile.betsCount}</b><span>apostas fechadas</span></div>
     <div class="stat-box"><b>${S.profile.winsCount}</b><span>vitórias</span></div>
     <div class="stat-box"><b>${winRate}%</b><span>taxa de acerto</span></div>
     <div class="stat-box"><b>${S.profile.biggestWin.toLocaleString('pt-BR')}</b><span>maior prêmio</span></div>

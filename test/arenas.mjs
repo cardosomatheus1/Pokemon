@@ -14,7 +14,7 @@
  *   4. é cosmética: nenhuma arena entra em `simular`.
  */
 import { criarSuite, ok, igual, dentro } from './harness.mjs';
-import { ARENAS, sortearArena, arenaPorChave } from '../app/modules/arenas-dados.mjs';
+import { ARENAS, VEU_MAX, sortearArena, arenaPorChave } from '../app/modules/arenas-dados.mjs';
 import { semearVisual, coreo, enfeite } from '../app/modules/sorte.mjs';
 import { derivar, sementes } from '../engine/seed.mjs';
 import { rng, simular } from '../app/modules/motor.mjs';
@@ -189,6 +189,56 @@ export function suite() {
     const pintadas = new Set([...bloco[1].matchAll(/^\s*(\w+)\s*:/gm)].map(m => m[1]));
     for (const a of ARENAS) ok(pintadas.has(a.key), `arena ${a.key} sem pintura`);
     igual(pintadas.size, ARENAS.length, 'pinturas sem arena correspondente');
+  });
+
+  /* --- o véu de cor (L-027) --------------------------------------------- */
+
+  /* O QUE ESTE TESTE PROTEGE NÃO É O VÉU: É O CONTRASTE.
+   *
+   * Um véu forte é a maneira mais fácil de dar unidade cromática ao conjunto e
+   * a mais fácil de tornar o campo ilegível — e quase ninguém reprova, porque
+   * fica bonito. O item 9 da L-030 é exatamente essa reclamação vindo da
+   * variante shiny: paleta alternativa com menos contraste contra o piso da
+   * cratera. Subir o véu para "unificar melhor" agravaria o item que ele
+   * deveria ajudar.
+   *
+   * Por isso o teto é regra e não convenção, e ele é medido: acima de ~0,10 de
+   * alfa em `soft-light` a diferença de luminância entre o lutador e o piso cai
+   * abaixo do que o olho separa a 22 px de sprite. */
+  s.teste('toda arena tem véu, e nenhum passa do teto', () => {
+    for (const a of ARENAS){
+      ok(typeof a.brilho === 'string' && /^#[0-9a-f]{6}$/i.test(a.brilho),
+        `arena ${a.key} sem cor de véu válida (veio "${a.brilho}")`);
+      ok(typeof a.veu === 'number' && a.veu > 0,
+        `arena ${a.key} com véu ${a.veu} — véu zerado é campo declarado e não construído, ` +
+        `que é literalmente a L-027 de volta`);
+      ok(a.veu <= VEU_MAX,
+        `arena ${a.key} com véu ${a.veu}, acima do teto de ${VEU_MAX}. ` +
+        `Véu forte une o conjunto comendo o contraste entre o lutador e o piso — ` +
+        `ver o item 9 da L-030.`);
+    }
+  });
+
+  /* `mix-blend-mode` é o que faz o véu unificar em vez de tingir. `multiply`
+     apagaria as sombras do chão e `overlay` estouraria os claros do gelo — os
+     dois foram testados no bloco e os dois pioram o que o véu veio resolver. */
+  s.teste('o modo de mistura do véu é declarado e é um dos aceitos', () => {
+    const ACEITOS = ['soft-light', 'overlay', 'color', 'hue'];
+    for (const a of ARENAS)
+      ok(ACEITOS.includes(a.mistura),
+        `arena ${a.key} com mistura "${a.mistura}" — fora de ${ACEITOS.join('/')}`);
+  });
+
+  /* O véu tem que estar LIGADO. Um campo no catálogo que nenhuma linha lê é a
+     forma exata da L-027: documentado e não construído. */
+  s.teste('a pintura aplica o véu que o catálogo declara', () => {
+    const txt = readFileSync(new URL('../app/modules/arenas.mjs', import.meta.url), 'utf8');
+    ok(/--veuCor/.test(txt) && /--veuAlfa/.test(txt) && /--veuMistura/.test(txt),
+      'arenas.mjs não aplica as três propriedades do véu');
+    const html = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
+    ok(/id="veuArena"/.test(html), 'a camada do véu não existe na página');
+    ok(/#veuArena\{[^}]*pointer-events:none/.test(html),
+      'a camada do véu recebe clique — ela pinta a cena, não participa da interação');
   });
 
   return s;

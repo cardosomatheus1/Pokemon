@@ -3,8 +3,9 @@
  * Fronteira: traduz clique em chamada. Não guarda regra. */
 
 import { $ } from './dom.mjs';
+import { MOEDA } from './motor.mjs';
 import { S } from './estado.mjs';
-import { atualizarFichas, emReais } from './carteira.mjs';
+import { atualizarFichas } from './carteira.mjs';
 import { saldo } from './banco.mjs';
 import { closeModal, renderSession } from './navegacao.mjs';
 import { renderProfile } from './customizacao.mjs';
@@ -22,9 +23,10 @@ function atualizarSaldo(){
   const s = saldo();
   const fmt = s.toLocaleString('pt-BR');
   const el = $('#bal'); if (el) el.textContent = fmt;
-  const br = $('#balBrl'); if (br) br.textContent = emReais(s);
+  /* O saldo é PokéCash e só. Ver a nota longa em carteira.mjs. */
+  const br = $('#balBrl'); if (br) br.textContent = MOEDA;
   const wb = $('#wBal'); if (wb) wb.textContent = fmt;
-  const wr = $('#wBalBrl'); if (wr) wr.textContent = emReais(s);
+  const wr = $('#wBalBrl'); if (wr) wr.textContent = MOEDA;
   atualizarFichas();
 }
 

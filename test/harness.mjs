@@ -3,6 +3,9 @@
 export function criarSuite(nome) {
   const casos = [];
   return {
+    /* O nome fica exposto no objeto, e não só no resultado: o recorte `--so`
+       (T3) precisa saber quem é cada suíte ANTES de rodá-la. */
+    nome,
     teste: (titulo, fn) => casos.push({ titulo, fn }),
     async rodar() {
       const falhas = [];

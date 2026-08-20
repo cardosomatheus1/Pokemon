@@ -31,7 +31,28 @@ import { saveProfile } from './perfil.mjs';
    o que permite mexer no câmbio depois sem caçar valor solto em vinte
    lugares.                                                            */
 const PC_POR_REAL = 10;
-const emReais = pc => 'R$ ' + (pc / PC_POR_REAL).toFixed(2).replace('.', ',');
+
+/* O `R$` SAIU DE TODA ANOTAÇÃO DE POKÉCASH (V1.20, decisão do dono do projeto).
+ *
+ * Cada ficha dizia "50 / R$ 5,00", o saldo dizia "1.000 / R$ 100,00", e o
+ * retorno dizia "263 (R$ 26,30)". Três consequências, e nenhuma delas era o que
+ * a tradução queria fazer:
+ *
+ *   · ensinava uma taxa fixa de 10 PC = R$ 1,00 como se fosse parte da regra;
+ *   · fazia a PERDA ser sentida em reais, que é precisamente o que uma moeda
+ *     simulada não deveria conseguir fazer (Spec §P1 e cap. 28);
+ *   · repetia o mesmo número duas vezes em cada ficha, gastando a linha de baixo
+ *     do cartão com informação que não muda a decisão de ninguém.
+ *
+ * O que SOBRA em reais é a única coisa que não é anotação: o **preço dos
+ * pacotes** da loja simulada. Ali o real não traduz um saldo — ele é o produto,
+ * e a tela já se declara simulada em cima. Tirar o preço da loja não deixaria a
+ * moeda mais simulada; deixaria a loja sem preço.
+ *
+ * A constante fica porque a loja precisa dela. É a mesma lição de sempre: a taxa
+ * mora num lugar só. */
+/* Sem uso desde que a anotação saiu. Fica DELETADA e não comentada: função
+   exportada que ninguém chama é convite para a anotação voltar sem decisão. */
 
 const DEPOSIT_PACKAGES = [
   { brl:5,   pc:50   },
@@ -142,10 +163,10 @@ function atualizarFichas(){
   const row = $('#chipRow'); if (!row) return;
   row.innerHTML = CHIP_VALUES.map(v => `
       <button class="chip ${S.chipVal === v ? 'on' : ''} ${v > saldo() ? 'off' : ''}" data-v="${v}">
-        <b>${v.toLocaleString('pt-BR')}</b><span>${emReais(v)}</span>
+        <b>${v.toLocaleString('pt-BR')}</b><span>${MOEDA}</span>
       </button>`).join('') +
     `<button class="chip ${S.chipVal === 'max' ? 'on' : ''} ${saldo() < APOSTA_MIN ? 'off' : ''}" data-v="max">
-        <b>Tudo</b><span>${emReais(saldo())}</span></button>`;
+        <b>Tudo</b><span>${saldo().toLocaleString('pt-BR')} ${MOEDA}</span></button>`;
 
   row.querySelectorAll('.chip').forEach(b => b.onclick = () => {
     if (b.classList.contains('off')) return;
@@ -159,7 +180,7 @@ function atualizarFichas(){
     const v = valorAposta();
     dica.innerHTML = saldo() < APOSTA_MIN
       ? `Saldo abaixo da aposta mínima de ${CUR} ${APOSTA_MIN}. Complete um desafio diário ou compre ${MOEDA}.`
-      : `Apostando <b>${CUR} ${v.toLocaleString('pt-BR')}</b> (${emReais(v)}) por rodada.`;
+      : `Apostando <b>${CUR} ${v.toLocaleString('pt-BR')}</b> por rodada.`;
   }
 }
 
@@ -174,7 +195,7 @@ function usarValorPersonalizado(){
   const v = Math.floor(+inp.value || 0);
   const dica = $('#chipHint');
   if (v < APOSTA_MIN){
-    dica.innerHTML = `<span style="color:var(--red)">A aposta mínima é ${CUR} ${APOSTA_MIN} (${emReais(APOSTA_MIN)}).</span>`;
+    dica.innerHTML = `<span style="color:var(--red)">A aposta mínima é ${CUR} ${APOSTA_MIN}.</span>`;
     return;
   }
   if (v > saldo()){
@@ -201,11 +222,11 @@ function abrirCarteira(){
   const dep    = loadDeposits().reduce((a,d) => a + (d.pc || d.diamonds || 0), 0);
   const liq    = ganho - perda;
   $('#wSum').innerHTML = `
-    <div class="wcard up"><span>Ganhos</span><b>+${CUR} ${ganho.toLocaleString('pt-BR')}</b><i>${emReais(ganho)}</i></div>
-    <div class="wcard down"><span>Perdas</span><b>−${CUR} ${perda.toLocaleString('pt-BR')}</b><i>${emReais(perda)}</i></div>
+    <div class="wcard up"><span>Ganhos</span><b>+${CUR} ${ganho.toLocaleString('pt-BR')}</b><i>${MOEDA}</i></div>
+    <div class="wcard down"><span>Perdas</span><b>−${CUR} ${perda.toLocaleString('pt-BR')}</b><i>${MOEDA}</i></div>
     <div class="wcard ${liq>=0?'up':'down'}"><span>Resultado</span>
-      <b>${liq>=0?'+':'−'}${CUR} ${Math.abs(liq).toLocaleString('pt-BR')}</b><i>${emReais(Math.abs(liq))}</i></div>
-    <div class="wcard"><span>Depositado</span><b>${CUR} ${dep.toLocaleString('pt-BR')}</b><i>${emReais(dep)}</i></div>`;
+      <b>${liq>=0?'+':'−'}${CUR} ${Math.abs(liq).toLocaleString('pt-BR')}</b><i>${MOEDA}</i></div>
+    <div class="wcard"><span>Depositado</span><b>${CUR} ${dep.toLocaleString('pt-BR')}</b><i>${MOEDA}</i></div>`;
   openModal('#walletModal');
 }
 $('#btnWallet').onclick = abrirCarteira;
@@ -250,7 +271,6 @@ export {
   APOSTA_MIN,
   DEPOSIT_PACKAGES,
   atualizarFichas,
-  emReais,
   registrarAposta,
   renderDeposit,
   simulateDeposit,

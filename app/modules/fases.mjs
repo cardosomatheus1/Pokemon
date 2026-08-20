@@ -4,7 +4,7 @@
  * S.state. Chama todo o resto; por isso é a camada mais alta antes do laço. */
 
 import { $, log } from './dom.mjs';
-import { emReais, registrarAposta } from './carteira.mjs';
+import { registrarAposta } from './carteira.mjs';
 import { CONF, CUR, MOEDA, aplicarClima, sortearPool, rng, sortearClima, simular } from './motor.mjs';
 import { tiposDaPool } from '../../engine/engine.mjs';
 /* A árvore de sementes não passa pela ligação do motor: ela não depende de
@@ -30,7 +30,7 @@ import { posSelRing, reiniciarMovimento } from './coreografia.mjs';
 import { atualizarSaldo } from './controles.mjs';
 import { creditarRecompensa, pagarAposta, perderAposta } from './banco.mjs';
 import { updatePlate } from './eventos.mjs';
-import { placeBet } from './aposta.mjs';
+import { atualizarCTA, placeBet } from './aposta.mjs';
 import { renderBattleBanner } from './banner.mjs';
 import { atualizarEu, atualizarFase, relogio } from './faixa.mjs';
 import { renderMeuLutador } from './meu-lutador.mjs';
@@ -46,6 +46,14 @@ function setPhase(s){
   relogio();
   renderMeuLutador();   // a zona de ação troca de modo junto com a fase
   refreshOddsTable();   // e a lista de lutadores também
+  /* A grade de vida dorme na aposta e acorda quando a luta começa (L-030,
+     item 2). Aqui e não em `startFight` porque `setPhase` é o único lugar que
+     conhece TODAS as transições — inclusive a volta para 'betting'. */
+  $('#hud')?.classList.toggle('dormindo', s === 'betting');
+  /* Em coluna única a ORDEM dos blocos muda com a fase: na aposta a lista vem
+     primeiro (é a única ação da tela), na luta a arena volta para cima. Ver a
+     nota longa no CSS — em 420 px a lista ficava fora da dobra. */
+  document.querySelector('.app')?.classList.toggle('luta', s === 'fighting' || s === 'result');
   /* Controle morto não fica na tela ligado. Durante a luta não há rodada para
      iniciar, e um botão aceso sugerindo que há é o mesmo tipo de contradição
      que fazia a fase ter quatro pistas discordantes (L-029). */
@@ -69,7 +77,13 @@ async function newRound(){
   shots.length = 0; bursts.length = 0; puffs.length = 0;
   fxs.length = 0; sched.length = 0; S.shake = 0; entryRings.length = 0;
   $('#arena').style.transform = '';
-  $('#betInfo').innerHTML = 'Escolha um lutador na arena durante a fase de apostas.';
+  /* UMA instrução, e ela aponta para onde a lista de fato está — ver
+     `atualizarCTA` em aposta.mjs, que é quem manda no que a arena diz. */
+  /* SEM DIREÇÃO NO TEXTO. "ao lado" é verdade em três das quatro larguras: em
+     420 px a lista desce para baixo do canvas, e a instrução passa a apontar
+     para o lugar errado. É o mesmo defeito que o V1.16 removeu da seta do
+     overlay, voltando pela porta do texto. */
+  $('#betInfo').innerHTML = 'Escolha um lutador na lista para entrar na rodada.';
   hideWeatherBadge();
   initWeatherFx(null);   // sem efeito nenhum até o clima ser revelado em startFight()
   $('#stormBadge').classList.remove('show');
@@ -139,7 +153,12 @@ async function newRound(){
   atualizarEu();            // avatar e nível na faixa
   renderBattleBanner();     // vitrine do jogador no perfil
 
-  log(`<span class="l-sys">&gt; nova rodada · commit ${S.commit.commit.slice(0,16)}… · 12 sorteados de 76</span>`);
+  /* O TICKER TEM DUAS LINHAS E A FRASE NÃO CABIA. Saía "· 12 sorteados de" e
+     acabava ali, sem elipse e sem fim — frase truncada lê como defeito. O hash
+     de commit inteiro também não é para o apostador: ele existe para auditar
+     (§4.5), e a tela de Regras é que explica como. Oito dígitos bastam para
+     conferir, e a ordem inverte para o que muda primeiro ficar visível. */
+  log(`<span class="l-sys">&gt; nova rodada · 12 de 76 lutadores · commit ${S.commit.commit.slice(0,8)}</span>`);
   emitir('round_viewed', { commit: S.commit.commit });
 
   /* O OVERLAY NÃO REPETE MAIS A LISTA. Ele mostrava oito dos doze lutadores,
@@ -149,12 +168,13 @@ async function newRound(){
   /* UMA instrução, e ela aponta para onde a lista de fato está. Havia duas
      frases discordantes: o painel dizia "escolha na arena", o canvas dizia
      "escolha na lista →" — e em uma coluna a seta apontava para o lado errado. */
-  overlay.innerHTML = `<div class="banner">Escolha seu lutador na lista de odds</div>`;
+  overlay.innerHTML = '<div class="banner"></div>';
+  setPhase('betting');          // antes do CTA: ele lê S.state
+  atualizarCTA();
   $('#pickList').addEventListener('click', ev => {
     const row = ev.target.closest('.pick'); if (!row) return;
     placeBet(+row.dataset.i, row);
   });
-  setPhase('betting');
   roundPending = false;
 }
 
@@ -434,7 +454,7 @@ function finish(){
        gratuito em saldo transferível. */
     pagarAposta(S.myBet.composicao, S.myBet.odd, 'aposta'); atualizarSaldo();
     recordBetResult(true, S.myBet.amount, win, f);
-    $('#betInfo').innerHTML = `<b style="color:var(--green)">Ganhou ${CUR} ${win.toLocaleString('pt-BR')}!</b> (${emReais(win)})`;
+    $('#betInfo').innerHTML = `<b style="color:var(--green)">Ganhou ${CUR} ${win.toLocaleString('pt-BR')}!</b>`;
     registrarAposta({t:Date.now(), mon:f.n, amount:S.myBet.amount, odd:S.myBet.odd,
                      won:true, payout:win, pos:1});
     log(`<span class="l-win">💵 +${win.toLocaleString('pt-BR')} ${MOEDA} (x${S.myBet.odd.toFixed(2)}) — lucro de ${lucro.toLocaleString('pt-BR')}!</span>`);
@@ -445,7 +465,7 @@ function finish(){
         ${imgTag(f)}
         <div class="banner" style="margin-top:8px">${f.n} venceu!</div>
         <div class="payout">+${CUR} ${win.toLocaleString('pt-BR')}
-          <small>x${S.myBet.odd.toFixed(2)} · lucro de ${lucro.toLocaleString('pt-BR')} ${MOEDA} (${emReais(lucro)})</small>
+          <small>x${S.myBet.odd.toFixed(2)} · lucro de ${lucro.toLocaleString('pt-BR')} ${MOEDA}</small>
         </div>
         ${blocoXP(xpInfo, feitos)}
       </div>`;

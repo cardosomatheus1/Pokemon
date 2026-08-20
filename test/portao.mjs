@@ -106,6 +106,101 @@ export function suite() {
     igual(filtrarTocados(D, []).length, 2, 'lista vazia de arquivos esvaziou os defeitos');
   });
 
+  /* --- o recorte da suíte (T3) ------------------------------------------
+   *
+   * O recorte é a peça mais perigosa do arnês, porque a falha dele é SILENCIOSA
+   * e VERDE: `--so=cartira` com um erro de digitação rodaria zero testes e
+   * imprimiria sucesso. Um portão que não roda nada e diz que passou é pior que
+   * nenhum portão — alguém confia nele.
+   *
+   * Os testes gastam um processo cada, e é o preço certo: eles guardam a peça
+   * que decide o que TODAS as outras rodam. Com `--so=carteira` o filho custa
+   * 0,8 s e não sobe navegador nenhum. */
+  const rodarFilho = async args => {
+    const { execFile } = await import('node:child_process');
+    const raiz = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+    return new Promise(res => {
+      execFile('node', ['test/run.mjs', ...args],
+        { cwd: raiz, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024,
+          env: { ...process.env, SEM_VISUAL: '1' } },
+        (err, out, errOut) => res({ code: err ? (err.code ?? 1) : 0, saida: out + errOut }));
+    });
+  };
+
+  s.teste('o recorte com nome inexistente REPROVA, em vez de rodar vazio', async () => {
+    const r = await rodarFilho(['--so=cartira']);
+    ok(r.code !== 0,
+      `--so com nome errado saiu com código ${r.code}. Execução vazia e verde é a ` +
+      `falha mais silenciosa que este arnês pode ter.`);
+    ok(/não conhece a suíte/.test(r.saida),
+      `saiu com erro, mas sem dizer qual nome não existe:\n${r.saida.slice(-300)}`);
+  });
+
+  s.teste('o recorte se anuncia como parcial', async () => {
+    const r = await rodarFilho(['--so=carteira']);
+    ok(r.code === 0, `--so=carteira devia passar, saiu ${r.code}`);
+    ok(/PARCIAL/.test(r.saida),
+      `execução parcial não se anunciou. Portão que parece inteiro sem ser é ` +
+      `pior que portão ausente — mesma lição do sabotagem:tocados.`);
+  });
+
+  s.teste('o portão de fechamento RECUSA o recorte', async () => {
+    const { execFile } = await import('node:child_process');
+    const raiz = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+    const r = await new Promise(res => {
+      execFile('node', ['test/run.mjs', '--so=carteira'],
+        { cwd: raiz, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024,
+          env: { ...process.env, EXIGE_VISUAL: '1' } },
+        (err, out, errOut) => res({ code: err ? (err.code ?? 1) : 0, saida: out + errOut }));
+    });
+    ok(r.code !== 0,
+      `com EXIGE_VISUAL=1 o recorte foi aceito (código ${r.code}) — o bloco poderia ` +
+      `fechar com um sexto da suíte`);
+  });
+
+  s.teste('toda suíte expõe o próprio nome', async () => {
+    const { criarSuite } = await import('./harness.mjs');
+    const x = criarSuite('exemplo');
+    igual(x.nome, 'exemplo',
+      'criarSuite não expõe `nome` — sem ele o recorte casa com nada e roda vazio');
+  });
+
+  /* AS DUAS LISTAS DE SUÍTES DE NAVEGADOR TÊM QUE FECHAR (T3).
+   *
+   * `run.mjs` tem `COM_NAVEGADOR` — quem, se pedido, obriga o Chromium a subir.
+   * `sabotagem.mjs` tem `SUITES_NAVEGADOR` — o que a segunda passada roda quando
+   * a primeira saiu verde.
+   *
+   * Elas precisam concordar, e a divergência é SILENCIOSA nos dois sentidos:
+   * suíte de navegador nova que não entre na lista da sabotagem deixa de rodar
+   * naquela passada, e um defeito que só ela pega volta como PASSOU — o portão
+   * diria "ninguém pega isto" quando a verdade é "ninguém perguntou".
+   *
+   * Duas listas em arquivos diferentes que precisam ser iguais é dívida; o teste
+   * é o juro. Uni-las exigiria a sabotagem importar do runner, e ela roda o
+   * runner como processo filho de propósito. */
+  s.teste('as duas listas de suítes de navegador fecham', async () => {
+    const { readFileSync } = await import('node:fs');
+    const ler = f => readFileSync(new URL(f, import.meta.url).pathname, 'utf8');
+    const doRunner = ler('./run.mjs').match(/const COM_NAVEGADOR = \[([^\]]+)\]/);
+    const daSabotagem = ler('./sabotagem.mjs').match(/const SUITES_NAVEGADOR = '([^']+)'/);
+    ok(doRunner, 'run.mjs sem a lista COM_NAVEGADOR — o teste perdeu a âncora');
+    ok(daSabotagem, 'sabotagem.mjs sem a lista SUITES_NAVEGADOR — o teste perdeu a âncora');
+    const A = doRunner[1].split(',').map(x => x.trim().replace(/^'|'$/g, '')).filter(Boolean);
+    const B = daSabotagem[1].split(',').map(x => x.trim()).filter(Boolean);
+    /* `sem-rede` só existe quando há assets locais, então ela pode faltar em B
+       sem que isso seja divergência — é a única exceção, e é declarada. */
+    const faltando = A.filter(n => n !== 'sem-rede' && !B.includes(n));
+    ok(faltando.length === 0,
+      `a sabotagem não roda ${faltando.join(', ')} na passada com navegador. ` +
+      `Um defeito que só essa suíte pega voltaria como PASSOU — o portão diria ` +
+      `"ninguém pega" quando a verdade é "ninguém perguntou".`);
+    const sobrando = B.filter(n => !A.includes(n));
+    ok(sobrando.length === 0,
+      `a sabotagem pede ${sobrando.join(', ')}, que o runner não conhece como ` +
+      `suíte de navegador — o recorte reprovaria com "não conhece a suíte"`);
+  });
+
   /* D-010 · CORRIGIDO NO T2 — os dois lados da mesma barra.
    *
    * O teste que existia aqui afirmava o defeito: reconstruía a magnitude medida

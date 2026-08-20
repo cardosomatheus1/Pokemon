@@ -61,6 +61,18 @@ import { conferirAncoras, filtrarTocados } from './ancoras.mjs';
  * 3. EM PARALELO, uma caixa de areia por trabalhador. Nada disso enfraquece o
  *    portão: as mesmas suítes rodam, com os mesmos dados, na mesma máquina.
  */
+/* AS SUÍTES QUE PRECISAM DE NAVEGADOR (T3).
+ *
+ * A segunda passada — a que responde "só o navegador pega?" — rodava a suíte
+ * INTEIRA de novo, com Chromium. As 21 suítes baratas já tinham saído verdes na
+ * primeira passada, e rodá-las outra vez não podia mudar a resposta: elas não
+ * enxergam o navegador. Agora ela roda só as seis que enxergam.
+ *
+ * A lista é a mesma do `run.mjs`, e é o único lugar onde as duas precisam
+ * concordar — se uma suíte de navegador nova não entrar aqui, ela deixa de rodar
+ * nesta passada e a coluna "pego por" fica pobre, não errada. */
+const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,contraste';
+
 function rodar(caixa, semGolden, comVisual) {
   const env = { ...process.env,
     /* Marca a caixa de areia. Um teste que confira as âncoras da lista real
@@ -72,7 +84,8 @@ function rodar(caixa, semGolden, comVisual) {
     ...(semGolden ? { SEM_GOLDEN: '1' } : {}),
     ...(comVisual ? {} : { SEM_VISUAL: '1' }) };
   return new Promise(res => {
-    execFile('node', ['test/run.mjs'], { encoding:'utf8', env, cwd:caixa, maxBuffer: 32*1024*1024 },
+    const args = comVisual ? ['test/run.mjs', `--so=${SUITES_NAVEGADOR}`] : ['test/run.mjs'];
+    execFile('node', args, { encoding:'utf8', env, cwd:caixa, maxBuffer: 32*1024*1024 },
       (err, stdout, stderr) => res({ vermelha: !!err, saida: (stdout||'') + (stderr||'') }));
   });
 }
@@ -181,6 +194,24 @@ async function avaliar(d, caixa) {
   const alvo = join(caixa, d.arquivo);
   writeFileSync(alvo, src.replace(d.de, d.para));
   try {
+    /* TENTATIVA MEDIDA E DESCARTADA: começar pelo navegador quando o defeito
+     * mora em `app/`.
+     *
+     * A ideia era boa e a conta estava errada. Dos 12 defeitos novos do V1.20,
+     * 10 só o navegador pega — e para cada um o portão roda a suíte inteira SEM
+     * navegador (55 s, tudo verde, zero informação) antes de rodar COM. Inverter
+     * a ordem pareceu economizar esses 55 s.
+     *
+     * Só que a MAIORIA dos defeitos de `app/` não é dessa classe: eles são
+     * pegos por suíte barata, e com `PARAR_CEDO` isso custa segundos. Inverter a
+     * ordem fazia todos eles pagarem a partida do Chromium ANTES da suíte que já
+     * os pegava. Medido: 49 de 113 em 640 s, projetando ~24 min contra os ~20
+     * do caminho normal. **Piorou**, e a medição é que disse.
+     *
+     * Fica registrado porque a próxima pessoa a olhar este gargalo vai ter a
+     * mesma ideia. O que sobrou dela e funciona está na segunda passada abaixo:
+     * quando a suíte sai verde sem navegador, a passada COM navegador roda só as
+     * suítes que precisam dele, em vez da suíte inteira outra vez. */
     let comG = await rodar(caixa, false, false);
     let pegouPor = comG.vermelha ? suitesQuePegaram(comG.saida) : [];
 
