@@ -1248,10 +1248,16 @@ export const DEFEITOS = [
      um veredito morto. Os defeitos aqui guardam o que TEM que continuar
      universal, e não o que encolheu. */
 
-  { id:'S222', arquivo:FECHO, nome:'caminho de script por variável passa a ser resolvido',
-    real:'"quase sempre é um caminho" — e o portão reaproveita veredito de um filho que ele não leu',
+  /* A primeira versão do S222 trocava o `return null` por `if (false)` e PASSOU
+     por 226 defeitos: o `existsSync` logo abaixo devolvia `null` do mesmo jeito,
+     porque nome de variável fatiado não é caminho que exista. Mutante
+     equivalente — os dois guardas só divergem quando o fatiado EXISTE, e aí o
+     mutante acerta. Reapontado para o erro que de fato quebra o portão, o mesmo
+     do S223: dúvida virar SILÊNCIO em vez de virar TUDO. */
+  { id:'S222', arquivo:FECHO, nome:'caminho de script por variável some do fecho',
+    real:'"não sei ler, então ignoro" — e o fecho encolhe para o que ele conseguiu ler',
     de:"    if (!/^['\"][^'\"]+['\"]$/.test(primeiro)) return null;            // caminho por variável",
-    para:'    if (false) return null;' },
+    para:"    if (!/^['\"][^'\"]+['\"]$/.test(primeiro)) continue;" },
 
   { id:'S223', arquivo:FECHO, nome:'comando desconhecido deixa de virar fecho universal',
     real:'"se não é `node`, ignora" — e um `deno`/`python` disparado some do fecho inteiro',

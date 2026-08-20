@@ -508,24 +508,66 @@ export function suite() {
       'o fecho do `portao` não inclui o `run.mjs`, que ele dispara');
   });
 
-  s.teste('caminho de script vindo de VARIÁVEL mantém o fecho universal', async () => {
-    const { fechoDeArquivo, TUDO } = await import('./fecho.mjs');
+  /* Os dois casos abaixo montam um arquivo de mentira em /tmp e perguntam o
+     fecho DELE. Arquivo de verdade e não string: `fechoDeArquivo` lê do disco,
+     e testar a função por dentro não provaria o encaixe.
+
+     O S222 nasceu apontado para o guarda errado e passou por 226 defeitos: ele
+     trocava `return null` por `if (false)`, e o `existsSync` logo abaixo
+     devolvia `null` do mesmo jeito — nome de variável fatiado não é caminho que
+     exista. Mutante equivalente: os dois guardas só divergem quando o fatiado
+     EXISTE, e aí o mutante acerta. O que de fato quebra o portão é a dúvida
+     virar SILÊNCIO em vez de virar TUDO, e é para aí que os dois apontam
+     agora. */
+  async function fechoDeUmArquivoDeMentira(corpo) {
+    const { fechoDeArquivo } = await import('./fecho.mjs');
     const { writeFileSync, mkdtempSync, rmSync } = await import('node:fs');
     const { tmpdir } = await import('node:os');
     const { join } = await import('node:path');
     const dir = mkdtempSync(join(tmpdir(), 'fecho-teste-'));
     try {
       const alvo = join(dir, 'suite-de-mentira.mjs');
-      writeFileSync(alvo, `
-        import { execFile } from 'node:child_process';
-        const script = process.env.QUAL_SCRIPT;
-        execFile('node', [script], () => {});
-      `);
-      igual(fechoDeArquivo(alvo), TUDO,
-        'um script disparado por VARIÁVEL foi resolvido. Não há como saber o que ' +
-        'ele toca, e adivinhar aqui é o portão reaproveitando veredito às cegas — ' +
-        'toda dúvida resolve para TUDO.');
+      writeFileSync(alvo, corpo);
+      return fechoDeArquivo(alvo);
     } finally { rmSync(dir, { recursive: true, force: true }); }
+  }
+
+  s.teste('caminho de script vindo de VARIÁVEL mantém o fecho universal', async () => {
+    const { TUDO } = await import('./fecho.mjs');
+    const f = await fechoDeUmArquivoDeMentira(`
+      import { execFile } from 'node:child_process';
+      const script = process.env.QUAL_SCRIPT;
+      execFile('node', [script], () => {});
+    `);
+    igual(f, TUDO,
+      'um script disparado por VARIÁVEL não deixou o fecho universal. Não há ' +
+      'como saber o que ele toca, e tanto adivinhar quanto IGNORAR o disparo é ' +
+      'o portão reaproveitando veredito às cegas — toda dúvida resolve para TUDO.');
+  });
+
+  s.teste('comando que não sei classificar mantém o fecho universal', async () => {
+    const { TUDO } = await import('./fecho.mjs');
+    /* `python3` não está entre os binários do sistema declarados nem é `node`.
+       Um dia alguém dispara um `deno`, um `python`, um binário compilado nosso
+       — e o fecho tem que reconhecer que não sabe o que aquilo lê. */
+    const f = await fechoDeUmArquivoDeMentira(`
+      import { execFileSync } from 'node:child_process';
+      execFileSync('python3', ['tools/relatorio.py']);
+    `);
+    igual(f, TUDO,
+      'um comando desconhecido sumiu do fecho em vez de torná-lo universal. ' +
+      'Ignorar o que não se sabe ler é pior do que não ler: o veredito volta ' +
+      'reaproveitado de um filho que ninguém acompanhou.');
+
+    /* O contrapeso, senão o teste acima é satisfeito por um fecho universal
+       constante: binário do sistema DECLARADO continua não sujando o fecho. */
+    const g = await fechoDeUmArquivoDeMentira(`
+      import { execFileSync } from 'node:child_process';
+      execFileSync('git', ['ls-files']);
+    `);
+    ok(g !== TUDO,
+      'disparar `git` virou fecho universal. Binário do sistema declarado não ' +
+      'lê arquivo nosso nenhum — se ele universaliza, o T4 não encolheu nada.');
   });
 
   /* O QUARTO CASO DO T4: o defeito que derruba o CARREGAMENTO.
