@@ -1011,6 +1011,12 @@ linha de base visual inteira, porque o primeiro quadro deixa de ter saldo.
 **O que a destrava:** o resto do F1.14, e o critério de saída dele é uma frase:
 `localStorage.clear()` não muda nada do que o jogador tem.
 
+**A ordem mudou depois do D-018.** O resto do F1.14 é o cliente reconstruindo a
+rodada a partir de `revelado.raiz`, e o **F1.15** vai trocar essa raiz de 32
+para 128 bits. Construir o cliente sobre a raiz velha é retrabalho garantido, e
+por isso o F1.15 vem antes. A primeira metade do F1.14 — as duas pontas do
+transporte — já está no ar e é inerte.
+
 ---
 
 ### L-037 — a tela "acertou e não ganhou" nunca foi lida de perto ✅ FECHADA

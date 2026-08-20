@@ -1785,8 +1785,15 @@ navegador do arnês de dois processos que a L-032 construiu.
 
 ### F1.15 — A raiz da rodada sai de 32 bits
 
-**Tam.** G · **Método** INV · **Portões** Q1 Q2 Q3 Q4 Q6 · **Depende de** F1.14
-· **BLOQUEIA A TAG DA v0.9**
+**Tam.** G · **Método** INV · **Portões** Q1 Q2 Q3 Q4 Q6 · **Depende de** nada
+· **BLOQUEIA A TAG DA v0.9** · **VEM ANTES da segunda metade do F1.14**
+
+**A ordem é decisão, e o motivo é concreto.** A metade que falta do F1.14 é o
+cliente lendo `revelado.raiz` e reconstruindo a rodada a partir dela. Construir
+isso em cima de uma raiz de 32 bits que este bloco vai trocar por 128 é
+retrabalho garantido: muda o tipo, muda a serialização, muda toda fixture que o
+cliente compara. O F1.14 fica na primeira metade — que é inerte e está verde —
+até este fechar.
 
 **Por que ele existe:** o **D-018**. Com a janela de aposta aberta dá para saber
 o campeão, usando só o que a rota pública devolve. A raiz tem 32 bits, a pool
