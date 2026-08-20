@@ -60,6 +60,15 @@ const RUNNER = 'test/run.mjs';
 const SABOT  = 'test/sabotagem.mjs';
 const ARNES  = 'test/harness.mjs';
 const ARENAP = 'app/modules/arenas.mjs';
+const SRV    = 'server/servidor.mjs';
+const SRVROD = 'server/rodada.mjs';
+const SRVCFG = 'server/config.mjs';
+const SRVDB  = 'server/banco.mjs';
+const SRVAUT = 'server/auth.mjs';
+const SRVCAR = 'server/carteira.mjs';
+const SRVSCH = 'server/scheduler.mjs';
+const SRVTRA = 'server/transporte.mjs';
+const SRVAPO = 'server/aposta.mjs';
 const CARTEIRA= 'app/modules/carteira.mjs';
 const NAVEG  = 'app/modules/navegacao.mjs';
 const RODADA = 'app/modules/rodada.mjs';
@@ -640,4 +649,308 @@ export const DEFEITOS = [
     real:'lista encolhida numa limpeza — defeito que só aquela suíte pega volta como PASSOU',
     de:"const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,contraste';",
     para:"const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,contraste';" },
+  /* ---------- F1.1: o esqueleto do backend ---------- */
+
+  { id:'S114', arquivo:SRV, nome:'a versão da API deixa de ser conferida',
+    real:'"o cliente sempre manda" — e cliente antigo numa aba passa a apostar com contrato velho',
+    de:'      if (!SEM_VERSAO.includes(caminho)) {', para:'      if (false) {' },
+
+  { id:'S115', arquivo:SRV, nome:'o CORS ecoa a origem que pediu',
+    real:'"assim funciona em qualquer ambiente" — e é `*` escrito de outro jeito',
+    de:'  if (!origem || !config.origens.includes(origem)) return;',
+    para:'  if (!origem) return;' },
+
+  { id:'S116', arquivo:SRV, nome:'o erro interno devolve o stack trace',
+    real:'"ajuda a depurar" — entrega caminho de arquivo, versão de runtime e nome de função',
+    de:"      return responder(res, 500, { codigo: ERROS.INTERNO, erro: 'erro interno' });",
+    para:'      return responder(res, 500, { codigo: ERROS.INTERNO, erro: e.stack });' },
+
+  { id:'S117', arquivo:SRV, nome:'a raiz aceita as formas que o Number() engole calado',
+    real:'validação afrouxada — `?raiz=1e3` vira 1000 e é outra rodada, sem erro nenhum',
+    de:"  if (typeof v !== 'string' || !/^\\d{1,10}$/.test(v)) return null;",
+    para:"  if (typeof v !== 'string') return null;" },
+
+  { id:'S118', arquivo:SRV, nome:'um cabeçalho de segurança some da resposta',
+    real:'limpeza de objeto literal — e a API passa a poder ser posta num iframe',
+    de:"  'x-frame-options': 'DENY',\n", para:'' },
+
+  { id:'S119', arquivo:SRV, nome:'o 404 ecoa o caminho pedido',
+    real:'"assim fica mais fácil achar o erro de digitação" — é eco de entrada do usuário',
+    de:"erro: 'caminho desconhecido' }", para:"erro: 'caminho desconhecido: ' + caminho }" },
+
+  { id:'S120', arquivo:SRVROD, nome:'o servidor precifica com margem própria',
+    real:'ajuste "de servidor" — e o jogador vê uma odd na tela e outra no ticket',
+    de:'  const preco = precificar(wins, sims, M, opcoes);',
+    para:'  const preco = precificar(wins, sims, M, { ...opcoes, margem: 0.2 });' },
+
+  { id:'S121', arquivo:SRVROD, nome:'o servidor sorteia o elenco de outro ramo da árvore',
+    real:'rótulo trocado — mesma raiz, doze lutadores diferentes dos que o cliente mostra',
+    de:'  return M.sortearPool(s.elenco);', para:'  return M.sortearPool(s.batalha);' },
+
+  { id:'S122', arquivo:SRVROD, nome:'servidor e cliente em versões diferentes do motor',
+    real:'instância velha no pool — e ninguém percebe até uma odd sair errada',
+    de:'export const VERSAO_MOTOR = VERSAO;', para:"export const VERSAO_MOTOR = '0.9.0-OUTRA';" },
+
+  { id:'S123', arquivo:SRVCFG, nome:'produção sobe sem segredo de sessão',
+    real:'"o padrão serve" — é como quase toda sessão forjável começa',
+    de:"      throw new Error('SEGREDO_SESSAO ausente. Em produção o segredo não tem padrão — ' +",
+    para:"      segredoSessao = 'padrao'.repeat(8); if (false) throw new Error('' +" },
+
+  { id:'S124', arquivo:SRVCFG, nome:'o segredo de desenvolvimento é fixo no código',
+    real:'"assim a sessão sobrevive ao reinício" — segredo em repositório é segredo publicado',
+    de:"    segredoSessao = randomBytes(32).toString('hex');",
+    para:"    segredoSessao = 'a'.repeat(64);" },
+  /* O DEFEITO MUDOU DE ALVO porque o anterior era INSABOTÁVEL: a caixa de areia
+     é montada antes de qualquer defeito ser plantado, então sabotar a derivação
+     dentro da caixa não muda a caixa que já existe. Ele passou no Q2 do F1.4 por
+     isso, e a prova virou teste estático em `test/portao.mjs`.
+     O que se sabota agora é o que aquele teste lê: a bandeira que faz o `git
+     ls-files` enxergar pasta ainda não commitada. */
+  { id:'S125', arquivo:SABOT, nome:'a caixa de areia deixa de enxergar pasta não commitada',
+    real:'`ls-files` puro só vê o que já foi commitado — e a pasta do bloco em construção não foi',
+    de:"  execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'],",
+    para:"  execFileSync('git', ['ls-files'']," },
+  /* ---------- F1.2: o banco ---------- */
+
+  { id:'S126', arquivo:SRVDB, nome:'a chave estrangeira do SQLite fica desligada',
+    real:'o padrão do SQLite é OFF — sem a linha, toda REFERENCES vira documentação',
+    de:"  db.exec('PRAGMA foreign_keys = ON');", para:"  db.exec('PRAGMA foreign_keys = OFF');" },
+
+  { id:'S127', arquivo:SRVDB, nome:'o esquema passa a aceitar saldo negativo',
+    real:'"a aplicação já valida" — e a invariante do §4.6 vira promessa que um caminho novo esquece',
+    de:'          saldo   INTEGER NOT NULL DEFAULT 0 CHECK (saldo >= 0),',
+    para:'          saldo   INTEGER NOT NULL DEFAULT 0,' },
+
+  { id:'S128', arquivo:SRVDB, nome:'o ledger passa a aceitar lançamento de zero',
+    real:'CHECK removido — linha nula no registro que existe para ser auditado',
+    de:'          amount         INTEGER NOT NULL CHECK (amount <> 0),',
+    para:'          amount         INTEGER NOT NULL,' },
+
+  { id:'S129', arquivo:SRVDB, nome:'o mesmo usuário passa a poder ter duas apostas na rodada',
+    real:'UNIQUE afrouxado — o §5.6 diz UMA posição, e trocar de lutador vira INSERT',
+    de:'          UNIQUE (user_id, round_id)', para:'          UNIQUE (user_id, round_id, id)' },
+
+  { id:'S130', arquivo:SRVDB, nome:'o ledger deixa de ser append-only',
+    real:'"o gatilho atrapalha a correção manual" — e é o registro que existe para ser confiável',
+    de:"        CREATE TRIGGER ledger_sem_update BEFORE UPDATE ON wallet_ledger\n        BEGIN SELECT RAISE(ABORT, 'wallet_ledger é append-only'); END",
+    para:'        CREATE TABLE _sem_gatilho_update (x INT)' },
+
+  { id:'S131', arquivo:SRVDB, nome:'a data de nascimento vira opcional',
+    real:'NOT NULL removido — usuário sem idade declarada entra pela porta de trás (§28.2)',
+    de:'          birth_date    TEXT NOT NULL', para:'          birth_date    TEXT' },
+
+  { id:'S132', arquivo:SRVDB, nome:'o status da aposta aceita qualquer texto',
+    real:'CHECK removido — enum sem CHECK é comentário, e o settlement lê status',
+    de:"          status     TEXT NOT NULL\n                       CHECK (status IN ('aberta','travada','ganha','perdida','cancelada')),",
+    para:'          status     TEXT NOT NULL,' },
+
+  { id:'S133', arquivo:SRVDB, nome:'a migração deixa de derrubar uma tabela ao descer',
+    real:'esquecimento na lista inversa — e "reversível" passa a ser meia verdade',
+    de:"      for (const t of ['responsible_play_events', 'self_exclusions', 'player_limits',",
+    para:"      for (const t of ['responsible_play_events', 'self_exclusions'," },
+
+  { id:'S134', arquivo:SRVDB, nome:'a data de nascimento vira editável',
+    real:'gatilho removido — §28.2 exige imutabilidade, e CHECK não vê o valor antigo',
+    de:"        CREATE TRIGGER nascimento_imutavel BEFORE UPDATE OF birth_date ON users\n        WHEN OLD.birth_date <> NEW.birth_date\n        BEGIN SELECT RAISE(ABORT, 'data de nascimento é imutável (§28.2)'); END",
+    para:'        CREATE TABLE _sem_gatilho_nascimento (x INT)' },
+
+  { id:'S135', arquivo:SRVDB, nome:'a migração roda fora de transação',
+    real:'"é só um exec" — falha no meio deixa o banco entre dois esquemas e a versão mentindo',
+    de:"    db.exec('BEGIN');\n    try { m.sobe(db); db.prepare(`INSERT INTO schema_versao VALUES (?, ?)`)",
+    para:"    db.exec('-- sem transacao');\n    try { m.sobe(db); db.prepare(`INSERT INTO schema_versao VALUES (?, ?)`)" },
+  /* ---------- F1.3: autenticação ---------- */
+
+  { id:'S136', arquivo:SRVAUT, nome:'a idade deixa de contar o aniversário que não veio',
+    real:'"é só subtrair os anos" — e entra gente de 17 durante um ano inteiro',
+    de:'  if (mesHoje < m || (mesHoje === m && diaHoje < d)) anos--;', para:'  ' },
+
+  { id:'S137', arquivo:SRVAUT, nome:'a conta bloqueada por idade é apagada em vez de congelada',
+    real:'"não faz sentido guardar cadastro recusado" — apagar É o contorno (§28.2)',
+    de:"    db.prepare(`INSERT INTO users (id, username, email, password_hash, status, birth_date, created_at)\n                VALUES (?, ?, ?, ?, 'congelado', ?, ?)`)",
+    para:"    if (false) db.prepare(`INSERT INTO users (id, username, email, password_hash, status, birth_date, created_at)\n                VALUES (?, ?, ?, ?, 'congelado', ?, ?)`)" },
+
+  { id:'S138', arquivo:SRVAUT, nome:'o hash é pulado quando o e-mail não existe',
+    real:'"economiza CPU" — e o relógio passa a responder quais e-mails têm conta',
+    de:"  const ok = confereSenha(String(senha || ''), u ? u.password_hash : HASH_FANTASMA);",
+    para:"  const ok = u ? confereSenha(String(senha || ''), u.password_hash) : false;" },
+
+  { id:'S139', arquivo:SRVAUT, nome:'a mensagem distingue e-mail inexistente de senha errada',
+    real:'"ajuda o usuário" — e transforma a tela de login numa consulta de contas',
+    de:'  if (!u || !ok) {',
+    para:"  if (!u) throw erro(ERRO_AUTH.DADOS, 'e-mail não encontrado');\n  if (!ok) {" },
+
+  { id:'S140', arquivo:SRVAUT, nome:'a senha volta a ser hash cru, sem sal nem custo',
+    real:'"scrypt é lento" — é uma tabela arco-íris esperando acontecer',
+    de:"  return `scrypt$${params.N}$${params.r}$${params.p}$${sal.toString('base64')}$${h.toString('base64')}`;",
+    para:"  return h.toString('base64');" },
+
+  { id:'S141', arquivo:SRVAUT, nome:'a assinatura da sessão é comparada com ===',
+    real:'vaza byte a byte quantos caracteres o atacante já acertou',
+    de:'  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;',
+    para:'  if (assinatura !== esperada) return null;' },
+
+  { id:'S142', arquivo:SRVAUT, nome:'a sessão perde o prazo de validade',
+    real:'checagem removida — token sem prazo é token eterno, inclusive o roubado',
+    de:"  if (!dados || typeof dados.exp !== 'number' || dados.exp <= agora) return null;",
+    para:'  if (!dados) return null;' },
+
+  { id:'S143', arquivo:SRVAUT, nome:'o token de recuperação vira reutilizável',
+    real:'"o UPDATE atrapalha o teste" — quem achar o e-mail antigo entra depois',
+    de:"    db.prepare(`UPDATE responsible_play_events SET tipo='recuperacao_usada', detalhe='{}' WHERE id=?`)\n      .run(linha.id);",
+    para:'    ;' },
+
+  { id:'S144', arquivo:SRVAUT, nome:'a força bruta deixa de ser limitada',
+    real:'"o limite atrapalha o teste manual" — e a senha vale o tempo de um laço',
+    de:'  if (bloqueado(emailNorm, agora))', para:'  if (false)' },
+  /* ---------- F1.4: a carteira no servidor ---------- */
+
+  { id:'S145', arquivo:SRVCAR, nome:'o payout deixa de herdar a origem da stake',
+    real:'"é tudo dinheiro" — e a Arena vira conversor de bônus gratuito em saldo real (§5.5)',
+    de:'    ? { bucket, tipo: TIPO_PAYOUT[bucket], delta: Math.floor(n * odd), reservaDelta: -n }',
+    para:"    ? { bucket: 'transferivel', tipo: 'BET_PAYOUT_TRANSFERABLE', delta: Math.floor(n * odd), reservaDelta: -n }" },
+
+  { id:'S146', arquivo:SRVCAR, nome:'o saldo é escrito em vez de somado',
+    real:'"fica mais legível" — e é o TOCTOU com outra roupa: duas reservas do mesmo dinheiro',
+    de:'          `UPDATE carteiras SET saldo = saldo + ? WHERE user_id = ? AND bucket = ?`)',
+    para:'          `UPDATE carteiras SET saldo = ? WHERE user_id = ? AND bucket = ?`)' },
+
+  { id:'S147', arquivo:SRVCAR, nome:'a ordem de consumo é invertida',
+    real:'gasta o saldo do jogador antes do bônus — o §5.5 escolheu o contrário de propósito',
+    de:'  for (const b of ORDEM_CONSUMO) {', para:'  for (const b of [...ORDEM_CONSUMO].reverse()) {' },
+
+  { id:'S148', arquivo:SRVCAR, nome:'a reconciliação para de somar o ledger',
+    real:'"o laço não faz nada útil" — e saldo adulterado passa a ser saldo adulterado E ACEITO',
+    de:"    calc[l.bucket] += l.type === 'BET_RESERVE' ? -Math.abs(l.amount) : l.amount;",
+    para:'    ;' },
+
+  { id:'S149', arquivo:SRVCAR, nome:'liberar devolve o VALOR e não a COMPOSIÇÃO',
+    real:'"é o mesmo total" — e cancelar aposta vira conversor de bônus em transferível',
+    de:"    linhas: Object.entries(composicao).map(([bucket, n]) =>\n      ({ bucket, tipo: 'BET_RELEASE', delta: n, reservaDelta: -n })) });",
+    para:"    linhas: [{ bucket: 'transferivel', tipo: 'BET_RELEASE', delta: Object.values(composicao).reduce((a,b)=>a+b,0), reservaDelta: -Object.values(composicao).reduce((a,b)=>a+b,0) }] });" },
+
+  /* SABOTA O PONTO ÚNICO, e não uma das duas redes.
+     A idempotência tem duas defesas — a consulta prévia e o UNIQUE do esquema —
+     e num processo só elas são redundantes: remover uma deixa a outra cobrindo,
+     e o defeito passaria (medido; ver a L-032). O que derruba as DUAS com uma
+     linha é a chave nunca ser GRAVADA: sem ela, a consulta não acha nada e o
+     UNIQUE nunca dispara. */
+  { id:'S150', arquivo:SRVCAR, nome:'a idempotência do ledger cai por inteiro',
+    real:'"o cliente reenviou" vira "o jogador ganhou cinco vezes" (§16.4.1)',
+    de:'             i === 0 ? (idem ?? null) : null,', para:'             null,' },
+
+  { id:'S151', arquivo:SRVCAR, nome:'o movimento de carteira sai de dentro da transação',
+    real:'"é só um UPDATE e um INSERT" — falha no meio deixa o ledger contando outra história',
+    de:"  db.exec('BEGIN IMMEDIATE');", para:"  db.exec('-- sem transacao');" },
+  /* ---------- F1.5: o scheduler autoritativo ---------- */
+
+  { id:'S152', arquivo:SRVSCH, nome:'o servidor aceita a semente que o cliente mandar',
+    real:'"o campo já vem no pedido" — quem escolhe a semente escolhe a luta',
+    de:'    const raiz = novaRaiz();', para:'    const raiz = _pedido.raiz ?? novaRaiz();' },
+
+  { id:'S153', arquivo:SRVSCH, nome:'a semente é revelada com as apostas ABERTAS',
+    real:'condição afrouxada — e o §4.5 vira letra morta na hora de provar que vale',
+    de:'    if (atual.status !== ESTADOS.ABERTA) {', para:'    if (true) {' },
+
+  { id:'S154', arquivo:SRVSCH, nome:'o commit deixa de conferir com o reveal',
+    real:'mensagem "equivalente" — e o compromisso publicado não se valida',
+    de:"const MENSAGEM_COMMIT = (raiz, sal) => `pokearena|v1|${(raiz >>> 0).toString(16)}|${sal}`;",
+    para:"const MENSAGEM_COMMIT = (raiz, sal) => `${raiz}|${sal}`;" },
+
+  { id:'S155', arquivo:SRVSCH, nome:'duas rodadas passam a existir ao mesmo tempo',
+    real:'guarda removida — o cliente pediria a próxima até sair uma que lhe agrade',
+    de:'    if (atual && atual.status !== ESTADOS.ENCERRADA && atual.status !== ESTADOS.CANCELADA)',
+    para:'    if (false)' },
+
+  { id:'S156', arquivo:SRVSCH, nome:'os prazos de fase voltam a ser relativos ao tick',
+    real:'"calcula na transição" — e um tick atrasado empurra o cronograma inteiro',
+    de:'              terminaEm: agora + FASE_MS.APOSTA + FASE_MS.PREPARO + FASE_MS.LUTA,',
+    para:'              terminaEm: agora + FASE_MS.APOSTA + FASE_MS.PREPARO + FASE_MS.LUTA + 9999999,' },
+
+  { id:'S157', arquivo:SRVSCH, nome:'o campeão não é gravado no fecho da rodada',
+    real:'"está em memória" — e o processo que reinicia perde o resultado da rodada',
+    de:'        .run(ESTADOS.ENCERRADA, atual.batalha.campeaoDex, agora, atual.id);',
+    para:'        .run(ESTADOS.ENCERRADA, null, agora, atual.id);' },
+
+  { id:'S158', arquivo:SRVSCH, nome:'o registro de preço do §4.4.5 não é gravado',
+    real:'"dá para recalcular depois" — com o código de amanhã, que pode não ser o de hoje',
+    de:'      preco.lutadores.forEach((l, slot) =>\n        ins.run(id, slot, l.dex, l.prob, l.erroRelativo, l.fair, l.odd));',
+    para:'      ;' },
+
+  { id:'S159', arquivo:PRECO, nome:'o viés de convexidade volta à escala errada',
+    real:'(1-p)/(n·p²) é o viés em PONTOS de odd, não em fração dela — erra por ~60x na cauda',
+    de:'    const viesConvexidade = (1 - prob) / (sims * prob);',
+    para:'    const viesConvexidade = (1 - prob) / (sims * prob * prob);' },
+  /* ---------- F1.6: transporte, sala e reconexão ---------- */
+
+  { id:'S160', arquivo:SRVTRA, nome:'evento dirigido a um usuário vai para a sala inteira',
+    real:'filtro ignorado — todo mundo vê quanto cada um ganhou',
+    de:'      if (filtro && !filtro(con)) continue;', para:'      ;' },
+
+  { id:'S161', arquivo:SRVTRA, nome:'evento dirigido entra no histórico da retomada',
+    real:'"é só um histórico" — o vazamento entra pela porta dos fundos, na reconexão',
+    de:'    if (!filtro) {\n      historico.push(evento);',
+    para:'    if (true) {\n      historico.push(evento);' },
+
+  { id:'S162', arquivo:SRVTRA, nome:'um socket morto congela a sala',
+    real:'try removido — quem estiver DEPOIS dele na lista para de receber tudo',
+    de:'    } catch { conexoes.delete(con.id); return false; }',
+    para:'    } catch (e) { throw e; }' },
+
+  { id:'S163', arquivo:SRVTRA, nome:'quem chega atrasado recebe deltas em vez do estado',
+    real:'"o histórico já está aí" — e quem entra no segundo 22 reconstrói a rodada por partes',
+    de:'    if (faltando && faltando.length > 0 && faltando.length < HISTORICO_MAX) {',
+    para:'    if (historico.length > 0) { for (const e of historico) escrever(con, e); } else if (false) {' },
+
+  { id:'S164', arquivo:SRVTRA, nome:'a conexão que cai continua na sala',
+    real:'listener vazio — vazamento de socket, e a sala cresce até o processo cair',
+    de:"    req.on('close', () => { conexoes.delete(id); });",
+    para:"    req.on('close', () => {});" },
+
+  { id:'S165', arquivo:SRVTRA, nome:'a retomada repete o evento que o cliente já viu',
+    real:'comparação virou >= — o jogador vê o mesmo KO duas vezes',
+    de:'      ? historico.filter(e => e.id > ultimoVisto) : null;',
+    para:'      ? historico.filter(e => e.id >= ultimoVisto) : null;' },
+  /* ---------- F1.7: aposta, lock e settlement ---------- */
+
+  { id:'S166', arquivo:SRVAPO, nome:'a aposta é aceita depois do lock',
+    real:'guarda de fase removida — a semente já foi revelada, é apostar no passado',
+    de:"  if (rodada.status !== ESTADOS.ABERTA)\n    throw erro(ERRO_APOSTA.JANELA_FECHADA, 'a janela de apostas está fechada');\n\n  const conta",
+    para:"  if (false)\n    throw erro(ERRO_APOSTA.JANELA_FECHADA, 'a janela de apostas está fechada');\n\n  const conta" },
+
+  { id:'S167', arquivo:SRVAPO, nome:'trocar de lutador cria uma SEGUNDA posição',
+    real:'"é mais simples inserir" — com duas, o jogador cobre os doze e sai sempre no lucro',
+    de:"  const jaTem = db.prepare(\n    `SELECT * FROM bets WHERE user_id = ? AND round_id = ? AND status = 'aberta'`)\n    .get(userId, rodada.id);",
+    para:'  const jaTem = null;' },
+
+  { id:'S168', arquivo:SRVAPO, nome:'o settlement paga com odd diferente da do ticket',
+    real:'ajuste no cálculo — pagar com a odd de hoje uma aposta de ontem é inventar preço',
+    de:'    liquidarNoBanco(db, { userId: t.user_id, composicao, ganhou, odd: t.odd,',
+    para:'    liquidarNoBanco(db, { userId: t.user_id, composicao, ganhou, odd: t.odd * 2,' },
+
+  { id:'S169', arquivo:SRVAPO, nome:'o teto de payout deixa de ser aplicado no servidor',
+    real:'"o cliente já valida" — e o cliente é do jogador (§4.4.6)',
+    de:'  if (Math.floor(valor * oferta.offered_odd) > CONF.MAX_PAYOUT_POR_TICKET)',
+    para:'  if (false)' },
+
+  { id:'S170', arquivo:SRVAPO, nome:'conta congelada volta a poder apostar',
+    real:'checagem de status afrouxada — a barreira do §28.2 não alcança a aposta',
+    de:"  if (!conta || conta.status !== 'ativo')", para:'  if (!conta)' },
+
+  { id:'S171', arquivo:SRVAPO, nome:'a rodada é liquidada antes de terminar',
+    real:'guarda de fase removida — liquida uma rodada cujo campeão ainda não existe',
+    de:'  if (rodada.status !== ESTADOS.ENCERRADA)', para:'  if (false)' },
+
+  /* SABOTA A CHAVE, e não o filtro de status. As duas são redes do mesmo
+     risco — pagar duas vezes — e num caminho feliz são redundantes, como na
+     L-032. A chave é a que não depende de uma COLUNA estar certa, e o teste
+     "reverter o status à mão" existe para isolá-la. */
+  { id:'S172', arquivo:SRVAPO, nome:'o settlement perde a chave de idempotência',
+    real:'"o status já filtra" — e um reprocessamento depois de mexer numa coluna paga de novo',
+    de:'                          ref: t.id, idem: `settle-${t.id}`, agora });',
+    para:'                          ref: t.id, agora });' },
+
+  { id:'S173', arquivo:SRVAPO, nome:'a liberação da troca ganha chave de idempotência',
+    real:'"toda operação tem chave" — e a SEGUNDA troca não devolve o dinheiro da primeira',
+    de:'  if (jaTem) liberarNoBanco(db, { userId, composicao: JSON.parse(jaTem.stake_breakdown),\n                                  ref: jaTem.id, agora });',
+    para:'  if (jaTem) liberarNoBanco(db, { userId, composicao: JSON.parse(jaTem.stake_breakdown),\n                                  ref: jaTem.id, idem: `lib-${jaTem.id}`, agora });' },
 ];

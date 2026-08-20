@@ -27,6 +27,13 @@ import * as tema from './tema.mjs';
 import * as arenas from './arenas.mjs';
 import * as portao from './portao.mjs';
 import * as contraste from './contraste.mjs';
+import * as servidor from './servidor.mjs';
+import * as bancoServidor from './banco-servidor.mjs';
+import * as auth from './auth.mjs';
+import * as carteiraServidor from './carteira-servidor.mjs';
+import * as scheduler from './scheduler.mjs';
+import * as transporte from './transporte.mjs';
+import * as apostaServidor from './aposta-servidor.mjs';
 import * as colocacao from './colocacao.mjs';
 import * as banner from './banner.mjs';
 import * as shiny from './shiny.mjs';
@@ -204,6 +211,7 @@ const todas = [
   fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(),
   carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(), telemetria.suite(), commit.suite(), saida.suite(), progressao.suite(), tema.suite(), arenas.suite(), portao.suite(), colocacao.suite(), banner.suite(), shiny.suite(), adm.suite(),
   /* médias: lotes de simulação curtos */
+  await servidor.suite(), bancoServidor.suite(), auth.suite(), carteiraServidor.suite(), scheduler.suite(), transporte.suite(), apostaServidor.suite(),
   semente.suite(), estatistica.suite(), precisao.suite(), invariantes.suite(),
   /* `rVisual` e não `visual.disponivel()`: com `--so` fora das suítes de
      navegador o Chromium nem sobe, e a condição antiga montaria suítes com
@@ -253,5 +261,9 @@ console.log('  ⏳ = registrado e pendente; não se resolve escrevendo software.
 
 console.log('\nInvariantes da Spec §4.6 já verificadas:');
 for (const n of invariantes.JA_VERIFICADAS) console.log('  ✓ ' + n);
-console.log('\nInvariantes da Spec §4.6 ainda não verificáveis neste bloco:');
-for (const n of invariantes.NAO_APLICAVEIS_AINDA) console.log('  · ' + n);
+if (invariantes.NAO_APLICAVEIS_AINDA.length) {
+  console.log('\nInvariantes da Spec §4.6 ainda não verificáveis neste bloco:');
+  for (const n of invariantes.NAO_APLICAVEIS_AINDA) console.log('  · ' + n);
+} else {
+  console.log('\nInvariantes da Spec §4.6: todas verificáveis desde o F1.7.');
+}

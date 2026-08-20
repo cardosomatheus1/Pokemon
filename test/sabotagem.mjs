@@ -163,15 +163,36 @@ for (const f of ARQUIVOS) originais.set(f, readFileSync(f, 'utf8'));
 
 /* Uma caixa por trabalhador. A árvore de trabalho fica intocada do começo ao
    fim, e matar este processo a qualquer momento não deixa rastro. */
+/* AS PASTAS DA CAIXA SAEM DO GIT, e não de uma lista escrita à mão.
+ *
+ * A lista à mão custou DUAS execuções de portão. No V1.14 foi a lista de
+ * ARQUIVOS, que não conhecia dois módulos novos e morreu com um TypeError no
+ * defeito 70 — vinte minutos jogados fora. No F1.1 foi esta: `server/` nasceu,
+ * ninguém o acrescentou aqui, e o portão abortou com "a suíte já está vermelha"
+ * depois de montar as caixas.
+ *
+ * O git sabe exatamente o que o projeto versiona, que é exatamente o que a suíte
+ * precisa. `assets/` fica de fora sozinho, porque não é versionado — e são
+ * 18 MB que não têm o que fazer numa caixa de areia.
+ *
+ * É a mesma correção que o ARQUIVOS recebeu, pelo mesmo motivo, escrito no
+ * comentário logo acima: **derivar não pode dessincronizar.** */
+/* `--cached --others --exclude-standard` e não `ls-files` puro: o puro só vê o
+   que já foi COMMITADO, e a pasta nova de um bloco em construção ainda não foi.
+   Foi assim que `server/` ficou de fora na primeira tentativa desta correção —
+   uma falha silenciosa exatamente no caso que a correção existia para cobrir.
+   `--exclude-standard` respeita o .gitignore, então `assets/` continua fora. */
+const DIRS_VERSIONADOS = [...new Set(
+  execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'],
+    { encoding: 'utf8' })
+    .split('\n').filter(l => l.includes('/'))
+    .map(l => l.split('/')[0]))].filter(d => existsSync(d));
+
 const N_TRAB = Math.max(1, Math.min(cpus().length, 4));
 const CAIXAS = [];
 for (let i = 0; i < N_TRAB; i++) {
   const c = mkdtempSync(join(tmpdir(), 'pokearena-sabotagem-'));
-  /* `docs/` entra desde o F0.10 (test/saida-v09.mjs confere o §4.8 contra a
-     Spec e o registro das lacunas) e `arte/` desde o V1.13 (test/tema.mjs
-     confere que a arte referenciada pelo CSS existe). Sem eles a suíte nem
-     roda na caixa — e caixa que não roda a suíte reprova tudo por igual. */
-  for (const dir of ['engine', 'app', 'test', 'prototype', 'content', 'tools', 'docs', 'arte'])
+  for (const dir of DIRS_VERSIONADOS)
     cpSync(dir, join(c, dir), { recursive: true });
   cpSync('package.json', join(c, 'package.json'));
   /* `.gitignore` entra porque test/assets.mjs afirma que a arte não é

@@ -17,10 +17,12 @@ const ORCAMENTO_AGREGADO  = 80;   // PC-B/semana, TODAS as fontes rotineiras
 const ORCAMENTO_DESAFIOS  = 30;   // o que sobra depois da trilha de login
 const POR_DIA             = 3;    // desafios sorteados por dia, em desafios.mjs
 
-export const NAO_APLICAVEIS_AINDA = [
-  'payout ocorre uma única vez          -> F1.7',
-  'aposta fechada não pode ser alterada -> F1.7',
-];
+/* VAZIA DESDE O F1.7, e a lista fica de propósito.
+   As duas que moravam aqui — "payout ocorre uma única vez" e "aposta fechada
+   não pode ser alterada" — dependiam de settlement no servidor, que é o que o
+   F1.7 construiu. A lista vazia é a resposta certa; apagá-la esconderia que
+   ela já teve conteúdo, e é o histórico que torna a ausência legível. */
+export const NAO_APLICAVEIS_AINDA = [];
 
 /* Verificadas depois que a lista foi escrita — ficam nomeadas para que a
    ausência delas acima seja leitura fácil, e não pergunta. */
@@ -29,6 +31,9 @@ export const JA_VERIFICADAS = [
   'nenhuma rodada excede MAX_LIABILITY  -> F0.8, em test/exposicao.mjs',
   'nenhuma batalha excede hard cap      -> F0.6, D-003, aqui em L-016',
   'saldo nunca fica negativo            -> F0.9, em test/carteira.mjs',
+  'saldo nunca fica negativo (servidor) -> F1.2, CHECK no esquema + test/banco-servidor.mjs',
+  'payout ocorre uma única vez          -> F1.7, em test/aposta-servidor.mjs',
+  'aposta fechada não pode ser alterada -> F1.7, em test/aposta-servidor.mjs',
 ];
 
 export function suite() {

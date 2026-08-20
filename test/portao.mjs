@@ -165,6 +165,44 @@ export function suite() {
       'criarSuite não expõe `nome` — sem ele o recorte casa com nada e roda vazio');
   });
 
+  /* AS PASTAS DA CAIXA DE AREIA SAEM DO GIT, E ISTO É TESTE ESTÁTICO.
+   *
+   * A lista escrita à mão custou DUAS execuções de portão: no V1.14 a lista de
+   * ARQUIVOS não conhecia dois módulos novos e morreu no defeito 70; no F1.1 a
+   * de PASTAS não conhecia `server/` e o portão abortou com "a suíte já está
+   * vermelha" depois de montar as caixas.
+   *
+   * ELE É ESTÁTICO PORQUE O DEFEITO É INSABOTÁVEL, e vale explicar: a caixa de
+   * areia é montada ANTES de qualquer defeito ser plantado. Sabotar a derivação
+   * dentro da caixa não muda a caixa que já existe — a sabotagem não alcança o
+   * próprio bootstrap. O `S125` passou no Q2 exatamente por isso, e foi assim
+   * que este teste nasceu.
+   *
+   * O que ele prova: que a lista é DERIVADA. O que ele não prova: que a
+   * derivação está certa. Essa segunda parte tem prova empírica e cara — é o
+   * portão inteiro abortando —, e é a que já aconteceu duas vezes. */
+  s.teste('a caixa de areia deriva as pastas do git, e não de uma lista à mão', async () => {
+    const { readFileSync } = await import('node:fs');
+    /* OS COMENTÁRIOS SAEM ANTES DA VARREDURA, e a lição custou uma execução de
+       portão. A primeira versão lia o arquivo inteiro — e o comentário logo
+       acima da linha EXPLICA a regra citando `--others` e `--exclude-standard`.
+       Com a bandeira sabotada no código, o teste continuava achando as duas
+       palavras no texto que as explicava, e passava. O S125 escapou por isso.
+       Teste que lê o comentário testa a intenção, não a peça. */
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+    ok(/execFileSync\('git', \['ls-files'/.test(txt),
+      'a lista de pastas da caixa de areia não vem do git');
+    ok(/--others/.test(txt) && /--exclude-standard/.test(txt),
+      '`git ls-files` sem `--others --exclude-standard`: ele só enxerga o que já ' +
+      'foi COMMITADO, e a pasta nova de um bloco em construção ainda não foi. ' +
+      'Foi assim que `server/` ficou de fora — falha silenciosa exatamente no ' +
+      'caso que a derivação existe para cobrir.');
+    ok(!/for \(const dir of \[['"]/.test(txt),
+      'voltou a existir uma lista de pastas escrita à mão em sabotagem.mjs');
+  });
+
   /* AS DUAS LISTAS DE SUÍTES DE NAVEGADOR TÊM QUE FECHAR (T3).
    *
    * `run.mjs` tem `COM_NAVEGADOR` — quem, se pedido, obriga o Chromium a subir.

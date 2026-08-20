@@ -232,17 +232,51 @@ precisa de aleatoriedade, ela sai de um ramo nomeado da árvore. **Nunca de
 
 ---
 
-## 10. Onde o projeto está, e o que vem a seguir
+## 10. O servidor
 
-**O porte da versão do amigo anterior está fechado** (V1.13 a V1.20, mais T1–T3
-de ferramenta). O próximo passo é **o nosso roadmap**: `F1.1` em diante, que é o
-backend.
+**`F1.1` a `F1.7` estão construídos.** O ciclo econômico roda no servidor:
+
+```
+server/contrato.mjs    a versão da API e os códigos de erro
+server/config.mjs      configuração por ambiente; produção sem segredo NÃO SOBE
+server/servidor.mjs    node:http, cabeçalhos de segurança, CORS por lista
+server/banco.mjs       node:sqlite, dez tabelas, migrações que descem
+server/auth.mjs        cadastro, sessão, e a barreira de idade do §28.2
+server/carteira.mjs    ledger append-only, idempotente, atômico
+server/scheduler.mjs   dono do relógio: gera, precifica, abre, fecha, simula
+server/transporte.mjs  SSE — a sala, o estado e a reconexão
+server/aposta.mjs      aposta, lock e settlement
+```
+
+**Zero dependências vale aqui também.** `node:sqlite` é embutido desde o Node
+22.5; `node:crypto` faz senha (scrypt), sessão (HMAC) e commit. Nenhum
+`node_modules`.
+
+**SSE e não WebSocket.** O Node não traz servidor WebSocket, o tráfego é de uma
+via, e SSE traz reconexão automática e `Last-Event-ID` de graça. A escolha está
+declarada em `server/transporte.mjs`, com o que se perde.
+
+```bash
+npm run servidor     # sobe o serviço
+```
+
+O contrato está em **`docs/API.md`** — leia antes de escrever cliente.
+
+### O que vem a seguir
+
+**F1.8** (limites do jogador) e **F1.9** (pausa e autoexclusão) — as três tabelas
+do capítulo 28 já existem desde o F1.2, vazias, esperando. **F1.10** destrava o
+**D-007**, e o D-007 destrava os baús.
+
+O porte da versão anterior está fechado (V1.13 a V1.20, mais T1–T3 de
+ferramenta).
 
 **Aberto agora:**
 
 | item | o que é | dono |
 |---|---|---|
 | **D-007** | desafios diários emitem 6,5× o orçamento agregado do Estudo Econômico | **F1.10** |
+| **L-032** | a idempotência tem duas redes e a suíte só alcança uma (`node:sqlite` é síncrono) | **F1.6** |
 | **L-031** | os 9 itens da terceira passada do crítico cego (1920 estica em vez de agrupar) | **V1.21** |
 | **L-026** | o baú não tem contra o que ser calibrado enquanto D-007 durar | **V1.19** |
 | **L-012** | consulta de enquadramento regulatório | ⏳ não se resolve com software |

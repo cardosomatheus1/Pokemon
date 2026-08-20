@@ -100,16 +100,37 @@ export function precificar(wins, sims, M, opcoes) {
     /* Erro relativo de p̂ — e, em primeira ordem, o da odd: sqrt((1-p)/(n·p)).
        É a fórmula do §4.4.2, a mesma que dimensiona SIMS pela cauda. */
     const erroRelativo = Math.sqrt((1 - prob) / (sims * prob));
-    /* Viés de convexidade (§4.4.3): como 1/p é convexa, E[1/p̂] > 1/p e o
-       desvio NÃO se cancela entre rodadas — é sistemático e sempre a favor do
-       apostador. O termo de segunda ordem, como fração da odd justa, é
-       (1-p)/(n·p²).
-
-       Ele é publicado ao lado do erro pelo mesmo motivo que o erro é publicado:
-       sem ele, uma margem realizada abaixo da configurada é indistinguível de
-       um defeito de precificação. O F0.6 mediu 7,61 % contra 8 % — é este campo
-       que permite dizer quanto disso é o estimador. */
-    const viesConvexidade = (1 - prob) / (sims * prob * prob);
+    /* VIÉS DE CONVEXIDADE (§4.4.3) — E A FÓRMULA ESTAVA COM A ESCALA ERRADA.
+     *
+     * 1/p é convexa, então E[1/p̂] > 1/p: o desvio não se cancela entre rodadas.
+     * Expandindo, E[1/p̂] ≈ (1/p)·(1 + (1-p)/(n·p)), logo a fração da odd justa
+     * é **(1-p)/(n·p)**.
+     *
+     * O que estava aqui era `(1-p)/(n·p²)`, que é a fração DIVIDIDA POR p — o
+     * viés medido em pontos de odd, não em fração dela. Na cauda a diferença é
+     * de quase sessenta vezes: com p = 1,7 % e n = 154.000, a fórmula antiga
+     * publicava 2,21 % e a correta dá 0,038 %.
+     *
+     * MEDIDO no F1.5, contra simulação de referência (8.000 repetições por
+     * ponto), que é o que a L-023 exigia antes de qualquer correção virar preço:
+     *
+     *     p       n=154.000   observado    (1-p)/(n·p)   (1-p)/(n·p²)
+     *     0,071               -0,102 %        0,008 %        0,120 %
+     *     0,029               -0,111 %        0,022 %        0,750 %
+     *     0,017               -0,167 %        0,038 %        2,209 %
+     *
+     * O viés OBSERVADO é negativo — a suavização de Laplace `(k+1)/(n+12)` já o
+     * absorve e passa um pouco do ponto. Ou seja: nesta amostragem ele não é
+     * "sempre a favor do apostador", e é menor que dois décimos de por cento.
+     *
+     * **Por isso a correção analítica da L-023 NÃO foi aplicada:** ela empurraria
+     * a odd na direção errada. Ver o verbete da lacuna, que fecha com esta
+     * medição.
+     *
+     * O campo continua publicado no registro pelo mesmo motivo de sempre: sem
+     * ele, uma margem realizada abaixo da configurada é indistinguível de um
+     * defeito de precificação. */
+    const viesConvexidade = (1 - prob) / (sims * prob);
     const bruta = justa * (1 - margem);
     const comPiso = Math.max(oddMin, bruta);
     const comTeto = oddMax === null ? comPiso : Math.min(oddMax, comPiso);

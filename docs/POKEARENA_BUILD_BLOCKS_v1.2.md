@@ -1304,7 +1304,7 @@ propósito, e é a maior mudança visual desde o V1.13.
 
 Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a única em que proteção do jogador é requisito de entrega. É também onde Q6 deixa de ser formalidade: a partir de F1.1 existe superfície exposta.
 
-### F1.1 — Esqueleto do backend e contrato de API
+### F1.1 — Esqueleto do backend e contrato de API ✅
 
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 Q6 · **Depende de** F0.10
 
@@ -1318,7 +1318,7 @@ Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a úni
 
 ---
 
-### F1.2 — Banco, migrações e modelo V1
+### F1.2 — Banco, migrações e modelo V1 ✅
 
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 Q3 Q6 · **Depende de** F1.1
 
@@ -1334,7 +1334,7 @@ Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a úni
 
 ---
 
-### F1.3 — Autenticação real
+### F1.3 — Autenticação real ✅
 
 **Tam.** M · **Método** GL+INV · **Portões** Q1 Q2 Q5 Q6 · **Depende de** F1.2
 
@@ -1352,7 +1352,7 @@ Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a úni
 
 ---
 
-### F1.4 — Wallet ledger no servidor
+### F1.4 — Wallet ledger no servidor ✅
 
 **Tam.** G · **Método** INV · **Portões** Q1 Q2 Q3 Q6 Q8 · **Depende de** F1.3
 
@@ -1368,7 +1368,7 @@ Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a úni
 
 ---
 
-### F1.5 — Round scheduler autoritativo
+### F1.5 — Round scheduler autoritativo ✅
 
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 Q3 Q6 · **Depende de** F1.4
 
@@ -1384,7 +1384,7 @@ Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a úni
 
 ---
 
-### F1.6 — Transporte realtime, sala e reconexão
+### F1.6 — Transporte realtime, sala e reconexão ✅
 
 **Tam.** G · **Método** INV · **Portões** Q1 Q2 Q6 Q8 · **Depende de** F1.5
 
@@ -1400,7 +1400,7 @@ Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a úni
 
 ---
 
-### F1.7 — Aposta, lock e settlement
+### F1.7 — Aposta, lock e settlement ✅
 
 **Tam.** M · **Método** GL+INV · **Portões** Q1 Q2 Q3 Q5 Q6 Q8 Q9 · **Depende de** F1.6
 
@@ -1417,6 +1417,45 @@ Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a úni
 **Q7 (GL):** barra = o Reels original do `pokebet.arena`, que é a referência que deu origem ao projeto. Comparação de ritmo e legibilidade do ciclo apostar → assistir → resultado.
 
 **Saída:** ciclo econômico completo ponta a ponta no servidor.
+
+---
+
+> ## F1.1 a F1.7 — o ciclo econômico fechou no servidor
+>
+> **Sete blocos, uma sessão.** O que mudou de fato: até aqui o cliente iniciava a
+> rodada, sorteava a semente, calculava o preço e guardava a carteira. Agora o
+> servidor faz as quatro coisas, e o cliente perdeu o direito de pedir a próxima
+> rodada.
+>
+> **Zero dependências continua valendo no backend.** `node:http` para o serviço,
+> **`node:sqlite`** para o banco (embutido desde o Node 22.5), `node:crypto` para
+> senha, token e commit. Nenhum `node_modules`.
+>
+> **SSE e não WebSocket**, e a escolha está declarada em `server/transporte.mjs`:
+> o Node não traz servidor WebSocket, o tráfego aqui é de uma via, e SSE traz de
+> graça a reconexão automática e o `Last-Event-ID` que o §5.9 pede.
+>
+> **As duas invariantes do §4.6 que a suíte listava como "ainda não
+> verificáveis" saíram da lista** — *payout ocorre uma única vez* e *aposta
+> fechada não pode ser alterada*. A lista ficou vazia, e ela continua no código
+> vazia de propósito: apagá-la esconderia que já teve conteúdo.
+>
+> **O F1.5 fechou a L-023 e derrubou a premissa dela.** A lacuna dizia que o
+> viés de convexidade valia 2,49 % da odd e era sempre a favor do apostador. A
+> medição contra simulação de referência achou duas coisas erradas: a fórmula
+> publicada estava com a escala errada por um fator de ~60 na cauda, e o viés
+> observado é **negativo** — a suavização de Laplace já o absorve. **A correção
+> analítica NÃO foi aplicada**, porque empurraria a odd na direção errada.
+>
+> **O que os testes acharam, e o código não teria achado sozinho:**
+> prazos de fase que se deslocavam quando um tick atrasava; uma chave de
+> idempotência que impedia a segunda troca de aposta de devolver o dinheiro; o
+> sinal do reservado invertido no `SUM` do ledger; e três testes meus frouxos
+> demais, que a sabotagem reprovou antes de eu acreditar neles.
+>
+> **Aberto:** **L-032** — a idempotência tem duas redes e a suíte só alcança uma,
+> porque `node:sqlite` é síncrono. Dono **F1.6**, e precisa de um arnês de Q8 com
+> dois processos de verdade.
 
 ---
 

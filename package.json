@@ -17,6 +17,7 @@
     "olhar": "node tools/olhar-telas.mjs",
     "portoes": "npm run repetir && npm run sabotagem",
     "repetir": "node tools/repetir-portao.mjs",
+    "servidor": "node server/principal.mjs",
     "serve": "node prototype/serve.js"
   }
 }

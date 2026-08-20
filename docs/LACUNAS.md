@@ -382,37 +382,63 @@ agora diz que Nevasca é impossível. Qualquer acoplamento entre pool e clima
 vaza; zerar exigiria clima independente da pool, e aí o efeito climático
 simplesmente não aconteceria em parte das rodadas.
 
-### L-023 — o viés de convexidade é medido, mas não corrigido
+### L-023 — o viés de convexidade é medido, mas não corrigido ✅ FECHADA
 
-**Dono:** F1.5 · **Notada em:** F0.7
+**Dono:** F1.5 · **Notada em:** F0.7 · **Fechada no:** F1.5 —
+**e a premissa dela estava errada**
 
-`odd = 1/p` é convexa, então `E[1/p̂] > 1/p`: o erro amostral **não se cancela**
-entre rodadas, é sistemático e sempre a favor do apostador. O termo de segunda
-ordem, como fração da odd justa, é `(1-p)/(n·p²)`.
+### O que ela dizia
 
-Com os 20.000 sims herdados valia **19,12 %** no pior perfil — mais que o dobro
-da margem configurada. O F0.7 subiu a amostra para 154.000 e ele caiu para
-**2,49 %**. Continua sendo ~31 % da margem de 8 %, entregue na cauda.
+Que `odd = 1/p` é convexa, logo `E[1/p̂] > 1/p`; que o desvio é sistemático e
+**sempre a favor do apostador**; e que valia **2,49 %** da odd no pior perfil com
+154.000 simulações — cerca de 31 % da margem de 8 %, entregue na cauda.
 
-O F0.7 **publica** o viés por lutador no registro de precificação (§4.4.5), o que
-permite atribuir a margem realizada. Não o **corrige**.
+### O que a medição achou
 
-**Por que não cabe agora.** Corrigir é uma linha —
-`justa_corrigida = justa / (1 + (1-p̂)/(n·p̂))` — e é justamente por ser barato
-que não deve entrar de contrabando: mudar o estimador muda TODA odd exibida, e
-o escopo do F0.7 é `restaurar Laplace, elevar SIMS_MIN, registrar erro,
-gravar o registro`. Nada ali diz "trocar o estimador". Além disso a correção
-analítica é de primeira ordem e precisa ser validada contra uma simulação de
-referência antes de virar preço — medição que exige amostra grande e tempo.
+O F1.5 fez o que a lacuna exigia — validar contra simulação de referência antes
+de a correção virar preço — e achou **duas coisas erradas**.
 
-**Por que não abre bloco na Fase 0.** O §4.4.4 aceita `SIMS_MIN` como a resposta
-da v0.9 e o critério de saída do §4.8 fala em erro relativo registrado, não em
-viés corrigido. É melhoria, não pendência de saída.
+**1. A fórmula publicada estava com a escala errada.** O código calculava
+`(1-p)/(n·p²)` e o comentário dizia que isso era "a fração da odd justa". Não é:
+expandindo, `E[1/p̂] ≈ (1/p)·(1 + (1-p)/(n·p))`, então a fração é **`(1-p)/(n·p)`**.
+O que estava lá é a fração dividida por `p` — o viés em PONTOS de odd. Na cauda a
+diferença é de quase **sessenta vezes**.
 
-**O que a destrava:** F1.5, quando o preço passa a ser calculado pelo servidor.
-Ali o custo de uma simulação de referência deixa de competir com a janela de
-30 s do cliente, e o registro de precificação já carrega o campo para comparar
-antes e depois.
+**2. O viés observado é NEGATIVO.** Simulação de referência, 8.000 repetições por
+ponto, com o mesmo `rng` do motor e a mesma suavização de Laplace `(k+1)/(n+12)`:
+
+| p | n = 154.000, observado | `(1-p)/(n·p)` | `(1-p)/(n·p²)` |
+|---|---|---|---|
+| 0,071 | **−0,102 %** | 0,008 % | 0,120 % |
+| 0,029 | **−0,111 %** | 0,022 % | 0,750 % |
+| 0,017 | **−0,167 %** | 0,038 % | 2,209 % |
+
+E isolando o Laplace, com p = 0,017 e n = 20.000: **sem** ele o viés observado é
+`+0,041 %`, **com** ele é `−0,193 %`. Ou seja, **a suavização já absorve o viés e
+passa um pouco do ponto** — o que sobra é dois décimos de por cento, na direção
+da casa, e não do apostador.
+
+### A decisão, e por que ela é o contrário do que a lacuna pedia
+
+**A correção analítica NÃO foi aplicada.** `justa / (1 + (1-p̂)/(n·p̂))` empurraria
+a odd na direção errada: corrigiria um viés positivo que não existe nesta
+amostragem, tornando as odds piores para o jogador em cerca de 0,04 % na cauda.
+
+O que foi feito:
+
+- `engine/preco.mjs` passa a publicar `(1-p)/(n·p)`, com a medição no comentário;
+- `test/precisao.mjs` inverteu a afirmação que dizia "na cauda o viés é MAIOR que
+  o erro relativo" — ela vinha da escala errada. O erro é `sqrt((1-p)/(n·p))`, e
+  a raiz de um número menor que 1 é maior que ele: na cauda o erro passa de 1 % e
+  o viés fica em 0,04 %.
+
+> **A lição é a do projeto inteiro, aparecendo numa fórmula:** a lacuna tinha
+> número, tinha fonte e tinha três parágrafos de justificativa — e o número
+> estava errado por um fator de sessenta porque ninguém tinha medido. **Medir
+> antes de mexer** valeu aqui para não mexer.
+
+---
+
 
 ### L-024 — o bucket `pendente` existe e nada o preenche
 
@@ -737,6 +763,40 @@ V1.14 construiu, e ninguém tinha reparado.
 **Por que isto é lacuna e não defeito:** nada aqui está quebrado. A tela funciona,
 e os 299 testes que dizem isso continuam certos. O que ela não faz é ser lida em
 três segundos — e isso é trabalho de desenho, com escopo próprio, não conserto.
+
+---
+
+### L-032 — a idempotência tem duas redes e a suíte só alcança uma
+
+**Dono:** **F1.6** (é ele que traz mais de um processo) · **Achado por:** sabotagem
+do F1.4 · **Destrava:** nada; é limite de cobertura, não defeito
+
+A carteira do servidor protege a idempotência duas vezes: uma **consulta prévia**
+dentro da transação, e o **`UNIQUE` em `wallet_ledger.idem_key`** no esquema.
+
+Medido na sabotagem do F1.4:
+
+| removido | a suíte |
+|---|---|
+| só o `UNIQUE` | **passa** |
+| só a consulta prévia | **passa** |
+| as duas | reprova |
+
+Num processo só, as duas são redundantes, e a suíte não consegue distinguir qual
+está trabalhando — `node:sqlite` é síncrono, e o teste de "cem reservas
+concorrentes" é intercalação de transações, não paralelismo de threads.
+
+**O `UNIQUE` é a rede do caso que a suíte não alcança:** dois processos lendo
+"não existe" no mesmo instante e os dois escrevendo. É o TOCTOU clássico, e é
+exatamente o que o F1.6 vai criar ao ter mais de uma instância.
+
+**O defeito plantado sabota as DUAS**, porque sabotar uma só produziria um
+defeito que passa — e um "PASSOU" no relatório do Q2 que não é falha de
+cobertura, e sim redundância saudável, polui exatamente a coluna que existe para
+apontar cobertura fraca.
+
+**O que destrava:** um arnês de Q8 com dois processos de verdade contra o mesmo
+arquivo de banco. Não cabe no F1.4, que é síncrono por construção.
 
 ---
 

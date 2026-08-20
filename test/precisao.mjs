@@ -120,14 +120,18 @@ export function suite() {
     const wins = new Uint32Array([100, 50, 25, 5]);
     const r = precificar(wins, 1000, E.M);
     for (const l of r.lutadores) {
-      const esperado = (1 - l.prob) / (1000 * l.prob * l.prob);
+      const esperado = (1 - l.prob) / (1000 * l.prob);
       ok(Math.abs(l.viesConvexidade - esperado) < 1e-12,
-        `o viés de ${l.idx} não é (1-p)/(n·p²)`);
+        `o viés de ${l.idx} não é (1-p)/(n·p) — a fração da odd justa. ` +
+        `(1-p)/(n·p²) é o viés em PONTOS de odd, e foi o que ficou aqui até o F1.5.`);
     }
-    /* O viés cresce muito mais rápido que o erro na cauda: é 1/p² contra 1/p.
-       É por isso que ele, e não o erro, é o que come margem no azarão. */
-    ok(r.lutadores[3].viesConvexidade > r.lutadores[3].erroRelativo,
-      'na cauda o viés precisa ser maior que o erro relativo — é a diferença entre 1/p² e 1/p');
+    /* O VIÉS É MENOR QUE O ERRO, e não maior — a afirmação anterior vinha da
+       fórmula com escala errada. O erro relativo é sqrt((1-p)/(n·p)) e o viés é
+       (1-p)/(n·p): para (1-p)/(n·p) < 1, que é todo caso útil, a raiz é MAIOR.
+       Medido no F1.5: na cauda o erro passa de 1 % e o viés fica em 0,04 %. */
+    ok(r.lutadores[3].viesConvexidade < r.lutadores[3].erroRelativo,
+      'o viés ficou maior que o erro relativo — é o sinal de que a fórmula voltou ' +
+      'a ser (1-p)/(n·p²), que mede pontos de odd e não fração dela');
   });
 
   s.teste('o viés de convexidade fica abaixo de um terço da margem', () => {
@@ -139,9 +143,10 @@ export function suite() {
     const r = precificar(wins, E.CONF.SIMS, E.M);
     const teto = E.CONF.MARGIN / 3;
     ok(r.viesPior < teto,
-      `viés do pior perfil: ${(r.viesPior*100).toFixed(2)}%, contra teto de ` +
-      `${(teto*100).toFixed(2)}% (um terço da margem). Com 20.000 sims era 19,22% — ` +
-      `mais que o DOBRO da margem, e sempre a favor do apostador.`);
+      `viés do pior perfil: ${(r.viesPior*100).toFixed(3)}%, contra teto de ` +
+      `${(teto*100).toFixed(2)}% (um terço da margem). Medido no F1.5 contra ` +
+      `simulação de referência: com 154.000 sims o viés TEÓRICO no pior perfil é ` +
+      `0,04% e o OBSERVADO é -0,17% — a suavização de Laplace já o absorve.`);
   });
 
   s.teste('o registro tem os nove campos do §4.4.5', () => {
