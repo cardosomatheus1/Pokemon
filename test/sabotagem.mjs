@@ -305,8 +305,20 @@ const VEREDITOS = (() => {
 /* A digital de cada arquivo versionado, numa passada só. Calcular por defeito
    releria os mesmos arquivos 208 vezes. */
 const HASHES = new Map();
+/* AS SAÍDAS DO PRÓPRIO PORTÃO FICAM DE FORA DO MAPA, e a ausência é a correção
+   de um defeito que a medição pegou: `q2-veredito.json` e `captura.json` moram
+   em `test/`, e `test/` é prefixo do fecho de várias suítes. Gravá-los ao fim de
+   uma execução mudava o hash de um arquivo dentro do fecho, e a execução
+   SEGUINTE reavaliava 19 defeitos sem nada ter mudado — o portão invalidando a
+   si mesmo, um pouco mais a cada bloco.
+
+   Eles são SAÍDA, não entrada: nenhuma suíte muda de comportamento por causa
+   deles. `visual-base.json` continua no mapa, porque aquele é entrada de
+   verdade — a linha de base contra a qual a suíte visual julga. */
+const SAIDAS_DO_PORTAO = new Set([CAMINHO_VEREDITOS, CAMINHO_INDICE]);
 for (const f of execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'],
                              { encoding: 'utf8' }).split('\n').filter(Boolean)) {
+  if (SAIDAS_DO_PORTAO.has(f)) continue;
   try { HASHES.set(f, createHash('sha1').update(readFileSync(f)).digest('hex').slice(0, 12)); }
   catch { /* arquivo listado e ausente: some do mapa, e isso já muda a chave */ }
 }

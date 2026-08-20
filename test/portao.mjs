@@ -363,6 +363,22 @@ export function suite() {
       'o fecho de uma suíte não inclui o arnês');
   });
 
+  s.teste('as saídas do portão não entram no que ele mede', async () => {
+    const { readFileSync } = await import('node:fs');
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+    ok(/SAIDAS_DO_PORTAO\.has\(f\)\) continue/.test(txt),
+      'o mapa de digitais voltou a incluir as saídas do próprio portão. ' +
+      '`q2-veredito.json` e `captura.json` moram em `test/`, que é prefixo do ' +
+      'fecho de várias suítes: gravá-los ao fim de uma execução invalida ' +
+      'defeitos na execução seguinte sem nada ter mudado. Medido: 19 ' +
+      'reavaliações fantasma, e o número cresce a cada bloco.');
+    ok(!/SAIDAS_DO_PORTAO = new Set\(\[[^\]]*visual-base/.test(txt),
+      '`visual-base.json` saiu do mapa. Aquele é ENTRADA de verdade — é a linha ' +
+      'de base contra a qual a suíte visual julga —, e tirá-lo faria o portão ' +
+      'reaproveitar vereditos de uma linha de base que mudou.');
+  });
+
   s.teste('suíte que dispara processo tem fecho universal', async () => {
     const { fechoDaSuite, TUDO } = await import('./fecho.mjs');
     /* `concorrencia` roda `tools/q8-worker.mjs` como processo de verdade: o que
