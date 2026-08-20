@@ -5,7 +5,8 @@
 import { S } from './estado.mjs';
 import { tipoNomes, rng } from './motor.mjs';
 import { atualizarSaldo } from './controles.mjs';
-import { creditarRecompensa } from './banco.mjs';
+import { creditarRecompensa, saldoBonus } from './banco.mjs';
+import { recompensaDeDesafio, semanaDe } from '../../engine/emissao.mjs';
 import { saveProfile } from './perfil.mjs';
 
 /* =====================================================================
@@ -16,23 +17,35 @@ import { saveProfile } from './perfil.mjs';
    "rerolar" até vir um fácil. Vira meia-noite, entram três novos e o
    progresso zera.
 
-   Recompensa: XP + um bônus pequeno de PokéCash. Recalibrado na v0.7,
-   quando o câmbio passou a existir: os valores antigos davam ~400 por
-   dia, que na moeda nova equivale a R$ 40 diários de graça — mais do
-   que qualquer pacote de compra pequeno, o que tornaria o depósito
-   irrelevante. Agora os três somam ~75 (R$ 7,50), pouco mais de uma
-   aposta mínima: empurrão pra voltar no dia seguinte, não fonte de
-   renda que dispense apostar.
+   RECOMPENSA: XP SEMPRE, PC-B POR MARCO SEMANAL — e a mudança é o D-007.
+
+   O campo `dia` de cada desafio virou HISTÓRICO. Ele pagava PC-B a cada
+   conclusão, três vezes ao dia, ~25 cada: **~525 PC-B por semana**, contra
+   um orçamento de 30 no Estudo Econômico. Dezessete vezes e meia.
+
+   Não foi descuido — a calibragem de 75/dia é da v0.7, ANTERIOR ao Estudo,
+   e estava comentada aqui como decisão de UX. O que mudou foi o Estudo
+   passar a existir, com 10 mil agentes × 52 semanas mostrando emissão
+   irrestrita levando a oferta de PC-B de 2,0 M para 26,4 M.
+
+   Baixar 525 para 30 dividido por 21 desafios daria 1,4 por desafio —
+   poeira ao lado de uma aposta mínima de 50. Então o PC-B saiu do desafio
+   e foi para um MARCO SEMANAL: doze conclusões pagam o orçamento inteiro
+   de uma vez. Mesma conta, e a recompensa volta a ser sentida.
+
+   O XP continua por desafio, sempre, sem teto — ele não é moeda.
+
+   A regra mora em `engine/emissao.mjs`, e o teto de saldo mora com ela.
    ===================================================================== */
 const DESAFIO_POOL = [
-  {id:'rodadas',  txt:'Participe de {n} rodada{s}',            metas:[3,5,8], xp:60,  dia:20},
-  {id:'vitorias', txt:'Vença {n} rodada{s}',                   metas:[1,2,3], xp:120, dia:30},
-  {id:'tipo',     txt:'Aposte {n}x em Pokémon de {t}',         metas:[2,3,5], xp:80,  dia:25},
-  {id:'derrote',  txt:'Derrote {n} Pokémon de {t}',            metas:[2,3,5], xp:100, dia:25},
-  {id:'azarao',   txt:'Aposte {n}x num azarão (odd ≥ 4)',      metas:[1,2,3], xp:110, dia:30},
-  {id:'sobrevive',txt:'Termine no top 3 da arena {n}x',        metas:[1,2,3], xp:100, dia:25},
-  {id:'variedade',txt:'Aposte em {n} Pokémon diferentes',      metas:[3,4,6], xp:80,  dia:25},
-  {id:'clima',    txt:'Dispute {n} rodada{s} com clima ativo', metas:[2,3,4], xp:70,  dia:20},
+  {id:'rodadas',  txt:'Participe de {n} rodada{s}',            metas:[3,5,8], xp:60},
+  {id:'vitorias', txt:'Vença {n} rodada{s}',                   metas:[1,2,3], xp:120},
+  {id:'tipo',     txt:'Aposte {n}x em Pokémon de {t}',         metas:[2,3,5], xp:80},
+  {id:'derrote',  txt:'Derrote {n} Pokémon de {t}',            metas:[2,3,5], xp:100},
+  {id:'azarao',   txt:'Aposte {n}x num azarão (odd ≥ 4)',      metas:[1,2,3], xp:110},
+  {id:'sobrevive',txt:'Termine no top 3 da arena {n}x',        metas:[1,2,3], xp:100},
+  {id:'variedade',txt:'Aposte em {n} Pokémon diferentes',      metas:[3,4,6], xp:80},
+  {id:'clima',    txt:'Dispute {n} rodada{s} com clima ativo', metas:[2,3,4], xp:70},
 ];
 const TIPOS_DESAFIO = ['fire','water','grass','electric','psychic','rock','poison','flying','ground','bug'];
 
@@ -54,7 +67,7 @@ function rollDaily(){
       ? TIPOS_DESAFIO[(R() * TIPOS_DESAFIO.length) | 0] : null;
     escolhidos.push({
       id: base.id, meta, tipo, prog: 0, feito: false, pago: false,
-      xp: base.xp, dia: base.dia,
+      xp: base.xp,
       txt: base.txt.replace('{n}', meta).replace('{s}', meta === 1 ? '' : 's')
                    .replace('{t}', tipo ? (tipoNomes[tipo]||tipo) : ''),
     });
@@ -83,9 +96,12 @@ function progDesafio(id, quanto, tipo){
       c.feito = true;
       if (!c.pago){
         c.pago = true;
+        /* O XP É POR DESAFIO E NÃO TEM TETO. Ele não é moeda: não entra no
+           orçamento do Estudo, não sai da carteira de ninguém, e é o que faz o
+           desafio continuar valendo a pena antes de o marco fechar. */
         S.profile.xp += c.xp;
-        creditarRecompensa('CHALLENGE_REWARD', c.dia, 'desafio:' + c.id); atualizarSaldo();
         S.profile.dailyDone = (S.profile.dailyDone || 0) + 1;
+        pagarMarcoSemanal(c);
       }
       concluidos.push(c);
     }
@@ -94,7 +110,46 @@ function progDesafio(id, quanto, tipo){
   return concluidos;
 }
 
+/* ── O MARCO SEMANAL (D-007) ──────────────────────────────────────────────
+ *
+ * A DECISÃO de quanto pagar é do `engine/emissao.mjs` — pura, testável no Node,
+ * e a mesma que o servidor vai ler. Aqui só se conta o que aconteceu e se aplica
+ * o que ela responder.
+ *
+ * O contador é POR SEMANA ISO, e não por sete dias corridos: com janela
+ * deslizante, quem joga sábado e domingo fecha dois marcos em três dias, e o
+ * orçamento semanal vira quinzenal na prática. */
+function estadoDaSemana(){
+  const sem = semanaDe(hojeStr());
+  if (!S.profile.semana || S.profile.semana.id !== sem)
+    S.profile.semana = { id: sem, concluidos: 0, emitido: 0 };
+  return S.profile.semana;
+}
+
+function pagarMarcoSemanal(){
+  const w = estadoDaSemana();
+  w.concluidos++;
+  const r = recompensaDeDesafio({
+    concluidosNaSemana: w.concluidos,
+    jaEmitidoNaSemana:  w.emitido,
+    saldoPcB:           saldoBonus(),
+  });
+  if (r.pcB > 0){
+    creditarRecompensa('CHALLENGE_REWARD', r.pcB, 'marco-semanal:' + w.id);
+    w.emitido += r.pcB;
+    atualizarSaldo();
+  }
+  /* O SUBSTITUTO NÃO É SILÊNCIO. O Estudo é explícito: "Nunca mostrar como se o
+     usuário tivesse perdido uma recompensa". Quem desenha a tela lê este campo;
+     enquanto a tela não existir, ele fica no perfil para não se perder. */
+  if (r.substituto) w.ultimoSubstituto = { tipo: r.substituto, motivo: r.motivo };
+  saveProfile(S.profile);
+  return r;
+}
+
 export {
   ensureDaily,
   progDesafio,
+  pagarMarcoSemanal,
+  estadoDaSemana,
 };

@@ -597,33 +597,35 @@ tem data.
 
 ---
 
-### L-026 — o baú não tem contra o que ser calibrado
+### L-026 — o baú não tem contra o que ser calibrado ✅ DESTRAVADA
 
-**Dono:** V1.19 (o baú pelo nosso desenho) · **Destrava quando:** D-007 fechar
+**Dono:** V1.19 · **Destravada por:** a correção do **D-007**
 
-Decisão do dono do projeto: os baús ficam no **nosso** roadmap, com o **nosso**
-cálculo. A implementação da v1.0 não é portada; os números dela ficam como
-insumo, e são bons — 3.000.000 de aberturas, qui-quadrado em cinco sementes,
-autossustento de 4,7 % medido, pity com pior caso em 20.000 jogadores.
+Ela dizia que não dava para calibrar o baú enquanto a nossa própria
+implementação estourasse o orçamento em 6,5× — reconciliar vinha primeiro.
 
-**O que impede desenhar agora não é falta de método, é falta de orçamento.** O
-baú dele emite **1,45 PC-B por rodada**: 55 rodadas/semana consomem sozinhas os
-80 PC-B agregados do Estudo Econômico, e 21 rodadas/semana consomem os 30 que
-sobram para desafios/rescue/missões. Calibrar o nosso contra esse orçamento não
-faz sentido enquanto os nossos próprios desafios já o estouram em 6,5× — é o
-**D-007**, e ele vem primeiro.
+**Reconciliou.** A emissão de desafios cabe nos 30 PC-B/semana do sub-teto, e o
+`soft_issuance_ceiling = 500` passou a existir no código, em
+`engine/emissao.mjs`. O baú do V1.19 tem agora duas coisas contra as quais se
+calibrar:
 
-Três coisas o V1.19 vai ter que decidir, e nenhuma delas vem pronta do trabalho
-dele:
+- **o que sobra do orçamento agregado** — 80 no total, até 50 para a trilha de
+  login, 30 para desafios; o que o baú consumir sai de dentro desses 30, ou
+  exige rediscutir a repartição com medição;
+- **o teto de saldo**, que já está implementado e vale para qualquer fonte
+  rotineira nova. Um baú que emita PC-B herda o mesmo regulador de graça: quem
+  acumula para de receber moeda e recebe substituto.
 
-1. **PC-T ou PC-B?** Em PC-T seria dinheiro sacável nascendo de graça, que é
-   exatamente o que a proveniência do §5.5 existe para impedir.
-2. **As três moedas novas** — fragmento, essência, prisma — mudam a superfície
-   econômica inteira, e cada uma é uma decisão de §5.5 por si.
-3. **O §11.3 lista "loot box paga sem transparência"** entre os pilares a
-   evitar. O baú dele é gratuito (fragmento por participação), então não cai na
-   proibição — mas ela fecha a porta para a monetização óbvia, e isso precisa
-   estar dito antes de alguém desenhar contando com ela.
+> **O número que o V1.19 precisa bater:** o baú da v1.0 emitia **1,45 PC-B por
+> rodada**. Cinquenta e cinco rodadas por semana consomem sozinhas os 80
+> agregados; vinte e uma consomem os 30 que sobram. Esse continua sendo o
+> problema de desenho — a diferença é que agora ele é um problema de calibragem,
+> e não de contradição entre dois documentos.
+
+**A lacuna sai da lista; o desenho do baú continua sendo escopo do V1.19.**
+
+---
+
 
 ### L-027 — o véu de cor por arena foi documentado e não construído ✅ FECHADA
 
@@ -766,39 +768,65 @@ três segundos — e isso é trabalho de desenho, com escopo próprio, não cons
 
 ---
 
-### L-032 — a idempotência tem duas redes e a suíte só alcança uma
+### L-032 — a idempotência tem duas redes e a suíte só alcança uma ✅ FECHADA
 
-**Dono:** **F1.6** (é ele que traz mais de um processo) · **Achado por:** sabotagem
-do F1.4 · **Destrava:** nada; é limite de cobertura, não defeito
+**Dono:** F1.6 · **Achada por:** sabotagem do F1.4 · **Fechada com:**
+`test/concorrencia.mjs` — **e a premissa dela também estava errada**
 
-A carteira do servidor protege a idempotência duas vezes: uma **consulta prévia**
-dentro da transação, e o **`UNIQUE` em `wallet_ledger.idem_key`** no esquema.
+### O que ela dizia
 
-Medido na sabotagem do F1.4:
+Que a carteira protege a idempotência duas vezes — consulta prévia dentro da
+transação e `UNIQUE` em `wallet_ledger.idem_key` — e que num processo só elas
+são redundantes, porque `node:sqlite` é síncrono. Que o `UNIQUE` era **a rede do
+TOCTOU entre processos**: dois lendo "não existe" no mesmo instante e os dois
+escrevendo. E que fechá-la exigia um arnês com processos de verdade.
 
-| removido | a suíte |
+### O arnês foi construído
+
+`tools/q8-worker.mjs` é um processo de verdade; `test/concorrencia.mjs` dispara
+até doze deles contra o **mesmo arquivo** de banco, com **barreira por instante
+combinado** — cada filho espera até um `alvoMs` e só então dispara. Sinal do pai
+chegaria em ordens diferentes, e o teste mediria a ordem de entrega em vez da
+corrida.
+
+O arnês **prova a si mesmo**: ele mede a janela de término e reprova se os
+processos rodaram em fila, senão seria um teste que passa por não testar.
+
+### O que a medição achou
+
+**1. O TOCTOU entre processos NÃO EXISTE com este armazenamento.** Com oito
+processos de verdade e a mesma chave:
+
+| removido | oito processos |
 |---|---|
 | só o `UNIQUE` | **passa** |
 | só a consulta prévia | **passa** |
-| as duas | reprova |
+| as duas | reprova (creditou **800** em vez de 100) |
 
-Num processo só, as duas são redundantes, e a suíte não consegue distinguir qual
-está trabalhando — `node:sqlite` é síncrono, e o teste de "cem reservas
-concorrentes" é intercalação de transações, não paralelismo de threads.
+É o mesmo resultado da suíte de um processo. O motivo é o `BEGIN IMMEDIATE`:
+ele adquire o lock de escrita na abertura, então **a consulta prévia já é atômica
+em relação aos outros escritores**. A janela que a lacuna descrevia está fechada
+antes de qualquer uma das duas redes agir.
 
-**O `UNIQUE` é a rede do caso que a suíte não alcança:** dois processos lendo
-"não existe" no mesmo instante e os dois escrevendo. É o TOCTOU clássico, e é
-exatamente o que o F1.6 vai criar ao ter mais de uma instância.
+**2. E o `BEGIN IMMEDIATE` é a guarda que ninguém estava protegendo.** Com as
+duas redes no lugar e a transação em `BEGIN DEFERRED`, **três dos cinco testes
+caem** — e não por dinheiro duplicado, por `database is locked`: dois leitores
+tentando virar escritor no mesmo instante é um impasse que o `busy_timeout` não
+resolve. Quatro dos oito processos voltam com erro.
 
-**O defeito plantado sabota as DUAS**, porque sabotar uma só produziria um
-defeito que passa — e um "PASSOU" no relatório do Q2 que não é falha de
-cobertura, e sim redundância saudável, polui exatamente a coluna que existe para
-apontar cobertura fraca.
+> **O modo da transação decide se há concorrência ou impasse.** Havia defeito
+> plantado para a transação SUMIR (`S151`) e nenhum para ela ser REBAIXADA — que
+> é o erro que alguém comete de verdade ao "simplificar" a linha. Virou o `S174`.
 
-**O que destrava:** um arnês de Q8 com dois processos de verdade contra o mesmo
-arquivo de banco. Não cabe no F1.4, que é síncrono por construção.
+### Onde a redundância continua fazendo sentido
+
+O `UNIQUE` fica. Ele não guarda contra um buraco vivo — guarda contra a troca de
+armazenamento. Um banco com lock por LINHA em vez de por arquivo (Postgres, por
+exemplo) não serializa escritores, e ali a consulta prévia volta a ter janela. A
+constraint é a rede que sobrevive à migração, e o custo dela é zero.
 
 ---
+
 
 ### L-031 — o que a TERCEIRA passada do crítico abriu
 

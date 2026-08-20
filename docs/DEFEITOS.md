@@ -361,81 +361,99 @@ com igualdade exata no cenário construído. O defeito S36 planta a regressão.
 
 ---
 
-## D-007 — os desafios diários emitem 6,5× o orçamento agregado do Estudo Econômico
+## D-007 — os desafios diários emitem 6,5× o orçamento agregado ✅ CORRIGIDO
 
 **Achado em:** V1.14 (fora do escopo — a pergunta era outra) ·
-**Bloco dono:** **F1.10** (Perfil, desafios e login streak) ·
-**Estado:** ⚠️ REGISTRADO, NÃO CORRIGIDO
+**Bloco dono:** **F1.10** · **Corrigido em:** pendências pós-F1.7
 
-### O que está quebrado
+### O que estava quebrado
 
-`app/modules/desafios.mjs` sorteia **três** desafios por dia e paga cada um por
-`creditarRecompensa('CHALLENGE_REWARD', c.dia, …)`, que cai no balde `bonus` —
-ou seja, **PC-B**. Os oito desafios do pool valem 20/30/25/25/30/25/25/20, média
-25. Três por dia, sete dias:
+`app/modules/desafios.mjs` sorteava três desafios por dia e pagava cada um em
+PC-B pelo campo `dia` (20/30/25/25/30/25/25/20, média 25):
 
 ```
 3 × 25 × 7  =  ~525 PC-B por semana, por conta
 ```
 
-O `POKEARENA_ECONOMY_STUDY_v1.2` (linha 340) fixa:
+O Estudo Econômico fixa `routine_pc_b_budget = até 80 PC-B/semana` como teto
+**agregado**, dos quais a trilha de login usa até 50 e sobram **até 30 para
+desafios**. Seis vírgula cinco vezes o agregado; **dezessete vezes e meia** o
+sub-teto.
 
-```text
-routine_pc_b_budget = até 80 PC-B/semana por conta
-soft_issuance_ceiling = 500 PC-B
-```
+Não foi descuido: a calibragem de 75/dia é da v0.7 e estava comentada no próprio
+módulo como decisão de UX — feita **antes** de o Estudo existir. Os dois
+documentos se contradiziam e o código seguia o mais permissivo, que é sempre o
+pior lado para errar numa economia.
 
-e a linha 344 é explícita em que os 80 são **teto agregado** de todas as fontes
-rotineiras, dos quais a trilha de login usa até 50 e sobram **até 30 para
-desafios/rescue/missões**.
+### A DECISÃO, e ela era obrigatória
 
-| | PC-B/semana | contra o orçamento |
-|---|---:|---:|
-| medido no código | ~525 | — |
-| teto agregado documentado | 80 | **6,5×** |
-| sub-teto de desafios | 30 | **17,5×** |
+O verbete dava dois caminhos e exigia escolha explícita. **Escolhido o primeiro:
+baixar a emissão.** O motivo é assimetria de evidência — o Estudo tem medição
+(10 mil agentes × 52 semanas, emissão irrestrita levando a oferta de PC-B de
+2,0 M para 26,4 M) e o código tem uma intuição de UX de duas versões atrás. Não
+havia medição do outro lado para opor a essa.
 
-### Por que isso importa, e não é só um número fora do lugar
+> **Isto é reversível, e de propósito.** Se o dono do projeto preferir o segundo
+> caminho — corrigir o Estudo com medição nova —, o que muda são três constantes
+> em `engine/emissao.mjs` e os números do documento. O teste compara os dois e
+> reprova se divergirem, então a troca não pode ser feita pela metade.
 
-A simulação do próprio Estudo (10 mil agentes × 52 semanas) mostra emissão
-irrestrita levando a oferta PC-B de 2,0 M para 26,4 M. Com o
-`soft_issuance_ceiling = 500` ela estabiliza em ~5,35 M, e só 46,5 % da
-recompensa nominal chega a ser emitida. **O teto por carteira é o que segura o
-modelo — e ele não existe no código.** Sem ele, 525/semana é emissão real.
+### O que mudou, e o custo de UX é real
 
-### Como o defeito nasceu
+Baixar 525 para 30 divididos por 21 conclusões daria **1,4 PC-B por desafio** —
+poeira ao lado de uma aposta mínima de 50. **Recompensa que não se sente é pior
+que recompensa ausente, porque ainda ocupa a tela.**
 
-Não foi descuido: o comentário do próprio módulo (linha 23) diz *"Agora os três
-somam ~75 (R$ 7,50), pouco mais de uma…"*. Foi uma calibragem deliberada de UX,
-feita na v0.7 — **antes** de o orçamento do Estudo Econômico existir. Hoje os
-dois documentos se contradizem e o código segue o mais permissivo, que é sempre
-o pior lado para errar numa economia.
+Então o PC-B **saiu do desafio** e foi para um **marco semanal**: doze conclusões
+pagam o orçamento inteiro de uma vez. Mesma conta, mesma emissão, e a recompensa
+volta a ser sentida — 30 PC-B chegando juntos é uma aposta mínima com sobra.
 
-### O que trava enquanto não fechar
+**O XP continua por desafio, sempre, sem teto.** Ele não é moeda.
 
-**O baú.** A decisão do dono do projeto é que os baús ficam no nosso roadmap com
-o nosso cálculo (ver `BUILD_BLOCKS` → V1.19). O baú da v1.0 emite 1,45 PC-B por
-rodada — 55 rodadas/semana consomem sozinhas os 80 agregados, 21 rodadas/semana
-consomem os 30 que sobram. Não dá para calibrar um baú contra um orçamento que
-a nossa própria implementação já estoura em 6,5×. **Reconciliar vem primeiro.**
+### E o teto de saldo, que é o que segura o modelo
 
-### A decisão que o F1.10 tem que tomar
+`soft_issuance_ceiling = 500` **não existia no código**, e é ele que faz a
+simulação do Estudo estabilizar a oferta em ~5,35 M em vez de 26,4 M. Ele não é
+teto de emissão: é teto de **saldo**. Acima dele o jogador para de receber moeda
+e passa a receber substituto não monetário — *"quem gasta recebe reposição, quem
+acumula não"*.
 
-Uma das duas, e explicitamente:
+**A ordem importa e está testada:** o teto de saldo é conferido ANTES do
+orçamento. Se o orçamento viesse primeiro, quem acumula continuaria recebendo — e
+é exatamente esse jogador que o teto existe para parar.
 
-1. **Baixar a emissão** para caber nos 30 PC-B/semana, e aceitar o custo de UX
-   que a calibragem da v0.7 estava evitando; ou
-2. **Corrigir o Estudo Econômico**, com medição nova que justifique o número
-   maior — e aí o `soft_issuance_ceiling` por carteira deixa de ser opcional,
-   porque é ele que impede a oferta de fugir.
+O Estudo é explícito no tom: *"Nunca mostrar como se o usuário tivesse 'perdido'
+uma recompensa; a substituição deve ser prevista na trilha."* A função devolve
+sempre alguma coisa.
 
-O que não pode continuar é o Estudo afirmar 80 e o código emitir 525.
+### O campo morto foi REMOVIDO, não zerado
 
-### O teste que afirma o defeito
+`dia:` saiu do pool. Campo que ninguém lê é convite para alguém religá-lo, e
+religar aquele campo é o D-007 inteiro de volta — multiplicado por 21 conclusões
+por semana. Há teste (`D-007 · o pool não voltou a ter recompensa por conclusão`)
+e defeito plantado (`S181`) para isso.
 
-`test/invariantes.mjs` → `D-007 · a emissão semanal dos desafios estoura o
-orçamento`. Ele afirma o defeito **de propósito**: fica **vermelho** no dia em
-que alguém corrigir a emissão, e é assim que o F1.10 descobre que fechou.
+**E a tela deixou de prometer o que não paga:** o perfil dizia
+`Recompensa: +60 XP e 💵 25` em cada desafio. Prometer por desafio um dinheiro
+que só sai no marco seria a tela mentindo.
+
+### Os testes
+
+`test/emissao.mjs` (13 testes) — e o principal deles **lê o orçamento do
+DOCUMENTO**, não uma cópia dele. Copiar o número para dentro do teste deixaria os
+dois concordando entre si e discordando da fonte, que é literalmente como este
+defeito nasceu.
+
+`test/invariantes.mjs` → `D-007 · a emissão semanal cabe no orçamento`. Ele
+reprova nos **dois sentidos**: emissão acima do orçamento (o defeito antigo) e
+emissão **zerada** — a "correção" preguiçosa que faz o número caber apagando a
+recompensa.
+
+### O que isto destrava
+
+**A L-026 e o V1.19.** O baú agora tem contra o que ser calibrado: sobram 30
+PC-B/semana de orçamento de desafios, e o teto de saldo já existe para segurar
+o que vier.
 
 ---
 

@@ -74,6 +74,12 @@ export function salvar() {
 
 export const saldo = () => (S.carteira ? totalDisponivel(S.carteira) : 0);
 
+/* O saldo de PC-B sozinho. Existe para o teto de saldo do §6 do Estudo
+   (`soft_issuance_ceiling`), que é sobre BÔNUS e não sobre o total — somar os
+   quatro baldes faria quem comprou PokéCash parar de receber recompensa, que é
+   o contrário do que o teto quer. */
+export const saldoBonus = () => (S.carteira ? S.carteira.disponivel.bonus : 0);
+
 function aplicar(fn) {
   const r = fn();
   if (r && r.ok !== false) salvar();

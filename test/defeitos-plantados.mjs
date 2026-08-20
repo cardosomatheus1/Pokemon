@@ -66,6 +66,8 @@ const SRVCFG = 'server/config.mjs';
 const SRVDB  = 'server/banco.mjs';
 const SRVAUT = 'server/auth.mjs';
 const SRVCAR = 'server/carteira.mjs';
+const EMISSAO= 'engine/emissao.mjs';
+const DESAF  = 'app/modules/desafios.mjs';
 const SRVSCH = 'server/scheduler.mjs';
 const SRVTRA = 'server/transporte.mjs';
 const SRVAPO = 'server/aposta.mjs';
@@ -953,4 +955,51 @@ export const DEFEITOS = [
     real:'"toda operação tem chave" — e a SEGUNDA troca não devolve o dinheiro da primeira',
     de:'  if (jaTem) liberarNoBanco(db, { userId, composicao: JSON.parse(jaTem.stake_breakdown),\n                                  ref: jaTem.id, agora });',
     para:'  if (jaTem) liberarNoBanco(db, { userId, composicao: JSON.parse(jaTem.stake_breakdown),\n                                  ref: jaTem.id, idem: `lib-${jaTem.id}`, agora });' },
+  /* ---------- L-032: o que o arnês de dois processos achou ---------- */
+
+  /* `BEGIN IMMEDIATE` NÃO É DETALHE DE ESTILO, e não tinha defeito plantado.
+     Medido com oito processos de verdade contra o mesmo arquivo: com
+     `BEGIN DEFERRED` eles não competem — eles TRAVAM. Quatro dos oito voltam
+     com "database is locked", porque dois leitores tentando virar escritor no
+     mesmo instante é um impasse que o `busy_timeout` não resolve.
+     O S151 sabota a transação INTEIRA; este sabota o modo dela, que é o erro
+     que alguém comete de verdade ao "simplificar" a linha. */
+  { id:'S174', arquivo:SRVCAR, nome:'a transação da carteira vira BEGIN DEFERRED',
+    real:'"IMMEDIATE é agressivo demais" — e dois processos travam em vez de esperar a vez',
+    de:"  db.exec('BEGIN IMMEDIATE');", para:"  db.exec('BEGIN DEFERRED');" },
+  /* ---------- D-007: a emissão de PC-B ---------- */
+
+  { id:'S175', arquivo:EMISSAO, nome:'o orçamento de emissão é inflado no código',
+    real:'"o número do Estudo é conservador demais" — e o código volta a discordar do documento',
+    de:'export const ORCAMENTO_AGREGADO_SEMANAL = 80;',
+    para:'export const ORCAMENTO_AGREGADO_SEMANAL = 800;' },
+
+  { id:'S176', arquivo:EMISSAO, nome:'o teto de saldo é desligado',
+    real:'"o jogador reclama que parou de receber" — é o que estabiliza a oferta em 5,35M',
+    de:'  if (saldoPcB >= TETO_SALDO_PC_B)', para:'  if (false)' },
+
+  { id:'S177', arquivo:EMISSAO, nome:'o teto de saldo passa a vir DEPOIS do orçamento',
+    real:'reordenação inocente — quem acumula volta a receber, e é ele que o teto para',
+    de:"  if (saldoPcB >= TETO_SALDO_PC_B)\n    return { pcB: 0, substituto: SUBSTITUTOS[0], motivo: 'teto_de_saldo' };\n\n  const cabe",
+    para:'  const cabe' },
+
+  { id:'S178', arquivo:EMISSAO, nome:'o marco semanal passa a pagar mais de uma vez',
+    real:'o que já saiu deixa de ser descontado — e o orçamento vira por conclusão de novo',
+    de:'  const cabe = ORCAMENTO_DESAFIOS_SEMANAL - jaEmitidoNaSemana;',
+    para:'  const cabe = ORCAMENTO_DESAFIOS_SEMANAL;' },
+
+  { id:'S179', arquivo:EMISSAO, nome:'a recompensa SOME em vez de virar substituto',
+    real:'"não tem o que pagar" — o Estudo pede substituição, não supressão',
+    de:"    return { pcB: 0, substituto: SUBSTITUTOS[0], motivo: 'orcamento_da_semana' };",
+    para:"    return { pcB: 0, substituto: null, motivo: 'orcamento_da_semana' };" },
+
+  { id:'S180', arquivo:EMISSAO, nome:'a semana vira janela deslizante de sete dias',
+    real:'"é mais simples contar sete dias" — quem joga fim de semana fecha dois marcos em três dias',
+    de:'  const dia = (d.getUTCDay() + 6) % 7;              // segunda = 0',
+    para:'  const dia = 0;' },
+
+  { id:'S181', arquivo:DESAF, nome:'o campo de recompensa por desafio volta ao pool',
+    real:'"falta o valor da recompensa nesta lista" — é o D-007 inteiro de volta, x21 por semana',
+    de:"{id:'rodadas',  txt:'Participe de {n} rodada{s}',            metas:[3,5,8], xp:60}",
+    para:"{id:'rodadas',  txt:'Participe de {n} rodada{s}',            metas:[3,5,8], xp:60, dia:25}" },
 ];

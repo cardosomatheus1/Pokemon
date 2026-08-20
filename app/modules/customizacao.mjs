@@ -193,7 +193,12 @@ function renderDaily(){
         <span class="cnt">${c.prog}/${c.meta}</span>
       </div>
       <div class="pg"><i style="width:${pct.toFixed(0)}%"></i></div>
-      <div class="rw">Recompensa: <b>+${c.xp} XP</b> e <b>${CUR} ${c.dia}</b></div>
+      <!-- O PC-B SAIU DAQUI (D-007). O desafio pagava ~25 por conclusão, três
+           vezes ao dia — ~525/semana contra um orçamento de 30 no Estudo
+           Econômico. Agora o XP é por desafio e o PC-B vem do marco semanal,
+           que é onde a tela precisa prometê-lo. Prometer por desafio um
+           dinheiro que só sai no marco seria a tela mentindo. -->
+      <div class="rw">Recompensa: <b>+${c.xp} XP</b></div>
     </div>`;
   }).join('') +
   `<div class="tiny" style="margin-top:8px">Desafios concluídos no total:

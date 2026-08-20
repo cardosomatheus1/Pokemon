@@ -6,7 +6,7 @@
  * NÃO são silenciosamente omitidas. */
 import { readFileSync } from 'node:fs';
 import * as E from './motor.mjs';
-import { criarSuite, ok, rngTeste, elencoDeterministico } from './harness.mjs';
+import { criarSuite, ok, rngTeste, elencoDeterministico, igual } from './harness.mjs';
 
 const RODADAS = 2000;
 
@@ -234,31 +234,60 @@ export function suite() {
       `${perto} de 500 rodadas chegaram perto do corte duro — a tempestade parou de encerrar antes`);
   });
 
-  /* D-007 · AFIRMA O DEFEITO DE PROPÓSITO — ver docs/DEFEITOS.md.
+  /* D-007 · CORRIGIDO — e a afirmação virou o contrário.
    *
-   * Os desafios diários emitem ~525 PC-B por semana; o Estudo Econômico fixa um
-   * teto AGREGADO de 80 e reserva até 30 para desafios. É contradição entre a
-   * nossa implementação e o nosso próprio documento, e ela trava o desenho do
-   * baú (V1.16), que não tem contra o que ser calibrado enquanto durar.
+   * O teste que morava aqui afirmava o defeito: lia os campos `dia:` do pool de
+   * desafios, multiplicava por três por dia e sete dias, e exigia que o
+   * resultado ESTOURASSE o orçamento. Ele ficou vermelho no dia em que a emissão
+   * caiu — que é como o defeito avisa que fechou.
    *
-   * Este teste fica VERMELHO no dia em que alguém corrigir a emissão. É de
-   * propósito, e é como o F1.10 descobre que fechou — o mesmo padrão do D-001
-   * e do D-003.
+   * O QUE ELE MEDIA DEIXOU DE EXISTIR: o campo `dia` foi removido, porque o
+   * PC-B saiu do desafio e foi para o marco semanal. Campo que ninguém lê é
+   * convite para alguém religá-lo, e religar aquele campo é o D-007 de volta.
    *
-   * A leitura é por texto, e não por importação: `desafios.mjs` puxa DOM por
-   * `controles.mjs` e não sobe no Node. Ler a fonte mede o mesmo número. */
-  s.teste('D-007 · a emissão semanal dos desafios estoura o orçamento do Estudo', () => {
-    const txt = readFileSync(new URL('../app/modules/desafios.mjs', import.meta.url), 'utf8');
-    const dias = [...txt.matchAll(/\bdia:\s*(\d+)/g)].map(m => +m[1]);
-    ok(dias.length >= 8, `só ${dias.length} recompensas lidas do pool — a varredura perdeu o formato`);
-    const media = dias.reduce((a, b) => a + b, 0) / dias.length;
-    const porSemana = media * POR_DIA * 7;
+   * O teste novo mede a mesma grandeza pelo caminho novo, e reprova nos DOIS
+   * sentidos: emissão acima do orçamento (o defeito antigo) e emissão zerada
+   * (uma "correção" que resolve o número apagando a recompensa). */
+  s.teste('D-007 · a emissão semanal dos desafios cabe no orçamento do Estudo', async () => {
+    const { recompensaDeDesafio, ORCAMENTO_DESAFIOS_SEMANAL } =
+      await import('../engine/emissao.mjs');
 
-    ok(porSemana > ORCAMENTO_AGREGADO,
-      `a emissão semanal caiu para ${porSemana.toFixed(0)} PC-B, dentro dos ` +
-      `${ORCAMENTO_AGREGADO} agregados: D-007 foi CORRIGIDO. ` +
-      `Tire este teste, marque o defeito como corrigido em docs/DEFEITOS.md e ` +
-      `confira se o sub-teto de ${ORCAMENTO_DESAFIOS} PC-B/semana também fecha.`);
+    /* A semana MAIS generosa possível: os 21 desafios do período, todos
+       concluídos, carteira vazia, orçamento intocado. */
+    let emitido = 0, saldo = 0;
+    for (let i = 1; i <= POR_DIA * 7; i++) {
+      const r = recompensaDeDesafio({ concluidosNaSemana: i, jaEmitidoNaSemana: emitido,
+                                      saldoPcB: saldo });
+      emitido += r.pcB; saldo += r.pcB;
+    }
+
+    ok(emitido <= ORCAMENTO_DESAFIOS, 
+      `a emissão semanal máxima é ${emitido} PC-B, contra o sub-teto de ` +
+      `${ORCAMENTO_DESAFIOS} do Estudo. Era ~525 antes do D-007 fechar.`);
+    ok(emitido <= ORCAMENTO_AGREGADO,
+      `a emissão estoura até o teto AGREGADO de ${ORCAMENTO_AGREGADO}`);
+
+    /* E O OUTRO LADO, que é o que impede a "correção" preguiçosa: zerar a
+       recompensa faz o número caber e destrói o desenho. */
+    ok(emitido > 0,
+      'a emissão semanal é ZERO. O orçamento passou a caber porque a recompensa ' +
+      'sumiu, e o Estudo pede substituição, não supressão.');
+    igual(emitido, ORCAMENTO_DESAFIOS_SEMANAL,
+      `a semana perfeita emitiu ${emitido} e o orçamento é ` +
+      `${ORCAMENTO_DESAFIOS_SEMANAL} — sobrou orçamento sem ninguém receber`);
+  });
+
+  /* O CAMPO MORTO NÃO PODE VOLTAR. Religar `dia:` no pool é o D-007 inteiro de
+     volta, e é a forma mais provável de ele voltar: alguém lê a lista, acha que
+     falta o valor da recompensa, e o repõe. */
+  s.teste('D-007 · o pool de desafios não voltou a ter recompensa por conclusão', () => {
+    const txt = readFileSync(new URL('../app/modules/desafios.mjs', import.meta.url), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ');
+    const campos = [...txt.matchAll(/\b(dia|pcb|pcB|bonus|moeda):\s*\d+/g)].map(m => m[0]);
+    ok(campos.length === 0,
+      `o pool voltou a declarar recompensa em moeda por desafio: ${campos.join(', ')}. ` +
+      `São 21 conclusões por semana; qualquer valor aqui multiplica por 21 contra ` +
+      `um orçamento de ${ORCAMENTO_DESAFIOS}.`);
   });
 
   return s;
