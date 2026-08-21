@@ -1852,6 +1852,47 @@ já existe.
 
 ---
 
+## FASE 1 — o que ela fechou
+
+**Portão Q2: VERDE, 283/283 detectados.** Suíte: 705 testes, verde com
+navegador. Todos os blocos de F1.1 a F1.15 construídos; o **F1.12** é o único
+parcial, e a parte que falta não é software.
+
+**Os números do portão, medidos no fecho:**
+
+```
+Q2 do zero                          68 min   (283 defeitos)
+Q2 depois de mexer em UM arquivo     3 min 40 s
+reaproveitados                     246 de 283
+```
+
+O portão cresceu de 208 para 283 defeitos e a execução quente **encolheu**. É a
+tese do cache de veredito: custo proporcional ao tamanho da mudança, não ao do
+projeto.
+
+**O que a Fase 1 aprendeu, e não estava no roteiro:**
+
+| lição | onde ela apareceu |
+|---|---|
+| `PEGOU` falso esconde o que de fato escapa | D-015, e de novo no D-023 — três defeitos de proteção estavam verdes por acidente |
+| testar a peça não testa o encaixe | sete vezes; a sétima foi `RESCUE_GRANT` fora da lista do ledger |
+| teste cujo poder depende do sorteio é teste que às vezes não testa | D-021, e mais duas reincidências |
+| diagnóstico bom sobrevive a correção errada | o teto do D-022 estava errado; o número que ele mandou imprimir achou o D-023 |
+| mutante equivalente é ruído que faz o portão mentir | L-038, cinco ocorrências |
+
+**O que fica aberto, e nenhuma das três é código:**
+
+- **L-042** — 76 desenhos. Bloqueia a troca de `ID_ESCOLHIDO`, que é o critério
+  de saída do F1.12 e o fim formal da Fase 1.
+- **L-012** — consulta de enquadramento regulatório (§0.5.1). Bloqueia a tag.
+- **L-010** — política de publicidade e afiliados. Sem dono.
+
+**Propostos durante a fase e ainda não construídos:** F1.16 (o cliente não é
+fonte de dinheiro nem por um instante) e F1.17 (o operador do painel prova quem
+é — enquanto não existir, o painel só pode ser exposto em rede fechada).
+
+---
+
 ### F1.16 — O cliente não é fonte de dinheiro nem por um instante
 
 **Tam.** P · **Método** INV · **Portões** Q1 Q2 Q6 · **Depende de** F1.14

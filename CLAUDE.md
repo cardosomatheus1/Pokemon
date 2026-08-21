@@ -164,10 +164,14 @@ suíte que cada defeito roda. Acelerar a execução mudaria a constante e deixar
 a curva de pé; em três blocos voltaria a doer.
 
 ```
-Q2 do zero, sem cache          31 min      (era ~100)
-Q2 sem nada ter mudado        4 min 09 s
-reaproveitados               194 de 208
+Q2 do zero, sem cache         68 min      (283 defeitos, era ~100 com 208)
+Q2 depois de mexer em UM arquivo   3 min 40 s
+reaproveitados               246 de 283
 ```
+
+Medido no fecho da Fase 1, e é o número que importa: **o portão cresceu de 208
+para 283 defeitos e a execução quente ENCOLHEU.** O custo é proporcional ao
+tamanho da mudança, não ao do projeto — que era exatamente a promessa.
 
 Os 14 reavaliados com o repositório intocado são exatamente os 14 de fecho
 universal — ver **L-035** e o bloco **T4**, que existe para derrubá-los.
