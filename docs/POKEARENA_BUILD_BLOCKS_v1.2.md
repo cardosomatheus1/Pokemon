@@ -1878,7 +1878,42 @@ já existia por outra razão pagou o segundo fator de graça.
 
 ---
 
-## FASE 1 — o que ela fechou
+## FASE 1 — FECHADA
+
+**Portão Q2: VERDE, 292/292 detectados.** Suíte: **723 testes**, verde com
+navegador. Blocos F1.1 a F1.17 construídos; o **F1.12** é o único parcial, e a
+parte que falta não é software.
+
+**Os dois números que fecham a fase, medidos no mesmo estado da árvore:**
+
+```
+npm test        723/723 VERDE   (com navegador)
+npm run sabotagem   292/292 detectados, 41 min
+```
+
+### O que a última milha ensinou
+
+Os três últimos defeitos do portão não estavam no produto — estavam no **arnês**,
+e os três têm a mesma forma:
+
+| defeito | causa |
+|---|---|
+| **D-024** | a caixa de areia copiava 18 MB e colidia com o próprio symlink |
+| (mesmo commit) | o `CLAUDE.md` não chegava na caixa, e o teste que o lê morria |
+| **D-017** | `npm run rapido` cobria 21 das 35 suítes sem navegador |
+
+**Derivar é melhor que listar à mão — e derivar PELA METADE é pior que as duas**,
+porque parece derivado. A lista de pastas da caixa já vinha do `git`; a de
+arquivos de raiz continuava escrita à mão com dois itens, e o terceiro que um
+teste precisasse ler derrubava o portão inteiro.
+
+E a outra metade da mesma lição: derivar não dispensa perguntar **o que a
+derivação passa a incluir quando a fonte muda**. Versionar `assets/` mudou a
+resposta do `git ls-files` sem ninguém tocar numa linha do portão.
+
+---
+
+## O que a Fase 1 construiu
 
 **Portão Q2: VERDE, 283/283 detectados.** Suíte: 705 testes, verde com
 navegador. Todos os blocos de F1.1 a F1.15 construídos; o **F1.12** é o único

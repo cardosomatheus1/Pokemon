@@ -238,6 +238,11 @@ const DIRS_VERSIONADOS = [...new Set(
    * D-024. */
   .filter(d => d !== 'assets');
 
+/* Os arquivos versionados que moram na RAIZ — as linhas do `git` sem barra. */
+const ARQUIVOS_RAIZ = execFileSync('git',
+  ['ls-files', '--cached', '--others', '--exclude-standard'], { encoding: 'utf8' })
+  .split('\n').filter(l => l && !l.includes('/') && existsSync(l));
+
 const N_TRAB = Math.max(1, Math.min(cpus().length, 4));
 const CAIXAS = [];
 /* UMA CAIXA A MAIS, E ELA NUNCA RECEBE MUTANTE. É onde as linhas de base por
@@ -247,12 +252,17 @@ for (let i = 0; i < N_TRAB + 1; i++) {
   const c = mkdtempSync(join(tmpdir(), 'pokearena-sabotagem-'));
   for (const dir of DIRS_VERSIONADOS)
     cpSync(dir, join(c, dir), { recursive: true });
-  cpSync('package.json', join(c, 'package.json'));
-  /* `.gitignore` entra porque test/assets.mjs afirma que a arte não é
-     versionada, e essa afirmação se lê nele. `assets/` entra por link
-     simbólico: são ~10 MB e copiá-los quatro vezes por execução é desperdício
-     puro — nenhum defeito plantado mexe em arte. */
-  cpSync('.gitignore', join(c, '.gitignore'));
+  /* OS ARQUIVOS DE RAIZ VÊM DO GIT, e não de uma lista à mão.
+   *
+   * Eram dois, escolhidos a dedo: `package.json` e `.gitignore`. O terceiro que
+   * um teste precisasse ler derrubaria o portão — e derrubou: o teste que cobra
+   * que o `CLAUDE.md` não contradiga a árvore morreu com ENOENT dentro da
+   * caixa, porque o `CLAUDE.md` mora na raiz e a raiz não era copiada.
+   *
+   * É a mesma correção que a lista de PASTAS já tinha recebido, pelo mesmo
+   * motivo, e agora pelo mesmo caminho: o `git` sabe o que o projeto versiona.
+   * Derivar não pode dessincronizar. */
+  for (const arq of ARQUIVOS_RAIZ) cpSync(arq, join(c, arq));
   if (existsSync('assets')) symlinkSync(join(process.cwd(), 'assets'), join(c, 'assets'), 'dir');
   CAIXAS.push(c);
 }
