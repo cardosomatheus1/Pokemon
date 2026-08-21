@@ -1352,3 +1352,38 @@ o use.
 **O que a destrava:** o F1.17. Enquanto ele não existe, o painel só pode ser
 exposto em rede fechada — e isso precisa estar escrito onde quem faz o deploy
 vai ler, não só aqui.
+
+---
+
+### L-042 — o ContentPack original existe, é jogável, e não tem arte
+
+**Dono:** trilha `arte` · **Bloqueia:** a troca de `ID_ESCOLHIDO`, que é o
+critério de saída do F1.12 e o fim da Fase 1 · **Notada em:** F1.12
+
+O pack `original_v1` está completo em tudo que é software: 76 criaturas com
+nomes autorais, oito tipos numa roda fechada, golpes, climas, moeda e rótulos.
+Ele passa no contrato, joga 300 rodadas sem falhar, e a distribuição de força do
+elenco é a mesma sobre a qual margem, ruína e precisão de odd foram medidas.
+
+**O que falta são 76 desenhos.** Enquanto eles não existem, cada criatura
+aparece com a silhueta procedural de `silhuetaDe()` — nossa, determinística e
+declaradamente provisória.
+
+**Por que o produto NÃO trocou de pack mesmo com tudo pronto:** lançar com 76
+silhuetas trocaria um risco comercial por um problema de produto. O §0.3.1 quer
+a telemetria de retenção medida sobre o pack que será lançado; medi-la sobre
+silhuetas mede outra coisa, e erra na direção oposta à da nostalgia.
+
+**A troca é UMA LINHA** — `ID_ESCOLHIDO` em `content/escolhido.mjs` — e essa é
+exatamente a promessa que a Content Layer fazia. Todo o resto está feito e
+testado: a varredura garante zero identificadores da franquia em produção, e o
+pack não tem caminho para cair no outro.
+
+**O que a destrava:** os desenhos. `arte/original/README.md` diz como cada um
+entra, e `COM_ARTE` é o livro-razão — ele responde "quanto falta?" sem ninguém
+contar arquivo.
+
+**O que ela destrava:** o Q5 e o Q7 do F1.12 — "o jogo inteiro capturado nos dois
+packs" e o crítico cego com a barra do bloco. Os dois portões precisam de tela
+com arte para julgar, e por isso o F1.12 fica **aberto no visual e fechado no
+resto**.

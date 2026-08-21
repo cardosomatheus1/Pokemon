@@ -1992,7 +1992,7 @@ L-012.
 
 ---
 
-### F1.12 — ContentPack original
+### F1.12 — ContentPack original ⚠️ SOFTWARE FECHADO · ARTE ABERTA
 
 **Tam.** G · **Método** GL · **Portões** Q1 Q2 Q5 Q7 · **Depende de** F1.11
 
@@ -2007,6 +2007,58 @@ L-012.
 **Saída:** as duas primeiras coortes de retenção medidas no pack que será lançado. **Fim da Fase 1.**
 
 ---
+
+**SOFTWARE FECHADO. ARTE ABERTA — e a divisão é literal.**
+
+O pack `original_v1` existe, é válido e joga: 76 criaturas com nomes autorais,
+oito tipos numa roda fechada, golpes, climas, moeda e rótulos. Medido: 300
+rodadas, zero sem vencedor, 73 vencedores distintos.
+
+**A roda tem OITO tipos, e não dezoito.** Copiar a tabela de dezoito seria
+copiar o desenho de jogo da franquia mesmo trocando os nomes. A roda dá por
+FORMA a propriedade que a tabela grande só alcança por ajuste manual: cada tipo
+é forte contra dois e fraco contra dois, então nenhum é dominante e nenhum é
+lixo. E cada relação tem leitura óbvia — brasa queima seiva, seiva se espalha no
+sopro, sopro dispersa carga, carga funde liga, liga lasca pedra, pedra afunda no
+mare, mare apaga o véu, véu abafa brasa.
+
+**A distribuição de força é herdada de propósito.** Os totais de base stats são
+os mesmos percentis do elenco medido — 288 / 490 / 600. Margem, ruína e precisão
+de odd foram medidas sobre aquela distribuição, e trocar de tema não pode trocar
+o jogo. O RECORTE entre os seis stats é sorteado: copiar o recorte também seria
+copiar o balanceamento, e aí o pack seria uma renomeação com passos a mais.
+
+**A varredura achou nove vazamentos, e é a razão do item nº 1 de sabotagem:**
+
+| onde | o que era |
+|---|---|
+| `app/index.html` | a marca, o texto do "como funciona", dois títulos de seção |
+| `app/modules/desafios.mjs` | as frases dos desafios diários |
+| `app/modules/customizacao.mjs` | o avatar padrão, que só existe num pack |
+| `server/rodada.mjs`, `app/modules/motor.mjs` | o import do pack, nomeado |
+| `server/scheduler.mjs` | a versão gravada na rodada |
+
+Todos fechados. O pack passa a DIZER como as coisas se chamam (`rotulos`, agora
+exigido pelo contrato), e `content/escolhido.mjs` é o único arquivo fora de
+`content/` que pode nomear um pack.
+
+**A L-021 fechou no caminho.** O motor exigia um pool de golpes chamado
+literalmente `normal` — tema vazando para o motor, e o pack original não tem
+tipo genérico. O pack declara qual dos seus pools é o de reserva.
+
+**Sem fallback, e com teste de comportamento.** `resolver(id)` é função e não
+constante justamente para dar para perguntar "e se não existir?" sem quebrar o
+processo — teste que lê fonte não prova comportamento. Sem arte, a criatura
+mostra silhueta procedural nossa; nunca um endereço externo.
+
+**O que fica aberto:** a **L-042**. Faltam 76 desenhos, e por isso `ID_ESCOLHIDO`
+continua no pack de desenvolvimento — lançar com 76 silhuetas trocaria um risco
+comercial por um problema de produto. **A troca é UMA LINHA**, e essa era a
+promessa da Content Layer.
+
+Os portões **Q5 e Q7 deste bloco ficam abertos com ela**: os dois precisam de
+tela com arte para julgar. Q1, Q2 e o contrato estão fechados.
+
 
 ### F1.13 — A montagem do serviço: as rotas e o cliente ligado ✅
 

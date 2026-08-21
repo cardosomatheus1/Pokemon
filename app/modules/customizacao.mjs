@@ -49,15 +49,20 @@ const BANNER_SCENES = [
    foi exatamente o que aconteceu na v0.6. */
 
 
-/* slug do lutador a partir do número da dex — o último espelho da
-   cadeia (Showdown) indexa por nome, não por número */
+/* slug do lutador a partir do número da dex — o espelho de arte indexa por
+   nome, não por número.
+ *
+ * O PADRÃO É A PRIMEIRA DO ELENCO, e não um nome escrito à mão. Antes era o
+ * slug de uma criatura da franquia: identificador de tema em código de
+ * produção, e um dos nove que a varredura do F1.12 achou. Pior que isso, era um
+ * padrão que só existe num pack — noutro tema ele apontaria para nada. */
 function slugDoDex(dex){
   const e = especies.find(p => p.dex === dex);
-  return e ? e.n : 'pikachu';
+  return e ? e.n : (especies[0]?.n ?? '');
 }
 
 
-/* Pokémon oferecidos na customização: os 76 do elenco ativo, com os
+/* Criaturas oferecidas na customização: os 76 do elenco ativo, com os
    que você mais usou na frente — customizar com o seu predileto é o
    caminho mais provável. */
 function customMons(){

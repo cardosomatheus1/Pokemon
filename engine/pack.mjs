@@ -37,6 +37,15 @@ export function validarPack(pack) {
     exigir(eObj(pack.tipos.nomes), 'tipos.nomes ausente');
   }
 
+  /* --- rótulos (F1.12) ---
+     A interface precisa chamar as criaturas de alguma coisa, e esse nome é do
+     TEMA. Sem este campo, o cliente escreve o nome da franquia — foi assim que
+     ele apareceu em nove lugares de produção. */
+  if (exigir(eObj(pack.rotulos), 'rotulos ausente: a interface não tem como nomear as criaturas'))
+    for (const k of ['criatura', 'criaturas', 'elenco'])
+      exigir(TIPO(pack.rotulos[k], 'string') && pack.rotulos[k].length > 0,
+        `rotulos.${k} ausente ou vazio`);
+
   /* --- espécies --- */
   if (exigir(Array.isArray(pack.especies) && pack.especies.length > 0, 'especies ausente ou vazio')) {
     const vistos = new Set();
@@ -65,8 +74,20 @@ export function validarPack(pack) {
   /* --- golpes --- */
   if (exigir(eObj(pack.golpes), 'golpes ausente')) {
     const tipos = Object.keys(pack.tipos?.efetividade ?? {});
-    exigir(Array.isArray(pack.golpes.normal) && pack.golpes.normal.length > 0,
-      'golpes.normal é o pool de reserva de atribuição e não pode faltar');
+    /* ── L-021 FECHADA NO F1.12 ──────────────────────────────────────────
+     *
+     * O motor exigia um pool chamado literalmente `normal`. Isso é decisão de
+     * TEMA vazando para o motor: "normal" é um tipo da franquia, e um pack que
+     * não tenha esse conceito — como o `original_v1`, cuja roda tem oito tipos
+     * e nenhum genérico — era recusado no carregamento por um nome.
+     *
+     * O pack passa a DECLARAR qual dos seus pools é o de reserva. Quem não
+     * declarar continua valendo se tiver um `normal`, porque o pack de desenvolvimento tem e
+     * mudar o arquivo dele seria mexer no que já foi medido. */
+    const reserva = pack.poolReserva ?? 'normal';
+    exigir(TIPO(reserva, 'string'), 'poolReserva precisa ser o nome de um pool');
+    exigir(Array.isArray(pack.golpes[reserva]) && pack.golpes[reserva].length > 0,
+      `golpes.${reserva} é o pool de reserva de atribuição (\`poolReserva\`) e não pode faltar`);
     for (const [t, lista] of Object.entries(pack.golpes)) {
       exigir(tipos.includes(t), `golpes tem o tipo desconhecido "${t}"`);
       if (!exigir(Array.isArray(lista) && lista.length > 0, `golpes.${t} vazio`)) continue;

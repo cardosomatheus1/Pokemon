@@ -3,7 +3,7 @@
  * Fronteira: mede o que aconteceu e paga recompensa não transferível. */
 
 import { S } from './estado.mjs';
-import { tipoNomes, rng } from './motor.mjs';
+import { tipoNomes, rng, ROTULOS } from './motor.mjs';
 import { atualizarSaldo } from './controles.mjs';
 import { creditarRecompensa, saldoBonus } from './banco.mjs';
 import { recompensaDeDesafio, semanaDe } from '../../engine/emissao.mjs';
@@ -40,11 +40,11 @@ import { saveProfile } from './perfil.mjs';
 const DESAFIO_POOL = [
   {id:'rodadas',  txt:'Participe de {n} rodada{s}',            metas:[3,5,8], xp:60},
   {id:'vitorias', txt:'Vença {n} rodada{s}',                   metas:[1,2,3], xp:120},
-  {id:'tipo',     txt:'Aposte {n}x em Pokémon de {t}',         metas:[2,3,5], xp:80},
-  {id:'derrote',  txt:'Derrote {n} Pokémon de {t}',            metas:[2,3,5], xp:100},
+  {id:'tipo',     txt:'Aposte {n}x em {c} de {t}',         metas:[2,3,5], xp:80},
+  {id:'derrote',  txt:'Derrote {n} {c} de {t}',            metas:[2,3,5], xp:100},
   {id:'azarao',   txt:'Aposte {n}x num azarão (odd ≥ 4)',      metas:[1,2,3], xp:110},
   {id:'sobrevive',txt:'Termine no top 3 da arena {n}x',        metas:[1,2,3], xp:100},
-  {id:'variedade',txt:'Aposte em {n} Pokémon diferentes',      metas:[3,4,6], xp:80},
+  {id:'variedade',txt:'Aposte em {n} {c} diferentes',      metas:[3,4,6], xp:80},
   {id:'clima',    txt:'Dispute {n} rodada{s} com clima ativo', metas:[2,3,4], xp:70},
 ];
 const TIPOS_DESAFIO = ['fire','water','grass','electric','psychic','rock','poison','flying','ground','bug'];
@@ -68,7 +68,11 @@ function rollDaily(){
     escolhidos.push({
       id: base.id, meta, tipo, prog: 0, feito: false, pago: false,
       xp: base.xp,
+      /* `{c}` é o nome que o TEMA dá às criaturas — vem do pack, não daqui.
+         Estas frases diziam o nome da franquia literalmente, e a varredura do
+         F1.12 as encontrou entre os nove vazamentos de produção. */
       txt: base.txt.replace('{n}', meta).replace('{s}', meta === 1 ? '' : 's')
+                   .replace('{c}', ROTULOS.criaturas)
                    .replace('{t}', tipo ? (tipoNomes[tipo]||tipo) : ''),
     });
   }

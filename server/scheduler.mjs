@@ -91,7 +91,7 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
         `INSERT INTO rounds (id, status, round_seed_commit, engine_version, content_version,
                              betting_opens_at, betting_locks_at, environment, sims, margem_efetiva)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-        .run(id, ESTADOS.ABERTA, compromisso.commit, VERSAO_MOTOR, M.pack?.versao ?? 'kanto-v1',
+        .run(id, ESTADOS.ABERTA, compromisso.commit, VERSAO_MOTOR, M.pack?.versao ?? M.pack?.id ?? 'desconhecido',
              agora, agora + FASE_MS.APOSTA, ambiente, sims, preco.margemEfetiva);
 
       /* O REGISTRO DE PREÇO DO §4.4.5 É GRAVADO NA ABERTURA.

@@ -13,7 +13,9 @@
  * de um módulo que promete independência de tema.
  */
 import { criarMotor, CONF, VERSAO, rng, statAt, stormRate, tiposDaPool } from '../../engine/engine.mjs';
-import pack from '../../content/pokemon_kanto_v1.mjs';
+/* O pack vem do ESCOLHIDO — ver `content/escolhido.mjs`. O cliente não sabe
+   qual tema recebeu, e é isso que faz a troca ser uma linha. */
+import pack from '../../content/escolhido.mjs';
 
 export const M = criarMotor(pack);
 
@@ -34,5 +36,9 @@ export const tipoCores   = pack.tipos.cores;
 export const tipoNomes   = pack.tipos.nomes;
 
 /* Nome e símbolo da moeda vêm do pack: são identidade do tema, não do motor. */
+/* Como o TEMA chama as coisas. A interface pergunta ao pack em vez de escrever
+   o nome de uma franquia — §0.3, e o item nº 1 da sabotagem do F1.12. */
+export const ROTULOS = M.pack.rotulos;
+
 export const MOEDA = M.moeda.nome;
 export const CUR   = M.moeda.simbolo;

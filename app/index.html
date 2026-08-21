@@ -2432,7 +2432,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
        para a mesma palavra, em 3 segundos, sem dizer qual valia. O elenco é o
        catálogo; a rodada é o recorte. E `base v0.8` é número de versão nosso,
        que o apostador não tem o que fazer com. -->
-  <div class="brand">⚔️ PokéArena <small>Kanto · elenco de 76</small></div>
+  <div class="brand">⚔️ <span id="marcaNome">PokéArena</span> <small id="marcaElenco">elenco de 76</small></div>
   <nav class="mainnav" id="mainnav">
     <button class="nav" data-view="viewHome">Início</button>
     <button class="nav on" data-view="viewArena">Arenas</button>
@@ -2489,9 +2489,9 @@ body.tremeTela{animation:tremeTela .7s ease-out}
     <h2>Como funciona</h2>
     <div class="steps">
       <div class="step"><b>1</b><div><h4>A pool é sorteada</h4>
-        <p>Doze lutadores saem dos 76 do elenco (só evoluções finais e Pokémon-base).
+        <p>Doze lutadores saem dos 76 do elenco (só as formas plenas).
            O clima já é sorteado nesse momento, em segredo, e garante que exista
-           ao menos um Pokémon do tipo favorecido na pool.</p></div></div>
+           ao menos um lutador do tipo favorecido na pool.</p></div></div>
       <div class="step"><b>2</b><div><h4>As odds são calculadas</h4>
         <p>O servidor roda <b class="sims"></b> batalhas completas com o motor real e transforma
            frequência de vitória em odd, já descontada a margem da casa. As odds
@@ -2792,7 +2792,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <input type="text" id="profName" maxlength="18">
       <div class="sec-t">Avatar — treinadores</div>
       <div class="pick-grid" id="pickTrainer"></div>
-      <div class="sec-t">Avatar — Pokémon</div>
+      <div class="sec-t" id="secAvatar">Avatar</div>
       <div class="pick-grid" id="pickMon"></div>
       <div class="sec-t">Banner de batalha</div>
       <!-- Prévia em tamanho real do que os cosméticos abaixo montam. Ele saiu
@@ -2804,7 +2804,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <div class="pick-grid" id="pickEfeito"></div>
       <div class="sec-t">Cenário do banner do perfil</div>
       <div class="pick-grid" id="pickScene"></div>
-      <div class="sec-t">Pokémon do banner</div>
+      <div class="sec-t" id="secBanner">Lutador do banner</div>
       <div class="pick-grid" id="pickBannerMon"></div>
 
       <div class="sec-t">Cosméticos shiny <span id="shinyVagas" style="color:var(--dim)"></span></div>
@@ -2889,6 +2889,7 @@ import { S } from './modules/estado.mjs';
 import { $, log } from './modules/dom.mjs';
 import { ensureDaily } from './modules/desafios.mjs';
 import { frame } from './modules/loop.mjs';
+import { ROTULOS } from './modules/motor.mjs';
 import { startFight } from './modules/fases.mjs';
 import { modoServidor, hidratar } from './modules/banco.mjs';
 import { api } from './modules/api.mjs';
@@ -3051,6 +3052,17 @@ S.profile = loadProfile();
    de retenção mentindo para cima. */
 /* O <head> já pintou o tema antes do primeiro quadro; isto o normaliza pela
    mesma função que a troca usa, para não existirem dois caminhos de verdade. */
+/* A MARCA VEM DO PACK (F1.12). Estava escrita no HTML — "PokéArena · Kanto" —,
+   que é identificador de tema em código de produção. A varredura do bloco a
+   encontrou entre os nove, e é a mais visível de todas: é a primeira coisa que
+   o jogador lê. */
+const marcaNome = document.getElementById('marcaNome');
+const marcaElenco = document.getElementById('marcaElenco');
+if (marcaNome) marcaNome.textContent = ROTULOS.arena ?? 'Arena';
+if (marcaElenco) marcaElenco.textContent = `${ROTULOS.elenco} · elenco de ${elenco.length}`;
+const secAvatar = document.getElementById('secAvatar');
+if (secAvatar) secAvatar.textContent = `Avatar — ${ROTULOS.criaturas}`;
+
 aplicarTema(temaAtual());
 emitir('session_started');
 addEventListener('pagehide', () => emitir('session_ended'));

@@ -87,6 +87,11 @@ export const packSintetico = {
   golpes:   GOLPES,
   clima:    CLIMA,
   moeda:    { nome: 'Fichas', simbolo: '◈' },
+  /* Rótulos: o contrato ganhou este campo no F1.12, porque a interface precisa
+     chamar as criaturas de alguma coisa e esse nome é do TEMA. Sem ele o
+     cliente escrevia o nome da franquia, e a varredura o achou em nove
+     lugares de produção. */
+  rotulos:  { criatura: 'peça', criaturas: 'peças', elenco: 'Sintético' },
   nomeExibido: bonito,
   slugExterno: s => s,
   /* Sprite sem rede: o pack decide o endereço, e um pack de teste devolve um

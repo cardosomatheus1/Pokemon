@@ -16,7 +16,9 @@
  * dois motores podem concordar no vencedor e discordar em cada golpe.
  */
 import { criarMotor, CONF, VERSAO } from '../engine/engine.mjs';
-import pack from '../content/pokemon_kanto_v1.mjs';
+/* O pack vem do ESCOLHIDO, e não nomeado aqui: `content/escolhido.mjs` é o
+   único lugar fora de `content/` que pode nomear um pack (§0.3, F1.12). */
+import pack from '../content/escolhido.mjs';
 import { sementes } from '../engine/seed.mjs';
 import { precificar, simularLote } from '../engine/preco.mjs';
 

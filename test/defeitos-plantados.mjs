@@ -83,6 +83,9 @@ const RESULT = 'engine/resultado.mjs';
 const RESTELA= 'app/modules/resultado-tela.mjs';
 const PROGSRV= 'server/progressao.mjs';
 const TELESRV= 'server/telemetria.mjs';
+const PACKV  = 'engine/pack.mjs';
+const ORIGV1 = 'content/original_v1.mjs';
+const ESCOLH = 'content/escolhido.mjs';
 const ADMSRV = 'server/admin.mjs';
 const CARTEIRA= 'app/modules/carteira.mjs';
 const NAVEG  = 'app/modules/navegacao.mjs';
@@ -1596,6 +1599,33 @@ export const DEFEITOS = [
   { id:'S278', arquivo:ADMSRV, nome:'a ação administrativa dispensa motivo',
     real:'"o operador está identificado, basta" — e seis meses depois ninguém sabe por que a margem mudou',
     de:"  if (!String(motivo).trim())",
+    para:'  if (false)' },
+
+  /* ── F1.12 · O CONTENTPACK ORIGINAL ───────────────────────────────────── */
+
+  { id:'S279', arquivo:ORIGV1, nome:'o pack original cai para a arte do outro pack',
+    real:'"melhor uma imagem que uma silhueta" — e o jogo original mostra arte da franquia; é a lição da v0.6.1',
+    de:'  return COM_ARTE.has(slug) ? `arte/original/${slug}.png` : silhuetaDe(especie);',
+    para:'  return COM_ARTE.has(slug) ? `arte/original/${slug}.png` : `https://play.pokemonshowdown.com/sprites/gen5ani/${slug}.gif`;' },
+
+  { id:'S280', arquivo:ORIGV1, nome:'duas criaturas passam a ter a mesma silhueta',
+    real:'derivar de menos coisa — e o jogador não distingue em quem está apostando',
+    de:'  const a = 18 + (especie.dex * 7) % 22;\n  const b = 30 + (especie.dex * 13) % 30;\n  const c = 8 + (especie.dex * 5) % 14;',
+    para:'  const a = 18 + (especie.dex % 3);\n  const b = 30 + (especie.dex % 3);\n  const c = 8 + (especie.dex % 3);' },
+
+  { id:'S281', arquivo:ORIGV1, nome:'a distribuição de força do elenco muda',
+    real:'"os números são feios" — e margem, ruína e precisão de odd deixam de valer no dia do lançamento',
+    de:"  {dex:1,n:'lufaito',t:['seiva'],s:[40,",
+    para:"  {dex:1,n:'lufaito',t:['seiva'],s:[70," },
+
+  { id:'S282', arquivo:ESCOLH, nome:'a escolha de pack ganha um fallback',
+    real:'"se não carregar, usa o outro" — e faltou-um-arquivo vira o-jogo-inteiro-saiu-errado, sem ninguém perceber',
+    de:'  const p = PACKS[id];',
+    para:'  const p = PACKS[id] ?? PACKS[Object.keys(PACKS)[0]];' },
+
+  { id:'S283', arquivo:PACKV, nome:'o pack deixa de precisar declarar os rótulos',
+    real:'"quase todo pack tem" — e o cliente volta a escrever o nome de uma franquia',
+    de:"  if (exigir(eObj(pack.rotulos), 'rotulos ausente: a interface não tem como nomear as criaturas'))",
     para:'  if (false)' },
 
   { id:'S224', arquivo:FECHO, nome:'o fecho para de seguir os imports do filho',

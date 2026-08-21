@@ -172,9 +172,13 @@ function dano(chart, A, D, mv, R, aMul, dMul){
 }
 
 
-function atribuirGolpes(golpes, entry){
+/* `nomeReserva` é do PACK, e chega como parâmetro em vez de ser lido de uma
+   variável de módulo: esta função é pura de propósito, e o `criarMotor` a expõe
+   para o teste chamar com um pack qualquer. Ver L-021. */
+function atribuirGolpes(golpes, entry, nomeReserva = 'normal'){
   const R = rng(entry.dex * 7919 + 104729);
-  const pools = entry.t.map(t => golpes[t] || golpes.normal);
+  const reserva = golpes[nomeReserva] || golpes.normal;
+  const pools = entry.t.map(t => golpes[t] || reserva);
   const picks = [];
   const used = new Set();
 
@@ -210,8 +214,8 @@ function atribuirGolpes(golpes, entry){
 
   while (picks.length < 4){
     const wantStab = R() < 0.62;
-    const pool = wantStab ? pools[(R() * pools.length) | 0] : golpes.normal;
-    if (!takeFrom(pool) && !takeFrom(golpes.normal)) break;
+    const pool = wantStab ? pools[(R() * pools.length) | 0] : reserva;
+    if (!takeFrom(pool) && !takeFrom(reserva)) break;
   }
   return picks;
 }
@@ -233,7 +237,7 @@ function montarElenco(pack, list){
       atk: statAt(b[1]), def: statAt(b[2]),
       spa: statAt(b[3]), spd: statAt(b[4]), spe: statAt(b[5]),
     };
-    f.moves = atribuirGolpes(pack.golpes, p);
+    f.moves = atribuirGolpes(pack.golpes, p, pack.poolReserva);
     f.sprite = pack.sprite(p);
     return f;
   });
@@ -488,7 +492,7 @@ function criarMotor(pack){
     dano:          (A,D,mv,R,a,d)      => dano(chart, A, D, mv, R, a, d),
     simular:       (f, seed, gravar)   => simular(chart, f, seed, gravar),
     montarElenco:  (lista)             => montarElenco(pack, lista),
-    atribuirGolpes:(esp)               => atribuirGolpes(pack.golpes, esp),
+    atribuirGolpes:(esp)               => atribuirGolpes(pack.golpes, esp, pack.poolReserva),
     sortearPool:   (semente)            => sortearPool(pack, elenco, semente),
     sortearClima:  (seed, tipos)       => sortearClima(pack.clima, seed, tipos),
     aplicarClima:  (lista, clima)      => aplicarClima(lista, clima),

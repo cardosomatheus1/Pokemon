@@ -354,6 +354,15 @@ function sprite(especie){
 /* ----------------------------- MOEDA ----------------------------- */
 const MOEDA = { nome: 'PokéCash', simbolo: '💵' };
 
+/* Como a interface chama as coisas neste tema (F1.12). Antes estes nomes
+   estavam escritos dentro do cliente, que é onde eles não podem estar. */
+const ROTULOS = {
+  criatura:  'Pokémon',
+  criaturas: 'Pokémon',
+  elenco:    'Kanto',
+  arena:     'PokéArena',
+};
+
 export const pokemonKantoV1 = {
   id: 'pokemon_kanto_v1',
   tipos:    { efetividade: CHART, cores: TCOLOR, nomes: TIPO_PT },
@@ -362,6 +371,7 @@ export const pokemonKantoV1 = {
   golpes:   MASTER_MOVES,
   clima:    CLIMA,
   moeda:    MOEDA,
+  rotulos: ROTULOS,
   nomeExibido, slugExterno, sprite,
 };
 
