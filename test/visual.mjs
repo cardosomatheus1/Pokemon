@@ -1193,6 +1193,29 @@ export async function rodarRodadaCompleta() {
     const { S } = await import('/app/modules/estado.mjs');
     S.speed = 60;
   });
+  /* ── O ATRASO QUE TORNA O S260 OBSERVÁVEL ────────────────────────────────
+   *
+   * O `finish()` chama `hidratar()` SEM `await` — de propósito: a tela de
+   * resultado desenha agora e o número se corrige depois. A consequência é uma
+   * CORRIDA com o bloco de liquidação, que vem mais abaixo na mesma função.
+   *
+   * Se a reidratação vencer, `S.carteira` já é a projeção pós-settlement, sem
+   * reserva — e a liquidação do cliente FALHA sozinha, pela invariante "saldo
+   * nunca fica negativo". Se perder, a carteira ainda tem a reserva e o
+   * lançamento duplo ACONTECE.
+   *
+   * Medido: com a projeção real, `liquidarGanho` devolve `ok:true` e credita
+   * 250; sem reserva, `ok:false` e nada. O defeito plantado S260 passou verde
+   * porque a corrida foi ganha pela reidratação naquela execução.
+   *
+   * Atrasar `/api/carteira` a partir daqui fixa o lado da corrida: no momento
+   * da liquidação a carteira ainda é a de antes, e um cliente que lance vai
+   * lançar. É o D-021 pelo avesso — em vez de esperar o acaso, escolhê-lo. */
+  await pg.route('**/api/carteira', async rota => {
+    await new Promise(z => setTimeout(z, 2500));
+    return rota.continue();
+  });
+
   t += FASE_MS.APOSTA + 1; api.sched.tick();
   r.travou = await ate(async () => (await espiar()).fase !== 'betting', 'o fechamento vindo do servidor');
   r.aposTravar = await espiar();

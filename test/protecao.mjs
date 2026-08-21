@@ -90,6 +90,75 @@ export function suite() {
         `função exportada é convite.`);
   });
 
+  /* O ENCURTAMENTO PELA PORTA DO PRODUTO, e ele não precisa de função nenhuma.
+   *
+   * Os testes acima provam que não existe `encerrarPausa`. Isso fecha a porta
+   * dos fundos e deixa a da frente aberta: o jogador em autoexclusão de 180
+   * dias PEDE um cool-off de 24 h — que é uma ação legítima, oferecida pelo
+   * produto — e se a consulta perguntar "qual é a mais RECENTE" em vez de "qual
+   * termina mais TARDE", a autoexclusão vira 24 horas.
+   *
+   * Nenhuma linha de código faliu; a ordenação de uma lista mudou. O defeito
+   * plantado S199 é exatamente isso, e passou por 292 defeitos porque nenhum
+   * teste empilhava duas pausas.
+   */
+  s.teste('cool-off por cima de autoexclusão NÃO encurta nada', () => {
+    const c = cenario();
+    pausar(c.db, { userId: c.u.id, tipo: 'self_exclusion', duracao: '180d', agora: c.agoraDe() });
+    c.avancar(HORA);
+    /* Ação legítima e oferecida: o produto não recusa um cool-off. */
+    pausar(c.db, { userId: c.u.id, tipo: 'cooloff', duracao: '24h', agora: c.agoraDe() });
+
+    /* A LEITURA COM AS DUAS VIGENTES é o que discrimina. Duas horas depois,
+       cool-off e autoexclusão estão ambos dentro do prazo, e é aí que a
+       ORDENAÇÃO decide qual responde. Perguntar dois dias depois não serve: o
+       cool-off já venceu e sai no filtro, então qualquer ordenação acerta —
+       foi assim que a primeira versão deste teste deixou o S199 escapar. */
+    c.avancar(HORA);
+    const p = pausaAtiva(c.db, c.u.id, c.agoraDe());
+    ok(p, 'nenhuma pausa vigente com duas empilhadas e as duas dentro do prazo');
+    igual(p.tipo, 'self_exclusion',
+      `com as duas vigentes, a consulta devolveu \`${p.tipo}\`. Ela está ` +
+      `perguntando qual é a mais RECENTE em vez de qual termina mais TARDE — e ` +
+      `é exatamente assim que um cool-off de 24 h pedido por cima encurta uma ` +
+      `autoexclusão de 180 dias, sem função nenhuma de encurtar.`);
+    igual(p.duracao, '180d', `a pausa vigente é de ${p.duracao}`);
+
+    /* E o efeito, que é o que importa para o jogador: dois dias depois — muito
+       além do cool-off — a conta continua parada. */
+    c.avancar(2 * DIA);
+    ok(pausaAtiva(c.db, c.u.id, c.agoraDe()),
+      'a conta voltou a poder jogar dois dias depois de uma autoexclusão de 180 DIAS');
+    c.avancar(170 * DIA);
+    ok(pausaAtiva(c.db, c.u.id, c.agoraDe()),
+      'a autoexclusão soltou antes dos 180 dias');
+  });
+
+  s.teste('a permanente vence qualquer prazo empilhado por cima', () => {
+    /* O caso extremo da mesma regra: `ate === null` não se compara por número,
+       e uma ordenação que só olhasse `ate` colocaria a permanente por último —
+       `null` perde de qualquer inteiro. */
+    const c = cenario();
+    pausar(c.db, { userId: c.u.id, tipo: 'self_exclusion', duracao: 'permanente',
+                   agora: c.agoraDe() });
+    c.avancar(HORA);
+    pausar(c.db, { userId: c.u.id, tipo: 'cooloff', duracao: '7d', agora: c.agoraDe() });
+    /* Com as duas vigentes: a permanente tem que ganhar do cool-off de 7 dias. */
+    c.avancar(HORA);
+    const agora = pausaAtiva(c.db, c.u.id, c.agoraDe());
+    igual(agora?.ate, null,
+      `com as duas vigentes a consulta devolveu a que termina em ${agora?.ate}. ` +
+      `\`null\` não se compara como número, e uma ordenação que só olhe \`ate\` ` +
+      `põe a PERMANENTE por último.`);
+
+    c.avancar(30 * DIA);
+    const p = pausaAtiva(c.db, c.u.id, c.agoraDe());
+    ok(p, 'a autoexclusão PERMANENTE caiu depois de trinta dias');
+    igual(p.ate, null,
+      `a pausa vigente termina em ${p.ate} e a permanente não termina nunca — ` +
+      `a ordenação comparou \`null\` como número e o pôs por último`);
+  });
+
   s.teste('a pausa NÃO cai no logout nem no login novo', () => {
     const c = cenario();
     pausar(c.db, { userId: c.u.id, tipo: 'self_exclusion', duracao: '30d', agora: c.agoraDe() });

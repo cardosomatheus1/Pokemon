@@ -43,23 +43,27 @@ export const PACKS = {
  * ainda (L-042): lançar com 76 silhuetas seria trocar um risco comercial por um
  * problema de produto. A troca é UMA LINHA, e é essa a promessa da Content
  * Layer — o resto do trabalho já está feito e testado. */
-export const ID_ESCOLHIDO = 'original_v1';
+export const ID_ESCOLHIDO = 'pokemon_kanto_v1';
 
-/* ── A ARTE EMPRESTADA, E ELA É UM ESTADO DECLARADO ─────────────────────────
+/* ── A ARTE EMPRESTADA, E POR QUE ELA ESTÁ DESLIGADA ────────────────────────
  *
- * Decisão do dono do projeto: enquanto o build for PRIVADO — jogado por amigos,
- * sem aquisição paga e sem monetização —, o pack original veste a arte que o
- * pack de desenvolvimento baixa, em vez das 76 silhuetas.
+ * O mecanismo existe e está testado: preenchido com o id de outro pack, o pack
+ * escolhido veste a arte daquele em vez da própria.
  *
- * ESTE VALOR É A DISTÂNCIA ENTRE "build entre amigos" E "produto publicado".
- * Com ele preenchido, o §0.3.1 NÃO está satisfeito: o que aquela seção proíbe é
- * PUBLICAR um produto com stake econômico sobre assets de terceiros. Um build
- * entre amigos não é isso — e a diferença entre os dois estados é uma linha,
- * que é exatamente por que ela precisa estar escrita num lugar só e gritando.
+ * ELE FOI LIGADO UMA VEZ E DESLIGADO NA MESMA SESSÃO, e a razão vale registrar
+ * porque é uma lição de produto, não de código. Ligá-lo COM `ID_ESCOLHIDO` no
+ * pack original produziu criaturas de nome autoral sobre sprites da franquia:
+ * um Pinsir chamado Lúmenara. As duas metades corretas, e a combinação sem
+ * sentido nenhum para quem olha.
  *
- * `null` volta às silhuetas, que continuam sendo o estado honesto até a L-042
- * fechar com desenhos de verdade. */
-export const ARTE_EMPRESTADA_DE = 'pokemon_kanto_v1';
+ * Arte emprestada só faz sentido quando a arte e os nomes vêm do MESMO tema.
+ * Enquanto o pack original não tiver os próprios desenhos (L-042), o jogo roda
+ * no pack de desenvolvimento inteiro — nome e arte do mesmo lugar.
+ *
+ * Quando `ARTE_EMPRESTADA_DE` estiver preenchido, o §0.3.1 NÃO está satisfeito:
+ * o que aquela seção proíbe é PUBLICAR um produto com stake econômico sobre
+ * assets de terceiros. O `test/saida-v09.mjs` cobra o registro disso. */
+export const ARTE_EMPRESTADA_DE = null;
 
 /* RESOLVER É UMA FUNÇÃO, e não uma busca solta, por dois motivos.
  *

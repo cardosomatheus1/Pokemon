@@ -1457,3 +1457,42 @@ enquanto ela estiver ligada.
 `COM_ARTE` em `content/original_v1.mjs` é o livro-razão que os recebe um a um.
 
 **Desligar é apagar uma linha:** `ARTE_EMPRESTADA_DE = null` volta às silhuetas.
+---
+
+### L-043 — o pack original tem outra distribuição de desfecho, e a economia foi medida na antiga
+
+**Dono:** **F2.1** (a recalibragem econômica da Fase 2) · **Notada em:** ao trocar
+`ID_ESCOLHIDO` para `original_v1` e OLHAR a tela de odds
+
+O F1.12 herdou de propósito a distribuição de **força** do elenco medido: os
+totais de base stats são os mesmos percentis. O que ele NÃO herdou — também de
+propósito, para o pack não ser uma renomeação — foi o **recorte** entre os seis
+stats, que é sorteado.
+
+A consequência apareceu na tela, não em teste nenhum: o favorito da rodada saía
+a **x5,22** onde antes saía perto de x2,10. Medido em 40 rodadas × 3.000
+simulações:
+
+| | favorito médio | × da média (8,3%) | odd máxima média |
+|---|---|---|---|
+| `pokemon_kanto_v1` | 24,5% | **2,9×** | 48,4 |
+| `original_v1` | 19,0% | **2,3×** | 57,9 |
+
+**O pack original é mais PLANO e tem cauda mais LONGA.** Nenhum lutador domina
+tanto — o que é uma melhora em relação à **L-002**, que registra "um lutador
+vence 4× mais que a média" como defeito do elenco antigo — e o azarão mais fraco
+é mais fraco.
+
+**O que NÃO mudou, e está verificado:** a margem da casa continua em 8,0%, e
+`fixtures/margem.json` passa com o pack novo. Os tetos do §4.4.6 seguem valendo
+e `test/exposicao.mjs` está verde. A troca não quebrou a economia.
+
+**O que fica em aberto:** o Estudo Econômico mediu a **curva de ruína** — 100%
+das simulações, mediana de 128 rodadas — sobre a distribuição antiga. Com odds
+mais planas e cauda mais longa, a variância do jogador muda, e a mediana de
+ruína provavelmente também. O número que o §28.8 cita para justificar o resgate
+é daquela medição.
+
+**O que a destrava:** refazer a medição de ruína sobre o pack que vai ser
+lançado. É barato — o simulador existe — e não cabia neste bloco, que era sobre
+o pack existir e ser jogável.
