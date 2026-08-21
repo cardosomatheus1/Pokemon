@@ -188,6 +188,37 @@ export function suite() {
     igual(contasLigadas(c.db, estranho.id).length, 0, 'apareceu ligação onde não há');
   });
 
+  /* AÇÃO QUE NINGUÉM CLASSIFICOU É RECUSADA DURANTE A PAUSA.
+   *
+   * Os testes de pausa exercitavam ações das duas listas — bloqueadas e
+   * liberadas — e nenhum exercitava o TERCEIRO caso, que é o que mais importa:
+   * a ação que ainda não existia quando as listas foram escritas.
+   *
+   * O defeito plantado S204 troca a recusa por `{ ok: true }` e passou pela
+   * suíte inteira. O que ele descreve é o modo de falha real: alguém escreve
+   * uma feature nova, esquece de classificá-la, e ela nasce furando a
+   * autoexclusão de quem pediu para parar. */
+  s.teste('ação NÃO classificada é recusada durante a pausa', () => {
+    const c = cenario();
+    pausar(c.db, { userId: c.u.id, tipo: 'cooloff', duracao: '24h', agora: c.agoraDe() });
+    for (const acao of ['comprar_pacote_novo', 'entrar_no_torneio', 'trocar_com_amigo', '']) {
+      const r = podeAgir(c.db, { userId: c.u.id, acao, agora: c.agoraDe() });
+      igual(r.ok, false,
+        `\`${acao}\` passou durante a pausa sem estar em lista nenhuma. Ação que ` +
+        `ninguém classificou é ação que ninguém pensou, e o lado seguro de errar ` +
+        `aqui é o que NÃO deixa o jogador voltar a gastar.`);
+      igual(r.motivo, 'acao_nao_classificada',
+        `a recusa de \`${acao}\` não diz que ela é desconhecida — sem isso ninguém ` +
+        `descobre que falta classificá-la`);
+    }
+    /* O CONTRAPESO: sem pausa, a mesma ação desconhecida passa. Senão este teste
+       seria satisfeito por um `podeAgir` que recusa tudo. */
+    const livre = cenario();
+    igual(podeAgir(livre.db, { userId: livre.u.id, acao: 'comprar_pacote_novo',
+                               agora: livre.agoraDe() }).ok, true,
+      'sem pausa nenhuma, uma ação desconhecida foi recusada');
+  });
+
   /* --- A REENTRADA É ATIVA ------------------------------------------------ */
 
   s.teste('ao expirar, a reentrada é PEDIDA, nunca automática', () => {
@@ -201,6 +232,29 @@ export function suite() {
     concederReentrada(c.db, { userId: c.u.id, agora: c.agoraDe() });
     igual(podeAgir(c.db, { userId: c.u.id, acao: 'apostar', agora: c.agoraDe() }).ok, true,
       'pediu e não voltou');
+  });
+
+  /* O CASO QUE FALTAVA, e ele escapou de 283 defeitos.
+   *
+   * O teste acima SEMPRE pede antes de conceder — monta o caminho feliz e mede
+   * só ele. Tirar a conferência do pedido ficava invisível: o defeito plantado
+   * S202 passou pela suíte inteira.
+   *
+   * E a regra é justamente a que ele quebra. "Ao expirar, a reentrada é ATIVA:
+   * o jogador precisa pedir." Conceder sem pedido é o produto decidindo por
+   * quem pediu para parar — a pausa vence, a conta volta sozinha, e ninguém
+   * perguntou nada a ela. */
+  s.teste('conceder reentrada SEM o jogador ter pedido é recusado', () => {
+    const c = cenario();
+    pausar(c.db, { userId: c.u.id, tipo: 'self_exclusion', duracao: '30d', agora: c.agoraDe() });
+    c.avancar(31 * DIA);
+    const e = recusa(() => concederReentrada(c.db, { userId: c.u.id, agora: c.agoraDe() }));
+    ok(e,
+      'a reentrada foi concedida sem pedido nenhum. O prazo venceu, e o produto ' +
+      'decidiu por quem pediu para parar — é exatamente o que "reentrada ATIVA" ' +
+      'existe para impedir.');
+    igual(podeAgir(c.db, { userId: c.u.id, acao: 'apostar', agora: c.agoraDe() }).ok, false,
+      'a conta voltou a poder apostar mesmo com a concessão recusada');
   });
 
   s.teste('a reentrada NÃO pode ser concedida antes do prazo', () => {
@@ -315,6 +369,59 @@ export function suite() {
     ok(!sinaisDeRisco(c.db, { userId: c.u.id, agora: c.agoraDe() }).includes('chasing'),
       'stake alta e CONSTANTE foi lida como perseguição de perda — o §28.6 diz ' +
       'que a base é a mudança da própria conta, não o nível');
+  });
+
+  /* `chasing` OLHA A MUDANÇA, NUNCA O NÍVEL — e agora com stakes controladas.
+   *
+   * O teste que já existia aposta pela rodada, e o valor dele depende do
+   * `stakeMax` do slot, que depende do sorteio. Quando o sorteio dava menos de
+   * 500, o defeito plantado S205 — que troca a conjunção por `stake >= 500` —
+   * não acendia, e escapava. É o D-021 pela terceira vez: teste cujo poder
+   * depende do sorteio é teste que às vezes não testa.
+   *
+   * Aqui a série é montada DIRETO na tabela, e é o certo para esta regra: o que
+   * o §28.6 diz é sobre a SÉRIE de apostas, não sobre o caminho que as criou.
+   * O outro teste continua existindo e mede o encaixe; este mede a regra. */
+  s.teste('`chasing` ignora o NÍVEL da stake, por mais alta que seja', () => {
+    const c = cenario();
+    const t = c.agoraDe();
+    /* Uma rodada por aposta: o esquema tem `UNIQUE (user_id, round_id)`, que é
+       a invariante "uma aposta por rodada por jogador" escrita onde ela não
+       pode ser esquecida. Montar a série exige respeitá-la. */
+    const serie = (db, userId, valores) => {
+      const rodada = db.prepare(
+        `INSERT INTO rounds (id, status, round_seed_commit, engine_version, content_version,
+                             betting_opens_at, betting_locks_at, environment)
+         VALUES (?, 'encerrada', 'x', 'v', 'v', ?, ?, 'teste')`);
+      const aposta = db.prepare(
+        `INSERT INTO bets (id, user_id, round_id, slot_apostado, species_id, stake, odd,
+                           status, payout, created_at)
+         VALUES (?, ?, ?, 0, 1, ?, 2.0, 'perdida', 0, ?)`);
+      valores.forEach((v, i) => {
+        const quando = t + i * 60_000;
+        rodada.run(`rod${i}`, quando, quando + 30_000);
+        aposta.run(`b${i}`, userId, `rod${i}`, v, quando);
+      });
+    };
+
+    /* Dez apostas de 5.000, todas PERDIDAS, todas do mesmo tamanho. É o
+       apostador de stake alta: ele não mudou nada, e o §28.6 é explícito —
+       "detectar mudança, não classificar perfil". */
+    serie(c.db, c.u.id, Array(10).fill(5000));
+    ok(!sinaisDeRisco(c.db, { userId: c.u.id, agora: t + 11 * 60_000 }).includes('chasing'),
+      'dez apostas de 5.000 iguais acenderam `chasing`. O sinal virou um limiar ' +
+      'sobre o VALOR, e o sistema passa a intervir em quem não mudou nada — ' +
+      'enquanto deixa passar quem dobra de 10 para 20 depois de perder.');
+
+    /* O CONTRAPESO, e ele é obrigatório: com AUMENTO após perda, o sinal TEM
+       que acender. Sem esta metade, o teste acima é satisfeito por um `chasing`
+       que nunca acende. */
+    const d = cenario();
+    serie(d.db, d.u.id, [10, 20, 40, 80, 160]);
+    ok(sinaisDeRisco(d.db, { userId: d.u.id, agora: t + 6 * 60_000 }).includes('chasing'),
+      'dobrar a aposta quatro vezes seguidas depois de perder NÃO acendeu ' +
+      '`chasing`. É a perseguição de perda em estado puro, e é para isso que o ' +
+      'sinal existe.');
   });
 
   s.teste('`limit_pressure` sobe com pedidos repetidos de aumento de limite', () => {
