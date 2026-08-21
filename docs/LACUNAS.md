@@ -1325,3 +1325,30 @@ não uma caçada.
 histórico. Duas medidas bastam: quantos jogadores arruinados voltam a jogar
 depois do resgate, e quantos zeram de novo dentro da mesma semana. A segunda
 subindo é o sinal de que o valor virou incentivo.
+
+---
+
+### L-041 — o operador do painel se declara, não se prova
+
+**Dono:** **F1.17** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** F1.11
+
+O F1.11 construiu **autorização**, **auditoria** e **confirmação** para o painel
+admin. O que ele não construiu é **autenticação**: o operador chega num
+cabeçalho `x-operador` com o próprio id, e o servidor confia.
+
+**Por que ficou assim, e por que isso não é descuido:** as três camadas que o
+§5.11 nomeia — papel, registro, confirmação — são de desenho, e desenho errado
+não se conserta com login. Autenticação de operador é outra coisa: precisa de
+credencial separada, segundo fator e rotação, e cada uma dessas é uma decisão de
+produto que não cabia no escopo declarado do bloco. Construir meia autenticação
+teria sido pior que nenhuma — ela pareceria proteção.
+
+**O que já protege hoje, e não é nada:** um id de operador é um UUID, não é
+enumerável pela rota (operador inexistente e sem papel dão a MESMA resposta), a
+rota admin não aceita sessão de jogador, e toda ação fica registrada com quem,
+o quê, de, para e por quê. O que falta é impedir que alguém que descubra um id
+o use.
+
+**O que a destrava:** o F1.17. Enquanto ele não existe, o painel só pode ser
+exposto em rede fechada — e isso precisa estar escrito onde quem faz o deploy
+vai ler, não só aqui.

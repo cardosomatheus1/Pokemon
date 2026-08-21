@@ -51,6 +51,16 @@ export const SALDO_INICIAL = 1000;
    produto ainda não tem seria inventar histórico. */
 export const TIPOS = [
   'WELCOME_GRANT', 'DAILY_REWARD', 'CHALLENGE_REWARD',
+  /* F1.10 · o `rescue grant` do §0.4 e do §28.8. A rota que o credita nasceu no
+     F1.10 usando este tipo, e ele NÃO estava aqui — o crédito teria lançado
+     `tipo desconhecido` na primeira concessão real. Achado pelo painel do
+     F1.11, que soma faucets por tipo: o teste do painel creditou um resgate e
+     o ledger recusou.
+
+     Vale registrar a forma, porque ela se repete: a rota estava certa, a lista
+     estava certa para o que existia antes, e ninguém liga uma na outra. É
+     "testar a peça não testa o encaixe" pela sétima vez. */
+  'RESCUE_GRANT',
   'BET_RESERVE', 'BET_RELEASE', 'BET_LOSS',
   'BET_PAYOUT_TRANSFERABLE', 'BET_PAYOUT_BONUS', 'BET_PAYOUT_COMPETITIVE',
   'PC_T_PURCHASE_CLEARED', 'ADMIN_ADJUSTMENT',

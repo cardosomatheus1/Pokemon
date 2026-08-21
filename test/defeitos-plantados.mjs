@@ -82,6 +82,8 @@ const FECHO  = 'test/fecho.mjs';
 const RESULT = 'engine/resultado.mjs';
 const RESTELA= 'app/modules/resultado-tela.mjs';
 const PROGSRV= 'server/progressao.mjs';
+const TELESRV= 'server/telemetria.mjs';
+const ADMSRV = 'server/admin.mjs';
 const CARTEIRA= 'app/modules/carteira.mjs';
 const NAVEG  = 'app/modules/navegacao.mjs';
 const RODADA = 'app/modules/rodada.mjs';
@@ -1193,8 +1195,8 @@ export const DEFEITOS = [
 
   { id:'S209', arquivo:SRV, nome:'a sessão deixa de ser conferida no despacho',
     real:'"cada rota confere a sua" — e a rota NOVA nasce aberta, porque quem a escreveu não sabia que precisava lembrar',
-    de:'      if (!ROTAS_PUBLICAS.includes(chave) && !SEM_VERSAO.includes(caminho)) {',
-    para:'      if (false) {' },
+    de:'      if (!ROTAS_PUBLICAS.includes(chave) && !ROTAS_ADMIN.includes(chave)',
+    para:'      if (false && !ROTAS_ADMIN.includes(chave)' },
 
   { id:'S210', arquivo:SRVROT, nome:'o usuário passa a vir do corpo do pedido',
     real:'"o admin precisa consultar outra conta" — é a carteira de qualquer um para quem souber um id',
@@ -1553,6 +1555,48 @@ export const DEFEITOS = [
     real:'"o motivo é opcional" — e a curva de progressão vira número sem origem',
     de:"  if (!motivo) throw erro('xp_invalido', 'XP sem motivo não é auditável');",
     para:'' },
+
+  /* ── F1.11 · TELEMETRIA E ADMIN ───────────────────────────────────────── */
+
+  { id:'S271', arquivo:TELESRV, nome:'evento de proteção passa a ser amostrável',
+    real:'"a conta de telemetria explodiu" — e some o registro de conformidade que responde "este jogador recebeu o aviso?"',
+    de:'  } else if (amostra < 1 && sorteio() >= amostra) {',
+    para:'  }\n  if (amostra < 1 && sorteio() >= amostra) {' },
+
+  { id:'S272', arquivo:TELESRV, nome:'a lista de eventos de proteção encolhe',
+    real:'"esse é métrica de produto" — e um evento sai da conformidade sem ninguém decidir',
+    de:"  'rescue_grant_issued', 'rescue_grant_blocked_by_policy',",
+    para:"  'rescue_grant_issued'," },
+
+  { id:'S273', arquivo:TELESRV, nome:'campo obrigatório vazio passa a valer',
+    real:'"veio o campo" — e o painel soma zero sem ninguém perceber',
+    de:"      if (presentes[c] === undefined || presentes[c] === null || presentes[c] === '')",
+    para:'      if (presentes[c] === undefined)' },
+
+  { id:'S274', arquivo:ADMSRV, nome:'ação desconhecida passa a ser permitida',
+    real:'"se não está na tabela, não é restrita" — e a ação escrita amanhã nasce liberada',
+    de:'  if (!minimo) return false;',
+    para:'  if (!minimo) return true;' },
+
+  { id:'S275', arquivo:ADMSRV, nome:'a auditoria passa a ser gravada só no sucesso',
+    real:'inverter a ordem — e a ação que falha no meio não deixa rastro, que é a que mais interessa depois',
+    de:'  registrar();\n  return executar ? executar(op) : { ok: true };',
+    para:'  const r = executar ? executar(op) : { ok: true };\n  registrar();\n  return r;' },
+
+  { id:'S276', arquivo:ADMSRV, nome:'confirmação aceita qualquer coisa verdadeira',
+    real:'`if (!confirmado)` — e a string "false" vinda de query confirma',
+    de:"  if (DESTRUTIVAS.has(acao) && confirmado !== true)",
+    para:'  if (DESTRUTIVAS.has(acao) && !confirmado)' },
+
+  { id:'S277', arquivo:ADMSRV, nome:'o painel passa a somar o saldo guardado',
+    real:'"é a mesma conta e é mais rápida" — e o painel mostra a mesma resposta errada que o cache tem',
+    de:"    `SELECT bucket, COALESCE(SUM(amount), 0) AS s FROM wallet_ledger\n      WHERE created_at <= ? GROUP BY bucket`).all(ate))",
+    para:"    `SELECT bucket, COALESCE(SUM(saldo), 0) AS s FROM carteiras GROUP BY bucket`).all())" },
+
+  { id:'S278', arquivo:ADMSRV, nome:'a ação administrativa dispensa motivo',
+    real:'"o operador está identificado, basta" — e seis meses depois ninguém sabe por que a margem mudou',
+    de:"  if (!String(motivo).trim())",
+    para:'  if (false)' },
 
   { id:'S224', arquivo:FECHO, nome:'o fecho para de seguir os imports do filho',
     real:'somar só o arquivo do script — mudar o que ele importa deixa de invalidar',

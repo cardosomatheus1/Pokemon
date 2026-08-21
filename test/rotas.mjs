@@ -57,13 +57,15 @@ async function comServico(fn, opcoes = {}) {
   try { return await fn(ctx); } finally { await s.fechar(); }
 }
 
-const pedir = (porta, caminho, { metodo = 'GET', corpo, sessao, versao = API_VERSAO } = {}) =>
+const pedir = (porta, caminho, { metodo = 'GET', corpo, sessao, cabecalhos = {},
+                                 versao = API_VERSAO } = {}) =>
   fetch(`http://127.0.0.1:${porta}${caminho}`, {
     method: metodo,
     headers: {
       ...(versao === null ? {} : { [CABECALHO_VERSAO]: versao }),
       ...(sessao ? { authorization: `Bearer ${sessao}` } : {}),
       ...(corpo ? { 'content-type': 'application/json' } : {}),
+      ...cabecalhos,
     },
     ...(corpo ? { body: JSON.stringify(corpo) } : {}),
   }).then(async r => ({ status: r.status, corpo: await r.json().catch(() => null) }));
@@ -508,6 +510,85 @@ export async function suite() {
       igual((await pedir(porta, '/api/perfil/entrar', { metodo: 'POST', sessao: a.sessao, corpo: {} })).corpo.sequencia, 1,
         'a sequência passou de 1 sem passar um dia');
     });
+  });
+
+  /* ── F1.11 · O Q6 DO PAINEL ADMIN ─────────────────────────────────────
+   *
+   * "O painel admin é a superfície de maior valor do sistema" — §5.11. Quem
+   * chega aqui vê saldo de todo mundo e muda a margem da casa.
+   */
+  s.teste('rota admin recusa sem operador, com ou sem sessão de jogador', async () => {
+    await comServico(async ({ porta }) => {
+      const a = await conta(porta, 'a');
+      for (const sessao of [undefined, a.sessao]) {
+        const r = await pedir(porta, '/api/admin/painel', { sessao });
+        ok(r.status === 401 || r.status === 403,
+          `o painel respondeu ${r.status} sem operador${sessao ? ' (mas com sessão de jogador)' : ''}. ` +
+          `Sessão de jogador NÃO autoriza nada no admin: se o mesmo token ` +
+          `servisse para os dois, um vazamento de sessão viraria acesso ` +
+          `administrativo, e o raio do incidente passaria de uma conta para todas.`);
+      }
+    });
+  });
+
+  s.teste('operador de leitura não alcança ação de economia', async () => {
+    await comServico(async ({ porta, s: srv }) => {
+      const { criarOperador } = await import('../server/admin.mjs');
+      const leitor = criarOperador(srv.db, { email: 'l@x.test', papel: 'leitura' });
+      const r = await pedir(porta, '/api/admin/painel', { cabecalhos: { 'x-operador': leitor.id } });
+      igual(r.status, 200, `leitura não alcançou o painel: ${JSON.stringify(r.corpo)}`);
+      ok(r.corpo.emCirculacao, 'o painel voltou sem a circulação');
+    });
+  });
+
+  s.teste('operador desconhecido e sem papel dão a MESMA resposta', async () => {
+    /* Distinguir "não existe" de "não pode" transforma a rota num verificador
+       de ids de operador — a mesma razão de o login não distinguir e-mail que
+       existe de e-mail que não existe. */
+    await comServico(async ({ porta, s: srv }) => {
+      const { criarOperador } = await import('../server/admin.mjs');
+      criarOperador(srv.db, { email: 'l@x.test', papel: 'leitura' });
+      const inexistente = await pedir(porta, '/api/admin/painel',
+        { cabecalhos: { 'x-operador': 'nao-existe-mesmo' } });
+      const semPapel = await pedir(porta, '/api/admin/auditoria',
+        { cabecalhos: { 'x-operador': 'nao-existe-mesmo' } });
+      igual(inexistente.status, semPapel.status,
+        'as duas recusas têm status diferente — dá para enumerar operadores');
+      igual(JSON.stringify(inexistente.corpo), JSON.stringify(semPapel.corpo),
+        'as duas recusas têm corpo diferente — dá para enumerar operadores');
+    });
+  });
+
+  s.teste('toda consulta ao painel deixa registro de auditoria', async () => {
+    await comServico(async ({ porta, s: srv }) => {
+      const { criarOperador } = await import('../server/admin.mjs');
+      const op = criarOperador(srv.db, { email: 'l@x.test', papel: 'leitura' });
+      await pedir(porta, '/api/admin/painel', { cabecalhos: { 'x-operador': op.id } });
+      const n = srv.db.prepare(
+        `SELECT COUNT(*) n FROM admin_auditoria WHERE operador_id = ?`).get(op.id).n;
+      ok(n >= 1,
+        'ver o painel não deixou registro. Quem viu o saldo de todo mundo é ' +
+        'exatamente o que a auditoria existe para responder.');
+    });
+  });
+
+  s.teste('toda rota /api/admin/ está declarada como administrativa', async () => {
+    const { ROTAS, ROTAS_PUBLICAS, ROTAS_ADMIN } = await import('../server/rotas.mjs');
+    /* Derivar não pode dessincronizar. Uma rota admin fora da lista responderia
+       401 para o operador certo; uma rota admin DENTRO da lista de públicas
+       seria o incidente inteiro. */
+    const doAdmin = Object.keys(ROTAS).filter(k => k.includes('/api/admin/'));
+    ok(doAdmin.length > 0, 'nenhuma rota admin encontrada — o varredor quebrou');
+    for (const k of doAdmin) {
+      ok(ROTAS_ADMIN.includes(k), `\`${k}\` não está em ROTAS_ADMIN`);
+      ok(!ROTAS_PUBLICAS.includes(k),
+        `\`${k}\` está na lista de PÚBLICAS. É a rota que vê saldo de todo ` +
+        `mundo, aberta para qualquer um.`);
+    }
+    for (const k of ROTAS_ADMIN)
+      ok(k.includes('/api/admin/'),
+        `\`${k}\` está em ROTAS_ADMIN e não é rota de admin — ela deixaria de ` +
+        `exigir sessão de jogador sem ninguém perceber`);
   });
 
   return s;

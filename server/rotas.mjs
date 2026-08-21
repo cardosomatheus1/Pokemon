@@ -36,10 +36,33 @@ import { pausar, pausaAtiva, pedirReentrada, concederReentrada, realityCheck,
 import { perfilDe, desafiosDe, registrarLogin, sequenciaDeLogin, emitidoNaSemana,
          pedirResgate, marcarRuina } from './progressao.mjs';
 import { BUCKETS } from '../engine/carteira.mjs';
+import { agir, painelEconomico, ERRO_ADMIN } from './admin.mjs';
 
 /* AS PÚBLICAS, e cada uma com motivo. Quem ainda não entrou precisa poder criar
    sessão; o estado da rodada é público por desenho (§4.5 — o commit tem que ser
    conferível por qualquer um). Fora isso, nada. */
+/* ── AS ADMINISTRATIVAS, QUE NÃO SÃO PÚBLICAS NEM DE JOGADOR (F1.11) ────────
+ *
+ * Uma terceira categoria, e ela precisou existir. As rotas admin não podem ser
+ * PÚBLICAS — elas veem saldo de todo mundo — e também não podem depender da
+ * sessão do JOGADOR: se o mesmo token servisse para as duas coisas, um
+ * vazamento de sessão viraria acesso administrativo, e o raio do incidente
+ * passaria de uma conta para todas.
+ *
+ * Então o despacho pula a conferência de sessão para estas, e a autorização
+ * fica inteira com `comOperador` → `agir`, que recusa sem operador, sem papel,
+ * sem motivo e sem confirmação.
+ *
+ * A REGRA "ROTA NOVA NASCE PRIVADA" CONTINUA VALENDO: quem não está em
+ * `ROTAS_PUBLICAS` nem aqui exige sessão de jogador. E `test/rotas.mjs` cobra
+ * que toda rota `/api/admin/` esteja NESTA lista e em nenhuma outra — uma rota
+ * admin esquecida aqui responderia 401 para o operador certo, e uma rota admin
+ * na lista de públicas seria o incidente inteiro. */
+export const ROTAS_ADMIN = [
+  'GET /api/admin/painel',
+  'GET /api/admin/auditoria',
+];
+
 export const ROTAS_PUBLICAS = [
   'POST /api/auth/cadastrar',
   'POST /api/auth/entrar',
@@ -219,6 +242,30 @@ export const ROTAS = {
     return { corpo: v };
   },
 
+  /* ── F1.11 · ADMIN ────────────────────────────────────────────────────
+   *
+   * ROTA ADMIN NÃO É ROTA DE JOGADOR COM UM `if`. A sessão do produto NÃO
+   * autoriza nada aqui: o operador é uma identidade separada, num cabeçalho
+   * separado, e a autorização é por papel.
+   *
+   * A razão é o §5.11 — esta é a superfície de maior valor do sistema. Se o
+   * mesmo token servisse para as duas coisas, um vazamento de sessão de
+   * jogador viraria acesso administrativo, e o raio do incidente passaria a
+   * ser "todo mundo" em vez de "uma conta".
+   *
+   * O cabeçalho é `x-operador`. Não é autenticação de verdade — o operador não
+   * prova quem é, ele se declara — e ISSO ESTÁ REGISTRADO na L-041, com o dono.
+   * O que já existe aqui é a autorização, a auditoria e a confirmação; o que
+   * falta é a prova de identidade, e ela não é escopo deste bloco. */
+  'GET /api/admin/painel': ({ db, cabecalhos }) =>
+    comOperador(db, cabecalhos, 'painel.ver', 'consulta do painel',
+      () => ({ corpo: painelEconomico(db) })),
+
+  'GET /api/admin/auditoria': ({ db, cabecalhos }) =>
+    comOperador(db, cabecalhos, 'painel.ver', 'consulta da auditoria',
+      () => ({ corpo: { registros: db.prepare(
+        `SELECT * FROM admin_auditoria ORDER BY criado_em DESC LIMIT 200`).all() } })),
+
   'POST /api/aposta/cancelar': ({ db, sched, userId, agora }) => {
     try { return { corpo: cancelar(db, { sched, userId, agora }) }; }
     catch (e) { return daExcecao(e); }
@@ -313,4 +360,21 @@ export function usuarioDa(req, config, agora) {
   if (!token) return null;
   const s = lerSessao({ segredo: config.segredoSessao, token, agora });
   return s?.userId ?? null;
+}
+
+/* Toda rota admin passa por aqui, e é isso que impede um caminho novo de
+   esquecer uma das camadas. `agir` recusa sem operador, sem papel, sem motivo e
+   sem confirmação — e grava a auditoria antes de executar. */
+function comOperador(db, cabecalhos, acao, motivo, executar) {
+  const id = cabecalhos?.['x-operador'];
+  if (!id) return erro(401, ERROS.NAO_AUTORIZADO, 'rota administrativa exige operador');
+  try {
+    return agir(db, { operadorId: id, acao, motivo }, executar);
+  } catch (e) {
+    if (e.codigo === ERRO_ADMIN.SEM_OPERADOR || e.codigo === ERRO_ADMIN.SEM_PAPEL)
+      /* MESMA RESPOSTA PARA "não existe" e "não pode". Distinguir as duas
+         transforma a rota num verificador de ids de operador. */
+      return erro(403, ERROS.NAO_AUTORIZADO, 'sem permissão');
+    throw e;
+  }
 }

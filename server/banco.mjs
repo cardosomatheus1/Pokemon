@@ -518,6 +518,68 @@ export const MIGRACOES = [
       db.exec(`ALTER TABLE users DROP COLUMN ruina_em`);
     },
   },
+
+  /* ── F1.11 · TELEMETRIA E ADMINISTRAÇÃO ───────────────────────────────────
+   *
+   * TRÊS TABELAS, e a primeira tem uma coluna que explica o bloco inteiro:
+   * `amostravel`. O §4.7 fecha a lista de eventos de proteção com uma frase
+   * que não é sugestão — "nenhum destes eventos pode ser amostrado: são
+   * registro de conformidade, não métrica de produto".
+   *
+   * Amostragem é a otimização óbvia de qualquer telemetria com volume, e é por
+   * isso que a proibição precisa morar no ESQUEMA e não numa convenção: o dia
+   * em que alguém ligar amostragem para conter custo, os eventos de proteção
+   * precisam recusar em vez de participar.
+   *
+   * `admin_operadores` e `admin_auditoria` existem pelo §5.11: o painel é a
+   * superfície de maior valor do sistema. Nenhuma ação administrativa sem
+   * operador identificado, e nenhuma sem registro — a auditoria não é log, é
+   * parte do produto. */
+  {
+    nome: 'telemetria-admin-17',
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE telemetry_events (
+          id          TEXT PRIMARY KEY,
+          nome        TEXT NOT NULL,
+          user_id     TEXT REFERENCES users(id) ON DELETE SET NULL,
+          round_id    TEXT,
+          amostravel  INTEGER NOT NULL DEFAULT 1 CHECK (amostravel IN (0, 1)),
+          campos      TEXT NOT NULL,
+          criado_em   INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE INDEX idx_telemetria_nome ON telemetry_events(nome, criado_em)`);
+      db.exec(`CREATE INDEX idx_telemetria_user ON telemetry_events(user_id, criado_em)`);
+
+      db.exec(`
+        CREATE TABLE admin_operadores (
+          id        TEXT PRIMARY KEY,
+          email     TEXT NOT NULL UNIQUE,
+          papel     TEXT NOT NULL CHECK (papel IN ('leitura', 'suporte', 'economia', 'dono')),
+          ativo     INTEGER NOT NULL DEFAULT 1 CHECK (ativo IN (0, 1)),
+          criado_em INTEGER NOT NULL
+        )`);
+
+      /* A AUDITORIA GUARDA O ANTES E O DEPOIS. "Fulano mudou a margem" não
+         responde nada seis meses depois; "de 0,08 para 0,12" responde. */
+      db.exec(`
+        CREATE TABLE admin_auditoria (
+          id          TEXT PRIMARY KEY,
+          operador_id TEXT NOT NULL REFERENCES admin_operadores(id),
+          acao        TEXT NOT NULL,
+          alvo        TEXT,
+          de          TEXT,
+          para        TEXT,
+          motivo      TEXT NOT NULL,
+          criado_em   INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE INDEX idx_auditoria_operador ON admin_auditoria(operador_id, criado_em)`);
+    },
+    desce: db => {
+      for (const t of ['admin_auditoria', 'admin_operadores', 'telemetry_events'])
+        db.exec(`DROP TABLE IF EXISTS ${t}`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

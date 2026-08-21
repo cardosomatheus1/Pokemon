@@ -22,7 +22,7 @@ import { abrirBanco, migrar } from './banco.mjs';
 import { criarScheduler } from './scheduler.mjs';
 import { criarSala } from './transporte.mjs';
 import { criarLaco } from './laco.mjs';
-import { ROTAS, ROTAS_PUBLICAS, usuarioDa } from './rotas.mjs';
+import { ROTAS, ROTAS_PUBLICAS, ROTAS_ADMIN, usuarioDa } from './rotas.mjs';
 
 /* CABEÇALHOS DE SEGURANÇA, em toda resposta, inclusive nas de erro.
  *
@@ -168,7 +168,14 @@ export function criarServidor(opcoes = {}) {
          serem aplicados na saída e da versão ser conferida antes do
          roteamento: garantia que depende de lembrança é garantia ausente. */
       let userId = null;
-      if (!ROTAS_PUBLICAS.includes(chave) && !SEM_VERSAO.includes(caminho)) {
+      /* AS ADMINISTRATIVAS PULAM A SESSÃO DE JOGADOR, e não porque sejam
+         abertas: elas exigem IDENTIDADE DE OPERADOR, que é outra coisa e é
+         conferida dentro da própria rota por `comOperador`. Misturar as duas
+         faria um vazamento de sessão de jogador virar acesso administrativo.
+         `test/rotas.mjs` cobra que toda rota `/api/admin/` esteja declarada
+         em `ROTAS_ADMIN` e em nenhuma outra lista. */
+      if (!ROTAS_PUBLICAS.includes(chave) && !ROTAS_ADMIN.includes(chave)
+          && !SEM_VERSAO.includes(caminho)) {
         userId = usuarioDa(req, config, relogio());
         if (!userId)
           return responder(res, 401, { codigo: ERROS.NAO_AUTORIZADO,
@@ -191,7 +198,11 @@ export function criarServidor(opcoes = {}) {
       if (corpo === Symbol.for('grande'))
         return responder(res, 413, { codigo: ERROS.ENTRADA_INVALIDA, erro: 'corpo grande demais' });
 
-      const saida = await fn({ query: url.searchParams, corpo, req, config, userId });
+      /* `cabecalhos` vai junto porque as rotas admin do F1.11 leem `x-operador`
+         — a identidade do operador é SEPARADA da sessão do jogador, e por isso
+         não cabe no `userId`. */
+      const saida = await fn({ query: url.searchParams, corpo, req, config, userId,
+                               cabecalhos: req.headers });
       if (saida?.status && saida.status >= 400) return responder(res, saida.status, saida.corpo);
       return responder(res, saida?.status || 200, saida?.corpo ?? null);
 

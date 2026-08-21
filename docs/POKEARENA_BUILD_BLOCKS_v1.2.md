@@ -1825,6 +1825,33 @@ dizendo "ninguém pega" quando a verdade é "ninguém perguntou".
 **Deixou aberto:** a **L-039**, que o **F1.16** fecha.
 
 
+### F1.17 — O operador do painel prova quem é
+
+**Tam.** M · **Método** INV · **Portões** Q1 Q2 Q6 · **Depende de** F1.11
+· **BLOQUEIA a exposição do painel em rede aberta**
+
+**Por que ele existe:** proposto no F1.11, ao fechar a **L-041**. Aquele bloco
+construiu autorização, auditoria e confirmação; o operador ainda chega num
+cabeçalho `x-operador` com o próprio id, e o servidor confia.
+
+Construir meia autenticação junto teria sido pior que nenhuma — ela pareceria
+proteção. Autenticação de operador precisa de credencial separada da do jogador,
+segundo fator e rotação, e cada uma é decisão de produto.
+
+**Escopo:** credencial própria por operador, segundo fator, expiração e rotação
+de sessão administrativa, e registro de login de operador na mesma auditoria que
+já existe.
+
+**Critério de saída:** um id de operador vazado não abre nada.
+
+**Sabotagem declarada:**
+- aceitar a sessão do JOGADOR como credencial de operador
+- sessão administrativa sem expiração
+- login de operador fora da auditoria — quem entrou é a primeira pergunta
+- distinguir "senha errada" de "operador não existe", que é o enumerador do §5.11
+
+---
+
 ### F1.16 — O cliente não é fonte de dinheiro nem por um instante
 
 **Tam.** P · **Método** INV · **Portões** Q1 Q2 Q6 · **Depende de** F1.14
