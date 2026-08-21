@@ -73,6 +73,17 @@ import * as visual from './visual.mjs';
  * ser é pior que portão ausente — é a mesma lição do `sabotagem:tocados`, e é
  * por isso que o `npm run portoes` recusa a bandeira. */
 const argSo = process.argv.find(a => a.startsWith('--so='));
+/* `--sem-navegador` — TODAS as suítes menos as que precisam de Chromium (D-017).
+ *
+ * O `npm run rapido` carregava a lista à mão, e ela cobria 21 das 35 suítes que
+ * não precisam de navegador: catorze ficaram de fora porque ninguém lembrou de
+ * acrescentá-las quando nasceram. Uma lista escrita à mão de coisas que crescem
+ * dessincroniza — é a mesma razão de as pastas da caixa de areia virem do `git`
+ * e não de um `ARQUIVOS` manual.
+ *
+ * Aqui a lista é DERIVADA: tudo que não está em `COM_NAVEGADOR`. Suíte nova
+ * entra sozinha, e não há como esquecer. */
+const semNavegador = process.argv.includes('--sem-navegador');
 const SO = argSo ? argSo.slice(5).split(',').map(x => x.trim()).filter(Boolean) : null;
 const querSo = nome => !SO || SO.includes(nome);
 
@@ -271,7 +282,11 @@ const todas = [
   informacao.suite(), margem.suite(),
 ];
 
-const suites = SO ? todas.filter(x => querSo(x.nome)) : todas;
+/* D-017 · `--sem-navegador` é DERIVADO, e por isso não dessincroniza: suíte
+   nova que não precise de Chromium entra sozinha. */
+const suites = SO ? todas.filter(x => querSo(x.nome))
+  : semNavegador ? todas.filter(x => !COM_NAVEGADOR.includes(x.nome))
+  : todas;
 if (SO) {
   const orfas = SO.filter(n => !todas.some(x => x.nome === n));
   if (orfas.length) {

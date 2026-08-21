@@ -24,7 +24,9 @@ import { abrirBanco, migrar } from '../server/banco.mjs';
 import {
   criarScheduler, ESTADOS, FASE_MS,
 } from '../server/scheduler.mjs';
-import { digital as digitalNode } from './rodada-digital.mjs';
+import { criarDigital } from '../engine/rodada-digital.mjs';
+import packEscolhido from '../content/escolhido.mjs';
+const { digital: digitalNode } = criarDigital(packEscolhido);
 import { M } from '../server/rodada.mjs';
 
 const SIMS_TESTE = 800;   // lote curto: o que se testa aqui é o CICLO, não o preço

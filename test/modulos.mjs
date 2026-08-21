@@ -6,7 +6,7 @@
  * qualquer coisa puxando o motor de volta para a UI.
  */
 import { readFileSync, readdirSync } from 'node:fs';
-import { criarSuite, ok } from './harness.mjs';
+import { criarSuite, ok, igual } from './harness.mjs';
 
 const DIR = new URL('../app/modules/', import.meta.url);
 const APP = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
@@ -306,6 +306,40 @@ export function suite() {
     for (const mod of ['sprites', 'render', 'efeitos', 'clima'])
       ok(new RegExp(`from ['"]\\./modules/${mod}\\.mjs['"]`).test(APP),
         `o app não importa ./modules/${mod}.mjs`);
+  });
+
+  /* ── D-019 · PRODUÇÃO NÃO IMPORTA DE `test/` ───────────────────────────
+   *
+   * Havia uma ocorrência: `server/servidor.mjs` importava
+   * `test/rodada-digital.mjs` para servir a rota da digital. Não quebrava nada
+   * — o repositório inteiro é a unidade de entrega —, mas um deploy que
+   * empacotasse o conjunto natural falharia no import antes de abrir a porta,
+   * no primeiro deploy real.
+   *
+   * A guarda existe porque a próxima ocorrência nasceria igual: o arquivo de
+   * teste está ali, exporta o que se precisa, e importar dele parece
+   * inofensivo. */
+  s.teste('nada de produção importa de `test/`', () => {
+    const achados = [];
+    for (const dir of ['engine', 'server', 'content', 'app/modules']) {
+      const base = new URL(`../${dir}/`, import.meta.url).pathname;
+      for (const f of readdirSync(base)) {
+        if (!f.endsWith('.mjs')) continue;
+        const txt = readFileSync(base + f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ' ');
+        for (const m of txt.matchAll(/from\s+['"]([^'"]*\/test\/[^'"]*)['"]/g))
+          achados.push(`${dir}/${f} → ${m[1]}`);
+      }
+    }
+    const html = readFileSync(new URL('../app/index.html', import.meta.url).pathname, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ');
+    for (const m of html.matchAll(/from\s+['"]([^'"]*\/test\/[^'"]*)['"]/g))
+      achados.push(`app/index.html → ${m[1]}`);
+
+    igual(achados.length, 0,
+      `código de produção importando de \`test/\`:\n      ${achados.join('\n      ')}\n` +
+      `      Um deploy que empacote só \`server/\`, \`engine/\`, \`content/\` e ` +
+      `\`app/\` falha no import antes de abrir a porta — e o sintoma aparece no ` +
+      `primeiro deploy real, que é o pior momento para descobri-lo.`);
   });
 
   return s;

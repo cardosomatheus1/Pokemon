@@ -19,7 +19,9 @@ import { createServer, request as httpRequest } from 'node:http';
 import { readFileSync, existsSync } from 'node:fs';
 import { extname, join, sep } from 'node:path';
 import { criarSuite, igual, ok } from './harness.mjs';
-import { digital as digitalNode, rodada as rodadaNode } from './rodada-digital.mjs';
+import { criarDigital } from '../engine/rodada-digital.mjs';
+import packEscolhido from '../content/escolhido.mjs';
+const { digital: digitalNode, rodada: rodadaNode } = criarDigital(packEscolhido);
 import { VEU_MAX, sortearArena } from '../app/modules/arenas-dados.mjs';
 import { CONF as MOTOR_CONF } from '../engine/engine.mjs';
 const CONF_SIMS = MOTOR_CONF.SIMS;
@@ -232,7 +234,7 @@ export async function capturarBase() {
  * lugar clássico: aritmética que escapou de `| 0` / `>>> 0` e virou float de
  * 53 bits num lado só.
  *
- * O navegador importa `test/rodada-digital.mjs` — o MESMO arquivo que o Node
+ * O navegador importa `engine/rodada-digital.mjs` — o MESMO arquivo que o Node
  * usa. Comparar duas implementações parecidas provaria bem menos.            */
 export async function digitaisNoNavegador(raizes) {
   const { chromium } = await import(PW);
@@ -243,7 +245,9 @@ export async function digitaisNoNavegador(raizes) {
   pg.on('pageerror', e => erros.push(String(e).split('\n')[0]));
   await pg.goto(`http://127.0.0.1:${porta}/__q3.html`, { waitUntil: 'load', timeout: 60000 });
   const out = await pg.evaluate(async lista => {
-    const { digital } = await import('/test/rodada-digital.mjs');
+    const { criarDigital } = await import('/engine/rodada-digital.mjs');
+    const pack = (await import('/content/escolhido.mjs')).default;
+    const { digital } = criarDigital(pack);
     return lista.map(digital);
   }, raizes);
   await b.close(); s.close();

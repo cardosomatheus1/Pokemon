@@ -949,7 +949,7 @@ que a suíte existe para pegar, a condição nunca fecha e a espera estoura.
 
 ---
 
-## D-017 — `npm run rapido` cobre 21 suítes das 35 que não precisam de navegador
+## D-017 — `npm run rapido` cobre 21 suítes das 35 que não precisam de navegador ✅ CORRIGIDO
 
 **Achado em:** F1.14 · **Bloco dono:** **T5** · **Medido:** 261 de 596 testes
 
@@ -987,6 +987,17 @@ puro, fora do escopo de um bloco que muda o laço de jogo. E a correção certa
 não é acrescentar catorze nomes à lista — é fazer a lista deixar de existir,
 porque **derivar não pode dessincronizar**. Isso é um bloco, não um remendo.
 
+
+**CORRIGIDO.** A lista deixou de ser escrita à mão: `--sem-navegador` roda tudo
+que não está em `COM_NAVEGADOR`. Suíte nova entra sozinha.
+
+Medido: a cobertura passou de **264 para 663 testes** na mesma execução — as
+catorze suítes que faltavam eram as que nasceram depois de alguém escrever a
+lista, exatamente como a lacuna previa.
+
+E a derivação achou um defeito na primeira execução: `engine/rodada-digital.mjs`
+importando de `content/`. A lista à mão o teria escondido, porque a suíte que o
+pega não estava nela.
 ---
 
 ## D-018 — a raiz da rodada cabia num brute force ✅ CORRIGIDO no F1.15
@@ -1123,7 +1134,7 @@ raiz.
 
 ---
 
-## D-019 — o servidor de produção importa um arquivo de `test/`
+## D-019 — o servidor de produção importa um arquivo de `test/` ✅ CORRIGIDO
 
 **Achado em:** F1.14 (lendo os pontos de contato do F1.15) · **Bloco dono:**
 **F1.15** · **Gravidade:** latente — não quebra hoje
@@ -1161,6 +1172,19 @@ vem com a guarda que faltava: **nada em `server/`, `engine/`, `content/` ou
 arquivo em outro commit faria o diff do F1.15 misturar a mudança de endereço com
 a de tipo, e uma esconderia a outra.
 
+
+**CORRIGIDO.** `test/rodada-digital.mjs` virou `engine/rodada-digital.mjs` —
+reconstruir a rodada a partir da raiz é motor, não teste. E veio com a guarda
+que faltava: **nada em `engine/`, `server/`, `content/` ou `app/` importa de
+`test/`**, verificada em `test/modulos.mjs`. Sem a guarda, a próxima ocorrência
+nasceria igual: o arquivo está ali, exporta o que se precisa, e importar dele
+parece inofensivo.
+
+**A mudança de endereço achou outra coisa.** A primeira versão importava o
+ContentPack escolhido, e a suíte reprovou na hora: *o motor não importa nada de
+`content/`* — a dependência é ao contrário, e é o §0.3 inteiro. Virou fábrica,
+`criarDigital(pack)`, na mesma forma do `criarMotor(pack)` que já existia. Quem
+chama liga o pack; o módulo continua sem saber de tema nenhum.
 ---
 
 ## D-020 — valor ilegível de limite virava PEDIDO DE REMOÇÃO ✅ CORRIGIDO

@@ -319,7 +319,7 @@ pack entra como `sprite as enderecoSprite`: o lutador já tem um campo
 A lista de nomes proibidos de `test/fonte-unica.mjs` guardou os apelidos
 removidos — reaparecer é regressão desta lacuna, não conveniência.
 
-### L-021 — o motor exige um pool de golpes chamado `normal`
+### L-021 — o motor exige um pool de golpes chamado `normal` ✅ FECHADA
 
 **Dono:** F1.12 · **Notada em:** F0.4
 
@@ -437,6 +437,14 @@ O que foi feito:
 > estava errado por um fator de sessenta porque ninguém tinha medido. **Medir
 > antes de mexer** valeu aqui para não mexer.
 
+
+**FECHADA no F1.12.** O pack passou a DECLARAR qual dos seus pools é o de
+reserva (`poolReserva`). Quem não declarar continua valendo se tiver um
+`normal`, porque o pack de desenvolvimento tem e mudar o arquivo dele seria
+mexer no que já foi medido.
+
+A lacuna virou bloqueio real quando o `original_v1` chegou: a roda dele tem oito
+tipos e nenhum genérico, e ele era recusado no carregamento **por um nome**.
 ---
 
 

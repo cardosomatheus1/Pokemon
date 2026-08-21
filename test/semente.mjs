@@ -22,7 +22,9 @@ import packKanto from '../content/pokemon_kanto_v1.mjs';
 /* A reconstrução mora em arquivo próprio porque o portão Q5 importa a MESMA
    fonte dentro do Chromium — é assim que "dois ambientes JS distintos" vira
    comparação de verdade, e não de dois códigos parecidos. */
-import { digital, rodada } from './rodada-digital.mjs';
+import { criarDigital } from '../engine/rodada-digital.mjs';
+import packEscolhido from '../content/escolhido.mjs';
+const { digital, rodada } = criarDigital(packEscolhido);
 import { precificar, simularLote } from '../engine/preco.mjs';
 import { M } from './motor.mjs';
 

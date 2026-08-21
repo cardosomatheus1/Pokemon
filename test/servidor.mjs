@@ -21,7 +21,9 @@
 import { criarSuite, ok, igual } from './harness.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import { API_VERSAO } from '../server/contrato.mjs';
-import { digital as digitalNode } from './rodada-digital.mjs';
+import { criarDigital } from '../engine/rodada-digital.mjs';
+import packEscolhido from '../content/escolhido.mjs';
+const { digital: digitalNode } = criarDigital(packEscolhido);
 
 /* Sobe, roda, derruba. O `try/finally` é obrigatório: servidor que vaza numa
    falha de teste segura a porta e a próxima execução falha por motivo errado. */
