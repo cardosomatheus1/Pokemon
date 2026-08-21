@@ -14,6 +14,8 @@ import {
   recompensaDeDesafio, emissaoSemanalMaxima, semanaDe,
   ORCAMENTO_AGREGADO_SEMANAL, ORCAMENTO_DESAFIOS_SEMANAL, ORCAMENTO_LOGIN_SEMANAL,
   TETO_SALDO_PC_B, MARCO_SEMANAL, SUBSTITUTOS,
+  avaliarResgate, RESGATE_VALOR, RESGATE_RECUSA, RESGATE_COOLDOWN_MS,
+  ORCAMENTO_ROTINEIRO_SEMANAL,
 } from '../engine/emissao.mjs';
 
 const estudo = () => readFileSync(
@@ -176,6 +178,99 @@ export function suite() {
     /* 31/12/2026 é quinta; 01/01/2027 é sexta. Mesma semana ISO. */
     igual(semanaDe('2026-12-31'), semanaDe('2027-01-01'),
       'a virada do ano partiu uma semana em duas, e o orçamento dobra nela');
+  });
+
+  /* ── O RESGATE DO §28.8 (F1.10) ────────────────────────────────────────
+   *
+   * A regra que define este mecanismo é NEGATIVA: o valor não pode escalar com
+   * a perda. Um teste que só verificasse "concede quando deve" passaria com uma
+   * implementação proporcional — por isso o primeiro teste aqui é sobre o que a
+   * função NÃO faz.
+   */
+  const base = { saldoTotal: 0, ruinaEm: 0, agora: RESGATE_COOLDOWN_MS + 1,
+                 recebidosNaSemana: 0, jaEmitidoNaSemana: 0 };
+
+  s.teste('§28.8 · o valor NÃO escala com a perda', () => {
+    /* A função não recebe perda nenhuma — e é essa ausência que garante a
+       regra. O teste confere a ausência no CONTRATO, não no resultado: passar
+       perdas diferentes e ver o mesmo número provaria pouco, porque a próxima
+       versão poderia ler a perda de outro lugar. */
+    const fonte = readFileSync(new URL('../engine/emissao.mjs', import.meta.url).pathname, 'utf8');
+    const corpo = fonte.slice(fonte.indexOf('export function avaliarResgate'));
+    /* SEM COMENTÁRIOS. Eles EXPLICAM a regra e por isso citam a palavra que a
+       regra proíbe — varrê-los reprovaria a documentação correta. É a mesma
+       máscara que o teste do D-007 usa, e pelo mesmo motivo. */
+    const ate = corpo.slice(0, corpo.indexOf('\n}'))
+      .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ');
+    for (const proibido of ['perda', 'perdido', 'prejuizo', 'stake', 'apostado'])
+      ok(!new RegExp(`\\b${proibido}`, 'i').test(ate),
+        `\`avaliarResgate\` menciona "${proibido}". O §28.8 é explícito: valor ` +
+        `fixo, nunca proporcional à perda — um grant que escala com o quanto o ` +
+        `jogador perdeu ensina exatamente o comportamento errado.`);
+
+    /* E o resultado, para o caso de a palavra mudar de nome: dois cenários de
+       ruína idênticos em tudo menos no quanto se perdeu antes dão o MESMO
+       valor, porque não há por onde a perda entrar. */
+    igual(avaliarResgate(base).valor, RESGATE_VALOR, 'o valor concedido não é o fixo');
+  });
+
+  s.teste('§28.8 · um por semana', () => {
+    igual(avaliarResgate({ ...base, recebidosNaSemana: 1 }).conceder, false,
+      'o segundo resgate da semana foi concedido');
+    igual(avaliarResgate({ ...base, recebidosNaSemana: 1 }).motivo,
+      RESGATE_RECUSA.JA_NA_SEMANA, 'a recusa não diz que já houve um');
+  });
+
+  s.teste('§28.8 · o cooldown conta da RUÍNA, e não do pedido', () => {
+    const r = avaliarResgate({ ...base, ruinaEm: 1000, agora: 1000 + RESGATE_COOLDOWN_MS - 1 });
+    igual(r.conceder, false, 'o resgate saiu antes das 24 h');
+    igual(r.motivo, RESGATE_RECUSA.COOLDOWN, 'a recusa não é por cooldown');
+    igual(r.liberaEm, 1000 + RESGATE_COOLDOWN_MS,
+      'a recusa não diz QUANDO libera — parede sem porta, como no §28.3');
+    ok(avaliarResgate({ ...base, ruinaEm: 1000, agora: 1000 + RESGATE_COOLDOWN_MS }).conceder,
+      'exatamente às 24 h ainda recusou');
+  });
+
+  s.teste('§28.8 · proteção ativa bloqueia, e vem ANTES de tudo', () => {
+    /* Ordem importa: quem está em cool-off e cumpre todas as outras condições
+       não pode receber. Dar dinheiro a quem pediu para parar desfaz o pedido
+       dele com um presente. */
+    const r = avaliarResgate({ ...base, protecaoAtiva: true });
+    igual(r.conceder, false, 'concedeu resgate a conta em pausa');
+    igual(r.motivo, RESGATE_RECUSA.PROTECAO, 'a recusa não aponta a proteção');
+    igual(avaliarResgate({ ...base, sinaisDeRisco: 1 }).motivo, RESGATE_RECUSA.RISCO,
+      'sinal de risco aceso não bloqueou o resgate');
+  });
+
+  s.teste('§28.8 · quem ainda tem saldo não é resgatado', () => {
+    igual(avaliarResgate({ ...base, saldoTotal: 1 }).motivo, RESGATE_RECUSA.TEM_SALDO,
+      'resgatou quem não estava em ruína');
+  });
+
+  /* ── O POTE É UM SÓ ─────────────────────────────────────────────────────
+   *
+   * O Estudo §6: "login consome até 50 e deixa até 30 para desafios/rescue/
+   * missões". São 30 para os TRÊS. Ler como 30 para cada um põe a emissão
+   * agregada acima do teto sem ninguém mexer em número nenhum — é o D-007
+   * noutra escala, e é o erro mais fácil de cometer aqui. */
+  s.teste('o resgate e os desafios competem pelo MESMO orçamento', () => {
+    igual(ORCAMENTO_ROTINEIRO_SEMANAL, ORCAMENTO_DESAFIOS_SEMANAL,
+      'o resgate ganhou um orçamento próprio. São 30 para desafios, resgate E ' +
+      'missões somados — orçamento separado põe a emissão agregada acima de 80.');
+    const quaseCheio = ORCAMENTO_ROTINEIRO_SEMANAL - RESGATE_VALOR + 1;
+    igual(avaliarResgate({ ...base, jaEmitidoNaSemana: quaseCheio }).motivo,
+      RESGATE_RECUSA.ORCAMENTO,
+      'o resgate saiu com o pote quase vazio, e a soma passou do orçamento');
+  });
+
+  s.teste('a soma do pior caso não passa do orçamento agregado', () => {
+    /* O teto do documento é 80/semana: até 50 de login e até 30 do pote
+       rotineiro. O pior caso é o pote inteiro sair. */
+    const pior = ORCAMENTO_LOGIN_SEMANAL + ORCAMENTO_ROTINEIRO_SEMANAL;
+    igual(pior, ORCAMENTO_AGREGADO_SEMANAL,
+      `o pior caso emite ${pior} PC-B/semana e o orçamento agregado é ` +
+      `${ORCAMENTO_AGREGADO_SEMANAL}. É a conta que o D-007 pedia que alguém ` +
+      `fizesse, agora com o resgate dentro dela.`);
   });
 
   return s;

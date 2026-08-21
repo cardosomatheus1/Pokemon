@@ -108,6 +108,96 @@ export function recompensaDeDesafio({ concluidosNaSemana, jaEmitidoNaSemana, sal
            motivo: 'marco_pago' };
 }
 
+/* ── O RESGATE DO §28.8 ─────────────────────────────────────────────────────
+ *
+ * O §0.4 lista `rescue grant` entre os faucets de PC-B, e o §28.8 o cerca:
+ *
+ *     rescue_grant_max_por_semana   = 1
+ *     rescue_grant_valor            = fixo, nunca proporcional à perda
+ *     rescue_grant_cooldown         = 24 h após a ruína, não imediato
+ *     rescue_grant_bloqueado_se     = cooloff | self_exclusion | sinal de risco
+ *
+ * **A regra do valor fixo é a que importa.** Um grant que escala com o quanto o
+ * jogador perdeu ensina exatamente o comportamento errado: perder mais passa a
+ * render mais. É o item nº 1 da sabotagem deste bloco.
+ *
+ * ── O ORÇAMENTO É UM SÓ, E ISSO PRECISOU SER DECIDIDO ──────────────────────
+ *
+ * O Estudo Econômico §6 diz: "login consome até 50 e deixa até **30** para
+ * desafios/rescue/missões". São 30 para os TRÊS, e não 30 para cada um — a
+ * leitura errada põe a emissão agregada acima do teto de 80 sem ninguém mexer
+ * em número nenhum. Foi o defeito D-007 noutra escala.
+ *
+ * Então o resgate consulta o MESMO `jaEmitidoNaSemana` que os desafios
+ * consultam, e os dois competem pelo mesmo pote. Quem chegar primeiro leva; o
+ * segundo recebe substituto. Nenhum dos dois precisa saber do outro — o
+ * contador é a única coisa que os liga, e é o que impede a soma de estourar.
+ *
+ * ── O VALOR É DECISÃO DESTE BLOCO, E NÃO ESTÁ CALIBRADO ────────────────────
+ *
+ * O §28.8 exige que o valor seja fixo e não diz qual. Vinte PC-B é o que cabe
+ * no pote sem consumi-lo inteiro, deixando dez para os desafios da mesma
+ * semana. NÃO é um número medido: até haver coorte não há de onde calibrá-lo,
+ * e isso está registrado na **L-040**, junto com o que a destrava. */
+export const ORCAMENTO_ROTINEIRO_SEMANAL = ORCAMENTO_DESAFIOS_SEMANAL;
+export const RESGATE_VALOR = 20;
+export const RESGATE_MAX_POR_SEMANA = 1;
+export const RESGATE_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
+/* Os motivos de recusa. Nomeados porque a telemetria do §4.7 grava
+   `rescue_grant_blocked_by_policy` e "bloqueado" sem o porquê não responde
+   nada — nem para o jogador, nem para quem lê o painel depois. */
+export const RESGATE_RECUSA = {
+  PROTECAO:    'protecao_ativa',
+  RISCO:       'sinal_de_risco',
+  COOLDOWN:    'cooldown_de_24h',
+  JA_NA_SEMANA:'ja_recebeu_nesta_semana',
+  TEM_SALDO:   'ainda_tem_saldo',
+  ORCAMENTO:   'orcamento_da_semana',
+};
+
+/* Recebe o estado e devolve o que fazer. Nunca lê a PERDA — o parâmetro não
+   existe, e essa ausência é a garantia do §28.8: não dá para escalar com algo
+   que a função não recebe.
+ *
+ *   saldoTotal          quanto o jogador tem agora (a ruína é isto ser zero)
+ *   ruinaEm             quando ele zerou; o cooldown conta daí
+ *   agora               o relógio
+ *   recebidosNaSemana   quantos resgates já saíram nesta semana
+ *   jaEmitidoNaSemana   quanto de PC-B rotineiro já saiu — o pote compartilhado
+ *   protecaoAtiva       cool-off ou autoexclusão em curso
+ *   sinaisDeRisco       quantos sinais do §28.6 estão acesos
+ */
+export function avaliarResgate({ saldoTotal, ruinaEm, agora, recebidosNaSemana,
+                                 jaEmitidoNaSemana, protecaoAtiva = false,
+                                 sinaisDeRisco = 0 }) {
+  /* A PROTEÇÃO VEM PRIMEIRO, ANTES DE QUALQUER CONTA. Dar dinheiro a quem pediu
+     para parar é desfazer o pedido dele com um presente — e o §28.4 diz que a
+     pausa é irreversível durante o prazo. */
+  if (protecaoAtiva) return { conceder: false, motivo: RESGATE_RECUSA.PROTECAO, valor: 0 };
+  if (sinaisDeRisco > 0) return { conceder: false, motivo: RESGATE_RECUSA.RISCO, valor: 0 };
+
+  if (saldoTotal > 0) return { conceder: false, motivo: RESGATE_RECUSA.TEM_SALDO, valor: 0 };
+  if (recebidosNaSemana >= RESGATE_MAX_POR_SEMANA)
+    return { conceder: false, motivo: RESGATE_RECUSA.JA_NA_SEMANA, valor: 0 };
+
+  /* O COOLDOWN CONTA DA RUÍNA, e não do pedido. Imediato, o resgate vira a
+     recompensa de ter zerado: perdeu tudo, ganhou de volta, joga de novo. As
+     24 h são o que separa uma rede de segurança de um laço de reengajamento. */
+  if (!Number.isFinite(ruinaEm) || agora - ruinaEm < RESGATE_COOLDOWN_MS)
+    return { conceder: false, motivo: RESGATE_RECUSA.COOLDOWN, valor: 0,
+             liberaEm: Number.isFinite(ruinaEm) ? ruinaEm + RESGATE_COOLDOWN_MS : null };
+
+  const cabe = ORCAMENTO_ROTINEIRO_SEMANAL - jaEmitidoNaSemana;
+  if (cabe < RESGATE_VALOR)
+    return { conceder: false, motivo: RESGATE_RECUSA.ORCAMENTO, valor: 0,
+             substituto: SUBSTITUTOS[0] };
+
+  /* VALOR FIXO. Não há nenhum parâmetro de perda nesta função, e é assim que a
+     regra do §28.8 fica impossível de quebrar por descuido. */
+  return { conceder: true, motivo: 'concedido', valor: RESGATE_VALOR };
+}
+
 /* A emissão semanal MÁXIMA que este desenho permite, por conta. É o número que
    o teste compara com o orçamento do documento — e é a conta que o D-007 pedia
    que alguém fizesse. */

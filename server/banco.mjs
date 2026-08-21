@@ -431,6 +431,93 @@ export const MIGRACOES = [
         db.exec(`ALTER TABLE ${t} DROP COLUMN ${c}`);
     },
   },
+
+  /* ── F1.10 · A PROGRESSÃO SAI DO NAVEGADOR ─────────────────────────────────
+   *
+   * Até aqui XP, medalhas, desafios e trilha de login moravam no
+   * `localStorage`: limpar o navegador apagava semanas de jogo, e forjar
+   * progresso era editar um JSON. O §5.10 quer os dois lados resolvidos.
+   *
+   * QUATRO TABELAS, e a divisão não é arbitrária:
+   *
+   *   player_profile   o que o jogador É — nível, XP, cosméticos escolhidos
+   *   challenges       o que ele TEM PARA FAZER hoje, e o quanto andou
+   *   login_streak     a trilha de dias, que é uma série e não um contador
+   *   rescue_grants    cada resgate concedido, com o motivo e o valor
+   *
+   * O `rescue_grants` guarda até os NEGADOS, com o motivo. Sem eles, "por que
+   * este jogador não recebeu?" não tem resposta, e o §4.7 pede
+   * `rescue_grant_blocked_by_policy` como evento de telemetria — evento sem
+   * registro é número sem auditoria. */
+  {
+    nome: 'progressao-5.10',
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE player_profile (
+          user_id    TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          xp         INTEGER NOT NULL DEFAULT 0 CHECK (xp >= 0),
+          nome       TEXT,
+          avatar     TEXT,
+          banner_dex INTEGER,
+          criado_em  INTEGER NOT NULL,
+          visto_em   INTEGER NOT NULL
+        )`);
+
+      /* UM DESAFIO POR (conta, dia, slot). A chave composta é o que impede
+         reivindicar o mesmo desafio duas vezes — a regra mora no esquema, e
+         não numa checagem que alguém pode esquecer de chamar. É o item nº 4 da
+         sabotagem deste bloco. */
+      db.exec(`
+        CREATE TABLE challenges (
+          user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          dia        TEXT NOT NULL,
+          slot       INTEGER NOT NULL CHECK (slot >= 0 AND slot < 3),
+          tipo       TEXT NOT NULL,
+          alvo       INTEGER NOT NULL CHECK (alvo > 0),
+          progresso  INTEGER NOT NULL DEFAULT 0 CHECK (progresso >= 0),
+          concluido_em INTEGER,
+          pago_em    INTEGER,
+          PRIMARY KEY (user_id, dia, slot)
+        )`);
+
+      /* A TRILHA É UMA SÉRIE, e não um contador. Um `dias_seguidos INTEGER`
+         não distingue "sete dias seguidos" de "sete logins" — e é exatamente
+         essa diferença que o item de sabotagem "farmar streak manipulando
+         fuso horário" ataca. Com uma linha por dia, o servidor recalcula a
+         sequência a partir dos fatos, e o relógio do cliente não participa. */
+      db.exec(`
+        CREATE TABLE login_streak (
+          user_id  TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          dia      TEXT NOT NULL,
+          pcb      INTEGER NOT NULL DEFAULT 0 CHECK (pcb >= 0),
+          criado_em INTEGER NOT NULL,
+          PRIMARY KEY (user_id, dia)
+        )`);
+
+      db.exec(`
+        CREATE TABLE rescue_grants (
+          id        TEXT PRIMARY KEY,
+          user_id   TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          semana    TEXT NOT NULL,
+          concedido INTEGER NOT NULL,
+          valor     INTEGER NOT NULL DEFAULT 0 CHECK (valor >= 0),
+          motivo    TEXT NOT NULL,
+          criado_em INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE INDEX idx_rescue_semana ON rescue_grants(user_id, semana, concedido)`);
+
+      /* A RUÍNA É UM INSTANTE, e o §28.8 conta o cooldown a partir dele. Sem
+         guardá-lo, "24 h após a ruína" viraria "24 h após o pedido" — que é
+         outra regra, e a errada: dá para pedir tarde e receber na hora. */
+      db.exec(`ALTER TABLE users ADD COLUMN ruina_em INTEGER`);
+    },
+    desce: db => {
+      for (const t of ['rescue_grants', 'login_streak', 'challenges', 'player_profile'])
+        db.exec(`DROP TABLE IF EXISTS ${t}`);
+      db.exec(`DROP INDEX IF EXISTS idx_rescue_semana`);
+      db.exec(`ALTER TABLE users DROP COLUMN ruina_em`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

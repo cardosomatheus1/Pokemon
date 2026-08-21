@@ -31,7 +31,11 @@ import { apostar, cancelar, ERRO_APOSTA } from './aposta.mjs';
 import { definirLimite, confirmarAumento, limitesDe, pedidosDe, TIPOS_LIMITE,
          ERRO_LIMITE } from './limites.mjs';
 import { pausar, pausaAtiva, pedirReentrada, concederReentrada, realityCheck,
-         confirmarRealityCheck, DURACOES, TIPOS_PAUSA, ERRO_PROTECAO } from './protecao.mjs';
+         confirmarRealityCheck, sinaisDeRisco, DURACOES, TIPOS_PAUSA,
+         ERRO_PROTECAO } from './protecao.mjs';
+import { perfilDe, desafiosDe, registrarLogin, sequenciaDeLogin, emitidoNaSemana,
+         pedirResgate, marcarRuina } from './progressao.mjs';
+import { BUCKETS } from '../engine/carteira.mjs';
 
 /* AS PÚBLICAS, e cada uma com motivo. Quem ainda não entrou precisa poder criar
    sessão; o estado da rodada é público por desenho (§4.5 — o commit tem que ser
@@ -168,6 +172,51 @@ export const ROTAS = {
                               valor: inteiro(corpo?.valor), agora });
       return { corpo: t };
     } catch (e) { return daExcecao(e); }
+  },
+
+  /* ── F1.10 · PROGRESSÃO ────────────────────────────────────────────────
+   *
+   * NENHUMA destas rotas recebe quanto o jogador progrediu. Elas recebem o que
+   * ele FEZ, e o servidor deriva — é a diferença entre progresso e alegação de
+   * progresso, e é o que separa isto do `localStorage` que ela substitui.
+   *
+   * E nenhuma recebe `userId`: ele sai da SESSÃO, como toda rota daqui. "O
+   * usuário sai da sessão, nunca do pedido" é o que torna "reivindicar
+   * recompensa de outro usuário" impossível em vez de improvável. */
+  'GET /api/perfil': ({ db, userId, agora }) => ({
+    corpo: {
+      perfil: perfilDe(db, { userId, agora }),
+      desafios: desafiosDe(db, { userId, agora }),
+      sequencia: sequenciaDeLogin(db, { userId, agora }),
+      emitido: emitidoNaSemana(db, userId, agora),
+    },
+  }),
+
+  /* O login da trilha é um FATO do servidor: ele acontece quando a sessão
+     aparece, e não quando o cliente pede. A rota existe para o app poder
+     mostrar a trilha logo no boot; chamá-la dez vezes é a mesma coisa que
+     chamá-la uma, porque a linha é única por (conta, dia). */
+  'POST /api/perfil/entrar': ({ db, userId, agora }) => ({
+    corpo: registrarLogin(db, { userId, agora }),
+  }),
+
+  'POST /api/resgate': ({ db, userId, agora }) => {
+    /* OS TRÊS FATOS QUE A DECISÃO PRECISA vêm do servidor, um a um. O cliente
+       não manda saldo (senão mandaria zero), não manda se está em pausa
+       (senão mandaria não), e não manda sinais de risco. */
+/* O disponível, e só ele: o reservado está preso numa aposta viva, e quem
+       tem aposta em curso não está em ruína. */
+    const sd = saldos(db, userId);
+    const saldoTotal = BUCKETS.reduce((a, b) => a + (sd[b] || 0), 0);
+    const pausa = pausaAtiva(db, userId, agora);
+    const sinais = sinaisDeRisco(db, { userId, agora });
+    marcarRuina(db, { userId, saldoTotal, agora });
+    const v = pedirResgate(db, { userId, saldoTotal, protecaoAtiva: !!pausa,
+                                 sinaisDeRisco: sinais.length, agora });
+    if (v.conceder)
+      creditar(db, { userId, tipo: 'RESCUE_GRANT', bucket: 'bonus', valor: v.valor,
+                     idem: `rescue-${userId}-${new Date(agora).toISOString().slice(0, 10)}`, agora });
+    return { corpo: v };
   },
 
   'POST /api/aposta/cancelar': ({ db, sched, userId, agora }) => {

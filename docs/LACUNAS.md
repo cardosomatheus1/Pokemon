@@ -1299,3 +1299,29 @@ antes de criar carteira.
 consultado antes do primeiro `carregar()`. Parece uma linha e não é: `carregar()`
 é chamado de vários lugares, e a versão certa é a fachada saber que, em modo
 servidor, ela não é fonte — não que cada chamador lembre de perguntar.
+
+---
+
+### L-040 — o valor do resgate é chute educado até haver coorte
+
+**Dono:** trilha `dados de produção` · **Mecanismo:** F1.10 · **Notada em:** F1.10
+
+O §28.8 exige que o `rescue grant` tenha valor **fixo** e não diz qual. O F1.10
+escolheu **20 PC-B**: é o que cabe no pote rotineiro de 30 sem consumi-lo
+inteiro, deixando 10 para os desafios da mesma semana.
+
+**Não é um número medido.** A pergunta que o calibra é econômica e precisa de
+gente jogando: *quanto de resgate mantém o jogador arruinado no produto sem
+virar a razão de ele ter zerado?* Alto demais e o resgate ensina que perder tudo
+é o caminho mais curto para receber; baixo demais e ele é teatro — o jogador sai
+mesmo assim, e a proteção do §28 não protege ninguém.
+
+É a mesma classe da **L-011** (limiares de risco) e pelo mesmo motivo: até haver
+coorte, não há de onde calibrar. Ficam nomeados e num lugar só —
+`RESGATE_VALOR` em `engine/emissao.mjs` — para que a calibragem seja uma linha e
+não uma caçada.
+
+**O que a destrava:** o painel do F1.11 com série por conta, e semanas de
+histórico. Duas medidas bastam: quantos jogadores arruinados voltam a jogar
+depois do resgate, e quantos zeram de novo dentro da mesma semana. A segunda
+subindo é o sinal de que o valor virou incentivo.

@@ -81,6 +81,7 @@ const PTXT   = 'app/modules/protecao-texto.mjs';
 const FECHO  = 'test/fecho.mjs';
 const RESULT = 'engine/resultado.mjs';
 const RESTELA= 'app/modules/resultado-tela.mjs';
+const PROGSRV= 'server/progressao.mjs';
 const CARTEIRA= 'app/modules/carteira.mjs';
 const NAVEG  = 'app/modules/navegacao.mjs';
 const RODADA = 'app/modules/rodada.mjs';
@@ -1496,6 +1497,62 @@ export const DEFEITOS = [
     real:'duplo lançamento — os números coincidem quase sempre, e o defeito só aparece no dia em que divergem',
     de:'    if (modoServidor()) {',
     para:'    if (false) {' },
+
+  /* ── F1.10 · PROGRESSÃO, TRILHA E RESGATE ─────────────────────────────── */
+
+  { id:'S261', arquivo:EMISSAO, nome:'o resgate passa a escalar com a perda',
+    real:'"quem perdeu mais precisa de mais" — e o produto ensina que perder rende',
+    de:'  return { conceder: true, motivo: \'concedido\', valor: RESGATE_VALOR };',
+    para:'  return { conceder: true, motivo: \'concedido\', valor: RESGATE_VALOR + Math.floor((arguments[0].perdaRecente || 0) / 10) };' },
+
+  { id:'S262', arquivo:EMISSAO, nome:'o resgate ganha orçamento próprio',
+    real:'"são coisas diferentes" — e a emissão agregada passa de 80 sem ninguém mexer em número',
+    de:'export const ORCAMENTO_ROTINEIRO_SEMANAL = ORCAMENTO_DESAFIOS_SEMANAL;',
+    para:'export const ORCAMENTO_ROTINEIRO_SEMANAL = ORCAMENTO_DESAFIOS_SEMANAL + 30;' },
+
+  { id:'S263', arquivo:EMISSAO, nome:'conta em pausa volta a poder receber resgate',
+    real:'"ele está zerado, é proteção" — e o presente desfaz o pedido de parar',
+    de:"  if (protecaoAtiva) return { conceder: false, motivo: RESGATE_RECUSA.PROTECAO, valor: 0 };",
+    para:'' },
+
+  { id:'S264', arquivo:EMISSAO, nome:'o cooldown do resgate conta do PEDIDO',
+    real:'"24 h desde que ele pediu" — e dá para pedir tarde e receber na hora',
+    de:'  if (!Number.isFinite(ruinaEm) || agora - ruinaEm < RESGATE_COOLDOWN_MS)',
+    para:'  if (false)' },
+
+  { id:'S265', arquivo:PROGSRV, nome:'a ruína é remarcada a cada consulta',
+    real:'"atualizar o carimbo" — e o cooldown reinicia para sempre, porque quem zerou consulta o tempo todo',
+    de:'  if (u?.ruina_em != null) return u.ruina_em;',
+    para:'' },
+
+  { id:'S266', arquivo:PROGSRV, nome:'o desafio já concluído conclui de novo',
+    real:'condição afrouxada — e o mesmo desafio pode ser pago duas vezes',
+    de:"    `SELECT * FROM challenges WHERE user_id = ? AND dia = ? AND tipo = ? AND concluido_em IS NULL`)",
+    para:"    `SELECT * FROM challenges WHERE user_id = ? AND dia = ? AND tipo = ?`)" },
+
+  { id:'S267', arquivo:PROGSRV, nome:'o dia da trilha passa a vir do relógio local',
+    real:'`toLocaleDateString` no lugar do UTC — e trocar o fuso vira um dia novo',
+    de:"export const diaDe = agora => new Date(agora).toISOString().slice(0, 10);",
+    para:"export const diaDe = agora => new Date(agora).toLocaleDateString('en-CA');" },
+
+  { id:'S268', arquivo:PROGSRV, nome:'a sequência de login vira contador',
+    real:'"somar um por login" — e sete logins no mesmo dia fecham a trilha de sete dias',
+    de:'  let n = 0, cursor = diaDe(agora);\n  while (dias.has(cursor)) { n++; cursor = diaAnterior(cursor); }',
+    para:'  const n = db.prepare(`SELECT COUNT(*) c FROM login_streak WHERE user_id = ?`).get(userId).c;' },
+
+  /* REAPONTADO: a primeira versão tirava o clamp de `registrarLogin`, e era
+     MUTANTE EQUIVALENTE — com 7 PC-B/dia × 7 dias = 49 contra um teto de 50, o
+     clamp nunca morde. O que de fato protege o orçamento é o valor diário sair
+     da divisão dele, e é para aí que o defeito aponta agora. */
+  { id:'S269', arquivo:PROGSRV, nome:'a recompensa diária de login vira número escolhido à mão',
+    real:'"10 por dia é mais redondo" — e a trilha passa a emitir 70 contra um orçamento de 50',
+    de:'export const LOGIN_POR_DIA = Math.floor(ORCAMENTO_LOGIN_SEMANAL / TRILHA_DIAS);',
+    para:'export const LOGIN_POR_DIA = 10;' },
+
+  { id:'S270', arquivo:PROGSRV, nome:'o XP entra sem motivo',
+    real:'"o motivo é opcional" — e a curva de progressão vira número sem origem',
+    de:"  if (!motivo) throw erro('xp_invalido', 'XP sem motivo não é auditável');",
+    para:'' },
 
   { id:'S224', arquivo:FECHO, nome:'o fecho para de seguir os imports do filho',
     real:'somar só o arquivo do script — mudar o que ele importa deixa de invalidar',

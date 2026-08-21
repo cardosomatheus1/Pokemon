@@ -435,5 +435,80 @@ export async function suite() {
     });
   });
 
+  /* ── F1.10 · O Q6 DA PROGRESSÃO ────────────────────────────────────────
+   *
+   * Os três ataques que o bloco declara, pela porta:
+   *
+   *   reivindicar recompensa de outro usuário
+   *   forjar progresso de desafio pelo cliente
+   *   farmar login streak manipulando fuso horário
+   */
+  s.teste('não dá para pedir resgate nem perfil em nome de outro', async () => {
+    await comServico(async ({ porta }) => {
+      const a = await conta(porta, 'a'); const b = await conta(porta, 'b');
+      /* O corpo manda o id do OUTRO. A rota lê o dono da sessão, e o campo é
+         ignorado — não recusado com erro, IGNORADO, porque recusar seria
+         admitir que o campo existe. */
+      const r = await pedir(porta, '/api/perfil', { sessao: a.sessao });
+      igual(r.corpo.perfil.user_id, a.id, 'a rota devolveu o perfil de outra conta');
+
+      const res = await pedir(porta, '/api/resgate', { metodo: 'POST', sessao: a.sessao,
+                                                       corpo: { userId: b.id } });
+      ok(res.status < 500, 'a rota quebrou com userId no corpo');
+      const doB = await pedir(porta, '/api/perfil', { sessao: b.sessao });
+      igual(doB.corpo.perfil.xp, 0,
+        'o pedido de A mexeu no perfil de B. O usuário sai da SESSÃO, nunca do ' +
+        'pedido — e é isso que torna "reivindicar recompensa de outro" ' +
+        'impossível em vez de improvável.');
+    });
+  });
+
+  s.teste('o cliente NÃO consegue declarar progresso de desafio', async () => {
+    await comServico(async ({ porta }) => {
+      const a = await conta(porta, 'a');
+      const antes = (await pedir(porta, '/api/perfil', { sessao: a.sessao })).corpo.desafios;
+      /* Não existe rota para isso, e é essa AUSÊNCIA que é a garantia. O teste
+         tenta as formas óbvias: se qualquer uma responder 2xx, nasceu uma
+         porta que ninguém queria. */
+      for (const [m, c, corpo] of [
+        ['POST', '/api/desafio', { slot: 0, progresso: 999 }],
+        ['POST', '/api/perfil/desafio', { slot: 0, progresso: 999 }],
+        ['POST', '/api/perfil', { xp: 999999 }],
+        ['POST', '/api/progresso', { slot: 0, progresso: 999 }],
+      ]) {
+        const r = await pedir(porta, c, { metodo: m, sessao: a.sessao, corpo });
+        ok(r.status >= 400,
+          `\`${m} ${c}\` respondeu ${r.status}. O cliente diz o que FEZ, nunca ` +
+          `quanto progrediu — uma rota que aceita \`progresso\` é a edição do ` +
+          `localStorage com mais passos.`);
+      }
+      const depois = (await pedir(porta, '/api/perfil', { sessao: a.sessao })).corpo.desafios;
+      igual(depois.map(d => d.progresso).join(','), antes.map(d => d.progresso).join(','),
+        'algum progresso mudou depois das tentativas');
+    });
+  });
+
+  s.teste('a trilha de login não conta o relógio do cliente', async () => {
+    await comServico(async ({ porta }) => {
+      const a = await conta(porta, 'a');
+      const primeiro = await pedir(porta, '/api/perfil/entrar', { metodo: 'POST', sessao: a.sessao, corpo: {} });
+      ok(primeiro.corpo.creditou > 0, 'o primeiro login não creditou');
+
+      /* Dez tentativas mandando datas e fusos diferentes. Nenhuma pode virar
+         um dia novo: o dia sai de `agora`, do servidor. */
+      for (const forjado of [
+        { dia: '2030-01-01' }, { data: '2030-01-02' }, { agora: 4102444800000 },
+        { tz: 'Pacific/Kiritimati' }, { timezoneOffset: -840 },
+      ]) {
+        const r = await pedir(porta, '/api/perfil/entrar', { metodo: 'POST', sessao: a.sessao, corpo: forjado });
+        igual(r.corpo.creditou, 0,
+          `mandar ${JSON.stringify(forjado)} creditou de novo no mesmo dia — o ` +
+          `cliente conseguiu inventar um dia, e a trilha de 7 dias fecha em uma tarde`);
+      }
+      igual((await pedir(porta, '/api/perfil/entrar', { metodo: 'POST', sessao: a.sessao, corpo: {} })).corpo.sequencia, 1,
+        'a sequência passou de 1 sem passar um dia');
+    });
+  });
+
   return s;
 }
