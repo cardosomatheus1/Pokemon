@@ -72,6 +72,27 @@ export function criarOperador(db, { email, papel, agora = Date.now() }) {
   return operadorPor(db, id);
 }
 
+/* O REGISTRO, SOZINHO. Extraído no F1.17 porque o login de operador também
+ * precisa dele — "quem entrou" é a primeira pergunta de qualquer investigação, e
+ * ela é anterior a "o que ele fez".
+ *
+ * `operadorId` pode ser nulo: uma tentativa de login com e-mail que não existe
+ * não tem operador, e é justamente essa que se quer contar. Cem recusas
+ * seguidas é o sinal mais barato de ataque que existe.
+ *
+ * O QUE ELE NÃO GUARDA é tão importante quanto o que guarda: nenhuma credencial
+ * entra aqui. Registro é para ser lido por gente, e uma auditoria com senha
+ * dentro vira o lugar mais fácil de achar uma. */
+export function registrarAuditoria(db, { operadorId, acao, alvo = null, de = null,
+                                         para = null, motivo = '', agora = Date.now() }) {
+  db.prepare(
+    `INSERT INTO admin_auditoria (id, operador_id, acao, alvo, de, para, motivo, criado_em)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+    .run(randomUUID(), operadorId, acao, alvo,
+         de === null ? null : String(de), para === null ? null : String(para),
+         String(motivo).trim(), agora);
+}
+
 /* AÇÃO DESCONHECIDA É NEGADA. Não é detalhe: sem esta linha, uma ação nova
    escrita amanhã ficaria liberada para o papel mais fraco até alguém lembrar de
    acrescentá-la à tabela. É a mesma regra de `ROTAS_PUBLICAS`. */
@@ -102,17 +123,10 @@ export function agir(db, { operadorId, acao, alvo = null, de = null, para = null
   if (DESTRUTIVAS.has(acao) && confirmado !== true)
     throw erro(ERRO_ADMIN.SEM_CONFIRMAR, `\`${acao}\` é destrutiva e exige confirmação explícita`);
 
-  const registrar = () => db.prepare(
-    `INSERT INTO admin_auditoria (id, operador_id, acao, alvo, de, para, motivo, criado_em)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
-    .run(randomUUID(), op.id, acao, alvo,
-         de === null ? null : String(de), para === null ? null : String(para),
-         String(motivo).trim(), agora);
-
   /* A ORDEM É A GARANTIA: registrar ANTES de executar. Invertida, a ação que
      falha no meio não deixa rastro nenhum — e é exatamente essa que mais
      interessa depois. */
-  registrar();
+  registrarAuditoria(db, { operadorId: op.id, acao, alvo, de, para, motivo, agora });
   return executar ? executar(op) : { ok: true };
 }
 

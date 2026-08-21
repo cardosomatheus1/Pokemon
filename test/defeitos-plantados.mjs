@@ -82,6 +82,8 @@ const FECHO  = 'test/fecho.mjs';
 const RESULT = 'engine/resultado.mjs';
 const RESTELA= 'app/modules/resultado-tela.mjs';
 const PROGSRV= 'server/progressao.mjs';
+const ADMAUTH= 'server/admin-auth.mjs';
+const ROTASSRV2 = 'server/rotas.mjs';
 const TELESRV= 'server/telemetria.mjs';
 const PACKV  = 'engine/pack.mjs';
 const ORIGV1 = 'content/original_v1.mjs';
@@ -1586,8 +1588,11 @@ export const DEFEITOS = [
 
   { id:'S275', arquivo:ADMSRV, nome:'a auditoria passa a ser gravada só no sucesso',
     real:'inverter a ordem — e a ação que falha no meio não deixa rastro, que é a que mais interessa depois',
-    de:'  registrar();\n  return executar ? executar(op) : { ok: true };',
-    para:'  const r = executar ? executar(op) : { ok: true };\n  registrar();\n  return r;' },
+    /* REALVADO NO F1.17: `registrar()` virou `registrarAuditoria`, extraída
+       porque o login de operador também precisa dela. O defeito segue o
+       COMPORTAMENTO — registrar ANTES de executar —, e não o nome antigo. */
+    de:'  registrarAuditoria(db, { operadorId: op.id, acao, alvo, de, para, motivo, agora });\n  return executar ? executar(op) : { ok: true };',
+    para:'  const r = executar ? executar(op) : { ok: true };\n  registrarAuditoria(db, { operadorId: op.id, acao, alvo, de, para, motivo, agora });\n  return r;' },
 
   { id:'S276', arquivo:ADMSRV, nome:'confirmação aceita qualquer coisa verdadeira',
     real:'`if (!confirmado)` — e a string "false" vinda de query confirma',
@@ -1630,6 +1635,43 @@ export const DEFEITOS = [
     real:'"quase todo pack tem" — e o cliente volta a escrever o nome de uma franquia',
     de:"  if (exigir(eObj(pack.rotulos), 'rotulos ausente: a interface não tem como nomear as criaturas'))",
     para:'  if (false)' },
+
+  /* ── F1.17 · O OPERADOR PROVA QUEM É ──────────────────────────────────── */
+
+  { id:'S291', arquivo:ROTASSRV2, nome:'o painel volta a aceitar o id do operador como credencial',
+    real:'"o cabeçalho antigo por compatibilidade" — e o id, que aparece em toda linha de auditoria, abre tudo de novo',
+    de:"  const sessao = lerSessaoAdmin(db, { token, agora, girar: true });\n  if (!sessao) return erro(401, ERROS.NAO_AUTORIZADO, 'sessão de operador ausente, expirada ou inválida');",
+    para:"  const sessao = lerSessaoAdmin(db, { token, agora, girar: true }) || { operadorId: token };" },
+
+  { id:'S292', arquivo:ADMAUTH, nome:'a sessão administrativa deixa de expirar',
+    real:'"o operador reclama de ser deslogado" — e um terminal esquecido vira acesso permanente ao painel',
+    de:'  if (agora >= s.expira_em) return null;',
+    para:'' },
+
+  { id:'S293', arquivo:ADMAUTH, nome:'a rotação deixa o token anterior vivo',
+    real:'"não invalidar para não quebrar o pedido em voo" — e passa a haver dois tokens válidos onde havia um',
+    de:'  db.prepare(`UPDATE admin_sessoes SET encerrada_em = ? WHERE token = ?`).run(agora, token);\n  db.prepare(`INSERT INTO admin_sessoes (token, operador_id, criada_em, expira_em,',
+    para:'  db.prepare(`INSERT INTO admin_sessoes (token, operador_id, criada_em, expira_em,' },
+
+  { id:'S294', arquivo:ADMAUTH, nome:'o login de operador sai da auditoria',
+    real:'"login não é ação administrativa" — e "quem entrou", a primeira pergunta de qualquer investigação, fica sem resposta',
+    de:"  registrarAuditoria(db, { operadorId: op.id, acao: 'operador.entrou',\n    alvo: op.email, motivo: '', agora });",
+    para:'' },
+
+  { id:'S295', arquivo:ADMAUTH, nome:'a recusa distingue senha errada de operador inexistente',
+    real:'"a mensagem ajuda o operador" — e a tela de login vira consulta de quem tem acesso',
+    de:"    throw erro(ERRO_ADMIN_AUTH.CREDENCIAL, 'credenciais inválidas');\n  }\n\n  /* O CÓDIGO NÃO SE REUSA.",
+    para:"    throw erro(ERRO_ADMIN_AUTH.CREDENCIAL, op ? 'senha ou código inválidos' : 'operador não encontrado');\n  }\n\n  /* O CÓDIGO NÃO SE REUSA." },
+
+  { id:'S296', arquivo:ADMAUTH, nome:'o hash fantasma some, e o relógio vira o enumerador',
+    real:'"não faz sentido rodar scrypt sem operador" — e a resposta instantânea diz que o e-mail não existe',
+    de:"  const senhaOk = confere(String(senha ?? ''), op?.senha_hash ?? HASH_FANTASMA);",
+    para:"  const senhaOk = op?.senha_hash ? confere(String(senha ?? ''), op.senha_hash) : false;" },
+
+  { id:'S297', arquivo:ADMAUTH, nome:'o código do segundo fator pode ser reusado',
+    real:'"ele é de 30 segundos, já expira" — e quem viu o número por cima do ombro o digita dentro da janela',
+    de:'  if (jaUsado) {',
+    para:'  if (false) {' },
 
   { id:'S224', arquivo:FECHO, nome:'o fecho para de seguir os imports do filho',
     real:'somar só o arquivo do script — mudar o que ele importa deixa de invalidar',

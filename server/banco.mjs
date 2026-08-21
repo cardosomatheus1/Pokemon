@@ -580,6 +580,70 @@ export const MIGRACOES = [
         db.exec(`DROP TABLE IF EXISTS ${t}`);
     },
   },
+
+  /* ── F1.17 · O OPERADOR PROVA QUEM É ──────────────────────────────────────
+   *
+   * O F1.11 deixou o painel com autorização, auditoria e confirmação — e SEM
+   * autenticação: o operador chegava num cabeçalho com o próprio id, e o
+   * servidor confiava. Um id vazado — e ele aparece em toda linha de auditoria
+   * — abria tudo.
+   *
+   * `admin_sessoes` é uma tabela SEPARADA da de sessões de jogador, e essa é a
+   * decisão central do bloco. Se as duas fossem a mesma, um vazamento de sessão
+   * de jogador viraria acesso administrativo, e o raio do incidente passaria de
+   * uma conta para TODAS.
+   *
+   * `operador_id` da auditoria passa a aceitar NULO: uma tentativa de login com
+   * e-mail inexistente não tem operador, e é justamente essa que se quer
+   * contar — cem recusas seguidas é o sinal mais barato de ataque que existe. */
+  {
+    nome: 'admin-auth-5.11',
+    sobe: db => {
+      db.exec(`ALTER TABLE admin_operadores ADD COLUMN senha_hash TEXT`);
+      db.exec(`ALTER TABLE admin_operadores ADD COLUMN totp_segredo TEXT`);
+      db.exec(`ALTER TABLE admin_operadores ADD COLUMN credencial_em INTEGER`);
+
+      db.exec(`
+        CREATE TABLE admin_sessoes (
+          token        TEXT PRIMARY KEY,
+          operador_id  TEXT NOT NULL REFERENCES admin_operadores(id) ON DELETE CASCADE,
+          criada_em    INTEGER NOT NULL,
+          expira_em    INTEGER NOT NULL,
+          girada_em    INTEGER NOT NULL,
+          /* O código do segundo fator que abriu esta sessão. Guardado para que
+             ele não possa abrir OUTRA dentro da mesma janela de 30 s — quem vê
+             o número por cima do ombro o reusaria. Não é credencial guardada:
+             ele já foi usado e vale zero. */
+          totp_usado   TEXT,
+          encerrada_em INTEGER
+        )`);
+      db.exec(`CREATE INDEX idx_admin_sessao_op ON admin_sessoes(operador_id, encerrada_em)`);
+
+      /* SQLite não afrouxa NOT NULL por ALTER. A tabela é recriada, e a
+         auditoria antiga é PRESERVADA — apagá-la para mudar uma restrição seria
+         perder exatamente o que ela existe para guardar. */
+      db.exec(`ALTER TABLE admin_auditoria RENAME TO admin_auditoria_v1`);
+      db.exec(`
+        CREATE TABLE admin_auditoria (
+          id          TEXT PRIMARY KEY,
+          operador_id TEXT REFERENCES admin_operadores(id),
+          acao        TEXT NOT NULL,
+          alvo        TEXT,
+          de          TEXT,
+          para        TEXT,
+          motivo      TEXT NOT NULL,
+          criado_em   INTEGER NOT NULL
+        )`);
+      db.exec(`INSERT INTO admin_auditoria SELECT * FROM admin_auditoria_v1`);
+      db.exec(`DROP TABLE admin_auditoria_v1`);
+    },
+    desce: db => {
+      db.exec(`DROP INDEX IF EXISTS idx_admin_sessao_op`);
+      db.exec(`DROP TABLE IF EXISTS admin_sessoes`);
+      for (const c of ['senha_hash', 'totp_segredo', 'credencial_em'])
+        db.exec(`ALTER TABLE admin_operadores DROP COLUMN ${c}`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

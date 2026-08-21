@@ -1825,7 +1825,7 @@ dizendo "ninguém pega" quando a verdade é "ninguém perguntou".
 **Deixou aberto:** a **L-039**, que o **F1.16** fecha.
 
 
-### F1.17 — O operador do painel prova quem é
+### F1.17 — O operador do painel prova quem é ✅
 
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 Q6 · **Depende de** F1.11
 · **BLOQUEIA a exposição do painel em rede aberta**
@@ -1849,6 +1849,32 @@ já existe.
 - sessão administrativa sem expiração
 - login de operador fora da auditoria — quem entrou é a primeira pergunta
 - distinguir "senha errada" de "operador não existe", que é o enumerador do §5.11
+
+**FECHADO.** Critério de saída cumprido: o teste manda o id do operador como
+token — e ele aparece em toda linha de auditoria — e cobra que não abra nada.
+Suíte 719 VERDE com navegador; oito defeitos plantados, os oito vermelhos.
+
+**As três defesas, e o que cada uma custa ao atacante:**
+
+| | |
+|---|---|
+| senha | scrypt, os mesmos parâmetros do jogador |
+| TOTP | um código de 30 s que não viaja pela rede do produto |
+| expiração | 8 h de vida, rotação a cada 30 min |
+
+Nenhuma resolve sozinha: senha vaza em lista, TOTP sozinho é um número de seis
+dígitos, sessão eterna transforma terminal esquecido em acesso permanente. As
+três juntas exigem senha, aparelho **e** janela de tempo.
+
+**Duas decisões que o bloco tomou e vale registrar.** A tabela de sessão é
+SEPARADA da do jogador — se fosse a mesma, um vazamento de sessão de jogador
+viraria acesso administrativo, e o raio do incidente passaria de uma conta para
+todas. E o código do segundo fator fica guardado na sessão que ele abriu, para
+não abrir uma segunda dentro da mesma janela: quem vê o número por cima do
+ombro o reusaria.
+
+O HMAC-SHA-256 é construído sobre o `engine/hash.mjs` do F1.15 — o SHA-256 que
+já existia por outra razão pagou o segundo fator de graça.
 
 ---
 

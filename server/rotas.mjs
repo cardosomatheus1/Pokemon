@@ -37,6 +37,7 @@ import { perfilDe, desafiosDe, registrarLogin, sequenciaDeLogin, emitidoNaSemana
          pedirResgate, marcarRuina } from './progressao.mjs';
 import { BUCKETS } from '../engine/carteira.mjs';
 import { agir, painelEconomico, ERRO_ADMIN } from './admin.mjs';
+import { entrarOperador, lerSessaoAdmin, sairOperador } from './admin-auth.mjs';
 
 /* AS PÚBLICAS, e cada uma com motivo. Quem ainda não entrou precisa poder criar
    sessão; o estado da rodada é público por desenho (§4.5 — o commit tem que ser
@@ -61,6 +62,12 @@ import { agir, painelEconomico, ERRO_ADMIN } from './admin.mjs';
 export const ROTAS_ADMIN = [
   'GET /api/admin/painel',
   'GET /api/admin/auditoria',
+  /* F1.17: entrar e sair também são administrativas — elas não podem exigir
+     sessão de JOGADOR, que é o que o despacho faria se não estivessem aqui.
+     `POST /api/admin/entrar` é a única que dispensa credencial de operador, e
+     é a que a cria; a defesa dela mora inteira no `entrarOperador`. */
+  'POST /api/admin/entrar',
+  'POST /api/admin/sair',
 ];
 
 export const ROTAS_PUBLICAS = [
@@ -257,14 +264,37 @@ export const ROTAS = {
    * prova quem é, ele se declara — e ISSO ESTÁ REGISTRADO na L-041, com o dono.
    * O que já existe aqui é a autorização, a auditoria e a confirmação; o que
    * falta é a prova de identidade, e ela não é escopo deste bloco. */
-  'GET /api/admin/painel': ({ db, cabecalhos }) =>
-    comOperador(db, cabecalhos, 'painel.ver', 'consulta do painel',
-      () => ({ corpo: painelEconomico(db) })),
+  /* A ÚNICA ROTA ADMIN SEM SESSÃO, e é a que a cria. Ela está em
+     `ROTAS_PUBLICAS` pelo mesmo motivo que `/api/auth/entrar` está: quem ainda
+     não entrou não tem como provar nada. Toda a defesa dela mora no
+     `entrarOperador` — mensagem única, tempo constante, e registro da
+     tentativa. */
+  'POST /api/admin/entrar': ({ db, corpo, agora }) => {
+    try {
+      const r = entrarOperador(db, { email: corpo?.email, senha: corpo?.senha,
+                                     codigo: corpo?.codigo, agora });
+      return { corpo: r };
+    } catch (e) {
+      /* 401 sem detalhe. O `entrarOperador` já cuidou de não distinguir os
+         casos; repetir a distinção aqui desfaria o trabalho dele. */
+      return erro(401, ERROS.NAO_AUTORIZADO, 'credenciais inválidas');
+    }
+  },
 
-  'GET /api/admin/auditoria': ({ db, cabecalhos }) =>
+  'POST /api/admin/sair': ({ db, cabecalhos, agora }) => {
+    const cru = String(cabecalhos?.authorization ?? '');
+    if (cru.startsWith('Bearer ')) sairOperador(db, { token: cru.slice(7), agora });
+    return { corpo: { ok: true } };
+  },
+
+  'GET /api/admin/painel': ({ db, cabecalhos, agora }) =>
+    comOperador(db, cabecalhos, 'painel.ver', 'consulta do painel',
+      () => ({ corpo: painelEconomico(db) }), agora),
+
+  'GET /api/admin/auditoria': ({ db, cabecalhos, agora }) =>
     comOperador(db, cabecalhos, 'painel.ver', 'consulta da auditoria',
       () => ({ corpo: { registros: db.prepare(
-        `SELECT * FROM admin_auditoria ORDER BY criado_em DESC LIMIT 200`).all() } })),
+        `SELECT * FROM admin_auditoria ORDER BY criado_em DESC LIMIT 200`).all() } }), agora),
 
   'POST /api/aposta/cancelar': ({ db, sched, userId, agora }) => {
     try { return { corpo: cancelar(db, { sched, userId, agora }) }; }
@@ -365,11 +395,32 @@ export function usuarioDa(req, config, agora) {
 /* Toda rota admin passa por aqui, e é isso que impede um caminho novo de
    esquecer uma das camadas. `agir` recusa sem operador, sem papel, sem motivo e
    sem confirmação — e grava a auditoria antes de executar. */
-function comOperador(db, cabecalhos, acao, motivo, executar) {
-  const id = cabecalhos?.['x-operador'];
-  if (!id) return erro(401, ERROS.NAO_AUTORIZADO, 'rota administrativa exige operador');
+/* ── O OPERADOR PROVA QUEM É (F1.17) ────────────────────────────────────────
+ *
+ * Até aqui a identidade vinha do cabeçalho `x-operador` com o próprio id, e o
+ * servidor confiava — um id vazado, e ele aparece em toda linha de auditoria,
+ * abria tudo. Era a L-041.
+ *
+ * Agora vem de `authorization: Bearer <token>`, e o token só existe depois de
+ * senha E segundo fator. `x-operador` deixou de ser aceito: mantê-lo "por
+ * compatibilidade" seria manter a porta que o bloco existe para fechar.
+ *
+ * A ROTAÇÃO ACONTECE NA LEITURA. Quando a sessão passa da janela, `lerSessaoAdmin`
+ * devolve um token novo e mata o anterior na hora; a rota o devolve num
+ * cabeçalho para o cliente trocar. Rotação que depende de alguém lembrar de
+ * pedir é rotação que não acontece. */
+function comOperador(db, cabecalhos, acao, motivo, executar, agora = Date.now()) {
+  const cru = String(cabecalhos?.authorization ?? '');
+  const token = cru.startsWith('Bearer ') ? cru.slice(7) : null;
+  if (!token) return erro(401, ERROS.NAO_AUTORIZADO, 'rota administrativa exige sessão de operador');
+
+  const sessao = lerSessaoAdmin(db, { token, agora, girar: true });
+  if (!sessao) return erro(401, ERROS.NAO_AUTORIZADO, 'sessão de operador ausente, expirada ou inválida');
+
+  const cabecalhosResposta = sessao.tokenNovo ? { 'x-admin-token': sessao.tokenNovo } : undefined;
   try {
-    return agir(db, { operadorId: id, acao, motivo }, executar);
+    const saida = agir(db, { operadorId: sessao.operadorId, acao, motivo }, executar);
+    return cabecalhosResposta ? { ...saida, cabecalhos: cabecalhosResposta } : saida;
   } catch (e) {
     if (e.codigo === ERRO_ADMIN.SEM_OPERADOR || e.codigo === ERRO_ADMIN.SEM_PAPEL)
       /* MESMA RESPOSTA PARA "não existe" e "não pode". Distinguir as duas

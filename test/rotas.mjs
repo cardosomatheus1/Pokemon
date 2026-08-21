@@ -78,6 +78,28 @@ async function conta(porta, nome = 'j') {
   return { sessao: r.corpo.sessao, id: r.corpo.id };
 }
 
+
+/* ── A CREDENCIAL DE OPERADOR (F1.17) ────────────────────────────────────────
+ *
+ * Antes deste bloco, `x-operador: <id>` bastava — o operador se DECLARAVA. Era
+ * a L-041, e um id vazado abria tudo: ele aparece em toda linha de auditoria.
+ *
+ * Agora é senha + segundo fator, e o que vai no cabeçalho é um token de sessão
+ * com prazo. Este auxiliar existe para os testes de rota não repetirem o login
+ * inteiro — e o `test/admin-auth.mjs` é quem prova que o login está certo. */
+async function operadorLogado(srv, { papel = 'leitura', agora = AGORA } = {}) {
+  const { criarOperador } = await import('../server/admin.mjs');
+  const { definirCredencial, entrarOperador, segredoTotp, codigoTotp } =
+    await import('../server/admin-auth.mjs');
+  const op = criarOperador(srv.db, { email: `${papel}@x.test`, papel, agora });
+  const seg = segredoTotp();
+  const senha = 'senha-de-operador-bem-longa-1';
+  definirCredencial(srv.db, { operadorId: op.id, senha, segredoTotp: seg, agora });
+  const { token } = entrarOperador(srv.db,
+    { email: op.email, senha, codigo: codigoTotp(seg, agora), agora });
+  return { op, token, cabecalhos: { authorization: `Bearer ${token}` } };
+}
+
 export async function suite() {
   const s = criarSuite('rotas');
 
@@ -533,9 +555,8 @@ export async function suite() {
 
   s.teste('operador de leitura não alcança ação de economia', async () => {
     await comServico(async ({ porta, s: srv }) => {
-      const { criarOperador } = await import('../server/admin.mjs');
-      const leitor = criarOperador(srv.db, { email: 'l@x.test', papel: 'leitura' });
-      const r = await pedir(porta, '/api/admin/painel', { cabecalhos: { 'x-operador': leitor.id } });
+      const leitor = await operadorLogado(srv, { papel: 'leitura' });
+      const r = await pedir(porta, '/api/admin/painel', { cabecalhos: leitor.cabecalhos });
       igual(r.status, 200, `leitura não alcançou o painel: ${JSON.stringify(r.corpo)}`);
       ok(r.corpo.emCirculacao, 'o painel voltou sem a circulação');
     });
@@ -546,12 +567,14 @@ export async function suite() {
        de ids de operador — a mesma razão de o login não distinguir e-mail que
        existe de e-mail que não existe. */
     await comServico(async ({ porta, s: srv }) => {
-      const { criarOperador } = await import('../server/admin.mjs');
-      criarOperador(srv.db, { email: 'l@x.test', papel: 'leitura' });
+      const leitor = await operadorLogado(srv, { papel: 'leitura' });
+      /* Token inventado e ID DE OPERADOR REAL: os dois têm que dar a mesma
+         recusa. O segundo é o ataque que o F1.17 fecha — o id é público no
+         sentido que importa, porque aparece em toda linha de auditoria. */
       const inexistente = await pedir(porta, '/api/admin/painel',
-        { cabecalhos: { 'x-operador': 'nao-existe-mesmo' } });
-      const semPapel = await pedir(porta, '/api/admin/auditoria',
-        { cabecalhos: { 'x-operador': 'nao-existe-mesmo' } });
+        { cabecalhos: { authorization: 'Bearer token-que-nao-existe-mesmo-nao' } });
+      const semPapel = await pedir(porta, '/api/admin/painel',
+        { cabecalhos: { authorization: `Bearer ${leitor.op.id}` } });
       igual(inexistente.status, semPapel.status,
         'as duas recusas têm status diferente — dá para enumerar operadores');
       igual(JSON.stringify(inexistente.corpo), JSON.stringify(semPapel.corpo),
@@ -561,11 +584,14 @@ export async function suite() {
 
   s.teste('toda consulta ao painel deixa registro de auditoria', async () => {
     await comServico(async ({ porta, s: srv }) => {
-      const { criarOperador } = await import('../server/admin.mjs');
-      const op = criarOperador(srv.db, { email: 'l@x.test', papel: 'leitura' });
-      await pedir(porta, '/api/admin/painel', { cabecalhos: { 'x-operador': op.id } });
+      const { op } = await operadorLogado(srv, { papel: 'leitura' });
+      const antes = srv.db.prepare(
+        `SELECT COUNT(*) n FROM admin_auditoria WHERE operador_id = ? AND acao = 'painel.ver'`)
+        .get(op.id).n;
+      const logado = await operadorLogado(srv, { papel: 'economia' });
+      await pedir(porta, '/api/admin/painel', { cabecalhos: logado.cabecalhos });
       const n = srv.db.prepare(
-        `SELECT COUNT(*) n FROM admin_auditoria WHERE operador_id = ?`).get(op.id).n;
+        `SELECT COUNT(*) n FROM admin_auditoria WHERE operador_id = ?`).get(logado.op.id).n;
       ok(n >= 1,
         'ver o painel não deixou registro. Quem viu o saldo de todo mundo é ' +
         'exatamente o que a auditoria existe para responder.');

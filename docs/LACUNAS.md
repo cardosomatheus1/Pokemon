@@ -1328,7 +1328,7 @@ subindo é o sinal de que o valor virou incentivo.
 
 ---
 
-### L-041 — o operador do painel se declara, não se prova
+### L-041 — o operador do painel se declara, não se prova ✅ FECHADA
 
 **Dono:** **F1.17** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** F1.11
 
@@ -1352,6 +1352,18 @@ o use.
 **O que a destrava:** o F1.17. Enquanto ele não existe, o painel só pode ser
 exposto em rede fechada — e isso precisa estar escrito onde quem faz o deploy
 vai ler, não só aqui.
+
+**FECHADA no F1.17.** O operador entra com senha (scrypt, os mesmos parâmetros
+do jogador) **e** segundo fator (TOTP com HMAC-SHA-256, sobre o SHA-256 que o
+F1.15 escreveu — o projeto continua sem dependências). A sessão vive 8 h e gira
+a cada 30 min, matando o token anterior na hora.
+
+`x-operador` **deixou de ser aceito**. Mantê-lo "por compatibilidade" seria
+manter aberta exatamente a porta que o bloco existe para fechar — e o teste que
+prova o critério de saída manda o id do operador como token e cobra que não
+abra nada.
+
+O painel pode ser exposto em rede aberta.
 
 ---
 
