@@ -102,6 +102,38 @@ export function suite() {
       'resolve escrevendo software — senão o F0.10 fecha e a v0.9 parece pronta');
   });
 
+  /* ── A ARTE EMPRESTADA BLOQUEIA A TAG ──────────────────────────────────
+   *
+   * O build entre amigos veste o pack original com a arte do pack de
+   * desenvolvimento (`ARTE_EMPRESTADA_DE` em `content/escolhido.mjs`). É uma
+   * decisão legítima e reversível — o §0.3.1 proíbe PUBLICAR um produto com
+   * stake econômico sobre assets de terceiros, e um build privado não é isso.
+   *
+   * O QUE ESTE TESTE IMPEDE é que a decisão de hoje vire o estado de lançamento
+   * por inércia. Ela é uma linha; sem uma guarda, ninguém percebe que ela
+   * continua ligada no dia em que o produto sair.
+   *
+   * Ele NÃO reprova enquanto o empréstimo estiver ligado — reprovar deixaria a
+   * suíte vermelha por uma decisão consciente, e vermelho constante ensina a
+   * ignorar vermelho. Ele cobra que o bloqueio esteja REGISTRADO onde quem for
+   * marcar a tag vai ler. */
+  s.teste('arte emprestada está registrada como bloqueio da tag', async () => {
+    const escolhido = await import('../content/escolhido.mjs');
+    if (!escolhido.ARTE_EMPRESTADA_DE) return;   // sem empréstimo, nada a cobrar
+
+    const lacunas = ler('docs/LACUNAS.md');
+    ok(/L-042/.test(lacunas) && /arte emprestada|ARTE_EMPRESTADA_DE/i.test(lacunas),
+      `o pack está vestindo arte de \`${escolhido.ARTE_EMPRESTADA_DE}\` e a ` +
+      `L-042 não registra isso. A decisão é legítima para um build privado, mas ` +
+      `ela é UMA LINHA de distância do estado que o §0.3.1 proíbe — e sem ` +
+      `registro ninguém percebe que ela continua ligada no dia do lançamento.`);
+
+    const blocos = ler('docs/POKEARENA_BUILD_BLOCKS_v1.2.md');
+    ok(/ARTE_EMPRESTADA_DE/.test(blocos),
+      'o BUILD_BLOCKS não menciona `ARTE_EMPRESTADA_DE`. É o que quem for marcar ' +
+      'a tag lê para saber o que falta, e o empréstimo precisa estar nessa lista.');
+  });
+
   return s;
 }
 

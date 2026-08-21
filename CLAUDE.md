@@ -303,11 +303,19 @@ Branch de trabalho: `claude/pok-arena-repo-setup-qgcn76`.
 - Substituir arte, som ou dado por outro de fonte diferente quando o original
   falhar. **O resgate busca a mesma coisa em outro endereço, nunca outra coisa** —
   lição registrada da v0.6.1.
-- Versionar material de **terceiros**. `battle-theme.mp3` está fora por isso, e
-  as folhas de sprite também — elas vêm por `npm run assets` para `assets/`,
-  que não entra no git. **Arte NOSSA é o contrário: entra, em `arte/`.** Aplicar
-  a regra ao contrário custou quase três imagens no porte da v1.0; ver
-  `arte/README.md`.
+- ~~Versionar material de **terceiros**.~~ **A REGRA MUDOU**, por decisão do dono
+  do projeto, quando o build passou a ser privado — jogado por amigos, sem
+  aquisição paga e sem monetização. `assets/` agora ENTRA no repositório, para
+  que quem clona possa jogar sem rodar um comando a mais.
+
+  O que a regra protegia continua valendo e mudou de lugar: **publicar** um
+  produto com stake econômico sobre assets de terceiros é o que o §0.3.1 proíbe,
+  e isso não mudou. A distância entre os dois estados é uma linha —
+  `ARTE_EMPRESTADA_DE` em `content/escolhido.mjs` — e o `test/saida-v09.mjs`
+  recusa a tag enquanto ela estiver preenchida.
+
+  **Arte NOSSA continua entrando em `arte/`.** Aplicar a regra ao contrário
+  custou quase três imagens no porte da v1.0; ver `arte/README.md`.
 - Ligar qualquer feature de valor econômico real sem o checkpoint do §25.1.
 
 ## Sempre

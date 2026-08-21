@@ -27,6 +27,7 @@
  */
 import kanto from './pokemon_kanto_v1.mjs';
 import original from './original_v1.mjs';
+import { comArteEmprestada } from './arte-emprestada.mjs';
 
 /* Os packs que existem, por id. Um mapa e não uma cadeia de `if`: acrescentar
    um pack é uma linha, e a lista é auditável de uma olhada. */
@@ -42,7 +43,23 @@ export const PACKS = {
  * ainda (L-042): lançar com 76 silhuetas seria trocar um risco comercial por um
  * problema de produto. A troca é UMA LINHA, e é essa a promessa da Content
  * Layer — o resto do trabalho já está feito e testado. */
-export const ID_ESCOLHIDO = 'pokemon_kanto_v1';
+export const ID_ESCOLHIDO = 'original_v1';
+
+/* ── A ARTE EMPRESTADA, E ELA É UM ESTADO DECLARADO ─────────────────────────
+ *
+ * Decisão do dono do projeto: enquanto o build for PRIVADO — jogado por amigos,
+ * sem aquisição paga e sem monetização —, o pack original veste a arte que o
+ * pack de desenvolvimento baixa, em vez das 76 silhuetas.
+ *
+ * ESTE VALOR É A DISTÂNCIA ENTRE "build entre amigos" E "produto publicado".
+ * Com ele preenchido, o §0.3.1 NÃO está satisfeito: o que aquela seção proíbe é
+ * PUBLICAR um produto com stake econômico sobre assets de terceiros. Um build
+ * entre amigos não é isso — e a diferença entre os dois estados é uma linha,
+ * que é exatamente por que ela precisa estar escrita num lugar só e gritando.
+ *
+ * `null` volta às silhuetas, que continuam sendo o estado honesto até a L-042
+ * fechar com desenhos de verdade. */
+export const ARTE_EMPRESTADA_DE = 'pokemon_kanto_v1';
 
 /* RESOLVER É UMA FUNÇÃO, e não uma busca solta, por dois motivos.
  *
@@ -63,4 +80,12 @@ export function resolver(id) {
   return p;
 }
 
-export default resolver(ID_ESCOLHIDO);
+/* A COMPOSIÇÃO, e ela é o último passo de propósito: `resolver` continua sendo
+   a função que prova a ausência de fallback, e o empréstimo é uma camada por
+   cima — não uma exceção dentro dela. */
+export function escolher(id = ID_ESCOLHIDO, arteDe = ARTE_EMPRESTADA_DE) {
+  const base = resolver(id);
+  return arteDe ? comArteEmprestada(base, resolver(arteDe)) : base;
+}
+
+export default escolher();

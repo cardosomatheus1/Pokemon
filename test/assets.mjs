@@ -54,11 +54,33 @@ export function suite() {
     ok(!p.includes('//') && !p.includes(':'), `o caminho local tem lixo de URL: ${p}`);
   });
 
-  s.teste('a arte não entra no versionamento', () => {
+  /* A REGRA MUDOU, e o teste muda com ela — não some.
+   *
+   * Até a decisão do build entre amigos, `assets/` ficava fora do
+   * versionamento e este teste cobrava isso. Agora entra, para quem clona poder
+   * jogar sem rodar um comando a mais.
+   *
+   * O QUE O TESTE PASSA A COBRAR é a outra metade, que não mudou: a arte de
+   * terceiros no repositório é aceitável num build PRIVADO, e a tag da v0.9 tem
+   * que recusar enquanto for assim. Apagar o teste deixaria a mudança sem
+   * guarda nenhuma; trocar o que ele afirma mantém a decisão amarrada à sua
+   * condição. */
+  s.teste('arte de terceiros versionada exige build privado declarado', async () => {
     const ignore = readFileSync(new URL('../.gitignore', import.meta.url), 'utf8');
-    ok(/^assets\/$/m.test(ignore),
-      '`assets/` não está no .gitignore. É arte de terceiros — mesma razão pela ' +
-      'qual o battle-theme.mp3 ficou de fora. O script baixa; o repositório não guarda.');
+    const versionada = !/^assets\/$/m.test(ignore);
+    if (!versionada) return;    // voltou a ficar fora: nada a cobrar
+
+    const escolhido = await import('../content/escolhido.mjs');
+    ok('ARTE_EMPRESTADA_DE' in escolhido,
+      '`assets/` saiu do .gitignore e `content/escolhido.mjs` não declara ' +
+      '`ARTE_EMPRESTADA_DE`. Arte de terceiros no repositório sem o estado que a ' +
+      'justifica é a situação que o §0.3.1 proíbe, sem ninguém tendo decidido.');
+
+    const claude = readFileSync(new URL('../CLAUDE.md', import.meta.url), 'utf8');
+    ok(/A REGRA MUDOU/.test(claude),
+      'o `CLAUDE.md` ainda lista versionar material de terceiros entre os ' +
+      '"Nunca", e a árvore faz o contrário. Documento que contradiz o ' +
+      'repositório é pior que qualquer uma das duas opções.');
   });
 
   /* Se a cópia local existe, ela precisa cobrir o que o jogo pede. Cobertura

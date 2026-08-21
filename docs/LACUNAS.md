@@ -1425,3 +1425,35 @@ contar arquivo.
 packs" e o crítico cego com a barra do bloco. Os dois portões precisam de tela
 com arte para julgar, e por isso o F1.12 fica **aberto no visual e fechado no
 resto**.
+
+
+---
+
+## Estado de hoje: ARTE EMPRESTADA (build entre amigos)
+
+**Decisão do dono do projeto**, e ela é legítima: enquanto o build for privado —
+jogado por amigos, sem aquisição paga, sem monetização e sem a telemetria de
+retenção sendo usada para decisão de negócio —, o pack original veste a arte que
+o pack de desenvolvimento baixa, em vez das 76 silhuetas.
+
+```
+content/escolhido.mjs   ID_ESCOLHIDO        = 'original_v1'
+                        ARTE_EMPRESTADA_DE  = 'pokemon_kanto_v1'
+```
+
+O empréstimo é **posicional**, e essa é a propriedade que o faz funcionar: o
+elenco original foi gerado com os mesmos percentis de força, então a criatura de
+índice `i` veste o lutador `i` de lá. O mais fraco veste o mais fraco, o mais
+forte veste o mais forte — a arte acompanha o poder, e o jogador lê isso sem ler
+número nenhum.
+
+**O que continua NÃO satisfeito.** O §0.3.1 proíbe PUBLICAR um produto com stake
+econômico sobre assets de terceiros. Um build entre amigos não é isso, mas a
+distância entre os dois estados é **uma linha** — e é exatamente por isso que
+ela mora num lugar só, gritando, com `test/saida-v09.mjs` cobrando este registro
+enquanto ela estiver ligada.
+
+**A L-042 continua aberta**, e o que ela pede não mudou: 76 desenhos próprios.
+`COM_ARTE` em `content/original_v1.mjs` é o livro-razão que os recebe um a um.
+
+**Desligar é apagar uma linha:** `ARTE_EMPRESTADA_DE = null` volta às silhuetas.

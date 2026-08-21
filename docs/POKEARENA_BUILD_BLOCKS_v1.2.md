@@ -1913,6 +1913,14 @@ projeto.
 - **L-012** — consulta de enquadramento regulatório (§0.5.1). Bloqueia a tag.
 - **L-010** — política de publicidade e afiliados. Sem dono.
 
+**O QUE BLOQUEIA A TAG DA v0.9, e nenhum é código:**
+
+| item | o que falta |
+|---|---|
+| **`ARTE_EMPRESTADA_DE`** | o pack original veste arte de terceiros. Legítimo num build privado; a tag exige `null` e os 76 desenhos da L-042 |
+| **L-012** | consulta de enquadramento regulatório (§0.5.1) |
+| **L-010** | política de publicidade e afiliados |
+
 **Propostos durante a fase e ainda não construídos:** F1.16 (o cliente não é
 fonte de dinheiro nem por um instante) e F1.17 (o operador do painel prova quem
 é — enquanto não existir, o painel só pode ser exposto em rede fechada).

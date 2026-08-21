@@ -1,7 +1,14 @@
 node_modules/
 tools/.snapshot-prototipo.mjs
 engine/*.bak
-assets/
+# assets/ — VERSIONADO desde a decisão do build entre amigos.
+#
+# A regra deste projeto era o contrário, e o `CLAUDE.md` a registrava entre os
+# "Nunca". Ela foi mudada por decisão do dono, com o motivo escrito lá: o build
+# é privado, e quem clona precisa poder jogar sem rodar um comando a mais.
+#
+# O custo está medido e aceito: 18 MB que não comprimem em delta, permanentes na
+# história. Ver `docs/DEFEITOS.md` → D-024 se um dia isso incomodar.
 
 # Capturas do passo OLHAR (tools/olhar-telas.mjs). São para leitura humana
 # durante o bloco, não artefato do projeto — mesma razão de assets/.
