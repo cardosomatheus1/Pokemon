@@ -31,6 +31,7 @@
  * for preciso. Quem mostra isso ao jogador é a tela de conexão.
  */
 import { criarSalaCliente, ESTADO_SALA } from './sala.mjs';
+import { sementes } from '../../engine/seed.mjs';
 
 let sala = null;
 let ultima = null;                 // a última rodada que a sala entregou
@@ -122,3 +123,29 @@ export const rodadaViva = () => ultima;
 export const conexao = () => estado;
 export const ligado = () => sala !== null;
 export const esperando = () => esperandoAbertura.length;
+
+/* ── O CLIENTE CONFERE O QUE JÁ TINHA (F1.14) ───────────────────────────────
+ *
+ * Durante a janela o cliente desenhou a pool a partir de `sementeElenco`. No
+ * fechamento chega a raiz. Se a raiz revelada NÃO reproduz aquela semente, o
+ * servidor mostrou uma rodada e jogou outra — e esta é a única hora em que dá
+ * para perceber, porque depois só existe a batalha.
+ *
+ * A AUDITORIA DO §25.2 NÃO PEGA ISSO. Ela confere que a raiz bate com o
+ * commit, e bateria: o que divergiu foi o que o cliente VIU. É uma checagem
+ * diferente, e ela tem que morar do lado de cá.
+ *
+ * MORA AQUI, E NÃO NO `fases.mjs`, por dois motivos. É a regra da relação com
+ * o servidor, que é o que este módulo é; e dentro da máquina de fases ela só
+ * seria alcançável por um navegador — foi assim que o defeito plantado S256
+ * escapou da suíte inteira na primeira passada.
+ *
+ * Devolve a árvore COMPLETA quando confere, e `null` quando não. Nunca lança:
+ * quem chama precisa decidir o que mostrar ao jogador, e uma exceção no meio
+ * do fechamento derrubaria a tela em vez de explicá-la. */
+export function arvoreConferida(raiz, sementeElencoUsada) {
+  if (!raiz) return null;
+  const completa = sementes(raiz);
+  if (completa.elenco !== sementeElencoUsada) return null;
+  return completa;
+}

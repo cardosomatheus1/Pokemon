@@ -74,6 +74,12 @@ export function criarApi({ base = '', armazem = globalThis.localStorage } = {}) 
     get:  (c)    => chamar('GET', c),
     post: (c, b) => chamar('POST', c, b ?? {}),
     temSessao: () => !!sessao,
+    /* A SESSÃO EM SI, para quem não passa por aqui. O `sala.mjs` abre o fluxo
+       com o próprio `fetch` — ele precisa de streaming, que esta fachada não
+       faz — e sem isto ele conectaria sem autenticação. Não é um vazamento:
+       é a MESMA sessão, lida do mesmo lugar, em vez de uma segunda cópia
+       guardada em outro canto. */
+    sessaoAtual: () => sessao,
     esquecerSessao: () => { sessao = null; gravar(null); },
   };
 }

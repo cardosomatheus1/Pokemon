@@ -5,12 +5,14 @@
 import { $ } from './dom.mjs';
 import { CONF } from './motor.mjs';
 import { S } from './estado.mjs';
+import { modoServidor } from './banco.mjs';
 import { relogio } from './faixa.mjs';
 import { enfeite } from './sorte.mjs';
 import { applyEvent } from './eventos.mjs';
 import { drawFx, sched } from './efeitos.mjs';
 import { drawMap } from './render.mjs';
-import { entryTotalTime, finish, newRound, passoEntrada, releaseAll, setPhase, startFight } from './fases.mjs';
+import { entryTotalTime, newRound, passoEntrada, releaseAll, setPhase, startFight } from './fases.mjs';
+import { finish } from './resultado-tela.mjs';
 import { overlay } from './rodada.mjs';
 import { sfx } from './audio.mjs';
 import { stepMovement } from './coreografia.mjs';
@@ -28,7 +30,14 @@ function frame(now){
   if (S.state === 'betting' || S.state === 'fighting') relogio();
 
   if (S.state === 'betting'){
-    if (CONF.BET_WINDOW - S.clock <= 0) startFight();
+    /* QUEM FECHA A JANELA É O SERVIDOR, quando há servidor (F1.14).
+     *
+     * O relógio local continua desenhando a contagem — é ele que dá o
+     * segundo a segundo na tela —, mas a TRANSIÇÃO é do evento `travada`.
+     * Deixar o cliente decidir criaria a pior das divergências possíveis:
+     * a aposta ainda aberta aqui e já fechada lá, ou o contrário. Uma
+     * dessas duas é dinheiro. */
+    if (!modoServidor() && CONF.BET_WINDOW - S.clock <= 0) startFight();
   }
   else if (S.state === 'countdown'){
     const c = $('#count');

@@ -180,5 +180,36 @@ export function suite() {
     });
   });
 
+  /* ── A CONFERÊNCIA DO REVEAL ───────────────────────────────────────────
+   *
+   * A auditoria do §25.2 confere que a raiz bate com o commit — e bateria
+   * mesmo se o servidor tivesse MOSTRADO uma rodada e JOGADO outra, porque o
+   * que ela audita é a raiz, não o que apareceu na tela. Esta é a checagem que
+   * falta, e o fechamento é a única hora em que ela é possível.
+   */
+  s.teste('a raiz que reproduz a pool desenhada devolve a árvore inteira', async () => {
+    const { novaRaiz, sementes, derivar } = await import('../engine/seed.mjs');
+    const raiz = novaRaiz();
+    const a = modo.arvoreConferida(raiz, derivar(raiz, 'elenco'));
+    ok(a, 'a raiz correta foi recusada');
+    igual(a.batalha, sementes(raiz).batalha, 'a árvore devolvida não é a da raiz');
+  });
+
+  s.teste('raiz que NÃO reproduz a pool desenhada é recusada', async () => {
+    const { novaRaiz, derivar } = await import('../engine/seed.mjs');
+    const mostrada = novaRaiz(), jogada = novaRaiz();
+    igual(modo.arvoreConferida(jogada, derivar(mostrada, 'elenco')), null,
+      'o cliente aceitou uma raiz que não produz a pool que ele desenhou. O ' +
+      'servidor mostrou uma rodada e jogou outra, e a auditoria do §25.2 não ' +
+      'pegaria: ela confere a raiz contra o commit, e essa parte bate.');
+  });
+
+  s.teste('a conferência não lança, ela devolve `null`', () => {
+    for (const ruim of [null, undefined, '', 'nao-e-raiz'])
+      igual(modo.arvoreConferida(ruim, 123), null,
+        `\`${ruim}\` fez a conferência lançar em vez de recusar. Uma exceção no ` +
+        `meio do fechamento derruba a tela em vez de explicá-la ao jogador.`);
+  });
+
   return s;
 }

@@ -12,7 +12,15 @@ import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { resultadoDaAposta, retornoLiquidoEstimado, rotuloLiquido } from '../engine/resultado.mjs';
 
-const fases = () => readFileSync(new URL('../app/modules/fases.mjs', import.meta.url).pathname, 'utf8');
+/* A TELA DE RESULTADO SAIU DO `fases.mjs` NO F1.14 — ela virou
+   `resultado-tela.mjs`, porque o `fases` decide QUANDO cada coisa acontece e a
+   tela decide COMO o fim da rodada aparece.
+
+   O nome da função de leitura fica `fases` de propósito: o que ela devolve é
+   "o código da tela de resultado", e trocar o nome em vinte asserções para
+   registrar uma mudança de endereço faria o diff parecer maior do que é. O
+   caminho é o que importa, e ele está aqui numa linha só. */
+const fases = () => readFileSync(new URL('../app/modules/resultado-tela.mjs', import.meta.url).pathname, 'utf8');
 
 export function suite() {
   const s = criarSuite('resultado');

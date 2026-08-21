@@ -1269,3 +1269,33 @@ e a terceira passada do crítico cego recebeu as duas.
 
 ---
 
+
+---
+
+### L-039 — em modo servidor o cliente ainda cria uma carteira local no boot
+
+**Dono:** **F1.16** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:**
+F1.14, pelo teste que joga uma rodada inteira no navegador
+
+O boot chama `atualizarSaldo()` antes de `ligarModoServidor()`, e
+`atualizarSaldo` chama `carregar()` — que cria a carteira local com o
+`WELCOME_GRANT` de boas-vindas. Só depois o `hidratar()` substitui `S.carteira`
+pela projeção do servidor.
+
+**O que isso custa hoje:** nada de dinheiro. A projeção do servidor sobrescreve
+a local antes de qualquer tela, e o `localStorage.clear()` continua não mudando
+nada do que o jogador tem — o critério de saída do F1.14 vale. O que sobra é um
+`WELCOME_GRANT` órfão no armazenamento de quem joga com conta.
+
+**O que isso custa depois, e é por isso que fica registrado:** o teste
+`em modo servidor o cliente NÃO escreve dinheiro no armazenamento` precisou
+EXCLUIR o `WELCOME_GRANT` da conta para poder afirmar o resto. Toda exclusão
+dessas é uma janela: no dia em que outro lançamento de boot aparecer, ele passa
+pela mesma brecha sem ninguém notar. A afirmação forte — "em modo servidor o
+cliente não escreve dinheiro nenhum" — só é possível quando o boot souber o modo
+antes de criar carteira.
+
+**O que a destrava:** inverter a ordem no boot, para que `modoServidor()` seja
+consultado antes do primeiro `carregar()`. Parece uma linha e não é: `carregar()`
+é chamado de vários lugares, e a versão certa é a fachada saber que, em modo
+servidor, ela não é fonte — não que cada chamador lembre de perguntar.

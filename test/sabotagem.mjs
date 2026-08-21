@@ -79,7 +79,7 @@ import { conferirAncoras, filtrarTocados } from './ancoras.mjs';
  * — voltando como PASSOU, porque eu tinha deixado o `sem-rede` de fora. É o
  * portão que pegou o vazamento de avatar do V1.15. Suíte que não roda não é
  * cobertura fraca: é ausência de cobertura com relatório verde. */
-const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,contraste';
+const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,sem-backend,rodada-completa,contraste';
 
 function rodar(caixa, semGolden, comVisual, recorte = null, estreita = false) {
   const env = { ...process.env,

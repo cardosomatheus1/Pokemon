@@ -1742,7 +1742,7 @@ Objetivo: servidor autoritativo e produto multiplayer. Fase mais longa, e a úni
 
 ---
 
-### F1.14 — O laço de jogo contra o servidor
+### F1.14 — O laço de jogo contra o servidor ✅
 
 **Tam.** G · **Método** INV+GL · **Portões** Q1 Q2 Q3 Q5 Q6 Q8 Q9 · **Depende de** F1.13
 
@@ -1780,6 +1780,78 @@ navegador do arnês de dois processos que a L-032 construiu.
 
 **Saída:** `localStorage.clear()` não muda nada do que o jogador tem, e a
 **L-036** fecha.
+
+---
+
+**FECHADO.** Critério de saída cumprido: `localStorage.clear()` não muda nada do
+que o jogador tem. Suíte 644 VERDE com navegador.
+
+**O que fechou o bloco não foi o código — foi um teste que não existia.** Os
+cinco defeitos plantados do laço passaram por toda a suíte na primeira
+sabotagem, porque moram dentro de `newRound`, `placeBet` e `finish`: funções que
+só rodam com DOM. A suíte tinha 629 testes verdes e nenhum deles jogava.
+
+A suíte `rodada-completa` joga: servidor de verdade com relógio controlado,
+navegador de verdade com sessão de verdade, e o servidor de arquivos
+encaminhando `/api/` para ter mesma origem — como em produção, onde o cliente é
+servido pelo mesmo domínio. Ela achou **seis defeitos** que ninguém via:
+
+| achado | por que escapou |
+|---|---|
+| a sala conectava sem sessão | `sala.mjs` não passa pela `api`, e o boot mandava `token: () => null` |
+| quem entra com conta real caía na HOME | `sessaoAtiva()` só conhecia o PIN local do protótipo |
+| a telemetria derrubava a página no 1º evento | `S.seeds.raiz` não existe durante a janela — é o §4.5 |
+| o cliente lia `stake`, a rota devolve `valor` | contrato divergente entre duas peças corretas |
+| **o cliente liquidava o que o servidor já liquidara** | os dois números coincidiam quase sempre |
+| o próprio teste lia `dataset.fase`, que não existe | aprovava sem medir nada |
+
+O quinto é o mais grave e o mais instrutivo. Duplo lançamento para a mesma
+aposta, invisível porque as contas batiam — apareceria só no dia em que
+divergissem, com o jogador vendo um saldo que não é o dele. Ele se revelou
+porque o defeito plantado S259 **passava numa execução e era pego na seguinte**:
+a instabilidade era o duplo lançamento acertando por acaso.
+
+O sexto é o pior de todos como método: um portão que aprova por engano é pior
+que portão nenhum, porque no ausente ninguém confia.
+
+**Duas correções de método vieram junto.** O teste apostava num lutador
+qualquer, e aposta perdedora torna o defeito invisível — o saldo pós-settlement
+é igual ao pós-aposta. Ele passa a apostar no campeão, e o settlement sempre
+credita. É o **D-021** noutra roupa: teste cujo poder depende do sorteio é teste
+instável. E o `portao` cobrou que a passada com navegador da sabotagem incluísse
+as suítes novas, senão defeito que só elas pegam volta `PASSOU` — o portão
+dizendo "ninguém pega" quando a verdade é "ninguém perguntou".
+
+**Deixou aberto:** a **L-039**, que o **F1.16** fecha.
+
+
+### F1.16 — O cliente não é fonte de dinheiro nem por um instante
+
+**Tam.** P · **Método** INV · **Portões** Q1 Q2 Q6 · **Depende de** F1.14
+
+**Por que ele existe:** proposto no F1.14, ao fechar a **L-039**. O boot chama
+`atualizarSaldo()` antes de `ligarModoServidor()`, e `atualizarSaldo` chama
+`carregar()` — que cria a carteira local com o crédito de boas-vindas. A
+projeção do servidor sobrescreve tudo logo em seguida, então **não custa
+dinheiro hoje**; o que custa é uma exceção no teste.
+
+O teste `em modo servidor o cliente NÃO escreve dinheiro no armazenamento`
+precisou excluir o `WELCOME_GRANT` para poder afirmar o resto, e toda exclusão
+dessas é uma janela: o próximo lançamento de boot passa por ela sem ninguém
+notar.
+
+**Escopo:** a fachada `banco.mjs` passa a saber que, em modo servidor, ela não é
+fonte — em vez de cada chamador de `carregar()` lembrar de perguntar. É a mesma
+forma do `modoServidor()` no `aposta.mjs`: a bifurcação mora num lugar só.
+
+**Critério de saída:** o teste da rodada completa afirma o ledger local VAZIO,
+sem exceção nenhuma na lista.
+
+**Sabotagem declarada:**
+- o boot voltar a criar carteira local com sessão ativa
+- `carregar()` passar a ser fonte quando o `hidratar()` falha — silêncio não é
+  permissão para inventar saldo, é a mesma regra da rodada
+- a exceção do `WELCOME_GRANT` voltar para o teste
 
 ---
 

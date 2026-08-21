@@ -116,30 +116,57 @@ export async function suite() {
     });
   });
 
-  /* ── O QUE AINDA NÃO ESTÁ LIGADO, AFIRMADO DE PROPÓSITO ──────────────────
+  /* ── O MODO SERVIDOR ESTÁ LIGADO, E É INTEIRO ──────────────────────────
    *
-   * A carteira já sabe vir do servidor. O app ainda NÃO a liga: nada no boot
-   * chama `hidratar()`, a rodada continua sendo sorteada no cliente e a aposta
-   * continua local. Isso é metade do F1.14, e a metade que falta é a que muda
-   * toda tela que mostra saldo.
+   * Até este bloco havia aqui um teste que AFIRMAVA A AUSÊNCIA de propósito —
+   * molde do `D-001`: "o app ainda NÃO liga o modo servidor no boot". Ele
+   * existia como lembrete de que a carteira não podia ser ligada sozinha, e
+   * ficou verde por três commits. Agora que a rodada e a aposta foram junto,
+   * ele saiu, e no lugar dele entra o que ele protegia.
    *
-   * O teste afirma a ausência DE PROPÓSITO, no molde do `D-001`: quem ligar o
-   * modo servidor no boot encontra este teste vermelho, e o vermelho é o
-   * lembrete de que a rodada e a aposta precisam ir junto. Ligar só a carteira
-   * daria duas fontes para o mesmo dinheiro — pior que qualquer um dos dois
-   * modos inteiros.
-   *
-   * Quando o resto do F1.14 fechar, este teste some no mesmo commit. */
-  s.teste('o app ainda NÃO liga o modo servidor no boot (metade do F1.14)', async () => {
+   * O QUE SE MEDE AQUI É A COMPLETUDE DO MODO. Um app meio migrado — saldo do
+   * servidor, aposta local — teria duas fontes para o mesmo dinheiro, que é
+   * pior que qualquer um dos dois modos inteiros. Então o teste não pergunta
+   * "a carteira vem de lá?"; ele pergunta se as TRÊS coisas vêm. */
+  s.teste('em modo servidor, as três fontes são o servidor', async () => {
     const { readFileSync, readdirSync } = await import('node:fs');
     const dir = new URL('../app/modules/', import.meta.url).pathname;
-    const chamam = readdirSync(dir).filter(f => f.endsWith('.mjs'))
-      .filter(f => /\bhidratar\s*\(/.test(readFileSync(dir + f, 'utf8')));
-    igual(chamam.join(','), 'banco.mjs',
-      `\`hidratar()\` passou a ser chamada por: ${chamam.join(', ')}. Se o modo ` +
-      `servidor foi ligado, a RODADA e a APOSTA precisam ter ido junto — senão o ` +
-      `saldo vem do servidor e a aposta continua local, e o mesmo dinheiro passa ` +
-      `a ter duas fontes. Apague este teste no commit que fechar o F1.14.`);
+    const fonte = Object.fromEntries(readdirSync(dir).filter(f => f.endsWith('.mjs'))
+      .map(f => [f, readFileSync(dir + f, 'utf8')]));
+    const html = readFileSync(new URL('../app/index.html', import.meta.url).pathname, 'utf8');
+
+    ok(/ligarModoServidor\s*\(\)/.test(html) && /await\s+ligarModoServidor/.test(html),
+      'o boot não liga o modo servidor. A carteira, a rodada e a aposta ficam ' +
+      'locais mesmo com sessão — e o `localStorage.clear()` volta a apagar ' +
+      'dinheiro.');
+
+    ok(/modoServidor\(\)/.test(fonte['fases.mjs']) && /esperarAbertura\(\)/.test(fonte['fases.mjs']),
+      '`fases.mjs` não busca a rodada no servidor. Com a carteira remota e a ' +
+      'rodada local, o jogador aposta numa rodada que o settlement não conhece.');
+
+    ok(/modoServidor\(\)/.test(fonte['aposta.mjs']) && /api\.post\('\/api\/aposta'/.test(fonte['aposta.mjs']),
+      '`aposta.mjs` não manda a aposta para o servidor. O saldo viria de lá e ' +
+      'a aposta ficaria aqui: duas fontes para o mesmo dinheiro.');
+
+    ok(/modoServidor\(\)/.test(fonte['loop.mjs']),
+      '`loop.mjs` ainda fecha a janela de aposta pelo relógio local. A janela ' +
+      'ficaria aberta aqui e fechada lá, ou o contrário — e uma dessas duas é ' +
+      'dinheiro.');
+  });
+
+  /* O CONTRAPESO, e ele é a metade que se esquece: o modo LOCAL continua
+     inteiro. Um app que só funcionasse com servidor teria trocado um modo
+     completo por outro, e o produto nasceu offline-first. */
+  s.teste('sem sessão, nada do servidor é chamado', async () => {
+    await comServico(async ({ ligar }) => {
+      const { banco } = await ligar();
+      igual(banco.modoServidor(), false, 'sem sessão o app se declarou em modo servidor');
+      igual(await banco.hidratar(), false,
+        '`hidratar()` tentou falar com o servidor sem sessão — e o modo local ' +
+        'não pode depender de rede para nada');
+      banco.carregar();
+      ok(banco.saldo() > 0, 'o modo local deixou de dar saldo inicial ao jogador');
+    });
   });
 
   return s;

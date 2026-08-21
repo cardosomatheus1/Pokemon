@@ -146,14 +146,14 @@ const exigeVisual = process.env.EXIGE_VISUAL === '1';
    mesmo argumento do Q5. */
 const exigeLocal = process.env.EXIGE_LOCAL === '1';
 const semVisual = process.env.SEM_VISUAL === '1';   // usado pela sabotagem
-let rVisual = null, baseAtual = null, baseGravada = null, digitaisNav = null, rSemRede = null, rTemaCedo = null;
+let rVisual = null, baseAtual = null, baseGravada = null, digitaisNav = null, rSemRede = null, rTemaCedo = null, rSemBackend, rRodadaCompleta;
 /* Q3 do F0.5 pede a mesma rodada reproduzida em dois ambientes JS. Estas são as
    raízes comparadas — fixas, para que a falha seja reproduzível. */
 const RAIZES_Q3 = [1, 42, 0xC0FFEE, 0xFFFFFFFF, 987654321];
 /* AS SUÍTES QUE PRECISAM DE NAVEGADOR. Com `--so` fora desta lista, as cinco
    partidas de Chromium não acontecem — é o que faz `--so=carteira` custar 0,2 s
    em vez de 95 s. */
-const COM_NAVEGADOR = ['visual','visual-base','ambientes','rodada-viva','tema-cedo','sem-rede','contraste'];
+const COM_NAVEGADOR = ['visual','visual-base','ambientes','rodada-viva','tema-cedo','sem-rede','sem-backend','rodada-completa','contraste'];
 const precisaNavegador = !SO || SO.some(n => COM_NAVEGADOR.includes(n));
 
 if (visual.disponivel() && !semVisual && precisaNavegador) {
@@ -174,12 +174,14 @@ if (visual.disponivel() && !semVisual && precisaNavegador) {
    *
    * `Promise.all` e não `allSettled` de propósito: falha de navegador tem que
    * derrubar a execução, e não virar um `null` que a suíte lê como "pulado". */
-  [rVisual, baseAtual, digitaisNav, rTemaCedo, rSemRede] = await Promise.all([
+  [rVisual, baseAtual, digitaisNav, rTemaCedo, rSemRede, rSemBackend, rRodadaCompleta] = await Promise.all([
     visual.rodar(),
     visual.capturarBase(),
     visual.digitaisNoNavegador(RAIZES_Q3),
     visual.rodarTemaSemModulos(),
     temLocal ? visual.rodarSemRede() : Promise.resolve(null),
+    visual.rodarSemBackend(),
+    visual.rodarRodadaCompleta(),
   ]);
   baseGravada = JSON.parse(readFileSync(new URL('./fixtures/visual-base.json', import.meta.url), 'utf8'));
   if (!temLocal) console.log('  · teste de egresso fechado pulado (sem assets locais) — use npm run assets\n');
@@ -236,6 +238,7 @@ const todas = [
         /* O contraste é medido no navegador e julgado por aritmética pura —
            por isso a suíte mora fora do visual.mjs e recebe as medidas. */
         contraste.suite(rVisual.contrastes),
+        visual.suiteSemBackend(rSemBackend), visual.suiteRodadaCompleta(rRodadaCompleta),
         ...(rSemRede ? [visual.suiteSemRede(rSemRede)] : [])]
      : []),
   await paridade.suite(),

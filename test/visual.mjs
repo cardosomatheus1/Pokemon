@@ -15,7 +15,7 @@
  *   `npm test`          -> pula com aviso, se não houver navegador
  *   `npm run portoes`   -> exige. Portão que pula em silêncio é decorativo.
  */
-import { createServer } from 'node:http';
+import { createServer, request as httpRequest } from 'node:http';
 import { readFileSync, existsSync } from 'node:fs';
 import { extname, join, sep } from 'node:path';
 import { criarSuite, igual, ok } from './harness.mjs';
@@ -38,9 +38,33 @@ export const disponivel = () => existsSync(PW) && existsSync(CHROME);
    egresso fechado não tem o que provar. */
 export const temAssetsLocais = () => existsSync(new URL('../assets', import.meta.url).pathname);
 
-function servidor() {
+/* `apiPorta` liga o ENCAMINHAMENTO para a API (F1.14).
+ *
+ * O servidor de arquivos e o `criarServidor()` são dois processos em portas
+ * diferentes, e o navegador trata isso como duas origens: sem CORS, a página
+ * não fala com a API, e com CORS o teste estaria medindo uma configuração que
+ * a produção não usa — lá o cliente é servido pelo mesmo domínio, e é POR ISSO
+ * que a lista de origens do servidor pode ser vazia.
+ *
+ * Encaminhar mantém a mesma origem e não inventa configuração nenhuma: a
+ * página vê exatamente o que veria em produção. */
+function servidor(apiPorta = null) {
   return new Promise(res => {
     const s = createServer((q, r) => {
+      if (apiPorta && q.url.startsWith('/api/')) {
+        const corpo = [];
+        q.on('data', c => corpo.push(c));
+        q.on('end', () => {
+          const req = httpRequest({ host: '127.0.0.1', port: apiPorta, path: q.url,
+                                    method: q.method, headers: q.headers }, resp => {
+            r.writeHead(resp.statusCode, resp.headers);
+            resp.pipe(r);
+          });
+          req.on('error', () => { r.writeHead(502); r.end(); });
+          req.end(Buffer.concat(corpo));
+        });
+        return;
+      }
       /* Página mínima do teste Q3 entre ambientes: só precisa de uma origem
          igual à do repositório para poder importar os módulos por caminho. */
       if (q.url.startsWith('/__q3')) {
@@ -887,6 +911,380 @@ export async function rodarSemRede() {
  * piscaria no tema errado até o boot chegar — e um quadro é o suficiente para
  * parecer defeito.
  */
+/* Q5/Q6 · COM SESSÃO E SEM SERVIDOR, O APP NÃO INVENTA RODADA (F1.14).
+ *
+ * ── O DEFEITO QUE ESTE TESTE EXISTE PARA PEGAR ─────────────────────────────
+ *
+ * É o primeiro item da sabotagem declarada do bloco, e é o mais tentador de
+ * todos: a rede não respondeu, e alguém acha que travar a tela é pior que
+ * sortear uma rodada local "só para o jogador não ficar parado". O resultado é
+ * o jogador apostando numa rodada que o settlement do servidor não conhece —
+ * dinheiro debitado contra lutadores que nunca existiram.
+ *
+ * O defeito plantado S255 escapou de TODA a suíte na primeira passada, porque a
+ * queda mora dentro de `newRound()`, que precisa de DOM para rodar. Teste
+ * estático não a alcança; só um navegador de verdade alcança. É a razão de o
+ * Q5 existir, na forma mais literal possível.
+ *
+ * ── COMO A CENA É MONTADA ──────────────────────────────────────────────────
+ *
+ * O `localStorage` recebe uma sessão ANTES de qualquer módulo rodar, então o
+ * app acorda em modo servidor. Toda chamada para `/api/` é abortada, como um
+ * backend caído faria — mas os ARQUIVOS continuam sendo servidos, senão a
+ * página nem carregaria e o teste passaria por não ter app nenhum.
+ */
+export async function rodarSemBackend() {
+  const { chromium } = await import(PW);
+  const { s, porta } = await servidor();
+  const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+  const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
+  const pg = await ctx.newPage();
+  const erros = [];
+  pg.on('pageerror', e => erros.push(String(e).split('\n')[0]));
+
+  /* A sessão entra antes do primeiro script da página. */
+  await pg.addInitScript(() => { try { localStorage.setItem('ar_sessao', 'sessao-de-teste'); } catch {} });
+
+  /* A API cai; o resto do site continua de pé. */
+  let chamadasApi = 0;
+  await pg.route('**/api/**', rota => { chamadasApi++; return rota.abort(); });
+
+  await pg.goto(`http://127.0.0.1:${porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
+
+  /* Espera generosa E CONTRA A CONDIÇÃO ERRADA: se aparecer lutador para
+     apostar, o app inventou rodada — que é exatamente o defeito. Esperar o
+     "tempo de não acontecer" é o único caso em que o relógio é a medida certa,
+     porque a afirmação é sobre AUSÊNCIA. Oito segundos são muitas vezes o
+     tempo normal de uma abertura. */
+  await pg.waitForFunction(() => document.querySelectorAll('.pick').length > 0,
+    { timeout: 8000, polling: 200 }).catch(() => {});
+
+  const st = await pg.evaluate(() => ({
+    picks: document.querySelectorAll('.pick').length,
+    faixa: document.getElementById('conexaoFaixa')?.className || '',
+    textoFaixa: document.getElementById('conexaoFaixa')?.textContent || '',
+  }));
+  await b.close(); s.close();
+  return { erros, chamadasApi, ...st };
+}
+
+export function suiteSemBackend(r) {
+  const s = criarSuite('sem-backend');
+  s.teste('a página sobe com sessão e sem backend', () => {
+    ok(r.erros.length === 0, `erro de página: ${r.erros[0]}`);
+    ok(r.chamadasApi > 0,
+      'nenhuma chamada à API foi tentada — o app não acordou em modo servidor, ' +
+      'e então este teste não estaria medindo nada');
+  });
+
+  s.teste('NENHUMA rodada é inventada quando o servidor não responde', () => {
+    igual(r.picks, 0,
+      `apareceram ${r.picks} lutadores para apostar com o backend inteiro caído. ` +
+      `O app sorteou uma rodada local em modo servidor — e quem apostar nela ` +
+      `aposta contra números que o settlement não conhece. Rede caída não é ` +
+      `permissão para inventar rodada.`);
+  });
+
+  s.teste('a faixa de conexão explica a espera', () => {
+    ok(r.faixa.includes('on'),
+      'o app ficou parado sem dizer nada. Uma tela que não abre e não explica ' +
+      'lê como produto quebrado — é o §5.9, e é a diferença entre esperar e ' +
+      'fechar a aba.');
+    ok(/aposta|saldo|guardad/i.test(r.textoFaixa),
+      `a faixa não fala do dinheiro: "${r.textoFaixa.slice(0, 60)}". É a primeira ` +
+      `pergunta de quem cai, e não respondê-la deixa a pior resposta possível.`);
+  });
+  return s;
+}
+
+/* Q5/Q1 · UMA RODADA INTEIRA CONTRA O SERVIDOR, NO NAVEGADOR (F1.14).
+ *
+ * ── POR QUE ESTE TESTE PRECISOU EXISTIR ────────────────────────────────────
+ *
+ * Três defeitos plantados do bloco escaparam da suíte inteira:
+ *
+ *   S255  rede caída faz o app cair para o sorteio local
+ *   S258  falha de rede vira "aposta recusada", e o jogador aposta duas vezes
+ *   S259  a carteira deixa de voltar do settlement
+ *
+ * Os três moram dentro de `newRound`, `placeBet` e `finish` — funções que só
+ * rodam com DOM. Nenhum teste estático as alcança, e nenhum teste de módulo
+ * também: eles medem as PEÇAS, e o que falha aqui é o ENCAIXE. É a lição que o
+ * projeto já registrou cinco vezes, e esta é a sexta.
+ *
+ * ── O QUE ELE MONTA ────────────────────────────────────────────────────────
+ *
+ * Um servidor de verdade com relógio controlado, um navegador de verdade com
+ * sessão de verdade, e o servidor de arquivos ENCAMINHANDO `/api/` — mesma
+ * origem, como em produção. O teste é quem avança o relógio do servidor, então
+ * a rodada inteira cabe em segundos em vez de 78.
+ */
+export async function rodarRodadaCompleta() {
+  const { chromium } = await import(PW);
+  const { criarServidor } = await import('../server/servidor.mjs');
+  const { FASE_MS } = await import('../server/scheduler.mjs');
+
+  let t = 1_700_000_000_000;
+  const api = criarServidor({ config: { ambiente: 'teste', silencioso: true },
+                              banco: ':memory:', sims: 400, relogio: () => t });
+  const apiPorta = await api.ouvir(0);
+  const { s, porta } = await servidor(apiPorta);
+
+  const conta = await fetch(`http://127.0.0.1:${apiPorta}/api/auth/cadastrar`, {
+    method: 'POST', headers: { 'x-api-versao': '1', 'content-type': 'application/json' },
+    body: JSON.stringify({ username: 'jogadora', email: 'j@exemplo.test',
+                           senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01' }) });
+  const { sessao } = await conta.json();
+
+  const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+  const pg = await (await b.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+  const erros = [], falhas = [], consola = [];
+  pg.on('pageerror', e => erros.push(String(e.stack || e).split('\n').slice(0, 4).join(' « ')));
+  pg.on('requestfailed', q => falhas.push(`${q.method()} ${q.url()} — ${q.failure()?.errorText}`));
+  pg.on('console', m => { if (m.type() === 'error') consola.push(m.text().slice(0, 160)); });
+  await pg.addInitScript(tk => { try { localStorage.setItem('ar_sessao', tk); } catch {} }, sessao);
+
+  /* A FASE SAI DE `S.state`, E NÃO DE UM ATRIBUTO DO DOM.
+   *
+   * A primeira versão lia `document.documentElement.dataset.fase`, que NÃO
+   * EXISTE — então a comparação `'' !== 'betting'` era verdadeira sempre, e o
+   * teste "quem fecha a janela é o servidor" passava sem medir nada. Portão
+   * que aprova por engano é pior que portão ausente: o ausente ninguém confia.
+   *
+   * `S.state` é a fase de verdade, é o que o app usa para decidir, e o módulo
+   * é importável de dentro da página. */
+  const espiar = async () => pg.evaluate(async () => {
+    const { S } = await import('/app/modules/estado.mjs');
+    return {
+      picks: document.querySelectorAll('.pick').length,
+      saldo: document.getElementById('bal')?.textContent?.replace(/\D/g, '') || '',
+      info: document.getElementById('betInfo')?.textContent || '',
+      fase: S.state,
+    };
+  });
+  const ate = async (cond, oQue, teto = 30000) => {
+    const fim = Date.now() + teto;
+    while (Date.now() < fim) { if (await cond()) return true; await new Promise(z => setTimeout(z, 120)); }
+    return false;
+  };
+
+  const r = { erros };
+  await pg.goto(`http://127.0.0.1:${porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
+
+  /* 1 · a rodada chega do servidor */
+  r.abriu = await ate(async () => (await espiar()).picks === 12, 'a rodada do servidor');
+  r.aposHome = await espiar();
+
+  /* 2 · o saldo é o do servidor, e não o inicial local */
+  const carteira = await fetch(`http://127.0.0.1:${apiPorta}/api/carteira`,
+    { headers: { 'x-api-versao': '1', authorization: `Bearer ${sessao}` } }).then(x => x.json());
+  r.saldoServidor = Object.entries(carteira.saldos)
+    .filter(([k]) => !k.startsWith('reservado_')).reduce((a, [, v]) => a + v, 0);
+
+  /* 3 · a aposta vai pela rota. O clique só acontece se houve o que clicar —
+     senão o erro seria um stack de timeout do Playwright, que não diagnostica
+     nada. O teste abaixo é quem reprova, com o número. */
+  r.falhas = falhas.slice(0, 4); r.consola = consola.slice(0, 4);
+  if (!r.abriu) { await b.close(); s.close(); await api.fechar(); return r; }
+  /* O CLIQUE NÃO PODE MATAR O ARNÊS. Um `page.click` que estoura joga
+     `TimeoutError` para fora da suíte inteira: o relatório vira um stack do
+     Playwright, as outras asserções nunca rodam, e o portão fica sem saber o
+     que falhou. Aqui ele vira um dado, e quem reprova é a asserção — com o
+     nome do que estava na frente. */
+  /* A APOSTA VAI NO CAMPEÃO, e a escolha é o que dá poder ao teste do fim.
+   *
+   * Com aposta PERDEDORA, o saldo depois do settlement é igual ao de depois da
+   * aposta — o stake já saiu e não entra payout nenhum. Um cliente que NÃO
+   * reidrata a carteira mostra o número certo por acidente, e o defeito
+   * plantado S259 fica invisível. Foi exatamente o que aconteceu: ele passou
+   * numa execução e foi pego na seguinte, conforme o sorteio.
+   *
+   * É o D-021 noutra roupa — teste cujo poder depende do sorteio é teste
+   * instável, e instável é pior que vermelho. Apostando no campeão o
+   * settlement SEMPRE credita, e o número na tela só pode estar certo se tiver
+   * vindo do servidor. */
+  const rd = api.db.prepare('SELECT id FROM rounds ORDER BY rowid DESC LIMIT 1').get();
+  const campeaoSlot = api.db.prepare(
+    'SELECT slot FROM round_fighters WHERE round_id=? AND species_id=?')
+    .get(rd.id, api.sched.espiarCampeao(rd.id))?.slot ?? 0;
+  r.campeaoSlot = campeaoSlot;
+
+  r.cliqueErro = null;
+  try {
+    await pg.click(`.pick[data-i="${campeaoSlot}"]`, { timeout: 8000 });
+  } catch (e) {
+    r.cliqueErro = String(e.message || e).split('\n').slice(0, 3).join(' ');
+    r.bootPresente = await pg.evaluate(() => !!document.getElementById('boot'));
+  }
+  r.apostou = await ate(async () => /retorno se vencer/.test((await espiar()).info), 'a confirmação da aposta');
+  r.aposAposta = await espiar();
+  const apostas = api.db.prepare('SELECT COUNT(*) n, SUM(stake) s FROM bets').get();
+  r.apostasNoBanco = apostas.n;
+  r.stakeNoBanco = apostas.s;
+
+  /* 4 · A REDE CAI NO MEIO DA APOSTA. O jogador troca de lutador e o servidor
+     não responde. A recusa e o silêncio precisam ser textos DIFERENTES: dizer
+     "recusada" quando a rede caiu faz o jogador tentar de novo, e a primeira
+     pode ter chegado — duas apostas por causa de uma mensagem. */
+  await pg.route('**/api/aposta', rota => rota.abort());
+  /* Um lutador QUALQUER menos o campeão: a queda tem que impedir a troca, e a
+     aposta vencedora precisa continuar de pé para o teste do fim. */
+  await pg.evaluate(c => document.querySelector(`.pick[data-i="${c === 0 ? 1 : 0}"]`)?.click(), campeaoSlot);
+  r.textoSemRede = (await ate(async () => {
+    const i = (await espiar()).info;
+    return i && !/retorno se vencer/.test(i);
+  }, 'a mensagem de queda', 8000)) ? (await espiar()).info : '(a tela não mudou)';
+  await pg.unroute('**/api/aposta');
+
+  /* 5 · A RODADA VAI ATÉ O FIM, e o saldo tem que voltar do settlement.
+     `S.speed` multiplica o tempo da luta e já existe — é o mesmo recurso que o
+     roteiro de capturas usa. Sem ele a batalha levaria 45 s de relógio de
+     parede, e o portão inteiro pagaria isso a cada execução. */
+  await pg.evaluate(async () => {
+    const { S } = await import('/app/modules/estado.mjs');
+    S.speed = 60;
+  });
+  t += FASE_MS.APOSTA + 1; api.sched.tick();
+  r.travou = await ate(async () => (await espiar()).fase !== 'betting', 'o fechamento vindo do servidor');
+  r.aposTravar = await espiar();
+
+  t += FASE_MS.PREPARO + FASE_MS.LUTA + 1; api.sched.tick(); api.sched.tick();
+  const { liquidarRodada } = await import('../server/aposta.mjs');
+  const rodada = api.db.prepare('SELECT id FROM rounds ORDER BY rowid DESC LIMIT 1').get();
+  try { liquidarRodada(api.db, { sched: api.sched, roundId: rodada.id, agora: t }); } catch { /* já liquidada */ }
+  const depois = await fetch(`http://127.0.0.1:${apiPorta}/api/carteira`,
+    { headers: { 'x-api-versao': '1', authorization: `Bearer ${sessao}` } }).then(x => x.json());
+  r.saldoLiquidado = Object.entries(depois.saldos)
+    .filter(([k]) => !k.startsWith('reservado_')).reduce((a, [, v]) => a + v, 0);
+
+  r.chegouAoFim = await ate(async () => (await espiar()).fase === 'result', 'a tela de resultado', 40000);
+
+  /* O LEDGER LOCAL NÃO PODE TER GANHO NADA.
+   *
+   * Com o servidor liquidando, o cliente que TAMBÉM lançasse teria dois
+   * lançamentos para a mesma aposta. A tela não denunciaria: o `hidratar()`
+   * vem depois e sobrescreve o número com o do servidor — o defeito ficaria
+   * escondido atrás da própria correção que o torna visível no saldo.
+   *
+   * O que sobra observável é o ARMAZENAMENTO: em modo servidor o cliente não
+   * escreve dinheiro nenhum. É a propriedade "uma fonte só" dita diretamente,
+   * e é o que o defeito plantado S260 quebra. */
+  r.ledgerLocal = await pg.evaluate(() => {
+    try {
+      const w = JSON.parse(localStorage.getItem('ar_carteira') || 'null');
+      return w?.ledger?.map(l => l.tipo) ?? [];
+    } catch { return ['(ilegível)']; }
+  });
+  r.faseFinal = (await espiar()).fase;
+  r.estadoFinal = await pg.evaluate(async () => {
+    const { S } = await import('/app/modules/estado.mjs');
+    return { state: S.state, speed: S.speed, clock: Math.round(S.clock), temBatalha: !!S.battle,
+             eventos: S.battle?.events?.length ?? 0, champ: S.champ };
+  }).catch(() => null);
+  r.saldoNaTelaFinal = (await ate(async () => +(await espiar()).saldo === r.saldoLiquidado,
+    'o saldo reidratado', 15000)) ? r.saldoLiquidado : +(await espiar()).saldo;
+
+  await b.close(); s.close(); await api.fechar();
+  return r;
+}
+
+export function suiteRodadaCompleta(r) {
+  const s = criarSuite('rodada-completa');
+
+  s.teste('a página joga contra o servidor sem erro', () => {
+    ok(r.erros.length === 0, `erro de página: ${r.erros[0]}`);
+  });
+
+  s.teste('a rodada desenhada é a do servidor', () => {
+    ok(r.abriu,
+      `os doze lutadores não apareceram (vi ${r.aposHome?.picks ?? '?'}). Ou a ` +
+      `rodada não chegou pela sala, ou o cliente não montou a pool a partir da ` +
+      `semente publicada.\n      requisições que falharam: ${r.falhas?.join(' | ') || 'nenhuma'}` +
+      `\n      console: ${r.consola?.join(' | ') || 'limpo'}`);
+  });
+
+  s.teste('o saldo na tela é o do SERVIDOR', () => {
+    ok(r.abriu, 'a rodada não abriu — ver o teste acima');
+    igual(r.aposHome.saldo, String(r.saldoServidor),
+      `a tela mostra ${r.aposHome.saldo} e o servidor tem ${r.saldoServidor}. O ` +
+      `cliente está exibindo a carteira local — e limpar o armazenamento voltaria ` +
+      `a apagar dinheiro do jogador.`);
+  });
+
+  s.teste('a aposta chega ao banco do servidor', () => {
+    ok(r.abriu, 'a rodada não abriu — ver o teste acima');
+    ok(!r.cliqueErro,
+      `não deu para clicar no lutador: ${r.cliqueErro}` +
+      (r.bootPresente ? '\n      A TELA DE BOOT AINDA ESTÁ NA PÁGINA. O boot só a ' +
+        'remove depois de `newRound()` voltar — se ela ficou, alguma coisa antes ' +
+        'dela não voltou, e o jogador vê a tela de carregamento para sempre.' : '') +
+      `\n      erros de página: ${r.erros.join(' | ') || 'nenhum'}`);
+    ok(r.apostou, `a aposta não foi confirmada na tela: "${r.aposAposta.info.slice(0, 80)}"`);
+    igual(r.apostasNoBanco, 1,
+      `o banco do servidor tem ${r.apostasNoBanco} apostas. O clique virou aposta ` +
+      `local: o jogador teria débito aqui e nada lá, e o settlement não pagaria.`);
+  });
+
+  s.teste('o saldo cai pelo valor que o SERVIDOR registrou', () => {
+    ok(r.abriu, 'a rodada não abriu — ver o teste acima');
+    igual(+r.aposAposta.saldo, r.saldoServidor - r.stakeNoBanco,
+      `depois de apostar ${r.stakeNoBanco} a tela mostra ${r.aposAposta.saldo} e a ` +
+      `conta do servidor dá ${r.saldoServidor - r.stakeNoBanco}. As duas pontas ` +
+      `discordam sobre quanto o jogador tem.`);
+  });
+
+  s.teste('queda de rede na aposta NÃO é lida como recusa', () => {
+    ok(r.abriu, 'a rodada não abriu — ver o teste acima');
+    const txt = (r.textoSemRede || '').toLowerCase();
+    ok(txt && txt !== '(a tela não mudou)',
+      'o servidor sumiu no meio da aposta e a tela não disse nada');
+    for (const proibido of ['recusada', 'tente novamente', 'não foi aceita', 'inválida'])
+      ok(!txt.includes(proibido),
+        `a tela diz "${proibido}" para uma FALHA DE REDE: "${r.textoSemRede.slice(0, 90)}". ` +
+        `O jogador tenta de novo, e a primeira aposta pode ter chegado — duas ` +
+        `apostas por causa de uma mensagem.`);
+    ok(/não repita|não consegui|conexão|servidor/.test(txt),
+      `a mensagem não explica que foi a rede: "${r.textoSemRede.slice(0, 90)}"`);
+  });
+
+  s.teste('o saldo final é o do SETTLEMENT do servidor', () => {
+    ok(r.abriu, 'a rodada não abriu — ver o teste acima');
+    ok(r.chegouAoFim,
+      `a rodada não chegou à tela de resultado — parou em \`${r.faseFinal}\`. ` +
+      `estado: ${JSON.stringify(r.estadoFinal)}`);
+    igual(r.saldoNaTelaFinal, r.saldoLiquidado,
+      `depois do settlement o servidor tem ${r.saldoLiquidado} e a tela mostra ` +
+      `${r.saldoNaTelaFinal}. O cliente não reidratou a carteira no fim da ` +
+      `rodada: o número congela na projeção de antes, e o jogador vê um saldo ` +
+      `que não é o dele até recarregar a página.`);
+  });
+
+  s.teste('em modo servidor o cliente NÃO escreve dinheiro no armazenamento', () => {
+    ok(r.abriu, 'a rodada não abriu — ver o teste acima');
+    /* DINHEIRO DA RODADA, e não todo lançamento. O `WELCOME_GRANT` nasce no
+       boot, antes de o app saber que há sessão — a carteira local é criada por
+       `carregar()` e só depois `ligarModoServidor()` a substitui pela projeção.
+       Isso é uma lacuna própria (L-039) e tem dono; não é o que este teste
+       mede. O que ele mede é se a RODADA gerou lançamento local. */
+    const dinheiro = (r.ledgerLocal || []).filter(t => /BET|WIN|LOSS|PAYOUT|BUY/i.test(t));
+    igual(dinheiro.length, 0,
+      `o ledger local ganhou ${dinheiro.join(', ')} numa rodada de SERVIDOR. ` +
+      `São dois lançamentos para a mesma aposta, e a tela não denuncia: o ` +
+      `\`hidratar()\` vem depois e sobrescreve o número. A divergência só ` +
+      `apareceria no dia em que as duas contas não batessem.`);
+  });
+
+  s.teste('quem fecha a janela de aposta é o servidor', () => {
+    ok(r.abriu, 'a rodada não abriu — ver o teste acima');
+    ok(r.travou,
+      'o cliente continuou na fase de aposta depois de o servidor travar a ' +
+      'rodada. A janela fica aberta aqui e fechada lá — e uma dessas duas é ' +
+      'dinheiro.');
+  });
+
+  return s;
+}
+
 export async function rodarTemaSemModulos(temaAlvo = 'shadow') {
   const { chromium } = await import(PW);
   const { s, porta } = await servidor();

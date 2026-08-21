@@ -56,7 +56,20 @@ export function emitir(nome, extra = {}) {
   const ev = {
     evento: nome,
     sessao: idSessao(),
-    rodada: S.seeds ? S.seeds.raiz.toString(16) : null,
+    /* QUAL RODADA, E ELA TEM DOIS NOMES (F1.14).
+     *
+     * Sozinho, o app é dono da raiz e ela identifica a rodada. Contra o
+     * servidor, a raiz é SEGREDO durante a janela de aposta — o §4.5 — e
+     * `S.seeds` chega parcial, só com os dois ramos cosméticos. Quem
+     * identifica ali é o id da rodada, que o servidor publica e que vale para
+     * os dois lados do evento.
+     *
+     * Sem isto, `S.seeds.raiz.toString(16)` derrubava a página inteira no
+     * primeiro `emitir()` de uma rodada de servidor — e a tela de boot ficava
+     * para sempre, porque `newRound()` nunca voltava. Achado pelo teste que
+     * joga uma rodada completa no navegador; nenhum módulo estava errado
+     * sozinho. */
+    rodada: S.rodadaId ?? (S.seeds?.raiz != null ? S.seeds.raiz.toString(16) : null),
     versaoMotor: VERSAO_MOTOR,
     versaoPack: pack.id,
     ts: Date.now(),

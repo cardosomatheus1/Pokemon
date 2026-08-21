@@ -31,6 +31,8 @@ const PACK   = 'content/pokemon_kanto_v1.mjs';
 const VALID  = 'engine/pack.mjs';
 const SEMENTE= 'engine/seed.mjs';
 const FASES  = 'app/modules/fases.mjs';
+const LOOPC  = 'app/modules/loop.mjs';
+const APOSTAC= 'app/modules/aposta.mjs';
 const PRECO  = 'engine/preco.mjs';
 const CLIMA  = 'app/modules/clima.mjs';
 const EXPO   = 'engine/exposicao.mjs';
@@ -78,6 +80,7 @@ const APIC   = 'app/modules/api.mjs';
 const PTXT   = 'app/modules/protecao-texto.mjs';
 const FECHO  = 'test/fecho.mjs';
 const RESULT = 'engine/resultado.mjs';
+const RESTELA= 'app/modules/resultado-tela.mjs';
 const CARTEIRA= 'app/modules/carteira.mjs';
 const NAVEG  = 'app/modules/navegacao.mjs';
 const RODADA = 'app/modules/rodada.mjs';
@@ -424,7 +427,7 @@ export const DEFEITOS = [
 
   { id:'S65', arquivo:TELEM, nome:'o evento sai sem a rodada',
     real:'campo comum esquecido — o evento existe e não responde nada',
-    de:'    rodada: S.seeds ? S.seeds.raiz.toString(16) : null,', para:'' },
+    de:'    rodada: S.rodadaId ?? (S.seeds?.raiz != null ? S.seeds.raiz.toString(16) : null),', para:'' },
 
   { id:'S66', arquivo:TELEM, nome:'a telemetria passa a identificar o dispositivo',
     real:'"é só para segmentar melhor" — e classe de dispositivo vira impressão digital',
@@ -679,8 +682,8 @@ export const DEFEITOS = [
      runner sem ninguém notar. */
   { id:'S113', arquivo:SABOT, nome:'a passada com navegador deixa de rodar uma suíte de navegador',
     real:'lista encolhida numa limpeza — defeito que só aquela suíte pega volta como PASSOU',
-    de:"const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,contraste';",
-    para:"const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,contraste';" },
+    de:"const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,sem-backend,rodada-completa,contraste';",
+    para:"const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,sem-backend,contraste';" },
   /* ---------- F1.1: o esqueleto do backend ---------- */
 
   { id:'S114', arquivo:SRV, nome:'a versão da API deixa de ser conferida',
@@ -1116,7 +1119,10 @@ export const DEFEITOS = [
      importante da fase". Cada item dela vira um defeito aqui, e nenhum é
      rebuscado: são as seis formas de a proteção cair sozinha. */
 
-  { id:'S195', arquivo:FASES, nome:'a tela comemora retorno menor que a aposta',
+  /* REALVADO NO F1.14: a tela de resultado saiu do `fases.mjs` para
+     `resultado-tela.mjs` — o `fases` decide QUANDO, a tela decide COMO. O
+     defeito segue o comportamento, não o endereço antigo. */
+  { id:'S195', arquivo:RESTELA, nome:'a tela comemora retorno menor que a aposta',
     real:'a condição volta a ser "acertei o campeão?" — é a perda disfarçada de ganho, e é o §28.5 inteiro',
     de:'    if (res.comemora){', para:'    if (acertou){' },
 
@@ -1452,6 +1458,44 @@ export const DEFEITOS = [
     real:'"o nome do campo é esse" — e a tela mostra a intenção em vez do preço que o §4.4.5 manda auditar',
     de:'    margemConfigurada: rodada.margemEfetiva,',
     para:'    margemConfigurada: rodada.margemConfigurada,' },
+
+  /* ── F1.14 · O LAÇO DE JOGO CONTRA O SERVIDOR ─────────────────────────── */
+
+  { id:'S255', arquivo:FASES, nome:'rede caída faz o app cair para o sorteio local',
+    real:'"melhor jogar do que travar" — e o jogador aposta numa rodada que o settlement não conhece',
+    /* A PRIMEIRA VERSÃO DESTE MUTANTE ERA INÓCUA, e vale registrar por quê:
+       ela punha `|| {…}` depois de um `await` numa promessa que NUNCA resolve,
+       então o ramo alternativo jamais rodava. Mutante que não muda
+       comportamento não é defeito — é ruído que volta PASSOU e faz o portão
+       mentir. Este aqui desiste de verdade, com relógio, que é exatamente a
+       forma que a queda tem no mundo real. */
+    de:'    const r = await esperarAbertura();',
+    para:"    const r = await Promise.race([esperarAbertura(), new Promise(z => setTimeout(() => z(null), 300))]);\n    if (!r) { S.rodadaId = null; S.commit = { commit: 'local' }; S.seeds = sementes(novaRaiz()); S.fighters = sortearPool(S.seeds.elenco); S.weather = null; S.odds = await computeOdds(S.fighters, 400, undefined, S.seeds.raiz, margemConfigurada()); S.passivo = passivoVazio(S.odds, CONF); return montarCena(); }" },
+
+  { id:'S256', arquivo:MODOSRV, nome:'o cliente deixa de conferir a raiz revelada contra a pool que desenhou',
+    real:'"a raiz é do servidor, é confiável" — e uma rodada mostrada diferente da jogada passa sem ninguém ver',
+    de:'  if (completa.elenco !== sementeElencoUsada) return null;',
+    para:'  return completa;' },
+
+  { id:'S257', arquivo:LOOPC, nome:'a janela de aposta volta a fechar pelo relógio local',
+    real:'"o relógio é o mesmo" — e a aposta fica aberta aqui e fechada lá, ou o contrário',
+    de:'    if (!modoServidor() && CONF.BET_WINDOW - S.clock <= 0) startFight();',
+    para:'    if (CONF.BET_WINDOW - S.clock <= 0) startFight();' },
+
+  { id:'S258', arquivo:APOSTAC, nome:'falha de rede vira aposta recusada',
+    real:'"o jogador precisa saber que não deu" — e ele aposta de novo, com a primeira possivelmente registrada',
+    de:"  if (r.indisponivel) {\n    $('#betInfo').innerHTML =\n      `<b>Não consegui falar com o servidor.</b><br>` +\n      `<span class=\"tiny\">A aposta pode ou não ter sido registrada — não repita. `",
+    para:"  if (false) {\n    $('#betInfo').innerHTML =\n      `<b>Não consegui falar com o servidor.</b><br>` +\n      `<span class=\"tiny\">A aposta pode ou não ter sido registrada — não repita. `" },
+
+  { id:'S259', arquivo:RESTELA, nome:'a carteira deixa de voltar do settlement',
+    real:'"o saldo já está na tela" — e o número congela na projeção de antes da rodada',
+    de:'  if (modoServidor()) hidratar().then(atualizarSaldo);',
+    para:'  if (false) hidratar().then(atualizarSaldo);' },
+
+  { id:'S260', arquivo:RESTELA, nome:'o cliente liquida a aposta que o servidor já liquidou',
+    real:'duplo lançamento — os números coincidem quase sempre, e o defeito só aparece no dia em que divergem',
+    de:'    if (modoServidor()) {',
+    para:'    if (false) {' },
 
   { id:'S224', arquivo:FECHO, nome:'o fecho para de seguir os imports do filho',
     real:'somar só o arquivo do script — mudar o que ele importa deixa de invalidar',

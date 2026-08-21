@@ -8,7 +8,7 @@ import { CUR } from './motor.mjs';
 import { S } from './estado.mjs';
 import { simsLongo } from './sims.mjs';
 import { emitir } from './telemetria.mjs';
-import { saldo } from './banco.mjs';
+import { modoServidor, saldo } from './banco.mjs';
 import { renderProfile } from './customizacao.mjs';
 import { avatarURL, trainerURL } from './perfil.mjs';
 import { progressoNivel, saveProfile, tituloDe } from './perfil.mjs';
@@ -49,7 +49,18 @@ function renderHero(){
        <div><b>30s</b><span>para apostar</span></div>`;
 }
 
-const sessaoAtiva = () => localStorage.getItem('ar_session') === '1';
+/* ── QUEM ESTÁ DENTRO, E AS DUAS FORMAS DE ESTAR (F1.14) ────────────────────
+ *
+ * `ar_session` é o PIN local — a fachada de login do protótipo, que nunca foi
+ * segurança e está documentada como tal. `modoServidor()` é sessão de verdade,
+ * emitida pelo `/api/auth`.
+ *
+ * As duas contam, e a de verdade vale sozinha. Sem esta linha, quem entra pela
+ * conta real cai na HOME em vez da arena: o boot pergunta "tem sessão?" e a
+ * pergunta só sabia da fachada. O defeito foi achado pelo teste que joga uma
+ * rodada inteira no navegador — nenhum teste de módulo o alcançava, porque
+ * cada metade estava certa sozinha. */
+const sessaoAtiva = () => modoServidor() || localStorage.getItem('ar_session') === '1';
 
 function renderSession(){
   const box = $('#sessionBox');

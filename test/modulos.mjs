@@ -127,6 +127,13 @@ const CAMADA = {
      as EXPLICA antes do clique. Um limite que valesse aqui sumiria quando o
      jogador abrisse outra aba. */
   'protecao-tela.mjs': 4,
+  /* A faixa de conexão do §5.9: lê o texto do módulo puro e pinta no `body`.
+     Mesma camada da tela de proteção — toca DOM, não decide nada. */
+  'conexao-tela.mjs': 4,
+  /* A tela de resultado: saiu do `fases.mjs` no F1.14. O `fases` decide QUANDO
+     cada coisa acontece; isto decide COMO o fim da rodada aparece. Camada 5,
+     acima do `fases` — ele é quem ela consulta, não o contrário. */
+  'resultado-tela.mjs': 5,
   'navegacao.mjs': 4,
   'controles.mjs': 4,
   /* A aposta saiu de `fases.mjs` no V1.15: as fases são a máquina de estados
