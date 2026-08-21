@@ -1919,7 +1919,7 @@ fonte de dinheiro nem por um instante) e F1.17 (o operador do painel prova quem
 
 ---
 
-### F1.16 — O cliente não é fonte de dinheiro nem por um instante
+### F1.16 — O cliente não é fonte de dinheiro nem por um instante ✅
 
 **Tam.** P · **Método** INV · **Portões** Q1 Q2 Q6 · **Depende de** F1.14
 
@@ -1940,6 +1940,19 @@ forma do `modoServidor()` no `aposta.mjs`: a bifurcação mora num lugar só.
 
 **Critério de saída:** o teste da rodada completa afirma o ledger local VAZIO,
 sem exceção nenhuma na lista.
+
+**FECHADO.** Critério cumprido: a asserção é `ledger local vazio`, sem lista de
+tipos permitidos. Suíte 719 VERDE; dois defeitos plantados, os dois vermelhos.
+
+**O que a construção ensinou.** As duas guardas — `carregar()` não cria,
+`salvar()` não escreve — mascaram uma à outra: sem a segunda, a carteira local
+criada não persiste; sem a primeira, nada chama a segunda. Olhando só o
+armazenamento, os dois defeitos passavam verdes.
+
+E amostrar o boot a cada 4 ms pegava o primeiro por CORRIDA. Foi trocado por
+perguntar à fachada diretamente — o que `carregar()` devolve com sessão ativa —,
+que é determinístico e cobra as duas pontas separadamente. Quarta ocorrência do
+D-021: teste cuja força depende de timing é teste que às vezes não testa.
 
 **Sabotagem declarada:**
 - o boot voltar a criar carteira local com sessão ativa

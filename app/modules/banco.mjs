@@ -73,6 +73,31 @@ export async function hidratar() {
 }
 
 export function carregar() {
+  /* ── EM MODO SERVIDOR A FACHADA NÃO É FONTE (F1.16) ──────────────────────
+   *
+   * O boot chama `atualizarSaldo()` antes de `ligarModoServidor()`, e
+   * `atualizarSaldo` chama isto — que criava a carteira local com o
+   * `WELCOME_GRANT` de boas-vindas. A projeção do servidor sobrescrevia tudo em
+   * seguida, então nunca custou dinheiro; o que custava era uma EXCEÇÃO no
+   * teste, e toda exceção dessas é uma janela por onde o próximo lançamento de
+   * boot passa sem ninguém notar.
+   *
+   * A BIFURCAÇÃO MORA AQUI, num lugar só — e não em cada chamador lembrando de
+   * perguntar. É a mesma forma do `modoServidor()` no `aposta.mjs`: quem
+   * esquece de perguntar não cria um caminho meio-migrado, porque não há o que
+   * perguntar.
+   *
+   * A CARTEIRA VAZIA E NÃO NULA: a tela desenha antes de o `hidratar()` voltar,
+   * e uma carteira nula derrubaria o primeiro `saldo()`. Vazia ela mostra zero
+   * por um instante e o número certo logo depois — honesto, e sem inventar
+   * dinheiro que o servidor não confirmou. */
+  if (modoServidor()) {
+    S.carteira = carteiraVazia();
+    S.carteira.projecao = true;
+    ultimoDiagnostico = { origem: 'servidor', problemas: [] };
+    return S.carteira;
+  }
+
   const bruto = localStorage.getItem(CHAVE);
   if (!bruto) {
     /* Migração do saldo antigo: quem já jogava tinha um número em `ar_bal`.
@@ -116,6 +141,11 @@ export function carregar() {
 }
 
 export function salvar() {
+  /* F1.16 · EM MODO SERVIDOR NÃO SE ESCREVE. `carregar()` já não cria carteira
+     local, mas `salvar()` é chamado por toda operação da fachada — e uma delas
+     escapando gravaria de volta o que o bloco tirou. A garantia é a ausência de
+     escrita, e ela precisa valer nas duas pontas. */
+  if (modoServidor()) return;
   localStorage.setItem(CHAVE, JSON.stringify(S.carteira));
 }
 

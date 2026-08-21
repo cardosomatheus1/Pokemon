@@ -1052,6 +1052,43 @@ export async function rodarRodadaCompleta() {
   pg.on('console', m => { if (m.type() === 'error') consola.push(m.text().slice(0, 160)); });
   await pg.addInitScript(tk => { try { localStorage.setItem('ar_sessao', tk); } catch {} }, sessao);
 
+  /* ── A AMOSTRAGEM DO INSTANTE (F1.16) ───────────────────────────────────
+   *
+   * "O cliente não é fonte de dinheiro NEM POR UM INSTANTE" é uma afirmação
+   * sobre um intervalo que dura milissegundos: entre o boot criar a carteira e
+   * o `hidratar()` substituí-la pela projeção do servidor. Olhar o estado no
+   * fim da rodada não vê nada — a L-039 dizia isso, e foi por isso que os
+   * defeitos S298 e S299 passaram verdes na primeira passada.
+   *
+   * Este amostrador roda dentro da página desde antes do primeiro módulo e
+   * guarda TODO lançamento que aparecer na carteira. Se o cliente criar
+   * dinheiro por um quadro que seja, fica registrado. */
+  await pg.addInitScript(() => {
+    window.__amostras = { lancamentos: [], origens: [], armazenamento: [] };
+    const olhar = async () => {
+      try {
+        const { S } = await import('/app/modules/estado.mjs');
+        const banco = await import('/app/modules/banco.mjs');
+        for (const l of S.carteira?.ledger ?? [])
+          if (!window.__amostras.lancamentos.includes(l.tipo))
+            window.__amostras.lancamentos.push(l.tipo);
+        /* O DIAGNÓSTICO SÓ CONTA DEPOIS DE HAVER CARTEIRA. `ultimoDiagnostico`
+           nasce com `origem: 'novo'` — é o valor inicial do módulo, não prova
+           de que `carregar()` rodou. Amostrá-lo antes da primeira carga
+           reprovaria a árvore limpa, e foi o que aconteceu na primeira
+           tentativa deste teste. */
+        const o = S.carteira ? banco.ultimoDiagnostico?.origem : null;
+        if (o && !window.__amostras.origens.includes(o)) window.__amostras.origens.push(o);
+        const g = localStorage.getItem('ar_carteira');
+        if (g && !window.__amostras.armazenamento.includes('escreveu'))
+          window.__amostras.armazenamento.push('escreveu');
+      } catch { /* os módulos ainda não carregaram */ }
+    };
+    const t = setInterval(olhar, 4);
+    window.__pararAmostra = () => clearInterval(t);
+    setTimeout(() => clearInterval(t), 20000);
+  });
+
   /* A FASE SAI DE `S.state`, E NÃO DE UM ATRIBUTO DO DOM.
    *
    * A primeira versão lia `document.documentElement.dataset.fase`, que NÃO
@@ -1183,6 +1220,58 @@ export async function rodarRodadaCompleta() {
       return w?.ledger?.map(l => l.tipo) ?? [];
     } catch { return ['(ilegível)']; }
   });
+
+  /* O ARMAZENAMENTO NÃO BASTA, e descobrir isso custou dois defeitos plantados.
+   *
+   * A fachada tem DUAS guardas em modo servidor: `carregar()` não cria carteira
+   * local, e `salvar()` não escreve. Olhando só o `localStorage`, cada uma
+   * MASCARA a outra — sem `salvar`, a carteira local criada não persiste; sem
+   * `carregar` local, nada chama `salvar`. Os defeitos S298 e S299 passaram
+   * verdes por isso.
+   *
+   * A carteira VIVA e o diagnóstico mostram as duas separadamente: em modo
+   * servidor a origem é `servidor` e o ledger em memória está vazio. */
+  r.amostras = await pg.evaluate(() => window.__amostras ?? null);
+  /* A FACHADA EXERCIDA DIRETO, com sessão ativa.
+   *
+   * `salvar()` tem guarda própria em modo servidor, e durante uma rodada normal
+   * ninguém a alcança — `carregar()` já não cria carteira local, então nada
+   * chama `salvar()`. As duas guardas mascaram uma à outra, e o defeito S299
+   * passou verde por isso.
+   *
+   * Aqui a fachada é chamada de propósito. É legítimo e é o contrato dela: com
+   * sessão, NADA é escrito. O dia em que um lançamento de recompensa do cliente
+   * sobreviver à migração — XP, desafio, medalha —, esta é a rede que pega. */
+  r.carteiraViva = await pg.evaluate(async () => {
+    const { S } = await import('/app/modules/estado.mjs');
+    const banco = await import('/app/modules/banco.mjs');
+    return { origem: banco.ultimoDiagnostico?.origem ?? '(sem diagnóstico)',
+             lancamentos: S.carteira?.ledger?.map(l => l.tipo) ?? ['(sem carteira)'],
+             modoServidor: banco.modoServidor() };
+  });
+  r.fachadaEscreveu = await pg.evaluate(async () => {
+    /* O AMOSTRADOR PARA ANTES, senão esta sonda polui a própria medição: ela
+       credita de propósito, e o amostrador registraria o crédito dela como se
+       fosse do boot. Foi o que aconteceu na primeira versão. */
+    window.__pararAmostra?.();
+    const banco = await import('/app/modules/banco.mjs');
+    if (!banco.modoServidor()) return '(sem sessão: o teste não mediu nada)';
+    localStorage.removeItem('ar_carteira');
+
+    /* `carregar()` PERGUNTADO DIRETO, e é a metade determinística da medição.
+       Amostrar o boot pega o defeito só se a janela durar mais que o intervalo
+       do amostrador — é uma corrida, e teste cuja força depende de timing é
+       teste que às vezes não testa (D-021). Aqui a pergunta é feita à fachada,
+       e a resposta é sempre a mesma. */
+    const w = banco.carregar();
+    const doCarregar = (w?.ledger ?? []).map(l => l.tipo);
+
+    try { banco.creditarRecompensa('WELCOME_GRANT', 500, 'sonda-f1.16'); } catch { /* recusar é ok */ }
+    try { banco.salvar(); } catch { /* idem */ }
+    return { doCarregar,
+             escreveu: localStorage.getItem('ar_carteira') ? 'escreveu' : 'nada' };
+  });
+
   r.faseFinal = (await espiar()).fase;
   r.estadoFinal = await pg.evaluate(async () => {
     const { S } = await import('/app/modules/estado.mjs');
@@ -1269,17 +1358,62 @@ export function suiteRodadaCompleta(r) {
 
   s.teste('em modo servidor o cliente NÃO escreve dinheiro no armazenamento', () => {
     ok(r.abriu, 'a rodada não abriu — ver o teste acima');
-    /* DINHEIRO DA RODADA, e não todo lançamento. O `WELCOME_GRANT` nasce no
-       boot, antes de o app saber que há sessão — a carteira local é criada por
-       `carregar()` e só depois `ligarModoServidor()` a substitui pela projeção.
-       Isso é uma lacuna própria (L-039) e tem dono; não é o que este teste
-       mede. O que ele mede é se a RODADA gerou lançamento local. */
-    const dinheiro = (r.ledgerLocal || []).filter(t => /BET|WIN|LOSS|PAYOUT|BUY/i.test(t));
-    igual(dinheiro.length, 0,
-      `o ledger local ganhou ${dinheiro.join(', ')} numa rodada de SERVIDOR. ` +
-      `São dois lançamentos para a mesma aposta, e a tela não denuncia: o ` +
-      `\`hidratar()\` vem depois e sobrescreve o número. A divergência só ` +
-      `apareceria no dia em que as duas contas não batessem.`);
+    /* O LEDGER LOCAL FICA VAZIO. SEM EXCEÇÃO NENHUMA.
+     *
+     * Até o F1.16 esta asserção precisava excluir o `WELCOME_GRANT`: o boot
+     * chamava `atualizarSaldo()` antes de `ligarModoServidor()`, e a carteira
+     * local nascia com o crédito de boas-vindas. Nunca custou dinheiro — a
+     * projeção do servidor sobrescrevia —, mas a exclusão era uma janela: o
+     * próximo lançamento de boot passaria por ela sem ninguém notar.
+     *
+     * Agora a fachada sabe que, em modo servidor, ela não é fonte. E a
+     * afirmação pode ser a forte: NADA foi escrito. */
+    igual((r.ledgerLocal || []).length, 0,
+      `o ledger local tem ${(r.ledgerLocal || []).join(', ')} numa rodada de ` +
+      `SERVIDOR. Em modo servidor o cliente não é fonte de dinheiro nem por um ` +
+      `instante: qualquer lançamento aqui é uma segunda contabilidade para o ` +
+      `mesmo dinheiro, e a tela não denuncia porque o \`hidratar()\` vem depois ` +
+      `e sobrescreve o número.`);
+
+    /* NEM POR UM INSTANTE. O amostrador roda a cada 4 ms desde antes do
+       primeiro módulo: se o cliente criou dinheiro por um quadro que seja
+       — mesmo que o `hidratar()` sobrescreva logo depois —, está aqui. */
+    const am = r.amostras || {};
+    igual((am.lancamentos || []).length, 0,
+      `a carteira do cliente teve ${(am.lancamentos || []).join(', ')} em algum ` +
+      `instante do boot, com sessão ativa. A projeção do servidor sobrescreve ` +
+      `depois e a tela nunca denuncia — mas o cliente foi fonte de dinheiro, e ` +
+      `é isso que este bloco existe para tornar impossível.`);
+    ok(!(am.origens || []).some(o => o !== 'servidor'),
+      `o diagnóstico da carteira passou por ${(am.origens || []).join(', ')} com ` +
+      `sessão ativa. Qualquer origem que não seja "servidor" é o \`carregar()\` ` +
+      `local tendo rodado.`);
+    igual((am.armazenamento || []).length, 0,
+      'o cliente escreveu no armazenamento em algum instante, com sessão ativa');
+
+    const f = r.fachadaEscreveu || {};
+    igual((f.doCarregar || []).length, 0,
+      `\`carregar()\` devolveu ${(f.doCarregar || []).join(', ')} com sessão ativa. ` +
+      `Em modo servidor a fachada NÃO é fonte: ela devolve uma carteira vazia e ` +
+      `espera a projeção, em vez de inventar o crédito de boas-vindas que o ` +
+      `servidor já deu.`);
+    igual(f.escreveu, 'nada',
+      `chamar a fachada com sessão ativa resultou em "${f.escreveu}". A garantia ` +
+      `vale nas DUAS pontas: \`carregar()\` não cria e \`salvar()\` não escreve. ` +
+      `Com só uma delas, a outra a mascara e o defeito passa despercebido — foi ` +
+      `exatamente o que os defeitos S298 e S299 fizeram na primeira passada.`);
+
+    const v = r.carteiraViva || {};
+    igual(v.modoServidor, true, 'a página não estava em modo servidor — o teste não mediu nada');
+    igual(v.origem, 'servidor',
+      `a carteira viva tem origem "${v.origem}" e deveria ser "servidor". O ` +
+      `\`carregar()\` criou uma carteira LOCAL com sessão ativa — ela não ` +
+      `persiste, porque \`salvar()\` está bloqueado, mas existe em memória até o ` +
+      `\`hidratar()\` voltar. Cliente como fonte, nem que por um instante.`);
+    igual((v.lancamentos || []).length, 0,
+      `a carteira viva tem ${(v.lancamentos || []).join(', ')} em modo servidor. ` +
+      `O crédito de boas-vindas nasceu no cliente, e o servidor já tinha dado o ` +
+      `dele — são dois para o mesmo jogador.`);
   });
 
   s.teste('quem fecha a janela de aposta é o servidor', () => {

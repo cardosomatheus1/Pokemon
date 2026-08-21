@@ -82,6 +82,7 @@ const FECHO  = 'test/fecho.mjs';
 const RESULT = 'engine/resultado.mjs';
 const RESTELA= 'app/modules/resultado-tela.mjs';
 const PROGSRV= 'server/progressao.mjs';
+const BANCOC = 'app/modules/banco.mjs';
 const ADMAUTH= 'server/admin-auth.mjs';
 const ROTASSRV2 = 'server/rotas.mjs';
 const TELESRV= 'server/telemetria.mjs';
@@ -1672,6 +1673,18 @@ export const DEFEITOS = [
     real:'"ele é de 30 segundos, já expira" — e quem viu o número por cima do ombro o digita dentro da janela',
     de:'  if (jaUsado) {',
     para:'  if (false) {' },
+
+  /* ── F1.16 · O CLIENTE NÃO É FONTE DE DINHEIRO ────────────────────────── */
+
+  { id:'S298', arquivo:BANCOC, nome:'o boot volta a criar carteira local em modo servidor',
+    real:'"é só a projeção inicial" — e nasce um WELCOME_GRANT órfão que a próxima exceção de teste esconde',
+    de:'  if (modoServidor()) {\n    S.carteira = carteiraVazia();\n    S.carteira.projecao = true;',
+    para:'  if (false) {\n    S.carteira = carteiraVazia();\n    S.carteira.projecao = true;' },
+
+  { id:'S299', arquivo:BANCOC, nome:'a fachada volta a gravar no armazenamento com sessão',
+    real:'"salvar não faz mal" — e o cliente vira segunda contabilidade para o mesmo dinheiro',
+    de:'  if (modoServidor()) return;',
+    para:'' },
 
   { id:'S224', arquivo:FECHO, nome:'o fecho para de seguir os imports do filho',
     real:'somar só o arquivo do script — mudar o que ele importa deixa de invalidar',

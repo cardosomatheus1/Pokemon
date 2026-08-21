@@ -1272,7 +1272,7 @@ e a terceira passada do crítico cego recebeu as duas.
 
 ---
 
-### L-039 — em modo servidor o cliente ainda cria uma carteira local no boot
+### L-039 — em modo servidor o cliente ainda cria uma carteira local no boot ✅ FECHADA
 
 **Dono:** **F1.16** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:**
 F1.14, pelo teste que joga uma rodada inteira no navegador
@@ -1300,6 +1300,24 @@ consultado antes do primeiro `carregar()`. Parece uma linha e não é: `carregar
 é chamado de vários lugares, e a versão certa é a fachada saber que, em modo
 servidor, ela não é fonte — não que cada chamador lembre de perguntar.
 
+
+**FECHADA no F1.16.** A fachada passou a saber que, em modo servidor, ela não é
+fonte — em vez de cada chamador lembrar de perguntar. `carregar()` devolve uma
+carteira VAZIA e espera a projeção; `salvar()` não escreve.
+
+A exceção saiu do teste: ele afirma agora o ledger local **vazio**, sem lista de
+tipos permitidos.
+
+**O que a construção ensinou, e vale mais que o conserto.** As duas guardas
+MASCARAM UMA À OUTRA: sem `salvar`, a carteira local criada não persiste; sem
+`carregar` local, nada chama `salvar`. Olhando só o armazenamento, os dois
+defeitos plantados passavam verdes. E amostrar o boot a cada 4 ms pegava o
+primeiro por CORRIDA — teste cuja força depende de timing é teste que às vezes
+não testa (D-021, quarta ocorrência).
+
+A medição que funciona pergunta à fachada diretamente, com sessão ativa: o que
+`carregar()` devolve, e se `salvar()` escreveu. Determinística, e cobra as duas
+pontas separadamente.
 ---
 
 ### L-040 — o valor do resgate é chute educado até haver coorte
