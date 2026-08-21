@@ -1328,3 +1328,67 @@ investigação. Agora ela diz o número e o que ele significa.
 É a terceira vez que o projeto paga por uma sonda de navegador cujo teto media a
 máquina, e a segunda vez em dois dias que a correção é *dizer o número em vez de
 adivinhar*.
+
+---
+
+## D-023 — sete Chromiums ao mesmo tempo, e o portão parou de terminar ✅ CORRIGIDO
+
+**Achado em:** o portão Q2 completo do fim da Fase 1 · **Corrigido no mesmo
+commit** · **Família do D-016 e do D-022, e desta vez a causa é outra**
+
+O portão abortou na configuração `com-golden/navegador-estreito` — de novo, e
+corretamente: `garantirBase` recusa julgar numa configuração vermelha.
+
+### O número que não fechava
+
+A mensagem que o D-022 acrescentou disse:
+
+```
+esperei 30.0 s
+```
+
+E o teto que o D-022 tinha posto era de **240 s**. Trinta segundos não é estouro
+de tempo: é o **renderer morrendo**. `waitForFunction` rejeita por dois motivos
+— o tempo acabou ou o alvo caiu —, e os dois viravam `pronto = false` com a
+mesma mensagem.
+
+Sem aquele número, a investigação teria repetido a do D-022: medir contenção de
+CPU, achar tudo verde, e ficar sem explicação. Foi o diagnóstico que apontou
+para o lugar certo, e ele custou três linhas.
+
+### A causa
+
+`test/run.mjs` rodava **sete sondas de navegador em `Promise.all`**, cada uma com
+um Chromium próprio. O F1.14 acrescentou duas — `sem-backend` e
+`rodada-completa`. Dentro da caixa de areia do portão, com até quatro mutantes
+em paralelo, o limite deixou de ser CPU e passou a ser **memória**.
+
+Não é hipótese: o processo inteiro já tinha sido morto por OOM (código 137) mais
+cedo na mesma sessão.
+
+| medição | resultado |
+|---|---|
+| `sem-rede` sozinha, estreita | verde |
+| as 9 suítes de navegador juntas, fora da caixa, 2× | verdes |
+| as 9 juntas, dentro de uma caixa de areia | verde |
+| dentro do portão, com mutantes em paralelo | **vermelha** |
+
+Só a última tem os dois ao mesmo tempo — e é a única que falha.
+
+### A correção, e as duas metades
+
+**As sondas rodam em FILA.** O pico de memória passa a ser de um navegador em
+vez de sete. A execução fica um pouco mais longa e passa a **terminar** — e
+portão que não termina não julga nada.
+
+**E a espera diz por que parou**, não só quando. Longe do teto e com "Target
+crashed": foi memória. Perto do teto: o Monte Carlo não terminou. Nenhum dos
+dois: o app não abriu mesmo. Três diagnósticos que antes eram a mesma frase.
+
+### A lição, e ela é sobre o anterior
+
+O D-022 subiu o teto de 90 s para 240 s achando que o problema era tempo. **A
+correção estava errada e o diagnóstico estava certo** — foi o número que ela
+mandou imprimir que revelou a causa verdadeira, um portão depois. Vale registrar
+que a parte útil daquela correção não foi o teto: foi mandar o teste dizer o
+número.

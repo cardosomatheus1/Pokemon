@@ -516,9 +516,12 @@ export const DEFEITOS = [
 
   /* Só o navegador pega: em paralelo, uma execução que some não reprova nada —
      ela simplesmente deixa de aparecer no relatório. */
-  { id:'S82', arquivo:RUNNER, nome:'uma execução de navegador some do paralelo',
+  /* REALVADO NO D-023: as sondas de navegador passaram de `Promise.all` para
+     fila, e cada uma virou uma função. O defeito segue o comportamento — uma
+     sonda que some da lista —, não o formato antigo da linha. */
+  { id:'S82', arquivo:RUNNER, nome:'uma execução de navegador some da fila',
     real:'linha comentada para "testar mais rápido" e esquecida — o portão encolhe em silêncio',
-    de:'    visual.rodarTemaSemModulos(),', para:'    Promise.resolve(null),' },
+    de:'    () => visual.rodarTemaSemModulos(),', para:'    () => Promise.resolve(null),' },
 
   /* ---------- V1.15: cancelar aposta ---------- */
 

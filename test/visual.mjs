@@ -861,9 +861,17 @@ export async function rodarSemRede() {
    * distingue "o app quebrou" de "faltaram dois segundos", e a diferença é toda
    * a investigação. */
   const t0 = Date.now();
+  /* POR QUE ELA PAROU, e não só quando. `waitForFunction` rejeita por DOIS
+     motivos: o tempo acabou, ou o alvo morreu. Os dois viravam `pronto = false`
+     e a mensagem dizia "esperei N segundos" nos dois casos — foi assim que um
+     renderer morto por falta de memória se disfarçou de demora por 30 s contra
+     um teto de 240. Ver D-023. */
+  let motivoParada = null;
   const pronto = await pg.waitForFunction(
     () => document.querySelectorAll('.pick').length > 0,
-    { timeout: 240000, polling: 300 }).then(() => true).catch(() => false);
+    { timeout: 240000, polling: 300 })
+    .then(() => true)
+    .catch(e => { motivoParada = String(e?.message || e).split('\n')[0]; return false; });
   const msEspera = Date.now() - t0;
 
   /* ESPERA A ARTE CHEGAR, e não 2,5 segundos.
@@ -895,7 +903,7 @@ export async function rodarSemRede() {
       .filter(i => i.currentSrc.includes('/assets/') && i.naturalWidth > 0).length,
   }));
   await b.close(); s.close();
-  return { erros, bloqueadas, pronto, msEspera, ...st };
+  return { erros, bloqueadas, pronto, msEspera, motivoParada, ...st };
 }
 
 /* Q5 · O TEMA É APLICADO SEM NENHUM MÓDULO RODAR (V1.13).
@@ -1323,9 +1331,10 @@ export function suiteSemRede(r) {
     ok(r.erros.length === 0, `erro de página com a rede desligada: ${r.erros[0]}`);
     ok(r.pronto,
       `a fase de apostas não abriu sem rede — esperei ${(r.msEspera / 1000).toFixed(1)} s ` +
-      `e a lista de apostas continuou vazia. Se este número estiver perto do teto, ` +
-      `foi carga: a espera aguarda 154.000 simulações dentro do Chromium, e o portão ` +
-      `roda até cinco deles ao mesmo tempo. Se estiver longe, o app não abriu mesmo.`);
+      `de um teto de 240 s.\n      a espera parou porque: ${r.motivoParada || '(não disse)'}\n` +
+      `      Longe do teto e com "Target crashed" ou "closed": foi MEMÓRIA, não ` +
+      `tempo — o renderer morreu. Perto do teto: o Monte Carlo não terminou. ` +
+      `Nenhum dos dois: o app não abriu mesmo.`);
     ok(r.lutadores === 12, `${r.lutadores} lutadores em cena, esperados 12`);
   });
   s.teste('nenhuma requisição externa é feita', () => {

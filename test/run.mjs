@@ -177,14 +177,35 @@ if (visual.disponivel() && !semVisual && precisaNavegador) {
    *
    * `Promise.all` e não `allSettled` de propósito: falha de navegador tem que
    * derrubar a execução, e não virar um `null` que a suíte lê como "pulado". */
-  [rVisual, baseAtual, digitaisNav, rTemaCedo, rSemRede, rSemBackend, rRodadaCompleta] = await Promise.all([
-    visual.rodar(),
-    visual.capturarBase(),
-    visual.digitaisNoNavegador(RAIZES_Q3),
-    visual.rodarTemaSemModulos(),
-    temLocal ? visual.rodarSemRede() : Promise.resolve(null),
-    visual.rodarSemBackend(),
-    visual.rodarRodadaCompleta(),
+  /* ── AS SONDAS DE NAVEGADOR RODAM EM FILA, E NÃO TODAS DE UMA VEZ ────────
+   *
+   * Eram sete `Promise.all`, e cada uma sobe um Chromium próprio. O F1.14
+   * acrescentou duas — `sem-backend` e `rodada-completa` — e o custo passou de
+   * caro para insustentável: o portão roda esta passada DENTRO de uma caixa de
+   * areia, com até quatro mutantes em paralelo, e o limite deixou de ser CPU e
+   * passou a ser MEMÓRIA.
+   *
+   * O sintoma era enganoso. A sonda `sem-rede` voltava "esperei 30,0 s" com um
+   * teto de 240 s — número impossível para um estouro de tempo. Trinta segundos
+   * não é o teto: é o renderer sendo morto. `waitForFunction` REJEITA quando o
+   * alvo cai, e a rejeição virava `pronto = false` como se fosse demora.
+   *
+   * Em fila, o pico de memória é de um navegador em vez de sete. A execução
+   * fica um pouco mais longa e passa a terminar — e portão que não termina não
+   * julga nada. É o D-023. */
+  const emFila = async lista => {
+    const fora = [];
+    for (const fn of lista) fora.push(await fn());
+    return fora;
+  };
+  [rVisual, baseAtual, digitaisNav, rTemaCedo, rSemRede, rSemBackend, rRodadaCompleta] = await emFila([
+    () => visual.rodar(),
+    () => visual.capturarBase(),
+    () => visual.digitaisNoNavegador(RAIZES_Q3),
+    () => visual.rodarTemaSemModulos(),
+    () => (temLocal ? visual.rodarSemRede() : Promise.resolve(null)),
+    () => visual.rodarSemBackend(),
+    () => visual.rodarRodadaCompleta(),
   ]);
   baseGravada = JSON.parse(readFileSync(new URL('./fixtures/visual-base.json', import.meta.url), 'utf8'));
   if (!temLocal) console.log('  · teste de egresso fechado pulado (sem assets locais) — use npm run assets\n');
