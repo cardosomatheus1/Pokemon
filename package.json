@@ -6,6 +6,7 @@
   "description": "PokéArena — battle royale de apostas com moeda simulada",
   "scripts": {
     "snapshot": "node tools/snapshot-prototipo.mjs",
+    "jogar": "node tools/jogar.mjs",
     "assets": "node tools/baixar-assets.mjs",
     "test": "node test/run.mjs",
     "test:sem-golden": "SEM_GOLDEN=1 node test/run.mjs",
