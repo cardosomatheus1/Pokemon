@@ -1416,3 +1416,45 @@ correção estava errada e o diagnóstico estava certo** — foi o número que e
 mandou imprimir que revelou a causa verdadeira, um portão depois. Vale registrar
 que a parte útil daquela correção não foi o teto: foi mandar o teste dizer o
 número.
+
+---
+
+## D-024 — versionar `assets/` derrubou o portão antes do primeiro defeito ✅ CORRIGIDO
+
+**Achado em:** a primeira execução do Q2 depois da decisão de versionar a arte ·
+**Corrigido no mesmo commit**
+
+```
+Error: EEXIST: file already exists,
+  symlink '/home/user/Pokemon/assets' -> '/tmp/pokearena-sabotagem-ZIPtIZ/assets'
+```
+
+O portão morreu em **0,3 s**, antes de plantar o primeiro defeito.
+
+### A causa, e ela é uma consequência direta de uma decisão de produto
+
+A lista de pastas que a caixa de areia copia vem do `git ls-files` — de
+propósito, para não dessincronizar quando uma pasta nova nasce. Foi a correção
+que duas execuções de portão pagaram, e ela está certa.
+
+Quando `assets/` entrou no versionamento, o `git` passou a devolvê-lo, e a caixa
+passou a **copiá-lo**. Duas consequências:
+
+1. **18 MB copiados cinco vezes por execução** — puro desperdício, e a razão de
+   o link simbólico existir desde o começo;
+2. o `symlinkSync` logo abaixo colidia com a pasta recém-copiada, e o processo
+   morria com `EEXIST`.
+
+### A correção
+
+`assets/` sai da lista de cópia explicitamente. A razão do link simbólico **não
+mudou com o versionamento**: nenhum defeito plantado mexe em arte, então a caixa
+pode olhar para a mesma pasta que a árvore de trabalho.
+
+### A lição
+
+Uma lista DERIVADA é melhor que uma escrita à mão — isso continua valendo, e o
+D-017 é sobre exatamente isso. Mas derivar não dispensa perguntar **o que a
+derivação passa a incluir** quando a fonte muda. Aqui a fonte era o `git`, e a
+decisão de versionar a arte mudou a resposta dela sem ninguém mexer numa linha
+do portão.

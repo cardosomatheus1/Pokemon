@@ -220,7 +220,23 @@ const DIRS_VERSIONADOS = [...new Set(
   execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'],
     { encoding: 'utf8' })
     .split('\n').filter(l => l.includes('/'))
-    .map(l => l.split('/')[0]))].filter(d => existsSync(d));
+    .map(l => l.split('/')[0]))]
+  .filter(d => existsSync(d))
+  /* `assets/` FICA DE FORA DA CÓPIA, mesmo agora que é versionado.
+   *
+   * Ele passou a entrar no repositório quando o build virou privado, e o `git
+   * ls-files` — que é a fonte desta lista, de propósito, para não
+   * dessincronizar — passou a devolvê-lo. Duas consequências, e o portão parou
+   * de subir por causa da segunda:
+   *
+   *   1. 18 MB copiados CINCO vezes por execução, puro desperdício;
+   *   2. o `symlinkSync` logo abaixo colidia com a pasta já copiada, e o
+   *      processo morria com EEXIST antes de plantar o primeiro defeito.
+   *
+   * A razão do link simbólico não mudou com o versionamento: nenhum defeito
+   * plantado mexe em arte, então a caixa pode olhar para a mesma pasta. É o
+   * D-024. */
+  .filter(d => d !== 'assets');
 
 const N_TRAB = Math.max(1, Math.min(cpus().length, 4));
 const CAIXAS = [];
