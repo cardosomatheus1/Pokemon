@@ -185,6 +185,10 @@ const ADMD   = 'app/modules/adm-dados.mjs';
 const SIMS   = 'app/modules/sims.mjs';
 const VISUAL = 'test/visual.mjs';
 const RUNNER = 'test/run.mjs';
+/* D-101: o contrato de execução saiu da sabotagem para `execucao.mjs`, que é o
+   único pedaço do portão que fica no ARNES. Os defeitos que protegem esse
+   contrato mudam de endereço junto — realvar, nunca apagar. */
+const EXECUCAO = 'test/execucao.mjs';
 const SABOT  = 'test/sabotagem.mjs';
 const MODULOS= 'test/modulos.mjs';
 const ARNES  = 'test/harness.mjs';
@@ -910,7 +914,7 @@ export const DEFEITOS = [
      em sabotagem.mjs). O risco novo é o que sobrou da ideia: a passada com
      navegador roda só as suítes que precisam dele, e a lista pode divergir da do
      runner sem ninguém notar. */
-  { id:'S113', arquivo:SABOT, nome:'a passada com navegador deixa de rodar uma suíte de navegador',
+  { id:'S113', arquivo:EXECUCAO, nome:'a passada com navegador deixa de rodar uma suíte de navegador',
     real:'lista encolhida numa limpeza — defeito que só aquela suíte pega volta como PASSOU',
     /* REALVADO no 1.5: a lista ganhou  e a âncora antiga morreu.
        O defeito NÃO foi apagado — o comportamento continua o mesmo, só mudou de
@@ -1628,7 +1632,7 @@ export const DEFEITOS = [
     de:'    try { corpo = JSON.parse(dados[1]); } catch { return; }',
     para:'    corpo = JSON.parse(dados[1]);' },
 
-  { id:'S239', arquivo:SABOT, nome:'o portão perde o teto por mutante',
+  { id:'S239', arquivo:EXECUCAO, nome:'o portão perde o teto por mutante',
     real:'"nenhum defeito trava" — e o primeiro que travar pendura o portão sem veredito',
     de:'                             timeout: TETO_MUTANTE_MS, killSignal: \'SIGKILL\' },',
     para:'                             },' },

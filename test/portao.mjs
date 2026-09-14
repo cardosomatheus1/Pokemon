@@ -541,10 +541,24 @@ export function suite() {
 
   s.teste('mudar o arnês invalida todo veredito guardado', async () => {
     const { ARNES, fechoDaSuite, TUDO } = await import('./fecho.mjs');
-    for (const a of ['test/harness.mjs', 'test/sabotagem.mjs'])
+    for (const a of ['test/harness.mjs', 'test/execucao.mjs'])
       ok(ARNES.includes(a),
         `${a} não está no fecho comum. Mudar o arnês muda COMO a pergunta é ` +
         `feita, e nenhum veredito anterior sobrevive a isso.`);
+    /* D-101: `sabotagem.mjs` SAI, e a saída só é honesta enquanto o contrato de
+       execução morar mesmo em `execucao.mjs`. Se alguém devolver a invocação
+       para lá, o portão volta a ser dependência de si mesmo — e desta vez em
+       silêncio, porque a lista continuaria "certa". */
+    ok(!ARNES.includes('test/sabotagem.mjs'),
+      'test/sabotagem.mjs voltou ao fecho comum. Ela orquestra (caixas, ' +
+      'paralelismo, relatório) e isso não muda veredito nenhum; com ela aqui, ' +
+      'ajustar a concorrência custa reavaliar os 991. É o D-101.');
+    const fonteSab = (await import('node:fs')).readFileSync(
+      new URL('./sabotagem.mjs', import.meta.url), 'utf8');
+    ok(!/execFile\('node', args/.test(fonteSab),
+      'a invocação do mutante voltou para a sabotagem.mjs. Ela é o que PODE ' +
+      'mudar um veredito, então mora em execucao.mjs — que é o que está no ' +
+      'ARNES. Split que apodrece devolve o D-101 sem avisar.');
     /* E O QUE NÃO PODE ESTAR, que é o erro que quase matou o cache: os dois
        arquivos que TODO bloco mexe. Com eles no fecho comum, todo bloco
        invalidaria os 208 vereditos e o cache nunca pagaria nada. */
@@ -626,7 +640,8 @@ export function suite() {
 
   s.teste('o portão tem teto de tempo por mutante', async () => {
     const { readFileSync } = await import('node:fs');
-    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8');
+    /* D-101: o contrato de execução mora em `execucao.mjs`. */
+    const txt = readFileSync(new URL('./execucao.mjs', import.meta.url), 'utf8');
     const chamada = txt.match(/execFile\('node', args, \{[^}]*\}/s)?.[0] ?? '';
     ok(/timeout:/.test(chamada),
       'o `execFile` que roda a suíte mutada não tem `timeout`. Um mutante que ' +
@@ -819,9 +834,9 @@ export function suite() {
     const { readFileSync } = await import('node:fs');
     const ler = f => readFileSync(new URL(f, import.meta.url), 'utf8');
     const doRunner = ler('./run.mjs').match(/const COM_NAVEGADOR = \[([^\]]+)\]/);
-    const daSabotagem = ler('./sabotagem.mjs').match(/const SUITES_NAVEGADOR = '([^']+)'/);
+    const daSabotagem = ler('./execucao.mjs').match(/SUITES_NAVEGADOR = '([^']+)'/);
     ok(doRunner, 'run.mjs sem a lista COM_NAVEGADOR — o teste perdeu a âncora');
-    ok(daSabotagem, 'sabotagem.mjs sem a lista SUITES_NAVEGADOR — o teste perdeu a âncora');
+    ok(daSabotagem, 'execucao.mjs sem a lista SUITES_NAVEGADOR — o teste perdeu a âncora');
     const A = doRunner[1].split(',').map(x => x.trim().replace(/^'|'$/g, '')).filter(Boolean);
     const B = daSabotagem[1].split(',').map(x => x.trim()).filter(Boolean);
     /* SEM EXCEÇÃO. A primeira versão deste teste dispensava o `sem-rede` "porque

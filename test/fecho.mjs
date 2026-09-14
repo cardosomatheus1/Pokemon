@@ -88,7 +88,26 @@ export const CAPTOR_NAO_CARREGA = '(não carrega)';
  * Sobra o que de fato muda a pergunta: o `harness`, que define como um teste
  * afirma, e a própria `sabotagem`, que define como o mutante é plantado e
  * medido. Os dois mudam raramente. */
-export const ARNES = ['test/harness.mjs', 'test/sabotagem.mjs', 'test/fecho.mjs'];
+/* ── E A LISTA ENCOLHEU, PORQUE A SUPOSIÇÃO ACIMA ERA FALSA (D-101) ────────
+ *
+ * O parágrafo anterior diz que harness e sabotagem "mudam raramente". Em
+ * 14/09 a `sabotagem.mjs` mudou TRÊS vezes, todas para baratear o portão — e
+ * como ela estava aqui, cada uma invalidou os 991 vereditos. Consertar o
+ * portão exigia pagar o portão.
+ *
+ * Saem dois, e cada saída tem argumento próprio:
+ *
+ *   sabotagem.mjs   o que nela PODE mudar um veredito — como o filho é
+ *                   invocado — mudou-se para `execucao.mjs`, que entra aqui no
+ *                   lugar. O que sobrou lá (caixas, paralelismo, relatório,
+ *                   cache) não muda a resposta de nenhum defeito
+ *
+ *   fecho.mjs       redundante. Se o algoritmo de fecho muda, a DIGITAL que ele
+ *                   produz muda junto, e a chave já difere por isso. Estar na
+ *                   lista só acrescentava uma invalidação total a cada ajuste
+ *                   no próprio cálculo
+ */
+export const ARNES = ['test/harness.mjs', 'test/execucao.mjs'];
 
 /* Suítes que nascem dentro de outro módulo: `visual-base` não tem arquivo
    próprio. O mapa é explícito porque adivinhar por nome erraria. */

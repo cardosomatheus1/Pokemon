@@ -5902,3 +5902,94 @@ a memória volta a ser o limite (D-023). `Q2_TRAB` permite remedir noutra máqui
 sem editar o arquivo — o número tem data, e número documentado envelhece
 (D-059).
 
+---
+
+## D-101 — o portão era dependência de si mesmo, e consertá-lo custava o portão inteiro
+
+**Achado em:** 14/09/2026, depois de três execuções abortadas e ~13 h de portão.
+**Bloco dono:** T9. **Estado:** CORRIGIDO — o contrato de execução saiu para `test/execucao.mjs`.
+
+```js
+// test/fecho.mjs
+export const ARNES = ['test/harness.mjs', 'test/sabotagem.mjs', 'test/fecho.mjs'];
+// e, em fechoDeArquivo:
+const fora = new Set([...ARNES, ...prefixos]);     // em TODO fecho
+```
+
+`test/sabotagem.mjs` — **o próprio portão** — estava no fecho de toda suíte.
+Qualquer edição nele invalidava os 991 vereditos de uma vez.
+
+### O que isso significa na prática
+
+```text
+consertar o CUSTO do portão exigia PAGAR o portão inteiro,
+e o que se estava consertando era justamente o preço dele
+```
+
+Em 14/09 a `sabotagem.mjs` mudou três vezes — todas para baratear o Q2 — e as
+três zeraram o cache. Medido: `avanco`, uma suíte de motor que não tem nada a
+ver com o portão, tinha `test/sabotagem.mjs` dentro do fecho.
+
+### A suposição que estava escrita, e era falsa
+
+O comentário que justificava a lista dizia, com todas as letras:
+
+> *"Sobra o que de fato muda a pergunta: o `harness` [...] e a própria
+> `sabotagem` [...] **Os dois mudam raramente**."*
+
+Mudaram três vezes em um dia. E o array tinha **três** itens onde o comentário
+justificava **dois** — o `fecho.mjs` entrou sem argumento nenhum.
+
+### O que muda um veredito, e o que não muda
+
+É a separação do D-098 outra vez — **orquestrar não é julgar**:
+
+```text
+MUDA      como o filho é invocado: bandeiras, ambiente, recorte, teto de tempo
+NÃO MUDA  quantas caixas em paralelo, limpeza de sandbox, relatório,
+          contabilidade de cache, pré-voo, ordem da fila
+```
+
+O que MUDA foi para `test/execucao.mjs` — `rodar()`, `SUITES_NAVEGADOR`,
+`TETO_MUTANTE_MS` — e é ele que entra no ARNES.
+
+**E o `fecho.mjs` sai por ser redundante:** se o algoritmo de fecho muda, a
+DIGITAL que ele produz muda junto, e a chave já difere por isso. Estar na lista
+só acrescentava uma invalidação total a cada ajuste no próprio cálculo.
+
+```js
+export const ARNES = ['test/harness.mjs', 'test/execucao.mjs'];
+```
+
+### A guarda, porque split que apodrece devolve o defeito em silêncio
+
+`test/portao.mjs` passa a exigir três coisas: que `execucao.mjs` esteja no
+ARNES, que `sabotagem.mjs` **não** esteja, e que a invocação do mutante
+(`execFile('node', args, …)`) não tenha voltado para a sabotagem. Sem a
+terceira, alguém devolve o código e a lista continua "certa".
+
+### A ressalva, e ela é real
+
+O **D-100** mostrou que o número de trabalhadores PODE mudar um veredito: com a
+máquina afogada, a suíte reprova por falta de CPU e o portão lê `PEGOU`. Isso é
+um defeito, e a resposta é não afogar a máquina — não invalidar o cache toda vez
+que alguém ajusta a concorrência.
+
+> Veredito que depende da carga não é veredito, e nenhuma chave de cache
+> conserta isso.
+
+### Medido
+
+```text
+antes    fecho de `avanco`: 15 arquivos, com test/sabotagem.mjs dentro
+depois   fecho de `avanco`: 14 arquivos, sem ela
+         suítes cujo fecho ainda contém sabotagem.mjs: 0
+
+npm run rapido   VERDE 2050/2050
+--so=portao      VERDE 40/40
+```
+
+**O que este conserto NÃO faz:** ressuscitar o cache atual. As chaves guardadas
+foram calculadas com o ARNES antigo, então esta transição ainda paga uma
+execução fria. Ele paga a partir da próxima.
+
