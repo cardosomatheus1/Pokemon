@@ -764,6 +764,30 @@ export async function rodar() {
   const { s, porta } = await servidor();
   const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
   const pg = await (await b.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+  /* ── O CRONÔMETRO POR FASE (T9) ──────────────────────────────────────────
+   *
+   * `Q2_TEMPOS=1` imprime quanto cada navegação e cada espera longa custou
+   * dentro desta sonda. Existe porque a conta do portão travou aqui: depois de
+   * cortar as sondas vizinhas e as larguras, sobraram 64 s que nenhuma das duas
+   * explicava, e "otimizar `rodar()`" sem saber ONDE é chute caro.
+   *
+   * É a metade do D-022 que deu certo: imprimir o número achou a causa um
+   * portão depois. Fica no código, desligado, porque a próxima pessoa a mexer
+   * no custo vai precisar dele de novo. */
+  const TEMPOS = process.env.Q2_TEMPOS === '1' ? [] : null;
+  if (TEMPOS) {
+    const marca = (rotulo, t0) => TEMPOS.push([rotulo, Date.now() - t0]);
+    const goto0 = pg.goto.bind(pg);
+    pg.goto = async (u, o) => { const t = Date.now(); const r = await goto0(u, o);
+      marca('goto ' + String(u).replace(/^https?:\/\/[^/]+/, ''), t); return r; };
+    const wf0 = pg.waitForFunction.bind(pg);
+    pg.waitForFunction = async (...a) => { const t = Date.now();
+      try { return await wf0(...a); } finally { marca('waitForFunction', t); } };
+    const wt0 = pg.waitForTimeout.bind(pg);
+    pg.waitForTimeout = async (ms) => { const t = Date.now();
+      try { return await wt0(ms); } finally { marca('sono ' + ms + 'ms', t); } };
+  }
+
   /* O ESTADO ESPELHADO NUMA GLOBAL. `waitForFunction` roda dentro da página e
      não pode `import`; a medição da colocação viva precisa ler `S` no MESMO
      tique em que lê o DOM — ver a nota longa onde ela acontece. */
@@ -2051,6 +2075,12 @@ export async function rodar() {
   await b.close(); s.close();
 
 
+  if (TEMPOS) {
+    const soma = TEMPOS.reduce((a, [, ms]) => a + ms, 0);
+    console.log(`\n  [Q2_TEMPOS] sonda rodar() — ${(soma/1000).toFixed(1)} s em ${TEMPOS.length} esperas`);
+    for (const [r, ms] of TEMPOS.filter(([, ms]) => ms >= 500).sort((a, b) => b[1] - a[1]))
+      console.log(`    ${String(ms).padStart(7)} ms  ${r}`);
+  }
   return { erros, conhecidos, apostas, aoVivo, relogio, folhas: cache.size, erroDepois, jogo, corte, cancelamento, comAposta, colunasAposta, painel, arena, idle, idlePronto, som, captura, loja, bnIdle, idleRecarregado, contagem, colocacaoViva, houveQueda, porqueNaoCaiu, tema, fontes, avisos, ...st };
 }
 

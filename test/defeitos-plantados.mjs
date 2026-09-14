@@ -705,9 +705,40 @@ export const DEFEITOS = [
   /* REALVADO NO D-023: as sondas de navegador passaram de `Promise.all` para
      fila, e cada uma virou uma função. O defeito segue o comportamento — uma
      sonda que some da lista —, não o formato antigo da linha. */
+  /* REALVADO no T9 (D-098): a fila passou a ser condicional (`se(...)`), então
+     o trecho antigo deixou de existir. O comportamento protegido é o MESMO —
+     uma sonda sumir da fila em silêncio — e por isso o defeito muda de
+     endereço em vez de sair da lista. É a regra do pré-voo no CLAUDE.md, e foi
+     o próprio pré-voo que pegou a âncora perdida. */
   { id:'S82', arquivo:RUNNER, nome:'uma execução de navegador some da fila',
     real:'linha comentada para "testar mais rápido" e esquecida — o portão encolhe em silêncio',
-    de:'    () => visual.rodarTemaSemModulos(),', para:'    () => Promise.resolve(null),' },
+    de:"    se('temaCedo',       () => visual.rodarTemaSemModulos()),",
+    para:'    () => Promise.resolve(null),' },
+
+  /* ---------- T9: o corte das sondas, e as guardas que o tornam seguro ------ */
+
+  /* O corte é a maior economia do portão E a forma mais fácil de uma suíte
+     sumir calada. Cada um destes derruba uma das decisões do bloco. */
+
+  { id:'S993', arquivo:'test/bandeiras.mjs', nome:'o conjunto de sondas volta a ser tudo ou nada',
+    real:'o corte some e `--so=visual` volta a subir as sete sondas — 226 s onde bastavam 82',
+    de:'  const pedidas = (!so || !so.length) ? Object.keys(SONDA_DA_SUITE) : so;',
+    para:'  const pedidas = Object.keys(SONDA_DA_SUITE);' },
+
+  { id:'S994', arquivo:'test/bandeiras.mjs', nome:'a recusa do --sem-navegador para de valer para as sondas',
+    real:'`npm run rapido` volta a subir Chromium que ninguém lê — o D-059 inteiro de volta',
+    de:"  if (!precisaNavegador({ so, semNavegador, comNavegador })) return new Set();",
+    para:'  if (false) return new Set();' },
+
+  { id:'S995', arquivo:'test/bandeiras.mjs', nome:'contraste e rodada-viva ganham sonda propria',
+    real:'duas sondas a mais por mutante, para ler o que a `rodar()` ja tinha capturado',
+    de:"  'contraste':       'rodar',",
+    para:"  'contraste':       'contrastePropria'," },
+
+  { id:'S996', arquivo:RUNNER, nome:'sonda que subiu e nao virou suite passa em silencio',
+    real:'a guarda do S109 cai, e o portao fica VERDE tendo olhado menos do que promete',
+    de:'  if (sumidas.length) {',
+    para:'  if (false) {' },
 
   /* ---------- V1.15: cancelar aposta ---------- */
 
