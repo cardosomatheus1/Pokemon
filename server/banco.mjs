@@ -26,8 +26,26 @@
  * exatamente o mesmo esquema.
  */
 import { DatabaseSync } from 'node:sqlite';
+import { mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 
 export function abrirBanco(caminho) {
+  /* O SQLITE NÃO CRIA DIRETÓRIO, SÓ ARQUIVO — e é o D-030.
+   *
+   * `config.mjs` resolve o banco para `dados/pokearena.db` em todo ambiente que
+   * não seja teste. Num clone limpo `dados/` não existe, e não deve existir: é
+   * dado de execução. O erro que sai dali é `unable to open database file`, que
+   * é também a mensagem de permissão negada, de disco cheio e de caminho
+   * inválido — quem clona procura em quatro lugares antes do certo.
+   *
+   * `recursive` não é enfeite: ele cobre o caminho inteiro, não só o último
+   * nível. `dados/` pode virar `var/dados/` no dia em que alguém mexer na
+   * configuração, e um `mkdirSync` sem ele passaria hoje e quebraria lá.
+   *
+   * AQUI E NÃO NO `principal.mjs`: este é o único ponto por onde todo caminho
+   * que abre banco passa. No ponto de entrada, a próxima ferramenta que abrir
+   * um banco — um script de migração, uma exportação — repetiria o defeito. */
+  if (caminho !== ':memory:') mkdirSync(dirname(caminho), { recursive: true });
   const db = new DatabaseSync(caminho);
   /* CHAVE ESTRANGEIRA NÃO É LIGADA POR PADRÃO NO SQLITE, e essa é a pegadinha
      mais cara dele: sem esta linha, toda `REFERENCES` do esquema abaixo vira
@@ -642,6 +660,338 @@ export const MIGRACOES = [
       db.exec(`DROP TABLE IF EXISTS admin_sessoes`);
       for (const c of ['senha_hash', 'totp_segredo', 'credencial_em'])
         db.exec(`ALTER TABLE admin_operadores DROP COLUMN ${c}`);
+    },
+  },
+
+  {
+    nome: 'margem-da-casa',
+    /* A MARGEM VIRA DADO DO SERVIDOR (R18, fecha a L-047).
+     *
+     * Ela vivia em `localStorage` no cliente, e o R9 a removeu de lá: preço
+     * decidido sem papel, sem confirmação e sem registro, por qualquer um que
+     * abrisse o console. Desde então a rodada usa a do motor, que é a única
+     * auditável — e definir margem não tinha caminho nenhum.
+     *
+     * A tabela é de UMA LINHA, e isso é decisão. A margem é uma configuração
+     * da casa, não uma série: quem quiser a história de quem mudou o quê tem a
+     * `admin_auditoria`, que guarda `de` e `para` de cada mudança. Duas fontes
+     * para a mesma história é como elas divergem.
+     *
+     * `atualizado_por` referencia o operador de propósito: uma margem sem dono
+     * é uma margem que ninguém responde por. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE casa_config (
+          id             INTEGER PRIMARY KEY CHECK (id = 1),
+          margem         REAL,
+          atualizado_em  INTEGER,
+          atualizado_por TEXT REFERENCES admin_operadores(id)
+        )`);
+      /* `margem NULL` é "use a do motor", e é diferente de `0`, que é uma casa
+         sem margem nenhuma. A linha nasce com NULL: o comportamento de hoje
+         continua sendo o de hoje até alguém decidir o contrário. */
+      db.exec(`INSERT INTO casa_config (id, margem) VALUES (1, NULL)`);
+    },
+    desce: db => { db.exec(`DROP TABLE IF EXISTS casa_config`); },
+  },
+
+  {
+    nome: 'liga-previsao-6.8',
+    /* A LIGA DE PREVISÃO (R36, Spec §6.8 e §6.10).
+     *
+     * Ranking por CALIBRAÇÃO, sem stake e sem risco econômico. Por não
+     * movimentar valor, ela é a única via competitiva que não depende do
+     * checkpoint do §25.1 — foi por isso que a Spec a antecipou da Fase 5 para
+     * a V2. Nada aqui toca `carteiras` nem `wallet_ledger`, e é de propósito:
+     * previsão que pagasse seria outro produto, com outro enquadramento.
+     *
+     * A CONTA não mora aqui. Ela é `engine/calibracao.mjs`, pura e testada
+     * sozinha; estas tabelas guardam o que foi dito, quando, e sob qual regra.
+     */
+    sobe: db => {
+      /* `distribution_json` guarda o que o jogador DISSE, no texto em que ele
+         disse. Guardar a distribuição já normalizada perderia a diferença
+         entre "ele mandou algo inválido" e "nós consertamos" — e o §6.8 exige
+         que previsão liquidada não reabra, o que só tem sentido se o que foi
+         dito estiver preservado.
+
+         `score` NULO é "ainda não liquidada". Zero é a NOTA PERFEITA em Brier,
+         então usar zero como ausência poria quem nunca foi pontuado no topo —
+         a mesma armadilha que o `engine/calibracao.mjs` documenta.
+
+         `scoring_version` viaja com a nota (§6.10): mudar a fórmula não pode
+         reescrever a história. A nota foi dada sob uma regra e o jogador jogou
+         sob ela. */
+      db.exec(`
+        CREATE TABLE predictions (
+          id                TEXT PRIMARY KEY,
+          round_id          TEXT NOT NULL REFERENCES rounds(id) ON DELETE CASCADE,
+          user_id           TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          market_kind       TEXT NOT NULL,
+          distribution_json TEXT NOT NULL,
+          created_at        INTEGER NOT NULL,
+          score             REAL,
+          scored_at         INTEGER,
+          scoring_version   INTEGER,
+          /* UMA PREVISÃO POR RODADA POR MERCADO. Sem isto, quem manda doze
+             previsões na mesma rodada fica com a melhor delas depois — que é
+             o oposto de medir calibração. */
+          UNIQUE (user_id, round_id, market_kind),
+          /* A NOTA E A VERSÃO ANDAM JUNTAS. Nota sem versão é nota que ninguém
+             sabe sob qual regra nasceu; versão sem nota é lixo. */
+          CHECK ((score IS NULL) = (scoring_version IS NULL)),
+          CHECK ((score IS NULL) = (scored_at IS NULL))
+        )`);
+      /* A liquidação percorre uma rodada inteira; o ranking percorre um
+         jogador. Os dois caminhos têm índice. */
+      db.exec(`CREATE INDEX idx_pred_rodada ON predictions(round_id)`);
+      db.exec(`CREATE INDEX idx_pred_user ON predictions(user_id, scored_at)`);
+
+      /* O RANKING MATERIALIZADO POR TEMPORADA.
+       *
+       * `sample_size` fica visível de propósito: é a regra de honestidade do
+       * §28.5 aplicada ao ranking — esconder o tamanho da amostra esconde o
+       * quanto a nota vale. E é o que o §6.8 exige para "volume não substitui
+       * qualidade" ser conferível por quem olha, e não só por quem calcula.
+       *
+       * `rank` NULO é "não alcançou a amostra mínima". Ele existe como coluna
+       * e não como derivação porque a tela precisa mostrar a linha do jogador
+       * COM o motivo — sumir da lista esconderia justamente a informação de
+       * que falta amostra. */
+      db.exec(`
+        CREATE TABLE calibration_ratings (
+          user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          season_id   TEXT NOT NULL,
+          sample_size INTEGER NOT NULL CHECK (sample_size >= 0),
+          score       REAL,
+          rank        INTEGER CHECK (rank IS NULL OR rank >= 1),
+          updated_at  INTEGER NOT NULL,
+          PRIMARY KEY (user_id, season_id)
+        )`);
+      db.exec(`CREATE INDEX idx_calib_temporada ON calibration_ratings(season_id, rank)`);
+    },
+    desce: db => {
+      db.exec(`DROP TABLE IF EXISTS calibration_ratings`);
+      db.exec(`DROP TABLE IF EXISTS predictions`);
+    },
+  },
+  {
+    nome: 'criaturas-do-jogador-1.1',
+    /* AS CRIATURAS QUE O JOGADOR POSSUI (bloco 1.1, §7.9 e §7.17).
+     *
+     * ── A DECISÃO QUE MUDOU O PLANO DESTE BLOCO ─────────────────────────────
+     *
+     * O plano do 1.1 previa TRÊS tabelas: `species`, `evolution_chain` e as
+     * instâncias. Só a terceira entra, e a razão é a mesma que fez os biomas
+     * saírem do motor.
+     *
+     * Espécie e linha evolutiva são DADO DO PACK. Copiá-las para o banco cria
+     * uma segunda fonte de verdade que pode divergir da primeira — e divergir
+     * em silêncio, porque nada obriga as duas a andarem juntas. Pior: com a
+     * linha evolutiva no banco, acrescentar a Gen 2 deixa de ser editar um
+     * arquivo e passa a exigir uma MIGRAÇÃO, que é exatamente o custo que o
+     * dono do projeto mandou não pagar.
+     *
+     * O servidor carrega o pack como o cliente carrega, do mesmo arquivo
+     * versionado. Aqui fica só o que o pack não pode saber: quem é de quem.
+     *
+     * ── O POTENCIAL NÃO É COLUNA, E ISSO É PROTEÇÃO ─────────────────────────
+     *
+     * Ele sai dos seis ocultos por uma conta de uma linha. Guardado ao lado
+     * deles, passaria a existir um estado em que os dois DISCORDAM — e esse
+     * estado é a fraude: um UPDATE em `potencial` valoriza uma criatura sem
+     * tocar em nada que o jogo confira.
+     *
+     * Não guardar é a única defesa que não depende de ninguém lembrar de
+     * conferir. Mesmo raciocínio de `forma` e do estágio evolutivo.
+     *
+     * ── A SEMENTE VIAJA COM A CRIATURA (§P3, §25.2) ─────────────────────────
+     *
+     * `semente` é a raiz que gerou os ocultos. Guardá-la é o que torna a
+     * captura AUDITÁVEL do mesmo jeito que a rodada é: dado o número, qualquer
+     * um regera a criatura e confere que os seis ocultos gravados são os que o
+     * sorteio produziu.
+     *
+     * Sem ela, "esta criatura foi sorteada honestamente" é uma afirmação que só
+     * a casa pode fazer — e o §25.2 existe justamente para que não seja assim.
+     * Num jogo onde criatura vale dinheiro, é a diferença entre um mercado
+     * conferível e um mercado onde se acredita. */
+    sobe: db => {
+      /* OS OCULTOS SÃO SEIS COLUNAS, e não um JSON.
+       *
+       * JSON caberia num campo e pouparia digitação; o que ele não faz é
+       * RECUSAR. Em coluna, o banco impede 0..31 de ser violado — e o valor
+       * impossível para de depender de o código estar certo no dia. É a mesma
+       * escolha do CHECK de saldo não negativo em `carteiras`, pelo mesmo
+       * motivo: a última linha de defesa não pode ser código de aplicação. */
+      db.exec(`
+        CREATE TABLE criaturas (
+          id            TEXT PRIMARY KEY,
+          user_id       TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          /* O PACK VIAJA COM A LINHA. Um \`dex\` sozinho é ambíguo: o 25 de um
+             pack não é o 25 do outro, e trocar o ContentPack sem esta coluna
+             transformaria silenciosamente a coleção inteira de todo mundo. */
+          pack_id       TEXT NOT NULL,
+          dex           INTEGER NOT NULL CHECK (dex >= 1),
+          o_hp          INTEGER NOT NULL CHECK (o_hp  BETWEEN 0 AND 31),
+          o_atq         INTEGER NOT NULL CHECK (o_atq BETWEEN 0 AND 31),
+          o_def         INTEGER NOT NULL CHECK (o_def BETWEEN 0 AND 31),
+          o_spa         INTEGER NOT NULL CHECK (o_spa BETWEEN 0 AND 31),
+          o_spd         INTEGER NOT NULL CHECK (o_spd BETWEEN 0 AND 31),
+          o_vel         INTEGER NOT NULL CHECK (o_vel BETWEEN 0 AND 31),
+          natureza      TEXT,
+          exemplar      INTEGER NOT NULL DEFAULT 0 CHECK (exemplar IN (0, 1)),
+          nivel         INTEGER NOT NULL DEFAULT 1 CHECK (nivel >= 1),
+          vinculo       INTEGER NOT NULL DEFAULT 0 CHECK (vinculo >= 0),
+          foco          TEXT,
+          /* A raiz que gerou os ocultos — ver o comentário acima. */
+          semente       TEXT NOT NULL,
+          /* De onde ela veio. Nasce restrita de propósito: 'mercado' só entra
+             quando o mercado existir, e o checkpoint do §25.1 for cumprido. */
+          origem        TEXT NOT NULL CHECK (origem IN ('captura','inicial','raid')),
+          criada_em     INTEGER NOT NULL
+        )`);
+      /* A coleção de um jogador é o caminho quente: é o que a aba do registro
+         pede a cada abertura. */
+      db.exec(`CREATE INDEX idx_criaturas_dono ON criaturas(user_id, criada_em)`);
+      /* E o registro por espécie, que é como a tela agrupa. */
+      db.exec(`CREATE INDEX idx_criaturas_especie ON criaturas(user_id, pack_id, dex)`);
+    },
+    desce: db => { db.exec(`DROP TABLE IF EXISTS criaturas`); },
+  },
+  {
+    nome: 'idle-1.2d',
+    /* O SERVIDOR DO IDLE (bloco 1.2d, §P2, §P3, §25.2).
+     *
+     * Os blocos 1.2a, 1.2b e 1.2c fecharam o MOTOR da expedição, do encontro e
+     * do saque — puro, testado, e sem nada que sobreviva a um F5. Este é o
+     * bloco que dá memória a eles (L-069).
+     *
+     * ── A DECISÃO QUE GOVERNA O ESQUEMA ─────────────────────────────────────
+     *
+     * **A semente do saque é sorteada NA COLHEITA, e nunca no início.**
+     *
+     * Se a raiz nascesse junto com a expedição, ela existiria no banco durante
+     * oito horas ANTES de o jogador colher. Quem tivesse acesso a ela — um
+     * vazamento, um administrador, o próprio jogador num cliente adulterado —
+     * saberia o resultado antes, e poderia CANCELAR a expedição ruim.
+     *
+     * Sorteada na colheita, não há janela: no instante em que o resultado
+     * existe, ele já é do jogador.
+     *
+     * O CHECK abaixo torna isso ESTRUTURAL e não uma promessa:
+     *
+     *     CHECK ((colhida_em IS NULL) = (semente IS NULL))
+     *
+     * Uma semente sem colheita é um estado que o banco RECUSA. É a mesma
+     * família do CHECK de `score`/`scoring_version` na liga de previsão, e
+     * pelo mesmo motivo: dois campos que só fazem sentido juntos não podem
+     * poder existir separados.
+     *
+     * ── A STAMINA VAI PARA A CRIATURA ───────────────────────────────────────
+     *
+     * O 1.2a decidiu que a stamina é da criatura e não do jogador — é o que faz
+     * a coleção ter função em vez de ser enfeite. Aqui isso vira coluna.
+     *
+     * Guardada como (valor, instante) e DERIVADA no presente, exatamente como o
+     * motor faz: derivar funciona mesmo com o servidor desligado a semana
+     * inteira, enquanto guardar o valor atualizado exigiria alguém rodando um
+     * relógio. */
+    sobe: db => {
+      db.exec(`ALTER TABLE criaturas ADD COLUMN stamina INTEGER NOT NULL DEFAULT 100`);
+      db.exec(`ALTER TABLE criaturas ADD COLUMN stamina_em INTEGER NOT NULL DEFAULT 0`);
+
+      db.exec(`
+        CREATE TABLE expedicoes (
+          id           TEXT PRIMARY KEY,
+          user_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          pack_id      TEXT NOT NULL,
+          bioma        TEXT NOT NULL,
+          perfil       TEXT NOT NULL,
+          /* os ids das criaturas enviadas, na ordem em que foram escolhidas */
+          equipe_json  TEXT NOT NULL,
+          custo        INTEGER NOT NULL CHECK (custo >= 0),
+          iniciada_em  INTEGER NOT NULL,
+          termina_em   INTEGER NOT NULL,
+          colhida_em   INTEGER,
+          semente      TEXT,
+          /* Expedição que termina antes de começar seria tempo negativo, e
+             tempo negativo vira teto diário de graça. */
+          CHECK (termina_em > iniciada_em),
+          /* A SEMENTE E A COLHEITA ANDAM JUNTAS — ver o comentário acima. */
+          CHECK ((colhida_em IS NULL) = (semente IS NULL))
+        )`);
+      /* O caminho quente é "o que está em campo agora", e ele é por jogador. */
+      db.exec(`CREATE INDEX idx_exped_campo ON expedicoes(user_id, colhida_em, termina_em)`);
+
+      /* A BOLSA.
+       *
+       * Uma linha por (jogador, item) e não uma por unidade: guardar vinte
+       * linhas de "uma bola barata" seria vinte escritas onde cabe uma.
+       *
+       * O CHECK de não negativo é a última linha de defesa, e ela não pode
+       * depender de o código de aplicação estar certo no dia — é a mesma
+       * escolha do saldo da carteira, pelo mesmo motivo. Bolsa negativa é bola
+       * de graça, e bola de graça é criatura de graça. */
+      db.exec(`
+        CREATE TABLE bolsa (
+          user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          item_id    TEXT NOT NULL,
+          quantidade INTEGER NOT NULL CHECK (quantidade >= 0),
+          PRIMARY KEY (user_id, item_id)
+        )`);
+
+      /* O REGISTRO.
+       *
+       * Conta FRAGMENTOS e não porcentagem: a porcentagem sai do alvo da faixa,
+       * que é dado do pack e pode ser rebalanceado. Guardar a porcentagem
+       * congelaria o balanço de hoje na conta de todo mundo.
+       *
+       * `pack_id` viaja com a linha pelo mesmo motivo da criatura: o dex 25 de
+       * um pack não é o 25 do outro. */
+      db.exec(`
+        CREATE TABLE registro (
+          user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          pack_id    TEXT NOT NULL,
+          dex        INTEGER NOT NULL CHECK (dex >= 1),
+          fragmentos INTEGER NOT NULL DEFAULT 0 CHECK (fragmentos >= 0),
+          visto_em   INTEGER NOT NULL,
+          PRIMARY KEY (user_id, pack_id, dex)
+        )`);
+    },
+    /* O SQLite deste projeto suporta DROP COLUMN, mas descer uma migração que
+       ALTERA tabela é onde se perde dado por engano. As colunas de stamina
+       ficam: elas têm padrão, não estorvam quem não as usa, e a versão gravada
+       continua contando a história certa. */
+    desce: db => {
+      db.exec(`DROP TABLE IF EXISTS registro`);
+      db.exec(`DROP TABLE IF EXISTS bolsa`);
+      db.exec(`DROP TABLE IF EXISTS expedicoes`);
+    },
+  },
+  {
+    nome: 'idle-1.6a-encontros',
+    /* O TETO DIÁRIO PASSA A CONTAR ENCONTROS (D-052).
+     *
+     * Contava expedições, e o que o jogador leva para casa não são expedições:
+     * quatro Vigílias rendiam até 56 encontros contra os 27 do dia desenhado.
+     * Ver o comentário do §P5 em `engine/expedicao.mjs`.
+     *
+     * A coluna guarda quantos encontros a colheita rendeu. `DEFAULT 0` e não
+     * `NOT NULL` sem padrão: as expedições já colhidas antes desta migração não
+     * têm o número, e inventá-lo seria pior que zerá-lo — zero as deixa fora da
+     * conta do dia, e a janela móvel de 24 h as descarta sozinha em um dia. */
+    sobe: db => {
+      db.exec(`ALTER TABLE expedicoes ADD COLUMN encontros INTEGER NOT NULL DEFAULT 0`);
+      /* O caminho quente do teto é "quantos encontros neste jogador desde
+         ontem" — user_id e colhida_em, que o índice de campo não cobre porque
+         ele filtra por colhida_em IS NULL. */
+      db.exec(`CREATE INDEX idx_exped_colhidas
+                 ON expedicoes(user_id, colhida_em)`);
+    },
+    desce: db => {
+      db.exec(`DROP INDEX IF EXISTS idx_exped_colhidas`);
+      db.exec(`ALTER TABLE expedicoes DROP COLUMN encontros`);
     },
   },
 ];

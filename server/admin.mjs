@@ -27,6 +27,7 @@
  */
 import { randomUUID } from 'node:crypto';
 import { BUCKETS } from '../engine/carteira.mjs';
+import { MARGEM_MAX, margemValida } from '../engine/preco.mjs';
 
 /* Os papéis, do menos para o mais poderoso. A ordem é significativa: `podeFazer`
    compara posição, então um papel novo entra no lugar certo da escada e todas
@@ -178,4 +179,51 @@ export function painelEconomico(db, { desde = 0, ate = Number.MAX_SAFE_INTEGER }
     totalEmitido: Object.values(faucets).reduce((a, v) => a + v, 0),
     totalRetirado: Object.values(sinks).reduce((a, v) => a + v, 0),
   };
+}
+
+/* ── A MARGEM DA CASA (R18, fecha a L-047) ─────────────────────────────────
+ *
+ * `margem.definir` existia em `EXIGE` e em `DESTRUTIVAS` desde o F1.11 — com
+ * papel `economia`, confirmação obrigatória e auditoria — e **não tinha rota**.
+ * A ação estava desenhada e desarmada.
+ *
+ * Estas duas funções são o mínimo para armá-la, e nada além: LER a margem em
+ * vigor e DEFINI-LA. Toda a defesa continua onde já estava, no `agir` — papel,
+ * motivo escrito, confirmação e registro antes de executar. Repetir qualquer
+ * uma delas aqui criaria uma segunda cópia da regra, e a que estivesse errada
+ * seria a que ninguém olha.
+ */
+
+/* `null` é "use a do motor", e é DIFERENTE de `0`, que é uma casa sem margem.
+   Confundir os dois zeraria a margem sem ninguém pedir. */
+export function margemDaCasa(db) {
+  const r = db.prepare(`SELECT margem FROM casa_config WHERE id = 1`).get();
+  return r?.margem ?? null;
+}
+
+/* O VALOR É VALIDADO AQUI E NO MOTOR, e a repetição é deliberada: o `precificar`
+   valida porque não pode confiar em quem o chama, e esta função valida porque
+   uma margem inválida não pode chegar a ser GRAVADA. Recusar na escrita é o que
+   separa "a rodada ignorou o valor" de "o valor nunca existiu".
+   `null` explícito é aceito: é como se volta para a do motor. */
+export function definirMargem(db, { operadorId, valor, motivo, confirmado = false,
+                                    agora = Date.now() }) {
+  const limpo = valor === null ? null : margemValida(valor, undefined);
+  if (limpo === undefined)
+    throw erro(ERRO_ADMIN.ACAO,
+      `margem inválida: precisa ser número entre 0 e ${MARGEM_MAX}, ou null para usar a do motor`);
+
+  const de = margemDaCasa(db);
+  /* `de` e `para` como TEXTO no registro: a auditoria guarda o que mudou de
+     forma legível por quem lê depois, não um número para reinterpretar. */
+  return agir(db, {
+    operadorId, acao: 'margem.definir', alvo: 'casa',
+    de: de === null ? 'motor' : String(de),
+    para: limpo === null ? 'motor' : String(limpo),
+    motivo, confirmado, agora,
+  }, op => {
+    db.prepare(`UPDATE casa_config SET margem = ?, atualizado_em = ?, atualizado_por = ?
+                WHERE id = 1`).run(limpo, agora, op.id);
+    return { margem: limpo };
+  });
 }

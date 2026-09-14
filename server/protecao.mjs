@@ -39,6 +39,7 @@
  */
 import { randomUUID } from 'node:crypto';
 import { ORDEM_CONSUMO } from '../engine/carteira.mjs';
+import { anotar } from './telemetria.mjs';
 
 export const TIPOS_PAUSA = ['cooloff', 'self_exclusion'];
 
@@ -86,10 +87,37 @@ export const ERRO_PROTECAO = {
 const erro = (codigo, mensagem, extra) =>
   Object.assign(new Error(mensagem), { codigo, ...extra });
 
-const evento = (db, userId, tipo, detalhe, agora) =>
+/* ── DOIS REGISTROS, E OS DOIS PRECISAM EXISTIR (R21, fecha o D-034) ───────
+ *
+ * `responsible_play_events` é NOSSO: nomes em português, detalhe livre, feito
+ * para investigar um caso. `telemetry_events` é o do §4.7: nomes padronizados,
+ * campos obrigatórios declarados, feito para ser LIDO POR FORA — auditoria,
+ * regulador, revisão.
+ *
+ * Até o R21 só o primeiro era escrito. O segundo estava construído inteiro e
+ * nunca chamado, então nenhum fato de proteção era registrado no formato que a
+ * Spec manda registrar.
+ *
+ * A tradução mora AQUI, num mapa, e não espalhada por cada chamador. Espalhada,
+ * os dois registros divergem no primeiro bloco que acrescentar um evento a um
+ * só deles — e divergência entre dois registros da mesma coisa é pior que ter
+ * um: passam a existir duas respostas para a mesma pergunta. */
+const EQUIVALENTE_47 = {
+  cooloff_iniciado:        d => ({ nome: 'cooloff_started',            campos: { window: d.duracao } }),
+  autoexclusao_iniciada:   d => ({ nome: 'self_exclusion_started',     campos: { window: d.duracao } }),
+  reentrada_concedida:     () => ({ nome: 'self_exclusion_expired',    campos: {} }),
+  reality_check_confirmado: d => ({ nome: 'reality_check_acknowledged', campos: { duracaoMs: d.duracaoMs } }),
+  intervencao:             d => ({ nome: 'risk_intervention_shown',
+                                   campos: { intervention_id: d.intervencaoId, nivel: d.nivel, sinal: d.sinal } }),
+};
+
+const evento = (db, userId, tipo, detalhe, agora) => {
   db.prepare(`INSERT INTO responsible_play_events (id, user_id, tipo, detalhe, criado_em)
               VALUES (?,?,?,?,?)`)
     .run(randomUUID(), userId, tipo, JSON.stringify(detalhe), agora);
+  const par = EQUIVALENTE_47[tipo];
+  if (par) { const e = par(detalhe || {}); anotar(db, { ...e, userId, agora }); }
+};
 
 /* ── O GRUPO DE CONTAS DE UMA PESSOA ───────────────────────────────────────
  *
@@ -228,11 +256,18 @@ export function concederReentrada(db, { userId, agora = Date.now() }) {
   /* O ÚNICO PORTÃO QUE IMPORTA: nem esta função encurta. Ela conclui uma pausa
      que o RELÓGIO já terminou; enquanto o prazo corre, ela recusa — e é por
      isso que ela pode existir sem virar a porta dos fundos que o §28.4 fecha. */
-  if (p.ate === null || agora < p.ate)
+  if (p.ate === null || agora < p.ate) {
+    /* A TENTATIVA BARRADA É O FATO MAIS IMPORTANTE DESTA FUNÇÃO, e o §4.7 tem
+       evento próprio para ela. Registrar só a reentrada concedida contaria a
+       história pela metade: quem tentou voltar antes da hora e foi impedido é
+       exatamente o que uma revisão de proteção quer conseguir contar. */
+    anotar(db, { nome: 'self_exclusion_reentry_blocked', userId,
+                 campos: { action_blocked: 'reentrada', ate: p.ate }, agora });
     throw erro(ERRO_PROTECAO.EM_VIGOR,
       p.ate === null ? 'autoexclusão permanente não tem reentrada'
                      : `a pausa vale até ${new Date(p.ate).toISOString()}`,
       { ate: p.ate });
+  }
   if (!p.reentrada_pedida_em)
     throw erro(ERRO_PROTECAO.SEM_PEDIDO, 'a reentrada precisa ser pedida pelo jogador');
   db.prepare(`UPDATE self_exclusions SET reentrada_em = ? WHERE id = ?`).run(agora, p.id);
@@ -293,8 +328,28 @@ export function realityCheck(db, { userId, agora = Date.now() }) {
     `SELECT MAX(criado_em) AS q FROM responsible_play_events
       WHERE user_id = ? AND tipo = 'reality_check_confirmado' AND criado_em >= ?`)
     .get(userId, s.inicio).q ?? s.inicio;
+  const mostrar = agora - ultimo >= INTERVALO_REALITY_CHECK_MS;
+  /* O §4.7 pede `reality_check_shown` — o MOSTRADO, e não só o confirmado.
+     A diferença é a que importa numa revisão: mostrado sem confirmado é o
+     jogador que fechou o aviso, e é justamente esse padrão que se quer poder
+     contar. Registrar só a confirmação apagaria quem não confirmou. */
+  if (mostrar) {
+    anotar(db, { nome: 'reality_check_shown', userId,
+                 campos: { duracaoMs: s.duracaoMs }, agora });
+    /* `net_position_viewed` NO MESMO INSTANTE, e não é redundância: o §28.5
+       manda o reality check apresentar tempo de sessão E resultado líquido
+       juntos, então mostrá-lo É mostrar a posição líquida. Os dois eventos
+       existem separados no §4.7 porque a posição líquida pode ser vista fora
+       do reality check — e quando essa tela existir, ela emite aqui também.
+       O QUE O SERVIDOR SABE, e o comentário existe para não exagerar: ele sabe
+       que MANDOU o painel, não que o jogador olhou. É o limite de qualquer
+       telemetria de servidor, e registrar como se fosse certeza seria a mesma
+       mentira confortável que o R20 combateu no painel econômico. */
+    anotar(db, { nome: 'net_position_viewed', userId,
+                 campos: { liquido: s.liquidoDaSessao, rodadas: s.rodadas }, agora });
+  }
   return {
-    mostrar: agora - ultimo >= INTERVALO_REALITY_CHECK_MS,
+    mostrar,
     duracaoMs: s.duracaoMs,
     /* OS DOIS NÚMEROS QUE O §28.5 EXIGE, juntos: tempo de sessão E resultado
        líquido. Tempo sozinho é um relógio; líquido sozinho é um extrato. É a
@@ -401,7 +456,20 @@ export function sinaisDeRisco(db, { userId, agora = Date.now() }) {
      registrada na LACUNA com bloco dono. Fingir que medem seria pior: um sinal
      que nunca acende parece calmaria. */
 
-  return [...new Set(ligados)];
+  const acesos = [...new Set(ligados)];
+
+  /* UM EVENTO POR SINAL, e não um evento com a lista. O §4.7 declara
+     `signal_type` como campo obrigatório de `risk_signal_raised` — um evento
+     carregando três sinais teria que escolher um deles para o campo, e os
+     outros dois deixariam de ser contáveis.
+     `sinaisDeRisco` é consultada em vários caminhos, então o mesmo sinal pode
+     ser registrado mais de uma vez na mesma sessão. É o desenho certo para
+     este dado: a série responde "com que frequência acendeu", que é a pergunta
+     do §28.6 — deduplicar aqui responderia "acendeu alguma vez", que é menos. */
+  for (const sinal of acesos)
+    anotar(db, { nome: 'risk_signal_raised', userId, campos: { signal_type: sinal }, agora });
+
+  return acesos;
 }
 
 export function intervir(db, { userId, nivel, sinal, desfecho = 'aplicada',

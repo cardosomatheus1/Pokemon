@@ -15,8 +15,8 @@ import { S } from './estado.mjs';
 import { api } from './api.mjs';
 import {
   carteiraVazia, creditar, liberar, liquidarGanho, liquidarPerda,
-  reconciliar, reconstruir, reservar, totalDisponivel, SALDO_INICIAL,
-  carteiraDeSaldos } from '../../engine/carteira.mjs';
+  reconciliar, reconstruir, reservar, totalDisponivel, disponivelPara, SALDO_INICIAL,
+  carteiraDeSaldos, gastarCosmetico } from '../../engine/carteira.mjs';
 
 const CHAVE = 'ar_carteira';
 const CHAVE_ANTIGA = 'ar_bal';
@@ -155,6 +155,12 @@ export const saldo = () => (S.carteira ? totalDisponivel(S.carteira) : 0);
    (`soft_issuance_ceiling`), que é sobre BÔNUS e não sobre o total — somar os
    quatro baldes faria quem comprou PokéCash parar de receber recompensa, que é
    o contrário do que o teto quer. */
+/* O QUANTO ESTA TRANCADO — o PokeCash comprado que nao compra poder. Existe
+   como funcao para a tela nao refazer a conta: duas contas do mesmo saldo e
+   exatamente como se divergem. */
+export const travado = () =>
+  (S.carteira ? totalDisponivel(S.carteira) - disponivelPara(S.carteira, 'poder') : 0);
+
 export const saldoBonus = () => (S.carteira ? S.carteira.disponivel.bonus : 0);
 
 /* A APOSTA MÍNIMA E O VALOR EFETIVO DA APOSTA.
@@ -184,8 +190,17 @@ function aplicar(fn) {
 export const creditarRecompensa = (tipo, valor, ref) =>
   aplicar(() => creditar(S.carteira, tipo, 'bonus', valor, ref));
 
+/* ── O QUE SE COMPRA CAI NO BALDE `comprado` (1.26) ──────────────────────
+   Antes caía em `transferivel`, e ali ele comprava tudo — inclusive poder. É a
+   linha que o cadeado do dono existe para mudar, e ela é UMA. */
 export const creditarCompra = (valor, ref) =>
-  aplicar(() => creditar(S.carteira, 'PC_T_PURCHASE_CLEARED', 'transferivel', valor, ref));
+  aplicar(() => creditar(S.carteira, 'PC_T_PURCHASE_CLEARED', 'comprado', valor, ref));
+
+/* A loja de cosmético. A REGRA mora no motor (`gastarCosmetico`), como a da
+   aposta: fachada que reimplementa regra é a forma de as duas divergirem, e o
+   portão `carteira` cobra isso por escrito. */
+export const gastarEmCosmetico = (valor, ref) =>
+  aplicar(() => gastarCosmetico(S.carteira, valor, ref));
 
 export const reservarAposta = (valor, ref) => aplicar(() => reservar(S.carteira, valor, ref));
 export const devolverAposta  = (comp, ref)  => aplicar(() => liberar(S.carteira, comp, ref));

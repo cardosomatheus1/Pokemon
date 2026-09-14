@@ -41,6 +41,7 @@
  */
 import { randomUUID } from 'node:crypto';
 import { TIPOS_LIMITE } from './banco.mjs';
+import { anotar } from './telemetria.mjs';
 
 export { TIPOS_LIMITE };
 
@@ -146,10 +147,36 @@ function validar(tipo, valor) {
     throw erro(ERRO_LIMITE.VALOR, `valor de limite inválido: ${String(valor)}`);
 }
 
+/* A TRADUÇÃO PARA O §4.7, no mesmo desenho do `protecao.mjs` (R21, D-034).
+ *
+ * O registro nosso — `responsible_play_events`, nomes em português — já
+ * existia. O padronizado do §4.7 estava construído e nunca chamado.
+ *
+ * `limit_value` aceita `null` de propósito no caso de REMOÇÃO de limite: os
+ * campos obrigatórios do §4.7 recusam `null`, e é por isso que a remoção viaja
+ * como `0`. Um pedido de remover o teto é um pedido de teto infinito, e o
+ * evento precisa poder existir para ele — a alternativa seria não registrar
+ * justamente a mudança mais permissiva que o jogador pode pedir. */
+const EQUIVALENTE_47 = {
+  limite_reduzido:            d => ({ nome: 'limit_decrease_applied',
+                                      campos: { limit_type: d.tipo, limit_value: d.para ?? 0 } }),
+  limite_aumento_pedido:      d => ({ nome: 'limit_increase_requested',
+                                      campos: { limit_type: d.tipo, limit_value: d.para ?? 0 } }),
+  limite_remocao_pedida:      d => ({ nome: 'limit_increase_requested',
+                                      campos: { limit_type: d.tipo, limit_value: 0 } }),
+  limite_aumento_confirmado:  d => ({ nome: 'limit_increase_applied',
+                                      campos: { limit_type: d.tipo, limit_value: d.valor ?? 0 } }),
+  limite_bloqueou:            d => ({ nome: 'limit_blocked_action',
+                                      campos: { limit_type: d.limite, action_blocked: d.contexto || 'aposta',
+                                                usado: d.usado, teto: d.teto } }),
+};
+
 function registrarEvento(db, userId, tipo, detalhe, agora) {
   db.prepare(`INSERT INTO responsible_play_events (id, user_id, tipo, detalhe, criado_em)
               VALUES (?,?,?,?,?)`)
     .run(randomUUID(), userId, tipo, JSON.stringify(detalhe), agora);
+  const par = EQUIVALENTE_47[tipo];
+  if (par) { const e = par(detalhe || {}); anotar(db, { ...e, userId, agora }); }
 }
 
 function gravarVigente(db, userId, tipo, valor, agora) {
@@ -183,6 +210,13 @@ export function definirLimite(db, { userId, tipo, valor, agora = Date.now() }) {
     gravarVigente(db, userId, tipo, valor, agora);
     db.prepare(`DELETE FROM limit_requests WHERE user_id = ? AND tipo = ?`).run(userId, tipo);
     registrarEvento(db, userId, 'limite_reduzido', { tipo, de: atual ?? null, para: valor }, agora);
+    /* `limit_set` É O EVENTO DE "ESTE LIMITE PASSOU A VALER", e ele é diferente
+       de `limit_decrease_applied`: um diz o estado novo, o outro diz a direção
+       da mudança. O §4.7 declara os dois, e uma revisão que só tivesse o
+       segundo não conseguiria responder "que limites este jogador tem hoje?"
+       sem reconstruir a história inteira das mudanças. */
+    anotar(db, { nome: 'limit_set', userId,
+                 campos: { limit_type: tipo, limit_value: valor ?? 0, window: JANELA[tipo] }, agora });
     return { tipo, valor, vigente: true, efetivoEm: agora };
   }
 
@@ -282,6 +316,18 @@ export function registrarBloqueio(db, { userId, veredito, contexto, agora = Date
   registrarEvento(db, userId, 'limite_bloqueou',
     { limite: veredito.limite, usado: veredito.usado, teto: veredito.teto,
       voltaEm: veredito.voltaEm ?? null, contexto }, agora);
+
+  /* O TEMPO DE SESSÃO TEM EVENTO PRÓPRIO NO §4.7, separado do bloqueio
+     genérico — e a razão é que ele mede coisa diferente. Os outros limites
+     recusam um VALOR: apostou demais, perdeu demais. `max_session_time` recusa
+     a CONTINUAÇÃO, e é o único que responde "esta pessoa está jogando há tempo
+     demais", que é a pergunta do §28.5.
+     Vai junto do `limit_blocked_action`, não no lugar dele: a ação bloqueada
+     também é fato, e quem conta bloqueios não quer perder este. */
+  if (veredito.limite === 'max_session_time')
+    anotar(db, { nome: 'session_limit_reached', userId,
+                 campos: { limit_type: veredito.limite, usado: veredito.usado,
+                           teto: veredito.teto }, agora });
   return veredito;
 }
 

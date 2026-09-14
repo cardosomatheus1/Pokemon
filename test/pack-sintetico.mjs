@@ -77,6 +77,15 @@ const CLIMA = [
   { key: 'erosao',   w: 15, type: 'pedra', stat: 'offense', mult: 1.3, nome: 'Erosão' },
 ];
 
+/* O clima do AVANÇO (1.32). O pack sintético existe para provar que o motor não
+   conhece tema, então ele traz a forma mínima: um neutro e dois que pagam em
+   canais diferentes — um que MULTIPLICA e um que DIVIDE. */
+const CLIMA_IDLE = [
+  { key: 'parado', w: 50, name: 'Parado',  tipos: [],        rende: null,   desc: 'Sem bônus.' },
+  { key: 'quente', fx: 'sol', w: 30, name: 'Quente',  tipos: ['brasa'], rende: 'xp',   desc: 'Brasa rende mais XP.' },
+  { key: 'lufada', fx: 'vento', w: 20, name: 'Lufada',  tipos: ['vento'], rende: 'ritmo', desc: 'Vento acelera a wave.' },
+];
+
 const bonito = s => s.charAt(0).toUpperCase() + s.slice(1);
 
 export const packSintetico = {
@@ -86,6 +95,7 @@ export const packSintetico = {
   elenco:   ESPECIES.map(p => p.dex),
   golpes:   GOLPES,
   clima:    CLIMA,
+  climaIdle: CLIMA_IDLE,
   moeda:    { nome: 'Fichas', simbolo: '◈' },
   /* Rótulos: o contrato ganhou este campo no F1.12, porque a interface precisa
      chamar as criaturas de alguma coisa e esse nome é do TEMA. Sem ele o

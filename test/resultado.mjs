@@ -20,7 +20,7 @@ import { resultadoDaAposta, retornoLiquidoEstimado, rotuloLiquido } from '../eng
    "o código da tela de resultado", e trocar o nome em vinte asserções para
    registrar uma mudança de endereço faria o diff parecer maior do que é. O
    caminho é o que importa, e ele está aqui numa linha só. */
-const fases = () => readFileSync(new URL('../app/modules/resultado-tela.mjs', import.meta.url).pathname, 'utf8');
+const fases = () => readFileSync(new URL('../app/modules/resultado-tela.mjs', import.meta.url), 'utf8');
 
 export function suite() {
   const s = criarSuite('resultado');

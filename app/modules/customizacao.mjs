@@ -3,15 +3,18 @@
  * Fronteira: puramente cosmética. Nada aqui toca probabilidade nem economia. */
 
 import { $ } from './dom.mjs';
+import { confirmar } from './dialogo.mjs';
 import { CUR, elenco, especies, tipoCores, tipoNomes, nomeExibido, slugExterno } from './motor.mjs';
 import { DEPOSIT_PACKAGES, simulateDeposit } from './carteira.mjs';
-import { PROFILE_DEFAULT, avatarURL, cascataTreinador, loadProfile, nivelDe, progressoNivel, saveProfile, tituloDe, topOf, trainerURL } from './perfil.mjs';
+import { PROFILE_DEFAULT, avatarURL, avatarEhArte, avatarEnquadramento, cascataTreinador, loadProfile, nivelDe, progressoNivel, saveProfile, tituloDe, topOf, trainerURL } from './perfil.mjs';
 import { S } from './estado.mjs';
 import { TEMAS, aplicarTema, temaAtual } from './tema.mjs';
 import { TYPE_BADGES, renderBadges } from './medalhas.mjs';
-import { dexImg, dexURL } from './sprites.mjs';
-import { BN_CENAS, BN_EFEITOS, PADRAO_BANNER } from './banner-dados.mjs';
+import { dexImg, dexURL, retratoAnimado } from './sprites.mjs';
+import { BN_CENAS, BN_EFEITOS, BN_MOLDURAS, PADRAO_BANNER, cosmeticoValido } from './banner-dados.mjs';
 import { TRAINER_AVATARS } from './avatares-dados.mjs';
+import { AVATARES_ARTE, arquivoAvatar } from './acervo-dados.mjs';
+import { AVATARES as AVATARES_GALERIA, arquivoArte } from './artes-dados.mjs';
 import { NIVEIS_POR_VAGA, alternar, desbloquear, gifShinyAtivo, skinShinyAtiva,
          vagasLivres, vagasNoNivel, vagasUsadas } from './shiny-dados.mjs';
 import { renderBattleBanner } from './banner.mjs';
@@ -29,12 +32,8 @@ import { reiniciarCarteira, saldo } from './banco.mjs';
    de treinador não existir na fonte, o onerror troca por um Pokémon —
    assim a customização nunca aparece quebrada.
    ===================================================================== */
-const BANNER_SCENES = [
-  {id:'praia',   nm:'Praia'},   {id:'floresta', nm:'Floresta'},
-  {id:'oceano',  nm:'Oceano'},  {id:'vulcao',   nm:'Vulcão'},
-  {id:'ceu',     nm:'Céu'},     {id:'caverna',  nm:'Caverna'},
-  {id:'noite',   nm:'Noite'},   {id:'campeao',  nm:'Campeão'},
-];
+/* O catálogo `BANNER_SCENES` saiu no R10: era o segundo catálogo de cenário,
+   só para o banner do perfil. Uma pergunta, uma lista. */
 
 /* Retratos da Pokédex: mesma história das folhas da arena — o raw do
    GitHub cai/é bloqueado, então a CDN vem primeiro e o Showdown fecha a
@@ -73,14 +72,47 @@ function customMons(){
   });
 }
 
+/* UMA ARTE, TRÊS ENQUADRAMENTOS (R10).
+ *
+ * O banner do perfil vestia `.sc-*`, um catálogo de oito gradientes que só ele
+ * usava, escolhido numa grade própria. O banner da rodada e a faixa do topo —
+ * onde mora a carteira — vestem `.cn-*`, as dez cenas do catálogo único.
+ *
+ * Eram duas escolhas para a mesma pergunta ("com que cara eu apareço?"), com
+ * listas diferentes, e o resultado natural era um jogador com dois visuais que
+ * nunca combinam. Agora os três lugares vestem a MESMA cena, cada um no seu
+ * enquadramento: 112 px no perfil, faixa fina no topo, e o banner inteiro na
+ * rodada.
+ *
+ * `cosmeticoValido` e não `bt.cena` cru: é a mesma guarda dos outros dois, e
+ * ela existe porque perfil de versão antiga e `localStorage` adulterado chegam
+ * aqui — cena inválida cairia num `class="cn-undefined"` sem desenho nenhum. */
 function renderBanner(){
   const b = S.profile.banner || PROFILE_DEFAULT.banner;
+  const bt = S.profile.battle || PADRAO_BANNER;
+  /* ── R42 · O BANNER DO PERFIL NUNCA MOSTROU O SHINY ─────────────────────
+   *
+   * O banner de BATALHA passa `gifShinyAtivo` desde o R34; este aqui nunca
+   * passou — `dexImg` sem o quarto argumento sempre pediu a folha normal. Quem
+   * desbloqueou a skin, equipou, e escolheu o bicho para o banner do perfil via
+   * o Pokémon comum na própria tela de customização, ao lado do guarda-roupa
+   * que acabou de dizer que a skin está ativa.
+   *
+   * A pergunta aqui é a POSSE, e não a escolha — ao contrário da arena e da
+   * tela de vencedor. A diferença é o dono: o banner do perfil mostra o bicho
+   * que ESTE jogador escolheu para representá-lo, então ele já é "o dele" por
+   * definição. Na arena o lutador pode ser de qualquer um, e por isso lá a
+   * pergunta precisa das duas metades. */
   $('#profBanner').innerHTML =
-    `<div class="scene sc-${b.scene}"></div>
-     ${dexImg(b.dex, slugDoDex(b.dex), 'class="mon"')}
+    `<div class="scene cn-${cosmeticoValido('cena', bt.cena)}"></div>
+     ${dexImg(b.dex, slugDoDex(b.dex), 'class="mon"', gifShinyAtivo(S.profile, b.dex))}
      <div class="shade"></div>`;
   const av = $('#profAvatar');
   av.src = avatarURL();
+  av.classList.toggle('avArte', avatarEhArte());
+  /* O enquadramento da galeria vem do catálogo; para as outras coleções a
+     ponte devolve vazio, e o estilo do CSS continua mandando. */
+  av.setAttribute('style', avatarEnquadramento());
   av.onerror = () => {
     av.onerror = () => { av.onerror = null; av.src = trainerURL('red'); };
     av.src = `https://play.pokemonshowdown.com/sprites/gen5/${slugExterno(slugDoDex(
@@ -93,6 +125,35 @@ function renderCustom(){
   const b = S.profile.banner || PROFILE_DEFAULT.banner;
   const bt = S.profile.battle || PADRAO_BANNER;
   const mons = customMons();
+
+  /* `.avArte` desliga o `image-rendering:pixelated` que as outras duas grades
+     precisam: sprite de 96 px ampliado quer pixel duro, retrato pintado de
+     256 px reduzido a 66 quer suavização. A mesma regra sem a classe serrilha
+     a arte inteira — e é o tipo de coisa que passa em qualquer teste e só
+     aparece olhando. */
+  /* ── R43 · A GALERIA ────────────────────────────────────────────────────
+   *
+   * As artes de maior resolução do produto, e as únicas três do guarda-roupa
+   * que se MEXEM. O `object-position` sai do catálogo — cada uma foi
+   * enquadrada olhando o corte em 66 px, que é o tamanho em que ela vai viver,
+   * e não no tamanho em que foi desenhada.
+   *
+   * `.avArte` desliga o `image-rendering:pixelated` das outras grades: estas
+   * são PINTADAS e reduzidas, e pixel duro numa redução serrilha a imagem
+   * inteira. Mesma razão do acervo. */
+  $('#pickGaleria').innerHTML = AVATARES_GALERIA.map(x => `
+    <div class="opt ${a.kind==='galeria'&&a.id===x.id?'on':''}" data-av="galeria" data-id="${x.id}"
+         title="${x.nm}${x.vivo ? ' · animado' : ''}">
+      <img class="avArte" src="../${arquivoArte(x)}" loading="lazy" alt=""
+           style="object-position:50% ${(x.y*100).toFixed(0)}%">
+      <div class="cap">${x.nm}</div>
+    </div>`).join('');
+
+  $('#pickArte').innerHTML = AVATARES_ARTE.map(x => `
+    <div class="opt ${a.kind==='arte'&&a.id===x.id?'on':''}" data-av="arte" data-id="${x.id}">
+      <img class="avArte" src="../${arquivoAvatar(x.id)}" loading="lazy" alt="">
+      <div class="cap">${x.nm}</div>
+    </div>`).join('');
 
   $('#pickTrainer').innerHTML = TRAINER_AVATARS.map(t => `
     <div class="opt ${a.kind==='trainer'&&a.id===t.id?'on':''}" data-av="trainer" data-id="${t.id}">
@@ -124,17 +185,75 @@ function renderCustom(){
       <div class="cap">${x.nm}</div>
     </div>`).join('');
 
-  $('#pickScene').innerHTML = BANNER_SCENES.map(s => `
-    <div class="opt ${b.scene===s.id?'on':''}" data-scene="${s.id}">
-      <div class="swatch sc-${s.id}"></div>
-      <div class="cap">${s.nm}</div>
+  /* ── R40 · A GRADE DE MOLDURAS ──────────────────────────────────────────
+   *
+   * A AMOSTRA MOSTRA A MOLDURA COM UM RETRATO DENTRO, e não a moldura vazia.
+   * É o mesmo defeito que o R34 corrigiu na grade do lutador do banner: lá a
+   * grade mostrava PNG estático e o banner desenhava GIF, então o jogador
+   * escolhia olhando uma coisa e recebia outra. Moldura vazia teria o mesmo
+   * problema — o que se julga numa moldura é como ela emoldura ALGO.
+   *
+   * O retrato da amostra é o avatar de verdade do jogador, pelo mesmo motivo:
+   * a Pokébola corta as orelhas de quem estiver ali dentro, e isso precisa
+   * aparecer ANTES de equipar, não depois.
+   *
+   * O `.mdFio` acompanha o Circuito Vivo aqui como acompanha no banner. Sem
+   * ele a amostra mostraria a moldura sem os fios — de novo, escolher olhando
+   * uma coisa e receber outra. */
+  $('#pickMoldura').innerHTML = BN_MOLDURAS.map(x => `
+    <div class="opt ${bt.moldura===x.id?'on':''}" data-bmoldura="${x.id}" title="${x.nm}">
+      <div class="swatch" style="display:flex;align-items:center;justify-content:center;
+        background:var(--panel)">
+        <span class="bnMold md-${x.id}" style="position:static;width:38px;height:38px">
+          <img class="bnTreinador${avatarEhArte() ? ' avArte' : ''}" src="${avatarURL()}" alt=""
+            onerror="this.onerror=null;this.src='${trainerURL('red')}'">${
+          x.id === 'vivo' ? '<span class="mdFio" aria-hidden="true"></span>' : ''}</span>
+      </div>
+      <div class="cap">${x.nm}</div>
     </div>`).join('');
 
-  $('#pickBannerMon').innerHTML = mons.map(m => `
-    <div class="opt ${+b.dex===m.dex?'on':''}" data-bmon="${m.dex}">
-      ${dexImg(m.dex, m.n, 'loading="lazy"')}
+
+  /* ── R34 · O LUTADOR DO BANNER É GIF, COMO NA ARENA ────────────────────
+   *
+   * Esta grade escolhe QUEM aparece no banner de batalha, e o banner desenha o
+   * escolhido com `retratoAnimado` — o GIF do pack. A grade mostrava
+   * `dexImg`, que é PNG estático: o jogador escolhia olhando uma coisa e
+   * recebia outra.
+   *
+   * É o mesmo defeito que o R13 corrigiu na tela de fim de rodada, onde o
+   * campeão comemorava imóvel: não faltava arte, faltava apontar para a que já
+   * está em disco.
+   *
+   * O `gifShinyAtivo` entra aqui pela mesma razão que entra no banner — quem
+   * desbloqueou e equipou a skin escolhe vendo a skin. E o contêiner leva
+   * `temShiny`, porque `::after` não funciona dentro de um `<img>`. */
+  /* ── A OPCAO NENHUM (1.6c) ──────────────────────────────────────────────
+   *
+   * Pedido do dono: *"adicione opcao de NENHUM se caso a pessoa queira escolher
+   * um lutador no banner, mas depois queira tirar"*.
+   *
+   * Ate aqui a grade era uma porta que so abria num sentido: escolhido um
+   * lutador, dava para TROCAR por outro e nunca para nao ter nenhum. Escolha
+   * sem volta e uma armadilha pequena, e as pequenas sao as que ninguem
+   * registra — o jogador so descobre que se arrependeu depois de nao poder
+   * voltar atras.
+   *
+   * `dex 0` e a ausencia, e nao um id de especie: nenhuma dex vale zero, entao
+   * o valor nao colide com nada agora nem com pack nenhum depois. */
+  const nenhum = `
+    <div class="opt semMon ${!+b.dex ? 'on' : ''}" data-bmon="0" title="Sem criatura no banner">
+      <div class="semMonArte" aria-hidden="true">—</div>
+      <div class="cap">Nenhum</div>
+    </div>`;
+
+  $('#pickBannerMon').innerHTML = nenhum + mons.map(m => {
+    const sh = gifShinyAtivo(S.profile, m.dex);
+    return `
+    <div class="opt ${+b.dex===m.dex?'on':''}${sh ? ' temShiny' : ''}" data-bmon="${m.dex}">
+      ${retratoAnimado(m, 'loading="lazy"', sh)}
       <div class="cap">${nomeExibido(m.n)}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   renderShiny();
 }
@@ -291,10 +410,11 @@ $('#profileModal').addEventListener('click', ev => {
   const opt = ev.target.closest('.opt');
   if (!opt) return;
   if (opt.dataset.av)          S.profile.avatar = {kind:opt.dataset.av, id: opt.dataset.av==='mon' ? +opt.dataset.id : opt.dataset.id};
-  else if (opt.dataset.scene)  S.profile.banner = {...S.profile.banner, scene: opt.dataset.scene};
+
   else if (opt.dataset.bmon)   S.profile.banner = {...S.profile.banner, dex: +opt.dataset.bmon};
   else if (opt.dataset.bcena)  S.profile.battle = {...S.profile.battle, cena: opt.dataset.bcena};
   else if (opt.dataset.befeito)S.profile.battle = {...S.profile.battle, efeito: opt.dataset.befeito};
+  else if (opt.dataset.bmoldura)S.profile.battle = {...S.profile.battle, moldura: opt.dataset.bmoldura};
   else return;
   saveProfile(S.profile);
   renderBanner(); renderSession(); renderBattleBanner();
@@ -308,7 +428,7 @@ $('#profileModal').addEventListener('click', ev => {
    acima: ali o clique em qualquer lugar do cartão escolhe o item, e aqui há
    dois botões DENTRO do cartão com significados diferentes. Misturar os dois
    faria "equipar a skin" também trocar o avatar. */
-$('#pickShiny').addEventListener('click', ev => {
+$('#pickShiny').addEventListener('click', async ev => {
   const bg = ev.target.closest('[data-shiny-gif]');
   const bk = ev.target.closest('[data-shiny-skin]');
   if (bg || bk){
@@ -330,14 +450,17 @@ $('#pickShiny').addEventListener('click', ev => {
     return;
   }
   const nome = (especies.find(e => e.dex === dex) || {}).n || dex;
-  if (!confirm(`Usar uma vaga de cosmético shiny em ${nomeExibido(nome)}?\n\n` +
-               `Você tem ${vagasLivres(S.profile, nivel)} livre(s). A vaga não volta.`)) return;
+  if (!await confirmar(`Usar uma vaga de cosmético shiny em ${nomeExibido(nome)}?\n` +
+               `Você tem ${vagasLivres(S.profile, nivel)} livre(s). A vaga não volta.`,
+               { ok: 'Usar a vaga', perigo: true })) return;
   desbloquear(S.profile, dex, nivel);
   saveProfile(S.profile); renderShiny(); renderBattleBanner();
 });
 
-$('#btnProfReset').onclick = () => {
-  if (!confirm('Resetar todo o perfil e o saldo?')) return;
+$('#btnProfReset').onclick = async () => {
+  if (!await confirmar('Resetar todo o perfil e o saldo?\n' +
+                       'Isto apaga o treinador, o histórico e o saldo deste navegador.',
+                       { ok: 'Resetar tudo', perigo: true })) return;
   localStorage.removeItem('ar_profile'); localStorage.removeItem('ar_deposits');
   reiniciarCarteira(); atualizarSaldo();
   S.profile = loadProfile(); localStorage.removeItem('ar_session');

@@ -41,6 +41,26 @@ import * as protecao from './protecao.mjs';
 import * as resultado from './resultado.mjs';
 import * as rotas from './rotas.mjs';
 import * as protecaoTela from './protecao-tela.mjs';
+import * as logBatalha from './log.mjs';
+import * as painelRodada from './painel-rodada.mjs';
+import * as resultadoCentro from './resultado-centro.mjs';
+import * as arenaLegivel from './arena-legivel.mjs';
+import * as vencedorAnimado from './vencedor-animado.mjs';
+import * as ortografia from './ortografia.mjs';
+import * as arteArena from './arte-arena.mjs';
+import * as margemCasa from './margem-casa.mjs';
+import * as filtroCor from './filtro-cor.mjs';
+import * as distribuicao from './distribuicao.mjs';
+import * as grafico from './grafico.mjs';
+import * as politica from './politica.mjs';
+import * as telemetriaLigada from './telemetria-ligada.mjs';
+import * as xpRodada from './xp-rodada.mjs';
+import * as ordemBolas from './ordem-bolas.mjs';
+import * as shinyArena from './shiny-arena.mjs';
+import * as marcaArte from './marca-arte.mjs';
+import * as miniLog from './mini-log.mjs';
+import * as cedula from './cedula.mjs';
+import * as marca from './marca.mjs';
 import * as hash from './hash.mjs';
 import * as laco from './laco.mjs';
 import * as adminAuth from './admin-auth.mjs';
@@ -51,11 +71,80 @@ import * as progressaoServidor from './progressao-servidor.mjs';
 import * as adminServidor from './admin.mjs';
 import * as packOriginal from './pack-original.mjs';
 import * as lacoServidor from './laco-servidor.mjs';
+import * as progressaoLigada from './progressao-ligada.mjs';
+import * as caixas from './caixas-teste.mjs';
+import * as instancia from './instancia.mjs';
+import * as bioma from './bioma.mjs';
+import * as evolucao from './evolucao.mjs';
+import * as criaturasServidor from './criaturas-servidor.mjs';
+import * as expedicao from './expedicao.mjs';
+import * as captura from './captura.mjs';
+import * as drops from './drops.mjs';
+import * as idleServidor from './idle-servidor.mjs';
+import * as mundo from './mundo.mjs';
+import * as outfit from './outfit.mjs';
+import * as vida from './vida.mjs';
+import * as particulas from './particulas.mjs';
+import * as relevo from './relevo.mjs';
+import * as faunaTeste from './fauna.mjs';
+import * as bandeiras from './bandeiras-suite.mjs';
+import * as viewport from './viewport.mjs';
+import * as idleQuem from './idle-quem.mjs';
+import * as idleEscolha from './idle-escolha.mjs';
+import * as repertorioSuite from './repertorio.mjs';
+import * as avancoBossSuite from './avanco-boss.mjs';
+import * as avancoEfeitoSuite from './avanco-efeito.mjs';
+import * as folhaVivaSuite from './folha-viva.mjs';
+import * as climaIdleSuite from './clima-idle.mjs';
+import * as icones from './icones.mjs';
+import * as decoracao from './decoracao.mjs';
+import * as itensIcone from './itens-icone.mjs';
+import * as economiaIdle from './economia-idle.mjs';
+import * as vagasSuite from './vagas.mjs';
+import * as nivelCriatura from './nivel-criatura.mjs';
+import * as estagiosSuite from './estagios.mjs';
+import * as elencoEstagioSuite from './elenco-estagio.mjs';
+import * as waveSuite from './wave.mjs';
+import * as roteiroWaveSuite from './roteiro-wave.mjs';
+import * as runAvancoSuite from './run-avanco.mjs';
+import * as avancoTelaSuite from './avanco-tela.mjs';
+import * as avancoEstadoSuite from './avanco-estado.mjs';
+import * as avancoPagaSuite from './avanco-paga.mjs';
+import * as avancoForcaSuite from './avanco-forca.mjs';
+import * as rotaOffSuite from './rota-off.mjs';
+import * as vitrineSuite from './vitrine.mjs';
+import * as estilhacoSuite from './estilhaco.mjs';
+import * as avancoSuite from './avanco.mjs';
+import * as ausenteSuite from './ausente.mjs';
+import * as npcSuite from './npc.mjs';
+import * as itensCatalogo from './itens-catalogo.mjs';
+import * as ligacaoSuite from './ligacao.mjs';
+import * as origemSuite from './origem.mjs';
+import * as itensNomeSuite from './itens-nome.mjs';
+import * as raridadeSuite from './raridade.mjs';
+import * as capturaTelaSuite from './captura-tela.mjs';
+import * as idleConfirmaSuite from './idle-confirma.mjs';
+import * as lojaSuite from './loja.mjs';
+import * as composicaoSuite from './composicao.mjs';
+import * as focoSuite from './foco.mjs';
+import * as idleHudSuite from './idle-hud.mjs';
+import * as pokedexSuite from './pokedex.mjs';
+import * as evoIdleSuite from './evolucao-idle.mjs';
+import * as idleDados from './idle-dados.mjs';
+import * as idleTela from './idle-tela.mjs';
+import * as rotasIdle from './rotas-idle.mjs';
 import * as colocacao from './colocacao.mjs';
 import * as banner from './banner.mjs';
 import * as shiny from './shiny.mjs';
 import * as adm from './adm.mjs';
 import * as visual from './visual.mjs';
+import { precisaNavegador as precisaDeNavegador } from './bandeiras.mjs';
+import * as acervo from './acervo.mjs';
+import * as calibracao from './calibracao.mjs';
+import * as ligaServidor from './liga-servidor.mjs';
+import * as ligaLocal from './liga-local.mjs';
+import * as artes from './artes.mjs';
+import * as servir from './servir.mjs';
 
 /* `--so=a,b,c` — o RECORTE (T3).
  *
@@ -131,7 +220,18 @@ if (process.argv.includes('--gerar')) {
   if (querSo('visual')) {                                   // ~40 s
     if (visual.disponivel()) {
       const base = await visual.capturarBase();
-      writeFileSync(new URL('./fixtures/visual-base.json', import.meta.url), JSON.stringify(base));
+      const amb = visual.ambienteAtual();
+      const lerA = () => { try { return JSON.parse(readFileSync(
+        new URL('./fixtures/visual-base-ambiente.json', import.meta.url), 'utf8')); } catch { return null; } };
+      const ref = lerA();
+      if (visual.baseQueVale(null, ref, {}).origem === 'referência') {
+        writeFileSync(new URL('./fixtures/visual-base.json', import.meta.url), JSON.stringify(base));
+        writeFileSync(new URL('./fixtures/visual-base-ambiente.json', import.meta.url), JSON.stringify(amb ?? {}));
+        console.log('  linha de base visual (REFERÊNCIA, ' + visual.chaveAmbiente(amb) + ')');
+      } else {
+        writeFileSync(new URL('./fixtures/visual-base-local.json', import.meta.url), JSON.stringify(base));
+        console.log('  linha de base visual LOCAL (' + visual.chaveAmbiente(amb) + ') — a REFERÊNCIA não foi tocada.');
+      }
       console.log(`  linha de base visual: ${Object.keys(base).length} telas`);
     } else {
       console.log('  linha de base visual NÃO regravada — sem navegador');
@@ -168,8 +268,15 @@ const RAIZES_Q3 = [1, 42, 0xC0FFEE, 0xFFFFFFFF, 987654321];
 /* AS SUÍTES QUE PRECISAM DE NAVEGADOR. Com `--so` fora desta lista, as cinco
    partidas de Chromium não acontecem — é o que faz `--so=carteira` custar 0,2 s
    em vez de 95 s. */
-const COM_NAVEGADOR = ['visual','visual-base','ambientes','rodada-viva','tema-cedo','sem-rede','sem-backend','rodada-completa','contraste'];
-const precisaNavegador = !SO || SO.some(n => COM_NAVEGADOR.includes(n));
+const COM_NAVEGADOR = ['visual','visual-base','ambientes','rodada-viva','tema-cedo','sem-rede','sem-backend','rodada-completa','contraste','outfit-canvas'];
+/* A DECISAO MORA EM `bandeiras.mjs`, e nao aqui — D-059. Ela consultava o
+   `--so` e esquecia o `--sem-navegador`, entao o `npm run rapido` subia os
+   cinco Chromium e descartava o resultado deles trinta e sete linhas abaixo:
+   3 min 30 s onde a documentacao prometia 7 s, sem sintoma nenhum na saida.
+   Extraida, a regra virou tabela-verdade com teste; no lugar, ela continuaria
+   sem forma de ser observada de fora que nao fosse o cronometro. */
+const precisaNavegador = precisaDeNavegador(
+  { so: SO, semNavegador, comNavegador: COM_NAVEGADOR });
 
 if (visual.disponivel() && !semVisual && precisaNavegador) {
   const temLocal = visual.temAssetsLocais();
@@ -219,7 +326,28 @@ if (visual.disponivel() && !semVisual && precisaNavegador) {
     () => visual.rodarSemBackend(),
     () => visual.rodarRodadaCompleta(),
   ]);
-  baseGravada = JSON.parse(readFileSync(new URL('./fixtures/visual-base.json', import.meta.url), 'utf8'));
+  const ler = u => { try { return JSON.parse(readFileSync(u, 'utf8')); } catch { return null; } };
+  const ambienteRef = ler(new URL('./fixtures/visual-base-ambiente.json', import.meta.url));
+
+  /* A BASE LOCAL, FORA DO VERSIONAMENTO.
+     A digital de pixels responde "mudou nesta maquina", e e so isso. No
+     ambiente que gravou a versionada ela continua valendo; em qualquer outro,
+     vale a local — e a primeira execucao CRIA e nao compara nada, dizendo isso
+     em voz alta. Mesmo desenho do cache de vereditos do Q2. */
+  const ARQ_LOCAL = new URL('./fixtures/visual-base-local.json', import.meta.url);
+  let baseLocal = ler(ARQ_LOCAL);
+  const escolha = visual.baseQueVale(ler(new URL('./fixtures/visual-base.json', import.meta.url)),
+                                     ambienteRef, baseLocal);
+  if (escolha.origem === 'local' && !baseLocal) {
+    writeFileSync(ARQ_LOCAL, JSON.stringify(baseAtual));
+    baseLocal = baseAtual;
+    console.log('  · linha de base visual LOCAL criada (' +
+                visual.chaveAmbiente(visual.ambienteAtual()) + ') — esta execução não comparou nada.');
+    console.log('    A versionada é de outro ambiente e digital de pixel não viaja.\n');
+  }
+  if (escolha.origem === 'local')
+    console.log('  · Q5 comparando contra a base LOCAL desta máquina, não a do projeto.\n');
+  baseGravada = escolha.origem === 'local' ? baseLocal : escolha.base;
   if (!temLocal) console.log('  · teste de egresso fechado pulado (sem assets locais) — use npm run assets\n');
 
   /* RESULTADO AUSENTE NÃO PODE VIRAR SUÍTE AUSENTE.
@@ -259,10 +387,15 @@ const pararCedo = process.env.PARAR_CEDO === '1';
 const todas = [
   ...(semGolden ? [] : [golden.suite()]),
   /* baratas: varredura de texto e lotes pequenos */
-  fonteUnica.suite(), estado.suite(), modulos.suite(), conteudo.suite(), emissao.suite(),
-  carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(), telemetria.suite(), commit.suite(), saida.suite(), progressao.suite(), tema.suite(), arenas.suite(), portao.suite(), colocacao.suite(), banner.suite(), shiny.suite(), adm.suite(),
+  fonteUnica.suite(), estado.suite(), modulos.suite(), bandeiras.suite(), viewport.suite(), idleQuem.suite(), idleEscolha.suite(), repertorioSuite.suite(), avancoBossSuite.suite(), avancoEfeitoSuite.suite(), folhaVivaSuite.suite(), climaIdleSuite.suite(), icones.suite(), decoracao.suite(), itensIcone.suite(), economiaIdle.suite(), vagasSuite.suite(), nivelCriatura.suite(), estagiosSuite.suite(), elencoEstagioSuite.suite(), waveSuite.suite(), roteiroWaveSuite.suite(), runAvancoSuite.suite(), avancoTelaSuite.suite(), avancoEstadoSuite.suite(), avancoPagaSuite.suite(), avancoForcaSuite.suite(), rotaOffSuite.suite(), vitrineSuite.suite(), estilhacoSuite.suite(), avancoSuite.suite(), ausenteSuite.suite(), npcSuite.suite(), itensCatalogo.suite(), ligacaoSuite.suite(), origemSuite.suite(), itensNomeSuite.suite(), raridadeSuite.suite(), capturaTelaSuite.suite(), idleConfirmaSuite.suite(), lojaSuite.suite(), composicaoSuite.suite(), focoSuite.suite(), idleHudSuite.suite(), pokedexSuite.suite(), evoIdleSuite.suite(), conteudo.suite(), emissao.suite(),
+  carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(), telemetria.suite(), commit.suite(), saida.suite(), progressao.suite(), tema.suite(), arenas.suite(), portao.suite(), colocacao.suite(), banner.suite(), logBatalha.suite(), painelRodada.suite(), resultadoCentro.suite(), arenaLegivel.suite(), marca.suite(), vencedorAnimado.suite(), ortografia.suite(), arteArena.suite(), filtroCor.suite(), xpRodada.suite(), cedula.suite(), ordemBolas.suite(), shinyArena.suite(), marcaArte.suite(), miniLog.suite(), distribuicao.suite(), grafico.suite(), acervo.suite(), calibracao.suite(), ligaServidor.suite(), ligaLocal.suite(), artes.suite(), servir.suite(), shiny.suite(), adm.suite(),
   /* médias: lotes de simulação curtos */
-  await servidor.suite(), bancoServidor.suite(), auth.suite(), carteiraServidor.suite(), scheduler.suite(), transporte.suite(), apostaServidor.suite(), concorrencia.suite(), limites.suite(), protecao.suite(), resultado.suite(), await rotas.suite(), await protecaoTela.suite(), await hash.suite(), laco.suite(), salaCliente.suite(), conexaoTexto.suite(), modoServidor.suite(), progressaoServidor.suite(), adminServidor.suite(), adminAuth.suite(), packOriginal.suite(), await lacoServidor.suite(),
+  await servidor.suite(), bancoServidor.suite(), auth.suite(), carteiraServidor.suite(), scheduler.suite(), transporte.suite(), apostaServidor.suite(), concorrencia.suite(), limites.suite(), protecao.suite(), resultado.suite(), await rotas.suite(), await protecaoTela.suite(), await hash.suite(), laco.suite(), salaCliente.suite(), conexaoTexto.suite(), modoServidor.suite(), progressaoServidor.suite(), adminServidor.suite(), adminAuth.suite(), margemCasa.suite(), politica.suite(), await telemetriaLigada.suite(), packOriginal.suite(), await lacoServidor.suite(), await progressaoLigada.suite(), caixas.suite(), instancia.suite(), bioma.suite(), evolucao.suite(), criaturasServidor.suite(), expedicao.suite(), captura.suite(), drops.suite(), idleServidor.suite(), mundo.suite(), outfit.suite(), vida.suite(), particulas.suite(), relevo.suite(), faunaTeste.suite(), idleDados.suite(), idleTela.suite(), rotasIdle.suite(),
+  /* A metade de canvas do outfit é MONTADA sob demanda: montá-la sobe um
+     Chromium, e subi-lo no `npm run rapido` custaria os 7 s que essa execução
+     inteira leva. Fora do recorte, ela nem é construída; sem navegador, ela se
+     monta como um teste de aviso e não abre nada. */
+  ...(!semNavegador && querSo('outfit-canvas') && !semVisual ? [await outfit.suiteCanvas()] : []),
   semente.suite(), estatistica.suite(), precisao.suite(), invariantes.suite(),
   /* `rVisual` e não `visual.disponivel()`: com `--so` fora das suítes de
      navegador o Chromium nem sobe, e a condição antiga montaria suítes com

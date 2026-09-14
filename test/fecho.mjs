@@ -33,7 +33,7 @@
  * resolve para `TUDO` — o fecho universal, que invalida com qualquer mudança.
  */
 import { readFileSync, existsSync, statSync } from 'node:fs';
-import { dirname, relative, resolve } from 'node:path';
+import { dirname, relative, resolve, sep } from 'node:path';
 
 /* ── TENTATIVA MEDIDA E DESCARTADA: cobertura de execução ───────────────────
  *
@@ -106,8 +106,14 @@ const NAVEGADORAS = new Set(['visual', 'visual-base', 'ambientes', 'rodada-viva'
                              'tema-cedo', 'sem-rede', 'sem-backend', 'rodada-completa', 'contraste']);
 
 const RAIZ = process.cwd();
+
+/* `relative` devolve `\` no Windows, e TODO o resto do arnes fala em `/`:
+   o ARNES, os prefixos varridos, e a chave do cache de veredito do Q2. Sem
+   normalizar aqui, o fecho no Windows nao casa com nada e o portao degenera —
+   silenciosamente, que e a pior forma. */
+const relRaiz = abs => relative(RAIZ, abs).split(sep).join('/');
 const pastaRel = abs => {
-  const r = relative(RAIZ, abs);
+  const r = relRaiz(abs);
   return r && !r.startsWith('..') ? (r.endsWith('/') ? r : r + '/') : '';
 };
 const cacheImports = new Map();
@@ -196,16 +202,16 @@ function prefixosVarridos(arq, txt) {
     if (!bruto) continue;
     if (bruto.startsWith('.')) {
       const abs = resolve(dirname(arq), bruto);
-      const rel = relative(RAIZ, abs);
+      const rel = relRaiz(abs);
       if (rel && !rel.startsWith('..')) fora.push(rel.endsWith('/') ? rel : rel + '/');
     } else {
       /* Nome de variável: procura a constante literal no mesmo arquivo. */
       const decl = txt.match(new RegExp(`const ${bruto}\\s*=\\s*new URL\\(\\s*['"]([^'"]+)['"]`));
       if (!decl) return null;                 /* não resolvi: quem chama decide TUDO */
       const abs = resolve(dirname(arq), decl[1]);
-      const rel = relative(RAIZ, abs);
+      const rel = relRaiz(abs);
       if (rel && !rel.startsWith('..')) fora.push(rel.endsWith('/') ? rel : rel + '/');
-      else if (decl[1] === './') fora.push(relative(RAIZ, dirname(arq)) + '/');
+      else if (decl[1] === './') fora.push(relRaiz(dirname(arq)) + '/');
     }
   }
   return fora;
@@ -266,7 +272,7 @@ export function fechoDeArquivo(entrada, navegadora = false) {
 
   const fora = new Set([...ARNES, ...[...prefixos].filter(Boolean)]);
   for (const a of vistos) {
-    const rel = relative(RAIZ, a);
+    const rel = relRaiz(a);
     if (rel && !rel.startsWith('..')) fora.add(rel);
   }
   /* O navegador enxerga o app inteiro. Prefixos, e não arquivos: um módulo novo

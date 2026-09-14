@@ -20,7 +20,7 @@ import { criarOperador, podeFazer, agir, painelEconomico, PAPEIS, EXIGE,
 
 const AGORA = Date.parse('2026-03-02T12:00:00Z');
 const spec = () => readFileSync(
-  new URL('../docs/POKEARENA_SPEC_MASTER_V1-V5_v1.5_COMPLETE.md', import.meta.url).pathname, 'utf8');
+  new URL('../docs/POKEARENA_SPEC_MASTER_V1-V5_v1.5_COMPLETE.md', import.meta.url), 'utf8');
 
 function cenario() {
   const db = abrirBanco(':memory:'); migrar(db);
@@ -185,7 +185,7 @@ export function suite() {
   /* ── O PAINEL LÊ O LEDGER ──────────────────────────────────────────────*/
 
   s.teste('o painel NÃO consulta a tabela de saldos', () => {
-    const fonte = readFileSync(new URL('../server/admin.mjs', import.meta.url).pathname, 'utf8');
+    const fonte = readFileSync(new URL('../server/admin.mjs', import.meta.url), 'utf8');
     const painel = fonte.slice(fonte.indexOf('export function painelEconomico'));
     const somaCache = [...painel.matchAll(/FROM carteiras/g)].length;
     igual(somaCache, 1,

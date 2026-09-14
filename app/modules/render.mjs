@@ -26,9 +26,48 @@ import { drawWeatherGround } from './clima.mjs';
    RENDER — ilha 2D top-down desenhada em canvas (pixel art procedural)
    ===================================================================== */
 const W = 300, H = 400;
-const map = document.getElementById('mapCanvas').getContext('2d');
-const fx  = document.getElementById('fxCanvas').getContext('2d');
-map.imageSmoothingEnabled = false; fx.imageSmoothingEnabled = false;
+
+/* ── O BUFFER TEM RESOLUÇÃO SOBRANDO (R11) ─────────────────────────────────
+ *
+ * Medido antes de mexer, a 1920: o buffer era `300×400` e aparecia numa caixa
+ * de 589 px. Ampliação de 1,96× — **não inteira** — e com
+ * `image-rendering:pixelated` isso significa vizinho-mais-próximo: algumas
+ * colunas de origem viram um pixel na tela, outras viram dois. O resultado é
+ * serrilhado IRREGULAR, que é o que se lê como "não parece ampliada
+ * corretamente".
+ *
+ * A correção não muda o espaço lógico: `W` e `H` continuam 300×400, e os seis
+ * módulos que desenham por eles continuam desenhando igual. O que muda é que o
+ * buffer passa a ter `ESCALA` vezes mais pixels e o contexto já nasce escalado
+ * — cada unidade lógica vira um quadrado exato de `ESCALA × ESCALA`.
+ *
+ * Com o buffer maior que a caixa, a conta do navegador vira REDUÇÃO em vez de
+ * ampliação. Reduzir descarta informação de forma uniforme; ampliar por fator
+ * quebrado duplica algumas colunas e não outras, que é o defeito.
+ *
+ * `ESCALA = 2` porque a caixa da arena não passa de 570 px em largura nenhuma
+ * (ver `--arena-teto` no CSS), e 600 > 570 com folga. Aumentar mais custaria
+ * memória e tempo de pintura sem ganho visível. */
+const ESCALA = 2;
+
+function contexto(id){
+  const cv = document.getElementById(id);
+  cv.width = W * ESCALA; cv.height = H * ESCALA;
+  const c = cv.getContext('2d');
+  /* Escala aplicada UMA vez, no nascimento do contexto. Os `save`/`restore`
+     espalhados pelos módulos preservam-na, porque restauram um estado que já a
+     continha; ninguém chama `setTransform`, e um dia que alguém chame vai
+     precisar somar esta escala de volta. */
+  c.scale(ESCALA, ESCALA);
+  /* Continua desligado: dentro do buffer o desenho é pixel art, e cada unidade
+     lógica precisa virar um quadrado chapado de 2×2. Quem suaviza é o
+     navegador, na redução para a tela — e ali suavizar é o que se quer. */
+  c.imageSmoothingEnabled = false;
+  return c;
+}
+
+const map = contexto('mapCanvas');
+const fx  = contexto('fxCanvas');
 
 const CX = W/2, CY = H/2;
 // a ilha encosta nas laterais, igual ao vídeo de referência — só sobra
@@ -261,11 +300,28 @@ function drawMap(time, dt = 0){
     map.globalAlpha = 1;
   }
 
-  // antes de abrir: cada lutador é uma pokébola no chão
-  const closed = !S.released;
+  /* ── ANTES DE ABRIR, CADA LUTADOR É UMA POKÉBOLA NO CHÃO ─────────────────
+   *
+   * A CONDIÇÃO É POR ENTIDADE, e não global. Aqui havia `!S.released`, que é
+   * uma bandeira única: `releaseAll()` a liga no instante em que monta a FILA
+   * de entrada — quando o `BATTLE!!` aparece —, e naquele mesmo quadro as doze
+   * bolas paravam de ser desenhadas DE UMA VEZ.
+   *
+   * O efeito na tela era o oposto do que a abertura em volta (R23) existe para
+   * dar: o véu saía, a arena aparecia VAZIA, e só depois os anéis começavam a
+   * estourar um a um. O dono do projeto descreveu exatamente isso — "as
+   * pokébolas continuam sumindo primeiro".
+   *
+   * E foi por isso que a pausa do R33 não mudou nada: ela atrasou o momento em
+   * que as bolas ABREM, mas o que sumia antes da pausa era o DESENHO delas.
+   * Ajustar o tempo de uma coisa que não estava na tela.
+   *
+   * `e.aberta` é ligado pela fila, na hora em que AQUELA bola abre. Assim a
+   * bola fica no chão até o próprio clarão dela — que é o que faz a volta ser
+   * acompanhável. */
   for (const e of S.ents){
     if (!e.alive) continue;
-    if (closed){ drawBall(map, e.x|0, (e.y-7)|0, e.bola); continue; }
+    if (!e.aberta){ drawBall(map, e.x|0, (e.y-7)|0, e.bola); continue; }
     // sombra proporcional ao tamanho do bicho (Gyarados faz mais sombra
     // que Pikachu), e um tico maior enquanto ele está atacando
     const r = e.meta.w[0] * e.scale * 0.30;

@@ -72,7 +72,7 @@ export function suite() {
      vinte testes verdes, e é o mesmo erro que criou o D-007. */
   s.teste('o cooldown do código é as 24 h que a Spec escreve', () => {
     const spec = readFileSync(new URL(
-      '../docs/POKEARENA_SPEC_MASTER_V1-V5_v1.5_COMPLETE.md', import.meta.url).pathname, 'utf8');
+      '../docs/POKEARENA_SPEC_MASTER_V1-V5_v1.5_COMPLETE.md', import.meta.url), 'utf8');
     const m = spec.match(/aumentar limite\s*->\s*pedido registrado \+ cooldown de (\d+)\s*h/);
     ok(m, 'não achei o cooldown no §28.3 — o teste perdeu a âncora no documento');
     igual(COOLDOWN_MS, Number(m[1]) * 60 * 60 * 1000,
@@ -320,7 +320,25 @@ export function suite() {
     igual(v.ok, false,
       'perdeu 300 com limite diário de 200 e o limite não viu — o contrapeso do ' +
       'teste de cima: um settlement que não lança NADA passaria nele');
-    igual(v.usado, 300, `contou ${v.usado} de perda`);
+    /* ── O NÚMERO É `perda`, E NÃO O 300 QUE EU PEDI ────────────────────
+       D-080, e a explicação já estava escrita vinte linhas acima, no comentário
+       do D-021: a rodada tem um `stakeMax` próprio, e `stakeQueCabe` corta o
+       pedido nele. Medido em 3.600 slots, o menor foi 212.
+
+       Então este `igual(..., 300)` só valia quando o corte não acontecia — e
+       quando acontecia, a suíte ficava vermelha dizendo "esperado 300, veio
+       212" numa execução em cada tantas.
+
+         > Um teste que afirma o que ele PEDIU em vez do que ele CONSEGUIU não
+         > é rigoroso: ele é instável. E instável é pior que vermelho — o
+         > vermelho tem endereço, o instável escolhe quando aparecer.
+
+       Afirmar contra `perda` é MAIS forte, e não menos: agora ele cobra a
+       contagem inteira para qualquer valor que a rodada aceite, e não só para
+       o caso feliz em que ela aceita tudo. */
+    igual(v.usado, perda,
+      `a perda foi ${perda} e o limite contou ${v.usado} — um settlement que ` +
+      'conta menos do que se perdeu deixa o jogador apostar de novo hoje');
   });
 
   /* --- Q9: o bloqueio deixa rastro ---------------------------------------- */

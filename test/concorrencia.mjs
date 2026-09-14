@@ -33,16 +33,17 @@
  * trabalhadores chegaram a disputar o lock, e REPROVA se a janela nunca abriu —
  * senão seria um teste que passa por não testar.
  */
+import { fileURLToPath } from 'node:url';
 import { execFile } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { abrirBanco, migrar } from '../server/banco.mjs';
 import { cadastrar } from '../server/auth.mjs';
 import { creditar, saldos, ledgerDe, reconciliarNoBanco } from '../server/carteira.mjs';
 
-const RAIZ = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const AGORA = Date.UTC(2026, 0, 15);
 
 /* Quanto tempo os filhos têm para subir antes da barreira. Precisa cobrir a

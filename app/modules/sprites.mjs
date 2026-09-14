@@ -9,7 +9,7 @@
 
 /* `sprite` chega com apelido: o lutador já tem um campo `f.sprite`, e duas
    coisas com o mesmo nome no mesmo arquivo é convite a erro de leitura. */
-import { slugExterno, sprite as enderecoSprite } from './motor.mjs';
+import { slugExterno, sprite as enderecoSprite, spriteShiny as enderecoShiny } from './motor.mjs';
 import { S } from './estado.mjs';
 import { log } from './dom.mjs';
 
@@ -173,6 +173,71 @@ const DEX_MIRRORS = [
 
 const dexURL = (dex, shiny) => candidatos(DEX_MIRRORS[0](dex, shiny), null)[0];
 
+/* ── A ARTE DE GBA, para o mundo do idle ──────────────────────────────────
+ *
+ * O `dexURL` acima devolve o sprite MODERNO do PokeAPI — a arte de Sword/Shield,
+ * lisa, de outra era. Na Arena isso é certo: aquela tela é neon e a criatura é
+ * um retrato. No mundo do idle é errado, e o dono viu na hora:
+ *
+ *   "não da nem pra ver, ta parecendo que o treinador cagou o bulbassauro"
+ *
+ * Metade do problema era escala; a outra metade era ÉPOCA. Um sprite liso de
+ * 2019 ao lado de um outfit em pixel de GBA não parece variedade, parece erro.
+ *
+ * `sprites/pokemon/versions/generation-iii/firered-leafgreen/` é a arte dos
+ * cartuchos que o próprio dono mandou usar como referência para a distribuição
+ * do idle. Mesma era, mesma paleta, mesma quantidade de pixel — e existe para
+ * todos os 151, o que a pasta de overworld não tem (ela cobre 33).
+ *
+ * Emerald é o segundo espelho: mesma geração, e cobre quem faltar. */
+const DEX_GBA = [
+  (dex, sh) => 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' +
+               `versions/generation-iii/firered-leafgreen/${sh ? 'shiny/' : ''}${dex}.png`,
+  (dex, sh) => 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' +
+               `versions/generation-iii/emerald/${sh ? 'shiny/' : ''}${dex}.png`,
+];
+
+export const dexURLGba = (dex, shiny) => candidatos(DEX_GBA[0](dex, shiny), null)[0];
+export const dexURLGbaReserva = (dex, shiny) => candidatos(DEX_GBA[1](dex, shiny), null)[0];
+
+/* O RETRATO ANIMADO — o sprite de batalha que o pack declara (R13).
+ *
+ * O `dexImg` logo abaixo tem a cadeia inteira em PNG ESTÁTICO, e é ele que o
+ * fim de rodada desenhava. Não faltava arte: o GIF animado já é baixado desde
+ * sempre — a primeira linha do `alvos()` é `pack.sprite(esp)`, e ele devolve o
+ * `gen5ani`. Faltava apontar para o que já está em disco.
+ *
+ * A CASCATA É A MESMA DE TODO O RESTO: cópia local primeiro, origem depois. É
+ * o que o F0.12 construiu, e passar por fora dela reabriria o egresso que ele
+ * fechou. Se nem o local nem a origem responderem, o `dexImg` estático entra
+ * como último resgate — perder a animação é aceitável, perder o Pokémon não.
+ *
+ * `shiny` escolhe entre `sprite` e `spriteShiny`, e os dois são do PACK: o
+ * `original_v1` pinta com arte nossa e devolve a normal nos dois casos, porque
+ * ali um `-shiny` apontaria para arquivo inexistente. */
+function retratoAnimado(especie, extra, shiny){
+  const url = shiny ? enderecoShiny(especie) : enderecoSprite(especie);
+  const lista = candidatos(url, null);
+  /* Último degrau: o retrato estático do dex. Uma animação a menos é um
+     detalhe; um retângulo vazio no lugar do campeão não é. */
+  lista.push(DEX_MIRRORS[0](especie.dex, shiny));
+  const cadeia = lista.slice(1).reduceRight(
+    (acc, u) => `this.onerror=function(){${acc}};this.src='${u}';`,
+    `this.onerror=null;this.style.opacity=.25;`);
+  /* ── R34 · O RETRATO SHINY SE ANUNCIA ──────────────────────────────────
+   *
+   * `data-shiny` e não uma classe: o `extra` de cada chamador já traz o
+   * `class="..."` dele — `bnMon`, `bnMon vitrine`, `mon` —, e concatenar classe
+   * aqui exigiria acertar oito lugares para resolver um. O atributo é
+   * ortogonal, e o CSS pega por `img[data-shiny="1"]`.
+   *
+   * O desenho é `drop-shadow`, que acompanha o recorte alfa do próprio GIF:
+   * mesma decisão do contorno da arena, e pelo mesmo motivo — nada é pintado
+   * por cima de arte de terceiro. */
+  return `<img src="${lista[0]}" alt="${especie.n}" ${extra || ''}${shiny ? ' data-shiny="1"' : ''} `
+       + `onerror="${cadeia.replace(/"/g, '&quot;')}">`;
+}
+
 function dexImg(dex, slug, extra, shiny){
   /* A cópia local entra na frente da cadeia que já existia. Os endereços
      seguintes continuam sendo O MESMO desenho em outro lugar. */
@@ -181,7 +246,10 @@ function dexImg(dex, slug, extra, shiny){
   const cadeia = urls.slice(1).reduceRight(
     (acc, u) => `this.onerror=function(){${acc}};this.src='${u}';`,
     `this.onerror=null;this.style.opacity=.25;`);
-  return `<img src="${urls[0]}" alt="" ${extra||''} onerror="${cadeia.replace(/"/g,'&quot;')}">`;
+  /* Mesma marcação do `retratoAnimado` logo acima, e pela mesma razão: o
+     retrato estático também precisa dizer que é shiny. */
+  return `<img src="${urls[0]}" alt="" ${extra||''}${shiny ? ' data-shiny="1"' : ''} `
+       + `onerror="${cadeia.replace(/"/g,'&quot;')}">`;
 }
 
 export {
@@ -189,6 +257,7 @@ export {
   PMD,
   SPRITE_MAX_H,
   conferirFolha,
+  retratoAnimado,
   dexImg,
   dexURL,
   dirOf,

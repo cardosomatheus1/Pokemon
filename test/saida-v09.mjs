@@ -16,7 +16,7 @@ import { criarSuite, ok } from './harness.mjs';
 
 const raiz = p => new URL('../' + p, import.meta.url);
 const ler = p => readFileSync(raiz(p), 'utf8');
-const existe = p => existsSync(raiz(p).pathname);
+const existe = p => existsSync(raiz(p));
 
 /* Cada item aponta a evidência. `pendente` marca o que não é código. */
 export const ITENS = [

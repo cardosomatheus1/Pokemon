@@ -13,7 +13,7 @@ import { semTexto } from './modulos.mjs';
 import {
   BUCKETS, ORDEM_CONSUMO, TIPOS, carteiraVazia, creditar, lancar, liberar,
   liquidarGanho, liquidarPerda, reconciliar, reconstruir, reservar,
-  totalDisponivel, totalReservado,
+  totalDisponivel, totalReservado, disponivelPara, aceitaBalde, BUCKETS_LIVRES,
 } from '../engine/carteira.mjs';
 
 /* PRNG do próprio teste: os lotes aleatorizados precisam ser reproduzíveis. */
@@ -323,6 +323,192 @@ export function suite() {
     for (const proibido of ['disponivel[', 'reservado[', 'ledger.push'])
       ok(!banco.includes(proibido),
         `banco.mjs mexe em ${proibido} direto; isso é regra, e regra é do motor`);
+  });
+
+
+  /* ══ O CADEADO DO POKÉCASH COMPRADO (bloco 1.26) ═══════════════════════
+   *
+   * A regra mais importante da economia até agora, e o medo do dono é concreto:
+   *
+   *   > "O CARA DOAR NÃO SEI QUANTO E NO PRIMEIRO DIA TER DINHEIRO PRA DEIXAR
+   *   >  POKÉMON BOOSTADO FORTÃO"
+   *
+   * Sem esta separação, o requisito da pedra — *o dinheiro compra velocidade, a
+   * pedra cobra presença* — é contornável.
+   */
+
+  s.teste('o balde comprado NÃO compra poder, e compra aposta e cosmético', () => {
+    const w = carteiraVazia();
+    creditar(w, 'PC_T_PURCHASE_CLEARED', 'comprado', 1000, 'x');
+
+    /* A ÚNICA recusa nova. Um cadeado que mudasse o comportamento de tudo seria
+       uma reforma disfarçada de proteção. */
+    const poder = reservar(w, 500, 'boost', 'poder');
+    igual(poder.ok, false, 'PokéCash COMPRADO comprou poder — é o cenário exato ' +
+      'que o dono descreveu: doar e no primeiro dia ter o time boostado');
+    ok(/comprado/.test(poder.motivo),
+      `a recusa não diz por quê: "${poder.motivo}". Recusa sem endereço é o ` +
+      'D-067, e aqui ela cai na porta do dinheiro — o pior lugar possível');
+
+    for (const proposito of ['aposta', 'cosmetico']) {
+      const w2 = carteiraVazia();
+      creditar(w2, 'PC_T_PURCHASE_CLEARED', 'comprado', 1000, 'x');
+      const r = reservar(w2, 500, 'x', proposito);
+      igual(r.ok, true, `o comprado foi recusado em "${proposito}", e ele é aceito ali`);
+      igual(r.composicao.comprado, 500, `"${proposito}" não gastou o comprado`);
+    }
+  });
+
+  s.teste('o cadeado se abre GANHANDO — a aposta volta presa, o LUCRO cai livre', () => {
+    /* Palavra do dono: *"GANHANDO, o seu LUCRO SE SOMA À CARTEIRA; PERDENDO,
+       ELE PERDE O DINHEIRO"*.
+
+       É a diferença entre comprar VANTAGEM e comprar TENTATIVAS. E ganhar tem
+       risco, que é o que impede isto de virar uma casa de câmbio. */
+    const w = carteiraVazia();
+    creditar(w, 'PC_T_PURCHASE_CLEARED', 'comprado', 1000, 'x');
+    const r = reservar(w, 100, 'x', 'aposta');
+    igual(r.composicao.comprado, 100);
+
+    liquidarGanho(w, r.composicao, 2.5, 'x');
+    igual(w.disponivel.comprado, 1000,
+      'a APOSTA não voltou para o balde comprado — quem apostou e recuperou ' +
+      'estaria lavando o cadeado sem correr risco nenhum');
+    igual(w.disponivel.transferivel, 150,
+      'o LUCRO não caiu livre. É a linha do dono, e é ela que faz o cadeado se ' +
+      'abrir jogando em vez de nunca.');
+
+    /* E PERDENDO, some. */
+    const w2 = carteiraVazia();
+    creditar(w2, 'PC_T_PURCHASE_CLEARED', 'comprado', 1000, 'x');
+    const r2 = reservar(w2, 100, 'x', 'aposta');
+    liquidarPerda(w2, r2.composicao, 'x');
+    igual(w2.disponivel.comprado, 900, 'a perda não saiu do balde certo');
+    igual(w2.disponivel.transferivel, 0, 'perder criou saldo livre do nada');
+  });
+
+  s.teste('o BÔNUS continua sem virar saldo livre — a brecha do §5.5 segue fechada', () => {
+    /* A diferença entre os dois baldes é o DONO do dinheiro: bônus é da casa, e
+       convertê-lo em livre é a brecha que o §5.5 fecha. `comprado` é dinheiro
+       que o jogador pagou — a trava dele é sobre PODER, e não sobre saída.
+
+       Sem esta afirmação, "o lucro cai livre" viraria a regra de todos os
+       baldes, e o cadeado do 1.26 abriria a porta que o F0.9 trancou. */
+    const w = carteiraVazia();
+    creditar(w, 'DAILY_REWARD', 'bonus', 1000, 'x');
+    const r = reservar(w, 100, 'x', 'aposta');
+    liquidarGanho(w, r.composicao, 2.5, 'x');
+    igual(w.disponivel.transferivel, 0,
+      'apostar BÔNUS gerou saldo transferível — é a brecha que o §5.5 fecha');
+    igual(w.disponivel.bonus, 1150, 'o payout do bônus não voltou para o bônus');
+  });
+
+  s.teste('a ordem gasta o RESTRITO antes do LIVRE', () => {
+    /* Se o livre fosse primeiro, o jogador acabaria com uma bolsa só de PokéCash
+       restrito — e a sensação seria de estar sendo PUNIDO por ter comprado. */
+    const w = carteiraVazia();
+    creditar(w, 'WELCOME_GRANT', 'transferivel', 500, 'x');
+    creditar(w, 'PC_T_PURCHASE_CLEARED', 'comprado', 300, 'x');
+    const r = reservar(w, 400, 'x', 'aposta');
+    igual(r.composicao.comprado, 300, 'a aposta não esvaziou o restrito primeiro');
+    igual(r.composicao.transferivel, 100, 'a aposta não completou com o livre');
+    /* E o `bonus` continua na frente de tudo: é dinheiro da casa. */
+    const w2 = carteiraVazia();
+    creditar(w2, 'DAILY_REWARD', 'bonus', 200, 'x');
+    creditar(w2, 'PC_T_PURCHASE_CLEARED', 'comprado', 300, 'x');
+    const r2 = reservar(w2, 250, 'x', 'aposta');
+    igual(r2.composicao.bonus, 200, 'o bônus deixou de ser gasto primeiro');
+    igual(r2.composicao.comprado, 50);
+  });
+
+  s.teste('o que cabe para PODER é menor que o saldo na tela', () => {
+    /* Essa diferença É o cadeado, e a tela precisa poder mostrá-la — sem uma
+       função que a responda, ela refaria a conta, e duas contas do mesmo saldo
+       é exatamente como se divergem. */
+    const w = carteiraVazia();
+    creditar(w, 'WELCOME_GRANT', 'transferivel', 400, 'x');
+    creditar(w, 'PC_T_PURCHASE_CLEARED', 'comprado', 600, 'x');
+    igual(totalDisponivel(w), 1000, 'o saldo total mudou');
+    igual(disponivelPara(w, 'aposta'), 1000, 'a aposta não enxerga tudo');
+    igual(disponivelPara(w, 'cosmetico'), 1000, 'o cosmético não enxerga tudo');
+    igual(disponivelPara(w, 'poder'), 400,
+      'o poder enxergou o PokéCash comprado — o cadeado não existe');
+  });
+
+  s.teste('o cadeado sobrevive à reconciliação', () => {
+    /* `reconciliar` recalcula tudo pelo ledger. Um balde novo que não fosse
+       reconstruído viraria "saldo adulterado" na primeira conferência — e o
+       jogador levaria a culpa por uma coisa que eu fiz. */
+    const w = carteiraVazia();
+    creditar(w, 'PC_T_PURCHASE_CLEARED', 'comprado', 700, 'x');
+    const r = reservar(w, 200, 'x', 'aposta');
+    liquidarGanho(w, r.composicao, 3, 'x');
+    const rec = reconciliar(w);
+    igual(rec.ok, true, `a reconciliação acusou: ${JSON.stringify(rec.problemas ?? [])}`);
+  });
+
+  /* ── A COMPRA DE COSMÉTICO TEM LANÇAMENTO PRÓPRIO — bloco 1.31 ─────────
+   *
+   * A primeira forma que me ocorreu foi reusar `reservar` + `liquidarPerda`:
+   * o dinheiro sai igual, e não precisaria de tipo novo. Ela está errada, e o
+   * erro é de AUDITORIA e não de saldo.
+   *
+   *   > Um ledger que registra uma compra de traje como `BET_LOSS` conta uma
+   *   > história falsa sobre para onde o dinheiro do jogador foi. O saldo bate
+   *   > e a explicação mente — que é a pior combinação possível num livro.
+   *
+   * E o §25.2 é sobre exatamente isto: o que aconteceu tem de poder ser
+   * refeito a partir do que está gravado.
+   */
+  s.teste('a compra de cosmético é um lançamento próprio, e não uma perda de aposta', () => {
+    ok(TIPOS.includes('COSMETIC_PURCHASE'),
+      'a loja de cosmético não tem tipo próprio no ledger — ela teria de se ' +
+      'disfarçar de aposta perdida, e o livro passaria a mentir sobre para ' +
+      'onde o dinheiro foi');
+  });
+
+  s.teste('o cosmético gasta QUALQUER balde, inclusive o comprado', () => {
+    /* É o outro lado do cadeado do 1.26: o PokéCash comprado não vira PODER,
+       e cosmético não é poder. Trancá-lo aqui também seria trancar o jogador
+       fora da única coisa que ele de fato pode comprar. */
+    const w = carteiraVazia();
+    creditar(w, 'PC_T_PURCHASE_CLEARED', 'comprado', 500, 'r1');
+    igual(disponivelPara(w, 'cosmetico'), 500,
+      'o saldo comprado não alcança cosmético — e aí ele não compra nada');
+    igual(disponivelPara(w, 'poder'), 0,
+      'o saldo comprado alcançou PODER: o cadeado do 1.26 caiu');
+  });
+
+  s.teste('gastar em cosmético debita, e o ledger reconstrói o saldo', () => {
+    const w = carteiraVazia();
+    creditar(w, 'WELCOME_GRANT', 'bonus', 1000, 'ini');
+    const r = lancar(w, 'COSMETIC_PURCHASE', { disponivel: { bonus: -250 } },
+                     'loja:avatar:red');
+    igual(r.ok, true, `a compra foi recusada: ${r.motivo}`);
+    igual(totalDisponivel(w), 750, 'o preço não saiu do saldo');
+    /* §25.2: o saldo tem de sair do LIVRO, e não de um número guardado ao lado
+       dele. `reconciliar` refaz o saldo a partir das entradas e compara com o
+       que está gravado — se a compra tivesse escrito só num dos dois, é aqui
+       que ela apareceria. */
+    const { ok: bate, problemas, calculado } = reconciliar(w);
+    igual(bate, true, 'o ledger e o saldo divergiram depois da compra: ' + problemas.join('; '));
+    igual(totalDisponivel(calculado), 750,
+      'refazendo o saldo pelo livro, a compra de cosmético não aparece');
+    /* e a peça comprada fica no livro, e não só o valor */
+    const ultima = w.ledger[w.ledger.length - 1];
+    igual(ultima.tipo, 'COSMETIC_PURCHASE');
+    ok(String(ultima.ref).includes('avatar'),
+      `a entrada não diz o que foi comprado: ref="${ultima.ref}". Sem isso o ` +
+      'livro sabe quanto saiu e não sabe em troca de quê');
+  });
+
+  s.teste('a compra NUNCA deixa saldo negativo, nem por um', () => {
+    /* A invariante do §4.6 vale para toda porta, e a loja é uma porta nova. */
+    const w = carteiraVazia();
+    creditar(w, 'WELCOME_GRANT', 'bonus', 100, 'ini');
+    const r = lancar(w, 'COSMETIC_PURCHASE', { disponivel: { bonus: -101 } }, 'loja:x');
+    igual(r.ok, false, 'a loja levou o saldo a negativo');
+    igual(totalDisponivel(w), 100, 'a recusa não foi inteira — meia transação');
   });
 
   return s;

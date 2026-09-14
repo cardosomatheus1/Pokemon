@@ -207,7 +207,21 @@ export const emissaoSemanalMaxima = () => ORCAMENTO_DESAFIOS_SEMANAL;
    corridos": com janela deslizante, o jogador que joga sábado e domingo fecha
    dois marcos em três dias, e o orçamento semanal vira quinzenal na prática. */
 export function semanaDe(dataISO) {
-  const d = new Date(dataISO + 'T00:00:00Z');
+  /* ACEITA AS DUAS FORMAS, e essa tolerância é a correção do `D-035`.
+     A versão anterior concatenava `'T00:00:00Z'` no que recebesse. Com uma data
+     pura (`2026-03-02`) funcionava; com um instante ISO completo virava
+     `2026-03-02T12:00:00.000ZT00:00:00Z`, que é data inválida — e o servidor
+     chamava justamente assim. */
+  const dia0 = String(dataISO ?? '').slice(0, 10);
+  const d = new Date(dia0 + 'T00:00:00Z');
+  /* LANÇA EM VEZ DE DEVOLVER `NaN-WNaN`, e é isto que fecha o defeito de
+     verdade. A string com NaN era o problema inteiro: ela é COMPARÁVEL A SI
+     MESMA, então "mesma semana" continuava respondendo `true` e a regra do
+     §28.8 parecia funcionar — arquivando a vida toda do jogador numa semana só.
+     Um balde que não pode ser calculado não pode virar um balde. */
+  if (Number.isNaN(d.getTime()))
+    throw Object.assign(new Error(`data inválida para semana ISO: ${String(dataISO)}`),
+                        { codigo: 'semana_invalida' });
   const dia = (d.getUTCDay() + 6) % 7;              // segunda = 0
   d.setUTCDate(d.getUTCDate() - dia + 3);           // quinta da mesma semana
   const primeiraQuinta = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));

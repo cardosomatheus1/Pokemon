@@ -105,5 +105,91 @@ export function suite() {
     ok(algumImportou, 'ninguém importa da ligação — o motor ficou desconectado do app');
   });
 
+
+  /* ── AS TABELAS DE REGRA MORAM NO MOTOR, E EM LUGAR NENHUM MAIS ─────────
+   *
+   * O teste acima varre `app/index.html`. Quando o app virou vinte e tantos
+   * módulos, a varredura ficou olhando para a porta enquanto a casa crescia
+   * pelos fundos: o defeito plantado `S591` põe uma tabela de perfis dentro de
+   * `app/modules/idle-mundo.mjs` e a suíte inteira continua verde.
+   *
+   * Por que uma tabela duplicada é pior que uma função duplicada: ela não
+   * quebra. Os dois lados funcionam, e divergem no primeiro ajuste — o custo de
+   * uma expedição muda no motor, a aba continua cobrando o antigo, e o número
+   * na tela deixa de ser o número que o jogo usa. É a L-020 chegando por outra
+   * porta, e é a razão do §25.2.
+   *
+   * A lista é CURTA de propósito. Varrer todo símbolo do motor contra todo
+   * módulo devolveria ruído — `T`, `PACK` e afins são locais legítimos em vários
+   * lugares. O que entra aqui é tabela de REGRA: quanto custa, quanto rende,
+   * quantas vezes por dia. Essas o jogador sente quando divergem. */
+  const REGRAS_DO_MOTOR = ['PERFIS', 'TETO_DIARIO', 'TETO_ENCONTROS',
+                           'TETO_CAPTURA', 'TETO_SALDO_PC_B'];
+
+  s.teste('nenhum módulo do app redeclara uma tabela de regra do motor', () => {
+    const achados = [];
+    for (const f of readdirSync(MODULOS).filter(x => x.endsWith('.mjs'))) {
+      const txt = readFileSync(new URL(f, MODULOS), 'utf8');
+      for (const nome of REGRAS_DO_MOTOR) {
+        const re = new RegExp(`^\\s*(?:export\\s+)?(?:const|let|var|function)\\s+${nome}\\b`, 'm');
+        if (re.test(txt)) achados.push(`${f} → ${nome}`);
+      }
+    }
+    ok(achados.length === 0,
+      `${achados.length} tabela(s) de regra redeclarada(s) no app: ${achados.join(', ')}. ` +
+      'Uma tabela de regra em dois lugares não quebra nada hoje — os dois lados ' +
+      'funcionam. Ela diverge no primeiro ajuste, e a partir daí o número que a ' +
+      'tela mostra deixa de ser o número que o jogo cobra. Importe do motor.');
+  });
+
+  s.teste('as tabelas de regra existem mesmo, e no motor', () => {
+    /* Sem isto, renomear uma tabela no motor esvazia o teste acima em silêncio:
+       ele passaria a procurar por um nome que não existe mais em lugar nenhum,
+       e ficaria verde para sempre sobre uma varredura vazia. É o mesmo cuidado
+       do S109 — execução vazia com a palavra VERDE. */
+    const daEngine = readdirSync(new URL('../engine/', import.meta.url))
+      .filter(f => f.endsWith('.mjs'))
+      .map(f => readFileSync(new URL('../engine/' + f, import.meta.url), 'utf8'))
+      .join('\n');
+    for (const nome of REGRAS_DO_MOTOR)
+      ok(new RegExp(`^export const ${nome}\\b`, 'm').test(daEngine),
+        `"${nome}" está na lista de tabelas de regra e o motor não a exporta. ` +
+        'Ou ela foi renomeada e a lista ficou para trás, ou ela saiu do motor. ' +
+        'Nos dois casos a varredura acima virou letra morta.');
+  });
+  /* ── SELETOR SOLTO EM OUVINTE DE DOCUMENTO É CONTRATO INVISÍVEL (D-065) ──
+   *
+   * O cartão da criatura ganhou `data-dex` para uma sonda de teste, e o
+   * seletor do INICIAL — `ev.target.closest('[data-dex]')` num ouvinte de
+   * `document` — passou a casar com ele primeiro. Clicar numa criatura
+   * chamava `escolherInicial`, que lança, e o `return` matava o clique. O
+   * jogador só conseguia selecionar o inicial, que já vem selecionado.
+   *
+   * A CAUSA NÃO É O ATRIBUTO, é o seletor sem escopo: ele é um contrato
+   * invisível com a página inteira, e quem acrescenta o atributo noutro lugar
+   * não tem como saber que existia um dono.
+   *
+   * Isto se afirma na FONTE e não no navegador, e de propósito: a caixa do
+   * portão abre com uma criatura só, e com um cartão na tela o defeito não
+   * pode aparecer. Foi a sétima vez neste projeto que medi onde o defeito não
+   * cabe — a saída nunca é uma sonda mais esperta. */
+  s.teste('nenhum ouvinte delegado usa seletor de atributo sem escopo', () => {
+    const SOLTOS = ['data-dex', 'data-cria', 'data-bioma', 'data-perfil',
+                    'data-mover', 'data-lance', 'data-zoom', 'data-colher'];
+    const achados = [];
+    for (const f of readdirSync(MODULOS).filter(x => x.endsWith('.mjs'))) {
+      const txt = readFileSync(new URL(f, MODULOS), 'utf8');
+      for (const attr of SOLTOS) {
+        const re = new RegExp(`closest\\(\\s*['"]\\[${attr}\\]['"]\\s*\\)`, 'g');
+        if (re.test(txt)) achados.push(`${f} → [${attr}]`);
+      }
+    }
+    ok(achados.length === 0,
+      `${achados.length} seletor(es) de atributo sem escopo: ${achados.join(', ')}. ` +
+      'Num ouvinte de documento inteiro, isso reivindica o atributo na página ' +
+      'toda — e o próximo elemento que o ganhar perde o próprio clique, em ' +
+      'silêncio. Prefixe com o contêiner: .');
+  });
+
   return s;
 }

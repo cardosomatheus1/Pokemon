@@ -1,0 +1,43 @@
+  /* ── O BANNER TEM DOIS MODOS, E O CORPO MUDA COM ELE (1.6c) ─────────────
+   *
+   * Mesmo componente, duas telas. Pedido do dono, literal: *"você pode usar
+   * exatamente o mesmo modelo atual do nosso banner de batalha [...] você só vai
+   * fazer ele aparecer também na tela do iddle"*.
+   *
+   * O que NÃO muda entre os modos: cena, efeito de nome, moldura, nome, nível,
+   * avatar. É o mesmo cosmético, e ele é do jogador, não da tela.
+   *
+   * O que muda são duas coisas, e confundi-las é o erro fácil aqui:
+   *
+   *     a ARTE     na arena, o lutador da rodada; no idle, SEMPRE o Pokémon do
+   *                PERFIL — *"esse deve-se manter o Pokémon que ele escolheu na
+   *                customização do perfil"*
+   *     o TEXTO    na arena, a aposta; no idle, o lugar onde o treinador está,
+   *                o stage e o tempo restante
+   *
+   * E o texto do idle segue quem está COM O TREINADOR: *"no banner de batalha só
+   * irá aparecer de fato oque estiver com o treinador"*. Os outros três — quando
+   * as quatro expedições existirem (L-082) — aparecem no quadro da L-083, e não
+   * aqui.
+   *
+   * ── A VITRINE PASSOU A SER ANIMADA ────────────────────────────────────────
+   *
+   * Ela era a única arte de Pokémon estática que sobrava numa tela do jogador —
+   * a grade de escolha, ali ao lado na customização, já usava `retratoAnimado`
+   * desde sempre. Escolher vendo o GIF e receber um PNG é a pior ordem possível.
+   *
+   * É a regra permanente do dono (L-080): *"os GIFS DE POKÉMON DO PERFIL
+   * PRECISAM SER ANIMADOS, TODOS ESSES E TODOS FUTUROS QUE FOREM ADICIONADOS"*,
+   * normal e shiny. */
+  const modoIdle = box => box.dataset.modo === 'idle';
+
+  const corpoIdle = () => {
+    if (!vitrineDex) {
+      /* NENHUM escolhido. O quadro fica com a cena, o nome e o nível — e sem
+         Pokémon, que é exatamente o que o jogador pediu ao escolher nenhum. */
+      return `${avatar}<div class="bnRodape">${rodapeIdle(idleAgora())}</div>`;
+    }
+    const m = { dex: vitrineDex, n: nomeDaDex(vitrineDex) };
+    return `${retratoAnimado(m, 'class="bnMon"', gifShinyAtivo(perfil, vitrineDex))}` +
+           `${avatar}<div class="bnRodape">${rodapeIdle(idleAgora())}</div>`;
+  };

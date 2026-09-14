@@ -120,5 +120,40 @@ export function suite() {
       'fases.mjs voltou a montar a própria ordem de quedas');
   });
 
+  /* ═══ NENHUMA TELA AO VIVO LÊ A BATALHA INTEIRA ════════════════════════
+   *
+   * `S.battle.events` é a rodada JÁ RESOLVIDA em memória; o replay só a revela
+   * aos poucos. Derivar a colocação da lista inteira não desalinha a tela: ela
+   * mostra o resultado FINAL no primeiro segundo, no produto cujo §4.5 existe
+   * justamente para provar que o resultado não é conhecido antes da hora.
+   *
+   * ESTE TESTE NASCEU DE UM ESCAPE. O defeito `S89` planta exatamente isso na
+   * lista ao vivo, e o portão Q2 o devolveu `[PASSOU]`: o único captor dele era
+   * a impressão digital visual, que só o pegava se a ordem da lista diferisse o
+   * bastante NO INSTANTE da captura. Na mesma execução ele trocou de captor
+   * duas vezes. Captor por sorte é captor que um dia falta — e faltou.
+   *
+   * A ASSERÇÃO É ESTREITA DE PROPÓSITO: ela cobra a fatia no texto de quem
+   * desenha ao vivo. Perguntar isso por comportamento exigiria montar uma
+   * batalha inteira e um DOM; um teste estreito e honesto vale mais que um
+   * largo que erra — mesma lição do teste do botão de proteção, no R1.
+   *
+   * A lista vem de um par arquivo/função para que um lugar novo que passe a
+   * desenhar colocação ao vivo tenha de ser acrescentado aqui de propósito. */
+  const AO_VIVO = [
+    ['odds.mjs',   'buildLiveList',  'a lista de colocação da rodada'],
+    ['banner.mjs', 'minhaPosAgora',  'o rodapé do banner do jogador'],
+  ];
+  for (const [arquivo, fn, oque] of AO_VIVO) {
+    s.teste(`${oque} não lê eventos que o jogador ainda não viu`, async () => {
+      const { readFileSync } = await import('node:fs');
+      const src = readFileSync(new URL(`../app/modules/${arquivo}`, import.meta.url), 'utf8');
+      const corpo = src.match(new RegExp(`function ${fn}\\(\\)\\s*\\{[\\s\\S]*?\\n\\}`));
+      ok(corpo, `a \`${fn}\` sumiu do ${arquivo} — este teste precisa ser refeito`);
+      ok(/events\.slice\(0,\s*S\.evPtr\)/.test(corpo[0]),
+        `${oque} passou a ler a batalha inteira: a tela entrega o vencedor antes da hora`);
+    });
+  }
+
   return s;
 }

@@ -534,7 +534,7 @@ LAPLACE  = obrigatório
 | 154.000 | 43.200 | **42,5** | **68,4** |
 | 154.000 | 129.600 (3 arenas/min) | 127,5 | 205,1 |
 
-Por rodada, 154.000 sims custam ~3,5 s a 23 µs e ~5,7 s a 37 µs — cabe folgadamente antes de abrir a janela de 30 s, e é paralelizável por lotes independentes. A conclusão do §12 daquele estudo ("o Monte Carlo não será o custo principal do negócio") **sobrevive ao aumento de 7,7×**.
+Por rodada, 154.000 sims custam ~3,5 s a 23 µs e ~5,7 s a 37 µs — cabe folgadamente antes de abrir a janela de aposta (40 s desde o 1.27; era 30), e é paralelizável por lotes independentes. A conclusão do §12 daquele estudo ("o Monte Carlo não será o custo principal do negócio") **sobrevive ao aumento de 7,7×**.
 
 **Medido no F0.7**, no hardware de desenvolvimento: **4,9 s por rodada**, a 32 µs/batalha — dentro da faixa prevista acima e bem abaixo do teto de 8 s que o bloco impôs.
 
@@ -733,7 +733,7 @@ Lobby/Arena
 Pré-round
   ↓
 12 Pokémon + odds
-  ↓ 30 s
+  ↓ 40 s
 Escolha + aposta PokéCash
   ↓
 Apostas fecham
@@ -886,7 +886,7 @@ Regras:
 
 ### Política de odds V1
 
-Recomendação: odds são congeladas no início da janela de 30 s.
+Recomendação: odds são congeladas no início da janela de aposta — **40 s** desde o bloco 1.27 (era 30 s).
 
 Motivo: simplifica UX, auditoria e settlement.
 
@@ -1491,6 +1491,11 @@ Locais mantidos do desenho anterior (Viridian Forest, Power Plant, Seafoam Islan
 
 **Expedição adianta conhecimento, nunca sorte.** Nenhuma expedição pode devolver probabilidade, odd melhor, ou vantagem na Arena.
 
+> **Atualizado em 04/09/2026 — o §7.22.** Esta seção passa a descrever o modo
+> **ausente**: o jogador manda a equipe e fecha o jogo. O modo assistido, com
+> waves, chefes e a batalha na tela, está no §7.22. **Os dois dividem o teto de
+> encontros desta seção**, que não muda.
+
 ## 7.14 Progresso offline e energia
 
 Progresso offline é calculado **no servidor**, a partir de carimbo de tempo próprio. Nunca aceitar carimbo do cliente — é a superfície mais explorada de todo jogo idle.
@@ -1564,6 +1569,533 @@ retenção D7 e D30 de quem capturou x quem não capturou
 - **evidência de que o dossiê muda comportamento de aposta.** Sem isso a tese central do capítulo falhou, e a Fase 4 — que se apoia na mesma tese — precisa ser repensada antes de começar, não depois;
 - P4 verificado por teste após todas as features da fase estarem ligadas;
 - antifraude de captura com taxa de detecção conhecida.
+
+## 7.22 O Avanço — o idle que se assiste
+
+> **Decisão do dono do projeto, 04/09/2026.** Esta seção não substitui o §7.13;
+> ela acrescenta um segundo modo ao lado dele, e redefine o §7.13 como o modo
+> **ausente**. Os dois dividem o mesmo teto, e é essa divisão que faz a escolha
+> entre eles existir.
+
+### 7.22.1 O diagnóstico, e por que ele é correto
+
+O §7.13 entrega o farm inteiro como um número que muda depois de horas. Na
+palavra dele:
+
+> "o boneco roda com seu Pokémon por 45min, 3hrs, ou 8hrs, você literalmente
+>  não vê NADA ACONTECENDO, não assiste uma batalha, seu Pokémon só te
+>  acompanha e não faz nada, não corre o risco de morrer"
+
+Isso colide de frente com a regra permanente do `CLAUDE.md` — *"o cenário do
+idle nunca está pronto"* —, cujo argumento é que **esta é a única tela do
+produto que é olhada por horas sem interação**. Uma tela feita para ser olhada
+por horas e que não tem o que ser olhado é uma contradição de desenho, não um
+acabamento pendente.
+
+O produto já tem a peça que resolve isso e não a usa aqui: **a Arena calcula a
+batalha inteira antes de encená-la**, e a coreografia lê o próprio futuro para
+se posicionar (`app/modules/coreografia.mjs`). O idle tem sprites, tem cenário,
+tem biomas com habitantes — e nenhuma batalha na tela.
+
+### 7.22.2 As três unidades, e por que elas não podem ser a mesma
+
+Esta é a peça central do desenho, e sem ela o teto do §P5 estoura.
+
+```text
+ABATE      um mob derrubado.  ~58 por avanço.  NÃO consome teto.
+           paga XP pequeno, moeda pequena, e o espetáculo.
+
+ENCONTRO   uma ESPÉCIE que apareceu no avanço e pode receber bola.
+           no máximo 6 por avanço — o tamanho do elenco do estágio.
+           é ISTO que o teto do §7.13 conta, e nada muda nele.
+
+AVANÇO     o estágio limpo.  paga o baú: drop, essência, desbloqueio.
+```
+
+Sem esta separação, 58 mobs num avanço contra um teto diário de 30 encontros
+seria **quase o dobro do dia inteiro numa única run** — o dono identificou isso
+sozinho, e está certo. Com ela, o número que o teto vigia continua sendo o
+mesmo de hoje.
+
+> **Um mob é espetáculo. Uma espécie é economia.** O jogador vê 58 lutas e
+> ganha o direito a até 6 bolas — e as duas frases descrevem a mesma tela.
+
+**"Quem apareceu" já lista espécies, e não indivíduos.** O painel não muda de
+forma; muda o que o alimenta.
+
+### 7.22.3 A aritmética que fecha, e ela fecha sem teto novo
+
+```text
+elenco do estágio      4 espécies comuns + 2 chefes          = 6
+teto diário            30 encontros  (36 com o registro cheio)
+                       30 / 6                                = 5 avanços/dia
+```
+
+O dono previu **"repetir a floresta stage 1 umas 3-4x"** antes de qualquer
+conta. O desenho devolve 5. É a confirmação de que a intuição dele e a
+aritmética do §P5 estavam apontando para o mesmo lugar.
+
+**E os dois modos dividem o teto.** Uma Vigília de oito horas reserva até 14
+encontros; quem dormiu com ela acorda com espaço para 2 ou 3 avanços, e não 5.
+
+> Isso é o oposto de empilhar dois farms. **A pergunta "onde vão os encontros de
+> hoje: no meu sono ou na minha tela?" é uma decisão de jogo**, e ela nasce de
+> graça de os dois modos consumirem o mesmo orçamento.
+
+### 7.22.4 A estrutura do estágio
+
+```text
+waves 1 a 9    6 mobs — 3 de uma espécie + 3 de outra, sorteadas do elenco
+wave 10        4 mobs — 2 + 2, os dois chefes
+total          58 mobs
+```
+
+**O chefe é a evolução do mob.** O exemplo do dono — Weedle, Caterpie, Metapod
+e Kakuna nas nove; Beedrill e Butterfree na décima — não é uma lista escolhida
+à mão: é **a linha evolutiva das próprias espécies da wave**, e o jogo já tem
+essa cadeia (`engine/evolucao.mjs`, §7.5).
+
+Isso resolve três coisas de uma vez, e é por isso que vira regra:
+
+```text
+DERIVÁVEL     o elenco do estágio sai do pack, e não de uma tabela escrita à
+              mão por bioma — o §P6 exige que acrescentar geração seja editar
+              um arquivo, e não caçar números
+ENSINA        o jogador aprende a linha evolutiva LUTANDO contra ela
+ESCALA        o chefe é naturalmente mais forte, sem número inventado: ele é
+              mais forte no pack
+```
+
+E o elenco de cada estágio não é escrito: é **o que já existe** — o roster do
+bioma filtrado pelas faixas de raridade que o `FAIXAS_DO_ESTAGIO` (§7.13, bloco
+1.10) já declara, cortado em 4 + 2.
+
+```text
+estágio 1   comum · incomum                 4 comuns + as 2 evoluções delas
+estágio 2   comum · incomum · raro
+estágio 3   incomum · raro · muitoRaro
+estágio 4   raro · muitoRaro                só o que vale a viagem
+```
+
+### 7.22.5 O tempo, e por que ele não pode ser curto
+
+Um avanço de 10 waves resolvido em cinco minutos devolveria o problema pela
+outra ponta: 5 avanços seriam 25 minutos de tela por dia, e a tela existe para
+ficar aberta ao lado de um filme.
+
+```text
+wave            2 a 4 min — os mobs entram em intervalos, a luta é contínua
+avanço          ~40 min — a mesma ordem de grandeza da Batida de hoje
+5 avanços       ~3h20 de tela para bater o teto do dia
+```
+
+**Um avanço vale, em duração, uma Batida.** Isso não é coincidência: é o que
+permite os dois modos dividirem o teto sem que um deles pareça um atalho.
+
+### 7.22.6 Como a wave é decidida
+
+Segue o modelo da Arena, que já está construído e provado:
+
+> **resolve primeiro, encena depois.** A batalha inteira sai da semente antes
+> do primeiro quadro; a coreografia lê o roteiro pronto.
+
+É o que dá, de graça, quatro coisas que um combate encenado ao vivo não dá:
+avanço rápido ao reconectar, determinismo (§P3), auditabilidade do saque
+(§25.2) e teste estatístico (Q4).
+
+```text
+poder    nível · stats base da espécie · foco · vínculo      (§8.13, power score)
+ameaça   nível do estágio · faixa dos mobs · quantidade
+p(wave)  curva logística de poder/ameaça
+dano     função de quão apertada foi a wave
+```
+
+**A poção é o que impede o roteiro de ser único.** Se as 10 waves fossem
+resolvidas de uma vez, a interação do jogador não teria onde entrar. O roteiro
+é gerado **por wave**, de `semente + número da wave + estado atual` — o estado
+inclui o HP e os itens usados. Determinístico dadas as entradas, e ainda assim
+reativo.
+
+### 7.22.7 As duas barras, e o que cada uma paga
+
+> **Atualizado em 08/09/2026, bloco A3.** Os números desta seção mudaram por
+> correção do dono: a stamina é **2 por wave e 5 na do chefe, somando 23** — não
+> 35. Com 35 uma criatura fazia só duas runs, e a barra apertava justamente
+> quem menos podia contornar. Os números medidos estão no **§7.22.15**.
+
+```text
+HP        DENTRO do avanço. cai a cada wave. poção levanta.
+          zerou -> o avanço PARA na wave alcançada
+STAMINA   ENTRE avanços. 3 por wave, 8 na do chefe = 35 por estágio limpo.
+          regenera 8/h (§7.13, inalterado)
+```
+
+Com 100 de stamina e 35 por avanço, **uma criatura faz 2 avanços e para**. Os 5
+do teto exigem no mínimo 3 criaturas — o que mantém a regra do §7.13 de que *o
+teto do farm é o tamanho da coleção*.
+
+### 7.22.8 Falhar custa o baú, e nunca o farm
+
+Regra herdada do §7.13 e do bloco 1.7b, e ela não se negocia:
+
+> Um idle que castiga o jogador por estar ausente está castigando o jogador por
+> usar o produto como ele foi feito.
+
+```text
+HP zerou na wave 7   fica tudo que as 6 waves renderam — XP, moeda, drops,
+                     e as espécies que apareceram
+                     PERDE o baú do estágio e o desbloqueio do seguinte
+```
+
+É a tensão que o dono pediu — *"sentir a dificuldade"* — sem a punição que
+mataria o modo ausente do lado.
+
+### 7.22.9 O modo ausente permanece
+
+> **Atualizado em 08/09/2026, bloco A7.** O modo ausente deixou de custar
+> STAMINA e passou a custar **RESERVA** — ver o **§7.22.13**, que é onde a
+> decisão inteira está. Esta seção continua valendo no resto.
+
+O §7.13 inteiro continua valendo, e passa a ser o modo para quem vai fechar o
+jogo: Batida, Trilha e Vigília, com os perfis, o viés de raridade e os custos
+de hoje. O que muda é o enquadramento e o relato:
+
+```text
+ao ENVIAR    o jogador é avisado de que este modo é para ficar ausente
+ao VOLTAR    um relatório: bioma, estágio, tempo, quem enfrentou, o que farmou,
+             quanto de XP e de moeda — o quadro da L-141, e ele serve aos DOIS
+             modos
+```
+
+**O quadro de log é um só.** Um avanço assistido e uma vigília dormida produzem
+a mesma linha de histórico, com os mesmos ícones e as mesmas quantias — e é
+isso que faz os dois lerem como um jogo, e não como dois.
+
+### 7.22.10 A diferença que a nossa versão tem
+
+Exigência do `CLAUDE.md`, *Ao copiar de outro jogo*, passo 2 — nomear a
+diferença **antes** de construir:
+
+> **Na referência, a wave paga um nível. Aqui, cada bicho que aparece na wave é
+> uma espécie que entra na Pokédex, levanta o teto de encontros do jogador, e
+> pode ser mandada para a Arena para outras pessoas apostarem nela.**
+>
+> A wave não é uma barra de progresso. É um campo de recrutamento.
+
+E o ponto fraco da referência que a nossa versão ataca (passo 3): **o meio é
+morto** — idles de wave mostram a mesma luta por horas, e o jogador para de
+olhar. Duas peças atacam isso:
+
+```text
+o ELENCO é curto e NOMEADO   o jogador não assiste "mobs"; assiste esperando o
+                             Kakuna que falta na linha dele
+a BOLA torna a tela ATIVA    o único momento em que a tela pede a mão do
+                             jogador é o momento em que ela mais importa
+```
+
+### 7.22.11 O que fica em aberto
+
+```text
+LAYOUT       o dono vai mandar as referências. Nada de arranjo se decide antes.
+REFERÊNCIAS  "Baiak Idle" e "TBH / Task Hero Bar" foram citadas como alvo de
+             MECÂNICA. Eu não conheço as duas com confiança suficiente para
+             desenhar a partir delas, e desenhar de memória seria inventar.
+             As capturas do dono são a fonte.
+CHEFE RNG    ✅ DECIDIDO em 07/09/2026: **fixo na wave 10**, com o par sorteado
+             quando o estágio tiver mais de dois chefes possíveis.
+LAYOUT       ✅ APROVADO pelo dono em 08/09/2026, na prévia
+             `app/previa-avanco.html` — proposta B do banner. Nada mais
+             bloqueia o A4.
+REFERÊNCIAS  🟡 Baiak Idle visto (3 prints + vídeo) · TBH ainda sem captura
+```
+
+E o veredito veio com três acréscimos, que são condição do arranjo e não
+enfeite dele — cada um tem ficha própria:
+
+```text
+L-147   o BANNER é a identidade do jogador, e toda tela que ele habita mostra
+        o dele. Aqui: o mesmo `#battleBannerIdle` da Arena, no topo da coluna
+        da direita, e a equipe desce
+L-149   a CAIXA entra no arranjo: trocar quem sai é decisão de várias vezes ao
+        dia, e uma decisão frequente que exige sair da tela é uma decisão que
+        o jogador deixa de tomar
+L-145   o VÍNCULO tem de aparecer. Ele decide combate desde o A2 — até +25% —
+        e não existe em lugar nenhum da interface
+```
+
+### 7.22.12 A bola durante o avanço — uma por espécie, por run
+
+> **Decidido e construído em 08/09/2026, bloco A6.**
+
+O único momento em que a tela pede a mão do jogador, junto com a poção. Na
+referência que originou este capítulo o jogo é 100% automático; aqui há duas
+decisões, e esta é a que carrega o §7.22.10.
+
+```text
+UMA TENTATIVA por espécie, por avanço      máximo: o elenco, ou seja SEIS
+SÓ EM QUEM JÁ APARECEU                     não se mira no que a run não mostrou
+A ESPÉCIE QUEIMA MESMO SE A CAPTURA FALHA  errar custa a chance, e não só a bola
+```
+
+A primeira linha é o que salva o teto do §P5 pela porta da captura: sem ela, 58
+mobs seriam 58 tentativas.
+
+A terceira é o que torna o lance uma DECISÃO. Se insistir fosse possível, a
+escolha entre a bola comum e a Ultra deixaria de existir — bastaria gastar
+todas.
+
+**A chance sai do `engine/captura.mjs`**, e não de uma conta nova. É o §7.11
+aplicado aqui: *chamar a mesma função, jamais uma reimplementação*.
+
+### 7.22.13 O modo ausente passa a custar RESERVA, e não stamina
+
+> **Decidido pelo dono em 08/09/2026, construído no bloco A7.**
+
+O §7.22.9 dizia que o modo ausente continuava como está. Ele muda numa coisa, e
+a mudança foi pedida:
+
+> o modo ausente funciona **mesmo com a criatura de stamina zerada** — as três
+> opções de farm continuam disponíveis
+
+Isso obriga a trocar o preço. Hoje a expedição custa STAMINA, e stamina é da
+criatura; se o modo tem de funcionar com ela zerada, stamina não pode ser o
+preço — senão o pedido e a regra do §7.13 se contradizem, e uma das duas perde
+em silêncio.
+
+**O preço passa a ser a RESERVA**, que é a peça que a referência trouxe:
+
+```text
+ENCHE   jogando — 1 h de tela vale 1 h de reserva
+GASTA   estando fora
+TETO    12 h
+```
+
+E ela responde sozinha a pergunta que ficava aberta — *o que impede alguém de só
+farmar ausente e nunca olhar a tela?*
+
+> O modo ausente passa a ser uma **recompensa por jogar**, e não um farm
+> paralelo.
+
+Empilha com o que já existe sem conflito, porque limitam coisas diferentes: **a
+reserva limita o TEMPO fora; o teto do §7.13 limita o RENDIMENTO.** Nenhum teto
+novo.
+
+#### A diferença entre os modos é de NATUREZA, e não de multiplicador
+
+O dono pediu que o ausente rendesse menos. **Medido, ele já rende:**
+
+```text
+Vigília    1,50 encontro/h        Batida     5,33 encontro/h
+Trilha     2,33 encontro/h        AVANÇO     9,00 encontro/h
+```
+
+Seis vezes a Vigília. A diferença não precisa ser inventada — ela já vem de o
+online custar ATENÇÃO, e cortar números por cima disso puniria duas vezes a
+mesma escolha.
+
+O que diferencia de verdade é o que **exige a presença de alguém**:
+
+| | ausente | avanço |
+|---|---|---|
+| encontro · item · XP · vínculo | ✅ | ✅ |
+| a **bola** na mão | — | ✅ |
+| a **poção** | — | ✅ |
+| o **chefe** | — | ✅ |
+| o **baú** | — | ✅ |
+
+> Tirar qualquer um destes do ausente não é nerf: é reconhecer que ninguém está
+> lá para tomar a decisão.
+
+### 7.22.14 O treino ausente — ele treina o BANCO
+
+> **Pergunta do dono em 08/09/2026, resposta delegada e construída no A7.**
+
+Ele fixou a restrição: *não pode ser sobre upar stats, pois isso será no
+laboratório*. Concordo, e a restrição tem endereço — o laboratório é a **L-144**,
+com custo em PokéCash de arena mais pedras, escada B1 a B7.
+
+**O treino ausente recebe as criaturas que NÃO estão em aventura, e paga em
+VÍNCULO e XP.**
+
+O motivo não é temático, é estrutural, e resolve um problema que este capítulo
+criou:
+
+> O idle inteiro se apoia em *"o teto do farm é o tamanho da coleção"*. Mas a
+> segunda criatura nasce no nível 1, e levá-la a um nível útil exige gastar
+> nela os avanços que o jogador queria gastar na primeira.
+>
+> **A regra pedia uma coleção, e o jogo não dava por onde criá-la.**
+
+O treino é por onde. Ele **não produz encontro** — então não toca o teto do §P5
+— e não produz item. Produz só o que faz a criatura de banco virar criatura de
+equipe.
+
+```text
+XP           3/h    um terço da Batida
+VÍNCULO      1/h
+ENCONTRO     0      explícito, e não omitido: ausência se lê como esquecimento
+ITEM         0      e zero se lê como decisão
+```
+
+É de propósito mais lento que aventurar. Se fosse igual, ninguém aventuraria com
+a segunda criatura — e o modo que existe para viabilizar a coleção passaria a
+substituí-la.
+
+**Quem está em aventura não pode estar em treino.** Sem essa recusa a mesma
+criatura renderia nos dois lugares ao mesmo tempo, e o dia dobraria por uma
+porta que ninguém abriu de propósito.
+
+### 7.22.15 Os números, medidos
+
+> Atualizado em 08/09/2026, ao fim dos blocos A1 a A7. **Todo número aqui foi
+> medido**, e cada um tem teste que o refaz — se alguém mexer numa ponta, a
+> suíte reclama da outra.
+
+```text
+A CURVA          porta do estágio 1: limpa 45% · 2: 42% · 3: 14% · 4: 45%
+                 uma criatura, sem poção, no nível que abre o estágio
+
+O DANO           ~5 por wave vencida · ~15 por perdida · ~95 a run, de 100
+
+AS POÇÕES        Poção 20 · Super 50 · Hiper 80 · Máxima cheia
+                 a linha canônica, com a proporção sobre a NOSSA barra
+
+A STAMINA        2 por wave · 5 na do chefe = 23 pelo estágio
+                 4 avanços por criatura, e o dia comporta 5
+
+O DIA            30 encontros ÷ 6 por avanço = 5 avanços
+```
+
+**A stamina mudou por correção do dono**, e ele estava certo: com 35, uma
+criatura fazia duas runs, e a barra mordia justamente quem menos podia
+contornar.
+
+> Um limite que aperta o novato e afrouxa no veterano está no eixo errado.
+
+### 7.22.16 A run é uma função do instante, e é isso que junta os dois modos
+
+> **Construído em 08/09/2026, bloco A4a.** `engine/roteiro-wave.mjs` e
+> `engine/run-avanco.mjs`.
+
+O §7.22.6 decidiu que a wave **resolve primeiro e encena depois**. Faltava
+dizer o que acontece nos dois a quatro minutos entre uma coisa e outra — e a
+resposta muda o desenho de duas peças que pareciam separadas.
+
+#### O roteiro DISTRIBUI o que a wave decidiu. Ele não decide nada.
+
+```text
+a WAVE decide      venceu · quanto de dano · quem estava lá
+o ROTEIRO reparte  quem entra quando · quem cai quando · onde o dano acontece
+```
+
+A soma dos golpes recebidos é **exatamente** o dano que a wave cobrou, e o
+teste afirma isso por soma. Se o roteiro pudesse acrescentar um ponto, a run
+encenada e a run resolvida seriam duas — e duas verdades sobre a mesma coisa é
+o defeito que este projeto mais paga.
+
+#### E o relógio é CONSULTADO, nunca esperado
+
+A run não é uma fila de temporizadores: ela é uma função do instante. Fechar a
+aba por meia hora e voltar custa uma conta.
+
+> **Quem fechou a aba recebe EXATAMENTE a run de quem ficou olhando.** É a
+> afirmação central do bloco, e ela tem teste dedicado: a mesma run avançada de
+> cinco em cinco segundos e de três em três horas termina no mesmo instante,
+> com o mesmo saque.
+
+Isso não é uma conveniência de implementação. É o que faz o modo assistido e o
+modo ausente serem **o mesmo código visto de dois lugares** — e é por isso que
+o quadro de log ao vivo (L-141) e o relatório de volta (§7.22.9) são uma peça
+só, e não duas que precisam concordar.
+
+#### Perder a wave não avança, e a tentativa entra na semente
+
+A wave perdida se repete, cobrando dano. O jogador não morre por uma derrota;
+morre por acumular derrotas — e é isso que transforma o HP no relógio da run.
+
+A **tentativa** entra no rótulo da semente junto com o número da wave. Sem ela,
+repetir a wave 7 devolveria para sempre a mesma derrota: não seria sorte nem
+decisão, seria um número congelado. Com ela, cada tentativa é um sorteio novo
+sobre a mesma dificuldade — e é isso que faz a poção comprar **tentativas**.
+
+#### A poção não muda o que a wave decidiu
+
+Ela muda quanto sobra da barra, e nada mais. Se mudasse o resultado, o jogador
+veria uma derrota já encenada virar vitória no meio da encenação.
+
+Por isso a cura é um **evento datado** dentro da wave, com o valor já aparado
+no instante do clique. Guardar a poção inteira e aparar na leitura devolveria a
+sobra na wave seguinte — uma poção que rende mais por ser lida mais tarde.
+
+#### Recuar paga igual a cair
+
+O §7.22.8 diz que falhar custa o baú e nunca o farm. **Recuar é a mesma coisa
+escolhida em vez de sofrida:** fica tudo que caiu, perde-se o baú. As duas
+saídas pagando igual é o que torna a decisão honesta — quem está com a barra em
+12 na wave 8 pode guardar a criatura para a run seguinte, e isso é jogo.
+
+---
+
+### 7.22.17 A tela da run, e a decisão que mudou a prévia
+
+> **Construído em 08/09/2026, bloco A4b.** O arranjo é o que o dono aprovou em
+> `app/previa-avanco.html` — três colunas, proposta B do banner. Uma coisa
+> mudou da prévia para o produto, e ela é grande o bastante para virar Spec.
+
+#### A cena é o CENÁRIO DO IDLE, e não uma foto dele
+
+A prévia desenhou a batalha sobre uma imagem do bioma. Isso foi **certo para
+perguntar** — ninguém julga um arranjo olhando peças que não vão estar nele — e
+seria **errado para construir**:
+
+```text
+o cenário JÁ TEM   relevo, fauna, partículas, cachoeira, clima, o treinador
+                   andando, o companheiro junto, oito direções de sprite
+uma FOTO teria     um quadro parado
+```
+
+E a regra permanente do `CLAUDE.md` fecha a questão: *o cenário do idle nunca
+está pronto*, porque é a única tela do produto olhada por horas. Substituí-la
+por uma imagem seria a única forma de piorá-la.
+
+> **A wave acontece onde o jogador já estava olhando.** O que o bloco
+> acrescenta é o elenco que faltava.
+
+#### Os mobs entram pela borda e vêm andando
+
+O detalhe que não foi pedido, e sem o qual o pedido não estaria cumprido. Um
+sprite que nasce no posto resolve três coisas pior:
+
+```text
+LÊ COMO CAÇADA      o bando vem até você; você não está numa arena
+USA A ARTE INTEIRA  a folha do PMD tem OITO direções, e um bicho parado de
+                    frente joga sete fora
+PREENCHE O TEMPO    a wave dura minutos, e a aproximação ocupa os primeiros
+                    segundos sem inventar acontecimento nenhum
+```
+
+#### O HP tem uma linha só para ele
+
+O §7.22.7 diz que o HP é o relógio DENTRO do avanço. A primeira versão desta
+tela não o mostrava em lugar nenhum — e sem ele à vista a poção não é uma
+decisão, é um botão que o jogador aperta quando lembra.
+
+> Uma barra que decide quando a run acaba não pode ser menor que o nome do
+> bioma.
+
+#### E a barra do mob não é inventada
+
+O motor não modela HP por mob: ele decide a WAVE. O que a barra de cada mob
+mostra é o que o roteiro já decidiu — quanto falta para AQUELE cair. Numa wave
+perdida ninguém cai e as barras ficam cheias, que é a leitura certa: a wave foi
+perdida justamente por os mobs não terem sido derrubados.
+
+#### O banner é regra de tela, e não item deste bloco
+
+A L-147 vale daqui em diante: **toda tela que o jogador habita mostra o banner
+dele**, e é o mesmo componente da Arena — nunca um desenhado de novo. Aqui ele
+fica no topo da coluna da direita, que é a que responde *"quem sou eu nesta
+run"*; a equipe desce.
 
 ---
 
@@ -3369,7 +3901,17 @@ Permite balancear sem apagar histórico.
 
 H1. A batalha automática é divertida de assistir repetidamente.
 
-H2. 30 segundos é uma janela adequada para decidir a aposta.
+H2. ~~30 segundos é uma janela adequada para decidir a aposta.~~ **REPROVADA na prática, bloco 1.27.**
+
+   O dono reprovou a hipótese olhando a tela, e a L-110 diz por quê pelo outro
+   caminho: a ficha de escolha era pequena demais para ser lida em trinta
+   segundos — odd a 11 px, teto de aposta a 9,6 px. As duas lacunas são a mesma
+   queixa por dois caminhos, e por isso o 1.27 as corrigiu juntas: a ficha
+   cresceu E a janela foi para **40 s**.
+
+   Medido no mesmo bloco, e o custo é aceito: a rodada passa de 78 s para 88 s,
+   e de 46,2 para 40,9 rodadas por hora — **−11,4% de volume**. O que se compra
+   é a aposta deixar de ser um chute.
 
 H3. Odds e informação de espécies fazem o usuário sentir que existe decisão.
 

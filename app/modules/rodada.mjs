@@ -8,7 +8,7 @@ import { MOVE_FX, fxSheet } from './efeitos.mjs';
 import { PMD, SPRITE_MAX_H, conferirFolha, folhasFalhas, folhasOk, sheetURL, urlFolha } from './sprites.mjs';
 import { S } from './estado.mjs';
 import { sortearBolas } from './bolas-dados.mjs';
-import { skinShinyAtiva } from './shiny-dados.mjs';
+import { shinyNaArena, skinShinyAtiva } from './shiny-dados.mjs';
 import { place } from './coreografia.mjs';
 import { rng } from './motor.mjs';
 
@@ -32,9 +32,19 @@ function preloadSheets(){
   for (const f of S.fighters){
     for (const k of ['w','i','a','h']){
       if (!(PMD[f.dex] && PMD[f.dex][k])) continue;
-      // conferirFolha já faz o pedido (e o resgate no espelho, se precisar);
-      // o Set interno evita repetir o mesmo arquivo a cada rodada
-      conferirFolha(sheetURL(f.dex, k, skinShinyAtiva(S.profile, f.dex)));
+      /* conferirFolha já faz o pedido (e o resgate no espelho, se precisar);
+         o Set interno evita repetir o mesmo arquivo a cada rodada.
+
+         ── AS DUAS FOLHAS, QUANDO A SKIN É MINHA (R24) ────────────────────
+         Antes daqui pedia só a shiny para os dex que eu possuo, porque a arena
+         SEMPRE pintava esses de shiny. Agora ela só pinta se eu ESCOLHER o
+         lutador — e o mesmo Charizard pode aparecer normal, na mão de outro
+         jogador, na mesma rodada.
+         Pedir as duas é o custo de uma folha por espécie possuída, e sem isso a
+         normal só chega quando já é tarde: a arena piscaria o quadro vazio
+         justamente na espécie que eu colecionei. */
+      conferirFolha(sheetURL(f.dex, k, false));
+      if (skinShinyAtiva(S.profile, f.dex)) conferirFolha(sheetURL(f.dex, k, true));
     }
     // e as folhas de efeito dos golpes que este lutador tem
     for (const mv of f.moves){
@@ -118,6 +128,12 @@ function buildEntities(layoutSeed){
       x, y, tx:x, ty:y, alive:true, hp:f.maxHp,
       wander: 0.5 + R()*2, bubbleUntil:-1, rageUntil:-1,
       bola: bolas[i % bolas.length],
+      /* A BOLA DESTE LUTADOR AINDA ESTÁ FECHADA. `render.mjs` desenha a
+         pokébola no chão enquanto isto for falso, e a fila de entrada liga o
+         campo na hora em que ESTA bola abre — uma a uma, na volta horária.
+         Antes o desenho olhava `S.released`, que é global: as doze sumiam no
+         mesmo quadro em que a fila era montada, e a arena aparecia vazia. */
+      aberta: false,
       homeAng: ang,                       // centro da zona deste lutador
       homeR: 0.52 + (i % 3) * 0.16,       // 3 anéis, pra não ficarem todos na borda
 
@@ -162,8 +178,35 @@ function setAnim(e, key, once){
      O caminho fica GUARDADO na entidade porque o resgate por folha precisa
      saber quem está usando o quê, e ele mora em `sprites.mjs`, que é camada 1 e
      não pode consultar perfil para recalcular. Recalcular lá daria sempre o
-     caminho normal, e o resgate deixaria de alcançar quem está de shiny. */
-  e.folha = sheetURL(e.f.dex, key, skinShinyAtiva(S.profile, e.f.dex));
+     caminho normal, e o resgate deixaria de alcançar quem está de shiny.
+
+     ── SÓ PARA QUEM ESCOLHEU (R24) ────────────────────────────────────────
+     Aqui havia `skinShinyAtiva(S.profile, e.f.dex)` solto, e ele pergunta a
+     POSSE e mais nada: pintava de shiny qualquer lutador cujo dex eu possuísse,
+     inclusive o que OUTRO jogador escolheu. Eu tenho a skin de Charizard, outro
+     escolhe Charizard, e o Charizard dele aparecia shiny na minha tela.
+     `shinyNaArena` exige as duas coisas — ter a skin E ter posto o bicho em
+     campo. `setAnim` roda a cada troca de animação, então a decisão acompanha a
+     aposta mesmo tendo a entidade sido construída antes dela. */
+  const escolhido = !!S.myBet && S.ents[S.myBet.idx] === e;
+  const ehShiny = shinyNaArena(S.profile, e.f.dex, escolhido);
+  /* ── R34 · A ARENA MARCA QUEM ESTÁ SHINY ───────────────────────────────
+   *
+   * O desenho do shiny era invisível fora da própria folha: o jogador
+   * desbloqueava a skin, equipava, e o que aparecia era o mesmo bicho com
+   * outra paleta — que num sprite de 22 px, no meio de doze, ninguém nota.
+   *
+   * A marca é uma classe, e o desenho fica todo no CSS (`.mon.shiny`): halo
+   * quente no contorno, uma estrela pequena e um lampejo de UMA volta quando a
+   * pokébola abre. Nada é pintado por cima do sprite — mesma decisão do
+   * contorno, e pelo mesmo motivo (a folha é arte de terceiro).
+   *
+   * AQUI e não em `buildEntities` porque `setAnim` roda a cada troca de
+   * animação: a decisão acompanha a aposta, que pode mudar depois de a
+   * entidade ter sido construída. É o mesmo motivo de `shinyNaArena` estar
+   * nesta linha. */
+  e.el.classList.toggle('shiny', ehShiny);
+  e.folha = sheetURL(e.f.dex, key, ehShiny);
   e.body.style.backgroundImage = `url(${urlFolha(e.folha)})`;
   e.body.style.backgroundSize = (cols * 100) + '% ' + (8 * 100) + '%';
   drawFrame(e);

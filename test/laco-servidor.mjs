@@ -23,6 +23,7 @@
  * verdade. É o mesmo desenho de `test/banco.mjs`: o módulo testado é o que o
  * navegador carrega, sem adaptação.
  */
+import { fileURLToPath } from 'node:url';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import { criarApi } from '../app/modules/api.mjs';
@@ -130,10 +131,10 @@ export async function suite() {
    * "a carteira vem de lá?"; ele pergunta se as TRÊS coisas vêm. */
   s.teste('em modo servidor, as três fontes são o servidor', async () => {
     const { readFileSync, readdirSync } = await import('node:fs');
-    const dir = new URL('../app/modules/', import.meta.url).pathname;
+    const dir = fileURLToPath(new URL('../app/modules/', import.meta.url));
     const fonte = Object.fromEntries(readdirSync(dir).filter(f => f.endsWith('.mjs'))
       .map(f => [f, readFileSync(dir + f, 'utf8')]));
-    const html = readFileSync(new URL('../app/index.html', import.meta.url).pathname, 'utf8');
+    const html = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
 
     ok(/ligarModoServidor\s*\(\)/.test(html) && /await\s+ligarModoServidor/.test(html),
       'o boot não liga o modo servidor. A carteira, a rodada e a aposta ficam ' +

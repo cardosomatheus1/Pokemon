@@ -9,7 +9,7 @@ import { CONF, M } from './motor.mjs';
 import { precificar, simularLote } from '../../engine/preco.mjs';
 import { avaliarAposta } from '../../engine/exposicao.mjs';
 import { S } from './estado.mjs';
-import { ordemDeQuedas, rankingColocacao } from './colocacao.mjs';
+import { ordemDeQuedas, rankingColocacao, realceDoPodio } from './colocacao.mjs';
 import { abatesDe } from './killfeed.mjs';
 import { imgTag } from './sprites.mjs';
 /* §28.7: "exibir odd sem exibir, no mesmo lugar, o valor de retorno líquido".
@@ -122,13 +122,19 @@ function buildLiveList(){
     const f = S.fighters[r.i], o = S.odds.lutadores[r.i];
     const meu = S.myBet && S.myBet.idx === r.i;
     const top = r.pos <= 3, fechado = fim || !r.vivo;
-    return `<div class="pick viva ${r.vivo ? '' : 'fechado'} ${meu ? 'sel' : ''}" data-i="${r.i}">
+    /* O PÓDIO VALE DURANTE A LUTA, e não só no fim. As medalhas só apareciam
+       com `fechado`, então as doze linhas eram iguais justamente enquanto a
+       pergunta "quem está ganhando?" estava viva — no fim ela já foi respondida
+       pelo resultado no centro da tela. Quem decide o que é pódio é a mesma
+       aritmética que decide a colocação; um `pos <= 3` escrito aqui seria a
+       segunda contagem que o `colocacao.mjs` existe para evitar. */
+    return `<div class="pick viva ${r.vivo ? '' : 'fechado'} ${realceDoPodio(r.pos, r.vivo)} ${meu ? 'sel' : ''}" data-i="${r.i}">
       <span class="pos">${top && fechado ? ['🥇','🥈','🥉'][r.pos-1] : r.pos + 'º'}</span>
       ${imgTag(f)}
       <span class="n">${f.n}</span>
       <span class="p">${r.vivo ? Math.round(r.hp*100) + '%' : 'K.O.'}</span>
       <span class="o">${o ? 'x'+o.odd.toFixed(2) : ''}</span>
-      <span class="lim tiny">${abatesDe(r.i)} ab</span>
+      <span class="lim tiny${abatesDe(r.i) ? '' : ' zero'}">${abatesDe(r.i)} ab</span>
     </div>`;
   }).join('');
 }

@@ -25,6 +25,7 @@
  * empurra.
  */
 import { randomUUID } from 'node:crypto';
+import { anotar } from './telemetria.mjs';
 import {
   recompensaDeDesafio, avaliarResgate, semanaDe,
   ORCAMENTO_LOGIN_SEMANAL, RESGATE_VALOR,
@@ -243,6 +244,17 @@ export function pedirResgate(db, { userId, saldoTotal, protecaoAtiva = false,
   db.prepare(`INSERT INTO rescue_grants (id, user_id, semana, concedido, valor, motivo, criado_em)
               VALUES (?, ?, ?, ?, ?, ?, ?)`)
     .run(randomUUID(), userId, semana, v.conceder ? 1 : 0, v.valor, v.motivo, agora);
+
+  /* O §4.7 EM DUAS LINHAS, E ELAS FALTAVAM (R21, D-034).
+     A tabela `rescue_grants` já guardava o veredito, inclusive o negado. O que
+     não existia era o evento PADRONIZADO — e é ele que a auditoria externa lê,
+     porque `rescue_grants` é esquema nosso e `rescue_grant_issued` é do §4.7.
+     A recusa vai junto de propósito: sem ela, só o caminho feliz fica
+     auditável, e "por que este jogador não recebeu?" volta a não ter resposta. */
+  anotar(db, v.conceder
+    ? { nome: 'rescue_grant_issued', userId, campos: { valor: v.valor, semana }, agora }
+    : { nome: 'rescue_grant_blocked_by_policy', userId,
+        campos: { action_blocked: v.motivo, semana }, agora });
   return v;
 }
 

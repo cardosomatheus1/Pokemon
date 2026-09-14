@@ -29,6 +29,7 @@
  * Mensagens iguais não bastam; o relógio fala.
  */
 import { randomUUID, randomBytes, scryptSync, timingSafeEqual, createHmac } from 'node:crypto';
+import { anotar } from './telemetria.mjs';
 
 export const IDADE_MINIMA = 18;
 
@@ -123,6 +124,18 @@ export function cadastrar(db, { username, email, senha, nascimento, agora = Date
     db.prepare(`INSERT INTO responsible_play_events (id, user_id, tipo, detalhe, criado_em)
                 SELECT ?, id, 'bloqueio_idade', ?, ? FROM users WHERE email = ?`)
       .run(randomUUID(), `idade declarada ${idade}, mínima ${IDADE_MINIMA}`, agora, emailNorm);
+
+    /* O §4.7 EM DOIS EVENTOS, e a ordem conta a história (R21, D-034):
+       a declaração foi SUBMETIDA e a verificação FALHOU. Registrar só a falha
+       perderia o denominador — quantas pessoas declararam idade — e é ele que
+       transforma "barramos três" em "barramos três de mil".
+       A conta congelada já existe neste ponto, então o evento tem dono: sem
+       `user_id` o §4.7 recusaria, e um bloqueio anônimo não é auditável. */
+    const congelado = db.prepare(`SELECT id FROM users WHERE email = ?`).get(emailNorm);
+    anotar(db, { nome: 'age_declaration_submitted', userId: congelado?.id, agora });
+    anotar(db, { nome: 'age_verification_failed', userId: congelado?.id,
+                 campos: { idade_declarada: idade, minima: IDADE_MINIMA }, agora });
+
     throw erro(ERRO_AUTH.IDADE_MINIMA,
       `é preciso ter ao menos ${IDADE_MINIMA} anos para criar uma conta`);
   }
@@ -139,6 +152,16 @@ export function cadastrar(db, { username, email, senha, nascimento, agora = Date
       db.prepare(`INSERT INTO carteiras (user_id, bucket, saldo) VALUES (?, ?, 0)`).run(id, b);
     db.exec('COMMIT');
   } catch (e) { db.exec('ROLLBACK'); throw erro(ERRO_AUTH.DADOS, 'não foi possível concluir o cadastro'); }
+
+  /* DEPOIS DO COMMIT, e não dentro dele. O evento registra um fato consumado;
+     emiti-lo na transação faria um `ROLLBACK` apagar o registro de uma conta
+     que, para o §4.7, chegou a ser criada — e o `anotar` engole falha, então
+     nem apareceria o erro. Fora da transação, o pior caso é evento sem conta;
+     dentro, seria conta sem evento, que é o que a auditoria não perdoa. */
+  anotar(db, { nome: 'age_declaration_submitted', userId: id, agora });
+  anotar(db, { nome: 'age_verification_passed', userId: id,
+               campos: { idade_declarada: idade, minima: IDADE_MINIMA }, agora });
+
   return { id, username, email: emailNorm };
 }
 

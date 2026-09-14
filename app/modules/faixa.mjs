@@ -23,7 +23,7 @@
 import { $ } from './dom.mjs';
 import { CONF } from './motor.mjs';
 import { S } from './estado.mjs';
-import { avatarURL, tituloDe, trainerURL } from './perfil.mjs';
+import { avatarURL, avatarEhArte, avatarEnquadramento, tituloDe, trainerURL } from './perfil.mjs';
 import { progressoNivel } from './progressao.mjs';
 import { PADRAO_BANNER, cosmeticoValido } from './banner-dados.mjs';
 
@@ -76,6 +76,10 @@ function atualizarEu(){
   const img = $('#faAvatar');
   if (img){
     img.src = avatarURL();
+    /* O enquadramento da galeria (R43). Vazio para as outras coleções, e aí o
+       CSS da faixa continua mandando. */
+    img.setAttribute('style', avatarEnquadramento());
+    img.classList.toggle('avArte', avatarEhArte());
     img.onerror = () => { img.onerror = null; img.src = trainerURL('red'); };
   }
   const np = progressoNivel(S.profile?.xp || 0);

@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <!-- O ELO DE LIGAÇÃO — arte NOSSA, e o único item da mochila que é.
+       ═══════════════════════════════════════════════════════════════════
+       No material de origem, quatro linhas de Kanto evoluem por TROCA entre
+       jogadores. Aqui não há troca e não vai haver: dois jogadores combinando
+       fora do jogo furam qualquer regra de preço do §25. A raridade que a
+       troca dava vira raridade de ITEM — e o item precisa DIZER isso.
+
+       Dois elos de metal presos um no outro, e entre eles o fio de energia
+       que os prende. A corrente é o que a troca era; o fio é o que ela virou.
+
+       ── DESENHADO PARA 48 px, e isso muda tudo ────────────────────────
+       A primeira versão tinha traço de 17 e detalhe fino: virou um borrão
+       cinza. A 48 px o que sobrevive é SILHUETA e CONTRASTE, então: traço
+       grosso (26), contorno escuro por fora — a mochila é escura, e sem ele
+       o metal some no fundo — e um vinco de luz só, largo, em vez de vários.
+
+       ── VESTIDO NO TEMA ──────────────────────────────────────────────
+       O mundo é GBA, a interface é neon. Os elos são do mundo: metal frio,
+       sem gradiente exótico. O fio é da interface: magenta→ciano, a mesma
+       rampa da barra de aposta. A peça fica na fronteira de propósito — é um
+       objeto do jogo que a nossa interface atravessou. -->
+  <defs>
+    <linearGradient id="metalA" x1=".1" y1="0" x2=".9" y2="1">
+      <stop offset="0"   stop-color="#ffffff"/>
+      <stop offset=".22" stop-color="#c8d6e6"/>
+      <stop offset=".5"  stop-color="#7d8ea4"/>
+      <stop offset=".72" stop-color="#b4c3d4"/>
+      <stop offset="1"   stop-color="#546274"/>
+    </linearGradient>
+    <linearGradient id="metalB" x1=".9" y1="0" x2=".1" y2="1">
+      <stop offset="0"   stop-color="#eef4fb"/>
+      <stop offset=".26" stop-color="#aebccd"/>
+      <stop offset=".58" stop-color="#63728691"/>
+      <stop offset=".6"  stop-color="#637286"/>
+      <stop offset="1"   stop-color="#96a6ba"/>
+    </linearGradient>
+    <linearGradient id="fio" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0"   stop-color="#ff3ecf"/>
+      <stop offset=".48" stop-color="#a86bff"/>
+      <stop offset="1"   stop-color="#2ff2ff"/>
+    </linearGradient>
+    <radialGradient id="aura" cx=".5" cy=".5" r=".5">
+      <stop offset="0"   stop-color="#7ef0ff" stop-opacity=".8"/>
+      <stop offset=".6"  stop-color="#4fb4ff" stop-opacity=".22"/>
+      <stop offset="1"   stop-color="#4fb4ff" stop-opacity="0"/>
+    </radialGradient>
+    <!-- o elo de trás perde o pedaço onde o da frente passa: é isso, e só
+         isso, que faz os dois parecerem PRESOS em vez de sobrepostos -->
+    <mask id="atras">
+      <rect width="192" height="192" fill="#fff"/>
+      <circle cx="66" cy="126" r="58" fill="#000"/>
+    </mask>
+  </defs>
+
+  <circle cx="96" cy="96" r="58" fill="url(#aura)"/>
+
+  <!-- ELO DE TRÁS -->
+  <g mask="url(#atras)">
+    <circle cx="126" cy="66" r="44" fill="none" stroke="#1b2431" stroke-width="25"/>
+    <circle cx="126" cy="66" r="44" fill="none" stroke="url(#metalB)" stroke-width="17"/>
+    <path d="M100 34 A44 44 0 0 1 158 46" fill="none"
+          stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity=".65"/>
+  </g>
+
+  <!-- ELO DA FRENTE -->
+  <circle cx="66" cy="126" r="44" fill="none" stroke="#1b2431" stroke-width="25"/>
+  <circle cx="66" cy="126" r="44" fill="none" stroke="url(#metalA)" stroke-width="17"/>
+  <path d="M34 102 A44 44 0 0 0 26 146" fill="none"
+        stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+
+  <!-- O FIO: é ele que diz que a ligação é nossa -->
+  <path d="M44 148 Q96 96 148 44" fill="none" stroke="#0d1520"
+        stroke-width="18" stroke-linecap="round"/>
+  <path d="M44 148 Q96 96 148 44" fill="none" stroke="url(#fio)"
+        stroke-width="12" stroke-linecap="round"/>
+  <path d="M44 148 Q96 96 148 44" fill="none" stroke="#ffffff"
+        stroke-width="3.5" stroke-linecap="round" opacity=".9"/>
+  <circle cx="96" cy="96" r="13" fill="#0d1520"/>
+  <circle cx="96" cy="96" r="10" fill="#ffffff"/>
+  <circle cx="96" cy="96" r="6"  fill="#3fe9ff"/>
+</svg>

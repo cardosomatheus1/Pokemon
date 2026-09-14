@@ -26,6 +26,10 @@ const MIME = {
   '.svg': 'image/svg+xml', '.webp': 'image/webp', '.ico': 'image/x-icon',
   '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.m4a': 'audio/mp4',
   '.wav': 'audio/wav', '.woff2': 'font/woff2',
+  /* Servir binário de fonte como octet-stream não era o defeito do D-037 — o
+     navegador é tolerante com MIME de fonte — mas é a mesma falta de cuidado
+     que o causou na folha de estilo. */
+  '.ttf': 'font/ttf', '.woff': 'font/woff', '.otf': 'font/otf',
 };
 
 createServer((req, res) => {

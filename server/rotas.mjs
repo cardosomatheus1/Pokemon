@@ -36,8 +36,10 @@ import { pausar, pausaAtiva, pedirReentrada, concederReentrada, realityCheck,
 import { perfilDe, desafiosDe, registrarLogin, sequenciaDeLogin, emitidoNaSemana,
          pedirResgate, marcarRuina } from './progressao.mjs';
 import { BUCKETS } from '../engine/carteira.mjs';
-import { agir, painelEconomico, ERRO_ADMIN } from './admin.mjs';
+import { agir, definirMargem, margemDaCasa, ERRO_ADMIN } from './admin.mjs';
+import { politicaMonetaria } from './politica.mjs';
 import { entrarOperador, lerSessaoAdmin, sairOperador } from './admin-auth.mjs';
+import { ERRO_LIGA, minhasPrevisoes, rankingDaTemporada, registrarPrevisao } from './liga.mjs';
 
 /* AS PÚBLICAS, e cada uma com motivo. Quem ainda não entrou precisa poder criar
    sessão; o estado da rodada é público por desenho (§4.5 — o commit tem que ser
@@ -61,6 +63,7 @@ import { entrarOperador, lerSessaoAdmin, sairOperador } from './admin-auth.mjs';
  * na lista de públicas seria o incidente inteiro. */
 export const ROTAS_ADMIN = [
   'GET /api/admin/painel',
+  'POST /api/admin/margem',
   'GET /api/admin/auditoria',
   /* F1.17: entrar e sair também são administrativas — elas não podem exigir
      sessão de JOGADOR, que é o que o despacho faria se não estivessem aqui.
@@ -107,6 +110,16 @@ const STATUS_DE = {
   [ERRO_APOSTA.CONTA]: 403,
   [ERRO_APOSTA.SEM_APOSTA]: 404,
   [ERRO_APOSTA.RODADA]: 409,
+  /* A Liga (R36). `JANELA` e `REPETIDA` são 409 — CONFLITO com o estado atual,
+     e não erro do pedido: o cliente mandou algo que estava certo até um
+     instante atrás. É a mesma leitura que `APOSTA.JANELA_FECHADA` já usa, e a
+     diferença importa para a tela: 400 manda corrigir o pedido, 409 manda
+     recarregar a rodada. */
+  [ERRO_LIGA.RODADA]: 409,
+  [ERRO_LIGA.JANELA]: 409,
+  [ERRO_LIGA.REPETIDA]: 409,
+  [ERRO_LIGA.LIQUIDADA]: 409,
+  [ERRO_LIGA.DISTRIBUICAO]: 400,
 };
 
 /* Converte a exceção do domínio em resposta. O `limite` e a `pausa` viajam
@@ -289,7 +302,59 @@ export const ROTAS = {
 
   'GET /api/admin/painel': ({ db, cabecalhos, agora }) =>
     comOperador(db, cabecalhos, 'painel.ver', 'consulta do painel',
-      () => ({ corpo: painelEconomico(db) }), agora),
+      /* A MARGEM EM VIGOR VAI JUNTO (R18). Ela é a configuração que mais muda
+         o que o jogador vê — a odd ao lado de cada lutador — e um painel
+         econômico que não a mostra deixa o operador decidir no escuro. */
+      /* R20 — `politicaMonetaria` ENVELOPA o `painelEconomico`: devolve tudo o
+         que ele devolvia, mais as nove séries do §10.9 que têm fonte no banco.
+         Uma chamada só, porque o operador lê uma tela só. */
+      () => ({ corpo: { ...politicaMonetaria(db, { agora }), margem: margemDaCasa(db) } }), agora),
+
+  /* DEFINIR A MARGEM (R18, fecha a L-047).
+   *
+   * A ação existia em `EXIGE` e `DESTRUTIVAS` desde o F1.11 e não tinha rota:
+   * desenhada e desarmada. Toda a defesa mora no `agir`, dentro do
+   * `definirMargem` — papel `economia`, motivo escrito, confirmação explícita,
+   * e registro ANTES de executar.
+   *
+   * Não passa por `comOperador`: aquele atalho chama `agir` por fora com a
+   * ação dele, e aqui a ação precisa carregar `de`, `para` e `confirmado`. Duas
+   * chamadas a `agir` para a mesma operação registrariam a auditoria duas
+   * vezes, uma delas mentindo sobre o que mudou.
+   *
+   * A SESSÃO CONTINUA SENDO CONFERIDA — `lerSessaoAdmin` com rotação, igual ao
+   * `comOperador`. É a única parte dele que não pode ser dispensada. */
+  'POST /api/admin/margem': ({ db, cabecalhos, corpo, agora }) => {
+    const cru = String(cabecalhos?.authorization ?? '');
+    const token = cru.startsWith('Bearer ') ? cru.slice(7) : null;
+    if (!token) return erro(401, ERROS.NAO_AUTORIZADO, 'rota administrativa exige sessão de operador');
+    const sessao = lerSessaoAdmin(db, { token, agora, girar: true });
+    if (!sessao) return erro(401, ERROS.NAO_AUTORIZADO, 'sessão de operador ausente, expirada ou inválida');
+    const cabecalhosResposta = sessao.tokenNovo ? { 'x-admin-token': sessao.tokenNovo } : undefined;
+
+    try {
+      const r = definirMargem(db, {
+        operadorId: sessao.operadorId,
+        /* `valor` ausente e `valor: null` são a MESMA intenção — voltar para a
+           do motor —, e qualquer outra coisa vai inteira para a validação. */
+        valor: corpo?.valor === undefined ? null : corpo.valor,
+        motivo: corpo?.motivo,
+        confirmado: corpo?.confirmado === true,
+        agora,
+      });
+      return { corpo: r, cabecalhos: cabecalhosResposta };
+    } catch (e) {
+      /* MESMA RESPOSTA PARA "não existe" e "não pode", igual ao `comOperador`:
+         distinguir as duas transforma a rota num verificador de ids. As outras
+         recusas do `agir` — sem motivo, sem confirmação, valor inválido — são
+         400 com o código, porque ali quem chamou PODE corrigir e precisa saber
+         o quê. */
+      if (e.codigo === ERRO_ADMIN.SEM_OPERADOR || e.codigo === ERRO_ADMIN.SEM_PAPEL)
+        return { ...erro(403, ERROS.NAO_AUTORIZADO, 'sem permissão'), cabecalhos: cabecalhosResposta };
+      if (e.codigo) return { ...erro(400, e.codigo, e.message), cabecalhos: cabecalhosResposta };
+      throw e;
+    }
+  },
 
   'GET /api/admin/auditoria': ({ db, cabecalhos, agora }) =>
     comOperador(db, cabecalhos, 'painel.ver', 'consulta da auditoria',
@@ -377,6 +442,46 @@ export const ROTAS = {
 
   'POST /api/protecao/reentrada/confirmar': ({ db, userId, agora }) => {
     try { return { corpo: concederReentrada(db, { userId, agora }) }; }
+    catch (e) { return daExcecao(e); }
+  },
+
+  /* --- Liga de Previsão (R36, Spec §6.8) --------------------------------
+   *
+   * SEM STAKE E SEM RISCO ECONÔMICO. Nenhuma destas rotas toca carteira,
+   * ledger ou limite — e é por isso que a Liga não passa pelo checkpoint do
+   * §25.1. Se um dia alguma delas precisar mexer em valor, ela deixa de ser
+   * uma rota da Liga e vira outra coisa, com outro enquadramento.
+   *
+   * As três são PRIVADAS por omissão: a sessão é conferida no despacho, pela
+   * `ROTAS_PUBLICAS`, e nenhuma delas está lá. É o desenho que faz rota nova
+   * nascer fechada em vez de depender de alguém lembrar. */
+
+  'POST /api/liga/previsao': ({ db, userId, corpo, agora }) => {
+    try {
+      /* Campo a campo, e não `...corpo`. Espalhar deixaria o cliente mandar
+         `score` e `scoring_version` junto — e pontuar a própria previsão é
+         literalmente o jogo inteiro. Mesma decisão do cadastro logo acima. */
+      return { corpo: registrarPrevisao(db, {
+        userId,
+        roundId: corpo?.roundId,
+        distribuicao: corpo?.distribuicao,
+        agora,
+      }) };
+    } catch (e) { return daExcecao(e); }
+  },
+
+  'GET /api/liga/ranking': ({ db, query, agora }) => {
+    try {
+      const temporada = String(query?.get('temporada') || 'atual');
+      return { corpo: { temporada, linhas: rankingDaTemporada(db, temporada, { agora }) } };
+    } catch (e) { return daExcecao(e); }
+  },
+
+  /* O começo do "perfil de leitura" do §6.9. A regra de honestidade do §28.5
+     vale aqui: acerto e erro com o mesmo destaque, amostra visível. Devolver
+     só as melhores deixaria a lista mais bonita e a ferramenta inútil. */
+  'GET /api/liga/minhas': ({ db, userId }) => {
+    try { return { corpo: minhasPrevisoes(db, userId) }; }
     catch (e) { return daExcecao(e); }
   },
 };

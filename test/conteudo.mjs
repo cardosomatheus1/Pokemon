@@ -263,7 +263,7 @@ export function suite() {
    * número em prosa é história ("os 20.000 herdados da base v0.8"), e história
    * não envelhece. */
   s.teste('nenhum texto visível redigita o número de simulações', () => {
-    const bruto = readFileSync(new URL('../app/index.html', import.meta.url).pathname, 'utf8');
+    const bruto = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
     const visivel = bruto
       .replace(/<script[\s\S]*?<\/script>/g, ' ')
       .replace(/<!--[\s\S]*?-->/g, ' ');
@@ -280,7 +280,7 @@ export function suite() {
      redigitado é passado com louvor por uma página que apagou a frase inteira —
      e a frase é a promessa de auditoria do §P1. */
   s.teste('as quatro telas que citam o Monte Carlo trazem o marcador', () => {
-    const bruto = readFileSync(new URL('../app/index.html', import.meta.url).pathname, 'utf8');
+    const bruto = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
     const n = (bruto.match(/class="sims"/g) || []).length;
     ok(n >= 4,
       `${n} marcador(es) .sims em app/index.html, esperado ao menos 4 ` +

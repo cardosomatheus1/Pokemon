@@ -160,6 +160,8 @@ Não usar como fonte principal:
 
 - `../CLAUDE.md` — instruções de trabalho: disciplina de bloco, os nove portões, e a regra de registrar achado fora de escopo apontando o bloco dono;
 - `DEFEITOS.md` — o que está quebrado e ainda não foi corrigido, com bloco dono;
+- `ROADMAP.md` — **o mapa único**: de onde viemos, o que existe, o que vem e em
+  que ordem. Começa por ele quem quer decidir o que fazer a seguir.
 - `LACUNAS.md` — o que foi identificado e adiado, com bloco dono ou trilha nomeada.
 
 Eles podem ser mantidos apenas como histórico de decisão.

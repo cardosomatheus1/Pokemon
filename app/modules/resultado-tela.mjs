@@ -24,6 +24,7 @@
 import { $, log } from './dom.mjs';
 import { CUR, MOEDA } from './motor.mjs';
 import { S } from './estado.mjs';
+import { pontuarFimDeRodada } from './liga-tela.mjs';
 import { emitir } from './telemetria.mjs';
 import { resultadoDaAposta, rotuloLiquido } from '../../engine/resultado.mjs';
 import { modoServidor, hidratar } from './banco.mjs';
@@ -33,10 +34,13 @@ import { overlay } from './rodada.mjs';
 import { enfeite } from './sorte.mjs';
 import { music, sfx } from './audio.mjs';
 import { darXP, recordBetResult, saveProfile, tituloDe } from './perfil.mjs';
+import { xpDaRodada } from './progressao.mjs';
 import { progDesafio } from './desafios.mjs';
 import { conferirAbates, conferirColocacao, mostrarPodio } from './killfeed.mjs';
-import { colocacaoDe, ordemDeQuedas } from './colocacao.mjs';
-import { imgTag } from './sprites.mjs';
+import { ordemDeQuedas } from './colocacao.mjs';
+import { posicaoFinalDe } from '../../engine/colocacao.mjs';
+import { imgTag, retratoAnimado } from './sprites.mjs';
+import { gifShinyAtivo, shinyNaArena } from './shiny-dados.mjs';
 import { renderBattleBanner } from './banner.mjs';
 import { refreshOddsTable } from './odds.mjs';
 import { registrarAposta } from './carteira.mjs';
@@ -68,10 +72,13 @@ const CHEER_LINES = [
    evento mudar, e a que estiver errada será a que ninguém olha. A versão única
    ainda protege explicitamente contra os dois casos (`streak` e queda
    repetida), em vez de depender do formato continuar como está. */
+/* A REGRA SAIU DAQUI NO BLOCO 0.1, e por isto: a liquidação no servidor paga a
+   parcela de DESEMPENHO do XP, que é função da posição. Duas versões dela
+   fariam a tela mostrar um XP e o perfil guardar outro depois de recarregar —
+   e nenhum dos dois pareceria obviamente errado. Agora mora em
+   `engine/colocacao.mjs`; o que restou aqui é juntar o estado da tela. */
 function posicaoFinal(idx){
-  if (idx === S.champ) return 1;
-  const pos = colocacaoDe(idx, ordemDeQuedas(S.battle.events), S.fighters.length);
-  return pos === null ? 2 : pos;             // sobreviveu ao tempo, mas não venceu
+  return posicaoFinalDe(idx, S.champ, ordemDeQuedas(S.battle.events), S.fighters.length);
 }
 
 /* O desafio de variedade não é incremental: ele conta quantos Pokémon
@@ -97,6 +104,53 @@ function atualizaVariedade(){
    de nível novo e desafios concluídos naquela rodada. Aparece igual na
    vitória e na derrota — é justamente o ponto do sistema: perder
    também move a barra. */
+/* O RETRATO DO VENCEDOR: ANIMADO, E SHINY SÓ PARA QUEM TEM A SKIN.
+ *
+ * ── UMA REGRESSÃO MINHA, DO R5, CORRIGIDA AQUI ────────────────────────────
+ *
+ * O comentário do `sprites.mjs` sempre disse que o `gen5ani` era usado "nos
+ * retratos da lista e da TELA DE VITÓRIA, onde uma pose de batalha fica melhor
+ * que um quadro solto". E era: a janela usava `imgTag`, que aponta para o GIF
+ * ANIMADO.
+ *
+ * No R5 eu troquei `imgTag` por `dexImg` para poder consultar a posse da skin
+ * — o `imgTag` não sabe o que é shiny. Resolvi o shiny e, sem perceber, troquei
+ * a animação por um PNG parado. O campeão passou a comemorar imóvel.
+ *
+ * O `retratoAnimado` faz as duas coisas: o GIF animado que o pack declara, com
+ * a variante shiny vindo do MESMO pack. A decisão do shiny continua sendo do
+ * `gifShinyAtivo`, que é a fonte única de "este perfil tem esta skin, e ela
+ * está equipada".
+ *
+ * A REGRA VALE NOS DOIS SENTIDOS, e o segundo é o que importa: mostrar shiny a
+ * quem não desbloqueou entrega de graça a recompensa que o guarda-roupa (R8)
+ * vende por conquista. Um cosmético que aparece sozinho deixa de ser cosmético.
+ *
+ * `S.profile` pode não existir no boot — o `gifShinyAtivo` devolve `false` para
+ * perfil ausente, então o caminho normal é o padrão, que é o certo.
+ *
+ * ── R42 · A POSSE NÃO BASTA. FALTAVA A ESCOLHA ────────────────────────────
+ *
+ * Este era o ÚLTIMO lugar do produto ainda perguntando só "eu tenho esta
+ * skin?". A arena já tinha sido corrigida, e o comentário do `rodada.mjs`
+ * descreve o defeito palavra por palavra:
+ *
+ *     "pintava de shiny qualquer lutador cujo dex eu possuísse... o vizinho
+ *      escolhe Charizard, e o Charizard dele aparecia shiny na minha tela."
+ *
+ * Aqui era pior, porque a tela de vencedor é a mais vista da rodada: o dono do
+ * projeto relatou um shiny que ele possui vencendo uma rodada em que ele NÃO
+ * apostou — e o campeão apareceu vestindo a skin dele. A tela parecia dizer
+ * "seu bicho ganhou" quando nada dele estava em jogo.
+ *
+ * `shinyNaArena` é a pergunta certa e já existia: ela exige as DUAS coisas —
+ * ter a skin E o bicho ser o escolhido. Aqui "escolhido" é ter apostado nele,
+ * que é a única forma de um lutador ser SEU nesta tela. */
+function vencedorImg(f){
+  const meuCampeao = !!S.myBet && S.fighters[S.myBet.idx] === f;
+  return retratoAnimado(f, '', shinyNaArena(S.profile, f.dex, meuCampeao));
+}
+
 function blocoXP(info, feitos){
   if (!info) return '';
   const p = info.depois;
@@ -133,6 +187,14 @@ function animaXP(){
 function finish(){
   S.champ = S.battle.winner;
   setPhase('result');
+
+  /* ── A LIGA PONTUA AQUI, e este é o único lugar onde ela pode ─────────
+     É o instante em que o campeão passa a ser conhecido. Pontuar antes seria
+     adivinhar; pontuar depois exigiria guardar o vencedor em algum lugar só
+     para isso. A idempotência mora na camada de dados, então chamar duas
+     vezes é inofensivo por construção — e chamar é mais barato que verificar.
+     A Liga NÃO toca saldo: ela some Brier, e é só. */
+  pontuarFimDeRodada();
 
   /* ── MODO SERVIDOR: A CARTEIRA VOLTA DO SETTLEMENT (F1.14) ─────────
    *
@@ -173,12 +235,18 @@ function finish(){
     const venceu = S.myBet.idx === S.champ;
     // colocação: quantos dos 12 ele sobreviveu (1º = 12 posições)
     const pos = minhaPos = posicaoFinal(S.myBet.idx);
-    const sobrevividos = 12 - pos;                    // 0..11
-    const partes = [{ n:'Rodada disputada', xp:10 }];
-    if (venceu) partes.push({ n:'Vitória', xp:25 });
-    const desemp = Math.round((sobrevividos / 11) * 15);
-    if (desemp > 0) partes.push({ n:`Desempenho (${pos}º lugar)`, xp:desemp });
-    if (S.myBet.odd >= 4 && pos <= 6) partes.push({ n:'Azarão que foi longe', xp:5 });
+    /* OS ABATES DO MEU LUTADOR, contados antes do XP porque agora ele os usa.
+       A definição é a mesma que os desafios já usavam algumas linhas abaixo, e
+       é de propósito: tempestade e killstreak não são abate do lutador —
+       tempestade é a arena matando, e contá-la pagaria XP por sorte. */
+    const meusAbates = S.battle.events.filter(
+      e => !e.storm && !e.streak && e.ko && e.a === S.myBet.idx).length;
+
+    /* O MODELO SAIU DAQUI NO R22. Ele estava escrito no meio do desenho do
+       overlay, onde não podia ser testado sem levantar meia interface — e foi
+       assim que a parcela de abate se perdeu na migração sem ninguém notar.
+       Agora mora em `progressao.mjs`, puro, com teste próprio. */
+    const partes = xpDaRodada({ venceu, pos, abates: meusAbates, odd: S.myBet.odd });
     xpInfo = darXP(partes);
 
     // desafios
@@ -282,7 +350,7 @@ function finish(){
       overlay.innerHTML = `<div id="winBox" class="win">
           <div class="trophy">🏆</div>
           <div class="moneybag">💰</div>
-          ${imgTag(f)}
+          ${vencedorImg(f)}
           <div class="banner" style="margin-top:8px">${f.n} venceu!</div>
           <div class="payout">${rotuloLiquido(res.liquido)} ${CUR}
             <small>retorno de ${CUR} ${retorno.toLocaleString('pt-BR')} sobre ${CUR} ${S.myBet.amount.toLocaleString('pt-BR')} · x${S.myBet.odd.toFixed(2)}</small>
@@ -301,7 +369,7 @@ function finish(){
          zero de vermelho de perda — e zero não é perda, é o dinheiro de volta.
          Exagerar para o lado pessimista é errar do mesmo jeito. Ver L-037. */
       overlay.innerHTML = `<div id="winBox" class="devolvido">
-          ${imgTag(f)}
+          ${vencedorImg(f)}
           <div class="banner" style="margin-top:8px">${f.n} venceu!</div>
           <div class="liquido${res.liquido < 0 ? ' negativo' : ''}">${rotuloLiquido(res.liquido)} ${CUR}
             <small>Você apostou ${CUR} ${S.myBet.amount.toLocaleString('pt-BR')} e recebeu ${
@@ -336,7 +404,7 @@ function finish(){
     /* ---------- SEM APOSTA (só assistindo) ---------- */
     overlay.innerHTML = `<div id="winBox" class="win">
         <div class="trophy">🏆</div>
-        ${imgTag(f)}
+        ${vencedorImg(f)}
         <div class="banner" style="margin-top:8px">${f.n} venceu!</div>
         <div class="neutral">Você não apostou nesta rodada.</div>
       </div>`;

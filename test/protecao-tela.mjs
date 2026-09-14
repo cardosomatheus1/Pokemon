@@ -28,7 +28,7 @@ import { criarSuite, ok, igual } from './harness.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import { criarApi } from '../app/modules/api.mjs';
 
-const ler = f => readFileSync(new URL(f, import.meta.url).pathname, 'utf8');
+const ler = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 const tela = () => ler('../app/modules/protecao-tela.mjs');
 const html = () => ler('../app/index.html');
 

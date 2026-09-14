@@ -19,6 +19,8 @@ docs/POKEARENA_BUILD_BLOCKS_v1.2.md                 o COMO e em que ordem
 docs/POKEARENA_DESIGN_DEPTH_v1.1.md                 por que o metagame é assim
 docs/POKEARENA_ECONOMY_STUDY_v1.2.md                economia do jogo
 docs/POKEARENA_UNIT_ECONOMICS_STUDY_v1.2.md         economia da empresa
+docs/RETOMAR.md                                     ONDE PARAMOS — leia numa aba nova
+docs/ROADMAP.md                                     o mapa: feito, pendente, prioridade
 docs/POKEARENA_DOCUMENT_INDEX_v1.4.md               índice; começa por ele
 docs/DEFEITOS.md                                    defeitos achados, não corrigidos
 docs/LACUNAS.md                                     trabalho identificado, adiado
@@ -139,9 +141,26 @@ npm run sabotagem          # Q2 completo — obrigatório para fechar bloco
 npm run sabotagem:tocados  # Q2 parcial, DURANTE a construção (ver abaixo)
 npm run test:gerar         # regrava fixtures E linha de base visual (~5 min)
 npm run gerar:visual       # SÓ a linha de base visual — 49 s (T3)
-npm run rapido             # as 21 suítes sem navegador — 7 s (T3)
+npm run rapido             # as 96 suítes sem navegador — 1 min 25 s (T6)
 npm run snapshot           # regera o instantâneo do protótipo (paridade)
 ```
+
+### Um número documentado envelhece, e envelhecer é mentir
+
+O `rapido` esteve **quatro blocos** subindo cinco Chromium e descartando o que
+eles mediam: 3 min 30 s onde esta linha prometia 7 s. Ninguém notou porque o
+defeito não tinha sintoma — suíte verde, contagem certa, só o relógio sabia. É o
+**D-059**, e as duas metades dele valem como regra:
+
+```text
+o 7 s     era verdade com 21 suítes; hoje são 96, e uma delas (servidor) custa
+          39 s sozinha. Número em documento não se atualiza sozinho.
+o 21      virou 96 quando o D-017 derivou a lista, e a linha não foi reescrita
+```
+
+**Número que aparece no `CLAUDE.md` é medição, e medição tem data.** Quem o
+citar num bloco novo mede de novo antes; quem o achar errado corrige na hora, no
+commit do próprio bloco, com o número velho ao lado do novo.
 
 ### O recorte `--so` acelera a construção, e não fecha bloco nenhum
 
@@ -206,6 +225,39 @@ Duas regras que sustentam isso, e as duas têm teste no `portao.mjs`:
   o portão mentir.
 
 `npm run sabotagem:completo` ignora o cache. É o que roda antes de uma tag.
+
+### Toda espera de portão tem prazo
+
+O portão visual ficou **mais de 300 segundos sem terminar e sem imprimir uma
+linha**, e a suíte inteira parou com ele. A causa foi um `await` que não termina:
+
+```js
+await pg.evaluate(() => Promise.all(
+  imagensPendentes.map(i => i.decode().catch(() => {}))));
+```
+
+`decode()` de uma imagem PENDENTE não resolve nem rejeita — ela só fica. O
+`catch` cobre rejeição, e rejeição é exatamente o caso que não acontece.
+
+```text
+o gatilho    loading="lazy" numa vista escondida: a imagem nunca entra na fila
+o sintoma    log vazio, Chromium vivo e ocioso, zero CPU
+o que achou  uma sonda escrevendo com appendFileSync, que não bufferiza
+```
+
+**Log vazio não é "travou antes de imprimir": é "não terminou, então não
+descarregou".** Duas execuções foram descartadas como travadas sem terem sido, e
+uma terceira foi tomada por vermelha quando estava só parada — foi assim que o
+Q2 abortou dizendo que a configuração com navegador estava quebrada.
+
+A regra que fica, e ela vale para qualquer espera nova:
+
+> **Portão que não termina não julga nada** — e por isso nenhuma espera dele
+> pode ser ilimitada. Perder uma espera custa um vermelho com endereço; travar
+> custa a execução inteira e não deixa por onde começar.
+
+`waitForFunction` já tinha prazo. `evaluate` não tinha, porque ninguém tinha
+imaginado um `await` que não termina dentro dele. É o **D-069**.
 
 ### Toda configuração que julga precisa da própria linha de base
 
@@ -318,6 +370,30 @@ Branch de trabalho: `claude/pok-arena-repo-setup-qgcn76`.
   custou quase três imagens no porte da v1.0; ver `arte/README.md`.
 - Ligar qualquer feature de valor econômico real sem o checkpoint do §25.1.
 
+## Ao copiar de outro jogo
+
+**Nunca entregue a cópia.** Referência entra como matéria-prima, e sai como coisa
+nossa — com uma diferença que se possa NOMEAR.
+
+Decisão do dono do projeto, 30/08/2026, e vale para tudo: arte, mecânica,
+interface, economia.
+
+```text
+1. ANALISAR    o que a referência faz BEM, e por quê. Não "como ela é".
+2. NOMEAR      a diferença que a nossa versão vai ter, antes de construir.
+3. APERFEIÇOAR o ponto fraco dela — toda referência tem um.
+4. VESTIR      no nosso tema (neon/cyberpunk sobre sprite GBA), que não é
+               enfeite: é o que faz a coisa parecer nossa e não emprestada.
+```
+
+Se ao fim não dá para dizer **em uma frase** o que a nossa versão faz melhor ou
+diferente, ela não está pronta — está copiada.
+
+O exemplo que originou a regra: o formato de torre do Pokerogue é bom e serve de
+base. O que ele NÃO tem é a nossa arena por trás, o dossiê que ele alimenta, e a
+identidade visual do tema. A nossa versão só existe quando essas três coisas
+estiverem na tela.
+
 ## Sempre
 
 - Medir antes de mexer. É o método do projeto e já evitou várias decisões erradas.
@@ -331,3 +407,217 @@ Branch de trabalho: `claude/pok-arena-repo-setup-qgcn76`.
 1. Consulta de enquadramento regulatório (Spec §0.5.1).
 2. Arte do ContentPack original (Spec §0.3.1) — prazo: antes do fim da V1.
 3. Política de publicidade e afiliados — sem dono em nenhum documento.
+
+## Toda implementação visual merece atenção especial
+
+Decisão do dono do projeto, 30/08/2026. **Banner, cenário, outfit, avatar,
+moldura, ícone, tela — tudo que é visual ou estético entra por esta porta**, e
+não pela porta do "funciona".
+
+O motivo está registrado em três lugares deste arquivo e vale reunir aqui:
+
+```text
+V1.15   três defeitos passaram por 299 testes VERDES — todos de LEITURA
+v0.6.1  uma correção de sprites virou troca de fonte de arte e custou 3 versões
+prévias o dono reprovou duas rodadas seguidas: "nem cenário nem treinador estão
+        legais" e "parecem estar sobre o cenário, não dentro"
+```
+
+Nenhum dos três aparece em teste. Todos aparecem para quem olha.
+
+### O que "atenção especial" quer dizer, em passos
+
+```text
+1. NUNCA ENTREGAR O MÍNIMO QUE FUNCIONA
+   Um sprite que aparece na tela não é a entrega. A entrega é o sprite que
+   parece pertencer àquele lugar.
+
+2. ACRESCENTAR UM DETALHE QUE NÃO FOI PEDIDO, e que a cena precisa
+   sombra, oclusão, partícula, luz, profundidade, um prop na frente dos pés.
+   Foi assim que o cenário deixou de parecer colagem: nada disso estava no
+   pedido, e sem nada disso o pedido não estava cumprido.
+
+3. OLHAR NA PROPORÇÃO REAL, e não no código
+   É a segunda metade do Q5. Capturar, abrir e LER — nas larguras em que o
+   arranjo muda, e no tamanho em que o jogador vai ver.
+
+4. VESTIR NO TEMA
+   O mundo é GBA, a interface é neon. Toda peça nova escolhe um dos dois de
+   propósito, e nunca fica no meio por descuido.
+
+5. NOMEAR A DIFERENÇA
+   Vale a regra de cópia acima: se ao fim não dá para dizer em uma frase o que
+   a nossa versão faz melhor ou diferente, ela não está pronta.
+```
+
+### A pergunta que fecha qualquer peça visual
+
+> Se um jogador visse isto pela primeira vez, sem explicação, ele acharia que é
+> de um jogo publicado — ou que é um protótipo?
+
+Enquanto a resposta for "protótipo", a peça não fechou.
+
+## O cenário do idle nunca está pronto
+
+Decisão do dono do projeto, 01/09/2026, e ela é **regra permanente** — não uma
+tarefa de um bloco.
+
+> "a intenção sempre o cenário de bioma iddle se parecer o mais vivo possível,
+>  pense que muitas pessoas vão largar por horas nessa tela, e vão está vendo
+>  outra tela um filme ou serie sei lá só exemplo, se for algo feio e mal
+>  visualizado, você acha que essa pessoa vai querer ficar vendo?"
+
+O argumento é o que a torna regra, e não preferência. **Esta tela é a única do
+produto que é olhada por horas sem interação.** Todas as outras são atravessadas:
+o jogador aposta e sai, escolhe a rota e sai. Esta fica aberta ao lado de um
+filme. Um defeito de leitura numa tela atravessada custa um segundo de confusão;
+na tela de fundo, custa a sessão inteira — a pessoa simplesmente fecha.
+
+### O que isso obriga, na prática
+
+```text
+TODO BLOCO que passe perto do cenário procura uma melhoria, mesmo que o
+           escopo dele seja outro — e a registra, mesmo que não a construa
+NENHUMA    entrega de cenário é "suficiente". A pergunta do §atenção especial
+           vale em dobro aqui: parece de um jogo publicado, ou parece protótipo?
+O DONO     não precisa pedir. Ele já pediu, uma vez, para sempre.
+```
+
+E o inverso também: **isto não vira desculpa para desviar de bloco.** Vale a
+mesma regra da divisão de trabalho — a melhoria que aparece no meio de outra
+coisa é REGISTRADA e encaixada, não construída na hora. O que muda é que ela
+nunca é descartada por "não foi pedido".
+
+### Por que ela precisou ser escrita
+
+Porque eu já entreguei o mínimo três vezes nesta tela, e as três o dono pegou
+olhando: as partículas diluídas num mundo oito vezes maior, a cachoeira parada,
+a fenda em tracejado. Nenhuma estava quebrada. Todas estavam *prontas* pelo
+critério de funcionar, e nenhuma estava pronta pelo critério dele.
+
+---
+
+## A divisão de trabalho
+
+Decisão do dono do projeto, 31/08/2026, e ela é metodologia — não preferência.
+
+```text
+ELE   lança ideia solta, a qualquer momento, fora de ordem, no meio de outra coisa
+EU    destrincho, formulo, organizo, e decido SE aplica e QUANDO aplica
+ELE   dá veredito — mas só no que for crucial
+```
+
+Na palavra dele: *"Faço sempre lançamento de ideias, pa pa pa pa ideia pra crlh,
+você destrincha, formula, organiza, e decide como aplicar ou não aplicar e dou
+veredito, isso quando for coisas cruciais."*
+
+**A ordem e a forma de aplicar são minhas.** Perguntar "faço agora ou depois?" é
+devolver exatamente a decisão que ele delegou.
+
+### O risco que essa divisão cria, e a regra que o contém
+
+> **Ideia solta não vira desvio de rota.**
+
+Ele avisou junto: *"não se perca nos processos"*. O modo de falha é eu abandonar
+o bloco aberto a cada ideia nova e terminar com seis frentes pela metade — que é
+a mesma doença que a regra central deste arquivo já trata, chegando por outra
+porta.
+
+Ideia que chega no meio de um bloco:
+
+```text
+1. REGISTRA   docs/LACUNAS.md, docs/DEFEITOS.md, ou o mapa de decisões (DEC-###)
+2. ENCAIXA    na ordem, com bloco dono nomeado
+3. FECHA      o bloco que já estava aberto
+4. RELATA     o que entrou, onde foi parar, e em que posição da fila
+```
+
+A exceção é a ideia que **muda o bloco em curso** — aí ela entra agora, porque
+terminar o bloco na forma antiga seria construir algo que já se sabe errado.
+
+### Recomendação minha é o padrão
+
+Quando eu apresentar uma recomendação de desenho, **sigo com ela sem esperar
+aprovação**; ele avisa quando não quiser. A recomendação tem de estar **escrita
+e visível** antes de eu construir em cima dela — no commit, em `LACUNAS`, ou no
+relatório do bloco.
+
+Parar e perguntar continua sendo o certo em três casos, e só neles:
+
+```text
+caro de desfazer      migração de dado, formato de arquivo que já tem acervo
+valor econômico real  §25.1 — loja, mercado, qualquer coisa com dinheiro
+ambíguo de verdade    duas leituras levam a trabalhos materialmente diferentes
+```
+
+### E eu cobro o que ele esqueceu
+
+Pedido dele, 30/08/2026. Decisão pendente do dono é registrada com dono e fica
+na lista do relatório até ele decidir. "Ele não respondeu" não arquiva nada.
+
+## O dono nunca fica sem o jogo na mão
+
+Decisão do dono do projeto, 03/09/2026, e ela é **regra de metodologia**:
+
+> "toda vez que você ver que o token não será suficiente pra finalizar você
+>  deixa um navegador local aberto disponível com local e um diretório de onde
+>  está a pasta atual do projeto em meu pc. Isso se torna regra, e ao finalizar
+>  os blocos também é necessário essa atualização"
+
+O motivo é o mesmo da regra central deste arquivo, chegando pela ponta dele: **o
+jogo tem de estar jogável quando eu paro**, e "jogável" para o dono quer dizer
+*aberto num endereço que ele consegue clicar*, não "verde na minha suíte".
+
+### Quando
+
+```text
+AO FECHAR   todo bloco, sem exceção
+ANTES DE    acabar o orçamento de contexto — e isso se ANTECIPA, não se descobre
+            depois. Parar sem deixar o endereço é parar mal.
+```
+
+### E o `docs/RETOMAR.md` é atualizado junto
+
+Decisão do dono, 08/09/2026: ele separa as abas de trabalho por data, e quer
+abrir uma nova sem perder o ponto.
+
+> **O comando dele é um só:** `leia docs/RETOMAR.md e continue de onde paramos`
+
+Isso só funciona se o arquivo estiver vivo. **Ele é atualizado no fecho de todo
+bloco, junto com o link local** — nada importante deste projeto pode morar só na
+conversa, e este arquivo é a prova disso ou a mentira sobre isso.
+
+### E ELE COBROU AS DUAS COISAS DE NOVO EM 08/09/2026
+
+> "você está esquecendo algumas coisas, duas por exemplo: a cada atualização
+>  importante é necessário informativo % + mini resumo, além de sempre estar
+>  abrindo o local para testar aqui em nosso navegador"
+
+As duas já estavam escritas — e eu as deixei cair mesmo assim, o que diz que
+escrever não bastou. Ficam com forma explícita:
+
+```text
+A CADA ENTREGA    "Progresso: NN%" e um mini resumo do que mudou. Não é no
+                  fim do bloco: é a cada coisa que ele precisaria saber para
+                  decidir alguma coisa
+O LOCAL NO AR     conferido com uma requisição de verdade, e o link
+                  apresentado. "Estava rodando antes" não conta — o processo
+                  cai, a aba fecha, e quem descobre é ele
+```
+
+O motivo de a segunda ser tão insistente está na própria regra: **anunciar um
+link morto é pior que não anunciar**, porque manda o dono procurar defeito
+onde não há. O inverso também vale — não anunciar nada o deixa sem saber se
+existe o que olhar.
+
+### O que a atualização contém, sempre as três linhas
+
+```text
+o LINK       http://localhost:8099/app/index.html  (servidor de pé, conferido)
+a PASTA      C:\Users\gdult\pa4
+o ESTADO     o que está no ar agora: último bloco, suíte, o que mudou de visível
+```
+
+O servidor é `node tools/servir.mjs --porta 8099`. **Conferir que ele responde
+antes de dizer que está no ar** — anunciar um link morto é pior que não anunciar:
+ele manda o dono procurar defeito onde não há.

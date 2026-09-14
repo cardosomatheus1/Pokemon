@@ -4,6 +4,7 @@
  * adaptação. É o mesmo desenho de `test/banco.mjs`: o que se mede é o encaixe,
  * e testar a peça não testa o encaixe.
  */
+import { fileURLToPath } from 'node:url';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import { FASE_MS } from '../server/scheduler.mjs';
@@ -83,10 +84,10 @@ export function suite() {
        que passe a ler `S.odds.overround` amanhã encontra este teste vermelho —
        derivar não pode dessincronizar. */
     const { readFileSync, readdirSync } = await import('node:fs');
-    const dir = new URL('../app/modules/', import.meta.url).pathname;
+    const dir = fileURLToPath(new URL('../app/modules/', import.meta.url));
     const fontes = readdirSync(dir).filter(f => f.endsWith('.mjs'))
       .map(f => readFileSync(dir + f, 'utf8'))
-      .concat(readFileSync(new URL('../app/index.html', import.meta.url).pathname, 'utf8'));
+      .concat(readFileSync(new URL('../app/index.html', import.meta.url), 'utf8'));
     const campos = new Set();
     for (const txt of fontes)
       for (const m of txt.matchAll(/\bS\.odds\.(\w+)/g)) campos.add(m[1]);

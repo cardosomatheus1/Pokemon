@@ -200,14 +200,43 @@ for (const t of RODA)
 const CLIMA = [
   { key:'neutro',  w:40, emoji:'⛅',  name:'Calmaria',
     type:null,    stat:null,      mult:1,   desc:'Sem bônus climático nesta rodada.' },
-  { key:'estio',   w:15, emoji:'🔥', name:'Estio',
+  { key:'estio', w:15, emoji:'🔥', name:'Estio',
     type:'brasa', stat:'offense', mult:2,   desc:'Criaturas de Brasa com ATK/SpA em dobro!' },
   { key:'dilúvio', w:15, emoji:'🌊', name:'Dilúvio',
     type:'mare',  stat:'spe',     mult:2,   desc:'Criaturas de Maré com Velocidade em dobro!' },
-  { key:'vendo',   w:15, emoji:'🌬️', name:'Vendaval',
+  { key:'vendo', w:15, emoji:'🌬️', name:'Vendaval',
     type:'sopro', stat:'spe',     mult:1.5, desc:'Criaturas de Sopro com Velocidade x1,5!' },
   { key:'tempest', w:15, emoji:'⚡', name:'Tempestade',
     type:'carga', stat:'offense', mult:1.5, desc:'Criaturas de Carga com ATK/SpA x1,5!' },
+];
+
+/* ── O CLIMA DO AVANÇO (1.32) ──────────────────────────────────────────────
+ *
+ * Outra lista que a de cima, pelo mesmo motivo do pack de Kanto: aquela muda
+ * DANO na Arena e as odds foram medidas sobre os pesos dela; esta muda o FARM.
+ *
+ * A cobertura deste elenco é bem mais plana — 76 espécies em oito tipos:
+ *
+ *     seiva 17 · sopro 15 · pedra 14 · liga 13 · carga 12 · brasa 12
+ *     mare 11 · veu 8
+ *
+ * Nenhum tipo é raro como o Gelo do outro pack, e isso é uma propriedade do
+ * elenco, não um defeito da lista. O passo sai da raridade medida, então aqui
+ * ele nasce parelho sozinho e o VÉU — o menor, com oito — é o que paga mais.
+ * A mesma regra, sem uma linha de exceção. */
+const CLIMA_IDLE = [
+  { key:'neutro', w:40, emoji:'⛅', name:'Tempo Firme', tipos:[], rende:null,
+    desc:'Sem bônus de clima nesta run.' },
+  { key:'estio', fx:'sol', w:13, emoji:'🔥', name:'Estio', tipos:['brasa'], rende:'xp',
+    desc:'Quem é de Brasa rende mais XP nesta run.' },
+  { key:'diluvio', fx:'chuva', w:13, emoji:'🌊', name:'Dilúvio', tipos:['mare'], rende:'ritmo',
+    desc:'Quem é de Maré acelera as waves desta run.' },
+  { key:'vendo', fx:'vento', w:13, emoji:'🌬️', name:'Vendaval', tipos:['sopro'], rende:'moeda',
+    desc:'Quem é de Sopro traz mais moeda desta run.' },
+  { key:'erosao', fx:'vento', w:13, emoji:'⛈️', name:'Erosão', tipos:['pedra','liga'], rende:'material',
+    desc:'Quem é de Pedra ou Liga traz mais material.' },
+  { key:'veu', fx:'nevoa', w:8, emoji:'🌫️', name:'Véu Baixo', tipos:['veu'], rende:'itemRaro',
+    desc:'Raro. Quem é de Véu melhora MUITO o item raro do baú.' },
 ];
 
 /* ── NOMES E ARTE ──────────────────────────────────────────────────────────*/
@@ -286,7 +315,39 @@ function sprite(especie) {
   return COM_ARTE.has(slug) ? `arte/original/${slug}.png` : silhuetaDe(especie);
 }
 
+/* ESTE PACK NÃO TEM ARTE SHINY, E DIZ ISSO DEVOLVENDO A NORMAL.
+ *
+ * A alternativa seria devolver `arte/original/<slug>-shiny.png` — um endereço
+ * que não existe. E um endereço que não existe é PIOR que a arte normal: o
+ * primeiro some da tela, o segundo só não é shiny. É a mesma lógica do
+ * `silhuetaDe` logo acima, e a mesma razão pela qual esta função não cai para
+ * o sprite do outro pack: o resgate busca a mesma coisa noutro endereço, e
+ * "a mesma coisa" aqui é a arte DESTE tema. */
+function spriteShiny(especie) { return sprite(especie); }
+
 const MOEDA = { nome: 'Arena Cash', simbolo: '💠' };
+
+/* ── A MOEDA DO PvE E O MATERIAL (L-095) ──────────────────────────────────
+ *
+ * São TRÊS coisas com papéis diferentes, e o dono nomeou as três:
+ *
+ *     Arena Cash   a APOSTA — moeda da arena, simulada
+ *     Créditos     o DINHEIRO do PvE — o idle e a Torre pagam nele
+ *     Essência   o MATERIAL — farma-se, e troca-se por item de poder
+ *
+ * A distinção não é decorativa: **dinheiro compra o que já tem preço; material
+ * compra o que não devia ter preço.** Um item de poder comprável por dinheiro é
+ * a loja vendendo poder; o mesmo item saindo de uma troca por material farmado
+ * é recompensa de persistência.
+ *
+ * Moram aqui, e não no motor, porque nome de moeda é NOMENCLATURA DE TEMA — o
+ * portão `conteudo` reprovou a primeira versão por isto, pela quarta vez neste
+ * projeto.
+ *
+ * A `Essência` mantém o id que sempre teve: ela mudou de PAPEL, não de nome, e
+ * por isso nenhum saldo salvo precisa ser convertido. */
+const MOEDA_PVE = { id: "pokecoin", nome: 'Créditos', simbolo: "🪙" };
+const MATERIAL  = { id: "essencia", nome: "Essência" };
 
 /* ── COMO A INTERFACE CHAMA AS COISAS ──────────────────────────────────────
  *
@@ -298,11 +359,211 @@ const MOEDA = { nome: 'Arena Cash', simbolo: '💠' };
  * O pack passa a dizer como as coisas se chamam. Não é tradução: é o TEMA
  * nomeando a si mesmo, que é o que a Content Layer existe para permitir. */
 const ROTULOS = {
+  /* O NOME DO REGISTRO DE ESPECIES vem do PACK (1.19).
+     O motor nao pode dizer o nome da franquia — e identificador de tema, e o
+     portao §0.3 reprova qualquer um dentro de `engine/`. Entao o motor fala
+     `registro`, neutro, e o TEMA diz como ele se chama para quem joga.
+
+     E a mesma porta da moeda e do material, e e ela que mantem a engenharia
+     trocavel de tema — que e decisao registrada do dono. */
+  registro:  'Registro',
   criatura:  'criatura',
   criaturas: 'criaturas',
   elenco:    'Roda de Oito',
   arena:     'PokéArena',
 };
+
+/* ── AS NATUREZAS DESTE PACK ───────────────────────────────────────────────
+ *
+ * Vinte e cinco, com a mesma ARITMÉTICA do outro pack e nomes NOSSOS — cinco
+ * neutras, e as vinte restantes subindo um eixo e descendo outro.
+ *
+ * É o que o §0.3.1 pede: o pack original tem de ser jogável sem uma linha da
+ * franquia. Traduzir os nomes de lá seria trazer a franquia por outro caminho. */
+const NATUREZAS = [
+  ['Plana', null, null], ['Serena', null, null], ['Neutra', null, null],
+  ['Estável', null, null], ['Comum', null, null],
+  ['Feroz', 'atq', 'def'], ['Pesada', 'atq', 'vel'], ['Bruta', 'atq', 'spa'], ['Crua', 'atq', 'spd'],
+  ['Rochosa', 'def', 'atq'], ['Lenta', 'def', 'vel'], ['Dura', 'def', 'spa'], ['Densa', 'def', 'spd'],
+  ['Ágil', 'vel', 'atq'], ['Leve', 'vel', 'def'], ['Rápida', 'vel', 'spa'], ['Solta', 'vel', 'spd'],
+  ['Arcana', 'spa', 'atq'], ['Etérea', 'spa', 'def'], ['Quieta', 'spa', 'vel'], ['Instável', 'spa', 'spd'],
+  ['Calma', 'spd', 'atq'], ['Gentil', 'spd', 'def'], ['Firme', 'spd', 'vel'], ['Zelosa', 'spd', 'spa'],
+];
+
+/* ── OS BIOMAS DESTE PACK ──────────────────────────────────────────────────
+ *
+ * Mesma mecânica do outro pack, nomes e recorte NOSSOS. O §0.3.1 exige que este
+ * pack seja jogável sem uma linha da franquia — traduzir os biomas de lá seria
+ * trazer a franquia por outro caminho.
+ *
+ * OS TIPOS SÃO OS QUE ESTE PACK DECLARA, e não os do outro — e eu errei isto
+ * na primeira tentativa, copiando 'grass' e 'water' de Kanto para cá. O teste
+ * reprovou com "Mata ficou vazio", que é exatamente o sintoma: bioma cujos
+ * tipos ninguém tem é rota morta.
+ *
+ * Os oito tipos deste pack são: seiva, liga, carga, sopro, brasa, pedra, mare
+ * e veu. Nenhum deles existe no outro pack, e é assim que o §0.3.1 fica
+ * cumprido — o pack original é jogável sem uma linha da franquia. */
+/* AS PALETAS DESTE PACK, e nenhuma é a de lá.
+ *
+ * O §0.3.1 exige que este pack seja jogável sozinho, e cor emprestada é
+ * empréstimo. Há teste que compara as duas listas e reprova se uma paleta
+ * inteira se repetir — foi o mesmo cuidado que os biomas e as bolas exigiram,
+ * e nas duas vezes eu errei antes de acertar. */
+const BIOMAS = [
+  { id:'mata',     rotulo:'Mata',      tipos:['seiva'], assinatura:['seiva'],
+    detalhe:170, paleta:{ base:'#2f5d4a', baseEsc:'#24483a', claro:'#4f8f6d', acento:'#7fd6a0', trilha:'#6b5f4a', trilhaEsc:'#544b3b', areia:'#5e6a4e', massa:'#1c5a55', massaEsc:'#123f3c', massaClaro:'#3d8f88', espuma:'#a0efe0', luz:'rgba(120,240,190,.22)', luzNucleo:'#b8ffe0' } },
+  { id:'costa',    rotulo:'Costa',     tipos:['mare','sopro'], assinatura:['mare'],
+    detalhe:70, paleta:{ base:'#c9c2a2', baseEsc:'#aca690', claro:'#e4dfc0', acento:'#fff4d0', trilha:'#b5ab8a', trilhaEsc:'#9a9174', areia:'#dcd4b0', massa:'#3a6f9c', massaEsc:'#274f73', massaClaro:'#6ba6cc', espuma:'#dff4ff', luz:'rgba(150,210,255,.22)', luzNucleo:'#dcf0ff' } },
+  { id:'planicie', rotulo:'Planície',  tipos:['carga','veu'], assinatura:['carga'],
+    detalhe:200, paleta:{ base:'#8a9c58', baseEsc:'#6f7f47', claro:'#b4c47a', acento:'#ffe98c', trilha:'#9a8a60', trilhaEsc:'#7d7050', areia:'#a4ac6c', massa:'#4a7a86', massaEsc:'#345862', massaClaro:'#78aab4', espuma:'#e0f6fa', luz:'rgba(255,232,150,.22)', luzNucleo:'#fff2b4' } },
+  { id:'penhasco', rotulo:'Penhasco',  tipos:['pedra','liga'], assinatura:['pedra'],
+    detalhe:60, paleta:{ base:'#6e6470', baseEsc:'#57505c', claro:'#948b98', acento:'#c2b4cc', trilha:'#7d7280', trilhaEsc:'#635a68', areia:'#665e6a', massa:'#3c3448', massaEsc:'#2a2434', massaClaro:'#5e5470', espuma:'#a294b4', luz:'rgba(190,150,255,.20)', luzNucleo:'#e0ccff' } },
+  { id:'cratera',  rotulo:'Cratera',   tipos:['brasa','pedra'], assinatura:['brasa'],
+    detalhe:80, paleta:{ base:'#4a2f34', baseEsc:'#341f24', claro:'#74484c', acento:'#ff7a5c', trilha:'#5e3c3a', trilhaEsc:'#432a29', areia:'#6e4238', massa:'#b8341c', massaEsc:'#801f0f', massaClaro:'#ff6a3a', espuma:'#ffb08a', luz:'rgba(255,110,60,.28)', luzNucleo:'#ffc09a' } },
+  { id:'sucata',   rotulo:'Sucata',    tipos:['liga','carga'], assinatura:['liga'],
+    detalhe:110, paleta:{ base:'#54585c', baseEsc:'#3f4246', claro:'#787e84', acento:'#d4b06a', trilha:'#5f584c', trilhaEsc:'#48433a', areia:'#63656a', massa:'#3a4238', massaEsc:'#282e26', massaClaro:'#5e6a58', espuma:'#c8d4a0', luz:'rgba(230,190,110,.26)', luzNucleo:'#ffe8b0' } },
+];
+
+/* [ nome, teto de força, chance de captura, fragmentos do registro ]
+ *
+ * OS TETOS SÃO DESTE PACK, e não os do outro — é o D-051.
+ *
+ * A primeira versão copiou os tetos de Kanto, e a medição mostrou o estrago:
+ * este elenco tem a força concentrada muito mais alto (mediana 490 contra 405),
+ * então os mesmos números produziam **UMA espécie comum em 76**. Oitenta e oito
+ * por cento dos encontros cairiam em "raro" ou pior, com captura de 14%, 6% e
+ * 1,5% — o farm aqui seria injogável, e nenhum teste reprovava, porque todos
+ * perguntavam se a raridade era coerente e nenhum perguntava se ela era JOGÁVEL.
+ *
+ * Os tetos abaixo saem dos quantis DESTE elenco, mirando a mesma forma que
+ * Kanto produz:
+ *
+ *     kanto     comum 35,6%  incomum 18,5%  raro 24,0%  muitoRaro 21,2%
+ *     original  comum 35,5%  incomum 22,4%  raro 19,7%  muitoRaro 21,1%
+ *
+ * A chance de captura e o alvo de registro continuam iguais aos do outro pack de
+ * propósito: eles são a DIFICULDADE da faixa, e ela não muda de tema. O que
+ * muda é onde cada faixa começa. */
+const RARIDADE_FAIXAS = [
+  ['comum',      460, 0.450,  8],
+  ['incomum',    490, 0.280, 12],
+  ['raro',       505, 0.140, 20],
+  ['muitoRaro',  555, 0.060, 30],
+  ['lendario', 99999, 0.015, 50],
+];
+
+/* AS BOLAS DESTE PACK, com nomes NOSSOS.
+ *
+ * O §0.3.1 exige que este pack seja jogável sem uma linha da franquia. Traduzir
+ * os nomes de lá seria trazer a franquia por outro caminho — foi o mesmo erro
+ * que eu cometi com os biomas deste pack, e que o teste pegou. */
+const BOLAS = [
+  { id: 'simples',  rotulo: 'Cápsula Simples',  mult: 1.0 },
+  { id: 'reforcada',rotulo: 'Cápsula Reforçada',mult: 1.5 },
+  { id: 'selada',   rotulo: 'Cápsula Selada',   mult: 2.2 },
+];
+
+/* ── OS ITENS E AS LINHAS EVOLUTIVAS DESTE PACK ────────────────────────────
+ *
+ * Mesma mecânica do outro pack, conteúdo NOSSO. O §0.3.1 exige que este pack
+ * seja jogável sem uma linha da franquia — copiar as pedras de lá seria trazer a
+ * franquia por outro caminho, e traduzir os nomes seria pior ainda.
+ *
+ * AS LINHAS SÃO DERIVADAS, e não escritas à mão, pelo mesmo motivo que o elenco
+ * é gerado: escrever setenta arestas de dado inventado seria setenta chances de
+ * errar em silêncio. Derivando de força crescente dentro do tipo, duas coisas
+ * saem de graça e para sempre:
+ *
+ *   · evoluir NUNCA enfraquece — a força é o critério da ordenação;
+ *   · não há ciclo — a aresta só aponta do mais fraco para o mais forte.
+ *
+ * As duas são invariantes que o teste do outro pack tem de conferir à mão. */
+const ITENS = [
+  { id:'nucleo',  rotulo:'Núcleo Vivo',   fonte:'mata' },
+  { id:'selo',    rotulo:'Selo de Maré',  fonte:'costa' },
+  { id:'brasao',  rotulo:'Brasão Fundido',fonte:'cratera' },
+];
+
+const EVOLUCOES = (() => {
+  const forca = e => e.s.reduce((a, b) => a + b, 0);
+  const arestas = [];
+  const tipos = [...new Set(DEX.map(e => e.t[0]))];
+  tipos.forEach((tipo, iTipo) => {
+    /* EMPATE DE FORÇA NÃO VIRA ARESTA. O elenco é gerado, e nele duas criaturas
+       podem ter o mesmo total; ligá-las daria uma evolução que não é ganho. Foi
+       o teste "evoluir nunca enfraquece" que pegou isto. Quem empata fica sem
+       linha, e isso também é conteúdo: nem tudo evolui. */
+    const vistos = new Set();
+    const fila = DEX.filter(e => e.t[0] === tipo)
+      .sort((a, b) => forca(a) - forca(b))
+      .filter(e => !vistos.has(forca(e)) && vistos.add(forca(e)));
+    /* trincas; sobra de uma vira criatura sem linha, que também tem de existir */
+    for (let i = 0; i + 1 < fila.length; i += 3) {
+      const [a, b, c] = fila.slice(i, i + 3);
+      arestas.push({ de: a.dex, para: b.dex, exige: { nivel: 16 } });
+      if (!c) continue;
+      const porItem = (iTipo + i) % 2 === 1;
+      arestas.push(porItem
+        ? { de: b.dex, para: c.dex, exige: { item: ITENS[(iTipo + i) % ITENS.length].id } }
+        : { de: b.dex, para: c.dex, exige: { nivel: 36 } });
+    }
+  });
+  return arestas;
+})();
+
+/* AS TRÊS INICIAIS.
+ *
+ * SEM ELAS A ABA DO IDLE NÃO ABRE, e isso não é figura de linguagem: a stamina
+ * é da criatura (bloco 1.2a), então quem não tem nenhuma não pode mandar
+ * expedição — e sem expedição não há encontro, não há captura, não há primeira
+ * criatura. O laço fecha em si mesmo.
+ *
+ * SÃO TRÊS, e a escolha é do jogador. Dar uma sorteada seria mais simples e
+ * perderia a única coisa que a primeira tela tem para oferecer: uma decisão que
+ * é dele antes de o jogo cobrar qualquer coisa.
+ *
+ * AS TRÊS TÊM DE SER PARELHAS. Uma nitidamente mais forte transforma a escolha
+ * em resposta certa, e aí ela não é escolha. */
+/* lúmenago (liga), dunaux (carga), cirronte (sopro) — as três com
+   força 395, dispersão ZERO. Mais parelhas que as do outro pack. */
+const INICIAIS = [5, 6, 7];
+
+/* ── AS FAIXAS DE NÍVEL DAS ROTAS ──────────────────────────────────────────
+ *
+ * O jogador escolhe o BIOMA e a FAIXA. Rota alta traz as formas evoluídas e
+ * drops melhores; rota baixa traz os filhotes.
+ *
+ * QUEM APARECE EM CADA UMA É DERIVADO, e não escrito aqui — sai da linha
+ * evolutiva do próprio pack (ver engine/rotas.mjs). O que mora nesta tabela é
+ * só o RECORTE: onde uma faixa começa, onde termina, e que força cabe nela.
+ *
+ * A JANELA DE FORÇA é a parte que parece arbitrária e é a mais necessária. Sem
+ * teto, um Lapras de 535 aparecia em rota de nível 2 — ele não evolui de
+ * ninguém, então as outras duas perguntas o deixam passar. Sem piso, um Rattata
+ * continuava aparecendo na rota de 50.
+ *
+ * Os números saem dos quantis do elenco, do mesmo jeito que as faixas de
+ * raridade — e por isso um pack com outra distribuição precisa dos seus (é o
+ * D-051, e ele custou uma tarde). */
+/* AS JANELAS SÃO DESTE PACK, e é o D-051 pela terceira vez.
+ *
+ * Copiar as do outro deixava CINCO das seis rotas rasas VAZIAS — a força deste
+ * elenco começa em 288 e tem mediana 490, contra 195 e 405 do outro. Rota vazia
+ * é rota morta: o jogador escolhe e não acontece nada.
+ *
+ * A lição já apareceu nas faixas de raridade e agora aqui, então ela generaliza:
+ * QUALQUER LIMIAR TIRADO DA FORÇA É POR PACK. Os níveis podem ser os mesmos —
+ * eles saem da linha evolutiva, que é estrutura. A força, não.
+ *
+ * Estes saem dos quantis deste elenco: p70/p85/p95 nos tetos, p10/p30/p55 nos
+ * pisos. Nenhuma rota fica vazia e o menor elenco é de quatro. */
+const FAIXAS = [
+  { id: 'f1', rotulo: 'Rota rasa',   nivel: [ 2,  8], piso:   0, teto:  500 },
+  { id: 'f2', rotulo: 'Rota média',  nivel: [ 9, 20], piso: 405, teto:  525 },
+  { id: 'f3', rotulo: 'Rota funda',  nivel: [21, 34], piso: 455, teto:  540 },
+  { id: 'f4', rotulo: 'Rota do fim', nivel: [35, 60], piso: 490, teto: 9999 },
+];
 
 export const originalV1 = {
   id: 'original_v1',
@@ -315,12 +576,23 @@ export const originalV1 = {
   poolReserva: 'pedra',
   tipos:    { efetividade: CHART, cores: TCOLOR, nomes: TIPO_PT },
   especies: DEX,
+  naturezas: NATUREZAS,
+  biomas:    BIOMAS,
+  faixas:    FAIXAS,
+  raridade:  RARIDADE_FAIXAS,
+  evolucoes: EVOLUCOES,
+  bolas:     BOLAS,
+  itens:     ITENS,
+  iniciais: INICIAIS,
   elenco:   DEX.map(e => e.dex),
   golpes:   MOVES,
   clima:    CLIMA,
+  climaIdle: CLIMA_IDLE,
   moeda:    MOEDA,
+  moedaPve: MOEDA_PVE,
+  material: MATERIAL,
   rotulos: ROTULOS,
-  nomeExibido, slugExterno, sprite, silhuetaDe,
+  nomeExibido, slugExterno, sprite, spriteShiny, silhuetaDe,
 };
 
 export default originalV1;

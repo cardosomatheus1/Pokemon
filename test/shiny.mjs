@@ -99,5 +99,44 @@ export function suite() {
       ok(k in SHINY_VAZIO, `o molde vazio não tem ${k}`);
   });
 
+  /* ═══ R8 · O GUARDA-ROUPA CHEGA À TELA ═════════════════════════════════
+   *
+   * As dez asserções acima cobrem as GARANTIAS: vaga por nível, desbloqueio
+   * que não gasta duas vagas, e a mais importante do bloco — desequipar mantém
+   * a conquista. O bloco R8 pedia exatamente isso, e já estava construído nesta
+   * linha do projeto.
+   *
+   * O que NENHUMA delas cobria é se aquilo chega à tela de alguém. E é o modo
+   * de falha que este trecho do trabalho encontrou três vezes seguidas:
+   *
+   *   D-028   seis classes escritas pelo JS e nenhuma no CSS
+   *   R7      cinco regras de identidade no CSS e nenhum elemento no corpo
+   *
+   * Nos dois casos a suíte estava verde e o jogador não via nada. Aqui a
+   * pergunta é feita de propósito: a grade existe no HTML, e alguém a desenha.
+   */
+  s.teste('a grade do guarda-roupa existe na tela e alguém a desenha', async () => {
+    const { readFileSync } = await import('node:fs');
+    const html = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
+    const custom = readFileSync(new URL('../app/modules/customizacao.mjs', import.meta.url), 'utf8');
+    ok(/id="pickShiny"/.test(html), 'a grade do guarda-roupa não existe no HTML');
+    ok(/id="shinyVagas"/.test(html) && /id="shinyNota"/.test(html),
+      'o contador de vagas ou a nota de regra sumiram da tela');
+    ok(/\$\('#pickShiny'\)/.test(custom), 'ninguém desenha a grade do guarda-roupa');
+    /* Os dois botões separados são o bloco inteiro: desbloquear dá os dois
+       cosméticos juntos, e equipar cada um é escolha independente. */
+    ok(/data-shiny-gif=/.test(custom) && /data-shiny-skin=/.test(custom),
+      'os dois cosméticos deixaram de ser equipáveis separadamente');
+  });
+
+  /* A promessa está ESCRITA na tela, e é ela que faz o jogador se arriscar a
+     desequipar. Se a frase sair e a garantia ficar, ninguém a usa. */
+  s.teste('a tela promete que desequipar não perde a conquista', async () => {
+    const { readFileSync } = await import('node:fs');
+    const custom = readFileSync(new URL('../app/modules/customizacao.mjs', import.meta.url), 'utf8');
+    ok(/desequipar não perde a conquista/.test(custom),
+      'a tela deixou de dizer que desequipar é seguro — a garantia existe e ninguém confia nela');
+  });
+
   return s;
 }

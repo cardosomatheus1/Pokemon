@@ -18,20 +18,65 @@
  * `lancar`, e `reconciliar` recalcula tudo pelo ledger para provar.
  */
 
-/* Os quatro buckets do §5.5. `pendente` é PC-T comprado e ainda sob hold: não
-   entra em mercado transferível enquanto não liquidar. */
-export const BUCKETS = ['transferivel', 'pendente', 'bonus', 'competitivo'];
+/* Os buckets do §5.5, mais o `comprado` do bloco 1.26. `pendente` é PC-T
+   comprado e ainda sob hold: não entra em mercado transferível enquanto não
+   liquidar. */
+export const BUCKETS = ['transferivel', 'pendente', 'bonus', 'competitivo', 'comprado'];
 
-/* ORDEM DE CONSUMO: bônus, competitivo, transferível.
+/* ── O CADEADO: `comprado` NÃO COMPRA PODER (bloco 1.26) ──────────────────
+ * O medo do dono, e ele está certo — a citação vai PARAFRASEADA porque a
+ * original nomeia a franquia, e o §0.3 não deixa isso entrar no motor:
+ *
+ *   > o cara doa não sei quanto e no primeiro dia tem dinheiro pra deixar a
+ *   > criatura boostada fortona
+ * pedra cobra presença* — é contornável: quem comprasse muito zeraria a coluna
+ * do dinheiro em todos os degraus de uma vez.
+ *
+ *     comprado com dinheiro real   APOSTA  ·  COSMÉTICO
+ *     ganho jogando                livre, inclusive PODER
+ *
+ * **O cadeado se abre GANHANDO.** Comprar dá tentativas; o poder vem do que se
+ * ganhou. É a linha do dono — *"GANHANDO, o seu LUCRO SE SOMA À CARTEIRA"* — e
+ * ela é elegante: o dinheiro entra no jogo e o progresso continua conquistado.
+ *
+ * Esta é a peça do §P5 escrita como código em vez de como intenção. Ela não
+ * proíbe comprar; proíbe comprar VANTAGEM.
+ */
+export const BUCKETS_LIVRES = ['transferivel', 'bonus', 'competitivo'];
+
+/* Para que serve cada propósito de gasto, e quais baldes ele aceita.
+ *
+ * `poder` é o único que recusa o `comprado`, e essa é a ÚNICA recusa nova. O
+ * resto continua exatamente como era — um cadeado que mudasse o comportamento
+ * de tudo seria uma reforma disfarçada de proteção. */
+export const PROPOSITOS = {
+  aposta:    BUCKETS,          /* tudo, inclusive o comprado */
+  cosmetico: BUCKETS,          /* tudo — cosmético não é poder */
+  poder:     BUCKETS_LIVRES,   /* NUNCA o comprado */
+};
+
+export const aceitaBalde = (proposito, bucket) =>
+  (PROPOSITOS[proposito] ?? BUCKETS_LIVRES).includes(bucket);
+
+/* ORDEM DE CONSUMO: bônus, comprado, competitivo, transferível.
  *
  * O §5.5 não a define, e escolher é obrigatório — sem ordem, `stake_breakdown`
- * é indeterminado. Gasta-se primeiro o que o jogador não pôs dinheiro para ter:
- * o saldo dele próprio dura mais. E como o payout preserva a origem, apostar
- * bônus devolve bônus — que é exatamente a brecha que o §5.5 fecha.
+ * é indeterminado.
+ *
+ * `bonus` continua na frente pelo motivo de sempre: é dinheiro da casa, e gastar
+ * o que o jogador não pôs dinheiro para ter faz o saldo dele durar mais.
+ *
+ * `comprado` entra LOGO DEPOIS, e isso é decisão deste bloco:
+ *
+ *   > Se o livre fosse gasto primeiro, o jogador acabaria com uma bolsa só de
+ *   > saldo restrito — e a sensação seria de estar sendo PUNIDO por ter
+ *   > comprado, que é o oposto do que se quer.
+ *
+ * Gastando o restrito antes do livre, o cadeado se dissolve com o uso.
  *
  * `pendente` fica FORA da ordem: PC-T sob hold não pode ser apostado (§5.5).
  * Registrado como lacuna L-024, porque a decisão é econômica e não tem dono. */
-export const ORDEM_CONSUMO = ['bonus', 'competitivo', 'transferivel'];
+export const ORDEM_CONSUMO = ['bonus', 'comprado', 'competitivo', 'transferivel'];
 
 /* O SALDO COM QUE UMA CONTA COMEÇA.
  *
@@ -63,7 +108,26 @@ export const TIPOS = [
   'RESCUE_GRANT',
   'BET_RESERVE', 'BET_RELEASE', 'BET_LOSS',
   'BET_PAYOUT_TRANSFERABLE', 'BET_PAYOUT_BONUS', 'BET_PAYOUT_COMPETITIVE',
+  /* O pagamento de uma aposta feita com saldo COMPRADO: a aposta volta
+     comprada, o LUCRO cai livre. Ver `liquidarGanho`. */
+  'BET_PAYOUT_PURCHASED',
   'PC_T_PURCHASE_CLEARED', 'ADMIN_ADJUSTMENT',
+  /* ── A LOJA DE COSMÉTICO (1.31) ─────────────────────────────────────────
+   *
+   * Tipo PRÓPRIO, e não `BET_LOSS` reaproveitado. A primeira forma que me
+   * ocorreu foi reusar `reservar` + `liquidarPerda`: o dinheiro sai igual e
+   * não precisaria de linha nova aqui.
+   *
+   * Ela está errada, e o erro é de AUDITORIA e não de saldo:
+   *
+   *   > Um livro que registra a compra de um traje como aposta perdida conta
+   *   > uma história falsa sobre para onde o dinheiro do jogador foi. O saldo
+   *   > bate e a explicação mente — a pior combinação possível num ledger.
+   *
+   * O §25.2 é sobre exatamente isto: o que aconteceu tem de poder ser refeito
+   * a partir do que está gravado. E a `ref` carrega a peça (`loja:familia:id`),
+   * então "o que ele comprou" também se refaz. */
+  'COSMETIC_PURCHASE',
 ];
 
 const zerado = () => Object.fromEntries(BUCKETS.map(b => [b, 0]));
@@ -149,14 +213,69 @@ export const totalReservado = w =>
 
 /* Reserva `valor` seguindo a ordem de consumo e devolve o `stake_breakdown` do
  * §5.5. O ticket nunca grava só `stake = 100`; grava de onde os 100 saíram. */
-export function reservar(w, valor, ref) {
+/* ── QUANTO CABE PARA UM PROPÓSITO ───────────────────────────────────────
+ *
+ * `poder` não enxerga o `comprado`, e por isso o total dele é MENOR que o saldo
+ * na tela. Essa diferença é o cadeado, e a tela precisa poder mostrá-la — sem
+ * esta função ela teria de refazer a conta, e duas contas do mesmo saldo é
+ * exatamente como se divergem. */
+export const disponivelPara = (w, proposito = 'aposta') =>
+  ORDEM_CONSUMO.filter(b => aceitaBalde(proposito, b))
+    .reduce((a, b) => a + (w.disponivel[b] ?? 0), 0);
+
+/* ── O QUE A LOJA DE COSMÉTICO GASTA (1.31) ─────────────────────────────
+ *
+ * Um lançamento SÓ, e não reserva-depois-liquida: a compra de um traje não tem
+ * o meio-tempo que a aposta tem. Reservar para liquidar em seguida inventaria
+ * um instante em que o dinheiro não é de ninguém, e é nesse instante que um
+ * recarregamento de página deixaria saldo preso.
+ *
+ * O propósito é `cosmetico`, que aceita TODOS os baldes — inclusive o
+ * comprado. É o outro lado do cadeado do 1.26: comprado não vira PODER, e
+ * cosmético não é poder. Trancá-lo aqui trancaria o jogador fora da única
+ * coisa que ele de fato pode comprar.
+ *
+ * A ORDEM DE CONSUMO é a mesma da aposta. Duas ordens no mesmo saldo fariam o
+ * bônus sumir por caminhos diferentes conforme a porta, e o jogador não tem
+ * como saber qual delas está certa.
+ */
+export function gastarCosmetico(w, valor, ref) {
   if (!ehInteiroPositivo(valor)) return { ok: false, motivo: 'valor inválido' };
-  if (valor > totalDisponivel(w)) return { ok: false, motivo: 'saldo insuficiente' };
+  const cabe = disponivelPara(w, 'cosmetico');
+  if (valor > cabe) return { ok: false, motivo: `faltam ${valor - cabe}` };
+
+  const deltas = { disponivel: {} };
+  let falta = valor;
+  for (const b of ORDEM_CONSUMO) {
+    if (falta <= 0) break;
+    if (!aceitaBalde('cosmetico', b)) continue;
+    const usa = Math.min(falta, w.disponivel[b] ?? 0);
+    if (usa > 0) { deltas.disponivel[b] = -usa; falta -= usa; }
+  }
+  return lancar(w, 'COSMETIC_PURCHASE', deltas, ref);
+}
+
+export function reservar(w, valor, ref, proposito = 'aposta') {
+  if (!ehInteiroPositivo(valor)) return { ok: false, motivo: 'valor inválido' };
+  /* ── A RECUSA DIZ O PORQUÊ, E NÃO SÓ "NÃO" ────────────────────────────
+   *
+   * Ter 900 na tela e ouvir "saldo insuficiente" ao gastar 500 num boost é o
+   * D-067 na porta do dinheiro — a pior forma de ensinar uma regra. A frase
+   * separa as duas causas: falta saldo, ou o saldo que existe está trancado. */
+  const cabe = disponivelPara(w, proposito);
+  if (valor > cabe) {
+    const trancado = totalDisponivel(w) - cabe;
+    return { ok: false, motivo: trancado > 0 && valor <= totalDisponivel(w)
+      ? `${trancado} do seu saldo foi COMPRADO, e comprado não vira poder — ` +
+        'ganhe apostando para liberá-lo'
+      : 'saldo insuficiente' };
+  }
 
   const composicao = {};
   let falta = valor;
   for (const b of ORDEM_CONSUMO) {
     if (falta <= 0) break;
+    if (!aceitaBalde(proposito, b)) continue;
     const usa = Math.min(falta, w.disponivel[b]);
     if (usa > 0) { composicao[b] = usa; falta -= usa; }
   }
@@ -196,11 +315,39 @@ export function liquidarGanho(w, composicao, odd, ref) {
     bonus:        'BET_PAYOUT_BONUS',
     competitivo:  'BET_PAYOUT_COMPETITIVE',
     pendente:     'BET_PAYOUT_TRANSFERABLE',
+    comprado:     'BET_PAYOUT_PURCHASED',
   };
   const lancamentos = [];
   let ganhoLiquido = 0;
   for (const [b, n] of Object.entries(composicao)) {
     const retorno = Math.floor(n * odd);
+    /* ── O CADEADO SE ABRE GANHANDO (1.26) ─────────────────────────────
+     *
+     * Palavra do dono: *"GANHANDO, o seu LUCRO SE SOMA À CARTEIRA; PERDENDO,
+     * ELE PERDE O DINHEIRO"*.
+     *
+     * A APOSTA volta ao balde de onde saiu — o `comprado` continua comprado, e
+     * quem apostou e recuperou não lavou nada. **O LUCRO cai livre.**
+     *
+     *     apostou 100 comprado a 2,5x  ->  100 volta comprado · 150 livre
+     *
+     * É a diferença entre comprar VANTAGEM e comprar TENTATIVAS. Comprar dá
+     * tentativas; o poder vem do que se ganhou — e ganhar tem risco, que é o
+     * que impede isto de virar uma casa de câmbio.
+     *
+     * O `bonus` NÃO faz isso, e a diferença é o dono do dinheiro: bônus é
+     * dinheiro da casa, e convertê-lo em livre é a brecha que o §5.5 fecha.
+     * `comprado` é dinheiro que o jogador pagou — a trava dele é sobre PODER,
+     * e não sobre saída. */
+    if (b === 'comprado' && retorno > n) {
+      const lucro = retorno - n;
+      const r = lancar(w, TIPO_POR_BUCKET[b],
+        { disponivel: { comprado: n, transferivel: lucro }, reservado: { comprado: -n } }, ref);
+      if (!r.ok) return r;
+      lancamentos.push(r.entrada);
+      ganhoLiquido += lucro;
+      continue;
+    }
     const r = lancar(w, TIPO_POR_BUCKET[b], { disponivel: { [b]: retorno }, reservado: { [b]: -n } }, ref);
     if (!r.ok) return r;
     lancamentos.push(r.entrada);

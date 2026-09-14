@@ -106,6 +106,33 @@ export function emitir(db, { nome, userId = null, roundId = null, campos = {},
   return id;
 }
 
+/* ── ANOTAR: EMITIR SEM PODER DERRUBAR A DECISÃO (R21, fecha o D-034) ──────
+ *
+ * `emitir` lança — e tem que lançar: é assim que evento sem campo obrigatório
+ * é recusado em vez de entrar pela metade.
+ *
+ * Mas quem chama nos módulos de proteção está no meio de uma DECISÃO já
+ * tomada. Uma pausa que falha porque o registro dela falhou é o pior desenho
+ * possível: o evento existe para PROVAR que a proteção funcionou, e viraria a
+ * coisa que a impede. A ordem é decidir, executar, registrar — e a terceira
+ * não pode desfazer as duas primeiras.
+ *
+ * ── POR QUE ENGOLIR AQUI NÃO ESCONDE DEFEITO ──────────────────────────────
+ *
+ * Porque a validação continua sendo cobrada, só que pelo outro lado: os testes
+ * de comportamento do `test/telemetria-ligada.mjs` exigem que o evento ESTEJA
+ * no banco com os campos certos. Um campo obrigatório faltando faz `emitir`
+ * lançar, este `catch` engole, o evento não aparece — e o teste falha dizendo
+ * "não gerou evento".
+ *
+ * O que se engole aqui é falha de INFRAESTRUTURA em produção, que é
+ * exatamente o caso em que a proteção precisa continuar valendo.
+ */
+export function anotar(db, args) {
+  try { return emitir(db, args); }
+  catch { return null; }
+}
+
 export const eventosDe = (db, { nome, desde = 0, ate = Number.MAX_SAFE_INTEGER }) =>
   db.prepare(`SELECT * FROM telemetry_events
                WHERE nome = ? AND criado_em >= ? AND criado_em <= ? ORDER BY criado_em`)

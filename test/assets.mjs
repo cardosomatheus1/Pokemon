@@ -7,13 +7,18 @@
  * errado. O teste central deste arquivo transforma essa frase em asserção:
  * todos os candidatos de um asset precisam terminar no MESMO arquivo.
  */
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { candidatos, caminhoLocal, PASTA_LOCAL } from '../app/modules/assets.mjs';
-import { PMD_BASE, PMD_ESPELHO } from '../app/modules/sprites-dados.mjs';
+import { PMD, ANIM_FILE, PMD_BASE, PMD_ESPELHO } from '../app/modules/sprites-dados.mjs';
 import { FX_BASE, FX_ESPELHO, MOVE_FX } from '../app/modules/efeitos-dados.mjs';
 import { criarSuite, ok, igual } from './harness.mjs';
 
-const RAIZ = new URL('..', import.meta.url).pathname;
+/* COM a barra no fim: aqui a RAIZ e usada por CONCATENACAO
+   (`RAIZ + 'engine'`), e `join` nunca deixa separador — o `.pathname`
+   de antes deixava. Sem ela o caminho vira `...pa4engine`, que nao existe. */
+const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..') + '/';
 
 export function suite() {
   const s = criarSuite('assets');
@@ -96,6 +101,55 @@ export function suite() {
       `${faltando.length} folha(s) de efeito fora da cópia local, a começar por ` +
       `${faltando[0]}. Foi o portão de egresso fechado que revelou que elas existiam: ` +
       `70 requisições saíam para fora com todas as folhas de SPRITE já em disco.`);
+  });
+
+  /* ── E A MESMA COBRANÇA PARA AS FOLHAS DE COMBATE (D-090) ──────────────
+   *
+   * O teste acima existe para as folhas de EFEITO desde o F0.12. O de CRIATURA
+   * nunca foi escrito — e foi exatamente por ali que o buraco passou.
+   *
+   *   > Um portão escrito para uma família de arte não cobre a família ao
+   *   > lado. Ele só faz parecer que cobre.
+   *
+   * O que o buraco custou: o baixador pedia `Attack` e `Hurt` só para as 76
+   * espécies da ARENA, e o Avanço põe na tela o elenco do ESTÁGIO, que sai das
+   * 146. Setenta espécies entravam na wave sem a folha do golpe em disco, e o
+   * bicho SUMIA no instante em que batia — porque a escolha da folha consultava
+   * a TABELA, que tem as 146, e não o disco, que tinha 76.
+   *
+   * Três dias de "as sprites continuam bugadas" saíram daqui. */
+  s.teste('a cópia local cobre as folhas de COMBATE de quem entra numa wave', async () => {
+    if (!existsSync(RAIZ + PASTA_LOCAL)) return;   // sem assets, nada a cobrar
+    const pack = (await import('../content/pokemon_kanto_v1.mjs')).default;
+    const faltando = [];
+    for (const esp of pack.especies) {
+      if (!PMD[esp.dex]) continue;
+      /* AS TRÊS QUE A CENA TROCA. `Idle` fica de fora porque a cena do Avanço
+         não a pede: quem está parado usa o quadro 0 da caminhada. */
+      for (const k of ['w', 'a', 'h']) {
+        if (!PMD[esp.dex][k]) continue;
+        const arq = String(esp.dex).padStart(4, '0') + '/' + ANIM_FILE[k] + '-Anim.png';
+        if (!existsSync(RAIZ + caminhoLocal(PMD_BASE + arq))) faltando.push(arq);
+      }
+    }
+    ok(faltando.length === 0,
+      `${faltando.length} folha(s) de combate fora da cópia local, a começar por ` +
+      `${faltando[0]}. Quem entra numa wave sem a folha do golpe SOME no instante ` +
+      `em que bate — a placa continua, e a criatura vira um buraco. Rode ` +
+      `npm run assets; se ainda faltar, a lista de \`alvos()\` não alcança o ` +
+      `elenco todo (era o defeito D-090: ela cobria só o elenco da ARENA).`);
+  });
+
+  /* E a lista do baixador tem de PEDIR o que o teste acima cobra. Sem isto, o
+     teste de disco passaria para sempre depois de um `npm run assets` feito à
+     mão — e voltaria a falhar sozinho na máquina de quem clona. */
+  s.teste('o baixador alcança o elenco INTEIRO, e não o da Arena', () => {
+    const t = readFileSync(new URL('../tools/baixar-assets.mjs', import.meta.url), 'utf8');
+    const linha = /const elenco = ([^;]+);/.exec(t)?.[1] ?? '';
+    ok(!/pack\.elenco/.test(linha),
+      `a lista de folhas do baixador sai de \`${linha}\` — o elenco da ARENA, ` +
+      `que tem 76 das 146. O Avanço põe na tela o elenco do ESTÁGIO, que sai ` +
+      `dos biomas e não conhece essa lista. Foi o D-090.`);
   });
 
   return s;

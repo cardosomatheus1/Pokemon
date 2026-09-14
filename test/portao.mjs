@@ -16,6 +16,8 @@
  * nenhum, porque dá a impressão de que as âncoras foram conferidas. O defeito
  * S79 planta exatamente isso.
  */
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { conferirAncoras, filtrarTocados } from './ancoras.mjs';
 
@@ -118,11 +120,26 @@ export function suite() {
    * 0,8 s e não sobe navegador nenhum. */
   const rodarFilho = async args => {
     const { execFile } = await import('node:child_process');
-    const raiz = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+    const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
+    /* O FILHO NÃO HERDA A MARCA DE FECHAMENTO (D-029).
+     *
+     * `{ ...process.env }` trazia o `EXIGE_VISUAL=1` de `npm run portoes` e de
+     * `npm run repetir`, e o `run.mjs` recusa `--so` sob essa marca. O filho
+     * morria antes de rodar, e os dois testes que exercitam o recorte falhavam
+     * — sempre os mesmos dois, nas duas execuções do `repetir`.
+     *
+     * `delete` e não `EXIGE_VISUAL: ''`: a guarda compara com `'1'`, então os
+     * dois funcionariam, mas variável presente e vazia é um estado a mais para
+     * alguém interpretar depois. Ausente é ausente.
+     *
+     * Isto NÃO afrouxa a recusa: quem a testa é o teste logo abaixo, que passa
+     * a marca de propósito. A regra inteira é essa — a recusa é para quem quer
+     * fechar bloco, não para quem está testando a recusa. */
+    const env = { ...process.env, SEM_VISUAL: '1' };
+    delete env.EXIGE_VISUAL;
     return new Promise(res => {
       execFile('node', ['test/run.mjs', ...args],
-        { cwd: raiz, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024,
-          env: { ...process.env, SEM_VISUAL: '1' } },
+        { cwd: raiz, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024, env },
         (err, out, errOut) => res({ code: err ? (err.code ?? 1) : 0, saida: out + errOut }));
     });
   };
@@ -144,9 +161,49 @@ export function suite() {
       `pior que portão ausente — mesma lição do sabotagem:tocados.`);
   });
 
+  /* ═══ R12 · OS TESTES DO RECORTE SOBREVIVEM AO PORTÃO DE FECHAMENTO ═════
+   *
+   * O `D-029`, e ele é sutil porque as duas peças estão certas sozinhas:
+   *
+   *   · `npm run portoes` e `npm run repetir` rodam com `EXIGE_VISUAL=1`, e o
+   *     `run.mjs` recusa `--so` sob essa marca. Certo: recorte parcial não
+   *     fecha bloco, e é o que o `S109` guarda;
+   *   · os dois testes acima exercitam o recorte disparando processos-filho.
+   *     Certo também: só um processo de verdade prova o que o recorte faz.
+   *
+   * O erro está na costura. O filho herdava `{ ...process.env }`, e com ele a
+   * marca de fechamento: era recusado antes de rodar, e os dois testes
+   * falhavam. Resultado medido: `npm run repetir` VERMELHO 2/793 nas duas
+   * execuções — sempre os mesmos dois.
+   *
+   * **O portão que a metodologia manda usar para fechar bloco não ficava verde**,
+   * e portão que nunca fica verde deixa de ser consultado.
+   *
+   * O teste ABAIXO reproduz exatamente isso: liga a marca no processo pai e
+   * cobra que o filho continue funcionando. O teste do parágrafo seguinte —
+   * que o portão RECUSA o recorte — continua valendo e passa a marca de
+   * propósito. Os dois juntos dizem a regra inteira: **a recusa é para quem
+   * quer fechar bloco, não para quem está testando a recusa.** */
+  s.teste('os testes do recorte sobrevivem ao portão de fechamento', async () => {
+    const antes = process.env.EXIGE_VISUAL;
+    process.env.EXIGE_VISUAL = '1';
+    try {
+      const r = await rodarFilho(['--so=carteira']);
+      ok(r.code === 0,
+        `com a marca de fechamento no pai, o filho saiu ${r.code} — ele herdou a ` +
+        `recusa e os dois testes do recorte quebram dentro de \`npm run portoes\`. ` +
+        `Ver D-029.\n${r.saida.slice(-300)}`);
+      ok(/PARCIAL/.test(r.saida),
+        'o filho rodou mas não se anunciou parcial — a marca alterou o que ele faz');
+    } finally {
+      if (antes === undefined) delete process.env.EXIGE_VISUAL;
+      else process.env.EXIGE_VISUAL = antes;
+    }
+  });
+
   s.teste('o portão de fechamento RECUSA o recorte', async () => {
     const { execFile } = await import('node:child_process');
-    const raiz = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+    const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
     const r = await new Promise(res => {
       execFile('node', ['test/run.mjs', '--so=carteira'],
         { cwd: raiz, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024,
@@ -189,7 +246,7 @@ export function suite() {
        Com a bandeira sabotada no código, o teste continuava achando as duas
        palavras no texto que as explicava, e passava. O S125 escapou por isso.
        Teste que lê o comentário testa a intenção, não a peça. */
-    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, ' ')
       .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
     ok(/execFileSync\('git', \['ls-files'/.test(txt),
@@ -201,6 +258,54 @@ export function suite() {
       'caso que a derivação existe para cobrir.');
     ok(!/for \(const dir of \[['"]/.test(txt),
       'voltou a existir uma lista de pastas escrita à mão em sabotagem.mjs');
+  });
+
+  /* ── AS CAIXAS SOMEM MESMO QUANDO O PORTÃO NÃO TERMINA (D-036) ───────────
+   *
+   * A remoção vivia numa linha no fim do caminho feliz. Quando o portão aborta
+   * — e ele aborta — a execução saía antes, e as caixas ficavam. Medido em
+   * 29/08: **120 caixas órfãs, 3,25 GB**.
+   *
+   * O custo não é o disco: o portão que está rodando disputa I/O com os restos
+   * dos que não terminaram, e a execução do R23 levou 31 min contra os 10 a 15
+   * normais com 75 cópias no mesmo temporário. Aí os defeitos se alimentam —
+   * mais lento dá mais janela para a instabilidade que fez abortar.
+   *
+   * COM OS COMENTÁRIOS REMOVIDOS, pela lição do `S125` logo acima: o texto que
+   * EXPLICA a limpeza continuaria casando com a busca depois de alguém apagar a
+   * limpeza. Teste que lê o comentário testa a intenção, não a peça.
+   *
+   * A REGRA em si mora em `test/caixas.mjs` e tem oito testes próprios. O que
+   * se mede aqui é o GANCHO — que ela é de fato chamada, e com a lista certa.
+   * Ver a `L-056` para o que continua sem teste de ponta a ponta. */
+  s.teste('a limpeza das caixas está pendurada na SAÍDA, e não no fim do caminho feliz', async () => {
+    const { readFileSync } = await import('node:fs');
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+
+    ok(/process\.on\(\s*['"]exit['"]\s*,\s*limpar\s*\)/.test(txt),
+      'o `process.on("exit")` que remove as caixas sumiu. Sem ele a limpeza volta ' +
+      'a acontecer só quando o portão TERMINA, e todo aborto deixa N+1 cópias do ' +
+      'repositório no temporário — foram 120 caixas e 3,25 GB antes do D-036.');
+
+    ok(/SIGINT|SIGTERM/.test(txt),
+      'o portão deixou de limpar quando alguém o interrompe. Ctrl+c no meio de ' +
+      'um Q2 de dez minutos é a coisa mais comum que acontece com ele.');
+
+    /* A CAIXA_BASE É O VAZAMENTO DO CAMINHO FELIZ. Ela sai de `CAIXAS` num
+       `pop()`, então quem limpasse só a lista deixaria uma caixa por execução
+       BEM-SUCEDIDA — que é como se chega a 120 sem ninguém notar. */
+    const chamada = txt.match(/const limpar\s*=[^\n]*/)?.[0] ?? '';
+    ok(/CAIXA_BASE/.test(chamada),
+      `o limpador não recebe a CAIXA_BASE. Ela sai de \`CAIXAS\` num \`pop()\`, ` +
+      `então some do alcance de quem limpa só a lista — e vaza uma caixa por ` +
+      `execução bem-sucedida, calada. Linha atual: "${chamada.trim()}"`);
+
+    ok(/limparOrfas\(\s*tmpdir\(\)\s*\)/.test(txt),
+      'o portão deixou de limpar as órfãs de execuções anteriores na entrada. ' +
+      'Consertar o vazamento não recupera as que já existem, e são elas que ' +
+      'ocupam o disco hoje.');
   });
 
   /* ── O ÍNDICE DE CAPTURA SÓ PODE ACELERAR ────────────────────────────────
@@ -216,7 +321,7 @@ export function suite() {
    * convenção, é uma propriedade do código. */
   s.teste('o atalho do índice não tem como produzir PASSOU nem VERDE', async () => {
     const { readFileSync } = await import('node:fs');
-    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, ' ')
       .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
 
@@ -249,7 +354,7 @@ export function suite() {
 
   s.teste('entrada de índice inválida cai no caminho completo, e nunca some', async () => {
     const { readFileSync } = await import('node:fs');
-    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, ' ')
       .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
     const fn = txt.match(/function entradaUsavel\(id\) \{[\s\S]*?\n\}/);
@@ -277,7 +382,7 @@ export function suite() {
    * verdade é "ninguém olhou naquela largura". */
   s.teste('a passada estreita do navegador nunca decide sozinha um PASSOU', async () => {
     const { readFileSync } = await import('node:fs');
-    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, ' ')
       .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
     const bloco = txt.match(/if \(!comG\.vermelha\) \{[\s\S]*?\n    \}/);
@@ -321,7 +426,7 @@ export function suite() {
    * `rodar` direto, sem passar pela validação. */
   s.teste('nenhum julgamento roda numa configuração sem base validada', async () => {
     const { readFileSync } = await import('node:fs');
-    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
 
     const fn = txt.match(/async function julgar\([\s\S]*?\n\}/);
@@ -350,7 +455,7 @@ export function suite() {
 
   s.teste('quem julga a linha de base gravada conta as quatro larguras', async () => {
     const { readFileSync } = await import('node:fs');
-    const txt = readFileSync(new URL('./visual.mjs', import.meta.url).pathname, 'utf8')
+    const txt = readFileSync(new URL('./visual.mjs', import.meta.url), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
 
     const bloco = txt.match(/a linha de base cobre as telas e larguras declaradas[\s\S]*?\n  \}\);/);
@@ -373,7 +478,7 @@ export function suite() {
     const { readFileSync } = await import('node:fs');
     /* `npm test` e `npm run portoes` não podem definir a variável: o portão de
        fechamento tem que olhar as quatro larguras sempre. */
-    const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url).pathname, 'utf8'));
+    const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
     for (const [nome, cmd] of Object.entries(pkg.scripts || {}))
       ok(!/SABOTAGEM_ESTREITA/.test(cmd),
         `o script \`${nome}\` define SABOTAGEM_ESTREITA. Ela é da sabotagem e de ` +
@@ -397,7 +502,7 @@ export function suite() {
    *   · o arnês mudar sem invalidar nada. */
   s.teste('o cache guarda apenas defeitos PEGOS', async () => {
     const { readFileSync } = await import('node:fs');
-    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
     const bloco = txt.match(/for \(const r of res\) \{[\s\S]*?guardados\[r\.id\][^\n]*\n/);
     ok(bloco, 'a gravação de vereditos sumiu — âncora perdida');
@@ -409,7 +514,7 @@ export function suite() {
 
   s.teste('a chave do cache amarra o fecho da suíte que pegou', async () => {
     const { readFileSync } = await import('node:fs');
-    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
     const fn = txt.match(/function chaveDe\(d, captor\) \{[\s\S]*?\n\}/);
     ok(fn, 'a função `chaveDe` sumiu — âncora perdida');
@@ -457,7 +562,7 @@ export function suite() {
 
   s.teste('as saídas do portão não entram no que ele mede', async () => {
     const { readFileSync } = await import('node:fs');
-    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
     ok(/SAIDAS_DO_PORTAO\.has\(f\)\) continue/.test(txt),
       'o mapa de digitais voltou a incluir as saídas do próprio portão. ' +
@@ -683,7 +788,7 @@ export function suite() {
 
   s.teste('só a execução COMPLETA regrava o índice', async () => {
     const { readFileSync } = await import('node:fs');
-    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url).pathname, 'utf8')
+    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, ' ')
       .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
     const grava = txt.indexOf('writeFileSync(CAMINHO_INDICE');
@@ -712,7 +817,7 @@ export function suite() {
    * runner como processo filho de propósito. */
   s.teste('as duas listas de suítes de navegador fecham', async () => {
     const { readFileSync } = await import('node:fs');
-    const ler = f => readFileSync(new URL(f, import.meta.url).pathname, 'utf8');
+    const ler = f => readFileSync(new URL(f, import.meta.url), 'utf8');
     const doRunner = ler('./run.mjs').match(/const COM_NAVEGADOR = \[([^\]]+)\]/);
     const daSabotagem = ler('./sabotagem.mjs').match(/const SUITES_NAVEGADOR = '([^']+)'/);
     ok(doRunner, 'run.mjs sem a lista COM_NAVEGADOR — o teste perdeu a âncora');
@@ -893,7 +998,7 @@ export function suite() {
   s.teste('a lista real de defeitos não tem âncora perdida, ambígua ou inócua', async () => {
     const { DEFEITOS } = await import('./defeitos-plantados.mjs');
     const { readFileSync } = await import('node:fs');
-    const raiz = new URL('../', import.meta.url).pathname;
+    const raiz = join(dirname(fileURLToPath(import.meta.url)), '..') + '/';
     const probs = conferirAncoras(DEFEITOS, f => readFileSync(raiz + f, 'utf8'));
     ok(probs.length === 0,
       `${probs.length} defeito(s) plantado(s) sem valor:\n      ` +

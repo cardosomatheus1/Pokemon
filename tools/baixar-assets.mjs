@@ -40,15 +40,51 @@ const FONTE_CSS = 'https://fonts.googleapis.com/css2?family=Press+Start+2P&famil
 /* Todo endereço que o jogo pode pedir, com o espelho de cada um. */
 function alvos() {
   const lista = [];
-  const elenco = pack.especies.filter(p => pack.elenco.includes(p.dex));
+  /* ── QUEM PRECISA DAS FOLHAS DE COMBATE — TODO O ELENCO, e não o da ARENA
+   *
+   * Aqui morava `pack.especies.filter(p => pack.elenco.includes(p.dex))`: as
+   * 76 espécies que lutam na Arena, de 146. Estava certo enquanto a Arena era
+   * o único lugar que trocava de folha.
+   *
+   * O AVANÇO chegou e passou a pôr na tela o elenco do ESTÁGIO, que sai dos
+   * BIOMAS — e bioma não conhece essa lista. Setenta espécies entravam na wave
+   * sem `Attack-Anim.png` nem `Hurt-Anim.png` em disco, e o bicho SUMIA no
+   * instante exato em que batia ou apanhava. Era o que o dono via.
+   *
+   *   > Uma lista escrita para um consumidor não fica errada quando chega o
+   *   > segundo: ela fica CURTA, e curta não avisa.
+   *
+   * E o baixador não reclamava: ele conferia 1423 arquivos, tinha os 1423, e
+   * dizia `falhou: 0`. Um relatório honesto sobre a pergunta errada.
+   *
+   * As folhas existem na origem — medido em 10/09/2026, HTTP 200 nas três que
+   * faltavam e que eu conferi. Nunca foi limite da arte: era o alcance da
+   * lista. */
+  const elenco = pack.especies;
   for (const esp of pack.especies) {
     lista.push({ url: pack.sprite(esp), espelho: null });
+    /* A VARIANTE SHINY DO RETRATO ANIMADO (R13). O `shiny-dados.mjs` chama o
+       cosmético de "o retrato animado" desde que nasceu; sem esta linha, quem
+       equipasse a skin com a rede desligada veria o retrato sumir. Mesma razão
+       da folha shiny da arena, algumas linhas abaixo. */
+    lista.push({ url: pack.spriteShiny(esp), espelho: null });
     /* retrato do dex, usado na customização e no pódio */
     lista.push({ url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${esp.dex}.png`,
                  espelho: `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${esp.dex}.png` });
     /* variante shiny do retrato — mesmo repositório, subpasta `shiny/` */
     lista.push({ url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${esp.dex}.png`,
                  espelho: `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/shiny/${esp.dex}.png` });
+    /* A ARTE DE GBA, para o mundo do idle (1.5c).
+     *
+     * O retrato acima é o sprite MODERNO — arte lisa de 2019. Na Arena está
+     * certo; no mundo do idle, ao lado de um outfit em pixel de GBA, ele
+     * denuncia a colagem. Esta é a arte dos cartuchos de FireRed/LeafGreen, que
+     * é a mesma referência que o dono mandou usar para a distribuição do idle.
+     * Mesmo repositório, subpasta de versão — resgate do mesmo desenho, não
+     * substituição por outra fonte. */
+    const gba = `versions/generation-iii/firered-leafgreen/${esp.dex}.png`;
+    lista.push({ url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${gba}`,
+                 espelho: `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${gba}` });
   }
   /* AVATARES DE TREINADOR (V1.15). Dezesseis arquivos, e eles já eram pedidos
      antes — pela topbar e pela tela de customização. O portão de egresso
@@ -105,7 +141,22 @@ const lista = alvos();
 /* A fonte tem duas etapas: baixar o CSS, ler os endereços de .woff2 de dentro
    dele, reescrever o CSS para apontar para as cópias locais. */
 async function baixarFonte() {
-  const destinoCss = join(RAIZ, caminhoLocal(FONTE_CSS));
+  /*  NO FIM, e não é detalhe (D-037): o espelho copia o caminho da URL,
+     e `fonts.googleapis.com/css2?...` não tem extensão. Servida sem extensão, a
+     folha sai como `application/octet-stream` — e o navegador RECUSA folha de
+     estilo com MIME que não seja CSS. O tema inteiro caía para Segoe UI sem
+     nada quebrar e sem nada avisar.
+     O espelho já adapta o nome do host (pontos viram sublinhados); acrescentar
+     a extensão é a mesma adaptação, pelo mesmo motivo. */
+  /* A EXTENSÃO NO FIM, E ELA NÃO É DETALHE — ver D-037.
+     O espelho copia o caminho da URL, e `fonts.googleapis.com/css2?family=...`
+     não tem extensão. Servida sem extensão, a folha sai como
+     `application/octet-stream`, e o navegador RECUSA folha de estilo com MIME
+     que não seja CSS. O tema inteiro caía para Segoe UI sem nada quebrar e sem
+     nada avisar — por três blocos de letrado seguidos.
+     O espelho já adapta o nome do host (pontos viram sublinhados); acrescentar
+     a extensão é a mesma adaptação, pelo mesmo motivo. */
+  const destinoCss = join(RAIZ, caminhoLocal(FONTE_CSS)) + '.css';
   try {
     const r = await fetch(FONTE_CSS, { headers: { 'User-Agent': 'Mozilla/5.0' } });
     if (!r.ok) return 'falhou';

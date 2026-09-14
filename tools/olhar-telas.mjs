@@ -26,13 +26,17 @@
  *
  * Dependência: `playwright-core`, o mesmo do portão Q5. Ver tools/README.md.
  */
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, mkdirSync } from 'node:fs';
-import { extname, join, sep } from 'node:path';
+import { dirname, extname, join, sep } from 'node:path';
 
-const RAIZ_REPO = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
-const PW = '/tmp/pw/node_modules/playwright-core/index.mjs';
-const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const RAIZ_REPO = join(dirname(fileURLToPath(import.meta.url)), '..');
+/* Mesma correção do R0 em `test/visual.mjs` (D-019): o playwright mora fora do
+   repositório e o caminho não é o mesmo em toda máquina. O padrão POSIX fica
+   como estava; as variáveis existem para quem não o tem ali. */
+const PW = process.env.PW_MODULO || '/tmp/pw/node_modules/playwright-core/index.mjs';
+const CHROME = process.env.PW_CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
 const arg = (nome, padrao) => {
   const i = process.argv.indexOf(nome);
@@ -60,7 +64,8 @@ const srv = await new Promise(res => {
   s.listen(0, '127.0.0.1', () => res({ s, porta: s.address().port }));
 });
 
-const { chromium } = await import(PW);
+/* `pathToFileURL`: o Windows recusa `import()` de caminho absoluto por esquema. */
+const { chromium } = await import(pathToFileURL(PW).href);
 const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 const erros = [];
 const avisos = [];
@@ -142,8 +147,147 @@ for (const [nome, w, h] of [['arena-1920',1920,1000], ['arena-1440',1440,900],
                             ['arena-1100',1100,900], ['arena-420',420,900]])
   await tela(nome, w, h);
 
+/* A TELA DE INÍCIO. É onde a marca aparece grande e onde alguém chega primeiro,
+ * e não era capturada — o roteiro ia direto para a arena. O R7 devolveu o
+ * letrado e a arte de fundo a ela, e sem esta captura não haveria como OLHAR o
+ * que o bloco fez. */
+const noInicio = async pg => {
+  await pg.$eval('.nav[data-view="viewHome"]', el => el.click()).catch(() => {});
+  await pg.waitForTimeout(500);
+};
+await tela('inicio', 1440, 900, noInicio);
+await tela('inicio-420', 420, 900, noInicio);
+
 await tela('luta', 1440, 900, emLuta);
 await tela('luta-larga', 1920, 1000, emLuta);
+
+/* ── AS DUAS TELAS QUE MAIS SE OLHA, E QUE NÃO ERAM CAPTURADAS (1.22) ──────
+ *
+ * A esteira nasceu para a arena e ficou nela. Mas o produto mudou de forma:
+ *
+ *     a ARENA        é atravessada — aposta e sai
+ *     as ROTAS       ficam abertas POR HORAS, ao lado de um filme. É a regra
+ *                    permanente do `CLAUDE.md`: "o cenário do idle nunca está
+ *                    pronto"
+ *     a POKÉDEX      é a tela de 146 linhas onde um erro de leitura se repete
+ *                    146 vezes
+ *
+ * Nenhuma das duas tinha captura. O D-074 — a aba de Rotas em branco, achada
+ * PELO DONO jogando — passou por 1724 testes verdes, e a segunda metade do Q5
+ * não tinha como pegá-lo porque não havia imagem para olhar.
+ *
+ * O SAVE É PLANTADO, e não sorteado: as duas telas só mostram o que elas têm
+ * para mostrar quando há criatura, expedição e registro. Uma captura de conta
+ * vazia sempre parece certa — foi o que escondeu o D-028 na arena, e seria o
+ * que esconderia o D-075 aqui, que é a linha `007 ? ???` com o selo de
+ * capturada ao lado.
+ *
+ * E as duas criaturas plantadas não são quaisquer duas:
+ *
+ *     dex 7   INICIAL, que nunca passou por encontro  -> o caso do D-075
+ *     dex 37  evolui por ITEM que falta na bolsa      -> o caso do D-074
+ */
+const COM_SAVE = pg => pg.addInitScript(() => {
+  try {
+    const agora = Date.now();
+    localStorage.setItem('ar_idle', JSON.stringify({
+      v: 1,
+      criaturas: [
+        { id: 'olhar-7',  dex: 7,  nivel: 12, xp: 40, vinculo: 6, foco: null,
+          iv: [20,20,20,22,29,22], natureza: 'Bold', origem: 'inicial',
+          stamina: 100, staminaEm: agora, criadaEm: agora },
+        { id: 'olhar-37', dex: 37, nivel: 8,  xp: 10, vinculo: 2, foco: null,
+          iv: [21,28,11,25,3,5],   natureza: 'Careful', origem: 'captura',
+          stamina: 70,  staminaEm: agora, criadaEm: agora },
+      ],
+      /* UMA EXPEDIÇÃO PRONTA E NÃO COLHIDA — o estado exato do relato do dono:
+         "estava pra coletar recompensa[,] atualizei e ficou assim". */
+      expedicoes: [{ id: 'olhar-x1', pack: 'pokemon_kanto_v1', bioma: 'floresta',
+        perfil: 'batida', equipe: ['olhar-7'], custo: 20,
+        iniciadaEm: agora - 3600000, terminaEm: agora - 60000 }],
+      bolsa: { poke: 4, great: 1, essencia: 13, pokecoin: 1356 },
+      registro: { 11: 3, 48: 1 },
+    }));
+  } catch { /* modo privado */ }
+});
+
+/* ── A ABA PELO `data-view`, E O PORQUÊ ESTÁ NA PRIMEIRA TENTATIVA ────────
+ *
+ * A primeira versão procurava o botão pelo TEXTO. Ela capturou a **arena**
+ * cinco vezes seguidas, com nome de arquivo `rotas-1440.png`, e eu só descobri
+ * porque abri a imagem.
+ *
+ *   > **Uma captura que abre a tela errada é pior que captura nenhuma.** Ela
+ *   > chega ao relatório com o nome certo, e quem a lê a toma como prova.
+ *
+ * Duas coisas conspiraram, e as duas valem registro:
+ *
+ *     `$$eval` virou `$eval`   o patch passou por `String.replace`, e ali `$$`
+ *                              significa UM cifrão literal. `$eval` entrega UM
+ *                              elemento onde o código esperava uma lista, e o
+ *                              `els.find` estourou.
+ *     `.catch(() => {})`       engoliu o estouro. O roteiro seguiu, tirou a
+ *                              foto da tela que estava aberta, e não disse nada.
+ *
+ * Agora o clique é pelo `data-view` — que é como o resto desta ferramenta já
+ * fazia — e o `waitForFunction` transforma "não abriu" num AVISO em vez de numa
+ * foto errada. */
+const naVista = id => async pg => {
+  await pg.$eval(`.nav[data-view="${id}"]`, el => el.click())
+    .catch(() => avisos.push(`${id}: o botão da aba não existe`));
+  await pg.waitForFunction(v => {
+    const el = document.getElementById(v);
+    return el && getComputedStyle(el).display !== 'none';
+  }, id, { timeout: 8000 })
+    .catch(() => avisos.push(`${id}: A VISTA NÃO ABRIU — esta captura é de outra tela`));
+  await pg.waitForTimeout(900);
+};
+
+for (const [nome, w, h] of [['rotas-1440',1440,900], ['rotas-1100',1100,900],
+                            ['rotas-420',420,900]])
+  await tela(nome, w, h, naVista('viewIdle'), COM_SAVE);
+
+for (const [nome, w, h] of [['pokedex-1440',1440,900], ['pokedex-420',420,900]])
+  await tela(nome, w, h, naVista('viewPokedex'), COM_SAVE);
+
+/* A LUTA COM APOSTA VIVA, e ela existe por um defeito que passou por aqui.
+ *
+ * As telas `luta` acima assistem de fora: o roteiro só aperta "iniciar". O
+ * caminho COM aposta desenha outra coisa na zona de ação — a vitrine do
+ * jogador vira o painel do lutador dele, com vida, colocação e retorno — e
+ * NUNCA foi capturado. Foi ali que o D-028 se escondeu: o cartão `SEU LUTADOR`
+ * usava seis classes que não existiam na folha de estilo, e a captura de fora
+ * caía no ramo "você ficou de fora desta rodada", que é texto simples e parece
+ * certo.
+ *
+ * Não é um caso de borda: é o que o jogador que apostou vê o tempo inteiro. */
+/* A CONTAGEM COM APOSTA VIVA. Foi o caso relatado pelo dono do projeto — "com
+ * lutador escolhido, a contagem 3, 2, 1 aparece no canto inferior direito,
+ * pequena demais para ler; sem lutador escolhido aparece no centro" —, e ele
+ * durou porque as duas telas de contagem que existiam eram SEM aposta. A
+ * diferença entre os dois casos é uma classe de CSS que não era removida. */
+await tela('contagem-apostado', 1440, 900, async pg => {
+  await pg.evaluate(async () => {
+    const banco = await import('/app/modules/banco.mjs');
+    banco.creditarCompra(20000, 'olhar');
+    document.querySelector('.pick')?.click();
+  });
+  await pg.waitForTimeout(300);
+  await pg.$eval('#btnStart', el => el.click()).catch(() => {});
+  await pg.waitForFunction(() => !!document.querySelector('#count'),
+    { timeout: 20000, polling: 100 }).catch(() => avisos.push('a contagem não apareceu'));
+  await pg.waitForTimeout(250);
+});
+
+await tela('luta-apostado', 1440, 900, async pg => {
+  await pg.evaluate(async () => {
+    const banco = await import('/app/modules/banco.mjs');
+    banco.creditarCompra(20000, 'olhar');
+    document.querySelector('.pick')?.click();
+  });
+  await pg.waitForTimeout(400);
+  await emLuta(pg);
+});
 
 await tela('aposta-feita', 1440, 900, async pg => {
   await pg.evaluate(async () => {
@@ -259,6 +403,35 @@ await tela('resultado-b', 1440, 900, resultado({}, 'resultado-b'));
 await tela('resultado-devolvido', 1440, 1500, resultado({ odd: 1.0 }, 'resultado-devolvido'), 'favoritoVence');
 await tela('resultado-devolvido-420', 420, 1500, resultado({ odd: 1.0 }, 'resultado-devolvido-420'), 'favoritoVence');
 
+/* O GUARDA-ROUPA SHINY. A aba existe, funciona e nunca foi FOTOGRAFADA — as
+ * capturas `shiny-sim`/`shiny-nao` mostram a arena COM e SEM as skins, que é
+ * outra pergunta. Este bloco do projeto vem achando o mesmo modo de falha três
+ * vezes seguidas (D-028, e a identidade visual inteira do R7): coisa que
+ * existe, passa na suíte e não chega à tela de ninguém. Uma aba que ninguém
+ * olhou é candidata natural.
+ * O perfil recebe XP para ter vagas e um desbloqueio já feito, para a captura
+ * mostrar os DOIS estados de linha da grade: o que se pode desbloquear e o que
+ * já é seu, com os botões de equipar. */
+await tela('guarda-roupa', 1100, 1500, async pg => {
+  await pg.evaluate(async () => {
+    const { S } = await import('/app/modules/estado.mjs');
+    const { saveProfile } = await import('/app/modules/perfil.mjs');
+    const sh = await import('/app/modules/shiny-dados.mjs');
+    S.profile.xp = 40000;
+    sh.desbloquear(S.profile, 6, 99); sh.alternar(S.profile, 'skin', 6);
+    saveProfile(S.profile);
+    (await import('/app/modules/customizacao.mjs')).renderProfile();
+    document.querySelector('#profileModal')?.classList.add('show');
+    document.querySelector('[data-pane="paneCustom"]')?.click();
+  });
+  await pg.waitForTimeout(600);
+  /* A grade shiny fica no fim do painel de customização: sem rolar até ela, a
+     captura mostra os avatares e nada do guarda-roupa. */
+  await pg.evaluate(() => document.querySelector('#pickShiny')
+    ?.scrollIntoView({ block: 'center' }));
+  await pg.waitForTimeout(500);
+});
+
 await tela('perfil', 1100, 1500, async pg => {
   await pg.evaluate(async () => {
     const { S } = await import('/app/modules/estado.mjs');
@@ -289,8 +462,25 @@ for (const [nome, w, h] of [['protecao', 1440, 1200], ['protecao-420', 420, 1200
     await pg.waitForTimeout(1200);
   });
 
-await tela('adm', 1440, 1400, async pg => {
+/* O PAINEL DE ADM, EM DUAS TELAS DESDE O R9.
+ *
+ * `adm-recusa` é o que QUALQUER UM vê: esta caixa serve arquivos estáticos e
+ * não tem servidor, então o painel recusa e diz por quê. É a garantia do bloco
+ * fotografada — se um dia aparecer painel aqui, o caminho local voltou.
+ *
+ * `adm` é o painel DESENHADO, para continuar dando para ler o que ele mostra.
+ * Ele é chamado pelo `admRender`, que só desenha: abrir exige o servidor. */
+await tela('adm-recusa', 1440, 900, async pg => {
   await pg.evaluate(async () => (await import('/app/modules/adm.mjs')).admAbrir());
+  await pg.waitForTimeout(700);
+});
+
+await tela('adm', 1440, 1400, async pg => {
+  await pg.evaluate(async () => {
+    const adm = await import('/app/modules/adm.mjs');
+    adm.admRender();
+    (await import('/app/modules/navegacao.mjs')).goView('viewAdm');
+  });
   await pg.waitForTimeout(800);
 });
 

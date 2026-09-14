@@ -32,6 +32,8 @@ import { reservarNoBanco, liberarNoBanco, liquidarNoBanco } from './carteira.mjs
 import { avaliarAposta, avaliarRodada, registrarRodada, registrarPerda,
          registrarBloqueio, ERRO_LIMITE } from './limites.mjs';
 import { podeAgir, ERRO_PROTECAO } from './protecao.mjs';
+import { darXP, registrarFeito } from './progressao.mjs';
+import { xpDaRodada } from '../engine/progressao.mjs';
 
 export const ERRO_APOSTA = {
   JANELA_FECHADA:  'janela_fechada',
@@ -248,6 +250,58 @@ export function liquidarRodada(db, { sched, roundId, agora = Date.now() }) {
        o stake no momento da aposta faria o limite contar volume, que é o que a
        Spec diz explicitamente para não contar. */
     registrarPerda(db, { userId: t.user_id, valor: t.stake - retorno, agora });
+
+    /* ── O CIRCUITO DA PROGRESSÃO FECHA AQUI (bloco 0.1, D-045) ────────────
+     *
+     * Até este bloco, `darXP` e `registrarFeito` existiam em
+     * `server/progressao.mjs` com um único chamador cada: os próprios testes.
+     * A rota `/api/perfil` devolvia fielmente um perfil que nunca crescia, e o
+     * cliente calculava a progressão sozinho, no `localStorage`. O jogador
+     * perdia XP, nível e trilha ao limpar o navegador.
+     *
+     * NÃO NASCE ROTA NENHUMA PARA ISTO, e é o ponto: o §5.10 diz que o cliente
+     * relata o que FEZ e o servidor DERIVA. Aqui nem relato é preciso — a
+     * liquidação já sabe quem apostou, em quem, e se ganhou. Uma rota
+     * `POST /api/perfil/xp` seria a edição do `localStorage` com mais passos, e
+     * é o que o `test/rotas.mjs` já proíbe em quatro formas.
+     *
+     * A REGRA É A MESMA DA TELA, importada e não copiada — `xpDaRodada` mora em
+     * `engine/progressao.mjs` justamente porque agora tem dois donos. Duas
+     * implementações divergiriam no primeiro ajuste, e o jogador veria um XP na
+     * tela de resultado e outro no perfil depois de recarregar.
+     *
+     * `settled_at` É A CHAVE DE IDEMPOTÊNCIA, e ela é necessária. O laço só
+     * pega tickets `travada`, então a liquidação normal passa uma vez por
+     * ticket; mas o teste `reverter o status do ticket à mão` reverte a coluna
+     * e liquida de novo — é o cenário real de "alguém reprocessou a rodada
+     * depois de mexer numa coluna". A carteira sobrevive a isso pela chave
+     * derivada do ticket; o XP não tem ledger para se defender sozinho, então a
+     * defesa é não conceder duas vezes pelo mesmo bilhete. */
+    if (t.settled_at == null) {
+      const resultado = sched?.resultadoDaRodada?.(roundId) ?? null;
+      const meu = resultado?.[t.slot_apostado] ?? null;
+      /* CONFERE O `dex` ANTES DE USAR. O índice do array é o índice na pool, e
+         ele coincide com o `slot` porque `precificar` preserva a ordem — o que
+         é verdade hoje e não é invariante declarada em lugar nenhum. Uma
+         ordenação acrescentada lá pagaria XP e desafio ao lutador errado, em
+         silêncio e sem teste vermelho. Divergiu, não concede: XP a menos é
+         defeito com endereço, XP ao lutador errado é ruído que ninguém rastreia. */
+      if (meu && meu.dex === t.species_id) {
+        const partes = xpDaRodada({ venceu: ganhou, pos: meu.pos,
+                                    abates: meu.abates, odd: t.odd });
+        darXP(db, { userId: t.user_id, quanto: partes.reduce((a, p) => a + p.xp, 0),
+                    motivo: `rodada:${roundId}`, agora });
+        /* O DESAFIO ANDA COM O FATO, um por vez. `apostar` sempre; `vencer` só
+           quando venceu. Os outros três tipos do `POOL_PADRAO` — assistir,
+           variedade e aposta_alta — dependem de coisas que a liquidação não
+           sabe (presença na sala, quantas espécies distintas no dia, o tamanho
+           relativo da aposta) e ficam para o bloco que as souber. Registrado
+           como L-054 em vez de adivinhado aqui. */
+        registrarFeito(db, { userId: t.user_id, tipo: 'apostar', agora });
+        if (ganhou) registrarFeito(db, { userId: t.user_id, tipo: 'vencer', agora });
+      }
+    }
+
     ganhou ? pagos++ : perdidos++;
   }
   return { pagos, perdidos, total: tickets.length };

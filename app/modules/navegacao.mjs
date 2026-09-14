@@ -4,6 +4,7 @@
  * como tal; autenticação de verdade é da V1. */
 
 import { $ } from './dom.mjs';
+import { confirmar } from './dialogo.mjs';
 import { CUR } from './motor.mjs';
 import { S } from './estado.mjs';
 import { simsLongo } from './sims.mjs';
@@ -13,6 +14,7 @@ import { renderProfile } from './customizacao.mjs';
 import { avatarURL, trainerURL } from './perfil.mjs';
 import { progressoNivel, saveProfile, tituloDe } from './perfil.mjs';
 import { renderDeposit } from './carteira.mjs';
+import { music, somLigado, verVista } from './audio.mjs';
 
 /* =====================================================================
    NAVEGAÇÃO E SESSÃO
@@ -27,6 +29,17 @@ function goView(id){
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
   document.querySelectorAll('.nav').forEach(b => b.classList.toggle('on', b.dataset.view === id));
   window.scrollTo({top:0, behavior:'smooth'});
+  /* A ARENA SO SOA NA ARENA — trilha E hitbox.
+
+     O dono descreveu o defeito com o exemplo certo: *"Eu nao posso ta na aba
+     da rota ouvindo os hitbox da arena"*. Hitbox e SFX, nao trilha — parar so
+     a musica deixaria os efeitos da luta tocando por cima das rotas.
+
+     Por isso quem sabe disso e o , numa trava so: a navegacao
+     avisa que a arena saiu da tela, e tudo que soa passa por la. */
+  /* A vista INTEIRA, e não "é a arena?": a captura toca som na aba de
+     Rotas, e a trava antiga a emudecia. Ver `audio.mjs`. */
+  verVista(id);
   if (id === 'viewHome') renderHero();
 }
 document.querySelectorAll('.nav').forEach(b => b.onclick = () => goView(b.dataset.view));
@@ -75,8 +88,12 @@ function renderSession(){
        <button class="tbtn" id="btnLogout" title="Sair">⏻</button>`;
     $('#chipProfile').onclick = () => { renderProfile(); openModal('#profileModal'); };
     $('#btnDeposit2').onclick = () => { renderDeposit(); openModal('#depositModal'); };
-    $('#btnLogout').onclick = () => {
-      if (!confirm('Sair da conta? O treinador continua salvo neste navegador.')) return;
+    $('#btnLogout').onclick = async () => {
+      /* Era `window.confirm`, e num navegador que suprime diálogo ele devolve
+         `false` sem perguntar nada — o botão de sair ficava clicável e inerte.
+         Ver `dialogo.mjs`. */
+      if (!await confirmar('Sair da conta? O treinador continua salvo neste navegador.',
+                           { ok: 'Sair' })) return;
       localStorage.removeItem('ar_session'); renderSession(); renderHero(); goView('viewHome');
     };
   } else {

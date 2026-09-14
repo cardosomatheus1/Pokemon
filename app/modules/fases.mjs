@@ -3,7 +3,7 @@
  * Fronteira: é a máquina de estados da rodada, e o único lugar que muda
  * S.state. Chama todo o resto; por isso é a camada mais alta antes do laço. */
 
-import { $, log } from './dom.mjs';
+import { $, limparMini, log } from './dom.mjs';
 import { registrarAposta } from './carteira.mjs';
 import { CONF, CUR, MOEDA, aplicarClima, sortearPool, rng, sortearClima, simular } from './motor.mjs';
 import { tiposDaPool } from '../../engine/engine.mjs';
@@ -17,7 +17,7 @@ import { emitir } from './telemetria.mjs';
 import { S } from './estado.mjs';
 import { modoServidor, hidratar } from './banco.mjs';
 import { arvoreConferida, esperarAbertura, oddsDoServidor, rodadaViva } from './modo-servidor.mjs';
-import { coreo, enfeite, semearVisual } from './sorte.mjs';
+import { enfeite, semearVisual } from './sorte.mjs';
 import { arenaDaRodada } from './arenas.mjs';
 import { buildEntities, overlay, preloadSheets, selRing } from './rodada.mjs';
 import { buildPickList, computeOdds, refreshOddsTable } from './odds.mjs';
@@ -25,7 +25,8 @@ import { bursts, fxs, sched, shots } from './efeitos.mjs';
 import { conferirAbates, conferirColocacao, limparPodio, mostrarPodio, renderKillfeed, renderPodio, resetKillfeed } from './killfeed.mjs';
 import { darXP, recordBetPlaced, recordBetResult, saveProfile, tituloDe } from './perfil.mjs';
 import { ensureDaily, progDesafio } from './desafios.mjs';
-import { entryRings, puffs } from './render.mjs';
+import { CX, CY, entryRings, puffs } from './render.mjs';
+import { ordemHoraria } from './bolas-dados.mjs';
 import { hideWeatherBadge, initWeatherFx, showWeatherBadge } from './clima.mjs';
 import { imgTag } from './sprites.mjs';
 import { music, sfx } from './audio.mjs';
@@ -33,11 +34,10 @@ import { posSelRing, reiniciarMovimento } from './coreografia.mjs';
 import { atualizarSaldo } from './controles.mjs';
 import { creditarRecompensa, pagarAposta, perderAposta } from './banco.mjs';
 import { updatePlate } from './eventos.mjs';
-import { atualizarCTA, placeBet } from './aposta.mjs';
+import { atualizarCTA, placeBet, selecionarLutador } from './aposta.mjs';
 import { renderBattleBanner } from './banner.mjs';
 import { atualizarEu, atualizarFase, relogio } from './faixa.mjs';
-import { renderMeuLutador } from './meu-lutador.mjs';
-import { margemConfigurada } from './adm.mjs';
+import { renderZonaAcao } from './zona-acao.mjs';
 import { colocacaoDe, ordemDeQuedas } from './colocacao.mjs';
 
 /* ------------------------- FASES ------------------------- */
@@ -47,7 +47,14 @@ function setPhase(s){
      sintetizá-la de quatro pistas espalhadas e contraditórias — ver L-029. */
   atualizarFase();
   relogio();
-  renderMeuLutador();   // a zona de ação troca de modo junto com a fase
+  /* O CTA da arena também é função da fase, e é AQUI que ele tem de ser
+     reavaliado — pelo motivo que o comentário acima já dá: este é o único lugar
+     que conhece TODAS as transições. Ele só era chamado durante a aposta, então
+     a classe `apostado` — que joga o conteúdo do overlay para o canto — nunca
+     era removida ao sair dela, e levava a contagem, o K.O., o XP e o vencedor
+     para o canto inferior direito. Só para quem apostou. */
+  atualizarCTA();
+  renderZonaAcao();   // a zona de ação troca de modo junto com a fase
   refreshOddsTable();   // e a lista de lutadores também
   /* A grade de vida dorme na aposta e acorda quando a luta começa (L-030,
      item 2). Aqui e não em `startFight` porque `setPhase` é o único lugar que
@@ -90,6 +97,7 @@ async function newRound(){
   hideWeatherBadge();
   initWeatherFx(null);   // sem efeito nenhum até o clima ser revelado em startFight()
   $('#stormBadge').classList.remove('show');
+  limparMini();   // o mini log não pode levar os golpes da rodada anterior
   $('#koToast').classList.remove('show');   // aviso de KO da rodada anterior
   $('#streakToast').className = '';         // aviso de killstreak da anterior
   limparPodio();
@@ -172,7 +180,10 @@ async function newRound(){
   // acima). Ele só é revelado depois que as apostas fecham (ver
   // startFight). É de propósito: ninguém aposta sabendo do bônus
   // climático de antemão.
-  S.odds = await computeOdds(S.fighters, CONF.SIMS, undefined, S.seeds.raiz, margemConfigurada());
+  /* Sem margem do cliente (R9): definir margem é ação de operador, e a rota dela
+     ainda não existe. `undefined` faz `precificar` usar a do motor — que é a
+     única auditável hoje. */
+  S.odds = await computeOdds(S.fighters, CONF.SIMS, undefined, S.seeds.raiz, undefined);
   /* Passivo zerado a cada rodada: o teto do §4.4.6 é POR RODADA. */
   S.passivo = passivoVazio(S.odds, CONF);
 
@@ -226,9 +237,19 @@ function montarCena(){
   overlay.innerHTML = '<div class="banner"></div>';
   setPhase('betting');          // antes do CTA: ele lê S.state
   atualizarCTA();
+  /* ── ESCOLHER NÃO É APOSTAR (L-112, bloco 1.27) ──────────────────────
+     Pedido do dono, e ele é o mesmo do envio da expedição no 1.24: um clique
+     que move o saldo não pode acontecer sem um segundo gesto.
+
+       > "ao selecionar agora é preciso confirmar logo, se você não confirmar
+       >  outro jogador pode escolher o Pokémon que você estava querendo"
+
+     O clique passa a SELECIONAR; quem aposta é o ✓ verde. A janela foi para
+     40 s no mesmo bloco para o segundo gesto caber — as duas metades da mesma
+     correção. */
   $('#pickList').addEventListener('click', ev => {
     const row = ev.target.closest('.pick'); if (!row) return;
-    placeBet(+row.dataset.i, row);
+    selecionarLutador(+row.dataset.i, row);
   });
   roundPending = false;
 }
@@ -312,11 +333,30 @@ function startFight(){
 /* Entrada UM DE CADA VEZ (não os 12 juntos): pra cada lutador, primeiro
    aparece o anel+brilho no chão (telegrafo), e só depois — com a bola
    ainda fechada até esse instante — ela abre com o clarão de sempre.
-   A ordem é embaralhada com o fluxo de coreografia, então
-   o "show" de entrada também é reproduzível igual ao resto da batalha,
-   mesmo sendo puramente cosmético e não afetar quem vence.            */
+
+   A ORDEM É A VOLTA DO RELÓGIO (R23), e não mais um embaralhamento. Ela
+   sempre foi uma a uma; o que faltava era ordem, e sem ela a abertura pulava
+   de um canto ao outro da arena. Sendo geométrica, ela também é reproduzível
+   sem gastar sorteio nenhum — a posição já saiu da raiz da rodada.          */
 const ENTRY = { RING_LEAD: 0.35, STAGGER: 0.18 };
 function entryTotalTime(n){ return (n-1) * ENTRY.STAGGER + ENTRY.RING_LEAD + 0.5; }
+
+/* ═══ R33 · O COMPASSO DE ESPERA DAS POKÉBOLAS ═════════════════════════════
+ *
+ * O véu do `BATTLE!!` some com `display:none`, sem transição — some no quadro.
+ * O que havia depois dele era `RING_LEAD`, 0,35 s, e nesse tempo o anel da
+ * primeira bola JÁ ESTÁ DESENHANDO. Ou seja: o jogador nunca via as doze
+ * pokébolas paradas no círculo; via o véu sumir com uma delas já se abrindo.
+ *
+ * A abertura em volta (R23) foi construída para ser acompanhada pelo olho, e
+ * ela só funciona se o olho souber ONDE as bolas estão antes de a primeira
+ * abrir. Sem esse instante de leitura, a volta vira um piscar de doze pontos.
+ *
+ * 0,6 s é o suficiente para ler o círculo e não o bastante para virar espera.
+ * Ele entra no relógio da FASE, como todo o resto da entrada — nunca em tempo
+ * de parede, que é a lição da L-005: aba em segundo plano separa as duas
+ * fontes, e a bola abria antes de o relógio chegar lá. */
+const PAUSA_BOLAS = 0.6;
 
 /* --- L-005 ---------------------------------------------------------------
    A entrada era agendada com setTimeout, ou seja, em tempo de parede. A fase
@@ -335,8 +375,13 @@ const filaEntrada = [];   // {t: segundos após o início da entrada, fn}
 function releaseAll(){
   S.released = true;
   filaEntrada.length = 0;
-  const order = S.ents.slice();
-  for (let i=order.length-1;i>0;i--){ const j=(coreo()*(i+1))|0; [order[i],order[j]]=[order[j],order[i]]; }
+  /* A VOLTA, E NÃO O SORTEIO (R23).
+     Aqui havia um Fisher-Yates: as bolas abriam uma a uma — o escalonamento
+     sempre existiu — mas em ordem aleatória, pulando de um canto ao outro da
+     arena. O olho não acompanha doze aberturas espalhadas; acompanha uma volta.
+     Agora a ordem é horária a partir das 12 h, que é onde o olho já está quando
+     a contagem termina. A conta mora em `bolas-dados.mjs`, pura e medida. */
+  const order = ordemHoraria(S.ents, CX, CY);
 
   order.forEach((e, i) => {
     const delayRing = i * ENTRY.STAGGER;
@@ -346,6 +391,11 @@ function releaseAll(){
     }});
     filaEntrada.push({ t: delayRing + ENTRY.RING_LEAD, fn: () => {
       bursts.push({x:e.x, y:e.y-7, col:'#ffffff', r:20, life:.45, age:0, seed:enfeite()*6});
+      /* A BOLA DESTA ENTIDADE SAI DO CHÃO AQUI, e não quando a fila é montada.
+         O desenho da bola em `render.mjs` olha `e.aberta`; antes ele olhava
+         `S.released`, que é ligado lá em cima — e as doze sumiam de uma vez,
+         deixando a arena vazia antes de a primeira abrir. */
+      e.aberta = true;
       e.el.classList.remove('ball');
       e.el.classList.add('opening');
     }});
@@ -369,6 +419,7 @@ function passoEntrada(desde){
 }
 
 export {
+  PAUSA_BOLAS,
   entryTotalTime,
   newRound,
   passoEntrada,

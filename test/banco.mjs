@@ -119,12 +119,32 @@ export function suite() {
       banco.carregar();
       banco.creditarCompra(300, 'x');
       const gravado = JSON.parse(dados.get('ar_carteira'));
-      igual(gravado.disponivel.transferivel, 1300,
-        'a compra não chegou ao armazenamento — recarregar a página perderia o crédito');
+      /* ── A COMPRA CAI NO BALDE `comprado` (1.26) ─────────────────────────
+         Ela caía em `transferivel`, e ali comprava tudo — inclusive PODER. O
+         cadeado do dono é essa linha: *"o cara doar não sei quanto e no primeiro
+         dia ter dinheiro pra deixar Pokémon boostado fortão"*.
+
+         O saldo inicial (1000) fica onde estava; só o que se COMPRA muda de
+         balde. Conferir os dois é o que prova que a compra não vazou. */
+      igual(gravado.disponivel.comprado, 300,
+        'a compra não chegou ao balde `comprado` — sem ela ali, o cadeado não ' +
+        'existe e dinheiro real compra poder no primeiro dia');
+      igual(gravado.disponivel.transferivel, 1000,
+        'a compra vazou para o balde livre — é exatamente o que o cadeado impede');
       const r = banco.reservarAposta(200, 'x');
       ok(r.ok, 'a reserva falhou');
       const gravado2 = JSON.parse(dados.get('ar_carteira'));
-      igual(gravado2.reservado.transferivel, 200, 'a reserva não foi persistida');
+      /* ── O RESTRITO É GASTO ANTES DO LIVRE (1.26) ────────────────────────
+         Se o livre fosse primeiro, o jogador acabaria com uma bolsa só de
+         PokéCash comprado — e a sensação seria de estar sendo PUNIDO por ter
+         comprado, que é o oposto do que se quer. Gastando o restrito antes, o
+         cadeado se dissolve com o uso. */
+      igual(gravado2.reservado.comprado, 200,
+        'a aposta não gastou o PokéCash comprado primeiro — o cadeado ficaria ' +
+        'preso na carteira e o jogador se sentiria punido por ter comprado');
+      igual(gravado2.reservado.transferivel, 0,
+        'a aposta gastou o saldo LIVRE tendo restrito disponível');
+      igual(gravado2.disponivel.comprado, 100, 'sobrou o valor errado no restrito');
     });
   });
 

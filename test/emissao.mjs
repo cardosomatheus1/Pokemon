@@ -19,7 +19,7 @@ import {
 } from '../engine/emissao.mjs';
 
 const estudo = () => readFileSync(
-  new URL('../docs/POKEARENA_ECONOMY_STUDY_v1.2.md', import.meta.url).pathname, 'utf8');
+  new URL('../docs/POKEARENA_ECONOMY_STUDY_v1.2.md', import.meta.url), 'utf8');
 
 const cheio = (extra = {}) =>
   ({ concluidosNaSemana: MARCO_SEMANAL, jaEmitidoNaSemana: 0, saldoPcB: 0, ...extra });
@@ -180,6 +180,43 @@ export function suite() {
       'a virada do ano partiu uma semana em duas, e o orçamento dobra nela');
   });
 
+  /* ── O D-035, E POR QUE TODO TESTE ANTERIOR O DEIXOU PASSAR ────────────
+   *
+   * Todos os testes acima chamam `semanaDe` com data PURA. O servidor a chamava
+   * com o instante ISO completo, e aí a concatenação produzia data inválida: o
+   * retorno era a string `NaN-WNaN`, para TODA data.
+   *
+   * E `NaN-WNaN === NaN-WNaN`. A regra "um resgate por semana" continuava
+   * respondendo certo — comparando duas semanas erradas e iguais —, então a
+   * vida inteira do jogador ficava arquivada numa semana só: um resgate por
+   * conta, para sempre, em vez de um por semana.
+   *
+   * A lição é a mesma que o R20 aprendeu no `S379`: o DADO do teste é parte do
+   * teste. Um valor de entrada escolhido com cuidado demais esconde o caso que
+   * a produção usa. */
+  s.teste('a semana aceita o instante ISO completo, e não só a data', () => {
+    igual(semanaDe('2026-03-02T12:00:00.000Z'), semanaDe('2026-03-02'),
+      'o instante ISO completo deu uma semana diferente da data pura — era ' +
+      'assim que o servidor chamava, e o retorno era `NaN-WNaN` (D-035)');
+  });
+
+  s.teste('semanas diferentes continuam diferentes com instante completo', () => {
+    ok(semanaDe('2026-03-02T12:00:00.000Z') !== semanaDe('2026-03-10T12:00:00.000Z'),
+      'duas semanas distintas viraram a mesma. Com `NaN-WNaN` para todas, o ' +
+      'teto de "um resgate por semana" vira "um resgate por conta, para sempre".');
+  });
+
+  /* DATA IMPOSSÍVEL LANÇA, e não devolve uma string. Devolver `NaN-WNaN` foi o
+     defeito inteiro: um balde que não pôde ser calculado virou um balde, e um
+     que compara igual a si mesmo. */
+  s.teste('data inválida lança em vez de virar um balde', () => {
+    for (const ruim of ['', null, undefined, 'ontem', '2026-13-45']) {
+      let caiu = false;
+      try { semanaDe(ruim); } catch { caiu = true; }
+      ok(caiu, `\`${String(ruim)}\` não lançou — devolveu uma semana que não existe`);
+    }
+  });
+
   /* ── O RESGATE DO §28.8 (F1.10) ────────────────────────────────────────
    *
    * A regra que define este mecanismo é NEGATIVA: o valor não pode escalar com
@@ -195,7 +232,7 @@ export function suite() {
        regra. O teste confere a ausência no CONTRATO, não no resultado: passar
        perdas diferentes e ver o mesmo número provaria pouco, porque a próxima
        versão poderia ler a perda de outro lugar. */
-    const fonte = readFileSync(new URL('../engine/emissao.mjs', import.meta.url).pathname, 'utf8');
+    const fonte = readFileSync(new URL('../engine/emissao.mjs', import.meta.url), 'utf8');
     const corpo = fonte.slice(fonte.indexOf('export function avaliarResgate'));
     /* SEM COMENTÁRIOS. Eles EXPLICAM a regra e por isso citam a palavra que a
        regra proíbe — varrê-los reprovaria a documentação correta. É a mesma

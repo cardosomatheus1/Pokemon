@@ -1,3 +1,5 @@
+import { CANAIS as CANAIS_IDLE } from './clima-idle.mjs';
+
 /* Validação de ContentPack.
  *
  * Um pack inválido é recusado no CARREGAMENTO, nunca no meio de uma batalha.
@@ -127,6 +129,53 @@ export function validarPack(pack) {
       }
     });
     exigir(peso > 0, 'a soma dos pesos de clima é zero');
+  }
+
+  /* --- clima do AVANÇO (1.32) ---
+   *
+   * OUTRA lista que a de cima, e a validação é outra porque o EIXO é outro: a
+   * de cima muda dano e exige `stat`/`mult`; esta diz em que CANAL o farm
+   * rende, e o quanto sai da raridade do tipo — medida pelo motor, nunca
+   * escrita à mão (ver `engine/clima-idle.mjs`).
+   *
+   * É OPCIONAL: um pack sem Avanço continua válido, e o modo simplesmente não
+   * sorteia clima. Exigir a lista quebraria todo pack antigo por um recurso que
+   * ele não usa. */
+  if (pack.climaIdle !== undefined) {
+    if (exigir(Array.isArray(pack.climaIdle) && pack.climaIdle.length > 0,
+               'climaIdle presente mas vazio')) {
+      const tipos = Object.keys(pack.tipos?.efetividade ?? {});
+      let pesoIdle = 0, comBonus = 0;
+      pack.climaIdle.forEach((c, i) => {
+        exigir(TIPO(c?.key, 'string'), `climaIdle[${i}].key ausente`);
+        exigir(TIPO(c?.name, 'string'), `climaIdle[${i}].name ausente — o nome é TEMA e mora aqui`);
+        exigir(TIPO(c?.desc, 'string'), `climaIdle[${i}].desc ausente — o cartão precisa dizer o que o clima faz ANTES do clique (D-062)`);
+        exigir(Number.isFinite(c?.w) && c.w > 0, `climaIdle[${i}].w precisa ser peso positivo`);
+        pesoIdle += c?.w ?? 0;
+        const meus = Array.isArray(c?.tipos) ? c.tipos : [];
+        if (c?.rende != null) {
+          comBonus++;
+          exigir(CANAIS_IDLE.includes(c.rende),
+            `climaIdle[${i}].rende "${c.rende}" não é canal — os canais são ${CANAIS_IDLE.join(', ')}`);
+          exigir(meus.length > 0, `climaIdle "${c.key}" rende ${c.rende} e não favorece tipo nenhum`);
+          for (const t of meus) {
+            exigir(tipos.includes(t), `climaIdle "${c.key}" favorece o tipo desconhecido "${t}"`);
+            /* Sem NINGUÉM daquele tipo no elenco, o clima é um bônus que não
+               pode ser conquistado — e um bônus impossível ensina o jogador a
+               ignorar a linha do clima inteira. */
+            exigir((pack.especies ?? []).some(e => e?.t?.includes(t)),
+              `climaIdle "${c.key}" favorece ${t}, que não existe no elenco`);
+          }
+        } else {
+          exigir(meus.length === 0,
+            `climaIdle "${c.key}" não rende nada mas favorece tipo — favorecer sem pagar é promessa vazia`);
+        }
+      });
+      exigir(pesoIdle > 0, 'a soma dos pesos de climaIdle é zero');
+      /* Uma lista SÓ de neutro é a mesma coisa que não ter lista, e mais cara:
+         o jogador vê a linha do clima toda run e ela nunca diz nada. */
+      exigir(comBonus > 0, 'climaIdle não tem nenhum clima que renda — só neutro');
+    }
   }
 
   /* --- funções e moeda --- */

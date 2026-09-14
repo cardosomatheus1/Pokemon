@@ -21,7 +21,7 @@ export const M = criarMotor(pack);
 
 export const {
   elenco, efeito, dano, simular, montarElenco, atribuirGolpes,
-  sortearPool, sortearClima, aplicarClima, nomeExibido, slugExterno, sprite,
+  sortearPool, sortearClima, aplicarClima, nomeExibido, slugExterno, sprite, spriteShiny,
   tipoCor, tipoNome,
 } = M;
 export { CONF, rng, statAt, stormRate, tiposDaPool, pack };
@@ -39,6 +39,13 @@ export const tipoNomes   = pack.tipos.nomes;
 /* Como o TEMA chama as coisas. A interface pergunta ao pack em vez de escrever
    o nome de uma franquia — §0.3, e o item nº 1 da sabotagem do F1.12. */
 export const ROTULOS = M.pack.rotulos;
+
+/* O PACK INTEIRO, para quem precisa de mais que rótulo. A marca desenhada (R26)
+   é o primeiro caso: ela é identidade de tema como o nome, e sai daqui pelo
+   mesmo motivo — trocar de pack tem que trocar a marca junto. Exportar o pack
+   não abre a porta para o app conhecer a franquia: ele continua perguntando,
+   em vez de escrever. */
+export const PACK = M.pack;
 
 export const MOEDA = M.moeda.nome;
 export const CUR   = M.moeda.simbolo;

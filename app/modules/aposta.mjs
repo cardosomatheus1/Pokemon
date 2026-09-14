@@ -43,7 +43,15 @@ import { renderBattleBanner } from './banner.mjs';
 function atualizarCTA(){
   const overlay = $('#overlay'); if (!overlay) return;
   const banner = overlay.querySelector('.banner') || overlay;
-  if (S.state !== 'betting'){ overlay.classList.remove('on'); return; }
+  /* `apostado` SAI JUNTO COM `on`, e a ausência dela era o defeito.
+     A classe joga o conteúdo do overlay para o canto inferior direito, e ali
+     ela está certa: durante a aposta, a dica "X é a sua aposta · toque em outro
+     para trocar" não pode tapar os doze lutadores que o jogador veio olhar.
+     Só que ninguém a removia ao sair da fase — e ela atravessava a contagem, a
+     luta e o resultado, levando para o canto o `3, 2, 1`, o `K.O.`, o XP e o
+     Pokémon vencedor. E só para QUEM APOSTOU, que é justamente quem tem
+     dinheiro na rodada e mais motivo para querer ler aquilo. */
+  if (S.state !== 'betting'){ overlay.classList.remove('on', 'apostado'); return; }
   if (S.myBet){
     const f = S.fighters[S.myBet.idx];
     banner.innerHTML =
@@ -126,6 +134,59 @@ async function apostarNoServidor(idx, pedido) {
      <button class="btn cancelBet" id="btnCancelBet">✕ Cancelar aposta e ficar de fora</button>`;
   $('#btnCancelBet').onclick = cancelarAposta;
 }
+
+/* ── A ESCOLHA, ANTES DA APOSTA (L-112, bloco 1.27) ──────────────────────
+ *
+ * Ela existe para o clique errado custar um segundo gesto em vez de custar o
+ * saldo. É a mesma peça que a expedição ganhou no 1.24, e pelo mesmo motivo.
+ *
+ * A ESCOLHA NÃO RESERVA NADA. Ela é só da tela: enquanto ele não confirma, o
+ * dinheiro continua dele e o lutador continua de todo mundo — que é
+ * literalmente o que o dono descreveu ao pedir a confirmação.
+ */
+let escolhido = null;
+
+function selecionarLutador(idx, row) {
+  if (S.state !== 'betting') return;
+  escolhido = idx;
+  document.querySelectorAll('.pick').forEach(p =>
+    p.classList.toggle('escolhido', +p.dataset.i === idx));
+  pintarConfirmacao();
+}
+
+function limparEscolha() {
+  escolhido = null;
+  document.querySelectorAll('.pick').forEach(p => p.classList.remove('escolhido'));
+  pintarConfirmacao();
+}
+
+function pintarConfirmacao() {
+  const caixa = $('#confirmaAposta');
+  if (!caixa) return;
+  /* NASCE E VOLTA A FICAR ESCONDIDO. Um par de botões inertes na tela ensina
+     que botão pode não fazer nada — e é o mesmo defeito do D-067 por outra
+     porta: a tela oferece o que ela não vai cumprir. */
+  if (escolhido == null) { caixa.hidden = true; return; }
+  const f = S.fighters[escolhido];
+  const o = S.odds?.lutadores?.find(l => l.idx === escolhido);
+  const valor = valorAposta();
+  caixa.hidden = false;
+  $('#caQuem').innerHTML =
+    `<b>${CUR} ${valor.toLocaleString('pt-BR')}</b> em <b>${f?.n ?? ''}</b>` +
+    (o ? ` · x${o.odd.toFixed(2)}` : '');
+}
+
+/* Os dois botões são ligados uma vez, como o resto desta tela. */
+document.addEventListener('click', ev => {
+  if (ev.target.closest('#btnConfirmarAposta')) {
+    if (escolhido == null) return;
+    const idx = escolhido;
+    limparEscolha();
+    placeBet(idx, document.querySelector(`.pick[data-i="${idx}"]`));
+    return;
+  }
+  if (ev.target.closest('#btnCancelarEscolha')) limparEscolha();
+});
 
 async function placeBet(idx, row){
   if (S.state !== 'betting') return;
@@ -260,4 +321,6 @@ export {
   cancelarAposta,
   markMyPlate,
   placeBet,
+  selecionarLutador,
+  limparEscolha,
 };

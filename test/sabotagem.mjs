@@ -29,7 +29,7 @@
  *
  * Uso: node test/sabotagem.mjs
  */
-import { existsSync, readFileSync, symlinkSync, writeFileSync, cpSync, rmSync, mkdtempSync } from 'node:fs';
+import { existsSync, readFileSync, symlinkSync, writeFileSync, cpSync, rmSync, mkdtempSync, readdirSync, statSync } from 'node:fs';
 import { execFile, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { fechoDeCaptor, digitalDoFecho, TUDO, CAPTOR_NAO_CARREGA } from './fecho.mjs';
@@ -41,6 +41,7 @@ import { DEFEITOS } from './defeitos-plantados.mjs';
 /* Ver a explicação longa no `execFile` abaixo. */
 const TETO_MUTANTE_MS = 10 * 60 * 1000;
 import { conferirAncoras, filtrarTocados } from './ancoras.mjs';
+import { limparCaixas, limparOrfas } from './caixas.mjs';
 
 /* --- COMO A SABOTAGEM RODA, E POR QUE ASSIM -----------------------------
  *
@@ -79,7 +80,7 @@ import { conferirAncoras, filtrarTocados } from './ancoras.mjs';
  * — voltando como PASSOU, porque eu tinha deixado o `sem-rede` de fora. É o
  * portão que pegou o vazamento de avatar do V1.15. Suíte que não roda não é
  * cobertura fraca: é ausência de cobertura com relatório verde. */
-const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,sem-backend,rodada-completa,contraste';
+const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,sem-backend,rodada-completa,contraste,outfit-canvas';
 
 function rodar(caixa, semGolden, comVisual, recorte = null, estreita = false) {
   const env = { ...process.env,
@@ -236,7 +237,22 @@ const DIRS_VERSIONADOS = [...new Set(
    * A razão do link simbólico não mudou com o versionamento: nenhum defeito
    * plantado mexe em arte, então a caixa pode olhar para a mesma pasta. É o
    * D-024. */
-  .filter(d => d !== 'assets');
+  /*  SAI DA CÓPIA PELO MESMO MOTIVO, e por um terceiro (D-040).
+   *
+   * Os dois primeiros são os do : nenhum defeito plantado mexe em arte,
+   * e copiá-la cinco vezes é desperdício — aqui, 3 MB por caixa.
+   *
+   * O TERCEIRO foi medido no R27, e é o que motivou a mudança. Com cópias
+   * SEPARADAS, as cinco caixas decodificam o Rayquaza de 2816x1105 do zero, ao
+   * mesmo tempo, sem cache de página compartilhado — e a  saía
+   * fora da linha de base na faixa do fundo. Medido: caixa sozinha VERDE,
+   * quatro  em paralelo do MESMO repositório VERDES, e só a
+   * combinação caixa+paralelo falhava. Era o custo de descompactar o mesmo PNG
+   * grande cinco vezes em paralelo.
+   *
+   * Com o link simbólico as cinco olham para o mesmo arquivo, o sistema o
+   * decodifica uma vez, e a foto para de depender de quem chegou primeiro. */
+  .filter(d => d !== 'assets' && d !== 'arte');
 
 /* Os arquivos versionados que moram na RAIZ — as linhas do `git` sem barra. */
 const ARQUIVOS_RAIZ = execFileSync('git',
@@ -245,6 +261,57 @@ const ARQUIVOS_RAIZ = execFileSync('git',
 
 const N_TRAB = Math.max(1, Math.min(cpus().length, 4));
 const CAIXAS = [];
+
+/* ── AS CAIXAS SOMEM MESMO QUANDO O PORTÃO ABORTA (D-036) ──────────────────
+ *
+ * A remoção vivia numa linha no fim do caminho feliz. Quando o portão aborta —
+ * e ele aborta — a execução saía antes, e as caixas ficavam. Pior: `CAIXA_BASE`
+ * sai de `CAIXAS` por um `pop()`, então ela nunca era removida NEM no caminho
+ * feliz. Toda execução vazava pelo menos uma.
+ *
+ * Medido em 29/08, antes desta correção: **120 caixas órfãs, 3,25 GB**. A ficha
+ * do D-036 tinha registrado 75 e 4,9 GB em 24/08.
+ *
+ * O custo não é o disco. O portão que está rodando disputa I/O com os restos
+ * dos que não terminaram: a execução do R23 levou 31 min contra os 10 a 15
+ * normais, com 75 cópias do repositório no mesmo diretório. E aí os defeitos se
+ * alimentam — mais lento dá mais janela para a instabilidade que fez abortar.
+ *
+ * ── POR QUE NÃO É "LIMPAR TUDO SEMPRE" ────────────────────────────────────
+ *
+ * O caminho de aborto PRESERVA a caixa de propósito: ele imprime
+ * `reproduza com: cd <caixa> && …`, e essa linha é o diagnóstico inteiro. Uma
+ * limpeza cega jogaria fora exatamente o que se quer olhar quando deu errado.
+ *
+ * Então: `preservar()` marca a caixa que o aborto quer manter, e o resto vai
+ * embora — inclusive quando alguém interrompe com ctrl+c. */
+const PRESERVADAS = new Set();
+const preservar = c => PRESERVADAS.add(c);
+
+/* `CAIXA_BASE` é `const` e nasce depois deste ponto; a referência indireta
+   existe para o limpador poder alcançá-la sem mover a declaração dela — e ela
+   é justamente a que vazava no caminho feliz, por sair de `CAIXAS` num `pop()`. */
+const CAIXA_BASE_REF = { atual: null };
+const limpar = () => limparCaixas([...CAIXAS, CAIXA_BASE_REF.atual], PRESERVADAS);
+
+process.on('exit', limpar);
+for (const sinal of ['SIGINT', 'SIGTERM'])
+  process.on(sinal, () => { limpar(); process.exit(130); });
+
+/* ── AS ÓRFÃS DAS EXECUÇÕES ANTERIORES ─────────────────────────────────────
+ *
+ * Consertar o vazamento não recupera as que já existem, e são elas que estão
+ * ocupando o disco hoje. Mas apagar TODAS na entrada tem um custo: a última
+ * caixa preservada por um aborto pode ser justamente a que alguém está
+ * investigando agora.
+ *
+ * SEIS HORAS é o corte. Longo o bastante para uma investigação caber, curto o
+ * bastante para o disco não acumular semanas. Quem quiser guardar por mais
+ * tempo copia a caixa para fora do temporário — que é o que se faz com
+ * qualquer coisa que se queira guardar num diretório chamado `Temp`. */
+const ORFAS = limparOrfas(tmpdir());
+if (ORFAS.length)
+  console.log(`${ORFAS.length} caixa(s) órfã(s) de execuções anteriores removida(s).`);
 /* UMA CAIXA A MAIS, E ELA NUNCA RECEBE MUTANTE. É onde as linhas de base por
    configuração rodam — ver `garantirBase`. Validar numa caixa com defeito
    plantado mediria o defeito, não a configuração. */
@@ -263,10 +330,25 @@ for (let i = 0; i < N_TRAB + 1; i++) {
    * motivo, e agora pelo mesmo caminho: o `git` sabe o que o projeto versiona.
    * Derivar não pode dessincronizar. */
   for (const arq of ARQUIVOS_RAIZ) cpSync(arq, join(c, arq));
-  if (existsSync('assets')) symlinkSync(join(process.cwd(), 'assets'), join(c, 'assets'), 'dir');
+  for (const compartilhada of ['assets', 'arte'])
+    if (existsSync(compartilhada))
+      symlinkSync(join(process.cwd(), compartilhada), join(c, compartilhada), 'dir');
+
+  /* A LINHA DE BASE VISUAL DESTA MÁQUINA, e ela NÃO é versionada — de propósito:
+     a impressão digital depende da versão do Chromium, então cada máquina grava
+     a sua e a REFERÊNCIA compartilhada fica para comparação entre máquinas.
+     Só que a caixa de areia copia apenas o que o `git` versiona. Sem esta
+     linha ela caía na referência, gravada noutro dia e noutra build — e o
+     portão Q2 abortava na pré-checagem acusando "a configuração está quebrada"
+     quando o que estava velho era a foto de comparação.
+     A caixa roda NESTA máquina, então a linha de base desta máquina é a
+     verdade dela. Ver `D-039`. */
+  const baseLocal = join('test', 'fixtures', 'visual-base-local.json');
+  if (existsSync(baseLocal)) cpSync(baseLocal, join(c, baseLocal));
   CAIXAS.push(c);
 }
 const CAIXA_BASE = CAIXAS.pop();
+CAIXA_BASE_REF.atual = CAIXA_BASE;
 console.log(`${N_TRAB} caixa(s) de areia em ${tmpdir()}\n`);
 
 /* Os nomes de suíte saem da PRÓPRIA linha de base, e não de um regex sobre os
@@ -298,8 +380,13 @@ if (base.vermelha) {
   const linhas = base.saida.split('\n');
   const falhas = linhas.filter(l => /^\s{2}\[[\w-]+\]|^VERMELHO|^\s{6}\S/.test(l));
   console.error((falhas.length ? falhas : linhas.slice(-25)).join('\n'));
+  /* ESTA CAIXA FICA, E É A ÚNICA QUE FICA (D-036). A linha abaixo diz "cd
+     <caixa>", e sem ela o diagnóstico seria uma instrução para um diretório que
+     o limpador acabou de apagar. As outras somem no `exit`. */
+  preservar(CAIXAS[0]);
   console.error(`\ncaixa: ${CAIXAS[0]}`);
   console.error('reproduza com: cd <caixa> && EM_SANDBOX=1 PARAR_CEDO=1 SEM_VISUAL=1 node test/run.mjs\n');
+  console.error('as outras caixas desta execução foram removidas; esta fica para você olhar.\n');
   process.exit(2);
 }
 for (const m of base.saida.matchAll(/^\s{2}([\w-]+): \d+\/\d+$/gm)) SUITES_REAIS.add(m[1]);
@@ -530,12 +617,38 @@ function garantirBase(semGolden, comVisual, estreita) {
  * "o portão inteiro". */
 const VALIDAR_TUDO_ACIMA_DE = 50;
 
+/* ── EM SEQUÊNCIA, E NÃO EM PARALELO (D-040) ───────────────────────────────
+ *
+ * Eram três `garantirBase` dentro de um `Promise.all`, e duas delas dirigem
+ * Chromium — NA MESMA CAIXA, ao mesmo tempo.
+ *
+ * Isso invertia a lógica do `D-015`. A validação existe para dizer "a
+ * configuração de julgamento está sã"; medi-la sob uma carga que o julgamento
+ * NÃO tem faz a referência ser medida em condições piores que a coisa medida.
+ * Cada mutante roda sozinho na caixa dele; a base rodava disputando CPU e disco
+ * consigo mesma.
+ *
+ * O sintoma foi o `arena@largo` região 1,5 fora da linha de base — sempre a
+ * mesma tela, sempre a mesma região, valores pequenos (média 2,5 a 3,8). Ele
+ * sobreviveu à correção do GIF animado (D-033), à da linha de base velha na
+ * caixa (D-039), à espera pela decodificação da arte e ao compartilhamento da
+ * pasta `arte/`. Medido, uma a uma:
+ *
+ *   caixa sozinha, config completa       VERDE, duas vezes seguidas
+ *   4x `visual-base` em paralelo         VERDES
+ *   local, config idêntica à do portão   VERDE, 62/62
+ *   dentro do portão                     VERMELHO, reprodutível
+ *
+ * O que só o portão tinha era ESTA linha: duas suítes de navegador na mesma
+ * caixa, simultâneas.
+ *
+ * O custo de serializar é ~40 s por execução. É o preço de um juiz confiável, e
+ * ele é baixo perto de uma execução inteira perdida num aborto — que foi o que
+ * este defeito vinha cobrando. */
 async function validarConfiguracoesUsadas() {
-  await Promise.all([
-    garantirBase(false, false, false),
-    garantirBase(false, true, true),
-    garantirBase(false, true, false),
-  ]);
+  await garantirBase(false, false, false);
+  await garantirBase(false, true, true);
+  await garantirBase(false, true, false);
   console.log('configurações de julgamento: todas VERDES\n');
 }
 
@@ -706,7 +819,20 @@ console.log('\n');
 const ordem = new Map(ALVOS.map((d, i) => [d.id, i]));
 res.sort((a, b) => ordem.get(a.id) - ordem.get(b.id));
 
-for (const c of CAIXAS) rmSync(c, { recursive:true, force:true });
+/* A REMOÇÃO SAIU DAQUI (D-036), e o motivo é que esta linha só era alcançada
+   quando o portão TERMINAVA. Agora ela mora no `process.on('exit')`, no topo do
+   arquivo, e cobre também os abortos, o ctrl+c e a `CAIXA_BASE` — que saía de
+   `CAIXAS` por um `pop()` e por isso vazava até no caminho feliz.
+   Chamada aqui de propósito mesmo assim: no caminho feliz o disco é liberado
+   antes de imprimir o relatório, que é longo.
+
+   `limpar()` e NÃO `limparCaixas()`: o segundo é a função do módulo e exige a
+   lista; o primeiro é o invólucro sem argumentos que já sabe quais caixas são
+   as desta execução. Escrevi `limparCaixas()` aqui ao extrair o módulo, e o
+   primeiro Q2 de verdade devolveu `TypeError: caixas is not iterable` — depois
+   de remover 117 órfãs e montar as quatro caixas. Suíte verde não pega isto:
+   este arquivo é o portão, e não roda dentro da caixa. */
+limpar();
 
 console.log('id   defeito                                 status    sem golden, pego por');
 console.log('─'.repeat(96));

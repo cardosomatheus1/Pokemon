@@ -237,7 +237,7 @@ export function suite() {
    * suíte. Um dia em que houver banco de medição, este teste muda de forma. */
   s.teste('as comparações de segredo usam tempo constante', async () => {
     const { readFileSync } = await import('node:fs');
-    const txt = readFileSync(new URL('../server/auth.mjs', import.meta.url).pathname, 'utf8')
+    const txt = readFileSync(new URL('../server/auth.mjs', import.meta.url), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, ' ');
     /* Duas: a da senha e a da assinatura de sessão. Uma só significa que a
        outra está comparando com `===`. */

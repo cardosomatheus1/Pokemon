@@ -9,6 +9,8 @@
  * identificador da franquia fora do pack, e queda para o pack Kanto quando algo
  * falha.
  */
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { criarMotor, tiposDaPool } from '../engine/engine.mjs';
@@ -16,7 +18,10 @@ import { validarPack } from '../engine/pack.mjs';
 import original, { RODA, COM_ARTE, silhuetaDe } from '../content/original_v1.mjs';
 import kanto from '../content/pokemon_kanto_v1.mjs';
 
-const RAIZ = new URL('..', import.meta.url).pathname;
+/* COM a barra no fim: aqui a RAIZ e usada por CONCATENACAO
+   (`RAIZ + 'engine'`), e `join` nunca deixa separador — o `.pathname`
+   de antes deixava. Sem ela o caminho vira `...pa4engine`, que nao existe. */
+const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..') + '/';
 const M = criarMotor(original);
 
 /* Os arquivos de PRODUÇÃO onde nenhum identificador da franquia pode aparecer.

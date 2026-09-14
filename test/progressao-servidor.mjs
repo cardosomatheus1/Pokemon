@@ -85,7 +85,7 @@ export function suite() {
   s.teste('NÃO existe caminho para o cliente escrever progresso', () => {
     /* A varredura é sobre o MÓDULO INTEIRO: qualquer `UPDATE … progresso = ?`
        que não seja o incremento de `registrarFeito` é uma porta. */
-    const fonte = readFileSync(new URL('../server/progressao.mjs', import.meta.url).pathname, 'utf8');
+    const fonte = readFileSync(new URL('../server/progressao.mjs', import.meta.url), 'utf8');
     const escritas = [...fonte.matchAll(/progresso\s*=\s*[^,\s)]+/g)].map(m => m[0]);
     igual(escritas.length, 1,
       `há ${escritas.length} escritas em \`progresso\`: ${escritas.join(' | ')}. ` +

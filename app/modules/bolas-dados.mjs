@@ -55,3 +55,34 @@ export function sortearBolas(sementeVisual, quantas = 12) {
   for (let i = idx.length - 1; i > 0; i--) { const j = (R() * (i + 1)) | 0; [idx[i], idx[j]] = [idx[j], idx[i]]; }
   return idx.slice(0, quantas).map(i => BALLS[i]);
 }
+
+/* ── A ORDEM EM QUE AS BOLAS ABREM (R23) ───────────────────────────────────
+ *
+ * As bolas sempre abriram uma a uma — o escalonamento existe desde o começo. O
+ * que não existia era ORDEM: a entrada era embaralhada com Fisher-Yates, e a
+ * abertura pulava de um canto ao outro da arena.
+ *
+ * O olho não acompanha doze aberturas em ordem aleatória. Ele acompanha uma
+ * volta. Aqui a volta começa às 12 h e segue o sentido do relógio.
+ *
+ * ── A CONVENÇÃO DE ÂNGULO ─────────────────────────────────────────────────
+ *
+ * No canvas o Y CRESCE PARA BAIXO. Então `atan2(dy, dx)` crescente — que na
+ * matemática de papel é anti-horário — na tela é HORÁRIO. É a mesma conta com o
+ * eixo invertido, e é o tipo de coisa que se acerta por acidente e se quebra na
+ * primeira refatoração. Por isso o teste cobra por posição cardinal (topo,
+ * direita, base, esquerda) e não por número de radiano.
+ *
+ * O `+ π/2` gira a origem do ângulo de 3 h para 12 h: a primeira bola a abrir é
+ * a que está mais ao norte, que é onde o olho já está quando a contagem termina.
+ *
+ * NÃO MUTA A LISTA RECEBIDA. `S.ents` é a lista viva da arena e o índice de
+ * cada lutador é a identidade dele — reordenar ali trocaria quem é quem. */
+export function ordemHoraria(ents, cx, cy) {
+  const TAU = Math.PI * 2;
+  return [...(ents || [])].sort((a, b) => {
+    const anguloDe = e =>
+      ((Math.atan2(e.y - cy, e.x - cx) + Math.PI / 2) % TAU + TAU) % TAU;
+    return anguloDe(a) - anguloDe(b);
+  });
+}

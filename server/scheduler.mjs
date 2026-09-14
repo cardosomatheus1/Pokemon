@@ -27,9 +27,11 @@
  */
 import { randomUUID, randomBytes, createHash } from 'node:crypto';
 import { montarRodadaServidor, M, VERSAO_MOTOR } from './rodada.mjs';
+import { margemDaCasa } from './admin.mjs';
 import { sementes, novaRaiz as raizNova, derivar } from '../engine/seed.mjs';
 import { mensagemCommit } from '../engine/commit.mjs';
 import { CONF } from '../engine/engine.mjs';
+import { ordemDeQuedas, posicaoFinalDe, abatesNosEventos } from '../engine/colocacao.mjs';
 import { travarApostas } from './aposta.mjs';
 
 export const ESTADOS = {
@@ -41,10 +43,15 @@ export const ESTADOS = {
   CANCELADA: 'cancelada',
 };
 
-/* As fases, em milissegundos. A janela de 30 s é a do §5.5; as outras duas
-   existem para o cliente ter tempo de montar a cena e de assistir. */
+/* As fases, em milissegundos. A janela de aposta é a do §5.5 — 40 s desde o
+   1.27, e o porquê está no `BET_WINDOW` do motor. As outras duas existem para
+   o cliente ter tempo de montar a cena e de assistir.
+
+   OS DOIS LADOS TÊM DE CONCORDAR. Aqui é onde a aposta fecha de verdade; lá é
+   o relógio que o jogador vê. Divergir faz a barra chegar ao fim antes ou
+   depois do fechamento, e o jogador aprende a não confiar nela. */
 export const FASE_MS = {
-  APOSTA:  30_000,
+  APOSTA:  40_000,
   PREPARO:  3_000,
   LUTA:    45_000,
 };
@@ -78,7 +85,12 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
     const agora = relogio();
     const raiz = novaRaiz();
     const id = randomUUID();
-    const preco = montarRodadaServidor(raiz, sims);
+    /* A MARGEM DA CASA ENTRA AQUI (R18), e vem do banco — não de um valor
+       escrito no código nem de nada que o cliente mande. `null` significa "use
+       a do motor", e `precificar` já trata isso: é o comportamento que valeu
+       desde o R9, e ele continua sendo o padrão até um operador com papel
+       `economia` decidir o contrário, com motivo e registro. */
+    const preco = montarRodadaServidor(raiz, sims, { margem: margemDaCasa(db) ?? undefined });
 
     /* O commit é síncrono aqui por construção: `comprometer` é async, e o
        scheduler precisa ser síncrono para o tick não deixar a rodada num
@@ -231,12 +243,48 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
     const seg = segredos.get(id);
     return seg ? simularDaRaiz(seg.raiz).campeaoDex : null;
   };
+
+  /* O RESULTADO COMPLETO DA RODADA — posição e abates de cada lutador.
+   *
+   * Existe para a liquidação poder conceder o XP da rodada (bloco 0.1, D-045).
+   * O XP tem uma parcela de DESEMPENHO, função da colocação, e uma de ABATE:
+   * sem isto o servidor só saberia quem venceu, e pagaria menos XP do que a
+   * tela mostrou — que seria eu regredindo o jogador para fechar um bloco.
+   *
+   * NÃO GUARDA COLUNA NOVA, e não precisa: a batalha é determinística a partir
+   * da raiz, que já está no `segredos`. É a mesma propriedade que deixa o
+   * `espiarCampeao` existir sem uma coluna de campeão — e a mesma que o §4.5
+   * publica como promessa de auditoria.
+   *
+   * A ARITMÉTICA É DO `engine/colocacao.mjs`, e não daqui. Uma travessia
+   * própria dos eventos neste arquivo seria a segunda contagem que aquele
+   * arquivo inteiro existe para proibir, com o agravante de que a divergência
+   * apareceria entre a tela e o perfil do mesmo jogador.
+   *
+   * O índice do array é o índice do lutador na POOL, que é o mesmo `slot`
+   * gravado em `round_fighters` — `precificar` preserva a ordem (`idx: i`) e
+   * `abrirRodada` grava por `forEach((l, slot) => …)`. Quem consome confere o
+   * `dex` antes de usar, porque "preserva a ordem hoje" não é invariante
+   * declarada, e uma ordenação acrescentada ali pagaria XP ao lutador errado
+   * sem nenhum teste ficar vermelho. */
+  const resultadoDaRodada = id => {
+    const seg = segredos.get(id);
+    if (!seg) return null;
+    const { eventos, lutadores, campeaoDex } = simularDaRaiz(seg.raiz);
+    const ordem = ordemDeQuedas(eventos);
+    const campeaoIdx = lutadores.findIndex(l => l.dex === campeaoDex);
+    return lutadores.map((l, i) => ({
+      dex: l.dex,
+      pos: posicaoFinalDe(i, campeaoIdx, ordem, lutadores.length),
+      abates: abatesNosEventos(i, eventos),
+    }));
+  };
   const campeaoDaRaiz = raiz => simularDaRaiz(raiz).campeaoDex;
 
   return {
     abrirRodada, tick, paraCliente,
     rodadaAtual: () => atual,
-    espiarCampeao, campeaoDaRaiz,
+    espiarCampeao, campeaoDaRaiz, resultadoDaRodada,
   };
 }
 

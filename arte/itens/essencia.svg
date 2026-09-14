@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <!-- A ESSÊNCIA — arte NOSSA, e o segundo item do jogo que é.
+       ═══════════════════════════════════════════════════════════════════
+       Ela deixou de ser dinheiro e virou MATERIAL (L-095): farma-se uma
+       quantidade, e troca-se por um item de poder. O desenho tem de dizer
+       essa diferença, porque na mochila ela fica ao lado da moeda — e duas
+       coisas com o mesmo papel visual são lidas como a mesma coisa.
+
+       ── COMO ELA SE DIFERENCIA DA MOEDA, DE PROPÓSITO ─────────────────
+         MOEDA      disco fechado, ouro, símbolo cunhado, borda dura
+         ESSÊNCIA   cristal aberto, ciano/violeta, luz vindo de DENTRO
+
+       Dinheiro é feito e contado; material é achado e acumulado. Um tem
+       casa da moeda, o outro tem jazida. A silhueta carrega isso sozinha:
+       o círculo é fabricado, o cristal é bruto.
+
+       ── DESENHADO PARA 30 px ──────────────────────────────────────────
+       É o tamanho da ficha de saldo. Sobrevive a isso: silhueta angular,
+       contorno escuro (a mochila é escura), um brilho grande em vez de
+       vários pequenos. Facetas finas somem — as três aqui são largas. -->
+  <defs>
+    <linearGradient id="cristal" x1=".15" y1="0" x2=".85" y2="1">
+      <stop offset="0"   stop-color="#eafcff"/>
+      <stop offset=".22" stop-color="#7fe9ff"/>
+      <stop offset=".55" stop-color="#39a8f0"/>
+      <stop offset=".8"  stop-color="#7a5cf0"/>
+      <stop offset="1"   stop-color="#3b2a8c"/>
+    </linearGradient>
+    <linearGradient id="faceta" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0"   stop-color="#ffffff" stop-opacity=".92"/>
+      <stop offset="1"   stop-color="#9fe8ff" stop-opacity=".15"/>
+    </linearGradient>
+    <radialGradient id="nucleo" cx=".5" cy=".45" r=".55">
+      <stop offset="0"   stop-color="#ffffff" stop-opacity=".95"/>
+      <stop offset=".45" stop-color="#7ff0ff" stop-opacity=".45"/>
+      <stop offset="1"   stop-color="#4aa8ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- a luz que ela emite, por trás: é o que diz "isto tem energia dentro" -->
+  <circle cx="96" cy="98" r="70" fill="url(#nucleo)"/>
+
+  <!-- CONTORNO ESCURO. Sem ele o cristal claro some sobre o painel escuro,
+       e some justamente na ficha pequena, onde ele mais precisa aparecer. -->
+  <path d="M96 14 L150 66 L124 172 L68 172 L42 66 Z"
+        fill="#0e1826" stroke="#0e1826" stroke-width="17" stroke-linejoin="round"/>
+  <path d="M96 14 L150 66 L124 172 L68 172 L42 66 Z"
+        fill="url(#cristal)" stroke="#16283f" stroke-width="4" stroke-linejoin="round"/>
+
+  <!-- TRÊS FACETAS LARGAS. Finas viram sujeira a 30 px; estas continuam
+       legíveis e são o que faz a peça parecer cristal e não pedra. -->
+  <path d="M96 14 L42 66 L74 172 L88 78 Z" fill="url(#faceta)" opacity=".55"/>
+  <path d="M96 14 L150 66 L112 168 L102 78 Z" fill="#ffffff" opacity=".13"/>
+  <path d="M88 78 L102 78 L112 168 L74 172 Z" fill="#0a1a33" opacity=".28"/>
+
+  <!-- o brilho vivo no núcleo, e um lampejo na quina de cima -->
+  <ellipse cx="96" cy="92" rx="19" ry="27" fill="#ffffff" opacity=".22"/>
+  <ellipse cx="96" cy="92" rx="10" ry="16" fill="#eafdff" opacity=".55"/>
+  <path d="M96 26 L120 50 L96 44 L74 52 Z" fill="#ffffff" opacity=".5"/>
+</svg>

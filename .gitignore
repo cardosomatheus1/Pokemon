@@ -19,3 +19,40 @@ engine/*.bak
 # definição, arquivo e fecho, então cache frio custa tempo e nunca correção.
 test/fixtures/q2-veredito.json
 test/fixtures/captura.json
+
+# Linha de base visual DESTA maquina. A digital e de pixels e pixel de texto
+# muda com o rasterizador — a medida e local por natureza, e versiona-la tornaria
+# ilegivel o diff de todo bloco. Mesma razao do cache do Q2.
+test/fixtures/visual-base-local.json
+
+# dados/ — banco de execução (D-030). Dado de runtime, nunca versionado:
+# ele muda a cada rodada, e o esquema já vive nas migrações do banco.mjs.
+dados/
+
+# A folha de contato do acervo é SAÍDA, não fonte: `node tools/folha-acervo.mjs`
+# a regera em segundos, e ela pesa mais que todas as derivadas somadas.
+arte/acervo/folha-contato.png
+
+# tools/previas/saida/ — CAPTURAS DE PRÉVIA, e elas não são do jogo.
+#
+# O cabeçalho do `tools/previas/capturar.mjs` já dizia que esta pasta não entra
+# no repositório: é material de conversa, para o dono do projeto olhar e
+# aprovar. Mas o R40 e o R41 a versionaram por descuido meu, com um `git add -A
+# tools/` — e ela cresceu para 36 MB.
+#
+# O tamanho é o argumento: o ZIP entregue tinha 71 MB, e METADE eram capturas
+# de tela de conversas já encerradas. Quem clona o projeto para jogar não
+# precisa de nenhuma delas, e quem quiser regerá-las roda o script.
+#
+# As páginas de prévia CONTINUAM versionadas — elas são instrumento, e a
+# metodologia depende delas. O que sai é só a saída.
+tools/previas/saida/
+
+# As capturas do OLHAR do IDLE (tools/olhar-idle.mjs). Mesma razão do `.telas/`:
+# são para alguém LER durante o bloco, e não artefato do projeto. Ficaram de
+# fora quando aquela regra foi escrita — a ferramenta do idle nasceu depois.
+tools/previas/_idle/
+tools/previas/_rota-off/
+
+/_pacote/
+pokearena-continuidade-*.zip

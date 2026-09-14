@@ -1144,6 +1144,8 @@ o nome dele, e `npm run rapido` roda toda suíte que não precisa de navegador.
 
 ---
 
+---
+
 ### T4 — O fecho alcança o processo filho ✅
 
 **Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/` e `tools/`)
@@ -1278,6 +1280,59 @@ em vez de exibir as outras duas.
 > encolher de menos.
 
 ---
+
+### T6 — A bandeira que não recusava nada ✅
+
+**Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/`)
+· **Depende de** nada
+
+**Por que ele existe.** O `--sem-navegador` existe para não pagar Chromium.
+Durante quatro blocos ele não impediu partida nenhuma:
+
+```js
+const precisaNavegador = !SO || SO.some(n => COM_NAVEGADOR.includes(n));
+```
+
+A condição consultava `--so` e esquecia `--sem-navegador`. Sem `--so`, `!SO` é
+verdadeiro, os cinco Chromium subiam — e trinta e sete linhas abaixo o filtro do
+D-017 removia do resultado toda suíte que precisaria deles. **Cinco navegadores
+subiam, mediam, e ninguém lia.**
+
+**O defeito não tinha sintoma.** Suíte verde, contagem certa, nada quebrado. Só
+o relógio sabia, e ninguém olha o relógio de um comando chamado `rapido`. É a
+mesma família do D-058 — uma condição que nunca casa — e a mesma do D-056: um
+número que eu publiquei e não medi de novo.
+
+**O escopo.**
+
+```text
+1. a decisão sai do run.mjs e vira test/bandeiras.mjs, camada 0, pura
+2. tabela-verdade em test/bandeiras-suite.mjs — cinco casos, microssegundos
+3. defeito plantado S625 devolve a forma antiga
+4. o CLAUDE.md ganha o número medido, e a regra de que número tem data
+```
+
+**Por que módulo e não uma linha corrigida no lugar.** Porque a linha corrigida
+continuaria sem teste: `run.mjs` é o ponto de entrada, importá-lo de uma suíte
+executa a suíte inteira, e a única outra forma de observar a regra de fora seria
+cronometrar — que mede o efeito e não a regra, e devolve um teste lento e
+instável. Extraída, ela é tabela-verdade. É a mesma correção que `caixas.mjs`
+recebeu, pela mesma razão.
+
+**A medição, que é o critério de saída.**
+
+```
+antes    3 min 30 s     96 suítes, cinco Chromium subindo à toa
+depois   1 min 25 s     as mesmas 96 suítes, 1375/1375 verde
+sobra    84 s           trabalho de verdade: `servidor` custa 39 s sozinha
+```
+
+**Sabotagem.** `S625` — `if (semNavegador) return false;` vira
+`if (semNavegador && so) return false;`, que é exatamente a forma antiga. Sem a
+suíte nova, a correção fica verde dos dois lados; com ela, vermelho na hora.
+
+**Critério de saída.** ✅ `npm run rapido` abaixo de 2 min · ✅ `S625` PEGOU ·
+✅ o número do `CLAUDE.md` medido nesta máquina, com a data e o bloco ao lado.
 
 ### T2 — A linha de base visual mais fina ✅
 

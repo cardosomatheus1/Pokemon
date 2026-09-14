@@ -32,8 +32,8 @@
  */
 import { MARGEM_MAX, margemValida } from '../../engine/preco.mjs';
 
-export const CHAVE_ADM = 'ar_adm';
-export const ADM_PIN = '7777';
+
+
 export const PADRAO = { margem: null };
 
 export { MARGEM_MAX };

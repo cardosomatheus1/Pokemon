@@ -17,7 +17,9 @@
  * `:memory:` em toda suíte: banco em disco não roda em paralelo consigo mesmo, e
  * o T3 acabou de comprar paralelo.
  */
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, mkdtempSync, rmSync, existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { abrirBanco, migrar, desmigrar, versaoDoBanco, MIGRACOES } from '../server/banco.mjs';
 
@@ -209,6 +211,73 @@ export function suite() {
         `\n      Use consulta parametrizada. Nome de tabela vindo de constante do ` +
         `próprio arquivo é aceitável — mas então extraia para uma constante e o ` +
         `padrão para de casar.`);
+    }
+  });
+
+  /* ── O CLONE LIMPO PRECISA SUBIR (D-030) ─────────────────────────────────
+   *
+   * `config.mjs` resolve o banco para `dados/pokearena.db` em todo ambiente que
+   * não seja teste, e o SQLite NÃO CRIA DIRETÓRIO — só arquivo. Num clone
+   * limpo `dados/` não existe, e não deve existir: é dado de execução, e dado
+   * de execução não se versiona.
+   *
+   *     npm run servidor
+   *     → Error: unable to open database file   errcode 14
+   *
+   * E a mensagem é a mesma de permissão negada, disco cheio e caminho
+   * inválido — quem clona procura em quatro lugares antes do certo.
+   *
+   * ESTE TESTE É O ÚNICO DA SUÍTE QUE ESCREVE EM DISCO, e é de propósito. O
+   * resto roda em `:memory:` porque banco em arquivo não roda em paralelo
+   * consigo mesmo (T3) — e foi exatamente por isso que ninguém passou por aqui
+   * em cinquenta blocos. Um defeito que só aparece fora de `:memory:` precisa
+   * de um teste que saia de `:memory:`.
+   *
+   * Escreve num diretório temporário próprio, com nome único, e apaga no
+   * `finally` — inclusive quando a asserção falha. Deixar caixa para trás é o
+   * D-036, e não vou plantá-lo de novo aqui. */
+  s.teste('abrir o banco CRIA o diretório que falta, como num clone limpo', () => {
+    const raiz = mkdtempSync(join(tmpdir(), 'pokearena-d030-'));
+    /* Dois níveis: o defeito real é `dados/` faltando, mas `recursive` é o que
+       separa "cria o último" de "cria o caminho". Um `mkdirSync` sem ele
+       passaria com um nível e quebraria com dois — e `dados/` pode virar
+       `var/dados/` no dia em que alguém mexer no `config.mjs`. */
+    const caminho = join(raiz, 'dados', 'sub', 'pokearena.db');
+    try {
+      const db = abrirBanco(caminho);
+      migrar(db);
+      igual(versaoDoBanco(db), MIGRACOES.length,
+        'o banco abriu e as migrações não subiram');
+      db.close();
+      ok(existsSync(caminho),
+        `o arquivo do banco não existe em ${caminho} depois de abrir e migrar`);
+    } catch (e) {
+      ok(false,
+        `abrir o banco num caminho cujo diretório não existe lançou "${e.message}". ` +
+        `É o D-030: o SQLite não cria diretório, e num clone limpo \`dados/\` não ` +
+        `existe. A mensagem dele não diz isso — diz "unable to open database file", ` +
+        `que é também a de permissão negada e disco cheio.`);
+    } finally {
+      /* LIMPAR NÃO PODE REPROVAR UM TESTE QUE PASSOU (D-050).
+       *
+       * No Windows, apagar um arquivo de banco recém-fechado pode dar EPERM ou
+       * EBUSY enquanto o sistema ainda solta o descritor — e `force: true`
+       * silencia ENOENT e mais nada. Um `rmSync` que lança dentro do
+       * `finally` propaga a exceção e derruba o teste com o corpo do `try`
+       * inteiro verde.
+       *
+       * O sintoma é uma falha intermitente e dependente de carga, que é
+       * exatamente a condição do portão — e foi assim que quatro caixas
+       * `pokearena-d030-*` apareceram no temporário sem ninguém saber quando.
+       *
+       * `maxRetries` é o remédio documentado do Node para EBUSY; o `catch`
+       * existe para o caso de nem ele bastar. Caixa esquecida é vazamento a
+       * reportar (D-036), e não resultado de teste. */
+      try {
+        rmSync(raiz, { recursive: true, force: true, maxRetries: 20, retryDelay: 50 });
+      } catch (e) {
+        console.warn(`  ⚠ não consegui apagar ${raiz}: ${e.code ?? e.message}`);
+      }
     }
   });
 

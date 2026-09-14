@@ -52,19 +52,47 @@ export function suite() {
    * Os COSMÉTICOS não. "Neon", "Glitch", "Grade Synth" são efeitos que o
    * jogador escolhe pelo nome, e a cor específica é a identidade deles — um
    * efeito Neon que muda de cor com o tema deixa de ser o efeito que a pessoa
-   * escolheu. Por isso `.cn-*`, `.ef-*` e `.sc-*` podem ter cor própria.
+   * escolheu. Por isso `.cn-*`, `.ef-*`, `.sc-*` e `.md-*` podem ter cor própria.
+   *
+   * O `.md-*` entrou no R40, e pelo mesmo argumento: a moldura Chama é âmbar
+   * porque É a Chama. Se ela virasse violeta no tema Shadow, o jogador que
+   * escolheu Chama passaria a usar outra coisa com o nome dela.
    *
    * A exceção é por SELETOR e não por arquivo, de propósito: assim ela cobre
    * exatamente os cosméticos, e uma cor solta numa regra de plataforma continua
    * reprovando mesmo estando no meio do bloco de pele. */
   s.teste('nenhuma cor de acento solta fora dos cosméticos', () => {
     const ACENTOS = ['#f5c542', '245,197,66', '#00e5ff', '0,229,255', '#b57bff', '181,123,255'];
-    const COSMETICO = /^\s*(@keyframes\s+(ef|cn|sc)[A-Z]|[.#][\w-]*[\s,>]*)?[.](cn|ef|sc)-/;
+    const COSMETICO = /^\s*(@keyframes\s+(ef|cn|sc|md)[A-Z]|[.#][\w-]*[\s,>]*)?[.](cn|ef|sc|md)-/;
     const linhas = CSS.split('\n');
     const ruins = [];
     let dentroDeCosmetico = false;
+    /* ── COMENTÁRIO NÃO É COR NA TELA (R35) ──────────────────────────────
+     *
+     * A varredura era por linha crua e pegava o texto dos comentários. O R35
+     * reprovou por causa de uma frase que EXPLICA o defeito que ele corrigiu:
+     * o pódio usava `var(--gold)`, e o comentário precisava dizer que naquele
+     * token mora o acento do tema, que vale ciano.
+     *
+     * Proibir o valor no comentário é proibir a explicação — e é a terceira vez
+     * que este projeto encontra a mesma armadilha. O `test/banner.mjs` já a
+     * registrou por escrito ao permitir citar o catálogo `.sc-*` removido, e o
+     * `test/shiny-arena.mjs` fez o mesmo com `skinShinyAtiva`.
+     *
+     * O que a regra guarda continua intacto: cor que o navegador PINTA. Uma cor
+     * dentro de `/* *​/` não é pintada, então não pode deixar de virar com o
+     * tema — que é literalmente o defeito que este teste existe para achar. */
+    let dentroDeComentario = false;
     linhas.forEach((l, i) => {
-      if (COSMETICO.test(l) || /^\s*@keyframes\s+(ef|cn|sc)/.test(l)) dentroDeCosmetico = true;
+      const abriu = l.includes('/*'), fechou = l.includes('*/');
+      const eraComentario = dentroDeComentario;
+      if (abriu && !fechou) dentroDeComentario = true;
+      else if (fechou) dentroDeComentario = false;
+      /* A linha que ABRE o comentário também é ignorada da abertura em diante;
+         ignorá-la inteira é aceitável porque cor e comentário na mesma linha,
+         com a cor DEPOIS do `/*`, é comentário. */
+      if (eraComentario || abriu) return;
+      if (COSMETICO.test(l) || /^\s*@keyframes\s+(ef|cn|sc|md)/.test(l)) dentroDeCosmetico = true;
       else if (/^[.#@:a-zA-Z\[]/.test(l) && !/^\s/.test(l)) dentroDeCosmetico = false;
       if (dentroDeCosmetico) return;
       /* a própria definição de um token é o único outro lugar legítimo */
@@ -129,7 +157,7 @@ export function suite() {
     const usadas = [...new Set([...CSS.matchAll(/\.\.\/arte\/([\w-]+\.(?:jpg|png|webp))/g)].map(m => m[1]))];
     ok(usadas.length > 0, 'o CSS não referencia nenhuma arte de arte/');
     for (const a of usadas)
-      ok(existsSync(new URL(a, ARTE).pathname),
+      ok(existsSync(new URL(a, ARTE)),
         `o CSS usa ../arte/${a} e o arquivo não está no repositório`);
   });
 

@@ -121,7 +121,30 @@ const CONF = {
      a casa nunca paga as duas pontas.                                      */
   MAX_PAYOUT_POR_TICKET:    50000,
   MAX_LIABILITY_POR_RODADA: 500000,   // 10 × o teto por ticket
-  BET_WINDOW:   30,     // segundos de aposta
+  /* ── 40 s, E NÃO 30 (L-112, bloco 1.27) ────────────────────────────────
+     A H2 da Spec dizia "30 segundos é uma janela adequada para decidir a
+     aposta". Era uma HIPÓTESE declarada, e o dono a reprovou na prática:
+
+       Ele descreveu o problema assim, e a citação vai parafraseada porque o
+       §0.3 não deixa identificador de franquia entrar no motor: sem
+       confirmação, quem demora a decidir perde o lutador que estava mirando
+       para outro apostador.
+
+     E a L-110 diz por quê, pelo outro caminho: a ficha era pequena demais
+     para se ler em trinta segundos. As duas lacunas são a mesma queixa.
+
+     MEDIDO, e o custo é real e aceito:
+
+         rodada    30+3+45 = 78 s   ->   40+3+45 = 88 s
+         por hora  46,2 rodadas     ->   40,9      −11,4%
+
+     Menos rodadas por hora é menos volume por sessão. O que se compra com
+     isso é a aposta deixar de ser um chute — e uma aposta que o jogador não
+     conseguiu ler não é volume, é ruído.
+
+     O Monte Carlo não trava: o §12 já media 154.000 sims cabendo "folgadamente"
+     em 30 s, e com 40 a folga só aumenta. */
+  BET_WINDOW:   40,     // segundos de aposta
   RESULT_HOLD:  8,      // segundos mostrando o vencedor
   ARENA_SIZE:   12,     // lutadores por rodada
 };
@@ -499,6 +522,9 @@ function criarMotor(pack){
     nomeExibido:   (slug)              => pack.nomeExibido(slug),
     slugExterno:   (slug)              => pack.slugExterno(slug),
     sprite:        (esp)               => pack.sprite(esp),
+    /* O retrato shiny é o MESMO desenho noutra pasta. Endereço de arte é do
+       pack, e não daqui: cada tema sabe se tem variante shiny e onde. */
+    spriteShiny:   (esp)               => pack.spriteShiny(esp),
     tipoCor:       (t)                 => pack.tipos.cores[t],
     tipoNome:      (t)                 => pack.tipos.nomes[t] || t,
     moeda:         pack.moeda,

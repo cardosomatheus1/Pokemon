@@ -81,6 +81,17 @@ export function criarApi({ base = '', armazem = globalThis.localStorage } = {}) 
        guardada em outro canto. */
     sessaoAtual: () => sessao,
     esquecerSessao: () => { sessao = null; gravar(null); },
+    /* ADOTAR UM TOKEN QUE A RESPOSTA NÃO ENTREGOU COMO `sessao`.
+     *
+     * A captura automática acima cobre a sessão do JOGADOR, que vem no campo
+     * `sessao`. A do OPERADOR vem como `token`, de `POST /api/admin/entrar`, e
+     * é outra coisa: outro tempo de vida, outra rotação, e um alcance que
+     * inclui o saldo de todo mundo.
+     *
+     * Ela existe para ser usada numa instância criada com `armazem: null` —
+     * memória e nada mais. Persistir um token de operador desfaria as duas
+     * defesas que o servidor construiu: a expiração e a rotação. */
+    adotarSessao: t => { sessao = t || null; gravar(sessao); },
   };
 }
 

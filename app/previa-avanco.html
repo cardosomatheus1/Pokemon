@@ -1,0 +1,894 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PokéArena — prévia do Avanço</title>
+<!--
+  PRÉVIA DE LAYOUT DO AVANÇO (Spec §7.22) — 07/09/2026.
+
+  NÃO É PRODUTO. É uma tela para o dono OLHAR e corrigir antes de eu construir,
+  e ela existe porque a regra do CLAUDE.md diz que nada de arranjo se decide
+  sem olhar na proporção real.
+
+  As três vistas são as três capturas que ele mandou do Baiak Idle, vestidas
+  com a informação do NOSSO idle:
+
+      A RUN        a tela principal — 3 colunas, o bioma no meio
+      OS ESTÁGIOS  o modal de escolha, com o elenco visível no cartão
+      AUSENTE      o modo offline, com a RESERVA que enche jogando
+
+  Os dados NÃO são inventados: o elenco da Floresta estágio 1 sai de
+  `elencoDoBioma` + `faixasDoEstagio`, e deu exatamente os quatro que o dono
+  nomeou de cabeça. Os sprites são os do cache local, os mesmos da Arena.
+-->
+<style>
+/* ── A PELE É A DO JOGO ────────────────────────────────────────────────────
+   Os tokens são copiados do `index.html` de propósito: esta prévia tem de
+   parecer a mesma casa, ou ela responde a pergunta errada. Um layout bonito
+   numa paleta que não é a nossa não prova nada sobre a nossa tela. */
+:root{
+  --bg:#070a12; --panel:rgba(17,27,46,.72); --panel2:rgba(10,17,31,.78);
+  --gold:#00e5ff; --goldRGB:0,229,255; --line:rgba(var(--goldRGB),.20);
+  --neon2:#a06bff; --neon2RGB:160,107,255;
+  --ink:#e8f2ff; --ink2:#93a7c4; --ink3:#63789a;
+  --ok:#43e08a; --perigo:#ff5a4d; --aviso:#ffcc4d;
+  --mata:#3c6b3e; --mataClaro:#6ba55c; --mataAcento:#8fd46a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:
+    radial-gradient(1200px 600px at 50% -10%,rgba(var(--goldRGB),.07),transparent 60%),
+    var(--bg);
+  color:var(--ink); font:13px/1.45 "Segoe UI",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{margin:0;font-weight:700}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* ── O AVISO DE QUE ISTO NÃO É O JOGO ─────────────────────────────────── */
+.tarja{
+  background:linear-gradient(90deg,rgba(var(--neon2RGB),.22),rgba(var(--goldRGB),.10));
+  border-bottom:1px solid var(--line); padding:7px 16px; font-size:12px;
+  display:flex; gap:14px; align-items:center; flex-wrap:wrap}
+.tarja b{color:var(--neon2); letter-spacing:.06em}
+.tarja span{color:var(--ink2)}
+.tarja .abas{margin-left:auto; display:flex; gap:6px}
+.tarja .abas button{
+  padding:4px 12px; border:1px solid var(--line); border-radius:999px;
+  font-size:11.5px; letter-spacing:.05em; color:var(--ink2)}
+.tarja .abas button[aria-pressed="true"]{
+  background:rgba(var(--goldRGB),.16); color:var(--gold);
+  border-color:rgba(var(--goldRGB),.5)}
+
+/* ── O MENU DO JOGO, COMO ELE JÁ É ────────────────────────────────────── */
+.topo{display:flex; align-items:center; gap:18px; padding:9px 16px;
+  border-bottom:1px solid var(--line); background:var(--panel2)}
+.marca{font-weight:800; letter-spacing:.14em; font-size:14px; color:var(--gold);
+  text-shadow:0 0 14px rgba(var(--goldRGB),.5)}
+.nav{display:flex; gap:3px}
+.nav b{padding:5px 11px; border-radius:8px; font-weight:600; font-size:12.5px;
+  color:var(--ink2)}
+.nav b.on{background:rgba(var(--goldRGB),.14); color:var(--gold)}
+.saldos{margin-left:auto; display:flex; gap:14px; align-items:center; font-size:12.5px}
+.saldos i{font-style:normal; color:var(--ink3); margin-right:5px}
+
+/* ── A GRADE DE TRÊS COLUNAS ──────────────────────────────────────────── */
+/* ── A COLUNA DA DIREITA ALARGOU POR CAUSA DO BANNER ─────────────────────
+   O banner é desenhado a 554 px no jogo. Numa coluna de 296 ele fica a 53% e o
+   texto dele — o nome, o nível, a linha de estado — deixa de se ler. E ele está
+   ali justamente para ser lido: é a identidade do jogador (L-147).
+
+   A coluna vai a 360. O que se paga é LARGURA da cena, e não altura — e nesta
+   tela as duas não custam o mesmo: foi a altura que empurrou a barra de ação
+   para baixo da dobra a 1920. Largura a cena tem de sobra; altura, não. */
+.palco{display:grid; grid-template-columns:252px minmax(0,1fr) 360px;
+  gap:10px; padding:10px; align-items:start}
+@media (max-width:1240px){ .palco{grid-template-columns:230px minmax(0,1fr)} .colDir{display:none} }
+@media (max-width:900px){ .palco{grid-template-columns:1fr} .colEsq{display:none} }
+.col{display:flex; flex-direction:column; gap:10px; min-width:0}
+
+.bloco{background:var(--panel); border:1px solid var(--line); border-radius:11px;
+  overflow:hidden}
+.bloco>h4{
+  display:flex; align-items:center; gap:8px;
+  padding:7px 11px; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--gold); background:rgba(var(--goldRGB),.07);
+  border-bottom:1px solid var(--line)}
+.bloco>h4 small{margin-left:auto; color:var(--ink3); letter-spacing:.04em;
+  text-transform:none; font-size:11px; font-weight:400}
+.corpo{padding:10px 11px}
+
+/* barras */
+.barra{height:7px; border-radius:99px; background:rgba(255,255,255,.07);
+  overflow:hidden; margin:5px 0 2px}
+.barra i{display:block; height:100%; border-radius:99px}
+.linha{display:flex; justify-content:space-between; gap:10px; font-size:12px;
+  padding:2px 0}
+.linha span:last-child{color:var(--ink); font-variant-numeric:tabular-nums}
+.linha span:first-child{color:var(--ink2)}
+.rot{font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--ink3)}
+
+/* ── O CENTRO ─────────────────────────────────────────────────────────── */
+.cabecalhoRun{display:flex; align-items:center; gap:12px; padding:8px 11px;
+  background:var(--panel2); border-bottom:1px solid var(--line)}
+.seletor{display:flex; align-items:center; gap:8px; padding:5px 11px;
+  border:1px solid rgba(var(--goldRGB),.4); border-radius:8px;
+  background:rgba(var(--goldRGB),.09); font-weight:700; letter-spacing:.05em;
+  font-size:12.5px; color:var(--gold); white-space:nowrap}
+.seletor u{text-decoration:none; color:var(--ink2); font-weight:400}
+
+/* A TIRA DAS WAVES — é o mostrador central desta tela.
+   No Baiak ela é um punhado de quadradinhos com o chefe no fim; aqui ela
+   ganha o que a nossa tem e a dele não: a ESPÉCIE de cada wave. */
+.waves{display:flex; align-items:center; gap:4px; margin:0 auto}
+.wv{width:24px; height:11px; border-radius:3px; background:rgba(255,255,255,.10);
+  border:1px solid transparent}
+.wv.feita{background:rgba(var(--goldRGB),.55)}
+.wv.agora{background:var(--gold); box-shadow:0 0 10px rgba(var(--goldRGB),.9);
+  border-color:#fff}
+.wv.chefe{width:34px; height:20px; border-radius:5px; margin-left:5px;
+  background:rgba(var(--neon2RGB),.22); border:1px solid rgba(var(--neon2RGB),.6);
+  display:grid; place-items:center; font-size:12px; color:var(--neon2)}
+.relogio{font-variant-numeric:tabular-nums; font-size:15px; font-weight:700;
+  letter-spacing:.06em}
+.laco{display:flex; align-items:center; gap:6px; padding:4px 10px;
+  border:1px solid var(--line); border-radius:999px; font-size:11.5px;
+  color:var(--ink2); white-space:nowrap}
+.laco.on{color:var(--ok); border-color:rgba(67,224,138,.5);
+  background:rgba(67,224,138,.10)}
+.laco em{width:7px; height:7px; border-radius:99px; background:currentColor;
+  font-style:normal}
+
+/* ── A CENA É A NOSSA, E ELA É TOP-DOWN ───────────────────────────────────
+   A primeira versão desta prévia desenhou a cena DE LADO, à mão: gradiente
+   verde, copas em bolha, criaturas flutuando num degradê. Aí eu abri o jogo
+   e OLHEI.
+
+   O nosso cenário é top-down em tile GBA — a MESMA vista do Baiak — e ele
+   está construído há dez blocos. Eu estava prevendo uma tela pior que a que
+   já existe.
+
+     > Desenhar por cima do que já foi construído sem olhar o que já foi
+     > construído é a forma mais cara de "atenção especial" que existe.
+
+   O fundo agora é uma FOTO do canvas do jogo, tirada pelo `tools/foto-cena.mjs`.
+   Ampliada 3× com alisamento desligado, que é como o jogo a mostra. */
+/* ── E ELA TEM TETO DE ALTURA ─────────────────────────────────────────────
+   Só com `aspect-ratio` a cena crescia com a largura, e a 1920 ela empurrava a
+   BARRA DE AÇÃO para baixo da dobra — a poção e a bola, que são as duas únicas
+   coisas que esta tela pede da mão do jogador.
+
+     Um controle abaixo da dobra é um controle que não existe. E ele só
+     apareceu ao capturar em 1920: a 1440 estava tudo visível.
+
+   É a quarta vez neste projeto que o passo OLHAR pega o que o teste não pega,
+   e a segunda em que o defeito só existe numa largura.
+
+   E a PRIMEIRA correção estava errada, o que só a segunda captura mostrou:
+   `aspect-ratio` + `max-height` não corta a altura — ele encolhe a LARGURA
+   para manter a proporção, e a cena passou a terminar 360 px antes da borda
+   do painel, com faixa escura à direita. A altura é que manda aqui; a largura
+   é sempre a do painel, e o `cover` do fundo resolve o resto. */
+.cena{position:relative; width:100%; height:clamp(340px,58vh,660px);
+  overflow:hidden; isolation:isolate;
+  background:#1d3d26 url("./previa/cena-floresta.png") center/cover no-repeat;
+  image-rendering:pixelated}
+/* névoa, luz e vinheta — o §atenção especial pede o detalhe que não foi pedido,
+   e num top-down é a luz que diz que hora do dia é. */
+.raios{position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(106deg,transparent 30%,rgba(230,255,200,.11) 35%,
+    transparent 40%,transparent 60%,rgba(230,255,200,.07) 65%,transparent 70%)}
+.bruma{position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 45%,transparent 48%,rgba(3,8,5,.42) 100%)}
+/* NÃO existe moldura marcando "onde é o combate". A primeira versão tinha uma,
+   tracejada, e ela caiu em cima do treinador — mas o problema não era a
+   posição: andaime de prévia não pode aparecer numa prévia que existe para
+   dizer como a tela VAI ser. Quem diz onde olhar são os bichos e a tira das
+   waves lá em cima. */
+
+.ator{position:absolute; transform:translate(-50%,-50%);
+  display:flex; flex-direction:column; align-items:center; gap:2px}
+/* ── A ARTE É A DA ARENA, E NÃO GIF ───────────────────────────────────────
+   Correção do dono: *"você está me apresentando POKÉMON EM GIF, tem que ser AS
+   MESMAS SPRITES DOS POKÉMON QUE SÃO USADOS NA ARENA"*.
+
+   A Arena não usa GIF. Usa as FOLHAS do PMDCollab, desenhadas quadro a quadro
+   — arte 3/4 com OITO DIREÇÕES — e o companheiro do idle já usa as mesmas
+   desde o 1.5c(c). O GIF do Showdown é DE PERFIL: numa cena top-down ele nunca
+   poderia estar certo, porque o bicho olharia para fora do mundo.
+
+     > A arte errada não erra só o enfeite: ela erra a PERGUNTA. Ninguém julga
+     > um arranjo olhando peças que não vão estar nele.
+
+   `tools/tira-pmd.mjs` corta a LINHA 0 da folha (de frente) numa tira, e um
+   `steps()` de CSS a anima. Zero JavaScript, e o desenho é exatamente o que o
+   jogador vê na Arena. */
+.pmd{--alt:52px; height:var(--alt);
+  width:calc(var(--pw) * var(--alt) / var(--ph));
+  image-rendering:pixelated; background-repeat:no-repeat;
+  background-size:auto 100%; flex:none;
+  animation:tira var(--pms,700ms) steps(var(--pq)) infinite;
+  filter:drop-shadow(0 2px 0 rgba(0,0,0,.4))}
+/* O passo é a largura do quadro NA TELA, e não a nativa — senão a tira anda
+   mais que o quadro e o bicho pisca pedaços do vizinho. */
+@keyframes tira{ from{background-position-x:0}
+  to{background-position-x:calc(var(--pw) * var(--pq) * var(--alt) / var(--ph) * -1)} }
+/* PARADO no primeiro quadro. O cartão e o log precisam da mesma ARTE, e não da
+   mesma animação: vinte e quatro bichos andando ao mesmo tempo num cartão é
+   ruído — e ruído numa tela que fica aberta por horas custa a sessão. */
+.pmd.parado{animation:none; background-position-x:0}
+.pmd.chefe{--alt:62px; filter:drop-shadow(0 0 7px rgba(var(--neon2RGB),.9))}
+/* Quem levou a pancada congela no quadro do baque, como a Arena faz. */
+.pmd.doi{animation:none;
+  background-position-x:calc(var(--pw) * var(--alt) / var(--ph) * -1)}
+@media (prefers-reduced-motion:reduce){ .pmd{animation:none} }
+/* A sombra assenta a criatura no chão. Sem ela o sprite fica SOBRE o cenário
+   em vez de DENTRO dele — e essa foi, literalmente, a reprovação do dono duas
+   rodadas seguidas no cenário do idle. */
+.ator .sombra{position:absolute; bottom:-3px; width:calc(var(--h,58px)*.52);
+  height:calc(var(--h,58px)*.15); border-radius:50%;
+  background:rgba(0,0,0,.45); filter:blur(2.5px); z-index:-1}
+.cena .placa{font-size:11px}
+.cena .vidaMob{width:52px; height:4px}
+.placa{font-size:9.5px; letter-spacing:.03em; padding:1px 5px; border-radius:4px;
+  background:rgba(6,10,18,.8); border:1px solid rgba(255,255,255,.12);
+  white-space:nowrap}
+.vidaMob{width:38px; height:3px; border-radius:99px; background:rgba(0,0,0,.6);
+  overflow:hidden}
+.vidaMob i{display:block; height:100%; background:var(--ok)}
+.meu .placa{border-color:rgba(var(--goldRGB),.6); color:var(--gold)}
+.chefeAtor .placa{border-color:rgba(var(--neon2RGB),.7); color:var(--neon2);
+  font-weight:700}
+
+/* o balãozinho do golpe — pedido literal do dono */
+.golpe{position:absolute; transform:translate(-50%,-50%);
+  background:rgba(6,10,18,.9); border:1px solid rgba(var(--goldRGB),.5);
+  color:var(--gold); font-size:10px; font-weight:700; letter-spacing:.04em;
+  padding:2px 7px; border-radius:7px; white-space:nowrap}
+.golpe::after{content:""; position:absolute; left:12px; top:100%;
+  border:5px solid transparent; border-top-color:rgba(var(--goldRGB),.5)}
+.dano{position:absolute; font-weight:800; font-size:14px;
+  text-shadow:0 2px 0 rgba(0,0,0,.7); transform:translate(-50%,-50%)}
+.dano.neles{color:var(--aviso)} .dano.emmim{color:var(--perigo)}
+
+/* a barra de ação embaixo da cena */
+.acoes{display:flex; gap:7px; padding:9px 11px; background:var(--panel2);
+  border-top:1px solid var(--line); align-items:center; flex-wrap:wrap}
+.acao{display:flex; align-items:center; gap:7px; padding:6px 12px;
+  border:1px solid var(--line); border-radius:9px; font-size:12.5px;
+  background:rgba(255,255,255,.03)}
+.acao b{font-variant-numeric:tabular-nums}
+.acao.destaque{border-color:rgba(var(--goldRGB),.55); color:var(--gold);
+  background:rgba(var(--goldRGB),.10)}
+.acao.perigo{border-color:rgba(255,90,77,.45); color:var(--perigo)}
+.acoes .dica{margin-left:auto; color:var(--ink3); font-size:11.5px}
+
+/* ── O LOG DA RUN — a dívida da L-141 ─────────────────────────────────── */
+.log{display:flex; flex-direction:column; gap:0}
+.evt{display:flex; align-items:center; gap:8px; padding:5px 11px; font-size:12px;
+  border-bottom:1px solid rgba(255,255,255,.05)}
+.evt:last-child{border-bottom:0}
+.evt img{height:22px; image-rendering:pixelated}
+.evt .qtd{margin-left:auto; font-variant-numeric:tabular-nums; color:var(--ink)}
+.evt .quando{color:var(--ink3); font-size:10.5px; font-variant-numeric:tabular-nums;
+  min-width:34px}
+.evt.bom{color:var(--ok)} .evt.raro{color:var(--neon2)}
+.pastilha{width:19px; height:19px; border-radius:5px; display:grid;
+  place-items:center; font-size:11px; background:rgba(255,255,255,.07)}
+
+/* ── A EQUIPE, À DIREITA ──────────────────────────────────────────────── */
+.vaga{display:flex; gap:9px; padding:9px 11px;
+  border-bottom:1px solid rgba(255,255,255,.05)}
+.vaga:last-child{border-bottom:0}
+.vaga img{height:44px; image-rendering:pixelated; align-self:center}
+.vaga .quem{flex:1; min-width:0}
+.vaga .nome{font-weight:700; font-size:12.5px}
+.vaga .sub{font-size:10.5px; color:var(--ink3); letter-spacing:.04em}
+.travada{opacity:.62; align-items:center; gap:10px}
+.cadeado{width:44px; height:44px; border-radius:9px; display:grid;
+  place-items:center; border:1px dashed rgba(255,255,255,.18); font-size:16px}
+.travada .comoAbre{font-size:11px; color:var(--aviso)}
+
+/* bolsa e saque */
+.grade{display:grid; grid-template-columns:repeat(6,1fr); gap:5px; padding:10px 11px}
+.slot{aspect-ratio:1; border-radius:7px; background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.07); display:grid; place-items:center;
+  position:relative; font-size:15px}
+.slot b{position:absolute; right:2px; bottom:0; font-size:9.5px;
+  text-shadow:0 1px 2px #000; font-variant-numeric:tabular-nums}
+.slot.novo{border-color:rgba(var(--goldRGB),.6);
+  box-shadow:0 0 10px rgba(var(--goldRGB),.35)}
+.slot.vazio{opacity:.35}
+
+/* ── VISTA 2: OS ESTÁGIOS ─────────────────────────────────────────────── */
+.modal{max-width:1020px; margin:14px auto; background:var(--panel);
+  border:1px solid var(--line); border-radius:14px; overflow:hidden}
+.modal>header{padding:13px 18px; border-bottom:1px solid var(--line);
+  background:rgba(var(--goldRGB),.07)}
+.modal h2{font-size:15px; letter-spacing:.14em; color:var(--gold);
+  text-transform:uppercase}
+.modal h2 small{display:block; margin-top:3px; font-size:11.5px; font-weight:400;
+  letter-spacing:.03em; color:var(--ink2); text-transform:none}
+.filtros{display:flex; gap:8px; padding:11px 18px; flex-wrap:wrap;
+  border-bottom:1px solid rgba(255,255,255,.06); align-items:center}
+.busca{flex:1; min-width:180px; padding:7px 12px; border-radius:8px;
+  border:1px solid var(--line); background:rgba(0,0,0,.28); color:var(--ink2)}
+.chip{padding:5px 13px; border:1px solid var(--line); border-radius:999px;
+  font-size:11.5px; color:var(--ink2)}
+.chip.on{background:rgba(var(--goldRGB),.16); color:var(--gold);
+  border-color:rgba(var(--goldRGB),.5)}
+.duas{display:grid; grid-template-columns:186px 1fr; gap:0}
+@media (max-width:760px){ .duas{grid-template-columns:1fr} .duas>aside{display:none} }
+.duas>aside{border-right:1px solid rgba(255,255,255,.06); padding:12px 0}
+.duas>aside b{display:block; padding:5px 18px; font-size:10.5px;
+  letter-spacing:.11em; text-transform:uppercase; color:var(--ink3)}
+.duas>aside a{display:flex; justify-content:space-between; padding:6px 18px;
+  font-size:12.5px; color:var(--ink2); text-decoration:none}
+.duas>aside a.on{background:rgba(var(--goldRGB),.12); color:var(--gold);
+  border-left:2px solid var(--gold)}
+.cartoes{display:grid; grid-template-columns:repeat(auto-fill,minmax(276px,1fr));
+  gap:11px; padding:14px 18px; max-height:460px; overflow-y:auto;
+  align-items:start}   /* sem isto o cartão estica até a altura do vizinho */
+.cartao{border:1px solid var(--line); border-radius:11px; padding:11px 12px;
+  background:rgba(0,0,0,.26); position:relative}
+.cartao.aberto{border-color:rgba(var(--goldRGB),.5)}
+.cartao.fechado{opacity:.5}
+/* O elenco é a informação PRINCIPAL do cartão — é por ele que se escolhe
+   onde caçar, e não pelo nome. Ele fica maior que o texto, de propósito. */
+.elenco{display:flex; gap:4px; align-items:flex-end; min-height:58px;
+  margin-bottom:8px}
+.elenco img{height:40px; image-rendering:pixelated}
+.elenco img.chefe{height:46px; filter:drop-shadow(0 0 7px rgba(var(--neon2RGB),.85))}
+.cartao .nome{font-weight:700; font-size:13.5px; display:flex; gap:8px;
+  align-items:center}
+.selo{font-size:9.5px; letter-spacing:.08em; padding:2px 6px; border-radius:5px;
+  border:1px solid currentColor}
+.selo.loot{color:var(--aviso)} .selo.xp{color:var(--neon2)}
+.selo.raro{color:var(--gold)}
+/* A estrela VAZIA precisa ler como vazia. Pintadas da mesma cor, "★☆☆☆" e
+   "★★★★" viram a mesma mancha dourada num tamanho de 11 px — e a dificuldade,
+   que é a informação que o cartão existe para dar, some. */
+.estrelas{color:var(--aviso); font-size:11px; letter-spacing:1px}
+.estrelas s{text-decoration:none; color:rgba(255,255,255,.22)}
+.cartao .pe{display:flex; justify-content:space-between; margin-top:6px;
+  font-size:11.5px; color:var(--ink3)}
+.feitas{color:var(--ok); border:1px solid rgba(67,224,138,.4);
+  padding:1px 6px; border-radius:5px; font-size:10.5px}
+.modal>footer{padding:11px 18px; border-top:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; font-size:12px; color:var(--ink2)}
+.botao{margin-left:auto; padding:7px 18px; border-radius:9px;
+  border:1px solid rgba(var(--goldRGB),.5); color:var(--gold);
+  background:rgba(var(--goldRGB),.12); font-weight:700; letter-spacing:.05em}
+
+/* ── VISTA 3: O MODO AUSENTE ──────────────────────────────────────────── */
+.dois{display:grid; grid-template-columns:1fr 1fr; gap:0}
+.dois>button{padding:12px; font-weight:700; letter-spacing:.06em; font-size:12.5px;
+  color:var(--ink2); border-bottom:2px solid transparent}
+.dois>button[aria-pressed="true"]{color:var(--gold);
+  border-bottom-color:var(--gold); background:rgba(var(--goldRGB),.08)}
+.reserva{padding:16px 18px}
+.reserva .barra{height:11px; margin:9px 0 7px}
+.nota{font-size:12px; color:var(--ink2); line-height:1.6}
+.nota b{color:var(--ink)}
+.perfis{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:10px; padding:0 18px 16px}
+.perfil{border:1px solid var(--line); border-radius:11px; padding:12px;
+  background:rgba(0,0,0,.26)}
+.perfil.on{border-color:rgba(var(--goldRGB),.5);
+  box-shadow:0 0 0 1px rgba(var(--goldRGB),.2) inset}
+.perfil h5{margin:0 0 3px; font-size:13.5px}
+.perfil .dur{font-size:11px; color:var(--gold); letter-spacing:.06em}
+.perfil ul{margin:8px 0 0; padding-left:16px; font-size:11.5px; color:var(--ink2)}
+
+/* ── AS NOTAS DE DESENHO, QUE SE PODEM DESLIGAR ───────────────────────── */
+.nt{display:block; margin-top:7px; padding:6px 8px; font-size:11px;
+  line-height:1.5; color:var(--neon2); border-left:2px solid rgba(var(--neon2RGB),.55);
+  background:rgba(var(--neon2RGB),.07); border-radius:0 6px 6px 0}
+.nt b{color:#d9c4ff}
+body.semNotas .nt{display:none}
+/* ── O BANNER É O QUE JÁ EXISTE, E NÃO UM QUE EU DESENHE (L-147) ──────────
+ *
+ * A primeira versão desta prévia desenhou um banner: gradiente, nome em
+ * degradê, selos inventados. O dono corrigiu:
+ *
+ *   > "é o mesmo formato de banner qual usamos já na ARENA, e implementamos no
+ *   >  ROTAS, e agora vamos implementar no ATUAL ROTAS"
+ *
+ * Ele está certo. O banner existe desde a trilha R, é desenhado por
+ * `renderBattleBanner`, e o idle já o mostra desde o 1.6c — `#battleBannerIdle`.
+ *
+ *   > Uma prévia que redesenha o que já existe não está prevendo a nossa tela.
+ *   > Está prevendo outra, e ainda por cima uma que ninguém vai construir.
+ *
+ * É o MESMO erro do cenário desenhado de lado, duas semanas depois. A foto sai
+ * do jogo pelo `tools/foto-banner-real.mjs`, e o que a prévia decide é só ONDE
+ * ele fica e QUE TAMANHO tem.
+ *
+ * A proporção é a dele: 554×352, ou seja ~1,57. Fixá-la é o que impede o
+ * banner de esticar e a cidade de achatar — foi o mesmo cuidado da caixa 8:9
+ * da NPC da loja. */
+.bnReal{display:block; width:100%; aspect-ratio:554/352;
+  background:#0a0f1a url("./previa/banner-real.png") center/cover no-repeat;
+  border:1px solid var(--line); border-radius:11px;
+  box-shadow:0 6px 20px rgba(0,0,0,.45)}
+
+/* ── B · NO LUGAR DA EQUIPE, e ela desce ─────────────────────────────────
+   Escolha do dono. Custa ZERO altura da cena, que é o recurso mais escasso
+   desta tela — foi lá que o passo OLHAR pegou a barra de ação abaixo da dobra.
+   E ele pediu MAIOR: aqui o banner toma a coluna inteira, e a altura sai da
+   proporção dele em vez de um número que eu escolha. */
+.bnCartao{margin-bottom:10px}
+body.bnTopo .bnCartao{display:none}
+
+/* ── A · A FAIXA NO TOPO ─────────────────────────────────────────────────
+   A alternativa. Mais visível, e empurra a cena para baixo — o banner é largo,
+   então numa faixa da tela inteira ele fica baixo demais para se ver, e é
+   justamente o que o dono queria evitar. */
+.bnFaixa{padding:10px 16px; border-bottom:1px solid var(--line);
+  background:var(--panel2)}
+.bnFaixa .bnReal{max-width:520px; margin:0 auto}
+body:not(.bnTopo) .bnFaixa{display:none}
+
+.vista{display:none} .vista.on{display:block}
+</style>
+</head>
+<body>
+
+<div class="tarja">
+  <b>PRÉVIA</b>
+  <span>não é o jogo — é o arranjo para você olhar e corrigir · Spec §7.22</span>
+  <div class="abas">
+    <button data-ir="run" aria-pressed="true">A RUN</button>
+    <button data-ir="fases" aria-pressed="false">ESCOLHER ESTÁGIO</button>
+    <button data-ir="ausente" aria-pressed="false">MODO AUSENTE</button>
+    <button data-banner aria-pressed="false">banner</button>
+    <button data-notas aria-pressed="true">notas de desenho</button>
+  </div>
+</div>
+
+<div class="topo">
+  <div class="marca">POKÉARENA</div>
+  <nav class="nav">
+    <b>Arena</b><b>Liga</b><b class="on">Rotas</b><b>Pokédex</b><b>Itens</b><b>Wiki</b>
+  </nav>
+  <div class="saldos">
+    <span><i>PokéCoin</i>12.480</span>
+    <span><i>PokéCash</i>0</span>
+    <span><i>🔒</i>0</span>
+  </div>
+</div>
+
+
+<!-- A · a faixa no topo — a alternativa -->
+<div class="bnFaixa"><i class="bnReal"></i></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     VISTA 1 — A RUN
+     ══════════════════════════════════════════════════════════════════════ -->
+<section class="vista on" id="v-run">
+<div class="palco">
+
+  <!-- ─────────── COLUNA ESQUERDA — o estado de quem está lutando ─────── -->
+  <div class="col colEsq">
+
+    <div class="bloco">
+      <h4>Stamina da equipe <small>regenera 8/h</small></h4>
+      <div class="corpo">
+        <div class="linha"><span>Bulbasaur</span><span>72 / 100</span></div>
+        <div class="barra"><i style="width:72%;background:linear-gradient(90deg,var(--ok),#8fd46a)"></i></div>
+        <div class="linha"><span>custo desta wave</span><span>2</span></div>
+        <div class="linha"><span>o estágio inteiro custa</span><span>23</span></div>
+        <span class="nt"><b>Os números são seus, e a correção também.</b>
+        2 por wave e 5 na do chefe. Com 35 uma criatura fazia só <b>2 avanços</b>
+        — <i>"um pouco broxante"</i>, e você tinha razão. Com 23 ela faz
+        <b>4</b>, e o dia comporta 5: a 2ª criatura continua necessária, e o teto
+        do farm continua sendo o tamanho da coleção.</span>
+      </div>
+    </div>
+
+    <div class="bloco">
+      <h4>Foco <small>o buff que já existe</small></h4>
+      <div class="corpo">
+        <div class="linha"><span>Ataque</span><span style="color:var(--ok)">+12%</span></div>
+        <div class="linha"><span>Sorte de item</span><span style="color:var(--ok)">+8%</span></div>
+        <div class="linha"><span>Vínculo</span><span>4 / 10</span></div>
+        <div class="barra"><i style="width:40%;background:linear-gradient(90deg,var(--neon2),var(--gold))"></i></div>
+        <span class="nt">É a coluna de <b>Boosts</b> do Baiak. A diferença: os
+        dele se compram; os nossos vêm de <b>treinar a criatura</b> — e o §P5
+        exige que continue assim.</span>
+      </div>
+    </div>
+
+    <div class="bloco" style="flex:1">
+      <h4>Log da run <small>wave 4 de 10</small></h4>
+      <div class="log">
+        <div class="evt"><span class="quando">03:58</span><i class="pmd parado" title="kakuna" style="--pw:72px;--ph:120px;--pq:5;--alt:44px;background-image:url(./previa/tiras/0014-w.png)"></i><span>Kakuna derrubado</span><span class="qtd">×3</span></div>
+        <div class="evt bom"><span class="quando">03:51</span><span class="pastilha">🎁</span><span>Essência</span><span class="qtd">×2</span></div>
+        <div class="evt"><span class="quando">03:44</span><i class="pmd parado" title="weedle" style="--pw:96px;--ph:120px;--pq:3;--alt:44px;background-image:url(./previa/tiras/0013-w.png)"></i><span>Weedle derrubado</span><span class="qtd">×3</span></div>
+        <div class="evt bom"><span class="quando">03:30</span><span class="pastilha">⚪</span><span>Poké Ball</span><span class="qtd">×1</span></div>
+        <div class="evt"><span class="quando">03:12</span><span class="pastilha">👤</span><span>Treinador Kaio — vitória</span><span class="qtd">+240 XP</span></div>
+        <div class="evt raro"><span class="quando">02:47</span><span class="pastilha">✦</span><span>Estilhaço de Held</span><span class="qtd">1 / 7</span></div>
+        <div class="evt"><span class="quando">02:31</span><i class="pmd parado" title="caterpie" style="--pw:96px;--ph:96px;--pq:3;--alt:44px;background-image:url(./previa/tiras/0010-w.png)"></i><span>Caterpie derrubado</span><span class="qtd">×3</span></div>
+        <div class="evt"><span class="quando">02:04</span><span class="pastilha">🪙</span><span>PokéCoin</span><span class="qtd">+180</span></div>
+      </div>
+      <div class="corpo" style="border-top:1px solid var(--line)">
+        <div class="linha"><span>abates</span><span>22 de ~58</span></div>
+        <div class="linha"><span>XP da run</span><span>1.940</span></div>
+        <div class="linha"><span>moeda</span><span>+412</span></div>
+        <div class="linha"><span>espécies vistas</span><span>4 de 6</span></div>
+        <span class="nt"><b>É o Hunt Analyzer dele, e é a L-141 — a sua cobrança
+        de duas vezes.</b> A diferença que ele não tem: <b>ícone de criatura</b>,
+        e não só de item. E ele serve aos DOIS modos: o relatório de quando você
+        volta de uma Vigília é este mesmo quadro.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── CENTRO — o bioma ────────────────────────────────────── -->
+  <div class="col">
+    <div class="bloco">
+      <div class="cabecalhoRun">
+        <div class="seletor">FLORESTA <u>· estágio 1</u> ▾</div>
+        <div class="waves">
+          <i class="wv feita"></i><i class="wv feita"></i><i class="wv feita"></i>
+          <i class="wv agora"></i>
+          <i class="wv"></i><i class="wv"></i><i class="wv"></i><i class="wv"></i><i class="wv"></i>
+          <i class="wv chefe">👑</i>
+        </div>
+        <div class="relogio">04:12</div>
+        <div class="laco on"><em></em> Repetir</div>
+      </div>
+
+      <div class="cena">
+        <!-- os meus, à esquerda, junto do treinador que já está na foto -->
+        <div class="ator meu" style="left:31%;top:52%;--h:66px">
+          <div class="placa">Bulbasaur · lv 14</div>
+          <div class="vidaMob"><i style="width:81%"></i></div>
+          <i class="pmd bate" style="--pw:192px;--ph:216px;--pq:11;--pms:672ms;--alt:150px;background-image:url(./previa/tiras/0001-a.png)"></i><div class="sombra"></div>
+        </div>
+        <div class="ator meu" style="left:20%;top:70%;--h:54px">
+          <div class="placa">Pikachu · lv 11</div>
+          <div class="vidaMob"><i style="width:64%;background:var(--aviso)"></i></div>
+          <i class="pmd" style="--pw:96px;--ph:120px;--pq:4;--pms:864ms;--alt:118px;background-image:url(./previa/tiras/0025-w.png)"></i><div class="sombra"></div>
+        </div>
+        <div class="golpe" style="left:36%;top:31%">Chicote de Cipó</div>
+
+        <!-- a wave 4: TRÊS Weedle e TRÊS Kakuna, que é a estrutura 3+3 -->
+        <div class="ator" style="left:56%;top:34%;--h:46px">
+          <div class="placa">Weedle</div>
+          <div class="vidaMob"><i style="width:38%"></i></div>
+          <i class="pmd" style="--pw:96px;--ph:120px;--pq:3;--pms:624ms;--alt:104px;background-image:url(./previa/tiras/0013-w.png)"></i><div class="sombra"></div>
+        </div>
+        <div class="ator" style="left:68%;top:22%;--h:44px">
+          <div class="placa">Weedle</div>
+          <div class="vidaMob"><i style="width:92%"></i></div>
+          <i class="pmd" style="--pw:96px;--ph:120px;--pq:3;--pms:624ms;--alt:104px;background-image:url(./previa/tiras/0013-w.png)"></i><div class="sombra"></div>
+        </div>
+        <div class="ator" style="left:79%;top:44%;--h:48px">
+          <div class="placa">Weedle</div>
+          <div class="vidaMob"><i style="width:100%"></i></div>
+          <i class="pmd" style="--pw:96px;--ph:120px;--pq:3;--pms:624ms;--alt:104px;background-image:url(./previa/tiras/0013-w.png)"></i><div class="sombra"></div>
+        </div>
+        <div class="ator" style="left:62%;top:60%;--h:42px">
+          <div class="placa">Kakuna</div>
+          <div class="vidaMob"><i style="width:71%"></i></div>
+          <i class="pmd doi" style="--pw:144px;--ph:168px;--pq:2;--pms:240ms;--alt:112px;background-image:url(./previa/tiras/0014-h.png)"></i><div class="sombra"></div>
+        </div>
+        <div class="ator" style="left:86%;top:66%;--h:40px">
+          <div class="placa">Kakuna</div>
+          <div class="vidaMob"><i style="width:100%"></i></div>
+          <i class="pmd" style="--pw:72px;--ph:120px;--pq:5;--pms:720ms;--alt:104px;background-image:url(./previa/tiras/0014-w.png)"></i><div class="sombra"></div>
+        </div>
+        <div class="ator" style="left:74%;top:76%;--h:38px">
+          <div class="placa">Kakuna</div>
+          <div class="vidaMob"><i style="width:100%"></i></div>
+          <i class="pmd" style="--pw:72px;--ph:120px;--pq:5;--pms:720ms;--alt:104px;background-image:url(./previa/tiras/0014-w.png)"></i><div class="sombra"></div>
+        </div>
+
+        <div class="dano neles" style="left:57%;top:42%">-34</div>
+        <div class="dano neles" style="left:69%;top:30%">-29</div>
+        <div class="dano emmim" style="left:23%;top:62%">-11</div>
+
+        <div class="raios"></div><div class="bruma"></div>
+      </div>
+
+      <div class="acoes">
+        <button class="acao destaque">⚪ Poké Ball <b>×6</b></button>
+        <button class="acao">🧪 Poção <b>×2</b></button>
+        <button class="acao">🍬 Doce <b>×1</b></button>
+        <button class="acao perigo">↩ Recuar</button>
+        <span class="dica">recuar guarda o que já caiu — só o baú do estágio se perde</span>
+      </div>
+      <div class="corpo" style="border-top:1px solid var(--line);padding-top:0">
+        <span class="nt"><b>É aqui que a sua mão entra, e é o que o Baiak não
+        tem.</b> A tela dele é 100% automática — a nossa pede duas decisões que
+        importam: <b>gastar a poção</b> antes que o HP acabe, e <b>gastar a bola</b>
+        na espécie certa. O resto continua sozinho.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── COLUNA DIREITA — equipe, bolsa, saque ───────────────── -->
+  <div class="col colDir">
+
+    <!-- B · no lugar da equipe, e ela desce. Escolha do dono. -->
+    <i class="bnReal bnCartao"></i>
+
+    <div class="bloco">
+      <h4>Equipe <small>2 de 4 vagas</small></h4>
+      <div class="vaga">
+        <i class="pmd parado" title="bulbasaur" style="--pw:120px;--ph:120px;--pq:6;--alt:44px;background-image:url(./previa/tiras/0001-w.png)"></i>
+        <div class="quem">
+          <div class="nome">Bulbasaur <span style="color:var(--ink3);font-weight:400">lv 14</span></div>
+          <div class="barra"><i style="width:81%;background:var(--ok)"></i></div>
+          <div class="sub">HP 81% · stamina 72 · vínculo 4</div>
+        </div>
+      </div>
+      <div class="vaga">
+        <i class="pmd parado" title="pikachu" style="--pw:96px;--ph:120px;--pq:4;--alt:44px;background-image:url(./previa/tiras/0025-w.png)"></i>
+        <div class="quem">
+          <div class="nome">Pikachu <span style="color:var(--ink3);font-weight:400">lv 11</span></div>
+          <div class="barra"><i style="width:64%;background:var(--aviso)"></i></div>
+          <div class="sub">HP 64% · stamina 55 · vínculo 2</div>
+        </div>
+      </div>
+      <div class="vaga travada">
+        <div class="cadeado">🔒</div>
+        <div class="quem">
+          <div class="nome" style="font-size:12px">3ª vaga</div>
+          <div class="comoAbre">faltam 7 espécies na Pokédex</div>
+        </div>
+      </div>
+      <div class="vaga travada">
+        <div class="cadeado">🔒</div>
+        <div class="quem">
+          <div class="nome" style="font-size:12px">4ª vaga</div>
+          <div class="comoAbre">abre em 45 espécies</div>
+        </div>
+      </div>
+      <div class="corpo" style="border-top:1px solid var(--line)">
+        <span class="nt"><b>A diferença mais importante desta coluna.</b> No
+        Baiak a vaga abre por <b>gold ou 75 coins da loja</b>. Aqui ela abre
+        pela <b>Pokédex</b> — e isso não é preferência: vaga vendida é tempo
+        vendido, e num jogo em que o que se farma é vendável, isso é dinheiro
+        comprando dinheiro. O §P5 fecha essa porta.</span>
+      </div>
+    </div>
+
+    <div class="bloco">
+      <h4>Bolsa <small>o que dá para usar agora</small></h4>
+      <div class="grade">
+        <div class="slot">⚪<b>6</b></div><div class="slot">🔵<b>2</b></div>
+        <div class="slot">🧪<b>2</b></div><div class="slot">🍬<b>1</b></div>
+        <div class="slot vazio"></div><div class="slot vazio"></div>
+      </div>
+    </div>
+
+    <div class="bloco">
+      <h4>Saque da run <small>12 / 24</small></h4>
+      <div class="grade">
+        <div class="slot novo">✦<b>1</b></div><div class="slot">🎁<b>7</b></div>
+        <div class="slot">⚪<b>1</b></div><div class="slot">🪙<b>412</b></div>
+        <div class="slot">🍃<b>2</b></div><div class="slot">🪨<b>1</b></div>
+        <div class="slot">🧪<b>1</b></div><div class="slot">🦴<b>3</b></div>
+        <div class="slot">🌰<b>2</b></div><div class="slot">💠<b>1</b></div>
+        <div class="slot vazio"></div><div class="slot vazio"></div>
+      </div>
+      <div class="corpo" style="border-top:1px solid var(--line);padding-top:8px">
+        <span class="nt">O <b>Loot Pouch</b> dele, e é a peça de retenção que eu
+        mais quero copiar: <b>você vê o item chegar</b>. Metade do prazer de
+        olhar a tela por horas está nesta coluna se enchendo sozinha.</span>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     VISTA 2 — ESCOLHER O ESTÁGIO
+     ══════════════════════════════════════════════════════════════════════ -->
+<section class="vista" id="v-fases">
+<div class="modal">
+  <header>
+    <h2>Estágios — escolha onde caçar
+      <small>Ao concluir o estágio, o próximo abre. Ligue <b>Repetir</b> para farmar o mesmo.</small>
+    </h2>
+  </header>
+
+  <div class="filtros">
+    <input class="busca" placeholder="Buscar bioma, estágio ou espécie…">
+    <span class="chip on">Todos</span><span class="chip">XP</span>
+    <span class="chip">Item</span><span class="chip">Concluídos</span>
+    <span class="chip">Pendentes</span><span class="chip">Falta na Pokédex</span>
+  </div>
+
+  <div class="duas">
+    <aside>
+      <b>Nível recomendado</b>
+      <a class="on" href="#">Todos <span>44</span></a>
+      <a href="#">1–15 <span>11</span></a>
+      <a href="#">16–30 <span>11</span></a>
+      <a href="#">31–45 <span>11</span></a>
+      <a href="#">46+ <span>11</span></a>
+      <b style="margin-top:12px">Bioma</b>
+      <a href="#">Floresta <span>4</span></a>
+      <a href="#">Praia <span>4</span></a>
+      <a href="#">Campo <span>4</span></a>
+      <a href="#">Montanha <span>4</span></a>
+      <a href="#">Vulcão <span>4</span></a>
+    </aside>
+
+    <div class="cartoes">
+      <div class="cartao aberto">
+        <div class="elenco">
+          <i class="pmd parado" title="caterpie" style="--pw:96px;--ph:96px;--pq:3;--alt:44px;background-image:url(./previa/tiras/0010-w.png)"></i>
+          <i class="pmd parado" title="weedle" style="--pw:96px;--ph:120px;--pq:3;--alt:44px;background-image:url(./previa/tiras/0013-w.png)"></i>
+          <i class="pmd parado" title="metapod" style="--pw:96px;--ph:144px;--pq:10;--alt:44px;background-image:url(./previa/tiras/0011-w.png)"></i>
+          <i class="pmd parado" title="kakuna" style="--pw:72px;--ph:120px;--pq:5;--alt:44px;background-image:url(./previa/tiras/0014-w.png)"></i>
+          <i class="pmd parado chefe" title="butterfree" style="--pw:96px;--ph:168px;--pq:12;--alt:54px;background-image:url(./previa/tiras/0012-w.png)"></i>
+          <i class="pmd parado chefe" title="beedrill" style="--pw:96px;--ph:144px;--pq:4;--alt:54px;background-image:url(./previa/tiras/0015-w.png)"></i>
+        </div>
+        <div class="nome">Floresta · 1 <span class="estrelas">★<s>☆☆☆</s></span>
+          <span class="selo loot">ITEM</span></div>
+        <div class="pe"><span>nível 1 · 10 waves · ~40 min</span>
+          <span class="feitas">✓ 3×</span></div>
+        <span class="nt"><b>Os quatro que você nomeou de cabeça.</b> Eu não os
+        escolhi: <code>elencoDoBioma('floresta')</code> filtrado por
+        <code>faixasDoEstagio(1)</code> devolveu <b>Caterpie, Weedle, Metapod,
+        Kakuna</b> — nessa ordem — e os chefes são a evolução deles.</span>
+      </div>
+
+      <div class="cartao aberto">
+        <div class="elenco">
+          <i class="pmd parado" title="oddish" style="--pw:72px;--ph:120px;--pq:8;--alt:44px;background-image:url(./previa/tiras/0043-w.png)"></i>
+          <i class="pmd parado" title="bellsprout" style="--pw:72px;--ph:96px;--pq:4;--alt:44px;background-image:url(./previa/tiras/0069-w.png)"></i>
+          <i class="pmd parado" title="paras" style="--pw:96px;--ph:72px;--pq:4;--alt:44px;background-image:url(./previa/tiras/0046-w.png)"></i>
+          <i class="pmd parado" title="venonat" style="--pw:96px;--ph:144px;--pq:5;--alt:44px;background-image:url(./previa/tiras/0048-w.png)"></i>
+          <i class="pmd parado chefe" title="gloom" style="--pw:96px;--ph:96px;--pq:4;--alt:54px;background-image:url(./previa/tiras/0044-w.png)"></i>
+          <i class="pmd parado chefe" title="weepinbell" style="--pw:96px;--ph:96px;--pq:4;--alt:54px;background-image:url(./previa/tiras/0070-w.png)"></i>
+        </div>
+        <div class="nome">Floresta · 2 <span class="estrelas">★★<s>☆☆</s></span>
+          <span class="selo xp">XP</span></div>
+        <div class="pe"><span>nível 12 · 10 waves · ~40 min</span><span>—</span></div>
+      </div>
+
+      <div class="cartao fechado">
+        <div class="elenco">
+          <i class="pmd parado" title="pinsir" style="--pw:96px;--ph:144px;--pq:4;--alt:44px;background-image:url(./previa/tiras/0127-w.png)"></i>
+          <i class="pmd parado" title="scyther" style="--pw:120px;--ph:144px;--pq:4;--alt:44px;background-image:url(./previa/tiras/0123-w.png)"></i>
+          <i class="pmd parado" title="exeggcute" style="--pw:96px;--ph:96px;--pq:4;--alt:44px;background-image:url(./previa/tiras/0102-w.png)"></i>
+          <i class="pmd parado" title="tangela" style="--pw:96px;--ph:144px;--pq:6;--alt:44px;background-image:url(./previa/tiras/0114-w.png)"></i>
+        </div>
+        <div class="nome">Floresta · 3 <span class="estrelas">★★★<s>☆</s></span>
+          <span class="selo raro">RARO</span></div>
+        <div class="pe"><span style="color:var(--aviso)">🔒 precisa de nível 19</span>
+          <span>faltam 5 níveis</span></div>
+      </div>
+
+      <div class="cartao aberto">
+        <div class="elenco">
+          <i class="pmd parado" title="magikarp" style="--pw:96px;--ph:120px;--pq:7;--alt:44px;background-image:url(./previa/tiras/0129-w.png)"></i>
+          <i class="pmd parado" title="psyduck" style="--pw:72px;--ph:120px;--pq:4;--alt:44px;background-image:url(./previa/tiras/0054-w.png)"></i>
+          <i class="pmd parado" title="krabby" style="--pw:96px;--ph:96px;--pq:4;--alt:44px;background-image:url(./previa/tiras/0098-w.png)"></i>
+          <i class="pmd parado" title="shellder" style="--pw:72px;--ph:96px;--pq:6;--alt:44px;background-image:url(./previa/tiras/0090-w.png)"></i>
+          <i class="pmd parado chefe" title="kingler" style="--pw:96px;--ph:96px;--pq:4;--alt:54px;background-image:url(./previa/tiras/0099-w.png)"></i>
+          <i class="pmd parado chefe" title="golduck" style="--pw:96px;--ph:120px;--pq:4;--alt:54px;background-image:url(./previa/tiras/0055-w.png)"></i>
+        </div>
+        <div class="nome">Praia · 1 <span class="estrelas">★<s>☆☆☆</s></span>
+          <span class="selo loot">ITEM</span></div>
+        <div class="pe"><span>nível 1 · 10 waves · ~40 min</span><span>—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Concluir o estágio abre o próximo. <b style="color:var(--ink)">Repetir</b>
+    farma o mesmo até a stamina ou o teto acabarem.
+    <button class="botao">Entrar na Floresta · 1</button>
+  </footer>
+</div>
+<div class="modal" style="border:0;background:none">
+  <span class="nt" style="margin:0"><b>A diferença que o cartão nosso tem.</b>
+  O dele mostra os monstros e o nível. O nosso mostra a mesma coisa <b>e mais
+  uma</b>: quais dessas espécies ainda faltam na sua Pokédex — porque aqui o
+  bicho não é só o que te dá XP, é o que <b>levanta o seu teto e vai para a
+  Arena</b>. O filtro <b>"Falta na Pokédex"</b> existe por isso, e é a
+  tradução do §7.22.10.</span>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     VISTA 3 — O MODO AUSENTE
+     ══════════════════════════════════════════════════════════════════════ -->
+<section class="vista" id="v-ausente">
+<div class="modal">
+  <div class="dois">
+    <button aria-pressed="true">Expedição ausente</button>
+    <button aria-pressed="false">Treino ausente</button>
+  </div>
+
+  <div class="reserva">
+    <div class="linha"><span class="rot">Reserva</span><span>7h 20min / 12h</span></div>
+    <div class="barra"><i style="width:61%;background:linear-gradient(90deg,var(--gold),var(--neon2))"></i></div>
+    <p class="nota">A reserva <b>enche enquanto você joga</b> — 1 h de tela vale
+      1 h de reserva — e é gasta enquanto você está fora.</p>
+    <span class="nt"><b>Esta é a melhor peça do jogo dele, e eu quero copiar.</b>
+      Ela responde sozinha a pergunta que eu tinha deixado meio aberta: o que
+      impede alguém de só farmar offline e nunca olhar a tela? <b>Nada de
+      teto novo.</b> O offline passa a ser uma recompensa por jogar, e não um
+      farm paralelo. E ela empilha com o que já temos: <b>a reserva limita o
+      TEMPO fora, o teto de encontros limita o RENDIMENTO</b>.</span>
+  </div>
+
+  <div class="perfis">
+    <div class="perfil on">
+      <h5>Batida</h5><div class="dur">45 MIN · CUSTA 20</div>
+      <ul><li>3 a 5 encontros</li><li>puxa para o comum</li><li>o melhor por hora</li></ul>
+    </div>
+    <div class="perfil">
+      <h5>Trilha</h5><div class="dur">3 H · CUSTA 45</div>
+      <ul><li>6 a 8 encontros</li><li>o meio</li><li>a sessão da noite</li></ul>
+    </div>
+    <div class="perfil">
+      <h5>Vigília</h5><div class="dur">8 H · CUSTA 90</div>
+      <ul><li>10 a 14 encontros</li><li>puxa para o raro</li><li>o melhor por sessão</li></ul>
+    </div>
+  </div>
+
+  <div class="reserva" style="border-top:1px solid var(--line)">
+    <div class="linha"><span class="rot">Teto de encontros de hoje</span><span>11 de 30 usados</span></div>
+    <div class="barra"><i style="width:37%;background:var(--gold)"></i></div>
+    <p class="nota">Uma <b>Vigília</b> reserva até 14 — sobrariam 5, e um avanço
+      pede 6. <b>Escolher a Vigília hoje custa o avanço de amanhã cedo.</b></p>
+    <span class="nt"><b>É aqui que os dois modos se encontram, e é de propósito.</b>
+      A pergunta <i>"os encontros de hoje vão no meu sono ou na minha tela?"</i>
+      só existe porque os dois bebem do mesmo copo. Se cada um tivesse o seu,
+      não haveria escolha nenhuma — só dois farms empilhados.</span>
+  </div>
+
+  <footer>
+    Ao enviar, o jogo <b style="color:var(--ink)">desconecta</b> — este modo é
+    para quando você vai ficar fora.
+    <button class="botao">Enviar a Vigília</button>
+  </footer>
+</div>
+</section>
+
+<script>
+/* Troca de vista e o interruptor das notas. Nada de jogo aqui — esta página
+   existe para ser OLHADA, e um script grande seria a prévia virando produto
+   pela porta dos fundos. */
+const abas = document.querySelectorAll('[data-ir]');
+abas.forEach(b => b.addEventListener('click', () => {
+  abas.forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+  document.querySelectorAll('.vista').forEach(v =>
+    v.classList.toggle('on', v.id === 'v-' + b.dataset.ir));
+  scrollTo({ top: 0 });
+}));
+/* O interruptor do banner troca as DUAS propostas no mesmo tamanho — que é a
+   única forma honesta de comparar arranjo: lado a lado, no mesmo tamanho, na
+   mesma tela. Ver a L-147. */
+const bb = document.querySelector('[data-banner]');
+const rotularBanner = () => {
+  const topo = document.body.classList.contains('bnTopo');
+  bb.textContent = topo ? 'banner: no topo' : 'banner: na coluna';
+  bb.setAttribute('aria-pressed', String(topo));
+};
+bb.addEventListener('click', () => {
+  document.body.classList.toggle('bnTopo');
+  rotularBanner();
+});
+rotularBanner();
+
+const bn = document.querySelector('[data-notas]');
+
+bn.addEventListener('click', () => {
+  const off = document.body.classList.toggle('semNotas');
+  bn.setAttribute('aria-pressed', String(!off));
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "pokearena",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["tools/servir.mjs", "--porta", "8099"],
+      "url": "http://localhost:8099",
+      "port": 8099,
+      "autoPort": false
+    }
+  ]
+}

@@ -108,3 +108,33 @@ export function alternar(perfil, campo, dex) {
   s[chave][dex] = s[chave][dex] === false;
   return s[chave][dex];
 }
+
+/* ── O SHINY NA ARENA (R24) ────────────────────────────────────────────────
+ *
+ * `skinShinyAtiva` responde uma pergunta só: **este perfil tem esta skin e ela
+ * está equipada?** É a pergunta certa para o guarda-roupa, onde o jogador olha
+ * a própria coleção.
+ *
+ * Na ARENA ela é insuficiente, e era o defeito: aplicada a cada lutador, ela
+ * pintava de shiny QUALQUER bicho cujo dex eu possuísse — inclusive o que outro
+ * jogador escolheu. Eu tenho a skin de Charizard, outro escolhe Charizard, e o
+ * Charizard DELE aparece shiny na minha tela. Ele não tem a skin.
+ *
+ * Por que isso não é detalhe: o guarda-roupa (R8) vende cosmético por
+ * conquista — vagas por nível, desbloqueio por jogar. Um cosmético que aparece
+ * em bicho que não é seu deixa de ser cosmético e vira decoração ambiental, e
+ * quem se esforçou para desbloquear não ganhou nada distinguível.
+ *
+ * A regra é a que o dono pediu na letra: **shiny só quando quem SELECIONOU o
+ * lutador possui a skin.**
+ *
+ * ── POR QUE `escolhido` É ARGUMENTO, E NÃO CONSULTA INTERNA ───────────────
+ *
+ * Hoje o cliente só conhece o próprio perfil, então "quem selecionou" é sempre
+ * "eu ou ninguém". Recebendo isso de fora, o dia em que a rodada do servidor
+ * passar a dizer quem apostou em quem — e com qual skin — muda o ARGUMENTO, e
+ * não a regra. O caso "outro jogador escolheu e ele tem a skin" entra por aqui
+ * sem reescrever nada. */
+export function shinyNaArena(perfil, dex, escolhido) {
+  return !!escolhido && skinShinyAtiva(perfil, dex);
+}
