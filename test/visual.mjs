@@ -1823,9 +1823,66 @@ export async function rodar() {
      quadro de colocação congela. Esperar pelo próprio quadro seria circular. */
   /* Sinal de queda que sobrevive à fusão das listas (V1.16): linhas marcadas
      como caídas dentro da lista única. `#kfTotal` deixou de existir. */
-  const houveQueda = aoVivo && await pg.waitForFunction(
-    () => document.querySelectorAll('#pickList .pick.fechado').length > 0,
-    { timeout: 45000, polling: 400 }).then(() => true).catch(() => false);
+  /* ── D-097 · O PRAZO ERA DE PAREDE E O TRABALHO É DE ANIMAÇÃO ────────────
+   *
+   * A versão anterior esperava 45 s de RELÓGIO DE PAREDE pela primeira queda:
+   *
+   *     { timeout: 45000 }).then(() => true).catch(() => false)
+   *
+   * A luta avança no relógio da PÁGINA. Os dois só coincidem quando sobra CPU —
+   * e o portão roda quatro navegadores em quatro núcleos. Medido em 14/09:
+   *
+   *     a suíte sozinha, 3x      VERDE 3/3    226 · 227 · 224 s
+   *     4 em paralelo            VERDE 1/4    386 s
+   *
+   * 75% das execuções reprovavam sob a carga que o próprio portão impõe.
+   *
+   * E O `.catch(() => false)` APAGAVA A DISTINÇÃO QUE IMPORTA. "Ninguém caiu em
+   * 45 s de luta" e "a espera estourou sem a página ter tido chance de rodar"
+   * devolviam o mesmo `false`, e a asserção acusava "o cenário não foi
+   * exercitado" — falso, e me mandou procurar defeito no cenário por meia hora.
+   * É a lição do D-022: `false` não é "não caiu ninguém", é "não deu tempo de
+   * olhar".
+   *
+   * O QUE MUDA. A pergunta passa a ser respondida pelo relógio DO JOGO, que é
+   * `S.clock` e já está espelhado em `__estadoVisual`. Três respostas distintas,
+   * e nenhuma delas é um booleano mudo:
+   *
+   *     caiu           alguém caiu — o que o teste quer
+   *     naoCaiu        a luta AVANÇOU o bastante e ninguém caiu. Resposta
+   *                    legítima e vermelha, com o número junto
+   *     (estouro)      a página não avançou. NÃO é resposta sobre o jogo; é a
+   *                    máquina sem CPU, e o teste diz isso com estas palavras
+   *
+   * SUBIR O TETO SERIA O REMENDO ERRADO: esconde o sintoma, volta na próxima
+   * máquina mais lenta, e deixa o portão mais lento — que é o oposto do que a
+   * L-179 pede. O teto continua existindo porque portão que não termina não
+   * julga nada (D-069); o que ele deixa de ser é o critério. */
+  const AVANCO_EXIGIDO_S = 12;   /* a rodada dura ~31 s de jogo; 12 s sem queda
+                                    nenhuma já é anomalia de verdade */
+  const quedaOu = aoVivo && await pg.waitForFunction((exigido) => {
+    if (document.querySelectorAll('#pickList .pick.fechado').length > 0)
+      return { caiu: true };
+    const S = globalThis.__estadoVisual;
+    /* Só conclui "não caiu" depois que o JOGO andou. Enquanto o relógio dele
+       não chega lá, a espera continua — inclusive quando a máquina está sem
+       CPU, que é exatamente o caso que produzia o veredito falso. */
+    if (S && S.state === 'fighting' && S.clock >= exigido)
+      return { caiu: false, avancou: S.clock };
+    return false;
+  }, { timeout: 180000, polling: 400 }, AVANCO_EXIGIDO_S)
+    .then(h => h.jsonValue())
+    .catch(() => ({ semCpu: true }));
+
+  const houveQueda = !!(quedaOu && quedaOu.caiu);
+  /* A frase da recusa é o produto deste conserto tanto quanto o veredito. */
+  const porqueNaoCaiu = !aoVivo ? 'a luta não chegou a começar'
+    : quedaOu?.caiu ? null
+    : quedaOu?.semCpu
+      ? `a página não avançou dentro do teto — o relógio DO JOGO não chegou a ` +
+        `${AVANCO_EXIGIDO_S}s. Isto não é o cenário: é a máquina sem CPU para ` +
+        `rodar a luta (D-097). Rode a suíte sozinha antes de procurar defeito.`
+      : `a luta avançou ${quedaOu?.avancou}s de jogo e ninguém caiu`;
 
   /* A LEITURA É ATÔMICA, DENTRO DA PÁGINA, e as duas tentativas anteriores
    * erraram por não ser.
@@ -1994,7 +2051,7 @@ export async function rodar() {
   await b.close(); s.close();
 
 
-  return { erros, conhecidos, apostas, aoVivo, relogio, folhas: cache.size, erroDepois, jogo, corte, cancelamento, comAposta, colunasAposta, painel, arena, idle, idlePronto, som, captura, loja, bnIdle, idleRecarregado, contagem, colocacaoViva, houveQueda, tema, fontes, avisos, ...st };
+  return { erros, conhecidos, apostas, aoVivo, relogio, folhas: cache.size, erroDepois, jogo, corte, cancelamento, comAposta, colunasAposta, painel, arena, idle, idlePronto, som, captura, loja, bnIdle, idleRecarregado, contagem, colocacaoViva, houveQueda, porqueNaoCaiu, tema, fontes, avisos, ...st };
 }
 
 /* Q3 · A RODADA DO APP SAI DA RAIZ.
@@ -3017,7 +3074,10 @@ export function suite(r) {
     const v = r.colocacaoViva;
     ok(v && !v.erro, `não deu para ler a colocação viva: ${v?.erro}`);
     igual(v.linhas, 12, `${v.linhas} linhas no quadro durante a luta`);
-    ok(r.houveQueda, 'nenhuma queda em 45 s de luta — o cenário não foi exercitado');
+    /* D-097: a acusação passa a dizer QUAL das três coisas aconteceu. A frase
+       antiga — "o cenário não foi exercitado" — era falsa no caso que mais
+       acontecia (máquina sem CPU) e mandava procurar no lugar errado. */
+    ok(r.houveQueda, r.porqueNaoCaiu || 'nenhuma queda durante a luta');
     ok(v.mortos > 0, `a espera acusou queda mas ${v.mortos} lutadores estão caídos`);
     /* A CONVERGÊNCIA É A PRÓPRIA CONDIÇÃO DA SONDA: ela só devolve instantâneo
        quando o quadro e o estado batem, no mesmo tique e ainda em luta. Chegar
