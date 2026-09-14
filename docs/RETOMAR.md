@@ -22,7 +22,56 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 13/09/2026
+## 0. ONDE PARAMOS — 14/09/2026
+
+```text
+o LINK     http://localhost:8099/app/index.html
+           sobe com:  node tools/servir.mjs --porta 8099
+           ATENÇÃO: até hoje este comando SÓ funcionava no Windows. Ver D-095.
+a PASTA    C:\Users\gdult\pa4
+o ESTADO   Q1 VERDE 2044/2044 (sem navegador) · Q2 VERDE 987/987 · árvore limpa
+```
+
+### O que aconteceu em 14/09: o repositório foi aberto fora do `pa4`
+
+E foi a primeira vez. Três coisas quebraram na hora, e as três são a MESMA
+coisa dita de três jeitos: **o que faz este projeto rodar e o portão ser rápido
+mora fora do repositório, e só existe na máquina do dono.**
+
+```text
+D-095  sete tools/ calculam a raiz com `.slice(1)` no pathname — idioma de
+       Windows. No POSIX a raiz sai DOBRADA e o servir.mjs responde 404 no
+       jogo. Só um dos sete tinha teste.        CORRIGIDO (fileURLToPath)
+
+D-096  a passada ESTREITA do Q2 criava a linha de base visual com 4 entradas
+       onde a cobertura cobra 16, e o portão abortava para sempre culpando a
+       configuração.                            CORRIGIDO (recusa + remédio)
+
+L-179  o cache de vereditos está no .gitignore. Clone novo paga o Q2 A FRIO,
+       sempre. Medido aqui: 6 h 58 min, 987 reavaliados, 0 reaproveitados.
+```
+
+### E o dono fixou um requisito no meio disso
+
+> **O portão completo em no máximo 30 minutos.** Ele disse que não aceita nada
+> diferente disso.
+
+Não é conforto. A conta mostra que o caso QUENTE dele já está em ~24 min (99
+reavaliados × 14,4 s), e que o `CLAUDE.md` anuncia 68 min para um portão que
+hoje custa ~4 h a frio — o número foi medido com 283 defeitos e são 987.
+
+**O bloco é o `T9 — O portão em 30 minutos`**, proposto no `BUILD_BLOCKS` com a
+lacuna `L-179`. O item 1 dele é MEDIR, e a medição é entregável: decompor os
+25 s por mutante antes de consertar qualquer coisa.
+
+### O próximo bloco continua sendo o 1.27f
+
+Nada do que aconteceu em 14/09 mexeu na fila de produto. A ordem de serviço
+está em `docs/TAREFA_1.27f_CARTAO.md`, escrita para quem não acompanhou nada.
+
+---
+
+## 0b. ONDE PARAMOS — 13/09/2026
 
 ```text
 o LINK     http://localhost:8099/app/index.html
