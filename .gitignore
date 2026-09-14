@@ -14,11 +14,23 @@ engine/*.bak
 # durante o bloco, não artefato do projeto — mesma razão de assets/.
 .telas/
 
-# Cache de vereditos do portão Q2. É medição local e muda a cada execução;
-# versioná-lo tornaria ilegível o diff de todo bloco. A chave já amarra
-# definição, arquivo e fecho, então cache frio custa tempo e nunca correção.
-test/fixtures/q2-veredito.json
-test/fixtures/captura.json
+# Cache de vereditos e índice de captura do Q2 — A REGRA MUDOU em 14/09/2026,
+# por decisão do dono, e o motivo foi medido:
+#
+#   um clone limpo pagou 6 h 58 min de portão. 987 reavaliados, 0 reaproveitados
+#
+# A justificativa antiga dizia que "cache frio custa tempo e nunca correção".
+# A primeira metade continua verdadeira e a segunda também — o que estava errado
+# era o peso: sete horas não é "tempo", é o portão saindo de uso. O dono fixou
+# 30 min como requisito (L-179, bloco T9) e disse que desistiria de esperar.
+#
+# A OUTRA objeção era o diff ilegível de todo bloco, e ela foi ATENDIDA em vez
+# de ignorada: o `.gitattributes` marca os dois com `-diff`, então o git mostra
+# "Binary files differ" e o diff do bloco continua legível.
+#
+# O que NÃO muda: `npm run sabotagem:completo` ignora o cache, e é ele que roda
+# antes de uma tag. O cache acelera o laço do dia; quem responde por uma tag
+# continua sendo a execução que não confia em nada.
 
 # Linha de base visual DESTA maquina. A digital e de pixels e pixel de texto
 # muda com o rasterizador — a medida e local por natureza, e versiona-la tornaria

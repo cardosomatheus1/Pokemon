@@ -1,0 +1,5 @@
+# O cache do Q2 e o índice de captura são artefatos de medição: versionados
+# para que um clone novo não pague 7 h de portão, e marcados `-diff` para que o
+# diff de um bloco continue legível. Ver o comentário no .gitignore e a L-179.
+test/fixtures/q2-veredito.json -diff
+test/fixtures/captura.json -diff
