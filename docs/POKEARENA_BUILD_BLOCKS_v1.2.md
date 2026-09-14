@@ -1100,6 +1100,72 @@ ele existir pelo nosso desenho, é mudar uma função — não o sistema.
 
 ---
 
+### T9 — O portão em 30 minutos
+
+**Tam.** M · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/` e `tools/`)
+· **Depende de** o cache de vereditos (T1) e o pré-voo (T5) · **Lacuna** L-179
+
+**Por que ele existe, e o requisito é do dono.** Em 14/09 um Q2 num clone limpo
+custou **6 h 45 min**. A decomposição:
+
+```text
+aqui, a frio      405 min / 962 mutantes  =  25 s por mutante
+documentado        68 min / 283 mutantes  =  14 s por mutante
+```
+
+A máquina é 1,7x mais lenta e o portão é **3,5x maior** — 1,7 × 3,5 ≈ 6, que é a
+diferença toda. O caso QUENTE na máquina do dono já está em ~24 min (`RETOMAR`,
+bloco 1.32: *"99 reavaliados, 888 reaproveitados"*), e o `CLAUDE.md` ainda
+anuncia 68 min, medido com 283 defeitos.
+
+> **O critério de saída é um número, e foi o dono quem o fixou: 30 minutos.**
+> Ele não pediu melhoria de desempenho — apontou que o portão encostou no limite
+> dele, e disse que não aceita nada diferente disso.
+
+**Escopo:**
+
+1. **MEDIR primeiro, e a medição é entregável.** Decompor os 25 s por mutante em
+   preparar a caixa / rodar suíte que não podia pegar nada / subir Chromium.
+   Sem isso as três correções abaixo são palpite. Duas vezes em 14/09 o projeto
+   raciocinou sobre número documentado que estava velho.
+2. **A cobertura dirige a seleção.** `NODE_V8_COVERAGE` é built-in do Node, zero
+   dependência. Uma execução instrumentada diz, por defeito, quais suítes
+   executam a linha mutada. **Suíte que não executa a linha não pode pegar o
+   mutante** — é dedução, a mesma da onda 1, e por isso continua fechando bloco.
+   De 139 suítes por mutante para 1–3.
+3. **Um navegador, recarga em vez de relançamento.** O servidor de teste passa a
+   substituir os bytes de UM arquivo em memória; a página recarrega em vez de o
+   portão montar caixa nova e subir Chromium novo.
+4. **Reavaliar a exclusão do `q2-veredito.json` do git.** O `.gitignore` a
+   justifica com *"é medição local"*, e o veredito é função de (definição do
+   defeito, conteúdo do arquivo, fecho da suíte) — as três no repositório.
+   Diferente da linha de base visual, nada aqui depende da máquina. Se a análise
+   se confirmar, todo clone nasce com o caminho quente em vez das 4 h.
+5. **O número do `CLAUDE.md` é corrigido no mesmo commit**, com o velho ao lado
+   do novo e a contagem de defeitos escrita junto — a regra do D-059.
+
+**Fora do escopo, e declarado:** amostrar. Nada aqui pode PULAR defeito. O
+`--tocados` já é o modo que pula e ele não fecha bloco; este bloco compra
+velocidade por dedução, não por omissão. Um portão que responde por 900 de 987 é
+outro produto, e pior.
+
+**Sabotagem:** fazer a seleção por cobertura DESCARTAR uma suíte que executa a
+linha; fazer a cobertura ser lida de uma execução velha; fazer a recarga do
+navegador servir o arquivo original em vez do mutado; fazer o relatório contar
+como reaproveitado um defeito que ninguém avaliou; fazer o teto de 30 min ser
+medido com o cache quente e anunciado como se fosse frio.
+
+**Q6:** sem superfície nova.
+
+**Saída:** `npm run sabotagem` completo, **a frio**, em 30 min ou menos, com os
+987 defeitos respondidos — cada um avaliado agora ou com nada de que ele dependa
+tendo mudado. O número medido entra no `CLAUDE.md` com a contagem de defeitos ao
+lado, e com a máquina em que foi medido.
+
+---
+
+---
+
 ### T5 — O pré-voo responde antes do portão
 
 **Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/` e `tools/`)

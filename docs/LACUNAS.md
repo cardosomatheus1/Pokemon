@@ -7752,3 +7752,89 @@ uma pergunta. Elas nascem juntas, ou nascem divergentes.
 **O que a destrava:** o `elencoDoEstagio` passar a receber uma CONDIÇÃO
 (clima, hora) e o pack declarar quem entra e quem sai em cada uma. É desenho de
 conteúdo além de código — alguém tem de decidir quem aparece na chuva.
+
+---
+
+### L-179 — o Q2 encostou no teto de tempo do dono, e o número do `CLAUDE.md` mente em 3,5x
+
+**Registrada em:** 14/09/2026, depois de um Q2 de **6 h 45 min** num clone limpo.
+**Bloco dono:** T9 — o custo do portão (novo; proposto junto com esta lacuna).
+**Critério de saída, fixado pelo dono:** **o portão completo em no máximo 30 min.**
+Não é meta de conforto — é requisito, e ele disse com todas as letras que não
+aceita nada diferente disso.
+
+### A medição, e ela corrige duas coisas que estavam escritas errado
+
+```text
+aqui, a frio      405 min / 962 mutantes  =  25 s por mutante
+documentado        68 min / 283 mutantes  =  14 s por mutante
+```
+
+A máquina de medição é 1,7x mais lenta; o portão é **3,5x maior**. 1,7 × 3,5 ≈ 6,
+que é a diferença inteira. Duas conclusões saem daí:
+
+**1. O `CLAUDE.md` anuncia 68 min para um portão que hoje custa ~4 h a frio na
+máquina do dono.** O número foi medido com 283 defeitos e nunca foi refeito; são
+987. É o D-059 outra vez, e desta vez na linha mais cara do arquivo.
+
+**2. O caso QUENTE já está em ~24 min.** O `RETOMAR.md` registra do bloco 1.32:
+*"99 reavaliados agora, 888 reaproveitados"*. 99 × 14,4 s ≈ 24 min. O dono não
+pediu uma melhoria — ele percebeu que o portão acabou de encostar no limite dele.
+No ritmo de crescimento atual (283 -> 987 em poucas semanas), o caso quente
+estoura os 30 min dentro de um ou dois blocos.
+
+### E o clone limpo não tem caso quente nenhum
+
+```text
+.gitignore:20    test/fixtures/q2-veredito.json
+```
+
+O cache de vereditos está fora do repositório. Quem clona paga as 4 h, sempre, na
+primeira execução. É a terceira ocorrência do mesmo padrão no mesmo dia — junto
+com o D-093 (linha de base visual) e o D-096 (a criação dela): **o que faz o
+portão ser rápido e correto mora fora do repositório, e só existe na máquina do
+dono.**
+
+### As três propostas, em ordem de leverage
+
+**1 · A cobertura dirige a seleção.** Hoje o cache pergunta *"algum arquivo do
+fecho mudou?"* — pergunta de ARQUIVO. A pergunta exata é *"esta suíte executa a
+linha mutada?"*, e isso é cobertura. `NODE_V8_COVERAGE` é built-in do Node, zero
+dependência: uma execução instrumentada diz, por defeito, quais suítes tocam
+aquela linha.
+
+> Suíte que não executa a linha **não pode** pegar o mutante. É dedução, e é a
+> mesma lógica de "só pode condenar" que a onda 1 já usa — não é amostragem, e
+> por isso continua fechando bloco.
+
+De 139 suítes por mutante para 1–3. Ataca o multiplicador dos **dois** casos.
+
+**2 · Um navegador, recarga em vez de relançamento.** A cauda cara é a dos
+mutantes que precisam de Chromium. Hoje cada um custa caixa de areia + processo
+novo. O servidor de teste pode substituir os bytes de UM arquivo em memória e a
+página recarrega — segundos em vez de dezenas.
+
+**3 · Versionar o cache de vereditos.** O comentário do `.gitignore` justifica a
+exclusão com *"é medição local e muda a cada execução"*, e isso merece ser
+contestado: o veredito é função de **(definição do defeito, conteúdo do arquivo,
+fecho da suíte)** — as três moram no repositório. Diferente da linha de base
+visual, aqui nada depende da máquina. Se a análise se confirmar, todo clone nasce
+com o caminho quente.
+
+### O primeiro passo é MEDIR, e isso é parte do escopo
+
+Duas vezes em 14/09 eu raciocinei em cima de número documentado que estava velho.
+O bloco **começa** decompondo os 25 s por mutante:
+
+```text
+quanto é montar/preparar a caixa de areia
+quanto é rodar suíte que não tinha como pegar aquele defeito
+quanto é Chromium subindo, por mutante
+```
+
+Sem essa decomposição, "cobertura resolve" é palpite. Com ela, dá para dizer qual
+das três entrega os 30 min sozinha — e construir só essa.
+
+**O que a destrava:** nada. É trabalho de arnês, sem dependência de conteúdo nem
+de decisão do dono além do limite que ele já fixou.
+
