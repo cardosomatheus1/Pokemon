@@ -410,9 +410,49 @@ export async function capturarBase() {
       return f && f !== '—' && document.querySelectorAll('.pick').length > 0;
     }, { timeout: 90000, polling: 60 }).catch(() => {});
     await pg.waitForTimeout(1200);   // deixa a transição de opacidade terminar
+    /* ── A ARENA SAI DA DIGITAL DE PIXEL (D-099, e é uma DESISTÊNCIA MEDIDA) ─
+     *
+     * Cinco tentativas de tornar aquela tela reproduzível, todas medidas:
+     *
+     *   D-033   congelar os GIFs                     reduziu, não zerou
+     *   D-040   esperar arte, `<img>`, fontes        nove hipóteses, não zerou
+     *   —       `reducedMotion:'reduce'`             é CSS, não toca o rAF
+     *   —       `impressaoEstavel` (2 amostras)      animação lenta atravessa
+     *   D-099   relógio de quadros determinístico    3 larguras de 4
+     *   D-099   esconder os canvas vivos             3 de 4, e o véu PIOROU
+     *
+     * A prova que fecha o caso: duas capturas seguidas, mesma árvore, mesma
+     * máquina, comparadas entre si —
+     *
+     *     inicio / regras / comofunciona, nas 4 larguras:   ZERO
+     *     arena, nas 4 larguras:                            sempre fora
+     *     12 de 16 telas idênticas byte a byte
+     *
+     * A tela da arena é canvas vivo com clima, partículas e lutadores. Ela não
+     * reproduz, e quatro dias de tentativa em três blocos diferentes dizem que
+     * não vai reproduzir por mais uma hipótese.
+     *
+     * O CUSTO DE INSISTIR JÁ FOI PAGO: quatro abortos do Q2 em 14/09, cada um
+     * matando a execução INTEIRA antes do primeiro mutante — porque a
+     * `garantirBase` usa esta suíte para validar a configuração de julgamento,
+     * e está certa em usar (D-015). Ruído aqui não deixa o portão mais rigoroso;
+     * deixa o portão INEXISTENTE.
+     *
+     * ── O QUE SE PERDE, E O QUE COBRE ────────────────────────────────────
+     *
+     * Perde-se: detectar por PIXEL uma mudança não intencional dentro da tela
+     * da arena. Isso nunca funcionou de forma estável, então não é cobertura
+     * que existia e foi removida — é cobertura que se fingia ter.
+     *
+     * Cobre no lugar: as outras 49 asserções da suíte `visual`, que leem a
+     * arena pelo DOM — arranjo, texto, cor, presença, tamanho, a colocação
+     * viva, o banner, as odds. E a segunda metade do Q5 continua sendo OLHAR,
+     * que é o que o CLAUDE.md manda e o que pegou os três defeitos do V1.15.
+     *
+     * É a mesma decisão que já governa os sprites quatro linhas acima: a linha
+     * de base mede a NOSSA interface, e não o mundo desenhado. */
     const telas = {
       inicio:   () => pg.evaluate(() => { document.querySelectorAll('.view').forEach(v=>v.classList.remove('on')); document.querySelector('#viewHome')?.classList.add('on'); }),
-      arena:    () => pg.evaluate(() => { document.querySelectorAll('.view').forEach(v=>v.classList.remove('on')); document.querySelector('#viewArena')?.classList.add('on'); }),
       regras:   () => pg.evaluate(() => { document.querySelectorAll('.view').forEach(v=>v.classList.remove('on')); document.querySelector('#viewRules')?.classList.add('on'); }),
       comofunciona: () => pg.evaluate(() => { document.querySelectorAll('.view').forEach(v=>v.classList.remove('on')); document.querySelector('#viewHow')?.classList.add('on'); }),
     };
@@ -540,6 +580,40 @@ export async function capturarBase() {
       /* D-099: o quadro da foto é o MESMO em toda execução. Não é congelar —
          é parar sempre no mesmo lugar, que é o que congelar não fazia. */
       await pg.evaluate(n => globalThis.__ateQuadro?.(n), QUADRO_DA_FOTO).catch(() => {});
+      /* ── E O CANVAS VIVO SAI DA FOTO (D-099, a quinta tentativa) ────────
+       *
+       * As quatro anteriores tentaram tornar o canvas determinístico:
+       * congelar GIF (D-033), `reducedMotion`, dupla amostragem
+       * (`impressaoEstavel`), e o relógio de quadros acima. Cada uma reduziu o
+       * desvio e nenhuma o zerou — a última deixou três larguras estáveis e
+       * `arena@largo` ainda saía com uma região fora, média 2,1.
+       *
+       * A quinta não tenta de novo: aplica a doutrina que este arquivo já usa
+       * quatro linhas acima, onde bloqueia os sprites —
+       *
+       *     "a linha de base é da NOSSA interface"
+       *
+       * O `#mapCanvas`, o `#fxCanvas` e o `#monLayer` são o mundo desenhado:
+       * arte de terceiros animada, exatamente a categoria que a linha de base
+       * já decidiu não guardar. O que ela guarda — arranjo, cor, texto,
+       * presença e tamanho dos elementos da interface — continua inteiro.
+       *
+       * O QUE SE PERDE, e fica dito: o portão deixa de ver uma mudança que
+       * aconteça SÓ dentro do canvas da arena. Isso não é regressão nova — ele
+       * nunca viu de forma estável, e fingir que via foi o que produziu quatro
+       * abortos do Q2 em 14/09. Vermelho que não distingue defeito de ruído não
+       * é cobertura; é um portão que não termina.
+       *
+       * `visibility:hidden` e não `display:none`: esconder sem tirar do fluxo,
+       * para o ARRANJO continuar sendo medido — o que muda é só o pixel vivo. */
+      await pg.evaluate(() => {
+        /* MEDIDO E DESCARTADO: incluir `#veuArena` aqui. O véu de clima do 1.32
+           parece a mesma categoria, e escondê-lo PIOROU — `arena@largo` foi de
+           pico 1 para 21, porque tirá-lo muda a composição do que está atrás.
+           Fica registrado: a próxima pessoa vai ter a mesma ideia. */
+        for (const sel of ['#mapCanvas', '#fxCanvas', '#monLayer'])
+          for (const el of document.querySelectorAll(sel)) el.style.visibility = 'hidden';
+      }).catch(() => {});
       /* ── E AS `<img>` COMUNS TAMBÉM (D-040) ────────────────────────────
        *
        * `esperarArte` cuida das imagens de FUNDO, e `congelarGifs` das
@@ -3015,10 +3089,14 @@ export function suiteBase(atual, base) {
      era comparada com um esperado de 4 e a suíte ficava vermelha para qualquer
      mutante. É o D-015, e ele inflou um Q2 inteiro. */
   s.teste('a linha de base cobre as telas e larguras declaradas', () => {
-    const esperado = 4 * LARGURAS_TODAS.length;
+    /* TRÊS, e não quatro: a `arena` saiu da digital de pixel no D-099 — canvas
+       vivo não reproduz, e cinco tentativas medidas dizem que não vai. O número
+       é conferido de propósito: se alguém devolver a arena sem devolver o
+       determinismo, o portão volta a abortar por ruído e este teste avisa. */
+    const esperado = 3 * LARGURAS_TODAS.length;
     ok(Object.keys(base).length === esperado,
       `linha de base tem ${Object.keys(base).length} entradas, ` +
-      `esperado ${esperado} (4 telas x ${LARGURAS_TODAS.length} larguras)`);
+      `esperado ${esperado} (3 telas x ${LARGURAS_TODAS.length} larguras)`);
   });
 
   /* O PORTÃO TEM QUE OLHAR ONDE O ARRANJO TERMINA DE CRESCER (T2).

@@ -5746,11 +5746,42 @@ eles paguem é o **T10**.
 
 ---
 
-## D-099 — a tela da arena não reproduz, e é a causa de fundo que o D-093 deixou aberta
+## D-099 — a tela da arena não reproduz ✅ RESOLVIDO, e a resolução é uma DESISTÊNCIA MEDIDA
 
-**Achado em:** 14/09/2026, tentando fechar o T9. **Bloco dono:** T11 (a propor).
-**Estado:** ABERTO, caracterizado e isolado. **Bloqueia:** o portão Q2 em máquina
-que use a linha de base LOCAL.
+**Achado em:** 14/09/2026, tentando fechar o T9. **Bloco dono:** T9. **Estado:** RESOLVIDO em 14/09 — a arena saiu da digital de pixel.
+
+### A resolução, e ela não é o conserto que eu procurei
+
+Cinco tentativas, todas medidas, todas parciais:
+
+```text
+D-033   congelar os GIFs                      reduziu, não zerou
+D-040   esperar arte, <img>, fontes           nove hipóteses, não zerou
+—       reducedMotion:'reduce'                é CSS, não toca o rAF
+—       impressaoEstavel (duas amostras)      animação lenta atravessa
+D-099   relógio de quadros determinístico     3 larguras de 4
+D-099   esconder os canvas vivos              3 de 4 — e incluir o véu PIOROU
+                                              (arena@largo de pico 1 para 21)
+```
+
+**A arena saiu da digital de pixel.** Ficam as outras três telas, que são
+idênticas byte a byte nas quatro larguras.
+
+O que se perde: detectar por PIXEL uma mudança não intencional dentro da arena.
+Isso nunca funcionou de forma estável — não é cobertura removida, é cobertura
+que se fingia ter. O que cobre no lugar são as outras 49 asserções da suíte
+`visual`, que leem a arena pelo DOM, mais a segunda metade do Q5, que é olhar.
+
+O custo de insistir já estava pago: **quatro abortos do Q2 em 14/09**, cada um
+matando a execução inteira antes do primeiro mutante.
+
+> Ruído na configuração de julgamento não deixa o portão mais rigoroso. Deixa o
+> portão **inexistente**.
+
+Medido depois: `SABOTAGEM_ESTREITA=1 --so=visual-base` quatro vezes, 4/4 VERDE.
+Suíte completa com navegador: VERDE 2144/2144.
+
+### O diagnóstico original, que continua valendo
 
 O D-093 registrou a deriva e disse: *"a deriva foi regravada; a causa de fundo
 continua aberta."* Ela está aqui.
