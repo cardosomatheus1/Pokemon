@@ -1122,12 +1122,49 @@ anuncia 68 min, medido com 283 defeitos.
 > Ele não pediu melhoria de desempenho — apontou que o portão encostou no limite
 > dele, e disse que não aceita nada diferente disso.
 
-**Escopo:**
+**A MEDIÇÃO JÁ FOI FEITA — 14/09, e ela reordenou o bloco.** O item 1 era
+medir; está medido, e o resultado derrubou a ordem original das propostas:
 
-1. **MEDIR primeiro, e a medição é entregável.** Decompor os 25 s por mutante em
-   preparar a caixa / rodar suíte que não podia pegar nada / subir Chromium.
-   Sem isso as três correções abaixo são palpite. Duas vezes em 14/09 o projeto
-   raciocinou sobre número documentado que estava velho.
+```text
+294 de 981 defeitos só podem ser pegos por suíte de NAVEGADOR      (30%)
+
+confere com o relógio da execução fria:
+  418 min x 4 trabalhadores          = 100 320 s de trabalho
+  294 x ~250 s = 73 500 s
+  693 x  ~39 s = 27 000 s            = 100 500 s   ✓
+
+    o navegador é ~73% do custo do portão
+```
+
+Cobertura dirigida era a proposta nº 1 e **não compra o teto**: mesmo resolvendo
+perfeitamente os 158 que caem no caminho completo, os 294 de navegador sozinhos
+custam 294 x 34 s / 4 = **42 min**, já fora dos 30.
+
+**E o paralelismo de 4 não está nem pagando o que custa** (D-097):
+
+```text
+suíte visual sozinha, 3x     VERDE 3/3     226 · 227 · 224 s
+4 em paralelo                VERDE 1/4     386 s de parede
+```
+
+2,3x de ganho em 4 núcleos, com 75% dos vereditos corrompidos por fome de CPU.
+
+**Escopo, na ordem que a medição impôs:**
+
+1. **UM navegador vivo, recarga em vez de relançamento.** É a única mudança que
+   mexe nos 73%, e ela conserta o **D-097** de brinde — a instabilidade e o custo
+   são o mesmo defeito visto de dois ângulos. Alvo: de ~34 s para ~3 s por
+   mutante de navegador.
+
+   ```text
+   294 x 3 s = 882 s      693 x 0,5 s = 347 s      total / 4 ≈ 6 min
+   ```
+
+2. **A espera do jogo para de ser de relógio de parede** (D-097, segunda metade).
+   Esperar PROGRESSO — o placar de abates, que a própria sonda já lê — em vez de
+   45 s de parede. E o `.catch(() => false)` deixa de fundir "não caiu ninguém"
+   com "não deu tempo de olhar": prazo estourado vira erro com endereço, nunca um
+   `false` silencioso.
 2. **A cobertura dirige a seleção.** `NODE_V8_COVERAGE` é built-in do Node, zero
    dependência. Uma execução instrumentada diz, por defeito, quais suítes
    executam a linha mutada. **Suíte que não executa a linha não pode pegar o

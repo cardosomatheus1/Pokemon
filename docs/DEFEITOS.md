@@ -5580,3 +5580,82 @@ local nasce com **16 entradas** e o portão anda.
 > Recusar com endereço custa uma execução. Escrever a referência errada custa
 > todas as seguintes, e ainda manda procurar o defeito no lugar errado.
 
+---
+
+## D-097 — o portão reprova a si mesmo: quatro navegadores em quatro núcleos
+
+**Achado em:** 14/09/2026, na primeira execução QUENTE do Q2 depois do D-096.
+**Bloco dono:** T9 (o portão em 30 minutos). **Estado:** ABERTO — o conserto é a
+mesma peça que o T9 precisa reescrever.
+**Gravidade:** alta. Instável reprovando é o que o `CLAUDE.md` chama de pior que
+vermelho constante — *"vermelho constante é defeito com endereço, instável
+escolhe quando aparecer."*
+
+O Q2 abortou aos 10 min acusando a configuração com navegador de estar quebrada:
+
+```text
+[visual] a colocação está viva durante a luta, não só correta no fim
+    nenhuma queda em 45 s de luta — o cenário não foi exercitado
+```
+
+O mesmo teste tinha passado na execução FRIA, na mesma árvore.
+
+### Medido, e as três medições juntas são o diagnóstico
+
+```text
+sozinho, 3 execuções        VERDE 3/3     226 · 227 · 224 s   (±1,5 s)
+4 em paralelo               VERDE 1/4     386 s de parede
+                            a VERMELHO 4/49 · b VERMELHO 1/49 · d VERMELHO 4/49
+```
+
+**75% das execuções reprovam sob exatamente a carga que o portão impõe.** E o
+paralelismo compra menos do que custa: 4 execuções em 386 s contra 904 s em
+série — **2,3x de ganho em 4 núcleos**, pago com três quartos dos vereditos.
+
+### A causa, e são duas falhas somadas numa linha
+
+```js
+const houveQueda = aoVivo && await pg.waitForFunction(
+  () => document.querySelectorAll('#pickList .pick.fechado').length > 0,
+  { timeout: 45000, polling: 400 }).then(() => true).catch(() => false);
+```
+
+**1. O prazo é de PAREDE e o trabalho é de ANIMAÇÃO.** A batalha avança no
+relógio da página. Os dois relógios só coincidem quando sobra CPU; com quatro
+Chromiums em quatro núcleos, 45 s de parede compram bem menos que 45 s de luta.
+O teste passa a medir a carga da máquina em vez do jogo.
+
+**2. O `.catch(() => false)` apaga a distinção que importa.** *"Não houve queda
+em 45 s"* e *"a espera estourou sem a página ter tido chance de rodar"* devolvem
+o mesmo `false`. A asserção então acusa **"o cenário não foi exercitado"**, que é
+falso: o cenário foi exercitado e não teve CPU para chegar na primeira queda.
+
+> É o D-022 outra vez, e a frase de lá serve inteira: *"log vazio não é 'travou
+> antes de imprimir': é 'não terminou, então não descarregou'."* Aqui: **`false`
+> não é "não caiu ninguém": é "não deu tempo de olhar".** A acusação com o
+> endereço errado custou meia hora procurando defeito no cenário.
+
+O segundo sintoma da mesma fome aparece na sonda irmã, duas vezes nas quatro
+execuções: `"não deu para ler a colocação viva: a luta não chegou a acontecer"`.
+
+### Por que ele é do T9, e não um conserto solto
+
+Há um remendo barato — subir o prazo de 45 s. Ele está **errado** pela regra que
+o próprio arnês já aprendeu no D-022: aumentar o teto esconde o sintoma e o
+defeito volta na próxima máquina mais lenta. Pior, aqui ele agrava o problema que
+o dono levantou, porque prazo maior é portão mais lento.
+
+O conserto certo tem duas metades, e as duas são o T9:
+
+```text
+esperar PROGRESSO DO JOGO, e não relógio de parede — o placar de abates já é
+lido logo abaixo e o comentário do arquivo explica por que ele é independente
+
+UM navegador vivo em vez de quatro disputando — que é a mudança que o T9
+precisa fazer de qualquer forma para caber em 30 min
+```
+
+A segunda resolve as duas coisas de uma vez, e é a razão de este defeito não ter
+bloco próprio: **a instabilidade e o custo do portão são o mesmo defeito visto de
+dois ângulos.**
+
