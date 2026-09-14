@@ -1100,6 +1100,69 @@ ele existir pelo nosso desenho, é mudar uma função — não o sistema.
 
 ---
 
+### T10 — A sonda para de replayar a partida inteira
+
+**Tam.** M · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/`)
+· **Depende de** T9 (o corte das sondas) · **Lacuna** L-179 · **Fecha** o resto do teto
+
+**Por que ele existe.** O T9 tirou o portão de 7 h para ~90 min e parou aí, com
+a razão medida. Depois de cortar as sondas vizinhas e as larguras, `--so=visual`
+custa 64 s, e o cronômetro por fase (`Q2_TEMPOS=1`) diz onde:
+
+```text
+13779 ms  esperando a fase virar (entrada + AO VIVO)
+13675 ms  esperando a luta avançar até a primeira queda
+ 4005 ms  sono fixo de 4 s
+  987 ms  goto /app/index.html
+```
+
+**Metade do custo é a partida sendo jogada em tempo real.** O relógio do app é
+`S.clock += raw`, colado no relógio de parede.
+
+### E a boa notícia veio da leitura: a luta já está isolada
+
+A sonda `rodar()` é uma carga de página seguida de ~18 `evaluate` baratos, e só
+**no fim** ela clica em `#btnStart` e assiste. Quatro dos 49 testes dependem
+disso — `aoVivo`, `relogio`, `colocacaoViva`, `houveQueda` — e eles custam
+**27,5 s dos 64**.
+
+Não é refatorar 1 200 linhas: é cortar os últimos 200 em uma segunda sonda.
+
+**Escopo:**
+
+1. **A luta vira sonda própria**, e os quatro testes viram a suíte `visual-luta`.
+   A tabela `SONDA_DA_SUITE` do T9 já é o mecanismo — a suíte nova entra nela e
+   o atalho do portão passa a distinguir as duas sozinho.
+2. **O sono fixo de 4 s some.** Ele espera "a linha do tempo correr"; agora que
+   a espera seguinte é por progresso de `S.clock` (D-097), ele é redundante.
+3. **MEDIR de novo, e a medição é entregável.** A projeção é ~36 s para o
+   mutante que não precisa da luta; se ela não se confirmar, o próximo alvo é
+   outro e o bloco diz qual.
+4. **Medir o paralelismo.** O portão roda 4 trabalhadores e ganha 2,3x em 4
+   núcleos (D-097). Dois ou três podem render mais que quatro se o gargalo for
+   disputa — é medição, não refatoração, e pode valer mais que o item 1.
+
+**Fora do escopo, e declarado:** acelerar o relógio do app nos testes. Faria a
+suíte medir uma configuração que não é a entregue, e a segunda metade do Q5 é
+justamente olhar o que o jogador vê. Barato e errado.
+
+**Sabotagem:** fazer a suíte `visual-luta` nascer sem entrada em
+`SONDA_DA_SUITE` (some do recorte em silêncio — S109); fazer a sonda da luta
+devolver o resultado da sonda sem luta; fazer os quatro testes lerem campo de
+uma sonda que não subiu; remover o sono de 4 s **sem** a espera por progresso no
+lugar.
+
+**Q6:** sem superfície nova.
+
+**Saída:** `npm run sabotagem` completo, a frio, dentro dos **30 min** que o dono
+fixou — medido na máquina dele, com a contagem de defeitos e o número velho ao
+lado, como manda o D-059. Se a partição da luta não bastar, o bloco entrega a
+medição que nomeia o próximo alvo em vez de uma promessa.
+
+---
+
+---
+
 ### T9 — O portão em 30 minutos
 
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/` e `tools/`)

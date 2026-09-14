@@ -22,7 +22,69 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 14/09/2026
+## 0. ONDE PARAMOS — 14/09/2026, noite
+
+```text
+o LINK     http://localhost:8099/app/index.html
+           sobe com:  node tools/servir.mjs --porta 8099
+           (até hoje este comando só funcionava no Windows — D-095)
+a PASTA    C:\Users\gdult\pa4
+o ESTADO   T9 fechado · Q1 VERDE 2144 · o portão saiu de 7 h para ~90 min
+```
+
+### O dia inteiro foi uma coisa só: o repositório saiu do `pa4` pela primeira vez
+
+E quebrou em quatro lugares, todos da mesma família — **o que faz o projeto
+rodar e o portão ser rápido morava fora do repositório**:
+
+```text
+D-095  sete tools/ calculam a raiz com idioma de Windows        CORRIGIDO
+D-096  a passada estreita ESCREVIA a linha de base visual       CORRIGIDO
+D-097  o portão reprova a si mesmo: 4 navegadores, 4 núcleos    CORRIGIDO
+D-098  o booleano do navegador subia 7 sondas para ler 1        CORRIGIDO
+L-179  o cache do Q2 estava no .gitignore                       VERSIONADO
+```
+
+### O requisito que o dono fixou no meio disso
+
+> **O portão completo em no máximo 30 minutos.** Ele disse que não aceita nada
+> diferente, e que desistiria de esperar 7 h de novo.
+
+O cache de vereditos e o índice de captura **entraram no git** (`.gitattributes`
+os marca `-diff`, então o diff de bloco continua legível). Clone novo não paga
+mais a execução fria.
+
+### T9 — feito, e o que ele mediu
+
+```text
+--so=visual   226 s -> 82 s      mesmos 49 testes
+portão        7 h -> ~90 min aqui · ~53 min na máquina do dono
+```
+
+O corte foi transformar um **booleano** em **conjunto**: `--so=visual` subia
+sete Chromiums e lia um. Nasceu `SONDA_DA_SUITE` em `bandeiras.mjs`, com duas
+guardas para que nenhuma suíte suma calada (S109) — e a segunda foi sabotada
+antes de merecer confiança.
+
+### T10 — o próximo, e ele é menor do que parecia
+
+O cronômetro por fase (`Q2_TEMPOS=1`, novo) mostrou que **metade dos 64 s que
+sobraram é a partida sendo jogada em tempo real**. A leitura trouxe a boa
+notícia: a luta já está isolada no fim da sonda, e só **4 dos 49 testes**
+dependem dela — 27,5 s dos 64.
+
+Partir a luta em sonda própria é o T10, e a ordem de serviço está no
+`BUILD_BLOCKS`. Ele também manda **medir o paralelismo**: 4 trabalhadores dão
+2,3x em 4 núcleos, e 2 ou 3 podem render mais.
+
+### E o 1.27f continua esperando
+
+Nada disto mexeu na fila de produto. A ordem de serviço do cartão da equipe
+está em `docs/TAREFA_1.27f_CARTAO.md`, escrita para quem não acompanhou nada.
+
+---
+
+## 0a. ONDE PARAMOS — 14/09/2026, manhã
 
 ```text
 o LINK     http://localhost:8099/app/index.html

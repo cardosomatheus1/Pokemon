@@ -5659,3 +5659,88 @@ A segunda resolve as duas coisas de uma vez, e é a razão de este defeito não 
 bloco próprio: **a instabilidade e o custo do portão são o mesmo defeito visto de
 dois ângulos.**
 
+---
+
+## D-098 — o booleano do navegador era grosso demais, e subia sete sondas para ler uma
+
+**Achado em:** 14/09/2026, medindo o custo do portão para a L-179.
+**Bloco dono:** T9. **Estado:** CORRIGIDO — `sondasNecessarias()` devolve o conjunto.
+**Família:** D-059, no mesmo arquivo criado para contê-lo.
+
+```js
+const precisaNavegador = ...                 // booleano: "precisa?"
+if (precisaNavegador) emFila([ 7 sondas ])   // o "sim" virava "sobe todas"
+```
+
+`--so=visual` subia sete Chromiums, lia um resultado e descartava seis. O portão
+paga isso **por mutante de navegador**, e são 294 dos 981.
+
+### Quem denunciou foi a medição das larguras, e ela quase enganou
+
+```text
+visual, 4 larguras     226 s
+visual, 1 largura      152 s     <- cortar três larguras poupa só 33%
+```
+
+Se as larguras fossem o custo, cortar três teria poupado três quartos. Os ~127 s
+que sobravam não eram largura: eram as seis sondas que ninguém lia.
+
+### É o D-059 pela segunda vez, no arquivo criado para impedi-lo
+
+Da primeira, o booleano estava **errado** — esquecia o `--sem-navegador`, e o
+`npm run rapido` subia cinco Chromium para descartá-los: 3 min 30 s onde o
+`CLAUDE.md` prometia 7 s. Consertaram o valor e extraíram a regra para
+`bandeiras.mjs`, com tabela-verdade e teste.
+
+Ninguém notou que ela é do **tipo** errado. A pergunta nunca foi *"precisa de
+navegador?"* e sim *"de QUAIS sondas?"* — e booleano não responde isso.
+
+> **Consertar o valor de uma decisão não conserta a forma dela.** O módulo que
+> existe para conter este defeito carregava a segunda metade dele.
+
+### A correção, e as duas guardas que a tornam segura
+
+`SONDA_DA_SUITE` mapeia suíte → sonda, e `sondasNecessarias()` devolve o
+conjunto. A tabela é **escrita e não derivada do nome**, de propósito:
+`rodada-viva` e `contraste` vivem do resultado que a sonda `rodar()` já
+capturou, e derivar erraria exatamente nesses três.
+
+Cortar sondas é a maior economia do portão **e** a forma mais fácil de uma suíte
+sumir calada, que é o S109. Por isso duas guardas:
+
+```text
+a antiga    "resultado ausente não pode virar suíte ausente" passa a cobrar só
+            a sonda PEDIDA — antes exigia as quatro sempre
+a nova      DERIVADA das duas fontes que poderiam divergir: sonda que subiu e
+            não virou suíte ABORTA, nomeando a sonda
+```
+
+A segunda foi sabotada antes de merecer confiança — apontei `visual` para uma
+sonda inexistente e ela pegou. Sem ela, aquela sabotagem daria **VERDE com zero
+testes visuais**. A mensagem nomeia a **sonda** e não a suíte: errar isso
+repetiria o D-097, cuja acusação mandou procurar defeito no cenário por meia
+hora.
+
+### Medido
+
+```text
+--so=visual        226 s  ->  82 s      mesmos 49 testes, VERDE
+suíte bandeiras    5 testes -> 11
+portão (projeção)  7 h -> ~90 min aqui · ~53 min na máquina do dono
+```
+
+### O que ele NÃO resolve, e está medido
+
+Depois do corte, `--so=visual` estreita custa 64 s, e o cronômetro por fase
+(`Q2_TEMPOS=1`, que nasce neste bloco) diz onde:
+
+```text
+13779 ms  esperando a fase virar (entrada + AO VIVO)
+13675 ms  esperando a luta avançar até a primeira queda
+ 4005 ms  sono fixo de 4 s
+```
+
+**Metade do custo restante é a partida sendo jogada em tempo real.** Quatro dos
+49 testes dependem da luta e custam 27,5 s dos 64. Partir a sonda para que só
+eles paguem é o **T10**.
+
