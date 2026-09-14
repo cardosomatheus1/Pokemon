@@ -20,12 +20,12 @@
  *   node tools/folha-acervo.mjs      -> arte/acervo/folha-contato.png
  */
 import { writeFileSync, mkdirSync, unlinkSync } from "node:fs";
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { AVATARES_ARTE, CENAS_ARTE, arquivoAvatar, arquivoCena } from '../app/modules/acervo-dados.mjs';
 import { FONTES_AVATAR } from './acervo-fontes.mjs';
 
-const RAIZ = resolve(dirname(new URL(import.meta.url).pathname.slice(1)), '..');
+const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SAIDA = `${RAIZ}/arte/acervo/folha-contato.png`;
 
 const PW = process.env.PW_MODULO, CHROME = process.env.PW_CHROME;

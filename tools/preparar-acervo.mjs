@@ -26,7 +26,7 @@
  * remover o fundo desta?" tenha resposta em vez de opinião.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync, copyFileSync, readdirSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import {
   AVATARES_ARTE, CENAS_ARTE, DIR_ACERVO, TAM_AVATAR, TAM_BANNER,
@@ -39,7 +39,7 @@ import { FONTES_AVATAR, FONTES_CENA } from './acervo-fontes.mjs';
 const AVATARES = AVATARES_ARTE.map(a => ({ ...a, ...FONTES_AVATAR[a.id] }));
 const CENAS    = CENAS_ARTE.map(c => ({ ...c, ...FONTES_CENA[c.id] }));
 
-const RAIZ = resolve(dirname(new URL(import.meta.url).pathname.slice(1)), '..');
+const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const ORIGEM = `${RAIZ}/${DIR_ACERVO}/origem`;
 
 /* A pasta de onde as fontes chegam na máquina do dono do projeto. Só é lida

@@ -15,9 +15,10 @@
  */
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { dirname, extname, join, normalize, resolve } from 'node:path';
 
-const RAIZ = resolve(dirname(new URL(import.meta.url).pathname.slice(1)), '..');
+const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 const arg = (nome, padrao) => {
   const i = process.argv.indexOf(nome);

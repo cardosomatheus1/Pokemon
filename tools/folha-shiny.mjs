@@ -17,10 +17,10 @@
  *   node tools/folha-shiny.mjs
  */
 import { writeFileSync, unlinkSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
-const RAIZ = resolve(dirname(new URL(import.meta.url).pathname.slice(1)), '..');
+const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SAIDA = `${RAIZ}/.telas/shiny-lado-a-lado.png`;
 
 const PW = process.env.PW_MODULO, CHROME = process.env.PW_CHROME;

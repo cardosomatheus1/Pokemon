@@ -5428,3 +5428,155 @@ NUNCA   git checkout <commit> -- <arquivos>   sobrescreve o ÍNDICE junto, e
 NUNCA   backup em /tmp para atravessar uma sessão
 SEMPRE  commit de rascunho, e reescrita depois com rebase ou amend
 ```
+
+---
+
+## D-095 — os `tools/` calculam a raiz por um idioma que só existe no Windows
+
+**Achado em:** 14/09/2026, pela suíte `servir` num clone POSIX.
+**Bloco dono:** este mesmo commit. **Estado:** CORRIGIDO — `fileURLToPath` nos sete.
+
+O `npm run rapido` voltou **VERMELHO — 1/2043** num clone limpo em Linux, com um
+único teste caído: *"o app continua sendo servido no caminho dele"*, pedindo
+`/app/index.html` e recebendo **404** numa árvore em que o arquivo existe.
+
+A causa não estava no roteamento. Estava na primeira linha executável do
+`tools/servir.mjs`:
+
+```js
+const RAIZ = resolve(dirname(new URL(import.meta.url).pathname.slice(1)), '..');
+```
+
+### O `.slice(1)` é certo no Windows e errado em todo o resto
+
+```text
+Windows   new URL('file:///C:/Users/gdult/pa4/tools/servir.mjs').pathname
+          -> "/C:/Users/gdult/pa4/tools/servir.mjs"
+          o .slice(1) tira a barra e sobra o caminho absoluto. CERTO.
+
+POSIX     new URL('file:///home/user/Pokemon/tools/servir.mjs').pathname
+          -> "/home/user/Pokemon/tools/servir.mjs"
+          o .slice(1) tira a barra e o caminho vira RELATIVO. O resolve()
+          então o cola no diretório de trabalho:
+
+              servindo      /home/user/Pokemon/home/user/Pokemon
+```
+
+O servidor subia, imprimia o link, e respondia **302 na raiz** — porque o
+redirecionamento é aritmética de string e não toca o disco. Só o pedido que
+precisa **abrir um arquivo** revelava a raiz dobrada.
+
+### Por que ninguém tinha visto
+
+Porque o projeto é desenvolvido em `C:\Users\gdult\pa4`, onde a linha está
+certa. A suíte é verde na máquina do dono e vermelha em qualquer outra — e o
+`tools/servir.mjs` é, pelo `CLAUDE.md`, *"a única porta pela qual o jogo chega a
+alguém"*.
+
+### O achado maior: eram SETE, e só um tinha teste
+
+```text
+tools/servir.mjs           <- o único com suíte que o executa; o único vermelho
+tools/empacotar.mjs
+tools/folha-acervo.mjs
+tools/folha-gifs.mjs
+tools/folha-shiny.mjs
+tools/patchnotes.mjs
+tools/preparar-acervo.mjs
+```
+
+Consertar o `servir.mjs` e deixar os outros seis teria devolvido a suíte ao
+verde **e deixado o defeito de pé** — a falha de derivar pela metade, que já
+custou um portão inteiro a este projeto (ver `CLAUDE.md`, o D-017 e o D-024).
+
+### A guarda que fica
+
+`test/servir.mjs` ganhou uma peneira **derivada**: ela lê `tools/*.mjs` do
+diretório e reprova qualquer arquivo que leia o próprio caminho por
+`new URL(import.meta.url).pathname`. Ferramenta nova que repita o idioma nasce
+reprovada, sem ninguém precisar lembrar.
+
+A peneira é sobre o **idioma** e não sobre o resultado, de propósito: medir a
+raiz de cada ferramenta exigiria importá-la, e importar ferramenta é executá-la.
+
+> **Um caminho que só resolve numa plataforma é um caminho que não resolve.** O
+> que atravessa as duas é o `fileURLToPath` — que o próprio `test/servir.mjs` já
+> usava, quatro linhas acima de onde o defeito morava.
+
+---
+
+## D-096 — a passada ESTREITA do Q2 escrevia a linha de base que ela deveria só consultar
+
+**Achado em:** 14/09/2026, no primeiro `npm run sabotagem` de um clone POSIX.
+**Bloco dono:** este mesmo commit. **Estado:** CORRIGIDO — a criação recusa passada reduzida.
+**Família:** D-093 (a base local é invisível ao git) e D-015 (configuração que julga sem base própria).
+
+O portão abortou em 6 minutos, sem plantar um único defeito:
+
+```text
+ABORTADO: a suíte já está vermelha na configuração com-golden/navegador-estreito,
+          SEM nenhum defeito plantado.
+  [visual-base] a linha de base cobre as telas e larguras declaradas
+      linha de base tem 4 entradas, esperado 16 (4 telas x 4 larguras)
+```
+
+### A acusação estava certa e o culpado era outro
+
+A configuração não estava quebrada. A **referência** dela é que tinha nascido
+pela metade, e nascido ali mesmo:
+
+```text
+1. a base versionada é de `windows-chromium-NNN`; esta máquina é
+   `linux-chromium-141`. Digital de pixel não viaja, então vale a base LOCAL
+2. a base local mora em `test/fixtures/visual-base-local.json`, que o
+   `.gitignore` mantém fora do repositório — num clone novo ela NÃO EXISTE
+3. ela é criada, preguiçosamente, pela primeira passada que não a encontra
+4. num clone novo, a primeira passada é a do próprio Q2 — e o Q2 roda a suíte
+   visual ESTREITA, com uma largura em vez de quatro
+
+       nasce com   4 entradas   (4 telas x 1 largura)
+       e a cobertura cobra 16   (4 telas x 4 larguras, contra LARGURAS_TODAS)
+```
+
+A partir daí o arquivo está envenenado: toda execução seguinte compara contra
+uma base de 4 entradas e aborta acusando a configuração.
+
+### A regra que faltava, e ela é a terceira metade de uma regra que já existia
+
+O `CLAUDE.md` e o cabeçalho da passada estreita dizem o que a redução pode e o
+que não pode:
+
+```text
+PODE      condenar — vermelho em uma largura é vermelho nas quatro
+NÃO PODE  absolver — verde em uma largura não conclui nada
+```
+
+Faltava a terceira, e é a que mordeu:
+
+> **Uma configuração reduzida também não pode ESCREVER a referência.** Se ela
+> não pode concluir que está verde, ela muito menos pode definir o que "verde"
+> quer dizer para as próximas execuções.
+
+O D-015 tinha corrigido o lado do *esperado* — o teste passou a contar contra
+`LARGURAS_TODAS` em vez de `LARGURAS`. Ficou de pé o lado do *observado*: a
+base capturada por uma largura.
+
+### A correção
+
+`test/visual.mjs` exporta `passadaCompleta()`. O `test/run.mjs` só cria a base
+local quando a passada é completa; numa passada estreita sem base local ele
+**recusa e diz o remédio**, em vez de escrever um arquivo pela metade:
+
+```text
+linha de base visual LOCAL ausente, e esta passada é ESTREITA.
+  Uma largura não pode escrever a referência das quatro [...]
+  Rode `npm run gerar:visual` uma vez nesta máquina e repita o portão.
+```
+
+Medido: com o arquivo removido e `SABOTAGEM_ESTREITA=1`, a execução sai com
+código 2 e essa mensagem. Com `npm run gerar:visual` rodado uma vez, a base
+local nasce com **16 entradas** e o portão anda.
+
+> Recusar com endereço custa uma execução. Escrever a referência errada custa
+> todas as seguintes, e ainda manda procurar o defeito no lugar errado.
+

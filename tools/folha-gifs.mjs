@@ -30,10 +30,10 @@
  *   node tools/folha-gifs.mjs
  */
 import { writeFileSync, unlinkSync, readFileSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
-const RAIZ = resolve(dirname(new URL(import.meta.url).pathname.slice(1)), '..');
+const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SAIDA = `${RAIZ}/.telas/gifs-banner.png`;
 const PASTA = 'assets/play_pokemonshowdown_com/sprites/gen5ani';
 

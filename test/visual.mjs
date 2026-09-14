@@ -248,6 +248,23 @@ const LARGURAS_TODAS = [
 const ESTREITA = process.env.SABOTAGEM_ESTREITA === '1';
 const LARGURAS = ESTREITA ? LARGURAS_TODAS.filter(L => L.nome === 'largo') : LARGURAS_TODAS;
 
+/* D-096 · E A REDUÇÃO TAMBÉM NÃO PODE *ESCREVER* A REFERÊNCIA.
+ *
+ * O parágrafo acima cobre a redução JULGANDO. Faltava a terceira coisa que ela
+ * não pode fazer, e foi por ela que o portão morreu num clone limpo em Linux:
+ * a base LOCAL é criada preguiçosamente pela primeira passada que não a acha, e
+ * a primeira passada de um clone novo é a do próprio Q2 — estreita.
+ *
+ *     nasce com  4 entradas (4 telas x 1 largura)
+ *     e o teste  cobra 16   (4 telas x 4 larguras, contra LARGURAS_TODAS)
+ *
+ * A partir daí o arquivo está envenenado e o portão aborta em toda execução,
+ * dizendo que a configuração com navegador está quebrada. Ela não está: a
+ * referência dela é que nasceu pela metade.
+ *
+ * Quem exporta isto é o `run.mjs`, que decide criar ou recusar. */
+export const passadaCompleta = () => !ESTREITA;
+
 /* A CHAVE DO AMBIENTE — plataforma e versao MAIOR do Chromium.
    Maior e nao completa: uma correcao de ponto nao mexe em rasterizacao, e
    amarrar a base a 151.0.7922.34 obrigaria a regravar a cada atualizacao. */

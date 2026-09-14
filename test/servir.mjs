@@ -33,6 +33,7 @@
  * depender de nada estar rodando, nem deixar coisa rodando.
  */
 import { spawn } from 'node:child_process';
+import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { criarSuite, ok, igual } from './harness.mjs';
 
@@ -117,6 +118,40 @@ export function suite() {
       ok(r.status === 403 || r.status === 404,
         `travessia de diretório respondeu ${r.status} — ela precisa ser recusada`);
     } finally { proc.kill(); }
+  });
+
+  /* ── D-095 · A RAIZ QUE SÓ EXISTE NO WINDOWS ──────────────────────────────
+   *
+   * O teste acima subiu o servidor e pediu `/app/index.html`. Ele voltou 404 —
+   * numa árvore em que o arquivo existe — e a causa não estava no roteamento:
+   *
+   *     const RAIZ = resolve(dirname(new URL(import.meta.url).pathname.slice(1)), '..');
+   *
+   * `pathname` de uma URL `file:` no Windows é `/C:/Users/...`, e o `.slice(1)`
+   * existe para tirar aquela barra. No POSIX o `pathname` JÁ é o caminho, e
+   * cortar o primeiro caractere o torna RELATIVO — o `resolve` então o cola no
+   * diretório de trabalho e a raiz sai DOBRADA:
+   *
+   *     servindo      /home/user/Pokemon/home/user/Pokemon
+   *
+   * POR QUE ISTO PRECISA DE UM TESTE DERIVADO, e não de mais um caso no teste
+   * de cima: o mesmo idioma estava em SETE arquivos de `tools/`, e só um deles
+   * — este servidor — tem suíte que o executa. Os outros seis quebravam do
+   * mesmo jeito, calados, e continuariam quebrando. Consertar um e deixar seis
+   * é a falha de derivar pela metade: parece resolvido.
+   *
+   * A peneira é sobre o IDIOMA e não sobre o resultado, de propósito. Medir a
+   * raiz exigiria importar cada ferramenta, e importar ferramenta é executá-la.
+   */
+  s.teste('nenhuma ferramenta calcula a própria raiz cortando o `pathname`', () => {
+    const dir = fileURLToPath(new URL('../tools/', import.meta.url));
+    const culpados = readdirSync(dir)
+      .filter(n => n.endsWith('.mjs'))
+      .filter(n => /import\.meta\.url\)\.pathname/.test(readFileSync(dir + n, 'utf8')));
+    igual(culpados.join(', '), '',
+      `${culpados.length} ferramenta(s) leem o caminho do próprio arquivo por ` +
+      `\`new URL(import.meta.url).pathname\`, que é idioma de Windows e deixa a ` +
+      `raiz dobrada no POSIX. O que atravessa os dois é o \`fileURLToPath\`.`);
   });
 
   return s;

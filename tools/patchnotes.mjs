@@ -12,13 +12,13 @@
  */
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 
 const PW = process.env.PW_MODULO, CHROME = process.env.PW_CHROME;
 if (!PW || !CHROME) { console.error('PW_MODULO e PW_CHROME não definidos.'); process.exit(1); }
 const { chromium } = await import(pathToFileURL(PW).href);
 
-const RAIZ = join(dirname(new URL(import.meta.url).pathname.slice(1)), '..');
+const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SAIDA = join(RAIZ, 'docs', 'PATCHNOTES.pdf');
 
 const HTML = String.raw`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">

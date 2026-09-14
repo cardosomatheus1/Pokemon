@@ -339,6 +339,20 @@ if (visual.disponivel() && !semVisual && precisaNavegador) {
   const escolha = visual.baseQueVale(ler(new URL('./fixtures/visual-base.json', import.meta.url)),
                                      ambienteRef, baseLocal);
   if (escolha.origem === 'local' && !baseLocal) {
+    /* D-096 · UMA PASSADA REDUZIDA NÃO ESCREVE A REFERÊNCIA.
+       A base local nasce da primeira passada que não a encontra, e num clone
+       novo essa passada é a do próprio Q2 — estreita, uma largura só. O arquivo
+       nasceria com 4 entradas onde o teste de cobertura cobra 16, e o portão
+       passaria a abortar para sempre culpando a configuração. Ver visual.mjs. */
+    if (!visual.passadaCompleta()) {
+      console.error('\nlinha de base visual LOCAL ausente, e esta passada é ESTREITA ' +
+                    '(SABOTAGEM_ESTREITA=1).\n' +
+                    '  Uma largura não pode escrever a referência das quatro — ela nasceria\n' +
+                    '  com 4 entradas onde a cobertura cobra 16, e o portão abortaria para\n' +
+                    '  sempre culpando a configuração com navegador (D-096).\n\n' +
+                    '  Rode `npm run gerar:visual` uma vez nesta máquina e repita o portão.');
+      process.exit(2);
+    }
     writeFileSync(ARQ_LOCAL, JSON.stringify(baseAtual));
     baseLocal = baseAtual;
     console.log('  · linha de base visual LOCAL criada (' +
