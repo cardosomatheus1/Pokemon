@@ -5744,3 +5744,88 @@ Depois do corte, `--so=visual` estreita custa 64 s, e o cronômetro por fase
 49 testes dependem da luta e custam 27,5 s dos 64. Partir a sonda para que só
 eles paguem é o **T10**.
 
+---
+
+## D-099 — a tela da arena não reproduz, e é a causa de fundo que o D-093 deixou aberta
+
+**Achado em:** 14/09/2026, tentando fechar o T9. **Bloco dono:** T11 (a propor).
+**Estado:** ABERTO, caracterizado e isolado. **Bloqueia:** o portão Q2 em máquina
+que use a linha de base LOCAL.
+
+O D-093 registrou a deriva e disse: *"a deriva foi regravada; a causa de fundo
+continua aberta."* Ela está aqui.
+
+### A medição que fecha o diagnóstico
+
+Duas execuções de `npm run gerar:visual` seguidas — mesma árvore, mesma máquina,
+nenhum teste no meio — e a comparação das duas linhas de base entre si:
+
+```text
+arena@panoramico    média 0,06   pico 8
+arena@estreito      média 0,06   pico 8
+arena@medio         média 0,09   pico 4
+arena@largo         média 0,00   pico 1
+inicio / regras / comofunciona, nas 4 larguras:   0
+
+telas idênticas byte a byte: 12 de 16
+```
+
+**Só as quatro telas de `arena` não reproduzem.** As outras doze são idênticas.
+Não é a máquina, não é carga, não é o rasterizador: é aquela tela.
+
+### O que foi descartado, com medição
+
+```text
+o SORTEIO da arena     descartado. Com RAIZ_FIXA instalado, três capturas
+                       seguidas trazem a MESMA arena (🏝️ Ilha Tropical).
+                       Sem ele vinham três diferentes — foi o meu primeiro
+                       probe, e ele media outro experimento
+os GIFs                já congelados desde o D-033
+reducedMotion          é preferência de CSS: não toca `requestAnimationFrame`
+impressaoEstavel       mede duas vezes com 140 ms e aceita quando concordam
+                       dentro de 1. Animação LENTA produz duas amostras
+                       concordantes e continua andando
+```
+
+### E congelar o rAF NÃO resolve — foi tentado e medido
+
+Parar `requestAnimationFrame` antes de fotografar impede o canvas de mudar
+**durante** a medição, e não torna o conteúdo determinístico: ele para num
+quadro arbitrário, e o quadro de duas execuções não é o mesmo. Medido: a
+instabilidade virou vermelho **constante** de magnitude 4,8.
+
+> Virar constante é diagnosticamente melhor — *vermelho constante é defeito com
+> endereço* — mas não é conserto, e foi revertido.
+
+**Esta tela já consumiu nove hipóteses** (D-040, região 1,5 da mesma
+`arena@largo`; agora 1,1 e 1,2). Cada uma acertava uma causa e deixava a
+seguinte. O padrão é a pista: não faltam causas, falta uma que as cubra.
+
+### A direção recomendada, e ela tem precedente no próprio arquivo
+
+`RAIZ_FIXA` pinça o **acaso** sobrescrevendo `crypto.getRandomValues` num
+`addInitScript`. O que falta é o par dele: pinçar o **tempo**.
+
+```text
+RAIZ_FIXA      crypto.getRandomValues -> LCG determinístico     JÁ EXISTE
+RELOGIO_FIXO   performance.now()      -> passo fixo por chamada  FALTA
+```
+
+O laço do app é `S.clock += raw`, com `raw` derivado de `performance.now()`. Com
+o relógio em passo fixo, todo quadro computa o mesmo delta e o canvas evolui
+igual em toda execução — determinismo pela mesma porta por onde o acaso já foi
+domado, em vez da décima hipótese sobre qual elemento se mexeu.
+
+**O risco a medir antes de construir:** passo fixo pode fazer alguma divisão por
+delta virar `NaN`, e a fase de aposta precisa avançar para a captura acontecer.
+
+### Por que ele bloqueia
+
+`garantirBase` valida a configuração de julgamento antes de plantar defeito, e
+com razão (D-015). Uma tela que não reproduz deixa essa validação vermelha, e o
+portão **aborta antes do primeiro mutante**. Foi o que aconteceu três vezes em
+14/09.
+
+Na máquina do dono o caminho é outro — o ambiente casa com o da referência
+versionada —, mas a não-reprodutibilidade é da captura, e não do arquivo.
+
