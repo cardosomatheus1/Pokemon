@@ -113,6 +113,7 @@ export const ARNES = ['test/harness.mjs', 'test/execucao.mjs'];
    próprio. O mapa é explícito porque adivinhar por nome erraria. */
 const MODULO_DA_SUITE = {
   'visual-base': 'test/visual.mjs', 'ambientes': 'test/visual.mjs',
+  'visual-luta': 'test/visual.mjs',
   'rodada-viva': 'test/visual.mjs', 'tema-cedo': 'test/visual.mjs',
   'sem-rede': 'test/visual.mjs',
   'sem-backend': 'test/visual.mjs',
@@ -121,7 +122,7 @@ const MODULO_DA_SUITE = {
 
 /* Suítes de navegador servem o app inteiro a um Chromium: elas veem `app/` e
    `arte/` sem importar nada de lá, e por isso o grafo de imports não basta. */
-const NAVEGADORAS = new Set(['visual', 'visual-base', 'ambientes', 'rodada-viva',
+const NAVEGADORAS = new Set(['visual', 'visual-luta', 'visual-base', 'ambientes', 'rodada-viva',
                              'tema-cedo', 'sem-rede', 'sem-backend', 'rodada-completa', 'contraste']);
 
 const RAIZ = process.cwd();

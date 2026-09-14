@@ -75,6 +75,7 @@ export function precisaNavegador({ so, semNavegador, comNavegador }) {
    então derivá-la do nome daria errado nos três casos. */
 export const SONDA_DA_SUITE = {
   'visual':          'rodar',
+  'visual-luta':     'luta',
   'rodada-viva':     'rodar',
   'contraste':       'rodar',
   'visual-base':     'base',

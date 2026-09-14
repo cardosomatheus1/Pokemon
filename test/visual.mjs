@@ -1941,6 +1941,217 @@ export async function rodar() {
      Contar no clique conta troca de lutador e conta aposta cancelada. O defeito
      é aritmético e invisível: o perfil mostra "12 apostas" para quem fez 4.
      Nenhum teste estático o alcança — quem conta é o fluxo. */
+  /* ── A LUTA SAI DAQUI (T10) ──────────────────────────────────────────────
+   *
+   * Esta sonda esperava a luta acontecer em TEMPO REAL: 13,8 s pela entrada e
+   * 13,7 s pela primeira queda, medidos com `Q2_TEMPOS=1`, mais 4 s de sono
+   * fixo. Eram ~31 s dos 64 que ela custa — e o portão paga isso por mutante de
+   * navegador, que são 294 dos 991.
+   *
+   * QUATRO dos 49 testes precisavam da luta ANDANDO. Foram para a suíte
+   * `visual-luta`, com sonda própria, e o portão só paga a espera quando o
+   * captor do mutante é ela — o corte de sondas do D-098 faz isso sozinho.
+   *
+   * O QUE FICA, e é o achado que tornou o corte pequeno: `S.battle` nasce no
+   * instante do `startFight()`, não depois da entrada nem da primeira queda.
+   * Ler a rodada que o app montou — o teste do §P3 e o da arena — só precisa
+   * que a batalha EXISTA. Era o resto da espera que não servia a ninguém aqui.
+   */
+  await pg.$eval('#btnStart', el => el.click()).catch(() => {});
+  const batalhaPronta = await pg.waitForFunction(
+    () => !!globalThis.__estadoVisual?.battle,
+    { timeout: 60000, polling: 100 }).then(() => true).catch(() => false);
+
+  const erroDepois = erros.length;
+
+  /* --- a rodada que o APP montou -------------------------------------------
+     Ler o estado do app e recompor a mesma rodada em Node a partir da raiz é o
+     único jeito de provar que o jogo usa a árvore de sementes como manda o §P3.
+     Os testes de `semente.mjs` provam que a árvore funciona; este prova que o
+     app está ligado nela — e que cada ramo alimenta o que deve.
+
+     A importação dinâmica devolve a MESMA instância do módulo que a página
+     carregou (o registro de módulos é por URL), então isto lê o estado vivo,
+     sem precisar de nenhuma exposição em `window` só para o teste.           */
+  const jogo = await pg.evaluate(async () => {
+    const { S } = await import('/app/modules/estado.mjs');
+    if (!S.seeds || !S.battle) return null;
+    return {
+      raiz: S.seeds.raiz,
+      visual: S.seeds.visual,
+      clima: S.weather?.key,
+      elenco: S.fighters.map(f => [f.dex, f.n, f.maxHp, f.atk, f.def, f.spa, f.spd, f.spe,
+                                   f.moves.map(m => m.n)]),
+      vencedor: S.battle.winner,
+      duracao: S.battle.duration,
+      nEventos: S.battle.events.length,
+    };
+  }).catch(() => null);
+
+  /* ── R32 · OS AVISOS APARECEM SOB MOVIMENTO REDUZIDO? ──────────────────
+   *
+   * A pergunta precisa ser feita no NAVEGADOR porque a resposta é opacidade
+   * calculada ao longo do tempo, e nenhuma leitura de CSS chega lá: a regra que
+   * quebrou isso no R30 não tinha nada de errado à vista — ela zerava uma
+   * duração, e foi o `forwards` do outro lado do arquivo que transformou isso
+   * em conteúdo apagado.
+   *
+   * DUAS ARMADILHAS, e as duas custaram uma medição errada antes de aparecer:
+   *
+   *   animação CSS NÃO RODA dentro de ancestral escondido. Os avisos vivem em
+   *   `#arena`, e sem ativar a view a medição lê a opacidade base e conclui que
+   *   está tudo quebrado — inclusive quando está tudo certo;
+   *
+   *   o `#streakToast` anima pela classe `.anim`, não pela `.show`. Só `.show`
+   *   deixa o elemento visível-por-display e transparente.
+   *
+   * `emulateMedia` liga a preferência nesta página, mede, e desliga. */
+  const avisos = await (async () => {
+    try {
+      await pg.emulateMedia({ reducedMotion: 'reduce' });
+      const r = await pg.evaluate(async () => {
+        const dorme = ms => new Promise(r => setTimeout(r, ms));
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+        document.querySelector('#viewArena')?.classList.add('on');
+        await dorme(250);
+        const alvos = [
+          ['#koToast', ['show'], '<b>X</b> caiu!<span class="ret">retornando…</span>'],
+          ['#streakToast', ['show', 'atk', 'anim'], '<div class="txt"><b class="lvl">DOUBLE KILL</b></div>'],
+        ];
+        const out = {};
+        for (const [sel, classes, html] of alvos) {
+          const el = document.querySelector(sel);
+          if (!el) { out[sel] = null; continue; }
+          const antes = el.className;
+          el.className = ''; el.innerHTML = html; void el.offsetWidth;
+          el.className = classes.join(' ');
+          let pico = 0;
+          for (const t of [40, 120, 200, 320]) {
+            await dorme(t);
+            pico = Math.max(pico, +getComputedStyle(el).opacity);
+          }
+          el.className = antes;
+          out[sel] = +pico.toFixed(3);
+        }
+        return out;
+      });
+      await pg.emulateMedia({ reducedMotion: 'no-preference' });
+      return r;
+    } catch (e) { return { erro: String(e).split('\n')[0] }; }
+  })();
+
+  /* ANTES DO `b.close()`, e depois de tudo que le a rodada. `pg.reload()` derruba
+     andamento, e as sondas da luta (colocacao viva, contagem de apostas) leem
+     dela. No meio da coleta, esta recarga fazia quatro testes de arena
+     reprovarem por falta de rodada — erro de sonda vestido de erro de
+     produto, pela terceira vez neste arnes. */
+  /* ── E DEPOIS DE RECARREGAR, A ABA ABRE ONDE A ACAO ESTA ───────────────
+   *
+   * Isto so se ve numa carga NOVA com expedicao ja em campo — foi assim que o
+   * dono viu: *"nem fica setado qual Pokemon voce esta usando, onde ele
+   * esta"*. Com o bicho farmando no gelo, a aba abria na floresta vazia e ele
+   * concluia que o jogo tinha esquecido quem ele mandou.
+   *
+   * A sonda anterior media logo depois de mandar, e ali o bioma na tela e o
+   * que o jogador acabou de escolher: o defeito nao pode aparecer. E o mesmo
+   * erro do D-058 e do S614 — medir onde o defeito nao cabe. */
+  const idleRecarregado = await (async () => {
+    try {
+      /* UMA SEGUNDA ABA NO MESMO CONTEXTO, e nao `pg.reload()`.
+
+         Recarregar a `pg` derruba a rodada em andamento, e as sondas da luta
+         leem dela — e no fim da coleta a pagina ja foi fechada. A aba nova
+         compartilha o `localStorage` do contexto, que e exatamente o que esta
+         medicao precisa: uma carga NOVA sobre o mesmo estado salvo. */
+      const pg2 = await pg.context().newPage();
+      await pg2.goto(`http://127.0.0.1:${porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
+      await pg2.evaluate(() => {
+        document.querySelector('.nav[data-view="viewIdle"]')?.click();
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+        document.querySelector('#viewIdle')?.classList.add('on');
+      });
+      await pg2.waitForFunction(
+        () => document.querySelectorAll('#idleBiomas [data-bioma]').length > 0,
+        { timeout: 20000, polling: 150 });
+      await pg2.waitForTimeout(500);
+      const lido = await pg2.evaluate(() => {
+        const est = JSON.parse(localStorage.getItem('ar_idle') || 'null');
+        const ativa = (est?.expedicoes ?? []).find(x => !x.colhidaEm);
+        return { chip: document.querySelector('#viewIdle .idleChip.on')?.dataset?.bioma ?? null,
+                 ativa: ativa?.bioma ?? null };
+      });
+      await pg2.close();
+      return lido;
+    } catch (e) { return { erro: String(e).slice(0, 140) }; }
+  })();
+
+  await b.close(); s.close();
+
+
+  if (TEMPOS) {
+    const soma = TEMPOS.reduce((a, [, ms]) => a + ms, 0);
+    console.log(`\n  [Q2_TEMPOS] sonda rodar() — ${(soma/1000).toFixed(1)} s em ${TEMPOS.length} esperas`);
+    for (const [r, ms] of TEMPOS.filter(([, ms]) => ms >= 500).sort((a, b) => b[1] - a[1]))
+      console.log(`    ${String(ms).padStart(7)} ms  ${r}`);
+  }
+  return { erros, conhecidos, apostas, batalhaPronta, folhas: cache.size, erroDepois, jogo, corte, cancelamento, comAposta, colunasAposta, painel, arena, idle, idlePronto, som, captura, loja, bnIdle, idleRecarregado, tema, fontes, avisos, ...st };
+}
+
+/* Q3 · A RODADA DO APP SAI DA RAIZ.
+ *
+ * `semente.mjs` prova que a árvore é sólida. Este teste prova a outra metade:
+ * que o app está LIGADO nela, e que cada ramo alimenta o que deve. Trocar
+ * `S.seeds.batalha` por `S.seeds.elenco` numa linha de `fases.mjs` não muda
+ * nada que a suíte estática enxergue — foi o defeito S30, e é ele que este
+ * teste existe para pegar.                                                  */
+/* Q5 · O JOGO ABRE COM A REDE EXTERNA DESLIGADA (F0.12).
+ *
+ * Até aqui o portão de navegador só funcionava porque o arnês interceptava as
+ * requisições de sprite e as servia pelo Node. Isso escondia a dependência em
+ * vez de testá-la: ninguém sabia se o jogo abre numa máquina com egresso
+ * fechado, porque nunca se tentou.
+ *
+ * Aqui NADA é servido: toda requisição a host externo é ABORTADA, como um
+ * firewall faria. O jogo tem que subir, sortear a rodada e mostrar os lutadores
+ * usando só a cópia local.                                                   */
+/* ── A SONDA DA LUTA (T10) ──────────────────────────────────────────────────
+ *
+ * Quatro dos 49 testes da suíte `visual` precisavam da luta ANDANDO: o quadro
+ * de colocação vivo, a faixa de coluna durante a luta, a contagem de aposta no
+ * fecho da janela (D-008), e a fase AO VIVO com o relógio correndo.
+ *
+ * Eles custavam ~31 s de espera em TEMPO REAL, e os outros 45 pagavam junto.
+ * O portão paga isso por mutante de navegador — 294 dos 991 defeitos.
+ *
+ * POR QUE UM SEGUNDO BOOT, e não um modo na `rodar()`: ela faz ~18 leituras
+ * baratas que nada aqui usa, e um modo condicional significaria condicionar
+ * cada uma — dezoito pontos onde esquecer um deixa a suíte lendo `null` em
+ * silêncio, que é o S109 chegando por dentro. O boot custa o mesmo de qualquer
+ * sonda; clareza custa mais.
+ */
+export async function rodarLuta() {
+  const { chromium } = await import(PW_URL);
+  const { s: srv, porta } = await servidor();
+  const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+  const pg = await (await b.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+  /* O estado espelhado, igual à `rodar()`: a leitura da colocação precisa ler
+     `S` e o DOM no MESMO tique — ver a nota longa onde ela acontece. */
+  await pg.addInitScript(`import('/app/modules/estado.mjs')
+    .then(m => { globalThis.__estadoVisual = m.S; }).catch(() => {});`);
+  const erros = [];
+  pg.on('pageerror', e => erros.push(String(e).split('\n')[0]));
+  try {
+    await pg.goto(`http://127.0.0.1:${porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
+    /* Esperar ESTADO e não relógio: a fase de aposta ABERTA com a lista montada
+       é o primeiro instante em que dá para apostar e começar. */
+    await pg.waitForFunction(() => {
+      const f = document.querySelector('#phase')?.textContent;
+      return f && f !== '—' && document.querySelectorAll('.pick').length > 0;
+    }, { timeout: 90000, polling: 250 }).catch(() => {});
+
+  /* A CONTAGEM VEM ANTES DA LUTA, e é metade de um teste só (D-008): os três
+     cliques acontecem na janela de aposta, e o `contagemDepois` é lido DENTRO
+     da luta. Uma pergunta, duas fases — por isso a sonda faz as duas pontas. */
   const contagem = await pg.evaluate(async () => {
     const { S } = await import('/app/modules/estado.mjs');
     const antes = S.profile.betsCount;
@@ -2094,158 +2305,74 @@ export async function rodar() {
                               String(e).split('\n')[0] }))
     : { erro: 'a luta não chegou a acontecer' };
 
-  const erroDepois = erros.length;
-
-  /* --- a rodada que o APP montou -------------------------------------------
-     Ler o estado do app e recompor a mesma rodada em Node a partir da raiz é o
-     único jeito de provar que o jogo usa a árvore de sementes como manda o §P3.
-     Os testes de `semente.mjs` provam que a árvore funciona; este prova que o
-     app está ligado nela — e que cada ramo alimenta o que deve.
-
-     A importação dinâmica devolve a MESMA instância do módulo que a página
-     carregou (o registro de módulos é por URL), então isto lê o estado vivo,
-     sem precisar de nenhuma exposição em `window` só para o teste.           */
-  const jogo = await pg.evaluate(async () => {
-    const { S } = await import('/app/modules/estado.mjs');
-    if (!S.seeds || !S.battle) return null;
-    return {
-      raiz: S.seeds.raiz,
-      visual: S.seeds.visual,
-      clima: S.weather?.key,
-      elenco: S.fighters.map(f => [f.dex, f.n, f.maxHp, f.atk, f.def, f.spa, f.spd, f.spe,
-                                   f.moves.map(m => m.n)]),
-      vencedor: S.battle.winner,
-      duracao: S.battle.duration,
-      nEventos: S.battle.events.length,
-    };
-  }).catch(() => null);
-
-  /* ── R32 · OS AVISOS APARECEM SOB MOVIMENTO REDUZIDO? ──────────────────
-   *
-   * A pergunta precisa ser feita no NAVEGADOR porque a resposta é opacidade
-   * calculada ao longo do tempo, e nenhuma leitura de CSS chega lá: a regra que
-   * quebrou isso no R30 não tinha nada de errado à vista — ela zerava uma
-   * duração, e foi o `forwards` do outro lado do arquivo que transformou isso
-   * em conteúdo apagado.
-   *
-   * DUAS ARMADILHAS, e as duas custaram uma medição errada antes de aparecer:
-   *
-   *   animação CSS NÃO RODA dentro de ancestral escondido. Os avisos vivem em
-   *   `#arena`, e sem ativar a view a medição lê a opacidade base e conclui que
-   *   está tudo quebrado — inclusive quando está tudo certo;
-   *
-   *   o `#streakToast` anima pela classe `.anim`, não pela `.show`. Só `.show`
-   *   deixa o elemento visível-por-display e transparente.
-   *
-   * `emulateMedia` liga a preferência nesta página, mede, e desliga. */
-  const avisos = await (async () => {
-    try {
-      await pg.emulateMedia({ reducedMotion: 'reduce' });
-      const r = await pg.evaluate(async () => {
-        const dorme = ms => new Promise(r => setTimeout(r, ms));
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
-        document.querySelector('#viewArena')?.classList.add('on');
-        await dorme(250);
-        const alvos = [
-          ['#koToast', ['show'], '<b>X</b> caiu!<span class="ret">retornando…</span>'],
-          ['#streakToast', ['show', 'atk', 'anim'], '<div class="txt"><b class="lvl">DOUBLE KILL</b></div>'],
-        ];
-        const out = {};
-        for (const [sel, classes, html] of alvos) {
-          const el = document.querySelector(sel);
-          if (!el) { out[sel] = null; continue; }
-          const antes = el.className;
-          el.className = ''; el.innerHTML = html; void el.offsetWidth;
-          el.className = classes.join(' ');
-          let pico = 0;
-          for (const t of [40, 120, 200, 320]) {
-            await dorme(t);
-            pico = Math.max(pico, +getComputedStyle(el).opacity);
-          }
-          el.className = antes;
-          out[sel] = +pico.toFixed(3);
-        }
-        return out;
-      });
-      await pg.emulateMedia({ reducedMotion: 'no-preference' });
-      return r;
-    } catch (e) { return { erro: String(e).split('\n')[0] }; }
-  })();
-
-  /* ANTES DO `b.close()`, e depois de tudo que le a rodada. `pg.reload()` derruba
-     andamento, e as sondas da luta (colocacao viva, contagem de apostas) leem
-     dela. No meio da coleta, esta recarga fazia quatro testes de arena
-     reprovarem por falta de rodada — erro de sonda vestido de erro de
-     produto, pela terceira vez neste arnes. */
-  /* ── E DEPOIS DE RECARREGAR, A ABA ABRE ONDE A ACAO ESTA ───────────────
-   *
-   * Isto so se ve numa carga NOVA com expedicao ja em campo — foi assim que o
-   * dono viu: *"nem fica setado qual Pokemon voce esta usando, onde ele
-   * esta"*. Com o bicho farmando no gelo, a aba abria na floresta vazia e ele
-   * concluia que o jogo tinha esquecido quem ele mandou.
-   *
-   * A sonda anterior media logo depois de mandar, e ali o bioma na tela e o
-   * que o jogador acabou de escolher: o defeito nao pode aparecer. E o mesmo
-   * erro do D-058 e do S614 — medir onde o defeito nao cabe. */
-  const idleRecarregado = await (async () => {
-    try {
-      /* UMA SEGUNDA ABA NO MESMO CONTEXTO, e nao `pg.reload()`.
-
-         Recarregar a `pg` derruba a rodada em andamento, e as sondas da luta
-         leem dela — e no fim da coleta a pagina ja foi fechada. A aba nova
-         compartilha o `localStorage` do contexto, que e exatamente o que esta
-         medicao precisa: uma carga NOVA sobre o mesmo estado salvo. */
-      const pg2 = await pg.context().newPage();
-      await pg2.goto(`http://127.0.0.1:${porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
-      await pg2.evaluate(() => {
-        document.querySelector('.nav[data-view="viewIdle"]')?.click();
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
-        document.querySelector('#viewIdle')?.classList.add('on');
-      });
-      await pg2.waitForFunction(
-        () => document.querySelectorAll('#idleBiomas [data-bioma]').length > 0,
-        { timeout: 20000, polling: 150 });
-      await pg2.waitForTimeout(500);
-      const lido = await pg2.evaluate(() => {
-        const est = JSON.parse(localStorage.getItem('ar_idle') || 'null');
-        const ativa = (est?.expedicoes ?? []).find(x => !x.colhidaEm);
-        return { chip: document.querySelector('#viewIdle .idleChip.on')?.dataset?.bioma ?? null,
-                 ativa: ativa?.bioma ?? null };
-      });
-      await pg2.close();
-      return lido;
-    } catch (e) { return { erro: String(e).slice(0, 140) }; }
-  })();
-
-  await b.close(); s.close();
-
-
-  if (TEMPOS) {
-    const soma = TEMPOS.reduce((a, [, ms]) => a + ms, 0);
-    console.log(`\n  [Q2_TEMPOS] sonda rodar() — ${(soma/1000).toFixed(1)} s em ${TEMPOS.length} esperas`);
-    for (const [r, ms] of TEMPOS.filter(([, ms]) => ms >= 500).sort((a, b) => b[1] - a[1]))
-      console.log(`    ${String(ms).padStart(7)} ms  ${r}`);
-  }
-  return { erros, conhecidos, apostas, aoVivo, relogio, folhas: cache.size, erroDepois, jogo, corte, cancelamento, comAposta, colunasAposta, painel, arena, idle, idlePronto, som, captura, loja, bnIdle, idleRecarregado, contagem, colocacaoViva, houveQueda, porqueNaoCaiu, tema, fontes, avisos, ...st };
+    return { erros, aoVivo, relogio, colocacaoViva, houveQueda, porqueNaoCaiu, contagem };
+  } finally { await b.close(); srv.close(); }
 }
 
-/* Q3 · A RODADA DO APP SAI DA RAIZ.
- *
- * `semente.mjs` prova que a árvore é sólida. Este teste prova a outra metade:
- * que o app está LIGADO nela, e que cada ramo alimenta o que deve. Trocar
- * `S.seeds.batalha` por `S.seeds.elenco` numa linha de `fases.mjs` não muda
- * nada que a suíte estática enxergue — foi o defeito S30, e é ele que este
- * teste existe para pegar.                                                  */
-/* Q5 · O JOGO ABRE COM A REDE EXTERNA DESLIGADA (F0.12).
- *
- * Até aqui o portão de navegador só funcionava porque o arnês interceptava as
- * requisições de sprite e as servia pelo Node. Isso escondia a dependência em
- * vez de testá-la: ninguém sabia se o jogo abre numa máquina com egresso
- * fechado, porque nunca se tentou.
- *
- * Aqui NADA é servido: toda requisição a host externo é ABORTADA, como um
- * firewall faria. O jogo tem que subir, sortear a rodada e mostrar os lutadores
- * usando só a cópia local.                                                   */
+/* Q5 · A LUTA ANDANDO — os quatro testes que precisam dela (T10). */
+export function suiteLuta(r) {
+  const s = criarSuite('visual-luta');
+
+  /* SEM RESULTADO NÃO É SUÍTE VAZIA. Se a sonda não rodou, a suíte reprova em
+     vez de passar em silêncio — execução vazia com a palavra VERDE é o S109. */
+  s.teste('a sonda da luta produziu resultado', () => {
+    ok(r && typeof r === 'object', 'rodarLuta() não devolveu nada');
+    igual((r.erros || []).length, 0,
+      `a página quebrou durante a luta: ${(r.erros || []).join(' · ')}`);
+  });
+
+  s.teste('S102 · a faixa de coluna nomeia o que o número é, na luta', () => {
+    const c = (r.colocacaoViva?.colunas || '').toLowerCase();
+    ok(c.includes('vida'),
+      `a faixa de coluna durante a luta diz "${r.colocacaoViva?.colunas}" e não nomeia ` +
+      `a vida. É o lado em que a leitura otimista acontece: quem apostou a 7,1 % ` +
+      `e vê 91 % conclui que as chances explodiram.`);
+    ok(!c.includes('chance'),
+      `a faixa ficou com o texto da fase de aposta durante a luta: "${r.colocacaoViva?.colunas}"`);
+  });
+
+  s.teste('a colocação está viva durante a luta, não só correta no fim', () => {
+    const v = r.colocacaoViva;
+    ok(v && !v.erro, `não deu para ler a colocação viva: ${v?.erro}`);
+    igual(v.linhas, 12, `${v.linhas} linhas no quadro durante a luta`);
+    /* D-097: a acusação passa a dizer QUAL das três coisas aconteceu. A frase
+       antiga — "o cenário não foi exercitado" — era falsa no caso que mais
+       acontecia (máquina sem CPU) e mandava procurar no lugar errado. */
+    ok(r.houveQueda, r.porqueNaoCaiu || 'nenhuma queda durante a luta');
+    ok(v.mortos > 0, `a espera acusou queda mas ${v.mortos} lutadores estão caídos`);
+    /* A CONVERGÊNCIA É A PRÓPRIA CONDIÇÃO DA SONDA: ela só devolve instantâneo
+       quando o quadro e o estado batem, no mesmo tique e ainda em luta. Chegar
+       aqui com `v.erro` é o quadro nunca ter alcançado — quadro CONGELADO, que
+       é o S89: a ordem de quedas saindo de outro gancho que não o que credita
+       o abate. A conferência do fim corrigiria tudo e esconderia isto.
+
+       Por isso não há aqui uma comparação entre `mortos` e `caidosNoQuadro`: a
+       versão que comparava lia os dois em momentos diferentes e mediu, por duas
+       execuções de portão, o relógio da máquina em vez do produto. */
+    igual(v.caidosNoQuadro, v.mortos,
+      `a sonda devolveu ${v.mortos} caídos no estado e ${v.caidosNoQuadro} no ` +
+      `quadro — ela só devolve quando os dois batem, então isto é a própria ` +
+      `sonda quebrada, e não o app`);
+  });
+
+  s.teste('D-008 · três cliques de aposta contam UMA aposta', () => {
+    const c = r.contagem, v = r.colocacaoViva;
+    ok(c && !c.erro, `não deu para exercitar a contagem: ${c?.erro}`);
+    ok(v && !v.erro, `não deu para reler o perfil: ${v?.erro}`);
+    ok(c.apostaViva, 'os cliques não deixaram aposta viva — o cenário não foi exercitado');
+    igual(v.contagemDepois, c.antes + 1,
+      `três cliques (escolher + trocar + trocar) contaram ${v.contagemDepois - c.antes} apostas. ` +
+      `A aposta só entra na estatística quando a janela FECHA — ver D-008.`);
+  });
+
+  s.teste('a batalha começa e o relógio corre', () => {
+    ok(r.aoVivo, 'a rodada não chegou à fase AO VIVO');
+    ok(parseFloat(r.relogio) > 0, `relógio da batalha em ${r.relogio} — a linha do tempo não avançou`);
+  });
+
+  return s;
+}
+
 export async function rodarSemRede() {
   const { chromium } = await import(PW_URL);
   const { s, porta } = await servidor();
@@ -3176,25 +3303,7 @@ export function suite(r) {
 
   /* A GARANTIA DO C1, na tela: o painel pode MUDAR a margem, não pode criar uma
      odd secreta. O valor que ele mostra tem de ser o mesmo do registro §4.4.5. */
-  s.teste('S102 · a faixa de coluna nomeia o que o número é, na luta', () => {
-    const c = (r.colocacaoViva?.colunas || '').toLowerCase();
-    ok(c.includes('vida'),
-      `a faixa de coluna durante a luta diz "${r.colocacaoViva?.colunas}" e não nomeia ` +
-      `a vida. É o lado em que a leitura otimista acontece: quem apostou a 7,1 % ` +
-      `e vê 91 % conclui que as chances explodiram.`);
-    ok(!c.includes('chance'),
-      `a faixa ficou com o texto da fase de aposta durante a luta: "${r.colocacaoViva?.colunas}"`);
-  });
 
-  s.teste('D-008 · três cliques de aposta contam UMA aposta', () => {
-    const c = r.contagem, v = r.colocacaoViva;
-    ok(c && !c.erro, `não deu para exercitar a contagem: ${c?.erro}`);
-    ok(v && !v.erro, `não deu para reler o perfil: ${v?.erro}`);
-    ok(c.apostaViva, 'os cliques não deixaram aposta viva — o cenário não foi exercitado');
-    igual(v.contagemDepois, c.antes + 1,
-      `três cliques (escolher + trocar + trocar) contaram ${v.contagemDepois - c.antes} apostas. ` +
-      `A aposta só entra na estatística quando a janela FECHA — ver D-008.`);
-  });
 
   /* --- V1.20 · O QUE A TELA AFIRMA COM A APOSTA VIVA ---------------------
    *
@@ -3249,29 +3358,6 @@ export function suite(r) {
     ok(c.includes('odd'), `a faixa não nomeia a odd: "${r.colunasAposta}"`);
   });
 
-  s.teste('a colocação está viva durante a luta, não só correta no fim', () => {
-    const v = r.colocacaoViva;
-    ok(v && !v.erro, `não deu para ler a colocação viva: ${v?.erro}`);
-    igual(v.linhas, 12, `${v.linhas} linhas no quadro durante a luta`);
-    /* D-097: a acusação passa a dizer QUAL das três coisas aconteceu. A frase
-       antiga — "o cenário não foi exercitado" — era falsa no caso que mais
-       acontecia (máquina sem CPU) e mandava procurar no lugar errado. */
-    ok(r.houveQueda, r.porqueNaoCaiu || 'nenhuma queda durante a luta');
-    ok(v.mortos > 0, `a espera acusou queda mas ${v.mortos} lutadores estão caídos`);
-    /* A CONVERGÊNCIA É A PRÓPRIA CONDIÇÃO DA SONDA: ela só devolve instantâneo
-       quando o quadro e o estado batem, no mesmo tique e ainda em luta. Chegar
-       aqui com `v.erro` é o quadro nunca ter alcançado — quadro CONGELADO, que
-       é o S89: a ordem de quedas saindo de outro gancho que não o que credita
-       o abate. A conferência do fim corrigiria tudo e esconderia isto.
-
-       Por isso não há aqui uma comparação entre `mortos` e `caidosNoQuadro`: a
-       versão que comparava lia os dois em momentos diferentes e mediu, por duas
-       execuções de portão, o relógio da máquina em vez do produto. */
-    igual(v.caidosNoQuadro, v.mortos,
-      `a sonda devolveu ${v.mortos} caídos no estado e ${v.caidosNoQuadro} no ` +
-      `quadro — ela só devolve quando os dois batem, então isto é a própria ` +
-      `sonda quebrada, e não o app`);
-  });
 
   /* ═══ R11 · A ARENA MANTÉM A PROPORÇÃO QUE DECLARA ════════════════════
    *
@@ -3844,9 +3930,5 @@ export function suite(r) {
       'senão o apostador vê o bônus antes de escolher.');
   });
 
-  s.teste('a batalha começa e o relógio corre', () => {
-    ok(r.aoVivo, 'a rodada não chegou à fase AO VIVO');
-    ok(parseFloat(r.relogio) > 0, `relógio da batalha em ${r.relogio} — a linha do tempo não avançou`);
-  });
   return s;
 }

@@ -263,6 +263,7 @@ const exigeVisual = process.env.EXIGE_VISUAL === '1';
 const exigeLocal = process.env.EXIGE_LOCAL === '1';
 const semVisual = process.env.SEM_VISUAL === '1';   // usado pela sabotagem
 let sondasPedidas = new Set(), temAssets = false;
+let rLuta = null;
 let rVisual = null, baseAtual = null, baseGravada = null, digitaisNav = null, rSemRede = null, rTemaCedo = null, rSemBackend, rRodadaCompleta;
 /* Q3 do F0.5 pede a mesma rodada reproduzida em dois ambientes JS. Estas são as
    raízes comparadas — fixas, para que a falha seja reproduzível. */
@@ -270,7 +271,7 @@ const RAIZES_Q3 = [1, 42, 0xC0FFEE, 0xFFFFFFFF, 987654321];
 /* AS SUÍTES QUE PRECISAM DE NAVEGADOR. Com `--so` fora desta lista, as cinco
    partidas de Chromium não acontecem — é o que faz `--so=carteira` custar 0,2 s
    em vez de 95 s. */
-const COM_NAVEGADOR = ['visual','visual-base','ambientes','rodada-viva','tema-cedo','sem-rede','sem-backend','rodada-completa','contraste','outfit-canvas'];
+const COM_NAVEGADOR = ['visual','visual-luta','visual-base','ambientes','rodada-viva','tema-cedo','sem-rede','sem-backend','rodada-completa','contraste','outfit-canvas'];
 /* A DECISAO MORA EM `bandeiras.mjs`, e nao aqui — D-059. Ela consultava o
    `--so` e esquecia o `--sem-navegador`, entao o `npm run rapido` subia os
    cinco Chromium e descartava o resultado deles trinta e sete linhas abaixo:
@@ -338,8 +339,9 @@ if (visual.disponivel() && !semVisual && precisaNavegador) {
   const sondas = sondasNecessarias({ so: SO, semNavegador, comNavegador: COM_NAVEGADOR });
   sondasPedidas = sondas; temAssets = temLocal;
   const se = (nome, fn) => () => (sondas.has(nome) ? fn() : Promise.resolve(null));
-  [rVisual, baseAtual, digitaisNav, rTemaCedo, rSemRede, rSemBackend, rRodadaCompleta] = await emFila([
+  [rVisual, rLuta, baseAtual, digitaisNav, rTemaCedo, rSemRede, rSemBackend, rRodadaCompleta] = await emFila([
     se('rodar',          () => visual.rodar()),
+    se('luta',           () => visual.rodarLuta()),
     se('base',           () => visual.capturarBase()),
     se('digitais',       () => visual.digitaisNoNavegador(RAIZES_Q3)),
     se('temaCedo',       () => visual.rodarTemaSemModulos()),
@@ -395,7 +397,8 @@ if (visual.disponivel() && !semVisual && precisaNavegador) {
      exigia as quatro sempre, o que era certo quando as sete subiam sempre — e
      viraria um aborto falso agora que `--so=visual` sobe uma. O que não muda é
      a regra: sonda que SUBIU e não devolveu resultado aborta. */
-  const faltando = [['visual', 'rodar', rVisual], ['linha de base', 'base', baseAtual],
+  const faltando = [['visual', 'rodar', rVisual], ['luta', 'luta', rLuta],
+                    ['linha de base', 'base', baseAtual],
                     ['ambientes', 'digitais', digitaisNav], ['tema-cedo', 'temaCedo', rTemaCedo]]
     .filter(([, sonda]) => sondas.has(sonda))
     .filter(([, , v]) => !v).map(([n]) => n);
@@ -446,6 +449,7 @@ const todas = [
      subir sempre. Agora cada uma pergunta pela sua, e o recorte chega até aqui.
      Quem garante que nenhuma some em silêncio é a conferência logo abaixo. */
   ...(!semVisual ? [
+    ...(rLuta     ? [visual.suiteLuta(rLuta)] : []),
     ...(rVisual   ? [visual.suite(rVisual), visual.suiteRodadaViva(rVisual),
                      /* O contraste é medido no navegador e julgado por aritmética
                         pura — por isso a suíte mora fora do visual.mjs. */

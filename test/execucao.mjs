@@ -54,7 +54,7 @@ export const TETO_MUTANTE_MS = 10 * 60 * 1000;
  * — voltando como PASSOU, porque eu tinha deixado o `sem-rede` de fora. É o
  * portão que pegou o vazamento de avatar do V1.15. Suíte que não roda não é
  * cobertura fraca: é ausência de cobertura com relatório verde. */
-export const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,sem-backend,rodada-completa,contraste,outfit-canvas';
+export const SUITES_NAVEGADOR = 'visual,visual-luta,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,sem-backend,rodada-completa,contraste,outfit-canvas';
 
 export function rodar(caixa, semGolden, comVisual, recorte = null, estreita = false) {
   const env = { ...process.env,

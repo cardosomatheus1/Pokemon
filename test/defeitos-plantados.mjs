@@ -719,6 +719,26 @@ export const DEFEITOS = [
     de:"    se('temaCedo',       () => visual.rodarTemaSemModulos()),",
     para:'    () => Promise.resolve(null),' },
 
+  /* ---------- T10: a luta em sonda própria ---------------------------------- */
+
+  /* O corte tira ~31 s de espera de cada mutante de navegador. Estes defendem
+     que ele não tirou COBERTURA junto. */
+
+  { id:'S997', arquivo:'test/bandeiras.mjs', nome:'a suite da luta perde a sonda dela',
+    real:'visual-luta sai do recorte em silencio e os quatro testes nunca rodam — o S109',
+    de:"  'visual-luta':     'luta',",
+    para:"  'visual-luta':     'rodar'," },
+
+  { id:'S998', arquivo:RUNNER, nome:'a sonda da luta nao e mais cobrada quando pedida',
+    real:'sonda que sobe e nao devolve resultado deixa de abortar, e a suite le null',
+    de:"['luta', 'luta', rLuta],",
+    para:'[],' },
+
+  { id:'S999', arquivo:'test/execucao.mjs', nome:'a luta sai da lista que o portao passa no --so',
+    real:'o portao deixa de rodar a suite da luta na passada de navegador — cobertura ausente com relatorio verde',
+    de:"export const SUITES_NAVEGADOR = 'visual,visual-luta,",
+    para:"export const SUITES_NAVEGADOR = 'visual," },
+
   /* ---------- T9: o corte das sondas, e as guardas que o tornam seguro ------ */
 
   /* O corte é a maior economia do portão E a forma mais fácil de uma suíte
@@ -921,7 +941,7 @@ export const DEFEITOS = [
        texto, e apagar aqui seria exatamente a falha que o pré-voo existe para
        impedir. Removo a suíte NOVA de propósito: é a que um esquecimento real
        deixaria de fora, porque é a última da lista. */
-    de:"const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,sem-backend,rodada-completa,contraste,outfit-canvas';",
+    de: "export const SUITES_NAVEGADOR = 'visual,visual-luta,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,sem-backend,rodada-completa,contraste,outfit-canvas';",
     para:"const SUITES_NAVEGADOR = 'visual,visual-base,ambientes,rodada-viva,tema-cedo,sem-rede,sem-backend,rodada-completa,contraste';" },
   /* ---------- F1.1: o esqueleto do backend ---------- */
 
