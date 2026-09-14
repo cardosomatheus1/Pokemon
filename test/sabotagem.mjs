@@ -259,7 +259,35 @@ const ARQUIVOS_RAIZ = execFileSync('git',
   ['ls-files', '--cached', '--others', '--exclude-standard'], { encoding: 'utf8' })
   .split('\n').filter(l => l && !l.includes('/') && existsSync(l));
 
-const N_TRAB = Math.max(1, Math.min(cpus().length, 4));
+/* ── QUANTAS CAIXAS EM PARALELO (D-100) ────────────────────────────────────
+ *
+ * Era `min(cpus, 4)` — uma caixa por núcleo. A conta parece certa e não é: cada
+ * caixa sobe um NAVEGADOR, e um navegador são ~10 processos. Não é uma por
+ * núcleo; são dez por núcleo.
+ *
+ * MEDIDO em 14/09, mesma carga (`--so=visual`), máquina de 4 núcleos:
+ *
+ *     concorrência 1     55 s    1/1 verdes    vazão 1,09/min
+ *     concorrência 2     76 s    2/2 verdes    vazão 1,57/min
+ *     concorrência 4    147 s    0/4 verdes    vazão 1,63/min
+ *
+ * De 2 para 4 a vazão sobe QUATRO POR CENTO e a corretude vai a ZERO.
+ *
+ * E O PREJUÍZO NÃO É LENTIDÃO, É MENTIRA. No portão, mutante cuja suíte reprova
+ * conta como PEGOU. Suíte que reprova por falta de CPU vira captura que não
+ * aconteceu — `PEGOU` FALSO, que o CLAUDE.md classifica como pior que `PASSOU`
+ * falso: "manda seguir em frente E esconde os defeitos que de fato escapam".
+ *
+ * É o D-015 por outra porta. Lá a configuração de julgamento estava quebrada;
+ * aqui ela está sã e a MÁQUINA é que não dá conta — e o `garantirBase` não pega,
+ * porque ele valida SOZINHO, antes dos mutantes, quando ainda há CPU sobrando.
+ *
+ * Meio núcleo por caixa é o que a medição sustenta, e o teto de 4 fica: acima
+ * disso a memória volta a ser o limite (D-023). `Q2_TRAB` permite medir de novo
+ * noutra máquina sem editar o arquivo — o número acima tem data, e número
+ * documentado envelhece (D-059). */
+const N_TRAB = Math.max(1, Math.min(
+  Number(process.env.Q2_TRAB) || Math.floor(cpus().length / 2), 4));
 const CAIXAS = [];
 
 /* ── AS CAIXAS SOMEM MESMO QUANDO O PORTÃO ABORTA (D-036) ──────────────────

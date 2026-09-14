@@ -5829,3 +5829,76 @@ portão **aborta antes do primeiro mutante**. Foi o que aconteceu três vezes em
 Na máquina do dono o caminho é outro — o ambiente casa com o da referência
 versionada —, mas a não-reprodutibilidade é da captura, e não do arquivo.
 
+---
+
+## D-100 — o portão afoga a máquina e lê o afogamento como captura
+
+**Achado em:** 14/09/2026, medindo o paralelismo (item 4 do T10).
+**Bloco dono:** T9. **Estado:** CORRIGIDO — `N_TRAB` passa a ser meio núcleo por caixa.
+**Gravidade:** ALTA, e não é desempenho: é `PEGOU` falso.
+
+```js
+const N_TRAB = Math.max(1, Math.min(cpus().length, 4));   // uma caixa por núcleo
+```
+
+A conta parece certa e não é. **Cada caixa sobe um NAVEGADOR, e um navegador são
+~10 processos.** Não é uma por núcleo; são dez por núcleo. Medido durante uma
+execução real: carga 11,3 em 4 núcleos, 40 processos Chromium vivos.
+
+### A medição, mesma carga, três concorrências
+
+```text
+concorrência 1     55 s     1/1 verdes     vazão 1,09/min
+concorrência 2     76 s     2/2 verdes     vazão 1,57/min
+concorrência 4    147 s     0/4 verdes     vazão 1,63/min
+```
+
+**De 2 para 4 a vazão sobe quatro por cento e a corretude vai a zero.**
+
+### E o prejuízo é mentira, não lentidão
+
+No portão, mutante cuja suíte reprova conta como **PEGOU**. Suíte que reprova
+por falta de CPU vira captura que não aconteceu:
+
+```text
+garantirBase   valida a configuração SOZINHO, antes dos mutantes  ->  passa
+os mutantes    rodam N em paralelo, na máquina afogada            ->  reprovam
+o portão       lê "reprovou" como "o defeito foi pego"            ->  PEGOU FALSO
+```
+
+É o **D-015 por outra porta**. Lá a configuração de julgamento estava quebrada;
+aqui ela está sã e a MÁQUINA é que não dá conta. O `garantirBase` não tem como
+pegar: ele mede antes, quando ainda há CPU sobrando.
+
+> `PEGOU` falso é pior que `PASSOU` falso — o segundo manda investigar, o
+> primeiro manda seguir em frente **e esconde os defeitos que de fato escapam**.
+
+**Isto põe em dúvida o `Q2 VERDE 987/987` de 14/09 pela manhã**, que fechou o
+D-095 e o D-096. Não está provado falso; está provado **não confiável**, e a
+diferença é o que este registro existe para preservar.
+
+### Quem tornou o defeito visível
+
+O conserto do **D-097**, feito horas antes por outro motivo. As quatro execuções
+não falharam em silêncio — elas disseram, com estas palavras:
+
+```text
+a página não avançou dentro do teto — o relógio DO JOGO não chegou a 12s.
+Isto não é o cenário: é a máquina sem CPU para rodar a luta (D-097).
+```
+
+A mensagem escrita de manhã para não mandar procurar no lugar errado é a que
+trouxe o diagnóstico à noite. **Recusa com endereço se paga.**
+
+### A correção
+
+```js
+const N_TRAB = Math.max(1, Math.min(
+  Number(process.env.Q2_TRAB) || Math.floor(cpus().length / 2), 4));
+```
+
+Meio núcleo por caixa é o que a medição sustenta. O teto de 4 fica: acima disso
+a memória volta a ser o limite (D-023). `Q2_TRAB` permite remedir noutra máquina
+sem editar o arquivo — o número tem data, e número documentado envelhece
+(D-059).
+
