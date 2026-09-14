@@ -152,6 +152,66 @@ function RAIZ_FIXA() {
   };
 }
 
+/* ── O RELÓGIO DE QUADROS, PINÇADO COMO O ACASO JÁ ERA (fecha o D-099) ─────
+ *
+ * `RAIZ_FIXA` domou o ACASO sobrescrevendo `crypto.getRandomValues`. Faltava o
+ * par dele: o TEMPO. Sem ele, quatro telas de dezesseis não reproduziam —
+ * medido comparando duas linhas de base geradas em seguida, mesma árvore:
+ *
+ *     arena@panoramico  média 0,06  pico 8      inicio/regras/comofunciona  0
+ *     arena@estreito    média 0,06  pico 8      12 de 16 telas idênticas
+ *
+ * Só a arena, porque só ela tem canvas redesenhado por `requestAnimationFrame`.
+ *
+ * A ARMADILHA QUE ME CUSTOU UMA TENTATIVA: sobrescrever `performance.now()` não
+ * resolve. O laço do app é `function frame(now)`, e esse `now` é o carimbo que
+ * o NAVEGADOR passa para o callback do rAF — ele não vem do `performance.now()`.
+ * Quem precisa ser determinístico é o laço de quadros inteiro.
+ *
+ * E CONGELAR O rAF TAMBÉM NÃO RESOLVE, e isso também foi medido: parar o laço
+ * impede o canvas de mudar DURANTE a medição, mas ele para num quadro
+ * arbitrário. A instabilidade virou vermelho CONSTANTE de magnitude 4,8.
+ *
+ *     Determinismo não é "parar": é "parar SEMPRE NO MESMO LUGAR".
+ *
+ * COMO ESTE FUNCIONA. A captura deixa de OBSERVAR o relógio e passa a DIRIGI-LO:
+ *
+ *   · `requestAnimationFrame` vira uma fila. Nada roda sozinho;
+ *   · cada passo consome a fila com um delta FIXO de 1/60 s, e conta o quadro;
+ *   · a espera pela tela pronta avança 2 quadros por sondagem, então o app
+ *     progride sem depender de quanto a máquina demora;
+ *   · antes de fotografar, `__ateQuadro(N)` leva o contador a um N EXATO. Duas
+ *     execuções fotografam o quadro de mesmo número, com o mesmo tempo
+ *     acumulado — e o canvas evolui igual.
+ *
+ * O que ele NÃO muda é o que o jogador vê: isto é código de captura, e o app
+ * roda com o rAF do navegador em qualquer outro lugar. */
+function RELOGIO_QUADROS() {
+  const real = globalThis.requestAnimationFrame.bind(globalThis);
+  const PASSO = 1000 / 60;
+  let t = 0, n = 0, fila = [];
+  globalThis.requestAnimationFrame = (cb) => { fila.push(cb); return fila.length; };
+  /* `cancelAnimationFrame` vira no-op: o app cancela por id do rAF real, e um id
+     nosso não significa nada para ele. Deixar o original passaria a cancelar
+     quadro alheio. */
+  globalThis.cancelAnimationFrame = () => {};
+  const passo = () => {
+    const f = fila; fila = []; t += PASSO; n++;
+    for (const cb of f) { try { cb(t); } catch { /* um callback ruim não para a captura */ } }
+  };
+  globalThis.__passoQuadros = (k = 1) => { for (let i = 0; i < k; i++) passo(); return n; };
+  globalThis.__ateQuadro = (alvo) => { while (n < alvo) passo(); return n; };
+  globalThis.__quadroAtual = () => n;
+  /* O `real` fica guardado para o caso de alguém precisar devolver o laço; a
+     captura não devolve, porque a página morre no fim dela. */
+  globalThis.__rafReal = real;
+}
+
+/* Quantos quadros de app antes de cada foto. 900 = 15 s a 60 fps: passa da
+   abertura da fase de aposta com folga, e é o MESMO número em toda execução —
+   que é a única propriedade que importa aqui. */
+const QUADRO_DA_FOTO = 900;
+
 /* ── ESPERAR A TELA PARAR DE MUDAR (fecha o D-040) ─────────────────────────
  *
  * As tentativas anteriores perguntavam O QUE esperar: a fonte, o GIF, a arte do
@@ -327,6 +387,8 @@ export async function capturarBase() {
     /* sprite bloqueado: a linha de base é da nossa interface */
     await pg.route(/(githubusercontent|jsdelivr|pokemonshowdown)/, r => r.fulfill({ status: 204 }));
     await pg.addInitScript(RAIZ_FIXA);
+    /* D-099: o par do RAIZ_FIXA. Um pinça o acaso, o outro o tempo. */
+    await pg.addInitScript(RELOGIO_QUADROS);
     await pg.goto(`http://127.0.0.1:${porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
     /* Esperar ESTADO, não relógio.
        A espera fixa de 4 s funcionou enquanto a rodada custava 0,7 s. O F0.7
@@ -337,10 +399,16 @@ export async function capturarBase() {
 
        A condição é a fase de apostas ABERTA com a lista de odds montada: é o
        primeiro instante em que a interface está inteira e parada. */
+    /* D-099: com o laço de quadros na mão da captura, NADA anda sozinho — a
+       sondagem precisa avançar o app, senão a condição nunca chega. Dois
+       quadros por sondagem dão tempo de o trabalho assíncrono (Monte Carlo,
+       fontes, arte) progredir entre eles, que é o que o relógio de parede
+       fazia antes de graça. */
     await pg.waitForFunction(() => {
+      globalThis.__passoQuadros?.(2);
       const f = document.querySelector('#phase')?.textContent;
       return f && f !== '—' && document.querySelectorAll('.pick').length > 0;
-    }, { timeout: 90000, polling: 250 }).catch(() => {});
+    }, { timeout: 90000, polling: 60 }).catch(() => {});
     await pg.waitForTimeout(1200);   // deixa a transição de opacidade terminar
     const telas = {
       inicio:   () => pg.evaluate(() => { document.querySelectorAll('.view').forEach(v=>v.classList.remove('on')); document.querySelector('#viewHome')?.classList.add('on'); }),
@@ -469,6 +537,9 @@ export async function capturarBase() {
       await ir(); await pg.waitForTimeout(700);
       await esperarArte(SELETOR[nome]).catch(() => {});
       await congelarGifs().catch(() => {});
+      /* D-099: o quadro da foto é o MESMO em toda execução. Não é congelar —
+         é parar sempre no mesmo lugar, que é o que congelar não fazia. */
+      await pg.evaluate(n => globalThis.__ateQuadro?.(n), QUADRO_DA_FOTO).catch(() => {});
       /* ── E AS `<img>` COMUNS TAMBÉM (D-040) ────────────────────────────
        *
        * `esperarArte` cuida das imagens de FUNDO, e `congelarGifs` das
