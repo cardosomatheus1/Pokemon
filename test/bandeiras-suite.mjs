@@ -10,9 +10,15 @@
  * lê — foi por isso que ele sobreviveu a quatro blocos.
  */
 import { criarSuite, ok, igual } from './harness.mjs';
-import { precisaNavegador } from './bandeiras.mjs';
+import { precisaNavegador, sondasNecessarias, SONDA_DA_SUITE } from './bandeiras.mjs';
 
 const COM = ['visual', 'ambientes', 'rodada-viva', 'contraste'];
+
+/* A lista REAL do `run.mjs`. A `COM` acima é reduzida de propósito para a
+   tabela-verdade do booleano; as sondas precisam da lista inteira, senão o
+   teste das órfãs não teria o que conferir. */
+const COMPLETO = ['visual', 'visual-base', 'ambientes', 'rodada-viva', 'tema-cedo',
+                  'sem-rede', 'sem-backend', 'rodada-completa', 'contraste', 'outfit-canvas'];
 
 export function suite() {
   const s = criarSuite('bandeiras');
@@ -52,6 +58,72 @@ export function suite() {
     igual(precisaNavegador({ so: [], semNavegador: false, comNavegador: COM }), true,
       '`--so=` sem nomes não é "nenhuma suíte": o `run.mjs` já reprova nome ' +
       'órfão, e execução vazia com a palavra VERDE é o defeito S109.');
+  });
+
+  /* ── AS SONDAS, E NÃO SÓ O SIM/NÃO (D-098, bloco T9) ─────────────────────
+   *
+   * O booleano acima diz SE sobe navegador. Ele não diz DE QUAIS sondas, e o
+   * `run.mjs` traduzia o "sim" em subir as sete. Medido: `--so=visual` custava
+   * 152 s rodando sete sondas e lendo uma.
+   */
+  const sond = o => [...sondasNecessarias({ comNavegador: COMPLETO, ...o })].sort();
+
+  s.teste('`--so=visual` pede UMA sonda, e não as sete', () => {
+    igual(sond({ so: ['visual'], semNavegador: false }).join(','), 'rodar',
+      'a suíte `visual` lê só o que a sonda `rodar` capturou. Subir as outras ' +
+      'seis é o D-059 de volta: Chromium que ninguém lê, sem sintoma nenhum ' +
+      'além do relógio.');
+  });
+
+  s.teste('duas suítes de sondas diferentes pedem as duas', () => {
+    igual(sond({ so: ['visual', 'sem-rede'], semNavegador: false }).join(','),
+      'rodar,semRede', 'cada suíte nomeada traz a sonda dela, e só ela');
+  });
+
+  s.teste('três suítes que vivem da MESMA sonda pedem uma só', () => {
+    igual(sond({ so: ['visual', 'rodada-viva', 'contraste'], semNavegador: false }).join(','),
+      'rodar',
+      '`rodada-viva` e `contraste` leem o resultado que a `rodar()` já ' +
+      'capturou. É por isso que a tabela é escrita e não derivada do nome: ' +
+      'derivar erraria exatamente nestes três.');
+  });
+
+  s.teste('sem `--so`, sobem todas as sondas', () => {
+    igual(sond({ so: null, semNavegador: false }).length,
+      new Set(Object.values(SONDA_DA_SUITE)).size,
+      'sem recorte a execução é completa, e completa quer dizer toda sonda');
+  });
+
+  /* A LEI QUE AMARRA AS DUAS FUNÇÕES, e ela vale nos dois sentidos.
+   *
+   * Se elas discordarem, um dos dois lados quebra e os dois são caros:
+   *   booleano true + conjunto vazio   -> sobe navegador que ninguém usa (D-059)
+   *   booleano false + conjunto cheio  -> suíte montada sem a sonda dela (S109),
+   *                                        que é verde sem ter olhado nada
+   */
+  s.teste('conjunto vazio se e só se o booleano é falso', () => {
+    const casos = [
+      { so: null, semNavegador: false }, { so: null, semNavegador: true },
+      { so: ['visual'], semNavegador: true }, { so: ['carteira'], semNavegador: false },
+      { so: ['carteira', 'visual'], semNavegador: false }, { so: [], semNavegador: false },
+      { so: ['outfit-canvas'], semNavegador: false },
+    ];
+    for (const c of casos) {
+      const b = precisaNavegador({ comNavegador: COMPLETO, ...c });
+      const n = sondasNecessarias({ comNavegador: COMPLETO, ...c }).size;
+      igual(n > 0, b,
+        `discordam em ${JSON.stringify(c)}: booleano ${b}, ${n} sonda(s). ` +
+        `Booleano true com conjunto vazio sobe Chromium que ninguém lê; ` +
+        `false com conjunto cheio monta suíte sem a sonda dela, e isso é o S109.`);
+    }
+  });
+
+  s.teste('toda suíte de navegador tem sonda na tabela', () => {
+    const orfas = COMPLETO.filter(n => !SONDA_DA_SUITE[n]);
+    igual(orfas.join(', '), '',
+      `${orfas.length} suíte(s) de navegador sem sonda declarada. Sem entrada ` +
+      `na tabela elas somem do recorte em silêncio — e execução vazia com a ` +
+      `palavra VERDE é a falha mais silenciosa deste arnês (S109).`);
   });
 
   return s;

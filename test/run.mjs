@@ -138,7 +138,8 @@ import * as banner from './banner.mjs';
 import * as shiny from './shiny.mjs';
 import * as adm from './adm.mjs';
 import * as visual from './visual.mjs';
-import { precisaNavegador as precisaDeNavegador } from './bandeiras.mjs';
+import { precisaNavegador as precisaDeNavegador, sondasNecessarias,
+         SONDA_DA_SUITE } from './bandeiras.mjs';
 import * as acervo from './acervo.mjs';
 import * as calibracao from './calibracao.mjs';
 import * as ligaServidor from './liga-servidor.mjs';
@@ -261,6 +262,7 @@ const exigeVisual = process.env.EXIGE_VISUAL === '1';
    mesmo argumento do Q5. */
 const exigeLocal = process.env.EXIGE_LOCAL === '1';
 const semVisual = process.env.SEM_VISUAL === '1';   // usado pela sabotagem
+let sondasPedidas = new Set(), temAssets = false;
 let rVisual = null, baseAtual = null, baseGravada = null, digitaisNav = null, rSemRede = null, rTemaCedo = null, rSemBackend, rRodadaCompleta;
 /* Q3 do F0.5 pede a mesma rodada reproduzida em dois ambientes JS. Estas são as
    raízes comparadas — fixas, para que a falha seja reproduzível. */
@@ -317,14 +319,33 @@ if (visual.disponivel() && !semVisual && precisaNavegador) {
     for (const fn of lista) fora.push(await fn());
     return fora;
   };
+  /* ── E SÓ AS SONDAS QUE ESTA EXECUÇÃO VAI LER (D-098, bloco T9) ─────────
+   *
+   * A fila acima resolveu a MEMÓRIA. Faltava a outra metade: quantas sondas
+   * entram nela. Era sempre sete, porque a decisão que as governa era um
+   * booleano — "precisa de navegador?" — e o "sim" virava "sobe todas".
+   *
+   *     --so=visual    ->  7 sondas subiam, 1 era lida
+   *     medido          226 s com 4 larguras · 152 s com 1
+   *                     cortar 3 larguras poupa 33%; as 6 sondas mortas são o resto
+   *
+   * O portão paga isso por mutante de navegador, e são 294 dos 981.
+   *
+   * `sondasNecessarias` devolve o CONJUNTO, derivado das suítes pedidas. Sonda
+   * que ninguém vai ler não sobe, e o que ela devolveria fica `null` — o que é
+   * seguro porque a montagem das suítes lá embaixo passou a exigir a sonda de
+   * CADA UMA, em vez de exigir todas para montar qualquer uma. */
+  const sondas = sondasNecessarias({ so: SO, semNavegador, comNavegador: COM_NAVEGADOR });
+  sondasPedidas = sondas; temAssets = temLocal;
+  const se = (nome, fn) => () => (sondas.has(nome) ? fn() : Promise.resolve(null));
   [rVisual, baseAtual, digitaisNav, rTemaCedo, rSemRede, rSemBackend, rRodadaCompleta] = await emFila([
-    () => visual.rodar(),
-    () => visual.capturarBase(),
-    () => visual.digitaisNoNavegador(RAIZES_Q3),
-    () => visual.rodarTemaSemModulos(),
-    () => (temLocal ? visual.rodarSemRede() : Promise.resolve(null)),
-    () => visual.rodarSemBackend(),
-    () => visual.rodarRodadaCompleta(),
+    se('rodar',          () => visual.rodar()),
+    se('base',           () => visual.capturarBase()),
+    se('digitais',       () => visual.digitaisNoNavegador(RAIZES_Q3)),
+    se('temaCedo',       () => visual.rodarTemaSemModulos()),
+    se('semRede',        () => (temLocal ? visual.rodarSemRede() : Promise.resolve(null))),
+    se('semBackend',     () => visual.rodarSemBackend()),
+    se('rodadaCompleta', () => visual.rodarRodadaCompleta()),
   ]);
   const ler = u => { try { return JSON.parse(readFileSync(u, 'utf8')); } catch { return null; } };
   const ambienteRef = ler(new URL('./fixtures/visual-base-ambiente.json', import.meta.url));
@@ -368,10 +389,16 @@ if (visual.disponivel() && !semVisual && precisaNavegador) {
      Antes, cada `await` alimentava uma variável e a lista de suítes montava o
      que existisse. Em paralelo, um erro engolido daria `undefined` e a suíte
      correspondente simplesmente não apareceria no relatório — portão que some
-     em silêncio é a definição de portão decorativo. */
-  const faltando = [['visual', rVisual], ['linha de base', baseAtual],
-                    ['ambientes', digitaisNav], ['tema-cedo', rTemaCedo]]
-    .filter(([, v]) => !v).map(([n]) => n);
+     em silêncio é a definição de portão decorativo.
+
+     D-098: a cobrança passa a ser sobre a sonda que FOI PEDIDA. Antes ela
+     exigia as quatro sempre, o que era certo quando as sete subiam sempre — e
+     viraria um aborto falso agora que `--so=visual` sobe uma. O que não muda é
+     a regra: sonda que SUBIU e não devolveu resultado aborta. */
+  const faltando = [['visual', 'rodar', rVisual], ['linha de base', 'base', baseAtual],
+                    ['ambientes', 'digitais', digitaisNav], ['tema-cedo', 'temaCedo', rTemaCedo]]
+    .filter(([, sonda]) => sondas.has(sonda))
+    .filter(([, , v]) => !v).map(([n]) => n);
   if (faltando.length) {
     console.error(`\nQ5 incompleto: sem resultado de ${faltando.join(', ')}.`); process.exit(2);
   }
@@ -414,20 +441,59 @@ const todas = [
   /* `rVisual` e não `visual.disponivel()`: com `--so` fora das suítes de
      navegador o Chromium nem sobe, e a condição antiga montaria suítes com
      resultado nulo. */
-  ...(rVisual && baseAtual && !semVisual
-     ? [visual.suite(rVisual), visual.suiteBase(baseAtual, baseGravada),
-        visual.suiteAmbientes(digitaisNav, RAIZES_Q3), visual.suiteRodadaViva(rVisual),
-        visual.suiteTemaCedo(rTemaCedo),
-        /* O contraste é medido no navegador e julgado por aritmética pura —
-           por isso a suíte mora fora do visual.mjs e recebe as medidas. */
-        contraste.suite(rVisual.contrastes),
-        visual.suiteSemBackend(rSemBackend), visual.suiteRodadaCompleta(rRodadaCompleta),
-        ...(rSemRede ? [visual.suiteSemRede(rSemRede)] : [])]
-     : []),
+  /* CADA SUÍTE SOBRE A SONDA DELA (D-098). Era um `if` só, exigindo `rVisual`
+     E `baseAtual` para montar QUALQUER UMA — o que obrigava as sete sondas a
+     subir sempre. Agora cada uma pergunta pela sua, e o recorte chega até aqui.
+     Quem garante que nenhuma some em silêncio é a conferência logo abaixo. */
+  ...(!semVisual ? [
+    ...(rVisual   ? [visual.suite(rVisual), visual.suiteRodadaViva(rVisual),
+                     /* O contraste é medido no navegador e julgado por aritmética
+                        pura — por isso a suíte mora fora do visual.mjs. */
+                     contraste.suite(rVisual.contrastes)] : []),
+    ...(baseAtual ? [visual.suiteBase(baseAtual, baseGravada)] : []),
+    ...(digitaisNav     ? [visual.suiteAmbientes(digitaisNav, RAIZES_Q3)] : []),
+    ...(rTemaCedo       ? [visual.suiteTemaCedo(rTemaCedo)] : []),
+    ...(rSemBackend     ? [visual.suiteSemBackend(rSemBackend)] : []),
+    ...(rRodadaCompleta ? [visual.suiteRodadaCompleta(rRodadaCompleta)] : []),
+    ...(rSemRede        ? [visual.suiteSemRede(rSemRede)] : []),
+  ] : []),
   await paridade.suite(),
   /* caras: medições estatísticas grandes, por último de propósito */
   informacao.suite(), margem.suite(),
 ];
+
+/* ── SONDA QUE SUBIU TEM DE VIRAR SUÍTE (D-098, e a guarda é o S109) ───────
+ *
+ * Montar cada suíte sobre a sonda dela é o que barateia o portão — e é também
+ * a forma mais fácil de uma suíte sumir sem ninguém notar. Basta a tabela
+ * `SONDA_DA_SUITE` discordar do que o `run.mjs` monta, e a execução fica VERDE
+ * tendo olhado menos do que prometeu.
+ *
+ * Execução vazia com a palavra VERDE é a falha mais silenciosa deste arnês, e
+ * já tem nome: S109. Então a conferência é DERIVADA das mesmas duas fontes que
+ * poderiam divergir, e ela ABORTA — não avisa e segue.
+ *
+ * A acusação nomeia a SONDA, e não a suíte. Errar isso seria repetir o D-097,
+ * onde a mensagem mandou procurar defeito no cenário por meia hora. */
+if (sondasPedidas.size) {
+  /* Duas ausências são legítimas e por isso declaradas aqui, e não silenciosas:
+       sem-rede       precisa dos assets locais; sem eles a sonda não roda e o
+                      motivo já é anunciado acima
+       outfit-canvas  não está na fila: ela tem gatilho próprio, algumas linhas
+                      acima, porque subir Chromium para ela no `rapido` custaria
+                      a execução inteira */
+  const naoCobrar = new Set([...(temAssets ? [] : ['sem-rede']), 'outfit-canvas']);
+  const sumidas = COM_NAVEGADOR
+    .filter(n => sondasPedidas.has(SONDA_DA_SUITE[n]) && !naoCobrar.has(n))
+    .filter(n => !todas.some(x => x.nome === n));
+  if (sumidas.length) {
+    console.error(`\na sonda subiu e a suíte não foi montada: ${sumidas.join(', ')}.\n` +
+      `  Não é nome errado no --so: a sonda de cada uma dessas foi pedida e\n` +
+      `  executada, e o resultado não virou suíte. Verde aqui seria verde sem\n` +
+      `  ter olhado — o S109. Confira SONDA_DA_SUITE contra a montagem em run.mjs.`);
+    process.exit(2);
+  }
+}
 
 /* D-017 · `--sem-navegador` é DERIVADO, e por isso não dessincroniza: suíte
    nova que não precise de Chromium entra sozinha. */
