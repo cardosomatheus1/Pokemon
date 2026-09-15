@@ -118,6 +118,61 @@ exato da tela onde o olho responde. *Nota sem localização não vale.*
 declara. Um bloco sem superfície nova escreve `Q6: sem superfície nova` —
 explicitamente, para que a ausência seja decisão e não esquecimento.
 
+### E "Q2 obrigatório" passa a ter TRÊS níveis (decisão do dono, 15/09/2026)
+
+A regra antiga cobrava o Q2 **completo** para fechar qualquer bloco. Ela custou
+um dia inteiro em 14/09, e o modo de falha não foi lentidão:
+
+> Quando o portão custa horas, a alternativa real deixa de ser "pego na hora" e
+> passa a ser **"não rodo"**. Aconteceu quatro vezes naquele dia.
+
+Portão que ninguém roda protege zero. Então ele passa a ser cobrado onde paga:
+
+```text
+A CADA MUDANÇA     a suíte inteira           2145 testes · 9 min com navegador
+                   responde "quebrei alguma coisa?"
+
+A CADA BLOCO       `npm run sabotagem`       o portão com o cache
+                   responde "os testes deste bloco mordem?"
+
+ANTES DE UMA TAG   `npm run sabotagem:completo`
+                   responde "algum teste virou decorativo desde a última vez?"
+```
+
+**E o nível do meio NÃO é amostragem — é a mesma garantia de sempre.** O portão
+com cache reavalia todo defeito cuja chave mudou, e a chave é (definição,
+conteúdo do arquivo, fecho do captor). O conjunto "defeitos que ESTE bloco pôde
+afetar" é exatamente esse. Nenhum defeito fica sem resposta: cada um foi
+reavaliado agora, ou nada de que ele depende mudou.
+
+O que muda é só isto: **antes, um cache frio obrigava a pagar os 994 para fechar
+um bloco de três linhas.** Agora o cold run é do nível da tag.
+
+### O que torna isso seguro, e não foi de graça
+
+Quatro defeitos de 14/09 tinham que cair antes, porque cada um fazia o cache
+esfriar ou o portão mentir:
+
+```text
+L-179  o cache do Q2 estava no .gitignore — clone novo pagava tudo, sempre
+D-101  o portão era dependência de si mesmo: mexer nele zerava os 994
+D-100  4 caixas afogavam 4 núcleos, e afogamento era lido como captura
+D-099  a arena não reproduzia, e abortava o portão antes do primeiro mutante
+```
+
+Sem os quatro, o nível do meio seria um cache que nunca está quente — que é
+outra forma de não rodar.
+
+### O que se perde, dito com todas as letras
+
+Deixa de haver detecção **no fecho de cada bloco** de que um bloco tornou
+decorativo um teste antigo e distante. Isso acontece: o `S15` no V1.14 foi
+exatamente isso — um bloco no `render.mjs` quebrou um defeito ancorado na
+`coreografia.mjs`.
+
+Esse caso passa a ser pego na execução de tag. **Pode-se ficar alguns blocos sem
+saber**, e esse é o preço combinado.
+
 ### As duas metodologias
 
 - **GL — Gauntlet Loop** (`.claude/skills/gauntlet-loop`, CC BY 4.0, ver
@@ -141,7 +196,8 @@ npm run sabotagem          # Q2 completo — obrigatório para fechar bloco
 npm run sabotagem:tocados  # Q2 parcial, DURANTE a construção (ver abaixo)
 npm run test:gerar         # regrava fixtures E linha de base visual (~5 min)
 npm run gerar:visual       # SÓ a linha de base visual — 49 s (T3)
-npm run rapido             # as 96 suítes sem navegador — 1 min 25 s (T6)
+npm run rapido             # as suítes sem navegador (T6) — MEÇA, o número envelhece
+npm run sabotagem:completo # o Q2 ignorando o cache — é o nível da TAG
 npm run snapshot           # regera o instantâneo do protótipo (paridade)
 ```
 
@@ -319,6 +375,45 @@ defeito.**
 **Zero dependências no repositório.** O portão Q5 precisa de `playwright-core`,
 instalado **fora** do projeto — ver `tools/README.md`. `npm test` pula Q5 com
 aviso; `npm run portoes` exige, porque portão que pula em silêncio é decorativo.
+
+## Lógica fora da tela é decisão de CUSTO, não só de estilo
+
+Decisão do dono, 15/09/2026, e ela é a única que melhora a CURVA do portão em
+vez da constante.
+
+**Medido em 15/09:**
+
+```text
+defeitos plantados          994
+  em app/                   484   (49%)
+  cujo captor precisa de NAVEGADOR   294   (30%)
+
+custo por mutante           de Node        ~0,1 s
+                            de navegador    ~30 s
+                            -> 30% dos defeitos são ~73% do relógio
+```
+
+Um mutante precisa de navegador quando a decisão que ele quebra **mora dentro
+de uma `innerHTML` ou colada num `style`**. Quando a decisão mora num módulo
+puro e a tela só pinta o que ele devolveu, o mesmo defeito é pego em Node.
+
+> **Cada pedaço de lógica que sai do DOM converte um mutante de 30 s num de
+> 0,1 s.** É o único jeito de o portão ficar mais barato conforme o produto
+> cresce, em vez de mais caro.
+
+Isto já estava escrito como boa prática — `folha-viva.mjs`, `avanco-clima.mjs`,
+`clima-particulas.mjs` e `idle-escolha.mjs` são os exemplos, e seis defeitos
+plantados escaparam num bloco só por a lógica morar colada ao HTML. **Passa a
+ser critério de fecho de todo bloco que mexe em tela:**
+
+```text
+a decisão   vai para módulo de camada 0, puro, testável em Node
+a tela      pinta o que ele devolveu, e mais nada
+o bloco     RELATA quantos mutantes seus ficaram de navegador, e por quê
+```
+
+A última linha é o que impede a regra de virar enfeite: um número no relatório
+que só cresce quando alguém decide que vale a pena.
 
 ## Fixtures
 

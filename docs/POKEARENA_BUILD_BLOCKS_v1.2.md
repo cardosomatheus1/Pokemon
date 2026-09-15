@@ -1100,6 +1100,53 @@ ele existir pelo nosso desenho, é mudar uma função — não o sistema.
 
 ---
 
+### T11 — Um navegador vivo, reaproveitado entre mutantes
+
+**Tam.** M · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/`)
+· **Depende de** T9 e T10 · **Fecha** a conta que o T9 não fechou
+
+**Por que ele existe.** O T9 e o T10 cortaram o trabalho por mutante de 250 s
+para 30 s — 8x, medido. E mesmo assim uma execução FRIA não cabe em 30 min, e a
+razão é aritmética:
+
+```text
+994 mutantes / 1800 s x 2 trabalhadores  =  3,6 s de parede por mutante
+um mutante de navegador não sai por menos de ~30 s
+                                            (boot da página + Monte Carlo)
+```
+
+**Enquanto cada mutante subir o próprio Chromium, 30 min a frio é impossível**,
+e nenhuma poda muda isso. Foi o erro de leitura do T9: eu escrevi "30 min a
+frio" como critério sem fazer essa divisão, e passei o dia podando o numerador
+de uma fração cujo denominador era o boot.
+
+**Escopo:**
+
+1. **Um navegador vivo por trabalhador**, aberto uma vez e reusado. O mutante
+   deixa de ser "sandbox nova + processo novo" e passa a ser "servidor de teste
+   devolve os bytes mutados de UM arquivo, e a página recarrega".
+2. **A recarga é a unidade**, não o processo. Alvo: de ~30 s para ~3 s.
+3. **Isolamento entre mutantes tem de ser provado, não suposto** — é o risco
+   real desta mudança. Estado que vaza de um mutante para o seguinte produz
+   veredito falso nos dois sentidos, e é pior que o custo que se está cortando.
+
+**Fora do escopo:** acelerar o relógio do app. Já declarado no T10 e continua
+valendo — mediria uma configuração que não é a entregue.
+
+**Sabotagem:** servir o arquivo original em vez do mutado; deixar o estado de um
+mutante sobreviver à recarga; reaproveitar o navegador entre CONFIGURAÇÕES de
+julgamento diferentes; fazer o isolamento depender de a página cooperar.
+
+**Q6:** sem superfície nova.
+
+**Saída:** `npm run sabotagem:completo` a frio dentro de 30 min, com prova de
+isolamento entre mutantes — e o número medido na máquina do dono, com a
+contagem de defeitos ao lado (D-059).
+
+---
+
+---
+
 ### T10 — A sonda para de replayar a partida inteira
 
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/`)
