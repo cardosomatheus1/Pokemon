@@ -209,5 +209,43 @@ export function suite() {
     igual(idDoMaterial(undefined), 'material');
   });
 
+  /* ── §P5 · O PAGAMENTO NÃO TEM PORTA PARA VALOR DE FORA (D-104) ──────────
+   *
+   * O defeito `S658` acrescenta `bonus = 0` à assinatura de `moedasDa`. Ele
+   * ESCAPOU do Q2 de 15/09, e a razão é instrutiva: **com o padrão em zero e
+   * nenhum uso, o comportamento é idêntico.** Nenhuma asserção sobre o que a
+   * função DEVOLVE pode pegá-lo — ele é equivalente no resultado.
+   *
+   * O que ele viola é o §P5: o pagamento é função do perfil e do número de
+   * encontros, e de mais nada. Uma porta com padrão inócuo é uma porta: o
+   * defeito seguinte é alguém passar por ela, e aí já não há o que discutir
+   * porque a assinatura sempre aceitou.
+   *
+   * Quem o pegava era a digital de pixel da tela da arena, **por acidente** —
+   * qualquer pixel diferente reprova. Quando a arena saiu da digital (D-099),
+   * ele apareceu. A lição não é devolver a digital: é que ela vinha fazendo o
+   * trabalho de uma asserção que ninguém tinha escrito.
+   *
+   * Por isso este teste é ESTRUTURAL, e é o tipo certo para a pergunta: não
+   * existe entrada que o distinga, só a forma. */
+  s.teste('§P5 · as funções de pagamento não aceitam valor de fora', async () => {
+    const { readFileSync } = await import('node:fs');
+    const txt = readFileSync(new URL('../engine/economia-idle.mjs', import.meta.url), 'utf8');
+    const esperado = {
+      moedasDa:     'rnd, { perfil, encontros }',
+      pagamentoDe:  'rnd, perfil',
+      faixaDa:      'perfil, [minEnc, maxEnc]',
+    };
+    for (const [nome, assinatura] of Object.entries(esperado)) {
+      const m = txt.match(new RegExp(`export function ${nome}\\(([^)]*)\\)`));
+      ok(m, `\`${nome}\` sumiu de economia-idle.mjs — o teste perdeu a âncora`);
+      igual(m[1].trim(), assinatura,
+        `a assinatura de \`${nome}\` mudou para "${m[1].trim()}". O §P5 diz que o ` +
+        `pagamento é função do perfil e dos encontros, e de mais nada — parâmetro ` +
+        `a mais é porta, mesmo com padrão inócuo. Se a mudança é intencional, o ` +
+        `§P5 muda no MESMO commit; não se contorna a Spec no código.`);
+    }
+  });
+
   return s;
 }

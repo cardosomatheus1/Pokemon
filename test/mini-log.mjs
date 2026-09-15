@@ -89,12 +89,37 @@ export function suite() {
     igual(linhasDoMini([]).length, 0, 'lista vazia virou outra coisa');
   });
 
+  /* ── E A FIXTURE PRECISA PÔR A LINHA DE SISTEMA ONDE ELA DISPUTARIA (D-104)
+   *
+   * A primeira versão deste teste montava `[sis, a, b, c, d]` — com a linha de
+   * sistema em PRIMEIRO. O `slice(-3)` a descarta de qualquer jeito, então o
+   * teste passava mesmo sem o filtro: ele parecia medir a peneira e estava
+   * medindo o CORTE.
+   *
+   * Foi assim que o defeito `S420` — remover o `.filter(ehDeCombate)` —
+   * escapou do Q2 de 15/09 com este teste verde ao lado dele. Quem o pegava era
+   * a digital de pixel da arena, por acidente, até ela sair (D-099).
+   *
+   * Agora a linha de sistema entra ENTRE as últimas, que é o único lugar onde
+   * ela disputa vaga. É a quinta ocorrência do padrão que o RETOMAR registra:
+   * teste que mede algo ADJACENTE ao que o nome dele promete. */
   s.teste('as de sistema não ocupam vaga', () => {
-    const mix = [linha('sis', 'l-sys'), linha('a'), linha('b'), linha('c'), linha('d')];
+    /* Sem o filtro, as três últimas seriam [b, sis, c] e a de sistema comeria
+       uma vaga do combate. Com ele, saem [a, b, c]. */
+    const mix = [linha('a'), linha('b'), linha('sis', 'l-sys'), linha('c')];
     const fora = linhasDoMini(mix);
-    ok(!fora.some(l => l.html === 'sis'), 'a linha de sistema entrou mesmo assim');
-    igual(fora.length, Math.min(MINI_MAX, 4),
+    ok(!fora.some(l => l.html === 'sis'),
+      'a linha de sistema ocupou uma das três vagas. São três, e a luta tem ' +
+      'prioridade — ver o comentário do FORA em mini-log.mjs.');
+    igual(fora.map(l => l.html).join(','), 'a,b,c',
       'as linhas de combate não preencheram as vagas que a de sistema liberou');
+
+    /* E com a de sistema NO FIM, que é o caso mais fácil de errar: ela é a mais
+       recente, e "mostrar as últimas" a traria se ninguém peneirasse. */
+    const noFim = linhasDoMini([linha('a'), linha('b'), linha('c'), linha('sis', 'l-sys')]);
+    ok(!noFim.some(l => l.html === 'sis'),
+      'a linha de sistema mais RECENTE entrou — "as últimas" não pode vencer ' +
+      '"as de combate"');
   });
 
   /* ── E ELE PRECISA CABER NA ARENA SEM COBRIR A LUTA ────────────────────*/
