@@ -519,8 +519,32 @@ function entradaUsavel(id) {
   const nome = INDICE[id];
   if (typeof nome !== 'string' || nome === 'golden') return null;
   if (!SUITES_REAIS.has(nome) && !NAVEGADOR.has(nome)) return null;
-  return nome;
+  return comIrmas(nome);
 }
+
+/* ── SUÍTE QUE SE PARTIU EM DUAS, E O ÍNDICE AINDA NÃO SABE (T10) ──────────
+ *
+ * Quando um bloco parte uma suíte, o índice guardado continua nomeando a
+ * antiga. O atalho roda a antiga, ela volta VERDE — o teste que pegava aquele
+ * mutante mudou de casa —, e o defeito cai no CAMINHO COMPLETO, que é o caro.
+ * O índice só reaprende quando o caminho completo termina, e é ele que estava
+ * sendo evitado.
+ *
+ * MEDIDO em 14/09, logo depois do corte do T10: o portão passou de ~30 s para
+ * ~100 s por mutante, e a projeção saltou para 24 h. O índice tinha 981
+ * entradas e ZERO delas conhecia a `visual-luta`.
+ *
+ * A correção é declarar o parentesco: uma entrada que nomeia a mãe passa a
+ * pedir as duas. É seguro pela mesma dedução que rege o atalho inteiro —
+ * **rodar suíte A MAIS só pode condenar**, nunca absolver, e quem diz PASSOU
+ * continua sendo a execução completa. O custo é uma suíte extra nos mutantes
+ * afetados; o benefício é não pagar a execução completa por todos eles.
+ *
+ * A tabela some quando o índice reaprender. Ela fica porque a próxima partição
+ * vai acontecer, e sem isto ela custa outra execução de 24 h. */
+const IRMAS = { 'visual': 'visual,visual-luta' };
+const comIrmas = nome => nome.split(',').flatMap(n => (IRMAS[n] ?? n).split(','))
+  .filter((v, i, a) => a.indexOf(v) === i).join(',');
 
 /* ── LINHA DE BASE POR CONFIGURAÇÃO ────────────────────────────────────────
  *
