@@ -504,12 +504,27 @@ export function suite() {
     const { readFileSync } = await import('node:fs');
     const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
-    const bloco = txt.match(/for \(const r of res\) \{[\s\S]*?guardados\[r\.id\][^\n]*\n/);
+    const bloco = txt.match(/for \(const r of parciais\) \{[\s\S]*?guardados\[r\.id\][^\n]*\n/);
     ok(bloco, 'a gravação de vereditos sumiu — âncora perdida');
     ok(/r\.status !== 'PEGOU'\) continue/.test(bloco[0]),
       'o cache passou a guardar defeito não PEGO. Um PASSOU reaproveitado é o ' +
       'portão herdando a própria falha: o defeito escaparia hoje porque escapou ' +
       'ontem, e ninguém reavaliaria.');
+
+    /* ── AS DUAS PROPRIEDADES QUE TORNAM GRAVAR NO MEIO SEGURO (D-102) ────
+     *
+     * O cache passou a ser gravado DURANTE o laço, e não só no fim, porque
+     * execução que não termina não persistia nada — cinco execuções, ~20 h
+     * somadas, zero progresso guardado. Gravar cedo só é seguro com as duas
+     * abaixo, e sozinha nenhuma delas serve. */
+    ok(/const guardados = \{ \.\.\.anterior \}/.test(txt),
+      'a gravação voltou a SUBSTITUIR em vez de mesclar. Gravando no meio, ' +
+      'substituir apaga todo veredito que esta execução ainda não tocou — que ' +
+      'é exatamente o cache que se está tentando preservar.');
+    ok(/renameSync\(tmp, CAMINHO_VEREDITOS\)/.test(txt),
+      'a escrita do cache deixou de ser atômica. Gravando aos poucos, o ' +
+      'processo pode morrer NO MEIO da escrita, e um JSON truncado é pior que ' +
+      'cache nenhum: ele é lido como ilegível e some inteiro.');
   });
 
   s.teste('a chave do cache amarra o fecho da suíte que pegou', async () => {

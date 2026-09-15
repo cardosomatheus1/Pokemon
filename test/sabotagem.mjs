@@ -29,7 +29,7 @@
  *
  * Uso: node test/sabotagem.mjs
  */
-import { existsSync, readFileSync, symlinkSync, writeFileSync, cpSync, rmSync, mkdtempSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, renameSync, symlinkSync, writeFileSync, cpSync, rmSync, mkdtempSync, readdirSync, statSync } from 'node:fs';
 import { execFile, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { fechoDeCaptor, digitalDoFecho, TUDO, CAPTOR_NAO_CARREGA } from './fecho.mjs';
@@ -800,14 +800,54 @@ if (aReavaliar > VALIDAR_TUDO_ACIMA_DE) {
   await validarConfiguracoesUsadas();
 }
 
+const gravarVereditos = (parciais) => {
+  /* MESCLA, e a ordem importa: o disco primeiro, esta execução por cima. Um
+     veredito recém-medido vence o guardado; um guardado que esta execução não
+     tocou sobrevive. */
+  const anterior = (() => {
+    try { return JSON.parse(readFileSync(CAMINHO_VEREDITOS, 'utf8')); }
+    catch { return {}; }
+  })();
+  const guardados = { ...anterior };
+  for (const r of parciais) {
+    if (r.status !== 'PEGOU') continue;      /* só se guarda o que passou */
+    const captor = String(r.com).replace(/^navegador: /, '').split(',')[0];
+    const chave = chaveDe(r, captor);
+    if (chave) guardados[r.id] = { chave, status: r.status, com: r.com, sem: r.sem };
+  }
+  /* ESCRITA ATÔMICA. Gravar aos poucos multiplica as chances de o processo
+     morrer NO MEIO da escrita, e um JSON truncado é pior que cache nenhum:
+     ele é lido como ilegível e some inteiro. `rename` é atômico no mesmo
+     sistema de arquivos. */
+  const tmp = CAMINHO_VEREDITOS + '.parcial';
+  writeFileSync(tmp,
+    JSON.stringify(Object.fromEntries(Object.entries(guardados).sort()), null, 0) + '\n');
+  renameSync(tmp, CAMINHO_VEREDITOS);
+};
+
 const res = [];
 let feitos = 0;
+/* ── O PROGRESSO VAI PARA O DISCO DURANTE, E NÃO SÓ NO FIM (D-102) ─────────
+ *
+ * A cada `SALVAR_A_CADA` vereditos, o que já foi medido é mesclado no cache.
+ * Sem isto, uma execução interrompida perde TUDO — e numa máquina cujo
+ * container vive ~2-4 h, uma execução fria de 9 h nunca chega ao fim. Medido:
+ * cinco execuções, ~20 h somadas, zero persistido.
+ *
+ * O número é um meio-termo medido a olho: baixo demais e a escrita compete com
+ * a medição; alto demais e a janela de perda volta a doer. Vinte e cinco é
+ * ~1 min de trabalho nesta máquina.
+ *
+ * A gravação é MESCLA e é ATÔMICA — ver `gravarVereditos`. As duas coisas
+ * juntas são o que torna gravar no meio seguro; sozinhas, nenhuma serve. */
+const SALVAR_A_CADA = 25;
 await Promise.all(CAIXAS.map(async caixa => {
   for (;;) {
     const d = fila.shift();
     if (!d) return;
     res.push(await avaliar(d, caixa));
     process.stdout.write(`\r  ${++feitos}/${ALVOS.length} avaliados`);
+    if (!INCREMENTAL && feitos % SALVAR_A_CADA === 0) gravarVereditos(res);
   }
 }));
 console.log('\n');
@@ -846,17 +886,28 @@ for (const r of res)
  * pode esconder regressão nenhuma, porque nada é julgado por ele. Se estiver
  * errado, o portão só fica mais lento. */
 /* Os vereditos vão para o disco em toda execução que não seja parcial. Guardar
-   no incremental gravaria a chave de uma fatia e apagaria o resto. */
+   no incremental gravaria a chave de uma fatia e apagaria o resto.
+
+   ── E POR ISSO ELES PASSARAM A SER GRAVADOS AOS POUCOS (D-102) ─────────────
+
+   A frase acima diagnosticou certo e resolveu errado. O problema nunca foi
+   gravar cedo: foi gravar SUBSTITUINDO. Gravar só no fim tem um custo que só
+   aparece quando a execução não chega ao fim —
+
+     MEDIDO em 14-15/09: cinco execuções do portão, ~20 h de máquina somadas,
+     nenhuma terminou (container reiniciado duas vezes, projeção de 9 h), e o
+     cache no disco continuou sendo o da primeira. VINTE HORAS, ZERO PROGRESSO
+     PERSISTIDO.
+
+   O conserto é MESCLAR em vez de substituir. Com mescla, gravar no meio deixa
+   de apagar o resto — e a execução vira RETOMÁVEL: a que morre na hora 3 deixa
+   três horas de veredito no disco, e a seguinte começa de onde parou.
+
+   É a mesma lição dos commits de rascunho que salvaram este dia duas vezes:
+   trabalho que só existe na memória de um processo é trabalho apostado. */
+
 if (!INCREMENTAL) {
-  const guardados = {};
-  for (const r of res) {
-    if (r.status !== 'PEGOU') continue;      /* só se guarda o que passou */
-    const captor = String(r.com).replace(/^navegador: /, '').split(',')[0];
-    const chave = chaveDe(r, captor);
-    if (chave) guardados[r.id] = { chave, status: r.status, com: r.com, sem: r.sem };
-  }
-  writeFileSync(CAMINHO_VEREDITOS,
-    JSON.stringify(Object.fromEntries(Object.entries(guardados).sort()), null, 0) + '\n');
+  gravarVereditos(res);
 
   const reusados = res.filter(r => r.reusado).length;
   console.log(`\nvereditos: ${res.length - reusados} reavaliados agora, ${reusados} reaproveitados.`);
