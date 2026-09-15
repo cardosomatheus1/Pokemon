@@ -9,16 +9,30 @@
  * Só o relógio sabe. Um portão que só o relógio pega é um portão que ninguém
  * lê — foi por isso que ele sobreviveu a quatro blocos.
  */
+import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
-import { precisaNavegador, sondasNecessarias, SONDA_DA_SUITE } from './bandeiras.mjs';
+import { precisaNavegador, sondasNecessarias, SONDA_DA_SUITE,
+         suitesPrometidasENaoEntregues, sondasSemResultado } from './bandeiras.mjs';
 
 const COM = ['visual', 'ambientes', 'rodada-viva', 'contraste'];
 
-/* A lista REAL do `run.mjs`. A `COM` acima é reduzida de propósito para a
-   tabela-verdade do booleano; as sondas precisam da lista inteira, senão o
-   teste das órfãs não teria o que conferir. */
-const COMPLETO = ['visual', 'visual-base', 'ambientes', 'rodada-viva', 'tema-cedo',
-                  'sem-rede', 'sem-backend', 'rodada-completa', 'contraste', 'outfit-canvas'];
+/* A lista REAL do `run.mjs`, LIDA DELE (D-103).
+ *
+ * Ela era uma cópia à mão, e envelheceu na primeira oportunidade: o T10 criou a
+ * suíte `visual-luta` e a cópia não soube. O teste que deveria acusar a suíte
+ * sumida passou a não considerá-la — guarda que não enxerga o caso é guarda que
+ * não existe, e foi assim que o `S996` escapou.
+ *
+ * É a terceira vez que uma lista à mão dessincroniza neste arnês (D-017, D-098,
+ * esta). Derivar não pode dessincronizar: o `run.mjs` é ponto de entrada e não
+ * pode ser importado, então a lista é lida do TEXTO dele — a mesma técnica que
+ * o `portao.mjs` já usa para casar as duas listas de suítes de navegador. */
+const COMPLETO = (() => {
+  const txt = readFileSync(new URL('./run.mjs', import.meta.url), 'utf8');
+  const m = txt.match(/const COM_NAVEGADOR = \[([^\]]+)\]/);
+  if (!m) throw new Error('COM_NAVEGADOR não achado no run.mjs — o teste perdeu a âncora');
+  return m[1].split(',').map(x => x.trim().replace(/^'|'$/g, '')).filter(Boolean);
+})();
 
 export function suite() {
   const s = criarSuite('bandeiras');
@@ -124,6 +138,72 @@ export function suite() {
       `${orfas.length} suíte(s) de navegador sem sonda declarada. Sem entrada ` +
       `na tabela elas somem do recorte em silêncio — e execução vazia com a ` +
       `palavra VERDE é a falha mais silenciosa deste arnês (S109).`);
+  });
+
+  /* ── AS DUAS GUARDAS QUE ERAM DECORATIVAS (D-103) ────────────────────────
+   *
+   * Elas nasceram no T9 e no T10 para impedir que uma suíte sumisse calada — o
+   * S109. O Q2 de 15/09 provou que ninguém as testava: os defeitos `S996` e
+   * `S998` desligam as duas, e a suíte inteira ficou verde.
+   *
+   * Moravam no `run.mjs`, que é ponto de entrada: importá-lo executa a suíte
+   * inteira, e observar um `process.exit` de fora não é coisa que teste faça.
+   * Guarda indetectável é guarda que ninguém testa — é o D-059 de novo, e o
+   * remédio é o mesmo: extrair para camada 0 e cobrar aqui.
+   */
+  const PEDIDAS = new Set(['rodar', 'luta', 'base']);
+  /* TRÊS suítes vivem da sonda `rodar` — `visual`, `rodada-viva` e `contraste`.
+     A primeira versão desta fixture esqueceu duas, e o teste acusou na hora: é
+     a mesma relação não-1:1 que obriga a `SONDA_DA_SUITE` a ser escrita à mão
+     em vez de derivada do nome. */
+  const ENTREGUES = ['visual', 'rodada-viva', 'contraste', 'visual-luta', 'visual-base'];
+
+  s.teste('sonda que subiu e virou suíte não é cobrada', () => {
+    const faltam = suitesPrometidasENaoEntregues({
+      sondas: PEDIDAS, montadas: ENTREGUES,
+      temAssets: true, comNavegador: COMPLETO });
+    igual(faltam.join(', '), '', 'nada a cobrar quando a montagem entregou tudo');
+  });
+
+  s.teste('sonda que subiu e NÃO virou suíte é acusada pelo nome', () => {
+    const faltam = suitesPrometidasENaoEntregues({
+      sondas: PEDIDAS, montadas: ENTREGUES.filter(n => n !== 'visual-luta'),
+      temAssets: true, comNavegador: COMPLETO });
+    igual(faltam.join(', '), 'visual-luta',
+      'a suíte da luta sumiu da montagem e a guarda não acusou. Verde assim é ' +
+      'verde sem ter olhado — o S109, e foi o que o defeito S996 explorou.');
+  });
+
+  s.teste('`sem-rede` sem assets locais é ausência legítima', () => {
+    const faltam = suitesPrometidasENaoEntregues({
+      sondas: new Set(['semRede']), montadas: [], temAssets: false,
+      comNavegador: COMPLETO });
+    igual(faltam.join(', '), '',
+      'sem assets a sonda `sem-rede` não roda, e o motivo já é anunciado. ' +
+      'Cobrar aqui seria aborto falso em toda máquina sem `npm run assets`.');
+  });
+
+  s.teste('e COM assets ela volta a ser cobrada', () => {
+    const faltam = suitesPrometidasENaoEntregues({
+      sondas: new Set(['semRede']), montadas: [], temAssets: true,
+      comNavegador: COMPLETO });
+    igual(faltam.join(', '), 'sem-rede',
+      'com assets presentes a ausência deixa de ser legítima — e a exceção não ' +
+      'pode virar buraco permanente');
+  });
+
+  s.teste('sonda pedida que não devolveu resultado é acusada', () => {
+    igual(sondasSemResultado({ sondas: new Set(['rodar', 'luta']),
+      resultados: { rodar: { ok: 1 }, luta: null } }).join(', '), 'luta',
+      'sonda que subiu e devolveu nulo passou batida. A suíte a jusante leria ' +
+      '`null` e passaria por VAZIA — foi o que o defeito S998 explorou.');
+  });
+
+  s.teste('sonda que NÃO foi pedida não é cobrada por não ter resultado', () => {
+    igual(sondasSemResultado({ sondas: new Set(['rodar']),
+      resultados: { rodar: { ok: 1 }, luta: null } }).join(', '), '',
+      'cobrar resultado de sonda que ninguém pediu transformaria o corte do ' +
+      'D-098 num aborto em toda execução recortada');
   });
 
   return s;

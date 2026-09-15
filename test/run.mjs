@@ -139,7 +139,8 @@ import * as shiny from './shiny.mjs';
 import * as adm from './adm.mjs';
 import * as visual from './visual.mjs';
 import { precisaNavegador as precisaDeNavegador, sondasNecessarias,
-         SONDA_DA_SUITE } from './bandeiras.mjs';
+         SONDA_DA_SUITE, suitesPrometidasENaoEntregues,
+         sondasSemResultado } from './bandeiras.mjs';
 import * as acervo from './acervo.mjs';
 import * as calibracao from './calibracao.mjs';
 import * as ligaServidor from './liga-servidor.mjs';
@@ -397,11 +398,10 @@ if (visual.disponivel() && !semVisual && precisaNavegador) {
      exigia as quatro sempre, o que era certo quando as sete subiam sempre — e
      viraria um aborto falso agora que `--so=visual` sobe uma. O que não muda é
      a regra: sonda que SUBIU e não devolveu resultado aborta. */
-  const faltando = [['visual', 'rodar', rVisual], ['luta', 'luta', rLuta],
-                    ['linha de base', 'base', baseAtual],
-                    ['ambientes', 'digitais', digitaisNav], ['tema-cedo', 'temaCedo', rTemaCedo]]
-    .filter(([, sonda]) => sondas.has(sonda))
-    .filter(([, , v]) => !v).map(([n]) => n);
+  /* D-103: idem — a lista virava literal solto e ninguém a observava. */
+  const faltando = sondasSemResultado({ sondas, resultados: {
+    rodar: rVisual, luta: rLuta, base: baseAtual,
+    digitais: digitaisNav, temaCedo: rTemaCedo } });
   if (faltando.length) {
     console.error(`\nQ5 incompleto: sem resultado de ${faltando.join(', ')}.`); process.exit(2);
   }
@@ -486,10 +486,12 @@ if (sondasPedidas.size) {
        outfit-canvas  não está na fila: ela tem gatilho próprio, algumas linhas
                       acima, porque subir Chromium para ela no `rapido` custaria
                       a execução inteira */
-  const naoCobrar = new Set([...(temAssets ? [] : ['sem-rede']), 'outfit-canvas']);
-  const sumidas = COM_NAVEGADOR
-    .filter(n => sondasPedidas.has(SONDA_DA_SUITE[n]) && !naoCobrar.has(n))
-    .filter(n => !todas.some(x => x.nome === n));
+  /* D-103: a decisão mora em `bandeiras.mjs`, camada 0, porque aqui ela era
+     indetectável — `run.mjs` é ponto de entrada e nenhum teste o importa. Os
+     defeitos S996 e S998 desligavam estas duas guardas sem nada ficar vermelho. */
+  const sumidas = suitesPrometidasENaoEntregues({
+    sondas: sondasPedidas, montadas: todas.map(x => x.nome),
+    temAssets, comNavegador: COM_NAVEGADOR });
   if (sumidas.length) {
     console.error(`\na sonda subiu e a suíte não foi montada: ${sumidas.join(', ')}.\n` +
       `  Não é nome errado no --so: a sonda de cada uma dessas foi pedida e\n` +

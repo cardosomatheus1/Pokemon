@@ -729,10 +729,10 @@ export const DEFEITOS = [
     de:"  'visual-luta':     'luta',",
     para:"  'visual-luta':     'rodar'," },
 
-  { id:'S998', arquivo:RUNNER, nome:'a sonda da luta nao e mais cobrada quando pedida',
-    real:'sonda que sobe e nao devolve resultado deixa de abortar, e a suite le null',
-    de:"['luta', 'luta', rLuta],",
-    para:'[],' },
+  { id:'S998', arquivo:'test/bandeiras.mjs', nome:'sonda pedida que nao devolveu resultado deixa de abortar',
+    real:'a suite a jusante le null e passa por VAZIA — o S109 por dentro',
+    de:"  return [...sondas].filter(s => s in (resultados || {}) && !resultados[s]);",
+    para:'  return [];' },
 
   { id:'S999', arquivo:'test/execucao.mjs', nome:'a luta sai da lista que o portao passa no --so',
     real:'o portao deixa de rodar a suite da luta na passada de navegador — cobertura ausente com relatorio verde',
@@ -759,10 +759,14 @@ export const DEFEITOS = [
     de:"  'contraste':       'rodar',",
     para:"  'contraste':       'contrastePropria'," },
 
-  { id:'S996', arquivo:RUNNER, nome:'sonda que subiu e nao virou suite passa em silencio',
+  /* REALVADOS no D-103. Os dois moravam no `run.mjs` e ESCAPARAM no Q2 de
+     15/09 — ponto de entrada não se importa de um teste, então ninguém os
+     observava. As decisões foram para `bandeiras.mjs`, camada 0, e o defeito
+     muda de endereço junto. */
+  { id:'S996', arquivo:'test/bandeiras.mjs', nome:'sonda que subiu e nao virou suite passa em silencio',
     real:'a guarda do S109 cai, e o portao fica VERDE tendo olhado menos do que promete',
-    de:'  if (sumidas.length) {',
-    para:'  if (false) {' },
+    de:'    .filter(n => !feitas.has(n));',
+    para:'    .filter(() => false);' },
 
   /* ---------- V1.15: cancelar aposta ---------- */
 

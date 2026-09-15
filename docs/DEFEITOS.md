@@ -6024,3 +6024,70 @@ npm run rapido   VERDE 2050/2050
 foram calculadas com o ARNES antigo, então esta transição ainda paga uma
 execução fria. Ele paga a partir da próxima.
 
+---
+
+## D-103 — as guardas do S109 eram decorativas, e o portão provou
+
+**Achado em:** 15/09/2026, pelo primeiro Q2 completo e confiável.
+**Bloco dono:** T9/T10. **Estado:** CORRIGIDO — as decisões foram para camada 0.
+
+O Q2 fechou `VERMELHO — 7/994`, e **dois dos sete escapes eram meus, plantados
+no mesmo dia**: o `S996` e o `S998` desligam as guardas que o T9 e o T10
+criaram contra o S109 — suíte que some calada.
+
+```text
+S996  desliga a guarda "sonda subiu e não virou suíte"
+S998  desliga a guarda "sonda pedida não devolveu resultado"
+```
+
+Os dois passaram. **Eu escrevi as guardas e não escrevi teste que as verifique.**
+
+### Por que nenhum teste as pegava, e é o D-059 de novo
+
+As duas moravam no `test/run.mjs`, que é **ponto de entrada**: importá-lo de uma
+suíte executa a suíte inteira, e observar um `process.exit` de fora não é coisa
+que teste faça.
+
+> **Guarda que não dá para observar é guarda que ninguém testa.**
+
+É exatamente o que originou o `bandeiras.mjs` no D-059, e o remédio é o mesmo:
+extrair a decisão para camada 0, onde ela vira tabela e se testa em
+microssegundos. Nasceram `suitesPrometidasENaoEntregues()` e
+`sondasSemResultado()`, com seis testes.
+
+### E a extração achou um terceiro defeito, escondido no próprio teste
+
+A suíte `bandeiras` tinha uma lista `COMPLETO` — cópia à mão do `COM_NAVEGADOR`
+do `run.mjs`. Ela **envelheceu na primeira oportunidade**: o T10 criou a suíte
+`visual-luta` e a cópia não soube. O teste que deveria acusar a suíte sumida
+passou a nem considerá-la.
+
+```text
+teste escrito, teste rodando, teste verde — e cego para o caso que ele existe
+para pegar
+```
+
+**Terceira vez que uma lista à mão dessincroniza neste arnês** (D-017, D-098, e
+esta). `COMPLETO` passa a ser lida do TEXTO do `run.mjs` — a mesma técnica que o
+`portao.mjs` já usava para casar as duas listas de suítes de navegador.
+
+### Medido
+
+```text
+antes    S996 plantado -> suíte VERDE     (decorativo)
+         S998 plantado -> suíte VERDE     (decorativo)
+depois   S996 plantado -> VERMELHO 2/17
+         S998 plantado -> VERMELHO 1/17
+         bandeiras: 11 -> 17 testes
+         npm run rapido: VERDE 2056/2056
+```
+
+### O que isto diz sobre o dia
+
+O portão passou o dia sendo consertado, e a primeira coisa que ele fez quando
+voltou a funcionar foi **apontar para o trabalho daquele mesmo dia**. Duas das
+guardas que eu escrevi para torná-lo confiável eram enfeite.
+
+> Um portão que só confirma o que o autor já acredita não é portão. Este
+> discordou do autor no primeiro uso.
+

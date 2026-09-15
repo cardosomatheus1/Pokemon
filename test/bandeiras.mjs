@@ -104,3 +104,50 @@ export function sondasNecessarias({ so, semNavegador, comNavegador }) {
   for (const n of pedidas) if (SONDA_DA_SUITE[n]) fora.add(SONDA_DA_SUITE[n]);
   return fora;
 }
+
+
+/* ── QUE SUÍTE A SONDA PROMETEU, E NÃO ENTREGOU (D-103) ────────────────────
+ *
+ * Cortar sondas é a maior economia do portão e a forma mais fácil de uma suíte
+ * sumir calada — o S109. As guardas contra isso nasceram no T9 e no T10, dentro
+ * do `run.mjs`, e o Q2 de 15/09 mostrou que elas eram DECORATIVAS: os defeitos
+ * plantados `S996` e `S998` desligam as duas, e nada ficou vermelho.
+ *
+ * A razão é a mesma do D-059, e o remédio também. `run.mjs` é ponto de entrada:
+ * importá-lo de uma suíte EXECUTA a suíte inteira, então a única forma de
+ * observar a decisão de fora seria provocar um `process.exit` — que nenhum
+ * teste faz. Guarda que não dá para observar é guarda que ninguém testa.
+ *
+ * Extraída, ela vira tabela: entra um estado, sai a lista de suítes que a sonda
+ * prometeu e a montagem não entregou. Microssegundos, e o defeito que a desliga
+ * fica vermelho na hora.
+ *
+ *   sondas        as sondas que ESTA execução subiu
+ *   montadas      os nomes das suítes que a montagem produziu
+ *   temAssets     sem assets locais a `sem-rede` não roda, e a ausência é
+ *                 legítima e já anunciada
+ *
+ * `outfit-canvas` nunca é cobrada: ela não está na fila das sondas — tem
+ * gatilho próprio, porque subir Chromium para ela no `rapido` custaria a
+ * execução inteira. */
+export function suitesPrometidasENaoEntregues(
+  { sondas, montadas, temAssets, comNavegador = Object.keys(SONDA_DA_SUITE) }) {
+  if (!sondas || !sondas.size) return [];
+  const naoCobrar = new Set([...(temAssets ? [] : ['sem-rede']), 'outfit-canvas']);
+  const feitas = new Set(montadas || []);
+  return comNavegador
+    .filter(n => sondas.has(SONDA_DA_SUITE[n]) && !naoCobrar.has(n))
+    .filter(n => !feitas.has(n));
+}
+
+/* O par da função acima, para o outro lado da mesma promessa: sonda que SUBIU e
+   não devolveu resultado. Era uma lista literal no `run.mjs`, e o `S998` provou
+   que ela também não tinha quem a observasse.
+
+   `resultados` é um mapa sonda -> o que ela devolveu. Sonda pedida cujo
+   resultado é nulo é aborto, não aviso: a suíte a jusante leria `null` e
+   passaria por vazia. */
+export function sondasSemResultado({ sondas, resultados }) {
+  if (!sondas || !sondas.size) return [];
+  return [...sondas].filter(s => s in (resultados || {}) && !resultados[s]);
+}
