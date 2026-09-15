@@ -22,7 +22,80 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 14/09/2026, noite
+## 0. ONDE PARAMOS — 15/09/2026, madrugada
+
+```text
+o LINK     http://localhost:8099/app/index.html
+           sobe com:  node tools/servir.mjs --porta 8099
+a PASTA    C:\Users\gdult\pa4
+o ESTADO   Q1 VERDE 2145/2145 com navegador · árvore limpa · tudo empurrado
+           T9 e T10 CONSTRUÍDOS e MEDIDOS, esperando só o Q2 completo
+```
+
+### O dia inteiro foi ARNÊS, e o 1.27f não foi tocado
+
+Isso precisa ser a primeira frase porque é a mais importante para quem retomar:
+**nenhuma linha de produto mudou em 14/09.** O cartão da equipe continua onde
+estava, com a ordem de serviço pronta em `docs/TAREFA_1.27f_CARTAO.md`.
+
+O que aconteceu foi que o repositório saiu do `pa4` pela primeira vez, e o arnês
+inteiro quebrou — sete defeitos, todos da mesma família:
+
+```text
+D-095  sete tools/ calculavam a raiz com idioma de Windows       CORRIGIDO
+D-096  a passada estreita ESCREVIA a linha de base visual        CORRIGIDO
+D-097  prazo de PAREDE contra relógio de ANIMAÇÃO                CORRIGIDO
+D-098  booleano onde precisava ser conjunto (7 sondas para ler 1) CORRIGIDO
+D-099  a tela da arena não reproduz                              RESOLVIDO*
+D-100  o portão afogava a máquina e lia afogamento como captura  CORRIGIDO
+D-101  o portão era dependência de si mesmo                      CORRIGIDO
+L-179  o cache do Q2 estava no .gitignore                        VERSIONADO
+```
+
+\* O D-099 é uma **desistência medida**: a arena saiu da digital de pixel depois
+de cinco tentativas. Está escrito o que se perde e o que cobre no lugar.
+
+### O QUE O PORTÃO CUSTA, medido a cada etapa
+
+```text
+sonda visual (4 larguras, 7 sondas)     226 s
+depois do D-098 (corte de sondas)        82 s
+depois do T10 (a luta em sonda própria)  30 s      7,5x no total
+```
+
+### E A LIÇÃO QUE CUSTOU O DIA
+
+> **Cada melhoria do portão invalidava o que tornava o portão rápido.** O T9
+> matou o cache de vereditos; o T10 matou o índice de captura. Medi ganho real
+> em cada peça e nunca colhi o ganho agregado, porque a próxima correção sempre
+> reiniciava a contagem.
+
+Os dois lados estão consertados — D-101 (o cache) e a tabela `IRMAS` em
+`sabotagem.mjs` (o índice). **A partir daqui, mexer no arnês é barato.**
+
+### O QUE FALTA, e é uma coisa só
+
+`npm run sabotagem` verde. Na máquina de medição (4 núcleos, container) ele
+projeta ~9 h e o container cai antes. **Na máquina do dono ele deve ser bem mais
+rápido**, e é a primeira execução que colhe todas as correções juntas.
+
+```bash
+npm run sabotagem      # é isto que fecha o T9 e o T10
+```
+
+Se vier verde: marcar T9 e T10 como fechados no `BUILD_BLOCKS` e seguir para o
+**1.27f**, que é produto e é o que o dono pediu.
+
+### Uma dívida registrada, e ela é séria
+
+O `Q2 VERDE 987/987` de 14/09 pela manhã — que fechou o D-095 e o D-096 — está
+marcado como **NÃO CONFIÁVEL** no D-100: rodou com 4 caixas afogando 4 núcleos,
+e nessa condição suíte que reprova por falta de CPU conta como `PEGOU`. Não está
+provado falso; está provado não confiável. A execução que vier o substitui.
+
+---
+
+## 0a. ONDE PARAMOS — 14/09/2026, noite
 
 ```text
 o LINK     http://localhost:8099/app/index.html
