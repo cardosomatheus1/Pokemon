@@ -182,6 +182,28 @@ O conserto: a exclusão saiu do `ARNES` e virou `FORA_DA_DIGITAL` em `fecho.mjs`
 TEXTO do `sabotagem.mjs` e passou a CHAMAR a função, que é o que o teste antigo
 não fazia e por isso o defeito escapou.
 
+### A DECISÃO QUE FECHA O DIA, e ela é do dono
+
+Pergunta dele, 16/09: *"o que estamos fazendo é desenvolvimento ou estamos
+corrigindo erros?"*. O `git log` respondeu:
+
+```text
+últimos 8 dias        49 commits
+  de PRODUTO           1     o 1.27f
+  de arnês/portão     40
+```
+
+**O arnês está CONGELADO.** A regra nova está no `CLAUDE.md`, seção *"O arnês
+serve o produto, e não o contrário"*:
+
+> Bloco de arnês só é construído quando ele IMPEDE trabalho de produto, e com
+> orçamento nomeado ANTES de começar. *"O portão não termina"* impede; *"o
+> portão está lento"* não.
+
+Achado novo de arnês vai para `DEFEITOS`/`LACUNAS` com bloco dono e espera. Os
+números que fecham a conta: portão de 7 h para 3 min 02 s, suíte de 9 min para
+5 min 44 s.
+
 ### O PRÓXIMO
 
 `docs/ROADMAP.md`, seção **O QUE FALTA**.

@@ -57,6 +57,74 @@ vermelho quando alguém corrigir. Ver `D-001` em `test/invariantes.mjs`.
 
 ---
 
+## O arnês serve o produto, e não o contrário
+
+Decisão do dono, 16/09/2026, e ela nasceu de uma pergunta de uma linha:
+
+> **"O que estamos fazendo é desenvolvimento ou estamos corrigindo erros?"**
+
+A resposta estava no `git log`, e não deixava margem:
+
+```text
+últimos 8 dias        49 commits
+  de PRODUTO           1     o 1.27f, o cartão da equipe
+  de arnês/portão     40
+```
+
+### O que aconteceu, dito sem atenuar
+
+O portão estava **genuinamente quebrado**, e não só lento: ele MENTIA. Voltou
+`VERDE 987/987` escondendo cinco escapes reais, porque quatro caixas afogavam
+quatro núcleos e afogamento era lido como captura. E custava 7 h, que na prática
+quer dizer *"ninguém roda"*.
+
+Consertar era certo. **Oito dias não eram.** O modo de falha foi este:
+
+> **Cada conserto revelava o próximo, e cada um tinha justificativa boa
+> isolada.** D-098 → D-099 → D-100 → D-101 → D-102 → T9 → T10 → D-103 → D-104 →
+> D-105 → T13 → D-106 → T11a. Treze em sequência. Nenhum desnecessário; juntos,
+> uma semana de produto.
+
+E é a mesma doença que **a regra central** deste arquivo já trata — um bloco que
+não para no próprio escopo —, chegando por uma porta que a regra não cobria: não
+foi um bloco que cresceu, foram treze blocos legítimos em fila, cada um
+autorizado pelo anterior.
+
+### A regra
+
+> **Bloco de arnês só é construído quando ele IMPEDE trabalho de produto, e com
+> orçamento nomeado ANTES de começar.**
+
+```text
+IMPEDE        "o portão não termina"        -> constrói agora
+NÃO IMPEDE    "o portão está lento"         -> DEFEITOS/LACUNAS, e espera
+```
+
+A distinção é exatamente a que eu não fiz nesta semana. Os dois primeiros dias
+eram "não termina"; os seis seguintes eram "está lento", e eu tratei os oito
+igual.
+
+### E o que fecha a conta é o número, não a sensação de pronto
+
+```text
+portão, árvore intocada     7 h  ->  3 min 02 s
+suíte inteira            9 min  ->  5 min 44 s
+```
+
+**Está bom o bastante.** Achado novo de arnês vai para `DEFEITOS`/`LACUNAS` com
+bloco dono, e fica lá até impedir alguma coisa.
+
+### O agravante, e ele é meu
+
+O **T13** nasceu de uma medição que eu fiz *enquanto esperava o portão rodar*.
+Era um achado real e barato — e mesmo assim foi eu escolhendo arnês em cima de
+arnês, com produto parado há uma semana.
+
+**Tempo de espera não é licença para abrir frente nova.** Se há espera, ela se
+usa lendo o próximo bloco de produto, ou não se usa.
+
+---
+
 ## O ciclo de um bloco
 
 ```
