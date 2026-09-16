@@ -251,7 +251,8 @@ continua valendo.
 
 | # | bloco | estado | o que falta exatamente |
 |---|---|---|---|
-| 1 | **1.27f** · o cartão da equipe | **PERDIDO — refazer** | o dono pediu os stats e o nível de evolução de volta no cartão. Estava pronto e verde; eu o desfiz para separar commits e o backup evaporou. **A ordem de serviço completa está em `docs/TAREFA_1.27f_CARTAO.md`** — seis mudanças, três testes, quatro defeitos plantados, e como fechar |
+| 1 | **1.27f** · o cartão da equipe | ✅ **FECHADO em 16/09/2026** | refeito inteiro a partir de `docs/TAREFA_1.27f_CARTAO.md`. Q2 VERDE 998/998, suíte VERDE 2159/2159 com navegador. Capturas em `tools/previas/_cartao/`. Três defeitos de LEITURA que nenhum teste pega apareceram na captura e foram corrigidos — o rótulo `ATQ` transbordando a coluna, `VEL` e `DEF` na mesma cor, e o rodapé virando célula da grade |
+| 2 | **T11** · um navegador vivo por trabalhador | **o próximo do arnês** | o outro eixo dos 30 min: o T13 derrubou a QUANTIDADE de mutantes (portão em 3 min com a árvore intocada), o T11 ataca o CUSTO de cada um — hoje ~30 s de boot de Chromium por mutante |
 
 ### A seguir, na ordem decidida em 08/09
 

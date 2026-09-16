@@ -6246,8 +6246,12 @@ exatamente o sinal que se quer.
 ## D-106 — a exclusão do `ARNES` não vale para quem tem fecho `TUDO`
 
 **Achado em:** 16/09/2026, na execução de fecho do 1.27f.
-**Bloco dono:** **T13** (proposto neste mesmo commit, em `BUILD_BLOCKS`).
-**Estado:** REGISTRADO, medido, não corrigido.
+**Bloco dono:** **T13**. **Estado:** ✅ **CORRIGIDO em 16/09/2026.**
+
+> **Medido com a árvore idêntica entre duas execuções:** `0 reavaliados, 1002
+> reaproveitados, em 3 min 02 s` — contra os 114 que o defeito cobrava. A
+> exclusão saiu do `ARNES` e foi para `FORA_DA_DIGITAL`, em `fecho.mjs`, que é
+> o funil por onde TODA digital passa.
 
 A execução avisou **145 defeitos a reavaliar** depois de eu mudar **uma linha** —
 o `para` do S1002. O `git diff` entre as duas execuções tem três arquivos, e dois

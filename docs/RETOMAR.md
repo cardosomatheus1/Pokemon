@@ -28,10 +28,23 @@ defeito meu.
 o LINK     http://localhost:8099/app/index.html
            sobe com:  node tools/servir.mjs --porta 8099
 a PASTA    C:\Users\gdult\pa4
-o ESTADO   1.27f FECHADO · T9 e T10 FECHADOS · Q1 VERDE 2159/2159 com navegador
-           o cartão da equipe foi refeito, e as capturas estão em
-           tools/previas/_cartao/
+o ESTADO   1.27f · T9 · T10 · T13 FECHADOS · Q1 VERDE 2161/2161 com navegador
+           Q2 VERDE 1002/1002 · e o portão agora fecha em 3 MINUTOS quando o
+           bloco não toca em app/ nem no arnês
 ```
+
+### O NÚMERO QUE MUDA A ROTINA DO PROJETO
+
+```text
+Q2 com a árvore INTOCADA      3 min 02 s     0 reavaliados de 1002
+antes do T13                  ~4 min         14 reavaliados
+Q2 depois de mexer em test/   124 min        148 reavaliados
+Q2 do zero, sem cache         453 min
+```
+
+**O requisito de 30 min do dono está cumprido para o bloco que não mexe na
+tela**, e continua devido para o que mexe — esse é o **T11**. A diferença entre
+os dois casos é o boot do Chromium por mutante, e nenhuma poda o move.
 
 ### O 1.27f saiu, e ele é produto — o primeiro em seis dias
 
@@ -123,13 +136,45 @@ O D-105 tem **teste que afirma o defeito de propósito** em
 `test/invariantes.mjs` — ele fica vermelho no dia em que o T12 consertar, e é
 assim que se sabe que a entrada em `DEFEITOS.md` virou mentira.
 
+### O T13, que nasceu no meio disto e fechou junto
+
+Ele não estava na fila: apareceu porque a execução avisou **145 reavaliações por
+UMA linha de definição de defeito mudada**. A causa é uma guarda que existia,
+tinha teste, passava verde e não fazia o trabalho dela:
+
+> O `portao.mjs` cobrava que `test/defeitos-plantados.mjs` ficasse fora do
+> **`ARNES`**. Mas `ARNES` é o que se SOMA a um fecho **RESOLVIDO** — para as 22
+> suítes de fecho `TUDO` a exclusão não valia nada.
+
+É o **D-106**, e é a terceira vez que a mesma forma aparece (D-103, D-105). A
+classe já tem nome: **guarda escrita a partir de um exemplo protege aquele
+exemplo.**
+
+O conserto: a exclusão saiu do `ARNES` e virou `FORA_DA_DIGITAL` em `fecho.mjs`
+— o funil por onde TODA digital passa. E o teste deixou de procurar uma linha no
+TEXTO do `sabotagem.mjs` e passou a CHAMAR a função, que é o que o teste antigo
+não fazia e por isso o defeito escapou.
+
 ### O PRÓXIMO
 
-`docs/ROADMAP.md`, seção **O QUE FALTA**. O próximo de produto é o **1.33 ·
-1.34** — dia, tarde e noite, com a regra do dono que governou o clima: **efeito
-visível na wave, nunca um número que ninguém vê.**
+`docs/ROADMAP.md`, seção **O QUE FALTA**.
 
-O próximo de arnês é o **T11**, e ele é o que o dono cobrou por escrito.
+```text
+T11            o outro eixo dos 30 min: um navegador vivo por trabalhador.
+               O T13 derrubou a QUANTIDADE de mutantes; o T11 ataca o CUSTO
+               de cada um (~30 s de boot de Chromium)
+1.33 · 1.34    PRODUTO — dia, tarde e noite, com a regra do dono que governou
+               o clima: efeito VISÍVEL na wave, nunca um número que ninguém vê.
+               A L-178 nasce junto: hoje o clima muda o que a wave RENDE, e
+               não QUEM aparece nela
+T8 · T4 · T7   manutenção do arnês
+1.30           os 34 ícones de item — ⏸️ espera o dono mandar a arte
+```
+
+E três que não são código, todos com dono e todos parados: **L-042** (arte do
+ContentPack original, prazo: antes do fim da V1), **L-012** (consulta de
+enquadramento regulatório, BLOQUEIA A TAG), **L-010** (política de publicidade e
+afiliados, sem dono em nenhum documento).
 
 ---
 

@@ -1100,10 +1100,29 @@ ele existir pelo nosso desenho, é mudar uma função — não o sistema.
 
 ---
 
-### T13 — A exclusão passa a valer para quem tem fecho `TUDO`
+### T13 — A exclusão passa a valer para quem tem fecho `TUDO` · **FECHADO em 16/09/2026**
 
 **Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/`)
 · **Depende de** nada · **Fecha** o **D-106**
+
+> **FECHADO, e o critério de saída foi superado.** Ele pedia "no máximo os 14 de
+> fecho universal"; a medição deu **0**.
+>
+> ```text
+> Q2 do T13            VERDE 1002/1002 · 124 min · 148 reavaliados
+> a PROVA, sem nada
+> mudado entre as duas   0 reavaliados · 1002 reaproveitados · 3 min 02 s
+> ```
+>
+> Os **3 min 02 s** são o piso do portão: pré-voo mais a validação das
+> configurações de julgamento. **Um bloco que não toca em `app/` nem no arnês
+> passa a fechar o Q2 em 3 minutos** — o requisito de 30 min do dono está
+> cumprido para essa classe de bloco, e continua devido para os que tocam a
+> tela (é o T11).
+>
+> E os "14 de fecho universal" da L-035 viraram **0**: fecho universal não quer
+> dizer "reavalia sempre", quer dizer "reavalia se QUALQUER arquivo mudar". Eles
+> só reavaliavam porque alguma coisa mudava toda execução.
 
 **Por que ele existe.** O `portao.mjs` cobra que `test/defeitos-plantados.mjs` e
 `test/run.mjs` fiquem **fora do `ARNES`**, e dá a razão certa: *"a definição do

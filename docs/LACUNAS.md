@@ -959,6 +959,27 @@ conhecido, caminho vindo de variável, e disparo que o leitor não consegue ler.
 Cinco defeitos plantados guardam essas recusas, porque num bloco que encolhe
 fecho o perigo não é encolher de menos.
 
+### E os "14 de fecho universal" viraram ZERO no T13 (16/09/2026)
+
+A frase *"os 14 reavaliados com o repositório intocado"* aparece aqui e no
+`CLAUDE.md`, e **deixou de ser verdade**. Medido com a árvore idêntica entre
+duas execuções:
+
+```text
+antes do T13    14 reavaliados     os de fecho universal
+depois do T13    0 reavaliados     1002 reaproveitados, em 3 min 02 s
+```
+
+Fecho universal **não** quer dizer "reavalia sempre": quer dizer "reavalia se
+QUALQUER arquivo mudar". Com a árvore intocada, nenhum muda — e os 14 só
+reavaliavam porque alguma coisa mudava toda execução. Eram as saídas do próprio
+portão e, depois do D-106, o `test/defeitos-plantados.mjs`.
+
+**O balde universal continua sendo um problema de direção**, e o parágrafo acima
+segue valendo: o que ele custa aparece quando o bloco de fato mexe em algo, e aí
+os 22 fechos `TUDO` cobram 114. Reduzi-los é trabalho separado e ainda sem
+bloco.
+
 ---
 
 ### L-038 — três mutantes equivalentes, e todos com a mesma forma

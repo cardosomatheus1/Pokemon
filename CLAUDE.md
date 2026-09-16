@@ -239,17 +239,28 @@ suíte que cada defeito roda. Acelerar a execução mudaria a constante e deixar
 a curva de pé; em três blocos voltaria a doer.
 
 ```
-Q2 do zero, sem cache         68 min      (283 defeitos, era ~100 com 208)
-Q2 depois de mexer em UM arquivo   3 min 40 s
-reaproveitados               246 de 283
+                                     16/09/2026        antes (Fase 1)
+Q2 com a árvore INTOCADA             3 min 02 s        4 min
+  reavaliados                        0 de 1002         14 de 283
+Q2 depois de mexer num arquivo
+  de test/ que 22 suítes veem        124 min           —
+  reavaliados                        148 de 1002
+Q2 do zero, sem cache                453 min           68 min (283 defeitos)
 ```
 
-Medido no fecho da Fase 1, e é o número que importa: **o portão cresceu de 208
-para 283 defeitos e a execução quente ENCOLHEU.** O custo é proporcional ao
-tamanho da mudança, não ao do projeto — que era exatamente a promessa.
+Medido no T13. **O portão cresceu de 283 para 1002 defeitos e a execução com a
+árvore intocada ENCOLHEU de 4 min para 3.** O custo é proporcional ao tamanho da
+mudança e não ao do projeto — que era exatamente a promessa.
 
-Os 14 reavaliados com o repositório intocado são exatamente os 14 de fecho
-universal — ver **L-035** e o bloco **T4**, que existe para derrubá-los.
+**E os "14 de fecho universal" viraram 0.** Fecho universal não quer dizer
+"reavalia sempre": quer dizer "reavalia se QUALQUER arquivo mudar". Eles só
+reavaliavam porque alguma coisa mudava toda execução — as saídas do próprio
+portão, e depois o `test/defeitos-plantados.mjs`, que é o **D-106**.
+
+~~Os 14 reavaliados com o repositório intocado são exatamente os 14 de fecho
+universal.~~ **Corrigido no T13, 16/09/2026: são 0.** Ver **L-035** e o
+**D-106** — eles nunca foram "o preço do fecho universal", eram uma coisa
+mudando a cada execução.
 
 O que derruba a curva é a observação de que **o veredito de um defeito é função
 de três coisas e de mais nada**:
