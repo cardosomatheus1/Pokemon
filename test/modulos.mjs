@@ -188,6 +188,16 @@ const CAMADA = {
      pela mesma razão dos dois acima: resposta dentro de `innerHTML` não tem
      como ser afirmada, e o portão já cobrou isso quatro vezes. */
   'idle-escolha.mjs': 0,
+  /* A HORA DO DIA (L-124, bloco 1.34). Camada 0, e aqui a razão tem um número:
+     tudo que é DECISÃO — que período é, quanto escurece, onde está o astro,
+     quantas estrelas acendem — é pego em Node a ~0,1 s por mutante. Colado no
+     canvas, o mesmo defeito custaria ~30 s. E a cena passa a PINTAR o que este
+     módulo devolveu, e mais nada.
+
+     Ele não importa nada: a hora entra por argumento, sempre. Chamar
+     `Date.now()` por dentro faria a linha de base visual mudar de resultado
+     conforme a hora em que a suíte roda — o portão viraria sorte. */
+  'hora-do-dia.mjs': 0,
   /* O anúncio do chefe: o que a tela LÊ sobre ele, sem DOM (L-170). */
   'avanco-boss.mjs': 0,
   'sprites-dados.mjs': 0,
