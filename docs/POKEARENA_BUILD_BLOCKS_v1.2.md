@@ -1214,43 +1214,95 @@ teste e tirar o D-105 de `docs/DEFEITOS.md` faz parte do bloco.
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/`)
 · **Depende de** T9 e T10 · **Fecha** a conta que o T9 não fechou
 
+> ## ⚠ A PREMISSA DESTE BLOCO ESTAVA ERRADA, e a medição de 16/09 a derrubou
+>
+> O texto abaixo dizia que *"um mutante de navegador não sai por menos de ~30 s
+> (boot da página + Monte Carlo)"* e concluía que **o boot do Chromium** era o
+> piso. **Não é.** Medido:
+>
+> ```text
+> chromium.launch() quente            ~150 ms    (805 ms só o primeiro, frio)
+> launch + newContext + newPage + close  631 ms  média de 3
+> os 8 lançamentos do visual.mjs        ~5 s     de uma passada de ~124 s
+> ```
+>
+> **O boot é 4% do custo.** Reusar o navegador compraria 5 s de 124.
+>
+> ### Onde o tempo REALMENTE está
+>
+> ```text
+> visual-base       177 s     <- sozinha, mais que todas as outras somadas
+> sem-backend        32 s
+> visual             30 s
+> contraste          29 s
+> rodada-viva        28 s
+> visual-luta        25 s
+> rodada-completa    15 s
+> sem-rede            9 s
+> tema-cedo           1,6 s     ambientes 1,4 s     outfit-canvas 1,3 s
+> ```
+>
+> E dentro da `visual-base`, o custo é **por LARGURA** e não por tela:
+>
+> ```text
+> 1 largura     45 s
+> 4 larguras   177 s        ~44 s por largura, ~1 s de custo fixo
+> ```
+>
+> Cada largura recarrega o app inteiro e espera a fase de apostas montar — o
+> Monte Carlo de 154.000 simulações, as fontes, a arte, e o laço de quadros
+> sendo avançado de dois em dois a cada sondagem de 60 ms.
+>
+> ### O que isso muda no escopo
+>
+> O alvo deixa de ser "um navegador vivo" e passa a ser **"uma carga de página
+> por largura, e não uma por tela"** — ou melhor ainda, uma carga só, com a
+> largura mudando por `setViewportSize`. O `rodar()` já faz isso; a
+> `capturarBase()` abre um contexto novo por largura.
+>
+> **O bloco continua M e continua valendo**, mas o numerador que ele tem de
+> podar é outro. Reescrever o escopo é a primeira coisa a fazer nele — e a
+> medição acima é o que o próximo autor precisa para não repetir o meu erro:
+> **eu escrevi "boot" onde nunca tinha medido o boot.**
+
 **Por que ele existe.** O T9 e o T10 cortaram o trabalho por mutante de 250 s
-para 30 s — 8x, medido. E mesmo assim uma execução FRIA não cabe em 30 min, e a
-razão é aritmética:
+para 30 s — 8x, medido. E mesmo assim uma execução FRIA não cabe em 30 min:
 
 ```text
-994 mutantes / 1800 s x 2 trabalhadores  =  3,6 s de parede por mutante
-um mutante de navegador não sai por menos de ~30 s
-                                            (boot da página + Monte Carlo)
+1002 mutantes / 1800 s x 2 trabalhadores  =  3,6 s de parede por mutante
+uma passada de navegador custa           ~124 s
 ```
 
-**Enquanto cada mutante subir o próprio Chromium, 30 min a frio é impossível**,
-e nenhuma poda muda isso. Foi o erro de leitura do T9: eu escrevi "30 min a
-frio" como critério sem fazer essa divisão, e passei o dia podando o numerador
-de uma fração cujo denominador era o boot.
+O **T13** já fechou o outro eixo: com a árvore intocada o portão custa **3 min
+02 s** e reavalia **0 de 1002**. O que sobra é o preço de cada reavaliação que
+precisa de navegador, e é isso que este bloco ataca.
 
-**Escopo:**
+**Escopo (a reescrever com a medição acima):**
 
-1. **Um navegador vivo por trabalhador**, aberto uma vez e reusado. O mutante
-   deixa de ser "sandbox nova + processo novo" e passa a ser "servidor de teste
-   devolve os bytes mutados de UM arquivo, e a página recarrega".
-2. **A recarga é a unidade**, não o processo. Alvo: de ~30 s para ~3 s.
+1. **Uma carga de página por largura, e não uma por tela** — e de preferência
+   uma carga só, com `setViewportSize` entre as larguras, como o `rodar()` já
+   faz. A `capturarBase()` abre um contexto novo por largura, e são ~44 s cada.
+2. **A recarga é a unidade**, não o processo.
 3. **Isolamento entre mutantes tem de ser provado, não suposto** — é o risco
    real desta mudança. Estado que vaza de um mutante para o seguinte produz
    veredito falso nos dois sentidos, e é pior que o custo que se está cortando.
+4. Reusar o navegador entre mutantes **continua valendo**, mas como o último
+   item da lista e não o primeiro: são 5 s de 124.
 
 **Fora do escopo:** acelerar o relógio do app. Já declarado no T10 e continua
 valendo — mediria uma configuração que não é a entregue.
 
 **Sabotagem:** servir o arquivo original em vez do mutado; deixar o estado de um
 mutante sobreviver à recarga; reaproveitar o navegador entre CONFIGURAÇÕES de
-julgamento diferentes; fazer o isolamento depender de a página cooperar.
+julgamento diferentes; fazer o isolamento depender de a página cooperar;
+trocar a largura sem esperar o rearranjo, e capturar a digital da largura
+anterior.
 
 **Q6:** sem superfície nova.
 
-**Saída:** `npm run sabotagem:completo` a frio dentro de 30 min, com prova de
-isolamento entre mutantes — e o número medido na máquina do dono, com a
-contagem de defeitos ao lado (D-059).
+**Saída:** a passada de navegador de ~124 s para o que a medição permitir, com
+prova de que a digital de cada largura é a mesma de hoje — e o número medido, ao
+lado do antigo (D-059).
 
 ---
 
