@@ -6091,3 +6091,80 @@ guardas que eu escrevi para torná-lo confiável eram enfeite.
 > Um portão que só confirma o que o autor já acredita não é portão. Este
 > discordou do autor no primeiro uso.
 
+---
+
+## D-104 — a digital de pixel fazia o trabalho de cinco asserções que ninguém escreveu
+
+**Achado em:** 15-16/09/2026, pelo primeiro Q2 completo e confiável.
+**Bloco dono:** T9/T10. **Estado:** CORRIGIDO — cinco asserções específicas.
+
+O Q2 fechou `VERMELHO — 7/994`. Cinco dos sete eram **antigos**, e o índice de
+captura da execução anterior diz quem os pegava:
+
+```text
+S658  -> visual-base
+S100  -> visual-base, rodada-viva, sem-rede
+S420  -> visual-base, rodada-viva, sem-rede
+S493  -> visual-base, sem-rede
+S492  -> sem-rede
+```
+
+**Quatro eram pegos pela digital de pixel**, e eu tirei a tela da arena dela no
+D-099 — escrevendo, com todas as letras, que *"não é cobertura removida, é
+cobertura que se fingia ter"*.
+
+> **Estava errado.** A digital pegava quatro defeitos reais, e o portão provou
+> no primeiro uso.
+
+### E mesmo assim o conserto não é devolver a arena
+
+Ela abortava o portão, e isso continua verdade — quatro execuções morreram
+assim. O que os cinco revelam é outra coisa:
+
+> A digital de pixel vinha fazendo o trabalho de asserções que ninguém escreveu.
+> Ela pega por **acidente** — qualquer pixel diferente reprova — o que deveria
+> ser pego de propósito. Tirá-la não criou os buracos: revelou quais existiam.
+
+### As cinco, e cada uma ensinou uma coisa diferente
+
+**`S658` é equivalente no comportamento.** `moedasDa` ganha `bonus = 0`; com
+padrão zero e nenhum uso, a saída é idêntica e nenhuma asserção sobre o
+RESULTADO pode pegá-lo. O que ele viola é a forma — o §P5 diz que pagamento é
+função do perfil e dos encontros, e de mais nada. O teste é **estrutural**, e é
+o tipo certo para a pergunta.
+
+**`S420` tinha teste, e o teste media o vizinho.** Existia um *"as de sistema
+não ocupam vaga"* com a fixture `[sis, a, b, c, d]` — a linha de sistema em
+PRIMEIRO, onde o `slice(-3)` a descarta sozinha. Ele parecia medir a peneira e
+media o corte.
+
+**`S492` e `S493` são CSS**, e viraram asserção de texto sobre a regra: o visor
+não pode ser recentrado, e a máscara precisa de RAIO.
+
+**`S100` é leitura de CLASSE, não de pixel** — mais barata, mais precisa, e diz
+o que quebrou: o `#hud` tem de estar `dormindo` na fase de aposta.
+
+### Duas asserções minhas nasceram erradas, e o teste-do-teste pegou
+
+```text
+S493   exigi "algum dígito" na forma da elipse. `ellipse at 39.5% 21.5%` TEM
+       dígitos — na POSIÇÃO. O raio é o que vem ANTES do `at`
+S493   `mask-image` casa DENTRO de `-webkit-mask-image`: o laço conferia a
+       mesma linha duas vezes, e a propriedade sem prefixo — a que o defeito
+       muta — nunca era olhada
+```
+
+Sexta e sétima ocorrências do padrão que o `RETOMAR` registra: **asserção que
+mede o vizinho do que o nome promete**. As duas só apareceram porque eu plantei
+o defeito e exigi o vermelho antes de acreditar.
+
+### Medido
+
+```text
+S658 plantado -> VERMELHO 1/12      S492 plantado -> VERMELHO 1/24
+S420 plantado -> VERMELHO 1/11      S493 plantado -> VERMELHO 1/24 (as duas props)
+S100 plantado -> VERMELHO 1/46
+
+npm test (com navegador): VERDE 2155/2155
+```
+

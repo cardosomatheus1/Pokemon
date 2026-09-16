@@ -493,5 +493,58 @@ export function suite() {
       'da tela de escolha, e o dono chamou de "bagunça total"');
   });
 
+  /* ── A MOLDURA E A MÁSCARA DA ARENA (D-104) ──────────────────────────────
+   *
+   * Os defeitos `S492` e `S493` escaparam do Q2 de 15/09. Quem os pegava era a
+   * digital de pixel da tela da arena, e ela saiu no D-099 — e saiu com a minha
+   * afirmação de que não era "cobertura removida". Era.
+   *
+   * A lição não é devolver a digital, que abortava o portão. É que ela vinha
+   * fazendo o trabalho de asserções que ninguém escreveu: ela pega por
+   * ACIDENTE — qualquer pixel diferente reprova — o que deve ser pego de
+   * propósito. Estas duas são de propósito, e dizem O QUE quebra.
+   */
+  s.teste('a arte de fundo é enquadrada pelo VISOR, e não recentrada', () => {
+    const regra = APP.match(/#viewArena::before\{[^}]*\}/s);
+    ok(regra, 'a regra do `#viewArena::before` sumiu — o teste perdeu a âncora');
+    ok(!/background-position-x\s*:/.test(regra[0]),
+      'o `#viewArena::before` ganhou um `background-position-x`. O enquadramento ' +
+      'da arte vem do atalho `background`, que já põe o VISOR em 50.5% 53% — ' +
+      'reposicionar em 50% centra a IMAGEM, e o visor não mora no centro dela. ' +
+      'É o defeito S492, e ele escapou quando a digital de pixel saiu (D-099).');
+    ok(/50\.5%\s+53%/.test(regra[0]),
+      `o visor da arte mudou de lugar: "${regra[0].match(/background:[^;]*/)?.[0]}". ` +
+      `Se a mudança é intencional, a máscara do ::after tem de acompanhar — as ` +
+      `duas enquadram a MESMA imagem.`);
+  });
+
+  s.teste('a máscara do rosto tem RAIO, e não cobre a tela inteira', () => {
+    const regra = APP.match(/#rqRosto::before\{[^}]*\}/s);
+    ok(regra, 'a regra do `#rqRosto::before` sumiu — o teste perdeu a âncora');
+    /* `radial-gradient(ellipse at X Y, ...)` é válido e o padrão é FARTHEST-CORNER:
+       sem raio a máscara deixa de recortar o rosto e passa a valer a tela toda,
+       e o `mix-blend-mode:screen` com opacidade .55 clareia tudo. */
+    for (const prop of ['-webkit-mask-image', 'mask-image']) {
+      /* `mask-image` casa DENTRO de `-webkit-mask-image`, e a primeira versão
+         deste laço conferia a mesma linha duas vezes — a propriedade sem
+         prefixo, que é a que o defeito muta, nunca era olhada. A âncora é o que
+         separa as duas. */
+      const ancora = prop.startsWith('-') ? prop : '(?<![-\\w])' + prop;
+      const m = regra[0].match(new RegExp(ancora + ':radial-gradient\\(ellipse([^,]*),'));
+      ok(m, `${prop} sumiu do \`#rqRosto::before\` — o teste perdeu a âncora`);
+      /* O RAIO É O QUE VEM ANTES DO `at`, e a primeira versão deste teste errou
+         exatamente aqui: ela exigia "algum dígito" na forma, e `ellipse at
+         39.5% 21.5%` TEM dígitos — na POSIÇÃO. O defeito S493 passou verde por
+         isso, no teste escrito para pegá-lo. Sexta ocorrência do padrão:
+         asserção que mede o vizinho do que o nome promete. */
+      const raio = m[1].split(/\bat\b/)[0].trim();
+      ok(/\d/.test(raio),
+        `o ${prop} virou "ellipse${m[1]}" — o raio sumiu e sobrou só a posição. ` +
+        `O padrão do radial-gradient é farthest-corner, então a máscara deixa de ` +
+        `recortar o rosto e passa a cobrir a tela inteira, com mix-blend-mode ` +
+        `screen e opacidade .55 por cima. É o S493.`);
+    }
+  });
+
   return s;
 }

@@ -1269,6 +1269,21 @@ export async function rodar() {
   /* --- Q5 do V1.15: a colocação e o banner estão LIGADOS ------------------
      Quarta e quinta vez que a lição aparece (S30, S53, S65, S69, S77/S78): o
      módulo puro pode estar perfeito e ninguém tê-lo chamado. */
+  /* ── O HUD DORME NA APOSTA (D-104) ──────────────────────────────────────
+   *
+   * O defeito `S100` inverte a condição do `dormindo`: `s !== 'betting'` em vez
+   * de `s === 'betting'`. O efeito é doze barras de vida verdes em 100% durante
+   * a janela de aposta — a primeira fixação do olho vai para elas em vez de ir
+   * para as odds, que é onde a decisão acontece.
+   *
+   * Ele ESCAPOU do Q2 de 15/09. Quem o pegava era a digital de pixel da arena,
+   * por acidente, e ela saiu no D-099. É leitura de CLASSE, não de pixel: mais
+   * barata, mais precisa, e diz o que quebrou. */
+  const hudNaAposta = await pg.evaluate(() => ({
+    fase: document.querySelector('#phase')?.textContent ?? '',
+    dormindo: !!document.querySelector('#hud')?.classList.contains('dormindo'),
+  })).catch(e => ({ erro: String(e).split('\n')[0] }));
+
   const painel = await pg.evaluate(async () => {
     const { S } = await import('/app/modules/estado.mjs');
     const adm = await import('/app/modules/adm.mjs');
@@ -2094,7 +2109,7 @@ export async function rodar() {
     for (const [r, ms] of TEMPOS.filter(([, ms]) => ms >= 500).sort((a, b) => b[1] - a[1]))
       console.log(`    ${String(ms).padStart(7)} ms  ${r}`);
   }
-  return { erros, conhecidos, apostas, batalhaPronta, folhas: cache.size, erroDepois, jogo, corte, cancelamento, comAposta, colunasAposta, painel, arena, idle, idlePronto, som, captura, loja, bnIdle, idleRecarregado, tema, fontes, avisos, ...st };
+  return { erros, conhecidos, apostas, batalhaPronta, hudNaAposta, folhas: cache.size, erroDepois, jogo, corte, cancelamento, comAposta, colunasAposta, painel, arena, idle, idlePronto, som, captura, loja, bnIdle, idleRecarregado, tema, fontes, avisos, ...st };
 }
 
 /* Q3 · A RODADA DO APP SAI DA RAIZ.
@@ -3347,6 +3362,18 @@ export function suite(r) {
       `A taxa fixa de 10 PC = R$ 1,00 faz a PERDA ser sentida em reais, que é o ` +
       `que uma moeda simulada não deveria conseguir fazer (§P1, cap. 28). ` +
       `Decisão do dono do projeto no V1.20.`);
+  });
+
+  s.teste('S100 · o HUD de vida DORME durante a aposta', () => {
+    const h = r.hudNaAposta;
+    ok(h && !h.erro, `não deu para ler o HUD: ${h?.erro}`);
+    igual(h.fase, 'APOSTAS',
+      `a sonda leu a fase "${h.fase}" — ela precisa rodar na janela de aposta`);
+    ok(h.dormindo,
+      'o `#hud` não tem a classe `dormindo` na fase de aposta. Sem ela, doze ' +
+      'barras de vida verdes em 100% ficam acesas enquanto o jogador decide, e ' +
+      'roubam a primeira fixação do olho das odds — que é onde a decisão mora. ' +
+      'É o defeito S100.');
   });
 
   s.teste('S101 · a faixa de coluna nomeia o que o número é, na aposta', () => {
