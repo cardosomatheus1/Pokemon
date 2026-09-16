@@ -304,6 +304,11 @@ const CAMADA = {
      em canvas so pode ser conferida com navegador — e o que so o navegador
      confere acaba conferido por ninguem. */
   'idle-clima.mjs': 3,
+  /* O CÉU do idle (1.34) — o astro, as estrelas e a luz da hora. Camada 3 pelo
+     mesmo motivo que o clima logo acima: aqui é SÓ desenho, e toda a conta —
+     que período é, quanto escurece, onde está o astro, quantas estrelas — mora
+     no `hora-do-dia.mjs`, camada 0, pega em Node a ~0,1 s por mutante. */
+  'idle-ceu.mjs': 3,
   /* O que o BIOMA faz sozinho — cachoeira, luz, detalhe vivo. Saiu do
      `idle-mundo.mjs` na quarta vez que ele passou de 600 linhas. */
   'idle-bioma-vivo.mjs': 4,

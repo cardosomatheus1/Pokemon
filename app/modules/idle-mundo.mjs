@@ -410,6 +410,11 @@ async function laçoDoAtor(t) {
        lutadores, e eles continuam legíveis. Um véu por cima escureceria o
        próprio bicho, e o jogador perde o que veio ver. */
     veuDoClima(gm, fxDoClima, W, H);
+    /* ── O CÉU VEM ANTES DOS ATORES (1.34) ──────────────────────────
+       O astro e as estrelas estão ATRÁS de tudo, como o céu está. Aqui, no
+       canvas do mundo, eles ficam por baixo do treinador e dos bichos sem
+       precisar de z-index nenhum. A LUZ é a outra metade e vem no fim. */
+    pintarCeu(gm, W, H, Date.now());
 
     const g = cv.getContext('2d');
     g.imageSmoothingEnabled = false;
@@ -453,6 +458,16 @@ async function laçoDoAtor(t) {
        ontem, que fez essa frase valer a pena escrever. */
     desenharClima(g, fxDoClima, W, H, t);
 
+    /* ── E A LUZ DA HORA SOBRE TUDO (1.34) ──────────────────────────
+       Depois do treinador, do companheiro, dos selvagens e da chuva. Se ela
+       caísse só no chão, os bonecos ficariam acesos numa cena escura — e é
+       assim que o jogador descobre que a noite é um filtro e não uma hora.
+
+       `Date.now()` aqui e não `t`: `t` é o relógio da ANIMAÇÃO, que começa em
+       zero quando a aba abre. A hora é do MUNDO — ver a nota longa no
+       `hora-do-dia.mjs`. */
+    pintarLuz(g, W, H, Date.now());
+
     const v = vivos.get('comp');
     if (v) v.moldura.style.zIndex = bicho.y <= eu.y ? 1 : 3;
   }
@@ -469,6 +484,9 @@ import { prepararVida, cachoeirasVivas, desenharVida, ESPUMA_MS } from './idle-b
 /* O CLIMA (1.32). A conta mora em `clima-particulas.mjs`, camada 0; aqui só
    entra o desenho — ver o cabeçalho do `idle-clima.mjs`. */
 import { veuDoClima, desenharClima } from './idle-clima.mjs';
+/* O CÉU: o astro e as estrelas atrás de tudo, a luz da hora sobre tudo (1.34).
+   Quem DECIDE é o `hora-do-dia.mjs`, em camada 0; estes dois só pintam. */
+import { pintarCeu, pintarLuz } from './idle-ceu.mjs';
 export { ESPUMA_MS } from './idle-bioma-vivo.mjs';
 
 function esconder(chave) {
