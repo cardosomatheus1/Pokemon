@@ -1100,6 +1100,56 @@ ele existir pelo nosso desenho, é mudar uma função — não o sistema.
 
 ---
 
+### T13 — A exclusão passa a valer para quem tem fecho `TUDO`
+
+**Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/`)
+· **Depende de** nada · **Fecha** o **D-106**
+
+**Por que ele existe.** O `portao.mjs` cobra que `test/defeitos-plantados.mjs` e
+`test/run.mjs` fiquem **fora do `ARNES`**, e dá a razão certa: *"a definição do
+defeito já entra na chave por conta própria"*. Mas `ARNES` é o que se soma a um
+fecho RESOLVIDO, e `TUDO` não é um fecho resolvido — é o repositório inteiro. A
+exclusão protege as suítes que não precisavam dela.
+
+```text
+suítes com fecho TUDO             22
+defeitos que elas pegam          114  de 981
+reavaliações medidas em 16/09    145   por UMA linha de definição mudada
+```
+
+**Acrescentar um defeito plantado é coisa que todo bloco faz**, e hoje custa 114
+reavaliações — as caras, porque `visual` sozinha pega 44.
+
+**Por que ele vem ANTES do T11.** O T11 ataca o custo **por mutante** e é M.
+Este ataca a **quantidade** e é P.
+
+**Escopo:**
+
+1. A exclusão sai do `ARNES` e vai para a **digital**: um lugar só, que vale
+   para fecho resolvido e para `TUDO` igualmente.
+2. A lista é justificada **arquivo a arquivo**, no código, com o que a torna
+   segura. `test/defeitos-plantados.mjs` é seguro por repetir informação que já
+   é chave; `test/run.mjs` é o que EXECUTA a suíte e a coerência pode ser obtida
+   nos dois sentidos — o bloco MEDE antes de escolher.
+3. A asserção do `portao.mjs` passa a cobrar a digital, e não o `ARNES` — senão
+   ela continua verde sem fazer o trabalho, que é o defeito.
+
+**Fora do escopo:** reduzir os 22 fechos `TUDO`. Outro eixo, maior, e medir os
+dois juntos esconderia qual pagou.
+
+**Sabotagem:** subtrair da digital um arquivo que muda veredito de verdade (tem
+de produzir reaproveitamento indevido e ser pego); aplicar a subtração só ao
+fecho resolvido, que é o defeito de hoje; deixar a asserção do `portao` olhando
+para o `ARNES`; subtrair no cálculo e não na comparação.
+
+**Q6:** sem superfície nova.
+
+**Saída:** acrescentar um defeito plantado e rodar `npm run sabotagem` reavalia
+**o defeito novo e os 14 de fecho universal**, e não 114. O número vai no
+relatório ao lado do antigo (D-059).
+
+---
+
 ### T12 — O `semTexto` aprende literal de expressão regular
 
 **Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/`)
@@ -1187,10 +1237,14 @@ contagem de defeitos ao lado (D-059).
 
 ---
 
-### T10 — A sonda para de replayar a partida inteira
+### T10 — A sonda para de replayar a partida inteira · **FECHADO em 16/09/2026**
 
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/`)
 · **Depende de** T9 (o corte das sondas) · **Lacuna** L-179 · **Fecha** o resto do teto
+
+> **FECHADO com `Q2 VERDE — 998/998`.** A sonda visual principal foi de 226 s
+> para 30 s no total das duas etapas — 7,5×, medido —, e a luta virou sonda
+> própria (`rodarLuta`/`suiteLuta`).
 
 **Por que ele existe.** O T9 tirou o portão de 7 h para ~90 min e parou aí, com
 a razão medida. Depois de cortar as sondas vizinhas e as larguras, `--so=visual`
@@ -1250,10 +1304,24 @@ medição que nomeia o próximo alvo em vez de uma promessa.
 
 ---
 
-### T9 — O portão em 30 minutos
+### T9 — O portão em 30 minutos · **FECHADO em 16/09/2026**
 
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/` e `tools/`)
 · **Depende de** o cache de vereditos (T1) e o pré-voo (T5) · **Lacuna** L-179
+
+> **FECHADO com `Q2 VERDE — 998/998`**, em 129 min (145 reavaliados, 853
+> reaproveitados). **O alvo de 30 min NÃO foi atingido, e o bloco fecha mesmo
+> assim** — porque o que ele prometia entregar, entregou: `--so=visual` de 226 s
+> para 82 s, o cache de vereditos versionado (L-179), o pré-voo, e o portão de
+> 6 h 45 min para 129 min.
+>
+> Os 30 min continuam DEVIDOS, e agora se sabe por quê — são dois eixos, cada
+> um com bloco próprio: o **T13** (quantidade de mutantes: 114 reavaliações que
+> nenhum bloco causou) e o **T11** (custo por mutante: o boot do Chromium). Ver
+> o **D-106**.
+>
+> Escrever "30 min" como critério sem fazer a divisão `994 / 1800 s` foi erro
+> meu de leitura, e está registrado no T11.
 
 **Por que ele existe, e o requisito é do dono.** Em 14/09 um Q2 num clone limpo
 custou **6 h 45 min**. A decomposição:

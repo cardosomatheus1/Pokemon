@@ -22,7 +22,118 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 15/09/2026, madrugada
+## 0. ONDE PARAMOS — 16/09/2026
+
+```text
+o LINK     http://localhost:8099/app/index.html
+           sobe com:  node tools/servir.mjs --porta 8099
+a PASTA    C:\Users\gdult\pa4
+o ESTADO   1.27f FECHADO · T9 e T10 FECHADOS · Q1 VERDE 2159/2159 com navegador
+           o cartão da equipe foi refeito, e as capturas estão em
+           tools/previas/_cartao/
+```
+
+### O 1.27f saiu, e ele é produto — o primeiro em seis dias
+
+O cartão da equipe estava parado desde 10/09 com a ordem de serviço pronta em
+`docs/TAREFA_1.27f_CARTAO.md`. Saiu inteiro, e o que ele resolve é uma
+contradição que era minha e não do dono:
+
+```text
+04/09   "uma loucura, bagunça total, muito feio e confuso"
+10/09   "você removeu as informações de stats, lv que evolui etc."
+```
+
+**As duas queixas são verdadeiras.** A contradição só existe se a resposta for
+esconder — e foi essa a resposta errada que eu dei em 04/09. O problema nunca
+foi a QUANTIDADE de informação: era a FORMA dela.
+
+```text
+compacto    reabsorve `forma` e `evolucao`; xp/potencial/natureza ficam na ficha
+stats       3 linhas de texto de 27 px viram 3 barras de 18 px, número DENTRO
+evolução    ficha de uma linha: `evolui` miúdo, o requisito é a manchete
+nível       aparece UMA vez (com a barra de XP junto ele saía repetido)
+lista       flex-wrap vira GRADE; o cartão aceita a largura que a grade dá
+cartão      104x144  ->  147x198 no largo, 125x198 no estreito
+```
+
+### TRÊS DEFEITOS DE LEITURA que a suíte não pega, e a captura pegou
+
+Nenhum é erro de execução. Os três aparecem para quem olha, e é exatamente a
+classe dos três do V1.15 que passaram por 299 testes verdes.
+
+```text
+1  "ATQ" em 8 px mede ~25 px e transbordava a coluna de 20 — o preenchimento
+   da barra cobria o Q
+2  `.f-ve b` usava var(--gold), que é o ACENTO do tema e vale #00e5ff no
+   padrão: VEL saía CIANO do lado de DEF, que também é ciano
+3  o rodapé da concentração virou CÉLULA da grade e ocupou o lugar do quinto
+   cartão
+```
+
+O `tools/olhar-cartao.mjs` foi refeito (ele tinha se perdido num `/tmp` limpo) e
+agora **reprova sozinho** no caso 1. Ele fotografa o painel nos dois modos em
+duas larguras, **e o primeiro cartão sozinho a 3×** — porque densidade não se
+julga numa página de 2 500 px, e as duas queixas do dono eram sobre densidade.
+
+### O que o portão custou, e o que isso diz sobre os 30 min
+
+```text
+execução 1   143 min   275 reavaliados · 723 reaproveitados · VERMELHO 1/998
+execução 2   129 min   145 reavaliados · 853 reaproveitados · VERDE 998/998
+```
+
+O único escapado foi um defeito **meu**, do próprio 1.27f, e o motivo é uma
+armadilha que vale registrar:
+
+> **O S1002 era um mutante EQUIVALENTE.** Ele mudava uma linha que um `return`
+> anterior já tornava inalcançável. Nenhum teste podia pegá-lo, porque não havia
+> o que pegar — o comportamento era idêntico.
+>
+> Mutante equivalente não é teste fraco: é defeito mal plantado. Replantado para
+> tirar a guarda `temItem`, ele passou a morder na hora.
+
+### E a execução 2 revelou o que faltava para entender os 30 min
+
+**145 reavaliações por UMA linha de definição de defeito mudada.** Fui medir, e
+são dois eixos independentes — que é a razão de o T9 ter fechado sem os 30 min:
+
+```text
+D-106 / T13   QUANTIDADE   114 dos 145 não foram causados pelo bloco. O
+              (bloco P)    `portao.mjs` já cobra que `defeitos-plantados.mjs`
+                           não invalide tudo, mas cobra no ARNES — e ARNES é o
+                           que se SOMA a um fecho RESOLVIDO. Para as 22 suítes
+                           de fecho TUDO a guarda não vale nada
+T11           CUSTO        ~31 s de parede por reavaliação. O piso é o boot do
+              (bloco M)    Chromium por mutante, e nenhuma poda o move
+```
+
+**O T13 vem primeiro: é P, e hoje TODO bloco paga 114 reavaliações caras só por
+acrescentar um defeito plantado** — coisa que todo bloco faz.
+
+### O que entrou para a fila neste bloco
+
+```text
+D-105  `semTexto` não entende literal de expressão regular, e o `$` de uma
+       âncora volta como "usa sem importar: $"          bloco dono T12 (novo)
+T12    proposto em BUILD_BLOCKS, com escopo, sabotagem e saída
+```
+
+O D-105 tem **teste que afirma o defeito de propósito** em
+`test/invariantes.mjs` — ele fica vermelho no dia em que o T12 consertar, e é
+assim que se sabe que a entrada em `DEFEITOS.md` virou mentira.
+
+### O PRÓXIMO
+
+`docs/ROADMAP.md`, seção **O QUE FALTA**. O próximo de produto é o **1.33 ·
+1.34** — dia, tarde e noite, com a regra do dono que governou o clima: **efeito
+visível na wave, nunca um número que ninguém vê.**
+
+O próximo de arnês é o **T11**, e ele é o que o dono cobrou por escrito.
+
+---
+
+## 0a. ONDE PARAMOS — 15/09/2026, madrugada
 
 ```text
 o LINK     http://localhost:8099/app/index.html
@@ -95,7 +206,7 @@ provado falso; está provado não confiável. A execução que vier o substitui.
 
 ---
 
-## 0a. ONDE PARAMOS — 14/09/2026, noite
+## 0b. ONDE PARAMOS — 14/09/2026, noite
 
 ```text
 o LINK     http://localhost:8099/app/index.html
@@ -157,7 +268,7 @@ está em `docs/TAREFA_1.27f_CARTAO.md`, escrita para quem não acompanhou nada.
 
 ---
 
-## 0a. ONDE PARAMOS — 14/09/2026, manhã
+## 0c. ONDE PARAMOS — 14/09/2026, manhã
 
 ```text
 o LINK     http://localhost:8099/app/index.html
@@ -206,7 +317,7 @@ está em `docs/TAREFA_1.27f_CARTAO.md`, escrita para quem não acompanhou nada.
 
 ---
 
-## 0b. ONDE PARAMOS — 13/09/2026
+## 0d. ONDE PARAMOS — 13/09/2026
 
 ```text
 o LINK     http://localhost:8099/app/index.html

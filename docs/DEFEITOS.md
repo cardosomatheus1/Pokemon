@@ -6240,3 +6240,92 @@ medição, e não de véspera.
 `D-105`: ele monta o texto de um módulo fictício com uma âncora `$` e afirma
 que a detecção **acusa** — vermelho no dia em que o T12 consertar, que é
 exatamente o sinal que se quer.
+
+---
+
+## D-106 — a exclusão do `ARNES` não vale para quem tem fecho `TUDO`
+
+**Achado em:** 16/09/2026, na execução de fecho do 1.27f.
+**Bloco dono:** **T13** (proposto neste mesmo commit, em `BUILD_BLOCKS`).
+**Estado:** REGISTRADO, medido, não corrigido.
+
+A execução avisou **145 defeitos a reavaliar** depois de eu mudar **uma linha** —
+o `para` do S1002. O `git diff` entre as duas execuções tem três arquivos, e dois
+deles são saída do portão, já excluídas do mapa de digitais:
+
+```text
+test/defeitos-plantados.mjs      1 linha            <- a única que conta
+test/fixtures/captura.json       SAIDAS_DO_PORTAO   <- fora do mapa
+test/fixtures/q2-veredito.json   SAIDAS_DO_PORTAO   <- fora do mapa
+```
+
+### O `portao.mjs` já cobra que este arquivo não invalide tudo
+
+E cobra com a razão certa, escrita por extenso:
+
+```js
+['test/defeitos-plantados.mjs', 'ele muda toda vez que um bloco acrescenta ' +
+  'um defeito, e a definição do defeito já entra na chave por conta própria'],
+['test/run.mjs', 'ele muda toda vez que um bloco registra uma suíte nova, e ' +
+  'suíte a mais não pode invalidar um PEGOU — só pode pegar mais'],
+```
+
+A asserção verifica que os dois estão **fora do `ARNES`**. E estão.
+
+> **Só que `ARNES` é o que se SOMA a um fecho resolvido, e `TUDO` não é um fecho
+> resolvido — é o repositório inteiro.** A exclusão protege exatamente as suítes
+> que não precisavam dela, e não protege nenhuma das que precisavam.
+
+```text
+suítes com fecho TUDO                  22
+defeitos que elas pegam               114  de 981
+  visual 44 · portao 21 · carteira 12 · modulos 6 · modo-servidor 5
+  pack-original 5 · artes 4 · origem 4 · bioma 3 · tema 3 · ...
+```
+
+**Acrescentar um defeito plantado — coisa que TODO bloco faz — reavalia 114.**
+Some os 14 de fecho universal (L-035) e o próprio defeito mexido, e dá as 145
+que a execução anunciou.
+
+### Por que isto é pior que uma ineficiência
+
+Porque a guarda **existe, tem teste, e passa verde** enquanto não faz o trabalho
+para o qual foi escrita. É a mesma forma do D-103, e da terceira vez vale
+enunciar a classe:
+
+> **Guarda escrita a partir de um exemplo protege aquele exemplo.** O autor
+> pensou em "o arquivo está no `ARNES`?", que era o caso que ele tinha na mão, e
+> não em "o arquivo entra na digital?", que é a pergunta.
+
+### O conserto, e o que ele tem de provar
+
+A exclusão passa a ser subtraída da **digital**, e não do `ARNES` — um lugar só,
+que vale para fecho resolvido e para `TUDO` igualmente.
+
+**E a lista tem de ser justificada arquivo a arquivo**, porque errar para menos
+aqui produz reaproveitamento indevido, e `PEGOU` falso é pior que `PASSOU` falso:
+
+```text
+test/defeitos-plantados.mjs   SEGURO   a definição do defeito já é componente
+                                       da chave; o conteúdo do arquivo repete
+                                       a mesma informação para o defeito mexido
+                                       e é ruído para todos os outros
+test/run.mjs                  CUIDADO  ele É o que executa a suíte. Hoje já não
+                                       invalida fecho resolvido (está fora do
+                                       ARNES), então mantê-lo em TUDO é só
+                                       INCOERÊNCIA — mas a coerência pode ser
+                                       obtida nos dois sentidos, e o T13 tem de
+                                       MEDIR qual antes de escolher
+```
+
+### O que este defeito NÃO é
+
+Não é a auto-invalidação do portão: essa existiu, está medida em *"19
+reavaliações fantasma"*, e o `SAIDAS_DO_PORTAO` a resolveu. Cheguei a
+diagnosticá-la de novo aqui e estava **errado** — as duas saídas nunca entram no
+mapa de digitais. Fica registrado porque o erro é instrutivo: **os dois
+sintomas são idênticos, e só o `git diff` entre execuções separa um do outro.**
+
+E não é o número de fechos `TUDO`. Reduzir os 22 é o outro eixo, é maior, e cada
+um cai por um motivo diferente. Medir os dois juntos esconderia qual pagou — que
+é o erro que custou 14/09.
