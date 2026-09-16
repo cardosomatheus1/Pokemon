@@ -6995,7 +6995,7 @@ export const DEFEITOS = [
   { id:'S1002', arquivo:ESCOLHA, nome:'um requisito desconhecido vira um losango mudo',
     real:'"o losango serve para tudo" — e um simbolo que serve para tudo nao diz nada: a pedra sozinha fica indistinguivel de um requisito que o codigo nao le',
     de:"  return temItem ? [...numeros, '◆'].join(' ') : numeros.join(' ');",
-    para:"  return temItem || !numeros.length ? [...numeros, '◆'].join(' ') : numeros.join(' ');" },
+    para:"  return [...numeros, '◆'].join(' ');" },
 
   { id:'S948', arquivo:ESCOLHA, nome:'a ficha perde o que o dono pediu em blocos anteriores',
     real:'esconder e apagar nao sao a mesma coisa — e apagar aqui seria desfazer tres blocos',
