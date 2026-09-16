@@ -1264,6 +1264,51 @@ teste e tirar o D-105 de `docs/DEFEITOS.md` faz parte do bloco.
 > podar é outro. Reescrever o escopo é a primeira coisa a fazer nele — e a
 > medição acima é o que o próximo autor precisa para não repetir o meu erro:
 > **eu escrevi "boot" onde nunca tinha medido o boot.**
+>
+> ### E a segunda rodada de medição achou o gargalo de verdade
+>
+> Pergunta do dono, 16/09: *"será se pros testes precisa de fato de monte
+> carlos com tantas simulações?"* — e ela mandou medir o lugar certo.
+>
+> ```text
+> capturarBase, 1 largura                         45 s
+>   SIMS 154.000 -> 8.000                         39 s     -6 s   (13%)
+>   sem o RELOGIO_QUADROS                         16 s    -29 s   (64%)
+>
+> Monte Carlo puro, em Node, 154.000 sims        5,06 s   30.459 batalhas/s
+> a página NUA chega em "APOSTAS" em              8 s
+> a mesma página SOB A CAPTURA                   30 s
+> ```
+>
+> **O gargalo é o relógio de quadros determinístico**, não o Monte Carlo. Ele
+> troca o `requestAnimationFrame` por uma fila manual, e a espera avança **dois
+> quadros por sondagem de 60 ms** — o app precisa de centenas de quadros para
+> abrir a fase de apostas, e a conta dá os ~29 s.
+>
+> **E ele NÃO pode simplesmente sair:** é o D-099, é o que torna a linha de base
+> reproduzível, e cinco tentativas anteriores de determinismo falharam antes
+> dele. O alvo é fazê-lo avançar mais rápido, não removê-lo.
+>
+> Um detalhe medido que ainda não fecha, e o bloco tem de fechar: subir a
+> sondagem para 24 quadros a cada 16 ms **não mudou nada** (45 s). Se o custo
+> fosse só o número de sondagens, teria caído para ~6 s. Então há um segundo
+> gatilho preso a relógio de parede, e achá-lo é o primeiro passo — o
+> `Q2_TEMPOS=1` já existe para isso, mas hoje só instrumenta o `rodar()`; a
+> `capturarBase()` precisa do mesmo cronômetro.
+>
+> ### A ideia do dono entra, e entra em segundo lugar
+>
+> `SIMS = 154.000` é calibração de **preço**, não de render: ε = 2 % na cauda, e
+> o viés de convexidade que com 20.000 dava **+19,12 % de odd a mais** no pior
+> lutador, sempre na mesma direção. No produto, não desce.
+>
+> Na suíte visual ela não julga odd nenhuma — julga arranjo, cor e texto. Um
+> `SIMS` reduzido **só para a captura** é legítimo e é determinístico (cada
+> simulação tem sub-seed derivada do próprio índice, então o mesmo número de
+> sims dá sempre as mesmas odds). Custa uma regravação da linha de base.
+>
+> **Vale 6 s de 45, e por isso é o segundo item e não o primeiro.** Fica
+> registrado com o número ao lado para ninguém ter de medir de novo.
 
 **Por que ele existe.** O T9 e o T10 cortaram o trabalho por mutante de 250 s
 para 30 s — 8x, medido. E mesmo assim uma execução FRIA não cabe em 30 min:
