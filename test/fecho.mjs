@@ -301,6 +301,67 @@ export function fechoDeArquivo(entrada, navegadora = false) {
   return fora;
 }
 
+/* ── O QUE NÃO ENTRA NA DIGITAL, NUNCA, NEM EM `TUDO` (T13) ────────────────
+ *
+ * Três arquivos, e cada um está aqui por um defeito MEDIDO. A lista é curta de
+ * propósito: excluir demais faz o portão reaproveitar veredito de código que
+ * mudou, e `PEGOU` falso é pior que `PASSOU` falso — o segundo manda
+ * investigar, o primeiro manda seguir em frente **e esconde o que de fato
+ * escapa**.
+ *
+ *   test/fixtures/q2-veredito.json   SAÍDA do portão. Nenhuma suíte muda de
+ *   test/fixtures/captura.json       comportamento por causa deles, e gravá-los
+ *                                    ao fim de uma execução invalidava 19
+ *                                    defeitos na seguinte sem nada ter mudado
+ *
+ *   test/defeitos-plantados.mjs      a definição do defeito JÁ é componente da
+ *                                    chave (`d.id`, `d.arquivo`, `d.de`,
+ *                                    `d.para`). Na digital ela é ruído: repete
+ *                                    a informação para o defeito mexido, e
+ *                                    inventa uma dependência para todos os
+ *                                    outros. Custava 114 reavaliações — o
+ *                                    D-106
+ *
+ * ── E POR QUE ELA MORA AQUI, E NÃO ONDE MORAVA ───────────────────────────
+ *
+ * As duas primeiras já eram excluídas, mas no `sabotagem.mjs`, tirando-as do
+ * mapa de hashes. A terceira estava excluída do **`ARNES`** — e `ARNES` é o que
+ * se SOMA a um fecho RESOLVIDO. Para as 22 suítes de fecho `TUDO` a exclusão
+ * não valia nada.
+ *
+ *   > **Guarda escrita a partir de um exemplo protege aquele exemplo.** O autor
+ *   > pensou "o arquivo está no ARNES?", que era o caso na mão, e não "o
+ *   > arquivo entra na digital?", que é a pergunta. Terceira vez que esta forma
+ *   > aparece — ver D-103 e D-105.
+ *
+ * Aqui é o funil: **toda** digital passa por `digitalDoFecho`, resolvida ou
+ * `TUDO`. Uma lista num lugar só, e um teste que chama a função em vez de
+ * procurar uma linha no texto do arquivo.
+ *
+ * ── O QUE FOI DEIXADO DE FORA DESTA LISTA, DE PROPÓSITO ──────────────────
+ *
+ *   test/fixtures/visual-base.json   ENTRADA de verdade: é a linha de base
+ *                                    contra a qual a suíte visual julga
+ *
+ *   test/run.mjs                     ele É o que executa a suíte. Acrescentar
+ *                                    uma suíte é seguro — só pode PEGAR mais —,
+ *                                    mas TIRAR uma transforma um PEGOU em
+ *                                    PASSOU, e reaproveitar o PEGOU velho é
+ *                                    `PEGOU` falso. A lista não sabe distinguir
+ *                                    os dois casos, então ele fica de fora e o
+ *                                    custo é uma reavaliação a mais nos blocos
+ *                                    raros que mexem nele
+ *
+ * A exclusão de `defeitos-plantados.mjs` tem uma PREMISSA, e ela é verificável:
+ * nenhum defeito é plantado dentro dele. Se algum dia houver, a chave perderia
+ * o componente "conteúdo do arquivo mutado" para esse defeito — o `portao.mjs`
+ * tem um teste que cobra isso. */
+export const FORA_DA_DIGITAL = new Set([
+  'test/fixtures/q2-veredito.json',
+  'test/fixtures/captura.json',
+  'test/defeitos-plantados.mjs',
+]);
+
 /* ── A DIGITAL DE UM FECHO ──────────────────────────────────────────────────
  *
  * Resume em uma linha o conteúdo de tudo de que a suíte depende. Duas execuções
@@ -308,10 +369,12 @@ export function fechoDeArquivo(entrada, navegadora = false) {
  * mesmos dados — e por isso dariam o mesmo veredito.
  *
  * `TUDO` resume o repositório inteiro: qualquer mudança em qualquer arquivo
- * muda a digital, e o defeito é reavaliado. É o lado seguro de errar. */
+ * muda a digital, e o defeito é reavaliado. É o lado seguro de errar — e o
+ * `FORA_DA_DIGITAL` é a lista curta do que nem `TUDO` alcança. */
 export function digitalDoFecho(fecho, hashes) {
-  const casa = caminho => fecho === TUDO || fecho.has(caminho)
-    || [...fecho].some(e => e.endsWith('/') && caminho.startsWith(e));
+  const casa = caminho => !FORA_DA_DIGITAL.has(caminho) &&
+    (fecho === TUDO || fecho.has(caminho)
+     || [...fecho].some(e => e.endsWith('/') && caminho.startsWith(e)));
   const partes = [];
   for (const caminho of [...hashes.keys()].sort())
     if (casa(caminho)) partes.push(`${caminho}:${hashes.get(caminho)}`);

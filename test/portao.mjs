@@ -589,20 +589,88 @@ export function suite() {
       'o fecho de uma suíte não inclui o arnês');
   });
 
-  s.teste('as saídas do portão não entram no que ele mede', async () => {
-    const { readFileSync } = await import('node:fs');
-    const txt = readFileSync(new URL('./sabotagem.mjs', import.meta.url), 'utf8')
-      .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
-    ok(/SAIDAS_DO_PORTAO\.has\(f\)\) continue/.test(txt),
-      'o mapa de digitais voltou a incluir as saídas do próprio portão. ' +
-      '`q2-veredito.json` e `captura.json` moram em `test/`, que é prefixo do ' +
-      'fecho de várias suítes: gravá-los ao fim de uma execução invalida ' +
-      'defeitos na execução seguinte sem nada ter mudado. Medido: 19 ' +
-      'reavaliações fantasma, e o número cresce a cada bloco.');
-    ok(!/SAIDAS_DO_PORTAO = new Set\(\[[^\]]*visual-base/.test(txt),
-      '`visual-base.json` saiu do mapa. Aquele é ENTRADA de verdade — é a linha ' +
-      'de base contra a qual a suíte visual julga —, e tirá-lo faria o portão ' +
-      'reaproveitar vereditos de uma linha de base que mudou.');
+  /* ── O QUE NÃO ENTRA NA DIGITAL, E POR QUE SE TESTA O COMPORTAMENTO ────
+   *
+   * A versão anterior deste teste procurava `SAIDAS_DO_PORTAO.has(f)) continue`
+   * no TEXTO do `sabotagem.mjs`. Ela passava verde e não fazia o trabalho:
+   * garantia que uma linha existisse, não que a digital ignorasse o arquivo.
+   *
+   * Foi assim que o **D-106** escapou — a exclusão de
+   * `test/defeitos-plantados.mjs` estava escrita no `ARNES`, e `ARNES` é o que
+   * se SOMA a um fecho RESOLVIDO. Para as 22 suítes de fecho `TUDO` ela não
+   * valia nada, e mudar UMA linha de definição reavaliava 114 defeitos.
+   *
+   * Agora o teste chama a função e compara o resultado. */
+  s.teste('a digital ignora o que não pode invalidar, e ignora TAMBÉM em TUDO', async () => {
+    const { digitalDoFecho, FORA_DA_DIGITAL, TUDO, fechoDaSuite } =
+      await import('./fecho.mjs');
+
+    ok(FORA_DA_DIGITAL.size >= 3,
+      'a lista do que fica fora da digital encolheu. Cada entrada dela é um ' +
+      'defeito medido, e tirar uma devolve o defeito.');
+
+    for (const fora of FORA_DA_DIGITAL) {
+      const antes = new Map([[fora, 'aaa'], ['engine/engine.mjs', 'zzz']]);
+      const depois = new Map([[fora, 'bbb'], ['engine/engine.mjs', 'zzz']]);
+
+      /* AS DUAS CONFIGURAÇÕES, e a segunda é o D-106 inteiro: a exclusão que
+         só vale para fecho resolvido protege quem não precisava dela. */
+      igual(digitalDoFecho(TUDO, antes), digitalDoFecho(TUDO, depois),
+        `mudar "${fora}" mudou a digital de um fecho TUDO. É o D-106: 22 suítes ` +
+        'têm fecho TUDO e pegam 114 defeitos, e acrescentar um defeito plantado ' +
+        '— coisa que TODO bloco faz — passa a custar essas 114 reavaliações.');
+
+      const resolvido = new Set([fora, 'engine/engine.mjs']);
+      igual(digitalDoFecho(resolvido, antes), digitalDoFecho(resolvido, depois),
+        `mudar "${fora}" mudou a digital de um fecho RESOLVIDO que o contém.`);
+    }
+
+    /* E A DIGITAL CONTINUA SENDO UMA DIGITAL: excluir demais faria o portão
+       reaproveitar veredito de código que mudou, e `PEGOU` falso é pior que
+       `PASSOU` falso — o segundo manda investigar, o primeiro manda seguir em
+       frente E esconde o que de fato escapa. */
+    const m1 = new Map([['engine/engine.mjs', 'aaa']]);
+    const m2 = new Map([['engine/engine.mjs', 'bbb']]);
+    ok(digitalDoFecho(TUDO, m1) !== digitalDoFecho(TUDO, m2),
+      'a digital parou de ver `engine/engine.mjs`. A exclusão virou uma peneira ' +
+      'que deixa passar tudo, e o cache passa a reaproveitar veredito de código ' +
+      'que mudou.');
+    void fechoDaSuite;
+  });
+
+  s.teste('o que está fora da digital está fora por um motivo NOMEADO', async () => {
+    const { FORA_DA_DIGITAL } = await import('./fecho.mjs');
+    const { DEFEITOS } = await import('./defeitos-plantados.mjs');
+
+    for (const esperado of ['test/fixtures/q2-veredito.json',
+                            'test/fixtures/captura.json',
+                            'test/defeitos-plantados.mjs'])
+      ok(FORA_DA_DIGITAL.has(esperado),
+        `"${esperado}" saiu da lista. Os dois primeiros são SAÍDA do portão — ` +
+        'gravá-los ao fim de uma execução invalidava 19 defeitos na seguinte. O ' +
+        'terceiro repete na digital uma informação que a chave já tem por conta ' +
+        'própria (`d.id`, `d.arquivo`, `d.de`, `d.para`), e custava 114.');
+
+    /* ── O QUE NÃO PODE ENTRAR, e os dois motivos são diferentes ───────── */
+    ok(!FORA_DA_DIGITAL.has('test/fixtures/visual-base.json'),
+      '`visual-base.json` entrou na lista. Aquele é ENTRADA de verdade — é a ' +
+      'linha de base contra a qual a suíte visual julga —, e excluí-lo faria o ' +
+      'portão reaproveitar vereditos de uma linha de base que mudou.');
+
+    ok(!FORA_DA_DIGITAL.has('test/run.mjs'),
+      '`test/run.mjs` entrou na lista. Ele É o que executa a suíte: tirar uma ' +
+      'suíte dele transforma um PEGOU em PASSOU, e reaproveitar o PEGOU velho ' +
+      'seria `PEGOU` falso — o sentido ruim de errar. Acrescentar uma suíte é ' +
+      'seguro, tirar não é, e a lista não sabe distinguir os dois.');
+
+    /* E a razão de `defeitos-plantados.mjs` ser seguro tem uma premissa
+       verificável: nenhum defeito é plantado DENTRO dele. Se um dia houver, a
+       chave perderia o componente "conteúdo do arquivo mutado" para ele. */
+    ok(!DEFEITOS.some(d => d.arquivo === 'test/defeitos-plantados.mjs'),
+      'um defeito passou a ser plantado no próprio arquivo de defeitos. A ' +
+      'premissa que torna a exclusão dele segura caiu: a chave usa ' +
+      '`HASHES.get(d.arquivo)` para o arquivo mutado, e para este defeito esse ' +
+      'componente ficaria de fora junto com a digital.');
   });
 
   /* ── UM PORTÃO QUE PENDURA É PIOR QUE UM VERMELHO (F1.14) ───────────────

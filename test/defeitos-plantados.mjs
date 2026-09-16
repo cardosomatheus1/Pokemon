@@ -1951,6 +1951,32 @@ export const DEFEITOS = [
     real:'"`node` é externo também" — e disparar o próprio runner deixa de contar',
     de:"const BINARIOS_EXTERNOS = new Set(['git', 'sh', 'bash', 'npm', 'npx', 'chmod', 'cp', 'rm']);",
     para:"const BINARIOS_EXTERNOS = new Set(['git', 'sh', 'bash', 'npm', 'npx', 'chmod', 'cp', 'rm', 'node']);" },
+  /* ── OS QUATRO DO T13 ──────────────────────────────────────────────────
+     Cada um devolve o D-106 por um caminho diferente, e os dois sentidos de
+     errar estão cobertos: excluir de MENOS custa 114 reavaliações por bloco,
+     excluir de MAIS produz `PEGOU` falso — que é pior, porque manda seguir em
+     frente E esconde o que de fato escapa. */
+
+  { id:'S1004', arquivo:FECHO, nome:'a exclusao volta a valer so para fecho resolvido',
+    real:'"TUDO e TUDO" — e e exatamente o D-106: as 22 suites de fecho universal pegam 114 defeitos, e acrescentar um defeito plantado passa a custar as 114 reavaliacoes caras',
+    de:'  const casa = caminho => !FORA_DA_DIGITAL.has(caminho) &&',
+    para:'  const casa = caminho => (fecho === TUDO) ||' },
+
+  { id:'S1005', arquivo:FECHO, nome:'a digital para de ver qualquer arquivo',
+    real:'"excluir mais e mais seguro" — e a peneira deixa passar tudo: o portao reaproveita veredito de codigo que mudou, e PEGOU falso e pior que PASSOU falso',
+    de:'  for (const caminho of [...hashes.keys()].sort())',
+    para:'  for (const caminho of [])' },
+
+  { id:'S1006', arquivo:FECHO, nome:'a linha de base visual entra na lista do que nao invalida',
+    real:'"fixture e fixture" — e a visual-base e ENTRADA de verdade: e contra ela que a suite visual julga, e excluí-la faz reaproveitar veredito de uma linha de base que mudou',
+    de:"  'test/defeitos-plantados.mjs',",
+    para:"  'test/defeitos-plantados.mjs',\n  'test/fixtures/visual-base.json'," },
+
+  { id:'S1007', arquivo:FECHO, nome:'o arquivo que executa a suite entra na lista',
+    real:'"run.mjs muda a cada suite nova" — e TIRAR uma suite dele transforma um PEGOU em PASSOU: reaproveitar o PEGOU velho e o sentido ruim de errar',
+    de:"  'test/fixtures/captura.json',",
+    para:"  'test/fixtures/captura.json',\n  'test/run.mjs'," },
+
   /* ---------- R1: os três botões que não faziam o que diziam ---------- */
 
   /* O botão fora do modal vira IRMÃO dele no flex do backdrop, e disputa a
