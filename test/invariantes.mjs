@@ -388,5 +388,42 @@ export function suite() {
         `nem arena para desenhar, e o F1.15 provou que publicá-la é seguro.`);
   });
 
+  /* ── D-105 · O TESTE QUE AFIRMA O DEFEITO DE PROPÓSITO ────────────────
+   *
+   * `semTexto` (em `test/modulos.mjs`) mascara string e comentário para que a
+   * busca por símbolo só veja código de verdade. Ele **não conhece literal de
+   * expressão regular**, então o `$` de uma âncora sobrevive à máscara e volta
+   * como "o módulo usa `$` do dom.mjs sem importar".
+   *
+   * O próprio teste prevê a classe, por escrito — *"`semTexto` não entende
+   * literal de expressão regular e pode inventar uma ocorrência ao mascarar"* —
+   * e a guarda que ele montou não a cobre: ela exige o símbolo no código
+   * mascarado E no texto cru, e aqui o `$` está nos dois, porque é parte da
+   * expressão regular.
+   *
+   * Este teste AFIRMA O DEFEITO. Ele fica vermelho no dia em que o T12
+   * consertar o `semTexto` — e é isso que se quer: o sinal de que a entrada
+   * em `docs/DEFEITOS.md` virou mentira e tem de sair de lá.
+   *
+   * Ver `CLAUDE.md`: "Defeito registrado ganha teste que afirma o defeito de
+   * propósito, para ficar vermelho quando alguém corrigir." */
+  s.teste('D-105 · o `semTexto` deixa passar o `$` de uma âncora de regex', async () => {
+    const { semTexto } = await import('./modulos.mjs');
+
+    /* Uma linha que QUALQUER módulo poderia ter, e que nenhum tinha até o
+       1.27f: expressão regular ancorada no fim. */
+    const linha = 'const ehNivel = t => /^nivel (\\d+)$/.test(t);';
+    const mascarado = semTexto(linha);
+
+    /* A MESMA busca que o `modulos` faz pelo símbolo `$`. */
+    const solto = /(?<![.\w$])\$(?![\w$])(?!\s*:)/;
+
+    ok(solto.test(mascarado) && solto.test(linha),
+      'o `semTexto` passou a mascarar literal de expressão regular, e o D-105 ' +
+      'deixou de existir. ISTO É BOA NOTÍCIA: apague este teste e tire o ' +
+      'D-105 de docs/DEFEITOS.md — um defeito corrigido que continua listado ' +
+      'é pior que nenhum registro, porque ensina a não confiar na lista.');
+  });
+
   return s;
 }

@@ -6168,3 +6168,75 @@ S100 plantado -> VERMELHO 1/46
 npm test (com navegador): VERDE 2155/2155
 ```
 
+
+---
+
+## D-105 — o `modulos` não entende literal de expressão regular, e a âncora `$` vira "usa sem importar"
+
+**Achado em:** 16/09/2026, construindo o 1.27f.
+**Bloco dono:** **T12** (proposto neste mesmo commit, em `BUILD_BLOCKS`).
+**Estado:** REGISTRADO, não corrigido — está fora do escopo do 1.27f.
+
+O teste *"nenhum módulo usa símbolo conhecido sem importar"* reprovou com:
+
+```text
+idle-escolha.mjs usa sem importar: $ (de dom.mjs)
+```
+
+O arquivo não usa `$`. O que ele tinha era uma expressão regular ancorada:
+
+```js
+[/^n[íi]vel\s+(\d+)$/i,   n => `NV ${n}`],
+```
+
+`semTexto` mascara strings e comentários para procurar o símbolo só no código
+de verdade. Ele **não conhece literal de expressão regular**, então o `$` da
+âncora sobrevive à máscara e aparece solto — precedido por `)`, seguido por `/`,
+que é exatamente a forma que o teste procura.
+
+### O próprio teste já previa isto, por escrito
+
+```js
+/* Duas condições, e a segunda existe porque `semTexto` não entende
+   literal de expressão regular e pode inventar uma ocorrência ao mascarar. */
+```
+
+A segunda condição exige que o símbolo apareça **no código mascarado E no texto
+cru**. Ela elimina o artefato que só existe depois da máscara — e não elimina
+este, porque o `$` está no texto cru também: ele é parte da expressão regular.
+
+> **A guarda cobria o caso que o autor imaginou, e não a classe.** É o mesmo
+> formato do D-103, e vale registrar que a repetição não é coincidência: guarda
+> escrita a partir de UM exemplo protege aquele exemplo.
+
+### Por que ele não tinha aparecido antes
+
+Nenhum módulo em `app/modules/` tinha expressão regular ancorada com `$`. O
+primeiro que teve, reprovou. **Não é um defeito novo — é um defeito que estava
+esperando o primeiro arquivo a tropeçar nele.**
+
+### O que o 1.27f fez, e por que não conta como conserto
+
+O `resumoDaEvolucao` passou a separar `"palavra número"` com `split` em vez de
+expressão regular. Isso é **melhor código** por conta própria — duas linhas de
+`split` dizem o formato mais claramente que `/^n[íi]vel\s+(\d+)$/i` —, e foi
+por isso que ficou.
+
+Mas **não conserta nada**: o próximo módulo que precisar de uma âncora `$`
+reprova igual, e o autor vai gastar o mesmo tempo descobrindo por quê. O
+defeito continua inteiro.
+
+### O conserto, quando o T12 chegar
+
+`semTexto` passa a mascarar literal de expressão regular junto com string e
+comentário. A dificuldade conhecida é distinguir `/` de divisão de `/` de
+início de regex sem um analisador — e a saída barata é a mesma regra do fecho
+do Q2: **na dúvida, mascarar a mais.** Mascarar uma divisão por engano esconde
+um símbolo e produz um falso VERDE nesta asserção; mascarar de menos produz o
+falso VERMELHO que este defeito é. Os dois são ruins, então o T12 escolhe com
+medição, e não de véspera.
+
+**O teste que afirma o defeito de propósito** está em `test/invariantes.mjs`,
+`D-105`: ele monta o texto de um módulo fictício com uma âncora `$` e afirma
+que a detecção **acusa** — vermelho no dia em que o T12 consertar, que é
+exatamente o sinal que se quer.

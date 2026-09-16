@@ -17,7 +17,7 @@
  * São as duas metades da mesma queixa. A tela mostra DEMAIS onde a escolha é
  * simples (o cartão da criatura) e DE MENOS onde a escolha é difícil (a rota).
  *
- * ── O CARTÃO: TRÊS PERGUNTAS, E O RESTO É FICHA ──────────────────────────
+ * ── O CARTÃO: QUATRO PERGUNTAS, E O RESTO É FICHA ────────────────────────
  *
  * O cartão da criatura acumulou dez informações em 90 px — retrato, nome,
  * nível, energia, XP, ATQ/DEF/VEL, potencial, natureza, foco e evolução. A
@@ -26,9 +26,32 @@
  *
  *     QUEM É        a arte e o nome
  *     PODE IR?      a energia contra o custo, e onde ela já está
- *     O QUE SOMA    o nível e o foco
+ *     O QUE SOMA    o nível, o foco e a FORMA
+ *     QUANDO MUDA   o selo da evolução
  *
  * O resto é ficha, e ficha se consulta — não se atravessa onze vezes seguidas.
+ *
+ * ── AS DUAS QUEIXAS SÃO VERDADEIRAS, E A CONTRADIÇÃO É MINHA (1.27f) ─────
+ *
+ * O dono reprovou este mesmo cartão duas vezes, em sentidos opostos:
+ *
+ *   04/09  "uma loucura, bagunça total, muito feio e confuso"
+ *   10/09  "você removeu as informações de stats, lv que evolui etc."
+ *
+ * A primeira me fez cortar de dez campos para dois e esconder o resto atrás de
+ * um botão. Foi a resposta errada à queixa certa:
+ *
+ *   > O problema nunca foi a QUANTIDADE de informação: era a FORMA dela — dez
+ *   > rótulos de texto empilhados em 90 px, cada um numa linha própria.
+ *   > **Esconder não é organizar. Organizar é o que eu não tinha feito.**
+ *
+ * `forma` e `evolucao` voltam ao compacto porque são as duas perguntas que a
+ * ESCOLHA faz e a ficha não respondia a tempo. O que fica só na ficha é o que
+ * não decide nada agora: `xp` é progresso dentro do nível, e `potencial` e
+ * `natureza` não mudam entre uma run e a seguinte.
+ *
+ * A dobra continua existindo — `compacto.length < ficha.length` tem teste. O
+ * que mudou é o critério: ela dobra o que se CONSULTA, e não o que se lê.
  *
  * ── E NADA É APAGADO ─────────────────────────────────────────────────────
  *
@@ -67,13 +90,108 @@ export const MODO_PADRAO = 'compacto';
  * `nome`, `arte` e `energia` não aparecem aqui de propósito: eles são o cartão.
  * Um cartão sem eles não é um cartão reduzido — é outra coisa. */
 const CAMPOS = {
-  compacto: ['nivel', 'foco'],
+  compacto: ['nivel', 'foco', 'forma', 'evolucao'],
   ficha:    ['nivel', 'foco', 'xp', 'forma', 'potencial', 'natureza', 'evolucao'],
 };
 
 export const modoValido = m => MODOS.includes(m) ? m : MODO_PADRAO;
 export const camposDoCartao = modo => [...CAMPOS[modoValido(modo)]];
 export const mostra = (modo, campo) => camposDoCartao(modo).includes(campo);
+
+/* ── O NÍVEL APARECE UMA VEZ SÓ (1.27f) ───────────────────────────────────
+ *
+ * A barra de XP já traz `NV 36 · 58%` na frente dela. Com as duas, o número
+ * saía repetido a quatro pixels de si mesmo — e repetição num cartão de 104 px
+ * lê como erro de montagem, não como ênfase.
+ *
+ * Na FICHA manda a barra, que diz mais (o nível e o quanto falta para o
+ * próximo). No COMPACTO manda esta linha, que é o que sobra.
+ *
+ * Isto é uma DECISÃO, e por isso mora aqui e não dentro da `innerHTML`: colada
+ * ao HTML ela viraria um mutante de navegador de ~30 s; aqui é um de ~0,1 s.
+ * Ver `CLAUDE.md`, "Lógica fora da tela é decisão de CUSTO". */
+export const mostraNivelSolto = modo => mostra(modo, 'nivel') && !mostra(modo, 'xp');
+
+/* ── O RECORTE DA EVOLUÇÃO — A FICHA CURTA DO SELO (1.27f) ────────────────
+ *
+ * `oQueFalta` devolve a frase inteira: `"nível 32"`, `"Pedra do Fogo"`,
+ * `"nível 16 e Pedra da Água"`, `"vínculo 40"`. Ela é a frase certa para o
+ * `title` — o D-067 pede que a recusa diga O QUE consertar —, e é longa demais
+ * para os 104 px do cartão: `"evolui com nível 32"` tem 19 caracteres e quebra
+ * em TRÊS linhas em Press Start 2P, deixando o selo maior que o retrato.
+ *
+ * Então o selo recebe o recorte e o `title` continua com a frase por extenso.
+ * O que mudou não é o que ele diz: é que ele deixou de gritar.
+ *
+ *     "nível 32"                 ->  "NV 32"
+ *     "vínculo 40"               ->  "♥ 40"
+ *     "nível 20 e vínculo 30"    ->  "NV 20 ♥ 30"
+ *     "nível 16 e Pedra da Água" ->  "NV 16 ◆"
+ *     "Pedra do Fogo"            ->  "Pedra do Fogo"   <- POR EXTENSO
+ *     ""  ou  null               ->  ""
+ *     algo que este código não lê ->  a frase inteira
+ *
+ * ── A REGRA DO LOSANGO, E ELA TEM TESTE ─────────────────────────────────
+ *
+ * `◆` só substitui um requisito quando há um NÚMERO ao lado. Ali a manchete é
+ * o número, e o símbolo é só o aviso de que falta mais uma coisa. **Sozinho, o
+ * requisito volta por extenso.**
+ *
+ *   > A primeira versão devolvia `◆` em todos os casos, e o custo apareceu no
+ *   > teste: uma frase que este código não sabe ler — um requisito que algum
+ *   > bloco futuro invente — virava um losango mudo, indistinguível de "falta
+ *   > uma pedra".
+ *   >
+ *   > **Um símbolo que serve para tudo não diz nada.**
+ *
+ * ── E POR QUE ISTO MORA AQUI, E NÃO DENTRO DA `innerHTML` ───────────────
+ *
+ * Seis defeitos plantados escaparam do portão Q2 num bloco só, todos por a
+ * decisão morar colada ao HTML. Mutante de navegador custa ~30 s; o mesmo
+ * mutante num módulo puro custa ~0,1 s. Ver `CLAUDE.md`, e os exemplos em
+ * `folha-viva.mjs` e `avanco-clima.mjs`. */
+const REQUISITOS = [
+  { palavra: 'nivel',   escrever: n => `NV ${n}` },
+  { palavra: 'vinculo', escrever: n => `♥ ${n}` },
+];
+
+/* Sem expressão regular de propósito, e a razão é dupla. A primeira é leitura:
+   `"palavra número"` é o formato inteiro, e duas linhas de `split` dizem isso
+   mais claramente que `/^n[íi]vel\s+(\d+)$/i`. A segunda está registrada no
+   D-105 — o `test/modulos.mjs` mascara texto sem entender literal de expressão
+   regular, e o `$` de uma âncora volta como uso do `$` do `dom.mjs`. */
+const semAcento = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const soDigitos = t => t.length > 0 && [...t].every(c => c >= '0' && c <= '9');
+
+function recortarParte(parte) {
+  const p = parte.split(/\s+/);
+  if (p.length !== 2 || !soDigitos(p[1])) return null;
+  const r = REQUISITOS.find(x => x.palavra === semAcento(p[0]));
+  return r ? r.escrever(p[1]) : null;
+}
+
+export function resumoDaEvolucao(falta) {
+  const frase = typeof falta === 'string' ? falta.trim() : '';
+  if (!frase) return '';
+
+  /* A frase é montada com `' e '` no `oQueFalta`, e é por ali que ela se
+     desmonta. Nada de tentar entender a frase inteira de uma vez: cada parte
+     se reconhece sozinha, ou não se reconhece. */
+  const partes = frase.split(' e ').map(p => p.trim()).filter(Boolean);
+  const numeros = [];
+  let temItem = false;
+  for (const parte of partes) {
+    const achou = recortarParte(parte);
+    if (achou) numeros.push(achou); else temItem = true;
+  }
+
+  /* NENHUM NÚMERO — a frase volta inteira. É o caso da pedra sozinha, e é
+     também o caso do requisito que este código não conhece: nos dois, o
+     losango seria mudo e a frase por extenso é o que diz alguma coisa. */
+  if (!numeros.length) return frase;
+
+  return temItem ? [...numeros, '◆'].join(' ') : numeros.join(' ');
+}
 
 /* ── A SALA: O QUE UMA ROTA DIZ DE SI ─────────────────────────────────────
  *

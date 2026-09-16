@@ -1100,6 +1100,46 @@ ele existir pelo nosso desenho, é mudar uma função — não o sistema.
 
 ---
 
+### T12 — O `semTexto` aprende literal de expressão regular
+
+**Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/`)
+· **Depende de** nada · **Fecha** o **D-105**
+
+**Por que ele existe.** O `semTexto` (em `test/modulos.mjs`) mascara string e
+comentário para que a busca por símbolo veja só código de verdade. Ele não
+conhece literal de expressão regular, então o `$` de uma âncora sobrevive à
+máscara e volta como *"o módulo usa `$` do dom.mjs sem importar"*.
+
+```js
+[/^n[íi]vel\s+(\d+)$/i,   n => `NV ${n}`]   // -> "usa sem importar: $"
+```
+
+O 1.27f tropeçou nele no primeiro módulo de `app/` a precisar de uma âncora, e
+contornou escrevendo o parser com `split`. **Contornar não é consertar:** o
+próximo arquivo reprova igual, e o próximo autor gasta o mesmo tempo
+descobrindo por quê.
+
+**O que torna o bloco pequeno e não trivial.** Distinguir `/` de divisão de `/`
+de início de expressão regular sem um analisador. A saída barata é a mesma
+regra do fecho do Q2 — **na dúvida, mascarar a mais** —, e ela tem um custo que
+o bloco tem de MEDIR e não supor: mascarar uma divisão por engano esconde um
+símbolo e produz falso VERDE nesta asserção, que é o sentido ruim de errar.
+
+**Escopo:** `semTexto` e os testes dele (`test/modulos.mjs` já tem seis, pelo
+D-017). Nada mais.
+
+**Sabotagem:** mascarar a expressão regular e também a divisão seguinte;
+mascarar até o fim da linha; deixar `\/` dentro da classe `[...]` fechar o
+literal; devolver o texto sem máscara nenhuma.
+
+**Q6:** sem superfície nova.
+
+**Saída:** o teste `D-105` em `test/invariantes.mjs` fica **VERMELHO** — ele
+afirma o defeito de propósito, e é assim que se sabe que ele caiu. Apagar o
+teste e tirar o D-105 de `docs/DEFEITOS.md` faz parte do bloco.
+
+---
+
 ### T11 — Um navegador vivo, reaproveitado entre mutantes
 
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/`)

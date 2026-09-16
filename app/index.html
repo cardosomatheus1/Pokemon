@@ -1839,20 +1839,71 @@ input[type=range]{width:100%;accent-color:var(--gold)}
    duas criaturas de relance, e comparação de relance é altura, não dígito.
    O NÍVEL não aparece aqui de propósito — ele existe na criatura e nada o
    move ainda (L-099), e número que não anda ensina que o número é falso. */
-.criaForma{display:flex;flex-direction:column;gap:3px;margin-top:3px}
-.fLinha{display:grid;grid-template-columns:26px 1fr 22px;align-items:center;gap:5px}
-.fLinha u{font:9px/1 var(--px);letter-spacing:.5px;text-decoration:none;
-  color:rgba(255,255,255,.62)}
-.fLinha i{height:6px;border-radius:3px;background:rgba(255,255,255,.07);
+/* ── AS TRES BARRAS APERTAM (1.27f) ──────────────────────────────────────
+   O dono reprovou este cartao duas vezes em sentidos opostos: "bagunca total"
+   em 04/09, e "voce removeu as informacoes de stats" em 10/09. As duas queixas
+   sao verdadeiras, e a contradicao so existe se a resposta for esconder.
+
+   O problema nunca foi a QUANTIDADE: era a FORMA. Tres linhas de 27 px que
+   leem como formulario viram tres barras de 18 px que leem como MEDIDOR.
+
+     ANTES  3 colunas: 26px rotulo | barra 6px | 22px numero, gap 3px  ~27 px
+     DEPOIS 2 colunas: 20px rotulo | barra 9px, o numero DENTRO da barra,
+            encostado a direita, gap 2px                               ~18 px
+
+   Quatro detalhes que so a captura mostrou, e cada um custou uma volta:
+
+     1. `.fLinha` precisa de `position:relative`. O `<s>` do numero e IRMAO do
+        `<i>` da barra, e nao filho: com o relative no `<i>`, ele resolvia
+        contra o cartao inteiro e o "71" saia flutuando no canto superior
+        direito, uma linha ACIMA da barra que ele mede
+     2. a PISTA da barra precisa de contraste. Com menos que isto a barra some,
+        e o numero passa a dizer "66 de sei la"
+     3. o NUMERO precisa de sombra propria: sem ela, o branco sobre o
+        preenchimento dourado do VEL desaparece
+     4. o preenchimento leva `color` alem de `background`, porque o halo e
+        `currentColor`. Cor chapada le como barra de instalador; o halo e o que
+        faz a barra pertencer a ESTA tela */
+.criaForma{display:flex;flex-direction:column;gap:2px;margin-top:3px;width:100%}
+/* 26px e nao 20px, e o numero veio da FOTO e nao da conta: "ATQ" em 8px de
+   Press Start 2P mede ~25px com o letter-spacing, transbordava a coluna de 20 e
+   o preenchimento da barra cobria o Q. E a mesma classe dos tres defeitos que
+   passaram por 299 testes verdes no V1.15 — nenhum e erro de execucao, todos
+   sao erros de LEITURA, e so aparecem para quem OLHA a captura.
+
+   O `olhar-cartao.mjs` passou a REPROVAR quando o rotulo transborda, para esta
+   nao ser a segunda vez que ela e descoberta a olho. */
+.fLinha{position:relative;display:grid;grid-template-columns:26px 1fr;
+  align-items:center;gap:4px}
+.fLinha u{font:8px/1 var(--px);letter-spacing:.3px;text-decoration:none;
+  white-space:nowrap;color:rgba(255,255,255,.62)}
+.fLinha i{position:relative;min-width:0;height:9px;border-radius:5px;
+  background:rgba(255,255,255,.10);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
   overflow:hidden;display:block}
-.fLinha b{display:block;height:100%;border-radius:3px}
-.fLinha s{font:10px/1 var(--px);text-align:right;text-decoration:none;
-  color:rgba(255,255,255,.9);font-variant-numeric:tabular-nums}
-.f-of b{background:var(--red,#ff5d6e)}
+.fLinha b{display:block;height:100%;border-radius:5px;
+  box-shadow:0 0 6px -1px currentColor}
+.fLinha s{position:absolute;right:4px;top:50%;transform:translateY(-50%);
+  font:8px/1 var(--px);text-decoration:none;pointer-events:none;
+  color:rgba(255,255,255,.96);text-shadow:0 1px 2px rgba(0,0,0,.9);
+  font-variant-numeric:tabular-nums}
+/* ── AS TRES CORES SAO UMA LEGENDA, E LEGENDA NAO SEGUE O TEMA (1.27f) ───
+   `.f-ve b` usava `var(--gold)`, e `--gold` e o ACENTO do tema: #00e5ff no
+   padrao e #b57bff no shadow. No tema padrao a barra de VEL saia CIANO, do
+   lado da barra de DEF que tambem e ciano — duas medidas diferentes com a
+   mesma cor, e o rotulo de 8 px virava a unica forma de saber qual era qual.
+
+   Apareceu na foto de perto, e em nenhum teste: a cor resolvia, a barra
+   pintava, a suite ficava verde. E a segunda metade do Q5 fazendo o trabalho.
+
+   Tres matizes FIXOS, porque estas tres cores nao sao decoracao — sao o que
+   diz qual barra e qual. Um tema novo pode trocar o fundo inteiro; se trocar
+   estas, troca o significado. */
+:root{ --statAtq:#ff4d6d; --statDef:#5ee7ff; --statVel:#ffc93c; }
+.f-of b{background:var(--statAtq);color:var(--statAtq)}
 .f-of u{color:#ffb3bb}
-.f-df b{background:var(--blue,#5ee7ff)}
+.f-df b{background:var(--statDef);color:var(--statDef)}
 .f-df u{color:#a8eeff}
-.f-ve b{background:var(--gold,#ffc107)}
+.f-ve b{background:var(--statVel);color:var(--statVel)}
 .f-ve u{color:#ffdf8a}
 /* ── A BARRA DE XP (1.14) ─────────────────────────────────────────────────
    Ela chega no bloco em que o numero passou a andar, e nao antes. No 1.6b eu
@@ -4418,9 +4469,19 @@ body.tremeTela{animation:tremeTela .7s ease-out}
    Tres estados e nao dois. O do MEIO — "evolui com nivel 16" — e o que faz a
    mecanica ser jogavel: ele transforma a proxima expedicao numa decisao.
    Recusa sem endereco e o D-067, que ja custou um bloco a este projeto. */
-.criaEvo{display:block;margin-top:4px;font:700 .48rem/1.25 var(--px);
+/* O SELO VIRA FICHA DE UMA LINHA (1.27f). Ele era um bloco de texto centrado
+   com ate tres linhas — "evolui com nivel 32" em Press Start 2P nao cabe em
+   104 px. Agora `evolui` e o rotulo MIUDO e o requisito e a MANCHETE, os dois
+   na mesma linha de base. Quem recorta o requisito e o `resumoDaEvolucao`, em
+   camada 0; o `title` continua com a frase por extenso, que e o que o D-067
+   exige. O `nowrap` + `ellipsis` e a rede: um requisito longo encolhe com
+   reticencias em vez de empurrar o cartao. */
+.criaEvo{display:flex;align-items:baseline;justify-content:center;gap:4px;
+  margin-top:4px;font:700 .56rem/1.2 var(--px);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   border-radius:6px;padding:4px 6px;text-align:center;border:1px solid var(--line);
-  color:var(--dim)}
+  color:var(--dim);max-width:100%}
+.criaEvo em{font-style:normal;font-size:.42rem;opacity:.7;letter-spacing:.02em}
 .criaEvo.pronta{border-color:#ffd36b;color:#ffd36b;cursor:pointer;
   box-shadow:0 0 10px -3px #ffd36b;animation:evoPisca 2.2s ease-in-out infinite}
 .criaEvo.pronta:hover{background:rgba(255,211,107,.12)}
@@ -4795,7 +4856,11 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 /* O RECADO DA CONCENTRACAO (1.27). Ele fecha a lista da equipe porque e o
    resultado da escolha que a lista acabou de oferecer — e o ganho e o custo
    aparecem juntos: so o ganho venderia concentrar, so o custo o esconderia. */
-.idleConcentra{flex-basis:100%;margin:6px 2px 0;line-height:1.5;color:var(--ink2)}
+/* `grid-column:1/-1` porque o rodape e escrito DENTRO do mesmo `innerHTML` do
+   painel: com `flex-wrap` ele quebrava a linha sozinho, com grade ele virou uma
+   CELULA e a foto mostrou a frase ocupando o lugar do quinto cartao, no meio da
+   lista. */
+.idleConcentra{grid-column:1/-1;margin:2px 0 0;line-height:1.5;color:var(--ink2)}
 .idleConcentra b{color:var(--txt)}
 .concGanho{color:var(--gold)}
 .idleConcentra i{font-style:normal;opacity:.75;display:block;margin-top:2px}
@@ -5557,7 +5622,17 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 .idlePerfil:hover{border-color:var(--corPerfil)}
 .idlePerfil.on{background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px var(--corPerfil)}
 
-#idleEquipe,#offEquipe{display:flex;flex-wrap:wrap;gap:8px}
+/* A LISTA VIRA GRADE (1.27f). Com `flex-wrap` cada cartao pedia 104 px fixos e
+   a ultima linha ficava com sobra a direita; com grade eles dividem a largura
+   por igual e as barras de stat ganham o espaco que precisam para serem lidas
+   como MEDIDA. `align-items:stretch` e o que mantem os seis da mesma altura
+   quando um deles tem selo de evolucao e o vizinho nao. */
+#idleEquipe,#offEquipe{display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(118px,1fr));
+  align-items:stretch;gap:8px}
+@media (max-width:520px){
+  #idleEquipe,#offEquipe{grid-template-columns:repeat(auto-fill,minmax(104px,1fr))}
+}
 /* ── OS ENCONTROS E O CENTRO (bloco 1.6) ─────────────────────────────────
    A chance aparece ANTES do clique, e o botão sem bola fica DESLIGADO em vez de
    sumir: sumindo, o jogador nunca descobre que a bola boa existia. */
@@ -5632,7 +5707,10 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 .idleAcao{font-size:9px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--ac);opacity:.75;margin-top:2px}
 
-.idleCria{display:flex;flex-direction:column;align-items:center;gap:2px;width:104px;
+/* `width:100%` e nao `104px`: um `width` fixo dentro de uma grade e o item
+   RECUSANDO o espaco que a grade lhe da — numa coluna de 141 px o cartao
+   continuava com 104 e as barras ficavam curtas demais para medir. */
+.idleCria{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;
   background:#161f2e;border:1px solid var(--line);border-radius:10px;padding:8px 6px;
   cursor:pointer;color:var(--dim);transition:.14s}
 .idleCria:hover:not(:disabled){border-color:var(--gold)}

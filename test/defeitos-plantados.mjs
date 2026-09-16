@@ -6959,10 +6959,43 @@ export const DEFEITOS = [
     de:"export const MODO_PADRAO = 'compacto';",
     para:"export const MODO_PADRAO = 'ficha';" },
 
+  /* REALVADO no 1.27f, e nao apagado: o 1.27f devolveu `forma` e `evolucao` ao
+     compacto e a ancora antiga deixou de existir. O defeito e o MESMO — os dois
+     modos virarem um so, e a dobra deixar de dobrar —, mudou o endereco. E a
+     regra do pre-voo do Q2 no CLAUDE.md: ancora perdida quase sempre significa
+     que um bloco moveu o trecho. */
   { id:'S947', arquivo:ESCOLHA, nome:'o compacto volta a carregar a ficha inteira',
     real:'"os dois modos sao iguais" — e a dobra deixa de existir sem ninguem notar',
-    de:"  compacto: ['nivel', 'foco'],",
+    de:"  compacto: ['nivel', 'foco', 'forma', 'evolucao'],",
     para:"  compacto: ['nivel', 'foco', 'xp', 'forma', 'potencial', 'natureza', 'evolucao']," },
+
+  /* ── OS QUATRO DO 1.27f ────────────────────────────────────────────────
+     Cada um protege uma decisao do bloco que refez o cartao, e as quatro sao
+     de LEITURA: nenhuma quebra o jogo, e as quatro o deixam ilegivel. */
+
+  { id:'S1000', arquivo:ESCOLHA, nome:'o recorte da evolucao volta a ser a frase inteira',
+    real:'"a frase por extenso e mais clara" — e "evolui com nivel 32" quebra em TRES linhas em 104 px, deixando o selo maior que o retrato',
+    de:'  if (!numeros.length) return frase;',
+    para:'  return frase;' },
+
+  { id:'S1001', arquivo:ESCOLHA, nome:'o NIVEL some do recorte da evolucao',
+    real:'"o simbolo basta" — e "o lv que evolui" foi literalmente o que o dono pediu de volta em 10/09',
+    de:"  { palavra: 'nivel',   escrever: n => `NV ${n}` },",
+    para:"  { palavra: 'nivel',   escrever: () => 'NV' }," },
+
+  /* EM CAMADA 0 DE PROPOSITO. Colado na `innerHTML` do `idle-equipe` este
+     defeito seria um mutante de NAVEGADOR (~30 s); aqui e um de Node (~0,1 s).
+     E a regra "Logica fora da tela e decisao de CUSTO" do CLAUDE.md, e o
+     unico jeito de o portao ficar mais barato conforme o produto cresce. */
+  { id:'S1003', arquivo:ESCOLHA, nome:'o nivel volta a aparecer duas vezes na ficha',
+    real:'"mostrar o nivel sempre e mais seguro" — e na ficha ele sai repetido a quatro pixels de si mesmo, o que le como erro de montagem',
+    de:"export const mostraNivelSolto = modo => mostra(modo, 'nivel') && !mostra(modo, 'xp');",
+    para:"export const mostraNivelSolto = modo => mostra(modo, 'nivel');" },
+
+  { id:'S1002', arquivo:ESCOLHA, nome:'um requisito desconhecido vira um losango mudo',
+    real:'"o losango serve para tudo" — e um simbolo que serve para tudo nao diz nada: a pedra sozinha fica indistinguivel de um requisito que o codigo nao le',
+    de:"  return temItem ? [...numeros, '◆'].join(' ') : numeros.join(' ');",
+    para:"  return temItem || !numeros.length ? [...numeros, '◆'].join(' ') : numeros.join(' ');" },
 
   { id:'S948', arquivo:ESCOLHA, nome:'a ficha perde o que o dono pediu em blocos anteriores',
     real:'esconder e apagar nao sao a mesma coisa — e apagar aqui seria desfazer tres blocos',

@@ -24,7 +24,8 @@
 import { criarSuite, ok, igual } from './harness.mjs';
 import {
   MODOS, MODO_PADRAO, MOSTRA_ATE,
-  camposDoCartao, modoValido, mostra, resumoDaRota,
+  camposDoCartao, modoValido, mostra, resumoDaRota, resumoDaEvolucao,
+  mostraNivelSolto,
 } from '../app/modules/idle-escolha.mjs';
 import { nivelDoEstagio, ESTAGIOS_POR_BIOMA } from '../engine/estagios.mjs';
 import { elencoDoEstagio } from '../engine/elenco-estagio.mjs';
@@ -38,25 +39,40 @@ export function suite() {
 
   /* ══ O CARTÃO: TRÊS PERGUNTAS, E O RESTO É FICHA ══════════════════════ */
 
-  s.teste('o cartão abre COMPACTO, e o compacto responde só o que a escolha pede', () => {
+  /* ── AS DUAS QUEIXAS SÃO VERDADEIRAS (1.27f) ─────────────────────────
+     A versão anterior deste teste afirmava `compacto.length <= 3` e proibia
+     `forma` e `evolucao`. O que ela afirmava não estava errado sobre o que
+     tinha sido DECIDIDO; estava errado sobre o porquê — eu li "reduza a
+     quantidade" onde o dono disse "isto está confuso".
+
+       04/09  "uma loucura, bagunça total, muito feio e confuso"
+       10/09  "você removeu as informações de stats, lv que evolui etc."
+
+     A regra que sobrevive às duas: o COMPACTO carrega o que a HORA DE ESCOLHER
+     pergunta, a FICHA guarda o que só se CONSULTA, e a dobra continua
+     existindo. Contar campos media a coisa errada. */
+  s.teste('o cartão abre COMPACTO, e o compacto responde o que a escolha pergunta', () => {
     igual(MODO_PADRAO, 'compacto',
       'o cartão abre na ficha completa — e é ela que o dono chamou de bagunça');
 
     const compacto = camposDoCartao('compacto');
-    for (const campo of ['nivel', 'foco'])
+    for (const campo of ['nivel', 'foco', 'forma', 'evolucao'])
       ok(compacto.includes(campo),
-        `o compacto perdeu "${campo}", e ele é uma das três respostas que a ` +
-        'hora de escolher pede');
+        `o compacto perdeu "${campo}", e ele é uma das quatro perguntas da ` +
+        'hora de escolher: quem é, em que nível está, o que soma em combate, ' +
+        'e quando muda de forma. As duas últimas o dono pediu DE VOLTA em ' +
+        '10/09, depois de eu as ter escondido');
 
-    for (const ficha of ['forma', 'potencial', 'natureza', 'xp', 'evolucao'])
+    for (const ficha of ['potencial', 'natureza', 'xp'])
       ok(!compacto.includes(ficha),
-        `"${ficha}" continua no cartão compacto. Dez informações em 90 px é ` +
-        'exatamente o que foi reprovado — e ficha se consulta, não se ' +
-        'atravessa onze vezes seguidas');
+        `"${ficha}" voltou ao cartão compacto. Ele não decide nada AGORA: xp é ` +
+        'progresso dentro do nível, e potencial e natureza não mudam entre uma ' +
+        'run e a seguinte. Atravessar isso onze vezes seguidas é custo sem ' +
+        'decisão — e foi assim que o cartão chegou a dez informações');
 
-    ok(compacto.length <= 3,
-      `o compacto ficou com ${compacto.length} campos. Ele existe para caber ` +
-      'numa olhada, e o número é a prova disso');
+    ok(camposDoCartao('compacto').length < camposDoCartao('ficha').length,
+      'o compacto e a ficha têm o mesmo tamanho: a dobra deixou de dobrar, e ' +
+      'o botão que alterna passou a não levar a lugar nenhum');
   });
 
   /* ── E NADA FOI APAGADO ──────────────────────────────────────────────
@@ -84,9 +100,91 @@ export function suite() {
         `o modo ${JSON.stringify(lixo)} não caiu no padrão. Estado guardado é ` +
         'editável por quem quiser, e um cartão sem campo nenhum é a aba ' +
         'quebrada por uma string no localStorage');
-    ok(mostra('compacto', 'nivel'), 'o \`mostra\` discorda do \`camposDoCartao\`');
-    ok(!mostra('compacto', 'forma'), 'o \`mostra\` discorda do \`camposDoCartao\`');
-    ok(mostra('ficha', 'forma'), 'o \`mostra\` discorda do \`camposDoCartao\`');
+    /* AFIRMA A CONCORDÂNCIA, E NÃO A TABELA (1.27f). A versão anterior
+       escrevia as respostas à mão — `ok(!mostra('compacto','forma'))` —, e a
+       tabela é uma decisão de PRODUTO: ela mudou em 10/09 e levou o teste
+       junto. A regra que o `mostra` tem de cumprir é outra, e essa não muda:
+       ele concorda com o `camposDoCartao`, seja qual for a tabela. */
+    for (const modo of [...MODOS, 'inventado'])
+      for (const campo of ['nivel', 'foco', 'forma', 'evolucao',
+                           'xp', 'potencial', 'natureza', 'nada'])
+        igual(mostra(modo, campo), camposDoCartao(modo).includes(campo),
+          `o \`mostra\` discorda do \`camposDoCartao\` em (${modo}, ${campo}) — ` +
+          'duas verdades sobre o mesmo cartão, e a tela usa a errada');
+  });
+
+  s.teste('o nível aparece UMA vez — a linha solta cala quando a barra de XP fala', () => {
+    /* A barra de XP já traz `NV 36 · 58%` na frente dela. Com as duas, o número
+       saía repetido a quatro pixels de si mesmo, e repetição num cartão de
+       104 px lê como erro de montagem — não como ênfase. */
+    ok(mostraNivelSolto('compacto'),
+      'o compacto não mostra o nível em lugar nenhum: ele não tem barra de XP, ' +
+      'e a linha solta é a única que responde "em que nível está"');
+    ok(!mostraNivelSolto('ficha'),
+      'a ficha mostra o nível DUAS vezes — na linha solta e na frente da barra ' +
+      'de XP, a quatro pixels de si mesmo. Na ficha manda a barra, que diz mais');
+
+    /* A regra, e não a tabela: quem tem barra de XP não repete o número. */
+    for (const modo of [...MODOS, 'inventado'])
+      igual(mostraNivelSolto(modo), mostra(modo, 'nivel') && !mostra(modo, 'xp'),
+        `o \`mostraNivelSolto\` discorda da própria regra em "${modo}" — e a ` +
+        'tela passaria a ter uma segunda verdade sobre quantos níveis mostrar');
+  });
+
+  /* ══ O RECORTE DA EVOLUÇÃO (1.27f) ═══════════════════════════════════
+     O selo dizia `"evolui com nível 32"` — 19 caracteres que quebram em TRES
+     linhas em Press Start 2P e deixam o selo maior que o retrato. O recorte
+     mora em camada 0 para ser pego em Node: mutante de navegador custa ~30 s,
+     o mesmo mutante aqui custa ~0,1 s. */
+
+  s.teste('o recorte da evolução cabe no cartão, e o NÚMERO é a manchete', () => {
+    const tabela = [
+      ['nível 32',                  'NV 32'],
+      ['vínculo 40',                '♥ 40'],
+      ['nível 20 e vínculo 30',     'NV 20 ♥ 30'],
+      ['nível 16 e Pedra da Água',  'NV 16 ◆'],
+    ];
+    for (const [frase, esperado] of tabela)
+      igual(resumoDaEvolucao(frase), esperado,
+        `"${frase}" virou algo que não é "${esperado}". O selo tem 104 px e a ` +
+        'frase por extenso quebra em três linhas — o `title` é que guarda a ' +
+        'frase inteira, e ele continua guardando (D-067)');
+
+    /* O NÍVEL NÃO PODE SUMIR DO RECORTE. "o lv que evolui" foi literalmente o
+       que o dono pediu de volta em 10/09; um recorte que come o número
+       responde a queixa com a queixa. */
+    for (const [frase] of tabela.filter(([f]) => f.includes('nível')))
+      ok(/\d/.test(resumoDaEvolucao(frase).split('♥')[0]),
+        `"${frase}" perdeu o número do nível no recorte, e "o lv que evolui" ` +
+        'foi o pedido de 10/09 em palavras do dono');
+  });
+
+  s.teste('o losango só aparece ao lado de um NÚMERO — sozinho, o item vem por extenso', () => {
+    igual(resumoDaEvolucao('Pedra do Fogo'), 'Pedra do Fogo',
+      'o item sozinho virou losango. Ali não há manchete para o símbolo ' +
+      'acompanhar: ele seria a informação inteira, e um losango não diz QUAL ' +
+      'pedra');
+
+    /* A frase que este código NÃO SABE LER volta inteira — é o caso que
+       originou a regra. Um requisito que algum bloco futuro invente virava um
+       losango mudo, indistinguível de "falta uma pedra".
+
+       **Um símbolo que serve para tudo não diz nada.** */
+    for (const estranha of ['algo que ninguém lê', '?', 'amizade máxima de noite'])
+      igual(resumoDaEvolucao(estranha), estranha,
+        `"${estranha}" virou um símbolo mudo. O recorte só resume o que ` +
+        'reconhece; o que ele não lê, ele repete — calar é pior que ser longo');
+
+    ok(resumoDaEvolucao('nível 16 e Pedra da Água').includes('◆'),
+      'com um número ao lado, o item DEVE virar losango: ali a manchete é o ' +
+      'número, e o símbolo só avisa que falta mais uma coisa');
+  });
+
+  s.teste('sem evolução pendente o selo não escreve nada', () => {
+    for (const vazio of ['', null, undefined, '   ', 42, {}])
+      igual(resumoDaEvolucao(vazio), '',
+        `${JSON.stringify(vazio)} virou texto no cartão. "não evolui" escrito ` +
+        'em toda linha final encheria a tela com o que ninguém procura');
   });
 
   /* ══ A SALA: A ROTA RESPONDE ANTES DO CLIQUE ══════════════════════════ */

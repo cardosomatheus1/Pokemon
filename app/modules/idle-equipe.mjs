@@ -20,7 +20,8 @@ import { PERFIS, STAMINA_MAX } from '../../engine/expedicao.mjs';
 import { expedicaoEm, podemIr } from './idle-quem.mjs';
 import { pintarEm } from './idle-hud.mjs';
 import { $, nosDois } from './dom.mjs';
-import { mostra, MODO_PADRAO, proximoModo } from './idle-escolha.mjs';
+import { mostra, MODO_PADRAO, proximoModo, resumoDaEvolucao,
+         mostraNivelSolto } from './idle-escolha.mjs';
 import { FALA as FALA_DO_FOCO } from './idle-foco.mjs';
 import { NIVEL_PARA_ESCOLHER as NIVEL_DO_FOCO, descansando as descansandoFoco }
   from '../../engine/foco.mjs';
@@ -58,8 +59,17 @@ export function seloDaEvolucao(c, bolsa, nomeDoItem) {
   if (!r.falta)
     return `<span class="criaEvo pronta" data-evoluir="${c.id}"
                   title="esta criatura pode evoluir agora">evoluir</span>`;
+  /* O RECORTE NO CORPO, A FRASE INTEIRA NO `title` (1.27f).
+
+     `"evolui com nível 32"` tem 19 caracteres e quebrava em TRES linhas em
+     Press Start 2P — o selo ficava maior que o retrato. O que o D-067 exige e
+     que a recusa diga O QUE consertar, e o `title` continua dizendo por
+     extenso. O corpo deixou de gritar; nao deixou de falar.
+
+     Quem recorta e o `resumoDaEvolucao`, em camada 0 — mutante de navegador
+     custa ~30 s, o mesmo mutante num modulo puro custa ~0,1 s. */
   return `<span class="criaEvo esperando" title="para evoluir: ${r.falta}">`+
-         `evolui com ${r.falta}</span>`;
+         `<em>evolui</em>${resumoDaEvolucao(r.falta)}</span>`;
 }
 
 export function seloDoFoco(c, t) {
@@ -213,7 +223,12 @@ export function pintarCartoes(E, { perfil, selecao = [], agora = Date.now(),
            title="${sel ? 'vai a campo — clique para tirar' : 'fica — clique para mandar'}"></i>
         ${retratoAnimado(esp(c.dex), 'class=\"idleCriaArte\"', false)}
         <span class="idleCriaNome">${nomeExibido(esp(c.dex).n)}${c.exemplar ? ' <i class=\"exFlag\">✦</i>' : ''}</span>
-        ${ver('nivel') ? `<span class="criaNivel">nv <b>${Math.floor(Number(c.nivel) || 1)}</b></span>` : ''}
+        <!-- O NIVEL APARECE UMA VEZ SO (1.27f).
+             A barra de XP ja traz o nivel na frente dela (NV 36 · 58%). Com as
+             duas, o numero saia repetido a quatro pixels de si mesmo — e
+             repeticao num cartao de 104 px le como erro de montagem, e nao
+             como enfase. Quem decide e o mostraNivelSolto, em camada 0. -->
+        ${mostraNivelSolto(modo) ? `<span class="criaNivel">nv <b>${Math.floor(Number(c.nivel) || 1)}</b></span>` : ''}
 
         <!-- O RAIO DIZ QUE ISTO E ENERGIA, E NAO VIDA (1.19).
              Queixa do dono: a barra "parecia ser da barra de hp do bicho". Ele
