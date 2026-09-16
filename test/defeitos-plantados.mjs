@@ -1951,6 +1951,27 @@ export const DEFEITOS = [
     real:'"`node` é externo também" — e disparar o próprio runner deixa de contar',
     de:"const BINARIOS_EXTERNOS = new Set(['git', 'sh', 'bash', 'npm', 'npx', 'chmod', 'cp', 'rm']);",
     para:"const BINARIOS_EXTERNOS = new Set(['git', 'sh', 'bash', 'npm', 'npx', 'chmod', 'cp', 'rm', 'node']);" },
+  /* ── OS TRÊS DO T11a: QUEM AVANÇA OS QUADROS ──────────────────────────
+     O defeito que estes guardam ficou 30 s por largura escondido atrás de uma
+     linha de base VERDE. Nenhum deles deixa a base vermelha — eles deixam a
+     captura CARA e dependente de relógio de parede, e é por isso que precisam
+     de teste próprio. */
+
+  { id:'S1008', arquivo:VISUAL, nome:'o laco para de avancar quadros e a captura volta ao relogio de parede',
+    real:'"o waitForFunction ja avanca" — e nao avanca: o agendador do Playwright depende do rAF que o RELOGIO_QUADROS substituiu, entao a sondagem fica presa na fila que ela mesma deveria drenar (medido: sondas=1, quadro=2 em 30 s)',
+    de:'        globalThis.__passoQuadros?.(k);',
+    para:'        globalThis.__passoQuadros?.(0);' },
+
+  { id:'S1009', arquivo:VISUAL, nome:'a afinacao dos quadros por sondagem volta a ser pequena',
+    real:'"dois quadros bastam" — medido: 2 -> 21,3 s, 32 -> 8,4 s. Nao fica vermelho, so devolve 13 s por largura calado',
+    de:'const QUADROS_POR_SONDA = 32;',
+    para:'const QUADROS_POR_SONDA = 2;' },
+
+  { id:'S1010', arquivo:VISUAL, nome:'o contador de quadros passa a mentir um numero fixo',
+    real:'"o numero esta certo" — diagnostico que mente e pior que nenhum: ele faz a asercao de cima passar sem que nada esteja sendo guiado. Este defeito escapou da primeira versao do teste',
+    de:'      quadrosDaEspera = await pg.evaluate(() => globalThis.__quadroAtual?.() ?? 0);',
+    para:'      quadrosDaEspera = 999;' },
+
   /* ── OS QUATRO DO T13 ──────────────────────────────────────────────────
      Cada um devolve o D-106 por um caminho diferente, e os dois sentidos de
      errar estão cobertos: excluir de MENOS custa 114 reavaliações por bloco,

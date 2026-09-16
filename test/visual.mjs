@@ -212,6 +212,34 @@ function RELOGIO_QUADROS() {
    que é a única propriedade que importa aqui. */
 const QUADRO_DA_FOTO = 900;
 
+/* ── O LAÇO QUE LEVA O APP ATÉ A FASE DE APOSTAS ──────────────────────────
+ *
+ * 32 quadros por sondagem, e o número foi medido e não escolhido:
+ *
+ *   quadros/sonda      2        8       32      128
+ *   até "APOSTAS"   21,3 s   11,0 s    8,4 s    8,1 s
+ *
+ * O piso é ~8 s e é trabalho de verdade — carga da página, fontes, arte, e os
+ * 5,06 s de Monte Carlo (154.000 simulações a 30.459 batalhas/s, medido em
+ * Node). Passar de 32 compra 0,3 s e aumenta o tempo que a página fica
+ * bloqueada num único `evaluate`, o que atrasa o `pageerror` de chegar. */
+const QUADROS_POR_SONDA = 32;
+
+/* PRAZO, porque espera de portão sem prazo é o D-069: portão que não termina
+   não julga nada. Generoso de propósito — o piso medido é 8 s. */
+const ESPERA_FASE_MS = 90000;
+
+/* O QUADRO EM QUE A ESPERA TERMINOU, para a suíte poder cobrar que a captura
+   chegou lá AVANÇANDO QUADROS, e não esperando o relógio. Sem isto o defeito
+   que esta função acabou de corrigir volta calado: ele não deixava a base
+   vermelha, só a deixava cara e dependente de relógio de parede. */
+export let quadrosDaEspera = 0;
+/* E QUANTAS SONDAGENS CUSTARAM, porque um número sozinho é um número que o
+   teste tem de acreditar. Com os dois, a suíte cobra a CONCORDÂNCIA — e uma
+   mutação que finja um deles desmente o outro. Sabotado: `quadrosDaEspera =
+   999` passava verde com a asserção de um número só. */
+export let sondasDaEspera = 0;
+
 /* ── ESPERAR A TELA PARAR DE MUDAR (fecha o D-040) ─────────────────────────
  *
  * As tentativas anteriores perguntavam O QUE esperar: a fonte, o GIF, a arte do
@@ -404,11 +432,43 @@ export async function capturarBase() {
        quadros por sondagem dão tempo de o trabalho assíncrono (Monte Carlo,
        fontes, arte) progredir entre eles, que é o que o relógio de parede
        fazia antes de graça. */
-    await pg.waitForFunction(() => {
-      globalThis.__passoQuadros?.(2);
-      const f = document.querySelector('#phase')?.textContent;
-      return f && f !== '—' && document.querySelectorAll('.pick').length > 0;
-    }, { timeout: 90000, polling: 60 }).catch(() => {});
+    /* ── QUEM AVANÇA OS QUADROS É O NODE, E NÃO O `waitForFunction` ──────
+     *
+     * A versão anterior chamava `__passoQuadros(2)` DE DENTRO do predicado do
+     * `waitForFunction`. Medido: o predicado rodava **uma vez**.
+     *
+     *   [perfil] sondas=1  quadro=2        em 30 s de espera
+     *
+     * O `RELOGIO_QUADROS` troca o `requestAnimationFrame` por uma fila manual,
+     * e o agendador do próprio Playwright depende dele para marcar a sondagem
+     * seguinte. A sondagem que deveria drenar a fila ficava presa NA FILA QUE
+     * ELA MESMA DEVERIA DRENAR: rodava uma vez e parava.
+     *
+     * > E a espera de 30 s não era o app avançando: era o app chegando lá por
+     * > RELÓGIO DE PAREDE — exatamente o que o D-099 existe para eliminar. O
+     * > laço estava lá, custava 30 s por largura, e não estava guiando nada.
+     *
+     * O laço mora aqui fora, no Node, onde nada depende do rAF da página.
+     * Medido, `capturarBase` inteira:
+     *
+     *   1 largura     45 s  ->  16 s
+     *   4 larguras   177 s  ->  61 s          2,9x, com a base VERDE
+     *
+     * E o ganho de DETERMINISMO é maior que o de tempo: as quatro larguras
+     * passaram a chegar no MESMO quadro 448, em vez de no quadro 2 depois de
+     * um tempo de parede que variava. */
+    const t0Fase = Date.now();
+    quadrosDaEspera = 0; sondasDaEspera = 0;
+    while (Date.now() - t0Fase < ESPERA_FASE_MS) {
+      sondasDaEspera++;
+      const pronto = await pg.evaluate(k => {
+        globalThis.__passoQuadros?.(k);
+        const f = document.querySelector('#phase')?.textContent;
+        return !!(f && f !== '—' && document.querySelectorAll('.pick').length > 0);
+      }, QUADROS_POR_SONDA);
+      quadrosDaEspera = await pg.evaluate(() => globalThis.__quadroAtual?.() ?? 0);
+      if (pronto) break;
+    }
     await pg.waitForTimeout(1200);   // deixa a transição de opacidade terminar
     /* ── A ARENA SAI DA DIGITAL DE PIXEL (D-099, e é uma DESISTÊNCIA MEDIDA) ─
      *
@@ -3225,6 +3285,52 @@ export function suiteBase(atual, base) {
       `${falhas.length} tela(s) fora da linha de base:\n      ` + falhas.join('\n      ') +
       `\n      Se a mudança é intencional, regrave com npm run test:gerar e explique no commit.`);
   });
+  /* ── A CAPTURA CHEGA LÁ AVANÇANDO QUADROS, E NÃO ESPERANDO O RELÓGIO ──
+   *
+   * Este teste existe por um defeito que ficou 30 s por largura escondido
+   * atrás de uma base VERDE: o `__passoQuadros` era chamado de dentro do
+   * predicado do `waitForFunction`, e o agendador do Playwright depende do
+   * `requestAnimationFrame` que o `RELOGIO_QUADROS` substituiu. O predicado
+   * rodava UMA vez — `sondas=1, quadro=2` — e os 30 s eram o app chegando na
+   * fase de apostas por RELÓGIO DE PAREDE.
+   *
+   * > A base ficava verde, então nada reprovava. O que estava quebrado era o
+   * > MEIO: o determinismo que o D-099 comprou não estava sendo usado, e a
+   * > conta era 177 s contra 61 s.
+   *
+   * O número cobrado é a fase de apostas: ela abre por volta do quadro 400, e
+   * cobrar 100 dá folga para o app mudar sem o teste virar manutenção — e
+   * ainda assim reprova o dia em que o laço voltar a andar 2 quadros. */
+  s.teste('a captura avança QUADROS até a fase de apostas, e não o relógio', () => {
+    ok(quadrosDaEspera >= 100,
+      `a espera pela fase de apostas terminou no quadro ${quadrosDaEspera}. O ` +
+      'laço de quadros parou de guiar o app: ele está chegando na fase por ' +
+      'relógio de parede, que é o que o D-099 existe para eliminar. Custa ~30 s ' +
+      'por largura e a linha de base NÃO fica vermelha por isso — por isso este ' +
+      'teste existe.');
+
+    /* A CONCORDÂNCIA ENTRE OS DOIS, e ela é o que impede este teste de ser
+       decorativo. Com a asserção de cima sozinha, plantar `quadrosDaEspera =
+       999` passava VERDE — sabotado, medido, e é por isso que esta linha
+       existe. Cada sondagem avança exatamente `QUADROS_POR_SONDA`, então o
+       produto tem de bater; a folga de uma sondagem cobre a última, que pode
+       ter saído no meio. */
+    const esperado = sondasDaEspera * QUADROS_POR_SONDA;
+    ok(quadrosDaEspera > 0 && Math.abs(quadrosDaEspera - esperado) <= QUADROS_POR_SONDA,
+      `o contador de quadros (${quadrosDaEspera}) não bate com as ` +
+      `${sondasDaEspera} sondagens x ${QUADROS_POR_SONDA} quadros = ${esperado}. ` +
+      'Um dos dois está mentindo, e um diagnóstico que mente é pior que nenhum: ' +
+      'ele faz o teste acima passar sem que nada esteja sendo guiado.');
+
+    /* E A AFINAÇÃO É MEDIDA, não escolhida — 2 quadros por sondagem levava
+       21,3 s contra 8,4 s com 32. Voltar para um número pequeno não deixa nada
+       vermelho: só devolve 13 s por largura, calado. */
+    ok(QUADROS_POR_SONDA >= 16,
+      `QUADROS_POR_SONDA caiu para ${QUADROS_POR_SONDA}. Medido: 2 -> 21,3 s, ` +
+      '8 -> 11,0 s, 32 -> 8,4 s, 128 -> 8,1 s. O piso é ~8 s e é trabalho de ' +
+      'verdade; abaixo de 16 o custo volta a ser a ida e volta da sondagem.');
+  });
+
   /* ESTE TESTE JULGA A BASE GRAVADA, e não a captura desta execução — por isso
      ele conta contra `LARGURAS_TODAS` e não contra `LARGURAS`. A primeira versão
      usava `LARGURAS`, e na passada estreita ela vale 1: a base de 16 entradas
