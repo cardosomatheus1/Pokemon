@@ -28,10 +28,37 @@ defeito meu.
 o LINK     http://localhost:8099/app/index.html
            sobe com:  node tools/servir.mjs --porta 8099
 a PASTA    C:\Users\gdult\pa4
-o ESTADO   1.27f · T9 · T10 · T13 FECHADOS · Q1 VERDE 2161/2161 com navegador
-           Q2 VERDE 1002/1002 · e o portão agora fecha em 3 MINUTOS quando o
-           bloco não toca em app/ nem no arnês
+o ESTADO   1.27f · T9 · T10 · T13 · T11a FECHADOS
+           Q1 VERDE 2162/2162 com navegador · Q2 VERDE 1005/1005
+           o portão fecha em 3 MINUTOS quando o bloco não toca em app/ nem no
+           arnês, e o `npm test` caiu de 7m44 para 5m44
 ```
+
+### O T11a, que nasceu de uma pergunta do dono
+
+> *"e dá pra diminuir esse relógio nos testes?"*
+
+Dá, e medindo apareceu um defeito que passou blocos escondido atrás de uma linha
+de base VERDE: a `capturarBase` chamava `__passoQuadros(2)` **de dentro** do
+predicado do `waitForFunction`, e o agendador do Playwright depende do
+`requestAnimationFrame` que o `RELOGIO_QUADROS` substituiu.
+
+```text
+[perfil] sondas=1  quadro=2        em 30 s de espera
+```
+
+A sondagem ficava presa na fila que ela mesma deveria drenar.
+
+> Os 30 s nunca foram o app avançando. Eram o app chegando na fase de apostas
+> por **relógio de parede** — o oposto do que o D-099 comprou.
+
+```text
+capturarBase, 4 larguras   177 s  ->  61 s     2,9x
+npm test inteiro          7m44s  -> 5m44s     -2 min em TODA execução
+```
+
+E as quatro larguras passaram a chegar no MESMO quadro 448 — o ganho de
+determinismo é maior que o de tempo.
 
 ### O NÚMERO QUE MUDA A ROTINA DO PROJETO
 

@@ -129,8 +129,9 @@ um dia inteiro em 14/09, e o modo de falha não foi lentidão:
 Portão que ninguém roda protege zero. Então ele passa a ser cobrado onde paga:
 
 ```text
-A CADA MUDANÇA     a suíte inteira           2145 testes · 9 min com navegador
-                   responde "quebrei alguma coisa?"
+A CADA MUDANÇA     a suíte inteira           2162 testes · 5 min 44 s com
+                   responde "quebrei alguma coisa?"   navegador (era 2145 · 9 min;
+                                                      o T11a tirou 2 min)
 
 A CADA BLOCO       `npm run sabotagem`       o portão com o cache
                    responde "os testes deste bloco mordem?"

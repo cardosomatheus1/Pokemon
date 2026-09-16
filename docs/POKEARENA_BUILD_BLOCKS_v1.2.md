@@ -1209,6 +1209,62 @@ teste e tirar o D-105 de `docs/DEFEITOS.md` faz parte do bloco.
 
 ---
 
+### T11a — Quem avança os quadros é o Node · **FECHADO em 16/09/2026**
+
+**Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/`)
+· **Saiu de dentro do** T11, quando a medição mostrou onde o tempo estava
+
+**Por que ele existiu.** Pergunta do dono: *"e dá pra diminuir esse relógio nos
+testes?"*. Medindo, apareceu um defeito que passou blocos escondido atrás de uma
+linha de base VERDE.
+
+`capturarBase` chamava `__passoQuadros(2)` **de dentro** do predicado do
+`waitForFunction`. Medido, instrumentando o predicado:
+
+```text
+[perfil] sondas=1  quadro=2        em 30 s de espera
+```
+
+O `RELOGIO_QUADROS` troca o `requestAnimationFrame` por uma fila manual, e o
+agendador do próprio Playwright depende dele para marcar a sondagem seguinte. A
+sondagem que deveria drenar a fila ficava presa **na fila que ela mesma deveria
+drenar**: rodava uma vez e parava.
+
+> Os 30 s nunca foram o app avançando. Eram o app chegando na fase de apostas
+> por **relógio de parede** — exatamente o que o D-099 comprou determinismo para
+> eliminar. O laço estava lá, custava 30 s por largura, e não guiava nada.
+
+**Medido:**
+
+```text
+capturarBase, 4 larguras     177 s  ->   61 s      2,9x
+capturarBase, 1 largura       45 s  ->   16 s
+npm test inteiro           7m44s    ->  5m44s      -2 min em TODA execução
+Q2                          VERDE 1005/1005
+```
+
+E o ganho de **determinismo é maior que o de tempo**: as quatro larguras passaram
+a chegar no MESMO quadro 448, em vez de no quadro 2 depois de um tempo de parede
+que variava.
+
+**A afinação é medida, não escolhida:**
+
+```text
+quadros/sonda      2        8       32      128
+até "APOSTAS"   21,3 s   11,0 s    8,4 s    8,1 s
+```
+
+O piso é ~8 s e é trabalho real — carga, fontes, arte, e os 5,06 s de Monte
+Carlo. Passar de 32 compra 0,3 s e prende a página mais tempo num `evaluate` só.
+
+**E o teste do próprio bloco era decorativo numa dimensão.** Sabotado de três
+jeitos, **um passou**: plantar `quadrosDaEspera = 999` deixava verde, porque o
+teste acreditava no número que lia. Endurecido para cobrar a CONCORDÂNCIA entre
+o contador de quadros e o número de sondagens — uma mutação só não mente nas
+duas. Resabotado: os três VERMELHOS. Guardados como `S1008`, `S1009`, `S1010`.
+
+---
+
 ### T11 — Um navegador vivo, reaproveitado entre mutantes
 
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/`)
@@ -1260,8 +1316,12 @@ teste e tirar o D-105 de `docs/DEFEITOS.md` faz parte do bloco.
 > largura mudando por `setViewportSize`. O `rodar()` já faz isso; a
 > `capturarBase()` abre um contexto novo por largura.
 >
-> **O bloco continua M e continua valendo**, mas o numerador que ele tem de
-> podar é outro. Reescrever o escopo é a primeira coisa a fazer nele — e a
+> **PARTE DISTO JÁ CAIU NO T11a**, fechado em 16/09: a `capturarBase` foi de
+> 177 s para 61 s. O que sobra para este bloco é o resto da passada de
+> navegador, e a ideia do dono sobre o `SIMS` — que agora vale MAIS em
+> proporção: 5 s de 16, e não de 45.
+>
+> **O bloco continua valendo**, mas o numerador que ele tem de podar é outro. Reescrever o escopo é a primeira coisa a fazer nele — e a
 > medição acima é o que o próximo autor precisa para não repetir o meu erro:
 > **eu escrevi "boot" onde nunca tinha medido o boot.**
 >
