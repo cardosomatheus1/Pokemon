@@ -36,6 +36,15 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### ST-7.1b FECHADA — o banco do piloto tem cópia, e a cópia volta
+
+`node tools/banco-copia.mjs copiar` tira um instante consistente com o
+servidor ligado (`VACUUM INTO`, não `cp` — com WAL o `.db` sozinho mente);
+`conferir` checa integridade, versão do esquema e o ledger de cada conta
+contra o saldo; `restaurar` confere ANTES de tocar no destino, monta ao lado,
+migra e só troca no fim. Nada é sobrescrito sem `--sobrescrever`. Restaurar
+sobre o banco vivo exige o servidor desligado. S1164–S1168; Q2 do bloco 5/5.
+
 ### ST-7.1a FECHADA — o piloto passa a ser medido
 
 O cliente juntava eventos num buffer em memória que nunca saía, e o servidor
@@ -46,8 +55,7 @@ SERVIDOR, na hora; o cliente só relata o que só ele sabe (presença do dia,
 runs e expedições colhidas), por lista fechada, com o usuário vindo da sessão;
 o painel de política ganhou a retenção D1/D7 por coorte de cadastro (D7
 imaturo é `null`, não zero). O cliente relata o ESTADO, não o clique — reenviar
-não duplica, e nenhum `onclick` ganhou linha de telemetria. Falta a **b**: a
-cópia e a restauração do banco demonstradas. S1151–S1163.
+não duplica, e nenhum `onclick` ganhou linha de telemetria. A **b** fechou logo abaixo. S1151–S1163.
 
 ### D-110 CORRIGIDO — a arena rolava 16 px para o lado a 420 px
 

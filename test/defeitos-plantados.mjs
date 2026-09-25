@@ -7684,6 +7684,24 @@ export const DEFEITOS = [
     real:'o idle volta a morrer no navegador — a parte do jogo que fica aberta por horas nao aparece no piloto',
     de:'      relatar(api, eventosDoEstado(E, agora));', para:'      void eventosDoEstado(E, agora);' },
 
+  /* ── ST-7.1b · a cópia e a restauração do banco ─────────────────────── */
+  { id:'S1164', arquivo:'server/copia.mjs', nome:'copiar passa a sobrescrever a copia anterior',
+    real:'a copia de hoje, do banco ja estragado, apaga a de ontem, que era a boa',
+    de:'  if (existsSync(destino)) throw erro(ERRO_COPIA.EXISTE', para:'  if (false) throw erro(ERRO_COPIA.EXISTE' },
+  { id:'S1165', arquivo:'server/copia.mjs', nome:'a conferencia deixa de reconciliar ledger e saldo',
+    real:'uma copia com saldo adulterado e restaurada como se fosse boa — o piloto volta com dinheiro que ninguem ganhou',
+    de:'      for (const p of reconciliarNoBanco(db, id)) problemas.push(', para:'      for (const p of []) problemas.push(' },
+  { id:'S1166', arquivo:'server/copia.mjs', nome:'restaurar deixa de conferir antes',
+    real:'a restauracao poe no lugar do banco vivo um arquivo que nao reconcilia',
+    de:'  if (!c.ok) return { ok: false, codigo: ERRO_COPIA.CONFERENCIA', para:'  if (false) return { ok: false, codigo: ERRO_COPIA.CONFERENCIA' },
+  { id:'S1167', arquivo:'server/copia.mjs', nome:'restaurar passa a sobrescrever sem pedir',
+    real:'um erro de digitacao no destino apaga o banco vivo',
+    de:'  if (existsSync(destino) && !sobrescrever)', para:'  if (false)' },
+  { id:'S1168', arquivo:'server/copia.mjs', nome:'a copia antiga deixa de subir ate o esquema atual',
+    real:'o servidor abre um banco sem as tabelas que o codigo de hoje le — e cai na primeira compra',
+    de:'  try { db.exec(\'PRAGMA foreign_keys = ON\'); versao = migrar(db); }',
+    para:'  try { db.exec(\'PRAGMA foreign_keys = ON\'); versao = versaoLida(db); }' },
+
   /* ── L-187 · na luta, a câmera centra no trio ──────────────────────── */
   { id:'S1145', arquivo:'app/modules/avanco-geometria.mjs', nome:'na luta a camera volta a seguir so o treinador',
     real:'o bando mora no fundo da janela, com a placa encostando na borda (L-187)',
