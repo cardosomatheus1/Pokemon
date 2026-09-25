@@ -275,5 +275,29 @@ export function suite() {
       'o botão voltou a apagar o PIN à mão — é a forma exata do D-109');
   });
 
+  /* ST-1.2b: o Sair PEDE ao servidor que revogue — e pede com o token antigo,
+     antes de esquecê-lo. Pedir depois sairia sem credencial e seria recusado. */
+  s.teste('ST-1.2b: sair pede a revogação com o token antigo, e esquece mesmo sem rede', async () => {
+    const { criarApi } = await import('../app/modules/api.mjs');
+    const { sair } = await import('../app/modules/sair.mjs');
+    const armazem = armazemFalso({ ar_sessao: 'token-velho', ar_session: '1' });
+    const api = criarApi({ armazem });
+    const pedidos = [];
+    const fetchAntes = globalThis.fetch;
+    globalThis.fetch = async (url, o) => { pedidos.push({ url, auth: o.headers.authorization, metodo: o.method });
+                                           throw new Error('sem rede'); };
+    try {
+      const r = sair({ api, armazem });
+      ok(r.revogacao && typeof r.revogacao.then === 'function', 'o sair não devolveu a revogação para a tela esperar');
+      await r.revogacao;
+    } finally { globalThis.fetch = fetchAntes; }
+    igual(pedidos.length, 1, 'o sair não pediu a revogação ao servidor');
+    igual(pedidos[0].url, '/api/sair', 'a revogação foi para outra rota');
+    igual(pedidos[0].metodo, 'POST', 'a revogação não é um POST');
+    igual(pedidos[0].auth, 'Bearer token-velho',
+      'a revogação saiu sem o token que ela revoga — o servidor recusaria');
+    igual(api.temSessao(), false, 'sem rede, o token ficou no aparelho — o Sair local não pode depender do servidor');
+  });
+
   return s;
 }

@@ -234,8 +234,8 @@ mudança de produto. Achado de arnês que não couber vai para DEFEITOS/LACUNAS.
   2. sem sessão real (PIN local), o comportamento é o de hoje;
   3. o teste `D-109 (afirma o defeito)` em `test/modo-servidor.mjs` fica
      vermelho e vira teste de comportamento.
-- **ST-1.2b (opcional, M):** rota `POST /api/sair` que invalida o token no
-  servidor (lista de revogados com expiração). Só com DEC-07 decidida.
+- ~~**ST-1.2b (opcional, M):**~~ ✅ **25/09** · rota `POST /api/sair` que invalida o token no
+  servidor (lista de revogados com expiração, migração aditiva `sessao-revogada-st1.2b`). DEC-07 decidida: só o token do Sair; o outro aparelho segue.
 - **Sabotagem:** esquecer só o PIN; esquecer só o token; limpar o token e
   manter `S.profile` com os dados da conta.
 - **Portões:** Q1 Q2 Q5 (captura do cabeçalho deslogado) Q6 (sessão).

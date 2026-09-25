@@ -36,6 +36,21 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### O DONO DELEGOU AS DECISÕES DE PRODUTO — e a ST-1.2b fechou na primeira
+
+*"Eu acho que vc tem q tomar as decisões que vc achar melhor p software"* (25/09).
+As DECs de produto foram tomadas e estão na tabela do ROADMAP com o porquê;
+ficam com ele DEC-01, DEC-02 e a L-176. A mudança correspondente no
+`CLAUDE.md` ("Parar e perguntar") foi **bloqueada pelo classificador** como
+auto-modificação — **o dono precisa fazê-la, ou autorizar**.
+
+**ST-1.2b (DEC-07):** o Sair revoga o token no servidor. Tabela aditiva
+`sessoes_revogadas` (por nonce, limpa no vencimento), `POST /api/sair`, e o
+despacho recusa o revogado. O cliente pede com o token antigo antes de
+esquecê-lo, e esquece mesmo sem rede; a tela espera até 1,5 s antes de
+recarregar. O outro aparelho da mesma conta segue logado. Suíte 2293/2293; Q2
+do bloco 15/15 (S1106–S1110 novos, S1053 realinhado).
+
 ### ST-6.3 FECHADA — toda lacuna diz o próprio estado
 
 As 85 fichas sem linha de Estado foram conferidas CONTRA O CÓDIGO, uma a uma, e

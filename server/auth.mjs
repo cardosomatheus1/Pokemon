@@ -242,8 +242,28 @@ export function lerSessao({ segredo, token, agora = Date.now() }) {
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
   let dados; try { dados = JSON.parse(deB64(corpo).toString('utf8')); } catch { return null; }
   if (!dados || typeof dados.exp !== 'number' || dados.exp <= agora) return null;
-  return { userId: dados.u, expiraEm: dados.exp };
+  return { userId: dados.u, expiraEm: dados.exp, nonce: dados.n ?? null };
 }
+
+/* ── O SAIR REVOGA (ST-1.2b, DEC-07) ─────────────────────────────────────────
+ *
+ * Só o token apresentado — "sair de todos os aparelhos" é outro pedido, e a
+ * DEC-07 o deixou para quando o jogador o fizer explicitamente. Token inválido
+ * não revoga nada: aceitar revogação de token forjado seria uma escrita no
+ * banco que qualquer um dispara. */
+export function revogarSessao(db, { segredo, token, agora = Date.now() }) {
+  const s = lerSessao({ segredo, token, agora });
+  if (!s?.nonce) return false;
+  /* A LIMPEZA vai junto: o que venceu já é recusado pela assinatura, e manter
+     a linha só engordaria a consulta que toda rota privada faz. */
+  db.prepare(`DELETE FROM sessoes_revogadas WHERE expira_em <= ?`).run(agora);
+  db.prepare(`INSERT OR IGNORE INTO sessoes_revogadas (nonce, user_id, expira_em, revogada_em)
+              VALUES (?, ?, ?, ?)`).run(s.nonce, s.userId, s.expiraEm, agora);
+  return true;
+}
+
+export const sessaoRevogada = (db, nonce) =>
+  !!nonce && !!db.prepare(`SELECT 1 FROM sessoes_revogadas WHERE nonce = ?`).get(nonce);
 
 const assinar = (segredo, corpo) =>
   createHmac('sha256', segredo).update(corpo).digest('base64url');

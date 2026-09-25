@@ -617,5 +617,42 @@ export async function suite() {
         `exigir sessão de jogador sem ninguém perceber`);
   });
 
+  /* ── O SAIR REVOGA NO SERVIDOR (ST-1.2b, DEC-07) ─────────────────────────
+     O token é assinado e sem estado; o ST-1.2 fez o aparelho esquecê-lo, mas
+     quem o COPIOU antes do Sair continuava entrando por 7 dias. Agora o Sair
+     põe o nonce dele numa lista de revogados, e a lista se limpa sozinha
+     quando o token venceria de qualquer jeito. */
+  s.teste('ST-1.2b: depois do Sair, o MESMO token é recusado — e outro token da conta não', async () => {
+    await comServico(async ({ porta }) => {
+      const { sessao } = await conta(porta, 'saidor');
+      igual((await pedir(porta, '/api/carteira', { sessao })).status, 200, 'a sessão nova não abria a carteira');
+      const outra = (await pedir(porta, '/api/auth/entrar', { metodo: 'POST',
+        corpo: { email: 'saidor@exemplo.test', senha: SENHA } })).corpo.sessao;
+      ok(outra && outra !== sessao, 'o segundo login não abriu uma sessão própria');
+      const r = await pedir(porta, '/api/sair', { metodo: 'POST', corpo: {}, sessao });
+      igual(r.status, 200, `o Sair respondeu ${r.status}: ${JSON.stringify(r.corpo)}`);
+      igual((await pedir(porta, '/api/carteira', { sessao })).status, 401,
+        'o token do Sair continuou abrindo a carteira — quem o copiou antes segue dentro');
+      igual((await pedir(porta, '/api/carteira', { sessao: outra })).status, 200,
+        'o Sair derrubou o OUTRO aparelho — "sair de todos" só por pedido explícito (DEC-07)');
+    });
+  });
+
+  s.teste('ST-1.2b: a lista de revogados se limpa quando o token venceria', async () => {
+    const { abrirBanco, migrar } = await import('../server/banco.mjs');
+    const { abrirSessao, revogarSessao, sessaoRevogada, lerSessao } = await import('../server/auth.mjs');
+    const db = abrirBanco(':memory:'); migrar(db);
+    const segredo = 'x'.repeat(40);
+    const t = abrirSessao({ segredo, userId: 'u1', agora: 1000, duracaoMs: 5000 });
+    ok(revogarSessao(db, { segredo, token: t, agora: 2000 }), 'a revogação de um token válido falhou');
+    ok(sessaoRevogada(db, lerSessao({ segredo, token: t, agora: 2000 }).nonce), 'o nonce não entrou na lista');
+    const t2 = abrirSessao({ segredo, userId: 'u1', agora: 9000, duracaoMs: 5000 });
+    revogarSessao(db, { segredo, token: t2, agora: 9000 });
+    const n = db.prepare('SELECT COUNT(*) AS n FROM sessoes_revogadas').get().n;
+    igual(n, 1, 'o revogado que já tinha vencido continuou na lista — ela só cresce');
+    igual(revogarSessao(db, { segredo, token: 'forjado.x', agora: 9000 }), false,
+      'um token forjado foi aceito para revogar');
+  });
+
   return s;
 }

@@ -100,8 +100,14 @@ function renderSession(){
          Com conta real a página recomeça: carteira e perfil vieram do servidor
          e estão em memória — mostrá-los "deslogado" seria mostrar a conta de
          alguém para quem sentar depois. */
-      const { tinhaConta } = sair({ api });
-      if (tinhaConta) { location.reload(); return; }
+      const { tinhaConta, revogacao } = sair({ api });
+      /* ESPERA a revogação (ST-1.2b), com prazo: recarregar cancelaria o
+         pedido, e esperar para sempre prenderia o jogador na tela. */
+      if (tinhaConta) {
+        Promise.race([revogacao, new Promise(r => setTimeout(r, 1500))])
+          .finally(() => location.reload());
+        return;
+      }
       renderSession(); renderHero(); goView('viewHome');
     };
   } else {

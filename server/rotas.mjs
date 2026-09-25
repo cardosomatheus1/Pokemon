@@ -24,7 +24,8 @@
  * administrativo do F1.11 tem autenticação própria, por decisão do §28.10.
  */
 import { ERROS } from './contrato.mjs';
-import { lerSessao, abrirSessao, cadastrar, entrar, ERRO_AUTH } from './auth.mjs';
+import { lerSessao, abrirSessao, cadastrar, entrar, ERRO_AUTH,
+         revogarSessao, sessaoRevogada } from './auth.mjs';
 import { saldos, ledgerDe, creditar } from './carteira.mjs';
 import { SALDO_INICIAL } from '../engine/carteira.mjs';
 import { apostar, cancelar, ERRO_APOSTA } from './aposta.mjs';
@@ -239,6 +240,15 @@ export const ROTAS = {
      aparece, e não quando o cliente pede. A rota existe para o app poder
      mostrar a trilha logo no boot; chamá-la dez vezes é a mesma coisa que
      chamá-la uma, porque a linha é única por (conta, dia). */
+  /* O SAIR (ST-1.2b, DEC-07): revoga o token que chegou, e só ele. Rota
+     PRIVADA de propósito — sem sessão válida não há o que revogar, e o 401 é
+     a resposta certa para quem tenta sair duas vezes. */
+  'POST /api/sair': ({ db, cabecalhos, agora, config }) => {
+    const cab = cabecalhos?.authorization || '';
+    const token = cab.startsWith('Bearer ') ? cab.slice(7) : '';
+    return { corpo: { revogada: revogarSessao(db, { segredo: config.segredoSessao, token, agora }) } };
+  },
+
   'POST /api/perfil/entrar': ({ db, userId, agora }) => ({
     corpo: registrarLogin(db, { userId, agora }),
   }),
@@ -489,11 +499,14 @@ export const ROTAS = {
 const sessaoDe = (config, userId, agora) =>
   abrirSessao({ segredo: config.segredoSessao, userId, agora });
 
-export function usuarioDa(req, config, agora) {
+export function usuarioDa(req, config, agora, db = null) {
   const cab = req.headers.authorization || '';
   const token = cab.startsWith('Bearer ') ? cab.slice(7) : null;
   if (!token) return null;
   const s = lerSessao({ segredo: config.segredoSessao, token, agora });
+  /* O REVOGADO pelo Sair (ST-1.2b) é recusado como o forjado: a assinatura
+     confere, e o jogador disse que ele morreu. */
+  if (s && db && sessaoRevogada(db, s.nonce)) return null;
   return s?.userId ?? null;
 }
 

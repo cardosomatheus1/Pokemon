@@ -2158,8 +2158,8 @@ export const DEFEITOS = [
     para:'  const tinhaConta = false;' },
   { id:'S1053', arquivo:'app/modules/navegacao.mjs', nome:'o botao volta a apagar o PIN a mao',
     real:'a decisao testada nao e a que roda — a forma exata do D-109',
-    de:'      const { tinhaConta } = sair({ api });',
-    para:"      localStorage.removeItem('ar_session'); const tinhaConta = false;" },
+    de:'      const { tinhaConta, revogacao } = sair({ api });',
+    para:"      localStorage.removeItem('ar_session'); const tinhaConta = false, revogacao = null;" },
 
   /* ── ST-1.3 · COM CONTA ONLINE A BOUTIQUE NÃO VENDE (D-108) ─────────── */
   { id:'S1054', arquivo:'engine/vitrine.mjs', nome:'a boutique volta a vender com conta online',
@@ -7567,6 +7567,28 @@ export const DEFEITOS = [
     real:'o projetil chega quando o golpe entra na janela, quase um segundo antes do dano',
     de:"             'lc' + cena.wave + ':' + golpe.de + golpe.i + ':' + golpe.t, t + (golpe.t - cena.t));",
     para:"             'lc' + cena.wave + ':' + golpe.de + golpe.i + ':' + golpe.t, t);" },
+
+  /* ── ST-1.2b · o Sair revoga no servidor (DEC-07) ──────────────────── */
+  { id:'S1106', arquivo:SRVROT, nome:'o token revogado volta a abrir a conta',
+    real:'quem copiou o token antes do Sair continua dentro por 7 dias',
+    de:'  if (s && db && sessaoRevogada(db, s.nonce)) return null;',
+    para:'  if (false) return null;' },
+  { id:'S1107', arquivo:SRVAUT, nome:'a lista de revogados nunca se limpa',
+    real:'a tabela cresce a cada Sair para sempre, e toda rota privada a consulta',
+    de:'  db.prepare(`DELETE FROM sessoes_revogadas WHERE expira_em <= ?`).run(agora);\n',
+    para:'' },
+  { id:'S1108', arquivo:SRV, nome:'o despacho deixa de passar o banco para a sessao',
+    real:'a conferencia de revogados existe e nunca roda — o Sair volta a valer so no aparelho',
+    de:'        userId = usuarioDa(req, config, relogio(), db);',
+    para:'        userId = usuarioDa(req, config, relogio());' },
+  { id:'S1109', arquivo:'app/modules/sair.mjs', nome:'o Sair esquece o token antes de pedir a revogacao',
+    real:'o pedido sai sem credencial, o servidor recusa, e o token segue vivo',
+    de:"    ? api.post('/api/sair').catch(() => null)",
+    para:"    ? Promise.resolve().then(() => api.post('/api/sair')).catch(() => null)" },
+  { id:'S1110', arquivo:SRVAUT, nome:'token forjado consegue revogar',
+    real:'qualquer um dispara escrita no banco com um token inventado',
+    de:'  if (!s?.nonce) return false;',
+    para:'  if (!s?.nonce) return !!token;' },
 
   /* ── ST-6.3 · as fichas dizem o próprio estado ─────────────────────────
      O "produto" aqui é o documento: a fila e o estado do projeto moram nele. */

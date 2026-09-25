@@ -178,7 +178,7 @@ export function criarServidor(opcoes = {}) {
          em `ROTAS_ADMIN` e em nenhuma outra lista. */
       if (!ROTAS_PUBLICAS.includes(chave) && !ROTAS_ADMIN.includes(chave)
           && !SEM_VERSAO.includes(caminho)) {
-        userId = usuarioDa(req, config, relogio());
+        userId = usuarioDa(req, config, relogio(), db);
         if (!userId)
           return responder(res, 401, { codigo: ERROS.NAO_AUTORIZADO,
             erro: 'sessão ausente ou inválida' });

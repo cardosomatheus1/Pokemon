@@ -994,6 +994,32 @@ export const MIGRACOES = [
       db.exec(`ALTER TABLE expedicoes DROP COLUMN encontros`);
     },
   },
+  {
+    nome: 'sessao-revogada-st1.2b',
+    /* O SAIR REVOGA NO SERVIDOR (ST-1.2b, DEC-07).
+     *
+     * A sessão continua sem estado — o token é assinado, e é isso que deixa o
+     * servidor ter mais de um processo sem sessão pegajosa. O que entra aqui é
+     * só a EXCEÇÃO: os tokens que o jogador matou antes do prazo.
+     *
+     * `expira_em` é o vencimento do próprio token: depois dele, a linha não
+     * protege nada (o token já é recusado pela assinatura), e é apagada. A
+     * lista tem o tamanho de "quantos Sair nos últimos 7 dias", e não cresce.
+     *
+     * ADITIVA e com volta: descer apaga a tabela, e o único efeito é o Sair
+     * voltar a valer só no aparelho — que é o comportamento do ST-1.2. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE sessoes_revogadas (
+          nonce       TEXT PRIMARY KEY,
+          user_id     TEXT NOT NULL,
+          expira_em   INTEGER NOT NULL,
+          revogada_em INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE INDEX idx_revogadas_expira ON sessoes_revogadas(expira_em)`);
+    },
+    desce: db => { db.exec(`DROP TABLE IF EXISTS sessoes_revogadas`); },
+  },
 ];
 
 const TABELA_VERSAO = `
