@@ -154,7 +154,8 @@ function ajustarViewport() {
   if (encaixado !== zoom) { zoom = encaixado; }
   /* DEC-15: com a RUN na tela, a câmera se afasta até a luta caber — o `zoom`
      do jogador não é tocado, e volta sozinho quando a run acaba. */
-  const pedido = cenaDaVez() ? zoomDaRun(zoom, cx) : zoom;
+  /* L-188: e a altura também — no panorâmico era ela que não cabia. */
+  const pedido = cenaDaVez() ? zoomDaRun(zoom, cx, cy) : zoom;
   const jj = janela({ cx, cy, mundoW, mundoH, zoom: pedido });
   zoomEfetivo = jj.usar;
   const { w: W, h: H } = jj;

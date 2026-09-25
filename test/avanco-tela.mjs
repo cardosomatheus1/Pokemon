@@ -1316,13 +1316,22 @@ export function suite() {
    * bando ficava no último terço, com a placa encostando na borda. Na luta o
    * foco vira o posto do companheiro — o meio entre o treinador (em cima) e o
    * bando (embaixo) —, e a câmera CHEGA lá em vez de pular. */
-  s.teste('L-187: fora da luta a câmera segue o treinador; na luta, o posto do companheiro', async () => {
+  s.teste('L-187/L-188: fora da luta a câmera segue o treinador; na luta, o meio do trio', async () => {
     const G = await import('../app/modules/avanco-geometria.mjs');
     const eu = { x: 200, y: 100 }, mundo = { w: 2000, h: 2000 };
     const fora = G.focoDaCamera(eu, false, mundo);
     igual(fora.x, 200, 'fora da luta a câmera saiu do treinador'); igual(fora.y, 100, 'idem no Y');
     const dentro = G.focoDaCamera(eu, true, mundo), posto = G.postoDoCompanheiro(eu, mundo);
-    igual(dentro.x, posto.x, 'na luta o foco não é o posto do companheiro'); igual(dentro.y, posto.y, 'idem no Y');
+    igual(dentro.x, posto.x, 'na luta o foco saiu da coluna do companheiro');
+    /* L-188: o meio do TRIO, da cabeça do treinador à placa do bando — e não
+       o posto, que deixava o bando a 88% da janela no panorâmico. */
+    const cabeca = eu.y - G.ALTURA_DO_TREINADOR, placa = posto.y + G.CABE_O_CAMPO;
+    igual(dentro.y - cabeca, placa - dentro.y, `o foco (${dentro.y}) não é o meio entre a cabeça (${cabeca}) e a placa (${placa})`);
+    ok(dentro.y > posto.y, 'o foco não desceu do posto em direção ao bando');
+    /* Encostado embaixo, o campo vira para cima, e o meio vai junto. */
+    const embaixo = { x: 200, y: 1990 };
+    const pe = G.postoDoCompanheiro(embaixo, mundo), fe = G.focoDaCamera(embaixo, true, mundo);
+    ok(pe.y < embaixo.y && fe.y < pe.y, `com o campo acima, o foco (${fe.y}) não subiu além do posto (${pe.y})`);
   });
 
   s.teste('L-187: a câmera CHEGA ao foco novo, e não pula', async () => {

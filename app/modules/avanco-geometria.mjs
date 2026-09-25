@@ -301,7 +301,7 @@ export const DEGRAU_DE_PROFUNDIDADE = 7;
 /* Quanta folga o campo precisa depois do posto para caber inteiro: o arco dos
    selvagens, o corpo deles, e a placa embaixo. Medido nos maiores quadros do
    pack (56 px) mais os ~18 px da plaquinha. */
-const CABE_O_CAMPO = 96;
+export const CABE_O_CAMPO = 96;
 
 /* ── E A LUTA NÃO PODE ACONTECER FORA DA VISTA ──────────────────────────
  *
@@ -348,7 +348,22 @@ export const pontoDeBatalha = (eu, mundo = null) => postoDoCompanheiro(eu, mundo
  * selvagens abaixo, os dois à mesma distância de assistir. Mirar ali centra o
  * trio sem conta nova. */
 export const focoDaCamera = (eu, emLuta, mundo = null) =>
-  (emLuta ? postoDoCompanheiro(eu, mundo) : { x: eu.x, y: eu.y });
+  (emLuta ? centroDaLuta(eu, mundo) : { x: eu.x, y: eu.y });
+
+/* L-188: O POSTO NÃO ERA O MEIO. Medido no panorâmico (janela de 207 px de
+   mundo, câmera LIVRE): o pé do mob mais baixo a 88% da altura. O treinador
+   ocupa 52 px acima dos pés (o quadro da folha, o mesmo `qh` da área
+   andável); o campo, 96 abaixo do posto (`CABE_O_CAMPO`) — o trio vai da
+   cabeça dele à placa do bando, e o meio disso fica 5 px abaixo do posto. A
+   maior parte da L-188 era a ALTURA da janela, e mora no `zoomDaRun`. Com o
+   campo virado para cima (borda de baixo), a conta é a mesma espelhada. */
+export const ALTURA_DO_TREINADOR = 52;
+export function centroDaLuta(eu, mundo = null) {
+  const p = postoDoCompanheiro(eu, mundo);
+  const fundo = p.y + (p.y >= eu.y ? CABE_O_CAMPO : -CABE_O_CAMPO);
+  const topo = Math.min(eu.y - ALTURA_DO_TREINADOR, fundo), base = Math.max(eu.y, fundo);
+  return { x: p.x, y: (topo + base) / 2 };
+}
 
 /* E ELA CHEGA, EM VEZ DE PULAR: o foco muda de lugar no instante em que o mob
    entra, e uma câmera que teleporta vinte pixels de mundo lê como tranco. A

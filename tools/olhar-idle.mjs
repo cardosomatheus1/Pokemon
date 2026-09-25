@@ -764,15 +764,20 @@ for (const { L, chefe, raiz } of [
     };
   }).catch(() => null);
   const amostras = [];
-  for (let k = 0; k < 8; k++) { const a = await medirCam(); if (a) amostras.push(a); await pg.waitForTimeout(250); }
+  for (let k = 0; k < 16; k++) { const a = await medirCam(); if (a) amostras.push(a); await pg.waitForTimeout(250); }
   const janelaCam = amostras[amostras.length - 1] ?? null;
-  const comFaixa = amostras.filter(a => a.faixa).map(a => a.faixa[1]).sort((x, y) => x - y);
+  /* L-188: a amostra com um mob ainda FORA da janela (entrando, pé abaixo de
+     100%) não mede onde a luta está — mede a entrada. Contada à parte, e não
+     escondida; a mediana é só das amostras com a luta inteira à vista. */
+  const entrando = amostras.filter(a => a.faixa && a.faixa[1] > 100).length;
+  const comFaixa = amostras.filter(a => a.faixa && a.faixa[1] <= 100).map(a => a.faixa[1]).sort((x, y) => x - y);
   if (janelaCam) janelaCam.faixa = comFaixa.length
     ? [comFaixa[0], comFaixa[Math.floor(comFaixa.length / 2)], comFaixa[comFaixa.length - 1]] : null;
   if (janelaCam) console.log(
     `    janela da camera: canvas ${janelaCam.canvas} · palco ${janelaCam.palco} · ` +
     `escala ${janelaCam.escala} · ${janelaCam.mobs} moldura(s), ${janelaCam.fora} fora` +
     (janelaCam.faixa ? ` · pé do mob mais baixo: mediana ${janelaCam.faixa[1]}% da altura (${janelaCam.faixa[0]}–${janelaCam.faixa[2]}%, ${comFaixa.length} amostras)` : '') +
+    (entrando ? ` · ${entrando} amostra(s) com mob ainda entrando, fora da mediana` : '') +
     (janelaCam.fora ? '  <-- o mob esta fora, e nao o estouro' : ''));
 
   /* ── O CLIMA DA RUN (1.32) ──────────────────────────────────────────────

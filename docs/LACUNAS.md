@@ -8280,7 +8280,17 @@ suavização da câmera de hoje. Conta pura, como o `zoomDaRun`.
 ### L-188 — no panorâmico o bando ainda aparece rente ao fundo da janela
 
 **Registrada em:** 25/09/2026, no passo OLHAR do fecho da L-187. **Bloco
-dono:** o do CENÁRIO. **Estado:** aberto.
+dono:** o do CENÁRIO. **Estado:** ✅ fechada em 25/09/2026 (bloco do CENÁRIO)
+— a hipótese de baixo estava errada, e a medição corrigiu: a esteira passou a
+tirar 16 amostras e a separar as com mob ainda ENTRANDO (pé acima de 100%). O
+foco no posto estava quase certo (o meio do trio fica só 5 px abaixo dele,
+`centroDaLuta`); o que não cabia era a ALTURA: a 3× a janela mostra 207 px de
+mundo e o trio ocupa 182. A DEC-15 garantia a largura da luta e não a altura
+— estendida (`ALTURA_DA_LUTA = 284`, `zoomDaRun(escolhido, largura, altura)`).
+Panorâmico: pé do mob mais baixo **88% → 75%** (65–89%, 10 amostras); a run
+mostra 554×284 a 2,18× e o controle diz "2.18×". S1194–S1197.
+
+*Estado anterior:* aberto.
 
 Medido com a esteira a 1920 px: a janela da run tem só 207 px de mundo de
 altura (escala 3), a câmera está LIVRE (não presa na borda: queria 180–212,

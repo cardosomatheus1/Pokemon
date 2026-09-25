@@ -110,6 +110,16 @@ export const rotuloZoom = z => (Number.isInteger(z) ? String(z) : z.toFixed(2).r
  * O piso anti-esticado continua valendo POR CIMA: esta função pede um zoom, e
  * `janela` recusa o que ficaria abaixo do piso (S616). */
 export const MUNDO_DA_LUTA = 260;
-export const zoomDaRun = (escolhido, largura) =>
-  Math.min(escolhido || 1, Math.max(1, Number(largura) || 1) / MUNDO_DA_LUTA);
+
+/* L-188: A MESMA REGRA NO OUTRO EIXO. A conta acima garante a LARGURA da
+ * luta; a altura ficava por conta do zoom escolhido. No panorâmico, 3× mostra
+ * 207 px de mundo na vertical, e o trio — a cabeça do treinador (52), o posto
+ * do companheiro (34) e o campo com as placas (96) — ocupa 182: centrado ou
+ * não, o bando morava a 88% da janela. 284 px deixa o trio em 64% da altura,
+ * com ~18% de folga em cima e embaixo. `test/viewport.mjs` amarra o número às
+ * constantes da geometria: mexer numa sem a outra reprova. */
+export const ALTURA_DA_LUTA = 284;
+export const zoomDaRun = (escolhido, largura, altura) =>
+  Math.min(escolhido || 1, Math.max(1, Number(largura) || 1) / MUNDO_DA_LUTA,
+           Number(altura) > 0 ? Number(altura) / ALTURA_DA_LUTA : Infinity);
 

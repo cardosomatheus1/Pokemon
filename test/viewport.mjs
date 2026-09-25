@@ -190,6 +190,25 @@ export function suite() {
     igual(zoomDaRun(2, 800), 2, 'com a luta cabendo, a run trocou o zoom do jogador');
   });
 
+  /* L-188: A MESMA REGRA NO OUTRO EIXO. A DEC-15 garantiu a LARGURA da luta
+   * e não a altura: no panorâmico, 3× mostra 207 px de mundo na vertical, e o
+   * trio (treinador, companheiro, bando e placa) ocupa ~182 — o bando morava a
+   * 88% da janela. Na run, a câmera se afasta até a luta caber na ALTURA
+   * também, com folga; fora da run, o zoom segue do jogador. */
+  s.teste('L-188: na run a luta cabe na ALTURA, com folga', async () => {
+    const { zoomDaRun, ALTURA_DA_LUTA } = await import('../app/modules/viewport.mjs');
+    const G = await import('../app/modules/avanco-geometria.mjs');
+    const trio = G.ALTURA_DO_TREINADOR + G.POSTO_DO_MEU.FRENTE + G.CABE_O_CAMPO;
+    ok(trio / ALTURA_DA_LUTA <= 0.65, `o trio (${trio}) ocupa ${Math.round(trio / ALTURA_DA_LUTA * 100)}% da altura mínima — sem folga`);
+    const z = zoomDaRun(3, 1209, 620);
+    ok(z < 3, 'no panorâmico a run não se afastou — a luta segue sem caber na altura');
+    const j = janela({ cx: 1209, cy: 620, mundoW: 704, mundoH: 448, zoom: z });
+    ok(j.h >= ALTURA_DA_LUTA - 1, `a run mostra ${j.h} px de altura — a luta pede ${ALTURA_DA_LUTA}`);
+    igual(zoomDaRun(3, 1209), 3, 'sem a altura, a conta antiga (só largura) mudou');
+    igual(zoomDaRun(1, 1209, 620), 1, 'com a luta cabendo, a run trocou o zoom que o jogador escolheu');
+    igual(zoomDaRun(3, 390, 620), 1.5, 'na tela estreita a largura deixou de mandar');
+  });
+
   s.teste('DEC-15: o piso anti-esticado vale por cima do zoom da run', async () => {
     const { zoomDaRun } = await import('../app/modules/viewport.mjs');
     const j = janela({ cx: 390, cy: 620, mundoW: 300, mundoH: 300, zoom: zoomDaRun(3, 390) });
@@ -198,7 +217,7 @@ export function suite() {
 
   s.teste('DEC-15: o mundo usa o zoom da run SÓ com a run na tela, e o rótulo diz o efetivo', () => {
     const t = readFileSync(new URL('../app/modules/idle-mundo.mjs', import.meta.url), 'utf8');
-    ok(/cenaDaVez\(\) \? zoomDaRun\(zoom, cx\) : zoom/.test(t),
+    ok(/cenaDaVez\(\) \? zoomDaRun\(zoom, cx, cy\) : zoom/.test(t),
       'o idle-mundo não troca o zoom só na run — ou troca sempre, ou nunca');
     ok(/rotuloZoom\(zoomEfetivo\)/.test(t),
       'o rótulo mostra o zoom escolhido enquanto a tela usa outro — a mentira pequena do controle');

@@ -36,6 +36,16 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### L-188 FECHADA — no panorâmico a luta passou a caber na altura
+
+A esteira achou primeiro o próprio erro: uma amostra com mob ainda ENTRANDO
+(pé abaixo da janela) puxava a medida — agora é separada. O que sobrou era
+real: a DEC-15 garantia a LARGURA da luta e não a altura; a 3× o panorâmico
+mostra 207 px de mundo e o trio ocupa 182. A regra valeu nos dois eixos: na
+run, a câmera se afasta até 284 px de altura (2,18× no panorâmico), e o
+controle mostra o zoom de verdade. Bando: 88% → 75% da janela; a cena mostra
+mais do mundo (a fauna dormindo, os vaga-lumes).
+
 ### ST-7.2c FECHADA — o piloto está pronto para rodar; falta gente
 
 `docs/PILOTO.md` é o roteiro: como subir o servidor em produção (com o
