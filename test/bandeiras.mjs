@@ -226,3 +226,22 @@ export function agregacaoIncompleta({ esperadas, recebidas }) {
   return { faltando, intrusas, repetidas,
            ok: !faltando.length && !intrusas.length && !repetidas.length };
 }
+
+/* ── D-093 · O VEREDITO FINAL SABE QUE HÁ COMPARAÇÃO QUE NÃO ACONTECEU ─────
+ *
+ * Num clone novo a base visual LOCAL não existe. A passada completa a CRIA, e a
+ * suíte `visual-base` comparava a captura com ela mesma — VERDE sem ter
+ * comparado nada, e o aviso de uma linha se perdia no meio da saída. Execução
+ * que não olhou não pode terminar com a mesma palavra da que olhou.
+ *
+ *   falhas            vermelho, sempre
+ *   naoExecutadas     sem falha: VERDE, mas a linha final DIZ o que não rodou;
+ *                     e no portão de fechamento (exigeVisual) é reprovação —
+ *                     portão que fecha sem ter comparado é decorativo
+ */
+export function vereditoFinal({ falhas = 0, naoExecutadas = [], exigeVisual = false }) {
+  if (falhas > 0) return { palavra: 'VERMELHO', saida: 1 };
+  if (naoExecutadas.length && exigeVisual) return { palavra: 'NÃO FECHA', saida: 1 };
+  if (naoExecutadas.length) return { palavra: 'VERDE COM LACUNA', saida: 0 };
+  return { palavra: 'VERDE', saida: 0 };
+}

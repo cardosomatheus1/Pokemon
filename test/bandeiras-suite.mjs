@@ -13,7 +13,8 @@ import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { precisaNavegador, sondasNecessarias, SONDA_DA_SUITE,
          suitesPrometidasENaoEntregues, sondasSemResultado,
-         trabalhadoresDaSuite, ordemDeEntrega, agregacaoIncompleta } from './bandeiras.mjs';
+         trabalhadoresDaSuite, ordemDeEntrega, agregacaoIncompleta,
+         vereditoFinal } from './bandeiras.mjs';
 
 const COM = ['visual', 'ambientes', 'rodada-viva', 'contraste'];
 
@@ -265,6 +266,36 @@ export function suite() {
       'a mesma suíte contada duas vezes infla o total e esconde a que faltou');
     igual(agregacaoIncompleta({ esperadas: ['a', 'b'], recebidas: ['b', 'a'] }).ok, true,
       'a ordem de chegada é livre em paralelo, e não pode reprovar');
+  });
+
+  /* ── D-093 · a comparação que não aconteceu ─────────────────────────── */
+  s.teste('D-093: comparação não executada não termina com a palavra VERDE', () => {
+    const v = vereditoFinal({ falhas: 0, naoExecutadas: ['visual-base'] });
+    ok(v.palavra !== 'VERDE',
+      'a base local nasceu nesta execução, nada foi comparado, e a linha final disse VERDE — o D-093');
+    igual(v.saida, 0, 'no npm test comum, a lacuna avisa mas não reprova: o clone novo precisa poder rodar');
+  });
+
+  s.teste('D-093: no portão de fechamento, comparação não executada REPROVA', () => {
+    igual(vereditoFinal({ falhas: 0, naoExecutadas: ['visual-base'], exigeVisual: true }).saida, 1,
+      'o portão fechou sem ter comparado a tela — portão que pula em silêncio é decorativo');
+  });
+
+  s.teste('D-093: sem lacuna e sem falha, VERDE; com falha, VERMELHO sempre', () => {
+    igual(vereditoFinal({ falhas: 0 }).palavra, 'VERDE');
+    igual(vereditoFinal({ falhas: 2, naoExecutadas: ['x'] }).palavra, 'VERMELHO');
+  });
+
+  s.teste('D-093: base que nasceu agora vira NÃO EXECUTADA, e o run.mjs avisa a suíte', async () => {
+    const { suiteBase } = await import('./visual.mjs');
+    ok(suiteBase({}, {}, { criadaAgora: true }).naoExecutada,
+      'a suíte visual-base comparou a captura com a base que acabou de nascer dela — VERDE sem ter olhado');
+    ok(!suiteBase({}, {}, {}).naoExecutada, 'a base de sempre passou a se dizer não executada');
+    const run = readFileSync(new URL('./run.mjs', import.meta.url), 'utf8');
+    ok(/suiteBase\(baseAtual, baseGravada, \{ criadaAgora: baseCriadaAgora \}\)/.test(run),
+      'o run.mjs não conta à suíte que a base nasceu agora');
+    ok(/vereditoFinal\(\{ falhas: falhas\.length, naoExecutadas:/.test(run),
+      'o run.mjs decide a palavra final sem a regra que sabe da lacuna');
   });
 
   return s;

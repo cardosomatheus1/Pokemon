@@ -4914,7 +4914,15 @@ acontece em dois pontos **interiores** à faixa, longe dos grampos, com o produt
 ## D-086 — `sala-cliente` é INSTÁVEL, e instável é pior que vermelho
 
 **Achado em:** 09/09/2026, no fecho do 1.27. **Bloco dono:** F1.8 (a sala do
-cliente). **Estado:** aberto.
+cliente). **Estado:** aberto — **não reproduzido em 25/09/2026** (ST-5.8).
+
+> **Medido em 25/09:** 20 execuções de `--so=sala-cliente` com três `npm run
+> rapido` rodando ao mesmo tempo (CPU cheia): **20/20 verdes**. Nenhum código
+> foi mudado — esta ficha diz que chute em teste instável vira espera maior e
+> esconde o defeito, e não há falha lida para consertar. As mensagens de
+> `ate()` já nomeiam o sinal que não veio; a próxima falha no `npm run repetir`
+> é a leitura que destrava. Desde o T14 o `repetir` roda em ~3,5 min, então
+> rodá-lo em laço deixou de custar uma tarde.
 
 ```text
 execução 1   VERMELHO — 1/1955   [sala-cliente] entrar na sala traz o estado
@@ -5260,10 +5268,17 @@ foto com estouro no ar       (nunca existiu)      tirada
 
 ---
 
-## D-093 — a linha de base visual LOCAL é invisível ao git, e envelhece calada
+## D-093 — a linha de base visual LOCAL é invisível ao git, e envelhece calada ✅ CORRIGIDO
 
 **Achado em:** 10/09/2026, fechando o 1.27e. **Bloco dono:** T7 (a esteira).
 **Estado:** a deriva foi regravada; **a causa de fundo continua aberta.**
+
+> ✅ **CORRIGIDO em 25/09/2026, na ST-5.7.** Base local que nasce na execução
+> vira comparação **NÃO EXECUTADA**: a linha final diz "VERDE COM LACUNA" no
+> `npm test` e **NÃO FECHA** no portão (`EXIGE_VISUAL=1`). A base local ganhou
+> carimbo (`visual-base-local.meta.json`: data e commit), impresso a cada
+> execução. Regra em `vereditoFinal` (`bandeiras.mjs`); S1086–S1088. Simulado
+> um clone novo: 1ª execução do portão NÃO FECHA; a 2ª, VERDE.
 
 O portão Q2 ABORTOU antes de plantar um único defeito, porque a configuração de
 julgamento já estava vermelha:

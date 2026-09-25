@@ -36,6 +36,7 @@ engine/*.bak
 # muda com o rasterizador — a medida e local por natureza, e versiona-la tornaria
 # ilegivel o diff de todo bloco. Mesma razao do cache do Q2.
 test/fixtures/visual-base-local.json
+test/fixtures/visual-base-local.meta.json
 
 # dados/ — banco de execução (D-030). Dado de runtime, nunca versionado:
 # ele muda a cada rodada, e o esquema já vive nas migrações do banco.mjs.

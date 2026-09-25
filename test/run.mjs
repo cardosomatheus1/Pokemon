@@ -148,7 +148,7 @@ import * as visual from './visual.mjs';
 import { precisaNavegador as precisaDeNavegador, sondasNecessarias,
          SONDA_DA_SUITE, suitesPrometidasENaoEntregues,
          sondasSemResultado, trabalhadoresDaSuite, ordemDeEntrega,
-         agregacaoIncompleta } from './bandeiras.mjs';
+         agregacaoIncompleta, vereditoFinal } from './bandeiras.mjs';
 import * as acervo from './acervo.mjs';
 import * as calibracao from './calibracao.mjs';
 import * as ligaServidor from './liga-servidor.mjs';
@@ -282,7 +282,7 @@ const exigeVisual = process.env.EXIGE_VISUAL === '1';
    mesmo argumento do Q5. */
 const exigeLocal = process.env.EXIGE_LOCAL === '1';
 const semVisual = process.env.SEM_VISUAL === '1';   // usado pela sabotagem
-let sondasPedidas = new Set(), temAssets = false;
+let sondasPedidas = new Set(), temAssets = false, baseCriadaAgora = false;
 let rLuta = null;
 let rVisual = null, baseAtual = null, baseGravada = null, digitaisNav = null, rSemRede = null, rTemaCedo = null, rSemBackend, rRodadaCompleta;
 /* Q3 do F0.5 pede a mesma rodada reproduzida em dois ambientes JS. Estas são as
@@ -473,12 +473,24 @@ if (visual.disponivel() && !semVisual && precisaNavegador) {
     }
     writeFileSync(ARQ_LOCAL, JSON.stringify(baseAtual));
     baseLocal = baseAtual;
+    baseCriadaAgora = true;
+    /* D-093 · O CARIMBO: quando e sobre que commit a base local nasceu. Base
+       local envelhece calada — o carimbo é o que deixa a idade dela à vista. */
+    try {
+      const { execFileSync } = await import('node:child_process');
+      const commit = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim();
+      writeFileSync(new URL('./fixtures/visual-base-local.meta.json', import.meta.url),
+        JSON.stringify({ criadaEm: new Date().toISOString(), commit }) + '\n');
+    } catch { /* sem git (caixa de areia): sem carimbo, e a base continua */ }
     console.log('  · linha de base visual LOCAL criada (' +
                 visual.chaveAmbiente(visual.ambienteAtual()) + ') — esta execução não comparou nada.');
     console.log('    A versionada é de outro ambiente e digital de pixel não viaja.\n');
   }
-  if (escolha.origem === 'local')
-    console.log('  · Q5 comparando contra a base LOCAL desta máquina, não a do projeto.\n');
+  if (escolha.origem === 'local') {
+    const meta = ler(new URL('./fixtures/visual-base-local.meta.json', import.meta.url));
+    console.log('  · Q5 comparando contra a base LOCAL desta máquina, não a do projeto' +
+      (meta ? ` — criada em ${meta.criadaEm.slice(0, 10)}, commit ${meta.commit}.` : ' — sem carimbo (anterior ao D-093).') + '\n');
+  }
   baseGravada = escolha.origem === 'local' ? baseLocal : escolha.base;
   if (!temLocal) console.log('  · teste de egresso fechado pulado (sem assets locais) — use npm run assets\n');
 
@@ -548,7 +560,7 @@ const todas = [
                      /* O contraste é medido no navegador e julgado por aritmética
                         pura — por isso a suíte mora fora do visual.mjs. */
                      contraste.suite(rVisual.contrastes)] : []),
-    ...(baseAtual ? [visual.suiteBase(baseAtual, baseGravada)] : []),
+    ...(baseAtual ? [visual.suiteBase(baseAtual, baseGravada, { criadaAgora: baseCriadaAgora })] : []),
     ...(digitaisNav     ? [visual.suiteAmbientes(digitaisNav, RAIZES_Q3)] : []),
     ...(rTemaCedo       ? [visual.suiteTemaCedo(rTemaCedo)] : []),
     ...(rSemBackend     ? [visual.suiteSemBackend(rSemBackend)] : []),
@@ -659,12 +671,22 @@ if (paralelo) {
   }
 }
 console.log('');
+/* D-093: suíte que existe mas não comparou nada é dita, e não escondida. */
+const naoExecutadas = locais.filter(s => s.naoExecutada);
+const veredito = vereditoFinal({ falhas: falhas.length, naoExecutadas: naoExecutadas.map(s => s.nome), exigeVisual });
 if (falhas.length) {
   console.log(`VERMELHO — ${falhas.length}/${total} falharam`);
   for (const f of falhas) console.log(`  [${f.suite}] ${f.titulo}\n      ${f.erro}`);
   process.exit(1);
 }
-console.log(`VERDE — ${total}/${total} passaram`);
+for (const s of naoExecutadas) console.log(`⚠  NÃO EXECUTADA: ${s.nome} — ${s.naoExecutada}`);
+if (veredito.saida) {
+  console.log(`\n${veredito.palavra} — o portão não fecha com comparação não executada.`);
+  process.exit(veredito.saida);
+}
+console.log(naoExecutadas.length
+  ? `${veredito.palavra} — ${total}/${total} passaram, e ${naoExecutadas.length} comparação(ões) NÃO foram executadas`
+  : `VERDE — ${total}/${total} passaram`);
 console.log('\n§4.8 — critério de saída da v0.9, item a item:');
 console.log(saida.relatorio());
 console.log('  ⏳ = registrado e pendente; não se resolve escrevendo software.');

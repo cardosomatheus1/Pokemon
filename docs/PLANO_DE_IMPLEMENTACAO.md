@@ -419,8 +419,8 @@ Todas mexem em tela: Q5 com as duas metades, decisão em camada 0.
 | **ST-5.4** · números de dano não se tocam (L-172) | M | a sonda imprime os pares; meta **0** pares sobrepostos em 420 px em 3 execuções, 0 fora da janela |
 | **ST-5.5** · cast e projétil (L-171) | M | golpe com `cast`/`proj` no `MOVE_FX` produz folha no atacante e projétil do atacante ao alvo; a cena publica o par; o teste puro confere início e fim da trajetória |
 | **ST-5.6** · a janela de 420 px cabe a luta (L-175) | M | em 420 px o bando de 4, companheiro e treinador cabem; o zoom depende da largura sem violar o piso (o S616 continua reprovando) |
-| **ST-5.7** · base visual ausente não conta como verde (D-093) | P | sem a base local, `visual-base` aparece como **NÃO EXECUTADA** no relatório (e o `portoes` reprova), nunca como verde; a base local ganha carimbo de data e commit |
-| **ST-5.8** · `sala-cliente` estável (D-086) | P | reproduzir com carga; se for o teto de 3 s, a espera passa a ser por evento com prazo nomeado; `npm run repetir` 5/5 |
+| ~~**ST-5.7**~~ ✅ 25/09 · base visual ausente não conta como verde (D-093) | P | sem a base local, `visual-base` aparece como **NÃO EXECUTADA** no relatório (e o `portoes` reprova), nunca como verde; a base local ganha carimbo de data e commit |
+| **ST-5.8** · `sala-cliente` estável (D-086) — **não reproduzido** em 20 execuções sob carga (25/09); fica aberto esperando uma falha lida | P | reproduzir com carga; se for o teto de 3 s, a espera passa a ser por evento com prazo nomeado; `npm run repetir` 5/5 |
 
 **Evidência de fecho do E5:** uma run real jogada de ponta a ponta (entrar,
 lutar a wave, chegar ao fim), capturada — não componente isolado.

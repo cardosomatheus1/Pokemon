@@ -265,6 +265,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | **T9 · T10 · T13 · T11a** · o arnês | 16/09 | portão de 7 h para 3 min com a árvore intocada |
 | **1.34** · dia, tarde e noite | 25/09 | Q2 1017/1017 · suíte 2184/2184 · capturas em `tools/previas/_hora/` |
 | **1.33** · o elenco muda com a hora e o clima | 25/09 | 18 de 44 estágios mudam à noite · Q2 e suíte no commit · capturas `tools/previas/_hora/sala-*` |
+| **ST-5.7** · comparação visual não executada não é verde (D-093) | 25/09 | "VERDE COM LACUNA" no npm test, NÃO FECHA no portão · carimbo na base local · S1086–S1088 |
 | **ST-5.2** · o rodapé do banner entre o avatar e o Pokémon (D-082) | 25/09 | a primeira correção caiu sobre o avatar e a FOTO pegou · a ferramenta mede os dois lados · S1084–S1085 |
 | **ST-3.3** · o mapa de emissão por recurso | 25/09 | fixture de medição determinística · achou a L-185 (maratona: 8,7× a Essência calibrada) · S1082–S1083 |
 | **ST-3.4 · ST-3.5** · DEC-08 travada por teste; o custo da nova tentativa antes de entrar | 25/09 | as duas decisões aplicadas como padrão (recomendação = código) · S1079–S1081 |
@@ -345,8 +346,8 @@ Todos com dono nomeado, todos em `docs/LACUNAS.md`.
 | D-108 | com conta real, o cosmético da boutique sai de graça | 🟡 mitigado na ST-1.3 (não vende); o conserto é o E4 |
 | ~~D-109~~ | o ⏻ não desloga a conta real | ✅ ST-1.2, 25/09 |
 | ~~D-082~~ | o rodapé do banner passa por baixo do mon da vitrine na tela da run | ✅ ST-5.2, 25/09 |
-| **D-086** | `sala-cliente` é INSTÁVEL — vermelho uma vez, verde na seguinte | aberto |
-| **D-093** | a linha de base visual LOCAL é invisível ao git e envelhece calada. Um clone novo não a tem, e a suíte passa **sem comparar nada** | a deriva foi regravada; a causa de fundo segue aberta |
+| **D-086** | `sala-cliente` é INSTÁVEL — vermelho uma vez, verde na seguinte | aberto · não reproduzido em 20 execuções sob carga (25/09) |
+| ~~D-093~~ | a linha de base visual LOCAL comparava consigo mesma num clone novo | ✅ ST-5.7, 25/09 |
 
 ### E as três que travam o projeto e não são código
 

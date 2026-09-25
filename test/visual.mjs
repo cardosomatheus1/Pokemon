@@ -3277,9 +3277,14 @@ export function suiteRodadaViva(r) {
   return s;
 }
 
-export function suiteBase(atual, base) {
+export function suiteBase(atual, base, { criadaAgora = false } = {}) {
   const s = criarSuite('visual-base');
-  s.teste('a interface não mudou sem intenção', () => {
+  /* D-093 · BASE QUE NASCEU AGORA NÃO É COMPARAÇÃO. A captura contra ela mesma
+     dava VERDE sem ter olhado nada. A suíte continua existindo (a guarda do
+     S109 cobra), mas a comparação vira NÃO EXECUTADA, e o veredito final diz. */
+  if (criadaAgora)
+    s.naoExecutada = 'a linha de base visual LOCAL nasceu nesta execução — não havia com o que comparar; rode de novo';
+  else s.teste('a interface não mudou sem intenção', () => {
     const falhas = compararBase(atual, base);
     ok(falhas.length === 0,
       `${falhas.length} tela(s) fora da linha de base:\n      ` + falhas.join('\n      ') +

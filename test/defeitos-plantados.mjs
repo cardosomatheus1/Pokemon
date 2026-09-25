@@ -2318,6 +2318,20 @@ export const DEFEITOS = [
     de:'.bnRodape.comMon{left:84px;right:114px}',
     para:'.bnRodape.comMon{right:114px}' },
 
+  /* ── ST-5.7 · D-093: COMPARAÇÃO NÃO EXECUTADA NÃO É VERDE ─────────── */
+  { id:'S1086', arquivo:'test/bandeiras.mjs', nome:'o veredito final esquece a lacuna',
+    real:'o clone novo cria a base, nao compara nada, e a linha final diz VERDE — o D-093',
+    de:"  if (naoExecutadas.length) return { palavra: 'VERDE COM LACUNA', saida: 0 };",
+    para:"  if (naoExecutadas.length) return { palavra: 'VERDE', saida: 0 };" },
+  { id:'S1087', arquivo:'test/bandeiras.mjs', nome:'o portao fecha com comparacao nao executada',
+    real:'npm run portoes fecha o bloco sem ter comparado a tela',
+    de:"  if (naoExecutadas.length && exigeVisual) return { palavra: 'NÃO FECHA', saida: 1 };",
+    para:"  if (false) return { palavra: 'NÃO FECHA', saida: 1 };" },
+  { id:'S1088', arquivo:'test/visual.mjs', nome:'a base recem-criada volta a comparar consigo mesma',
+    real:'a captura contra ela mesma: VERDE sem ter olhado',
+    de:'  if (criadaAgora)\n    s.naoExecutada =',
+    para:'  if (false)\n    s.naoExecutada =' },
+
   { id:'S1043', arquivo:'test/bandeiras.mjs', nome:'as caras passam a ser entregues por ultimo',
     real:'a fila termina quando a ultima termina: a mais cara no fim deixa tres trabalhadores ociosos',
     de:'    ((custo[b] ?? 0) - (custo[a] ?? 0)) || (pos.get(a) - pos.get(b)));',

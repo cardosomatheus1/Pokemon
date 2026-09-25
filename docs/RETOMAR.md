@@ -36,6 +36,14 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### ST-5.7 FECHADA — comparação visual que não aconteceu não é verde (D-093)
+
+Num clone novo a base visual local nasce na primeira execução, e a suíte a
+comparava consigo mesma: VERDE sem ter olhado. Agora a linha final diz "VERDE
+COM LACUNA" no `npm test`, e o `portoes` **não fecha**; a base local ganhou
+carimbo de data e commit. **D-086** (sala-cliente instável): 20/20 verdes sob
+carga, não reproduzido — nenhum código mudado, fica esperando uma falha lida.
+
 ### ST-5.2 FECHADA — o banner não passa por cima do Pokémon (D-082)
 
 O rodapé com Pokémon no canto passou a ficar ENTRE o avatar e a arte. **A foto
