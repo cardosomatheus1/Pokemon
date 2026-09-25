@@ -1,3 +1,8 @@
+> **📦 ARQUIVO MORTO — movido para `docs/historico/` em 25/09/2026 (ST-6.1).**
+> Este documento mantinha uma fila ou um estado próprio, contra a GOV-01. Ele é
+> registro do que foi, e não dá ordem nenhuma. **O estado é `docs/RETOMAR.md`;
+> a fila, `docs/ROADMAP.md`; as fichas, `docs/PLANO_DE_IMPLEMENTACAO.md`.**
+
 > **HISTÓRICO — não é fila nem estado** (GOV-01, 25/09/2026). Este arquivo
 > mandava reconstruir o 1.27f, que foi entregue em 16/09. A fila está no
 > `ROADMAP.md` e o estado no `RETOMAR.md`.

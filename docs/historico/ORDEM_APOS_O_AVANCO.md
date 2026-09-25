@@ -1,3 +1,8 @@
+> **📦 ARQUIVO MORTO — movido para `docs/historico/` em 25/09/2026 (ST-6.1).**
+> Este documento mantinha uma fila ou um estado próprio, contra a GOV-01. Ele é
+> registro do que foi, e não dá ordem nenhuma. **O estado é `docs/RETOMAR.md`;
+> a fila, `docs/ROADMAP.md`; as fichas, `docs/PLANO_DE_IMPLEMENTACAO.md`.**
+
 # A ordem depois do Avanço — decidida em 08/09/2026
 
 **De onde ela sai:** da `PAUTA_2026-09-08.md`, relida com o Avanço **de pé**. A

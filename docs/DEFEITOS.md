@@ -2086,7 +2086,7 @@ comentários removidos pela lição do `S125`, e por dois defeitos plantados:
 
 ---
 
-## D-037 — as fontes do tema nunca carregaram: a folha é servida como binário
+## D-037 — as fontes do tema nunca carregaram: a folha é servida como binário ✅ CORRIGIDO (R25) — marca posta na ST-6.3, 25/09/2026; o corpo já registrava
 
 **Achado em:** R25, medindo a tela antes de mexer nela — o dono disse que "não
 sentiu diferença" nas três correções de letrado (R14, R15, R16).
@@ -2362,7 +2362,7 @@ hipótese estava certa e havia outra atrás".
 
 ---
 
-## D-041 — a varredura das cenas ignorava movimento reduzido
+## D-041 — a varredura das cenas ignorava movimento reduzido ✅ CORRIGIDO (R30) — marca posta na ST-6.3, 25/09/2026; o corpo já registrava
 
 **Achado em:** R30, ao reescrever as regras `.cn-*`. **Corrigido em:** R30.
 **Bloco dono:** R30, que passou a ser o dono dessas regras.
@@ -2450,7 +2450,7 @@ o número até calar", e ela estava certa.
 
 ---
 
-## D-042 — movimento reduzido apagava todo aviso da arena
+## D-042 — movimento reduzido apagava todo aviso da arena ✅ CORRIGIDO (R32) — marca posta na ST-6.3, 25/09/2026; o corpo já registrava
 
 **Introduzido em:** R30. **Achado em:** R32, por relato do dono do projeto.
 **Corrigido em:** R32. **Bloco dono:** R32.
@@ -2531,7 +2531,7 @@ quando estava tudo certo:
 
 ---
 
-## D-043 — o painel do protótipo continua sendo desenhado para o vazio
+## D-043 — o painel do protótipo continua sendo desenhado para o vazio ✅ CORRIGIDO (R35) — marca posta na ST-6.3, 25/09/2026; o corpo já registrava
 
 **Achado em:** R35, ao procurar onde moram as cores do pódio.
 **Bloco dono:** um bloco de higiene do cliente. **NÃO corrigido aqui** — remover
@@ -2676,7 +2676,7 @@ vale pouco sozinha — o defeito antigo aparecia em ~0,7% das execuções, entã
 verdes seriam o resultado esperado mesmo sem conserto nenhum. **A prova é a
 margem, não a repetição:** 300 × 7,13 = 2.139 contra um teto de 50.000.
 
-## D-045 — a progressão do F1.10 está inteira no servidor, e o app nunca a chama
+## D-045 — a progressão do F1.10 está inteira no servidor, e o app nunca a chama ✅ CORRIGIDO (0.1) — marca posta na ST-6.3, 25/09/2026; o corpo já registrava
 
 **Achado em:** bloco 0.1, ao conferir o critério de saída do F1.10.
 **Bloco dono:** 0.1 (fechar o F1.10). **Estado:** ABERTO — precisa de decisão do
@@ -3215,7 +3215,7 @@ que morreram no teto de tempo**, senão ele reprova o portão por um vazamento q
 
 ---
 
-## D-051 — o pack original tinha UMA espécie comum, e a suíte inteira estava verde
+## D-051 — o pack original tinha UMA espécie comum, e a suíte inteira estava verde ✅ CORRIGIDO (1.3b) — marca posta na ST-6.3, 25/09/2026; o corpo já registrava
 
 **Achado em:** 31/08/2026, no bloco 1.3b, escolhendo as criaturas iniciais.
 **Bloco dono:** 1.3b. **Estado: CORRIGIDO no mesmo commit.**
@@ -3704,7 +3704,7 @@ dominar em tudo.
 
 ---
 
-## D-059 — `--sem-navegador` sobe os cinco Chromium e joga o resultado fora
+## D-059 — `--sem-navegador` sobe os cinco Chromium e joga o resultado fora ✅ CORRIGIDO (T6) — marca posta na ST-6.3, 25/09/2026; o corpo já registrava
 
 > **CORRIGIDO no T6** (01/09/2026). A decisao saiu do `run.mjs` e virou
 > `test/bandeiras.mjs`, com tabela-verdade em `test/bandeiras-suite.mjs` e o
@@ -4268,7 +4268,7 @@ vê acontecer.
 
 ---
 
-## D-074 — um símbolo que eu inventei derrubou a aba de Rotas com a suíte VERDE
+## D-074 — um símbolo que eu inventei derrubou a aba de Rotas com a suíte VERDE ✅ CORRIGIDO (1.22) — marca posta na ST-6.3, 25/09/2026; o corpo já registrava
 
 **Achado em:** 02/09/2026, **pelo dono**, jogando.
 **Bloco dono:** 1.22 — **CORRIGIDO no mesmo bloco.** Origem: 1.21.
@@ -4394,7 +4394,7 @@ estender para REFERÊNCIA   302 alarmes, 0 defeitos  -> descartado, e escrito
 
 ---
 
-## D-075 — a Pokédex desenhava `007 ? ???` com a Pokébola de "capturada" ao lado
+## D-075 — a Pokédex desenhava `007 ? ???` com a Pokébola de "capturada" ao lado ✅ CORRIGIDO (1.22) — marca posta na ST-6.3, 25/09/2026; o corpo já registrava
 
 **Achado em:** 03/09/2026, no save do dono, indo atrás de outra queixa dele.
 **Bloco dono:** 1.22 — **CORRIGIDO no mesmo bloco.**
@@ -4444,7 +4444,7 @@ dono, e não efeito colateral de uma correção de tela. Fica na **L-128**.
 
 ---
 
-## D-076 — "menos movimento" apagava a cena da captura inteira
+## D-076 — "menos movimento" apagava a cena da captura inteira ✅ CORRIGIDO (1.26) — marca posta na ST-6.3, 25/09/2026; o corpo já registrava
 
 **Achado em:** 03/09/2026, **pelo dono**, jogando. **Bloco dono:** 1.26 —
 **CORRIGIDO no mesmo bloco.** Origem: 1.23.

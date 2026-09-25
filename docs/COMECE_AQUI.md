@@ -48,7 +48,7 @@ navegador com aviso.
 ```bash
 npm run rapido             # 21 suítes sem navegador ......... 10 s  (ver D-017)
 node test/run.mjs --so=carteira,exposicao   # só o que interessa  0,8 s
-npm test                   # a suíte inteira, 596 testes ..... ~4 min
+npm test                   # a suíte inteira — 2274 testes, 1 min 40 s (25/09/2026; eram 596 · ~4 min)
 npm run gerar:visual       # regrava só a linha de base visual . 49 s
 npm run olhar              # captura as telas em PNG .......... ~5 min
 npm run sabotagem:tocados  # Q2 só dos arquivos que você mexeu
@@ -435,7 +435,9 @@ guarda que já basta** — e só apareceram depois de o portão inteiro rodar. E
 em **L-038**. Defesa em profundidade é boa e fica; o que muda é onde se planta o
 defeito.
 
-**Aberto agora:**
+**Aberto agora** *(lista da era v0.9 — HISTÓRICA desde 25/09/2026: o D-018
+fechou no F1.15, e a lista do que está aberto HOJE mora no `docs/ROADMAP.md`,
+seções "Defeitos abertos" e "Aberto e sem bloco na fila"):*
 
 | item | o que é | dono |
 |---|---|---|

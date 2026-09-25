@@ -1,3 +1,8 @@
+> **📦 ARQUIVO MORTO — movido para `docs/historico/` em 25/09/2026 (ST-6.1).**
+> Este documento mantinha uma fila ou um estado próprio, contra a GOV-01. Ele é
+> registro do que foi, e não dá ordem nenhuma. **O estado é `docs/RETOMAR.md`;
+> a fila, `docs/ROADMAP.md`; as fichas, `docs/PLANO_DE_IMPLEMENTACAO.md`.**
+
 > **⚠ ESTE ARQUIVO É HISTÓRICO desde 15/09/2026.** O estado único do projeto
 > (GOV-01) é o **`docs/RETOMAR.md`** — o comando é `leia docs/RETOMAR.md e
 > continue de onde paramos`. Este aqui ficou parado em 30/08 e continuou na

@@ -1,3 +1,6 @@
+> **HISTÓRICO (ST-6.1, 25/09/2026).** Registro, e não ordem: contagens e "próximos" aqui
+> são da data do documento. O estado é `docs/RETOMAR.md`; a fila, `docs/ROADMAP.md`.
+
 # Porte da v1.0 do trabalho paralelo
 
 Um segundo desenvolvedor trabalhou **em cima do protótipo v0.8 congelado**, no

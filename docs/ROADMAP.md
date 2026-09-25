@@ -293,7 +293,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | 5 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
 | — | **E6** · higiene documental | ST-6.1 a 6.4 | não é código: corre em paralelo, um commit por story |
 | — | **ST-0.6** · CI no GitHub | `npm test` a cada push; Q2 fatiado à noite | espera a **DEC-13** |
-| — | **T11 · T8 · T4 · T7** · arnês | ❄️ **CONGELADO** | entra só quando IMPEDIR um bloco desta tabela, com orçamento nomeado antes (`CLAUDE.md`, 16/09) |
+| — | **T11 · T12 · T7** · arnês | ❄️ **CONGELADO** — *(ST-6.2, 25/09: a linha dizia "T11 · T8 · T4 · T7", e só o T11 era arnês pendente: o **T4 está fechado ✅** no BUILD_BLOCKS, e o **T8** era a tarefa de documentos feita em 08/09. Entram o **T12** — dono do D-105, que estava órfão da fila — e o **T7**, dono da L-173, que ainda não tem ficha)* | entra só quando IMPEDIR um bloco desta tabela, com orçamento nomeado antes (`CLAUDE.md`, 16/09) |
 
 ### Esperando decisão do dono
 
@@ -337,8 +337,11 @@ Todos com dono nomeado, todos em `docs/LACUNAS.md`.
 ### Defeitos abertos
 
 > **Critério desta tabela:** os defeitos que um bloco da fila vai tocar. A
-> contagem inteira dá **~21 fichas sem marca de fechada** em `DEFEITOS.md`, e
-> algumas estão fechadas sem marcador — revisar ficha a ficha é a ST-6.3.
+> contagem inteira, depois da ST-6.3 (25/09, marcas postas só onde o corpo já
+> registrava o conserto): **15 fichas sem marca de fechada** em `DEFEITOS.md` —
+> D-031, 034, 038, 039, 040, 047, 050, 053, 056, 060, 077, 078, 086, 097, 108.
+> Em `LACUNAS.md` a normalização ficha a ficha segue aberta (128 sem marca, 57
+> sem linha de Estado) — é o resto da ST-6.3.
 
 | defeito | o que é | estado |
 |---|---|---|
@@ -507,8 +510,9 @@ Ordem congelada em 04/09/2026, por decisão do dono: *"você no momento irá pau
 e armazenar, não descarte"*. **Nenhum deles foi descartado**, e todos têm lacuna
 aberta com bloco dono nomeado.
 
-> **A pauta completa está em `docs/PAUTA_2026-09-08.md`** — pedida pelo dono em
-> 08/09, e ela lista lacuna a lacuna, com quem pediu cada uma.
+> **A pauta completa está em `docs/historico/PAUTA_2026-09-08.md`** — pedida pelo
+> dono em 08/09, e ela lista lacuna a lacuna, com quem pediu cada uma. Arquivada
+> em 25/09 (ST-6.1): é registro, e a fila é a seção *O QUE FALTA*.
 
 #### T8 — alinhar as fichas ao mapa ✅ *(feito em 08/09/2026)*
 
@@ -540,12 +544,12 @@ e cada ficha diz que foi realinhada e quando.
 | **1.27c** ✅ | **o combate que o dono pediu em 09/09** — os cinco pedidos | L-168 os golpes liberados por NÍVEL · L-169 quatro por wave (com a densidade separada, senão o estágio 1 virava 100%) · L-170 o chefe 1x1 sorteado, com anúncio · L-171 as sprites de EFEITO da Arena, medidas em 14 estouros por wave · L-172 os números de dano, de 5 pares sobrepostos para 1–3 |
 | **1.27d** ✅ | **o que sobrou do L-164** | a prévia das espécies voltou à Rota OFF (0 → 12), e o boneco ATRAVESSA o mapa: wave 1 em [0,103], wave 10 em [601,704]. Achou o D-088 (um `escrever` de outro escopo) e o D-089 (a cena morta com a suíte verde). **Falta**: o `cast` e o `proj` do efeito, que pedem a linha entre atacante e alvo |
 | **1.27e** ✅ | **o SUMIÇO da sprite e o efeito FORA DA TELA** — o dono cobrando a mesma tela por três dias | uma linha de `tools/baixar-assets.mjs` pedia as folhas de combate só para o elenco da ARENA (76 de 146): **70 espécies entravam na wave sem `Attack` nem `Hurt` em disco e SUMIAM no golpe**, com a placa de nome no ar. E o estouro do efeito era posto em coordenada de TELA e pintado num canvas de MUNDO — a 3× de escala, fora da janela. Attack/Hurt em disco 76 → **146**; estouros fora da tela **0**; e a esteira passou a esperar o instante do golpe para FOTOGRAFAR. D-090, D-091, D-092 |
-| 1.28 ⏸️ | **o quadro de log** (L-141, L-109) — cobrado duas vezes | vira o quadro dos DOIS modos (§7.22.9), e é a peça que mais ganha com a mudança |
-| 1.29 ⏸️ | a essência ganha uso — Estilhaço, sorteado (L-138, L-139) | o baú do estágio passa a ser a porta natural do Estilhaço |
+| 1.28 ⏸️ | **o quadro de log** (L-141, L-109) — cobrado duas vezes · *(25/09: a base foi absorvida pelo A4 e o log da run existe; o HISTÓRICO permanente de runs segue aberto — `e.avancos` virou só o lançamento do teto no ST-1.1)* | vira o quadro dos DOIS modos (§7.22.9), e é a peça que mais ganha com a mudança |
+| ~~1.29 ⏸️~~ | ~~a essência ganha uso~~ — *linha velha: o 1.29 FECHOU (linha de baixo), e o baú virou porta do Estilhaço na ST-3.1 (25/09)* | — |
 | **1.29** ✅ | **a Essência vira ESTILHAÇO** — sete partes viram um held item, e o bolso é do BIOMA | fecha o maior buraco de economia aberto: 52,85% de tudo que caía não tinha porta. Feito em 09/09 |
 | **1.31** ✅ | **a BOUTIQUE de PokéCash** — o catálogo, a procedência, o preço e a vitrine | 101 peças catalogadas, 33 à venda, 19.750 a coleção inteira. Feito em 09/09 |
 | 1.30 ⏸️ | os **34** ícones de item (L-137) — o dono recobrou em 08/09 | não muda de forma — entra assim que a arte chegar |
-| 1.31 ⏸️ | as duas lojas e os NPCs (L-136, L-123, L-125) | não muda de forma; depende do cadeado do 1.26, que já existe |
+| 1.31b ⏸️ | as duas lojas e os NPCs (L-136, L-123, L-125) — *renomeado de "1.31" na ST-6.2: o 1.31 é a boutique, fechada; este é o resto, e é o dono da L-176 (os 404 de `lojas.mp4`)* | não muda de forma; depende do cadeado do 1.26, que já existe |
 | **1.32** ✅ | **o CLIMA do Avanço** (L-119) — buff de FARM, e não de dano | sete climas mais o Tempo Firme, e o quanto SAI da raridade do tipo: Gelo (4 espécies) paga +30% com equipe cheia, Veneno (33, o órfão que a lacuna apontou) paga +10%. Cinco canais — XP, moeda, material, item raro e **ritmo**, que encurta a wave e é o único que se vê sem ler número. O bônus só paga quem foi ENVIADO, com a mesma régua de vaga do combate. E a chuva na tela é a mesma que mexe no farm: véu, partículas, cartão e linha no log |
 | 1.33–1.34 ✅ | dia e noite (L-124) · "como funciona" | a hora do dia passa a ter efeito **visível na wave**; o elenco por condição nasce junto (L-178) |
 

@@ -1,5 +1,26 @@
 # PokéArena — Índice Oficial de Documentos v1.5
 
+> ## v1.6 — 25/09/2026 (ST-6.4): o mapa VIVO, antes de tudo
+>
+> O resto deste índice é de 18/08 e descreve a v1.4/v1.5. O que governa HOJE:
+>
+> | arquivo | papel | regra |
+> |---|---|---|
+> | `CLAUDE.md` | COMO se trabalha | método, portões, o que nunca fazer |
+> | `docs/RETOMAR.md` | o ESTADO — onde paramos | único (GOV-01) |
+> | `docs/ROADMAP.md` | a FILA — o que falta, em que ordem | única (GOV-01) |
+> | `docs/PLANO_DE_IMPLEMENTACAO.md` | as FICHAS por épico e story | não ordena; detalha |
+> | `docs/CRUZAMENTO_DOCS_CODIGO_2026-09-25.md` | a evidência do plano, arquivo:linha | fotografia datada |
+> | `docs/POKEARENA_SPEC_MASTER_V1-V5_v1.5_COMPLETE.md` | o QUÊ — fonte de verdade | a Spec vence conflito |
+> | `docs/POKEARENA_BUILD_BLOCKS_v1.2.md` | as fichas de bloco da V1 e do arnês (T1–T14) | as de produto de 1.27 em diante estão no PLANO |
+> | `docs/DEFEITOS.md` · `docs/LACUNAS.md` | o que está quebrado · o que falta, com bloco dono | toda ficha nomeia dono |
+> | `docs/revisao-2026-09-24/` | a Revisão 2.0 externa e a CONFERÊNCIA dela | referência; não substitui a Spec |
+> | `docs/historico/` | as filas e estados que já governaram | arquivo morto (ST-6.1), com LEIA-ME |
+>
+> **Economia:** `POKEARENA_ECONOMY_STUDY_v1.2`, `POKEARENA_UNIT_ECONOMICS_STUDY_v1.2`,
+> e desde a ST-3.3 o **mapa de emissão medido** em `test/fixtures/emissao-idle.json`.
+
+
 **Data:** 18/08/2026  
 **Status:** conjunto atual de referência do projeto
 

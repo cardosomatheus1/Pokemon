@@ -115,17 +115,20 @@ renegociam.
 Depois:
 
 ```text
-docs/CONTINUAR.md             o estado exato, e o que fazer a seguir
-docs/TAREFA_1.27f_CARTAO.md   a ordem de serviço do próximo bloco
-docs/ROADMAP.md               tudo que existe, e tudo que falta
-docs/COMECE_AQUI.md           o produto e o método, com calma
+docs/RETOMAR.md                  o estado exato — onde paramos (o ÚNICO estado)
+docs/ROADMAP.md                  a fila — o que falta, em que ordem (a ÚNICA fila)
+docs/PLANO_DE_IMPLEMENTACAO.md   as fichas de cada entrega: escopo, aceite, sabotagem
+docs/COMECE_AQUI.md              o produto e o método, com calma
 ```
 
 Se você for retomar com o Claude Code, a frase é:
 
 ```
-leia docs/CONTINUAR.md e siga daqui
+leia docs/RETOMAR.md e continue de onde paramos
 ```
+
+(`CONTINUAR.md` e `TAREFA_1.27f_CARTAO.md`, que esta seção apontava, foram para
+`docs/historico/` em 25/09/2026 — ver o `LEIA-ME` de lá.)
 
 ---
 

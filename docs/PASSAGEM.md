@@ -1,3 +1,6 @@
+> **HISTÓRICO (ST-6.1, 25/09/2026).** Registro, e não ordem: contagens e "próximos" aqui
+> são da data do documento. O estado é `docs/RETOMAR.md`; a fila, `docs/ROADMAP.md`.
+
 # PokéArena — passagem de bastão
 
 Este arquivo existe para quem pega o projeto agora. Ele não repete o que o

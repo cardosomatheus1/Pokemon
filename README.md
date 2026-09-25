@@ -47,9 +47,10 @@ comentário longo existe porque alguém já errou ali.
 ## Estado
 
 ```
-suíte        1116 testes, verde
-sabotagem    505 defeitos plantados, 100% detectados
-módulos      64 no app, todos com camada declarada
+suíte        2274 testes, verde — 1 min 40 s com navegador (medido 25/09/2026;
+             era 1116 quando esta linha foi escrita)
+sabotagem    1080 defeitos plantados; o Q2 do bloco fecha em minutos (T14)
+o estado     docs/RETOMAR.md · a fila: docs/ROADMAP.md
 ```
 
 ```bash

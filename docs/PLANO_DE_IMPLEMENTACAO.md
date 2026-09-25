@@ -434,10 +434,10 @@ commit de documentação.
 
 | story | aceite |
 |---|---|
-| **ST-6.1** · arquivar as filas mortas | `CONTINUAR`, `ORDEM_APOS_O_AVANCO`, `PAUTA_2026-09-08`, `LEIA-ME-DO-PACOTE`, `PASSAGEM`, `PORTE_v1.0`, `P1.1_ESCOPO`, `CHECKUP` vão para `docs/historico/` com nota de topo; `COMO_RODAR`, `README` e `COMECE_AQUI` apontam RETOMAR/ROADMAP e perdem contagens velhas. **Antes de mover:** `grep` nos testes (alguns leem `docs/`) |
-| **ST-6.2** · um id, um significado | resolver T8 (fichas ✅ × arnês congelado) e T4 (✅ × congelado); linhas 1.28/1.29/1.31 duplicadas no ROADMAP |
-| **ST-6.3** · estado padronizado nas fichas | toda ficha de DEFEITOS e LACUNAS com a linha `**Estado:** aberto / fechado em DD/MM (bloco)`; L-119 duplicada desfeita; L-138 e L-168 marcadas; a contagem do ROADMAP passa a ser um número verificável |
-| **ST-6.4** · o índice v1.6 | `DOCUMENT_INDEX` v1.6 com RETOMAR, ROADMAP, este plano, o cruzamento e a revisão; o `CLAUDE.md` aponta para ele |
+| ~~**ST-6.1**~~ ✅ 25/09 · arquivar as filas mortas | `CONTINUAR`, `ORDEM_APOS_O_AVANCO`, `PAUTA_2026-09-08`, `LEIA-ME-DO-PACOTE`, `PASSAGEM`, `PORTE_v1.0`, `P1.1_ESCOPO`, `CHECKUP` vão para `docs/historico/` com nota de topo; `COMO_RODAR`, `README` e `COMECE_AQUI` apontam RETOMAR/ROADMAP e perdem contagens velhas. **Antes de mover:** `grep` nos testes (alguns leem `docs/`) |
+| ~~**ST-6.2**~~ ✅ 25/09 · um id, um significado | resolver T8 (fichas ✅ × arnês congelado) e T4 (✅ × congelado); linhas 1.28/1.29/1.31 duplicadas no ROADMAP |
+| **ST-6.3** 🟡 25/09 — DEFEITOS feito (15 abertos, lista no ROADMAP); LACUNAS: L-119, L-138, L-168 corrigidas, o resto ficha a ficha · estado padronizado nas fichas | toda ficha de DEFEITOS e LACUNAS com a linha `**Estado:** aberto / fechado em DD/MM (bloco)`; L-119 duplicada desfeita; L-138 e L-168 marcadas; a contagem do ROADMAP passa a ser um número verificável |
+| ~~**ST-6.4**~~ ✅ 25/09 (seção v1.6 no topo do índice v1.5) · o índice v1.6 | `DOCUMENT_INDEX` v1.6 com RETOMAR, ROADMAP, este plano, o cruzamento e a revisão; o `CLAUDE.md` aponta para ele |
 
 ---
 

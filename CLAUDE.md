@@ -24,7 +24,7 @@ docs/ROADMAP.md                                     a FILA ÚNICA: feito, penden
 docs/PLANO_DE_IMPLEMENTACAO.md                      as FICHAS por épico e story (a ordem é do ROADMAP)
 docs/CRUZAMENTO_DOCS_CODIGO_2026-09-25.md           a evidência do plano: documento × código, arquivo:linha
 docs/revisao-2026-09-24/                            a Revisão 2.0 e a CONFERÊNCIA dela
-docs/POKEARENA_DOCUMENT_INDEX_v1.5.md               índice (a v1.4 não existe mais; v1.6 é a ST-6.4)
+docs/POKEARENA_DOCUMENT_INDEX_v1.5.md               índice — a seção v1.6 (25/09) no topo é o mapa vivo
 docs/DEFEITOS.md                                    defeitos achados, não corrigidos
 docs/LACUNAS.md                                     trabalho identificado, adiado
 ```

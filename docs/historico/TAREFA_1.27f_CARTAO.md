@@ -1,3 +1,8 @@
+> **📦 ARQUIVO MORTO — movido para `docs/historico/` em 25/09/2026 (ST-6.1).**
+> Este documento mantinha uma fila ou um estado próprio, contra a GOV-01. Ele é
+> registro do que foi, e não dá ordem nenhuma. **O estado é `docs/RETOMAR.md`;
+> a fila, `docs/ROADMAP.md`; as fichas, `docs/PLANO_DE_IMPLEMENTACAO.md`.**
+
 # TAREFA 1.27f — refazer o cartão da equipe
 
 **Estado:** ✅ **CONCLUÍDA em 16/09/2026** (commit `555848f`, Q2 VERDE 998/998). Este cartão é histórico — ele não manda refazer nada. Corrigido em 25/09 (REV-01): o cabeçalho continuou dizendo "a fazer" depois da entrega.

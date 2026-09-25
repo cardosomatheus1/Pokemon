@@ -4965,10 +4965,12 @@ dono e sem bloco.
 
 #### A lacuna original, preservada
 
-### L-119 — O CLIMA NO IDLE: buff de FARM, e não de dano
+### L-119 (ficha original) — O CLIMA NO IDLE: buff de FARM, e não de dano
 
 **Registrada em:** 02/09/2026, do checklist do dono. **Bloco dono:** 1.32. *(bloco realinhado ao ROADMAP em 08/09/2026 — ver T8)*
-**Estado:** aberta, com o desenho dele.
+**Estado:** ✅ FECHADA no 1.32 (10/09/2026) — o fecho é o título logo ACIMA
+deste. *(ST-6.3, 25/09: as duas entradas tinham o mesmo título e estados
+opostos; esta é a ficha de origem, preservada.)*
 
 A arena já tem clima (`pack.clima`) e ele muda DANO. No idle o eixo é outro:
 
@@ -5904,7 +5906,8 @@ vermelho quente que a 32 px lê como laranja.
 ### L-138 — a ESSÊNCIA é 53% de tudo que cai e não tem uso nenhum
 
 **Registrada em:** 03/09/2026, **pelo dono**. **Bloco dono:** 1.29. *(bloco realinhado ao ROADMAP em 08/09/2026 — ver T8)*
-**Estado:** aberta. **Prioridade alta — é o maior buraco de economia aberto.**
+**Estado:** ✅ FECHADA no 1.29 (09/09/2026) — a Essência vira Estilhaço. *(ST-6.3,
+25/09: o estado ainda dizia "aberta".)*
 
 > "hoje as essências já dropam beleza, mas onde é feita a troca? [...] afinal
 >  hoje se dropam as essências mas até momento sem uso"
@@ -7447,7 +7450,8 @@ plantados que o cobrem, num commit que só faz isso.
 ### L-168 — os golpes têm de ser LIBERADOS pelo nível
 
 **Registrada em:** 09/09/2026, por observação do dono. **Bloco dono:** 1.27c.
-**Estado:** aberta. **É defeito, e não pedido.**
+**Estado:** ✅ FECHADA no 1.27c — os golpes liberados por nível (ROADMAP, tabela
+da Prioridade 1). *(ST-6.3, 25/09: o estado ainda dizia "aberta".)* **Era defeito, e não pedido.**
 
 > "um charmander lv 1-2 era pra usar fire blast? Flamethrower? Tem que se
 >  atentar a isso, os poderes são liberados gradativamente com o nível."
