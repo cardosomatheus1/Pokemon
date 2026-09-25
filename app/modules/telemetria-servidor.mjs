@@ -28,11 +28,13 @@ export function eventosDoEstado(e, agora) {
   const runs = (e?.avancos ?? [])
     .filter(r => recente(r?.colhidaEm, agora))
     .map(r => ({ nome: 'run_harvested', chave: `run:${r.colhidaEm}`,
-                 campos: { bioma: String(r.bioma ?? ''), estagio: r.estagio ?? 0, encontros: r.encontros ?? 0 } }));
+                 campos: { em: r.colhidaEm, bioma: String(r.bioma ?? ''), estagio: r.estagio ?? 0,
+                           encontros: r.encontros ?? 0, moedas: r.moedas ?? 0, xp: r.xp ?? 0 } }));
   const exps = (e?.expedicoes ?? [])
     .filter(x => x?.id && recente(x.colhidaEm, agora))
     .map(x => ({ nome: 'expedition_harvested', chave: `exp:${x.id}`,
-                 campos: { bioma: String(x.bioma ?? ''), perfil: String(x.perfil ?? ''), encontros: x.encontros ?? 0 } }));
+                 campos: { em: x.colhidaEm, bioma: String(x.bioma ?? ''), perfil: String(x.perfil ?? ''),
+                           encontros: x.encontros ?? 0 } }));
   /* O teto do servidor é 50 por relato; o dia normal fica muito abaixo. */
   return [...runs, ...exps].slice(-50);
 }

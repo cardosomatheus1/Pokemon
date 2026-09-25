@@ -13,6 +13,15 @@ const DIA = 86400e3;
 const FUSO_MIN = 180;   // o mesmo relógio do mundo de `hora-do-dia.mjs`
 export const diaDe = t => Math.floor((Number(t) - FUSO_MIN * 60000) / DIA);
 
+/* O INSTANTE DO FATO (ST-7.2c): o cliente relata o dia depois — no login, na
+   colheita seguinte —, e a run conta no dia em que foi colhida. `campos.em` é
+   do cliente e por isso só vale se não for do FUTURO em relação ao relato. */
+export function instanteDoFato(linha) {
+  let em = null;
+  try { em = JSON.parse(linha.campos ?? '{}')?.em ?? null; } catch { em = null; }
+  return Number.isFinite(em) && em <= linha.criado_em ? em : linha.criado_em;
+}
+
 export function retencao(db, { agora = Date.now(), dias = 30 } = {}) {
   const hoje = diaDe(agora);
   const usuarios = db.prepare(`SELECT id, created_at FROM users`).all()
@@ -20,8 +29,8 @@ export function retencao(db, { agora = Date.now(), dias = 30 } = {}) {
     .filter(u => u.coorte > hoje - dias);
   const ativo = new Map();
   const marcar = (id, t) => { if (!ativo.has(id)) ativo.set(id, new Set()); ativo.get(id).add(diaDe(t)); };
-  for (const r of db.prepare(`SELECT user_id, criado_em FROM telemetry_events WHERE user_id IS NOT NULL`).all())
-    marcar(r.user_id, r.criado_em);
+  for (const r of db.prepare(`SELECT user_id, criado_em, campos FROM telemetry_events WHERE user_id IS NOT NULL`).all())
+    marcar(r.user_id, instanteDoFato(r));
   for (const r of db.prepare(`SELECT user_id, criado_em FROM player_activity`).all())
     marcar(r.user_id, r.criado_em);
 

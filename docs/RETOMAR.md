@@ -36,6 +36,17 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### ST-7.2c FECHADA — o piloto está pronto para rodar; falta gente
+
+`docs/PILOTO.md` é o roteiro: como subir o servidor em produção (com o
+segredo de sessão, senão reiniciar desloga todo mundo), como os amigos
+alcançam (túnel — não testado daqui), a rotina diária de 5 minutos (cópia do
+banco + relatório), como ler o relatório, o registro de problemas por
+evidência (ALCANCE × IMPEDE) e o calendário de 14 dias. O relatório
+(`node tools/relatorio-piloto.mjs`) põe cada jogador-dia do idle ao lado do
+perfil da ST-3.3 e dá a RAZÃO medida/referência — é a calibração contra gente
+de verdade. **O próximo passo é do dono:** subir o servidor e convidar.
+
 ### ST-7.2b FECHADA — pela primeira vez, uma conta real criada pelo navegador
 
 Com o servidor no ar (`npm run servidor`), o modal "Criar treinador" pede

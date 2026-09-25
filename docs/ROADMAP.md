@@ -261,6 +261,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **ST-7.2c** · o relatório e o roteiro do piloto | 25/09 | `node tools/relatorio-piloto.mjs` — contas, D1/D7, ativos por dia, idle por jogador-dia contra a ST-3.3, saldos por balde, arena e boutique · `docs/PILOTO.md` · S1187–S1193 |
 | **ST-7.2b** · a conta real na tela (fecha a L-189) | 25/09 | cadastro e login pelo navegador, pela primeira vez · a mensagem não vira consulta de conta · Chromium pelo backend: 2 contas, página volta logada com 1.000 do grant · S1179–S1186 · capturas `tools/previas/_conta/` |
 | **ST-7.2a** · um endereço: o servidor serve o jogo e a API | 25/09 | por lista (app, arte, assets, content, engine, o contrato) — `dados/` nunca sai · CSP própria da página · aberto no Chromium pelo backend: 0 erro, 0 bloqueio de CSP · S1172–S1178 |
 | **L-187** · a luta sai da borda do mundo | 25/09 | a borda segurava a câmera (35 px de folga a 420 px) · pé do mob 97% → 69% · S1169–S1171 · captura `tools/previas/_idle/run-estreito.png` |
@@ -297,7 +298,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | 4 | ~~**ST-3.6**~~ ✅ 25/09 · a emissão do Avanço decresce por run no mesmo dia | L-185 (DEC-14) | integridade de economia antes de enfeite |
 | 5 | **1.27g · UX-01** (resto) + o bloco do CENÁRIO · ~~ST-5.6~~ ✅, ~~ST-2.4~~ ✅, ~~D-110~~ ✅, 5.8 | L-175 ✅ (DEC-15), L-184 ✅, L-187 ✅, L-188 (o panorâmico), D-086 (não reproduzido) — o jato (L-186, ST-5.5b) fechou; o banner (D-082), o `est:` cru (L-160), a base visual (D-093), os números de dano (L-172, ST-5.4) e a carga e o projétil (L-171, ST-5.5) fecharam; os 404 (L-176) esperam o dono commitar os dois arquivos | o que impede ENTENDER a ação vem antes do que a enfeita |
 | 5b | ~~**ST-7.1**~~ ✅ 25/09 · telemetria mínima e restauração | a (eventos, retenção D1/D7) e b (`node tools/banco-copia.mjs copiar / conferir / restaurar`) | antecipada: o piloto (ST-7.2) só mede o que já estiver sendo gravado quando ele começar |
-| 5c | **ST-7.2** · o piloto com amigos, destravado pela DEC-01 — a ✅ (um endereço), b ✅ (conta real na tela), **c** (relatório e roteiro), e o piloto em si (o dono, com 5–10 amigos, 14 dias) | a ST-7.2a achou que a tela NUNCA criou conta real (L-189): sem a b, cada amigo jogaria no próprio navegador e o servidor não mediria nada | o piloto só mede o que a tela de fato manda |
+| 5c | **ST-7.2** · o piloto com amigos, destravado pela DEC-01 — a ✅ (um endereço), b ✅ (conta real na tela), c ✅ (relatório e roteiro — `docs/PILOTO.md`); falta **o piloto em si**: o dono, com 5–10 amigos, 14 dias, seguindo o roteiro | a ST-7.2a achou que a tela NUNCA criou conta real (L-189): sem a b, cada amigo jogaria no próprio navegador e o servidor não mediria nada | o piloto só mede o que a tela de fato manda |
 | 6 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
 | — | **E6** · higiene documental | ST-6.1 a 6.4 | não é código: corre em paralelo, um commit por story |
 | — | ~~**ST-0.6**~~ ✅ 25/09 · CI no GitHub | `npm test` a cada push (DEC-13: o Q2 noturno não) | — |

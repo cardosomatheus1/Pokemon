@@ -367,7 +367,11 @@ export function lancarRunNoTeto(e, run) {
   e.avancos = [
     ...(e.avancos ?? []).filter(x => x.colhidaEm > agora - DIA_MS),
     { colhidaEm: run.colhidaEm, encontros: run.encontros ?? 0,
-      bioma: run.bioma, estagio: run.estagio },
+      bioma: run.bioma, estagio: run.estagio,
+      /* O QUE A RUN PAGOU (ST-7.2c): o piloto mede a emissão contra a ST-3.3,
+         e o servidor só sabe o que o cliente relata. Dois números, e não o
+         `rendeu` inteiro — a razão de guardar pouco está logo acima. */
+      moedas: run.rendeu?.moedas ?? 0, xp: run.rendeu?.xp ?? 0 },
   ];
   return e.avancos;
 }
