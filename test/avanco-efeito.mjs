@@ -22,7 +22,10 @@
 import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { noCanvas, estourar, usarCarregador, desenharEstouros,
-         limparEstouros, contagem } from '../app/modules/avanco-efeito.mjs';
+         limparEstouros, contagem, encenacao, antecedencia, trajetoria,
+         direcao8, lancar, quantosNoAr, CARGA_MS } from '../app/modules/avanco-efeito.mjs';
+import { MOVE_FX } from '../app/modules/efeitos-dados.mjs';
+import { ANTECIPACAO_MS } from '../engine/run-avanco.mjs';
 
 const ler = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 
@@ -260,6 +263,136 @@ export function suite() {
       'Sem esse número, "desenhado" continua parecendo "visto" — e foi assim ' +
       'que o D-092 atravessou um bloco inteiro com o portão verde.');
     limparEstouros();
+  });
+
+  /* ══ ST-5.5 · A CARGA NO ATACANTE E O PROJÉTIL ATÉ O ALVO (L-171) ══════
+   *
+   * A outra metade do golpe da Arena: `cast` é tocado no atacante antes de o
+   * golpe sair, `proj` VIAJA do atacante até o alvo. Os dois pedem o PAR — de
+   * onde sai e onde chega —, e o par é o que a cena passou a publicar.
+   *
+   * E o tempo corre ao contrário do da Arena: lá o golpe é lançado e o dano cai
+   * quando o projétil chega; aqui o motor já decidiu QUANDO o dano cai, e o
+   * projétil tem de sair cedo o bastante para chegar nesse instante. */
+  s.teste('a encenação lê cast e proj da tabela da Arena, e o resto é null', () => {
+    const sombra = encenacao('Shadow Ball', 100);
+    ok(sombra?.projetil?.folha, 'a Shadow Ball tem `proj` na tabela e saiu sem projétil');
+    igual(sombra.carga, null, 'a Shadow Ball não tem `cast` e ganhou uma carga');
+    ok(sombra.projetil.giro, 'a Shadow Ball GIRA na Arena (`spin`) e aqui não');
+    const volt = encenacao('Volt Tackle', 100);
+    ok(volt?.carga?.folha, 'o Volt Tackle tem `cast` e saiu sem carga');
+    igual(volt.carga.escala, 0.7, 'a escala da carga não é o `csc` da tabela');
+    igual(volt.projetil, null, 'o Volt Tackle não tem `proj` e ganhou um');
+    igual(volt.cargaMs, CARGA_MS, 'a carga não dura o que dura na Arena');
+    /* Só impacto: nada a lançar. O impacto continua sendo o `estourar`. */
+    igual(encenacao('Fire Punch', 100), null, 'golpe só de impacto ganhou lançamento');
+    igual(encenacao(null, 100), null, 'golpe ausente virou encenação');
+    igual(encenacao('Golpe Que Nao Existe', 100), null, 'golpe inventado virou encenação');
+  });
+
+  s.teste('a viagem é a da Arena: distância a 420 px/s, entre 160 e 500 ms', () => {
+    igual(encenacao('Shadow Ball', 0).viagemMs, 160, 'viagem de distância zero não tem o piso');
+    igual(encenacao('Shadow Ball', 105).viagemMs, 250, '105 px a 420 px/s não deu 250 ms');
+    igual(encenacao('Shadow Ball', 1e6).viagemMs, 500, 'a viagem longa não tem o teto');
+    igual(encenacao('Volt Tackle', 300).viagemMs, 0, 'golpe sem projétil ganhou tempo de viagem');
+  });
+
+  /* O MOTOR avisa com ANTECIPACAO_MS de folga. Um golpe cuja carga + viagem
+     passasse disso sairia atrasado — o projétil chegaria DEPOIS do número. */
+  s.teste('nenhum golpe da tabela pede mais antecedência que a que o motor dá', () => {
+    const longos = Object.keys(MOVE_FX)
+      .filter(n => antecedencia(encenacao(n, 1e6)) > ANTECIPACAO_MS);
+    igual(longos.join(', '), '',
+      `estes golpes precisam de mais que ${ANTECIPACAO_MS} ms de aviso, e o projétil ` +
+      'chegaria depois do dano');
+  });
+
+  s.teste('a trajetória começa no atacante e termina no alvo', () => {
+    const o = { x0: 10, y0: 200, x1: 310, y1: 100, arco: 16 };
+    const a = trajetoria(o, 0), b = trajetoria(o, 1), m = trajetoria(o, 0.5);
+    igual(a.x, 10, 'o projétil não sai do X do atacante');
+    igual(a.y, 200, 'o projétil não sai do Y do atacante');
+    igual(b.x, 310, 'o projétil não chega ao X do alvo');
+    ok(Math.abs(b.y - 100) < 1e-9, `o projétil chega em y=${b.y}, e o alvo está em 100`);
+    igual(m.x, 160, 'no meio do caminho o X não é o meio');
+    ok(Math.abs(m.y - (150 - 16)) < 1e-9, `o arco não levanta o meio do caminho (y=${m.y})`);
+    /* Fora de [0, 1] é grampeado: nunca desenhado atrás do atacante nem além do alvo. */
+    igual(trajetoria(o, -1).x, 10, 'k negativo saiu atrás do atacante');
+    igual(trajetoria(o, 2).x, 310, 'k acima de 1 passou do alvo');
+  });
+
+  s.teste('a direção da folha segue a convenção da Arena (0 baixo, 2 direita, 4 cima, 6 esquerda)', () => {
+    igual(direcao8(0, 1), 0, 'para baixo não é a linha 0');
+    igual(direcao8(1, 0), 2, 'para a direita não é a linha 2');
+    igual(direcao8(0, -1), 4, 'para cima não é a linha 4');
+    igual(direcao8(-1, 0), 6, 'para a esquerda não é a linha 6');
+    igual(direcao8(1, 1), 1, 'diagonal baixo-direita não é a linha 1');
+  });
+
+  s.teste('o projétil sai cedo, VIAJA, e chega no instante do dano', () => {
+    limparEstouros();
+    usarCarregador(() => ({ ok: true, side: 20, n: 4, rows: 1, img: {} }));
+    const pintados = [];
+    const g = { globalAlpha: 1, drawImage: (...a) => pintados.push(a) };
+    const ACERTA = 10_000;
+    const l = lancar('Shadow Ball', { x: 100, y: 100 }, { x: 310, y: 100 },
+                     { x: 0, y: 0 }, 'p1', ACERTA);
+    ok(l?.projetil, 'o lançamento da Shadow Ball não agendou projétil');
+    const via = encenacao('Shadow Ball', 210).viagemMs;
+    igual(l.projetil.em, ACERTA - via, 'o projétil não sai `viagem` ms antes do impacto');
+
+    /* ANTES de sair: nada na tela, mas ele continua agendado. */
+    desenharEstouros(g, ACERTA - via - 50);
+    igual(pintados.length, 0, 'o projétil foi desenhado antes da hora de sair');
+    ok(quantosNoAr() >= 1, 'o projétil agendado para daqui a pouco foi DESCARTADO');
+
+    const centro = a => a[5] + a[7] / 2;        // dx + d/2
+    desenharEstouros(g, ACERTA - via + 1);
+    ok(pintados.length === 1 && Math.abs(centro(pintados[0]) - 100) < 3,
+      `no começo da viagem o projétil não está no atacante (x=${pintados[0] && centro(pintados[0])})`);
+    desenharEstouros(g, ACERTA - 1);
+    ok(pintados.length === 2 && Math.abs(centro(pintados[1]) - 310) < 3,
+      `no fim da viagem o projétil não está no alvo (x=${pintados[1] && centro(pintados[1])})`);
+    desenharEstouros(g, ACERTA + 1);
+    igual(pintados.length, 2, 'o projétil continuou no ar depois do impacto');
+    igual(lancar('Shadow Ball', { x: 100, y: 100 }, { x: 310, y: 100 }, { x: 0, y: 0 }, 'p1', ACERTA),
+      null, 'o mesmo golpe foi lançado duas vezes — a cena repinta a 60 quadros');
+    limparEstouros();
+  });
+
+  s.teste('a carga acende NO ATACANTE antes da viagem', () => {
+    limparEstouros();
+    usarCarregador(() => ({ ok: true, side: 20, n: 4, rows: 1, img: {} }));
+    const pintados = [];
+    const g = { globalAlpha: 1, drawImage: (...a) => pintados.push(a) };
+    const ACERTA = 5_000;
+    const l = lancar('Volt Tackle', { x: 40, y: 60 }, { x: 400, y: 60 },
+                     { x: 10, y: 20 }, 'c1', ACERTA);
+    ok(l?.carga, 'o Volt Tackle não agendou carga');
+    igual(l.carga.em, ACERTA - CARGA_MS, 'a carga não começa `CARGA_MS` antes do impacto');
+    desenharEstouros(g, ACERTA - CARGA_MS / 2);
+    igual(pintados.length, 1, 'a carga não foi desenhada no meio do tempo dela');
+    const d = pintados[0][7];
+    igual(pintados[0][5] + d / 2, 30, 'a carga não está no X do ATACANTE, no canvas');
+    igual(pintados[0][6] + d / 2, 40, 'a carga não está no Y do ATACANTE, no canvas');
+    desenharEstouros(g, ACERTA + 1);
+    igual(pintados.length, 1, 'a carga continuou acesa depois do impacto');
+    igual(lancar('Fire Punch', { x: 0, y: 0 }, { x: 9, y: 9 }, null, 'c2', ACERTA), null,
+      'golpe só de impacto foi lançado');
+    limparEstouros();
+  });
+
+  s.teste('a cena lança os golpes A CAMINHO com o par e a hora do impacto', () => {
+    const t = ler('../app/modules/avanco-cena.mjs');
+    ok(/cena\.aCaminho/.test(t), 'a cena não lê os golpes a caminho — nada é lançado antes do impacto');
+    const chamadas = [...t.matchAll(/lancar\(([\s\S]{0,360}?)\);/g)].map(m => m[1]);
+    ok(chamadas.length >= 1, 'a cena não chama `lancar`');
+    for (const c of chamadas) {
+      ok(/\bcam\b/.test(c), `uma chamada de \`lancar\` não passa a câmera:\n${c}`);
+      ok(!/\* escala/.test(c), `uma chamada de \`lancar\` multiplica pela escala (o D-092):\n${c}`);
+    }
+    ok(/golpe\.t\s*-\s*cena\.t/.test(t),
+      'a hora do impacto não sai de `golpe.t - cena.t` — o projétil chegaria em outro instante');
   });
 
   return s;

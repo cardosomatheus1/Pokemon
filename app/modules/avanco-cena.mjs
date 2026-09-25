@@ -61,7 +61,7 @@ import { pintarPlaca, balao, flutuar, placas, baloes,
    A MESMA `fxSheet`, e não uma cópia: duas maneiras de recortar a mesma folha
    divergem no dia em que alguém arrumar uma. */
 import { fxSheet } from './efeitos.mjs';
-import { estourar, desenharEstouros, limparEstouros,
+import { estourar, lancar, desenharEstouros, limparEstouros,
          usarCarregador } from './avanco-efeito.mjs';
 /* A ESCOLHA DA FOLHA saiu daqui e virou camada 0 — ver `folha-viva.mjs`. Ela
    morava numa linha ao lado do `style.backgroundImage`, e por isso nenhum
@@ -352,6 +352,19 @@ export function desenharMobs(g, cam, escala, t, eu, cena, sombra, nomeDe, golpeD
       }
     }
     if (!batendo) baloes.get(chave)?.classList.remove('on');
+
+    /* ── A CARGA E O PROJÉTIL SAEM ANTES DO IMPACTO (ST-5.5, L-171) ──────
+       O motor publica os golpes `aCaminho`; o projétil sai cedo o bastante
+       para chegar no instante em que o número sobe. O PAR é mob ↔ companheiro,
+       no MUNDO, com a câmera — a mesma regra do `estourar` (D-092). */
+    if (meu.pronto) for (const golpe of (cena.aCaminho ?? []).filter(x => x.i === m.i)) {
+      const dele = golpe.de === 'dele';
+      const nome = !golpeDe ? null : dele ? golpeDe(m.dex, golpe.golpe, cena.nivelDeles)?.nome
+                 : meu.dex != null ? golpeDe(meu.dex, golpe.golpe, cena.nivelMeu)?.nome : null;
+      const mob = { x: s.x, y: s.y - fh * 0.45 }, eu = { x: meu.x, y: meu.y - 14 };
+      lancar(nome, dele ? mob : eu, dele ? eu : mob, cam,
+             'lc' + cena.wave + ':' + golpe.de + golpe.i + ':' + golpe.t, t + (golpe.t - cena.t));
+    }
   }
 
   /* ── E O MEU POKÉMON TAMBÉM LUTA NA TELA, E NÃO SÓ NO MOTOR ──────────

@@ -15,7 +15,7 @@
 import { criarSuite, ok, igual } from './harness.mjs';
 import {
   novaRun, avancarRun, cenaDaRun, curarRun, recuarRun, resultadoDa, waveAtual,
-  emCurso, WAVES, HP_MAX,
+  emCurso, WAVES, HP_MAX, ANTECIPACAO_MS,
 } from '../engine/run-avanco.mjs';
 import { elencoDoEstagio } from '../engine/elenco-estagio.mjs';
 import { premioDo } from '../engine/avanco.mjs';
@@ -336,6 +336,35 @@ export function suite() {
     }
     ok(r.eventos.some(e => e.tipo === 'wave'), 'nenhuma wave entrou no log');
     ok(r.eventos.some(e => e.tipo === 'apareceu'), 'nenhuma espécie entrou no log');
+  });
+
+  /* ── O QUE ESTÁ PARA ACONTECER (ST-5.5, L-171) ─────────────────────────
+     A carga e o projétil têm de SAIR antes do impacto, para chegar no instante
+     em que o número sobe. O roteiro é determinístico e o futuro dele já
+     existe; a cena só precisa saber dos próximos golpes. Janela curta e só
+     para a frente: um golpe que já caiu não pode ser lançado de novo, e um
+     golpe longe demais anunciaria a luta antes da hora. */
+  s.teste('a cena publica os golpes A CAMINHO, e só os da próxima fração de segundo', () => {
+    let vistos = 0;
+    for (let i = 0; i < 6; i++) {
+      const r = comecar(`caminho-${i}`);
+      const w = waveAtual(r, { elenco: ELENCO, equipe: EQUIPE(NIVEL) });
+      const todos = w.roteiro.momentos.filter(m => m.tipo === 'golpe');
+      for (let t = 0; t <= w.roteiro.duracao; t += 250) {
+        const c = cenaDaRun(r, { elenco: ELENCO, equipe: EQUIPE(NIVEL), agora: T0 + t });
+        ok(Array.isArray(c.aCaminho), 'a cena não publica os golpes a caminho');
+        for (const g of c.aCaminho) {
+          ok(g.t > c.t && g.t <= c.t + ANTECIPACAO_MS,
+            `golpe em ${g.t} publicado a caminho no instante ${c.t} — fora da janela ` +
+            `(${c.t}, ${c.t + ANTECIPACAO_MS}]`);
+          vistos++;
+        }
+        const esperados = todos.filter(g => g.t > c.t && g.t <= c.t + ANTECIPACAO_MS).length;
+        igual(c.aCaminho.length, esperados,
+          `no instante ${c.t} havia ${esperados} golpe(s) a caminho no roteiro e a cena publicou ${c.aCaminho.length}`);
+      }
+    }
+    ok(vistos > 0, 'seis waves inteiras e nenhum golpe a caminho — a janela não abre nunca');
   });
 
   return s;

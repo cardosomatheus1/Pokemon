@@ -36,6 +36,16 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### ST-5.5 FECHADA — a carga e o projétil do golpe (L-171)
+
+O motor publica os golpes `aCaminho` (os próximos 900 ms) e o projétil sai
+cedo o bastante para chegar no instante em que o número sobe — o tempo corre ao
+contrário do da Arena, onde o dano espera o projétil. 13 projéteis numa wave
+com Venusaur (`node tools/olhar-idle.mjs --inicial 7`), com foto em voo. Nenhum
+golpe do pack tem `cast` hoje; o caminho tem teste. O jato (`beam`) virou a
+**L-186**. Suíte 2285/2285; Q2 do bloco 16/16, **0 mutantes de navegador** —
+toda a conta mora em Node.
+
 ### ST-5.4 FECHADA — os números de dano não se tocam (L-172)
 
 0 pares sobrepostos e 0 fora da janela em 3 execuções × 3 cenas. A sonda

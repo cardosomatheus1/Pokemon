@@ -7522,7 +7522,8 @@ semente da run, então ele é determinístico e auditável como todo o resto.
 ### L-171 — a arena tem SPRITE DE EFEITO, e o Avanço não
 
 **Registrada em:** 09/09/2026, com três capturas da Arena. **Bloco dono:** 1.27c.
-**Estado:** aberta.
+**Estado:** ✅ **FECHADA** — o impacto em 10/09; a carga e o projétil em 25/09
+(ST-5.5). O jato seguiu para a **L-186**.
 
 > "olha a diferença das sprites de ataque da arena. Eu quero que seja assim"
 
@@ -7586,6 +7587,51 @@ errado, que foi exatamente o D-083.
 
 **Bloco dono do resto:** 1.27d, junto do avanço progressivo — é ele que vai
 precisar da linha entre os dois de qualquer jeito.
+
+## O RESTO FECHADO em 25/09/2026 (ST-5.5) — e o tempo corre ao contrário
+
+O par chegou: a cena conhece mob e companheiro no mesmo laço, e passa os dois
+ao `lancar` no espaço do MUNDO, com a câmera (a regra do D-092).
+
+**A diferença para a Arena, e ela é o desenho inteiro:** lá o golpe é lançado
+e o dano cai quando o projétil chega. Aqui o motor já decidiu QUANDO o dano
+cai — o número sobe naquele instante. Então o motor passou a publicar os
+golpes `aCaminho` (os dos próximos **900 ms**, `ANTECIPACAO_MS`), e a carga e
+o projétil saem cedo o bastante para chegar exatamente no impacto. A
+antecedência de cada golpe da tabela é conferida contra os 900 ms por teste.
+
+```text
+medido na tela da run (--inicial 7: Venusaur, Magical Leaf)
+lancados antes do impacto   13 projeteis no panoramico · 12 a 420 · 4 no chefe
+foto do projetil em voo     run-*-projetil.png — a sonda espera o instante
+cargas (`cast`)             0 — nenhum golpe do pack Kanto HOJE tem `cast`
+                            (Volt Tackle, Solar Beam, Brave Bird, Hyper Beam
+                            não estão no repertório); o caminho tem teste
+```
+
+**Quem lança projétil, pelo repertório:** planta (Magical Leaf, desde o nível
+1), lutador, terra, voador, psíquico, pedra; e veneno, dragão e inseto a partir
+do 20. A viagem é a da Arena — 420 px/s entre 160 e 500 ms —, e no duelo do
+Avanço (~44 px de mundo) ela cai no piso de 160 ms, que é o mesmo ritmo da
+Arena a curta distância.
+
+O `beam` (o jato) ficou de fora do escopo e está na **L-186**.
+
+### L-186 — o jato (`beam`) do golpe no Avanço
+
+**Registrada em:** 25/09/2026, na ST-5.5. **Bloco dono:** 1.27g (UX-01), como
+**ST-5.5b**. **Estado:** aberta.
+
+A Arena encena três coisas entre atacante e alvo; a ST-5.5 trouxe duas (`cast`
+e `proj`). O `beam` — a folha REPETIDA ao longo da linha, com a ponta
+avançando — é o terceiro, e ele aparece no repertório: **Surf** a partir do
+nível 20, **Flamethrower, Thunderbolt, Ice Beam, Flash Cannon e Dark Pulse** no
+50. Sem ele esses golpes saem só com o impacto.
+
+**Por que não coube:** a story era `cast` e `proj`; o jato é outro desenho
+(segmentos com defasagem, fade de entrada e saída) e outra conta pura para
+testar. **O que a destrava:** nada — o par e o `aCaminho` já existem; é
+`encenacao` devolver `jato` e o `desenharEstouros` ganhar o terceiro tipo.
 
 ---
 

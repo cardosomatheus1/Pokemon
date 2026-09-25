@@ -45,6 +45,7 @@
  * Uso:
  *   node tools/olhar-idle.mjs                 todas as larguras
  *   node tools/olhar-idle.mjs --saida /tmp/x  outro destino
+ *   node tools/olhar-idle.mjs --inicial 1     outra criatura lidera a run
  */
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, mkdirSync } from 'node:fs';
@@ -119,11 +120,15 @@ const PLANTAR = async () => {
   P.saveProfile(perfil);
 
   const e = D.VAZIO();
-  D.escolherInicial(e, PACK, PACK.iniciais[0], agora);
+  /* `--inicial <dex>` troca quem lidera a run (ST-5.5): o padrão luta com
+     golpe de impacto, e o PROJÉTIL só aparece com quem tem `proj` — uma
+     criatura de planta, por exemplo. Sem a bandeira, a cena de sempre. */
+  const inicial = Number(window.__inicial) || PACK.iniciais[0];
+  D.escolherInicial(e, PACK, inicial, agora);
 
   /* Mais quatro criaturas: o cartão da equipe é o que o 1.6b reconstruiu, e uma
      equipe de um não mostra o arranjo que precisa ser lido. */
-  const extras = (PACK.especies ?? []).filter(x => x.dex !== PACK.iniciais[0]).slice(0, 4);
+  const extras = (PACK.especies ?? []).filter(x => x.dex !== inicial).slice(0, 4);
   for (const esp of extras)
     e.criaturas.push(D.criarCriatura(PACK, esp.dex, 'captura', agora,
       String(esp.dex).padStart(12, 'a') + 'f0'));
@@ -375,7 +380,7 @@ for (const { L, chefe, raiz } of [
    *
    * Então cada passada pede um clima DIFERENTE, e o relatório imprime a raiz
    * junto — quem lê sabe que a cena foi armada, e sabe reproduzi-la. */
-  await pg.evaluate(r => { window.__raizDaRun = r; }, raiz);
+  await pg.evaluate(([r, i]) => { window.__raizDaRun = r; window.__inicial = i; }, [raiz, arg('--inicial')]);
   await pg.evaluate(PLANTAR);
   /* ── A RUN LEVA QUEM AINDA NÃO ESCOLHEU O FOCO ────────────────────────
    *
@@ -511,9 +516,12 @@ for (const { L, chefe, raiz } of [
    * são coisas diferentes e não podem sair com a mesma cara. */
   const pegou = await (async () => {
     for (let tentativa = 0; tentativa < 240; tentativa++) {
+      /* O que está SENDO DESENHADO, e não o que está na lista: desde a ST-5.5
+         a lista guarda também o projétil agendado, que ainda não saiu. */
       const noAr = await pg.evaluate(async () => {
         const m = await import('/app/modules/avanco-efeito.mjs');
-        return m.quantosNoAr();
+        const n = m.noInstante(performance.now());
+        return n.estouro + n.carga + n.projetil;
       }).catch(() => 0);
       if (noAr > 0) {
         await pg.screenshot({ path: arq.replace(/\.png$/, '-estouro.png') });
@@ -523,6 +531,31 @@ for (const { L, chefe, raiz } of [
     }
     return 0;
   })();
+  /* ── E O PROJÉTIL EM VOO (ST-5.5) ──────────────────────────────────────
+     Ele vive de 160 a 500 ms, e uma foto ao acaso não o pega. Espera-se o
+     instante em que o módulo diz que há um SENDO desenhado, e a foto recorta
+     o mundo — o projétil é pequeno, e na tela inteira ele some. Sem golpe de
+     `proj` na equipe (o padrão), a linha diz isso e não finge. */
+  const voou = await (async () => {
+    for (let tentativa = 0; tentativa < 240; tentativa++) {
+      const n = await pg.evaluate(async () => {
+        const m = await import('/app/modules/avanco-efeito.mjs');
+        return m.noInstante(performance.now()).projetil;
+      }).catch(() => 0);
+      if (n > 0) {
+        const caixa = await pg.evaluate(() => {
+          const c = document.querySelector('#idleRun canvas, #idleVivos')?.getBoundingClientRect();
+          return c && c.width ? { x: c.x, y: c.y, width: c.width, height: c.height } : null;
+        });
+        await pg.screenshot({ path: arq.replace(/\.png$/, '-projetil.png'), ...(caixa ? { clip: caixa } : {}) });
+        return n;
+      }
+      await pg.waitForTimeout(20);
+    }
+    return 0;
+  })();
+  console.log(`    foto COM projetil em voo: ${voou ? voou + ' em voo — run-' + L.nome +
+    (chefe ? '-chefe' : '') + '-projetil.png' : 'nenhum em 5 s (a equipe tem golpe de `proj`? use --inicial 7)'}`);
   console.log(`    foto COM estouro no ar: ${pegou ? pegou + ' estouro(s) na tela — ' +
     'run-' + L.nome + (chefe ? '-chefe' : '') + '-estouro.png' :
     'NAO CONSEGUI em 12 s de espera — e isso nao quer dizer que nao ha efeito, ' +
@@ -656,6 +689,7 @@ for (const { L, chefe, raiz } of [
     const comHit = Object.values(d.MOVE_FX).filter(x => x?.hit).length;
     const c = m.contagem();
     return { noAr: m.quantosNoAr(), agendados: c.agendados, desenhados: c.desenhados,
+             cargas: c.cargas ?? 0, projeteis: c.projeteis ?? 0,
              fora: c.fora, folhasFaltando: f.quantasFaltam(), folhasVistas: f.quantasFolhas(),
              golpesComEfeito: comHit, total: Object.keys(d.MOVE_FX).length };
   }).catch(e => ({ erro: e.message }));
@@ -665,6 +699,10 @@ for (const { L, chefe, raiz } of [
       `${efeito.desenhados} desenhado(s), ${efeito.fora} FORA DA TELA` +
       (efeito.fora ? '  <-- D-092: desenhado nao e visto' : '') +
       ` · a tabela cobre ${efeito.golpesComEfeito}/${efeito.total} golpes`);
+    /* A OUTRA METADE (ST-5.5): quantas cargas e projéteis foram LANÇADOS. Zero
+       numa wave inteira quer dizer que ninguém ali tem golpe de `cast`/`proj`
+       — ou que o motor não publicou os golpes a caminho. */
+    console.log(`    lancados antes do impacto: ${efeito.cargas} carga(s), ${efeito.projeteis} projetil(eis)`);
     /* ── E AS FOLHAS DE COMBATE (D-090/D-091) ───────────────────────────
        Uma folha reprovada nao e erro — e arte que a origem nao tem. Mas
        DEZENAS delas querem dizer que o `npm run assets` nao passou por aqui, e

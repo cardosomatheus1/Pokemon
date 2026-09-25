@@ -73,9 +73,92 @@ const QUADROS_POR_S = 18;
 export function folhaDoImpacto(nome) {
   const fx = MOVE_FX[nome];
   /* O `hit` é a metade que o dono cobrou: o que ACERTA. O `cast` e o `proj`
-     ficam para depois — eles pedem a posição do atacante e a linha entre os
-     dois, e a cena do Avanço ainda não a publica. Ver a L-171. */
+     são a `encenacao` logo abaixo (ST-5.5). */
   return fx?.hit ? { folha: fx.hit, escala: Number(fx.hsc) || 1 } : null;
+}
+
+/* ── A CARGA E O PROJÉTIL (ST-5.5, L-171) ─────────────────────────────────
+ *
+ * A outra metade do golpe da Arena: `cast` acende no atacante antes de o golpe
+ * sair, `proj` VIAJA do atacante até o alvo. Ficaram de fora em 10/09 porque
+ * pediam o PAR — de onde sai e onde chega —, e a cena não o publicava. Agora
+ * publica.
+ *
+ * ── E O TEMPO CORRE AO CONTRÁRIO DO DA ARENA ─────────────────────────────
+ *
+ * Lá o golpe é lançado e o dano cai quando o projétil chega. Aqui o motor já
+ * decidiu QUANDO o dano cai — o número sobe naquele instante —, então o
+ * projétil tem de sair cedo o bastante para chegar nele. É por isso que o
+ * motor publica os golpes `aCaminho`, e que esta conta devolve a ANTECEDÊNCIA.
+ *
+ * Os números são os da Arena, inteiros, pelo mesmo motivo dos 18 quadros: o
+ * mesmo golpe com dois ritmos ensinaria dois gestos para a mesma coisa. */
+export const CARGA_MS = 380;
+const VIAGEM_MIN_MS = 160, VIAGEM_MAX_MS = 500, PX_POR_S = 420;
+/* O ARCO leve da Arena para o que é arremessado. */
+const ARCO = 16;
+
+export function encenacao(nome, dist) {
+  const fx = MOVE_FX[nome] ?? null;
+  if (!fx || (!fx.cast && !fx.proj)) return null;
+  const carga = fx.cast ? { folha: fx.cast, escala: Number(fx.csc) || 1 } : null;
+  const projetil = fx.proj ? { folha: fx.proj, escala: Number(fx.sc) || 1, giro: !!fx.spin } : null;
+  const viagemMs = projetil
+    ? Math.round(Math.max(VIAGEM_MIN_MS, Math.min(VIAGEM_MAX_MS, (Number(dist) || 0) / PX_POR_S * 1000)))
+    : 0;
+  return { carga, projetil, cargaMs: carga ? CARGA_MS : 0, viagemMs };
+}
+
+/* Quanto antes do impacto o lançamento começa. */
+export const antecedencia = enc => (enc?.cargaMs || 0) + (enc?.viagemMs || 0);
+
+/* ONDE O PROJÉTIL ESTÁ na fração `k` da viagem: reta do atacante ao alvo, com
+   o arco da Arena. Grampeado em [0, 1]: nunca atrás de quem lançou, nunca além
+   de quem levou. */
+export function trajetoria({ x0, y0, x1, y1, arco = 0 }, k) {
+  const q = Math.max(0, Math.min(1, Number(k) || 0));
+  return { x: x0 + (x1 - x0) * q, y: y0 + (y1 - y0) * q - Math.sin(q * Math.PI) * arco };
+}
+
+/* A LINHA DA FOLHA `.Dir8`: a mesma conta do `dirOf` da Arena (0 de frente,
+   para baixo, girando baixo → direita → cima → esquerda). Repetida e não
+   importada porque o `sprites.mjs` puxa o DOM, e este módulo é afirmado em
+   Node — o teste fixa a convenção nos quatro pontos cardeais. */
+export function direcao8(dx, dy) {
+  const graus = Math.atan2(dy, dx) * 180 / Math.PI;
+  return ((Math.round((90 - graus) / 45) % 8) + 8) % 8;
+}
+
+/* ── LANÇA: agenda a carga e o projétil para chegarem em `acertaEm` ───────
+   `de` e `para` são pontos do MUNDO, e a câmera converte aqui — a lição do
+   D-092: o espaço da posição e o do desenho decididos no mesmo arquivo. Um
+   golpe sem `cast` nem `proj` devolve null: o impacto continua sendo o
+   `estourar`, e ele já acontece no instante do dano. */
+export function lancar(nome, de, para, cam, chave, acertaEm) {
+  if (jaEstourou.has(chave) || !carregador) return null;
+  const a = noCanvas(de?.x, de?.y, cam), b = noCanvas(para?.x, para?.y, cam);
+  const enc = encenacao(nome, Math.hypot(b.x - a.x, b.y - a.y));
+  if (!enc) return null;
+  jaEstourou.add(chave);
+  if (jaEstourou.size > 500) jaEstourou.clear();
+  const fim = Number(acertaEm) || 0;
+  const dir = direcao8(b.x - a.x, b.y - a.y);
+  const feito = {};
+  if (enc.carga) {
+    feito.carga = { tipo: 'carga', rec: carregador(enc.carga.folha), escala: enc.carga.escala,
+                    x: a.x, y: a.y, dir, em: fim - antecedencia(enc), dur: enc.cargaMs };
+    vivos.push(feito.carga);
+    cargas++;
+  }
+  if (enc.projetil) {
+    feito.projetil = { tipo: 'projetil', rec: carregador(enc.projetil.folha),
+                       escala: enc.projetil.escala, giro: enc.projetil.giro,
+                       x0: a.x, y0: a.y, x1: b.x, y1: b.y, arco: ARCO, dir,
+                       em: fim - enc.viagemMs, dur: enc.viagemMs };
+    vivos.push(feito.projetil);
+    projeteis++;
+  }
+  return feito;
 }
 
 /* Os estouros vivos. Lista curta por construção — cada um vive meio segundo, e
@@ -158,18 +241,29 @@ export function desenharEstouros(g, agora) {
   for (let i = vivos.length - 1; i >= 0; i--) {
     const o = vivos[i];
     const idade = (Number(agora) || 0) - o.em;
-    if (idade >= DURACAO_MS || idade < 0) { vivos.splice(i, 1); continue; }
+    const dur = o.dur ?? DURACAO_MS;
+    if (idade >= dur) { vivos.splice(i, 1); continue; }
+    /* AINDA NÃO SAIU (ST-5.5): a carga e o projétil são agendados para o
+       futuro, e esperar é o caso normal. Descartar aqui apagaria todo
+       lançamento antes do primeiro quadro. O teto de 2 s é para um relógio que
+       voltou, e não para a espera. */
+    if (idade < 0) { if (idade < -2000) vivos.splice(i, 1); continue; }
     const rec = o.rec;
     if (!rec?.ok) continue;
 
     const lado = rec.side;
-    const quadro = Math.floor((idade / 1000) * QUADROS_POR_S) % Math.max(1, rec.n);
+    const k = idade / dur;
+    /* O PROJÉTIL corre os quadros (ou gira, como na Arena) e anda pela
+       trajetória; a carga e o estouro ficam parados no ponto deles. */
+    const quadro = Math.floor((idade / 1000) * (o.giro ? 24 : QUADROS_POR_S)) % Math.max(1, rec.n);
+    const linha = (o.dir || 0) % Math.max(1, rec.rows || 1);
     const d = lado * o.escala;
+    const onde = o.tipo === 'projetil' ? trajetoria(o, k) : o;
     /* O ESTOURO SOME NO FIM em vez de piscar: cortar no último quadro deixa um
-       buraco de um quadro que o olho registra como falha. */
-    const k = idade / DURACAO_MS;
-    g.globalAlpha = k > 0.75 ? (1 - k) * 4 : 1;
-    const dx = Math.round(o.x - d / 2), dy = Math.round(o.y - d / 2);
+       buraco de um quadro que o olho registra como falha. O projétil não
+       some — ele CHEGA, e quem some é o estouro que nasce no lugar dele. */
+    g.globalAlpha = o.tipo !== 'projetil' && k > 0.75 ? (1 - k) * 4 : 1;
+    const dx = Math.round(onde.x - d / 2), dy = Math.round(onde.y - d / 2);
     /* ── E ELE CAIU DENTRO DA TELA? (D-092) ────────────────────────────
      *
      * Esta é a pergunta que faltava, e a falta dela custou três dias. O bloco
@@ -185,7 +279,7 @@ export function desenharEstouros(g, agora) {
      * a única forma de o efeito existir e não chegar aos olhos. */
     const cw = g.canvas?.width ?? 0, ch = g.canvas?.height ?? 0;
     if (cw && ch && (dx + d <= 0 || dy + d <= 0 || dx >= cw || dy >= ch)) fora++;
-    g.drawImage(rec.img, quadro * lado, 0, lado, lado, dx, dy, d, d);
+    g.drawImage(rec.img, quadro * lado, linha * lado, lado, lado, dx, dy, d, d);
     g.globalAlpha = 1;
     vistos++; desenhados++;
   }
@@ -196,8 +290,21 @@ export function desenharEstouros(g, agora) {
    wave apareceria sobre a tela de escolha. */
 export function limparEstouros() { vivos.length = 0; }
 
-/* Só para o teste e para a esteira: quantos estão no ar agora. */
+/* Só para o teste e para a esteira: quantos estão no ar agora — incluindo a
+   carga e o projétil AGENDADOS, que ainda não saíram. */
 export const quantosNoAr = () => vivos.length;
+
+/* E quantos estão SENDO DESENHADOS neste instante, por tipo (ST-5.5). É a
+   pergunta da foto: um projétil agendado para daqui a meio segundo está "no
+   ar" para a lista e ainda não está na tela. */
+export function noInstante(agora) {
+  const n = { estouro: 0, carga: 0, projetil: 0 };
+  for (const o of vivos) {
+    const idade = (Number(agora) || 0) - o.em;
+    if (idade >= 0 && idade < (o.dur ?? DURACAO_MS)) n[o.tipo ?? 'estouro']++;
+  }
+  return n;
+}
 
 /* ── E QUANTOS JÁ NASCERAM E JÁ FORAM DESENHADOS ─────────────────────────
  *
@@ -210,6 +317,6 @@ export const quantosNoAr = () => vivos.length;
  * Estes dois contadores são a resposta certa: quantos foram AGENDADOS e
  * quantos chegaram a ser DESENHADOS. A diferença entre eles é folha que não
  * carregou — que é o único jeito de o efeito existir e não chegar aos olhos. */
-let agendados = 0, desenhados = 0, fora = 0;
-export const contagem = () => ({ agendados, desenhados, fora });
-export function zerarContagem() { agendados = 0; desenhados = 0; fora = 0; }
+let agendados = 0, desenhados = 0, fora = 0, cargas = 0, projeteis = 0;
+export const contagem = () => ({ agendados, desenhados, fora, cargas, projeteis });
+export function zerarContagem() { agendados = 0; desenhados = 0; fora = 0; cargas = 0; projeteis = 0; }

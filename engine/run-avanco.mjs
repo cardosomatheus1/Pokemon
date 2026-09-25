@@ -44,6 +44,15 @@ import { REGRA_DO_ELENCO } from './elenco-estagio.mjs';
    mais longo e dois balões se sobrepõem. */
 const JANELA_GOLPE_MS = 1_900;
 
+/* ── E O QUE ESTÁ PARA ACONTECER (ST-5.5, L-171) ─────────────────────────
+   A carga no atacante e o projétil até o alvo têm de SAIR antes do impacto,
+   para chegar no instante em que o motor derruba o HP. O roteiro é
+   determinístico e o futuro dele já existe: a cena só precisa saber dos
+   golpes da próxima fração de segundo. 900 ms cobre a carga mais longa da
+   Arena (380) mais a viagem mais longa (500) — e o teste do efeito confere
+   isso golpe a golpe. Mais longo anunciaria a luta antes da hora. */
+export const ANTECIPACAO_MS = 900;
+
 /* Um teto de voltas por chamada. Uma run parada por três dias é aritmética, e
    não um laço infinito — mas laço sem teto num caminho que lê relógio de
    sistema é exatamente como uma aba trava. O número é folgado: dez waves com
@@ -330,6 +339,8 @@ export function cenaDaRun(run, { elenco, equipe, agora, golpesMeus = 1, golpesDe
        como se fosse agora. */
     golpes: roteiro.momentos.filter(m =>
       m.tipo === 'golpe' && m.t <= t && m.t > t - JANELA_GOLPE_MS),
+    aCaminho: roteiro.momentos.filter(m =>
+      m.tipo === 'golpe' && m.t > t && m.t <= t + ANTECIPACAO_MS),
     fim: run.fim ?? null,
   };
 }
