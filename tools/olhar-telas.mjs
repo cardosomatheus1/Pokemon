@@ -44,6 +44,11 @@ const arg = (nome, padrao) => {
 };
 const SAIDA = arg('--saida', join(RAIZ_REPO, '.telas'));
 const RAIZ_FIXA = arg('--raiz', 'fixa') !== 'aleatoria';
+/* `--so a,b` fotografa só as telas nomeadas — para o passo OLHAR de um bloco
+   que mexeu numa tela só. Nome que não casa com tela nenhuma é AVISADO no fim:
+   foto vazia com relatório limpo é o S109 desta ferramenta. */
+const SO = arg('--so', null)?.split(',') ?? null;
+const vistas = new Set();
 
 if (!existsSync(PW) || !existsSync(CHROME)) {
   console.error('playwright-core ou o Chromium não estão instalados — ver tools/README.md');
@@ -117,6 +122,8 @@ async function abrir(largura, altura, preparar) {
 }
 
 async function tela(nome, largura, altura, roteiro, preparar) {
+  if (SO && !SO.includes(nome)) return;
+  vistas.add(nome);
   const { ctx, pg } = await abrir(largura, altura, preparar);
   if (roteiro) await roteiro(pg);
   await pg.screenshot({ path: join(SAIDA, nome + '.png') });
@@ -432,6 +439,23 @@ await tela('guarda-roupa', 1100, 1500, async pg => {
   await pg.waitForTimeout(500);
 });
 
+/* E4 · A PEÇA DA BOUTIQUE QUE AINDA NÃO É SUA aparece TRANCADA na grade da
+   customização — apagada, com cadeado — nas duas larguras em que a grade muda
+   de forma. Rolada até os banners, que é onde há mais peça à venda. */
+for (const [nome, w, h] of [['customizacao-trancada', 1440, 1100], ['customizacao-trancada-420', 420, 1100]])
+  await tela(nome, w, h, async pg => {
+    await pg.evaluate(async () => {
+      (await import('/app/modules/customizacao.mjs')).renderProfile();
+      document.querySelector('#profileModal')?.classList.add('show');
+      document.querySelector('[data-pane="paneCustom"]')?.click();
+    });
+    await pg.waitForTimeout(600);
+    await pg.evaluate(() => document.querySelector('#pickCena')?.scrollIntoView({ block: 'center' }));
+    await pg.waitForTimeout(400);
+    const n = await pg.evaluate(() => document.querySelectorAll('#profileModal .opt.tranc').length);
+    console.log(`  ${nome}: ${n} peça(s) trancada(s) na grade`);
+  });
+
 await tela('perfil', 1100, 1500, async pg => {
   await pg.evaluate(async () => {
     const { S } = await import('/app/modules/estado.mjs');
@@ -518,4 +542,5 @@ for (const [nome, ligado] of [['shiny-nao', false], ['shiny-sim', true]]) {
 await b.close(); srv.s.close();
 console.log(`\nerros de página: ${erros.length ? erros.join(' · ') : 'nenhum'}`);
 console.log(`avisos de layout: ${avisos.length ? '\n  ' + avisos.join('\n  ') : 'nenhum'}`);
+for (const n of SO ?? []) if (!vistas.has(n)) console.log(`AVISO: --so pediu "${n}", e nenhuma tela tem esse nome`);
 console.log('\nAgora OLHE as imagens. Verde não é legível.');

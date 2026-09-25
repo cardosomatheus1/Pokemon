@@ -2161,24 +2161,52 @@ export const DEFEITOS = [
     de:'      const { tinhaConta, revogacao } = sair({ api });',
     para:"      localStorage.removeItem('ar_session'); const tinhaConta = false, revogacao = null;" },
 
-  /* ── ST-1.3 · COM CONTA ONLINE A BOUTIQUE NÃO VENDE (D-108) ─────────── */
-  { id:'S1054', arquivo:'engine/vitrine.mjs', nome:'a boutique volta a vender com conta online',
-    real:'o D-108 de volta: o debito fica so na tela e o servidor devolve o saldo — peca de graca',
-    de:'  if (contaOnline)\n    return { pode: false, peca, fechada: true, motivo: MOTIVO_CONTA_ONLINE };',
-    para:'  if (false)\n    return { pode: false, peca, fechada: true, motivo: MOTIVO_CONTA_ONLINE };' },
-  { id:'S1055', arquivo:'app/modules/loja-cash.mjs', nome:'a compra pergunta ao motor sem a conta',
-    real:'a regra existe no motor e a tela a contorna — a boutique vende de novo',
-    de:'  const r = podeComprar(cat, { familia, id, posse, saldo: saldo(), contaOnline: modoServidor() });',
-    para:'  const r = podeComprar(cat, { familia, id, posse, saldo: saldo() });' },
-  { id:'S1056', arquivo:'engine/vitrine.mjs', nome:'a recusa da conta passa na frente do ja-tem',
-    real:'o jogador deixa de ver que a peca e dele e le que a boutique esta fechada',
-    de:`  if (temNaConta(posse, peca))
-    return { pode: false, peca, motivo: 'você já tem esta peça' };
-  if (contaOnline)`,
-    para:`  if (contaOnline) return { pode: false, peca, fechada: true, motivo: MOTIVO_CONTA_ONLINE };
-  if (temNaConta(posse, peca))
-    return { pode: false, peca, motivo: 'você já tem esta peça' };
-  if (false)` },
+  /* ── ST-1.3 → E4 · O D-108 FECHADO PELO SERVIDOR ──────────────────────
+     Até o E4 estes três travavam a boutique FECHADA com conta online. O E4
+     abriu a compra do lado certo; eles foram realinhados para onde o
+     comportamento mora hoje (regra do pré-voo: realinhar, não apagar). */
+  { id:'S1054', arquivo:'app/modules/loja-cash.mjs', nome:'com conta real a compra deixa de ir ao servidor',
+    real:'o D-108 de volta: debita a carteira local, e o servidor devolve o saldo — peca de graca',
+    de:'  if (modoServidor()) { comprarNoServidor(r.peca); return { pode: true, pendente: true, peca: r.peca }; }',
+    para:'  if (false) { comprarNoServidor(r.peca); return { pode: true, pendente: true, peca: r.peca }; }' },
+  { id:'S1055', arquivo:'app/modules/loja-cash.mjs', nome:'a boutique volta a ler a posse do navegador',
+    real:'com conta real a boutique mostra o que o navegador lembra, e nao o que a conta tem',
+    de:'let lerPosse = () => posseAtual();',
+    para:'let lerPosse = () => [];' },
+  { id:'S1056', arquivo:'app/modules/customizacao.mjs', nome:'o clique da customizacao equipa sem posse',
+    real:'tudo o que a boutique vende sai de graca pela tela de perfil',
+    de:'  if (escolha && !podeEquipar(catalogoCosmetico(), posseAtual(), escolha.familia, escolha.id)) {',
+    para:'  if (false) {' },
+
+  /* ── E4 · metade B, o cliente ───────────────────────────────────────── */
+  { id:'S1120', arquivo:'app/modules/posse-atual.mjs', nome:'toda peca do catalogo passa a ser equipavel',
+    real:'a vitrine vira enfeite: veste-se sem comprar',
+    de:'  return (posse ?? []).includes(`${familia}:${id}`);',
+    para:'  return true;' },
+  { id:'S1121', arquivo:'app/modules/posse-atual.mjs', nome:'o avatar da galeria deixa de ser peca do catalogo',
+    real:'o avatar vendido na boutique vira escolha livre — de graca pela customizacao',
+    de:"  if (d.av) return { familia: 'avatar', id: d.av === 'galeria' || d.av === 'trainer' ? d.id : null };",
+    para:"  if (d.av) return { familia: 'avatar', id: d.av === 'trainer' ? d.id : null };" },
+  { id:'S1122', arquivo:'app/modules/outfit-acervo.mjs', nome:'com conta real o traje volta a seguir o modo vitrine',
+    real:'a posse do servidor e ignorada no traje: veste-se o que a conta nao tem',
+    de:'  if (externa) return externa(id);\n',
+    para:'' },
+  { id:'S1123', arquivo:'app/modules/perfil-dados.mjs', nome:'o login deixa de hidratar a posse',
+    real:'limpar o navegador perde o que foi comprado (L-055) e a outra maquina nao ve a compra',
+    de:'  const posse = await hidratarPosse(api);',
+    para:'  const posse = null;' },
+  { id:'S1124', arquivo:'app/modules/cosmeticos.mjs', nome:'a base de graca volta a dar o que se ganha por missao',
+    real:'a peca de missao ou de fragmento sai de graca no dia em que existir',
+    de:"  cat.filter(p => p.procedencia === 'padrao').map(p => `${p.familia}:${p.id}`);",
+    para:"  cat.filter(p => p.procedencia !== 'loja' && p.procedencia !== 'npc').map(p => `${p.familia}:${p.id}`);" },
+  { id:'S1125', arquivo:'app/modules/posse-atual.mjs', nome:'o avatar da galeria volta do servidor como treinador',
+    real:'o avatar comprado some no outro aparelho — a tela procura um treinador com aquele id',
+    de:"    p.avatar = { kind: daGaleria ? 'galeria' : 'trainer', id: equipados.avatar };",
+    para:"    p.avatar = { kind: 'trainer', id: equipados.avatar };" },
+  { id:'S1126', arquivo:'app/modules/posse-atual.mjs', nome:'sem resposta do servidor a posse vira vazia',
+    real:'uma queda de rede no login tira do jogador tudo o que ele tem na tela',
+    de:'  if (r?.ok) adotarDoServidor(r.corpo);',
+    para:'  adotarDoServidor(r?.corpo ?? { posse: [] });' },
 
   /* ── 1.32b · OS CLIMAS À VISTA (ST-2.1, ST-2.2) ──────────────────────
      A legenda mente de três jeitos (lista própria, frase fixa, estágio

@@ -36,6 +36,20 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### E4 (metade B, cliente) — o INT-02 fechou, e o D-108 com ele
+
+Com conta real a boutique compra NO SERVIDOR (`comprarNoServidor`, chave por
+clique), a carteira local não é tocada, e a posse e o equipado voltam no login
+(`hidratarPosse` dentro do `hidratarPerfil`). A regra mora em
+`app/modules/posse-atual.mjs` (camada 0): de onde vem a posse, o que pode ser
+equipado, qual peça cada clique é, o que o servidor equipou. Equipar exige
+posse **nos dois modos** — antes, a customização vestia de graça tudo o que a
+boutique vende —, e a peça trancada aparece apagada, com cadeado (capturado a
+1440 e 420: 29 peças trancadas). `posseInicial` passou a dar só o `padrao`.
+Suíte 2311/2311; Q2 do bloco 21/21 — **os 10 mutantes do cliente são de Node,
+0 de navegador**. D-108 ✅, L-055 ✅, L-157 🟡. Achado de passagem: **D-110**
+(o modal de perfil rola 16 px na horizontal a 420 — anterior ao E4).
+
 ### E4 (metade A, servidor) — a posse de cosmético mora no servidor
 
 Tabelas `cosmetic_ownership` (só o ADQUIRIDO; o padrão é derivado do catálogo)

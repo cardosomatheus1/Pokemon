@@ -3,7 +3,7 @@
  * Fronteira: puramente cosmética. Nada aqui toca probabilidade nem economia. */
 
 import { $ } from './dom.mjs';
-import { confirmar } from './dialogo.mjs';
+import { confirmar, avisar } from './dialogo.mjs';
 import { CUR, elenco, especies, tipoCores, tipoNomes, nomeExibido, slugExterno } from './motor.mjs';
 import { DEPOSIT_PACKAGES, simulateDeposit } from './carteira.mjs';
 import { PROFILE_DEFAULT, avatarURL, avatarEhArte, avatarEnquadramento, cascataTreinador, loadProfile, nivelDe, progressoNivel, saveProfile, tituloDe, topOf, trainerURL } from './perfil.mjs';
@@ -21,7 +21,11 @@ import { renderBattleBanner } from './banner.mjs';
 import { ensureDaily } from './desafios.mjs';
 import { goView, renderSession } from './navegacao.mjs';
 import { atualizarSaldo } from './controles.mjs';
-import { reiniciarCarteira, saldo } from './banco.mjs';
+import { reiniciarCarteira, saldo, modoServidor } from './banco.mjs';
+/* E4: equipar pergunta à POSSE — a do servidor com conta real, a do navegador
+   sem. A regra mora em `posse-atual.mjs` (camada 0); aqui só se pinta. */
+import { posseAtual, podeEquipar, escolhaDoCosmetico, catalogoCosmetico } from './posse-atual.mjs';
+import { api } from './api.mjs';
 
 /* =====================================================================
    CUSTOMIZAÇÃO — avatar e banner
@@ -125,6 +129,11 @@ function renderCustom(){
   const b = S.profile.banner || PROFILE_DEFAULT.banner;
   const bt = S.profile.battle || PADRAO_BANNER;
   const mons = customMons();
+  /* O TRANCADO APARECE TRANCADO (E4): a peça da boutique que ainda não é sua
+     fica na grade, com cadeado — sumir com ela não desperta vontade nenhuma,
+     e deixá-la clicável era vestir de graça o que a loja vende. */
+  const cat = catalogoCosmetico(), posse = posseAtual();
+  const tranc = (familia, id) => (podeEquipar(cat, posse, familia, id) ? '' : ' tranc');
 
   /* `.avArte` desliga o `image-rendering:pixelated` que as outras duas grades
      precisam: sprite de 96 px ampliado quer pixel duro, retrato pintado de
@@ -142,7 +151,7 @@ function renderCustom(){
    * são PINTADAS e reduzidas, e pixel duro numa redução serrilha a imagem
    * inteira. Mesma razão do acervo. */
   $('#pickGaleria').innerHTML = AVATARES_GALERIA.map(x => `
-    <div class="opt ${a.kind==='galeria'&&a.id===x.id?'on':''}" data-av="galeria" data-id="${x.id}"
+    <div class="opt ${a.kind==='galeria'&&a.id===x.id?'on':''}${tranc('avatar', x.id)}" data-av="galeria" data-id="${x.id}"
          title="${x.nm}${x.vivo ? ' · animado' : ''}">
       <img class="avArte" src="../${arquivoArte(x)}" loading="lazy" alt=""
            style="object-position:50% ${(x.y*100).toFixed(0)}%">
@@ -156,7 +165,7 @@ function renderCustom(){
     </div>`).join('');
 
   $('#pickTrainer').innerHTML = TRAINER_AVATARS.map(t => `
-    <div class="opt ${a.kind==='trainer'&&a.id===t.id?'on':''}" data-av="trainer" data-id="${t.id}">
+    <div class="opt ${a.kind==='trainer'&&a.id===t.id?'on':''}${tranc('avatar', t.id)}" data-av="trainer" data-id="${t.id}">
       <img src="${trainerURL(t.id)}"${cascataTreinador(t.id)} alt="">
       <div class="cap">${t.nm}</div>
     </div>`).join('');
@@ -173,13 +182,13 @@ function renderCustom(){
      cobrindo o botão Salvar. Defeito que a v1.0 do porte já tinha achado e
      consertado; herdamos o conserto junto com a arte. */
   $('#pickCena').innerHTML = BN_CENAS.map(x => `
-    <div class="opt ${bt.cena===x.id?'on':''}" data-bcena="${x.id}">
+    <div class="opt ${bt.cena===x.id?'on':''}${tranc('cena', x.id)}" data-bcena="${x.id}">
       <div class="swatch cn-${x.id}" style="position:relative;overflow:hidden"></div>
       <div class="cap">${x.nm}</div>
     </div>`).join('');
 
   $('#pickEfeito').innerHTML = BN_EFEITOS.map(x => `
-    <div class="opt ${bt.efeito===x.id?'on':''}" data-befeito="${x.id}">
+    <div class="opt ${bt.efeito===x.id?'on':''}${tranc('efeito', x.id)}" data-befeito="${x.id}">
       <div class="swatch" style="display:flex;align-items:center;justify-content:center;
         background:var(--panel)"><span class="bnNome ef-${x.id}" style="font-size:.6rem">${x.ico}</span></div>
       <div class="cap">${x.nm}</div>
@@ -201,7 +210,7 @@ function renderCustom(){
    * ele a amostra mostraria a moldura sem os fios — de novo, escolher olhando
    * uma coisa e receber outra. */
   $('#pickMoldura').innerHTML = BN_MOLDURAS.map(x => `
-    <div class="opt ${bt.moldura===x.id?'on':''}" data-bmoldura="${x.id}" title="${x.nm}">
+    <div class="opt ${bt.moldura===x.id?'on':''}${tranc('moldura', x.id)}" data-bmoldura="${x.id}" title="${x.nm}">
       <div class="swatch" style="display:flex;align-items:center;justify-content:center;
         background:var(--panel)">
         <span class="bnMold md-${x.id}" style="position:static;width:38px;height:38px">
@@ -409,6 +418,15 @@ $('#profileModal').addEventListener('click', ev => {
   }
   const opt = ev.target.closest('.opt');
   if (!opt) return;
+  /* ── EQUIPAR EXIGE POSSE (E4, ST-4.3) ──────────────────────────────────
+     Antes do E4 este handler gravava qualquer peça: tudo o que a boutique
+     vende saía de graça por aqui. Com conta real o servidor confere de novo
+     — esta checagem é a da tela, a dele é a que vale. */
+  const escolha = escolhaDoCosmetico(opt.dataset);
+  if (escolha && !podeEquipar(catalogoCosmetico(), posseAtual(), escolha.familia, escolha.id)) {
+    avisar('Esta peça é da boutique — compre-a antes de usar.');
+    return;
+  }
   if (opt.dataset.av)          S.profile.avatar = {kind:opt.dataset.av, id: opt.dataset.av==='mon' ? +opt.dataset.id : opt.dataset.id};
 
   else if (opt.dataset.bmon)   S.profile.banner = {...S.profile.banner, dex: +opt.dataset.bmon};
@@ -417,6 +435,7 @@ $('#profileModal').addEventListener('click', ev => {
   else if (opt.dataset.bmoldura)S.profile.battle = {...S.profile.battle, moldura: opt.dataset.bmoldura};
   else return;
   saveProfile(S.profile);
+  if (escolha && modoServidor()) api.post('/api/cosmeticos/equipar', escolha);
   renderBanner(); renderSession(); renderBattleBanner();
   // marca a opção escolhida sem redesenhar a grade inteira (não perde o scroll)
   const grid = opt.parentElement;

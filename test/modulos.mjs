@@ -119,6 +119,8 @@ const CAMADA = {
      camada 0 porque não conhece DOM nem estado: recebe inventário, devolve
      catálogo. Quem a põe na tela é a loja, camada 4. */
   'cosmeticos.mjs': 0,
+  /* E4: a posse que a tela lê — servidor com conta, navegador sem. Pura. */
+  'posse-atual.mjs': 0,
   /* A VIDA NO MUNDO: passeio, direcao, quadro da folha e camera. Camada 0
      porque e aritmetica sobre coordenadas — nao conhece canvas, DOM nem pack.
      E o que permite percorrer onze horas de caminhada num teste de Node e

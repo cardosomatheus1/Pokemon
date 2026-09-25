@@ -60,7 +60,7 @@ import { ligarLoja, usarEstado as lojaUsaEstado } from './loja-tela.mjs';
 /* A BOUTIQUE — a loja de PokéCash (1.31). Ela é irmã da loja PvE: o mesmo
    quadro, o mesmo vídeo, o outro NPC. Ver `loja-cash.mjs`. */
 import { ligarCash, usarEstado as cashUsaEstado } from './loja-cash.mjs';
-import { carregarPosse, gravarPosse } from './cosmeticos.mjs';
+import { gravarPosse } from './cosmeticos.mjs';
 import { tocar as tocarCaptura, ligarCaptura } from './captura-cena.mjs';
 import { tocar as tocarEvolucao, ligarEvolucao } from './evolucao-cena.mjs';
 import { pintarPerfis } from './idle-perfis.mjs';
@@ -209,7 +209,6 @@ focoUsaCriaturas(() => E.criaturas ?? []);
 /* A boutique guarda a posse dela num depósito próprio — ver a nota longa em
    `cosmeticos.mjs` sobre por que o traje continua sendo do acervo. */
 cashUsaEstado({
-  ler: () => carregarPosse(),
   salvar: posse => gravarPosse(posse),
   mudou: () => renderIdle(),
 });

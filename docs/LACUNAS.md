@@ -1921,7 +1921,7 @@ pelo dono do projeto.
 
 **Registrada em:** bloco 0.1, ao fechar o `D-045`. **Bloco dono:** sem dono;
 candidato é um bloco de perfil no servidor, depois da V1.
-**Estado:** aberta — na fila do ROADMAP como INT-02 (posição 3).
+**Estado:** ✅ fechada em 25/09/2026 (E4 · INT-02) — com conta real a posse e o equipado moram no servidor (`cosmetic_ownership`, `cosmetic_equipped`) e voltam no login (`hidratarPosse`); limpar o navegador não leva mais a compra.
 
 O bloco 0.1 fez XP, desafios e trilha de login sobreviverem a
 `localStorage.clear()`. **Cosmético não sobrevive**, e a fronteira é decisão
@@ -7154,7 +7154,8 @@ está na fila do T8 por ordem, não por bloqueio.
 ### L-157 — a posse do traje e a posse dos cosméticos são duas listas
 
 **Registrada em:** 09/09/2026, ao construir o 1.31. **Bloco dono:** o primeiro
-bloco que puser um traje à venda. **Estado:** aberta, e hoje **não custa nada**.
+bloco que puser um traje à venda.
+**Estado:** 🟡 parcial (E4, 25/09/2026) — com conta real é UMA lista (`cosmetic_ownership`, família `outfit`), e o acervo segue a posse do servidor; sem conta o traje continua no `pa.outfit.v1`. Hoje **não custa nada**: nenhum traje está à venda (DEC-06).
 
 A boutique guarda o que foi comprado em `pa.cosmeticos.v1`, com chaves
 `familia:id`. O acervo de trajes tem posse própria desde que ele existe, em

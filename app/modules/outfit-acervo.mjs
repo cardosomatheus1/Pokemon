@@ -150,9 +150,18 @@ export function gravar(estado, deposito = globalThis.localStorage) {
    Nem o dono veste o traje do adversário, porque o dia em que ele testar o
    mundo vivo com o próprio traje de NPC, o mundo vai parecer certo e estar
    errado. */
+/* ── COM CONTA REAL, A POSSE É DO SERVIDOR (E4, ST-4.3/4.4) ─────────────
+   `posse-atual.mjs` injeta a pergunta quando o login hidrata; aí o traje
+   segue a MESMA lista das outras famílias (L-157), e o `MODO_VITRINE` — que é
+   estado de desenvolvimento, não produto — deixa de valer. Injetada, e não
+   importada, porque `cosmeticos.mjs` já importa este arquivo. */
+let externa = null;
+export function usarPosseExterna(fn) { externa = typeof fn === 'function' ? fn : null; }
+
 export function tem(estado, id) {
   const o = porId(id);
   if (!o || o.procedencia === 'npc') return false;
+  if (externa) return externa(id);
   return MODO_VITRINE || (estado?.posse ?? []).includes(id);
 }
 
@@ -164,7 +173,8 @@ export const vestiveis = estado => ACERVO.filter(o => tem(estado, o.id));
    simplesmente não está na lista não desperta vontade nenhuma, e é a vontade
    que faz a loja e o baú valerem alguma coisa. */
 export const bloqueados = estado =>
-  ACERVO.filter(o => o.procedencia !== 'npc' && !(estado?.posse ?? []).includes(o.id));
+  ACERVO.filter(o => o.procedencia !== 'npc' &&
+                     !(externa ? externa(o.id) : (estado?.posse ?? []).includes(o.id)));
 
 export function vestir(estado, id, deposito = globalThis.localStorage) {
   if (!tem(estado, id)) return estado;

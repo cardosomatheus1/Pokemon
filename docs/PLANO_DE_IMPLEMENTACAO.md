@@ -376,7 +376,7 @@ leva de graça. Hoje a posse vive só no navegador (`pa.cosmeticos.v1`,
   /api/cosmeticos` devolve posse e equipados; depois de `localStorage.clear()`,
   com sessão, a posse volta igual.
 
-### ST-4.2 · a compra atômica e idempotente — ✅ 25/09 (servidor; o cliente liga na metade B)
+### ST-4.2 · a compra atômica e idempotente — ✅ 25/09 (servidor e cliente)
 
 - **Porte** M · **Depende de** ST-4.1, ST-4.5
 - **Aceite:** `POST /api/cosmeticos/comprar {familia, id, chaveIdem}` numa
@@ -385,12 +385,12 @@ leva de graça. Hoje a posse vive só no navegador (`pa.cosmeticos.v1`,
   lançamento; 2 pedidos simultâneos = 1 débito (Q8); preço **do catálogo do
   servidor** — `preco: 1` no corpo é ignorado; peça `padrao`/`npc` recusada.
 
-### ST-4.3 · equipar exige posse, conferida no servidor — 🟡 25/09: o servidor confere; falta o cliente (metade B)
+### ST-4.3 · equipar exige posse, conferida no servidor — ✅ 25/09 (o servidor confere; a tela também, e mostra o trancado com cadeado; `MODO_VITRINE` não vale com conta)
 
 - **Porte** P · **Aceite:** equipar o que não se tem = 4xx com `codigo`, perfil
   intacto; `MODO_VITRINE` deixa de valer em modo servidor.
 
-### ST-4.4 · uma lista de posse só (L-157) — 🟡 25/09: no servidor o traje já é a mesma tabela; falta o cliente (metade B)
+### ST-4.4 · uma lista de posse só (L-157) — ✅ 25/09 com conta real (sem conta o traje segue no acervo local — L-157 parcial)
 
 - **Porte** P · **Aceite:** a família `outfit` passa pela mesma tabela; um traje
   marcado `loja` no teste, comprado, aparece em `vestiveis()` com

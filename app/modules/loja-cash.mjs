@@ -31,13 +31,16 @@
  */
 import { $ } from './dom.mjs';
 import { catalogo, ABAS } from './cosmeticos.mjs';
-import { podeComprar, chaveDa, temNaConta, custoDaVitrine, aVendaNaVitrine,
-         MOTIVO_CONTA_ONLINE } from '../../engine/vitrine.mjs';
-import { saldo, travado, gastarEmCosmetico, modoServidor } from './banco.mjs';
+import { podeComprar, chaveDa, temNaConta, custoDaVitrine, aVendaNaVitrine } from '../../engine/vitrine.mjs';
+/* E4: com conta real, quem cobra e quem guarda é o SERVIDOR. */
+import { api } from './api.mjs';
+import { adotarDoServidor, equipadosDoServidor, posseAtual } from './posse-atual.mjs';
+import { saldo, travado, gastarEmCosmetico, modoServidor, hidratar } from './banco.mjs';
 
 /* O acervo do jogador. Ele entra e sai por fora, como em toda tela desta base:
    quem desenha não guarda, e quem guarda não desenha. */
-let lerPosse = () => [];
+/* Por padrão, a posse que vale agora — a do servidor com conta real (E4). */
+let lerPosse = () => posseAtual();
 let gravarPosse = () => {};
 let aoMudar = () => {};
 
@@ -116,12 +119,10 @@ function cara(p) {
   return '<span class="lcCara ico">' + (a.ico ?? '') + '</span>';
 }
 
-function ficha(p, posse, temSaldo, contaOnline = false) {
+function ficha(p, posse, temSaldo) {
   const meu = temNaConta(posse, p);
   const daLoja = p.procedencia === 'loja';
-  /* D-108: com conta online o botão fica, com o preço, e DESLIGADO — sumir
-     com ele mandaria o jogador procurar; a razão está no recado do topo. */
-  const podePagar = temSaldo >= p.preco && !contaOnline;
+  const podePagar = temSaldo >= p.preco;
   const classe = meu ? 'meu' : daLoja ? (podePagar ? '' : 'longe') : 'gratis';
   const acao = meu
     ? '<span class="lcSelo">seu</span>'
@@ -169,7 +170,6 @@ export function pintarCash() {
   }).join('');
 
   const trancado = travado();
-  const contaOnline = modoServidor();
   alvo.innerHTML = `
     <div class="lcTopo">
       <span class="lcSaldo"><b>${num(disponivel)}</b><em>PokéCash</em></span>
@@ -183,8 +183,7 @@ export function pintarCash() {
     </div>
     <div class="lcAbas">${abas}</div>
     ${recado ? `<p class="lcRecado">${recado}</p>` : ''}
-    ${contaOnline ? `<p class="lcRecado">${MOTIVO_CONTA_ONLINE}.</p>` : ''}
-    <div class="lcGrade">${daAba.map(p => ficha(p, posse, disponivel, contaOnline)).join('')}</div>
+    <div class="lcGrade">${daAba.map(p => ficha(p, posse, disponivel)).join('')}</div>
     <!-- ── O AVISO DO §25.1, E ELE NÃO É LETRA MIÚDA ─────────────────────
          O dono pediu a loja declarada "em construção" até o checkpoint, e a
          Spec é explícita: nenhuma feature de valor real entra só porque
@@ -239,8 +238,13 @@ export function comprarPeca(chave) {
   const id = resto.join(':');
   const cat = catalogo();
   const posse = lerPosse() ?? [];
-  const r = podeComprar(cat, { familia, id, posse, saldo: saldo(), contaOnline: modoServidor() });
+  const r = podeComprar(cat, { familia, id, posse, saldo: saldo() });
   if (!r.pode) { recado = r.motivo; pintarCash(); return r; }
+
+  /* COM CONTA REAL, A COMPRA É DO SERVIDOR (E4, fecha o D-108). A carteira
+     local não é tocada: debitar aqui e cobrar lá seria cobrar duas vezes, e
+     só debitar aqui era a peça de graça. */
+  if (modoServidor()) { comprarNoServidor(r.peca); return { pode: true, pendente: true, peca: r.peca }; }
 
   const pago = gastarEmCosmetico(r.peca.preco, 'loja:' + chave);
   if (!pago || pago.ok === false) {
@@ -254,6 +258,32 @@ export function comprarPeca(chave) {
   aoMudar();
   pintarCash();
   return { pode: true, peca: r.peca };
+}
+
+/* Uma chave por CLIQUE: o mesmo clique repetido pela rede cobra uma vez; dois
+   cliques na mesma peça também — o segundo encontra a peça já na posse. */
+let emCurso = false;
+async function comprarNoServidor(peca) {
+  if (emCurso) return;
+  emCurso = true;
+  recado = 'comprando…';
+  pintarCash();
+  try {
+    const chaveIdem = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+    const r = await api.post('/api/cosmeticos/comprar', { familia: peca.familia, id: peca.id, chaveIdem });
+    if (!r.ok) {
+      recado = r.indisponivel ? 'sem conexão com o servidor — nada foi cobrado'
+                              : (r.corpo?.erro ?? 'a compra foi recusada');
+      return;
+    }
+    adotarDoServidor({ posse: r.corpo.posse, equipados: equipadosDoServidor() ?? {} });
+    await hidratar();
+    recado = `${peca.nome} é seu.`;
+    aoMudar();
+  } finally {
+    emCurso = false;
+    pintarCash();
+  }
 }
 
 let ligado = false;

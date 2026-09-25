@@ -6399,16 +6399,18 @@ instante seguinte, e nenhum teste olhava a run depois de colhida.
 
 ---
 
-## D-108 — com conta real, o cosmético da boutique sai de graça 🟡 MITIGADO
+## D-108 — com conta real, o cosmético da boutique sai de graça ✅ CORRIGIDO (E4)
 
 **Achado em:** 25/09/2026, no cruzamento documentos × código.
 **Bloco dono:** **ST-1.3** (mitigação) e **E4 / INT-02** (conserto). **Estado:**
-🟡 **MITIGADO em 25/09/2026 na ST-1.3** — com conta online a boutique não vende
+✅ **CORRIGIDO em 25/09/2026 no E4** — com conta real a compra vai ao servidor
+(`POST /api/cosmeticos/comprar`: débito, lançamento e posse numa transação, preço
+do catálogo do servidor); a carteira local não é tocada. *Antes:* 🟡 **MITIGADO em 25/09/2026 na ST-1.3** — com conta online a boutique não vende
 (`podeComprar` recusa com `fechada: true` e diz por quê; o botão fica com o
 preço, desligado). **Continua aberto para o E4**, que dá à posse um lugar no
 servidor e reabre a venda.
 **Gravidade:** alta — entrega sem cobrar.
-**Testes que travam:** `test/vitrine.mjs` → os quatro `D-108:`; S1054–S1056. O
+**Testes que travam (desde o E4):** `test/cosmeticos-servidor.mjs`, `test/posse-atual.mjs` e as rotas E4 em `test/rotas.mjs`; S1054–S1056 realinhados para o caminho do servidor, S1113–S1126. *Antes:* `test/vitrine.mjs` → os quatro `D-108:`. O
 "afirma o defeito" de `test/modo-servidor.mjs` ficou vermelho na mitigação e saiu.
 **Dívida registrada:** quem comprou com conta real antes de 25/09 ficou com a peça
 sem ter pago, e não há como saber quem (a posse é só do navegador). Não se
@@ -6449,3 +6451,19 @@ chama.
 
 **Agravante, e é decisão (DEC-07), não defeito:** o token dura 7 dias e o
 servidor não tem como revogá-lo (`server/auth.mjs:216-246`).
+
+---
+
+## D-110 — o modal de perfil rola na horizontal a 420 px
+
+**Achado em:** 25/09/2026, no passo OLHAR do E4 (`node tools/olhar-telas.mjs
+--so customizacao-trancada-420`). **Bloco dono:** **1.27g · UX-01** (a fila de
+leitura de tela). **Estado:** aberto.
+**Medição:** documento de **436 px** numa janela de 420 com o modal de perfil
+aberto na aba de customização. **Não é do E4:** a mesma captura com o
+`index.html` de antes do E4 dá os mesmos 436 px.
+**Gravidade:** baixa — 16 px, mas rolagem horizontal é defeito de layout sempre.
+**Teste que trava:** a sonda `olhar-telas` já avisa; o teste de suíte nasce no
+bloco dono (uma sonda de navegador — mutante de 30 s, por isso não entrou num
+bloco que não mexeu no layout do modal).
+

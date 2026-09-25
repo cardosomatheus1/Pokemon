@@ -42,6 +42,7 @@
  */
 import { S } from './estado.mjs';
 import { api } from './api.mjs';
+import { hidratarPosse, aplicarEquipados } from './posse-atual.mjs';
 import { nivelDe, progressoNivel } from '../../engine/progressao.mjs';
 
 export const CHAVE = 'ar_profile';
@@ -138,6 +139,10 @@ export async function hidratarPerfil(){
      veio da rota apagaria cosmético e estatística, que a rota não conhece — e
      seria o bloco 0.1 desfazendo do R24 ao R43 por descuido de uma linha. */
   S.profile.xp = r.corpo?.perfil?.xp ?? 0;
+  /* A POSSE DE COSMÉTICO VEM JUNTO (E4): o que ele comprou e o que ele vestiu,
+     de qualquer aparelho. Limpar o navegador deixa de levar a compra (L-055). */
+  const posse = await hidratarPosse(api);
+  if (posse?.ok) Object.assign(S.profile, aplicarEquipados(S.profile, posse.corpo?.equipados ?? {}));
   doServidor = {
     sequencia: r.corpo?.sequencia ?? 0,
     desafios:  r.corpo?.desafios ?? [],

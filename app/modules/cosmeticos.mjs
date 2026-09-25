@@ -186,11 +186,13 @@ export { PROCEDENCIAS };
  */
 const CHAVE_POSSE = 'pa.cosmeticos.v1';
 
-/* O que a conta já tem sem comprar nada: tudo que não é da loja. Uma vitrine
-   que começa com o jogador pelado não é vitrine — é pedágio. */
-export const posseInicial = () =>
-  catalogo().filter(p => p.procedencia !== 'loja' && p.procedencia !== 'npc')
-            .map(p => `${p.familia}:${p.id}`);
+/* O que a conta já tem sem comprar nada: o PADRÃO. Uma vitrine que começa com
+   o jogador pelado não é vitrine — é pedágio.
+   Só `padrao` (E4): a versão anterior dava tudo que não era loja nem NPC, e
+   `fragmento` e `missao` — que se GANHAM — sairiam de graça no dia em que o
+   primeiro existisse. O servidor usa a mesma regra (`server/cosmeticos.mjs`). */
+export const posseInicial = (cat = catalogo()) =>
+  cat.filter(p => p.procedencia === 'padrao').map(p => `${p.familia}:${p.id}`);
 
 export function carregarPosse(deposito = globalThis.localStorage) {
   const base = posseInicial();

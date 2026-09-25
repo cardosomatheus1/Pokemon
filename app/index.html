@@ -2124,6 +2124,12 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 .opt .cap{font-size:.55rem;color:var(--dim);margin-top:3px;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis}
 .opt.on .cap{color:var(--gold)}
+/* E4 · A PEÇA DA BOUTIQUE QUE AINDA NÃO É SUA: fica na grade, apagada e com
+   cadeado — ela vende a vitrine, e clicar nela explica onde comprar. */
+.opt.tranc{position:relative;opacity:.5;filter:grayscale(.6)}
+.opt.tranc:hover{border-color:var(--line);opacity:.75}
+.opt.tranc::after{content:'🔒';position:absolute;top:2px;right:3px;font-size:.62rem;
+  filter:none;text-shadow:0 0 3px #000}
 /* As amostras precisam ser âncora de posicionamento: os enfeites dos
    cenários (sol, lua, brilho do vulcão) são ::after com position:absolute
    e, sem um ancestral posicionado AQUI, eles subiam até o modal inteiro —
