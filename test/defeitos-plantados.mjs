@@ -2143,6 +2143,43 @@ export const DEFEITOS = [
     de:'  lancarRunNoTeto(e, run);',
     para:'  e.avancos = e.avancos ?? [];' },
 
+  /* ── ST-1.2 · O ⏻ DESLOGA A CONTA REAL (D-109) ──────────────────────── */
+  { id:'S1050', arquivo:'app/modules/sair.mjs', nome:'sair volta a esquecer so o PIN',
+    real:'o D-109 de volta: a conta real continua aberta depois do Sair',
+    de:'  api?.esquecerSessao?.();',
+    para:'  /* token intocado */' },
+  { id:'S1051', arquivo:'app/modules/sair.mjs', nome:'sair deixa o PIN da fachada',
+    real:'sem conta real, o botao Sair nao sai de nada',
+    de:'  try { armazem?.removeItem(CHAVE_PIN); } catch { /* modo privativo */ }',
+    para:'  /* PIN intocado */' },
+  { id:'S1052', arquivo:'app/modules/sair.mjs', nome:'sair mente que nao havia conta',
+    real:'a tela nao recarrega, e a carteira e o perfil do servidor ficam na memoria para quem sentar depois',
+    de:'  const tinhaConta = !!api?.temSessao?.();',
+    para:'  const tinhaConta = false;' },
+  { id:'S1053', arquivo:'app/modules/navegacao.mjs', nome:'o botao volta a apagar o PIN a mao',
+    real:'a decisao testada nao e a que roda — a forma exata do D-109',
+    de:'      const { tinhaConta } = sair({ api });',
+    para:"      localStorage.removeItem('ar_session'); const tinhaConta = false;" },
+
+  /* ── ST-1.3 · COM CONTA ONLINE A BOUTIQUE NÃO VENDE (D-108) ─────────── */
+  { id:'S1054', arquivo:'engine/vitrine.mjs', nome:'a boutique volta a vender com conta online',
+    real:'o D-108 de volta: o debito fica so na tela e o servidor devolve o saldo — peca de graca',
+    de:'  if (contaOnline)\n    return { pode: false, peca, fechada: true, motivo: MOTIVO_CONTA_ONLINE };',
+    para:'  if (false)\n    return { pode: false, peca, fechada: true, motivo: MOTIVO_CONTA_ONLINE };' },
+  { id:'S1055', arquivo:'app/modules/loja-cash.mjs', nome:'a compra pergunta ao motor sem a conta',
+    real:'a regra existe no motor e a tela a contorna — a boutique vende de novo',
+    de:'  const r = podeComprar(cat, { familia, id, posse, saldo: saldo(), contaOnline: modoServidor() });',
+    para:'  const r = podeComprar(cat, { familia, id, posse, saldo: saldo() });' },
+  { id:'S1056', arquivo:'engine/vitrine.mjs', nome:'a recusa da conta passa na frente do ja-tem',
+    real:'o jogador deixa de ver que a peca e dele e le que a boutique esta fechada',
+    de:`  if (temNaConta(posse, peca))
+    return { pode: false, peca, motivo: 'você já tem esta peça' };
+  if (contaOnline)`,
+    para:`  if (contaOnline) return { pode: false, peca, fechada: true, motivo: MOTIVO_CONTA_ONLINE };
+  if (temNaConta(posse, peca))
+    return { pode: false, peca, motivo: 'você já tem esta peça' };
+  if (false)` },
+
   { id:'S1043', arquivo:'test/bandeiras.mjs', nome:'as caras passam a ser entregues por ultimo',
     real:'a fila termina quando a ultima termina: a mais cara no fim deixa tres trabalhadores ociosos',
     de:'    ((custo[b] ?? 0) - (custo[a] ?? 0)) || (pos.get(a) - pos.get(b)));',

@@ -6375,12 +6375,20 @@ instante seguinte, e nenhum teste olhava a run depois de colhida.
 
 ---
 
-## D-108 — com conta real, o cosmético da boutique sai de graça
+## D-108 — com conta real, o cosmético da boutique sai de graça 🟡 MITIGADO
 
 **Achado em:** 25/09/2026, no cruzamento documentos × código.
-**Bloco dono:** **ST-1.3** (mitigação) e **E4 / INT-02** (conserto). **Estado:** aberto.
+**Bloco dono:** **ST-1.3** (mitigação) e **E4 / INT-02** (conserto). **Estado:**
+🟡 **MITIGADO em 25/09/2026 na ST-1.3** — com conta online a boutique não vende
+(`podeComprar` recusa com `fechada: true` e diz por quê; o botão fica com o
+preço, desligado). **Continua aberto para o E4**, que dá à posse um lugar no
+servidor e reabre a venda.
 **Gravidade:** alta — entrega sem cobrar.
-**Teste que trava:** `test/modo-servidor.mjs` → `D-108 (afirma o defeito)`.
+**Testes que travam:** `test/vitrine.mjs` → os quatro `D-108:`; S1054–S1056. O
+"afirma o defeito" de `test/modo-servidor.mjs` ficou vermelho na mitigação e saiu.
+**Dívida registrada:** quem comprou com conta real antes de 25/09 ficou com a peça
+sem ter pago, e não há como saber quem (a posse é só do navegador). Não se
+recupera; o E4 começa desse estado.
 
 ### Causa
 
@@ -6395,12 +6403,17 @@ conta real, que é o que a suíte de navegador não percorre na boutique.
 
 ---
 
-## D-109 — o botão ⏻ não desloga uma conta real
+## D-109 — o botão ⏻ não desloga uma conta real ✅ CORRIGIDO
 
 **Achado em:** 25/09/2026, no cruzamento documentos × código.
-**Bloco dono:** **ST-1.2** (F1.3, sessão). **Estado:** aberto.
+**Bloco dono:** **ST-1.2** (F1.3, sessão). **Estado:** ✅ **CORRIGIDO em 25/09/2026, na ST-1.2.**
 **Gravidade:** média — num aparelho compartilhado, "sair" deixa a conta aberta.
-**Teste que trava:** `test/modo-servidor.mjs` → `D-109 (afirma o defeito)`.
+**Testes que travam:** `test/modo-servidor.mjs` → os três `D-109:`; S1050–S1053.
+
+> **O conserto:** a decisão saiu do `onclick` para `app/modules/sair.mjs`
+> (camada 0): esquece o token (`api.esquecerSessao`) e o PIN; com conta real a
+> página recomeça, porque carteira e perfil do servidor estavam em memória.
+> Revogar o token NO SERVIDOR segue sendo a ST-1.2b, com a DEC-07.
 
 ### Causa
 

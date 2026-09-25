@@ -36,6 +36,15 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### ST-1.2 e ST-1.3 FECHADAS — o Sair desloga; a boutique não vende sem cobrar
+
+**D-109 corrigido:** a decisão saiu do `onclick` para `app/modules/sair.mjs`
+(camada 0) — esquece o token e o PIN; com conta real a página recomeça, porque
+carteira e perfil do servidor estavam em memória. **D-108 mitigado:** com conta
+online, `podeComprar` recusa com o motivo, e o botão fica com o preço,
+desligado. O conserto de verdade (posse no servidor) é o E4. Quem comprou com
+conta antes disso ficou com a peça sem pagar — registrado, sem recuperação.
+
 ### ST-1.1 FECHADA — o teto sente a run colhida (D-107)
 
 `encontrosHoje` passa a somar as runs colhidas das últimas 24 h, que o

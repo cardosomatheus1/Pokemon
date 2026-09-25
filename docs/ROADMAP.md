@@ -265,6 +265,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | **T9 · T10 · T13 · T11a** · o arnês | 16/09 | portão de 7 h para 3 min com a árvore intocada |
 | **1.34** · dia, tarde e noite | 25/09 | Q2 1017/1017 · suíte 2184/2184 · capturas em `tools/previas/_hora/` |
 | **1.33** · o elenco muda com a hora e o clima | 25/09 | 18 de 44 estágios mudam à noite · Q2 e suíte no commit · capturas `tools/previas/_hora/sala-*` |
+| **ST-1.2 · ST-1.3** · o Sair desloga; a boutique não vende sem cobrar (D-109, D-108) | 25/09 | `sair.mjs` em camada 0 · `podeComprar` com `contaOnline` · S1050–S1056 |
 | **ST-1.1** · o teto sente a run colhida (D-107) | 25/09 | 6 testes · S1044–S1049 · reserva até a colheita |
 | **T14** · os testes em minutos | 25/09 | `npm test` 6 min 10 s → 1 min 45 s · `repetir` 2/2 · Q2 do bloco 39/39 em 13 min · pedido do dono |
 
@@ -276,13 +277,11 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | # | bloco | o que é | por que aqui |
 |---|---|---|---|
-| 2 | **ST-1.2** · o Sair desloga a conta real | **D-109** | P, sem decisão pendente para o Sair |
-| 3 | **ST-1.3** · a boutique não dá peça sem cobrar | **D-108**: com sessão, débito só na tela | P; mitiga até o E4 |
-| 4 | **1.32b** · mostrar que climas existem | L-177, e a L-183 (o veterano quase não vê a noite) | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto. A prévia da NOITE já está na sala desde o 1.33 |
-| 5 | **INT-01** · recompensas que não duplicam | da Revisão 2.0: Estilhaço no baú (L-159), reservas, resgate concorrente | integridade de economia vem antes de calibrar quantidade |
-| 6 | **INT-02** · uma posse confiável | cosméticos e outfit entre dispositivos (L-157, L-055) | compra e equipar não podem depender do navegador |
-| 7 | **1.27g · UX-01** · efeitos e leitura da luta | L-171, L-172, L-175, L-176 | o que impede ENTENDER a ação vem antes do que a enfeita |
-| 8 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
+| 1 | **1.32b** · mostrar que climas existem | L-177, e a L-183 (o veterano quase não vê a noite) | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto. A prévia da NOITE já está na sala desde o 1.33 |
+| 2 | **INT-01** · recompensas que não duplicam | da Revisão 2.0: Estilhaço no baú (L-159), reservas, resgate concorrente | integridade de economia vem antes de calibrar quantidade |
+| 3 | **INT-02** · uma posse confiável | cosméticos e outfit entre dispositivos (L-157, L-055) | compra e equipar não podem depender do navegador |
+| 4 | **1.27g · UX-01** · efeitos e leitura da luta | L-171, L-172, L-175, L-176 | o que impede ENTENDER a ação vem antes do que a enfeita |
+| 5 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
 | — | **E6** · higiene documental | ST-6.1 a 6.4 | não é código: corre em paralelo, um commit por story |
 | — | **ST-0.6** · CI no GitHub | `npm test` a cada push; Q2 fatiado à noite | espera a **DEC-13** |
 | — | **T11 · T8 · T4 · T7** · arnês | ❄️ **CONGELADO** | entra só quando IMPEDIR um bloco desta tabela, com orçamento nomeado antes (`CLAUDE.md`, 16/09) |
@@ -332,8 +331,8 @@ Todos com dono nomeado, todos em `docs/LACUNAS.md`.
 | defeito | o que é | estado |
 |---|---|---|
 | ~~D-107~~ | o teto de encontros volta cheio depois de colher a run | ✅ ST-1.1, 25/09 |
-| **D-108** | com conta real, o cosmético da boutique sai de graça | aberto · ST-1.3 e E4 |
-| **D-109** | o ⏻ não desloga a conta real | aberto · ST-1.2 |
+| D-108 | com conta real, o cosmético da boutique sai de graça | 🟡 mitigado na ST-1.3 (não vende); o conserto é o E4 |
+| ~~D-109~~ | o ⏻ não desloga a conta real | ✅ ST-1.2, 25/09 |
 | **D-082** | o rodapé do banner passa por baixo do mon da vitrine na tela da run | aberto |
 | **D-086** | `sala-cliente` é INSTÁVEL — vermelho uma vez, verde na seguinte | aberto |
 | **D-093** | a linha de base visual LOCAL é invisível ao git e envelhece calada. Um clone novo não a tem, e a suíte passa **sem comparar nada** | a deriva foi regravada; a causa de fundo segue aberta |

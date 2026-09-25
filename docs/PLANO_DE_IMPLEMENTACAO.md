@@ -219,7 +219,7 @@ mudança de produto. Achado de arnês que não couber vai para DEFEITOS/LACUNAS.
   colhido (dupla contagem).
 - **Portões:** Q1 Q2 Q3 (invariante do §P5) · Q6: sem superfície nova.
 
-### ST-1.2 · o botão ⏻ desloga a conta real (D-109)
+### ST-1.2 · o botão ⏻ desloga a conta real (D-109) — ✅ fechada em 25/09
 
 - **Porte** P · **Bloco dono** F1.3 (sessão) · **Depende de** DEC-07 só para o
   que o OFF encerra — o Sair não depende de decisão.
@@ -240,7 +240,7 @@ mudança de produto. Achado de arnês que não couber vai para DEFEITOS/LACUNAS.
   manter `S.profile` com os dados da conta.
 - **Portões:** Q1 Q2 Q5 (captura do cabeçalho deslogado) Q6 (sessão).
 
-### ST-1.3 · com conta real, a boutique não entrega peça sem cobrar (D-108)
+### ST-1.3 · com conta real, a boutique não entrega peça sem cobrar (D-108) — ✅ fechada em 25/09 (mitigação; o conserto é o E4)
 
 - **Porte** P · **Bloco dono** INT-02 (mitigação antecipada)
 - **Por que P e não o conserto inteiro:** o conserto é o E4 (posse no

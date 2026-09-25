@@ -10,6 +10,8 @@ import { S } from './estado.mjs';
 import { simsLongo } from './sims.mjs';
 import { emitir } from './telemetria.mjs';
 import { modoServidor, saldo } from './banco.mjs';
+import { api } from './api.mjs';
+import { sair } from './sair.mjs';
 import { renderProfile } from './customizacao.mjs';
 import { avatarURL, trainerURL } from './perfil.mjs';
 import { progressoNivel, saveProfile, tituloDe } from './perfil.mjs';
@@ -94,7 +96,13 @@ function renderSession(){
          Ver `dialogo.mjs`. */
       if (!await confirmar('Sair da conta? O treinador continua salvo neste navegador.',
                            { ok: 'Sair' })) return;
-      localStorage.removeItem('ar_session'); renderSession(); renderHero(); goView('viewHome');
+      /* D-109: apagava só o PIN, e a conta real continuava aberta pelo token.
+         Com conta real a página recomeça: carteira e perfil vieram do servidor
+         e estão em memória — mostrá-los "deslogado" seria mostrar a conta de
+         alguém para quem sentar depois. */
+      const { tinhaConta } = sair({ api });
+      if (tinhaConta) { location.reload(); return; }
+      renderSession(); renderHero(); goView('viewHome');
     };
   } else {
     box.innerHTML = `<button class="tbtn" id="btnLogin">Entrar</button>

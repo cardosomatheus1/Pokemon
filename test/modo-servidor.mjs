@@ -223,26 +223,56 @@ export function suite() {
    * ficha em docs/DEFEITOS.md e trocar o teste por um de comportamento. */
   const fonte = f => lerArquivo(new URL(f, import.meta.url), 'utf8');
 
-  s.teste('D-108 (afirma o defeito): com sessão, a boutique debita só na tela', () => {
-    const loja = fonte('../app/modules/loja-cash.mjs');
-    const rotas = fonte('../server/rotas.mjs');
-    const compra = loja.slice(loja.indexOf('export function comprarPeca'),
-                              loja.indexOf('let ligado'));
-    ok(compra.length > 0, 'comprarPeca sumiu — o teste perdeu a âncora');
-    ok(!/modoServidor/.test(compra) && !/\/api\/cosmetic/i.test(rotas),
-      'A COMPRA DE COSMÉTICO PASSOU A SABER DO SERVIDOR. Se foi de propósito, o ' +
-      'D-108 foi tratado (ST-1.3 ou INT-02): marque a ficha e troque este teste ' +
-      'por um que compre com sessão e confira saldo e posse depois de hidratar');
+  /* D-108 · o teste que afirmava o defeito (a boutique debitava só na tela
+     com conta real) ficou vermelho na ST-1.3, que é a mitigação: com conta
+     online a boutique não vende. Os testes de comportamento moram em
+     `test/vitrine.mjs`, onde a regra mora (`podeComprar`). O conserto de
+     verdade — posse no servidor — é o E4. */
+
+  /* ══ D-109 · O ⏻ DESLOGA A CONTA REAL (ST-1.2, 25/09/2026) ═══════════
+     O teste de texto que afirmava o defeito ficou vermelho no conserto e virou
+     estes três: comportamento em Node, com a api de verdade sobre um armazém
+     falso, e uma guarda estrutural de que o botão usa a decisão. */
+  const armazemFalso = inicial => {
+    const m = new Map(Object.entries(inicial));
+    return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)),
+             removeItem: k => m.delete(k), tem: k => m.has(k) };
+  };
+
+  s.teste('D-109: com conta real, sair esquece o token e a sessão acaba', async () => {
+    const { criarApi } = await import('../app/modules/api.mjs');
+    const { sair } = await import('../app/modules/sair.mjs');
+    const armazem = armazemFalso({ ar_sessao: 'token-de-verdade', ar_session: '1' });
+    const api = criarApi({ armazem });
+    ok(api.temSessao(), 'a api não leu o token do armazém — o teste perdeu o que medir');
+    const r = sair({ api, armazem });
+    igual(r.tinhaConta, true, 'sair não percebeu que havia conta real');
+    igual(api.temSessao(), false,
+      'o token continuou na api: a próxima chamada sai autenticada como o jogador que saiu');
+    ok(!armazem.tem('ar_sessao'), 'o token continuou no armazém: recarregar a página religa a conta');
+    ok(!armazem.tem('ar_session'), 'o PIN da fachada continuou');
   });
 
-  s.teste('D-109 (afirma o defeito): o botão Sair não esquece o token da conta real', () => {
+  s.teste('D-109: sem conta real, sair é o de sempre — apaga o PIN e mais nada', async () => {
+    const { criarApi } = await import('../app/modules/api.mjs');
+    const { sair } = await import('../app/modules/sair.mjs');
+    const armazem = armazemFalso({ ar_session: '1', ar_carteira: '{"x":1}' });
+    const r = sair({ api: criarApi({ armazem }), armazem });
+    igual(r.tinhaConta, false, 'sem token não há conta real, e a tela não pode recarregar à toa');
+    ok(!armazem.tem('ar_session'), 'o PIN continuou');
+    ok(armazem.tem('ar_carteira'),
+      'sair apagou a carteira LOCAL — o aviso diz "o treinador continua salvo neste navegador"');
+  });
+
+  s.teste('D-109: o botão ⏻ passa pela decisão, e não por uma cópia dela', () => {
     const nav = fonte('../app/modules/navegacao.mjs');
-    const sair = nav.slice(nav.indexOf("$('#btnLogout').onclick"),
-                           nav.indexOf("$('#btnLogout').onclick") + 900);
-    ok(sair.length > 100, 'o handler do Sair sumiu — o teste perdeu a âncora');
-    ok(!/esquecerSessao|ar_sessao/.test(sair),
-      'O SAIR PASSOU A ESQUECER O TOKEN. Se foi de propósito, o D-109 foi ' +
-      'corrigido (ST-1.2): marque a ficha e troque este teste por um de comportamento');
+    const at = nav.indexOf("$('#btnLogout').onclick");
+    ok(at > 0, 'o handler do Sair sumiu — o teste perdeu a âncora');
+    const corpo = nav.slice(at, at + 1200);
+    ok(/sair\(\{ api \}\)/.test(corpo),
+      'o botão deixou de chamar sair({ api }): a decisão testada acima não é a que roda');
+    ok(!/removeItem\('ar_session'\)/.test(corpo),
+      'o botão voltou a apagar o PIN à mão — é a forma exata do D-109');
   });
 
   return s;

@@ -144,7 +144,16 @@ export const temNaConta = (posse, p) =>
  * É a mesma forma da recusa da carteira, e pelo mesmo motivo: ter saldo na
  * tela e ouvir "não" é o D-067 na porta do dinheiro.
  */
-export function podeComprar(catalogo, { familia, id, posse = [], saldo = 0 }) {
+/* `contaOnline` (ST-1.3, D-108): com conta real a posse não tem onde ficar —
+   o servidor não tem tabela de cosmético, e a carteira de lá devolve o saldo no
+   próximo `hidratar()`. Vender assim é dar a peça. A recusa vem DEPOIS de "já
+   tem" (o jogador precisa continuar sabendo o que é dele) e ANTES do saldo
+   (dizer "faltam 40" para uma compra que não vai acontecer seria mentir). Ela
+   some quando o E4 der à posse um lugar no servidor. */
+export const MOTIVO_CONTA_ONLINE =
+  'com conta online a boutique ainda não vende: a peça precisa de um lugar na sua conta, e ele está em construção';
+
+export function podeComprar(catalogo, { familia, id, posse = [], saldo = 0, contaOnline = false }) {
   const peca = (catalogo ?? []).find(p => p.familia === familia && p.id === String(id));
   if (!peca) return { pode: false, motivo: 'essa peça não existe na vitrine' };
   if (peca.procedencia !== 'loja')
@@ -152,6 +161,8 @@ export function podeComprar(catalogo, { familia, id, posse = [], saldo = 0 }) {
              motivo: `esta peça não se compra: ela vem de ${peca.procedencia}` };
   if (temNaConta(posse, peca))
     return { pode: false, peca, motivo: 'você já tem esta peça' };
+  if (contaOnline)
+    return { pode: false, peca, fechada: true, motivo: MOTIVO_CONTA_ONLINE };
   if (saldo < peca.preco)
     return { pode: false, peca, faltam: peca.preco - saldo,
              motivo: `faltam ${peca.preco - saldo} para esta peça` };

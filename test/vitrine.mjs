@@ -16,6 +16,7 @@
  *
  * A terceira já tem forma neste projeto: é o D-067 na porta do dinheiro.
  */
+import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import {
   PROCEDENCIAS, PRECO_BASE, PESO_DA_FAMILIA, precoDe, procedenciaValida,
@@ -233,6 +234,43 @@ export function suite() {
     }
     igual(c.ABAS.length, familias.size,
       'há família no catálogo sem aba, ou aba sem família');
+  });
+
+  /* ══ D-108 · COM CONTA ONLINE A BOUTIQUE NÃO VENDE (ST-1.3, 25/09/2026) ══
+   *
+   * Com conta real, a compra debitava a carteira LOCAL e gravava a posse
+   * LOCAL; o servidor não tem tabela nem rota de cosmético, e o próximo
+   * `hidratar()` devolvia o saldo. A peça saía de graça. O conserto de verdade
+   * é o E4 (posse no servidor); até lá, a regra é não vender o que não se
+   * consegue cobrar — e dizer por quê. */
+  s.teste('D-108: com conta online, a compra é recusada e a recusa diz por quê', () => {
+    const cat = catalogoDaVitrine(FAMILIAS());
+    const r = podeComprar(cat, { familia: 'outfit', id: 'o1', saldo: 99999, contaOnline: true });
+    igual(r.pode, false, 'com conta online a boutique vendeu — e o servidor devolve o saldo: peça de graça');
+    ok(r.fechada === true, 'a recusa não se marca como "boutique fechada" — a tela não sabe esconder o botão');
+    ok(/conta/.test(r.motivo), `a recusa não explica: "${r.motivo}"`);
+  });
+
+  s.teste('D-108: sem conta online, a compra continua como sempre', () => {
+    const cat = catalogoDaVitrine(FAMILIAS());
+    const r = podeComprar(cat, { familia: 'outfit', id: 'o1', saldo: precoDe('outfit'), contaOnline: false });
+    igual(r.pode, true, `o modo local deixou de vender: ${r.motivo}`);
+  });
+
+  s.teste('D-108: o que já é seu continua dizendo "já tem", com ou sem conta', () => {
+    const cat = catalogoDaVitrine(FAMILIAS());
+    const r = podeComprar(cat, { familia: 'avatar', id: 'a1', posse: ['avatar:a1'],
+                                 saldo: 99999, contaOnline: true });
+    ok(/já tem/.test(r.motivo), `a peça possuída passou a dizer outra coisa: ${r.motivo}`);
+  });
+
+  s.teste('D-108: a tela pergunta ao motor COM a conta — a compra e a ficha', () => {
+    const src = readFileSync(new URL('../app/modules/loja-cash.mjs', import.meta.url), 'utf8');
+    const compra = src.slice(src.indexOf('export function comprarPeca'), src.indexOf('let ligado'));
+    ok(/contaOnline: modoServidor\(\)/.test(compra),
+      'comprarPeca pergunta ao motor sem dizer se há conta online — o D-108 volta pela tela');
+    ok(/contaOnline/.test(src.slice(src.indexOf('function ficha'), src.indexOf('const VIA'))),
+      'a ficha oferece o botão de compra sem saber da conta online');
   });
 
   return s;

@@ -199,6 +199,8 @@ const CAMADA = {
      conforme a hora em que a suíte roda — o portão viraria sorte. */
   'hora-do-dia.mjs': 0,
   'elenco-condicao.mjs': 0,
+  /* O que o ⏻ limpa (ST-1.2, D-109): a api e o armazém entram por argumento. */
+  'sair.mjs': 0,
   /* O anúncio do chefe: o que a tela LÊ sobre ele, sem DOM (L-170). */
   'avanco-boss.mjs': 0,
   'sprites-dados.mjs': 0,

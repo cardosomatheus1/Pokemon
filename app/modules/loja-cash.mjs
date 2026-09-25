@@ -31,9 +31,9 @@
  */
 import { $ } from './dom.mjs';
 import { catalogo, ABAS } from './cosmeticos.mjs';
-import { podeComprar, chaveDa, temNaConta, custoDaVitrine, aVendaNaVitrine }
-  from '../../engine/vitrine.mjs';
-import { saldo, travado, gastarEmCosmetico } from './banco.mjs';
+import { podeComprar, chaveDa, temNaConta, custoDaVitrine, aVendaNaVitrine,
+         MOTIVO_CONTA_ONLINE } from '../../engine/vitrine.mjs';
+import { saldo, travado, gastarEmCosmetico, modoServidor } from './banco.mjs';
 
 /* O acervo do jogador. Ele entra e sai por fora, como em toda tela desta base:
    quem desenha não guarda, e quem guarda não desenha. */
@@ -116,10 +116,12 @@ function cara(p) {
   return '<span class="lcCara ico">' + (a.ico ?? '') + '</span>';
 }
 
-function ficha(p, posse, temSaldo) {
+function ficha(p, posse, temSaldo, contaOnline = false) {
   const meu = temNaConta(posse, p);
   const daLoja = p.procedencia === 'loja';
-  const podePagar = temSaldo >= p.preco;
+  /* D-108: com conta online o botão fica, com o preço, e DESLIGADO — sumir
+     com ele mandaria o jogador procurar; a razão está no recado do topo. */
+  const podePagar = temSaldo >= p.preco && !contaOnline;
   const classe = meu ? 'meu' : daLoja ? (podePagar ? '' : 'longe') : 'gratis';
   const acao = meu
     ? '<span class="lcSelo">seu</span>'
@@ -167,6 +169,7 @@ export function pintarCash() {
   }).join('');
 
   const trancado = travado();
+  const contaOnline = modoServidor();
   alvo.innerHTML = `
     <div class="lcTopo">
       <span class="lcSaldo"><b>${num(disponivel)}</b><em>PokéCash</em></span>
@@ -180,7 +183,8 @@ export function pintarCash() {
     </div>
     <div class="lcAbas">${abas}</div>
     ${recado ? `<p class="lcRecado">${recado}</p>` : ''}
-    <div class="lcGrade">${daAba.map(p => ficha(p, posse, disponivel)).join('')}</div>
+    ${contaOnline ? `<p class="lcRecado">${MOTIVO_CONTA_ONLINE}.</p>` : ''}
+    <div class="lcGrade">${daAba.map(p => ficha(p, posse, disponivel, contaOnline)).join('')}</div>
     <!-- ── O AVISO DO §25.1, E ELE NÃO É LETRA MIÚDA ─────────────────────
          O dono pediu a loja declarada "em construção" até o checkpoint, e a
          Spec é explícita: nenhuma feature de valor real entra só porque
@@ -235,7 +239,7 @@ export function comprarPeca(chave) {
   const id = resto.join(':');
   const cat = catalogo();
   const posse = lerPosse() ?? [];
-  const r = podeComprar(cat, { familia, id, posse, saldo: saldo() });
+  const r = podeComprar(cat, { familia, id, posse, saldo: saldo(), contaOnline: modoServidor() });
   if (!r.pode) { recado = r.motivo; pintarCash(); return r; }
 
   const pago = gastarEmCosmetico(r.peca.preco, 'loja:' + chave);
