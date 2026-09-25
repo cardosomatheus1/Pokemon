@@ -138,7 +138,7 @@ mudança de produto. Achado de arnês que não couber vai para DEFEITOS/LACUNAS.
   --fatia=k/N`, e um commit do `q2-veredito.json` de cada. 453 min frios / 4
   máquinas ≈ 2 h; com cache quente, minutos.
 
-### ST-0.6 · CI no GitHub: `npm test` a cada push, Q2 completo fatiado à noite — **aberta**
+### ST-0.6 · CI no GitHub: `npm test` a cada push — ✅ **25/09** (DEC-13: o Q2 noturno NÃO; `.github/workflows/testes.yml` + `test/ci.mjs`)
 
 - **Porte** M · **Depende de** DEC-13 (custo de minutos de Actions num repo
   privado).

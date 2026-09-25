@@ -1,0 +1,41 @@
+# A SUÍTE A CADA PUSH (ST-0.6, DEC-13).
+#
+# `npm test` inteiro, com navegador — nunca um recorte (`test/ci.mjs` trava
+# isso). O Q2 NÃO roda aqui: a DEC-13 decidiu que horas de Actions num
+# repositório privado não compram o que o `npm run sabotagem` local já compra.
+#
+# ZERO DEPENDÊNCIAS NO REPOSITÓRIO: o `playwright-core` é instalado FORA do
+# projeto, como o `tools/README.md` manda, na versão cujo Chromium é o mesmo
+# da máquina de desenvolvimento (1.56.1 → chromium 1194, 141.0.7390.37). Outro
+# Chromium desenharia outros pixels, e a linha de base visual julgaria isso.
+name: testes
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: playwright-core fora do projeto
+        run: |
+          mkdir -p /tmp/pw && cd /tmp/pw && npm init -y > /dev/null
+          npm i playwright-core@1.56.1
+          node node_modules/playwright-core/cli.js install --with-deps chromium
+
+      - name: apontar o Chromium
+        run: |
+          CHROME="$(find ~/.cache/ms-playwright -path '*chrome-linux*/chrome' -type f | head -1)"
+          test -x "$CHROME" || { echo "Chromium não encontrado"; exit 1; }
+          echo "PW_CHROME=$CHROME" >> "$GITHUB_ENV"
+
+      - name: a suíte
+        run: npm test

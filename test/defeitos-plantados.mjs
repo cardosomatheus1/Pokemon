@@ -7568,6 +7568,16 @@ export const DEFEITOS = [
     de:"             'lc' + cena.wave + ':' + golpe.de + golpe.i + ':' + golpe.t, t + (golpe.t - cena.t));",
     para:"             'lc' + cena.wave + ':' + golpe.de + golpe.i + ':' + golpe.t, t);" },
 
+  /* ── ST-0.6 · a CI no GitHub (DEC-13) ───────────────────────────────── */
+  { id:'S1111', arquivo:'.github/workflows/testes.yml', nome:'a CI roda o recorte sem navegador',
+    real:'o GitHub mostra verde sem ter aberto o jogo — o S109 com selo',
+    de:'        run: npm test',
+    para:'        run: npm run rapido' },
+  { id:'S1112', arquivo:'.github/workflows/testes.yml', nome:'a CI perde o endereco do Chromium',
+    real:'a suite pula o Q5 com aviso e fica verde sem ter aberto o jogo',
+    de:'          echo "PW_CHROME=$CHROME" >> "$GITHUB_ENV"',
+    para:'          echo "CHROME=$CHROME" >> "$GITHUB_ENV"' },
+
   /* ── ST-1.2b · o Sair revoga no servidor (DEC-07) ──────────────────── */
   { id:'S1106', arquivo:SRVROT, nome:'o token revogado volta a abrir a conta',
     real:'quem copiou o token antes do Sair continua dentro por 7 dias',

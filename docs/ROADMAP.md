@@ -293,7 +293,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | 5 | **1.27g · UX-01** (resto) + o bloco do CENÁRIO · ST-5.6, ST-2.4, 5.8 | L-175 (DEC-15 decidida), L-184, D-086 (não reproduzido) — o jato (L-186, ST-5.5b) fechou; o banner (D-082), o `est:` cru (L-160), a base visual (D-093), os números de dano (L-172, ST-5.4) e a carga e o projétil (L-171, ST-5.5) fecharam; os 404 (L-176) esperam o dono commitar os dois arquivos | o que impede ENTENDER a ação vem antes do que a enfeita |
 | 6 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
 | — | **E6** · higiene documental | ST-6.1 a 6.4 | não é código: corre em paralelo, um commit por story |
-| — | **ST-0.6** · CI no GitHub | `npm test` a cada push (DEC-13: o Q2 noturno não) | corre em paralelo, pequena |
+| — | ~~**ST-0.6**~~ ✅ 25/09 · CI no GitHub | `npm test` a cada push (DEC-13: o Q2 noturno não) | — |
 | — | **T11 · T12 · T7** · arnês | ❄️ **CONGELADO** — *(ST-6.2, 25/09: a linha dizia "T11 · T8 · T4 · T7", e só o T11 era arnês pendente: o **T4 está fechado ✅** no BUILD_BLOCKS, e o **T8** era a tarefa de documentos feita em 08/09. Entram o **T12** — dono do D-105, que estava órfão da fila — e o **T7**, dono da L-173, que ainda não tem ficha)* | entra só quando IMPEDIR um bloco desta tabela, com orçamento nomeado antes (`CLAUDE.md`, 16/09) |
 
 ### Decisões — tomadas por delegação do dono em 25/09
