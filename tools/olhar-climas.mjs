@@ -1,4 +1,5 @@
-/* OLHAR OS CLIMAS — a segunda metade do Q5 do 1.32b (ST-2.1 e ST-2.2).
+/* OLHAR OS CLIMAS — a segunda metade do Q5 do 1.32b (ST-2.1 e ST-2.2), e o
+ * custo da run sob o botão Avançar (ST-3.5).
  *
  * Fotografa a legenda dos climas ABERTA na sala de rotas, nas quatro larguras
  * em que o arranjo muda (1920, 1440, 1100, 420), e o log de uma run que começa
@@ -188,6 +189,30 @@ for (const largura of LARGURAS) {
                       height: z.bottom - a.top + 16 } : null;
   });
   if (r) await pg.screenshot({ path: join(SAIDA, `legenda-${largura}.png`), clip: r, fullPage: true });
+}
+
+/* O CUSTO DA RUN (ST-3.5, DEC-09): a frase sob o botão Avançar. */
+for (const largura of [1440, 420]) {
+  await pg.setViewportSize({ width: largura, height: 1200 });
+  await pg.waitForTimeout(300);
+  const r = await pg.evaluate(() => {
+    const a = document.querySelector('#idleAvancar')?.getBoundingClientRect();
+    const z = document.querySelector('#idleCustoRun')?.getBoundingClientRect();
+    const esq = Math.min(a.left, z.left), dir = Math.max(a.right, z.right);
+    return a && z ? { x: Math.max(0, esq - 12), y: a.top + scrollY - 12,
+                      width: Math.min(innerWidth, dir - esq + 24), height: z.bottom - a.top + 24 } : null;
+  });
+  if (!r) throw new Error('o botão Avançar ou a frase do custo não existem');
+  /* TRANSBORDO, medido e não olhado: texto mais largo que a própria caixa, ou
+     caixa passando da borda da página. É a classe dos defeitos do V1.15. */
+  const t = await pg.evaluate(() => {
+    const el = [...document.querySelectorAll('#idleCustoRun, #idleClimasLista li')];
+    return el.filter(x => x.scrollWidth > x.clientWidth + 1
+                     || x.getBoundingClientRect().right > innerWidth + 1).map(x => x.id || x.textContent.slice(0, 30));
+  });
+  if (t.length) erros.push(`transbordo em ${largura}px: ${t.join(' | ')}`);
+  console.log(`  ${largura}px: ${t.length ? 'TRANSBORDA ' + t.join(' | ') : 'nada transborda'}`);
+  await pg.screenshot({ path: join(SAIDA, `custo-${largura}.png`), clip: r, fullPage: true });
 }
 
 /* A LINHA DA RUN (ST-2.2): uma run na Floresta com a semente medida. */

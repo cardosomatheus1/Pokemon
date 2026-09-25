@@ -265,6 +265,8 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | **T9 · T10 · T13 · T11a** · o arnês | 16/09 | portão de 7 h para 3 min com a árvore intocada |
 | **1.34** · dia, tarde e noite | 25/09 | Q2 1017/1017 · suíte 2184/2184 · capturas em `tools/previas/_hora/` |
 | **1.33** · o elenco muda com a hora e o clima | 25/09 | 18 de 44 estágios mudam à noite · Q2 e suíte no commit · capturas `tools/previas/_hora/sala-*` |
+| **ST-3.3** · o mapa de emissão por recurso | 25/09 | fixture de medição determinística · achou a L-185 (maratona: 8,7× a Essência calibrada) · S1082–S1083 |
+| **ST-3.4 · ST-3.5** · DEC-08 travada por teste; o custo da nova tentativa antes de entrar | 25/09 | as duas decisões aplicadas como padrão (recomendação = código) · S1079–S1081 |
 | **ST-3.2** · duas abas não colhem a mesma coisa duas vezes | 25/09 | save com revisão (otimista) + evento `storage` · S1072–S1076 |
 | **T14c** · Q2 do bloco por TRECHO, não por arquivo | 25/09 | o 1.32b ia a 130 mutantes (~2,7 h) por 30 linhas no index.html · S1077–S1078 |
 | **ST-3.1** · o baú cai em Estilhaço até o estágio 3 (L-159, e a L-160 junto) | 25/09 | 1·2·3 partes por unidade; inteiro no 4 · S1065–S1071 |
@@ -283,7 +285,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | # | bloco | o que é | por que aqui |
 |---|---|---|---|
 | 1 | ~~**1.32b (resto)** · ST-2.3~~ | ✅ fechada em 25/09 — a noite muda 7·8·3·3 rotas | — | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto. A prévia da NOITE já está na sala desde o 1.33 |
-| 2 | **INT-01** (resto) · ST-3.3 a 3.5 | mapa de emissão, DEC-08/09 — Estilhaço no baú (ST-3.1), reservas (ST-1.1) e colheita entre abas (ST-3.2) já fecharam | integridade de economia vem antes de calibrar quantidade |
+| 2 | ~~**INT-01**~~ | ✅ fechado em 25/09 (ST-1.1, 3.1 a 3.5). Sobra a **ST-3.6** (calibrar a emissão), que espera a **DEC-14** | — | integridade de economia vem antes de calibrar quantidade |
 | 3 | **INT-02** · uma posse confiável | cosméticos e outfit entre dispositivos (L-157, L-055) | compra e equipar não podem depender do navegador |
 | 4 | **1.27g · UX-01** · efeitos e leitura da luta | L-171, L-172, L-175, L-176 | o que impede ENTENDER a ação vem antes do que a enfeita |
 | 5 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
@@ -296,10 +298,12 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | id | a pergunta | o que depende dela |
 |---|---|---|
 | **DEC-11** | manter os 154.000 sims? O argumento dos 19% caiu (L-182) | custo de servidor; nos testes é só 30% das sondas de navegador (medido, ST-0.8) — decide-se pela economia |
+| **DEC-14** | a emissão do Avanço (L-185): teto por recurso, rendimento decrescente, ou recalibrar o Estilhaço? | ST-3.6 · recomendação: rendimento decrescente por run no mesmo dia |
 | **DEC-13** | CI no GitHub Actions? | ST-0.6 — minutos de Actions num repositório privado |
 | ✅ DEC-12 | ~~o Q2 do bloco pode adiar o que só mudou de fecho?~~ **adotada** pelo pedido do dono de 25/09 ("minutos"); o preço está na ST-0.4 | o `portoes` |
 | DEC-01 · 02 · 03 | tema e direitos · RMT · pagamento e poder | qualquer coisa com dinheiro real |
-| DEC-07 · 08 · 09 | o que o OFF encerra · captura mostrada ou base · stamina por tentativa | INT-01 e a jornada |
+| DEC-07 | o que o OFF encerra (o Sair já foi consertado, ST-1.2) | a ST-1.2b (revogar token no servidor) |
+| ✅ DEC-08 · 09 | ~~captura mostrada ou base · stamina por tentativa~~ aplicadas como padrão em 25/09 (a recomendação era o código); o dono pode reverter — é um teste e uma frase | — |
 | DEC-04 · 05 · 06 | curva do laboratório · Vulcão sem raro · outfits à venda | os blocos donos, quando chegarem |
 | ✅ DEC-10 | ~~qual relógio governa o mundo~~ **Brasília para todos** (25/09) | o 1.34 e o 1.33 |
 

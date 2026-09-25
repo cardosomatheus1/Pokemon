@@ -97,6 +97,7 @@ import * as idleEscolha from './idle-escolha.mjs';
 import * as horaDoDia from './hora-do-dia.mjs';
 import * as elencoCondicao from './elenco-condicao.mjs';
 import * as climasLegenda from './climas-legenda.mjs';
+import * as emissaoIdle from './emissao-idle.mjs';
 import * as repertorioSuite from './repertorio.mjs';
 import * as avancoBossSuite from './avanco-boss.mjs';
 import * as avancoEfeitoSuite from './avanco-efeito.mjs';
@@ -226,6 +227,12 @@ if (process.argv.includes('--gerar')) {
     console.log(`  margem: ${mg.rodadas} rodadas x ${mg.sims} sims · buffável ${(mg.buffavel.margem*100).toFixed(2)}% · ` +
                 `resto ${(mg.neutro.margem*100).toFixed(2)}% · diferença ${(mg.diferenca*100).toFixed(2)} pontos`);
   }
+  if (querSo('emissao-idle')) {                             // ~1 s
+    const m = emissaoIdle.gerar();
+    const ma = m.perfis.maratona.estagio1.porDia;
+    console.log(`  emissão do idle: ${m.dias} dias · maratona (estágio 1) ${ma.essencia} de Essência ` +
+                `e ${ma.pokecoin} de moeda por dia`);
+  }
   if (querSo('estatistica')) {                              // ~50 s
     const b = estatistica.gerar();
     console.log(`  baseline: ${b.rodadas} rodadas · duração média ${b.duracaoMedia.toFixed(2)}s · ` +
@@ -253,7 +260,7 @@ if (process.argv.includes('--gerar')) {
   }
   /* Nome que não casa com fixture nenhuma sai com zero regravado e VERDE, que é
      a forma mais silenciosa de não fazer nada. */
-  const CONHECIDAS = ['golden','precisao','informacao','margem','estatistica','visual'];
+  const CONHECIDAS = ['golden','precisao','informacao','margem','estatistica','visual','emissao-idle'];
   const orfas = (SO || []).filter(n => !CONHECIDAS.includes(n));
   if (orfas.length) {
     console.error(`\n--so não conhece: ${orfas.join(', ')}. Fixtures: ${CONHECIDAS.join(', ')}`);
@@ -518,7 +525,7 @@ const pararCedo = process.env.PARAR_CEDO === '1';
 const todas = [
   ...(semGolden ? [] : [golden.suite()]),
   /* baratas: varredura de texto e lotes pequenos */
-  fonteUnica.suite(), estado.suite(), modulos.suite(), bandeiras.suite(), viewport.suite(), idleQuem.suite(), idleEscolha.suite(), horaDoDia.suite(), elencoCondicao.suite(), climasLegenda.suite(), repertorioSuite.suite(), avancoBossSuite.suite(), avancoEfeitoSuite.suite(), folhaVivaSuite.suite(), climaIdleSuite.suite(), icones.suite(), decoracao.suite(), itensIcone.suite(), economiaIdle.suite(), vagasSuite.suite(), nivelCriatura.suite(), estagiosSuite.suite(), elencoEstagioSuite.suite(), waveSuite.suite(), roteiroWaveSuite.suite(), runAvancoSuite.suite(), avancoTelaSuite.suite(), avancoEstadoSuite.suite(), avancoPagaSuite.suite(), avancoForcaSuite.suite(), rotaOffSuite.suite(), vitrineSuite.suite(), estilhacoSuite.suite(), avancoSuite.suite(), ausenteSuite.suite(), npcSuite.suite(), itensCatalogo.suite(), ligacaoSuite.suite(), origemSuite.suite(), itensNomeSuite.suite(), raridadeSuite.suite(), capturaTelaSuite.suite(), idleConfirmaSuite.suite(), lojaSuite.suite(), composicaoSuite.suite(), focoSuite.suite(), idleHudSuite.suite(), pokedexSuite.suite(), evoIdleSuite.suite(), conteudo.suite(), emissao.suite(),
+  fonteUnica.suite(), estado.suite(), modulos.suite(), bandeiras.suite(), viewport.suite(), idleQuem.suite(), idleEscolha.suite(), horaDoDia.suite(), elencoCondicao.suite(), climasLegenda.suite(), emissaoIdle.suite(), repertorioSuite.suite(), avancoBossSuite.suite(), avancoEfeitoSuite.suite(), folhaVivaSuite.suite(), climaIdleSuite.suite(), icones.suite(), decoracao.suite(), itensIcone.suite(), economiaIdle.suite(), vagasSuite.suite(), nivelCriatura.suite(), estagiosSuite.suite(), elencoEstagioSuite.suite(), waveSuite.suite(), roteiroWaveSuite.suite(), runAvancoSuite.suite(), avancoTelaSuite.suite(), avancoEstadoSuite.suite(), avancoPagaSuite.suite(), avancoForcaSuite.suite(), rotaOffSuite.suite(), vitrineSuite.suite(), estilhacoSuite.suite(), avancoSuite.suite(), ausenteSuite.suite(), npcSuite.suite(), itensCatalogo.suite(), ligacaoSuite.suite(), origemSuite.suite(), itensNomeSuite.suite(), raridadeSuite.suite(), capturaTelaSuite.suite(), idleConfirmaSuite.suite(), lojaSuite.suite(), composicaoSuite.suite(), focoSuite.suite(), idleHudSuite.suite(), pokedexSuite.suite(), evoIdleSuite.suite(), conteudo.suite(), emissao.suite(),
   carteira.suite(), banco.suite(), exposicao.suite(), assets.suite(), telemetria.suite(), commit.suite(), saida.suite(), progressao.suite(), tema.suite(), arenas.suite(), portao.suite(), colocacao.suite(), banner.suite(), logBatalha.suite(), painelRodada.suite(), resultadoCentro.suite(), arenaLegivel.suite(), marca.suite(), vencedorAnimado.suite(), ortografia.suite(), arteArena.suite(), filtroCor.suite(), xpRodada.suite(), cedula.suite(), ordemBolas.suite(), shinyArena.suite(), marcaArte.suite(), miniLog.suite(), distribuicao.suite(), grafico.suite(), acervo.suite(), calibracao.suite(), ligaServidor.suite(), ligaLocal.suite(), artes.suite(), servir.suite(), shiny.suite(), adm.suite(),
   /* médias: lotes de simulação curtos */
   await servidor.suite(), bancoServidor.suite(), auth.suite(), carteiraServidor.suite(), scheduler.suite(), transporte.suite(), apostaServidor.suite(), concorrencia.suite(), limites.suite(), protecao.suite(), resultado.suite(), await rotas.suite(), await protecaoTela.suite(), await hash.suite(), laco.suite(), salaCliente.suite(), conexaoTexto.suite(), modoServidor.suite(), progressaoServidor.suite(), adminServidor.suite(), adminAuth.suite(), margemCasa.suite(), politica.suite(), await telemetriaLigada.suite(), packOriginal.suite(), await lacoServidor.suite(), await progressaoLigada.suite(), caixas.suite(), instancia.suite(), bioma.suite(), evolucao.suite(), criaturasServidor.suite(), expedicao.suite(), captura.suite(), drops.suite(), idleServidor.suite(), mundo.suite(), outfit.suite(), vida.suite(), particulas.suite(), relevo.suite(), faunaTeste.suite(), idleDados.suite(), idleTela.suite(), rotasIdle.suite(),

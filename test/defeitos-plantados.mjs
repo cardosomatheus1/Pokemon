@@ -2280,6 +2280,34 @@ export const DEFEITOS = [
     de:"  if (t === 'todo') return true;",
     para:"  if (t === 'todo') return false;" },
 
+  /* ── ST-3.4 · DEC-08: A CAPTURA ENTREGA A ESPÉCIE MOSTRADA ─────────── */
+  { id:'S1079', arquivo:'app/modules/idle-lance.mjs', nome:'a captura passa a entregar outra especie',
+    real:'o jogador lanca a bola num Butterfree e recebe um Caterpie — a DEC-08 mudando sem decisao',
+    de:"    criatura = criar(pack, en.dex, 'captura', agora, novaRaiz());",
+    para:"    criatura = criar(pack, 10, 'captura', agora, novaRaiz());" },
+
+  /* ── ST-3.5 · DEC-09: O CUSTO DA NOVA TENTATIVA ────────────────────── */
+  { id:'S1080', arquivo:'engine/avanco.mjs', nome:'a frase do custo perde a nova tentativa',
+    real:'o jogador cai na sexta wave e descobre so ao tentar de novo que paga tudo outra vez',
+    de:"  `tentar de novo é outra run, com o mesmo custo.`;",
+    para:"  ``;" },
+  { id:'S1081', arquivo:'app/modules/avanco-tela.mjs', nome:'a tela deixa de escrever o custo',
+    real:'a frase existe no motor e nunca chega ao botao',
+    de:'  if (custo) custo.textContent = falaDoCusto();',
+    para:'  /* custo nao escrito */' },
+
+  /* ── ST-3.3 · O MAPA DE EMISSÃO ──────────────────────────────────────
+     Mudança silenciosa de economia: nenhuma regra quebra, nenhuma tela muda,
+     e o jogador passa a ganhar mais. Só o mapa de emissão vê. */
+  { id:'S1082', arquivo:'engine/economia-idle.mjs', nome:'a moeda da colheita paga um encontro a mais',
+    real:'a economia infla dez por cento sem ninguem ter decidido — o tipo de mudanca que so aparece meses depois',
+    de:'  for (let i = 0; i < n; i++) total += pagamentoDe(rnd, perfil);',
+    para:'  for (let i = 0; i <= n; i++) total += pagamentoDe(rnd, perfil);' },
+  { id:'S1083', arquivo:'engine/estilhaco.mjs', nome:'o bau do estagio 3 paga partes a mais',
+    real:'o item montavel sai mais facil do que a curva calibrou',
+    de:'  const partes = Math.min(PARTES - 1, Math.max(1, Math.floor(estagio)));',
+    para:'  const partes = Math.min(PARTES - 1, Math.max(1, Math.floor(estagio) + 1));' },
+
   { id:'S1043', arquivo:'test/bandeiras.mjs', nome:'as caras passam a ser entregues por ultimo',
     real:'a fila termina quando a ultima termina: a mais cara no fim deixa tres trabalhadores ociosos',
     de:'    ((custo[b] ?? 0) - (custo[a] ?? 0)) || (pos.get(a) - pos.get(b)));',

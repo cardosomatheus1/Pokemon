@@ -36,6 +36,25 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### ST-3.3 FECHADA — o mapa de emissão, e ele achou a L-185
+
+`test/emissao-idle.mjs` mede, pelo motor, o que três perfis tiram por dia em
+sete dias (fixture determinística: mudou a economia, fica vermelho). O achado:
+**o maratona tira ~200 de Essência por dia, 8,7× os 23 que calibraram a curva do
+Estilhaço**, e ~4.900 de moeda. O teto de encontros segura espécie, não
+recurso — o REV-14 com número. Registrado na L-185; a escolha é a **DEC-14**
+(recomendação: rendimento decrescente por run no mesmo dia). Com isso o
+**INT-01 fechou**.
+
+### ST-3.4 e ST-3.5 FECHADAS — as DEC-08 e DEC-09 aplicadas como padrão
+
+As duas recomendações eram o que o código já faz, e por isso entraram como
+padrão (regra do `CLAUDE.md`: recomendação escrita segue sem esperar, e o dono
+avisa se não quiser). **DEC-08:** a captura entrega a espécie mostrada — um
+teste trava isso, inclusive para o chefe evoluído. **DEC-09:** o custo é por
+wave alcançada; sob o botão Avançar a tela passa a dizer, antes de entrar,
+"tentar de novo é outra run, com o mesmo custo".
+
 ### ST-3.2 FECHADA — duas abas não colhem a mesma coisa duas vezes
 
 O save do idle ganhou revisão: quem carregou uma revisão velha não grava por

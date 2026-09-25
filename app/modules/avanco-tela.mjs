@@ -35,7 +35,7 @@ import { usarCena } from './avanco-cena.mjs';
 import { pintarColunaDaRun } from './avanco-painel.mjs';
 import { mostrarBioma, acompanhar } from './idle-mundo.mjs';
 import { WAVES } from '../../engine/wave.mjs';
-import { STAMINA_DO_AVANCO, staminaAteWave, curaDe, ganhoDaRun } from '../../engine/avanco.mjs';
+import { STAMINA_DO_AVANCO, staminaAteWave, curaDe, ganhoDaRun, falaDoCusto } from '../../engine/avanco.mjs';
 import { staminaAgora } from '../../engine/expedicao.mjs';
 
 /* O catálogo do PACK alimenta os ícones, uma vez na carga: o mapa id -> índice
@@ -471,6 +471,8 @@ export function atualizarBotaoAvancar(E, escolha, agora) {
   av.title = porque ?? 'dez waves, chefe na décima — e você assiste';
   av.textContent = porque ?? '⚔ Avançar (assistido)';
   av.classList.toggle('pri', !porque);
+  const custo = $('#idleCustoRun');
+  if (custo) custo.textContent = falaDoCusto();
 
   /* ── O AVISO DO TETO VEM ANTES, E NÃO DEPOIS (L-151) ──────────────────
      O teto deixou de recusar a run e passou a mudar o que ela rende. Isso só

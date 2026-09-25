@@ -14,6 +14,7 @@
  *   > Um mob é espetáculo. Uma espécie é economia. E as duas frases descrevem
  *   > a mesma tela.
  */
+import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual, rngTeste } from './harness.mjs';
 import {
   ENCONTROS_POR_AVANCO, abatesDe, encontrosDe, cabeAvanco, reservarAvanco,
@@ -321,6 +322,32 @@ export function suite() {
     ok(cabeAvanco({}), 'um estado vazio recusou o primeiro avanço do dia');
     const p = premioDo({});
     ok(p && p.bau === false && p.abates === 0, 'um resultado vazio não devolveu prêmio nulo');
+  });
+
+  /* ══ ST-3.5 · DEC-09 — O CUSTO DA NOVA TENTATIVA, ANTES DE ENTRAR ════════
+   *
+   * O código cobra por WAVE ALCANÇADA, no fim (2 por wave, 5 no chefe, 23 no
+   * estágio inteiro), e a queda encerra a run: tentar de novo é outra run,
+   * cobrada de novo. A Revisão 2.0 dizia "por tentativa iniciada"; a decisão
+   * padrão (a recomendação) é MANTER o código e dizer isto ao jogador antes de
+   * ele entrar. A frase sai das constantes — número escrito à mão numa frase é
+   * o número que envelhece (D-059). */
+  s.teste('DEC-09: a frase do custo sai das constantes do motor', async () => {
+    const { falaDoCusto, STAMINA_DO_AVANCO, STAMINA_POR_WAVE, STAMINA_DO_CHEFE } =
+      await import('../engine/avanco.mjs');
+    const f = falaDoCusto();
+    for (const n of [STAMINA_DO_AVANCO, STAMINA_POR_WAVE, STAMINA_DO_CHEFE])
+      ok(f.includes(String(n)), `a frase não traz o ${n}: "${f}"`);
+    ok(/de novo|nova/.test(f) && /outra run/.test(f),
+      `a frase não diz o que custa tentar de novo — é a metade que faltava: "${f}"`);
+  });
+
+  s.teste('DEC-09: a tela escreve a frase junto do botão de avançar', () => {
+    const src = readFileSync(new URL('../app/modules/avanco-tela.mjs', import.meta.url), 'utf8');
+    ok(/\$\('#idleCustoRun'\)/.test(src) && /falaDoCusto\(\)/.test(src),
+      'o custo da nova tentativa não chega à tela');
+    const html = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
+    ok(/id="idleCustoRun"/.test(html), 'o lugar da frase sumiu do index.html');
   });
 
   return s;

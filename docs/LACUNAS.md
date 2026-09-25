@@ -8036,3 +8036,38 @@ verdadeiro fora do jogo.
 **Opções:** manter 154.000; reduzir (servidor e testes mais baratos, ruído maior);
 ou reduzir só na captura visual, que não julga odd nenhuma — a ideia do dono de
 16/09, que vale ~5 s por largura.
+
+---
+
+### L-185 — o Avanço emite Essência e moeda muito acima do que a curva calibrou
+
+**Registrada em:** 25/09/2026, na ST-3.3 (o mapa de emissão). **Bloco dono:**
+**ST-3.6** (a calibragem, nova) — e ela depende da **DEC-14**, do dono.
+**Estado:** aberta. **Teste que trava:** `test/emissao-idle.mjs` → `L-185 (afirma o achado)`.
+
+**Medido** pelo motor do jogo, sete dias, sementes fixas
+(`test/fixtures/emissao-idle.json`), por dia:
+
+```text
+                     Essência   moeda (pokecoin)   Avanços   XP
+casual   estágio 1       16,3        1.440            2       303
+diario   estágio 1       40,0        1.984            8       423
+maratona estágio 1      199,6        4.865           48     1.089
+maratona estágio 3      205,3        6.165           48     1.374
+```
+
+**A curva do Estilhaço foi calibrada com 23 de Essência por dia**
+(`DIAS_DE_FARM` em `engine/estilhaco.mjs`: 2,5 Vigílias). O perfil maratona —
+seis criaturas, o teto da stamina — tira **8,7×** isso só com Avanço, e o
+diário quase 2×. O teto de encontros segura ESPÉCIE; não segura Essência,
+moeda nem XP, que é exatamente o REV-14 da Revisão 2.0, agora com número.
+
+**Por que não se conserta sozinho:** é calibragem de economia — quanto a run
+paga, ou um teto diário de Essência/moeda, ou a curva do Estilhaço sobe —, e
+cada saída muda o valor do que o jogador já juntou. É a DEC-14.
+
+**O que a destrava:** a DEC-14 escolher entre (a) teto diário por recurso, (b)
+rendimento decrescente por run no mesmo dia, (c) recalibrar `DIAS_DE_FARM` para
+a emissão real. Minha recomendação: **(b)** — preserva a sessão curta do casual
+(que está perto da calibragem) e morde só na maratona.
+

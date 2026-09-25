@@ -330,7 +330,7 @@ isso trouxe. O sigilo do clima sorteado (L-177) não se quebra.
   a mesma expedição: **um** crédito; o retry depois de gravar devolve o
   **mesmo** resultado (mesma semente) sem creditar de novo.
 
-### ST-3.3 · o mapa de emissão por recurso
+### ST-3.3 · o mapa de emissão por recurso — ✅ fechada em 25/09 (`test/emissao-idle.mjs` + fixture; achou a L-185)
 
 - **Porte** M · **Método** INV
 - **Escopo:** um gerador (`tools/` ou fixture de medição, como a `margem.json`)
@@ -340,14 +340,14 @@ isso trouxe. O sigilo do clima sorteado (L-177) não se quebra.
   de medição), e cada recurso sem teto tem **ou** um limite **ou** uma
   justificativa escrita. É a evidência que o REV-14 pedia.
 
-### ST-3.4 · DEC-08 registrada e travada por teste
+### ST-3.4 · DEC-08 registrada e travada por teste — ✅ fechada em 25/09 (a espécie mostrada, com teste e S1079)
 
 - **Porte** P · **Depende de** DEC-08
 - **Aceite:** se a decisão for "a espécie mostrada" (o que o código já faz), um
   teste afirma isso, incluindo o chefe evoluído; se for "a base", `baseDe` na
   captura, **sem** mexer em posse já capturada.
 
-### ST-3.5 · DEC-09: o custo da nova tentativa aparece antes
+### ST-3.5 · DEC-09: o custo da nova tentativa aparece antes — ✅ fechada em 25/09 (`falaDoCusto` sob o botão Avançar; o código fica como está)
 
 - **Porte** P · **Depende de** DEC-09
 - **Fato do código:** cobra por **wave alcançada**, no fim (2/wave, 5 no chefe,
@@ -469,9 +469,10 @@ nasceram deste cruzamento.
 | DEC | pergunta | o que o código já faz | recomendação | bloqueia |
 |---|---|---|---|---|
 | DEC-07 | o que o OFF encerra | OFF é local; o Sair está quebrado (D-109, defeito, não decisão) | OFF encerra presença; Sair esquece o token neste aparelho; revogar todos só por pedido explícito | ST-1.2b |
-| DEC-08 | captura: mostrada ou base | entrega a mostrada, com chefe evoluído | manter a mostrada; o D-107 é que precisa fechar | ST-3.4 |
-| DEC-09 | stamina por tentativa ou vitória | por wave alcançada, no fim | manter o código e **corrigir o texto**; mostrar custo da nova tentativa | ST-3.5 |
+| DEC-08 | captura: mostrada ou base | entrega a mostrada, com chefe evoluído | **aplicada como padrão em 25/09** (recomendação = código): teste trava; mudar vira decisão explícita | ✅ ST-3.4 |
+| DEC-09 | stamina por tentativa ou vitória | por wave alcançada, no fim | **aplicada como padrão em 25/09**: código mantido, a Spec já o descreve, e a tela diz o custo da nova tentativa | ✅ ST-3.5 |
 | DEC-11 | manter 154.000 sims | ~5 s de CPU por página e por servidor | medir o ruído contra quem calcula `p` fora do jogo antes de mudar; é a ST-0.8 | ST-0.8 |
+| **DEC-14** | a emissão de Essência e moeda do Avanço (L-185: o maratona tira 8,7× a Essência calibrada) | sem teto além da stamina | **(b) rendimento decrescente por run no mesmo dia** — o casual fica como está, a maratona morde | ST-3.6 (nova) |
 | **DEC-12** | o Q2 do bloco adia o que só mudou de fecho | — | **adotada** pelo pedido do dono de 25/09 ("minutos"); o preço (S15 aparece só no Q2 completo) está escrito na ST-0.4 | — |
 | **DEC-13** | CI no GitHub Actions | não há `.github/` | `npm test` por push (barato); Q2 fatiado à noite **só** se couber no plano de minutos do repositório | ST-0.6 |
 | DEC-01..06 | tema e direitos · RMT · pagamento e poder · curva do laboratório · Vulcão · outfits à venda | — | como na Revisão 2.0 | E4 (DEC-03), E7, E8 |

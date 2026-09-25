@@ -790,5 +790,29 @@ export function suite() {
       'a tela ignora o save recusado — seguiria mostrando uma colheita que não ficou');
   });
 
+  /* ══ ST-3.4 · DEC-08 — A CAPTURA ENTREGA A ESPÉCIE MOSTRADA ══════════════
+   *
+   * A pergunta da Revisão 2.0: capturar a espécie encontrada, ou sempre a base
+   * evolutiva? Os textos divergiam; o código já entrega a MOSTRADA — inclusive
+   * o chefe evoluído que a run trouxe. A recomendação (e a decisão padrão até o
+   * dono dizer outra coisa) é manter: é o que o jogador viu. Este teste trava a
+   * regra; mudá-la passa a ser decisão explícita, com migração, e não acidente. */
+  s.teste('DEC-08: capturar um Butterfree do Avanço dá um Butterfree, e não um Caterpie', async () => {
+    const { baseDe } = await import('../engine/evolucao.mjs');
+    igual(baseDe(kanto, 12), 10, 'o pack mudou: o 12 deixou de evoluir do 10 — o teste perdeu o que medir');
+    let pegou = null;
+    for (let i = 0; i < 60 && !pegou; i++) {
+      const e = comInicial();
+      e.bolsa.ultra = 1;
+      e.encontros.push({ chave: `dec08:${i}`, expedicao: null, origem: 'avanco', dex: 12,
+                         raridade: 'incomum', bioma: 'floresta', em: AGORA });
+      const r = lancarBola(e, { pack: kanto, chave: `dec08:${i}`, bola: 'ultra', agora: AGORA });
+      if (r.capturou) pegou = r;
+    }
+    ok(pegou, 'nenhuma de 60 ultras capturou um incomum — o teste perdeu o que medir');
+    igual(pegou.criatura.dex, 12,
+      `a captura entregou o ${pegou.criatura.dex} no lugar da espécie mostrada — a DEC-08 mudou sem decisão`);
+  });
+
   return s;
 }

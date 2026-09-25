@@ -152,6 +152,20 @@ export function staminaAteWave(n) {
     : w * STAMINA_POR_WAVE;
 }
 
+/* ── O QUE A RUN CUSTA, DITO ANTES DE ENTRAR (ST-3.5, DEC-09) ────────────
+ *
+ * A cobrança é por wave ALCANÇADA, no fim; a queda encerra a run, e tentar de
+ * novo é outra run, cobrada de novo. O painel dizia "o estágio inteiro custa
+ * 23" DEPOIS de entrar, e nada dizia o que custa tentar outra vez — que é a
+ * conta que decide se vale a pena insistir hoje.
+ *
+ * A frase sai das constantes: número escrito à mão numa frase é o número que
+ * envelhece calado (D-059). */
+export const falaDoCusto = () =>
+  `Custa até ${STAMINA_DO_AVANCO} de stamina por criatura — ${STAMINA_POR_WAVE} por wave, ` +
+  `${STAMINA_DO_CHEFE} no chefe. Se a equipe cair, paga só as waves que alcançou; ` +
+  `tentar de novo é outra run, com o mesmo custo.`;
+
 /* UMA CRIATURA SEM STAMINA REPROVA A EQUIPE INTEIRA — e a recusa diz quem.
    Mesma forma do `podeEnviar` do §7.13, e de propósito: duas regras diferentes
    para "esta equipe pode sair?" seriam duas telas discordando. */

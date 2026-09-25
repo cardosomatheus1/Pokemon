@@ -5636,6 +5636,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 .rotaNoite::after{content:'';position:absolute;right:-1px;top:-2px;width:6px;height:6px;
   border-radius:50%;box-shadow:-2px 1px 0 0 #f1edff}
 .rotaNoiteAviso{display:block;margin-top:4px;color:#b9a8ff}
+.avCustoRun{margin:6px 0 0;color:var(--ink2);line-height:1.35}
 /* ── A LEGENDA DOS CLIMAS (1.32b) ─────────────────────────────────────────
    Consulta dentro da sala: a mesma voz miúda da régua, e o nome do clima no
    acento do tema. Duas colunas no largo, uma no estreito — a frase do elenco
@@ -6842,6 +6843,9 @@ body.tremeTela{animation:tremeTela .7s ease-out}
              decisão é ali, e nasce escondido: a ausência de aviso é a
              resposta normal, não um caso de borda. -->
         <p id="idleAvisoTeto" class="avAvisoTeto" hidden></p>
+        <!-- O CUSTO, ANTES DE ENTRAR (ST-3.5, DEC-09): inclusive o de tentar de
+             novo. A frase vem do motor (`falaDoCusto`). -->
+        <p id="idleCustoRun" class="tiny avCustoRun"></p>
         <div id="idleAviso"></div>
         <p class="tiny" style="margin-top:10px">Para farmar com o jogo fechado —
            Batida, Trilha ou Vigília — use a aba <b>Rota OFF</b>. Os dois modos
