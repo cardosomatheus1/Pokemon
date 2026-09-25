@@ -261,17 +261,17 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | **1.27f** · o cartão da equipe | 16/09 | Q2 998/998 · capturas em `tools/previas/_cartao/` |
 | **T9 · T10 · T13 · T11a** · o arnês | 16/09 | portão de 7 h para 3 min com a árvore intocada |
 | **1.34** · dia, tarde e noite | 25/09 | Q2 1017/1017 · suíte 2184/2184 · capturas em `tools/previas/_hora/` |
+| **1.33** · o elenco muda com a hora e o clima | 25/09 | 18 de 44 estágios mudam à noite · Q2 e suíte no commit · capturas `tools/previas/_hora/sala-*` |
 
 ### A fila, na ordem
 
 | # | bloco | o que é | por que aqui |
 |---|---|---|---|
-| 1 | **1.33** · o elenco muda com a hora e o clima | fecha a L-178. Cartão completo em `docs/PROXIMO_BLOCO_1.33.md` | é a metade de JOGO do dia e noite: a cena já muda de luz, o elenco ainda não. Destravado em 25/09 (DEC-10) |
-| 2 | **1.32b** · mostrar que climas existem | L-177, junto com a prévia honesta do 1.33 | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto |
-| 3 | **INT-01** · recompensas que não duplicam | da Revisão 2.0: Estilhaço no baú (L-159), reservas, resgate concorrente | integridade de economia vem antes de calibrar quantidade |
-| 4 | **INT-02** · uma posse confiável | cosméticos e outfit entre dispositivos (L-157, L-055) | compra e equipar não podem depender do navegador |
-| 5 | **1.27g · UX-01** · efeitos e leitura da luta | L-171, L-172, L-175, L-176 | o que impede ENTENDER a ação vem antes do que a enfeita |
-| 6 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
+| 1 | **1.32b** · mostrar que climas existem | L-177, e a L-183 (o veterano quase não vê a noite) | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto. A prévia da NOITE já está na sala desde o 1.33 |
+| 2 | **INT-01** · recompensas que não duplicam | da Revisão 2.0: Estilhaço no baú (L-159), reservas, resgate concorrente | integridade de economia vem antes de calibrar quantidade |
+| 3 | **INT-02** · uma posse confiável | cosméticos e outfit entre dispositivos (L-157, L-055) | compra e equipar não podem depender do navegador |
+| 4 | **1.27g · UX-01** · efeitos e leitura da luta | L-171, L-172, L-175, L-176 | o que impede ENTENDER a ação vem antes do que a enfeita |
+| 5 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
 | — | **T11 · T8 · T4 · T7** · arnês | ❄️ **CONGELADO** | entra só quando IMPEDIR um bloco desta tabela, com orçamento nomeado antes (`CLAUDE.md`, 16/09) |
 
 ### Esperando decisão do dono
@@ -297,7 +297,9 @@ Todos com dono nomeado, todos em `docs/LACUNAS.md`.
 | **L-172** (resto) | de 1 a 3 pares de números de dano ainda se tocam em 420 px | 1.27g |
 | **L-175** | em 420 px a janela da câmera tem **130 px de mundo** contra 403 no panorâmico. Cabem três criaturas, e o bando é de quatro mais companheiro e treinador — o que sai da janela não é o efeito, é a luta | o do CENÁRIO |
 | **L-177** | o jogador não sabe QUE CLIMAS EXISTEM antes de montar a equipe. Revelar qual vai cair estragaria a escolha; revelar a tabela, não | 1.32b |
-| **L-178** | o clima não muda o ELENCO da wave, só o que ela rende | 1.33/1.34 |
+| ~~L-178~~ | ✅ fechada no 1.33 — a noite e o clima mudam o elenco | — |
+| **L-183** | o veterano quase não vê a noite: 2 das 11 rotas mudam no estágio 4 | 1.32b |
+| **L-184** | a fauna de enfeite do cenário não sabe que é noite | o do CENÁRIO |
 | **L-167** | `engine/avanco-bola.mjs` ficou sem chamador desde que a bola saiu da run | 1.27b |
 | **L-173** | varrer as ferramentas de plantio por campo DERIVADO escrito à mão (consequência do D-087) | T7 |
 | **L-176** | `battle-theme.mp3` e `lojas.mp4` dão 404 na abertura | 1.31b |
@@ -512,7 +514,7 @@ e cada ficha diz que foi realinhada e quando.
 | 1.30 ⏸️ | os **34** ícones de item (L-137) — o dono recobrou em 08/09 | não muda de forma — entra assim que a arte chegar |
 | 1.31 ⏸️ | as duas lojas e os NPCs (L-136, L-123, L-125) | não muda de forma; depende do cadeado do 1.26, que já existe |
 | **1.32** ✅ | **o CLIMA do Avanço** (L-119) — buff de FARM, e não de dano | sete climas mais o Tempo Firme, e o quanto SAI da raridade do tipo: Gelo (4 espécies) paga +30% com equipe cheia, Veneno (33, o órfão que a lacuna apontou) paga +10%. Cinco canais — XP, moeda, material, item raro e **ritmo**, que encurta a wave e é o único que se vê sem ler número. O bônus só paga quem foi ENVIADO, com a mesma régua de vaga do combate. E a chuva na tela é a mesma que mexe no farm: véu, partículas, cartão e linha no log |
-| 1.33–1.34 ⏸️ | dia e noite (L-124) · "como funciona" | a hora do dia passa a ter efeito **visível na wave**; o elenco por condição nasce junto (L-178) |
+| 1.33–1.34 ✅ | dia e noite (L-124) · "como funciona" | a hora do dia passa a ter efeito **visível na wave**; o elenco por condição nasce junto (L-178) |
 
 > **Dois deles não dependem do Avanço em nada** — os ícones (1.30) e as lojas
 > (1.31). São candidatos a correr em PARALELO com o A4, e essa é uma decisão de

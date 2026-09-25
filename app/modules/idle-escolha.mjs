@@ -212,13 +212,16 @@ export function resumoDaEvolucao(falta) {
  * Quem não abriu nada ainda vê o estágio 1, que é onde ele está. */
 export const MOSTRA_ATE = 4;
 
-export function resumoDaRota(pack, biomaId, criaturas = [], { ate = MOSTRA_ATE } = {}) {
+export function resumoDaRota(pack, biomaId, criaturas = [], { ate = MOSTRA_ATE, preferencias = null } = {}) {
   const estagio = Math.max(1, estagioMaximo(criaturas ?? []) || 1);
   /* O ELENCO VEM EM DOIS BALDES — `comuns` e `chefes` —, e a ordem entre eles
      é informação: o chefe é o fundo do bioma, e ele fecha a lista na prévia
      também. Achatar na ordem em que o motor os entrega é o que mantém as duas
      telas contando a mesma história sobre o mesmo lugar. */
-  const elenco = elencoDoEstagio(pack, biomaId, estagio) ?? {};
+  /* COM O PERÍODO, E SÓ COM ELE (1.33). Quem monta as preferências da prévia
+     é o `preferenciasDaPrevia`, que cala sobre o clima — ele é oculto até a run
+     começar (L-177). */
+  const elenco = elencoDoEstagio(pack, biomaId, estagio, preferencias) ?? {};
   const dex = [...(elenco.comuns ?? []), ...(elenco.chefes ?? [])]
     .map(x => x?.dex).filter(d => Number.isInteger(d));
   /* ── O QUE DIFERE ENTRE AS ROTAS, e o nível NÃO difere ────────────────
@@ -251,6 +254,10 @@ export function resumoDaRota(pack, biomaId, criaturas = [], { ate = MOSTRA_ATE }
        responde "vale a pena vir aqui?", e é a única linha do cartão que muda
        de rota para rota. */
     faixas,
+    /* QUEM ESTÁ AQUI SÓ PORQUE É NOITE (1.33). O cartão marca esses rostos: é
+       o efeito VISÍVEL que o dono pede, e é honesto sobre ser condição — de dia
+       eles não estão ali. */
+    noturnos: (elenco.trocas ?? []).filter(t => t.fonte === 'noite').map(t => t.entrou),
   };
 }
 

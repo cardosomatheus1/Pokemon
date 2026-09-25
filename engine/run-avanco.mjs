@@ -37,6 +37,7 @@ import { WAVES, HP_MAX, resolverWave, ehWaveDeChefe, fatorDoRitmo,
 import { roteiroDaWave, estadoEm, APROXIMACAO_MS, HP_MOB } from './roteiro-wave.mjs';
 import { derivar } from './seed.mjs';
 import { semente } from './instancia.mjs';
+import { REGRA_DO_ELENCO } from './elenco-estagio.mjs';
 
 /* Quanto tempo um golpe fica "acontecendo" para a tela. É a vida do balão na
    arena (1,9 s) arredondada: mais curto e o jogador não lê o nome do golpe;
@@ -73,6 +74,11 @@ export function novaRun({ bioma, estagio = 1, equipe = [], raiz, agora }) {
     equipe: [...equipe],
     raiz: String(raiz),
     iniciadaEm: inteiro(agora),
+    /* A VERSÃO DA REGRA DO ELENCO (1.33). A run guarda qual regra a gerou, e não
+       o elenco inteiro — o elenco continua DERIVADO. A run sem este campo
+       nasceu antes do 1.33 e fica no elenco-base até acabar: trocar os mobs no
+       meio da wave é o que o cartão proíbe. */
+    regraElenco: REGRA_DO_ELENCO,
     wave: 1,
     tentativa: 0,
     waveComecouEm: inteiro(agora),

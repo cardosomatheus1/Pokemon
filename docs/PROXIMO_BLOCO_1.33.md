@@ -1,5 +1,9 @@
 # Cartão 1.33 — elenco por período e clima
 
+> ✅ **FECHADO em 25/09/2026.** O que foi construído, medido e o que mudou do
+> cartão está na L-178 (`docs/LACUNAS.md`) e na mensagem do commit. Este arquivo
+> fica como o cartão de origem — a fila viva é o `ROADMAP.md`.
+
 > **ADOTADO em 25/09/2026** a partir da Revisão 2.0 (`docs/revisao-2026-09-24/`).
 > O texto do revisor segue abaixo, íntegro. Antes dele, a CONCILIAÇÃO COM O
 > CÓDIGO — a parte que ele pediu ("conferir os nomes/caminhos; o ZIP não contém

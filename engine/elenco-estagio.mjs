@@ -180,7 +180,7 @@ function montar(pack, poolComuns, poolChefes = poolComuns) {
   return chefes.length >= CHEFES_POR_ESTAGIO
     ? { comuns, chefes: chefes.slice(0, CHEFES_POR_ESTAGIO) } : null;
 }
-export function elencoDoEstagio(pack, biomaId, estagio) {
+function elencoBase(pack, biomaId, estagio) {
   /* Apertado para dentro da escada, como o `faixasDoEstagio` já faz. Duas
      regras diferentes para o mesmo número seriam duas verdades sobre ele. */
   const n = Math.min(ESTAGIOS_POR_BIOMA, Math.max(1, Math.floor(Number(estagio) || 1)));
@@ -226,6 +226,123 @@ export function elencoDoEstagio(pack, biomaId, estagio) {
       ?? montar(pack, girar(faixa, n), faixa)
       ?? montar(pack, faixa)
       ?? { comuns: frescoFaixa.slice(0, COMUNS_POR_ESTAGIO), chefes: [] };
+}
+
+/* ══ 1.33 · O ELENCO MUDA COM A CONDIÇÃO (L-178) ══════════════════════════
+ *
+ * Cartão em `docs/PROXIMO_BLOCO_1.33.md` — da Revisão 2.0, conciliado com o
+ * código. Três decisões governam esta parte:
+ *
+ * ── O MOTOR NÃO SABE O QUE É "NOITE" ────────────────────────────────────
+ *
+ * Ele recebe PREFERÊNCIAS por tipo: `{ fonte, favorece: [...], desfavorece:
+ * [...] }`. Quem traduz a hora e o clima em tipos é a camada 0 do app
+ * (`elenco-condicao.mjs`), lendo o pack. Assim o motor segue agnóstico ao tema
+ * (§0.3), e a mesma engrenagem serve para qualquer condição futura.
+ *
+ * ── A CONDIÇÃO TROCA, E NÃO SORTEIA ─────────────────────────────────────
+ *
+ * O elenco-base é determinístico e sem peso: os quatro mais fracos da faixa que
+ * ainda não apareceram. O cartão prevê este caso — *"se o resolver usa
+ * prioridade determinística sem pesos, conservar o algoritmo e aplicar
+ * preferências equivalentes"*. Então cada preferência faz no máximo UMA TROCA:
+ * sai um comum não favorecido (o desfavorecido primeiro), entra o candidato
+ * favorecido MAIS FRACO da MESMA raridade. E o `montar` recalcula os chefes —
+ * que continuam válidos por construção, porque é ele que já os valida.
+ *
+ * Uma troca, e não "reordenar tudo": a noite tem de ser VISÍVEL (regra do
+ * dono), e não pode desmontar a escada que o dono aprovou olhando.
+ *
+ * ── SEM CONDIÇÃO, O MESMO OBJETO DE SEMPRE ──────────────────────────────
+ *
+ * Sem preferência, a função devolve o elenco-base intacto — nem um campo a
+ * mais. É o invariante nº 2 do cartão, e a fixture `elenco-base.json`
+ * (fotografada antes deste bloco) o cobra nos 44 estágios.
+ *
+ * E a exclusão entre estágios (`usadosAntes`) e o `estagiosDoBioma` leem
+ * SEMPRE o elenco-base: a noite de um estágio não pode mudar quem aparece nos
+ * outros, nem quantos estágios o bioma tem. */
+
+/* A versão da regra. Runs criadas antes dela não a têm, e seguem no
+   elenco-base até terminarem — o cartão proíbe reprocessar em silêncio. */
+export const REGRA_DO_ELENCO = 1;
+
+const tiposPorDex = pack => {
+  const m = new Map();
+  for (const e of pack?.especies ?? []) m.set(e.dex, e.t ?? []);
+  return m;
+};
+/* +1 favorecido, −1 desfavorecido, 0 neutro — e O FAVORECIDO VENCE.
+ *
+ * A primeira versão seguia a proposta do cartão: tipo duplo com um favorecido e
+ * um desfavorecido se ANULA. Medido antes de fechar, e ela falhava exatamente
+ * onde mais importa: todo Veneno da Floresta também é Inseto ou Planta —
+ * Weedle, Oddish, Venonat, Bellsprout, os dezesseis —, então a anulação
+ * neutralizava todos, e o bioma que abre por padrão NUNCA mudava à noite.
+ *
+ *   > Uma regra que deixa a Floresta igual de dia e de noite é o "número que
+ *   > ninguém vê" que o dono proibiu, chegando pela porta do balanceamento.
+ *
+ * O cartão marca os pesos como "proposta de balanceamento, não números
+ * validados" — a medição é o que valida, e ela mandou trocar. E a regra nova
+ * bate com a tradição que o jogador conhece: Oddish e Venonat são da noite, e
+ * Caterpie, do dia. Um tipo noturno basta para ser noturno. */
+const lado = (tipos, pref) => {
+  if (tipos.some(t => (pref.favorece ?? []).includes(t))) return 1;
+  if (tipos.some(t => (pref.desfavorece ?? []).includes(t))) return -1;
+  return 0;
+};
+
+function aplicar(pack, biomaId, n, base, preferencias) {
+  const tipos = tiposPorDex(pack);
+  const faixa = dentroDaFaixa(elencoDoBioma(pack, biomaId), n);
+  const antes = usadosAntes(pack, biomaId, n);
+  let atual = { comuns: [...base.comuns], chefes: [...base.chefes] };
+  const trocas = [];
+
+  for (const pref of preferencias) {
+    if (!pref || !(pref.favorece ?? []).length) continue;
+    const ocupados = new Set(todosDoEstagio(atual).map(x => x.dex));
+    /* Candidatos: da faixa, rosto novo, favorecidos. Do mais fraco para o mais
+       forte, e o `dex` desempata — nenhuma ordem que ninguém decidiu. */
+    const candidatos = faixa
+      .filter(x => !antes.has(x.dex) && !ocupados.has(x.dex))
+      .filter(x => lado(tipos.get(x.dex) ?? [], pref) > 0)
+      .sort((a, b) => a.forca - b.forca || a.dex - b.dex);
+    /* Quem pode sair: não favorecido. O desfavorecido primeiro; depois o mais
+       forte — sair o mais forte preserva o degrau até o chefe. */
+    const saidas = atual.comuns
+      .map((x, i) => ({ x, i, l: lado(tipos.get(x.dex) ?? [], pref) }))
+      .filter(o => o.l <= 0)
+      .sort((a, b) => a.l - b.l || b.x.forca - a.x.forca || a.x.dex - b.x.dex);
+
+    let feita = null;
+    busca: for (const c of candidatos)
+      for (const s of saidas) {
+        if (s.x.raridade !== c.raridade) continue;         // a raridade do slot fica
+        const comuns = atual.comuns.map((x, i) => i === s.i ? c : x);
+        const novo = montar(pack, comuns, faixa);
+        if (!novo) continue;                                // chefe inválido: próxima
+        feita = { novo, saiu: s.x.dex, entrou: c.dex };
+        break busca;
+      }
+    if (feita) {
+      atual = feita.novo;
+      trocas.push({ fonte: pref.fonte ?? null, saiu: feita.saiu, entrou: feita.entrou });
+    }
+  }
+  return { ...atual, trocas };
+}
+
+export function elencoDoEstagio(pack, biomaId, estagio, preferencias = null) {
+  const base = elencoBase(pack, biomaId, estagio);
+  if (!Array.isArray(preferencias) || !preferencias.length) return base;
+  /* Um estágio que já não fecha 4 + 2 não recebe troca: ele está no último
+     recurso da escada, e mexer ali arrisca devolver meio elenco. */
+  if (base.comuns.length < COMUNS_POR_ESTAGIO || base.chefes.length < CHEFES_POR_ESTAGIO)
+    return { ...base, trocas: [] };
+  const n = Math.min(ESTAGIOS_POR_BIOMA, Math.max(1, Math.floor(Number(estagio) || 1)));
+  return aplicar(pack, biomaId, n, base, preferencias);
 }
 
 /* ── QUANTOS ESTÁGIOS UM BIOMA CONSEGUE SUSTENTAR DE VERDADE ──────────────

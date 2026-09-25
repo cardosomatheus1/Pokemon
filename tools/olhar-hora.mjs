@@ -248,9 +248,29 @@ for (const H of HORAS) {
   const arq = join(SAIDA, `hora-${H.nome}.png`);
   await palco.screenshot({ path: arq });
 
+  /* ── A SALA DE ROTAS NA MESMA HORA (1.33) ─────────────────────────────
+     O elenco muda com a noite, e a sala é onde o jogador VÊ isso: a frase da
+     régua e a lua nos rostos noturnos. Fotografada em 1440 e em 420 — a
+     fileira de ícones é o que aperta primeiro quando o cartão estreita. */
+  const noite = await pg.evaluate(() => document.querySelectorAll('#idleBiomas .rotaNoite').length);
+  for (const largura of [VISTA.w, 420]) {
+    await pg.setViewportSize({ width: largura, height: VISTA.h });
+    await pg.waitForTimeout(300);
+    const r = await pg.evaluate(() => {
+      const a = document.querySelector('#idleRotaRegua')?.getBoundingClientRect();
+      const z = document.querySelector('#idleBiomas')?.getBoundingClientRect();
+      return a && z ? { x: 0, y: a.top + scrollY - 8, width: innerWidth,
+                        height: Math.min(900, z.bottom - a.top + 16) } : null;
+    });
+    if (r) await pg.screenshot({ path: join(SAIDA, `sala-${H.nome}-${largura}.png`),
+                                 clip: r, fullPage: true });
+  }
+  await pg.setViewportSize({ width: VISTA.w, height: VISTA.h });
+  diz.luasNaSala = noite;
+
   console.log(`  ${H.nome}: ${diz.periodo} · alfa ${diz.alfa} · ${diz.astro} em ` +
               `(${diz.x}, ${diz.y}) brilho ${diz.brilho} · ${diz.estrelas} estrelas · ` +
-              `efeito x${diz.forca}${erros.length ? '  ERROS: ' + erros[0].slice(0, 120) : ''}`);
+              `efeito x${diz.forca} · ${diz.luasNaSala} lua(s) na sala${erros.length ? '  ERROS: ' + erros[0].slice(0, 120) : ''}`);
   relato.push({ hora: H.nome, ...diz, erros: erros.length, arq });
   await ctx.close();
 }

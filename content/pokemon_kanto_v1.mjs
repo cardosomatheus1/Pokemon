@@ -981,6 +981,15 @@ export const pokemonKantoV1 = {
   golpes:   MASTER_MOVES,
   clima:    CLIMA,
   climaIdle: CLIMA_IDLE,
+  /* QUEM É DA NOITE (1.33, L-178). O motor só conhece "preferências por tipo";
+     quais tipos são noturnos é CONTEÚDO, e por isso mora aqui (§0.3).
+
+     Um tipo favorecido BASTA — ver o `lado` do `engine/elenco-estagio.mjs`: a
+     regra de anular tipo duplo neutralizava todo Veneno da Floresta, e o bioma
+     que abre por padrão nunca mudava à noite. Com esta tabela, a noite traz
+     Oddish, Zubat, Koffing e Hypno, e leva Metapod, Paras e Voltorb. */
+  preferenciasDaNoite: { favorece: ['ghost', 'poison', 'psychic'],
+                         desfavorece: ['bug', 'grass', 'normal'] },
   moeda:    MOEDA,
   /* O CATALOGO COMPLETO (1.12): nome, funcao, faixa, e por qual PORTA o item
      entra no jogo. Mora no pack porque nome de item e nomenclatura de tema. */

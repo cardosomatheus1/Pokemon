@@ -41,6 +41,7 @@ import { aplicarClima } from '../../engine/clima-idle.mjs';
    a 567 das 600 linhas. A divisão é por responsabilidade: aqui é o que a run
    FAZ, lá é o que o tempo faz com ela. */
 import { climaDaRun, leituraDoClima, ritmoDoClima, falaDoClima } from './avanco-clima.mjs';
+import { preferenciasDaRun } from './elenco-condicao.mjs';
 import { semente } from '../../engine/instancia.mjs';
 import { repertorio } from '../../engine/repertorio.mjs';
 
@@ -82,8 +83,13 @@ export const paraOMotor = (pack, c) => ({
 export const runDe = e => e?.run ?? null;
 export const avancoEmCurso = e => emCurso(runDe(e));
 
+/* COM A CONDIÇÃO DA RUN (1.33): a noite em que ela começou, no relógio do
+   mundo, e o clima dela. Quem traduz é o `elenco-condicao.mjs`, em camada 0; o
+   motor só vê tipos. Run antiga, sem `regraElenco`, recebe lista vazia — e a
+   lista vazia devolve o elenco-base intacto. */
 export const elencoDaRun = (pack, run) =>
-  run ? elencoDoEstagio(pack, run.bioma, run.estagio) : { comuns: [], chefes: [] };
+  run ? elencoDoEstagio(pack, run.bioma, run.estagio, preferenciasDaRun(pack, run))
+      : { comuns: [], chefes: [] };
 
 /* A equipe da run, hidratada. Ela sai do estado a cada consulta em vez de ser
    guardada na run: o nível pode ter subido no meio, e uma cópia congelada

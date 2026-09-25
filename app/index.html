@@ -5619,6 +5619,23 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 /* A RÉGUA da seção: o que vale para as onze, dito uma vez. */
 .rotaRegua{margin:10px 0 0;color:var(--ink2)}
 .rotaRegua b{color:var(--gold);font-variant-numeric:tabular-nums}
+/* A NOITE NO CARTÃO (1.33). Quem só mora aqui porque é noite ganha um ANEL
+   violeta e uma lua no canto — os dois, porque o ícone cai para <img> quando
+   não há folha, e <img> não tem ::after. O anel sozinho seria "enfeite"; a lua
+   é o que diz POR QUÊ.
+
+   O ícone noturno sobe acima do vizinho (z-index): os rostos se sobrepõem como
+   cartas, e a primeira captura mostrou a lua do Estufa coberta pelo seguinte.
+   E a lua ganha um PRATO escuro: fina e clara, ela sumia sobre sprite amarelo. */
+.rotaNoite{position:relative;z-index:1;border-radius:50%;
+  box-shadow:0 0 0 1.5px #9d8cff,0 0 9px 2px rgba(150,120,255,.55)}
+/* O prato primeiro (::before), a lua por cima (::after): na ordem inversa o
+   prato opaco cobria a lua, e a segunda captura mostrou só um círculo vazio. */
+.rotaNoite::before{content:'';position:absolute;right:-5px;top:-5px;width:13px;height:13px;
+  border-radius:50%;background:#10142b;border:1px solid #9d8cff;box-sizing:border-box}
+.rotaNoite::after{content:'';position:absolute;right:-1px;top:-2px;width:6px;height:6px;
+  border-radius:50%;box-shadow:-2px 1px 0 0 #f1edff}
+.rotaNoiteAviso{display:block;margin-top:4px;color:#b9a8ff}
 
 /* ── A DOBRA DO CARTÃO — L-164 ────────────────────────────────────────────
    Controle de LEITURA, e o desenho diz isso: fantasma, pequeno, encostado à

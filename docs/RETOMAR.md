@@ -22,15 +22,42 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 25/09/2026
+## 0. ONDE PARAMOS — 25/09/2026, fim do dia
 
 ```text
 o LINK     http://localhost:8099/app/index.html
            sobe com:  node tools/servir.mjs --porta 8099
 a PASTA    C:\Users\gdult\pa4
+o ESTADO   1.33 FECHADO · o elenco muda com a noite e com o clima
+           (Q2 e suíte: ver a mensagem do commit do 1.33)
+o PRÓXIMO  1.32b — mostrar que climas existem (L-177), junto com a L-183
+```
+
+### O 1.33 fechou: a noite passou a mudar QUEM aparece
+
+A run que começa de noite (horário de Brasília) troca um mob por um noturno —
+fantasma, venenoso ou psíquico — e o chefe é recalculado. O clima faz o mesmo
+com a tabela que já decidia o bônus. Sem condição nenhuma, os 44 estágios são
+IDÊNTICOS aos de antes (fixture fotografada antes de mexer no motor). A run que
+já estava em curso não muda.
+
+**Na tela:** a sala de rotas, de noite, diz *"É noite: quem tem a lua só sai a
+esta hora"* e marca esse rosto com anel violeta e lua. O clima continua oculto
+na sala — ele só se revela quando a run começa.
+
+**Olhando, três ajustes:** a lua ficava coberta pelo ícone vizinho; sumia sobre
+sprite amarelo; e um fecho de comentário sobrando engoliu a regra CSS inteira
+sem nenhum erro — virou teste e defeito plantado (`S1037`).
+
+**Registrado:** L-183 (no estágio 4 só 2 das 11 rotas mudam de noite — o
+veterano quase não vê) e L-184 (a fauna de enfeite do cenário não sabe que é
+noite).
+
+## 0-. ANTES — 25/09/2026, início do dia
+
+```text
 o ESTADO   1.34 FECHADO · Q2 VERDE 1017/1017 · suíte VERDE 2184/2184
            a cena do idle tem dia, tarde e noite, no horário de Brasília
-o PRÓXIMO  1.33 — o elenco muda com a hora e o clima (docs/PROXIMO_BLOCO_1.33.md)
 ```
 
 ### O 1.34 fechou, na terceira forma

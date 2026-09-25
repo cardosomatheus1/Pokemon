@@ -45,6 +45,9 @@ const ESCOLHA = 'app/modules/idle-escolha.mjs';
 const HORA = 'app/modules/hora-do-dia.mjs';
 const TELA_IDLE_134 = 'app/modules/idle-tela.mjs';
 const PARTIC_134 = 'app/modules/particulas.mjs';
+const COND_133 = 'app/modules/elenco-condicao.mjs';
+const BIOMAS_133 = 'app/modules/idle-biomas.mjs';
+const KANTO_133 = 'content/pokemon_kanto_v1.mjs';
 
 /* Os golpes liberados por NÍVEL (L-168) e o anúncio do chefe (L-170). */
 const REPERT = 'engine/repertorio.mjs';
@@ -2019,6 +2022,73 @@ export const DEFEITOS = [
     real:'"UTC e mais simples" — e contraria a DEC-10 do dono: o mundo inteiro tres horas adiantado para quem joga',
     de:'export const FUSO_DO_MUNDO_MIN = 180;',
     para:'export const FUSO_DO_MUNDO_MIN = 0;' },
+
+  /* ── 1.33 · O ELENCO MUDA COM A HORA E O CLIMA ────────────────────────
+     Todos pegos em Node: a decisão mora no motor e na camada 0, e a sala de
+     rotas só pinta o que eles devolveram. Zero de navegador. */
+  { id:'S1023', arquivo:ELENCO, nome:'a troca da noite deixa de manter a raridade do slot',
+    real:'"o candidato favorito e bom, a faixa tanto faz" — e o estagio vira outro estagio de noite',
+    de:'if (s.x.raridade !== c.raridade) continue;',
+    para:'if (false) continue;' },
+  { id:'S1024', arquivo:ELENCO, nome:'a noite traz de volta quem um estagio anterior ja usou',
+    real:'filtrar so os ocupados parece suficiente; a exclusao entre estagios e o que faz o estagio ser novo',
+    de:'.filter(x => !antes.has(x.dex) && !ocupados.has(x.dex))',
+    para:'.filter(x => !ocupados.has(x.dex))' },
+  { id:'S1025', arquivo:ELENCO, nome:'tipo duplo passa a neutralizar a noite',
+    real:'a regra da proposta original — e com ela a Floresta nunca muda de noite',
+    de:'if (tipos.some(t => (pref.favorece ?? []).includes(t))) return 1;',
+    para:'if (tipos.some(t => (pref.favorece ?? []).includes(t))) return tipos.some(t => (pref.desfavorece ?? []).includes(t)) ? 0 : 1;' },
+  { id:'S1026', arquivo:ELENCO, nome:'a noite escolhe o candidato mais FORTE',
+    real:'"o mais forte da mais emocao" — e come o degrau ate o chefe',
+    de:'.sort((a, b) => a.forca - b.forca || a.dex - b.dex);',
+    para:'.sort((a, b) => b.forca - a.forca || a.dex - b.dex);' },
+  { id:'S1027', arquivo:ELENCO, nome:'a troca deixa de recalcular os chefes',
+    real:'"so mudou um comum, os chefes ficam" — e o chefe deixa de ser a evolucao de quem esta ali',
+    de:'const novo = montar(pack, comuns, faixa);',
+    para:'const novo = { comuns, chefes: atual.chefes };' },
+  { id:'S1028', arquivo:ELENCO, nome:'a troca perde a fonte',
+    real:'a fonte parece so log; e ela que a sala usa para pintar a lua',
+    de:'trocas.push({ fonte: pref.fonte ?? null,',
+    para:'trocas.push({ fonte: null,' },
+  { id:'S1029', arquivo:COND_133, nome:'a run antiga passa a receber a condicao',
+    real:'"toda run merece a noite" — e o elenco muda no meio da wave de quem ja estava jogando',
+    de:'if (!run || !(Number(run.regraElenco) >= REGRA_DO_ELENCO)) return [];',
+    para:'if (!run) return [];' },
+  { id:'S1030', arquivo:COND_133, nome:'a noite do elenco passa a ler UTC cru',
+    real:'o mesmo defeito do fuso do 1.34, agora no elenco: a cena escura e o elenco de dia',
+    de:"return periodoEm(relogioDoMundo(Number(instante))) === 'noite'",
+    para:"return periodoEm(Number(instante)) === 'noite'" },
+  { id:'S1031', arquivo:COND_133, nome:'a run deixa de aplicar a noite',
+    real:'apagar uma linha e o elenco inteiro fica o de dia, sem nenhum erro',
+    de:'if (n) fora.push(n);',
+    para:'' },
+  { id:'S1032', arquivo:RUNAV, nome:'a run nova nasce sem a versao da regra',
+    real:'o campo parece redundante; sem ele toda run nova e tratada como antiga e o 1.33 vira codigo morto',
+    de:'    regraElenco: REGRA_DO_ELENCO,',
+    para:'' },
+  { id:'S1033', arquivo:AVEST, nome:'o elenco da run ignora a condicao',
+    real:'a ligacao que some num refactor — o motor sabe trocar, e ninguem pede',
+    de:'run.estagio, preferenciasDaRun(pack, run))',
+    para:'run.estagio)' },
+  { id:'S1034', arquivo:ESCOLHA, nome:'a sala deixa de saber quem e noturno',
+    real:'um filtro errado e a lua some do cartao, com a lista mudando sem explicacao',
+    de:"filter(t => t.fonte === 'noite')",
+    para:"filter(t => t.fonte === 'dia')" },
+  { id:'S1035', arquivo:BIOMAS_133, nome:'a sala volta a pedir o elenco sem o periodo',
+    real:'a regua e os cartoes voltam a mostrar sempre o elenco de dia',
+    de:'const r = resumoDaRota(PACK, b.id, vivas, { preferencias });',
+    para:'const r = resumoDaRota(PACK, b.id, vivas);' },
+  { id:'S1036', arquivo:KANTO_133, nome:'o pack deixa de favorecer alguem a noite',
+    real:'uma tabela vazia e a noite existe no codigo e nao na tela',
+    de:"favorece: ['ghost', 'poison', 'psychic'],",
+    para:'favorece: [],' },
+  { id:'S1037', arquivo:APP, nome:'um fecho de comentario sobrando engole a regra do anel noturno',
+    real:'aconteceu no proprio 1.33: CSS nao da erro, a pagina nao da erro, e o anel nao aparece',
+    de:`é o que diz POR QUÊ.
+
+   O ícone`,
+    para:`é o que diz POR QUÊ. */
+   O ícone` },
 
   /* ── OS TRÊS DO T11a: QUEM AVANÇA OS QUADROS ──────────────────────────
      O defeito que estes guardam ficou 30 s por largura escondido atrás de uma

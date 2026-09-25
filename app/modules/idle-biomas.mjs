@@ -21,6 +21,9 @@ import { nosDois } from './dom.mjs';
 /* A SALA pergunta ao motor quem mora e o que a rota pede — camada 0, com
    teste próprio. Ver o cabeçalho do `idle-escolha.mjs`. */
 import { resumoDaRota } from './idle-escolha.mjs';
+/* A NOITE NA PORTA (1.33): a prévia pergunta com o período de agora, no relógio
+   do mundo, e com mais nada — o clima só se revela quando a run começa. */
+import { preferenciasDaPrevia } from './elenco-condicao.mjs';
 /* O RÓTULO da faixa vem de onde ele já mora — o mesmo que o quadro "quem
    apareceu" usa. Duas palavras para a mesma raridade seriam duas escalas. */
 import { daFaixa } from './raridade.mjs';
@@ -119,22 +122,30 @@ function pintarNele(alvo) {
      O estágio e o nível que ele pede são da COLEÇÃO do jogador, e não do
      lugar — os onze cartões diriam o mesmo número. Aqui a frase é uma, e o
      cartão fica com o que diferencia uma rota da outra. */
-  const regua = resumoDaRota(PACK, (PACK.biomas ?? [])[0]?.id, vivas);
+  const preferencias = preferenciasDaPrevia(PACK, Date.now());
+  const deNoite = preferencias.some(p => p.fonte === 'noite');
+  const regua = resumoDaRota(PACK, (PACK.biomas ?? [])[0]?.id, vivas, { preferencias });
   for (const el of nosDois('RotaRegua'))
     el.innerHTML = `Você entra no <b>estágio ${regua.estagio}</b>, e ele pede uma ` +
       `criatura no <b>nível ${regua.nivelPedido}</b> — em qualquer rota. ` +
-      `O que muda de lugar para lugar é <b>quem mora</b> nele.`;
+      `O que muda de lugar para lugar é <b>quem mora</b> nele.` +
+      (deNoite ? ` <span class="rotaNoiteAviso">É noite: quem tem a lua só sai a esta hora.</span>` : '');
   alvo.innerHTML = (PACK.biomas ?? []).map(b => {
     const quem = ocupados.get(b.id);
-    const r = resumoDaRota(PACK, b.id, vivas);
+    const r = resumoDaRota(PACK, b.id, vivas, { preferencias });
     /* OS MORADORES SÃO ÍCONES DE CABEÇA — o mesmo símbolo do "quem apareceu",
        da Pokédex e do chip de quem está farmando. Quarta aparição, e a
        repetição é a vantagem: o jogador aprende o símbolo uma vez. */
     const moradores = r.moradores.map(dex => {
       const est = estiloIcone(PACK, dex, 26);
+      /* A LUA marca quem só está aqui porque é noite. De dia o rosto some da
+         lista, e sem a marca isso pareceria defeito e não condição. */
+      const noite = r.noturnos.includes(dex);
+      const cls = noite ? 'rotaMora rotaNoite' : 'rotaMora';
+      const tit = nomeExibido(esp(dex).n) + (noite ? ' — só de noite' : '');
       return est
-        ? `<i class="rotaMora" style="${est}" title="${nomeExibido(esp(dex).n)}"></i>`
-        : dexImg(dex, esp(dex).n, 'class="rotaMora"');
+        ? `<i class="${cls}" style="${est}" title="${tit}"></i>`
+        : dexImg(dex, tit, `class="${cls}"`);
     }).join('');
 
     return `

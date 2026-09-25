@@ -7770,7 +7770,26 @@ central do `CLAUDE.md` chama isso pelo nome.
 ### L-178 — o clima não muda o ELENCO da wave, só o que ela rende
 
 **Registrada em:** 10/09/2026. **Bloco dono:** **1.33** — o 1.34 fechou a metade
-visual em 25/09. **Estado:** aberta, e é o PRÓXIMO bloco.
+visual em 25/09. **Estado:** ✅ **FECHADA no 1.33, 25/09/2026.**
+
+> **Como fechou.** O motor recebe PREFERÊNCIAS por tipo (`elencoDoEstagio(pack,
+> bioma, estagio, preferencias)`) e faz no máximo UMA troca por preferência: entra
+> o favorecido mais fraco e novo da mesma raridade, sai o desfavorecido (ou o
+> mais forte), e os chefes são recalculados. A noite mora no pack
+> (`preferenciasDaNoite`), e o clima usa a MESMA tabela `climaIdle[].tipos` que
+> já decidia o bônus — uma tabela para as duas perguntas, como esta lacuna
+> pedia. A tradução hora/clima → tipos é camada 0 (`elenco-condicao.mjs`).
+>
+> **Medido:** 18 dos 44 estágios mudam à noite; sem condição, os 44 são
+> idênticos à fixture `elenco-base.json`, fotografada ANTES de mexer no motor. A
+> run guarda `regraElenco`; a run antiga fica no elenco-base até acabar. A sala
+> de rotas mostra a noite (anel e lua no rosto que só sai de noite) e cala sobre
+> o clima, que continua oculto até a run começar (L-177).
+>
+> **Uma regra da proposta caiu na medição:** tipo duplo NEUTRALIZAVA (veneno +
+> inseto = 0), e com ela a Floresta nunca mudava de noite. Ficou "um tipo
+> favorecido basta" — e é a regra que o jogador conhece: Oddish é da noite.
+> Plantado como `S1025`.
 
 > **Destravada em 25/09/2026.** O que a travava — *"alguém tem de decidir quem
 > aparece na chuva"* — deixa de ser uma tabela escrita à mão: a condição
@@ -7917,6 +7936,52 @@ reaproveitar um `PEGOU` julgado por outro navegador.
 
 **O que a destrava:** uma troca de Chromium acontecer. Até lá, a mitigação é
 manual e custa uma linha: ao trocar o navegador, rodar `npm run sabotagem:completo`.
+
+---
+
+### L-183 — o veterano quase não vê a noite: 2 das 11 rotas mudam no estágio 4
+
+**Registrada em:** 25/09/2026, na captura da sala de rotas do 1.33. **Bloco
+dono:** **1.32b** — o bloco que ensina ao jogador que as condições existem é o
+que precisa de uma condição que ele consiga ver em todo estágio. **Estado:**
+aberta.
+
+**Medido:** 18 dos 44 estágios mudam à noite, mas concentrados no começo:
+
+```text
+estágio 1    6 de 11 rotas mudam      estágio 3    3 de 11
+estágio 2    7 de 11                  estágio 4    2 de 11  (ruína, estufa)
+```
+
+A causa é de conteúdo, e não de motor: o estágio 4 é a faixa raro/muito raro, e
+Kanto tem poucos fantasmas, venenosos e psíquicos nela que ainda não foram
+usados nos estágios anteriores. Quem está no estágio 4 — o jogador que mais
+tempo passa na sala — é o que menos vê a regra que o dono pediu VISÍVEL.
+
+**Por que não cabe no 1.33:** mudar a tabela da noite é balanceamento de
+conteúdo, e o 1.33 fechou a peça; mexer nos tipos agora seria recalibrar o que
+acabou de ser medido, no mesmo bloco que o mediu.
+
+**O que a destrava:** medir, por estágio, quantos candidatos cada tipo teria
+(o 1.33 deixa isso a uma linha de `elencoDoEstagio` por tipo), e decidir com o
+número se a noite ganha um quarto tipo ou se o estágio 4 aceita a troca na faixa
+vizinha.
+
+---
+
+### L-184 — a fauna de cenário do idle não sabe que é noite
+
+**Registrada em:** 25/09/2026, pela regra "o cenário do idle nunca está pronto".
+**Bloco dono:** **o do CENÁRIO** (o mesmo da L-175). **Estado:** aberta.
+
+O 1.33 fez a WAVE ficar noturna — os mobs da run que começou de noite são outros.
+Mas os moradores de ENFEITE do cenário (`fauna.mjs`, lidos do pack) são os
+mesmos às 14h e às 2h: o Psyduck continua na margem, acordado, sob a lua. É a
+tela que o jogador deixa aberta por horas, e a noite nela é só luz.
+
+**O que a destrava:** o pack declarar, por morador de enfeite, se ele dorme
+(quadro parado, olhos fechados) ou se é trocado por um noturno — pela mesma
+`preferenciasDaNoite` que o elenco já usa, para as duas nunca discordarem.
 
 ---
 

@@ -15,8 +15,9 @@
 import { criarSuite, ok, igual } from './harness.mjs';
 import {
   elencoDoEstagio, estagiosDoBioma, todosDoEstagio,
-  COMUNS_POR_ESTAGIO, CHEFES_POR_ESTAGIO,
+  COMUNS_POR_ESTAGIO, CHEFES_POR_ESTAGIO, REGRA_DO_ELENCO,
 } from '../engine/elenco-estagio.mjs';
+import { readFileSync } from 'node:fs';
 import { faixasDoEstagio, ESTAGIOS_POR_BIOMA } from '../engine/estagios.mjs';
 import { elencoDoBioma, forcaDe } from '../engine/bioma.mjs';
 import { saidasDe } from '../engine/evolucao.mjs';
@@ -244,6 +245,159 @@ export function suite() {
     igual(e.comuns.length, 4, 'o pack sintético não devolveu quatro comuns');
     igual(e.chefes.map(x => x.dex).sort().join(','), '5,6',
       'os chefes do pack sintético não são as evoluções dos comuns');
+  });
+
+  /* ══ 1.33 · O ELENCO MUDA COM A CONDIÇÃO (L-178) ════════════════════════
+   *
+   * Cartão em `docs/PROXIMO_BLOCO_1.33.md` (Revisão 2.0, conciliada com o
+   * código). O motor NÃO sabe o que é "noite" nem "chuva": recebe uma lista de
+   * PREFERÊNCIAS por tipo, e quem traduz a hora e o clima em tipos é a camada 0
+   * do app. É o que mantém o motor agnóstico ao tema. */
+
+  const BASE = JSON.parse(readFileSync(new URL('./fixtures/elenco-base.json', import.meta.url), 'utf8'));
+  const dexes = e => ({ comuns: e.comuns.map(x => x.dex), chefes: e.chefes.map(x => x.dex) });
+  const NOITE = { fonte: 'noite', favorece: ['ghost', 'poison', 'psychic'], desfavorece: ['bug', 'grass', 'normal'] };
+  const tiposDe = dex => (kanto.especies ?? []).find(e => e.dex === dex)?.t ?? [];
+
+  s.teste('sem condição, o elenco é EXATAMENTE o de antes — ordem e desempates', () => {
+    /* A fixture foi fotografada ANTES de o 1.33 mexer no motor. É o invariante
+       nº 2 do cartão, e o que protege toda run que já existe. */
+    for (const [chave, esperado] of Object.entries(BASE)) {
+      const [b, n] = chave.split(':');
+      for (const cond of [undefined, null, []])
+        igual(JSON.stringify(dexes(elencoDoEstagio(kanto, b, Number(n), cond))), JSON.stringify(esperado),
+          `${chave} mudou SEM condição nenhuma (${JSON.stringify(cond)}). O 1.33 só ` +
+          'pode mexer no elenco quando há hora ou clima; sem eles, a run de ontem ' +
+          'tem de dar o mesmo elenco hoje.');
+    }
+  });
+
+  s.teste('com a noite, todo membro continua morando no bioma e na faixa, e a raridade do slot fica', () => {
+    for (const b of BIOMAS) for (let n = 1; n <= ESTAGIOS_POR_BIOMA; n++) {
+      const base = elencoDoEstagio(kanto, b, n);
+      const e = elencoDoEstagio(kanto, b, n, [NOITE]);
+      const moram = new Set(elencoDoBioma(kanto, b).map(x => x.dex));
+      const faixas = faixasDoEstagio(n);
+      for (const x of todos(e)) {
+        ok(moram.has(x.dex), `${b}:${n} — a noite trouxe ${nomeDe(x.dex)}, que não mora ali`);
+        ok(faixas.includes(x.raridade), `${b}:${n} — a noite trouxe ${nomeDe(x.dex)} fora da faixa`);
+      }
+      igual(e.comuns.map(x => x.raridade).sort().join(','), base.comuns.map(x => x.raridade).sort().join(','),
+        `${b}:${n} — a noite mudou a RARIDADE dos slots. A troca é de rosto, e não de faixa.`);
+      igual(e.comuns.length, COMUNS_POR_ESTAGIO, `${b}:${n} — a noite mudou quantos comuns há`);
+    }
+  });
+
+  s.teste('com a noite, os chefes continuam válidos: dois, e mais fortes que todo comum', () => {
+    for (const b of BIOMAS) for (let n = 1; n <= ESTAGIOS_POR_BIOMA; n++) {
+      const base = elencoDoEstagio(kanto, b, n);
+      if (base.chefes.length < CHEFES_POR_ESTAGIO) continue;
+      const e = elencoDoEstagio(kanto, b, n, [NOITE]);
+      igual(e.chefes.length, CHEFES_POR_ESTAGIO, `${b}:${n} — a noite deixou o estágio sem os dois chefes`);
+      const teto = Math.max(...e.comuns.map(x => x.forca));
+      for (const c of e.chefes)
+        ok(c.forca > teto, `${b}:${n} — ${nomeDe(c.dex)} é chefe e não é mais forte que os comuns da noite`);
+    }
+  });
+
+  s.teste('onde existe candidato noturno, ao menos um comum MUDA — e o que entrou é noturno', () => {
+    /* Invariante nº 4 do cartão: se a condição pode mudar alguma coisa, ela
+       muda. Uma noite que nunca troca ninguém é o "número que ninguém vê" que o
+       dono proibiu. */
+    let mudaram = 0;
+    for (const b of BIOMAS) for (let n = 1; n <= ESTAGIOS_POR_BIOMA; n++) {
+      const base = elencoDoEstagio(kanto, b, n);
+      const e = elencoDoEstagio(kanto, b, n, [NOITE]);
+      const antes = new Set(base.comuns.map(x => x.dex));
+      const entraram = e.comuns.filter(x => !antes.has(x.dex));
+      for (const x of entraram)
+        ok(tiposDe(x.dex).some(t => NOITE.favorece.includes(t)),
+          `${b}:${n} — ${nomeDe(x.dex)} entrou à noite sem ser de tipo noturno`);
+      if (entraram.length) mudaram++;
+      ok(Array.isArray(e.trocas), `${b}:${n} — o elenco com condição não explica o que trocou`);
+      igual(e.trocas.length, entraram.length, `${b}:${n} — a explicação não bate com o que mudou`);
+    }
+    ok(mudaram >= 6,
+      `só ${mudaram} dos 44 estágios mudam à noite. Kanto tem veneno e psíquico em quase ` +
+      'todo bioma; uma noite que quase nunca troca ninguém é invisível — e a regra do ' +
+      'dono é efeito VISÍVEL.');
+  });
+
+  s.teste('quem entra à noite é rosto NOVO: nenhum estágio anterior do bioma o usou', () => {
+    /* A exclusão entre estágios vale para a troca também. Sem ela, a noite
+       traria de volta o Oddish que o jogador já venceu no estágio 2 — e o
+       estágio 3 "novo" seria o 2 repetido. Medido contra a FIXTURE, e não
+       contra a função: comparar a função com ela mesma não prova nada. */
+    for (const b of BIOMAS) for (let n = 2; n <= ESTAGIOS_POR_BIOMA; n++) {
+      const usados = new Set();
+      for (let j = 1; j < n; j++) {
+        const x = BASE[`${b}:${j}`];
+        if (x) [...x.comuns, ...x.chefes].forEach(d => usados.add(d));
+      }
+      for (const t of elencoDoEstagio(kanto, b, n, [NOITE]).trocas ?? [])
+        ok(!usados.has(t.entrou),
+          `${b}:${n} — ${nomeDe(t.entrou)} entrou à noite, e um estágio anterior já o usou`);
+    }
+  });
+
+  s.teste('a troca escolhe o candidato MAIS FRACO — três casos medidos no 1.33', () => {
+    /* A regra "o mais fraco entra" preserva o degrau até o chefe. Três trocas
+       medidas quando o 1.33 fechou, fixadas aqui: com a ordem invertida, o
+       candidato forte entra e estes números mudam. Mudança de PROPÓSITO na
+       regra reescreve esta tabela no mesmo commit, com a medição nova. */
+    const medidas = [['floresta', 1, 11, 69], ['floresta', 2, 46, 43], ['ruina', 4, 87, 97]];
+    for (const [b, n, saiu, entrou] of medidas) {
+      const t = (elencoDoEstagio(kanto, b, n, [NOITE]).trocas ?? [])[0];
+      igual(t && `${t.saiu}->${t.entrou}`, `${saiu}->${entrou}`,
+        `${b}:${n} — a noite trocou outra coisa (${nomeDe(saiu)} por ${nomeDe(entrou)} era o medido)`);
+    }
+  });
+
+  s.teste('a mesma condição dá sempre o mesmo elenco', () => {
+    for (const b of BIOMAS)
+      igual(JSON.stringify(dexes(elencoDoEstagio(kanto, b, 2, [NOITE]))),
+            JSON.stringify(dexes(elencoDoEstagio(kanto, b, 2, [NOITE]))),
+            `${b}:2 — a noite deu dois elencos diferentes para a mesma entrada`);
+  });
+
+  s.teste('a condição não muda a escada: os estágios seguem medidos pelo elenco-BASE', () => {
+    /* A exclusão de quem os estágios anteriores já usaram TEM de ler o
+       elenco-base. Se lesse o condicionado, a noite de um estágio mudaria
+       quem aparece nos outros. */
+    /* Recontado a partir da FIXTURE, e não da função: comparar a função com ela
+       mesma passaria sempre — a primeira versão deste teste fazia isso, e era
+       decorativa. */
+    const daFixture = b => {
+      const vistos = new Set(); let n = 0;
+      for (let i = 1; i <= ESTAGIOS_POR_BIOMA; i++) {
+        const e = BASE[`${b}:${i}`];
+        if (!e || e.comuns.length < COMUNS_POR_ESTAGIO || e.chefes.length < CHEFES_POR_ESTAGIO) break;
+        const chave = [...e.comuns, ...e.chefes].sort((x, y) => x - y).join(',');
+        if (vistos.has(chave)) break;
+        vistos.add(chave); n = i;
+      }
+      return n;
+    };
+    for (const b of BIOMAS)
+      igual(estagiosDoBioma(kanto, b), daFixture(b),
+        `${b} — a quantidade de estágios mudou: a condição vazou para a escada`);
+  });
+
+  s.teste('uma preferência por tipo que não existe no bioma devolve o elenco-base', () => {
+    const nada = { fonte: 'teste', favorece: ['tipo-que-nao-existe'], desfavorece: [] };
+    for (const [chave, esperado] of Object.entries(BASE)) {
+      const [b, n] = chave.split(':');
+      const e = elencoDoEstagio(kanto, b, Number(n), [nada]);
+      igual(JSON.stringify(dexes(e)), JSON.stringify(esperado),
+        `${chave} — uma preferência sem candidato inventou uma troca`);
+      igual(e.trocas.length, 0, `${chave} — sem troca, a explicação tem de estar vazia`);
+    }
+  });
+
+  s.teste('a regra do elenco tem VERSÃO, para a run antiga não mudar por baixo', () => {
+    ok(Number.isInteger(REGRA_DO_ELENCO) && REGRA_DO_ELENCO >= 1,
+      'a regra do elenco não tem versão. Sem ela, uma run começada antes do 1.33 passa ' +
+      'a ter outro elenco no meio — o cartão proíbe reprocessar em silêncio.');
   });
 
   return s;
