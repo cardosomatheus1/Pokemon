@@ -36,6 +36,19 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### E4 (metade A, servidor) — a posse de cosmético mora no servidor
+
+Tabelas `cosmetic_ownership` (só o ADQUIRIDO; o padrão é derivado do catálogo)
+e `cosmetic_equipped`, migração aditiva `posse-cosmetica-e4`.
+`server/cosmeticos.mjs` precifica e valida pelo MESMO catálogo da vitrine;
+`POST /api/cosmeticos/comprar` é UMA transação (débito, lançamento, posse —
+`aplicar` ganhou `antes`/`depois` dentro da transação), idempotente por chave
+e por posse; `equipar` exige posse; o traje passa pela mesma tabela. O plano
+de consumo dos baldes saiu para `planoDoGasto` no motor — o mesmo no cliente e
+no servidor. **ST-4.5 adiada** (o `comprado` no servidor não tem fonte até o
+dinheiro real existir). A metade B liga o cliente. CI: primeira execução no
+GitHub disparada no push do ST-0.6.
+
 ### O DONO DELEGOU AS DECISÕES DE PRODUTO — e a ST-1.2b fechou na primeira
 
 *"Eu acho que vc tem q tomar as decisões que vc achar melhor p software"* (25/09).

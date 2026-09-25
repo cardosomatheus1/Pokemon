@@ -79,7 +79,7 @@ export const ledgerDe = (db, userId) =>
  * reserva é uma coisa só: sai do disponível E entra no reservado, e separá-las
  * em dois lançamentos criaria um instante em que o dinheiro não está em lugar
  * nenhum. */
-function aplicar(db, { userId, linhas, ref, refTipo, idem, memo, agora }) {
+function aplicar(db, { userId, linhas, ref, refTipo, idem, memo, agora, antes = null, depois = null }) {
   for (const l of linhas) {
     if (!TIPOS.includes(l.tipo)) throw erro(ERRO_CARTEIRA.TIPO, `tipo desconhecido: ${l.tipo}`);
     if (!BUCKETS.includes(l.bucket)) throw erro(ERRO_CARTEIRA.BUCKET, `bucket desconhecido: ${l.bucket}`);
@@ -93,6 +93,14 @@ function aplicar(db, { userId, linhas, ref, refTipo, idem, memo, agora }) {
     if (idem) {
       const ja = db.prepare(`SELECT 1 FROM wallet_ledger WHERE idem_key = ?`).get(idem);
       if (ja) { db.exec('ROLLBACK'); return { ok: true, repetida: true }; }
+    }
+    /* `antes` e `depois` (E4, ST-4.2) rodam DENTRO da transação. `antes` pode
+       encerrar sem mexer em nada (devolve a resposta); `depois` grava o que o
+       dinheiro comprou — e se ele falhar, o débito volta junto. É o que faz a
+       compra ser UMA transação, e não um débito seguido de uma esperança. */
+    if (antes) {
+      const curto = antes(db);
+      if (curto !== undefined) { db.exec('ROLLBACK'); return curto; }
     }
 
     for (const [i, l] of linhas.entries()) {
@@ -117,6 +125,7 @@ function aplicar(db, { userId, linhas, ref, refTipo, idem, memo, agora }) {
              i === 0 ? (idem ?? null) : null,
              memo ?? null, agora);
     }
+    if (depois) depois(db);
     db.exec('COMMIT');
     return { ok: true };
   } catch (e) {
@@ -132,6 +141,18 @@ function aplicar(db, { userId, linhas, ref, refTipo, idem, memo, agora }) {
 const erro = (codigo, mensagem) => Object.assign(new Error(mensagem), { codigo });
 
 /* ── AS OPERAÇÕES ─────────────────────────────────────────────────────────*/
+
+/* ── UM GASTO EM VÁRIOS BALDES, COM O QUE ELE COMPRA NA MESMA TRANSAÇÃO (E4) ──
+ *
+ * `deltas` é o plano do motor (`planoDoGasto`): `{ bucket: -valor }`. Uma linha
+ * por balde, a chave só na primeira — o movimento é UM. */
+export function gastar(db, { userId, tipo, deltas, ref, refTipo, idem, memo, agora = Date.now(),
+                              antes = null, depois = null }) {
+  const linhas = Object.entries(deltas ?? {})
+    .filter(([, n]) => n < 0).map(([bucket, delta]) => ({ bucket, tipo, delta, reservaDelta: 0 }));
+  if (!linhas.length) return { ok: false, motivo: ERRO_CARTEIRA.VALOR };
+  return aplicar(db, { userId, linhas, ref, refTipo, idem, memo, agora, antes, depois });
+}
 
 export function creditar(db, { userId, tipo, bucket, valor, ref, refTipo, idem, memo, agora = Date.now() }) {
   if (!ehInteiroPositivo(valor)) return { ok: false, motivo: ERRO_CARTEIRA.VALOR };

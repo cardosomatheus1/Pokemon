@@ -1020,6 +1020,47 @@ export const MIGRACOES = [
     },
     desce: db => { db.exec(`DROP TABLE IF EXISTS sessoes_revogadas`); },
   },
+  {
+    nome: 'posse-cosmetica-e4',
+    /* A POSSE DE COSMÉTICO MORA NO SERVIDOR (E4 · INT-02).
+     *
+     * Só o que foi ADQUIRIDO: o padrão é derivado do catálogo, como no
+     * cliente — guardar o padrão congelaria o catálogo de hoje na conta de todo
+     * mundo, e uma peça que vira padrão amanhã não chegaria a ninguém.
+     *
+     * `origem` diz como veio. `npc` não está na lista de propósito: a roupa de
+     * um NPC nunca é do jogador, e o CHECK é a última linha disso.
+     *
+     * O EQUIPADO numa tabela à parte, um por slot: equipar é escolha, e posse
+     * é fato. Misturar faria "trocar de moldura" reescrever a linha que prova
+     * a compra.
+     *
+     * ADITIVA e com volta: descer apaga as duas; a posse volta a ser do
+     * navegador (o estado do ST-1.3, com a compra fechada com sessão). */
+    sobe: db => {
+      const familias = `'outfit','avatar','cena','moldura','efeito','arena'`;
+      db.exec(`
+        CREATE TABLE cosmetic_ownership (
+          user_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          familia      TEXT NOT NULL CHECK (familia IN (${familias})),
+          item_id      TEXT NOT NULL,
+          origem       TEXT NOT NULL CHECK (origem IN ('loja','fragmento','missao','concessao')),
+          adquirido_em INTEGER NOT NULL,
+          PRIMARY KEY (user_id, familia, item_id)
+        )`);
+      db.exec(`
+        CREATE TABLE cosmetic_equipped (
+          user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          familia TEXT NOT NULL CHECK (familia IN (${familias})),
+          item_id TEXT NOT NULL,
+          PRIMARY KEY (user_id, familia)
+        )`);
+    },
+    desce: db => {
+      db.exec(`DROP TABLE IF EXISTS cosmetic_equipped`);
+      db.exec(`DROP TABLE IF EXISTS cosmetic_ownership`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

@@ -240,19 +240,34 @@ export const disponivelPara = (w, proposito = 'aposta') =>
  * como saber qual delas está certa.
  */
 export function gastarCosmetico(w, valor, ref) {
-  if (!ehInteiroPositivo(valor)) return { ok: false, motivo: 'valor inválido' };
-  const cabe = disponivelPara(w, 'cosmetico');
-  if (valor > cabe) return { ok: false, motivo: `faltam ${valor - cabe}` };
+  const plano = planoDoGasto(w.disponivel, valor, 'cosmetico');
+  if (!plano.ok) return plano;
+  return lancar(w, 'COSMETIC_PURCHASE', { disponivel: plano.deltas }, ref);
+}
 
-  const deltas = { disponivel: {} };
+/* ── DE QUAIS BALDES SAI UM GASTO — puro, e o MESMO no cliente e no servidor ──
+ *
+ * Nasceu dentro do `gastarCosmetico` e saiu no E4 (ST-4.2): a compra de
+ * cosmético passou a acontecer no servidor, e duas ordens de consumo — uma
+ * aqui, outra lá — fariam o bônus sumir por caminhos diferentes conforme a
+ * porta. `disponivel` é `{ bucket: saldo }`; balde ausente vale zero. */
+export function planoDoGasto(disponivel, valor, proposito) {
+  if (!ehInteiroPositivo(valor)) return { ok: false, motivo: 'valor inválido' };
+  const d = disponivel ?? {};
+  /* A MESMA conta do `disponivelPara`: só os baldes da ordem de consumo — o
+     `pendente` nunca é gasto. */
+  const cabe = ORDEM_CONSUMO.filter(b => aceitaBalde(proposito, b))
+                            .reduce((a, b) => a + Math.max(0, d[b] ?? 0), 0);
+  if (valor > cabe) return { ok: false, motivo: `faltam ${valor - cabe}`, falta: valor - cabe };
+  const deltas = {};
   let falta = valor;
   for (const b of ORDEM_CONSUMO) {
     if (falta <= 0) break;
-    if (!aceitaBalde('cosmetico', b)) continue;
-    const usa = Math.min(falta, w.disponivel[b] ?? 0);
-    if (usa > 0) { deltas.disponivel[b] = -usa; falta -= usa; }
+    if (!aceitaBalde(proposito, b)) continue;
+    const usa = Math.min(falta, Math.max(0, d[b] ?? 0));
+    if (usa > 0) { deltas[b] = -usa; falta -= usa; }
   }
-  return lancar(w, 'COSMETIC_PURCHASE', deltas, ref);
+  return { ok: true, deltas };
 }
 
 export function reservar(w, valor, ref, proposito = 'aposta') {

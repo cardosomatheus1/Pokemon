@@ -654,5 +654,42 @@ export async function suite() {
       'um token forjado foi aceito para revogar');
   });
 
+  /* ── A POSSE DE COSMÉTICO PELA REDE (E4 · ST-4.1 a 4.3) ────────────────── */
+  s.teste('E4: a compra cobra o preço do CATÁLOGO — o `preco` do corpo é ignorado', async () => {
+    const { catalogo } = await import('../app/modules/cosmeticos.mjs');
+    const peca = catalogo().find(p => p.familia === 'moldura' && p.procedencia === 'loja');
+    await comServico(async ({ porta }) => {
+      const { sessao } = await conta(porta, 'comprador');
+      const antes = (await pedir(porta, '/api/carteira', { sessao })).corpo;
+      const soma = c => Object.entries(c.saldos ?? c).filter(([k]) => !k.startsWith('reservado'))
+        .reduce((a, [, v]) => a + (typeof v === 'number' ? v : 0), 0);
+      const r = await pedir(porta, '/api/cosmeticos/comprar', { metodo: 'POST', sessao,
+        corpo: { familia: 'moldura', id: peca.id, chaveIdem: 'clique-1', preco: 1 } });
+      igual(r.status, 200, `a compra respondeu ${r.status}: ${JSON.stringify(r.corpo)}`);
+      const depois = (await pedir(porta, '/api/carteira', { sessao })).corpo;
+      igual(soma(antes) - soma(depois), peca.preco,
+        'a compra não cobrou o preço do catálogo — o cliente escolheu quanto pagar');
+      const g = await pedir(porta, '/api/cosmeticos', { sessao });
+      ok(g.corpo.posse.includes(`moldura:${peca.id}`), 'a posse não voltou pela leitura');
+    });
+  });
+
+  s.teste('E4: equipar o que não é seu é 4xx com código, e o equipado fica', async () => {
+    const { catalogo } = await import('../app/modules/cosmeticos.mjs');
+    const livre = catalogo().find(p => p.familia === 'efeito' && p.procedencia === 'padrao');
+    const loja = catalogo().find(p => p.familia === 'efeito' && p.procedencia === 'loja');
+    await comServico(async ({ porta }) => {
+      const { sessao } = await conta(porta, 'vestidor');
+      igual((await pedir(porta, '/api/cosmeticos/equipar', { metodo: 'POST', sessao,
+        corpo: { familia: 'efeito', id: livre.id } })).status, 200, 'não equipou o padrão');
+      const r = await pedir(porta, '/api/cosmeticos/equipar', { metodo: 'POST', sessao,
+        corpo: { familia: 'efeito', id: loja.id } });
+      ok(r.status >= 400 && r.status < 500, `equipar sem posse respondeu ${r.status}`);
+      igual(r.corpo.codigo, 'nao_possui', 'a recusa não traz o código');
+      igual((await pedir(porta, '/api/cosmeticos', { sessao })).corpo.equipados.efeito, livre.id,
+        'a recusa mexeu no equipado');
+    });
+  });
+
   return s;
 }

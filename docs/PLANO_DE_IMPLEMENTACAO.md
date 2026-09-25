@@ -369,14 +369,14 @@ leva de graça. Hoje a posse vive só no navegador (`pa.cosmeticos.v1`,
 > dado com acervo** (tabela nova) e mexe em **valor econômico** (PokéCash). O
 > desenho abaixo é a recomendação; a migração só roda com veredito.
 
-### ST-4.1 · a tabela e a leitura
+### ST-4.1 · a tabela e a leitura — ✅ 25/09 (servidor)
 
 - **Porte** M · **Aceite:** `cosmetic_ownership(user_id, familia, item_id,
   origem, adquirido_em)` com chave primária nas três primeiras; `GET
   /api/cosmeticos` devolve posse e equipados; depois de `localStorage.clear()`,
   com sessão, a posse volta igual.
 
-### ST-4.2 · a compra atômica e idempotente
+### ST-4.2 · a compra atômica e idempotente — ✅ 25/09 (servidor; o cliente liga na metade B)
 
 - **Porte** M · **Depende de** ST-4.1, ST-4.5
 - **Aceite:** `POST /api/cosmeticos/comprar {familia, id, chaveIdem}` numa
@@ -385,18 +385,26 @@ leva de graça. Hoje a posse vive só no navegador (`pa.cosmeticos.v1`,
   lançamento; 2 pedidos simultâneos = 1 débito (Q8); preço **do catálogo do
   servidor** — `preco: 1` no corpo é ignorado; peça `padrao`/`npc` recusada.
 
-### ST-4.3 · equipar exige posse, conferida no servidor
+### ST-4.3 · equipar exige posse, conferida no servidor — 🟡 25/09: o servidor confere; falta o cliente (metade B)
 
 - **Porte** P · **Aceite:** equipar o que não se tem = 4xx com `codigo`, perfil
   intacto; `MODO_VITRINE` deixa de valer em modo servidor.
 
-### ST-4.4 · uma lista de posse só (L-157)
+### ST-4.4 · uma lista de posse só (L-157) — 🟡 25/09: no servidor o traje já é a mesma tabela; falta o cliente (metade B)
 
 - **Porte** P · **Aceite:** a família `outfit` passa pela mesma tabela; um traje
   marcado `loja` no teste, comprado, aparece em `vestiveis()` com
   `MODO_VITRINE=false`. Os 9 trajes seguem `padrao` (DEC-06 fora do escopo).
 
-### ST-4.5 · o balde `comprado` no servidor (fecha o 🟡 do 1.26)
+### ST-4.5 · o balde `comprado` no servidor (fecha o 🟡 do 1.26) — ⏸️ **ADIADA em 25/09, por decisão minha (delegação do dono)**
+
+> **Por quê:** no servidor NADA pode pôr dinheiro no `comprado` — não existe
+> rota de compra de PokéCash, e ela é dinheiro real (DEC-02, do dono). Criar o
+> balde agora exige reconstruir o `wallet_ledger` (tabela append-only com
+> gatilhos) para mudar um CHECK, e o risco dessa migração não compra nada hoje.
+> A regra de produto já está decidida (DEC-03: `comprado` herda linhagem e
+> nunca paga `poder`) e o motor já a tem (`engine/carteira.mjs`). **Destrava:**
+> o bloco que ligar a compra de PokéCash (COM-01).
 
 - **Porte** M · **Depende de** DEC-03
 - **Fato:** o motor tem o balde e o propósito `'poder'`; o servidor não

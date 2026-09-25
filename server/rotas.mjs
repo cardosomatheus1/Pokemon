@@ -41,6 +41,8 @@ import { agir, definirMargem, margemDaCasa, ERRO_ADMIN } from './admin.mjs';
 import { politicaMonetaria } from './politica.mjs';
 import { entrarOperador, lerSessaoAdmin, sairOperador } from './admin-auth.mjs';
 import { ERRO_LIGA, minhasPrevisoes, rankingDaTemporada, registrarPrevisao } from './liga.mjs';
+import { posseDe, equipadosDe, comprar as comprarCosmetico, equipar as equiparCosmetico,
+         ERRO_COSMETICO } from './cosmeticos.mjs';
 
 /* AS PÚBLICAS, e cada uma com motivo. Quem ainda não entrou precisa poder criar
    sessão; o estado da rodada é público por desenho (§4.5 — o commit tem que ser
@@ -107,6 +109,11 @@ const STATUS_DE = {
   [ERRO_APOSTA.SLOT]: 400,
   [ERRO_APOSTA.VALOR]: 400,
   [ERRO_APOSTA.SALDO]: 402,
+  /* E4: a boutique fala a mesma língua da aposta — falta de saldo é 402. */
+  [ERRO_COSMETICO.DESCONHECIDA]: 404,
+  [ERRO_COSMETICO.NAO_A_VENDA]: 409,
+  [ERRO_COSMETICO.NAO_POSSUI]: 403,
+  [ERRO_COSMETICO.CHAVE]: 400,
   [ERRO_APOSTA.TETO]: 400,
   [ERRO_APOSTA.CONTA]: 403,
   [ERRO_APOSTA.SEM_APOSTA]: 404,
@@ -240,6 +247,26 @@ export const ROTAS = {
      aparece, e não quando o cliente pede. A rota existe para o app poder
      mostrar a trilha logo no boot; chamá-la dez vezes é a mesma coisa que
      chamá-la uma, porque a linha é única por (conta, dia). */
+  /* --- a posse de cosmético (E4 · INT-02) ------------------------------
+     O cliente diz O QUE quer, nunca quanto custa: `comprar` não recebe preço,
+     e o corpo é lido campo a campo. Ver `server/cosmeticos.mjs`. */
+  'GET /api/cosmeticos': ({ db, userId }) =>
+    ({ corpo: { posse: posseDe(db, userId), equipados: equipadosDe(db, userId) } }),
+
+  'POST /api/cosmeticos/comprar': ({ db, corpo, userId, agora }) => {
+    const r = comprarCosmetico(db, { userId, familia: corpo?.familia, id: corpo?.id,
+                                     chaveIdem: corpo?.chaveIdem, agora });
+    if (!r.ok) return daExcecao({ codigo: r.codigo === 'saldo_insuficiente' ? ERRO_APOSTA.SALDO : r.codigo,
+                                  message: r.motivo });
+    return { corpo: { ...r, posse: posseDe(db, userId), saldos: saldos(db, userId) } };
+  },
+
+  'POST /api/cosmeticos/equipar': ({ db, corpo, userId }) => {
+    const r = equiparCosmetico(db, { userId, familia: corpo?.familia, id: corpo?.id ?? null });
+    if (!r.ok) return daExcecao({ codigo: r.codigo, message: r.motivo });
+    return { corpo: r };
+  },
+
   /* O SAIR (ST-1.2b, DEC-07): revoga o token que chegou, e só ele. Rota
      PRIVADA de propósito — sem sessão válida não há o que revogar, e o 401 é
      a resposta certa para quem tenta sair duas vezes. */
