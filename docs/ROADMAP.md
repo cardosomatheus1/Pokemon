@@ -261,6 +261,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **L-187** · a luta sai da borda do mundo | 25/09 | a borda segurava a câmera (35 px de folga a 420 px) · pé do mob 97% → 69% · S1169–S1171 · captura `tools/previas/_idle/run-estreito.png` |
 | **ST-7.1b** · a cópia do banco, conferida e restaurada | 25/09 | cópia adulterada é recusada antes de tocar o destino · esquema antigo sobe · S1164–S1168 |
 | **ST-7.1a** · a telemetria mínima do piloto (OBS-01) | 25/09 | reenviar não duplica (índice único) · o cliente só relata o que só ele sabe · retenção D1/D7 por coorte no painel · S1151–S1163 |
 | **1.27f** · o cartão da equipe | 16/09 | Q2 998/998 · capturas em `tools/previas/_cartao/` |
@@ -292,7 +293,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | 2 | ~~**INT-01**~~ | ✅ fechado em 25/09 (ST-1.1, 3.1 a 3.5). Sobra a **ST-3.6** (calibrar a emissão) — a **DEC-14** foi decidida (rendimento decrescente), e ela entra depois do INT-02 | — | integridade de economia vem antes de calibrar quantidade |
 | 3 | ~~**INT-02**~~ ✅ 25/09 · ST-4.1 a 4.4 + ST-1.2b (a **ST-4.5** ficou adiada: o `comprado` no servidor não tem fonte até existir dinheiro real) | cosméticos e outfit entre dispositivos (L-157, L-055); o Sair revoga no servidor (DEC-07); saldo comprado não compra poder (DEC-03) | compra e equipar não podem depender do navegador |
 | 4 | ~~**ST-3.6**~~ ✅ 25/09 · a emissão do Avanço decresce por run no mesmo dia | L-185 (DEC-14) | integridade de economia antes de enfeite |
-| 5 | **1.27g · UX-01** (resto) + o bloco do CENÁRIO · ~~ST-5.6~~ ✅, ~~ST-2.4~~ ✅, ~~D-110~~ ✅, 5.8 | L-175 ✅ (DEC-15), L-184 ✅, L-187 🟡, D-086 (não reproduzido) — o jato (L-186, ST-5.5b) fechou; o banner (D-082), o `est:` cru (L-160), a base visual (D-093), os números de dano (L-172, ST-5.4) e a carga e o projétil (L-171, ST-5.5) fecharam; os 404 (L-176) esperam o dono commitar os dois arquivos | o que impede ENTENDER a ação vem antes do que a enfeita |
+| 5 | **1.27g · UX-01** (resto) + o bloco do CENÁRIO · ~~ST-5.6~~ ✅, ~~ST-2.4~~ ✅, ~~D-110~~ ✅, 5.8 | L-175 ✅ (DEC-15), L-184 ✅, L-187 ✅, L-188 (o panorâmico), D-086 (não reproduzido) — o jato (L-186, ST-5.5b) fechou; o banner (D-082), o `est:` cru (L-160), a base visual (D-093), os números de dano (L-172, ST-5.4) e a carga e o projétil (L-171, ST-5.5) fecharam; os 404 (L-176) esperam o dono commitar os dois arquivos | o que impede ENTENDER a ação vem antes do que a enfeita |
 | 5b | ~~**ST-7.1**~~ ✅ 25/09 · telemetria mínima e restauração | a (eventos, retenção D1/D7) e b (`node tools/banco-copia.mjs copiar / conferir / restaurar`) | antecipada: o piloto (ST-7.2) só mede o que já estiver sendo gravado quando ele começar |
 | 6 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
 | — | **E6** · higiene documental | ST-6.1 a 6.4 | não é código: corre em paralelo, um commit por story |

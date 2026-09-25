@@ -1344,5 +1344,43 @@ export function suite() {
       'o idle-mundo não mira pelo foco suavizado da luta — a câmera segue o treinador');
     ok(/camera\(focoCam, W, H, mundoW, mundoH\)/.test(t), 'a câmera não usa o foco calculado');
   });
+
+  /* ══ L-187 · A BORDA DO MUNDO SEGURAVA A CÂMERA ═══════════════════════
+   * Medido com a sonda a 420 px: mundo de 448 de altura, janela de 413 — a
+   * câmera tem 35 px de folga vertical, queria estar em y=142 e ficava presa
+   * em 35. A luta acontecia no último quarto do MAPA, e nenhuma câmera centra
+   * o que está na borda. Na run, o treinador não desce abaixo da linha que a
+   * câmera presa no fundo ainda mostra em TETO_DA_LUTA da janela. */
+  s.teste('L-187: na run o treinador não desce abaixo do que a câmera presa ainda mostra alto', async () => {
+    const { areaDaLuta, camera, TETO_DA_LUTA } = await import('../app/modules/vida.mjs');
+    const area = { x0: 12, x1: 680, y0: 19, y1: 414 };
+    for (const viewH of [413, 221, 207]) {
+      const a = areaDaLuta(area, { mundoH: 448, viewH });
+      const cam = camera({ x: 0, y: a.y1 }, 260, viewH, 704, 448);
+      const naJanela = (a.y1 - cam.y) / viewH;
+      ok(naJanela <= TETO_DA_LUTA + 0.01,
+        `janela de ${viewH}: o treinador no fundo da área fica a ${Math.round(naJanela * 100)}% da altura — ` +
+        'o bando, que luta abaixo dele, encosta na borda (L-187)');
+      igual(a.x0, area.x0); igual(a.x1, area.x1, 'a área da luta mexeu na jornada horizontal');
+      igual(a.y0, area.y0, 'a área da luta mexeu no topo');
+    }
+    ok(TETO_DA_LUTA > 0.4 && TETO_DA_LUTA < 0.8, `TETO_DA_LUTA = ${TETO_DA_LUTA} não é um teto`);
+  });
+
+  s.teste('L-187: a área da luta nunca some, e entrada ruim não a estraga', async () => {
+    const { areaDaLuta } = await import('../app/modules/vida.mjs');
+    const area = { x0: 12, x1: 680, y0: 19, y1: 414 };
+    /* O piso só morde quando o topo da área já é baixo: é aí que o corte
+       deixaria o passeio numa faixa fina rente ao próprio topo. */
+    for (const a of [area, { x0: 12, x1: 680, y0: 200, y1: 414 }]) {
+      const vista = areaDaLuta(a, { mundoH: 448, viewH: 2000 });
+      ok(vista.y1 - vista.y0 >= (a.y1 - a.y0) / 2,
+        `área ${a.y0}–${a.y1}: com a janela maior que o mundo ela encolheu para ${vista.y1 - vista.y0} px — o passeio vira uma linha`);
+    }
+    for (const ruim of [{}, { mundoH: 448 }, { mundoH: NaN, viewH: 413 }, { mundoH: 448, viewH: 0 }])
+      igual(JSON.stringify(areaDaLuta(area, ruim)), JSON.stringify(area), `entrada ${JSON.stringify(ruim)} mexeu na área`);
+    const t = readFileSync(new URL('../app/modules/idle-mundo.mjs', import.meta.url), 'utf8');
+    ok(/areaDaLuta\(trechoDaWave\(/.test(t), 'o idle-mundo não aplica a área da luta ao trecho da wave');
+  });
   return s;
 }

@@ -7703,6 +7703,17 @@ export const DEFEITOS = [
     para:'  try { db.exec(\'PRAGMA foreign_keys = ON\'); versao = versaoLida(db); }' },
 
   /* ── L-187 · na luta, a câmera centra no trio ──────────────────────── */
+  { id:'S1169', arquivo:'app/modules/vida.mjs', nome:'a luta volta a descer ate a borda do mundo',
+    real:'a 420 px a camera fica presa 35 px acima do fundo e o bando encosta na borda da janela (L-187)',
+    de:'  return { ...area, y1: Math.round(Math.max(piso, Math.min(area.y1, limite))) };',
+    para:'  return { ...area, y1: Math.round(Math.max(piso, area.y1)) };' },
+  { id:'S1170', arquivo:'app/modules/vida.mjs', nome:'a area da luta perde o piso',
+    real:'com a janela maior que o mundo o passeio vira uma linha rente ao topo',
+    de:'  const piso = area.y0 + (area.y1 - area.y0) / 2;', para:'  const piso = area.y0;' },
+  { id:'S1171', arquivo:'app/modules/idle-mundo.mjs', nome:'a run deixa de aplicar a area da luta',
+    real:'o corte existe e ninguem o chama — a luta volta ao ultimo quarto do mapa',
+    de:'      ? areaDaLuta(trechoDaWave(areaCheia, cenaAgora.wave, WAVES), { mundoH, viewH: H })',
+    para:'      ? trechoDaWave(areaCheia, cenaAgora.wave, WAVES)' },
   { id:'S1145', arquivo:'app/modules/avanco-geometria.mjs', nome:'na luta a camera volta a seguir so o treinador',
     real:'o bando mora no fundo da janela, com a placa encostando na borda (L-187)',
     de:'  (emLuta ? postoDoCompanheiro(eu, mundo) : { x: eu.x, y: eu.y });',

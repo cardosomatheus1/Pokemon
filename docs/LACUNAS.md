@@ -8253,7 +8253,14 @@ a emissão real. Minha recomendação: **(b)** — preserva a sessão curta do c
 
 **Registrada em:** 25/09/2026, no passo OLHAR da ST-5.6, pela regra "o cenário
 do idle nunca está pronto". **Bloco dono:** o do CENÁRIO (o mesmo da ST-2.4).
-**Estado:** 🟡 parcial (25/09/2026) — na luta a câmera mira o posto do
+**Estado:** ✅ fechada em 25/09/2026 (bloco do CENÁRIO) — a hipótese da borda
+conferiu: com a sonda, a 420 px o mundo tem 448 de altura e a janela 413; a
+câmera queria y=142 e ficava presa em 35. Na run, `areaDaLuta` (`vida.mjs`)
+sobe o fundo da área andável até a linha que a câmera presa ainda mostra a
+62% da janela (`TETO_DA_LUTA`). Pé do mob mais baixo, mediana de 8: **97% →
+69%** (59–75). S1169–S1171. O panorâmico ficou para a **L-188**.
+
+*Estado anterior:* 🟡 parcial (25/09/2026) — na luta a câmera mira o posto do
 companheiro (o meio do trio) e chega lá suavizada (`focoDaCamera`,
 `aproximarFoco`). Medido pela esteira, mediana de 8 amostras a 420 px: o pé do
 mob mais baixo foi de **96%** da altura da janela (91–97) para **88%** (87–89).
@@ -8269,3 +8276,18 @@ placa do mob de baixo encosta na borda. **O que a destrava:** a câmera da run
 centrar no meio do trio (treinador, companheiro, bando), com a mesma
 suavização da câmera de hoje. Conta pura, como o `zoomDaRun`.
 
+
+### L-188 — no panorâmico o bando ainda aparece rente ao fundo da janela
+
+**Registrada em:** 25/09/2026, no passo OLHAR do fecho da L-187. **Bloco
+dono:** o do CENÁRIO. **Estado:** aberto.
+
+Medido com a esteira a 1920 px: a janela da run tem só 207 px de mundo de
+altura (escala 3), a câmera está LIVRE (não presa na borda: queria 180–212,
+máximo 241), e mesmo assim o pé do mob mais baixo sai em mediana **97%** da
+altura (70–106%). Só 4 amostras com moldura — pode ser a investida, e por isso
+está aqui e não em DEFEITOS. **Hipótese:** com 207 px de altura, o foco no
+posto do companheiro deixa o bando (que luta ABAIXO dele) a ~100 px do centro;
+o foco precisaria descer para o meio entre o companheiro e o bando. **O que a
+destrava:** a esteira medir com mais amostras em luta (não na investida) e,
+confirmado, o `focoDaCamera` mirar o centro da luta inteira.

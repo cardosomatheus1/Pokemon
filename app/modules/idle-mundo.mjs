@@ -25,7 +25,7 @@ import { bloqueiosDecor } from './decoracao.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 
 import { folhaVestida, porId, carregar as carregarGuardaRoupa } from './outfit-acervo.mjs';
-import { areaAndavel, passeio, companheiro, quadroDe, camera } from './vida.mjs';
+import { areaAndavel, areaDaLuta, passeio, companheiro, quadroDe, camera } from './vida.mjs';
 /* O TRECHO DA WAVE (L-164): a jornada progressiva. Ver o cabeçalho de lá. */
 import { trechoDaWave, focoDaCamera, aproximarFoco } from './avanco-geometria.mjs';
 import { WAVES } from '../../engine/wave.mjs';
@@ -385,7 +385,7 @@ async function laçoDoAtor(t) {
        passeio da aba de escolha é o que o jogador vê a maior parte do tempo,
        e ele não tem wave nenhuma para seguir. */
     const area = cenaAgora
-      ? trechoDaWave(areaCheia, cenaAgora.wave, WAVES)
+      ? areaDaLuta(trechoDaWave(areaCheia, cenaAgora.wave, WAVES), { mundoH, viewH: H })
       : areaCheia;
     /* `vistas: 1` é o traje que só tem a frente. Ver `vida.mjs` e L-074: sem
        desenho de perfil, o passeio passa a ser vertical em vez de o boneco

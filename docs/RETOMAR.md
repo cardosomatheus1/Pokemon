@@ -36,6 +36,16 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### L-187 FECHADA — a luta saiu da borda do mundo
+
+A hipótese conferiu com uma sonda: a 420 px o mundo tem 448 de altura e a
+janela 413 — a câmera tinha 35 px de folga, queria y=142 e ficava presa em 35.
+Nenhuma câmera centra o que está na borda; o que resolve é a luta não
+acontecer lá. Na run a área andável não desce abaixo da linha que a câmera
+presa ainda mostra a 62% da janela. Pé do mob mais baixo: 97% → 69%. A
+captura mostra a luta no meio do palco, com as placas legíveis. O panorâmico
+ainda põe o bando rente ao fundo com a câmera LIVRE — registrado como L-188.
+
 ### ST-7.1b FECHADA — o banco do piloto tem cópia, e a cópia volta
 
 `node tools/banco-copia.mjs copiar` tira um instante consistente com o

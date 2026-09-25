@@ -314,3 +314,29 @@ export function camera(alvo, viewW, viewH, mundoW, mundoH) {
   const y = Math.round(Math.min(Math.max(alvo.y - viewH / 2, 0), Math.max(0, mundoH - viewH)));
   return { x, y };
 }
+
+/* ── NA RUN, A LUTA NÃO DESCE PARA ONDE A CÂMERA NÃO ALCANÇA (L-187) ───────
+ *
+ * A câmera para nas bordas, e isso é certo (ver acima). O custo aparece quando
+ * a janela é quase do tamanho do mundo: medido a 420 px, 413 de janela num
+ * mundo de 448 deixam 35 px de folga vertical — a câmera queria y=142 para
+ * centrar a luta, e ficava presa em 35. A luta acontecia no último quarto do
+ * MAPA, e o bando, que luta ABAIXO do treinador, encostava na borda da janela.
+ *
+ * Mirar melhor não resolvia: nenhuma câmera centra o que está na borda do
+ * mundo. O que resolve é a luta não acontecer lá. Na run, o fundo da área
+ * andável sobe até a linha que a câmera presa no fundo ainda mostra a
+ * `TETO_DA_LUTA` da altura da janela — e sobra embaixo o espaço do bando.
+ *
+ * Em tela larga a folga da câmera é grande e o corte é pequeno; a regra é a
+ * mesma nas duas, porque ela fala da JANELA, e não de uma largura escolhida.
+ * Nunca corta mais que metade da área: com a janela maior que o mundo, o
+ * passeio continuaria sendo passeio, e não uma linha. */
+export const TETO_DA_LUTA = 0.62;
+
+export function areaDaLuta(area, { mundoH, viewH } = {}) {
+  if (!(Number(mundoH) > 0) || !(Number(viewH) > 0)) return area;
+  const limite = Math.round(mundoH - Math.min(viewH, mundoH) * (1 - TETO_DA_LUTA));
+  const piso = area.y0 + (area.y1 - area.y0) / 2;
+  return { ...area, y1: Math.round(Math.max(piso, Math.min(area.y1, limite))) };
+}
