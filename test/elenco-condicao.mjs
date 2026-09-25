@@ -13,7 +13,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
-import { preferenciasDaRun, preferenciasDaPrevia } from '../app/modules/elenco-condicao.mjs';
+import { preferenciasDaRun, preferenciasDaPrevia, eventosDoElenco } from '../app/modules/elenco-condicao.mjs';
 import { climaDaRun } from '../app/modules/avanco-clima.mjs';
 import { REGRA_DO_ELENCO } from '../engine/elenco-estagio.mjs';
 import { resumoDaRota } from '../app/modules/idle-escolha.mjs';
@@ -151,6 +151,51 @@ export function suite() {
        deixou o defeito passar na sabotagem. */
     ok(/\}\s*\.rotaNoite\{[^}]*z-index:1[^}]*box-shadow:/.test(css),
       'a regra `.rotaNoite{}` sumiu do CSS — o anel e a subida sobre o vizinho não existem');
+  });
+
+  /* ══ 1.32b / ST-2.2 · A RUN DIZ QUEM A CONDIÇÃO TROUXE ══════════════════
+   *
+   * O clima é revelado no início (o cartão e a linha do log, desde o 1.32), e
+   * o 1.33 fez ele mudar QUEM aparece. Faltava ligar as duas coisas: sem a
+   * linha, o rosto novo parece sorte, e o jogador não aprende a regra que a
+   * legenda da sala ensinou. Semente medida: a `raiz: 'r9'` de dia na Floresta
+   * cai em Pólen, que troca um rosto no estágio 1. */
+  const DIA = brasilia(12);
+  s.teste('1.32b: a run diz quem a condição trouxe, e o elenco é o do motor', () => {
+    const r = run(12, { raiz: 'r9' });
+    igual(climaDaRun(kanto, r)?.key, 'polen', 'a semente medida mudou de clima — o teste perdeu o que medir');
+    const ev = eventosDoElenco(kanto, r, DIA);
+    igual(ev.length, 1, `o Pólen troca um rosto na Floresta e a run disse ${ev.length}`);
+    const e0 = ev[0];
+    igual(e0.tipo, 'elenco');
+    igual(e0.fonte, 'polen');
+    ok(e0.fonteNome === 'Pólen' && e0.emoji, `a linha não diz de onde veio a troca: ${JSON.stringify(e0)}`);
+    const efetivo = elencoDaRun(kanto, r);
+    ok((efetivo.comuns ?? []).some(x => x.dex === e0.entrou),
+      'a linha anuncia um rosto que o elenco efetivo da run não tem');
+    ok(!(efetivo.comuns ?? []).some(x => x.dex === e0.saiu), 'quem saiu continua no elenco');
+  });
+
+  s.teste('1.32b: sem troca, sem linha — tempo firme de dia não inventa novidade', () => {
+    for (let i = 0; i < 40; i++) {
+      const r = run(12, { raiz: 'r' + i });
+      const trocou = (elencoDaRun(kanto, r).trocas ?? []).length;
+      igual(eventosDoElenco(kanto, r, DIA).length, trocou,
+        `semente r${i}: ${trocou} troca(s) no motor e outra contagem no log`);
+    }
+  });
+
+  s.teste('1.32b: a noite também se anuncia, com o nome da noite', () => {
+    const r = run(23);
+    const ev = eventosDoElenco(kanto, r, brasilia(23));
+    ok(ev.some(x => x.fonte === 'noite' && /noite/i.test(x.fonteNome)),
+      `a troca da noite não foi anunciada: ${JSON.stringify(ev)}`);
+  });
+
+  s.teste('1.32b: run antiga não anuncia troca — ela não troca', () => {
+    const antiga = run(23); delete antiga.regraElenco;
+    igual(eventosDoElenco(kanto, antiga, brasilia(23)).length, 0,
+      'a run de antes do 1.33 ganhou linha de troca que ela não teve');
   });
 
   return s;

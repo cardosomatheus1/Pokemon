@@ -41,7 +41,7 @@ import { aplicarClima } from '../../engine/clima-idle.mjs';
    a 567 das 600 linhas. A divisão é por responsabilidade: aqui é o que a run
    FAZ, lá é o que o tempo faz com ela. */
 import { climaDaRun, leituraDoClima, ritmoDoClima, falaDoClima } from './avanco-clima.mjs';
-import { preferenciasDaRun } from './elenco-condicao.mjs';
+import { preferenciasDaRun, eventosDoElenco } from './elenco-condicao.mjs';
 import { semente } from '../../engine/instancia.mjs';
 import { repertorio } from '../../engine/repertorio.mjs';
 
@@ -219,6 +219,9 @@ export function comecarAvanco(e, { pack, bioma, estagio, equipe, agora, raiz = n
       frase: f.frase, pct: f.pct,
     }];
   }
+  /* E QUEM A NOITE OU O CLIMA TROUXE (1.32b): uma linha por troca, logo depois
+     da do clima — é ela que liga o bônus revelado ao rosto novo na wave. */
+  e.run.eventos = [...(e.run.eventos ?? []), ...eventosDoElenco(pack, e.run, agora)];
 
   salvar(e);
   return e.run;

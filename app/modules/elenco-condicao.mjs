@@ -35,7 +35,7 @@
  * seria o clima vazando pelo elenco. */
 import { periodoEm, relogioDoMundo } from './hora-do-dia.mjs';
 import { climaDaRun } from './avanco-clima.mjs';
-import { REGRA_DO_ELENCO } from '../../engine/elenco-estagio.mjs';
+import { REGRA_DO_ELENCO, elencoDoEstagio } from '../../engine/elenco-estagio.mjs';
 
 function daNoite(pack, instante) {
   const noite = pack?.preferenciasDaNoite;
@@ -64,4 +64,27 @@ export function preferenciasDaRun(pack, run) {
 export function preferenciasDaPrevia(pack, agora) {
   const n = daNoite(pack, agora);
   return n ? [n] : [];
+}
+
+/* ── A RUN DIZ QUEM A CONDIÇÃO TROUXE (1.32b / ST-2.2) ────────────────────
+ *
+ * O clima é revelado no início da run desde o 1.32, e o 1.33 fez ele mudar
+ * QUEM aparece. Sem ligar as duas coisas, o rosto novo parece sorte — e a
+ * regra que a legenda da sala ensina nunca é vista acontecendo. Uma linha por
+ * troca, e só quando há troca: a run de tempo firme não inventa novidade.
+ *
+ * As trocas são as do MOTOR (`elencoDoEstagio(...).trocas`), com as mesmas
+ * preferências que montam o elenco da run: a linha não pode anunciar um rosto
+ * que a run não tem. O nome da fonte vem do pack (o clima) ou é "a noite". */
+export function eventosDoElenco(pack, run, agora) {
+  const prefs = preferenciasDaRun(pack, run);
+  if (!prefs.length) return [];
+  const trocas = elencoDoEstagio(pack, run.bioma, run.estagio, prefs)?.trocas ?? [];
+  const clima = climaDaRun(pack, run);
+  return trocas.map(t => {
+    const daNoite = t.fonte === 'noite';
+    return { tipo: 'elenco', em: agora, fonte: t.fonte, entrou: t.entrou, saiu: t.saiu,
+             fonteNome: daNoite ? 'A noite' : (clima?.key === t.fonte ? clima.name : t.fonte),
+             emoji: daNoite ? '🌙' : (clima?.key === t.fonte ? clima.emoji : '') };
+  });
 }

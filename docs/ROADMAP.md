@@ -265,6 +265,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | **T9 · T10 · T13 · T11a** · o arnês | 16/09 | portão de 7 h para 3 min com a árvore intocada |
 | **1.34** · dia, tarde e noite | 25/09 | Q2 1017/1017 · suíte 2184/2184 · capturas em `tools/previas/_hora/` |
 | **1.33** · o elenco muda com a hora e o clima | 25/09 | 18 de 44 estágios mudam à noite · Q2 e suíte no commit · capturas `tools/previas/_hora/sala-*` |
+| **1.32b · ST-2.1 · ST-2.2** · os climas à vista (fecha a L-177) | 25/09 | legenda por estágio, perguntada ao motor · a run diz quem a condição trouxe · S1057–S1063 · capturas `tools/previas/_climas/` |
 | **ST-1.2 · ST-1.3** · o Sair desloga; a boutique não vende sem cobrar (D-109, D-108) | 25/09 | `sair.mjs` em camada 0 · `podeComprar` com `contaOnline` · S1050–S1056 |
 | **ST-1.1** · o teto sente a run colhida (D-107) | 25/09 | 6 testes · S1044–S1049 · reserva até a colheita |
 | **T14** · os testes em minutos | 25/09 | `npm test` 6 min 10 s → 1 min 45 s · `repetir` 2/2 · Q2 do bloco 39/39 em 13 min · pedido do dono |
@@ -277,7 +278,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | # | bloco | o que é | por que aqui |
 |---|---|---|---|
-| 1 | **1.32b** · mostrar que climas existem | L-177, e a L-183 (o veterano quase não vê a noite) | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto. A prévia da NOITE já está na sala desde o 1.33 |
+| 1 | **1.32b (resto)** · ST-2.3: o veterano vê a noite | L-183 — a L-177 fechou (ST-2.1/2.2) | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto. A prévia da NOITE já está na sala desde o 1.33 |
 | 2 | **INT-01** · recompensas que não duplicam | da Revisão 2.0: Estilhaço no baú (L-159), reservas, resgate concorrente | integridade de economia vem antes de calibrar quantidade |
 | 3 | **INT-02** · uma posse confiável | cosméticos e outfit entre dispositivos (L-157, L-055) | compra e equipar não podem depender do navegador |
 | 4 | **1.27g · UX-01** · efeitos e leitura da luta | L-171, L-172, L-175, L-176 | o que impede ENTENDER a ação vem antes do que a enfeita |

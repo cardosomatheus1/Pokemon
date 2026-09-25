@@ -228,6 +228,11 @@ const ROTULO = {
                   icone: ev.emoji || '🌤',
                   texto: `${ev.nome} — ${ev.frase}`,
                   qtd: ev.pct > 0 ? '+' + ev.pct + '%' : '' }),
+  /* 1.32b: quem a noite ou o clima trouxe para ESTA run. A frase é curta de
+     propósito — o nome da fonte e os dois rostos; o porquê está na legenda. */
+  elenco: ev => ({ classe: 'venceu', icone: carinha(ev.entrou),
+                   texto: `${ev.emoji ? ev.emoji + ' ' : ''}${ev.fonteNome} trouxe ${nome(ev.entrou)}` +
+                          ` no lugar de ${nome(ev.saiu)}` }),
   npc: ev => ({ classe: ev.venceu ? 'venceu' : 'perdeu', icone: '👤',
                 texto: `${ev.nome ?? 'Treinador'} — ${ev.venceu ? 'vitória' : 'derrota'}`,
                 qtd: ev.xp ? '+' + ev.xp + ' XP' : '' }),

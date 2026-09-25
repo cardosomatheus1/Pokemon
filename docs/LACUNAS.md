@@ -7736,10 +7736,20 @@ Agora eles saem contados e **com nome**.
 
 ---
 
-### L-177 — o jogador não sabe QUE CLIMAS EXISTEM antes de escolher a equipe
+### L-177 — o jogador não sabe QUE CLIMAS EXISTEM antes de escolher a equipe ✅ FECHADA
 
 **Registrada em:** 10/09/2026, consequência do 1.32. **Bloco dono:** 1.32b.
-**Estado:** aberta.
+**Estado:** ✅ **FECHADA em 25/09/2026, no 1.32b (ST-2.1 e ST-2.2).**
+
+> **O que foi construído:** a sala de rotas tem a legenda dos climas (fechada
+> por padrão) — nome, faixa de frequência, o bônus, e **em quantas rotas do
+> estágio do jogador o elenco troca um rosto**, perguntado ao motor rota por
+> rota (`app/modules/climas-legenda.mjs`). O Sol diz "não muda quem aparece",
+> porque não muda em estágio nenhum. A legenda não recebe nada da run: o clima
+> sorteado continua oculto até ela começar. E ao começar, o log diz quem a
+> condição trouxe — "🌼 Pólen trouxe Paras no lugar de Metapod". Capturas em
+> `tools/previas/_climas/`. A L-183 (o veterano quase não vê a noite) segue
+> aberta: é a ST-2.3, decisão de conteúdo.
 
 O clima é revelado ao ENTRAR na run, e essa decisão está certa — é a mesma da
 Arena, e o motivo está escrito no `avanco-clima.mjs`: sabido antes, a escolha de

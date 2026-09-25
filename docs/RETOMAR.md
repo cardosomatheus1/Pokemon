@@ -36,6 +36,21 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### 1.32b (ST-2.1 e ST-2.2) FECHADO — os climas à vista, e a L-177 caiu
+
+A sala de rotas ganhou a legenda dos climas, fechada por padrão. Cada clima diz
+o bônus e **em quantas rotas do SEU estágio ele troca um rosto** — o motor é
+perguntado rota por rota, e o Sol diz "não muda quem aparece" porque não muda
+em estágio nenhum (medido). A legenda não recebe nada da run: o clima sorteado
+continua oculto. Quando a run começa, o log diz **"🌼 Pólen trouxe Paras no
+lugar de Metapod"**. Olhado nas quatro larguras (`tools/previas/_climas/`).
+A sabotagem achou um teste que faltava (S1063: ninguém conferia que o começo da
+run GRAVA a linha) — escrito. Sobra do 1.32b a ST-2.3 (L-183), que é conteúdo.
+
+**E o T14b:** o Q2 de bloco de produto estava levando ~1 h porque a onda 1
+subia Chromium para todo defeito novo de `app/`. Consertado: o Q2 da ST-1.1
+caiu para 2 min 22 s.
+
 ### ST-1.2 e ST-1.3 FECHADAS — o Sair desloga; a boutique não vende sem cobrar
 
 **D-109 corrigido:** a decisão saiu do `onclick` para `app/modules/sair.mjs`

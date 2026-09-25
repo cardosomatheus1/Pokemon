@@ -5636,6 +5636,23 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 .rotaNoite::after{content:'';position:absolute;right:-1px;top:-2px;width:6px;height:6px;
   border-radius:50%;box-shadow:-2px 1px 0 0 #f1edff}
 .rotaNoiteAviso{display:block;margin-top:4px;color:#b9a8ff}
+/* ── A LEGENDA DOS CLIMAS (1.32b) ─────────────────────────────────────────
+   Consulta dentro da sala: a mesma voz miúda da régua, e o nome do clima no
+   acento do tema. Duas colunas no largo, uma no estreito — a frase do elenco
+   é a linha que decide, e ela não pode quebrar em três. */
+.climaLegenda{margin:8px 0 0;font-size:.72rem;color:var(--ink2)}
+.climaLegenda summary{cursor:pointer;color:var(--txt);font-weight:600;letter-spacing:.02em}
+.climaLegenda summary u{text-decoration:none;font-weight:400;opacity:.7;margin-left:6px}
+.climaLista{list-style:none;margin:8px 0 0;padding:0;display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px 14px}
+.climaLista li{display:grid;grid-template-columns:22px 1fr;column-gap:6px;align-items:start;
+  padding:5px 7px;border-radius:6px;background:rgba(255,255,255,.035);
+  border-left:2px solid var(--gold)}
+.climaLista .clEmoji{grid-row:span 3;font-size:1rem;line-height:1.2}
+.climaLista b{color:var(--gold)}
+.climaLista em{font-style:normal;opacity:.65;margin-left:6px;font-size:.66rem}
+.climaLista .clElenco{color:#b9a8ff;font-size:.66rem}
+.climaLista .clElenco.nada{color:var(--ink2);opacity:.6}
 
 /* ── A DOBRA DO CARTÃO — L-164 ────────────────────────────────────────────
    Controle de LEITURA, e o desenho diz isso: fantasma, pequeno, encostado à
@@ -6771,6 +6788,16 @@ body.tremeTela{animation:tremeTela .7s ease-out}
            cartões dizendo "pede nv 31" não ajudam a escolher nada. Uma frase
            serve as onze; o cartão fica com o que DIFERE. -->
       <p class="tiny rotaRegua" id="idleRotaRegua"></p>
+      <!-- OS CLIMAS QUE PODEM CAIR (1.32b, L-177). O da run continua oculto até
+           ela começar: saber QUAL estragaria a escolha de equipe; saber QUAIS
+           existem é o que faz o bônus, quando cai, ser reconhecido. Fechado por
+           padrão — é consulta, não é o assunto da sala. O <details> é estático
+           de propósito: repintar a lista não fecha o que o jogador abriu. -->
+      <details class="climaLegenda" id="idleClimas">
+        <summary>Os climas que podem cair numa run
+          <u>o da sua só aparece quando ela começa</u></summary>
+        <ul class="climaLista" id="idleClimasLista"></ul>
+      </details>
       <div id="idleBiomas" style="margin-top:12px"></div>
       <p class="tiny">Cada rota tem o próprio elenco e o próprio item. A pedra que
          uma criatura precisa para evoluir cai num lugar só — é isso que faz

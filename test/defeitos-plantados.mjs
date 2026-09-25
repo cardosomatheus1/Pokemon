@@ -2180,6 +2180,38 @@ export const DEFEITOS = [
     return { pode: false, peca, motivo: 'você já tem esta peça' };
   if (false)` },
 
+  /* ── 1.32b · OS CLIMAS À VISTA (ST-2.1, ST-2.2) ──────────────────────
+     A legenda mente de três jeitos (lista própria, frase fixa, estágio
+     errado) e vaza de um (ler a run); a linha da run mente de dois. */
+  { id:'S1057', arquivo:'app/modules/climas-legenda.mjs', nome:'a legenda para de perguntar ao motor e promete troca',
+    real:'o Sol diz que traz rosto novo e nao traz nenhum, em estagio nenhum',
+    de:"  if (!item.rotasQueMudam) return 'não muda quem aparece no seu estágio';",
+    para:"  if (false) return 'não muda quem aparece no seu estágio';" },
+  { id:'S1058', arquivo:'app/modules/climas-legenda.mjs', nome:'a legenda ignora o estagio do jogador',
+    real:'a Nevasca diz o mesmo no estagio 1 e no 3 — a frase deixa de ser sobre onde o jogador esta',
+    de:'        if ((elencoDoEstagio(pack, b, estagio, pref)?.trocas ?? []).length) rotasQueMudam++;',
+    para:'        if ((elencoDoEstagio(pack, b, 1, pref)?.trocas ?? []).length) rotasQueMudam++;' },
+  { id:'S1059', arquivo:'app/modules/climas-legenda.mjs', nome:'a legenda corta o clima raro',
+    real:'a Nevasca some da tabela — o bonus mais raro vira sorte sem motivo quando cai',
+    de:'  return lista.map(c => {',
+    para:'  return lista.filter(c => c.w > 2).map(c => {' },
+  { id:'S1060', arquivo:'app/modules/climas-legenda.mjs', nome:'a faixa de frequencia perde o raríssimo',
+    real:'a Nevasca aparece como rara, ao lado do Pólen — o jogador espera o que nao vai vir',
+    de:"  if (p >= 0.03) return 'raro';",
+    para:"  if (p >= 0.0) return 'raro';" },
+  { id:'S1061', arquivo:'app/modules/elenco-condicao.mjs', nome:'a linha da run anuncia sem a troca do motor',
+    real:'a run diz que o clima trouxe alguem quando o elenco nao mudou',
+    de:'  const trocas = elencoDoEstagio(pack, run.bioma, run.estagio, prefs)?.trocas ?? [];',
+    para:'  const trocas = prefs.map(p => ({ fonte: p.fonte, entrou: 0, saiu: 0 }));' },
+  { id:'S1062', arquivo:'app/modules/elenco-condicao.mjs', nome:'a troca da noite sai sem nome',
+    real:'a linha diz "noite trouxe" com a chave crua — a esteira ja pegou "para quem e water"',
+    de:"             fonteNome: daNoite ? 'A noite' : (clima?.key === t.fonte ? clima.name : t.fonte),",
+    para:'             fonteNome: t.fonte,' },
+  { id:'S1063', arquivo:'app/modules/avanco-estado.mjs', nome:'o comeco da run para de gravar a linha do elenco',
+    real:'o rosto novo aparece na wave e parece sorte — a regra da legenda nunca e vista acontecendo',
+    de:'  e.run.eventos = [...(e.run.eventos ?? []), ...eventosDoElenco(pack, e.run, agora)];',
+    para:'  e.run.eventos = [...(e.run.eventos ?? [])];' },
+
   { id:'S1043', arquivo:'test/bandeiras.mjs', nome:'as caras passam a ser entregues por ultimo',
     real:'a fila termina quando a ultima termina: a mais cara no fim deixa tres trabalhadores ociosos',
     de:'    ((custo[b] ?? 0) - (custo[a] ?? 0)) || (pos.get(a) - pos.get(b)));',

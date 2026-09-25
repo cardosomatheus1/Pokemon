@@ -24,6 +24,7 @@ import { resumoDaRota } from './idle-escolha.mjs';
 /* A NOITE NA PORTA (1.33): a prévia pergunta com o período de agora, no relógio
    do mundo, e com mais nada — o clima só se revela quando a run começa. */
 import { preferenciasDaPrevia } from './elenco-condicao.mjs';
+import { legendaDosClimas, fraseDoElenco } from './climas-legenda.mjs';
 /* O RÓTULO da faixa vem de onde ele já mora — o mesmo que o quadro "quem
    apareceu" usa. Duas palavras para a mesma raridade seriam duas escalas. */
 import { daFaixa } from './raridade.mjs';
@@ -130,6 +131,19 @@ function pintarNele(alvo) {
       `criatura no <b>nível ${regua.nivelPedido}</b> — em qualquer rota. ` +
       `O que muda de lugar para lugar é <b>quem mora</b> nele.` +
       (deNoite ? ` <span class="rotaNoiteAviso">É noite: quem tem a lua só sai a esta hora.</span>` : '');
+  /* A LEGENDA DOS CLIMAS (1.32b): a tabela do pack no estágio do jogador. A
+     decisão — quem aparece, em quantas rotas, que frase — é do módulo de
+     camada 0; aqui só se pinta. Nada da run entra: o clima dela é oculto. */
+  const legenda = legendaDosClimas(PACK, { estagio: regua.estagio });
+  for (const el of nosDois('ClimasLista'))
+    el.innerHTML = legenda.map(c => {
+      const frase = fraseDoElenco(c);
+      return `<li><span class="clEmoji">${c.emoji ?? ''}</span>` +
+        `<span><b>${c.nome}</b><em>${c.frequencia}</em></span>` +
+        `<span>${c.desc}</span>` +
+        (frase ? `<span class="clElenco${c.rotasQueMudam ? '' : ' nada'}">${frase}</span>` : '') +
+        `</li>`;
+    }).join('');
   alvo.innerHTML = (PACK.biomas ?? []).map(b => {
     const quem = ocupados.get(b.id);
     const r = resumoDaRota(PACK, b.id, vivas, { preferencias });

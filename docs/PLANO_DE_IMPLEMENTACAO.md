@@ -265,7 +265,7 @@ mudança de produto. Achado de arnês que não couber vai para DEFEITOS/LACUNAS.
 existem** e o que cada um favorece; ao começar a run, sabe **qual caiu** e quem
 isso trouxe. O sigilo do clima sorteado (L-177) não se quebra.
 
-### ST-2.1 · a legenda dos climas na escolha
+### ST-2.1 · a legenda dos climas na escolha — ✅ fechada em 25/09
 
 - **Porte** M · **Depende de** E1 · **Fecha** L-177
 - **Escopo:** a legenda sai de `pack.climaIdle` (nome, emoji, tipos
@@ -284,7 +284,7 @@ isso trouxe. O sigilo do clima sorteado (L-177) não se quebra.
 - **Sabotagem:** legenda com lista fixa em vez do pack; a sala receber o clima
   da run; o Sol ganhar a frase de "traz novos rostos".
 
-### ST-2.2 · o clima revelado no início, com o elenco efetivo
+### ST-2.2 · o clima revelado no início, com o elenco efetivo — ✅ fechada em 25/09
 
 - **Porte** P · **Depende de** ST-2.1
 - **Aceite:** depois do início, a tela mostra o clima que caiu e o elenco

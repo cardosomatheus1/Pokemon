@@ -151,6 +151,19 @@ export function suite() {
       'o conserto do disco foi calado');
   });
 
+  /* 1.32b · o começo da run grava QUEM a condição trouxe. A semente 'r9' na
+     Floresta cai em Pólen, que troca um rosto no estágio 1 (medido). Nasceu do
+     S1063, que escapou: a regra era testada em camada 0, e ninguém conferia que
+     o começo da run a GRAVA. */
+  s.teste('1.32b: o começo da run grava a linha de quem o clima trouxe', () => {
+    const e = jogador();
+    comecarAvanco(e, { pack: kanto, bioma: 'floresta', estagio: 1,
+      equipe: [e.criaturas[0].id], agora: AGORA, raiz: 'r9' });
+    const linhas = (e.run.eventos ?? []).filter(x => x.tipo === 'elenco');
+    igual(linhas.length, 1, 'a run trocou um rosto e o log não disse');
+    igual(linhas[0].fonte, 'polen', 'a linha diz outra fonte que não a do clima da run');
+  });
+
   s.teste('a segunda run é recusada enquanto a primeira está de pé', () => {
     const e = jogador();
     comecarAvanco(e, { pack: kanto, bioma: 'floresta', estagio: 1,
