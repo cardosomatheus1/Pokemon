@@ -7568,6 +7568,17 @@ export const DEFEITOS = [
     de:"             'lc' + cena.wave + ':' + golpe.de + golpe.i + ':' + golpe.t, t + (golpe.t - cena.t));",
     para:"             'lc' + cena.wave + ':' + golpe.de + golpe.i + ':' + golpe.t, t);" },
 
+  /* ── ST-6.3 · as fichas dizem o próprio estado ─────────────────────────
+     O "produto" aqui é o documento: a fila e o estado do projeto moram nele. */
+  { id:'S1104', arquivo:'docs/LACUNAS.md', nome:'uma ficha perde a linha de Estado',
+    real:'ninguem sabe se a L-186 esta aberta ou fechada sem ler a ficha inteira',
+    de:'**ST-5.5b**. **Estado:** ✅ **FECHADA no mesmo dia (ST-5.5b).**',
+    para:'**ST-5.5b**. ✅ **FECHADA no mesmo dia (ST-5.5b).**' },
+  { id:'S1105', arquivo:'docs/LACUNAS.md', nome:'duas fichas com o mesmo id',
+    real:'o bloco dono fecha a L-184 e nao se sabe qual das duas fechou',
+    de:'### L-185 — o Avanço emite',
+    para:'### L-184 — o Avanço emite' },
+
   /* ── ST-5.5b · o jato (L-186) ───────────────────────────────────────── */
   { id:'S1100', arquivo:AVEFX, nome:'o golpe de jato volta a sair sem jato',
     real:'Surf, Flamethrower e Thunderbolt saem so com o impacto — a linha entre os dois fica vazia',

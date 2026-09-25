@@ -342,8 +342,11 @@ Todos com dono nomeado, todos em `docs/LACUNAS.md`.
 > contagem inteira, depois da ST-6.3 (25/09, marcas postas só onde o corpo já
 > registrava o conserto): **15 fichas sem marca de fechada** em `DEFEITOS.md` —
 > D-031, 034, 038, 039, 040, 047, 050, 053, 056, 060, 077, 078, 086, 097, 108.
-> Em `LACUNAS.md` a normalização ficha a ficha segue aberta (128 sem marca, 57
-> sem linha de Estado) — é o resto da ST-6.3.
+> Em `LACUNAS.md` a ST-6.3 fechou em 25/09: **185 fichas, todas com linha de
+> Estado — 64 fechadas, 16 parciais, 105 abertas**. O número se refaz com
+> `node test/fichas.mjs`, e a suíte `fichas` reprova ficha sem Estado ou id
+> repetido. *(A linha antiga dizia "128 sem marca, 57 sem linha"; medido de
+> novo, eram 85 sem linha.)*
 
 | defeito | o que é | estado |
 |---|---|---|

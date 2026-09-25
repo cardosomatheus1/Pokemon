@@ -24,6 +24,7 @@ seu critério de saída.
 ### L-019 — a varredura de símbolos não é verificador de escopo ✅ FECHADA
 
 **Fechada em:** F0.3c · **Notada em:** F0.3b
+**Estado:** ✅ fechada no bloco F0.3c.
 
 `test/modulos.mjs` pega símbolo conhecido usado sem import, que foi a classe de
 erro real da extração. Mas ele varre por texto, não por escopo: uma variável
@@ -77,6 +78,7 @@ original já sabendo destes quatro números**.
 ### L-001 — 14 dos 66 golpes nunca são atribuídos a ninguém
 
 **Dono:** F1.12 · **Medido em:** F0.1
+**Estado:** 🟡 parcial — o requisito vale no `original_v1` (48 de 48 golpes alcançáveis, medido em 25/09/2026); o pack em jogo continua sendo o `pokemon_kanto_v1` (`ID_ESCOLHIDO`), onde seguem 52 de 66, e a troca espera a L-042.
 
 21% do conteúdo de golpes é inalcançável: os 6 Sombrios inteiros, Shadow Ball,
 Lick, Iron Head, Iron Tail, Meteor Mash, Dragon Pulse, Focus Blast, Ancient Power.
@@ -94,6 +96,7 @@ ou pool de golpes dimensionado ao número de representantes.
 ### L-002 — um lutador vence 4× mais que a média
 
 **Dono:** F1.12 · **Medido em:** F0.1 (baseline: 35,24%)
+**Estado:** aberta — no Kanto (pack em jogo) a reserva `normal` segue em 35,2% dos golpes; o `original_v1` repete a forma com reserva de tipo único (`poolReserva: 'pedra'`, 115 de 304 golpes, 37,8%), então o requisito da lacuna não foi cumprido.
 
 Gengar vence ~35% das rodadas contra os 8,33% de média esperada em 12 lutadores.
 
@@ -109,6 +112,7 @@ e Kanto não tem Sombrio para puni-lo.
 ### L-003 — 13 dos 76 lutadores não conseguem causar dano a um oponente específico
 
 **Dono:** F1.12 · **Medido em:** F0.1
+**Estado:** 🟡 parcial — o `original_v1` não tem nenhum kit com efetividade zero contra outro lutador (medido em 25/09/2026), mas o teste de invariante prometido para o F1.12 não existe, e no Kanto (pack em jogo) os mesmos 13 seguem sem arranhar o Gengar.
 
 Raticate, Persian, Primeape, Machamp, Hitmonlee, Hitmonchan, Lickitung, Chansey,
 Kangaskhan, Tauros, Ditto, Porygon e Snorlax têm o kit **inteiro** imune contra
@@ -120,6 +124,7 @@ lutador do elenco. É invariante testável e deve virar teste em F1.12.
 ### L-004 — amplitude de 16,6× entre o melhor e o pior do elenco
 
 **Dono:** F1.12 · **Medido em:** F0.1
+**Estado:** aberta — a decisão de amplitude do elenco original segue pendente do dono; o `original_v1` herdou os percentis de força do Kanto (ver L-043), sem decisão registrada.
 
 Do melhor (35,24%) ao pior (Ditto, ~1,6%). Amplitude grande **não é defeito por
 si** — é o que cria o azarão que paga alto e dá graça à aposta. Fica registrada
@@ -137,6 +142,7 @@ necessárias. É trade-off de produto, não de engenharia.
 ### L-005 — animação de entrada não acompanha o relógio da fase ✅ FECHADA
 
 **Fechada em:** F0.3c · **Notada em:** leitura do protótipo
+**Estado:** ✅ fechada em 18/08/2026 (bloco F0.3c).
 
 **A causa registrada estava incompleta.** Não é o controle de velocidade: a
 entrada acontece na contagem, que não é escalada. O problema é a **fonte de
@@ -156,6 +162,7 @@ duração de uma animação CSS — o relógio ali é o do CSS.
 ### L-006 — a rodada depende de `requestAnimationFrame`
 
 **Dono:** F1.5 · **Notado em:** leitura do protótipo
+**Estado:** ✅ fechada em 21/08/2026 (bloco F1.14) — em modo servidor quem fecha a janela é o servidor (F1.5) e o cliente obedece ao evento `travada`; o modo local continua no `requestAnimationFrame`, que era o combinado.
 
 Com a aba em segundo plano o `rAF` não roda, então a janela de aposta de 30 s
 estica e a batalha congela. Localmente é irrelevante; com relógio compartilhado é
@@ -165,6 +172,7 @@ relógio. Registrado para que ninguém "conserte" no cliente antes disso.
 ### L-007 — sabotagem fácil demais enquanto os goldens forem byte-exatos ✅ FECHADA
 
 **Fechada em:** F0.2 · **Notada em:** F0.1
+**Estado:** ✅ fechada em 18/08/2026 (bloco F0.2).
 
 Qualquer sabotagem que mude comportamento derruba os golden tests, então Q2 passa
 sem esforço. O sinal real é a coluna "pego por" do relatório de sabotagem: se um
@@ -190,6 +198,7 @@ muleta.
 ### L-014 — `spriteURL` mora no motor e é dado de conteúdo ✅ FECHADA
 
 **Fechada em:** F0.4 · **Notada em:** F0.2
+**Estado:** ✅ fechada em 18/08/2026 (bloco F0.4).
 
 `buildRoster` grava `f.sprite` e a interface usa esse campo. Para não mudar
 comportamento no F0.2, `spriteURL` ficou dentro de `engine/engine.mjs`. É função
@@ -206,6 +215,7 @@ que o motor não presume HTTP nem espelho.
 ### L-015 — quatro handlers `onclick` embutidos no HTML ✅ FECHADA
 
 **Fechada em:** F0.3d · **Notada em:** F0.2
+**Estado:** ✅ fechada em 18/08/2026 (bloco F0.3d).
 
 Os botões de fechar modal usam `onclick="closeModal(...)"` no HTML. Escopo de
 módulo não é global, então o F0.2 precisou de `window.closeModal = closeModal`
@@ -217,6 +227,7 @@ e remover a exposição no `window`.
 ### L-016 — o corte duro de tempo nunca é exercitado ✅ FECHADA
 
 **Fechada em:** F0.3d · **Notada em:** F0.2
+**Estado:** ✅ fechada em 18/08/2026 (bloco F0.3d).
 
 `CONF.MAX_TIME` é 56 s, mas **nenhuma** das 10.000 rodadas do lote estatístico passa
 de 50 s — a tempestade encerra tudo antes. O corte duro é um seguro que nunca
@@ -232,6 +243,7 @@ para cobrir, segundo o comentário do próprio protótipo.
 ### L-017 — a dependência de CDN de terceiros em tempo de execução ✅ FECHADA
 
 **Fechada em:** F0.12 · **Notada em:** F0.2, ao verificar os sprites no navegador
+**Estado:** ✅ fechada em 19/08/2026 (bloco F0.12).
 
 **Como fechou, e a lacuna estava SUBESTIMADA.** A cascata `local → origem →
 espelho` entrou em `app/modules/assets.mjs`, e `tools/baixar-assets.mjs` baixa
@@ -280,6 +292,7 @@ não presume HTTP — devolve um data URI e a rodada roda.
 ### L-018 — não existe sprite de ovo
 
 **Dono:** F3.2 · **Notada em:** F0.2
+**Estado:** aberta — não existe arte de ovo em `arte/` nem referência a ovo no app; o único "ovo" do código é o item `Ovo da Sorte`.
 
 O §7.5 da Spec define que a captura entrega a forma base — "você viu o campeão,
 leva um ovo". O ovo precisa de arte e não existe.
@@ -295,6 +308,7 @@ tema inteira para existir. Ver L-008.
 ### L-020 — a ligação exporta 13 apelidos herdados ✅ FECHADA
 
 **Fechada em:** F0.5 · **Notada em:** F0.4
+**Estado:** ✅ fechada em 18/08/2026 (bloco F0.5).
 
 `app/modules/motor.mjs` exporta `KANTO_DEX`, `CHART`, `simulate`, `buildRoster`,
 `pickLineup`, `rollWeather`, `applyWeather`, `displayName`, `showdownSlug`,
@@ -322,6 +336,7 @@ removidos — reaparecer é regressão desta lacuna, não conveniência.
 ### L-021 — o motor exige um pool de golpes chamado `normal` ✅ FECHADA
 
 **Dono:** F1.12 · **Notada em:** F0.4
+**Estado:** ✅ fechada em 21/08/2026 (bloco F1.12).
 
 `atribuirGolpes` cai em `golpes.normal` quando o pool do próprio tipo se esgota,
 e `validarPack` exige que a chave exista. Ou seja: o motor não conhece o tema,
@@ -344,6 +359,7 @@ por espécie (os 14 de 66 nunca atribuídos, do baseline do F0.1).
 ### L-022 — a garantia de tipo na pool é um canal de informação sobre o clima ✅ FECHADA
 
 **Fechada em:** F0.11 · **Notada em:** F0.6
+**Estado:** ✅ fechada em 19/08/2026 (bloco F0.11).
 
 Depois do F0.6 a margem por grupo **observável** fecha em 8 %. Condicionada ao
 clima que de fato saiu, ela continua torta: **−45 % para quem foi buffado**
@@ -386,6 +402,7 @@ simplesmente não aconteceria em parte das rodadas.
 
 **Dono:** F1.5 · **Notada em:** F0.7 · **Fechada no:** F1.5 —
 **e a premissa dela estava errada**
+**Estado:** ✅ fechada em 20/08/2026 (bloco F1.5) — com a premissa derrubada; a correção analítica não foi aplicada.
 
 ### O que ela dizia
 
@@ -451,6 +468,7 @@ tipos e nenhum genérico, e ele era recusado no carregamento **por um nome**.
 ### L-024 — o bucket `pendente` existe e nada o preenche
 
 **Dono:** F1.4 · **Notada em:** F0.9
+**Estado:** aberta — o F1.4 fechou sem ela: a compra continua simulada e credita direto (`PC_T_PURCHASE_CLEARED`); nada escreve em `pendente`, e os tipos de hold e estorno não existem no código.
 
 O §5.5 define `pending_transferable`: PC-T comprado e ainda sob hold, que **não
 pode entrar em mercado transferível** enquanto não liquidar. O bucket existe na
@@ -475,6 +493,7 @@ fora da ordem de consumo, e os tipos estão nomeados na Spec.
 ### L-025 — o portão fecha bloco com uma execução só ✅ FECHADA
 
 **Fechada em:** F0.10 · **Notada em:** F0.9, ao investigar o D-004
+**Estado:** ✅ fechada em 19/08/2026 (bloco F0.10).
 
 **Como fechou.** As duas metades:
 
@@ -515,6 +534,7 @@ escala maior — então a repetição precisa existir antes daquela verificaçã
 ### L-008 — o jogo não tem trilha sonora própria
 
 **Dono:** F1.12 · **Trilha paralela:** arte
+**Estado:** aberta — não há áudio próprio no repositório; o app ainda procura só o `battle-theme.mp3` da franquia.
 
 `battle-theme.mp3` é faixa da franquia e não foi versionado — ver
 `prototype/README.md`. O jogo roda sem ela. O ContentPack original precisa incluir
@@ -533,6 +553,7 @@ Trabalho real que **nenhum bloco resolve**. Fica aqui para não sumir do radar.
 ### L-009 — os simuladores não incorporam os cenários novos ✅ FECHADA
 
 **Fechada em:** 18/08/2026 · **Dono:** trilha `documento`
+**Estado:** ✅ fechada em 18/08/2026 (trilha `documento`).
 
 `support/unit_economics/pokearena_unit_economics_model_v1.2.py` substitui a v1.1 e
 gera os quatro cenários — atual, restrito, com conformidade, e restrito mais
@@ -548,6 +569,7 @@ simulador impede. O estudo foi corrigido.
 ### L-010 — não existe política de publicidade e afiliados
 
 **Dono:** trilha `jurídico` / produto
+**Estado:** aberta — sem dono e sem documento; nada mudou.
 
 Nenhum documento do conjunto cobre. Necessária antes de qualquer aquisição paga, e
 interage com o capítulo 28: publicidade de produto de aposta tem restrição própria,
@@ -557,6 +579,7 @@ do jogador.
 ### L-011 — os limiares de risco são chute educado até haver coorte
 
 **Dono:** trilha `dados de produção` · **Mecanismo:** F1.9
+**Estado:** aberta — os limiares seguem sendo os números de exemplo; não há coorte.
 
 Os sete sinais do §28.6 e seus limiares só ficam úteis depois de meses de dados.
 F1.9 entrega o mecanismo e a instrumentação; a calibração é pós-V1 e precisa de
@@ -566,6 +589,7 @@ com os números de exemplo.
 ### L-013 — os capítulos 6 a 9 da Spec ficaram desatualizados ✅ FECHADA
 
 **Fechada em:** 18/08/2026 pela **Spec v1.5** · **Dono:** trilha `documento`
+**Estado:** ✅ fechada em 18/08/2026 (Spec v1.5, trilha `documento`).
 
 Os capítulos 6 e 7 foram reescritos, o 8 reposicionado, e o 3, 5.6, 9, 10, 22 e 25
 ajustados. A exceção temporária de precedência no `CLAUDE.md` foi removida: a Spec
@@ -598,6 +622,7 @@ fechar.
 ### L-012 — a consulta de enquadramento regulatório não foi feita
 
 **Dono:** trilha `jurídico` · **Bloqueia:** Etapa A item 8, Fase 5 inteira
+**Estado:** aberta — a consulta não foi feita e continua bloqueando a tag da v0.9.
 
 Spec §0.5.1. É a única pendência do projeto capaz de reordenar o roadmap
 econômico inteiro. Está listada como entrada de arquitetura da v0.9 e ainda não
@@ -608,6 +633,7 @@ tem data.
 ### L-026 — o baú não tem contra o que ser calibrado ✅ DESTRAVADA
 
 **Dono:** V1.19 · **Destravada por:** a correção do **D-007**
+**Estado:** ✅ destravada em 20/08/2026 (correção do D-007); o desenho do baú continua no escopo do V1.19.
 
 Ela dizia que não dava para calibrar o baú enquanto a nossa própria
 implementação estourasse o orçamento em 6,5× — reconciliar vinha primeiro.
@@ -638,6 +664,7 @@ calibrar:
 ### L-027 — o véu de cor por arena foi documentado e não construído ✅ FECHADA
 
 **Dono:** V1.20 · **Fechada no:** V1.20
+**Estado:** ✅ fechada em 20/08/2026 (bloco V1.20).
 
 O catálogo da v1.0 documentava cinco campos por arena e implementava quatro. O
 quinto, `brilho` — *"véu de cor por cima, para dar unidade ao conjunto"* —
@@ -707,6 +734,7 @@ ramos que andaram em paralelo.
 ### L-029 — a tela principal reprova no teste dos 3 segundos
 
 **Dono:** trilha `R` (proposta abaixo) · **Achado por:** crítico cego, portão Q7
+**Estado:** ✅ fechada em 19/08/2026 (bloco V1.16, trilha `R`) — o que a segunda e a terceira passada do crítico acharam seguiu para a L-030 e a L-031.
 
 Primeira aplicação do Q7 ao produto. Um crítico recebeu dez capturas em quatro
 larguras e uma barra nomeada — **TESTE DOS 3 SEGUNDOS**: um apostador novo, sem
@@ -780,6 +808,7 @@ três segundos — e isso é trabalho de desenho, com escopo próprio, não cons
 
 **Dono:** F1.6 · **Achada por:** sabotagem do F1.4 · **Fechada com:**
 `test/concorrencia.mjs` — **e a premissa dela também estava errada**
+**Estado:** ✅ fechada em 20/08/2026 (pendência do F1.6, com `test/concorrencia.mjs`) — com a premissa derrubada.
 
 ### O que ela dizia
 
@@ -839,6 +868,7 @@ constraint é a rede que sobrevive à migração, e o custo dela é zero.
 ### L-033 — o backend inteiro existe e nada dele é alcançável por HTTP ✅ FECHADA
 
 **Dono:** **F1.13** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** F1.8
+**Estado:** ✅ fechada em 20/08/2026 (bloco F1.14, primeira metade).
 
 Os módulos do F1.3 ao F1.9 estão construídos e testados: autenticação, carteira,
 scheduler, transporte, aposta, limites, proteção. O `servidor.mjs` continua com
@@ -896,6 +926,7 @@ do F1.14, e está na **L-036**.
 
 **Dono:** `recovery_deposit` → **F2.x, o gate do §25.1** · `odd_hour` → **F1.11**
 · **Notada em:** F1.9
+**Estado:** aberta — `recovery_deposit` e `odd_hour` seguem na lista e sem medição.
 
 `sinaisDeRisco` mede cinco dos sete do §28.6. Os outros dois estão na lista
 `SINAIS` — ela é o contrato do documento e não pode encolher — e não acendem:
@@ -920,6 +951,7 @@ o `odd_hour` é calculável no dia em que houver quatro semanas de histórico.
 
 **Dono:** **T4** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** a
 mudança de estratégia do Q2
+**Estado:** ✅ fechada em 20/08/2026 (bloco T4); a frase dos 14 foi corrigida no T13 (16/09/2026).
 
 O cache de vereditos derrubou o portão Q2 de ~100 min para **4 min** quando nada
 muda, porque um veredito só é reavaliado quando alguma coisa de que ele depende
@@ -985,6 +1017,7 @@ bloco.
 ### L-038 — três mutantes equivalentes, e todos com a mesma forma
 
 **Dono:** **T5** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** F1.14
+**Estado:** aberta — o T5 não foi construído: o pré-voo só confere âncora, e defeito novo que passa ainda só aparece no Q2 (o `sabotagem:bloco` do T14 encurta a espera, mas não reprova no minuto zero).
 
 Três defeitos plantados neste bloco nasceram **equivalentes** — mutação
 aplicada, comportamento idêntico, teste verde para sempre:
@@ -1041,6 +1074,7 @@ seriam duas coisas para desconfiar quando o portão desse errado.
 ### L-036 — o cliente ainda guarda a própria carteira
 
 **Dono:** **F1.14** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** F1.13
+**Estado:** ✅ fechada em 21/08/2026 (bloco F1.14).
 
 O F1.13 pôs de pé as rotas e as telas de proteção do §28.7. O que ele **não**
 fez é o laço de jogo: `app/modules/banco.mjs` continua guardando a carteira em
@@ -1091,6 +1125,7 @@ transporte — já está no ar e é inerte.
 
 **Dono:** **V1.21** (é onde moram os itens de leitura da tela) · **Notada em:** F1.13,
 ao consertar o driver de captura
+**Estado:** ✅ fechada em 20/08/2026 (fora do bloco dono V1.21, num commit próprio).
 
 O F1.9 criou a terceira tela de resultado — acertou o campeão e o retorno não
 passou da aposta — e o Q5 daquele bloco pedia a captura dela. **Ela não foi
@@ -1158,6 +1193,7 @@ fica só para `perda_parcial`, que é perda de verdade.
 
 **Dono:** **V1.21** (proposto no `BUILD_BLOCKS`) · **Achado por:** crítico cego,
 Q7, terceira medição, mesma barra
+**Estado:** 🟡 parcial — os itens 6 e 9 saíram no F1.8/F1.9 (20/08/2026); o V1.21 não foi construído, e os itens 1–5, 7 e 8 seguem abertos (`Iniciar rodada` e `Auto: ON` continuam lado a lado).
 
 O V1.20 fechou os dez itens da L-030 e o crítico mediu de novo com o TESTE DOS 3
 SEGUNDOS. Notas: **1920 → 6,25 · 1440 → 7,00 · 420 → 5,50** (P1–P4).
@@ -1213,6 +1249,7 @@ tela. Fica registrado aqui para o próximo crítico não gastar o achado de novo
 
 **Dono:** V1.20 · **Achado por:** crítico cego, Q7, segunda medição ·
 **Fechada no:** V1.20
+**Estado:** ✅ fechada em 20/08/2026 (bloco V1.20).
 
 Os dez itens, e o que foi feito com cada um:
 
@@ -1305,6 +1342,7 @@ e a terceira passada do crítico cego recebeu as duas.
 
 **Dono:** **F1.16** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:**
 F1.14, pelo teste que joga uma rodada inteira no navegador
+**Estado:** ✅ fechada em 21/08/2026 (bloco F1.16).
 
 O boot chama `atualizarSaldo()` antes de `ligarModoServidor()`, e
 `atualizarSaldo` chama `carregar()` — que cria a carteira local com o
@@ -1352,6 +1390,7 @@ pontas separadamente.
 ### L-040 — o valor do resgate é chute educado até haver coorte
 
 **Dono:** trilha `dados de produção` · **Mecanismo:** F1.10 · **Notada em:** F1.10
+**Estado:** aberta — `RESGATE_VALOR` continua em 20, sem coorte para calibrar.
 
 O §28.8 exige que o `rescue grant` tenha valor **fixo** e não diz qual. O F1.10
 escolheu **20 PC-B**: é o que cabe no pote rotineiro de 30 sem consumi-lo
@@ -1378,6 +1417,7 @@ subindo é o sinal de que o valor virou incentivo.
 ### L-041 — o operador do painel se declara, não se prova ✅ FECHADA
 
 **Dono:** **F1.17** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** F1.11
+**Estado:** ✅ fechada em 21/08/2026 (bloco F1.17).
 
 O F1.11 construiu **autorização**, **auditoria** e **confirmação** para o painel
 admin. O que ele não construiu é **autenticação**: o operador chega num
@@ -1418,6 +1458,7 @@ O painel pode ser exposto em rede aberta.
 
 **Dono:** trilha `arte` · **Bloqueia:** a troca de `ID_ESCOLHIDO`, que é o
 critério de saída do F1.12 e o fim da Fase 1 · **Notada em:** F1.12
+**Estado:** aberta — faltam os 76 desenhos; o jogo voltou ao pack de desenvolvimento (`ID_ESCOLHIDO = 'pokemon_kanto_v1'`, `ARTE_EMPRESTADA_DE = null`), então a seção "Estado de hoje: ARTE EMPRESTADA" logo abaixo está desatualizada.
 
 O pack `original_v1` está completo em tudo que é software: 76 criaturas com
 nomes autorais, oito tipos numa roda fechada, golpes, climas, moeda e rótulos.
@@ -1484,6 +1525,7 @@ enquanto ela estiver ligada.
 
 **Dono:** **F2.1** (a recalibragem econômica da Fase 2) · **Notada em:** ao trocar
 `ID_ESCOLHIDO` para `original_v1` e OLHAR a tela de odds
+**Estado:** aberta — a curva de ruína não foi refeita sobre o `original_v1`; o dono nomeado (F2.1) é hoje o motor de apuração mútua, não uma recalibragem.
 
 O F1.12 herdou de propósito a distribuição de **força** do elenco medido: os
 totais de base stats são os mesmos percentis. O que ele NÃO herdou — também de
@@ -1524,6 +1566,7 @@ o pack existir e ser jogável.
 
 **Achado em:** R6, olhando a captura depois de o balão crescer.
 **Bloco dono:** **R11** — o dimensionamento da arena, que reordena as camadas.
+**Estado:** ✅ fechada por decisão do dono em 23/08/2026 (depois do R11).
 
 O balão do golpe vive no `#uiLayer` (`z-index:4`) e os crachás de canto são
 `z-index:6`. Um Pokémon no canto superior esquerdo tem o nome do golpe coberto
@@ -1549,6 +1592,7 @@ os cinco níveis nomeados.
 
 **Achado em:** R6, ao consertar o nome do derrotado na barra de vida.
 **Bloco dono:** **R11**, junto com a pilha de camadas da arena.
+**Estado:** ✅ fechada em 23/08/2026 (bloco R19).
 
 O `contrastes` do `test/visual.mjs` lê `getComputedStyle().color` e caminha para
 cima somando `backgroundColor`. Isso é correto para tudo que o portão mede hoje
@@ -1574,6 +1618,7 @@ CSS. O portão visual já captura e já lê pixel; é ali que isto encaixa.
 
 **Achado em:** R7, ao levantar o que existe de arte.
 **Bloco dono:** **R7 (continuação)** — depende de material do dono do projeto.
+**Estado:** ✅ fechada em 23/08/2026 (bloco R17).
 
 O pedido inclui "o Rayquaza ao fundo das arenas". O único Rayquaza que existe no
 projeto está em `arte/Gemini_Generated_Image_9rqhy19rqhy19rqh.jpg`, e ele **não
@@ -1604,6 +1649,7 @@ existiam no CSS e não eram usadas por elemento nenhum do corpo.
 **Achado em:** R9, ao unificar o caminho do painel de ADM.
 **Bloco dono:** um bloco de servidor, a propor no `BUILD_BLOCKS` — não é do R9,
 que é sobre o CAMINHO e não sobre a capacidade.
+**Estado:** ✅ fechada em 23/08/2026 (bloco R18).
 
 O servidor já declara `margem.definir` como ação **destrutiva**, com papel
 exigido em `EXIGE` e passagem obrigatória pelo `agir`, que registra auditoria e
@@ -1684,6 +1730,7 @@ configuração decorativa.
 
 **Registrada em:** R30. **Bloco dono:** um bloco futuro de arte, quando houver
 motivo para mexer nelas de novo.
+**Estado:** aberta.
 
 `cidade`, `portal` e `nucleo` ganharam `--foco` e `--tira` no R30, como as dez
 novas, e a faixa do topo delas passou a ser enquadrada de propósito. O que ficou
@@ -1707,6 +1754,7 @@ do R30.
 
 **Registrada em:** R30, ao fechar o D-040. **Bloco dono:** um bloco futuro de
 instrumentação visual.
+**Estado:** aberta.
 
 A última causa do D-040 era o relógio: a captura da arena caía ora antes, ora
 depois da virada de `betting` para `countdown`, e nenhuma espera resolve porque
@@ -1733,6 +1781,7 @@ critério que fechou o D-040.
 ### L-050 — a Liga sabe colapsar contas ligadas, e ninguém as liga sozinho
 
 **Registrada em:** R36. **Bloco dono:** um bloco de antifraude, sem escopo ainda.
+**Estado:** aberta.
 
 O §6.8 exige que "contas ligadas não somam", e o R36 cumpre a regra: o ranking
 colapsa o grupo inteiro num competidor só, com fecho transitivo, e representa o
@@ -1762,6 +1811,7 @@ mecânica já está pronta dos dois lados — `ligarContas` para escrever e
 
 **Registrada em:** H1, ao fechar o D-044. **Bloco dono:** um bloco futuro de
 higiene da suíte, ou o primeiro que mexer em `aposta-servidor`.
+**Estado:** aberta.
 
 O D-044 foi fechado trocando slot fixo por favorito nos testes em que o slot é
 **acessório**. Cinco testes não puderam ser trocados porque o slot é o que eles
@@ -1789,6 +1839,7 @@ dele um bloco com mais de um cliente, e por isso vale ser feito direito.
 
 **Registrada em:** H1, ao ler o `aposta-servidor` inteiro por causa do D-044.
 **Bloco dono:** o mesmo da L-051.
+**Estado:** aberta.
 
 Os testes de **slot inexistente**, **apostar em nome de outro** e **conta
 congelada** afirmam só `ok(recusa(...))`: qualquer erro os satisfaz. Se a guarda
@@ -1813,6 +1864,7 @@ seus dois irmãos, com a sabotagem que prova cada um.
 
 **Registrada em:** bloco 0.1, ao mover a aritmética de colocação para o motor.
 **Bloco dono:** o próximo que tocar `app/modules/killfeed.mjs`.
+**Estado:** aberta.
 
 Existem hoje três contagens de abate, e as três precisam concordar:
 
@@ -1840,6 +1892,7 @@ que só ela faz.
 
 **Registrada em:** bloco 0.1, ao ligar `registrarFeito` à liquidação.
 **Bloco dono:** sem dono; candidato natural é o bloco que ligar a sala ao perfil.
+**Estado:** aberta.
 
 A liquidação passou a alimentar dois tipos do `POOL_PADRAO`:
 
@@ -1868,6 +1921,7 @@ pelo dono do projeto.
 
 **Registrada em:** bloco 0.1, ao fechar o `D-045`. **Bloco dono:** sem dono;
 candidato é um bloco de perfil no servidor, depois da V1.
+**Estado:** aberta — na fila do ROADMAP como INT-02 (posição 3).
 
 O bloco 0.1 fez XP, desafios e trilha de login sobreviverem a
 `localStorage.clear()`. **Cosmético não sobrevive**, e a fronteira é decisão
@@ -1907,6 +1961,7 @@ Essa segunda pergunta é do dono do projeto, e ela muda o desenho.
 
 **Registrada em:** bloco 0.3, ao fechar o `D-036`. **Bloco dono:** o próximo que
 tocar `test/sabotagem.mjs`.
+**Estado:** aberta.
 
 A ficha do D-036 pedia este teste: *rodar o portão de um jeito que aborte e
 conferir que `tmpdir()` não ganhou diretório `pokearena-sabotagem-*` nenhum.*
@@ -1943,6 +1998,7 @@ um teste de ponta a ponta caber, e aí o seam deixa de ser necessário.
 **Registrada em:** 30/08/2026, a partir de decisão do dono do projeto.
 **Bloco dono:** sem dono — é Fase 4 (§8.9, combate PvE). Registrado agora para
 o bloco 1.1 nascer sabendo, e não para ser construído já.
+**Estado:** aberta — Fase 4; nada da raid foi construído.
 
 #### A decisão que já está tomada, e ela é do dono
 
@@ -2006,6 +2062,7 @@ quanto tempo uma raid leva de verdade.
 ### L-058 — a carência antes de anunciar no mercado não tem número
 
 **Registrada em:** 30/08/2026. **Bloco dono:** Fase 2, o bloco do escrow.
+**Estado:** aberta — o mercado (Fase 2) não existe.
 
 O dono decidiu que o que sai do farm só pode ser anunciado depois de uma
 carência, e levantou 24 h e 48 h. A decisão do NÚMERO fica em aberto de
@@ -2027,6 +2084,7 @@ de conta ligada, com a `L-050` já construída. A carência é esse tempo mais f
 
 **Registrada em:** 30/08/2026. **Bloco dono:** um bloco de direção visual,
 antes do 1.5 (a Torre).
+**Estado:** 🟡 parcial — a 1 (como se assiste ao farm) foi respondida pelo Avanço, fechado em 10/09/2026; a 2 e a 3 dependem da Torre, que é expansão sem bloco (EXP-01).
 
 Decidido: sprite GBA fiel, tema neon na INTERFACE e não no mundo, treinador
 visível com outfit trocável. Ver `docs/DESENHO_FASE1.md` §8.
@@ -2049,6 +2107,7 @@ produzida. O caro em arte é decidir, não desenhar.
 
 **Registrada em:** 30/08/2026, correção do dono do projeto. **Bloco dono:** 1.1
 para o dado; um bloco de arte para as folhas.
+**Estado:** ✅ fechada em 10/09/2026 (bloco 1.27e, D-090) — as 146 espécies têm as folhas em disco; data tirada do D-090, a lacuna nunca foi marcada.
 
 O dono corrigiu uma leitura minha: **a regra dos 76 vale só para a Arena.**
 
@@ -2074,6 +2133,7 @@ o intermediário sumir da coleção.
 ### L-061 — o mato alto, e por que ele não é enfeite
 
 **Registrada em:** 30/08/2026, pedido do dono. **Bloco dono:** 1.2 (a captura).
+**Estado:** 🟡 parcial — a moita existe como relevo desenhado (1.5L); o encontro não nasce nela, e não há tile mexendo nem oclusão dos pés.
 
 O clássico: o treinador **entra na moita** e o encontro acontece ali. Só nos
 biomas com vegetação — floresta, campo, oásis, estufa, praia. Gelo, caverna,
@@ -2096,6 +2156,7 @@ da cena.
 
 **Registrada em:** 30/08/2026, a partir da ideia do dono. **Bloco dono:** 1.5.
 **Não construir antes de decidir**; está aqui para amadurecer.
+**Estado:** aberta — a Torre não foi construída; é expansão sem bloco (EXP-01).
 
 #### A ideia do dono, e por que ela é boa
 
@@ -2170,6 +2231,7 @@ porque nenhum outro tem a Arena atrás.
 
 **Registrada em:** 30/08/2026, observação do dono. **Bloco dono:** o bloco de
 direção visual da L-059.
+**Estado:** 🟡 parcial — os props saíram (decoração por bioma, 1.5o–r); a coerência de posição não: `swimmer_f` anda em terra na praia.
 
 Duas coisas que o dono viu na prévia e estão certas:
 
@@ -2194,6 +2256,7 @@ certo.
 
 **Registrada em:** 30/08/2026, no fecho do bloco 1.1. **Bloco dono:** 1.3 (a aba
 do dossiê).
+**Estado:** ✅ fechada em 31/08/2026 (blocos 1.3a–c) — a aba do idle mostra a criatura; data do D-051, achado no 1.3b.
 
 O 1.1 fecha com a criatura **existindo de verdade**: ela nasce no servidor, é
 auditável pela raiz, evolui pela linha do material de origem e é gravada com
@@ -2216,6 +2279,7 @@ a coleção hidratada com potencial e forma, que é exatamente o que a tela pede
 
 **Registrada em:** 30/08/2026, no fecho do bloco 1.1. **Bloco dono:** o bloco do
 treino (Fase 1, ainda sem número).
+**Estado:** ✅ fechada em 02/09/2026 (bloco 1.16) — o jogador escolhe o `foco`, e a troca custa 48 h sem ir a campo.
 
 A instância nasce com `foco: null` e a coluna existe no banco. É o lugar do
 treino direcionado — a substituição dos EVs, na conversa com o dono. Nada
@@ -2234,6 +2298,7 @@ comprador paga por um atributo que o vendedor podia refazer de graça.
 
 **Registrada em:** 30/08/2026, decisão do dono do projeto. **Bloco dono:** o
 bloco da loja, Fase 2 — **não existe ainda, e não pode existir antes do §25.1.**
+**Estado:** aberta — bloqueada pelo §25.1; nenhuma loja de dinheiro real nem boost de stamina.
 
 #### A decisão do dono
 
@@ -2294,6 +2359,7 @@ tag da v0.9 — mas não pode ser LIGADO.
 
 **Registrada em:** 30/08/2026, decisão do dono do projeto. **Bloco dono:** 1.3
 (a aba do idle) para o consumo; a arte chega antes, por fora.
+**Estado:** ✅ fechada em 31/08/2026 (blocos 1.5a–c) — o jogador só veste trajes autorais; tamanho do lote e "cosmético puro" seguem na L-070/L-072.
 
 #### A decisão
 
@@ -2413,6 +2479,7 @@ nada, e o arquivo não sai do computador.
 
 **Registrada em:** 30/08/2026, no bloco 1.2c. **Bloco dono:** o primeiro bloco
 que introduzir um CONSUMIDOR de item novo — treino, loja ou raid.
+**Estado:** ✅ fechada em 02/09/2026 (bloco 1.12) — o catálogo de itens deu `fonte` própria aos cinco biomas.
 
 #### O que foi medido
 
@@ -2473,6 +2540,7 @@ ser olhada quando a L-057 for construída.
 
 **Registrada em:** 30/08/2026, no bloco 1.2c. **Bloco dono:** **1.2d**, o
 servidor do idle — próximo bloco, e ele existe por causa desta lacuna.
+**Estado:** ✅ fechada em 31/08/2026 (bloco 1.2d).
 
 #### O que existe e o que falta
 
@@ -2524,6 +2592,7 @@ dia** por ele, que trocou a pergunta de "jogador ou NPC" para "por qual porta
 esse outfit entra". **Bloco dono:** o bloco que introduzir NPC no idle (batalha
 de treinador) — ainda sem número — para as gavetas `npc`; o bloco da loja para
 `loja`; o bloco do baú para `fragmento`.
+**Estado:** 🟡 parcial — o campo `procedencia` existe; todos os trajes seguem `padrao`, a classificação espera o dono, e os NPCs ainda vestem arte do pokeemerald.
 
 #### A decisão do dono
 
@@ -2585,6 +2654,7 @@ funcionando prova o caminho, e o resto entra um arquivo por vez.
 
 **Registrada em:** 31/08/2026, a pedido do dono. **Bloco dono:** 1.6 (a aba do
 dossiê) para o que falta; a explicação é entrega de documento, não de código.
+**Estado:** 🟡 parcial — a ficha existe (Pokédex, blocos 1.19–1.20); o que completá-la DÁ continua sem decisão e sem código.
 
 #### O que o dono pediu
 
@@ -2633,6 +2703,7 @@ promessa; com INFORMAÇÃO ela vira mecânica.
 mandou guardar e pensar: *"vá me cobrando"*, *"vá pensando"*. **Bloco dono:** o
 bloco do guarda-roupa — ainda sem número; proposta abaixo. **Destrava:** o dono
 decidir; não depende de código nenhum para começar.
+**Estado:** 🟡 parcial — construídos `procedencia` no motor (1.31), `npc` fora de `CONCEDIVEIS` e `MODO_VITRINE`; falta o teste de dieta e a classificação pelo dono.
 
 #### O pedido, na palavra dele
 
@@ -2712,6 +2783,7 @@ o campo — ver L-070.
 **Registrada em:** 31/08/2026, durante a sabotagem do bloco 1.5. **Bloco dono:**
 o próprio 1.5, quando as demais artes do dono chegarem. **Destrava:** um outfit
 cujos nove quadros não tenham todos a mesma altura.
+**Estado:** aberta.
 
 #### O que a sabotagem mostrou
 
@@ -2752,6 +2824,7 @@ e as duas são respostas melhores que a de hoje.
 **Registrada em:** 31/08/2026, ao converter o acervo inteiro. **Bloco dono:**
 1.5c (mundo vivo). **Destrava:** arte, não código — o dono gerar as vistas de
 costas e de perfil desses três.
+**Estado:** 🟡 parcial — `fisherman` ganhou as três vistas; `femgirl` e `bugcatcher` continuam só de frente.
 
 #### O que acontece
 
@@ -2794,6 +2867,7 @@ incompleto sem ter de olhar o PNG.
 
 **Registrada em:** 31/08/2026, olhando a cena depois de ligar o companheiro.
 **Bloco dono:** 1.5d (a fauna). **Destrava:** nada — a arte já está em disco.
+**Estado:** ✅ fechada no bloco 1.5d–g (folha de caminhada do PMDCollab) — data não registrada, entre 31/08 e 01/09/2026.
 
 #### O que acontece
 
@@ -2833,6 +2907,7 @@ ausente — e feio é visível, que é o que garante que ninguém esqueça.
 **Por que existe:** ele pediu, com estas palavras — *"só não perca as ideias,
 procure armazenar literalmente tudo que for de implementação de ideias, pra não
 acabar se perdendo"*.
+**Estado:** 🟡 parcial — saíram a fauna e a decoração (1.5d–g, 1.5o–r) e o foco (DEC-019, 1.16); seguem abertos as portas dos outfits (L-070/L-072), o check-list da loja, os andares da Torre (DEC-075) e as vistas da L-074.
 
 A metodologia já manda registrar (`CLAUDE.md`, "A divisão de trabalho"): ideia
 solta REGISTRA e ENCAIXA, não vira desvio de rota. Esta é a lista de encaixe.
@@ -3010,6 +3085,7 @@ seu nível continua acessível e rende menos, em vez de ser uma parede a mais.
 
 **Registrada em:** 01/09/2026. **Bloco dono:** 1.7b. **Destrava:** o dono
 reler o desenho dele.
+**Estado:** ✅ fechada em 02/09/2026 (bloco 1.7b).
 
 #### O que já existe
 
@@ -3067,8 +3143,9 @@ o que custa       stamina? nada? uma vez por dia por NPC?
 > a nota: a lista escrita à mão de uma saída que a máquina já produziu é mais um
 > lugar onde derivar não pode dessincronizar.
 
+**Estado:** ✅ fechada em 01/09/2026 (blocos 1.5k, 1.5m e 1.5n).
 **Registrada em:** 01/09/2026. **Bloco dono:** 1.5k (proposto: as suítes de
-`idle-mundo` e `idle-dados`). **Estado:** aberta, com a lista fechada.
+`idle-mundo` e `idle-dados`). *Estado anterior (até a ST-6.3):* aberta, com a lista fechada.
 
 O `npm run sabotagem` completo, rodado sobre o `e8e81fb`, voltou **Q2 VERMELHO —
 7 de 615 não foram pegos**. Não é ruído: são sete comportamentos que eu posso
@@ -3298,7 +3375,8 @@ que está com o treinador, este conta todos.
 > derruba os comuns, e o muito raro fica provável lá porque não há mais comum
 > diluindo — e não porque alguém inverteu a tabela.
 
-**Bloco dono:** 1.10. **Estado:** DESENHO MEU PENDENTE — o dono pediu
+**Estado:** ✅ fechada em 02/09/2026 (blocos 1.10 e 1.7b).
+**Bloco dono:** 1.10. *Estado anterior (até a ST-6.3):* DESENHO MEU PENDENTE — o dono pediu
 explicitamente que eu estude e decida: *"precisamos estudar como será esse
 desbloqueio, acho interessante da maneira quais vós fala, veja melhor maneira de
 aplicação dentro da nossa metodologia e siga"*.
@@ -3592,6 +3670,7 @@ de a loja existir.
 > dá velocidade?"*.
 
 **Registrada em:** 01/09/2026. **Bloco dono:** 1.12 (proposto).
+**Estado:** ✅ fechada em 02/09/2026 (bloco 1.12) — o PDF gerado da tabela não foi feito e não tem registro.
 
 > "seria interessante no nosso próprio site conter uma espécie de aba como
 >  'wiki' [...] com sistema de busca onde ele digita nome do item e vai para o
@@ -3732,6 +3811,7 @@ a chave come a arte. Rodei sem olhar e comi 76% dela — desfeito.
 ### L-096 — O TETO DE USO, e por que ele é melhor que o teto de compra
 
 **Registrada em:** 01/09/2026, ideia do dono. **Bloco dono:** 1.11.
+**Estado:** 🟡 parcial — o teto está no catálogo (`usosPorRun: 1` no Exp. Share e no Lucky Egg, 1.12, 02/09/2026, com teste); nenhum item segurado é usado em run, então ele não é aplicado.
 
 > "além do teto de compra diária tem limite de uso, exemplo o exp share só pode
 >  ser usado em 1 run, seja de 45min, 3hrs ou 8hrs [...] quer usar mais? Compre
@@ -3912,9 +3992,10 @@ Nenhum deles depende de decisão do dono; todos são do bloco 1.11.
 > d'água nenhuma. A pergunta abaixo não precisou ser feita, e fica registrada
 > porque ela volta no dia em que chegar arte com marca.
 
-### L-098(a) — a pergunta, para quando ela voltar
+#### L-098(a) — a pergunta, para quando ela voltar
 
 **Registrada em:** 01/09/2026, lembrete do dono. **Bloco dono:** nenhum ainda.
+**Estado:** ✅ fechada por decisão em 01/09/2026 — o dono descartou o arquivo pokécash; as notas 50/100/300/500/1k não têm marca d'água.
 
 > "lembre-se que lá atrás fiquei de enviar as artes novas para alteração e você
 >  ia fazer a camuflagem da marca d'água, não lembro o porquê não foi feito"
@@ -3961,8 +4042,9 @@ eu posso fazer. Quando ele mandar as artes, uma frase resolve.
 >
 > Fica em **L-102**, com bloco dono próprio.
 
+**Estado:** ✅ fechada em 02/09/2026 (bloco 1.14) — `nivel` e `vinculo` andam; o `foco` foi para a L-102 e andou no 1.16.
 **Registrada em:** 01/09/2026, achado ao montar o painel do 1.6b.
-**Bloco dono:** 1.14 (proposto: a progressão da criatura). **Estado:** aberta.
+**Bloco dono:** 1.14 (proposto: a progressão da criatura). *Estado anterior (até a ST-6.3):* aberta.
 
 `criar()` grava `nivel: 1`, `vinculo: 0`, `foco: null` em toda criatura, e nenhum
 caminho do jogo escreve nesses três depois. É a mesma situação da `L-065`, que
@@ -4000,7 +4082,7 @@ entregar a moldura de uma coisa que não existe.
 ### L-100 — a esteira de OLHAR não sabia abrir a aba do idle
 
 **Registrada em:** 02/09/2026, ao fechar o 1.6b. **Bloco dono:** 1.6b.
-**Estado:** RESOLVIDA no mesmo bloco — `tools/olhar-idle.mjs`.
+**Estado:** ✅ RESOLVIDA no mesmo bloco — `tools/olhar-idle.mjs`.
 
 `olhar-telas.mjs` fotografa a Arena: início, aposta, contagem, luta, resultado,
 proteção, adm — sete telas, quatro larguras. Ele nunca fotografou a aba da rota.
@@ -4067,7 +4149,7 @@ bloco, com cor e peso próprios para cada parcela.
 
 **Registrada em:** 02/09/2026, olhando a captura de 1920 px que a L-100
 destravou. **Bloco dono:** 1.15 (proposto: a composição do bioma).
-**Estado:** CONSTRUÍDA em 02/09/2026.
+**Estado:** ✅ CONSTRUÍDA em 02/09/2026.
 
 A trilha CURVA — duas ondas fora de fase, uma curva a cada ~18 colunas, e o
 número de curvas cresce com a largura — e o chão ganhou CLAREIRAS e MATAS:
@@ -4119,8 +4201,9 @@ cascata) — falta ela ser convocada em função da largura, e não só do bioma
 
 ### L-102 — o `foco` é uma escolha, e ainda não há onde fazê-la
 
+**Estado:** ✅ fechada em 02/09/2026 (bloco 1.16) — `engine/foco.mjs` (`podeEscolher`, `escolher`).
 **Registrada em:** 02/09/2026, ao fechar a L-099 no bloco 1.14.
-**Bloco dono:** 1.16 (proposto: a especialização da criatura). **Estado:** aberta.
+**Bloco dono:** 1.16 (proposto: a especialização da criatura). *Estado anterior (até a ST-6.3):* aberta.
 
 `criar()` grava `foco: null` desde o bloco 1.1, e o 1.14 fez `nivel` e `vinculo`
 andarem sem tocar nele. Isso foi decisão, e ela está no comentário original do
@@ -4170,7 +4253,7 @@ que ausência.
 
 **Registrada em:** 02/09/2026, no bloco 1.10, depois de uma extração de módulo
 apagar `export function renderIdle` por acidente.
-**Bloco dono:** T8. **Estado:** CONSTRUÍDA em 02/09/2026, dentro do bloco 1.15.
+**Bloco dono:** T8. **Estado:** ✅ CONSTRUÍDA em 02/09/2026, dentro do bloco 1.15.
 
 `test/ligacao.mjs` varre `app/modules`, `engine`, `server` e o `index.html`,
 extrai os imports relativos e os exports de cada arquivo, e reprova quando um
@@ -4230,7 +4313,7 @@ milissegundos; o Q5 continua sendo quem julga.
 
 ### L-104 — sete itens ainda sem ícone confirmado
 
-**Bloco dono:** 1.12b. **Estado:** CONSTRUÍDA em 02/09/2026.
+**Bloco dono:** 1.12b. **Estado:** ✅ CONSTRUÍDA em 02/09/2026.
 
 O dono mandou as sete artes. Elas entraram nas casas **371 a 377** da folha,
 pela mesma porta das nossas três (Elo, Essência, PokéCoin): linha extra no fim,
@@ -4715,7 +4798,7 @@ contorno de varredura que a interface ja usa.
 ### L-115 — a captura não tem animação — CONSTRUÍDA no 1.23
 
 **Registrada em:** 02/09/2026, do checklist do dono, com vídeo de referência.
-**Bloco dono:** 1.23. **Estado:** CONSTRUÍDA em 03/09/2026.
+**Bloco dono:** 1.23. **Estado:** ✅ CONSTRUÍDA em 03/09/2026.
 
 > "hoje a mensagem de captura é muito vaga ela só aparece embaixo do 'mandar
 >  expedição' e some rapidamente, deve aparecer algum alerta, animação de que o
@@ -4758,7 +4841,7 @@ sem ela o resto é decoração.
 
 ### L-116 — as faixas de raridade precisam de destaque — CONSTRUÍDA no 1.23
 
-**Registrada em:** 02/09/2026, do checklist do dono. **Bloco dono:** 1.23. **Estado:** CONSTRUÍDA em 03/09/2026 — e o que se achou
+**Registrada em:** 02/09/2026, do checklist do dono. **Bloco dono:** 1.23. **Estado:** ✅ CONSTRUÍDA em 03/09/2026 — e o que se achou
 medindo foi PIOR que a lacuna: três telas definiam as cores e as três
 discordavam, e a mais rara usava `var(--gold)`, que muda com o TEMA.
 
@@ -4965,12 +5048,13 @@ dono e sem bloco.
 
 #### A lacuna original, preservada
 
-### L-119 (ficha original) — O CLIMA NO IDLE: buff de FARM, e não de dano
+#### L-119 (ficha original) — O CLIMA NO IDLE: buff de FARM, e não de dano
 
 **Registrada em:** 02/09/2026, do checklist do dono. **Bloco dono:** 1.32. *(bloco realinhado ao ROADMAP em 08/09/2026 — ver T8)*
-**Estado:** ✅ FECHADA no 1.32 (10/09/2026) — o fecho é o título logo ACIMA
+**Estado da ficha original:** ✅ FECHADA no 1.32 (10/09/2026) — o fecho é o título logo ACIMA
 deste. *(ST-6.3, 25/09: as duas entradas tinham o mesmo título e estados
 opostos; esta é a ficha de origem, preservada.)*
+**Estado:** 🟡 parcial — o clima fechou no 1.32 (10/09/2026); o ticket de clima (1.31b) e a trava de sprite por bioma seguem abertos.
 
 A arena já tem clima (`pack.clima`) e ele muda DANO. No idle o eixo é outro:
 
@@ -5047,7 +5131,7 @@ Registrado como decisão dele.
 ### L-120 — POP-UPS DE CONFIRMAÇÃO — a da EXPEDIÇÃO construída no 1.24
 
 **Registrada em:** 02/09/2026. **Bloco dono:** 1.24 (expedição) e 1.29 (arena).
-**Estado:** METADE CONSTRUÍDA em 03/09/2026 — a da expedição está de pé; a da
+**Estado:** 🟡 METADE CONSTRUÍDA em 03/09/2026 — a da expedição está de pé; a da
 ARENA continua aberta, junto da janela de 40 s, na L-112.
 
 Dois pedidos que são o mesmo assunto:
@@ -5075,7 +5159,7 @@ e da transição de evolução (1.21).
 ### L-121 — A SELEÇÃO DA EQUIPE — a pokébola construída no 1.24
 
 **Registrada em:** 02/09/2026, do checklist do dono, com print de simulação.
-**Bloco dono:** 1.24. **Estado:** METADE CONSTRUÍDA em 03/09/2026.
+**Bloco dono:** 1.24. **Estado:** 🟡 METADE CONSTRUÍDA em 03/09/2026.
 
 ```text
 a POKÉBOLA como interruptor    CONSTRUÍDA — acesa vai, apagada fica
@@ -5432,7 +5516,7 @@ Nada disso bloqueia o desktop, e por isso sai da fila principal.
 ### L-128 — a criatura DADA conta para a escada — DECIDIDA, conta
 
 **Registrada em:** 03/09/2026, saindo do D-075. **Bloco dono:** 1.27.
-**Estado:** FECHADA em 03/09/2026, pelo dono. **A inicial CONTA.**
+**Estado:** ✅ FECHADA em 03/09/2026, pelo dono. **A inicial CONTA.**
 
 > Palavra dele: *"acho que devia se manter a liberação através da dex"*, e sobre
 > a escada em geral: *"não precisa ser algo desenfreado, mas pode dar uma
@@ -6520,7 +6604,7 @@ regra que a produziu continua valendo:
 ### L-146 — as decisões do dono sobre o modo ausente, 08/09/2026
 
 **Registrada em:** 08/09/2026. **Bloco dono:** A7 (motor, FEITO) e A4 (tela).
-**Estado:** metade construída.
+**Estado:** 🟡 metade construída.
 
 #### O que ele decidiu, e o que já está de pé
 
@@ -7386,7 +7470,7 @@ escolher quem vai. São três perguntas — *quem é, se pode ir, e o que ele so
 ### L-166 — a bola saiu da run; o "QUEM APARECEU" é o momento
 
 **Registrada em:** 09/09/2026, por decisão do dono. **Bloco dono:** 1.27.
-**Estado:** FECHADA no mesmo bloco — está aqui porque a decisão precisa ficar
+**Estado:** ✅ FECHADA no mesmo bloco — está aqui porque a decisão precisa ficar
 escrita, e não porque falte trabalho.
 
 > "A poção pode e deve ser usada durante as waves, porém as bolas, não. Quando
@@ -7938,6 +8022,7 @@ conteúdo além de código — alguém tem de decidir quem aparece na chuva.
 **Critério de saída, fixado pelo dono:** **o portão completo em no máximo 30 min.**
 Não é meta de conforto — é requisito, e ele disse com todas as letras que não
 aceita nada diferente disso.
+**Estado:** ✅ fechada por decisão em 16/09/2026 (T9/T10) — cache versionado, número do CLAUDE.md refeito; o Q2 completo a frio (453 min) não cabe nos 30 min e virou nível de tag.
 
 ### A medição, e ela corrige duas coisas que estavam escritas errado
 
