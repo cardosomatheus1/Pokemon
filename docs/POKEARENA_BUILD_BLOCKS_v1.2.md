@@ -1137,6 +1137,17 @@ de 3 min 10 s para 38,6 s; `npm run repetir` estável 2/2; **Q2 do bloco VERDE
 tocou cujo fecho mudou (o caso S15). Ele é respondido pelo Q2 completo — em
 fatias ou antes da tag — e o relatório do bloco imprime quantos ficaram adiados.
 
+**T14b e T14c — dois consertos no mesmo orçamento, os dois porque IMPEDIAM:**
+
+```text
+T14b  a onda 1 subia Chromium para todo defeito novo de app/ sem índice
+      Q2 da ST-1.1: 3/33 em 15 min  ->  36/36 em 2 min 22 s
+T14c  "tocado" era o ARQUIVO: mexer 30 linhas do index.html punha 130
+      mutantes de navegador no Q2 do bloco (~2,7 h). Agora é o TRECHO:
+      avalia o defeito cuja âncora cai a até 25 linhas do que mudou
+      (git diff -U0); o resto do arquivo vai para os adiados, contados
+```
+
 **As fichas de PRODUTO de 1.27 em diante** não moram neste arquivo: estão em
 `docs/PLANO_DE_IMPLEMENTACAO.md`, por épico e story.
 

@@ -213,8 +213,9 @@ A CADA MUDANÇA     a suíte inteira           2218 testes · 1 min 45 s com
 
 A CADA BLOCO       `npm run sabotagem:bloco` o Q2 DO BLOCO (T14, 25/09)
                    responde "os testes deste bloco mordem?"
-                   avalia o que o bloco tocou e o que não tem veredito; ADIA,
-                   contando, o que só mudou de fecho
+                   avalia o defeito ancorado PERTO do que o bloco mudou (até
+                   25 linhas do diff, T14c) e o que não tem veredito; ADIA,
+                   contando, o resto
 
 DE TEMPOS EM TEMPOS `npm run sabotagem`      o Q2 completo com cache, inteiro ou
                    em fatias (`--fatia=k/N`) — responde pelos adiados

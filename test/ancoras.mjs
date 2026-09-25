@@ -109,11 +109,59 @@ export function filtrarTocados(defeitos, arquivos) {
  *             mesma garantia de sempre, sem aproximação
  *   adiar     só o fecho mudou. Fica para o Q2 completo, e o relatório CONTA —
  *             adiado não é pego, e não pode aparecer como pego */
-export function escopoDoBloco({ defeitos, tocados, temVeredito, chaveConfere }) {
+/* ── T14c · TOCADO É O TRECHO, E NÃO O ARQUIVO (25/09/2026) ───────────────
+ *
+ * O 1.32b pôs uma legenda no `app/index.html`, e o Q2 do bloco passou a
+ * avaliar TODO defeito ancorado nele — 130 mutantes, quase todos de navegador,
+ * ~2,7 h. O arquivo tem milhares de linhas; a mudança, trinta. Um defeito
+ * ancorado a mil linhas da mudança responde à mesma pergunta que o de fecho
+ * mudado ("algo distante ficou decorativo?"), e vai para a mesma pilha: ADIADO,
+ * contado, respondido no Q2 completo.
+ *
+ * `trechos` é arquivo -> lista de [início, fim] das linhas que o bloco mudou
+ * (numeração do arquivo ATUAL), ou 'todo' para arquivo novo. Sem `trechos`, o
+ * comportamento é o de antes: o arquivo inteiro conta como tocado. `ler` dá o
+ * texto atual, para achar a linha da âncora. A margem cobre a vizinhança: a
+ * regra CSS ao lado da que mudou é tocada; a do outro lado do arquivo, não. */
+export const MARGEM_DO_TRECHO = 25;
+
+export function trechosDoDiff(textoDiff) {
+  const fora = new Map();
+  let arq = null;
+  for (const l of String(textoDiff ?? '').split('\n')) {
+    const m = /^\+\+\+ (?:b\/)?(.+)$/.exec(l);
+    if (m) { arq = m[1] === '/dev/null' ? null : m[1]; if (arq && !fora.has(arq)) fora.set(arq, []); continue; }
+    const h = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/.exec(l);
+    if (h && arq) {
+      const ini = Number(h[1]), n = h[2] === undefined ? 1 : Number(h[2]);
+      fora.get(arq).push([ini, ini + Math.max(n, 1) - 1]);
+    }
+  }
+  return fora;
+}
+
+function linhasDaAncora(texto, de) {
+  const i = String(texto ?? '').indexOf(de);
+  if (i < 0) return null;
+  const ini = texto.slice(0, i).split('\n').length;
+  return [ini, ini + String(de).split('\n').length - 1];
+}
+
+function trechoTocado(d, trechos, ler) {
+  const t = trechos.get(d.arquivo);
+  if (t === 'todo') return true;
+  if (!t) return false;
+  const a = linhasDaAncora(ler(d.arquivo), d.de);
+  if (!a) return true;                     /* âncora que não acho: na dúvida, avalia */
+  return t.some(([i, f]) => a[0] <= f + MARGEM_DO_TRECHO && a[1] >= i - MARGEM_DO_TRECHO);
+}
+
+export function escopoDoBloco({ defeitos, tocados, temVeredito, chaveConfere, trechos = null, ler = null }) {
   const alvo = new Set(tocados || []);
   const avaliar = [], reusar = [], adiar = [];
+  const tocado = d => alvo.has(d.arquivo) && (!trechos || !ler || trechoTocado(d, trechos, ler));
   for (const d of defeitos) {
-    if (alvo.has(d.arquivo) || !temVeredito(d)) avaliar.push(d);
+    if (tocado(d) || !temVeredito(d)) avaliar.push(d);
     else if (chaveConfere(d)) reusar.push(d);
     else adiar.push(d);
   }

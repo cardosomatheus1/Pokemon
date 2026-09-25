@@ -19,7 +19,8 @@
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { criarSuite, ok, igual } from './harness.mjs';
-import { conferirAncoras, filtrarTocados, escopoDoBloco, fatiar } from './ancoras.mjs';
+import { conferirAncoras, filtrarTocados, escopoDoBloco, fatiar, trechosDoDiff,
+         MARGEM_DO_TRECHO } from './ancoras.mjs';
 
 /* Leitor injetado: o teste não pode depender do conteúdo real dos módulos,
    senão passa a falhar toda vez que alguém edita uma linha do jogo. */
@@ -133,6 +134,45 @@ export function suite() {
     igual(r.avaliar.length, 1,
       'o bloco que acrescenta um defeito plantado precisa provar que ele morde — ' +
       'sem isso o Q2 do bloco deixa passar o próprio teste do bloco');
+  });
+
+  s.teste('T14c: o diff vira as linhas mudadas, na numeração do arquivo atual', () => {
+    const diff = ['diff --git a/x.html b/x.html', '--- a/x.html', '+++ b/x.html',
+                  '@@ -10,0 +11,3 @@', '+a', '+b', '+c', '@@ -50 +53 @@', '-x', '+y',
+                  '+++ b/novo.mjs', '@@ -0,0 +1,2 @@'].join('\n');
+    const t = trechosDoDiff(diff);
+    igual(JSON.stringify(t.get('x.html')), '[[11,13],[53,53]]', 'as faixas do diff saíram erradas');
+    igual(JSON.stringify(t.get('novo.mjs')), '[[1,2]]');
+  });
+
+  s.teste('T14c: no arquivo tocado, só o defeito PERTO da mudança é avaliado', () => {
+    const texto = Array.from({ length: 400 }, (_, i) => `linha ${i + 1}`).join('\n');
+    const D = [{ id: 'PERTO', arquivo: 'x.html', de: 'linha 105' },
+               { id: 'LONGE', arquivo: 'x.html', de: 'linha 380' }];
+    const r = escopoDoBloco({ defeitos: D, tocados: ['x.html'],
+      temVeredito: () => true, chaveConfere: () => false,
+      trechos: new Map([['x.html', [[100, 110]]]]), ler: () => texto });
+    igual(r.avaliar.map(d => d.id).join(), 'PERTO',
+      'o defeito ao lado da mudança não foi avaliado — é o que o bloco pode ter quebrado');
+    igual(r.adiar.map(d => d.id).join(), 'LONGE',
+      'o defeito a 270 linhas da mudança foi avaliado: é o custo de 2,7 h do 1.32b');
+  });
+
+  s.teste('T14c: a margem cobre a vizinhança, e arquivo novo conta inteiro', () => {
+    const texto = Array.from({ length: 400 }, (_, i) => `linha ${i + 1}`).join('\n');
+    const perto = `linha ${110 + MARGEM_DO_TRECHO}`;
+    const r = escopoDoBloco({ defeitos: [{ id: 'V', arquivo: 'x.html', de: perto }, { id: 'N', arquivo: 'n.mjs', de: 'q' }],
+      tocados: ['x.html', 'n.mjs'], temVeredito: () => true, chaveConfere: () => false,
+      trechos: new Map([['x.html', [[100, 110]]], ['n.mjs', 'todo']]), ler: f => (f === 'x.html' ? texto : 'q') });
+    igual(r.avaliar.map(d => d.id).sort().join(), 'N,V',
+      'o vizinho dentro da margem, ou o arquivo novo, escaparam da avaliação');
+  });
+
+  s.teste('T14c: âncora que não se acha no arquivo é avaliada, não adiada', () => {
+    const r = escopoDoBloco({ defeitos: [{ id: 'P', arquivo: 'x.html', de: 'sumiu' }], tocados: ['x.html'],
+      temVeredito: () => true, chaveConfere: () => false,
+      trechos: new Map([['x.html', [[1, 2]]]]), ler: () => 'outra coisa' });
+    igual(r.avaliar.length, 1, 'na dúvida sobre a âncora, o defeito foi adiado — tem de ser avaliado');
   });
 
   s.teste('T14: as fatias são disjuntas e juntas cobrem tudo', () => {

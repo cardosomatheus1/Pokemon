@@ -39,7 +39,7 @@ import { join } from 'node:path';
 import { DEFEITOS } from './defeitos-plantados.mjs';
 
 /* Ver a explicação longa no `execFile` abaixo. */
-import { conferirAncoras, filtrarTocados, escopoDoBloco, fatiar } from './ancoras.mjs';
+import { conferirAncoras, filtrarTocados, escopoDoBloco, fatiar, trechosDoDiff } from './ancoras.mjs';
 import { limparCaixas, limparOrfas } from './caixas.mjs';
 
 /* --- COMO A SABOTAGEM RODA, E POR QUE ASSIM -----------------------------
@@ -145,6 +145,23 @@ function tocadosDoBloco() {
     } catch (e) { console.error(`--desde inválido: ${e.message}`); process.exit(2); }
   }
   return [...lista];
+}
+
+/* T14c: as LINHAS que o bloco mudou, por arquivo. Arquivo novo (não rastreado)
+   conta inteiro. O `--desde` é a base; sem ele, o HEAD — e `git diff <ref>`
+   compara com a árvore de trabalho, então pega o commitado e o não commitado. */
+function trechosDoBloco() {
+  const ref = argDesde ? argDesde.slice(8) : 'HEAD';
+  let t;
+  try {
+    t = trechosDoDiff(execFileSync('git', ['diff', '-U0', '--no-color', ref],
+                                   { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }));
+  } catch { return null; }                  /* sem diff legível: o arquivo inteiro conta */
+  try {
+    for (const l of execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).split('\n'))
+      if (l.startsWith('??')) t.set(l.slice(3).trim(), 'todo');
+  } catch { /* sem status: fica o diff */ }
+  return t;
 }
 
 function arquivosTocados() {
@@ -846,9 +863,10 @@ const chaveGuardadaConfere = d => {
   return !!(c?.chave && cap && c.chave === chaveDe(d, cap));
 };
 const ESCOPO = BLOCO ? escopoDoBloco({ defeitos: ALVOS, tocados: tocadosDoBloco(),
-  temVeredito: d => !!VEREDITOS[d.id]?.chave, chaveConfere: chaveGuardadaConfere }) : null;
+  temVeredito: d => !!VEREDITOS[d.id]?.chave, chaveConfere: chaveGuardadaConfere,
+  trechos: trechosDoBloco(), ler: f => originais.get(f) ?? '' }) : null;
 if (ESCOPO) {
-  console.log(`Q2 DO BLOCO — ${ESCOPO.avaliar.length} a avaliar (ancorados no que o bloco tocou, ` +
+  console.log(`Q2 DO BLOCO — ${ESCOPO.avaliar.length} a avaliar (ancorados PERTO do que o bloco mudou, ` +
               `ou sem veredito) · ${ESCOPO.reusar.length} reaproveitados · ` +
               `${ESCOPO.adiar.length} adiados para o Q2 completo\n`);
 }

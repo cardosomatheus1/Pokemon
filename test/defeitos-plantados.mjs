@@ -2212,6 +2212,16 @@ export const DEFEITOS = [
     de:'  e.run.eventos = [...(e.run.eventos ?? []), ...eventosDoElenco(pack, e.run, agora)];',
     para:'  e.run.eventos = [...(e.run.eventos ?? [])];' },
 
+  /* ── T14c · TOCADO É O TRECHO ─────────────────────────────────────── */
+  { id:'S1077', arquivo:'test/ancoras.mjs', nome:'o trecho deixa de olhar a vizinhanca',
+    real:'o defeito ao lado da mudanca e adiado — o Q2 do bloco deixa de testar o que o bloco mudou',
+    de:'  return t.some(([i, f]) => a[0] <= f + MARGEM_DO_TRECHO && a[1] >= i - MARGEM_DO_TRECHO);',
+    para:'  return false;' },
+  { id:'S1078', arquivo:'test/ancoras.mjs', nome:'arquivo novo deixa de contar inteiro',
+    real:'os defeitos de um modulo recem-criado sao adiados — justamente os que o bloco acabou de escrever',
+    de:"  if (t === 'todo') return true;",
+    para:"  if (t === 'todo') return false;" },
+
   { id:'S1043', arquivo:'test/bandeiras.mjs', nome:'as caras passam a ser entregues por ultimo',
     real:'a fila termina quando a ultima termina: a mais cara no fim deixa tres trabalhadores ociosos',
     de:'    ((custo[b] ?? 0) - (custo[a] ?? 0)) || (pos.get(a) - pos.get(b)));',
