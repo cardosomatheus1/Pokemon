@@ -2011,9 +2011,14 @@ export const DEFEITOS = [
     para:'export const relogioDeParede = (agora, fusoMin = 0) => agora + (Number(fusoMin) || 0) * 60000;' },
 
   { id:'S1021', arquivo:'app/modules/idle-mundo.mjs', nome:'a cena volta a ler o UTC cru',
-    real:'"Date.now() ja e a hora" — e o sol do jogo nasce tres horas antes do sol da janela do dono (DEC-10)',
-    de:'    const agoraDoMundo = relogioDeParede(Date.now(), new Date().getTimezoneOffset());',
+    real:'"Date.now() ja e a hora" — e o sol do jogo nasce tres horas antes do sol do Brasil (DEC-10)',
+    de:'    const agoraDoMundo = relogioDoMundo(Date.now());',
     para:'    const agoraDoMundo = Date.now();' },
+
+  { id:'S1022', arquivo:HORA, nome:'o mundo deixa de rodar no horario de Brasilia',
+    real:'"UTC e mais simples" — e contraria a DEC-10 do dono: o mundo inteiro tres horas adiantado para quem joga',
+    de:'export const FUSO_DO_MUNDO_MIN = 180;',
+    para:'export const FUSO_DO_MUNDO_MIN = 0;' },
 
   /* ── OS TRÊS DO T11a: QUEM AVANÇA OS QUADROS ──────────────────────────
      O defeito que estes guardam ficou 30 s por largura escondido atrás de uma

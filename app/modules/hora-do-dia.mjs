@@ -100,6 +100,31 @@ const mistura = (a, b, t) => a + (b - a) * t;
  * quem chama não ter de lembrar de inverter nada. */
 export const relogioDeParede = (agora, fusoMin = 0) => agora - (Number(fusoMin) || 0) * 60000;
 
+/* ── O RELÓGIO DO MUNDO — DEC-10, decidida pelo dono em 25/09/2026 ────────
+ *
+ * Pergunta: *"qual relógio governa o mundo do jogo?"*. Resposta do dono:
+ * **Brasília para todos** — a luz da cena e, no 1.33, o elenco.
+ *
+ * As três opções postas, e por que esta:
+ *
+ *     Brasília p/ todos       um relógio só: cena noturna = monstro noturno, e
+ *                             ninguém força a noite trocando o fuso do celular
+ *     hora local de cada um   natural para quem mora fora, mas o fuso do
+ *                             aparelho vira alavanca para farmar espécie noturna
+ *     luz local, elenco BR    sem burla, mas quem está fora vê cena e monstros
+ *                             descombinados
+ *
+ * O público é de amigos no Brasil, então para eles Brasília É a hora local. Quem
+ * jogar de fora vê o dia do Brasil — e isso é decisão, não defeito.
+ *
+ * UTC−3 FIXO: o Brasil não tem horário de verão desde 2019. Um número e não uma
+ * consulta ao `Intl`, de propósito — assim o servidor e qualquer navegador
+ * respondem igual, sem depender da base de fusos de cada um. Se o horário de
+ * verão voltar, este número muda com a decisão registrada. */
+export const FUSO_DO_MUNDO = 'America/Sao_Paulo';
+export const FUSO_DO_MUNDO_MIN = 180;
+export const relogioDoMundo = agora => relogioDeParede(agora, FUSO_DO_MUNDO_MIN);
+
 export function horaDecimal(agora) {
   const d = new Date(agora);
   return d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600

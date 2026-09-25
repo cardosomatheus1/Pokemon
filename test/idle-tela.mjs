@@ -383,16 +383,19 @@ export function suite() {
       'as camadas de luz e brilho sumiram do palco');
   });
 
-  /* ── A CENA USA A HORA DO JOGADOR (DEC-10, revisão de 24/09) ─────────
+  /* ── A CENA RODA NO RELÓGIO DO MUNDO (DEC-10, decidida em 25/09) ─────
      O `hora-do-dia.mjs` lê as horas em UTC de propósito — é o que o torna
-     determinístico —, então quem chama TEM de converter. Sem isto, a cena ficava
-     três horas adiantada para o dono, na Bahia. */
-  s.teste('a cena do idle converte o relógio para a hora local do jogador', () => {
+     determinístico —, então quem chama TEM de converter. E converte para
+     Brasília, e não para o fuso do aparelho: decisão do dono. */
+  s.teste('a cena do idle roda no relógio do MUNDO, e não no do aparelho', () => {
     const src = semComentario(ler('../app/modules/idle-mundo.mjs'));
-    ok(/relogioDeParede\(\s*Date\.now\(\)\s*,\s*new Date\(\)\.getTimezoneOffset\(\)\s*\)/.test(src),
-      'a cena do idle passa o UTC cru para a camada 0. Para quem não mora em ' +
-      'Greenwich o sol nasce na hora errada — na Bahia, três horas antes do ' +
-      'sol da janela.');
+    ok(/relogioDoMundo\(\s*Date\.now\(\)\s*\)/.test(src),
+      'a cena do idle não usa o relógio do mundo. Com o UTC cru o sol nasce ' +
+      'três horas antes no Brasil; com o fuso do aparelho, luz e elenco (1.33) ' +
+      'podem discordar — e a DEC-10 do dono é "Brasília para todos".');
+    ok(!/getTimezoneOffset/.test(src),
+      'a cena voltou a ler o fuso do APARELHO. Trocar o fuso do celular ' +
+      'passaria a mudar o mundo — e forçar a noite para farmar espécie noturna.');
   });
 
   s.teste('o nível mostra a PORCENTAGEM ao lado da barra', () => {

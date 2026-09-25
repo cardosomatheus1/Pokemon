@@ -51,8 +51,12 @@ const HORAS = [
    arranjo — esse o `olhar-idle` já cobre nas quatro larguras. */
 const VISTA = { w: 1440, h: 1200 };
 
-/* O fuso do dono. Setembro na Bahia não tem horário de verão: UTC−3 fixo. */
-const FUSO = 'America/Bahia';
+/* A PÁGINA RODA EM TÓQUIO DE PROPÓSITO. A DEC-10 manda o mundo rodar em
+   Brasília seja qual for o fuso do aparelho — então a foto só prova a regra se
+   o aparelho estiver LONGE de Brasília. Num contêiner em UTC, ou num navegador
+   em Brasília, a cena certa e a errada sairiam iguais. As horas pedidas são as
+   de Brasília (UTC−3). */
+const FUSO = 'Asia/Tokyo';
 const DESLOCAMENTO_H = 3;
 
 const MIME = {
@@ -204,7 +208,7 @@ for (const H of HORAS) {
   /* A HORA, FIXADA ANTES DE O APP CARREGAR. `Date.now` e `new Date()` sem
      argumento — os dois, porque o app usa os dois e fixar só um deixaria
      metade da cena numa hora e metade na outra. */
-  /* A hora pedida é a do RELÓGIO DE PAREDE da Bahia (UTC−3): 01h lá são 04h UTC. */
+  /* A hora pedida é a de BRASÍLIA (UTC−3): 01h lá são 04h UTC. */
   const alvo = Date.UTC(2026, 8, 16, H.h, 0, 0) + DESLOCAMENTO_H * 3600000;
   await pg.addInitScript(`(() => {
     const D = Date, T = ${alvo};
@@ -230,7 +234,7 @@ for (const H of HORAS) {
     const h = await import('/app/modules/hora-do-dia.mjs');
     /* O MESMO caminho que a cena usa, com o fuso da página: o relatório diz o
        que a cena DEVERIA mostrar, e a foto mostra o que ela mostrou. */
-    const t = h.relogioDeParede(Date.now(), new Date().getTimezoneOffset());
+    const t = h.relogioDoMundo(Date.now());
     const a = h.astroEm(t), l = h.luzEm(t);
     return { periodo: h.periodoEm(t), alfa: l.alfa, cor: `${l.r},${l.g},${l.b}`,
              astro: a.qual, x: a.x, y: a.y, brilho: a.brilho,

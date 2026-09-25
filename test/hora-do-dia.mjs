@@ -26,7 +26,7 @@ import { criarSuite, ok, igual } from './harness.mjs';
 import {
   PERIODOS, fracaoDoDia, periodoEm, luzEm, astroEm, forcaDoEfeito, estrelasEm,
   brilhoNoturno, ceuEm, estrelasNaJanela, ESTRELAS_NA_JANELA, luzRestanteEm,
-  relogioDeParede,
+  relogioDeParede, relogioDoMundo, FUSO_DO_MUNDO, FUSO_DO_MUNDO_MIN,
 } from '../app/modules/hora-do-dia.mjs';
 import { VIDA_QUE_BRILHA } from '../app/modules/particulas.mjs';
 
@@ -282,6 +282,23 @@ export function suite() {
      na Bahia (UTC−3), a cena ficava TRÊS HORAS adiantada — às 5h da madrugada
      dele, já era dia claro. Todos os testes rodavam em UTC, e por isso nenhum
      via. */
+  /* DEC-10, DECIDIDA pelo dono em 25/09/2026: "Brasília para todos". Um relógio
+     só governa o mundo — a luz da cena e, no 1.33, o elenco. Coerente (cena
+     noturna, monstro noturno), e ninguém força a noite trocando o fuso do
+     aparelho para farmar espécie noturna. */
+  s.teste('o mundo roda no horário de Brasília, seja qual for o fuso do aparelho', () => {
+    igual(FUSO_DO_MUNDO, 'America/Sao_Paulo',
+      'o fuso do mundo mudou. A DEC-10 é do dono: "Brasília para todos".');
+    igual(FUSO_DO_MUNDO_MIN, 180,
+      'Brasília é UTC−3 fixo desde o fim do horário de verão (2019). Se ele ' +
+      'voltar, este número muda de propósito, com a decisão registrada.');
+    /* 08h UTC são 05h em Brasília: noite. */
+    igual(periodoEm(relogioDoMundo(aos(8))), 'noite',
+      'às 08h UTC — 05h em Brasília — o mundo diz que é dia');
+    igual(periodoEm(relogioDoMundo(aos(15))), 'dia',
+      'às 15h UTC — meio-dia em Brasília — o mundo não diz que é dia');
+  });
+
   s.teste('o relógio de parede converte o instante para a hora LOCAL do jogador', () => {
     /* `getTimezoneOffset()` devolve +180 na Bahia: minutos a SOMAR à hora
        local para chegar ao UTC. Às 08h UTC são 05h lá — ainda noite. */

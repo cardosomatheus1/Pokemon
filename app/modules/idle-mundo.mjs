@@ -461,9 +461,10 @@ async function laçoDoAtor(t) {
        `Date.now()` aqui e não `t`: `t` é o relógio da ANIMAÇÃO, que começa em
        zero quando a aba abre. A hora é do MUNDO — ver a nota longa no
        `hora-do-dia.mjs`. */
-    /* A HORA DO JOGADOR, e não a de Greenwich — ver `relogioDeParede`. Sem a
-       conversão a cena ficava três horas adiantada na Bahia (DEC-10). */
-    const agoraDoMundo = relogioDeParede(Date.now(), new Date().getTimezoneOffset());
+    /* O RELÓGIO DO MUNDO — Brasília para todos, decisão do dono (DEC-10). Não o
+       UTC cru (três horas adiantado no Brasil) e não o fuso do aparelho (que
+       viraria alavanca para forçar a noite). Ver `relogioDoMundo`. */
+    const agoraDoMundo = relogioDoMundo(Date.now());
     /* A LUZ É UMA CAMADA DO PALCO, com `multiply` — ver o CSS de `#idleLuz`
        e as duas tentativas reprovadas que ele conta. Só escreve o estilo quando
        ele muda: a string é a mesma por minutos, e tocar o estilo a 60 Hz
@@ -514,7 +515,7 @@ import { veuDoClima, desenharClima } from './idle-clima.mjs';
    da vida atravessando a noite.
    Quem DECIDE é o `hora-do-dia.mjs`, em camada 0; estes dois só pintam. */
 import { estiloDaLuz, pintarJanelaDoCeu, falaDaHora } from './idle-ceu.mjs';
-import { brilhoNoturno, relogioDeParede } from './hora-do-dia.mjs';
+import { brilhoNoturno, relogioDoMundo } from './hora-do-dia.mjs';
 export { ESPUMA_MS } from './idle-bioma-vivo.mjs';
 
 function esconder(chave) {
