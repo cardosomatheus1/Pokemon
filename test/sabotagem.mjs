@@ -738,8 +738,23 @@ async function avaliar(d, caixa) {
 
        Foi assim que os defeitos da tela de proteção voltaram atribuídos a
        `visual` quando a `protecao-tela` os pegava em meio segundo. */
+    /* ── O NAVEGADOR SÓ NA ONDA 1 QUANDO O ÍNDICE O NOMEIA (T14b, 25/09) ──
+     *
+     * A afinidade de um arquivo de `app/` inclui TODAS as suítes de navegador.
+     * Sem entrada no índice — todo defeito novo —, a onda 1 rodava a lista
+     * inteira com Chromium (~3 min na caixa) ANTES da passada de CPU, que pega
+     * a maioria em segundos. Medido no Q2 da ST-1.1: 3 de 33 mutantes em ~15
+     * min, com as duas caixas presas no navegador.
+     *
+     * É a MESMA tentativa que o comentário de mais abaixo mediu e descartou
+     * ("começar pelo navegador quando o defeito mora em `app/`"), entrando pela
+     * porta da afinidade sem ninguém notar. Agora o grupo de navegador só roda
+     * na onda 1 se o captor guardado for de navegador; senão o defeito segue
+     * para a passada de CPU e, se ela sair verde, para o navegador — a ordem que
+     * a medição escolheu. Nenhum veredito muda: a onda 1 só sabe dizer PEGOU. */
+    const navNaOnda1 = !!previsto && previsto.split(',').some(n => NAVEGADOR.has(n));
     for (const grupo of [candidatas.filter(n => !NAVEGADOR.has(n)),
-                         candidatas.filter(n => NAVEGADOR.has(n))]) {
+                         navNaOnda1 ? candidatas.filter(n => NAVEGADOR.has(n)) : []]) {
       if (!grupo.length) continue;
       const nav = NAVEGADOR.has(grupo[0]);
       const r = await julgar(caixa, false, nav, grupo.join(','), nav);
