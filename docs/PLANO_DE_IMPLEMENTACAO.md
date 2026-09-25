@@ -158,7 +158,7 @@ mudança de produto. Achado de arnês que não couber vai para DEFEITOS/LACUNAS.
 - É o T11 (um navegador vivo reaproveitado). Só entra se a sonda `base` (62 s)
   virar impedimento. Registrado para não ser redescoberto.
 
-### ST-0.8 · o que a DEC-11 compraria na suíte — **aberta, espera o dono**
+### ST-0.8 · o que a DEC-11 compraria na suíte — ✅ **fechada em 25/09 sem mudança: a DEC-11 manteve os 154 k** (a medição abaixo fica como o preço conhecido)
 
 - ~~Cada página precifica 154 k (~5 s por carga), e é o maior custo restante
   das sondas.~~ **Errado — corrigido no mesmo dia, medindo:**
@@ -461,7 +461,12 @@ commit de documentação.
 
 ---
 
-## Decisões que esperam o dono
+## Decisões — tomadas por delegação do dono em 25/09
+
+> **A tabela viva é a do `ROADMAP.md`**, com o porquê de cada uma. Esta fica
+> como o registro do que cada DEC pedia quando o plano foi escrito. Em 25/09 o
+> dono delegou as de produto; com ele ficam só DEC-01, DEC-02 e a L-176.
+
 
 As DEC-01..10 são da Revisão 2.0 (`docs/revisao-2026-09-24/`). As três últimas
 nasceram deste cruzamento.

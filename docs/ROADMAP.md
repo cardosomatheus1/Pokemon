@@ -287,29 +287,37 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | # | bloco | o que é | por que aqui |
 |---|---|---|---|
 | 1 | ~~**1.32b (resto)** · ST-2.3~~ | ✅ fechada em 25/09 — a noite muda 7·8·3·3 rotas | — | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto. A prévia da NOITE já está na sala desde o 1.33 |
-| 2 | ~~**INT-01**~~ | ✅ fechado em 25/09 (ST-1.1, 3.1 a 3.5). Sobra a **ST-3.6** (calibrar a emissão), que espera a **DEC-14** | — | integridade de economia vem antes de calibrar quantidade |
-| 3 | **INT-02** · uma posse confiável | cosméticos e outfit entre dispositivos (L-157, L-055) | compra e equipar não podem depender do navegador |
-| 4 | **1.27g · UX-01** (resto) · ST-5.6, 5.8 | L-175 (⏸️ DEC-15), D-086 (não reproduzido) — o jato (L-186, ST-5.5b) fechou; o banner (D-082), o `est:` cru (L-160), a base visual (D-093), os números de dano (L-172, ST-5.4) e a carga e o projétil (L-171, ST-5.5) fecharam; os 404 (L-176) esperam o dono commitar os dois arquivos | o que impede ENTENDER a ação vem antes do que a enfeita |
-| 5 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
+| 2 | ~~**INT-01**~~ | ✅ fechado em 25/09 (ST-1.1, 3.1 a 3.5). Sobra a **ST-3.6** (calibrar a emissão) — a **DEC-14** foi decidida (rendimento decrescente), e ela entra depois do INT-02 | — | integridade de economia vem antes de calibrar quantidade |
+| 3 | **INT-02** · uma posse confiável · ST-4.1 a 4.5 + ST-1.2b | cosméticos e outfit entre dispositivos (L-157, L-055); o Sair revoga no servidor (DEC-07); saldo comprado não compra poder (DEC-03) | compra e equipar não podem depender do navegador |
+| 4 | **ST-3.6** · a emissão do Avanço decresce por run no mesmo dia | L-185 (DEC-14) | integridade de economia antes de enfeite |
+| 5 | **1.27g · UX-01** (resto) + o bloco do CENÁRIO · ST-5.6, ST-2.4, 5.8 | L-175 (DEC-15 decidida), L-184, D-086 (não reproduzido) — o jato (L-186, ST-5.5b) fechou; o banner (D-082), o `est:` cru (L-160), a base visual (D-093), os números de dano (L-172, ST-5.4) e a carga e o projétil (L-171, ST-5.5) fecharam; os 404 (L-176) esperam o dono commitar os dois arquivos | o que impede ENTENDER a ação vem antes do que a enfeita |
+| 6 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
 | — | **E6** · higiene documental | ST-6.1 a 6.4 | não é código: corre em paralelo, um commit por story |
-| — | **ST-0.6** · CI no GitHub | `npm test` a cada push; Q2 fatiado à noite | espera a **DEC-13** |
+| — | **ST-0.6** · CI no GitHub | `npm test` a cada push (DEC-13: o Q2 noturno não) | corre em paralelo, pequena |
 | — | **T11 · T12 · T7** · arnês | ❄️ **CONGELADO** — *(ST-6.2, 25/09: a linha dizia "T11 · T8 · T4 · T7", e só o T11 era arnês pendente: o **T4 está fechado ✅** no BUILD_BLOCKS, e o **T8** era a tarefa de documentos feita em 08/09. Entram o **T12** — dono do D-105, que estava órfão da fila — e o **T7**, dono da L-173, que ainda não tem ficha)* | entra só quando IMPEDIR um bloco desta tabela, com orçamento nomeado antes (`CLAUDE.md`, 16/09) |
 
-### Esperando decisão do dono
+### Decisões — tomadas por delegação do dono em 25/09
 
-| id | a pergunta | o que depende dela |
-|---|---|---|
-| **DEC-11** | manter os 154.000 sims? O argumento dos 19% caiu (L-182) | custo de servidor; nos testes é só 30% das sondas de navegador (medido, ST-0.8) — decide-se pela economia |
-| **DEC-15** | L-175: em 420 px a run mostra 130 px de mundo (cabem 3 criaturas; a luta tem 6). Proposta: na tela estreita, o zoom EFETIVO vira `min(zoom escolhido, largura ÷ 260)` — no largo nada muda (3× cabe). Mas "acima do piso o zoom é do jogador e ninguém mexe" é regra sua, e os 3× foram aprovados por você: afastar a câmera sozinha passaria por cima disso | ST-5.6 — não construída sem o seu sim |
-| **L-176** | commitar `assets/npc/lojas.mp4` e `battle-theme.mp3` do seu PC (só existem aí) | ST-5.1 — a regra do resgate proíbe trocar por outro arquivo |
-| **DEC-14** | a emissão do Avanço (L-185): teto por recurso, rendimento decrescente, ou recalibrar o Estilhaço? | ST-3.6 · recomendação: rendimento decrescente por run no mesmo dia |
-| **DEC-13** | CI no GitHub Actions? | ST-0.6 — minutos de Actions num repositório privado |
-| ✅ DEC-12 | ~~o Q2 do bloco pode adiar o que só mudou de fecho?~~ **adotada** pelo pedido do dono de 25/09 ("minutos"); o preço está na ST-0.4 | o `portoes` |
-| DEC-01 · 02 · 03 | tema e direitos · RMT · pagamento e poder | qualquer coisa com dinheiro real |
-| DEC-07 | o que o OFF encerra (o Sair já foi consertado, ST-1.2) | a ST-1.2b (revogar token no servidor) |
-| ✅ DEC-08 · 09 | ~~captura mostrada ou base · stamina por tentativa~~ aplicadas como padrão em 25/09 (a recomendação era o código); o dono pode reverter — é um teste e uma frase | — |
-| DEC-04 · 05 · 06 | curva do laboratório · Vulcão sem raro · outfits à venda | os blocos donos, quando chegarem |
-| ✅ DEC-10 | ~~qual relógio governa o mundo~~ **Brasília para todos** (25/09) | o 1.34 e o 1.33 |
+> *"Eu acho que vc tem q tomar as decisões que vc achar melhor p software"* —
+> o dono, 25/09. As de produto foram tomadas abaixo, cada uma com o porquê; ele
+> pode reverter qualquer uma. Ficam com ele dinheiro REAL, jurídico e o que só
+> existe no PC dele.
+
+| id | decisão | por quê | destrava |
+|---|---|---|---|
+| ✅ **DEC-03** | **pagamento não compra poder** (P5 restritivo): saldo comprado e o lucro de aposta feito com ele HERDAM a linhagem `comprado`, e `comprado` nunca paga propósito `poder` | é a proteção do jogador e o compromisso P5; a rota indireta (lucro que "lava" o saldo) é o REV-04 | ST-4.5, E4 |
+| ✅ **DEC-07** | OFF encerra presença; **Sair esquece o token neste aparelho E o servidor o revoga**; "sair de todos os aparelhos" só por pedido explícito | token que sobrevive ao Sair no servidor é credencial viva que o jogador acha que matou | ST-1.2b |
+| ✅ **DEC-11** | **manter os 154.000 sims** | decidido pelo próprio dono no começo do dia; nos testes custa 30% das sondas, e isso não justifica mudar a precificação | ST-0.8 fecha sem mudança |
+| ✅ **DEC-13** | **CI: `npm test` a cada push**; o Q2 noturno NÃO | a suíte leva ~2 min e responde "quebrei algo?"; o Q2 fatiado custaria horas de Actions num repositório privado para responder o que o `sabotagem` local responde | ST-0.6 (só a metade da suíte) |
+| ✅ **DEC-14** | **(b) rendimento decrescente por run no mesmo dia** | o casual (2 runs) fica como está; só a maratona (48 runs) morde — mexe onde a L-185 mediu o excesso | ST-3.6 |
+| ✅ **DEC-15** | **na RUN, abaixo do mínimo que a luta pede (260 px de mundo), a câmera se afasta sozinha**; no largo e fora da run o zoom continua do jogador | em 420 px a luta sai da janela (L-175): o zoom escolhido não pode esconder o que o jogador veio ver. A regra antiga ("acima do piso o zoom é do jogador") continua valendo onde a luta cabe | ST-5.6, e com ela a ST-2.4 (o bloco do cenário) |
+| ✅ **DEC-04** | laboratório: **prototipar só o B1**, com tempo-alvo medido, depois do piloto | curva sem uso observado é chute; é o que a Revisão recomenda | E8 (LAB-01) |
+| ✅ **DEC-05** | Vulcão: **não inventar raro para cumprir cota** | identidade do bioma vale mais que simetria de tabela | E8 |
+| ✅ **DEC-06** | outfits: **pausa mantida**; vender só com catálogo, posse no servidor (E4) e arte completos | vender o que não se possui no servidor é o D-108 | depois do E4 |
+| ✅ DEC-08 · 09 · 10 · 12 | aplicadas em 25/09 (captura mostrada · stamina por wave · Brasília · Q2 do bloco adia) | ver o PLANO | — |
+| ⏸️ **DEC-01** | tema e direitos da franquia | **do dono + assessoria de IP** — não se desfaz com commit | distribuição/comercialização |
+| ⏸️ **DEC-02** | RMT | **do dono + jurídico + pagamentos** | qualquer dinheiro real |
+| ⏸️ **L-176** | commitar `assets/npc/lojas.mp4` e `battle-theme.mp3` do PC dele | só existem lá; a regra do resgate proíbe trocar por outro arquivo | ST-5.1 |
 
 Série DEC-01 a DEC-11 = Revisão 2.0 (`docs/revisao-2026-09-24/`); DEC-019,
 DEC-075, DEC-095… = mapa de decisões do dono. Não confundir.
