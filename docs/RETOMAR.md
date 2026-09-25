@@ -36,6 +36,14 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### ST-5.5b FECHADA — o jato (L-186)
+
+O terceiro desenho da Arena entre atacante e alvo: a folha repetida pela linha,
+saindo 300 ms antes do impacto e vivendo 550. 5–7 jatos por wave com Squirtle
+no Surf (`--inicial 7`), com foto em voo. A 420 px ele sai pela borda — é a
+L-175, que espera a DEC-15. Suíte 2288/2288; Q2 do bloco 14/14, 0 mutantes de
+navegador.
+
 ### ST-5.5 FECHADA — a carga e o projétil do golpe (L-171)
 
 O motor publica os golpes `aCaminho` (os próximos 900 ms) e o projétil sai

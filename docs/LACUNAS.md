@@ -7620,7 +7620,12 @@ O `beam` (o jato) ficou de fora do escopo e está na **L-186**.
 ### L-186 — o jato (`beam`) do golpe no Avanço
 
 **Registrada em:** 25/09/2026, na ST-5.5. **Bloco dono:** 1.27g (UX-01), como
-**ST-5.5b**. **Estado:** aberta.
+**ST-5.5b**. **Estado:** ✅ **FECHADA no mesmo dia (ST-5.5b).** O jato sai
+300 ms antes do impacto e vive 550 (os números da Arena); `pontosDoJato` é a
+conta pura dos segmentos. Medido com Squirtle no nível ~20 (`--inicial 7`):
+5 jatos numa wave no panorâmico, 7 a 420, 2 no chefe; a foto em voo mostra a
+onda do Surf entre os dois. A 420 px o jato sai pela borda — é a L-175 (a
+câmera estreita, DEC-15), e não o jato.
 
 A Arena encena três coisas entre atacante e alvo; a ST-5.5 trouxe duas (`cast`
 e `proj`). O `beam` — a folha REPETIDA ao longo da linha, com a ponta

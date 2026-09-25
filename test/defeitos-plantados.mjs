@@ -7568,6 +7568,24 @@ export const DEFEITOS = [
     de:"             'lc' + cena.wave + ':' + golpe.de + golpe.i + ':' + golpe.t, t + (golpe.t - cena.t));",
     para:"             'lc' + cena.wave + ':' + golpe.de + golpe.i + ':' + golpe.t, t);" },
 
+  /* ── ST-5.5b · o jato (L-186) ───────────────────────────────────────── */
+  { id:'S1100', arquivo:AVEFX, nome:'o golpe de jato volta a sair sem jato',
+    real:'Surf, Flamethrower e Thunderbolt saem so com o impacto — a linha entre os dois fica vazia',
+    de:'  if (!fx || (!fx.cast && !fx.proj && !fx.beam)) return null;',
+    para:'  if (!fx || (!fx.cast && !fx.proj)) return null;' },
+  { id:'S1101', arquivo:AVEFX, nome:'a ponta do jato deixa de avancar',
+    real:'o jato nasce cobrindo a linha inteira, e le como um bastao parado e nao como um jato',
+    de:'    if (q > k * 1.6) break;',
+    para:'    if (q > 1) break;' },
+  { id:'S1102', arquivo:AVEFX, nome:'o jato sai no instante do dano',
+    real:'o numero sobe antes de o jato sair do atacante',
+    de:'                   em: fim - JATO_ATE_IMPACTO_MS, dur: JATO_MS };',
+    para:'                   em: fim, dur: JATO_MS };' },
+  { id:'S1103', arquivo:AVEFX, nome:'o jato vira um segmento so',
+    real:'um jato de um ponto e um estouro no atacante',
+    de:'  const seg = Math.max(3, Math.round(len / (Math.max(1, lado) * (escala || 1) * 0.55)));',
+    para:'  const seg = 0;' },
+
   /* REALVADO para a geometria: enquanto a limpeza morava junto do desenho, o
      defeito passou — não havia como afirmar a lista sem montar um DOM. */
   { id:'S963', arquivo:AVGEO2, nome:'a lista dos numeros no ar nunca se limpa',

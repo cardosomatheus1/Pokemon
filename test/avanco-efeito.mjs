@@ -23,7 +23,8 @@ import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { noCanvas, estourar, usarCarregador, desenharEstouros,
          limparEstouros, contagem, encenacao, antecedencia, trajetoria,
-         direcao8, lancar, quantosNoAr, CARGA_MS } from '../app/modules/avanco-efeito.mjs';
+         direcao8, lancar, quantosNoAr, CARGA_MS, pontosDoJato,
+         JATO_ATE_IMPACTO_MS, JATO_MS } from '../app/modules/avanco-efeito.mjs';
 import { MOVE_FX } from '../app/modules/efeitos-dados.mjs';
 import { ANTECIPACAO_MS } from '../engine/run-avanco.mjs';
 
@@ -393,6 +394,57 @@ export function suite() {
     }
     ok(/golpe\.t\s*-\s*cena\.t/.test(t),
       'a hora do impacto não sai de `golpe.t - cena.t` — o projétil chegaria em outro instante');
+  });
+
+  /* ══ ST-5.5b · O JATO (L-186) ══════════════════════════════════════════
+   *
+   * O terceiro desenho da Arena entre atacante e alvo: a folha REPETIDA ao
+   * longo da linha, com a ponta avançando. Na Arena o dano cai 300 ms depois
+   * de o jato sair, e ele dura 550 — continua um instante depois do impacto,
+   * que é o que faz ele ler como jato e não como tiro. */
+  s.teste('o jato vem da tabela da Arena: Surf sai com jato, sem projétil', () => {
+    const surf = encenacao('Surf', 100);
+    ok(surf?.jato?.folha, 'o Surf tem `beam` na tabela e saiu sem jato');
+    igual(surf.jato.escala, 1.3, 'a escala do jato não é o `sc` da tabela');
+    igual(surf.projetil, null, 'o Surf ganhou um projétil');
+    igual(surf.viagemMs, JATO_ATE_IMPACTO_MS, 'o jato não leva o tempo da Arena até o impacto');
+    /* Carga + jato: o Solar Beam e o Hyper Beam. */
+    const solar = encenacao('Solar Beam', 100);
+    ok(solar?.carga && solar?.jato, 'o Solar Beam perdeu a carga ou o jato');
+    igual(antecedencia(solar), CARGA_MS + JATO_ATE_IMPACTO_MS, 'a antecedência do Solar Beam não soma carga e jato');
+  });
+
+  s.teste('os pontos do jato vão do atacante ao alvo, e a ponta avança com o tempo', () => {
+    const o = { x0: 0, y0: 0, x1: 100, y1: 0 };
+    const cheio = pontosDoJato(o, 1, 20, 1);
+    /* 100 px de linha, sprite de 20 × 0,55 de passo: nove segmentos, dez pontos. */
+    igual(cheio.length, 10, `o jato cheio tem ${cheio.length} pontos, e a conta da Arena dá 10`);
+    igual(cheio[0].x, 0, 'o jato não sai do atacante');
+    igual(cheio[cheio.length - 1].x, 100, 'o jato não chega ao alvo');
+    igual(pontosDoJato(o, 0.1, 20, 1).length, 2, 'no começo a ponta já estava longe demais');
+    igual(pontosDoJato(o, 0.7, 20, 1).length, 10, 'a 70% do tempo o jato ainda não cobria a linha');
+    /* Linha curta ainda desenha três segmentos: um jato de um ponto é um estouro. */
+    igual(pontosDoJato({ x0: 0, y0: 0, x1: 5, y1: 0 }, 1, 20, 1).length, 4,
+      'uma linha curta virou menos de três segmentos');
+  });
+
+  s.teste('o jato sai antes do impacto e continua um instante depois', () => {
+    limparEstouros();
+    usarCarregador(() => ({ ok: true, side: 20, n: 4, rows: 1, img: {} }));
+    const pintados = [];
+    const g = { globalAlpha: 1, drawImage: (...a) => pintados.push(a) };
+    const ACERTA = 20_000;
+    const l = lancar('Surf', { x: 0, y: 50 }, { x: 100, y: 50 }, { x: 0, y: 0 }, 'j1', ACERTA);
+    ok(l?.jato, 'o Surf não agendou jato');
+    igual(l.jato.em, ACERTA - JATO_ATE_IMPACTO_MS, 'o jato não sai 300 ms antes do impacto');
+    desenharEstouros(g, ACERTA - JATO_ATE_IMPACTO_MS - 10);
+    igual(pintados.length, 0, 'o jato foi desenhado antes de sair');
+    desenharEstouros(g, ACERTA + 50);
+    ok(pintados.length >= 3, `no impacto o jato desenhou ${pintados.length} segmento(s) — ele cobre a linha`);
+    const n = pintados.length;
+    desenharEstouros(g, ACERTA - JATO_ATE_IMPACTO_MS + JATO_MS + 1);
+    igual(pintados.length, n, 'o jato ficou no ar depois da vida dele');
+    limparEstouros();
   });
 
   return s;

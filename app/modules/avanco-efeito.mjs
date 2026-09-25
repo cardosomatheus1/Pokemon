@@ -97,16 +97,23 @@ export const CARGA_MS = 380;
 const VIAGEM_MIN_MS = 160, VIAGEM_MAX_MS = 500, PX_POR_S = 420;
 /* O ARCO leve da Arena para o que é arremessado. */
 const ARCO = 16;
+/* O JATO (ST-5.5b, L-186): na Arena o dano cai 300 ms depois de ele sair, e
+   ele vive 550 — continua um instante depois do impacto, que é o que o faz
+   ler como jato e não como tiro. */
+export const JATO_ATE_IMPACTO_MS = 300;
+export const JATO_MS = 550;
 
 export function encenacao(nome, dist) {
   const fx = MOVE_FX[nome] ?? null;
-  if (!fx || (!fx.cast && !fx.proj)) return null;
+  if (!fx || (!fx.cast && !fx.proj && !fx.beam)) return null;
   const carga = fx.cast ? { folha: fx.cast, escala: Number(fx.csc) || 1 } : null;
   const projetil = fx.proj ? { folha: fx.proj, escala: Number(fx.sc) || 1, giro: !!fx.spin } : null;
+  /* O jato só quando não há projétil — a mesma precedência da Arena. */
+  const jato = !projetil && fx.beam ? { folha: fx.beam, escala: Number(fx.sc) || 1 } : null;
   const viagemMs = projetil
     ? Math.round(Math.max(VIAGEM_MIN_MS, Math.min(VIAGEM_MAX_MS, (Number(dist) || 0) / PX_POR_S * 1000)))
-    : 0;
-  return { carga, projetil, cargaMs: carga ? CARGA_MS : 0, viagemMs };
+    : jato ? JATO_ATE_IMPACTO_MS : 0;
+  return { carga, projetil, jato, cargaMs: carga ? CARGA_MS : 0, viagemMs };
 }
 
 /* Quanto antes do impacto o lançamento começa. */
@@ -118,6 +125,24 @@ export const antecedencia = enc => (enc?.cargaMs || 0) + (enc?.viagemMs || 0);
 export function trajetoria({ x0, y0, x1, y1, arco = 0 }, k) {
   const q = Math.max(0, Math.min(1, Number(k) || 0));
   return { x: x0 + (x1 - x0) * q, y: y0 + (y1 - y0) * q - Math.sin(q * Math.PI) * arco };
+}
+
+/* ── OS PONTOS DO JATO na fração `k` da vida dele ────────────────────────
+   A folha repetida ao longo da linha, um segmento a cada 0,55 do sprite (a
+   conta da Arena), e a ponta avança com o tempo: em 1/1,6 da vida ele já
+   cobre a linha inteira. Três segmentos no mínimo — um jato de um ponto é um
+   estouro. `s` vai junto porque a defasagem do quadro por segmento é o que
+   faz o jato CORRER do atacante para o alvo. */
+export function pontosDoJato({ x0, y0, x1, y1 }, k, lado, escala) {
+  const len = Math.hypot(x1 - x0, y1 - y0);
+  const seg = Math.max(3, Math.round(len / (Math.max(1, lado) * (escala || 1) * 0.55)));
+  const pts = [];
+  for (let n = 0; n <= seg; n++) {
+    const q = n / seg;
+    if (q > k * 1.6) break;
+    pts.push({ x: x0 + (x1 - x0) * q, y: y0 + (y1 - y0) * q, s: n });
+  }
+  return pts;
 }
 
 /* A LINHA DA FOLHA `.Dir8`: a mesma conta do `dirOf` da Arena (0 de frente,
@@ -157,6 +182,13 @@ export function lancar(nome, de, para, cam, chave, acertaEm) {
                        em: fim - enc.viagemMs, dur: enc.viagemMs };
     vivos.push(feito.projetil);
     projeteis++;
+  }
+  if (enc.jato) {
+    feito.jato = { tipo: 'jato', rec: carregador(enc.jato.folha), escala: enc.jato.escala,
+                   x0: a.x, y0: a.y, x1: b.x, y1: b.y, dir,
+                   em: fim - JATO_ATE_IMPACTO_MS, dur: JATO_MS };
+    vivos.push(feito.jato);
+    jatos++;
   }
   return feito;
 }
@@ -253,10 +285,24 @@ export function desenharEstouros(g, agora) {
 
     const lado = rec.side;
     const k = idade / dur;
+    const linha = (o.dir || 0) % Math.max(1, rec.rows || 1);
+    /* O JATO é a folha repetida pela linha, com entrada e saída suaves — o
+       mesmo desenho da Arena, segmento a segmento. */
+    if (o.tipo === 'jato') {
+      const d = lado * o.escala;
+      g.globalAlpha = k < 0.18 ? k / 0.18 : k > 0.8 ? (1 - k) / 0.2 : 1;
+      for (const p of pontosDoJato(o, k, lado, o.escala)) {
+        const q = Math.floor(idade / 1000 * 20 + p.s * 1.7) % Math.max(1, rec.n);
+        g.drawImage(rec.img, q * lado, linha * lado, lado, lado,
+                    Math.round(p.x - d / 2), Math.round(p.y - d / 2), d, d);
+      }
+      g.globalAlpha = 1;
+      vistos++; desenhados++;
+      continue;
+    }
     /* O PROJÉTIL corre os quadros (ou gira, como na Arena) e anda pela
        trajetória; a carga e o estouro ficam parados no ponto deles. */
     const quadro = Math.floor((idade / 1000) * (o.giro ? 24 : QUADROS_POR_S)) % Math.max(1, rec.n);
-    const linha = (o.dir || 0) % Math.max(1, rec.rows || 1);
     const d = lado * o.escala;
     const onde = o.tipo === 'projetil' ? trajetoria(o, k) : o;
     /* O ESTOURO SOME NO FIM em vez de piscar: cortar no último quadro deixa um
@@ -298,7 +344,7 @@ export const quantosNoAr = () => vivos.length;
    pergunta da foto: um projétil agendado para daqui a meio segundo está "no
    ar" para a lista e ainda não está na tela. */
 export function noInstante(agora) {
-  const n = { estouro: 0, carga: 0, projetil: 0 };
+  const n = { estouro: 0, carga: 0, projetil: 0, jato: 0 };
   for (const o of vivos) {
     const idade = (Number(agora) || 0) - o.em;
     if (idade >= 0 && idade < (o.dur ?? DURACAO_MS)) n[o.tipo ?? 'estouro']++;
@@ -317,6 +363,6 @@ export function noInstante(agora) {
  * Estes dois contadores são a resposta certa: quantos foram AGENDADOS e
  * quantos chegaram a ser DESENHADOS. A diferença entre eles é folha que não
  * carregou — que é o único jeito de o efeito existir e não chegar aos olhos. */
-let agendados = 0, desenhados = 0, fora = 0, cargas = 0, projeteis = 0;
-export const contagem = () => ({ agendados, desenhados, fora, cargas, projeteis });
-export function zerarContagem() { agendados = 0; desenhados = 0; fora = 0; cargas = 0; projeteis = 0; }
+let agendados = 0, desenhados = 0, fora = 0, cargas = 0, projeteis = 0, jatos = 0;
+export const contagem = () => ({ agendados, desenhados, fora, cargas, projeteis, jatos });
+export function zerarContagem() { agendados = 0; desenhados = 0; fora = 0; cargas = 0; projeteis = 0; jatos = 0; }

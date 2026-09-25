@@ -45,7 +45,7 @@
  * Uso:
  *   node tools/olhar-idle.mjs                 todas as larguras
  *   node tools/olhar-idle.mjs --saida /tmp/x  outro destino
- *   node tools/olhar-idle.mjs --inicial 1     outra criatura lidera a run
+ *   node tools/olhar-idle.mjs --inicial 7     esta criatura lidera a run (7: Surf)
  */
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, mkdirSync } from 'node:fs';
@@ -132,6 +132,10 @@ const PLANTAR = async () => {
   for (const esp of extras)
     e.criaturas.push(D.criarCriatura(PACK, esp.dex, 'captura', agora,
       String(esp.dex).padStart(12, 'a') + 'f0'));
+  /* E COM `--inicial` ELA LIDERA A RUN: as três primeiras vão às expedições e
+     a run leva as duas livres, então a escolhida vai para a quarta posição —
+     a do XP de nível ~20, que é onde o Surf entra no repertório. */
+  if (window.__inicial) e.criaturas.splice(3, 0, e.criaturas.shift());
 
   /* NIVEIS DIFERENTES, para a barra de XP mostrar o que ela faz (1.14). Um
      time todo no nivel 1 desenha cinco barras vazias, e cinco barras vazias
@@ -537,10 +541,13 @@ for (const { L, chefe, raiz } of [
      o mundo — o projétil é pequeno, e na tela inteira ele some. Sem golpe de
      `proj` na equipe (o padrão), a linha diz isso e não finge. */
   const voou = await (async () => {
-    for (let tentativa = 0; tentativa < 240; tentativa++) {
+    /* PRAZO EM TEMPO, e não em tentativas: cada pergunta à página custa o seu
+       próprio tanto, e 240 tentativas "de 20 ms" duravam o que quisessem. */
+    for (const ate = Date.now() + 12_000; Date.now() < ate;) {
       const n = await pg.evaluate(async () => {
         const m = await import('/app/modules/avanco-efeito.mjs');
-        return m.noInstante(performance.now()).projetil;
+        const n = m.noInstante(performance.now());
+        return n.projetil + (n.jato ?? 0);
       }).catch(() => 0);
       if (n > 0) {
         const caixa = await pg.evaluate(() => {
@@ -555,7 +562,7 @@ for (const { L, chefe, raiz } of [
     return 0;
   })();
   console.log(`    foto COM projetil em voo: ${voou ? voou + ' em voo — run-' + L.nome +
-    (chefe ? '-chefe' : '') + '-projetil.png' : 'nenhum em 5 s (a equipe tem golpe de `proj`? use --inicial 7)'}`);
+    (chefe ? '-chefe' : '') + '-projetil.png' : 'nenhum em 12 s (a equipe tem golpe de `proj` ou jato? use --inicial 1, ou 7 para o Surf)'}`);
   console.log(`    foto COM estouro no ar: ${pegou ? pegou + ' estouro(s) na tela — ' +
     'run-' + L.nome + (chefe ? '-chefe' : '') + '-estouro.png' :
     'NAO CONSEGUI em 12 s de espera — e isso nao quer dizer que nao ha efeito, ' +
@@ -689,7 +696,7 @@ for (const { L, chefe, raiz } of [
     const comHit = Object.values(d.MOVE_FX).filter(x => x?.hit).length;
     const c = m.contagem();
     return { noAr: m.quantosNoAr(), agendados: c.agendados, desenhados: c.desenhados,
-             cargas: c.cargas ?? 0, projeteis: c.projeteis ?? 0,
+             cargas: c.cargas ?? 0, projeteis: c.projeteis ?? 0, jatos: c.jatos ?? 0,
              fora: c.fora, folhasFaltando: f.quantasFaltam(), folhasVistas: f.quantasFolhas(),
              golpesComEfeito: comHit, total: Object.keys(d.MOVE_FX).length };
   }).catch(e => ({ erro: e.message }));
@@ -702,7 +709,7 @@ for (const { L, chefe, raiz } of [
     /* A OUTRA METADE (ST-5.5): quantas cargas e projéteis foram LANÇADOS. Zero
        numa wave inteira quer dizer que ninguém ali tem golpe de `cast`/`proj`
        — ou que o motor não publicou os golpes a caminho. */
-    console.log(`    lancados antes do impacto: ${efeito.cargas} carga(s), ${efeito.projeteis} projetil(eis)`);
+    console.log(`    lancados antes do impacto: ${efeito.cargas} carga(s), ${efeito.projeteis} projetil(eis), ${efeito.jatos} jato(s)`);
     /* ── E AS FOLHAS DE COMBATE (D-090/D-091) ───────────────────────────
        Uma folha reprovada nao e erro — e arte que a origem nao tem. Mas
        DEZENAS delas querem dizer que o `npm run assets` nao passou por aqui, e
