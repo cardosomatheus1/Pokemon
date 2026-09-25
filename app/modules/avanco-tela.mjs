@@ -28,6 +28,8 @@ import { NIVEL_PARA_ESCOLHER as NIVEL_DO_FOCO,
 import { nomesDe } from './itens-nome.mjs';
 import { estiloItem, usarCatalogo } from './itens-icone.mjs';
 import { PERFIL_DO_AVANCO } from './avanco-estado.mjs';
+import { api } from './api.mjs';
+import { relatar, eventosDoEstado } from './telemetria-servidor.mjs';
 import { runDe, avancoEmCurso, sincronizar, cena, comecarAvanco, recuar,
          porQueNaoAvancar, avisoDoTeto, usarPocao,
          colherAvancoDaRun, equipeDaRun } from './avanco-estado.mjs';
@@ -228,6 +230,9 @@ export function pintarRun(E, { agora }) {
     try {
       const r = colherAvancoDaRun(E, { pack: PACK, agora });
       ultimoSaque = r;
+      /* O DIA VAI PARA O SERVIDOR (ST-7.1a): o estado, não o clique — a chave
+         de cada run é o próprio `colhidaEm`, e reenviar não duplica. */
+      relatar(api, eventosDoEstado(E, agora));
       /* ── E O QUADRO CHAMA (L-166) ────────────────────────────────────
          O jogador acabou de ver a run terminar no meio da tela, e o quadro
          "quem apareceu" nasce ABAIXO da dobra. Sem isto ele fecharia a aba

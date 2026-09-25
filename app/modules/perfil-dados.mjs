@@ -43,6 +43,8 @@
 import { S } from './estado.mjs';
 import { api } from './api.mjs';
 import { hidratarPosse, aplicarEquipados } from './posse-atual.mjs';
+import { relatar, eventosDoEstado, diaDaSessao } from './telemetria-servidor.mjs';
+import { carregar } from './idle-dados.mjs';
 import { nivelDe, progressoNivel } from '../../engine/progressao.mjs';
 
 export const CHAVE = 'ar_profile';
@@ -143,6 +145,11 @@ export async function hidratarPerfil(){
      de qualquer aparelho. Limpar o navegador deixa de levar a compra (L-055). */
   const posse = await hidratarPosse(api);
   if (posse?.ok) Object.assign(S.profile, aplicarEquipados(S.profile, posse.corpo?.equipados ?? {}));
+  /* A PRESENÇA DO DIA E O DIA DO IDLE (ST-7.1a): o que só o navegador sabe.
+     Sem `await` — telemetria não segura o login. */
+  const agora = Date.now();
+  relatar(api, [{ nome: 'session_started', chave: diaDaSessao(agora), campos: {} }]);
+  try { relatar(api, eventosDoEstado(carregar(), agora)); } catch { /* sem idle salvo */ }
   doServidor = {
     sequencia: r.corpo?.sequencia ?? 0,
     desafios:  r.corpo?.desafios ?? [],

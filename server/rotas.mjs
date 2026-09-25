@@ -43,6 +43,7 @@ import { entrarOperador, lerSessaoAdmin, sairOperador } from './admin-auth.mjs';
 import { ERRO_LIGA, minhasPrevisoes, rankingDaTemporada, registrarPrevisao } from './liga.mjs';
 import { posseDe, equipadosDe, comprar as comprarCosmetico, equipar as equiparCosmetico,
          ERRO_COSMETICO } from './cosmeticos.mjs';
+import { anotar, receberDoCliente } from './telemetria.mjs';
 
 /* AS PÚBLICAS, e cada uma com motivo. Quem ainda não entrou precisa poder criar
    sessão; o estado da rodada é público por desenho (§4.5 — o commit tem que ser
@@ -221,6 +222,10 @@ export const ROTAS = {
     try {
       const t = apostar(db, { sched, userId, slot: inteiro(corpo?.slot),
                               valor: inteiro(corpo?.valor), agora });
+      /* ST-7.1a: a aposta vira evento de produto, anotado aqui — o cliente
+         nunca diz quanto apostou. Chave = o bilhete. */
+      anotar(db, { nome: 'bet_placed', userId, chave: String(t?.id ?? ''), agora,
+                   campos: { valor: inteiro(corpo?.valor) ?? 0, slot: inteiro(corpo?.slot) ?? -1 } });
       return { corpo: t };
     } catch (e) { return daExcecao(e); }
   },
@@ -265,6 +270,14 @@ export const ROTAS = {
     const r = equiparCosmetico(db, { userId, familia: corpo?.familia, id: corpo?.id ?? null });
     if (!r.ok) return daExcecao({ codigo: r.codigo, message: r.motivo });
     return { corpo: r };
+  },
+
+  /* --- o relato do cliente (ST-7.1a) -----------------------------------
+     O idle mora no navegador; o piloto precisa saber que ele foi jogado. O
+     usuário vem da sessão, a lista é fechada, e a chave dedupe o reenvio. */
+  'POST /api/telemetria': ({ db, corpo, userId, agora }) => {
+    try { return { corpo: receberDoCliente(db, { userId, eventos: corpo?.eventos, agora }) }; }
+    catch (e) { return daExcecao(e); }
   },
 
   /* O SAIR (ST-1.2b, DEC-07): revoga o token que chegou, e só ele. Rota

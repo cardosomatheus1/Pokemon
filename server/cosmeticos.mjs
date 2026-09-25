@@ -23,6 +23,7 @@
 import { catalogo as catalogoDaVitrine } from '../app/modules/cosmeticos.mjs';
 import { planoDoGasto } from '../engine/carteira.mjs';
 import { gastar, saldos } from './carteira.mjs';
+import { anotar } from './telemetria.mjs';
 
 export const ERRO_COSMETICO = {
   DESCONHECIDA: 'peca_desconhecida',
@@ -85,6 +86,10 @@ export function comprar(db, { userId, familia, id, chaveIdem, agora = Date.now()
                             VALUES (?, ?, ?, 'loja', ?)`).run(userId, familia, id, agora),
   });
   if (!r.ok) return recusa(r.motivo === 'saldo_insuficiente' ? ERRO_COSMETICO.SALDO : r.motivo, r.motivo);
+  /* O FATO VAI PARA A TELEMETRIA (ST-7.1a), com a chave da própria compra: a
+     repetição não gera evento, porque ela não gerou compra. */
+  if (!r.repetida) anotar(db, { nome: 'cosmetic_purchased', userId, chave: `cosm-${k}`, agora,
+                                campos: { familia, id: String(id), preco: peca.preco } });
   return { ok: true, repetida: !!r.repetida, peca: chave(peca), preco: peca.preco };
 }
 

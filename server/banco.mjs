@@ -1061,6 +1061,27 @@ export const MIGRACOES = [
       db.exec(`DROP TABLE IF EXISTS cosmetic_ownership`);
     },
   },
+  {
+    nome: 'telemetria-chave-st7.1',
+    /* O EVENTO REPETIDO CONTA UMA VEZ (ST-7.1a, OBS-01).
+     *
+     * O cliente relata o ESTADO (as runs do dia), e não o clique — então ele
+     * reenvia o mesmo fato várias vezes, de propósito. A chave é do FATO
+     * (`run:<instante>`, `exp:<id>`, a chave de idempotência da compra), e o
+     * índice único por (usuário, evento, chave) faz o banco contar uma vez.
+     * Parcial: os eventos de proteção antigos não têm chave, e seguem valendo.
+     *
+     * ADITIVA: descer apaga o índice e a coluna; os eventos ficam. */
+    sobe: db => {
+      db.exec(`ALTER TABLE telemetry_events ADD COLUMN chave TEXT`);
+      db.exec(`CREATE UNIQUE INDEX idx_telemetria_chave
+                 ON telemetry_events(user_id, nome, chave) WHERE chave IS NOT NULL`);
+    },
+    desce: db => {
+      db.exec(`DROP INDEX IF EXISTS idx_telemetria_chave`);
+      db.exec(`ALTER TABLE telemetry_events DROP COLUMN chave`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

@@ -463,7 +463,7 @@ commit de documentação.
 
 | story | gatilho | aceite |
 |---|---|---|
-| **ST-7.1** · telemetria mínima e restauração (OBS-01) | E1–E5 fechados | eventos deduplicados de run, colheita, compra, aposta; painel com coorte D1/D7; restauração do banco demonstrada |
+| 🟡 **ST-7.1** · telemetria mínima e restauração (OBS-01) — **a ✅ 25/09**: eventos com chave (índice único por usuário+evento+chave), `bet_placed` e `cosmetic_purchased` anotados pelo servidor, `POST /api/telemetria` com lista fechada (`session_started`, `run_harvested`, `expedition_harvested`), o cliente relata o ESTADO do dia (`telemetria-servidor.mjs`, camada 0), `retencao` D1/D7 no painel de política · S1151–S1163. **b**: a restauração do banco demonstrada | E1–E5 fechados (o gatilho foi antecipado por delegação: medir o piloto exige a telemetria ANTES dele) | eventos deduplicados de run, colheita, compra, aposta; painel com coorte D1/D7; restauração do banco demonstrada |
 | **ST-7.2** · piloto sem dinheiro real (PILOTO-01) | ST-7.1 + gate de IP compatível com teste privado (DEC-01) | 5–10 amigos, 14 dias; problemas priorizados por evidência; saldos e emissão medidos contra a ST-3.3 |
 
 ## E8 · Condicionados — cada um com o gatilho que o destrava

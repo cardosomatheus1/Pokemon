@@ -72,7 +72,17 @@ export const OBRIGATORIOS = {
 export const ERRO_TELEMETRIA = {
   CAMPO:      'campo_obrigatorio_ausente',
   AMOSTRAGEM: 'evento_de_protecao_nao_se_amostra',
+  LOTE:       'lote_de_eventos_grande_demais',
 };
+
+/* ── O QUE O CLIENTE PODE RELATAR (ST-7.1a) ─────────────────────────────────
+ *
+ * Lista FECHADA: o que só o navegador sabe (o idle mora nele) e a presença do
+ * dia. Aposta e compra NÃO estão aqui — quem as anota é o servidor, no
+ * instante em que elas acontecem; aceitar do cliente seria deixar ele dizer
+ * quanto apostou. */
+export const DO_CLIENTE = ['session_started', 'run_harvested', 'expedition_harvested'];
+export const LOTE_MAXIMO = 50;
 
 const erro = (codigo, msg) => Object.assign(new Error(msg), { codigo });
 
@@ -82,7 +92,7 @@ export const ehDeProtecao = nome => DE_PROTECAO.has(nome);
  * Para evento de proteção o parâmetro é IGNORADO — e o teste cobra que passar
  * 0 continue gravando. Recusar com exceção seria pior: quem ligou amostragem
  * global veria o serviço quebrar, e a tentação seria tirar o evento da lista. */
-export function emitir(db, { nome, userId = null, roundId = null, campos = {},
+export function emitir(db, { nome, userId = null, roundId = null, campos = {}, chave = null,
                              amostra = 1, sorteio = Math.random, agora = Date.now() }) {
   const protecao = ehDeProtecao(nome);
 
@@ -100,10 +110,40 @@ export function emitir(db, { nome, userId = null, roundId = null, campos = {},
   }
 
   const id = randomUUID();
-  db.prepare(`INSERT INTO telemetry_events (id, nome, user_id, round_id, amostravel, campos, criado_em)
-              VALUES (?, ?, ?, ?, ?, ?, ?)`)
-    .run(id, nome, userId, roundId, protecao ? 0 : 1, JSON.stringify(campos), agora);
+  /* COM CHAVE, O REPETIDO É IGNORADO e devolve o id do primeiro (ST-7.1a). */
+  const r = db.prepare(`INSERT OR IGNORE INTO telemetry_events
+                          (id, nome, user_id, round_id, amostravel, campos, criado_em, chave)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+    .run(id, nome, userId, roundId, protecao ? 0 : 1, JSON.stringify(campos), agora, chave);
+  if (r.changes === 0 && chave != null)
+    return db.prepare(`SELECT id FROM telemetry_events WHERE user_id IS ? AND nome = ? AND chave = ?`)
+      .get(userId, nome, chave)?.id ?? null;
   return id;
+}
+
+/* ── O RELATO DO CLIENTE (ST-7.1a) ──────────────────────────────────────────
+ *
+ * O usuário vem da SESSÃO (parâmetro), nunca do corpo. Cada evento precisa de
+ * nome da lista e de chave — sem chave, reenviar duplicaria. Os campos são
+ * achatados: só número, booleano e texto curto; objeto e `user_id` no meio dos
+ * campos são descartados, porque campo livre vindo do cliente é por onde o
+ * banco enche de lixo. */
+const CAMPO_OK = v => typeof v === 'number' ? Number.isFinite(v)
+  : typeof v === 'boolean' || (typeof v === 'string' && v.length <= 40);
+export function receberDoCliente(db, { userId, eventos, agora = Date.now() }) {
+  const lista = Array.isArray(eventos) ? eventos : [];
+  if (lista.length > LOTE_MAXIMO)
+    throw erro(ERRO_TELEMETRIA.LOTE, `no máximo ${LOTE_MAXIMO} eventos por relato`);
+  let aceitos = 0, recusados = 0;
+  for (const ev of lista) {
+    const chave = typeof ev?.chave === 'string' && ev.chave.length <= 80 ? ev.chave : null;
+    if (!DO_CLIENTE.includes(ev?.nome) || !chave) { recusados++; continue; }
+    const campos = Object.fromEntries(Object.entries(ev.campos ?? {})
+      .filter(([k, v]) => k !== 'user_id' && k.length <= 30 && CAMPO_OK(v)).slice(0, 12));
+    anotar(db, { nome: ev.nome, userId, chave, campos, agora });
+    aceitos++;
+  }
+  return { aceitos, recusados };
 }
 
 /* ── ANOTAR: EMITIR SEM PODER DERRUBAR A DECISÃO (R21, fecha o D-034) ──────
