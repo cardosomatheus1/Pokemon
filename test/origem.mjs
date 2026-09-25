@@ -377,7 +377,11 @@ export function suite() {
        `engine/` não pode ser um efeito colateral que ninguém vê. */
     const rels = fontes().map(f => f.rel);
     ok(rels.length > 100, `só ${rels.length} arquivos no alcance da peneira`);
-    for (const p of PASTAS)
+    /* LITERAIS, E NÃO `PASTAS` (D-111): iterar a própria constante tornava o
+       teste cego ao corte dela — a lista encolhia junto com o que ela afirma.
+       O `> 100` segurava sozinho enquanto `app/modules` tinha menos de 100
+       arquivos; em 25/09 tinha 144, e o Q2 completo viu o S765 passar. */
+    for (const p of ['app/modules', 'engine', 'server'])
       ok(rels.some(r => r.startsWith(p + '/')),
         `nenhum arquivo de "${p}" entrou na varredura`);
   });

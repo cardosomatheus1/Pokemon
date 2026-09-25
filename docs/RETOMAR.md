@@ -36,6 +36,16 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### Q2 COMPLETO — 1165/1166, e o que escapou era um teste que morreu sozinho
+
+O primeiro Q2 completo desde o T14 (966 reavaliados, ~2 h 10 min num
+worktree à parte). Escapou um: o **S765**. O teste da peneira de símbolos
+iterava a própria constante que o mutante encolhe, e só o `> 100 arquivos`
+o segurava — até `app/modules` passar de 100 (tem 144). Nenhum diff no teste;
+o produto cresceu e ele morreu. É o **D-111**, corrigido (pastas literais) e
+conferido: S765 PEGOU. O cache do Q2 foi commitado: o próximo Q2 do bloco
+parte de 1007 vereditos quentes.
+
 ### L-187 FECHADA — a luta saiu da borda do mundo
 
 A hipótese conferiu com uma sonda: a 420 px o mundo tem 448 de altura e a

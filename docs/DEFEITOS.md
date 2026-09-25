@@ -6476,3 +6476,23 @@ aberto na aba de customização. **Não é do E4:** a mesma captura com o
 bloco dono (uma sonda de navegador — mutante de 30 s, por isso não entrou num
 bloco que não mexeu no layout do modal).
 
+
+## D-111 — o teste da peneira de símbolos ficou decorativo sem ninguém mexer nele ✅ CORRIGIDO
+
+**Achado em:** 25/09/2026, pelo Q2 completo (o primeiro desde o T14):
+`S765 [PASSOU] a peneira varre so uma pasta`. **Bloco dono:** o próprio Q2
+completo — é exatamente a classe de achado que o `CLAUDE.md` reserva a ele
+("algum teste virou decorativo desde a última vez?"). **Estado:** ✅ corrigido
+em 25/09/2026.
+
+**Causa:** `test/origem.mjs` conferia o alcance da peneira iterando `PASTAS`
+— a mesma constante que o S765 encolhe. Cortada a lista, a conferência
+encolhia junto. Quem segurava o mutante era só o `rels.length > 100`, e isso
+valeu enquanto `app/modules` tinha menos de 100 arquivos. **Medição:** em
+25/09 tem **144** — o produto cresceu e o teste morreu, sem diff nele. É o
+caso S15 do V1.14, pelo mesmo caminho: só a execução completa vê.
+
+**Conserto:** as três pastas escritas LITERAIS no teste. Conferido à mão: com o
+mutante, `origem` 2/3; sem ele, 3/3. **Teste que trava:** o próprio S765.
+**A lição que fica:** teste que afirma uma constante não pode iterar a
+constante — a afirmação vira tautologia no dia em que a constante muda.
