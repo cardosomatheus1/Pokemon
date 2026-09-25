@@ -444,29 +444,43 @@ export const VOLTAS_DO_DANO = 6;
 export function pontoLivre(x, y, ocupados, { largura, altura, limite = null } = {}) {
   const L = Number(largura) || 0;
   const A = Number(altura) || 0;
-  let ponto = { x: Number(x) || 0, y: Number(y) || 0 };
-
-  for (let volta = 0; volta < VOLTAS_DO_DANO; volta++) {
-    const bateu = (ocupados ?? []).some(o =>
-      Math.abs(o.x - ponto.x) < L && Math.abs(o.y - ponto.y) < A);
-    if (!bateu) break;
-    /* PARA CIMA: a animação já sobe, então esta é a direção que o olho espera.
-       Para o lado afastaria o número do lutador que o causou. */
-    ponto = { x: ponto.x, y: ponto.y - PASSO_DO_DANO };
-  }
+  const x0 = Number(x) || 0, y0 = Number(y) || 0;
 
   /* ── E DENTRO DA JANELA ────────────────────────────────────────────────
      `limite` é a caixa da camada. Sem ele, nada é grampeado — quem não sabe o
-     tamanho da tela não pode inventar um. */
-  if (limite) {
+     tamanho da tela não pode inventar um. Em cima só: um número nunca é
+     empurrado para fora POR BAIXO — ele sobe. */
+  const grampear = p => {
+    if (!limite) return p;
     const meia = L / 2;
     const maxX = Math.max(meia, Number(limite.w) || 0);
-    ponto.x = Math.min(Math.max(ponto.x, meia), maxX - meia);
-    /* Em cima só: um número empurrado para fora POR BAIXO nunca acontece — ele
-       sobe. O teto existe para o empurrão não passar do topo da cena. */
-    ponto.y = Math.max(ponto.y, A);
+    return { x: Math.min(Math.max(p.x, meia), maxX - meia), y: Math.max(p.y, A) };
+  };
+  const bate = p => (ocupados ?? []).some(o => Math.abs(o.x - p.x) < L && Math.abs(o.y - p.y) < A);
+
+  /* ── A ORDEM DOS CANDIDATOS (ST-5.4, L-172) ─────────────────────────────
+     PARA CIMA primeiro: a animação já sobe, então é a direção que o olho
+     espera; para o lado afastaria o número do lutador que o causou. Até aqui
+     a conta parava nisso, e sobravam 1 a 3 pares por wave por duas portas: a
+     coluna cheia (o número era aceito em cima de outro) e o grampo do TOPO (ele
+     devolvia o número para cima de quem ele tinha desviado). Agora a colisão é
+     conferida DEPOIS do grampo, e quando a coluna acaba o número vai para o
+     LADO — um número de largura, e só então. */
+  const candidatos = [];
+  /* Até VOLTAS_DO_DANO passos acima (inclusive): é o alcance da conta antiga,
+     que subia na última volta sem conferir — o mesmo alcance, agora conferido. */
+  for (let volta = 0; volta <= VOLTAS_DO_DANO; volta++)
+    candidatos.push({ x: x0, y: y0 - volta * PASSO_DO_DANO });
+  for (const lado of [1, -1, 2, -2])
+    for (let volta = 0; volta <= VOLTAS_DO_DANO; volta++)
+      candidatos.push({ x: x0 + lado * L, y: y0 - volta * PASSO_DO_DANO });
+  for (const c of candidatos) {
+    const p = grampear(c);
+    if (!bate(p)) return p;
   }
-  return ponto;
+  /* Sem lugar livre nenhum por perto: o comportamento antigo — o mais alto
+     da coluna, grampeado. Sobreposição aqui é tela cheia de verdade. */
+  return grampear({ x: x0, y: y0 - VOLTAS_DO_DANO * PASSO_DO_DANO });
 }
 
 /* ── O AVANÇO PROGRESSIVO — o trecho da wave (L-164, v2) ──────────────────

@@ -447,6 +447,12 @@ for (const { L, chefe, raiz } of [
    * branco é prova de outra coisa — e as duas conversas são diferentes. */
   await pg.evaluate(() => {
     window.__dmg = [];
+    /* UM ELEMENTO, UM REGISTRO (ST-5.4). Quando um ancestral do número é
+       re-anexado no mesmo lote, o `querySelectorAll` abaixo acha o MESMO
+       número de novo — e a sonda contava "par sobreposto" com o mesmo texto, o
+       mesmo pixel e dt 0 ms. Eram os 1 a 3 pares que sobravam da L-172: a sonda
+       medindo a si mesma, pela segunda vez nesta tela. */
+    const vistos = new WeakSet();
     new MutationObserver(ms => {
       for (const m of ms) for (const raiz of m.addedNodes) {
         if (raiz.nodeType !== 1) continue;
@@ -458,6 +464,8 @@ for (const { L, chefe, raiz } of [
         const achados = raiz.classList.contains('avDmg')
           ? [raiz] : [...(raiz.querySelectorAll?.('.avDmg') ?? [])];
         for (const el of achados) {
+          if (vistos.has(el)) continue;
+          vistos.add(el);
           const c = getComputedStyle(el);
           const r = el.getBoundingClientRect();
           window.__dmg.push({ texto: el.textContent, lado: el.className.replace('dmg avDmg ',''),
@@ -561,15 +569,22 @@ for (const { L, chefe, raiz } of [
   }
   /* FORA DA JANELA conta separado, e não junto com "não nasceu": um número
      que nasce em x = -19 existe, é invisível, e a correção é outra. */
-  const fora = dmg.filter(d => !d.naTela || d.x < 0 || d.x + d.w > L.w);
+  /* E A DOBRA É OUTRA COISA (ST-5.4). A janela da sonda tem 1600 px de altura,
+     e a 420 a cena da run mora perto do fim dela: um número em y = 1610 está
+     ABAIXO DA DOBRA — a página rola até ele —, não fora do mundo. O L-172
+     era o número à ESQUERDA do mundo, que nenhuma rolagem mostra; misturar os
+     dois contou dois "fora" que o grampo não tinha como consertar. */
+  const fora = dmg.filter(d => d.w <= 0 || d.x < 0 || d.x + d.w > L.w);
+  const abaixo = dmg.filter(d => !fora.includes(d) && !d.naTela);
   const porLado = lado => dmg.filter(d => d.lado === lado).map(d => d.texto);
   console.log(`    numero do dano: ${dmg.length} nascido(s), ${fora.length} fora da janela` +
+    (abaixo.length ? ` · ${abaixo.length} abaixo da dobra (a pagina rola)` : '') +
     (dmg.length ? '' : ' · NENHUM — o hitbox que o dono cobrou tres vezes nao esta nascendo'));
   if (dmg.length) {
     console.log(`      que eu dou (ouro): ${porLado('meu').join(' ') || '—'}`);
     console.log(`      que eu levo (vermelho): ${porLado('dele').join(' ') || '—'}`);
     console.log(`      desenho: ${amostra.px} peso ${amostra.peso}`);
-    if (fora.length) console.log(`      FORA: ${fora.map(d => d.texto + '@' + d.x).join(' ')}`);
+    if (fora.length) console.log(`      FORA: ${fora.map(d => `${d.texto}@${d.x},${d.y} ${d.w}x${d.h}${d.naTela ? '' : ' (naTela=nao)'}`).join(' ')}`);
   }
   /* AS PLACAS QUE SE ENCOSTAM (D-081). A cena já entrega tudo em coordenadas
      de tela, então a conta é uma varredura de retângulos — e ela responde a
@@ -599,6 +614,7 @@ for (const { L, chefe, raiz } of [
     const VIDA_MS = 1100;      /* a duração do `floatUp` */
     const SUBIDA = 1.4;        /* de -50% a -190% da altura, em alturas */
     let n = 0;
+    const pares = [];
     for (let i = 0; i < dmg.length; i++)
       for (let j = i + 1; j < dmg.length; j++) {
         const [velho, novo] = (dmg[i].t ?? 0) <= (dmg[j].t ?? 0)
@@ -608,17 +624,24 @@ for (const { L, chefe, raiz } of [
         const subiu = (dt / VIDA_MS) * SUBIDA * (velho.h || 20);
         const vy = velho.y - subiu;
         if (velho.x < novo.x + novo.w && novo.x < velho.x + velho.w &&
-            vy < novo.y + novo.h && novo.y < vy + (velho.h || 20)) n++;
+            vy < novo.y + novo.h && novo.y < vy + (velho.h || 20)) {
+          n++;
+          pares.push(`${velho.texto}@${velho.x},${velho.y}→${velho.x},${Math.round(vy)} × ` +
+                     `${novo.texto}@${novo.x},${novo.y}  dt ${Math.round(dt)} ms`);
+        }
       }
-    return n;
+    return { n, pares };
   })();
   /* Quando sobra par, DIZER qual: dois números sem endereço voltam a ser "meio
      zoado", que é a palavra que eu preciso deixar de usar. */
-  if (dmgJuntos) {
+  if (dmgJuntos.n) {
     const larguras = dmg.map(d => d.w);
     console.log(`      caixa real: largura ${Math.min(...larguras)}–${Math.max(...larguras)} px, altura ${dmg[0]?.h}`);
   }
-  console.log(`    numeros sobrepostos: ${dmgJuntos}` + (dmgJuntos ? '  <-- L-172' : ''));
+  console.log(`    numeros sobrepostos: ${dmgJuntos.n}` + (dmgJuntos.n ? '  <-- L-172' : ''));
+  /* O PAR, com endereço (ST-5.4): o velho onde nasceu → onde estava quando o
+     novo nasceu, e o novo. Sem isto a próxima tentativa é chute. */
+  for (const par of dmgJuntos.pares) console.log(`      par: ${par}`);
 
   /* ── O EFEITO DO GOLPE CHEGOU AOS OLHOS? (L-171) ──────────────────────
      O estouro é desenhado no CANVAS, então nenhum observador de DOM o vê. A

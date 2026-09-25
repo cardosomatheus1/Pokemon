@@ -7592,7 +7592,7 @@ precisar da linha entre os dois de qualquer jeito.
 ### L-172 — os números de dano se atropelam
 
 **Registrada em:** 09/09/2026, por observação do dono. **Bloco dono:** 1.27c.
-**Estado:** aberta.
+**Estado:** ✅ **FECHADA em 25/09/2026 (ST-5.4).** Ver o fecho no fim desta entrada.
 
 > "o hitbox também tá meio zoado, os números aparecem de forma confusa"
 
@@ -7640,6 +7640,41 @@ aproximação da curva do `floatUp`, não a curva.
 **O que o destrava:** ler os dois pares que sobram — a sonda já sabe imprimir a
 caixa real, e falta ela imprimir o PAR. Sem essa leitura, a próxima tentativa é
 chute, e chute em arranjo visual é como eu gastei três rodadas.
+
+#### O FECHO (ST-5.4, 25/09/2026) — e a sonda errou pela TERCEIRA vez
+
+A sonda passou a imprimir o par, e todo par que sobrava tinha a mesma cara:
+
+```text
+par: -14@864,807→864,807 × -14@864,807  dt 0 ms
+par: -12@1469,781→1469,781 × -12@1469,781  dt 0 ms
+```
+
+Mesmo texto, mesmo pixel, zero milissegundo: era **um** número contado duas
+vezes. Quando um ancestral dele é re-anexado no mesmo lote de mutações, o
+`querySelectorAll` do observador o acha de novo. Agora um `WeakSet` guarda o
+que já foi registrado.
+
+```text
+                          conta ANTIGA      conta NOVA        (sonda corrigida,
+pares sobrepostos         1 em 9 cenas      0 em 9 cenas       3 execuções × 3 cenas)
+  o par real              -14 × -25 a 420 px, dt 1008 ms — a coluna do grampo
+fora da janela            0                 0
+```
+
+**A mudança no código ficou, e é menor do que parecia:** `pontoLivre` confere
+a colisão DEPOIS do grampo (antes ele devolvia o número para cima de quem
+tinha desviado) e, com a coluna cheia, vai para o LADO em vez de aceitar em
+cima de outro. Dois testes puros em `test/avanco-tela.mjs`, S1089 e S1090.
+
+**E o "fora da janela" também estava misturado:** a janela da sonda tem 1600
+px de altura, e a 420 a cena da run mora perto do fim dela. Um número em
+y = 1610 está **abaixo da dobra** (a página rola até ele), não à esquerda do
+mundo, que é o que a L-172 media. A sonda agora conta os dois separados.
+
+> Terceira vez nesta mesma tela que a sonda mede a si mesma. O padrão é o de
+> sempre: **um número que não bate com a foto é pergunta para a sonda antes de
+> ser pergunta para o produto.**
 
 ---
 

@@ -289,7 +289,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | 1 | ~~**1.32b (resto)** · ST-2.3~~ | ✅ fechada em 25/09 — a noite muda 7·8·3·3 rotas | — | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto. A prévia da NOITE já está na sala desde o 1.33 |
 | 2 | ~~**INT-01**~~ | ✅ fechado em 25/09 (ST-1.1, 3.1 a 3.5). Sobra a **ST-3.6** (calibrar a emissão), que espera a **DEC-14** | — | integridade de economia vem antes de calibrar quantidade |
 | 3 | **INT-02** · uma posse confiável | cosméticos e outfit entre dispositivos (L-157, L-055) | compra e equipar não podem depender do navegador |
-| 4 | **1.27g · UX-01** (resto) · ST-5.4 a 5.8 | L-172, L-171, L-175, D-093, D-086 — o banner (D-082) e o `est:` cru (L-160) fecharam; os 404 (L-176) esperam o dono commitar os dois arquivos | o que impede ENTENDER a ação vem antes do que a enfeita |
+| 4 | **1.27g · UX-01** (resto) · ST-5.5, 5.6, 5.8 | L-171, L-175 (⏸️ DEC-15), D-086 — o banner (D-082), o `est:` cru (L-160), a base visual (D-093) e os números de dano (L-172, ST-5.4) fecharam; os 404 (L-176) esperam o dono commitar os dois arquivos | o que impede ENTENDER a ação vem antes do que a enfeita |
 | 5 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
 | — | **E6** · higiene documental | ST-6.1 a 6.4 | não é código: corre em paralelo, um commit por story |
 | — | **ST-0.6** · CI no GitHub | `npm test` a cada push; Q2 fatiado à noite | espera a **DEC-13** |
@@ -300,6 +300,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | id | a pergunta | o que depende dela |
 |---|---|---|
 | **DEC-11** | manter os 154.000 sims? O argumento dos 19% caiu (L-182) | custo de servidor; nos testes é só 30% das sondas de navegador (medido, ST-0.8) — decide-se pela economia |
+| **DEC-15** | L-175: em 420 px a run mostra 130 px de mundo (cabem 3 criaturas; a luta tem 6). Proposta: na tela estreita, o zoom EFETIVO vira `min(zoom escolhido, largura ÷ 260)` — no largo nada muda (3× cabe). Mas "acima do piso o zoom é do jogador e ninguém mexe" é regra sua, e os 3× foram aprovados por você: afastar a câmera sozinha passaria por cima disso | ST-5.6 — não construída sem o seu sim |
 | **L-176** | commitar `assets/npc/lojas.mp4` e `battle-theme.mp3` do seu PC (só existem aí) | ST-5.1 — a regra do resgate proíbe trocar por outro arquivo |
 | **DEC-14** | a emissão do Avanço (L-185): teto por recurso, rendimento decrescente, ou recalibrar o Estilhaço? | ST-3.6 · recomendação: rendimento decrescente por run no mesmo dia |
 | **DEC-13** | CI no GitHub Actions? | ST-0.6 — minutos de Actions num repositório privado |
@@ -320,7 +321,7 @@ Todos com dono nomeado, todos em `docs/LACUNAS.md`.
 | lacuna | o que é | bloco dono |
 |---|---|---|
 | **L-171** (metade) | o `cast` e o `proj` do efeito — a carga no atacante e o projétil viajando até o alvo. Pedem a linha atacante→alvo, que a cena não publica | 1.27g |
-| **L-172** (resto) | de 1 a 3 pares de números de dano ainda se tocam em 420 px | 1.27g |
+| ~~**L-172**~~ | ✅ fechada na ST-5.4 (25/09): 0 pares em 3 execuções — os "1 a 3" eram a sonda contando o mesmo número duas vezes | — |
 | **L-175** | em 420 px a janela da câmera tem **130 px de mundo** contra 403 no panorâmico. Cabem três criaturas, e o bando é de quatro mais companheiro e treinador — o que sai da janela não é o efeito, é a luta | o do CENÁRIO |
 | **L-177** | o jogador não sabe QUE CLIMAS EXISTEM antes de montar a equipe. Revelar qual vai cair estragaria a escolha; revelar a tabela, não | 1.32b |
 | ~~L-178~~ | ✅ fechada no 1.33 — a noite e o clima mudam o elenco | — |

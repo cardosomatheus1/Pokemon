@@ -36,6 +36,23 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### ST-5.4 FECHADA — os números de dano não se tocam (L-172)
+
+0 pares sobrepostos e 0 fora da janela em 3 execuções × 3 cenas. A sonda
+passou a imprimir o PAR, e os "1 a 3 pares" que sobravam eram ela contando o
+MESMO número duas vezes (mesmo pixel, dt 0 ms) — corrigida com um `WeakSet`.
+Medida de novo com a sonda certa, a conta antiga deixava 1 par real em 9
+cenas (a coluna cheia / o grampo do topo); a nova, 0. `pontoLivre` confere a
+colisão depois do grampo e vai para o lado quando a coluna acaba. Suíte
+2276/2276; Q2 do bloco 11/11 em 2 min 20 s.
+
+**Achado de passagem, não construído:** a 420 px a cena da run começa perto de
+y = 1000 — num telefone, abaixo da dobra. É a mesma pergunta da L-175, que
+espera a DEC-15.
+
+**O Q2 completo** (852 adiados) foi interrompido para não disputar CPU com o
+navegador (D-100); roda sozinho no fim da sessão.
+
 ### ST-5.7 FECHADA — comparação visual que não aconteceu não é verde (D-093)
 
 Num clone novo a base visual local nasce na primeira execução, e a suíte a

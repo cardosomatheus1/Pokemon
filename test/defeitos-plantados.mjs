@@ -7507,18 +7507,28 @@ export const DEFEITOS = [
      numeros, e 2 fora da janela a 420 px. */
   { id:'S960', arquivo:AVGEO2, nome:'o numero do dano volta a nascer em cima do anterior',
     real:'"o hitbox ta meio zoado, os numeros aparecem de forma confusa" — a queixa do dono, com endereco',
-    de:'    ponto = { x: ponto.x, y: ponto.y - PASSO_DO_DANO };',
-    para:'    ponto = { x: ponto.x, y: ponto.y };' },
+    de:'    candidatos.push({ x: x0, y: y0 - volta * PASSO_DO_DANO });',   /* realvado na ST-5.4 */
+    para:'    candidatos.push({ x: x0, y: y0 });' },
 
   { id:'S961', arquivo:AVGEO2, nome:'o desvio do dano passa a ser para o LADO',
     real:'a cor diz de quem e o dano, mas a POSICAO diz de qual golpe — de lado ele desgruda do lutador',
-    de:'    ponto = { x: ponto.x, y: ponto.y - PASSO_DO_DANO };',
-    para:'    ponto = { x: ponto.x + PASSO_DO_DANO, y: ponto.y };' },
+    de:'  for (let volta = 0; volta <= VOLTAS_DO_DANO; volta++)\n    candidatos.push({ x: x0, y: y0 - volta * PASSO_DO_DANO });',   /* realvado na ST-5.4: o lado vem ANTES da coluna */
+    para:'  for (let volta = 0; volta <= VOLTAS_DO_DANO; volta++)\n    candidatos.push({ x: x0 + L, y: y0 });' },
 
   { id:'S962', arquivo:AVGEO2, nome:'o numero volta a poder nascer fora da janela',
     real:'medido a 420 px: dois dos vinte e cinco nasciam a esquerda do mundo — e o D-083 volta pela porta estreita',
-    de:'    ponto.x = Math.min(Math.max(ponto.x, meia), maxX - meia);',
-    para:'    ponto.x = ponto.x;' },
+    de:'    return { x: Math.min(Math.max(p.x, meia), maxX - meia), y: Math.max(p.y, A) };',   /* realvado na ST-5.4 */
+    para:'    return { x: p.x, y: Math.max(p.y, A) };' },
+
+  /* ── ST-5.4 · L-172: as duas portas que sobravam ─────────────────── */
+  { id:'S1089', arquivo:AVGEO2, nome:'a colisao volta a ser conferida ANTES do grampo',
+    real:'o grampo do topo devolve o numero em cima de quem ele desviou — a segunda porta do L-172',
+    de:'    const p = grampear(c);\n    if (!bate(p)) return p;',
+    para:'    const p = grampear(c);\n    if (!bate(c)) return p;' },
+  { id:'S1090', arquivo:AVGEO2, nome:'a coluna cheia deixa de ir para o lado',
+    real:'depois de seis subidas o numero e aceito em cima de outro — a primeira porta do L-172',
+    de:'  for (const lado of [1, -1, 2, -2])',
+    para:'  for (const lado of [])' },
 
   /* REALVADO para a geometria: enquanto a limpeza morava junto do desenho, o
      defeito passou — não havia como afirmar a lista sem montar um DOM. */

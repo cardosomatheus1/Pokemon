@@ -1145,6 +1145,35 @@ export function suite() {
       'a conta grampeou sem saber o tamanho da janela');
   });
 
+  /* ── ST-5.4 · L-172 — AS DUAS PORTAS DA SOBREPOSIÇÃO QUE SOBRAVA ─────────
+     O desvio para cima resolveu de 5 pares para 1 a 3. O que sobrava tinha dois
+     endereços, e os dois estão na própria conta: (1) depois de VOLTAS_DO_DANO
+     subidas ocupadas, o número era aceito em cima de outro; (2) o grampo do
+     TOPO da cena o empurrava de volta para baixo, em cima de quem ele tinha
+     desviado. Quando a coluna acaba, o número vai para o LADO — perto, e só
+     então. */
+  s.teste('L-172: coluna cheia até o teto — o número vai para o lado, e não em cima de outro', async () => {
+    const { pontoLivre, PASSO_DO_DANO, VOLTAS_DO_DANO } = await import('../app/modules/avanco-geometria.mjs');
+    const caixa = { largura: 40, altura: 20, limite: { w: 420 } };
+    const ocupados = [];
+    for (let i = 0; i <= VOLTAS_DO_DANO; i++) ocupados.push({ x: 200, y: 200 - i * PASSO_DO_DANO });
+    const p = pontoLivre(200, 200, ocupados, caixa);
+    for (const o of ocupados)
+      ok(Math.abs(o.x - p.x) >= caixa.largura || Math.abs(o.y - p.y) >= caixa.altura,
+        `a coluna estava cheia e o número caiu em cima de um (${o.x},${o.y}) — era a primeira porta do L-172`);
+    ok(Math.abs(p.x - 200) <= 2 * caixa.largura, `o número foi parar longe demais do lutador: x=${p.x}`);
+  });
+
+  s.teste('L-172: o grampo do topo não devolve o número para cima de quem ele desviou', async () => {
+    const { pontoLivre } = await import('../app/modules/avanco-geometria.mjs');
+    const caixa = { largura: 40, altura: 20, limite: { w: 420 } };
+    const ocupados = [{ x: 200, y: 22 }];
+    const p = pontoLivre(200, 22, ocupados, caixa);
+    ok(p.y >= caixa.altura, 'o número saiu pelo topo');
+    ok(Math.abs(ocupados[0].x - p.x) >= caixa.largura || Math.abs(ocupados[0].y - p.y) >= caixa.altura,
+      `o grampo do topo pôs o número em (${p.x},${p.y}), em cima do que já estava — a segunda porta`);
+  });
+
   /* ── E A LISTA DOS QUE ESTÃO NO AR SE LIMPA (S963) ────────────────────
    *
    * O defeito plantado que DESLIGA a limpeza passou enquanto ela morava dentro
