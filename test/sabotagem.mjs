@@ -39,7 +39,7 @@ import { join } from 'node:path';
 import { DEFEITOS } from './defeitos-plantados.mjs';
 
 /* Ver a explicação longa no `execFile` abaixo. */
-import { conferirAncoras, filtrarTocados } from './ancoras.mjs';
+import { conferirAncoras, filtrarTocados, escopoDoBloco, fatiar } from './ancoras.mjs';
 import { limparCaixas, limparOrfas } from './caixas.mjs';
 
 /* --- COMO A SABOTAGEM RODA, E POR QUE ASSIM -----------------------------
@@ -113,7 +113,39 @@ if (problemas.length) {
  * `npm run portoes` não o usa. */
 const INCREMENTAL = process.argv.includes('--tocados');
 const tocados = INCREMENTAL ? arquivosTocados() : [];
-const ALVOS = INCREMENTAL ? filtrarTocados(DEFEITOS, tocados) : DEFEITOS;
+
+/* --- T14 · `--bloco` e `--fatia=k/N` -------------------------------------
+ *
+ * `--bloco` é o Q2 que FECHA bloco desde 25/09/2026: avalia o que o bloco pode
+ * ter quebrado (defeitos ancorados em arquivo tocado, e defeitos sem veredito),
+ * reaproveita o que tem a chave intacta, e ADIA — contando — o que só mudou de
+ * fecho. A regra e o porquê moram em `escopoDoBloco`, no ancoras.mjs.
+ *
+ * `--desde=<ref>` soma aos tocados do `git status` o que mudou desde um commit:
+ * serve para rodar o Q2 do bloco DEPOIS de commitar.
+ *
+ * `--fatia=k/N` roda a k-ésima de N partes disjuntas: o Q2 completo dividido
+ * entre máquinas. O cache mescla por id, então as fatias se juntam sozinhas. */
+const BLOCO = process.argv.includes('--bloco');
+const argDesde = process.argv.find(a => a.startsWith('--desde='));
+const argFatia = process.argv.find(a => a.startsWith('--fatia='));
+const FATIA = argFatia ? argFatia.slice(8).split('/').map(Number) : null;
+const PARCIAL = INCREMENTAL || BLOCO || !!FATIA;
+const ALVOS = INCREMENTAL ? filtrarTocados(DEFEITOS, tocados)
+  : FATIA ? fatiar(DEFEITOS, FATIA[0], FATIA[1]) : DEFEITOS;
+if (FATIA) console.log(`\nFATIA ${FATIA[0]}/${FATIA[1]} — ${ALVOS.length} de ${DEFEITOS.length} defeitos. ` +
+                       'Só as N fatias juntas são o Q2 completo.\n');
+
+function tocadosDoBloco() {
+  const lista = new Set(arquivosTocados());
+  if (argDesde) {
+    try {
+      for (const f of execFileSync('git', ['diff', '--name-only', argDesde.slice(8)],
+                                   { encoding: 'utf8' }).split('\n').filter(Boolean)) lista.add(f);
+    } catch (e) { console.error(`--desde inválido: ${e.message}`); process.exit(2); }
+  }
+  return [...lista];
+}
 
 function arquivosTocados() {
   try {
@@ -791,15 +823,25 @@ async function avaliar(d, caixa) {
   }
 }
 
-/* Fila simples: cada caixa puxa o próximo defeito quando termina o seu. */
-const fila = ALVOS.slice();
-/* Só depois de saber quantos serão de fato avaliados: uma execução quente com
-   três reavaliações não paga o navegador. */
-const aReavaliar = ALVOS.filter(d => {
+/* O ESCOPO DO BLOCO (T14). Calculado aqui, e não lá em cima, porque precisa da
+   chave — e a chave precisa das digitais, que só existem a partir daqui. */
+const chaveGuardadaConfere = d => {
   const c = VEREDITOS[d.id];
   const cap = String(c?.com ?? '').replace(/^navegador: /, '').split(',')[0];
-  return !(c?.chave && cap && c.chave === chaveDe(d, cap));
-}).length;
+  return !!(c?.chave && cap && c.chave === chaveDe(d, cap));
+};
+const ESCOPO = BLOCO ? escopoDoBloco({ defeitos: ALVOS, tocados: tocadosDoBloco(),
+  temVeredito: d => !!VEREDITOS[d.id]?.chave, chaveConfere: chaveGuardadaConfere }) : null;
+if (ESCOPO) {
+  console.log(`Q2 DO BLOCO — ${ESCOPO.avaliar.length} a avaliar (ancorados no que o bloco tocou, ` +
+              `ou sem veredito) · ${ESCOPO.reusar.length} reaproveitados · ` +
+              `${ESCOPO.adiar.length} adiados para o Q2 completo\n`);
+}
+/* Fila simples: cada caixa puxa o próximo defeito quando termina o seu. */
+const fila = (ESCOPO ? ESCOPO.avaliar : ALVOS).slice();
+/* Só depois de saber quantos serão de fato avaliados: uma execução quente com
+   três reavaliações não paga o navegador. */
+const aReavaliar = fila.filter(d => !chaveGuardadaConfere(d)).length;
 if (aReavaliar > VALIDAR_TUDO_ACIMA_DE) {
   console.log(`${aReavaliar} defeitos a reavaliar — validando as configurações antes de começar.`);
   await validarConfiguracoesUsadas();
@@ -851,13 +893,14 @@ await Promise.all(CAIXAS.map(async caixa => {
     const d = fila.shift();
     if (!d) return;
     res.push(await avaliar(d, caixa));
-    process.stdout.write(`\r  ${++feitos}/${ALVOS.length} avaliados`);
+    process.stdout.write(`\r  ${++feitos}/${(ESCOPO ? ESCOPO.avaliar : ALVOS).length} avaliados`);
     if (!INCREMENTAL && feitos % SALVAR_A_CADA === 0) gravarVereditos(res);
   }
 }));
 console.log('\n');
 /* A fila devolve fora de ordem; o relatório é lido por id. */
 const ordem = new Map(ALVOS.map((d, i) => [d.id, i]));
+const N_JULGADOS = res.length;
 res.sort((a, b) => ordem.get(a.id) - ordem.get(b.id));
 
 /* A REMOÇÃO SAIU DAQUI (D-036), e o motivo é que esta linha só era alcançada
@@ -916,7 +959,7 @@ if (!INCREMENTAL) {
 
   const reusados = res.filter(r => r.reusado).length;
   console.log(`\nvereditos: ${res.length - reusados} reavaliados agora, ${reusados} reaproveitados.`);
-  if (reusados)
+  if (reusados && !PARCIAL)
     console.log('  Reaproveitado NÃO é pulado: para cada um deles, a definição do ' +
                 'defeito,\n  o arquivo mutado e todo o fecho da suíte que o pegou estão ' +
                 'byte a byte\n  iguais aos da avaliação anterior. Os 208 seguem respondidos.');
@@ -925,7 +968,9 @@ if (!INCREMENTAL) {
 
 if (!INCREMENTAL) {
   const antes = { ...INDICE };
-  const novo = {};
+  /* Execução parcial (bloco, fatia) MESCLA: ela viu uma parte, e substituir
+     apagaria o captor de todos os outros. Só a completa reescreve do zero. */
+  const novo = PARCIAL ? { ...antes } : {};
   for (const r of res) {
     if (r.status !== 'PEGOU') continue;
     /* A PRIMEIRA suíte da lista, e nunca o golden: o golden é fixture, e um
@@ -936,7 +981,7 @@ if (!INCREMENTAL) {
     if (captor) novo[r.id] = captor;
   }
   const mudaram = Object.keys(novo).filter(id => antes[id] && antes[id] !== novo[id]);
-  const perderam = Object.keys(antes).filter(id => !novo[id]);
+  const perderam = PARCIAL ? [] : Object.keys(antes).filter(id => !novo[id]);
   writeFileSync(CAMINHO_INDICE,
     JSON.stringify(Object.fromEntries(Object.entries(novo).sort()), null, 0) + '\n');
 
@@ -960,7 +1005,7 @@ const soGolden  = res.filter(r => r.status === 'PEGOU' && r.sem === 'NADA');
 
 console.log('');
 if (escaparam.length) {
-  console.log(`Q2 VERMELHO — ${escaparam.length}/${ALVOS.length} não foram pegos:`);
+  console.log(`Q2${ESCOPO ? ' DO BLOCO' : ''} VERMELHO — ${escaparam.length}/${N_JULGADOS} não foram pegos:`);
   /* O STATUS ENTRA NA LINHA, e não é detalhe. "ESCAPOU" e "ÂNCORA PERDIDA" são
      problemas diferentes: no primeiro o defeito foi plantado e a suíte não
      viu; no segundo ele nem chegou a ser plantado, porque o trecho onde ele
@@ -982,7 +1027,17 @@ if (escaparam.length) process.exit(1);
 /* O VERDE DO MODO INCREMENTAL NÃO É O VERDE DO PORTÃO, e a linha tem que dizer
    isso — verde parcial lido como verde de portão é exatamente o jeito de um
    bloco fechar com cobertura que ninguém verificou. */
-if (INCREMENTAL) {
+if (ESCOPO) {
+  console.log(`Q2 DO BLOCO VERDE — ${N_JULGADOS}/${N_JULGADOS} avaliados foram pegos · ` +
+              `${ESCOPO.reusar.length} reaproveitados com a chave intacta.`);
+  if (ESCOPO.adiar.length)
+    console.log(`⚠  ${ESCOPO.adiar.length} ADIADOS para o Q2 completo: ancorados fora do que o bloco ` +
+                'tocou, com o fecho da suíte captora mudado.\n   Adiado NÃO é pego. ' +
+                'O Q2 completo (`npm run sabotagem`, ou em fatias) responde por eles antes da tag.');
+} else if (FATIA) {
+  console.log(`fatia ${FATIA[0]}/${FATIA[1]} VERDE — ${ALVOS.length}/${ALVOS.length} detectados. ` +
+              'Só as N fatias juntas são o Q2 completo.');
+} else if (INCREMENTAL) {
   console.log(`parcial VERDE — ${ALVOS.length}/${ALVOS.length} dos defeitos tocados detectados.`);
   console.log(`⚠  ${DEFEITOS.length - ALVOS.length} defeito(s) NÃO foram avaliados. Isto não fecha o Q2.`);
   console.log('   Rode `npm run sabotagem` inteiro antes do commit.');

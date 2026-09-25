@@ -70,6 +70,36 @@ export function suite() {
       'o teto do dia não sentiu a run');
   });
 
+  /* ══ D-107 · ESTE TESTE AFIRMA O DEFEITO, DE PROPÓSITO ══════════════════
+   *
+   * Achado no cruzamento documentos × código de 25/09/2026. A run RESERVA 6
+   * encontros enquanto está de pé (o teste acima), mas ao ser colhida ela sai
+   * de `e.run` e vai para `e.avancos` — e `encontrosHoje` só soma
+   * `e.expedicoes`. O teto do §P5 volta cheio:
+   *
+   *     livre 30  ->  durante a run 24  ->  depois de colher 4 encontros: 30
+   *
+   * Rodando Avanço atrás de Avanço, a captura não tem teto nenhum.
+   *
+   * Este teste fica VERDE enquanto o defeito existir e VERMELHO no dia em que
+   * o bloco dono (ST-1.1 do PLANO_DE_IMPLEMENTACAO) consertar — é o sinal de
+   * que a ficha em DEFEITOS.md virou mentira e este teste tem de ser invertido
+   * para "o teto cai N depois de colher, e continua caído depois de carregar". */
+  s.teste('D-107 (afirma o defeito): colher a run devolve ao teto os encontros que ela rendeu', () => {
+    const e = jogador();
+    const livre = restamEncontros(estadoDoTeto(e, AGORA, kanto));
+    comecarAvanco(e, { pack: kanto, bioma: 'floresta', estagio: 1,
+      equipe: [e.criaturas[0].id], agora: AGORA, raiz: 'teto' });
+    const T = AGORA + 60 * 60_000;
+    sincronizar(e, { pack: kanto, agora: T });
+    colherAvancoDaRun(e, { pack: kanto, agora: T, raiz: 'teto' });
+    const vistos = e.encontros.filter(x => x.origem === 'avanco').length;
+    ok(vistos > 0, 'a run desta semente não rendeu encontro — o teste perdeu o que medir');
+    igual(restamEncontros(estadoDoTeto(e, T, kanto)), livre,
+      'O TETO PASSOU A SENTIR A RUN COLHIDA. Se foi de propósito, o D-107 foi ' +
+      'corrigido: marque a ficha em docs/DEFEITOS.md e inverta este teste');
+  });
+
   s.teste('a segunda run é recusada enquanto a primeira está de pé', () => {
     const e = jogador();
     comecarAvanco(e, { pack: kanto, bioma: 'floresta', estagio: 1,

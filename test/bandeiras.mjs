@@ -151,3 +151,78 @@ export function sondasSemResultado({ sondas, resultados }) {
   if (!sondas || !sondas.size) return [];
   return [...sondas].filter(s => s in (resultados || {}) && !resultados[s]);
 }
+
+
+/* ── A SUÍTE EM PARALELO (T14, 25/09/2026) ────────────────────────────────
+ *
+ * As ~150 suítes rodavam em FILA, num processo só, numa máquina de quatro
+ * núcleos. Medido em 25/09, sem navegador: 190 s de parede, 203 s de CPU — um
+ * núcleo trabalhando e três olhando.
+ *
+ * As três decisões que isso exige moram aqui, e não no `run.mjs`, pelo motivo
+ * de sempre (D-059, D-103): o `run.mjs` é ponto de entrada e não se importa;
+ * regra escrita lá não tem como ser observada de fora.
+ *
+ * ── QUANDO NÃO PARALELIZAR, e cada caso tem razão própria ────────────────
+ *
+ *   pararCedo    é a pergunta binária da sabotagem: "alguma fica vermelha?".
+ *                A resposta depende da ORDEM por custo; em paralelo a primeira
+ *                falha que chega não é a mais barata, e o captor do índice
+ *                mudaria de nome sem o comportamento mudar
+ *   emSandbox    o Q2 já roda 2 caixas em paralelo, meio núcleo cada. Mais
+ *                processos por caixa é o D-100 de volta: a máquina afogada
+ *                reprova por falta de CPU, e o portão lê isso como captura
+ *   so           o recorte é o laço de construção — uma ou duas suítes, e o
+ *                custo de subir trabalhador passaria o de rodar
+ *   serial       a recusa explícita (`TESTE_SERIAL=1`), para medir e comparar
+ *
+ * Um núcleo fica para o processo principal, que dirige o Chromium. */
+export function trabalhadoresDaSuite({ nucleos, pararCedo, emSandbox, so, serial, pedido }) {
+  if (serial || pararCedo || emSandbox) return 0;
+  if (so && so.length) return 0;
+  const teto = Math.max(0, (nucleos | 0) - 1);
+  const n = Number.isFinite(pedido) && pedido > 0 ? Math.min(pedido, teto || 1) : Math.min(teto, 4);
+  return n >= 2 ? n : 0;          /* um trabalhador só é a fila de antes, mais cara */
+}
+
+/* A ORDEM EM QUE AS SUÍTES SÃO ENTREGUES AOS TRABALHADORES.
+ *
+ * A fila é dinâmica — cada trabalhador pede a próxima quando termina —, então a
+ * ordem não decide QUEM roda o quê, só o fim: a mais cara entregue por último
+ * deixa três trabalhadores ociosos esperando por ela. As caras vão primeiro.
+ *
+ * O custo é um PALPITE com data, e errar não custa cobertura: todas rodam de
+ * qualquer jeito. Número documentado envelhece (D-059) — por isso ele só ordena,
+ * e nunca decide o que roda. Medido em 25/09/2026, segundos, sem navegador. */
+export const CUSTO_MEDIDO = {
+  margem: 15.2, paridade: 14.9, informacao: 14.9, progressao: 11.3,
+  invariantes: 5.8, concorrencia: 4.0, modulos: 3.3, portao: 3.2, rotas: 2.0,
+  auth: 1.9, protecao: 1.8, 'aposta-servidor': 1.8, precisao: 1.7, servidor: 1.7,
+  'liga-servidor': 1.5, 'admin-auth': 1.5, limites: 1.3, politica: 1.2,
+};
+export function ordemDeEntrega(nomes, custo = CUSTO_MEDIDO) {
+  const pos = new Map(nomes.map((n, i) => [n, i]));
+  return nomes.slice().sort((a, b) =>
+    ((custo[b] ?? 0) - (custo[a] ?? 0)) || (pos.get(a) - pos.get(b)));
+}
+
+/* O QUE FOI PEDIDO E NÃO VOLTOU — o S109 com outra roupa.
+ *
+ * Em fila, uma suíte que some é uma linha a menos no relatório. Em paralelo há
+ * mais portas para ela sumir: o trabalhador morre, a mensagem se perde, dois
+ * trabalhadores listam suítes diferentes. Qualquer uma delas devolveria VERDE
+ * tendo olhado menos — a falha mais silenciosa deste arnês.
+ *
+ * Então a agregação é conferida contra o que o processo principal montou, nos
+ * dois sentidos: suíte esperada sem resultado, e resultado de suíte que ninguém
+ * esperava (que quer dizer que as duas montagens divergiram). Qualquer uma das
+ * duas ABORTA; não avisa e segue. */
+export function agregacaoIncompleta({ esperadas, recebidas }) {
+  const vieram = new Map();
+  for (const n of recebidas || []) vieram.set(n, (vieram.get(n) || 0) + 1);
+  const faltando = (esperadas || []).filter(n => !vieram.has(n));
+  const intrusas = [...vieram.keys()].filter(n => !(esperadas || []).includes(n));
+  const repetidas = [...vieram].filter(([, k]) => k > 1).map(([n]) => n);
+  return { faltando, intrusas, repetidas,
+           ok: !faltando.length && !intrusas.length && !repetidas.length };
+}

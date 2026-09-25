@@ -3,7 +3,18 @@
 **O que é:** o mapa único do projeto. De onde viemos, o que existe hoje, e o que
 vem depois em ordem de prioridade.
 
-**Atualizado em:** 13/09/2026 — **a Prioridade 0 FECHOU.** O Avanço está
+**Atualizado em:** 25/09/2026, fim do dia — o **T14** fechou (a suíte de 6 min
+10 s para 1 min 45 s; o Q2 que fecha bloco de horas para minutos), e o
+cruzamento documentos × código achou **três defeitos novos** que passam para a
+frente da fila. A fila está em **O QUE FALTA**, logo abaixo da Parte I; as
+fichas de cada entrega, em `docs/PLANO_DE_IMPLEMENTACAO.md`.
+
+> ~~**O último bloco fechado:** 1.32 · **O próximo:** refazer o 1.27f ·
+> **Para retomar:** `docs/CONTINUAR.md`~~ — **velho desde 16/09**; ficou no
+> cabeçalho até 25/09, que é exatamente o que a GOV-01 existe para impedir. O
+> estado mora no `docs/RETOMAR.md`.
+
+**Em 13/09/2026 — a Prioridade 0 FECHOU.** O Avanço está
 inteiro: o jogador escolhe a rota numa sala que diz quem mora nela, entra,
 atravessa o mapa por dez waves de duelo dentro do cenário do bioma, enfrenta um
 chefe 1x1 com anúncio na décima, usa poção, e recebe o que a run rendeu num
@@ -12,14 +23,6 @@ quadro que diz o que apareceu.
 Depois dela fecharam mais quatro blocos da fila de 08/09 — a Rota OFF como aba
 própria, a boutique de PokéCash, o Estilhaço, e o clima do Avanço.
 
-**O último bloco fechado:** o **1.32** (clima do Avanço), commit `6514917` —
-Q1 2137/2137, Q2 987/987.
-
-**O próximo:** o **1.27f** (o cartão da equipe) precisa ser REFEITO — ele estava
-pronto e se perdeu. A ordem de serviço está em `docs/TAREFA_1.27f_CARTAO.md`.
-
-**Para retomar o trabalho:** `docs/CONTINUAR.md` é o ponto exato de onde seguir.
-A pauta do que está pausado continua em `docs/PAUTA_2026-09-08.md`.
 
 **Antes, em 04/09/2026:** a trilha V1.x inteira (blocos 0.1 a 1.26) entrou neste
 documento pela primeira vez, e a Prioridade 0 passou a ser **o Avanço**
@@ -262,23 +265,35 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | **T9 · T10 · T13 · T11a** · o arnês | 16/09 | portão de 7 h para 3 min com a árvore intocada |
 | **1.34** · dia, tarde e noite | 25/09 | Q2 1017/1017 · suíte 2184/2184 · capturas em `tools/previas/_hora/` |
 | **1.33** · o elenco muda com a hora e o clima | 25/09 | 18 de 44 estágios mudam à noite · Q2 e suíte no commit · capturas `tools/previas/_hora/sala-*` |
+| **T14** · os testes em minutos | 25/09 | `npm test` 6 min 10 s → 1 min 45 s · `repetir` 2/2 · Q2 do bloco 39/39 em 13 min · pedido do dono |
 
 ### A fila, na ordem
 
+> **As fichas** (escopo, fora, aceite, sabotagem) de cada linha abaixo estão em
+> `docs/PLANO_DE_IMPLEMENTACAO.md`, pelo id `ST-x.y`. A evidência, em
+> `docs/CRUZAMENTO_DOCS_CODIGO_2026-09-25.md`.
+
 | # | bloco | o que é | por que aqui |
 |---|---|---|---|
-| 1 | **1.32b** · mostrar que climas existem | L-177, e a L-183 (o veterano quase não vê a noite) | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto. A prévia da NOITE já está na sala desde o 1.33 |
-| 2 | **INT-01** · recompensas que não duplicam | da Revisão 2.0: Estilhaço no baú (L-159), reservas, resgate concorrente | integridade de economia vem antes de calibrar quantidade |
-| 3 | **INT-02** · uma posse confiável | cosméticos e outfit entre dispositivos (L-157, L-055) | compra e equipar não podem depender do navegador |
-| 4 | **1.27g · UX-01** · efeitos e leitura da luta | L-171, L-172, L-175, L-176 | o que impede ENTENDER a ação vem antes do que a enfeita |
-| 5 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
+| 1 | **ST-1.1** · o teto sente a run colhida | **D-107**: `30 → 24 → 30` depois de colher; captura sem teto pelo Avanço | fura o §P5. A revisão manda antecipar integridade quando a base a reproduz — e o cruzamento reproduziu |
+| 2 | **ST-1.2** · o Sair desloga a conta real | **D-109** | P, sem decisão pendente para o Sair |
+| 3 | **ST-1.3** · a boutique não dá peça sem cobrar | **D-108**: com sessão, débito só na tela | P; mitiga até o E4 |
+| 4 | **1.32b** · mostrar que climas existem | L-177, e a L-183 (o veterano quase não vê a noite) | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto. A prévia da NOITE já está na sala desde o 1.33 |
+| 5 | **INT-01** · recompensas que não duplicam | da Revisão 2.0: Estilhaço no baú (L-159), reservas, resgate concorrente | integridade de economia vem antes de calibrar quantidade |
+| 6 | **INT-02** · uma posse confiável | cosméticos e outfit entre dispositivos (L-157, L-055) | compra e equipar não podem depender do navegador |
+| 7 | **1.27g · UX-01** · efeitos e leitura da luta | L-171, L-172, L-175, L-176 | o que impede ENTENDER a ação vem antes do que a enfeita |
+| 8 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
+| — | **E6** · higiene documental | ST-6.1 a 6.4 | não é código: corre em paralelo, um commit por story |
+| — | **ST-0.6** · CI no GitHub | `npm test` a cada push; Q2 fatiado à noite | espera a **DEC-13** |
 | — | **T11 · T8 · T4 · T7** · arnês | ❄️ **CONGELADO** | entra só quando IMPEDIR um bloco desta tabela, com orçamento nomeado antes (`CLAUDE.md`, 16/09) |
 
 ### Esperando decisão do dono
 
 | id | a pergunta | o que depende dela |
 |---|---|---|
-| **DEC-11** | manter os 154.000 sims? O argumento dos 19% caiu (L-182) | custo de servidor e de testes |
+| **DEC-11** | manter os 154.000 sims? O argumento dos 19% caiu (L-182) | custo de servidor e de testes — é o maior custo que sobrou na suíte de navegador (ST-0.8) |
+| **DEC-13** | CI no GitHub Actions? | ST-0.6 — minutos de Actions num repositório privado |
+| ✅ DEC-12 | ~~o Q2 do bloco pode adiar o que só mudou de fecho?~~ **adotada** pelo pedido do dono de 25/09 ("minutos"); o preço está na ST-0.4 | o `portoes` |
 | DEC-01 · 02 · 03 | tema e direitos · RMT · pagamento e poder | qualquer coisa com dinheiro real |
 | DEC-07 · 08 · 09 | o que o OFF encerra · captura mostrada ou base · stamina por tentativa | INT-01 e a jornada |
 | DEC-04 · 05 · 06 | curva do laboratório · Vulcão sem raro · outfits à venda | os blocos donos, quando chegarem |
@@ -310,8 +325,15 @@ Todos com dono nomeado, todos em `docs/LACUNAS.md`.
 
 ### Defeitos abertos
 
+> **Critério desta tabela:** os defeitos que um bloco da fila vai tocar. A
+> contagem inteira dá **~21 fichas sem marca de fechada** em `DEFEITOS.md`, e
+> algumas estão fechadas sem marcador — revisar ficha a ficha é a ST-6.3.
+
 | defeito | o que é | estado |
 |---|---|---|
+| **D-107** | o teto de encontros volta cheio depois de colher a run — fura o §P5 | aberto · ST-1.1 |
+| **D-108** | com conta real, o cosmético da boutique sai de graça | aberto · ST-1.3 e E4 |
+| **D-109** | o ⏻ não desloga a conta real | aberto · ST-1.2 |
 | **D-082** | o rodapé do banner passa por baixo do mon da vitrine na tela da run | aberto |
 | **D-086** | `sala-cliente` é INSTÁVEL — vermelho uma vez, verde na seguinte | aberto |
 | **D-093** | a linha de base visual LOCAL é invisível ao git e envelhece calada. Um clone novo não a tem, e a suíte passa **sem comparar nada** | a deriva foi regravada; a causa de fundo segue aberta |

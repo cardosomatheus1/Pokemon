@@ -5,6 +5,7 @@
  * e testar a peça não testa o encaixe.
  */
 import { fileURLToPath } from 'node:url';
+import { readFileSync as lerArquivo } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import { FASE_MS } from '../server/scheduler.mjs';
@@ -210,6 +211,38 @@ export function suite() {
       igual(modo.arvoreConferida(ruim, 123), null,
         `\`${ruim}\` fez a conferência lançar em vez de recusar. Uma exceção no ` +
         `meio do fechamento derruba a tela em vez de explicá-la ao jogador.`);
+  });
+
+  /* ══ D-108 e D-109 · ESTES TESTES AFIRMAM OS DEFEITOS, DE PROPÓSITO ══════
+   *
+   * Achados no cruzamento documentos × código de 25/09/2026. Os dois só
+   * existem COM conta real (modo servidor), que é justamente o modo que a
+   * suíte de navegador não joga até o fim. São testes de TEXTO porque o
+   * comportamento pede a tela inteira; ficam VERDES enquanto o defeito existir
+   * e VERMELHOS no dia em que o bloco dono consertar — sinal para marcar a
+   * ficha em docs/DEFEITOS.md e trocar o teste por um de comportamento. */
+  const fonte = f => lerArquivo(new URL(f, import.meta.url), 'utf8');
+
+  s.teste('D-108 (afirma o defeito): com sessão, a boutique debita só na tela', () => {
+    const loja = fonte('../app/modules/loja-cash.mjs');
+    const rotas = fonte('../server/rotas.mjs');
+    const compra = loja.slice(loja.indexOf('export function comprarPeca'),
+                              loja.indexOf('let ligado'));
+    ok(compra.length > 0, 'comprarPeca sumiu — o teste perdeu a âncora');
+    ok(!/modoServidor/.test(compra) && !/\/api\/cosmetic/i.test(rotas),
+      'A COMPRA DE COSMÉTICO PASSOU A SABER DO SERVIDOR. Se foi de propósito, o ' +
+      'D-108 foi tratado (ST-1.3 ou INT-02): marque a ficha e troque este teste ' +
+      'por um que compre com sessão e confira saldo e posse depois de hidratar');
+  });
+
+  s.teste('D-109 (afirma o defeito): o botão Sair não esquece o token da conta real', () => {
+    const nav = fonte('../app/modules/navegacao.mjs');
+    const sair = nav.slice(nav.indexOf("$('#btnLogout').onclick"),
+                           nav.indexOf("$('#btnLogout').onclick") + 900);
+    ok(sair.length > 100, 'o handler do Sair sumiu — o teste perdeu a âncora');
+    ok(!/esquecerSessao|ar_sessao/.test(sair),
+      'O SAIR PASSOU A ESQUECER O TOKEN. Se foi de propósito, o D-109 foi ' +
+      'corrigido (ST-1.2): marque a ficha e troque este teste por um de comportamento');
   });
 
   return s;

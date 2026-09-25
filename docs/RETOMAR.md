@@ -22,7 +22,84 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 25/09/2026, fim do dia
+## 0. ONDE PARAMOS — 25/09/2026, noite
+
+```text
+o LINK     http://localhost:8099/app/index.html
+           sobe com:  node tools/servir.mjs --porta 8099
+a PASTA    C:\Users\gdult\pa4
+o ESTADO   T14 FECHADO · os testes em minutos
+           npm test   6 min 10 s -> 1 min 45 s   (2218/2218, repetir 2/2)
+           npm run rapido  3 min 10 s -> 38,6 s
+           Q2 DO BLOCO VERDE 39/39 em 13 min 17 s · 351 reaproveitados ·
+           648 ADIADOS (a dívida do Q2 do 1.33, interrompido em 300/1032)
+o PRÓXIMO  ST-1.1 — o teto de encontros sente a run colhida (D-107)
+```
+
+### Pedido do dono, 25/09: "cruze os documentos com o código, revise o planejamento, e os testes que levam horas precisam virar minutos"
+
+**Os testes.** Três causas medidas, três consertos, nenhum teste removido:
+
+```text
+servidor     14 servidores precificavam 154 k que nenhum teste lia  92 s -> 2 s
+paralelo     3 trabalhadores para as suítes de CPU; 2 filas de Chromium
+Q2 do bloco  avalia o que o bloco TOCOU; adia, contando, o que só mudou de fecho
+             no 1.33: 147 mutantes em vez de 589
+```
+
+`npm run portoes` agora fecha bloco com o **Q2 do bloco**; `npm run portoes:tag`
+é o nível da tag. `--fatia=k/N` divide o Q2 completo entre máquinas.
+**O preço, dito:** um bloco que deixe decorativo um teste DISTANTE (o S15) só
+aparece no Q2 completo — o relatório de cada bloco imprime quantos ficaram
+adiados. É a DEC-12, adotada pelo pedido.
+
+### O Q2 que fechou o T14 — e a dívida que ele deixou à vista
+
+```text
+39 avaliados    21 sem veredito (os 15 do 1.33 que o Q2 interrompido não
+                alcançou + os 6 do T14) e os ancorados no que o T14 tocou
+                30 pelo atalho do índice, 9 pelo caminho completo · 39/39 PEGOU
+351 reaproveitados   chave intacta
+648 adiados     quase todos são a mesma dívida: o Q2 do 1.33 parou em 300/1032
+                e nunca respondeu por eles. O modo novo não a criou — ele a
+                MOSTRA, com número, em vez de exigir 7 h para fechar um bloco
+```
+
+**A próxima ação de arnês, e ela não bloqueia produto:** rodar o Q2 completo
+UMA vez, em fatias (`node test/sabotagem.mjs --fatia=1/4` … `4/4`, em sessões
+paralelas, cada uma commitando o `q2-veredito.json`). Até lá, os blocos fecham
+pelo Q2 do bloco e o número de adiados só pode cair.
+
+**O cruzamento.** `docs/CRUZAMENTO_DOCS_CODIGO_2026-09-25.md`. Três defeitos que
+nenhum documento conhecia, os três no caminho **com conta real**, os três com
+teste que afirma o defeito:
+
+```text
+D-107  o teto de encontros volta cheio depois de colher a run   fura o §P5
+D-108  com conta real, o cosmético da boutique sai de graça
+D-109  o botão ⏻ não desloga a conta real
+```
+
+E o idle inteiro (Avanço, OFF, colheita) é autoridade do NAVEGADOR: o
+`server/idle.mjs` é transacional e não tem rota. Fica no E8 do plano, com gatilho.
+
+**O plano.** `docs/PLANO_DE_IMPLEMENTACAO.md` — 9 épicos, stories com escopo,
+fora, aceite, sabotagem e porte. A ORDEM continua só no ROADMAP: o E1 (os três
+defeitos, todos P) passou à frente do 1.32b, pela regra que a própria revisão
+escreveu.
+
+**Documentos velhos:** o `RETOMAR.md` da raiz ganhou nota de histórico; o
+cabeçalho do ROADMAP e o `CLAUDE.md` foram corrigidos. Arquivar as filas mortas
+(CONTINUAR, ORDEM, PAUTA…) é a ST-6.1 — não foi feito de uma vez de propósito,
+porque alguns testes leem `docs/`.
+
+### O que espera o dono
+
+DEC-13 (CI no GitHub) · DEC-11 (os 154 k sims — hoje é também o maior custo que
+sobrou na suíte de navegador) · DEC-07/08/09 com o que o código JÁ faz escrito
+ao lado (plano, seção final) · DEC-01..06.
+
+## 0-. ANTES — 25/09/2026, fim do dia
 
 ```text
 o LINK     http://localhost:8099/app/index.html
@@ -283,7 +360,7 @@ Achado novo de arnês vai para `DEFEITOS`/`LACUNAS` com bloco dono e espera. Os
 números que fecham a conta: portão de 7 h para 3 min 02 s, suíte de 9 min para
 5 min 44 s.
 
-### O PRÓXIMO
+### O PRÓXIMO *(de 16/09 — HISTÓRICO; a fila viva é só a do ROADMAP)*
 
 `docs/ROADMAP.md`, seção **O QUE FALTA**.
 
@@ -792,7 +869,7 @@ coincidência**. O buraco do portão está na L-174.
 
 ---
 
-## 4. A ORDEM DEPOIS DO AVANÇO
+## 4. A ORDEM DEPOIS DO AVANÇO *(de 08/09 — HISTÓRICO; a fila viva é só a do ROADMAP)*
 
 ```text
 1º  A4    o Avanço inteiro                ✅ FECHADO em 08/09

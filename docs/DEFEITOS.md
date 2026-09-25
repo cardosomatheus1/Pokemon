@@ -6333,3 +6333,75 @@ sintomas são idênticos, e só o `git diff` entre execuções separa um do outr
 E não é o número de fechos `TUDO`. Reduzir os 22 é o outro eixo, é maior, e cada
 um cai por um motivo diferente. Medir os dois juntos esconderia qual pagou — que
 é o erro que custou 14/09.
+
+---
+
+## D-107 — o teto de encontros do Avanço volta cheio depois de colher a run
+
+**Achado em:** 25/09/2026, no cruzamento documentos × código
+(`docs/CRUZAMENTO_DOCS_CODIGO_2026-09-25.md`).
+**Bloco dono:** **ST-1.1** (INT-01, antecipado). **Estado:** aberto.
+**Gravidade:** alta — fura o §P5.
+**Teste que trava:** `test/avanco-estado.mjs` → `D-107 (afirma o defeito)`.
+
+### O que acontece, medido
+
+```text
+restamEncontros, jogador novo           30
+com a run de pé (reserva de 6)          24
+depois de colher, run rendeu 4          30     <- deveria ser 26
+```
+
+### Causa
+
+A run em curso RESERVA pelo `estadoDoTeto` (`reservas: [6]`), e isso funciona e
+tem teste. Ao ser colhida, ela sai de `e.run` e vai para `e.avancos`
+(`app/modules/avanco-estado.mjs:502`) — e `encontrosHoje`
+(`app/modules/idle-dados.mjs:298-301`) só soma `e.expedicoes`. O `carregar`
+(`idle-dados.mjs:102-133`) nem lê `e.avancos`: depois de um recarregamento o
+histórico some.
+
+### Por que nenhum teste pegou
+
+O teste da reserva olha o instante em que a run está de pé. O furo está no
+instante seguinte, e nenhum teste olhava a run depois de colhida.
+
+---
+
+## D-108 — com conta real, o cosmético da boutique sai de graça
+
+**Achado em:** 25/09/2026, no cruzamento documentos × código.
+**Bloco dono:** **ST-1.3** (mitigação) e **E4 / INT-02** (conserto). **Estado:** aberto.
+**Gravidade:** alta — entrega sem cobrar.
+**Teste que trava:** `test/modo-servidor.mjs` → `D-108 (afirma o defeito)`.
+
+### Causa
+
+`comprarPeca` (`app/modules/loja-cash.mjs:233-253`) debita a carteira LOCAL e
+grava a posse LOCAL. Em modo servidor, `salvar()` não grava nada
+(`app/modules/banco.mjs:148`) e não existe rota de cosmético no servidor. O
+próximo `hidratar()` traz o saldo do servidor de volta; a peça fica em
+`pa.cosmeticos.v1`.
+
+Sem sessão (modo local) a compra é coerente. O defeito é só do caminho com
+conta real, que é o que a suíte de navegador não percorre na boutique.
+
+---
+
+## D-109 — o botão ⏻ não desloga uma conta real
+
+**Achado em:** 25/09/2026, no cruzamento documentos × código.
+**Bloco dono:** **ST-1.2** (F1.3, sessão). **Estado:** aberto.
+**Gravidade:** média — num aparelho compartilhado, "sair" deixa a conta aberta.
+**Teste que trava:** `test/modo-servidor.mjs` → `D-109 (afirma o defeito)`.
+
+### Causa
+
+O handler do Sair (`app/modules/navegacao.mjs:91-98`) apaga `ar_session` — o
+PIN local da fachada. O token da conta real mora em `ar_sessao`
+(`app/modules/api.mjs:21`), e `sessaoAtiva()` (`navegacao.mjs:76`) é verdadeira
+enquanto ele existir. `api.esquecerSessao` (`api.mjs:83`) existe e ninguém
+chama.
+
+**Agravante, e é decisão (DEC-07), não defeito:** o token dura 7 dias e o
+servidor não tem como revogá-lo (`server/auth.mjs:216-246`).

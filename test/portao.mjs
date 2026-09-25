@@ -19,7 +19,7 @@
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { criarSuite, ok, igual } from './harness.mjs';
-import { conferirAncoras, filtrarTocados } from './ancoras.mjs';
+import { conferirAncoras, filtrarTocados, escopoDoBloco, fatiar } from './ancoras.mjs';
 
 /* Leitor injetado: o teste não pode depender do conteúdo real dos módulos,
    senão passa a falhar toda vez que alguém edita uma linha do jogo. */
@@ -107,6 +107,50 @@ export function suite() {
     const D = [{ id:'A', arquivo:'x.mjs' }, { id:'B', arquivo:'y.mjs' }];
     igual(filtrarTocados(D, []).length, 2, 'lista vazia de arquivos esvaziou os defeitos');
   });
+
+  /* ── T14 · o Q2 do bloco e as fatias ─────────────────────────────────── */
+  s.teste('T14: o Q2 do bloco põe cada defeito em UMA pilha, e a certa', () => {
+    const D = [{ id: 'A', arquivo: 'tocado.mjs' },  { id: 'B', arquivo: 'outro.mjs' },
+               { id: 'C', arquivo: 'outro.mjs' },   { id: 'N', arquivo: 'outro.mjs' }];
+    const guardado = new Set(['A', 'B', 'C']);     /* N é defeito novo */
+    const confere = new Set(['A', 'B']);           /* C: só o fecho mudou */
+    const r = escopoDoBloco({ defeitos: D, tocados: ['tocado.mjs'],
+      temVeredito: d => guardado.has(d.id), chaveConfere: d => confere.has(d.id) });
+    igual(r.avaliar.map(d => d.id).join(''), 'AN',
+      'ancorado em arquivo tocado (A) e defeito sem veredito (N) são o que o bloco ' +
+      'pode ter quebrado — A é avaliado MESMO com a chave conferindo, porque o ' +
+      'arquivo mudou e é essa a pergunta do bloco');
+    igual(r.reusar.map(d => d.id).join(''), 'B', 'chave inteira confere: reaproveita');
+    igual(r.adiar.map(d => d.id).join(''), 'C',
+      'só o fecho mudou: vai para o Q2 completo, e NUNCA como pego');
+    igual(r.avaliar.length + r.reusar.length + r.adiar.length, D.length,
+      'defeito que não cai em pilha nenhuma some do relatório — o S109 no Q2');
+  });
+
+  s.teste('T14: defeito novo é avaliado mesmo longe dos arquivos tocados', () => {
+    const r = escopoDoBloco({ defeitos: [{ id: 'X', arquivo: 'longe.mjs' }], tocados: [],
+      temVeredito: () => false, chaveConfere: () => true });
+    igual(r.avaliar.length, 1,
+      'o bloco que acrescenta um defeito plantado precisa provar que ele morde — ' +
+      'sem isso o Q2 do bloco deixa passar o próprio teste do bloco');
+  });
+
+  s.teste('T14: as fatias são disjuntas e juntas cobrem tudo', () => {
+    const D = Array.from({ length: 11 }, (_, i) => ({ id: `S${i}` }));
+    const partes = [1, 2, 3].map(k => fatiar(D, k, 3).map(d => d.id));
+    const todos = partes.flat();
+    igual(todos.length, D.length, 'fatias somadas perderam ou repetiram defeito');
+    igual(new Set(todos).size, D.length, 'um defeito caiu em duas fatias');
+    igual(fatiar(D, 2, 3).map(d => d.id).join(), partes[1].join(),
+      'a mesma fatia pediu defeitos diferentes: o cache da fatia não reaproveitaria');
+  });
+
+  s.teste('T14: fatia fora da faixa é recusada, não vira fatia vazia', () => {
+    let erro = null;
+    try { fatiar([{ id: 'a' }], 4, 3); } catch (e) { erro = e; }
+    ok(erro, 'fatia 4/3 devolveu lista vazia e VERDE — execução vazia com a palavra VERDE');
+  });
+
 
   /* --- o recorte da suíte (T3) ------------------------------------------
    *

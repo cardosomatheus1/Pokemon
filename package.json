@@ -14,10 +14,12 @@
     "gerar:visual": "node test/run.mjs --gerar --so=visual",
     "rapido": "node test/run.mjs --sem-navegador",
     "sabotagem": "node test/sabotagem.mjs",
+    "sabotagem:bloco": "node test/sabotagem.mjs --bloco",
     "sabotagem:completo": "node test/sabotagem.mjs --completo",
     "sabotagem:tocados": "node test/sabotagem.mjs --tocados",
     "olhar": "node tools/olhar-telas.mjs",
-    "portoes": "npm run repetir && npm run sabotagem",
+    "portoes": "npm run repetir && npm run sabotagem:bloco",
+    "portoes:tag": "npm run repetir && npm run sabotagem:completo",
     "repetir": "node tools/repetir-portao.mjs",
     "servidor": "node server/principal.mjs",
     "serve": "node prototype/serve.js"

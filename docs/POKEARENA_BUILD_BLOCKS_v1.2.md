@@ -1100,6 +1100,48 @@ ele existir pelo nosso desenho, é mudar uma função — não o sistema.
 
 ---
 
+### T14 — Os testes em minutos · **FECHADO em 25/09/2026**
+
+**Tam.** M · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/` e
+`package.json`) · **Pedido do dono** 25/09: *"os testes estão levando horas,
+isso precisa resolver e reduzir para minutos"* · **Orçamento nomeado antes:**
+um dia, nenhuma mudança de produto.
+
+**Por que ele IMPEDIA produto** (a regra de 16/09): o 1.33 deixou o Q2 em
+300/1032 em três commits de cache parcial, porque a sessão acabou antes do
+portão. Bloco de produto que não consegue fechar é produto parado.
+
+**As três causas, medidas** — detalhe em `docs/CRUZAMENTO_DOCS_CODIGO_2026-09-25.md`:
+
+```text
+servidor      14 servidores x 5,2 s precificando 154 k que nenhum teste lia   92,5 s
+fila          ~150 suítes e 8 sondas de Chromium, tudo em série, 1 núcleo
+Q2 do bloco   reavaliava por FECHO mudado: 589 mutantes no 1.33, contra
+              147 ancorados no que o bloco tocou
+```
+
+**Escopo entregue:** `sims` curto na suíte `servidor`; trabalhadores em
+paralelo no `run.mjs` (decisão em `bandeiras.mjs`); sondas em duas filas fora da
+caixa; `--bloco`, `--desde=` e `--fatia=k/N` no `sabotagem.mjs` (decisão em
+`ancoras.mjs`); `npm run sabotagem:bloco`, `portoes` e `portoes:tag`.
+
+**Sabotagem:** S1038–S1043 (a decisão de paralelizar e a agregação), mais os
+testes de `escopoDoBloco` e `fatiar` no `portao.mjs`.
+
+**Saída, medida:** `npm test` de 6 min 10 s para 1 min 45 s; `npm run rapido`
+de 3 min 10 s para 38,6 s; `npm run repetir` estável 2/2; **Q2 do bloco VERDE
+39/39 em 13 min 17 s** (351 reaproveitados, 648 adiados — a dívida do Q2 do
+1.33, interrompido em 300/1032).
+
+**O preço, dito:** o Q2 do bloco ADIA o defeito ancorado fora do que o bloco
+tocou cujo fecho mudou (o caso S15). Ele é respondido pelo Q2 completo — em
+fatias ou antes da tag — e o relatório do bloco imprime quantos ficaram adiados.
+
+**As fichas de PRODUTO de 1.27 em diante** não moram neste arquivo: estão em
+`docs/PLANO_DE_IMPLEMENTACAO.md`, por épico e story.
+
+---
+
 ### T13 — A exclusão passa a valer para quem tem fecho `TUDO` · **FECHADO em 16/09/2026**
 
 **Tam.** P · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/`)

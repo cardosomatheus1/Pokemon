@@ -21,9 +21,10 @@ docs/POKEARENA_ECONOMY_STUDY_v1.2.md                economia do jogo
 docs/POKEARENA_UNIT_ECONOMICS_STUDY_v1.2.md         economia da empresa
 docs/RETOMAR.md                                     ONDE PARAMOS — o ESTADO ÚNICO
 docs/ROADMAP.md                                     a FILA ÚNICA: feito, pendente, prioridade
-docs/PROXIMO_BLOCO_1.33.md                          o cartão do próximo bloco
+docs/PLANO_DE_IMPLEMENTACAO.md                      as FICHAS por épico e story (a ordem é do ROADMAP)
+docs/CRUZAMENTO_DOCS_CODIGO_2026-09-25.md           a evidência do plano: documento × código, arquivo:linha
 docs/revisao-2026-09-24/                            a Revisão 2.0 e a CONFERÊNCIA dela
-docs/POKEARENA_DOCUMENT_INDEX_v1.4.md               índice; começa por ele
+docs/POKEARENA_DOCUMENT_INDEX_v1.5.md               índice (a v1.4 não existe mais; v1.6 é a ST-6.4)
 docs/DEFEITOS.md                                    defeitos achados, não corrigidos
 docs/LACUNAS.md                                     trabalho identificado, adiado
 ```
@@ -204,17 +205,32 @@ um dia inteiro em 14/09, e o modo de falha não foi lentidão:
 Portão que ninguém roda protege zero. Então ele passa a ser cobrado onde paga:
 
 ```text
-A CADA MUDANÇA     a suíte inteira           2204 testes · 6 min 50 s com
-                   responde "quebrei alguma coisa?"   navegador, medido 25/09 (era
+A CADA MUDANÇA     a suíte inteira           2218 testes · 1 min 45 s com
+                   responde "quebrei alguma coisa?"   navegador, medido 25/09 no T14
+                                                      (era 2204 · 6 min 10 s antes dele;
                                                       2162 · 5 min 44 s em 16/09;
                                                       2145 · 9 min antes do T11a)
 
-A CADA BLOCO       `npm run sabotagem`       o portão com o cache
+A CADA BLOCO       `npm run sabotagem:bloco` o Q2 DO BLOCO (T14, 25/09)
                    responde "os testes deste bloco mordem?"
+                   avalia o que o bloco tocou e o que não tem veredito; ADIA,
+                   contando, o que só mudou de fecho
+
+DE TEMPOS EM TEMPOS `npm run sabotagem`      o Q2 completo com cache, inteiro ou
+                   em fatias (`--fatia=k/N`) — responde pelos adiados
 
 ANTES DE UMA TAG   `npm run sabotagem:completo`
                    responde "algum teste virou decorativo desde a última vez?"
 ```
+
+> **MUDOU EM 25/09/2026 (T14, pedido do dono: "minutos").** O parágrafo abaixo
+> descreve o `npm run sabotagem`, que continua existindo e continua valendo o
+> que diz. O que fecha bloco passou a ser o `sabotagem:bloco`, e ele **não** é a
+> mesma garantia: os defeitos ancorados FORA do que o bloco tocou, cujo fecho
+> mudou, ficam ADIADOS para o Q2 completo. No 1.33 isso foi a diferença entre
+> 589 mutantes (horas) e 147 (minutos). O preço é o caso S15 aparecer depois, e
+> o relatório de todo bloco imprime quantos ficaram adiados. Ver a ST-0.4 em
+> `docs/PLANO_DE_IMPLEMENTACAO.md`.
 
 **E o nível do meio NÃO é amostragem — é a mesma garantia de sempre.** O portão
 com cache reavalia todo defeito cuja chave mudou, e a chave é (definição,
@@ -265,11 +281,13 @@ saber**, e esse é o preço combinado.
 ## Comandos
 
 ```bash
-npm run portoes            # suíte DUAS vezes com navegador + sabotagem
+npm run portoes            # suíte DUAS vezes com navegador + Q2 do bloco — FECHA bloco
+npm run portoes:tag        # suíte DUAS vezes + Q2 completo sem cache — o nível da TAG
 npm run repetir            # só a repetição — instável reprova como vermelho
 npm run assets             # baixa a arte para assets/, fora do versionamento
-npm test                   # suíte (pula Q5 se não houver navegador)
-npm run sabotagem          # Q2 completo — obrigatório para fechar bloco
+npm test                   # suíte, em paralelo (T14) — TESTE_SERIAL=1 para a fila antiga
+npm run sabotagem:bloco    # Q2 do bloco — obrigatório para fechar bloco (T14)
+npm run sabotagem          # Q2 completo com cache; --fatia=k/N divide entre máquinas
 npm run sabotagem:tocados  # Q2 parcial, DURANTE a construção (ver abaixo)
 npm run test:gerar         # regrava fixtures E linha de base visual (~5 min)
 npm run gerar:visual       # SÓ a linha de base visual — 49 s (T3)
@@ -524,7 +542,7 @@ de propósito — e o número novo vai na mensagem do commit, ao lado do antigo.
 Um bloco, um commit. A mensagem diz o que mudou, o que foi medido, e o que foi
 para DEFEITOS/LACUNAS. Se regravou fixture, explique a diferença.
 
-Branch de trabalho: `claude/pok-arena-repo-setup-qgcn76`.
+Branch de trabalho: o que a sessão indicar (o antigo era `claude/pok-arena-repo-setup-qgcn76`; em 25/09, `claude/docs-planning-tests-6hjthq`).
 
 ---
 

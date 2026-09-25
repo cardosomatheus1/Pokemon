@@ -84,3 +84,50 @@ export function filtrarTocados(defeitos, arquivos) {
   const alvo = new Set(arquivos);
   return defeitos.filter(d => alvo.has(d.arquivo));
 }
+
+/* ── T14 · O Q2 DO BLOCO: o que ESTE bloco pode ter quebrado ──────────────
+ *
+ * O portão com cache reavaliava todo defeito cuja CHAVE mudou, e a chave inclui
+ * o fecho da suíte captora. Mexer num arquivo que muitas suítes leem — o pack de
+ * conteúdo, o `index.html`, um utilitário de teste — muda o fecho de centenas.
+ *
+ *     medido 25/09   o 1.33 tocou 32 arquivos
+ *                    defeitos ANCORADOS neles       147
+ *                    defeitos com a chave mudada    589     -> horas de portão
+ *
+ * Os 442 de diferença não foram plantados em nada que o bloco tocou. Eles
+ * respondem a outra pergunta: "algum teste antigo e distante ficou decorativo?"
+ * — o S15 do V1.14. Essa pergunta continua sendo feita, no Q2 COMPLETO (tag, ou
+ * fatiado entre máquinas). O que muda é que ela deixa de travar o fecho de cada
+ * bloco. Decisão do dono, 25/09/2026: "os testes precisam ser minutos".
+ *
+ * As três pilhas, e cada defeito cai em exatamente uma:
+ *
+ *   avaliar   ancorado em arquivo tocado, ou sem veredito guardado (defeito
+ *             novo, ou que nunca foi pego). É o que o bloco pode ter quebrado
+ *   reusar    a chave inteira confere: nada de que ele depende mudou. É a
+ *             mesma garantia de sempre, sem aproximação
+ *   adiar     só o fecho mudou. Fica para o Q2 completo, e o relatório CONTA —
+ *             adiado não é pego, e não pode aparecer como pego */
+export function escopoDoBloco({ defeitos, tocados, temVeredito, chaveConfere }) {
+  const alvo = new Set(tocados || []);
+  const avaliar = [], reusar = [], adiar = [];
+  for (const d of defeitos) {
+    if (alvo.has(d.arquivo) || !temVeredito(d)) avaliar.push(d);
+    else if (chaveConfere(d)) reusar.push(d);
+    else adiar.push(d);
+  }
+  return { avaliar, reusar, adiar };
+}
+
+/* ── T14 · O Q2 COMPLETO EM FATIAS ────────────────────────────────────────
+ *
+ * O Q2 frio custou 453 min numa máquina (T13, 16/09). A fatia divide os
+ * defeitos em N partes DISJUNTAS e que cobrem tudo, para N máquinas ou N
+ * sessões rodarem ao mesmo tempo; o cache é mesclado por id, então as fatias
+ * juntam sozinhas. A partição é pelo ÍNDICE na lista, e não por sorteio: a
+ * mesma fatia pede sempre os mesmos defeitos, e fatia repetida reaproveita. */
+export function fatiar(defeitos, k, n) {
+  if (!(n >= 1) || !(k >= 1) || k > n) throw new Error(`fatia inválida: ${k}/${n}`);
+  return defeitos.filter((_, i) => i % n === k - 1);
+}

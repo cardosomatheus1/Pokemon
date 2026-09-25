@@ -27,8 +27,22 @@ const { digital: digitalNode } = criarDigital(packEscolhido);
 
 /* Sobe, roda, derruba. O `try/finally` é obrigatório: servidor que vaza numa
    falha de teste segura a porta e a próxima execução falha por motivo errado. */
+/* LOTE CURTO, e a razão é o relógio da suíte inteira (T14, 25/09/2026).
+ *
+ * `ouvir()` liga o laço, e o laço abre a primeira rodada precificando-a com
+ * `CONF.SIMS` — 154.000 batalhas, ~5 s de CPU. Esta suíte sobe 14 servidores,
+ * e nenhum dos seus testes lê a rodada que o laço abre: eles medem versão,
+ * saúde, cabeçalhos e a rota de paridade, que já pede o próprio `sims=2000`.
+ *
+ *     medido 25/09   servidor: 92,5 s de 190 s da suíte sem navegador
+ *                    cada teste: ~5,2 s em `ouvir()`, ~20 ms no resto
+ *
+ * O laço continua ligado — o que o teste sobe é o servidor de verdade —, só o
+ * tamanho do lote da primeira rodada muda. As outras suítes que sobem servidor
+ * (rotas, laco, sala-cliente, protecao-tela…) já passavam `sims` curto. */
+const SIMS_DO_TESTE = 2000;
 async function comServidor(fn) {
-  const s = criarServidor({ config: { ambiente: 'teste' } });
+  const s = criarServidor({ config: { ambiente: 'teste' }, sims: SIMS_DO_TESTE });
   const porta = await s.ouvir(0);
   try { return await fn(porta); } finally { await s.fechar(); }
 }
@@ -187,7 +201,8 @@ export async function suite() {
    * rota de erro em produção: superfície que só existe para o teste é superfície
    * que alguém acha em produção. */
   s.teste('erro inesperado NÃO vaza stack trace', async () => {
-    const s2 = criarServidor({ config: { ambiente: 'teste', silencioso: true } });
+    const s2 = criarServidor({ config: { ambiente: 'teste', silencioso: true },
+                              sims: SIMS_DO_TESTE });
     s2.registrar('GET', '/api/_estoura', () => {
       const e = new Error('segredo-interno-que-nao-pode-vazar');
       e.stack = 'Error: segredo-interno-que-nao-pode-vazar\n    at /home/app/server/x.mjs:42:7';

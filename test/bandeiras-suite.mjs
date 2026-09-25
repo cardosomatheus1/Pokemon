@@ -12,7 +12,8 @@
 import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { precisaNavegador, sondasNecessarias, SONDA_DA_SUITE,
-         suitesPrometidasENaoEntregues, sondasSemResultado } from './bandeiras.mjs';
+         suitesPrometidasENaoEntregues, sondasSemResultado,
+         trabalhadoresDaSuite, ordemDeEntrega, agregacaoIncompleta } from './bandeiras.mjs';
 
 const COM = ['visual', 'ambientes', 'rodada-viva', 'contraste'];
 
@@ -204,6 +205,66 @@ export function suite() {
       resultados: { rodar: { ok: 1 }, luta: null } }).join(', '), '',
       'cobrar resultado de sonda que ninguém pediu transformaria o corte do ' +
       'D-098 num aborto em toda execução recortada');
+  });
+
+  /* ── T14 · A SUÍTE EM PARALELO ─────────────────────────────────────────── */
+
+  const BASE = { nucleos: 4, pararCedo: false, emSandbox: false, so: null, serial: false };
+
+  s.teste('T14: sem restrição, 4 núcleos dão 3 trabalhadores — um fica com o Chromium', () => {
+    igual(trabalhadoresDaSuite(BASE), 3,
+      'o principal dirige o navegador; tirar dele o núcleo faz as sondas ' +
+      'disputarem CPU com as suítes e ficarem lentas justamente onde custam mais');
+  });
+
+  s.teste('T14: a sabotagem NUNCA roda em paralelo (PARAR_CEDO e caixa de areia)', () => {
+    igual(trabalhadoresDaSuite({ ...BASE, pararCedo: true }), 0,
+      'com PARAR_CEDO a resposta depende da ORDEM por custo: em paralelo a ' +
+      'primeira falha que chega não é a mais barata, e o captor do índice ' +
+      'mudaria de nome sem o comportamento mudar');
+    igual(trabalhadoresDaSuite({ ...BASE, emSandbox: true }), 0,
+      'dentro da caixa do Q2 isto é o D-100 de volta: caixas em paralelo com ' +
+      'trabalhadores em paralelo afogam a máquina, e afogamento vira PEGOU falso');
+  });
+
+  s.teste('T14: recorte `--so` e `TESTE_SERIAL=1` voltam para a fila', () => {
+    igual(trabalhadoresDaSuite({ ...BASE, so: ['carteira'] }), 0,
+      'o recorte é o laço de construção: subir trabalhador custaria mais que ' +
+      'rodar a suíte pedida');
+    igual(trabalhadoresDaSuite({ ...BASE, serial: true }), 0,
+      'a recusa explícita tem de vencer — é por ela que se mede a diferença');
+  });
+
+  s.teste('T14: máquina de dois núcleos não paga trabalhador que não ajuda', () => {
+    igual(trabalhadoresDaSuite({ ...BASE, nucleos: 2 }), 0,
+      'um trabalhador só é a fila de antes com o custo de um processo a mais');
+    igual(trabalhadoresDaSuite({ ...BASE, nucleos: 16 }), 4,
+      'acima de 4 a memória volta a ser o limite (D-023)');
+  });
+
+  s.teste('T14: as suítes caras são entregues primeiro, e nenhuma se perde', () => {
+    const nomes = ['golden', 'carteira', 'margem', 'rotas', 'paridade'];
+    const ordem = ordemDeEntrega(nomes, { margem: 15, paridade: 14, rotas: 2 });
+    igual(ordem.join(','), 'margem,paridade,rotas,golden,carteira',
+      'a fila dinâmica termina quando a ÚLTIMA termina: a mais cara entregue ' +
+      'por último deixa os outros trabalhadores ociosos esperando por ela');
+    igual([...ordem].sort().join(), [...nomes].sort().join(),
+      'ordenar não pode tirar nem pôr suíte — é o S109 pela porta da fila');
+  });
+
+  s.teste('T14: suíte que não voltou do trabalhador ABORTA a agregação', () => {
+    const r = agregacaoIncompleta({ esperadas: ['a', 'b', 'c'], recebidas: ['a', 'c'] });
+    igual(r.ok, false, 'faltou a `b` e a agregação aceitou: VERDE sem ter olhado');
+    igual(r.faltando.join(), 'b', 'a acusação precisa nomear a suíte que sumiu');
+  });
+
+  s.teste('T14: resultado a mais ou repetido também aborta', () => {
+    igual(agregacaoIncompleta({ esperadas: ['a'], recebidas: ['a', 'x'] }).ok, false,
+      'suíte que ninguém esperava quer dizer que as duas montagens divergiram');
+    igual(agregacaoIncompleta({ esperadas: ['a', 'b'], recebidas: ['a', 'a', 'b'] }).ok, false,
+      'a mesma suíte contada duas vezes infla o total e esconde a que faltou');
+    igual(agregacaoIncompleta({ esperadas: ['a', 'b'], recebidas: ['b', 'a'] }).ok, true,
+      'a ordem de chegada é livre em paralelo, e não pode reprovar');
   });
 
   return s;

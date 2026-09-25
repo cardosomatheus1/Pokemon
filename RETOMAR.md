@@ -1,3 +1,9 @@
+> **⚠ ESTE ARQUIVO É HISTÓRICO desde 15/09/2026.** O estado único do projeto
+> (GOV-01) é o **`docs/RETOMAR.md`** — o comando é `leia docs/RETOMAR.md e
+> continue de onde paramos`. Este aqui ficou parado em 30/08 e continuou na
+> raiz, onde uma aba nova o acharia primeiro. Nota posta no cruzamento de
+> 25/09/2026; mover para `docs/historico/` é a ST-6.1.
+
 # Retomar daqui — 30/08/2026, madrugada
 
 A **Fase 0 do roteiro de 29/08 está fechada**, mais um bloco extra. A árvore está

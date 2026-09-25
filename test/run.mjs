@@ -3,6 +3,9 @@
  *       node test/run.mjs --gerar   regrava as fixtures (só quando a mudança é intencional)
  */
 import { readFileSync, writeFileSync } from 'node:fs';
+import { fork } from 'node:child_process';
+import { cpus } from 'node:os';
+import { fileURLToPath } from 'node:url';
 import * as golden from './golden.mjs';
 import * as invariantes from './invariantes.mjs';
 import * as estatistica from './estatistica.mjs';
@@ -142,7 +145,8 @@ import * as adm from './adm.mjs';
 import * as visual from './visual.mjs';
 import { precisaNavegador as precisaDeNavegador, sondasNecessarias,
          SONDA_DA_SUITE, suitesPrometidasENaoEntregues,
-         sondasSemResultado } from './bandeiras.mjs';
+         sondasSemResultado, trabalhadoresDaSuite, ordemDeEntrega,
+         agregacaoIncompleta } from './bandeiras.mjs';
 import * as acervo from './acervo.mjs';
 import * as calibracao from './calibracao.mjs';
 import * as ligaServidor from './liga-servidor.mjs';
@@ -176,7 +180,12 @@ const argSo = process.argv.find(a => a.startsWith('--so='));
  *
  * Aqui a lista é DERIVADA: tudo que não está em `COM_NAVEGADOR`. Suíte nova
  * entra sozinha, e não há como esquecer. */
-const semNavegador = process.argv.includes('--sem-navegador');
+/* `--trabalhador` — este processo é FILHO de uma execução em paralelo (T14).
+   Ele monta as mesmas suítes, nunca sobe navegador (quem dirige o Chromium é o
+   pai), e roda só o que o pai mandar, uma suíte por vez. Não é bandeira para
+   uso à mão: sem o pai do outro lado do canal ele não tem o que fazer. */
+const TRABALHADOR = process.argv.includes('--trabalhador');
+const semNavegador = process.argv.includes('--sem-navegador') || TRABALHADOR;
 const SO = argSo ? argSo.slice(5).split(',').map(x => x.trim()).filter(Boolean) : null;
 const querSo = nome => !SO || SO.includes(nome);
 
@@ -284,6 +293,57 @@ const COM_NAVEGADOR = ['visual','visual-luta','visual-base','ambientes','rodada-
 const precisaNavegador = precisaDeNavegador(
   { so: SO, semNavegador, comNavegador: COM_NAVEGADOR });
 
+/* ── A SUÍTE EM PARALELO (T14, 25/09/2026) ────────────────────────────────
+ *
+ * MEDIDO antes: 190 s sem navegador, num núcleo, com três olhando; ~7 min com
+ * navegador, porque as sondas do Chromium e as suítes de CPU esperavam umas
+ * pelas outras sem nenhuma razão — as de CPU não leem nada das sondas.
+ *
+ * Os trabalhadores sobem AQUI, antes das sondas, e rodam as suítes de CPU
+ * enquanto o processo principal dirige o Chromium. A fila é dinâmica: cada um
+ * pede a próxima quando termina, as caras primeiro (`ordemDeEntrega`).
+ *
+ * NADA É PULADO NEM AFROUXADO: as mesmas suítes, com os mesmos dados. O que
+ * muda é que elas deixam de esperar umas pelas outras. E quando não pode ser
+ * assim — sabotagem, recorte, `TESTE_SERIAL=1` —, `trabalhadoresDaSuite`
+ * devolve zero e a execução é a fila de sempre. */
+const N_TRAB = TRABALHADOR ? 0 : trabalhadoresDaSuite({
+  nucleos: cpus().length, pararCedo: process.env.PARAR_CEDO === '1',
+  emSandbox: process.env.EM_SANDBOX === '1', so: SO,
+  serial: process.env.TESTE_SERIAL === '1', pedido: Number(process.env.TESTE_TRAB) });
+const paralelo = N_TRAB ? iniciarTrabalhadores(N_TRAB) : null;
+if (paralelo) console.log(`  · ${N_TRAB} trabalhadores rodando as suítes de CPU em paralelo ` +
+                          `(TESTE_SERIAL=1 para a fila de antes)\n`);
+
+function iniciarTrabalhadores(n) {
+  const recebidos = [], erros = [];
+  let fila = null, catalogo = null, vivos = n, divergiu = null, resolver;
+  const fim = new Promise(r => { resolver = r; });
+  const proxima = f => {
+    const nome = fila.shift();
+    if (nome) f.send({ rodar: nome }); else f.send({ sair: true });
+  };
+  for (let i = 0; i < n; i++) {
+    /* stdout do filho é descartado: ele só teria os pontinhos do arnês. O
+       resultado de cada suíte volta pelo canal, inteiro. O stderr passa, para
+       que um filho que morre diga por quê. */
+    const f = fork(fileURLToPath(import.meta.url), ['--trabalhador'],
+      { stdio: ['ignore', 'ignore', 'inherit', 'ipc'] });
+    f.on('message', m => {
+      if (m.pronto) {
+        if (!fila) { catalogo = m.nomes; fila = ordemDeEntrega(m.nomes); }
+        else if (m.nomes.join() !== catalogo.join()) divergiu = m.nomes;
+        proxima(f);
+      } else if (m.resultado) { recebidos.push(m.resultado); proxima(f); }
+    });
+    f.on('exit', codigo => {
+      if (codigo) erros.push(`trabalhador ${i + 1} saiu com código ${codigo}`);
+      if (--vivos === 0) resolver({ recebidos, erros, catalogo: catalogo ?? [], divergiu });
+    });
+  }
+  return { fim };
+}
+
 if (visual.disponivel() && !semVisual && precisaNavegador) {
   const temLocal = visual.temAssetsLocais();
   if (!temLocal && exigeLocal) {
@@ -323,6 +383,29 @@ if (visual.disponivel() && !semVisual && precisaNavegador) {
     for (const fn of lista) fora.push(await fn());
     return fora;
   };
+  /* ── E EM DUAS FILAS QUANDO A SUÍTE JÁ ESTÁ EM PARALELO (T14) ──────────
+   *
+   * O D-023 continua valendo onde ele nasceu: DENTRO da caixa do Q2, com
+   * outros mutantes na máquina. Lá `N_TRAB` é zero e a fila é uma só.
+   *
+   * Fora dela — o `npm test` de quem está construindo —, a memória sobra
+   * (15 GB medidos) e as sondas passavam 176 s esperando umas pelas outras.
+   * Duas filas, puxando a mais cara primeiro, é o pico de DOIS navegadores em
+   * vez de sete: o meio-termo entre o D-023 e o relógio. Medido em 25/09:
+   *
+   *     base 62 · semBackend 31 · rodar 29 · luta 25 · rodadaCompleta 16 ·
+   *     semRede 10 · temaCedo 0,7 · digitais 0,4       (segundos, uma fila)
+   *
+   * O resultado volta na MESMA posição de antes: quem consome não sabe que
+   * as sondas rodaram fora de ordem. */
+  const emDuasFilas = async (lista, custo) => {
+    const fora = new Array(lista.length);
+    const ordem = lista.map((_, i) => i).sort((a, b) => custo[b] - custo[a]);
+    const puxar = async () => { for (let i; (i = ordem.shift()) !== undefined;) fora[i] = await lista[i](); };
+    await Promise.all([puxar(), puxar()]);
+    return fora;
+  };
+  const CUSTO_SONDA = [29, 25, 62, 0.4, 0.7, 10, 31, 16];   /* na ordem da lista abaixo */
   /* ── E SÓ AS SONDAS QUE ESTA EXECUÇÃO VAI LER (D-098, bloco T9) ─────────
    *
    * A fila acima resolveu a MEMÓRIA. Faltava a outra metade: quantas sondas
@@ -342,7 +425,8 @@ if (visual.disponivel() && !semVisual && precisaNavegador) {
   const sondas = sondasNecessarias({ so: SO, semNavegador, comNavegador: COM_NAVEGADOR });
   sondasPedidas = sondas; temAssets = temLocal;
   const se = (nome, fn) => () => (sondas.has(nome) ? fn() : Promise.resolve(null));
-  [rVisual, rLuta, baseAtual, digitaisNav, rTemaCedo, rSemRede, rSemBackend, rRodadaCompleta] = await emFila([
+  const filas = paralelo ? l => emDuasFilas(l, CUSTO_SONDA) : emFila;
+  [rVisual, rLuta, baseAtual, digitaisNav, rTemaCedo, rSemRede, rSemBackend, rRodadaCompleta] = await filas([
     se('rodar',          () => visual.rodar()),
     se('luta',           () => visual.rodarLuta()),
     se('base',           () => visual.capturarBase()),
@@ -517,13 +601,54 @@ if (SO) {
   }
   avisoParcial(`${suites.length} de ${todas.length} suítes — ${SO.join(', ')}`);
 }
+/* O TRABALHADOR NÃO RODA A FILA: ele avisa o que montou e espera ordens. */
+if (TRABALHADOR) {
+  const porNome = new Map(suites.map(s => [s.nome, s]));
+  process.on('message', async m => {
+    if (m.sair) process.exit(0);
+    const r = await porNome.get(m.rodar).rodar();
+    process.send({ resultado: { nome: r.nome, total: r.total, falhas: r.falhas } });
+  });
+  process.send({ pronto: true, nomes: suites.map(s => s.nome) });
+  await new Promise(() => {});           /* o canal mantém o processo; `sair` encerra */
+}
+/* Em paralelo, o principal roda só as suítes de navegador — as que leem as
+   sondas que ele mesmo subiu. As outras já estão com os trabalhadores. */
+const remotas = paralelo ? suites.filter(s => !COM_NAVEGADOR.includes(s.nome)) : [];
+const locais = paralelo ? suites.filter(s => COM_NAVEGADOR.includes(s.nome)) : suites;
 let total = 0, falhas = [];
-for (const s of suites) {
+for (const s of locais) {
   const r = await s.rodar();
   total += r.total;
   falhas.push(...r.falhas.map(f => ({ ...f, suite: r.nome })));
   console.log(`  ${r.nome}: ${r.total - r.falhas.length}/${r.total}`);
   if (pararCedo && r.falhas.length) { console.log('  · parada antecipada (PARAR_CEDO=1)'); break; }
+}
+if (paralelo) {
+  const ag = await paralelo.fim;
+  /* A CONFERÊNCIA QUE IMPEDE O VERDE SEM TER OLHADO (S109). O que o principal
+     montou é a referência; o que voltou dos filhos tem de casar com ela, nos
+     dois sentidos, sem repetição. Filho que morreu, catálogo que divergiu ou
+     suíte que não voltou ABORTAM — não avisam e seguem. */
+  const conf = agregacaoIncompleta({ esperadas: remotas.map(s => s.nome),
+                                     recebidas: ag.recebidos.map(r => r.nome) });
+  if (!conf.ok || ag.erros.length || ag.divergiu) {
+    console.error('\nEXECUÇÃO EM PARALELO INCOMPLETA — o resultado não vale.');
+    if (conf.faltando.length) console.error(`  sem resultado: ${conf.faltando.join(', ')}`);
+    if (conf.intrusas.length) console.error(`  resultado de suíte não esperada: ${conf.intrusas.join(', ')}`);
+    if (conf.repetidas.length) console.error(`  resultado repetido: ${conf.repetidas.join(', ')}`);
+    if (ag.divergiu) console.error('  os trabalhadores montaram listas de suítes diferentes');
+    for (const e of ag.erros) console.error(`  ${e}`);
+    console.error('  Rode com TESTE_SERIAL=1 para ver a fila de antes.');
+    process.exit(2);
+  }
+  const porNome = new Map(ag.recebidos.map(r => [r.nome, r]));
+  for (const s of remotas) {
+    const r = porNome.get(s.nome);
+    total += r.total;
+    falhas.push(...r.falhas.map(f => ({ ...f, suite: r.nome })));
+    console.log(`  ${r.nome}: ${r.total - r.falhas.length}/${r.total}`);
+  }
 }
 console.log('');
 if (falhas.length) {

@@ -2090,6 +2090,35 @@ export const DEFEITOS = [
     para:`é o que diz POR QUÊ. */
    O ícone` },
 
+  /* ── T14 · A SUÍTE EM PARALELO ────────────────────────────────────────
+     A decisão de paralelizar e a conferência da agregação moram na camada 0
+     (bandeiras.mjs). Cada defeito abaixo é uma forma de a execução em paralelo
+     mentir: rodar onde não pode (sabotagem), ou devolver VERDE sem ter olhado. */
+  { id:'S1038', arquivo:'test/bandeiras.mjs', nome:'a sabotagem passa a rodar em paralelo',
+    real:'PARAR_CEDO deixa de depender da ordem por custo, e o captor do indice muda de nome sem o comportamento mudar',
+    de:'  if (serial || pararCedo || emSandbox) return 0;',
+    para:'  if (serial || emSandbox) return 0;' },
+  { id:'S1039', arquivo:'test/bandeiras.mjs', nome:'a caixa de areia do Q2 ganha trabalhadores',
+    real:'o D-100 de volta: caixas em paralelo com trabalhadores em paralelo afogam a maquina, e afogamento vira PEGOU falso',
+    de:'  if (serial || pararCedo || emSandbox) return 0;',
+    para:'  if (serial || pararCedo) return 0;' },
+  { id:'S1040', arquivo:'test/bandeiras.mjs', nome:'o principal perde o nucleo do Chromium',
+    real:'as sondas de navegador disputam CPU com as suites e ficam lentas justamente onde custam mais',
+    de:'  const teto = Math.max(0, (nucleos | 0) - 1);',
+    para:'  const teto = Math.max(0, nucleos | 0);' },
+  { id:'S1041', arquivo:'test/bandeiras.mjs', nome:'suite que nao voltou do trabalhador deixa de abortar',
+    real:'o S109 pela porta do paralelo: trabalhador morre e a execucao sai VERDE tendo olhado menos',
+    de:'  const faltando = (esperadas || []).filter(n => !vieram.has(n));',
+    para:'  const faltando = [];' },
+  { id:'S1042', arquivo:'test/bandeiras.mjs', nome:'resultado repetido passa a contar',
+    real:'a mesma suite contada duas vezes infla o total e esconde a que faltou',
+    de:'  const repetidas = [...vieram].filter(([, k]) => k > 1).map(([n]) => n);',
+    para:'  const repetidas = [];' },
+  { id:'S1043', arquivo:'test/bandeiras.mjs', nome:'as caras passam a ser entregues por ultimo',
+    real:'a fila termina quando a ultima termina: a mais cara no fim deixa tres trabalhadores ociosos',
+    de:'    ((custo[b] ?? 0) - (custo[a] ?? 0)) || (pos.get(a) - pos.get(b)));',
+    para:'    ((custo[a] ?? 0) - (custo[b] ?? 0)) || (pos.get(a) - pos.get(b)));' },
+
   /* ── OS TRÊS DO T11a: QUEM AVANÇA OS QUADROS ──────────────────────────
      O defeito que estes guardam ficou 30 s por largura escondido atrás de uma
      linha de base VERDE. Nenhum deles deixa a base vermelha — eles deixam a
