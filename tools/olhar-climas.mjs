@@ -86,6 +86,10 @@ const PLANTAR = async () => {
      Por isso o Pokédex é plantado ANTES: a ferramenta tem de conquistar as vagas
      do mesmo jeito que o jogador. Se houvesse atalho aqui, haveria no jogo. */
   e.registro = Object.fromEntries((PACK.especies ?? []).slice(0, 30).map(y => [y.dex, 3]));
+  /* SEIS RUNS JÁ COLHIDAS HOJE (ST-3.6): a próxima é a 7ª, e a frase do
+     rendimento aparece sob o botão. Sem encontros, para não mexer no teto. */
+  e.avancos = Array.from({ length: 6 }, (_, k) =>
+    ({ colhidaEm: agora - (k + 1) * 60000, encontros: 0, bioma: 'floresta', estagio: 1 }));
 
   const biomas = (PACK.biomas ?? []).map(b => b.id);
   const perfis = ['trilha', 'batida', 'vigilia'];
@@ -211,6 +215,8 @@ for (const largura of [1440, 420]) {
                      || x.getBoundingClientRect().right > innerWidth + 1).map(x => x.id || x.textContent.slice(0, 30));
   });
   if (t.length) erros.push(`transbordo em ${largura}px: ${t.join(' | ')}`);
+  const fala = await pg.evaluate(() => document.querySelector('#idleCustoRun')?.textContent ?? '');
+  if (!/7ª run de hoje/.test(fala)) erros.push(`${largura}px: a frase do rendimento (ST-3.6) não apareceu: "${fala.slice(0, 80)}"`);
   console.log(`  ${largura}px: ${t.length ? 'TRANSBORDA ' + t.join(' | ') : 'nada transborda'}`);
   await pg.screenshot({ path: join(SAIDA, `custo-${largura}.png`), clip: r, fullPage: true });
 }

@@ -8219,7 +8219,7 @@ ou reduzir só na captura visual, que não julga odd nenhuma — a ideia do dono
 
 **Registrada em:** 25/09/2026, na ST-3.3 (o mapa de emissão). **Bloco dono:**
 **ST-3.6** (a calibragem, nova) — e ela depende da **DEC-14**, do dono.
-**Estado:** aberta. **Teste que trava:** `test/emissao-idle.mjs` → `L-185 (afirma o achado)`.
+**Estado:** ✅ fechada em 25/09/2026 (ST-3.6, DEC-14) — rendimento decrescente por run no dia do mundo; o maratona foi de 8,7× para 2,5× a Essência calibrada. **Teste que trava:** `test/emissao-idle.mjs` → `ST-3.6:` (o "afirma o achado" foi invertido).
 
 **Medido** pelo motor do jogo, sete dias, sementes fixas
 (`test/fixtures/emissao-idle.json`), por dia:

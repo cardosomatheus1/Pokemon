@@ -24,6 +24,9 @@ import * as A from '../app/modules/avanco-estado.mjs';
 import * as D from '../app/modules/idle-dados.mjs';
 import kanto from '../content/pokemon_kanto_v1.mjs';
 import { DIAS_DE_FARM } from '../engine/estilhaco.mjs';
+import { fatorDoRendimento, runsNoDia, diaDoMundo, comRendimento, falaDoRendimento,
+         FUSO_DO_RENDIMENTO_MIN, RUNS_CHEIAS, PISO_DO_RENDIMENTO } from '../engine/avanco.mjs';
+import { FUSO_DO_MUNDO_MIN } from '../app/modules/hora-do-dia.mjs';
 
 const ARQ = new URL('./fixtures/emissao-idle.json', import.meta.url);
 const H = 3600e3, DIA = 24 * H, T0 = Date.UTC(2026, 8, 1, 3);   /* 00h de Brasília */
@@ -40,8 +43,8 @@ export const PERFIS = {
 export const TETOS = {
   encontros: 'TETO: 30 por dia + o bônus da coleção (MARCOS_ENCONTROS; o veterano medido tem 50), janela móvel (D-052, §P5) — e a run colhida pesa nele desde o ST-1.1',
   xp:        'sem teto próprio: a stamina (192/dia/criatura) e a curva de nível seguram',
-  pokecoin:  'SEM TETO — medido aqui; decisão pendente (L-185, DEC-14)',
-  essencia:  'SEM TETO — muito acima da calibragem do Estilhaço (23/dia); decisão pendente (L-185, DEC-14)',
+  pokecoin:  'rendimento decrescente por run no dia do mundo: 6 cheias, depois ×0,75 por run, piso de 5% (ST-3.6, DEC-14)',
+  essencia:  'o mesmo rendimento decrescente da moeda (ST-3.6, DEC-14); o maratona caiu de 8,7× para ~2,5× a calibragem',
   poke:      'sem teto: consumível, gasto no lance',
   great:     'sem teto: consumível, gasto no lance',
   ultra:     'sem teto: consumível, gasto no lance',
@@ -148,16 +151,52 @@ export function suite() {
       'duas medições iguais deram números diferentes: há sorteio fora das sementes');
   });
 
-  /* O ACHADO, travado: a curva do Estilhaço foi calibrada com 23 de Essência
-     por DIA (DIAS_DE_FARM). O Avanço emite muito mais. Este teste AFIRMA o
-     achado de propósito — fica vermelho no dia em que a emissão for
-     recalibrada, e aí a L-185 e a DEC-14 fecham. */
-  s.teste('L-185 (afirma o achado): o maratona tira mais de 3× a Essência calibrada', () => {
+  /* ── A L-185 FECHADA (ST-3.6, DEC-14) ─────────────────────────────────
+     O teste que AFIRMAVA o achado (maratona > 3× a Essência calibrada) foi
+     invertido: medido em 25/09, o maratona foi de 199,6 para ~57 por dia
+     (8,7× → 2,5× os 23 calibrados), o diário de 40 para ~37, e o casual não
+     mudou um centésimo. */
+  s.teste('ST-3.6: o maratona fica abaixo de 3× a Essência calibrada, e o diário abaixo de 2×', () => {
     const guardado = existsSync(ARQ) ? JSON.parse(readFileSync(ARQ, 'utf8')) : medir();
-    const ess = guardado.perfis.maratona.estagio1.porDia.essencia ?? 0;
-    ok(ess > 3 * DIAS_DE_FARM.ESSENCIA_POR_DIA,
-      `o maratona tira ${ess}/dia contra ${DIAS_DE_FARM.ESSENCIA_POR_DIA} calibrados — se a emissão foi ` +
-      'recalibrada, feche a L-185 e inverta este teste');
+    const cal = DIAS_DE_FARM.ESSENCIA_POR_DIA;
+    for (const est of ['estagio1', 'estagio3']) {
+      const m = guardado.perfis.maratona[est].porDia.essencia ?? 0;
+      const d = guardado.perfis.diario[est].porDia.essencia ?? 0;
+      ok(m < 3 * cal, `o maratona (${est}) tira ${m}/dia contra ${cal} calibrados — o rendimento não morde`);
+      ok(d < 2 * cal, `o diário (${est}) tira ${d}/dia contra ${cal} calibrados`);
+    }
+  });
+
+  s.teste('ST-3.6: as primeiras runs do dia pagam inteiras — o casual não sente nada', () => {
+    for (let n = 1; n <= RUNS_CHEIAS; n++) igual(fatorDoRendimento(n), 1, `a ${n}ª run do dia já perdeu rendimento`);
+    ok(fatorDoRendimento(RUNS_CHEIAS + 1) < 1, 'a run além das cheias pagou inteira — não há rendimento decrescente');
+    for (let n = RUNS_CHEIAS + 1; n < 60; n++)
+      ok(fatorDoRendimento(n + 1) <= fatorDoRendimento(n), `o rendimento SUBIU da ${n}ª para a ${n + 1}ª run`);
+    ok(PISO_DO_RENDIMENTO > 0 && fatorDoRendimento(1000) === PISO_DO_RENDIMENTO,
+      'a run tardia não para no piso — run que não paga nada ensina a não jogar');
+    ok(PERFIS.casual.avancos * PERFIS.casual.criaturas <= RUNS_CHEIAS,
+      'o perfil casual passou do número de runs cheias — a DEC-14 prometeu que ele não sente');
+  });
+
+  s.teste('ST-3.6: o dia é o do calendário em Brasília — a regularidade não é punida', () => {
+    igual(FUSO_DO_RENDIMENTO_MIN, FUSO_DO_MUNDO_MIN, 'o motor e a tela discordam sobre o fuso do mundo');
+    const meiaNoite = Date.UTC(2026, 8, 2, 3);          // 00h de Brasília
+    igual(diaDoMundo(meiaNoite - 60000) + 1, diaDoMundo(meiaNoite + 60000), '23h59 e 00h01 caíram no mesmo dia');
+    /* Ontem no MESMO horário não conta hoje — era o defeito da janela móvel. */
+    const ontem = [{ colhidaEm: meiaNoite + 9 * 3600e3 - 86400e3 }, { colhidaEm: meiaNoite + 9.3 * 3600e3 - 86400e3 }];
+    igual(runsNoDia(ontem, meiaNoite + 9 * 3600e3), 0, 'as runs de ontem, no mesmo horário, contaram hoje');
+    igual(runsNoDia([{ colhidaEm: meiaNoite + 60000 }], meiaNoite + 3600e3), 1, 'a run de hoje não contou');
+  });
+
+  s.teste('ST-3.6: o arredondamento semeado guarda a média, e a tela avisa antes', () => {
+    let soma = 0;
+    for (let i = 0; i < 1000; i++) soma += comRendimento(1, 0.3, i / 1000);
+    igual(soma, 300, 'o arredondamento não guarda a média — 1 × 0,3 em mil runs devia somar 300');
+    igual(falaDoRendimento(RUNS_CHEIAS), null, 'a tela avisou de rendimento numa run que paga inteira');
+    ok(/7ª run de hoje/.test(falaDoRendimento(RUNS_CHEIAS + 1) ?? '') && /75%/.test(falaDoRendimento(RUNS_CHEIAS + 1)),
+      `a frase não diz a posição e a porcentagem: ${falaDoRendimento(RUNS_CHEIAS + 1)}`);
+    ok(/falaDoRendimento\(runsNoDia\(/.test(readFileSync(new URL('../app/modules/avanco-tela.mjs', import.meta.url), 'utf8')),
+      'a tela não mostra o rendimento antes da run — ele cairia sem aviso');
   });
 
   return s;

@@ -166,6 +166,64 @@ export const falaDoCusto = () =>
   `${STAMINA_DO_CHEFE} no chefe. Se a equipe cair, paga só as waves que alcançou; ` +
   `tentar de novo é outra run, com o mesmo custo.`;
 
+/* ── O RENDIMENTO DECRESCE COM AS RUNS DO DIA (ST-3.6, DEC-14) ──────────────
+ *
+ * Medido na ST-3.3 (L-185): o jogador que roda o Avanço no teto da stamina —
+ * seis criaturas, oito runs cada — tirava 8,7× a Essência que a curva do
+ * Estilhaço foi calibrada para pagar num dia, e o diário quase 2×. O teto de
+ * encontros segura ESPÉCIE; não segura moeda nem Essência.
+ *
+ * A DEC-14 escolheu o rendimento decrescente: as primeiras runs do dia pagam
+ * inteiras — o casual (2 por dia) não sente nada —, e cada run a mais paga um
+ * pouco menos, até um piso. O piso existe porque run que não paga NADA ensina
+ * a não jogar, e o que se quer ensinar é que a décima run vale menos que a
+ * primeira.
+ *
+ * "O DIA" É O DE CALENDÁRIO, NO RELÓGIO DO MUNDO (Brasília, DEC-10) — e não a
+ * janela móvel de 24 h do teto de encontros. A primeira versão usou a janela,
+ * e a medição (`test/emissao-idle.mjs`) pegou o defeito: quem joga todo dia no
+ * mesmo horário encontrava as runs de ONTEM ainda dentro das 24 h, e a primeira
+ * run de hoje já nascia reduzida. O jogador regular pagava pela regularidade.
+ * A meia-noite fixa abre a brecha de jogar 23h50 e 00h10 — no pior caso, um dia
+ * cheio a mais por noite em claro, que é um preço bem menor.
+ *
+ * O que decresce: MOEDA e ESSÊNCIA — os dois que a L-185 mediu fora da
+ * calibragem. O XP não: a stamina e a curva de nível já o seguram. */
+export const RUNS_CHEIAS = 6;
+export const QUEDA_POR_RUN = 0.75;
+export const PISO_DO_RENDIMENTO = 0.05;
+const DIA_MS = 24 * 3600_000;
+/* O mesmo deslocamento de `FUSO_DO_MUNDO_MIN` (`app/modules/hora-do-dia.mjs`):
+   o motor não importa da aplicação, e `test/emissao-idle.mjs` confere que os
+   dois números são o mesmo. */
+export const FUSO_DO_RENDIMENTO_MIN = 180;
+export const diaDoMundo = agora => Math.floor(((Number(agora) || 0) - FUSO_DO_RENDIMENTO_MIN * 60000) / DIA_MS);
+
+/* `n` é a POSIÇÃO desta run no dia, contando com ela (a 1ª é 1). */
+export function fatorDoRendimento(n) {
+  const alem = Math.max(0, (Math.floor(Number(n)) || 1) - RUNS_CHEIAS);
+  return Math.max(PISO_DO_RENDIMENTO, QUEDA_POR_RUN ** alem);
+}
+
+/* Quantas runs já foram colhidas HOJE — a próxima é esta mais um. A lista de
+   `avancos` guarda as últimas 24 h, e o dia de calendário cabe nelas. */
+export const runsNoDia = (avancos, agora) =>
+  (avancos ?? []).filter(x => Number.isFinite(x?.colhidaEm) && diaDoMundo(x.colhidaEm) === diaDoMundo(agora)).length;
+
+/* Arredondar para baixo apagaria as quantidades pequenas (uma Essência × 0,8 =
+   0), e para o mais próximo daria de graça metade das vezes. O sorteio
+   SEMEADO (`u` em [0, 1)) guarda a média: 0,8 vira 1 em 80% das runs. */
+export const comRendimento = (quantidade, fator, u) =>
+  Math.floor((Number(quantidade) || 0) * fator + (Number(u) || 0));
+
+/* A frase da tela, ANTES de começar: o jogador decide com o número na mão. */
+export function falaDoRendimento(n) {
+  const f = fatorDoRendimento(n);
+  if (f >= 1) return null;
+  return `Esta seria a ${n}ª run de hoje: ela paga ${Math.round(f * 100)}% de moeda e Essência. ` +
+         `O rendimento volta inteiro à meia-noite (horário de Brasília).`;
+}
+
 /* UMA CRIATURA SEM STAMINA REPROVA A EQUIPE INTEIRA — e a recusa diz quem.
    Mesma forma do `podeEnviar` do §7.13, e de propósito: duas regras diferentes
    para "esta equipe pode sair?" seriam duas telas discordando. */

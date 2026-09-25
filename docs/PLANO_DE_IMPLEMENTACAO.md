@@ -357,6 +357,16 @@ isso trouxe. O sigilo do clima sorteado (L-177) não se quebra.
   da Spec e da revisão passa a descrever o código (ou o código muda, se o dono
   decidir "por tentativa").
 
+
+### ST-3.6 · DEC-14: o rendimento do Avanço decresce com as runs do dia — ✅ fechada em 25/09 (fecha a L-185)
+
+- **Feito:** `fatorDoRendimento` no motor — 6 runs cheias por dia, depois ×0,75
+  por run, piso de 5%; moeda e Essência (o XP não); arredondamento semeado que
+  guarda a média; o dia é o de CALENDÁRIO no relógio do mundo (Brasília,
+  DEC-10) — a janela móvel de 24 h foi medida e punia quem joga todo dia no
+  mesmo horário. A frase aparece sob o botão Avançar a partir da 7ª run.
+- **Medido:** Essência/dia casual 16,29 → 16,29 · diário 40,0 → 37,1 ·
+  maratona 199,6 → 57,4 (8,7× → 2,5× os 23 calibrados).
 ---
 
 ## E4 · Posse confiável (INT-02)

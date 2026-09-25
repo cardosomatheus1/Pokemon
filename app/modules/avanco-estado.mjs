@@ -27,6 +27,7 @@ import { estagioAberto, estagioMaximo, nivelDoEstagio } from '../../engine/estag
 import {
   podeAvancar, cabeAvanco, STAMINA_DO_AVANCO, ENCONTROS_POR_AVANCO,
   premioDo, ganhoDaRun, POR_ABATE, curaDe,
+  fatorDoRendimento, runsNoDia, comRendimento,
 } from '../../engine/avanco.mjs';
 import { creditar } from '../../engine/nivel-criatura.mjs';
 import { moedasDa, idDaMoeda, idDoMaterial } from '../../engine/economia-idle.mjs';
@@ -342,6 +343,11 @@ export function colherAvancoDaRun(e, { pack, agora, raiz = novaRaiz() }) {
 
   const valem = encontrosValemNa(run);
   const premio = premioDo(resultadoDa(run), { encontrosValem: valem });
+  /* O RENDIMENTO DO DIA (ST-3.6, DEC-14): a posição desta run no dia do mundo
+     decide quanto de moeda e Essência ela paga. Ver o motor. */
+  const naJanela = runsNoDia(e.avancos, agora) + 1;
+  const fator = fatorDoRendimento(naJanela);
+  const sorteioR = semente(derivar(raiz, 'avanco:rendimento'));
 
   /* ── O CLIMA, LIDO UMA VEZ (1.32) ──────────────────────────────────────
    *
@@ -388,11 +394,13 @@ export function colherAvancoDaRun(e, { pack, agora, raiz = novaRaiz() }) {
      Ramo próprio da semente, como na colheita da expedição: "quantos itens
      caíram" e "quanto você ganhou" são perguntas diferentes, e amarrá-las
      faria uma mexer na outra sem que ninguém quisesse. */
-  const moedas = moedasDa(semente(derivar(raiz, 'avanco:moeda')), {
+  /* O rendimento entra ANTES do clima: o "+52 por clima" continua dizendo o
+     que o clima de fato somou a esta run. */
+  const moedas = comRendimento(moedasDa(semente(derivar(raiz, 'avanco:moeda')), {
     perfil: PERFIL_DO_AVANCO,
     /* O abate paga moeda pela mesma régua com que paga XP. */
     encontros: premio.encontros.length + Math.round(premio.abates * POR_ABATE),
-  });
+  }), fator, sorteioR());
   const moedasComClima = Math.round(aplicarClima(moedas, bonusClima, 'moeda'));
   const km = idDaMoeda(pack);
   e.bolsa[km] = (e.bolsa[km] ?? 0) + moedasComClima;
@@ -445,12 +453,16 @@ export function colherAvancoDaRun(e, { pack, agora, raiz = novaRaiz() }) {
   for (let k = 0; k < itens.length; k++) {
     const it = itens[k];
     const l = it.classe === 'essencia'
-      ? { chave: idDoMaterial(pack), quantidade: it.quantidade }
+      ? { chave: idDoMaterial(pack), quantidade: comRendimento(it.quantidade, fator, sorteioR()) }
       : lancamentoDoBau(it, { estagio: run.estagio, catalogo: pack.catalogo })
         ?? { chave: it.id, quantidade: it.quantidade };
     e.bolsa[l.chave] = (e.bolsa[l.chave] ?? 0) + l.quantidade;
     if (l.estilhaco) itens[k] = { ...it, id: l.chave, quantidade: l.quantidade, estilhaco: true };
+    else if (it.classe === 'essencia') itens[k] = { ...it, quantidade: l.quantidade };
   }
+  /* A Essência que o rendimento zerou some da lista: "Essência ×0" no quadro
+     seria o saque mentindo em outra direção. */
+  for (let k = itens.length - 1; k >= 0; k--) if (!itens[k].quantidade) itens.splice(k, 1);
 
   /* ── OS ENCONTROS FICAM PENDENTES, esperando bola ──────────────────────
      Mesma forma da expedição (1.2b): guardar aqui é o que impede a colheita
@@ -493,6 +505,7 @@ export function colherAvancoDaRun(e, { pack, agora, raiz = novaRaiz() }) {
   };
   run.rendeu = {
     xp: ganho.xp, moedas: moedasComClima, itens, subiram, bau: premio.bau,
+    rendimento: { run: naJanela, fator },
     clima: climaAqui ? {
       key: climaAqui.clima.key,
       /* O NOME VEM DO PACK, e é ele que fica gravado: o histórico é lido meses

@@ -35,7 +35,8 @@ import { usarCena } from './avanco-cena.mjs';
 import { pintarColunaDaRun } from './avanco-painel.mjs';
 import { mostrarBioma, acompanhar } from './idle-mundo.mjs';
 import { WAVES } from '../../engine/wave.mjs';
-import { STAMINA_DO_AVANCO, staminaAteWave, curaDe, ganhoDaRun, falaDoCusto } from '../../engine/avanco.mjs';
+import { STAMINA_DO_AVANCO, staminaAteWave, curaDe, ganhoDaRun, falaDoCusto,
+         falaDoRendimento, runsNoDia } from '../../engine/avanco.mjs';
 import { staminaAgora } from '../../engine/expedicao.mjs';
 
 /* O catálogo do PACK alimenta os ícones, uma vez na carga: o mapa id -> índice
@@ -472,7 +473,10 @@ export function atualizarBotaoAvancar(E, escolha, agora) {
   av.textContent = porque ?? '⚔ Avançar (assistido)';
   av.classList.toggle('pri', !porque);
   const custo = $('#idleCustoRun');
-  if (custo) custo.textContent = falaDoCusto();
+  /* E O QUE ELA PAGA HOJE (ST-3.6): a partir da 7ª run do dia, a frase diz a
+     porcentagem ANTES de começar — rendimento que cai sem aviso é o D-067. */
+  if (custo) custo.textContent = [falaDoCusto(), falaDoRendimento(runsNoDia(E.avancos, agora) + 1)]
+    .filter(Boolean).join(' ');
 
   /* ── O AVISO DO TETO VEM ANTES, E NÃO DEPOIS (L-151) ──────────────────
      O teto deixou de recusar a run e passou a mudar o que ela rende. Isso só

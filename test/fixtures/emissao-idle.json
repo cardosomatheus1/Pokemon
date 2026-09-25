@@ -41,10 +41,10 @@
     "vigiliasRecusadasPeloTeto": 6,
     "porDia": {
      "great": 7.29,
-     "essencia": 40,
+     "essencia": 37.14,
      "item": 0.14,
      "poke": 22.43,
-     "pokecoin": 1984,
+     "pokecoin": 1855.86,
      "ultra": 2.14,
      "xp": 422.9,
      "encontros": 19.43
@@ -57,9 +57,9 @@
     "porDia": {
      "item": 0.85,
      "poke": 23.57,
-     "essencia": 46.86,
+     "essencia": 43.57,
      "great": 7.57,
-     "pokecoin": 3429.57,
+     "pokecoin": 3185.71,
      "estilhaco": 15,
      "ultra": 1,
      "xp": 732,
@@ -73,10 +73,10 @@
     "vigiliasPorDia": 0,
     "vigiliasRecusadasPeloTeto": 0,
     "porDia": {
-     "pokecoin": 4865.29,
+     "pokecoin": 1378.86,
      "great": 38.57,
      "poke": 109.57,
-     "essencia": 199.57,
+     "essencia": 57.43,
      "ultra": 11.29,
      "xp": 1089.4,
      "encontros": 20.29
@@ -87,11 +87,11 @@
     "vigiliasPorDia": 0,
     "vigiliasRecusadasPeloTeto": 0,
     "porDia": {
-     "pokecoin": 6165.43,
+     "pokecoin": 1729,
      "poke": 124.86,
      "great": 39.43,
      "estilhaco": 97.71,
-     "essencia": 205.29,
+     "essencia": 49.71,
      "ultra": 11,
      "xp": 1374,
      "encontros": 39.86

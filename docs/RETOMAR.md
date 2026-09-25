@@ -36,6 +36,17 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### ST-3.6 FECHADA — o Avanço paga menos a partir da 7ª run do dia (DEC-14, L-185)
+
+6 runs cheias por dia, depois ×0,75 por run, piso de 5% — moeda e Essência.
+**O dia é o de calendário em Brasília**, e a medição decidiu isso: a janela
+móvel de 24 h punia quem joga todo dia no mesmo horário (as runs de ontem
+ainda estavam na janela). Essência/dia: casual igual (16,29), diário 40 → 37,
+maratona 199,6 → 57,4 — de 8,7× para 2,5× a calibragem. A frase aparece sob o
+botão Avançar ("Esta seria a 7ª run de hoje: ela paga 75%…"), capturada a
+1440 e 420 sem transbordo. Suíte 2314/2314; Q2 do bloco 15/15 (S1127–S1134;
+S1081 realinhado), 0 mutantes de navegador.
+
 ### E4 (metade B, cliente) — o INT-02 fechou, e o D-108 com ele
 
 Com conta real a boutique compra NO SERVIDOR (`comprarNoServidor`, chave por
