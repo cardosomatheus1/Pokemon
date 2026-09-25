@@ -36,6 +36,16 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### ST-7.2b FECHADA — pela primeira vez, uma conta real criada pelo navegador
+
+Com o servidor no ar (`npm run servidor`), o modal "Criar treinador" pede
+nome, e-mail, senha e nascimento e cria a conta no servidor; "Já tenho conta"
+entra por e-mail e senha, de qualquer aparelho. Sem servidor, a fachada local
+de sempre — e o modal só pergunta ao ABRIR, então o boot continua sem pedido
+nenhum. Conferido no Chromium: a página volta logada, com o nome, o nível e os
+1.000 PokéCash que o servidor dá na entrada. Falta a **7.2c** (relatório e
+roteiro do piloto).
+
 ### DEC-01 DECIDIDA PELO DONO — e a ST-7.2a achou o que travava o piloto de verdade
 
 O dono, 25/09: *"Os direitos não importam agora, pode ignorar por hora, pode

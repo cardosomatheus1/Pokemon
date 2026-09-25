@@ -206,6 +206,7 @@ const CAMADA = {
   'elenco-condicao.mjs': 0,
   /* O que o ⏻ limpa (ST-1.2, D-109): a api e o armazém entram por argumento. */
   'sair.mjs': 0,
+  'conta-real.mjs': 0,
   /* A legenda dos climas (1.32b): entra o pack e o estágio, sai a tabela. */
   'climas-legenda.mjs': 0,
   /* O anúncio do chefe: o que a tela LÊ sobre ele, sem DOM (L-170). */

@@ -1411,7 +1411,7 @@ input[type=range]{width:100%;accent-color:var(--gold)}
   display:flex;justify-content:space-between;align-items:center}
 .modal .xbtn{background:none;border:none;color:var(--dim);font-size:1.15rem;cursor:pointer;line-height:1}
 .modal .xbtn:hover{color:var(--txt)}
-.modal input[type=text]{width:100%;padding:8px;border-radius:6px;border:1px solid var(--line);
+.modal input[type=text],.modal input[type=email],.modal input[type=password],.modal input[type=date]{width:100%;padding:8px;border-radius:6px;border:1px solid var(--line);
   background:var(--panel2);color:var(--txt);font-size:.85rem;margin-bottom:8px}
 
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
@@ -2456,9 +2456,9 @@ body::after{
   letter-spacing:.08em;text-shadow:0 0 10px rgba(var(--goldRGB),.6)}
 .modal-backdrop{background:rgba(3,6,14,.78);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-.modal input[type=text]{background:rgba(0,0,0,.4);border:1px solid var(--line);
+.modal input[type=text],.modal input[type=email],.modal input[type=password],.modal input[type=date]{background:rgba(0,0,0,.4);border:1px solid var(--line);
   border-radius:8px;color:var(--txt)}
-.modal input[type=text]:focus{outline:none;border-color:var(--gold);
+.modal input[type=text]:focus,.modal input[type=email]:focus,.modal input[type=password]:focus,.modal input[type=date]:focus{outline:none;border-color:var(--gold);
   box-shadow:0 0 0 3px rgba(var(--goldRGB),.14), 0 0 14px rgba(var(--goldRGB),.3)}
 
 .stat-box{background:var(--panel2);border:1px solid var(--line);border-radius:10px}
@@ -3275,8 +3275,9 @@ td.od{text-shadow:0 0 8px rgba(var(--goldRGB),.6)}
   letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-top:2px}
 #authModal #authAgeRow{text-transform:none;letter-spacing:0;font-family:'Segoe UI',sans-serif;
   font-size:.66rem}
-#authModal input[type=text]{
-  font-family:var(--dsp);font-weight:500;letter-spacing:.05em;
+#authModal input[type=text],#authModal input[type=email],
+#authModal input[type=password],#authModal input[type=date]{
+  color-scheme:dark;font-family:var(--dsp);font-weight:500;letter-spacing:.05em;
   padding:11px 12px;background:rgba(0,0,0,.5);
 }
 
@@ -7578,15 +7579,30 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 <div class="modal-backdrop" id="authModal">
   <div class="modal">
     <h2 id="authTtl">Criar treinador <button class="xbtn" data-fechar="#authModal">✕</button></h2>
-    <div class="tiny" style="background:#12233a;border:1px solid #24466e;border-radius:8px;
+    <div class="tiny" id="authInfo" style="background:#12233a;border:1px solid #24466e;border-radius:8px;
       padding:8px;margin-bottom:12px;color:#a9cdf0">
-      ℹ️ Não existe servidor ainda: o treinador é salvo só neste navegador.
+      ℹ️ Sem servidor: o treinador é salvo só neste navegador.
       Sem e-mail, sem senha real, sem coleta de dados.
     </div>
-    <label class="tiny" style="display:block;margin-bottom:4px">Nome do treinador</label>
-    <input type="text" id="authName" maxlength="18" placeholder="Ex.: Ash">
-    <label class="tiny" style="display:block;margin:6px 0 4px" id="authPinLbl">PIN de 4 dígitos (opcional)</label>
-    <input type="text" id="authPin" maxlength="4" inputmode="numeric" placeholder="0000">
+    <div id="authNomeRow">
+      <label class="tiny" style="display:block;margin-bottom:4px">Nome do treinador</label>
+      <input type="text" id="authName" maxlength="18" placeholder="Ex.: Ash" autocomplete="nickname">
+    </div>
+    <div id="authPinRow">
+      <label class="tiny" style="display:block;margin:6px 0 4px" id="authPinLbl">PIN de 4 dígitos (opcional)</label>
+      <input type="text" id="authPin" maxlength="4" inputmode="numeric" placeholder="0000">
+    </div>
+    <!-- ST-7.2b: a conta REAL, mostrada só quando o servidor responde. -->
+    <div id="authContaRow" style="display:none">
+      <label class="tiny" style="display:block;margin:6px 0 4px">E-mail</label>
+      <input type="email" id="authEmail" maxlength="120" placeholder="voce@exemplo.com" autocomplete="email">
+      <label class="tiny" style="display:block;margin:6px 0 4px">Senha (12 caracteres ou mais)</label>
+      <input type="password" id="authSenha" maxlength="200" placeholder="••••••••••••" autocomplete="current-password">
+      <div id="authNascRow">
+        <label class="tiny" style="display:block;margin:6px 0 4px">Data de nascimento</label>
+        <input type="date" id="authNasc" autocomplete="bday">
+      </div>
+    </div>
     <div class="tiny" id="authMsg" style="color:var(--red);min-height:14px;margin-top:4px"></div>
     <label class="tiny" id="authAgeRow" style="display:flex;gap:7px;align-items:flex-start;margin-top:8px;cursor:pointer">
       <input type="checkbox" id="authAge" style="margin-top:2px">

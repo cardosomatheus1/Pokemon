@@ -241,6 +241,9 @@ export const ROTAS = {
    * recompensa de outro usuário" impossível em vez de improvável. */
   'GET /api/perfil': ({ db, userId, agora }) => ({
     corpo: {
+      /* O NOME DO TREINADOR (ST-7.2b): quem entra noutro aparelho não tem o
+         perfil local, e sem isto chegaria sem nome. */
+      nome: db.prepare('SELECT username FROM users WHERE id = ?').get(userId)?.username ?? null,
       perfil: perfilDe(db, { userId, agora }),
       desafios: desafiosDe(db, { userId, agora }),
       sequencia: sequenciaDeLogin(db, { userId, agora }),

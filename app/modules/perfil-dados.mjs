@@ -141,6 +141,8 @@ export async function hidratarPerfil(){
      veio da rota apagaria cosmético e estatística, que a rota não conhece — e
      seria o bloco 0.1 desfazendo do R24 ao R43 por descuido de uma linha. */
   S.profile.xp = r.corpo?.perfil?.xp ?? 0;
+  /* O nome vem da conta (ST-7.2b): noutro aparelho não há perfil local. */
+  if (r.corpo?.nome) S.profile.name = r.corpo.nome;
   /* A POSSE DE COSMÉTICO VEM JUNTO (E4): o que ele comprou e o que ele vestiu,
      de qualquer aparelho. Limpar o navegador deixa de levar a compra (L-055). */
   const posse = await hidratarPosse(api);

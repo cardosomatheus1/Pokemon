@@ -8295,7 +8295,11 @@ confirmado, o `focoDaCamera` mirar o centro da luta inteira.
 ### L-189 — a tela nunca criou uma conta real
 
 **Registrada em:** 25/09/2026, ao preparar o piloto (ST-7.2a). **Bloco dono:**
-**ST-7.2b**. **Estado:** aberto.
+**ST-7.2b**. **Estado:** ✅ fechada em 25/09/2026 (ST-7.2b) — com o servidor no
+ar o modal cria conta e entra por `/api/auth`; sem ele, a fachada local de
+sempre. Conferido no Chromium pelo backend a 1440 e 420: duas contas criadas,
+a página volta logada com nome, nível e os 1.000 do grant do servidor, e a
+telemetria já gravou `session_started`. Capturas em `tools/previas/_conta/`.
 
 O modal "Criar treinador / Entrar" é a fachada LOCAL — ele ainda diz *"Não
 existe servidor ainda: o treinador é salvo só neste navegador"*. Nenhum

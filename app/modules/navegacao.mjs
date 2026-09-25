@@ -12,6 +12,7 @@ import { emitir } from './telemetria.mjs';
 import { modoServidor, saldo } from './banco.mjs';
 import { api } from './api.mjs';
 import { sair } from './sair.mjs';
+import { servidorNoAr, enviarConta } from './conta-real.mjs';
 import { renderProfile } from './customizacao.mjs';
 import { avatarURL, trainerURL } from './perfil.mjs';
 import { progressoNivel, saveProfile, tituloDe } from './perfil.mjs';
@@ -120,6 +121,22 @@ function renderSession(){
 }
 
 let authMode = 'signup';
+/* ── CONTA REAL OU FACHADA LOCAL (ST-7.2b) ────────────────────────────────
+   Perguntado ao ABRIR o modal, e não no boot: sem backend a pergunta é um 404,
+   e a abertura do jogo não pode ter nenhum (ST-5.1). As regras moram no
+   `conta-real.mjs`; aqui só se mostra o campo certo e se chama. */
+let contaReal = false;
+function pintarModoDaConta(){
+  const real = contaReal, cadastro = authMode === 'signup';
+  $('#authInfo').textContent = real
+    ? 'ℹ️ Conta no servidor: seu treinador, saldo e compras valem em qualquer aparelho. PokéCash é moeda simulada, sem valor real.'
+    : 'ℹ️ Sem servidor: o treinador é salvo só neste navegador. Sem e-mail, sem senha real, sem coleta de dados.';
+  $('#authContaRow').style.display = real ? 'block' : 'none';
+  $('#authNascRow').style.display = real && cadastro ? 'block' : 'none';
+  $('#authPinRow').style.display = real ? 'none' : 'block';
+  $('#authNomeRow').style.display = real && !cadastro ? 'none' : 'block';
+  $('#authSenha').autocomplete = cadastro ? 'new-password' : 'current-password';
+}
 function abrirAuth(modo){
   authMode = modo;
   const existe = !!localStorage.getItem('ar_profile');
@@ -130,14 +147,38 @@ function abrirAuth(modo){
   $('#authMsg').textContent = '';
   $('#authName').value = modo === 'login' && existe ? S.profile.name : '';
   $('#authPin').value = '';
+  $('#authSenha').value = '';
+  pintarModoDaConta();
   openModal('#authModal');
+  /* O botão espera a resposta: um clique antes dela iria pelo caminho errado. */
+  const go = $('#btnAuthGo');
+  go.disabled = true;
+  servidorNoAr(api).then(v => { contaReal = v; pintarModoDaConta(); }).finally(() => { go.disabled = false; });
 }
 $('#btnAuthSwap').onclick = () => abrirAuth(authMode === 'signup' ? 'login' : 'signup');
 
-$('#btnAuthGo').onclick = () => {
+$('#btnAuthGo').onclick = async () => {
   const nome = $('#authName').value.trim().slice(0,18);
   const pin  = $('#authPin').value.trim();
   const msg  = $('#authMsg');
+
+  if (contaReal){
+    const go = $('#btnAuthGo');
+    go.disabled = true; msg.textContent = '';
+    const r = await enviarConta(api, authMode, {
+      nome, email: $('#authEmail').value, senha: $('#authSenha').value,
+      nascimento: $('#authNasc').value, declarou: $('#authAge').checked,
+    });
+    go.disabled = false;
+    if (!r.ok){ msg.textContent = r.msg; return; }
+    /* A PÁGINA RECOMEÇA, como no Sair: o boot com sessão (`ligarModoServidor`)
+       hidrata carteira, perfil e posse, e entra na sala. Montar isso à mão
+       aqui seria uma segunda ordem de hidratação para manter igual à primeira. */
+    if (authMode === 'signup' && nome){ S.profile.name = nome; saveProfile(S.profile); }
+    location.reload();
+    return;
+  }
+
   if (!nome){ msg.textContent = 'Escolha um nome de treinador.'; return; }
   if (pin && !/^\d{4}$/.test(pin)){ msg.textContent = 'O PIN precisa ter 4 dígitos.'; return; }
 
