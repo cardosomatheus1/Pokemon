@@ -335,6 +335,54 @@ export function suite() {
 
   /* ── A BARRA DE XP DIZ QUANTO, E NÃO SÓ "PERTO" ───────────────────────── */
 
+  /* ── O RELÓGIO REPINTA O BANNER DA EXPEDIÇÃO (L-124, bloco 1.34) ─────
+     Palavra do dono, 02/09: *"a contagem que já existe no banner de batalha no
+     idle marcando a expedição ele não atualiza de forma contínua e
+     simultânea"*. Ele estava certo: o relógio de 1 s repintava o campo, o
+     treino e o botão — e não o HUD. O banner só era desenhado na repintura
+     COMPLETA, e ficava parado entre uma e outra.
+
+     O projeto já tinha a regra: *um número que nunca anda ensina o jogador que
+     o número é falso*. */
+  s.teste('o relógio de 1 s repinta o HUD da cena, e não só os painéis', () => {
+    const src = semComentario(ler('../app/modules/idle-tela.mjs'));
+    const i = src.indexOf('function ligarRelogio');
+    ok(i >= 0, 'a função do relógio sumiu de idle-tela.mjs — este teste precisa ' +
+      'de ser realvado para onde o relógio mora hoje, e não apagado');
+    const corpo = src.slice(i, src.indexOf('\n}', i));
+    ok(/setInterval\(/.test(corpo), 'o relógio deixou de ser um intervalo');
+    ok(/desenharHud\(/.test(corpo),
+      'o relógio de 1 s não repinta o HUD. O banner "EXPEDIÇÃO 1h40" fica parado ' +
+      'entre duas repinturas completas — e o dono pegou isso olhando, em 02/09: ' +
+      '"não atualiza de forma contínua e simultânea".');
+  });
+
+  /* ── A LUZ DA HORA É UMA CAMADA, E ELA MULTIPLICA (1.34) ──────────────
+     Esta afirmação guarda uma decisão que custou DUAS reprovações olhando, e
+     nenhuma delas apareceria num teste de comportamento:
+
+       1ª  tinta por cima, mistura normal     -> neblina cinza-leitosa
+       2ª  multiply no canvas dos atores       -> azul puro cobrindo o chão
+
+     A luz é o elemento `#idleLuz`, com `mix-blend-mode:multiply`, acima da cena
+     (z 4) e abaixo da interface (z 5+). O brilho vem em `screen`, por cima. */
+  s.teste('a luz da hora multiplica a cena inteira, e o brilho soma por cima', () => {
+    const css = semComentario(html());
+    const regra = sel => (css.match(new RegExp(sel.replace('#', '#') + '\\{([^}]*)\\}')) ?? [])[1] ?? '';
+    const luz = regra('#idleLuz'), brilho = regra('#idleBrilho');
+    ok(/mix-blend-mode:\s*multiply/.test(luz),
+      'a luz da hora deixou de multiplicar. Em mistura normal ela vira véu ' +
+      'cinza-leitoso sobre a grama — a noite lê como neblina (1ª reprovação).');
+    ok(/z-index:\s*4\b/.test(luz),
+      'a luz saiu do z-index 4. Abaixo disso ela não cobre as criaturas (z 3); ' +
+      'acima, escurece o HUD e a janela do céu, que são interface.');
+    ok(/mix-blend-mode:\s*screen/.test(brilho),
+      'o brilho da noite deixou de somar. Sem `screen` a brasa e o vaga-lume ' +
+      'ficam escurecidos junto com a cena — e o dono pediu o contrário.');
+    ok(/id="idleLuz"/.test(html()) && /id="idleBrilho"/.test(html()),
+      'as camadas de luz e brilho sumiram do palco');
+  });
+
   s.teste('o nível mostra a PORCENTAGEM ao lado da barra', () => {
     /* A barra sozinha diz "perto" ou "longe" e não diz QUANTO. Duas criaturas a
        71% e a 79% desenham o mesmo tracinho, e a decisão de qual mandar depende

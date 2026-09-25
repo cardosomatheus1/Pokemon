@@ -4312,6 +4312,24 @@ body.tremeTela{animation:tremeTela .7s ease-out}
    de pixel continua a mesma nas duas, que é a única coisa que não pode variar. */
 #idleAtor{position:absolute;inset:0;width:100%;height:100%;z-index:2;
   image-rendering:pixelated;pointer-events:none}
+/* ── A LUZ DA HORA É UMA CAMADA DO PALCO (1.34, terceira tentativa) ───────
+   Duas reprovações olhando antes desta. A primeira pintava a tinta por cima em
+   mistura normal: neblina cinza. A segunda trocou para `multiply` — e aplicou
+   no canvas dos ATORES, que é transparente onde não há boneco: multiplicar
+   sobre transparente pinta a cor pura, e ela cobriu o chão inteiro de azul.
+
+   Aqui a luz é um elemento próprio, em z-index 4: acima de TUDO que é cena
+   (chão, atores, criaturas em z 1 e 3) e abaixo de tudo que é interface (HUD e
+   janela do céu em z 5, zoom em 6). O navegador multiplica sobre chão e bonecos
+   juntos, que é o que luz faz.
+
+   O BRILHO vem logo depois, em `screen`: a luz do lugar — brasa, vaga-lume —
+   SOMADA por cima do escuro, e nunca escurecida por ele. */
+#idlePalco{isolation:isolate}
+#idleLuz{position:absolute;inset:0;z-index:4;pointer-events:none;
+  mix-blend-mode:multiply;border-radius:inherit}
+#idleBrilho{position:absolute;inset:0;width:100%;height:100%;z-index:4;
+  pointer-events:none;mix-blend-mode:screen;image-rendering:pixelated}
 /* O CONTROLE DE ZOOM fica no canto do palco, discreto: ele e do jogador mas
    nao e o assunto da tela. Aparece mais forte no hover do palco, que e quando
    a mao ja esta ali. */
@@ -4320,6 +4338,19 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   background:rgba(6,12,22,.62);border:1px solid rgba(120,190,255,.22);
   opacity:.45;transition:opacity .15s}
 #idlePalco:hover #idleZoom,#idleZoom:focus-within{opacity:1}
+/* ── A JANELA DO CÉU (1.34) ───────────────────────────────────────────────
+   Um mundo top-down não tem céu: estrela espalhada na grama lia como poeira, e
+   foi a primeira tentativa, reprovada olhando. O céu ganhou um LUGAR, no canto
+   — "sol num canto", nas palavras do dono.
+
+   Logo abaixo do zoom e no mesmo alinhamento, para os dois nunca se
+   sobreporem. Dentro é cartucho (pixelated, 40x24 esticado); a MOLDURA é o
+   neon da interface — cada metade escolhe um dos dois temas de propósito. */
+#idleCeu{position:absolute;right:9px;top:38px;z-index:5;width:80px;height:48px;
+  image-rendering:pixelated;border-radius:6px;pointer-events:auto;
+  border:1px solid rgba(120,220,255,.55);
+  box-shadow:0 0 0 1px rgba(4,10,20,.8),0 0 10px -2px rgba(90,210,255,.55)}
+@media (max-width:520px){#idleCeu{width:60px;height:36px;top:34px}}
 #idleZoom button{width:22px;height:22px;border-radius:99px;border:0;cursor:pointer;
   background:transparent;color:#cfe8ff;font:700 13px/1 var(--dsp)}
 #idleZoom button:hover{background:rgba(120,200,255,.18)}
@@ -6717,7 +6748,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 
     <div class="card idleDepois cardRota">
       <h3>A rota <span class="tiny">escolha o lugar antes de gastar as horas</span></h3>
-      <div id="idlePalco"><span id="idleBiomaNome"></span><canvas id="idleMundo"></canvas><canvas id="idleAtor"></canvas><div id="idleHud" aria-hidden="true"></div><div id="idleZoom"><button type="button" data-zoom="-1" title="afastar">&minus;</button><span id="idleZoomNivel">3&times;</span><button type="button" data-zoom="1" title="aproximar">+</button></div></div>
+      <div id="idlePalco"><span id="idleBiomaNome"></span><canvas id="idleMundo"></canvas><canvas id="idleAtor"></canvas><div id="idleLuz" aria-hidden="true"></div><canvas id="idleBrilho" aria-hidden="true"></canvas><div id="idleHud" aria-hidden="true"></div><div id="idleZoom"><button type="button" data-zoom="-1" title="afastar">&minus;</button><span id="idleZoomNivel">3&times;</span><button type="button" data-zoom="1" title="aproximar">+</button></div><canvas id="idleCeu" aria-hidden="true"></canvas></div>
       <!-- O NÍVEL É DA COLEÇÃO, e não do lugar: ele é o mesmo nas onze rotas.
            Repeti-lo em cada cartão foi o primeiro desenho da sala, e onze
            cartões dizendo "pede nv 31" não ajudam a escolher nada. Uma frase

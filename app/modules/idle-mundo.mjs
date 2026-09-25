@@ -410,11 +410,6 @@ async function laçoDoAtor(t) {
        lutadores, e eles continuam legíveis. Um véu por cima escureceria o
        próprio bicho, e o jogador perde o que veio ver. */
     veuDoClima(gm, fxDoClima, W, H);
-    /* ── O CÉU VEM ANTES DOS ATORES (1.34) ──────────────────────────
-       O astro e as estrelas estão ATRÁS de tudo, como o céu está. Aqui, no
-       canvas do mundo, eles ficam por baixo do treinador e dos bichos sem
-       precisar de z-index nenhum. A LUZ é a outra metade e vem no fim. */
-    pintarCeu(gm, W, H, Date.now());
 
     const g = cv.getContext('2d');
     g.imageSmoothingEnabled = false;
@@ -466,7 +461,36 @@ async function laçoDoAtor(t) {
        `Date.now()` aqui e não `t`: `t` é o relógio da ANIMAÇÃO, que começa em
        zero quando a aba abre. A hora é do MUNDO — ver a nota longa no
        `hora-do-dia.mjs`. */
-    pintarLuz(g, W, H, Date.now());
+    const agoraDoMundo = Date.now();
+    /* A LUZ É UMA CAMADA DO PALCO, com `multiply` — ver o CSS de `#idleLuz`
+       e as duas tentativas reprovadas que ele conta. Só escreve o estilo quando
+       ele muda: a string é a mesma por minutos, e tocar o estilo a 60 Hz
+       forçaria o navegador a recompor a camada à toa. */
+    const luzEl = $('#idleLuz');
+    if (luzEl) {
+      const fundo = estiloDaLuz(agoraDoMundo);
+      if (luzEl.dataset.fundo !== fundo) { luzEl.style.background = fundo; luzEl.dataset.fundo = fundo; }
+    }
+    /* ── E A LUZ DO LUGAR ATRAVESSA O ESCURO ─────────────────────────
+       Num canvas próprio, POR CIMA da luz e em `screen`: a brasa e o vaga-lume
+       somados ao escuro, nunca escurecidos por ele. Na primeira tentativa a
+       noite apagava justamente o que o dono pediu que ficasse mais forte. */
+    const brilhoCv = $('#idleBrilho');
+    if (brilhoCv) {
+      if (brilhoCv.width !== W) brilhoCv.width = W;
+      if (brilhoCv.height !== H) brilhoCv.height = H;
+      const gb = brilhoCv.getContext('2d');
+      gb.clearRect(0, 0, W, H);
+      brilhoDaVida(gb, alvo, W, H, t, brilhoNoturno(agoraDoMundo));
+    }
+    /* A JANELA DO CÉU, no canto. Um mundo top-down não tem céu, então o céu
+       ganhou um lugar — ver o cabeçalho do `idle-ceu.mjs`. */
+    const ceuCv = $('#idleCeu');
+    if (ceuCv) {
+      pintarJanelaDoCeu(ceuCv, agoraDoMundo, plantaAtual.paleta?.baseEsc ?? '#0d1a14');
+      const fala = falaDaHora(agoraDoMundo);
+      if (ceuCv.title !== fala) ceuCv.title = fala;
+    }
 
     const v = vivos.get('comp');
     if (v) v.moldura.style.zIndex = bicho.y <= eu.y ? 1 : 3;
@@ -480,13 +504,15 @@ async function laçoDoAtor(t) {
    por responsabilidade: aqui é a JANELA e os ATORES; lá é o LUGAR, e o que
    ele faz sozinho. Ver o cabeçalho de lá — é o arquivo que a regra permanente
    do `CLAUDE.md` sobre o cenário protege. */
-import { prepararVida, cachoeirasVivas, desenharVida, ESPUMA_MS } from './idle-bioma-vivo.mjs';
+import { prepararVida, cachoeirasVivas, desenharVida, brilhoDaVida, ESPUMA_MS } from './idle-bioma-vivo.mjs';
 /* O CLIMA (1.32). A conta mora em `clima-particulas.mjs`, camada 0; aqui só
    entra o desenho — ver o cabeçalho do `idle-clima.mjs`. */
 import { veuDoClima, desenharClima } from './idle-clima.mjs';
-/* O CÉU: o astro e as estrelas atrás de tudo, a luz da hora sobre tudo (1.34).
+/* O CÉU (1.34): a janela no canto, a luz da hora sobre a cena, e o brilho
+   da vida atravessando a noite.
    Quem DECIDE é o `hora-do-dia.mjs`, em camada 0; estes dois só pintam. */
-import { pintarCeu, pintarLuz } from './idle-ceu.mjs';
+import { estiloDaLuz, pintarJanelaDoCeu, falaDaHora } from './idle-ceu.mjs';
+import { brilhoNoturno } from './hora-do-dia.mjs';
 export { ESPUMA_MS } from './idle-bioma-vivo.mjs';
 
 function esconder(chave) {

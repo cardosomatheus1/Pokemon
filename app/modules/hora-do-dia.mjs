@@ -208,3 +208,108 @@ export function estrelasEm(agora) {
   const t = suave((alfa - 0.18) / (0.62 - 0.18));
   return Math.round(ESTRELAS_MAX * t);
 }
+
+/* ══ A SEGUNDA TENTATIVA ══════════════════════════════════════════════════
+ *
+ * A primeira noite foi REPROVADA olhando, e por dois erros de desenho — os dois
+ * meus, e nenhum pego por teste:
+ *
+ *   1. ESTRELAS NUM MUNDO TOP-DOWN NÃO EXISTEM. Não há céu onde pô-las, e
+ *      espalhadas sobre a grama elas liam como poeira.
+ *   2. A TINTA COBRIA A LUZ. Ela escurecia tudo, inclusive os vaga-lumes — a
+ *      noite apagava justamente o que devia brilhar.
+ *
+ * As três funções abaixo são as decisões da versão que substituiu aquela. */
+
+/* ── O BRILHO NOTURNO: a luz do cenário atravessando o escuro ─────────────
+ *
+ * 0 de dia, 1 no meio da noite. É a intensidade da passada que redesenha os
+ * halos das partículas luminosas DEPOIS da tinta — e é essa ordem que faz a
+ * brasa e o vaga-lume ficarem acesos numa cena escura, em vez de apagados junto.
+ *
+ * Amarrado na mesma curva do `forcaDoEfeito`, de propósito: os dois não podem
+ * discordar sobre quando é noite. */
+export function brilhoNoturno(agora) {
+  const f = forcaDoEfeito(agora);
+  return Math.round(clamp((f - 1) / (FORCA_NOITE - 1)) * 1000) / 1000;
+}
+
+/* ── O CÉU DA JANELA ──────────────────────────────────────────────────────
+ *
+ * O céu mora numa janela no canto do palco, e esta é a cor dele: um gradiente
+ * vertical, `topo` e `base`, em [r,g,b].
+ *
+ * A BASE é a linha do horizonte, e é ela que carrega o nascer e o pôr: no
+ * entardecer ela alaranja antes do topo, como o céu de verdade faz — a luz
+ * rasante tinge primeiro a faixa de baixo. É o detalhe que faz a janela ser um
+ * CÉU e não um quadrado mudando de cor. */
+const CEU = {
+  noite:  { topo: [8, 10, 34],    base: [26, 30, 72] },
+  aurora: { topo: [58, 78, 150],  base: [255, 170, 120] },
+  dia:    { topo: [72, 150, 232], base: [170, 220, 255] },
+  ocaso:  { topo: [70, 60, 140],  base: [255, 120, 56] },
+};
+const mistC = (a, b, t) => a.map((c, i) => Math.round(mistura(c, b[i], t)));
+const mistCeu = (a, b, t) => ({ topo: mistC(a.topo, b.topo, t), base: mistC(a.base, b.base, t) });
+
+export function ceuEm(agora) {
+  const h = horaDecimal(agora);
+  if (h < AURORA) return mistCeu(CEU.noite, CEU.noite, 0);
+  if (h < MANHA) {
+    /* Duas metades: noite -> aurora -> dia. Uma rampa só atravessaria o céu
+       direto do azul-escuro ao azul-claro, e o laranja do nascer nunca
+       apareceria. */
+    const t = (h - AURORA) / (MANHA - AURORA);
+    return t < 0.5 ? mistCeu(CEU.noite, CEU.aurora, suave(t * 2))
+                   : mistCeu(CEU.aurora, CEU.dia, suave(t * 2 - 1));
+  }
+  if (h < DOURADA) return mistCeu(CEU.dia, CEU.dia, 0);
+  if (h < OCASO)   return mistCeu(CEU.dia, CEU.ocaso, entre(h, DOURADA, OCASO));
+  if (h < CERRADO) return mistCeu(CEU.ocaso, CEU.noite, entre(h, OCASO, CERRADO));
+  return mistCeu(CEU.noite, CEU.noite, 0);
+}
+
+/* ── AS ESTRELAS DA JANELA ────────────────────────────────────────────────
+ *
+ * A janela é pequena, e cento e vinte estrelas nela seriam uma textura, não
+ * um céu. Catorze, acendendo na mesma curva das `estrelasEm`. */
+export const ESTRELAS_NA_JANELA = 14;
+export const estrelasNaJanela = agora =>
+  Math.round(ESTRELAS_NA_JANELA * estrelasEm(agora) / ESTRELAS_MAX);
+
+/* ── A LUZ QUE RESTA — a cena é MULTIPLICADA por ela ──────────────────────
+ *
+ * Segunda reprovação olhando, e esta não era de desenho: era de COMPOSIÇÃO.
+ * A tinta do `luzEm` era pintada por cima em mistura normal, e uma cor escura
+ * misturada sobre grama verde vira véu cinza-leitoso. A noite lia como
+ * neblina; o ocaso, como barro verde-oliva.
+ *
+ *   > Luz de verdade não pinta por cima. Ela TIRA do que já existe.
+ *
+ * Então a cena passa a ser multiplicada pela luz que RESTA: branco é a cena
+ * intacta, azul-escuro é o luar, laranja é o sol rasante. Multiplicar mantém o
+ * contraste — o caminho continua mais claro que a grama à noite, só que em
+ * outra luz — e é essa a diferença entre uma noite e uma tela apagada.
+ *
+ * `luzEm` continua existindo: ele mede QUANTO escureceu, e é o que o
+ * `forcaDoEfeito` e as estrelas leem. Este diz de QUE COR é a luz. */
+const LUZ = {
+  noite:  [58, 80, 170],     // luar: pouco, e azul
+  aurora: [255, 198, 168],
+  dia:    [255, 255, 255],   // a cena como foi pintada
+  ocaso:  [255, 162, 98],    // o sol rasante da TARDE
+};
+
+export function luzRestanteEm(agora) {
+  const h = horaDecimal(agora);
+  if (h < AURORA) return [...LUZ.noite];
+  if (h < MANHA) {
+    const t = (h - AURORA) / (MANHA - AURORA);
+    return t < 0.5 ? mistC(LUZ.noite, LUZ.aurora, suave(t * 2))
+                   : mistC(LUZ.aurora, LUZ.dia, suave(t * 2 - 1));
+  }
+  if (h < DOURADA) return [...LUZ.dia];
+  if (h < OCASO)   return mistC(LUZ.dia, LUZ.ocaso, entre(h, DOURADA, OCASO));
+  if (h < CERRADO) return mistC(LUZ.ocaso, LUZ.noite, entre(h, OCASO, CERRADO));
+  return [...LUZ.noite];
+}

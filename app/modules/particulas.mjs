@@ -106,6 +106,17 @@ export function quantas(tipo, area) {
 
 export const vidaDe = biomaId => VIDA_POR_BIOMA[biomaId] ?? 'polen';
 
+/* ── AS VIDAS QUE SÃO LUZ (1.34) ──────────────────────────────────────────
+ *
+ * À noite elas recebem halo DEPOIS da tinta da hora, e atravessam o escuro. As
+ * outras escurecem junto com a cena, porque não emitem nada.
+ *
+ * A lista é do dono antes de ser minha — *"a brasa do vulcão acesa, o floco de
+ * neve brilhando"* (L-124) — mais as que já nascem como luz: vaga-lume,
+ * plâncton, esporo e o arco do ferro-velho. Poeira e bolha ficam fora: poeira
+ * acesa no escuro não é luz, é a tela suja com halo. */
+export const VIDA_QUE_BRILHA = new Set(['brasa', 'neve', 'vagalume', 'plancton', 'esporo', 'arco']);
+
 /* A mesma mistura sem estado do `vida.mjs`: partícula sorteada com `Math.random`
    é partícula que o teste não consegue reproduzir, e a aba do idle tem teste
    que proíbe sorteio. */

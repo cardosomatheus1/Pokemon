@@ -42,8 +42,8 @@ mkdirSync(SAIDA, { recursive: true });
      01h  NOITE      a lua alta, as estrelas todas acesas */
 const HORAS = [
   { nome: '08-dia',    h: 8 },
-  { nome: '17-tarde',  h: 17 },
-  { nome: '19-ocaso',  h: 19 },
+  { nome: '18-tarde',  h: 18 },      // o pico do alaranjado — às 17h ele mal começou
+  { nome: '20-ocaso',  h: 20 },      // o laranja virando luar: onde um degrau apareceria
   { nome: '01-noite',  h: 1 },
 ];
 
@@ -195,7 +195,7 @@ for (const H of HORAS) {
   /* A HORA, FIXADA ANTES DE O APP CARREGAR. `Date.now` e `new Date()` sem
      argumento — os dois, porque o app usa os dois e fixar só um deixaria
      metade da cena numa hora e metade na outra. */
-  const alvo = Date.UTC(2026, 8, 16, H.h, 20, 0);
+  const alvo = Date.UTC(2026, 8, 16, H.h, 0, 0);
   await pg.addInitScript(`(() => {
     const D = Date, T = ${alvo};
     const F = function (...a) { return a.length ? new D(...a) : new D(T); };

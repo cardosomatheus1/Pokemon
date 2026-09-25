@@ -26,7 +26,7 @@
 import { T } from './mundo.mjs';
 /* As PARTÍCULAS são a vida do lugar — folha, poeira, fagulha. Elas vieram
    junto porque quem as semeia e move é este arquivo. */
-import { vidaDe, semear, mover, opacidade, mistura } from './particulas.mjs';
+import { vidaDe, semear, mover, opacidade, mistura, VIDA_QUE_BRILHA } from './particulas.mjs';
 
 /* A SEMENTE DO BIOMA: cada lugar tem a própria vida, e ela não pode mudar
    quando o relógio muda. Copiada do `idle-mundo.mjs` na divisão — uma linha, e
@@ -158,7 +158,54 @@ export function cachoeirasVivas(g, cam, t, planta) {
   }
 }
 
+/* ── A LUZ DO LUGAR ATRAVESSA A NOITE (1.34) ──────────────────────────────
+ *
+ * Chamada DEPOIS da tinta da hora, no canvas de cima, e é essa ordem que a
+ * primeira tentativa errou: a tinta vinha por cima de tudo, e a noite apagava
+ * justamente o vaga-lume e a brasa — o que o dono pediu que ficasse MAIS forte.
+ *
+ * Aqui só as vidas que SÃO luz (`VIDA_QUE_BRILHA`, camada 0) ganham um halo em
+ * `lighter`, na mesma posição em que o `desenharVida` as pôs neste quadro. A
+ * intensidade vem de fora — `brilhoNoturno`, também camada 0 —, e de dia ela é
+ * zero: o cenário diurno que o dono aprovou não muda um pixel.
+ *
+ * O halo é desenhado aqui e não pelo `pontoDeLuz`, de propósito: aquele pinta
+ * num quadrado fixo de 16 px, e um raio maior que 8 sai CORTADO em quadrado —
+ * exatamente o tipo de defeito que só aparece para quem olha.
+ *
+ * Devolve quantos halos saíram. "A função rodou" e "saiu pixel" são perguntas
+ * diferentes — foi essa confusão que custou o 1.27c. */
+/* A planta do último quadro, para o halo usar a MESMA cor de luz do bioma. */
+let plantaVida = null;
+export function brilhoDaVida(g, cam, W, H, t, intensidade) {
+  if (!g || !vidaPs || !(intensidade > 0) || !VIDA_QUE_BRILHA.has(vidaTipo)) return 0;
+  /* Medido olhando a captura da 1h: com 9 + 7 e alfa 0,75 os halos existiam e
+     sumiam no escuro — liam como sujeira clara, não como luz. O dono pediu
+     o efeito MAIS FORTE à noite, e fraco não é mais forte. */
+  const raio = 10 + 10 * intensidade;
+  let n = 0;
+  g.save();
+  g.globalCompositeOperation = 'lighter';
+  for (const p of vidaPs) {
+    const x = Math.round(p.x - cam.x), y = Math.round(p.y - cam.y);
+    if (x < -raio || y < -raio || x > W + raio || y > H + raio) continue;
+    const a = opacidade(p, vidaTipo, t, vidaArea);
+    if (a <= 0.05) continue;
+    const gr = g.createRadialGradient(x, y, 0, x, y, raio);
+    const P = plantaVida?.paleta;
+    gr.addColorStop(0, P?.luz ?? 'rgba(255,240,180,.8)');
+    gr.addColorStop(1, 'transparent');
+    g.globalAlpha = Math.min(1, a * 1.0 * intensidade);
+    g.fillStyle = gr;
+    g.fillRect(x - raio, y - raio, raio * 2, raio * 2);
+    n++;
+  }
+  g.restore();
+  return n;
+}
+
 export function desenharVida(g, cam, W, H, t, planta) {
+  plantaVida = planta;
   const plantaAtual = planta;
   if (!vidaPs || !plantaAtual) return;
   const P = plantaAtual.paleta;

@@ -42,6 +42,10 @@ const AVPAINEL = 'app/modules/avanco-painel.mjs';
 const AVFOCO = 'app/modules/avanco-foco.mjs';
 /* O que a tela de ESCOLHA responde — o cartão e a sala (L-164), camada 0. */
 const ESCOLHA = 'app/modules/idle-escolha.mjs';
+const HORA = 'app/modules/hora-do-dia.mjs';
+const TELA_IDLE_134 = 'app/modules/idle-tela.mjs';
+const PARTIC_134 = 'app/modules/particulas.mjs';
+
 /* Os golpes liberados por NÍVEL (L-168) e o anúncio do chefe (L-170). */
 const REPERT = 'engine/repertorio.mjs';
 const BOSS = 'app/modules/avanco-boss.mjs';
@@ -1951,6 +1955,56 @@ export const DEFEITOS = [
     real:'"`node` é externo também" — e disparar o próprio runner deixa de contar',
     de:"const BINARIOS_EXTERNOS = new Set(['git', 'sh', 'bash', 'npm', 'npx', 'chmod', 'cp', 'rm']);",
     para:"const BINARIOS_EXTERNOS = new Set(['git', 'sh', 'bash', 'npm', 'npx', 'chmod', 'cp', 'rm', 'node']);" },
+  /* ── OS NOVE DO 1.34: DIA, TARDE E NOITE ──────────────────────────────
+     SETE são de Node, e isso é a regra de custo do CLAUDE.md funcionando: toda
+     decisão da hora mora em camada 0. Os dois de CSS também são pegos em Node,
+     pelo teste estrutural do `idle-tela`. ZERO mutantes de navegador. */
+
+  { id:'S1011', arquivo:HORA, nome:'o brilho noturno deixa de ser zero de dia',
+    real:'"um pouco de brilho de dia não faz mal" — e o cenário diurno que o dono já aprovou olhando passa a mudar',
+    de:'  return Math.round(clamp((f - 1) / (FORCA_NOITE - 1)) * 1000) / 1000;',
+    para:'  return Math.round(clamp((f - 0.8) / (FORCA_NOITE - 1)) * 1000) / 1000;' },
+
+  { id:'S1012', arquivo:HORA, nome:'a lua passa a nascer do lado oposto ao do sol',
+    real:'"lado oposto" lido ao pé da letra — e contradiz a outra frase do dono: "onde sol nasce e se põe e o mesmo para lua"',
+    de:'export const ARCO_INVERTE_PARA_LUA = false;',
+    para:'export const ARCO_INVERTE_PARA_LUA = true;' },
+
+  { id:'S1013', arquivo:HORA, nome:'a luz do meio-dia deixa de ser branca',
+    real:'"um leve tom azulado dá clima" — e o multiply passa a mexer na cena de dia inteira, o tempo todo',
+    de:'  dia:    [255, 255, 255],   // a cena como foi pintada',
+    para:'  dia:    [240, 240, 255],   // a cena como foi pintada' },
+
+  { id:'S1014', arquivo:HORA, nome:'a noite escurece sem ficar azul',
+    real:'"escuro é escuro" — e a noite vira tela apagada, e não luar',
+    de:'  noite:  [58, 80, 170],     // luar: pouco, e azul',
+    para:'  noite:  [120, 120, 120],   // luar: pouco, e azul' },
+
+  { id:'S1015', arquivo:HORA, nome:'as estrelas acendem ao meio-dia',
+    real:'"as estrelas são sutis" — e há estrela na janela com o sol no alto',
+    de:'  const t = suave((alfa - 0.18) / (0.62 - 0.18));',
+    para:'  const t = suave((alfa + 0.18) / (0.62 - 0.18));' },
+
+  { id:'S1016', arquivo:PARTIC_134, nome:'a brasa deixa de brilhar a noite',
+    real:'"a brasa ja e vermelha" — e o exemplo que o dono deu pelo nome, a brasa do vulcao acesa, escurece junto com a cena',
+    de:"export const VIDA_QUE_BRILHA = new Set(['brasa', 'neve', 'vagalume', 'plancton', 'esporo', 'arco']);",
+    para:"export const VIDA_QUE_BRILHA = new Set(['neve', 'vagalume', 'plancton', 'esporo', 'arco']);" },
+
+  { id:'S1017', arquivo:TELA_IDLE_134, nome:'o relogio de 1 s para de repintar o banner da expedicao',
+    real:'"o painel ja atualiza" — e o banner EXPEDICAO 1h40 fica parado, que e exatamente o que o dono pegou olhando em 02/09',
+    de:'    desenharHud(E, biomaEscolhido, agora());\n  }, 1000);',
+    para:'  }, 1000);' },
+
+  { id:'S1018', arquivo:APP, nome:'a luz da hora volta a pintar por cima em vez de multiplicar',
+    real:'"normal e mais previsivel" — e a noite vira neblina cinza, a primeira tentativa reprovada',
+    de:'  mix-blend-mode:multiply;border-radius:inherit}',
+    para:'  mix-blend-mode:normal;border-radius:inherit}' },
+
+  { id:'S1019', arquivo:APP, nome:'o brilho da noite deixa de somar sobre o escuro',
+    real:'"normal basta" — e a brasa e o vaga-lume ficam escurecidos junto com a cena',
+    de:'  pointer-events:none;mix-blend-mode:screen;image-rendering:pixelated}',
+    para:'  pointer-events:none;mix-blend-mode:normal;image-rendering:pixelated}' },
+
   /* ── OS TRÊS DO T11a: QUEM AVANÇA OS QUADROS ──────────────────────────
      O defeito que estes guardam ficou 30 s por largura escondido atrás de uma
      linha de base VERDE. Nenhum deles deixa a base vermelha — eles deixam a

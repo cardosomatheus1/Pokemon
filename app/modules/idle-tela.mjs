@@ -365,6 +365,9 @@ function ligarRelogio() {
     pintarCampo(E);
     pintarTreino(E);
     atualizarBotao();
+    /* O BANNER ANDA A CADA SEGUNDO (L-124): parado, ele ensinava que o número
+       é falso — o dono pegou olhando, "não atualiza de forma contínua". */
+    desenharHud(E, biomaEscolhido, agora());
   }, 1000);
 }
 
