@@ -94,3 +94,22 @@ export function nivelMaisProximo(lista, alvo) {
 }
 
 export const rotuloZoom = z => (Number.isInteger(z) ? String(z) : z.toFixed(2).replace(/0$/, '')) + '\u00d7';
+
+/* ── NA RUN, A LUTA CABE (DEC-15, ST-5.6, L-175) ──────────────────────────
+ *
+ * Em 420 px o palco tem 390 de largura, e o zoom de 3× — o padrão, aprovado
+ * pelo dono — mostrava 130 px de mundo. Uma criatura tem 32 a 40: cabiam três,
+ * e a luta tem o bando, o companheiro e o treinador. O que saía da janela não
+ * era o efeito; era a luta.
+ *
+ * A DEC-15 decidiu: NA RUN, o zoom efetivo é o menor entre o escolhido e o que
+ * mostra `MUNDO_DA_LUTA` px de mundo. No largo a conta devolve o escolhido
+ * (em 1209 px, 3× já mostra 403); fora da run ela nem é chamada. A escolha do
+ * jogador fica guardada e volta quando a run acaba.
+ *
+ * O piso anti-esticado continua valendo POR CIMA: esta função pede um zoom, e
+ * `janela` recusa o que ficaria abaixo do piso (S616). */
+export const MUNDO_DA_LUTA = 260;
+export const zoomDaRun = (escolhido, largura) =>
+  Math.min(escolhido || 1, Math.max(1, Number(largura) || 1) / MUNDO_DA_LUTA);
+

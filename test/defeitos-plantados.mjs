@@ -7627,6 +7627,23 @@ export const DEFEITOS = [
     de:'    const usa = Math.min(falta, Math.max(0, d[b] ?? 0));',
     para:'    const usa = falta;' },
 
+  /* ── ST-5.6 · na run, a luta cabe (DEC-15, L-175) ─────────────────── */
+  { id:'S1135', arquivo:'app/modules/viewport.mjs', nome:'o minimo da luta volta a caber tres criaturas',
+    real:'em 420 px a run mostra 130 px de mundo e a luta sai da janela (L-175)',
+    de:'export const MUNDO_DA_LUTA = 260;', para:'export const MUNDO_DA_LUTA = 130;' },
+  { id:'S1136', arquivo:'app/modules/viewport.mjs', nome:'o zoom da run ignora o escolhido',
+    real:'no panoramico a run troca o zoom que o jogador escolheu — a regra dele passa por cima',
+    de:'  Math.min(escolhido || 1, Math.max(1, Number(largura) || 1) / MUNDO_DA_LUTA);',
+    para:'  Math.max(1, Number(largura) || 1) / MUNDO_DA_LUTA;' },
+  { id:'S1137', arquivo:'app/modules/idle-mundo.mjs', nome:'o zoom da luta vale fora da run tambem',
+    real:'a aba de escolha perde o zoom do jogador na tela estreita, sem luta nenhuma',
+    de:'  const pedido = cenaDaVez() ? zoomDaRun(zoom, cx) : zoom;',
+    para:'  const pedido = zoomDaRun(zoom, cx);' },
+  { id:'S1138', arquivo:'app/modules/idle-mundo.mjs', nome:'o rotulo do zoom volta a mostrar o escolhido',
+    real:'"3x" escrito sobre uma cena em 1,5x — o jogador clica e nada muda',
+    de:'  if (rot) rot.textContent = rotuloZoom(zoomEfetivo);',
+    para:'  if (rot) rot.textContent = rotuloZoom(zoom);' },
+
   /* ── ST-3.6 · o rendimento decrescente do Avanço (DEC-14) ───────────── */
   { id:'S1127', arquivo:'engine/avanco.mjs', nome:'so a primeira run do dia paga inteira',
     real:'o casual passa a sentir o rendimento — a DEC-14 prometeu que ele nao sente',

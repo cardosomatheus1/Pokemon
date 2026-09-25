@@ -7869,7 +7869,7 @@ exatamente o arrasto que a regra central proíbe.
 ### L-175 — em 420 px a janela da câmera tem 130 px de mundo
 
 **Registrada em:** 10/09/2026, achada pela esteira ao investigar o D-092.
-**Bloco dono:** o do CENÁRIO. **Estado:** aberta.
+**Bloco dono:** o do CENÁRIO. **Estado:** ✅ fechada em 25/09/2026 (ST-5.6, DEC-15) — na run, o zoom efetivo é `min(escolhido, largura ÷ 260)`: em 420 px a janela foi de 130×207 para **260×413** de mundo (1,5×), e o estouro fora da tela de 9–24 por wave para **0**; no panorâmico nada muda (403×207, 3×). O piso anti-esticado (S616) vale por cima.
 
 O contador novo de "estouro fora da tela" acusou 134 em 420 px e **zero** nas
 outras larguras. A pergunta seguinte separou dois defeitos diferentes — está
@@ -8246,4 +8246,18 @@ cada saída muda o valor do que o jogador já juntou. É a DEC-14.
 rendimento decrescente por run no mesmo dia, (c) recalibrar `DIAS_DE_FARM` para
 a emissão real. Minha recomendação: **(b)** — preserva a sessão curta do casual
 (que está perto da calibragem) e morde só na maratona.
+
+---
+
+### L-187 — na run estreita, a luta fica na borda de baixo da câmera
+
+**Registrada em:** 25/09/2026, no passo OLHAR da ST-5.6, pela regra "o cenário
+do idle nunca está pronto". **Bloco dono:** o do CENÁRIO (o mesmo da ST-2.4).
+**Estado:** aberta.
+
+Com a DEC-15 a luta inteira cabe em 420 px (260×413 de mundo), mas a câmera
+continua centrada no TREINADOR, e o bando fica no último terço da janela — a
+placa do mob de baixo encosta na borda. **O que a destrava:** a câmera da run
+centrar no meio do trio (treinador, companheiro, bando), com a mesma
+suavização da câmera de hoje. Conta pura, como o `zoomDaRun`.
 

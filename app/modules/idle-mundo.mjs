@@ -42,7 +42,7 @@ import { vivos } from './vivos.mjs';
 import { desenharCompanheiro, acompanhar as acompanharBicho,
          quemAcompanha } from './idle-companheiro.mjs';
 import { prepararHabitantes, desenharHabitantes } from './idle-habitantes.mjs';
-import { janela, niveis, nivelMaisProximo, rotuloZoom } from './viewport.mjs';
+import { janela, niveis, nivelMaisProximo, rotuloZoom, zoomDaRun } from './viewport.mjs';
 import { prepararNpcs, desenharNpcs } from './idle-npc.mjs';
 
 /* Quem é o bioma e quem é o companheiro vem de FORA: este módulo desenha, não
@@ -76,6 +76,8 @@ export const acompanhar = acompanharBicho;
    oferecia niveis que o piso engolia em silencio: o dono viu "o zoom do 1x e
    2x nao mudam", e ele estava certo. Ver `niveis()`. */
 let niveisAtuais = [1, 2, 3, 4, 5];
+/* O zoom que a tela USA agora — o escolhido, ou o da run estreita (DEC-15). */
+let zoomEfetivo = 1;
 const CHAVE_ZOOM = 'pa.idle.zoom';
 let zoom = 3;
 try {
@@ -148,7 +150,12 @@ function ajustarViewport() {
   niveisAtuais = niveis(j.piso);
   const encaixado = nivelMaisProximo(niveisAtuais, zoom);
   if (encaixado !== zoom) { zoom = encaixado; }
-  const { w: W, h: H } = zoom === j.usar ? j : janela({ cx, cy, mundoW, mundoH, zoom });
+  /* DEC-15: com a RUN na tela, a câmera se afasta até a luta caber — o `zoom`
+     do jogador não é tocado, e volta sozinho quando a run acaba. */
+  const pedido = cenaDaVez() ? zoomDaRun(zoom, cx) : zoom;
+  const jj = janela({ cx, cy, mundoW, mundoH, zoom: pedido });
+  zoomEfetivo = jj.usar;
+  const { w: W, h: H } = jj;
   pintarZoom();
   if (mundo.width !== W || mundo.height !== H) {
     mundo.width = W; mundo.height = H;
@@ -235,7 +242,9 @@ export function trocarZoom(passo) {
    mais irrita: o jogador clica, nada muda, e o jogo e que parece quebrado. */
 function pintarZoom() {
   const rot = $('#idleZoomNivel');
-  if (rot) rot.textContent = rotuloZoom(zoom);
+  /* O rótulo diz o número que a tela USA — na run estreita ele é menor que o
+     escolhido (DEC-15), e um "3×" desenhando 1,5× é a mentira pequena. */
+  if (rot) rot.textContent = rotuloZoom(zoomEfetivo);
   const menos = $('#idleZoom [data-zoom="-1"]'), mais = $('#idleZoom [data-zoom="1"]');
   /* O botao que nao tem para onde ir fica DESLIGADO em vez de nao fazer nada.
      Botao que aceita clique e ignora e a mesma mentira, um nivel abaixo. */

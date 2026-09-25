@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 /* Q1/Q3 · A JANELA DE MUNDO (bloco 1.5k).
  *
  * Esta suíte existe porque o defeito plantado `S616` — que apaga o piso do zoom
@@ -169,6 +170,38 @@ export function suite() {
       `o piso 1,63 saiu rotulado como ${rotuloZoom(niveis(1.63)[0])}. Um "1×" que ` +
       'renderiza 2,00× é mentira pequena, e mentira pequena em controle é a que ' +
       'mais irrita: o jogador clica, nada muda, e o jogo é que parece quebrado.');
+  });
+  /* ══ DEC-15 · NA RUN, A LUTA CABE (ST-5.6, L-175) ══════════════════════
+   * Em 420 px o palco tem 390 de largura e o zoom de 3× mostrava 130 px de
+   * mundo: cabiam três criaturas, e a luta tem seis corpos. A DEC-15 decidiu
+   * que, NA RUN, o zoom efetivo é o menor entre o escolhido e o que mostra 260
+   * px de mundo. Fora da run, e no largo, o zoom continua do jogador. E o piso
+   * anti-esticado (S616) vale por cima de tudo. */
+  s.teste('DEC-15: na tela estreita a câmera da run se afasta até a luta caber', async () => {
+    const { zoomDaRun, MUNDO_DA_LUTA } = await import('../app/modules/viewport.mjs');
+    igual(zoomDaRun(3, 390), 1.5, 'em 390 px de palco o zoom da run não virou 1,5×');
+    const j = janela({ cx: 390, cy: 620, mundoW: 1600, mundoH: 1200, zoom: zoomDaRun(3, 390) });
+    ok(j.w >= MUNDO_DA_LUTA, `a run mostra ${j.w} px de mundo — a luta (${MUNDO_DA_LUTA}) não cabe`);
+  });
+
+  s.teste('DEC-15: no largo, o zoom da run é o do jogador', async () => {
+    const { zoomDaRun } = await import('../app/modules/viewport.mjs');
+    igual(zoomDaRun(3, 1209), 3, 'no panorâmico a run mexeu no zoom escolhido');
+    igual(zoomDaRun(2, 800), 2, 'com a luta cabendo, a run trocou o zoom do jogador');
+  });
+
+  s.teste('DEC-15: o piso anti-esticado vale por cima do zoom da run', async () => {
+    const { zoomDaRun } = await import('../app/modules/viewport.mjs');
+    const j = janela({ cx: 390, cy: 620, mundoW: 300, mundoH: 300, zoom: zoomDaRun(3, 390) });
+    igual(j.usar, j.piso, 'o zoom da run passou abaixo do piso — a cena estica (S616)');
+  });
+
+  s.teste('DEC-15: o mundo usa o zoom da run SÓ com a run na tela, e o rótulo diz o efetivo', () => {
+    const t = readFileSync(new URL('../app/modules/idle-mundo.mjs', import.meta.url), 'utf8');
+    ok(/cenaDaVez\(\) \? zoomDaRun\(zoom, cx\) : zoom/.test(t),
+      'o idle-mundo não troca o zoom só na run — ou troca sempre, ou nunca');
+    ok(/rotuloZoom\(zoomEfetivo\)/.test(t),
+      'o rótulo mostra o zoom escolhido enquanto a tela usa outro — a mentira pequena do controle');
   });
   return s;
 }

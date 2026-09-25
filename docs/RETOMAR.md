@@ -36,6 +36,16 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### ST-5.6 FECHADA — em 420 px a luta cabe na câmera (DEC-15, L-175)
+
+Na run, o zoom efetivo é o menor entre o escolhido e o que mostra 260 px de
+mundo (`zoomDaRun`, camada 0). Medido a 420: janela 130×207 → **260×413**
+(1,5×), estouros fora da tela 9–24 → **0** por wave; panorâmico igual (403×207,
+3×). O rótulo mostra o zoom EFETIVO; a escolha do jogador volta quando a run
+acaba; o piso anti-esticado (S616) vale por cima. Achado de passagem: **L-187**
+(a luta fica na borda de baixo — a câmera centra no treinador). Suíte
+2318/2318; Q2 do bloco 8/8 (S1135–S1138), 0 mutantes de navegador.
+
 ### ST-3.6 FECHADA — o Avanço paga menos a partir da 7ª run do dia (DEC-14, L-185)
 
 6 runs cheias por dia, depois ×0,75 por run, piso de 5% — moeda e Essência.
