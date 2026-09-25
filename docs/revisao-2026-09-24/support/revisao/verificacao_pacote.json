@@ -1,0 +1,20 @@
+{
+  "escopo": "Integridade documental, nao teste de software do jogo.",
+  "status": "OK",
+  "originais_conferidos": 27,
+  "bytes_originais": 1406872,
+  "zip_original_preservado": true,
+  "documentos_novos_ou_redirecionados": 40,
+  "links_locais_conferidos": 148,
+  "registros": {
+    "L": {
+      "ocorrencias": 180,
+      "ids_distintos": 178
+    },
+    "D": {
+      "ocorrencias": 96,
+      "ids_distintos": 96
+    }
+  },
+  "erros": []
+}

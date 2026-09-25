@@ -194,7 +194,7 @@ esconderia a tentativa; ignorada, e o teste prova que foi.
 
 | fase | duração | o que acontece |
 |---|---|---|
-| `aberta` | 30 s | preço gravado, commit publicado, apostas aceitas |
+| `aberta` | 40 s | preço gravado, commit publicado, apostas aceitas — `BET_WINDOW: 40` no `engine/engine.mjs`; era 30 s até o 1.27, corrigido aqui em 25/09/2026 (REV-08) |
 | `travada` | 3 s | **semente revelada**, apostas travadas |
 | `emLuta` | 45 s | batalha simulada de uma vez; o cliente ANIMA o que já aconteceu |
 | `encerrada` | — | campeão gravado, settlement liberado |

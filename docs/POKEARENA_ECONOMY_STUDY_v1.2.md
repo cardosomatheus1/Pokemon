@@ -164,19 +164,26 @@ A v1.1 estudou o rake da Liga em profundidade e tratou a margem de 8% da Arena c
 
 ### O mecanismo
 
-As odds saem de `p̂ = wins / sims` e a odd ofertada é `(1/p̂) × (1 - margem)`. Como `1/p` é convexa, `E[1/p̂] > 1/p`: em média, a casa **sobrepaga**. O termo de segunda ordem é `(1-p)/(n·p²)`, expresso como fração da odd justa.
+> **CORRIGIDO em 25/09/2026 (REV-03).** O termo `(1-p)/(n·p²)` é o viés em
+> PONTOS de odd, e foi lido como fração — cada valor da tabela abaixo estava
+> dividido por `p` uma vez a mais. O viés relativo certo é `(1-p)/(n·p)`: no pior
+> lutador com 20.000 sims, **0,31%**, e não 19,22%. O vazamento estrutural de
+> margem que esta seção descrevia não existe nessa escala; o que existe é ruído
+> explorável por SELEÇÃO — ver o §4.4.3 da Spec, corrigido junto.
+
+As odds saem de `p̂ = wins / sims` e a odd ofertada é `(1/p̂) × (1 - margem)`. Como `1/p` é convexa, `E[1/p̂] > 1/p`. O viés relativo da odd é `(1-p)/(n·p)`.
 
 Com os 20.000 sims que a base v0.8 e a Spec v1.3 usavam, e os `p` medidos no motor:
 
 | Perfil do lutador | p medido | Odd justa | Sobrepagamento da odd | Comparação com a margem de 8% |
 |---|---:|---:|---:|---|
-| Favorito estrutural (Gengar) | 0,340 | x2,94 | +0,03% | irrelevante |
-| Favorito típico | 0,150 | x6,67 | +0,19% | irrelevante |
-| Mediana do elenco | 0,083 | x12,05 | +0,67% | 8% da margem |
-| Azarão comum | 0,037 | x27,03 | +3,52% | 44% da margem |
-| Pior do elenco (Ditto) | 0,016 | x62,50 | **+19,22%** | **2,4× a margem inteira** |
+| Favorito estrutural (Gengar) | 0,340 | x2,94 | +0,010% | irrelevante |
+| Favorito típico | 0,150 | x6,67 | +0,028% | irrelevante |
+| Mediana do elenco | 0,083 | x12,05 | +0,055% | irrelevante |
+| Azarão comum | 0,037 | x27,03 | +0,13% | 1,6% da margem |
+| Pior do elenco (Ditto) | 0,016 | x62,50 | +0,31% | 3,8% da margem |
 
-Na cauda, o erro de estimador entrega ao apostador mais que o dobro da margem configurada. E como o viés tem sinal fixo, ele **não se compensa entre rodadas**: é um vazamento estrutural, não variância.
+~~Na cauda, o erro de estimador entrega ao apostador mais que o dobro da margem configurada.~~ Corrigido acima: o viés tem sinal fixo, mas é pequeno. O que a dispersão empírica abaixo mostra é VARIÂNCIA — e ela só custa margem contra um apostador que seleciona.
 
 ### Confirmação empírica
 
@@ -1099,7 +1106,7 @@ Esses valores não foram usados para definir a política monetária; servem para
 | Seção | Mudança |
 |---|---|
 | Cabeçalho | Base passa a ser a Master Spec v1.4. Acrescenta nota de reprodução independente dos números da v1.1. |
-| 4.1 | **Nova.** Margem da Arena e vazamento por erro de estimador: viés de convexidade de até +19,22% na odd do azarão com 20.000 sims, dispersão empírica medida, dimensionamento para 150.000 sims. |
+| 4.1 | **Nova.** Margem da Arena e vazamento por erro de estimador: viés de convexidade ~~de até +19,22%~~ de 0,31% na odd do azarão com 20.000 sims (corrigido em 25/09/2026, REV-03), dispersão empírica medida, dimensionamento para 150.000 sims. |
 | 5.1 | **Nova.** Exposição e passivo por rodada. Teto de payout em vez de teto de odd; novas séries para o painel monetário. |
 | 15.1 | **Nova.** Proteção do jogador como parâmetro econômico: `protection_volume_drag`, acoplamento entre proteção, sink e Exchange Reserve, e regra do `rescue grant` de valor fixo. |
 | 20 | Ressalvas de modelo: conversão não limitada por saldo, cálculo de período único, mix discreto de win rate, ausência de proteção no simulador. |

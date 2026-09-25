@@ -92,10 +92,13 @@ const CONF = {
      entrega ε = 2,02 % — perde o alvo por 0,02 ponto. Medido, não estimado.
      A Spec foi corrigida junto, no mesmo commit; a diferença de custo é 0,1 s.
 
-     E o erro não é ruído cosmético: `odd = 1/p` é convexa, então E[1/p̂] > 1/p
-     e o desvio não se cancela entre rodadas. Com 20.000 sims o viés sozinho
-     entregava +19,12 % de odd a mais no pior lutador — mais que o dobro da
-     margem da casa, sempre na mesma direção. Com 154.000 ele cai para 2,49 %.
+     CORRIGIDO em 25/09/2026 (REV-03): este parágrafo afirmava um viés de
+     +19,12 % na odd do pior lutador com 20.000 sims. Era o viés em PONTOS de
+     odd lido como fração — o viés relativo é (1-p)/(n·p), 0,31 %, e com o
+     Laplace do `precificar` é menor ainda. O `engine/preco.mjs` já tinha a
+     conta certa. O que justifica os 154.000 é o RUÍDO (erro-padrão relativo de
+     ~5,5 % para ~2,0 %), que só custa margem contra quem seleciona o lutador
+     sobrepago calculando o `p` verdadeiro fora do jogo. Ver o §4.4.3 da Spec.
 
      O custo está medido e é irrelevante: ~4,9 s por rodada neste hardware
      (32 µs/batalha), contra uma janela de aposta de 30 s. Escrever isso aqui

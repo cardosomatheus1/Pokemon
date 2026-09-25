@@ -19,8 +19,10 @@ docs/POKEARENA_BUILD_BLOCKS_v1.2.md                 o COMO e em que ordem
 docs/POKEARENA_DESIGN_DEPTH_v1.1.md                 por que o metagame é assim
 docs/POKEARENA_ECONOMY_STUDY_v1.2.md                economia do jogo
 docs/POKEARENA_UNIT_ECONOMICS_STUDY_v1.2.md         economia da empresa
-docs/RETOMAR.md                                     ONDE PARAMOS — leia numa aba nova
-docs/ROADMAP.md                                     o mapa: feito, pendente, prioridade
+docs/RETOMAR.md                                     ONDE PARAMOS — o ESTADO ÚNICO
+docs/ROADMAP.md                                     a FILA ÚNICA: feito, pendente, prioridade
+docs/PROXIMO_BLOCO_1.33.md                          o cartão do próximo bloco
+docs/revisao-2026-09-24/                            a Revisão 2.0 e a CONFERÊNCIA dela
 docs/POKEARENA_DOCUMENT_INDEX_v1.4.md               índice; começa por ele
 docs/DEFEITOS.md                                    defeitos achados, não corrigidos
 docs/LACUNAS.md                                     trabalho identificado, adiado
@@ -28,6 +30,11 @@ docs/LACUNAS.md                                     trabalho identificado, adiad
 
 Conflito entre documentos: a Spec vence. Se a Spec estiver errada, corrija a Spec
 no mesmo commit — não contorne no código.
+
+**Uma fila e um estado** (GOV-01, adotada da Revisão 2.0 em 25/09/2026): a fila
+mora SÓ no `ROADMAP.md` e o estado SÓ no `RETOMAR.md`. Nenhum outro documento
+mantém lista de "próximo passo" — foi assim que a `TAREFA_1.27f` continuou
+dizendo "a fazer" depois de feita.
 
 ---
 

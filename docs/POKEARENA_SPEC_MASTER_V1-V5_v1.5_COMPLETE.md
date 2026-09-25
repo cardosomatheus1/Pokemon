@@ -489,17 +489,27 @@ O tamanho de amostra é ditado pelo **azarão**, não pelo favorito. Os 20.000 s
 
 ### 4.4.3 Viés de convexidade — por que isso custa margem
 
-Como `odd = 1/p` é convexa, o erro amostral não se cancela: `E[1/p̂] > 1/p`. O termo de segunda ordem é `(1-p)/(n·p²)`, expresso como fração da odd justa. Com os 20.000 sims atuais:
+> **CORRIGIDO em 25/09/2026 (REV-03, revisão externa de 24/09).** A tabela
+> que estava aqui dividia por `p` uma segunda vez: o termo `(1-p)/(n·p²)` é o
+> viés ABSOLUTO em pontos de odd, e foi lido como fração. O "19,22%" do pior
+> lutador é 0,1922 ponto de odd — **0,31%** da odd justa. O código
+> (`engine/preco.mjs`) já tinha a correção; a Spec, o estudo de economia e um
+> comentário do motor não. A conclusão "o viés entrega ao apostador o dobro da
+> margem" era falsa.
 
-| Perfil | p | Sobrepagamento esperado da odd |
+Como `odd = 1/p` é convexa, `E[1/p̂] > 1/p`. Pelo método delta, o viés RELATIVO da odd é `(1-p)/(n·p)`. Com 20.000 sims e o estimador puro `wins/n`:
+
+| Perfil | p | Viés relativo da odd |
 |---|---:|---:|
-| Favorito estrutural | 0,340 | +0,03% |
-| Favorito típico | 0,150 | +0,19% |
-| Mediana do elenco | 0,083 | +0,67% |
-| Azarão comum | 0,037 | +3,52% |
-| Pior do elenco | 0,016 | **+19,22%** |
+| Favorito estrutural | 0,340 | +0,010% |
+| Favorito típico | 0,150 | +0,028% |
+| Mediana do elenco | 0,083 | +0,055% |
+| Azarão comum | 0,037 | +0,13% |
+| Pior do elenco | 0,016 | +0,31% |
 
-Comparar com a margem configurada de 8%: no azarão extremo, o viés sozinho **entrega ao apostador mais que o dobro da margem da casa**. Não é aleatório e não se compensa entre rodadas — é sistemático e sempre na mesma direção.
+O motor usa Laplace — `(wins+1)/(n+12)` —, que puxa `p̂` para cima e reduz esse viés ainda mais (≈0,055% no pior lutador com 20.000 sims). **O viés de convexidade não é um vazamento relevante de margem.**
+
+O que É real é o RUÍDO, e a tabela de dispersão logo abaixo mede exatamente ele: o erro-padrão relativo é `sqrt((1-p)/(n·p))` — ~5,5% no pior lutador com 20.000 sims, ~2,0% com 154.000. Ruído é simétrico e não custa margem a quem aposta sem informação; custa margem contra quem **seleciona**: um jogador capaz de calcular o `p` verdadeiro fora do jogo (o motor é determinístico e público) aposta só nos lutadores sobrepagos naquela rodada. É essa a justificativa que resta para os 154.000 sims — e ela é mais fraca e mais condicional do que o texto anterior afirmava. Os "2%" do §4.4.2 são **um** erro-padrão, não um intervalo de 95% (para ±2% com 95% seriam ~590 mil sims).
 
 O efeito é observável no motor atual. Oito cálculos independentes de odds sobre a **mesma pool**, com 20.000 sims cada:
 
@@ -1644,11 +1654,26 @@ encontros; quem dormiu com ela acorda com espaço para 2 ou 3 avanços, e não 5
 
 ### 7.22.4 A estrutura do estágio
 
-```text
+> **CORRIGIDO em 25/09/2026 (REV-09, revisão externa de 24/09).** O texto
+> abaixo descrevia a primeira forma do Avanço. Blocos posteriores a mudaram e a
+> Spec ficou para trás — duas implementações "fiéis" dariam jogos diferentes. A
+> estrutura VIGENTE, conferida no código (`engine/wave.mjs`,
+> `engine/avanco.mjs`, `engine/elenco-estagio.mjs`):
+>
+> ```text
+> waves 1 a 9    4 mobs por wave          MOBS_POR_WAVE = 4
+> wave 10        1 chefe                  MOBS_DO_CHEFE = 1
+> total          37 mobs                  MOBS_TOTAIS  = 37
+> elenco         4 comuns + 2 candidatos a chefe (1 aparece)
+> stamina        2 por wave, 5 no chefe = 23 por estágio limpo
+>                (custo-base SEM derrota; nova tentativa cobra de novo)
+> ```
+
+~~```text
 waves 1 a 9    6 mobs — 3 de uma espécie + 3 de outra, sorteadas do elenco
 wave 10        4 mobs — 2 + 2, os dois chefes
 total          58 mobs
-```
+```~~ *(forma original, superada — ver a nota acima)*
 
 **O chefe é a evolução do mob.** O exemplo do dono — Weedle, Caterpie, Metapod
 e Kakuna nas nove; Beedrill e Butterfree na décima — não é uma lista escolhida
@@ -1726,7 +1751,7 @@ reativo.
 ```text
 HP        DENTRO do avanço. cai a cada wave. poção levanta.
           zerou -> o avanço PARA na wave alcançada
-STAMINA   ENTRE avanços. 3 por wave, 8 na do chefe = 35 por estágio limpo.
+STAMINA   ENTRE avanços. ~~3 por wave, 8 na do chefe = 35~~ 2 por wave, 5 no chefe = 23 por estágio limpo (vigente, ver §7.22.4).
           regenera 8/h (§7.13, inalterado)
 ```
 

@@ -1,3 +1,7 @@
+> **HISTÓRICO — não é fila nem estado** (GOV-01, 25/09/2026). Este arquivo
+> mandava reconstruir o 1.27f, que foi entregue em 16/09. A fila está no
+> `ROADMAP.md` e o estado no `RETOMAR.md`.
+
 # CONTINUAR — a passagem de bastão
 
 **Para quem é:** para mim numa aba nova ou em outra máquina, e para outra pessoa

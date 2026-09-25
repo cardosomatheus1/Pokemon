@@ -1,6 +1,6 @@
 # TAREFA 1.27f — refazer o cartão da equipe
 
-**Estado:** ⏳ **A FAZER — é o próximo bloco da fila.**
+**Estado:** ✅ **CONCLUÍDA em 16/09/2026** (commit `555848f`, Q2 VERDE 998/998). Este cartão é histórico — ele não manda refazer nada. Corrigido em 25/09 (REV-01): o cabeçalho continuou dizendo "a fazer" depois da entrega.
 **Pedido do dono:** 10/09/2026. **Escrito em:** 13/09/2026.
 **Estimativa:** menos de uma hora, com este documento na mão.
 

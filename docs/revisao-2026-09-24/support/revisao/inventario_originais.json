@@ -1,0 +1,191 @@
+[
+  {
+    "nome": "API.md",
+    "bytes": 9646,
+    "sha256": "d818817d491ecab4f8dd254310c5becfa5a7f60815dd17b3330b3c2a32761710",
+    "destino": "revisado/04_ARQUITETURA_E_API.md",
+    "tratamento": "Contrato reconciliado; versão/seed/tempo/SSE a conferir em M0"
+  },
+  {
+    "nome": "CHECKUP_2026-09-01.md",
+    "bytes": 8287,
+    "sha256": "7d39982e001bbe08f2aa9ac8cc262cb3d6342795ec7f51902e527eb84c18445e",
+    "destino": "revisado/06_VALIDACAO.md",
+    "tratamento": "Checkup datado preservado; não comprova o checkout atual"
+  },
+  {
+    "nome": "CLAUDE.md",
+    "bytes": 35920,
+    "sha256": "8a52a82fa37550e30784e5cf9f41d054f3290299e95813c3172c5cda7282d288",
+    "destino": "CLAUDE.md",
+    "tratamento": "Método reescrito com escopo, evidência proporcional e limite de ferramental"
+  },
+  {
+    "nome": "COMECE_AQUI.md",
+    "bytes": 22582,
+    "sha256": "865f8323fe604f01608de385b57398fe6741716c6a869cd5ee91b151a8ed6fff",
+    "destino": "COMECE_AQUI.md",
+    "tratamento": "Entrada única e hierarquia documental"
+  },
+  {
+    "nome": "CONTINUAR.md",
+    "bytes": 17853,
+    "sha256": "34993ef8243a4d82dda8a92af29f8ebc7501c706931cdbf12bea80aab81f6c12",
+    "destino": "RETOMAR.md",
+    "tratamento": "Consolidado; não manda mais reiniciar 1.27f"
+  },
+  {
+    "nome": "DEFEITOS.md",
+    "bytes": 266584,
+    "sha256": "087ec71405a48231e2697c78b56cadce616a00b15aa7248f225e0849419d3b00",
+    "destino": "revisado/08_REGISTROS_LEGADOS.md",
+    "tratamento": "Todos os registros inventariados, sem inventar status atual"
+  },
+  {
+    "nome": "DESENHO_FASE1.md",
+    "bytes": 28655,
+    "sha256": "3e6ac8afe77adee2d87309b38953edbde3768a7a1766169e7a7d9db8e37137f7",
+    "destino": "revisado/02_ESPECIFICACAO.md",
+    "tratamento": "Comportamento consolidado com decisões e critérios de integração"
+  },
+  {
+    "nome": "ECONOMIA_DE_ITENS.md",
+    "bytes": 8841,
+    "sha256": "1bd0da66723ecff3c4f8d9867681819f3affdb3273b9ba26e0c8b7a47722ab0a",
+    "destino": "revisado/03_ECONOMIA_E_NEGOCIO.md",
+    "tratamento": "Recursos, receitas, pity completo, faucets e sinks reconciliados"
+  },
+  {
+    "nome": "LACUNAS.md",
+    "bytes": 353024,
+    "sha256": "f1e0995129e9c593b04258b19b9b0735d6d65797eff02b25508f741c8f9f4b33",
+    "destino": "revisado/08_REGISTROS_LEGADOS.md",
+    "tratamento": "Ocorrências preservadas; duplicatas de IDs não fundidas"
+  },
+  {
+    "nome": "LEIA-ME-DO-PACOTE.md",
+    "bytes": 4507,
+    "sha256": "25e39bb69835e6f9722c02de66522eab556157e889c9886cc6d73ad7c4c01c68",
+    "destino": "COMECE_AQUI.md",
+    "tratamento": "Uso do pacote revisado e preservação dos originais"
+  },
+  {
+    "nome": "ORDEM_APOS_O_AVANCO.md",
+    "bytes": 5699,
+    "sha256": "2d741d091db428cce0d5310cba9a365524a922d4537de698214cbeabca267bae",
+    "destino": "ROADMAP.md",
+    "tratamento": "Fila única por dependências"
+  },
+  {
+    "nome": "P1.1_ESCOPO.md",
+    "bytes": 5950,
+    "sha256": "3f44695354eaaae7676894892e74e4b453b09432c887515cb66eb629134cb79f",
+    "destino": "revisado/02_ESPECIFICACAO.md",
+    "tratamento": "Escopo herdado tratado como histórico, sem reabertura automática"
+  },
+  {
+    "nome": "PARECER_MOEDAS_E_MERCADO.md",
+    "bytes": 16179,
+    "sha256": "62fb245ad603a82db9e0a4583924638f05b3ca7c752c0263cae07017a340acaf",
+    "destino": "revisado/03_ECONOMIA_E_NEGOCIO.md",
+    "tratamento": "RMT preservado; premissas de poder pago e operação explicitadas"
+  },
+  {
+    "nome": "PASSAGEM.md",
+    "bytes": 8315,
+    "sha256": "9c8fdb360186dccd2bc2c68617d57f6c6aec5038c85cb0b8063b869bb6530e12",
+    "destino": "RETOMAR.md",
+    "tratamento": "Estado atual separado de passagem histórica"
+  },
+  {
+    "nome": "PAUTA_2026-09-08.md",
+    "bytes": 9119,
+    "sha256": "9487f88d2c82c6a837026365c8f4304ae43b160bf1fd3c976666a5366a0e1cb9",
+    "destino": "ROADMAP.md",
+    "tratamento": "Pauta datada substituída pela fila corrente"
+  },
+  {
+    "nome": "POKEARENA_BUILD_BLOCKS_v1.2.md",
+    "bytes": 209961,
+    "sha256": "d49ee7b288491007e47d84791e2ce1f8c0cee5f81dca72e245c79d17d042fb3c",
+    "destino": "ROADMAP.md",
+    "tratamento": "Catálogo histórico preservado; critérios ativos nos novos cartões"
+  },
+  {
+    "nome": "POKEARENA_DESIGN_DEPTH_v1.1.md",
+    "bytes": 28173,
+    "sha256": "a9f464881fa7bab52a87cd840113ff00a26ff6b0f09f3c01d529962f93001093",
+    "destino": "revisado/01_PLANO_MESTRE.md",
+    "tratamento": "Profundidade ligada a hipóteses e expansão condicionada"
+  },
+  {
+    "nome": "POKEARENA_DOCUMENT_INDEX_v1.5.md",
+    "bytes": 13369,
+    "sha256": "2a12e03329b28a64f15d51598fc7b1657c4880bd3eb8a28b9e8424ddac965766",
+    "destino": "COMECE_AQUI.md",
+    "tratamento": "Índice e autoridade consolidados"
+  },
+  {
+    "nome": "POKEARENA_ECONOMY_STUDY_v1.2.md",
+    "bytes": 38788,
+    "sha256": "5598c99d39eeeff6ae995b5f936cb62f08b4bb8106bcba7befe6e4ac0728e014",
+    "destino": "revisado/03_ECONOMIA_E_NEGOCIO.md",
+    "tratamento": "Cálculos corrigidos; resultados empíricos sem script permanecem não reproduzidos"
+  },
+  {
+    "nome": "POKEARENA_SPEC_MASTER_V1-V5_v1.5_COMPLETE.md",
+    "bytes": 153060,
+    "sha256": "64fbe1f980b6aca71cfae57cab8c9cc72e93534bfee36a1cc8bbf52f0323aa91",
+    "destino": "revisado/02_ESPECIFICACAO.md",
+    "tratamento": "Especificação ativa consolidada; detalhes históricos mantidos para implementação"
+  },
+  {
+    "nome": "POKEARENA_UNIT_ECONOMICS_STUDY_v1.2.md",
+    "bytes": 28700,
+    "sha256": "9926970adddd90fae07fac567958db046f17e3d7bed050219b6107835fcb1070",
+    "destino": "revisado/03_ECONOMIA_E_NEGOCIO.md",
+    "tratamento": "Cenários distintos e modelo ilustrativo parametrizado"
+  },
+  {
+    "nome": "PORTE_v1.0.md",
+    "bytes": 10107,
+    "sha256": "de6e3e84ab7c903acfb99eeec85580f0c566d4c2e0dad8678a5f6cf9461c239b",
+    "destino": "ROADMAP.md",
+    "tratamento": "Estimativas por faixa e reestimativa após baseline"
+  },
+  {
+    "nome": "PROXIMO_BLOCO_1.33.md",
+    "bytes": 1342,
+    "sha256": "b14945b04c1f30d4cd65275b2945d04d767dbe9957570c8ad6a7b6ace8ea4bc6",
+    "destino": "PROXIMO_BLOCO_1.33.md",
+    "tratamento": "Cartão expandido com invariantes, compatibilidade e aceite"
+  },
+  {
+    "nome": "RETOMAR.md",
+    "bytes": 33077,
+    "sha256": "80fd8250e5b4c75b7c45247bd5fe41dc0ef60e7b28a39b40eefcd7b6c4d100e5",
+    "destino": "RETOMAR.md",
+    "tratamento": "Estado documental confirmado versus implementação reportada"
+  },
+  {
+    "nome": "ROADMAP.md",
+    "bytes": 48480,
+    "sha256": "ad3f235b786f5d4e1fb7c0a0c4dae0debbf3a2fa0a2a98e57891aba10f978f43",
+    "destino": "ROADMAP.md",
+    "tratamento": "Fila única, marcos e dependências"
+  },
+  {
+    "nome": "TAREFA_1.27f_CARTAO.md",
+    "bytes": 13326,
+    "sha256": "032b190ee5e7657b876e102a405b71acb173aa10747ecd2a90be003aab22d73c",
+    "destino": "RETOMAR.md",
+    "tratamento": "Conclusão reportada em 16/09; não repetir sem regressão reproduzida"
+  },
+  {
+    "nome": "TRILHA_R.md",
+    "bytes": 27328,
+    "sha256": "3e1324782fe80d4b3b626a5d577a9e2faf798d5a5a65ff55e2b80795ccedb10b",
+    "destino": "CLAUDE.md",
+    "tratamento": "Ferramental condicionado a bloqueio concreto, com orçamento"
+  }
+]

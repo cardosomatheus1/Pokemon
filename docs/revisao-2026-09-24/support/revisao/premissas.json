@@ -1,0 +1,50 @@
+{
+  "natureza": "Hipoteses ilustrativas editaveis; nao representam preco aprovado, benchmark, aliquota aplicavel ou previsao de receita.",
+  "modelo": "conteudo_sem_receita_de_moeda_apostavel_sem_RMT",
+  "mau_exemplo": 5000,
+  "custo_fixo_mensal": "15000",
+  "sensibilidade_custo_fixo": [
+    "5000",
+    "15000",
+    "30000"
+  ],
+  "preco_passe": "29.90",
+  "taxa_pagamento_percentual": "0.03",
+  "taxa_pagamento_por_pedido": "0.40",
+  "tributos_sobre_receita_bruta_hipoteticos": "0.08",
+  "devolucoes_fracao_receita": "0.02",
+  "perdas_adicionais_fracao_receita": "0.005",
+  "custo_variavel_por_mau": "0.30",
+  "observacoes": [
+    "Uma adesao de passe gera um pedido por mes; cosmeticos usam pedidos por comprador.",
+    "Mesmo usuario pode comprar cosmetico e passe; somar pedidos nao soma usuarios unicos pagantes.",
+    "Taxas sao cobradas sobre pedidos brutos e nao devolvidas no modelo; tributos usam base bruta simplificada.",
+    "Perdas adicionais nao incluem devolucoes ja contadas; evitar dupla contagem ao substituir por dados reais.",
+    "Custo variavel agrega entrega e suporte incremental; custos fixos agregam equipe/arte/operacao conforme cenario escolhido.",
+    "CAC e investimento inicial nao estao incluidos; equilibrio operacional nao representa retorno do investimento.",
+    "Nao usar estas premissas para concluir viabilidade juridica ou direitos sobre propriedade intelectual."
+  ],
+  "cenarios": [
+    {
+      "nome": "Baixa adesão",
+      "conversao_cosmetico": "0.01",
+      "pedidos_por_comprador": "1",
+      "ticket_cosmetico": "10",
+      "adesao_passe": "0.01"
+    },
+    {
+      "nome": "Adesão intermediária",
+      "conversao_cosmetico": "0.03",
+      "pedidos_por_comprador": "1.2",
+      "ticket_cosmetico": "15",
+      "adesao_passe": "0.03"
+    },
+    {
+      "nome": "Alta adesão",
+      "conversao_cosmetico": "0.06",
+      "pedidos_por_comprador": "1.5",
+      "ticket_cosmetico": "20",
+      "adesao_passe": "0.06"
+    }
+  ]
+}

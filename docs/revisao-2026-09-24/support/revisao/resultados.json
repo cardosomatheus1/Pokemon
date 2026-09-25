@@ -1,0 +1,83 @@
+{
+  "escopo": "Verificacao documental; nao teste do jogo nem reproducao do estudo original.",
+  "calculos": {
+    "p_referencia": 0.016,
+    "n_referencia": 20000,
+    "k_referencia": 12,
+    "odd_justa": 62.5,
+    "vies_absoluto_delta_estimador_puro": 0.19218749999999998,
+    "vies_relativo_delta_estimador_puro": 0.003075,
+    "vies_relativo_laplace_20000": 0.0005499725013748957,
+    "vies_relativo_laplace_154000": 7.142810760973894e-05,
+    "erro_padrao_relativo_154000": 0.01998375964003394,
+    "n_normal_95_meia_largura_relativa_2pct": 590646,
+    "overround_margem_8pct": 0.08695652173913043,
+    "p_piso_105_reduz_margem_8pct": 0.8761904761904762,
+    "p_piso_105_gera_ev_positivo": 0.9523809523809523,
+    "cpu_segundos_rodada_historica": 3.542,
+    "cpu_horas_mes_43200_rodadas": 42.504,
+    "equilibrio_historico_75000_div_312": "24038.46153846153846153846154",
+    "equilibrio_historico_87000_div_2908": "29917.46905089408528198074278",
+    "taxa_ilustrativa_ticket_5": "0.11",
+    "taxa_ilustrativa_ticket_20": "0.05",
+    "mobs_run_sem_retries": 37,
+    "stamina_base_run_sem_retries": 23,
+    "casos_identidade_binomial_verificados": 32
+  },
+  "financeiro_hipotetico": [
+    {
+      "cenario": "Baixa adesão",
+      "receita_cosmetico_por_mau": "0.10",
+      "receita_passe_por_mau": "0.2990",
+      "receita_bruta_por_mau": "0.3990",
+      "taxas_por_mau": "0.019970",
+      "tributos_hipoteticos_por_mau": "0.031920",
+      "devolucoes_por_mau": "0.007980",
+      "perdas_adicionais_por_mau": "0.0019950",
+      "custo_variavel_por_mau": "0.30",
+      "contribuicao_por_mau": "0.0371350",
+      "resultado_operacional_mau_exemplo": "-14814.3250000",
+      "mau_equilibrio_por_custo_fixo": {
+        "5000": 134644,
+        "15000": 403932,
+        "30000": 807864
+      }
+    },
+    {
+      "cenario": "Adesão intermediária",
+      "receita_cosmetico_por_mau": "0.540",
+      "receita_passe_por_mau": "0.8970",
+      "receita_bruta_por_mau": "1.4370",
+      "taxas_por_mau": "0.069510",
+      "tributos_hipoteticos_por_mau": "0.114960",
+      "devolucoes_por_mau": "0.028740",
+      "perdas_adicionais_por_mau": "0.0071850",
+      "custo_variavel_por_mau": "0.30",
+      "contribuicao_por_mau": "0.9166050",
+      "resultado_operacional_mau_exemplo": "-10416.9750000",
+      "mau_equilibrio_por_custo_fixo": {
+        "5000": 5455,
+        "15000": 16365,
+        "30000": 32730
+      }
+    },
+    {
+      "cenario": "Alta adesão",
+      "receita_cosmetico_por_mau": "1.800",
+      "receita_passe_por_mau": "1.7940",
+      "receita_bruta_por_mau": "3.5940",
+      "taxas_por_mau": "0.167820",
+      "tributos_hipoteticos_por_mau": "0.287520",
+      "devolucoes_por_mau": "0.071880",
+      "perdas_adicionais_por_mau": "0.0179700",
+      "custo_variavel_por_mau": "0.30",
+      "contribuicao_por_mau": "2.7488100",
+      "resultado_operacional_mau_exemplo": "-1255.9500000",
+      "mau_equilibrio_por_custo_fixo": {
+        "5000": 1819,
+        "15000": 5457,
+        "30000": 10914
+      }
+    }
+  ]
+}

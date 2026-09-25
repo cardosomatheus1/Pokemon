@@ -242,25 +242,50 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 ---
 
-## O QUE FALTA — a fila de hoje, 13/09/2026
+## O QUE FALTA — a fila de hoje, 25/09/2026
 
-Esta seção é a resposta curta. O resto da Parte II é o detalhe de cada item, e
-continua valendo.
+> **Esta é a FILA ÚNICA do projeto** (GOV-01, adotada da Revisão 2.0 de 24/09).
+> O `RETOMAR.md` é o ESTADO ÚNICO. Nenhum outro documento pode ter uma lista de
+> "próximo passo" — foi assim que a `TAREFA_1.27f` continuou dizendo "a fazer"
+> depois de feita, e que o T11 apareceu na frente com o arnês congelado.
+>
+> E três estados diferentes, que nenhuma linha desta tabela confunde (GOV-04):
+> **implementado** (suíte e portão verdes), **validado com jogadores** (ninguém
+> ainda jogou isto fora da suíte) e **pronto para vender** (depende de direitos,
+> pagamento e decisões do dono — DEC-01 a 03).
 
-### Em voo — o próximo bloco
+### Fechado nesta leva
 
-| # | bloco | estado | o que falta exatamente |
-|---|---|---|---|
-| 1 | **1.27f** · o cartão da equipe | ✅ **FECHADO em 16/09/2026** | refeito inteiro a partir de `docs/TAREFA_1.27f_CARTAO.md`. Q2 VERDE 998/998, suíte VERDE 2159/2159 com navegador. Capturas em `tools/previas/_cartao/`. Três defeitos de LEITURA que nenhum teste pega apareceram na captura e foram corrigidos — o rótulo `ATQ` transbordando a coluna, `VEL` e `DEF` na mesma cor, e o rodapé virando célula da grade |
-| 2 | **T11** · um navegador vivo por trabalhador | **o próximo do arnês** | o outro eixo dos 30 min: o T13 derrubou a QUANTIDADE de mutantes (portão em 3 min com a árvore intocada), o T11 ataca o CUSTO de cada um — hoje ~30 s de boot de Chromium por mutante |
+| bloco | fechou em | evidência |
+|---|---|---|
+| **1.27f** · o cartão da equipe | 16/09 | Q2 998/998 · capturas em `tools/previas/_cartao/` |
+| **T9 · T10 · T13 · T11a** · o arnês | 16/09 | portão de 7 h para 3 min com a árvore intocada |
+| **1.34** · dia, tarde e noite | 25/09 | Q2 1017/1017 · suíte 2184/2184 · capturas em `tools/previas/_hora/` |
 
-### A seguir, na ordem decidida em 08/09
+### A fila, na ordem
 
 | # | bloco | o que é | por que aqui |
 |---|---|---|---|
-| 3 | **1.33 · 1.34** | dia, tarde e noite, e o "como funciona" | a regra do dono governa: *efeito VISÍVEL na wave*. Na forma antiga a hora do dia mexia no sorteio do encontro — um número que ninguém vê. Agora o cenário muda de luz, os efeitos do bioma ficam mais fortes à noite, e o elenco do estágio muda com a hora (a L-178 nasce junto) |
-| 4 | **T8 · T4 · T7** | a manutenção do arnês | D-049, D-050, D-053, D-060+D-077 (que são o mesmo e devem ser fundidos), o D-078, e o D-093 (a linha de base visual que envelhece calada). Junto: a L-174 — o portão de navegador nunca abre a TELA DA RUN, e a esteira já sabe entrar |
-| 5 | **1.30** | os 34 ícones de item (L-137) | ⏸️ **espera o dono**: ele manda a arte um a um |
+| 1 | **1.33** · o elenco muda com a hora e o clima | fecha a L-178. Cartão completo em `docs/PROXIMO_BLOCO_1.33.md` | é a metade de JOGO do dia e noite: a cena já muda de luz, o elenco ainda não. Destravado em 25/09 (DEC-10) |
+| 2 | **1.32b** · mostrar que climas existem | L-177, junto com a prévia honesta do 1.33 | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto |
+| 3 | **INT-01** · recompensas que não duplicam | da Revisão 2.0: Estilhaço no baú (L-159), reservas, resgate concorrente | integridade de economia vem antes de calibrar quantidade |
+| 4 | **INT-02** · uma posse confiável | cosméticos e outfit entre dispositivos (L-157, L-055) | compra e equipar não podem depender do navegador |
+| 5 | **1.27g · UX-01** · efeitos e leitura da luta | L-171, L-172, L-175, L-176 | o que impede ENTENDER a ação vem antes do que a enfeita |
+| 6 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
+| — | **T11 · T8 · T4 · T7** · arnês | ❄️ **CONGELADO** | entra só quando IMPEDIR um bloco desta tabela, com orçamento nomeado antes (`CLAUDE.md`, 16/09) |
+
+### Esperando decisão do dono
+
+| id | a pergunta | o que depende dela |
+|---|---|---|
+| **DEC-11** | manter os 154.000 sims? O argumento dos 19% caiu (L-182) | custo de servidor e de testes |
+| DEC-01 · 02 · 03 | tema e direitos · RMT · pagamento e poder | qualquer coisa com dinheiro real |
+| DEC-07 · 08 · 09 | o que o OFF encerra · captura mostrada ou base · stamina por tentativa | INT-01 e a jornada |
+| DEC-04 · 05 · 06 | curva do laboratório · Vulcão sem raro · outfits à venda | os blocos donos, quando chegarem |
+| ✅ DEC-10 | ~~qual relógio governa o mundo~~ **Brasília para todos** (25/09) | o 1.34 e o 1.33 |
+
+Série DEC-01 a DEC-11 = Revisão 2.0 (`docs/revisao-2026-09-24/`); DEC-019,
+DEC-075, DEC-095… = mapa de decisões do dono. Não confundir.
 
 ### Aberto e sem bloco na fila — o que o Avanço deixou
 

@@ -5181,9 +5181,25 @@ Fica estruturada e declarada em construção. O NPC (o homem, do vídeo) já apa
 
 ---
 
-### L-124 — DIA E NOITE, o relógio, e o banner que não anda
+### L-124 — DIA E NOITE, o relógio, e o banner que não anda ✅ FECHADA
 
-**Registrada em:** 02/09/2026. **Bloco dono:** 1.34. **Estado:** aberta.
+**Registrada em:** 02/09/2026. **Bloco dono:** 1.34. **Estado:** ✅ **FECHADA em
+25/09/2026** — Q2 VERDE 1017/1017, suíte VERDE 2184/2184.
+
+> **O que ficou na tela:** a JANELA DO CÉU no canto do palco (o sol e a lua no
+> mesmo arco, a lua mordida, as estrelas acendendo, um horizonte de morros); a
+> luz da hora como camada com `multiply` sobre a cena inteira; e o BRILHO DA
+> NOITE — brasa, vaga-lume e neve somados ao escuro, 1,85× mais fortes. O banner
+> da expedição passou a andar a cada segundo.
+>
+> **Duas tentativas foram reprovadas olhando** antes da que ficou — estrelas na
+> grama e neblina cinza; depois azul puro cobrindo o chão. As duas estão no
+> histórico de commits, e não foram apagadas.
+>
+> **E o fuso:** a revisão externa de 24/09 perguntou qual relógio governa o
+> mundo, e a cena lia o UTC cru — três horas adiantada no Brasil. O dono
+> decidiu: **Brasília para todos** (DEC-10). `relogioDoMundo` em
+> `app/modules/hora-do-dia.mjs`.
 
 Visual, e o dono foi específico sobre o cuidado:
 
@@ -7753,8 +7769,15 @@ central do `CLAUDE.md` chama isso pelo nome.
 
 ### L-178 — o clima não muda o ELENCO da wave, só o que ela rende
 
-**Registrada em:** 10/09/2026. **Bloco dono:** 1.33/1.34 (dia e noite).
-**Estado:** aberta, por decisão.
+**Registrada em:** 10/09/2026. **Bloco dono:** **1.33** — o 1.34 fechou a metade
+visual em 25/09. **Estado:** aberta, e é o PRÓXIMO bloco.
+
+> **Destravada em 25/09/2026.** O que a travava — *"alguém tem de decidir quem
+> aparece na chuva"* — deixa de ser uma tabela escrita à mão: a condição
+> REORDENA a escolha dentro do que já mora no bioma, pelo TIPO, como todo o
+> elenco já é derivado. E o relógio que decide "noite" foi decidido pelo dono
+> (DEC-10: Brasília). O cartão completo está em `docs/PROXIMO_BLOCO_1.33.md`,
+> adotado da Revisão 2.0 e conciliado com o código.
 
 A L-119 pedia buff de farm, e é isso que o 1.32 entrega. Mas o pedido do dono
 sobre a trilha inteira diz mais:
@@ -7859,3 +7882,60 @@ das três entrega os 30 min sozinha — e construir só essa.
 **O que a destrava:** nada. É trabalho de arnês, sem dependência de conteúdo nem
 de decisão do dono além do limite que ele já fixou.
 
+---
+
+### L-180 — dois `elencoDoEstagio` no motor, com significados diferentes
+
+**Registrada em:** 25/09/2026, conciliando o cartão 1.33 com o código.
+**Bloco dono:** o bloco que mexer no sorteio da EXPEDIÇÃO — até lá, o 1.33
+apenas não toca o homônimo. **Estado:** aberta.
+
+`engine/elenco-estagio.mjs` exporta `elencoDoEstagio(pack, biomaId, estagio)`: o
+elenco das waves do Avanço, 4 comuns + 2 candidatos a chefe. `engine/expedicao.mjs`
+exporta OUTRA `elencoDoEstagio(pack, bioma, elenco, estagio)`: a lista filtrada
+por raridade das expedições. Mesmo nome, assinaturas e respostas diferentes.
+
+Não é defeito hoje — cada módulo importa a sua. É uma armadilha: quem importar a
+errada recebe outra lista, **sem erro nenhum**. Achei ao conferir o cartão, e
+por um instante li como defeito; conferir antes de afirmar foi o que evitou
+registrar um falso.
+
+**O que a fecha:** renomear a da expedição (`especiesDaExpedicao`, por exemplo)
+no bloco que já estiver mexendo nela, com os defeitos plantados realvados.
+
+---
+
+### L-181 — a chave do cache do Q2 não inclui a versão do Chromium
+
+**Registrada em:** 25/09/2026 — REV-12 da Revisão 2.0, conferido: **procede em
+parte.** **Bloco dono:** nenhum agora. O arnês está CONGELADO (`CLAUDE.md`, 16/09):
+isto entra quando IMPEDIR alguma coisa. **Estado:** aberta.
+
+A chave já inclui `process.version`. Não inclui a versão do navegador que as
+suítes visuais usam. Trocar o Chromium sem mudar nenhum arquivo deixaria o portão
+reaproveitar um `PEGOU` julgado por outro navegador.
+
+**O que a destrava:** uma troca de Chromium acontecer. Até lá, a mitigação é
+manual e custa uma linha: ao trocar o navegador, rodar `npm run sabotagem:completo`.
+
+---
+
+### L-182 — DEC-11: manter os 154.000 sims?
+
+**Registrada em:** 25/09/2026, saída da conferência do REV-03. **Dono da
+decisão:** o dono do projeto — é econômica. **Estado:** aberta, esperando veredito.
+
+O argumento que justificava os 154.000 sims — *"viés de convexidade de +19,22%,
+o dobro da margem"* — era conta errada (ver as notas de correção na Spec §4.4.3 e
+no estudo de economia §4.1). O viés real é 0,31%. **E eu repeti o número errado
+ao dono em 16/09**, quando ele perguntou se os testes precisavam de tantas
+simulações.
+
+O que resta como justificativa é o RUÍDO: erro-padrão relativo de ~5,5% no pior
+lutador com 20.000 sims, ~2,0% com 154.000. Ruído não custa margem a quem aposta
+sem informação; custa contra quem SELECIONA o lutador sobrepago calculando o `p`
+verdadeiro fora do jogo.
+
+**Opções:** manter 154.000; reduzir (servidor e testes mais baratos, ruído maior);
+ou reduzir só na captura visual, que não julga odd nenhuma — a ideia do dono de
+16/09, que vale ~5 s por largura.

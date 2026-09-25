@@ -22,7 +22,59 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 16/09/2026
+## 0. ONDE PARAMOS — 25/09/2026
+
+```text
+o LINK     http://localhost:8099/app/index.html
+           sobe com:  node tools/servir.mjs --porta 8099
+a PASTA    C:\Users\gdult\pa4
+o ESTADO   1.34 FECHADO · Q2 VERDE 1017/1017 · suíte VERDE 2184/2184
+           a cena do idle tem dia, tarde e noite, no horário de Brasília
+o PRÓXIMO  1.33 — o elenco muda com a hora e o clima (docs/PROXIMO_BLOCO_1.33.md)
+```
+
+### O 1.34 fechou, na terceira forma
+
+A janela do céu no canto do palco — o sol e a lua no mesmo arco, a lua mordida,
+estrelas acendendo, um horizonte de morros. A luz da hora como camada com
+`multiply` sobre a cena inteira. E à noite o cenário fica MAIS FORTE: brasa,
+vaga-lume e neve somados ao escuro, que era a metade que o dono destacou. O
+banner da expedição passou a andar a cada segundo.
+
+**Duas tentativas foram reprovadas OLHANDO**, e nenhuma por teste: estrelas
+espalhadas na grama com a noite virando neblina; depois `multiply` no canvas
+errado, pintando o chão de azul puro. Ficaram no histórico.
+
+### Chegou uma revisão externa do plano, e ela foi CONFERIDA, não só lida
+
+`docs/revisao-2026-09-24/` — 22 achados, feitos só com os documentos. A
+conferência contra o código está em `CONFERENCIA.md` nessa pasta. O essencial:
+
+```text
+REV-03  o "viés de +19,22%" que justificava 154.000 sims era conta errada:
+        é 0,31%. Eu tinha repetido o número errado ao dono. Corrigido na Spec,
+        no estudo de economia e no motor. Virou a DEC-11 (L-182): manter os sims?
+REV-08  a API dizia janela de 30 s; o código usa 40 s. Corrigido
+REV-09  o §7.22 dizia 6 mobs e 2 chefes; o código faz 4 e 1. Spec corrigida
+REV-01  a TAREFA_1.27f dizia "a fazer" depois de feita. Corrigido
+REV-02  o T11 aparecia na frente com o arnês congelado. Corrigido
+DEC-10  o fuso: a cena lia o UTC cru, três horas adiantada no Brasil.
+        DECIDIDA pelo dono — BRASÍLIA PARA TODOS
+```
+
+**Adotado:** as correções conferidas, a governança (o ROADMAP é a fila única, o
+RETOMAR é o estado único) e o cartão 1.33 revisado. **Não adotado:** trocar os 27
+documentos pelos reescritos — o revisor os escreveu sem o código, e ficam na
+pasta como referência.
+
+### O que espera o dono
+
+**DEC-11** (os 154.000 sims) e as decisões DEC-01 a DEC-09 da revisão — a lista
+está no `ROADMAP.md`, seção *Esperando decisão do dono*.
+
+---
+
+## 0a. ONDE PARAMOS — 16/09/2026
 
 ```text
 o LINK     http://localhost:8099/app/index.html
@@ -227,7 +279,7 @@ afiliados, sem dono em nenhum documento).
 
 ---
 
-## 0a. ONDE PARAMOS — 15/09/2026, madrugada
+## 0b. ONDE PARAMOS — 15/09/2026, madrugada
 
 ```text
 o LINK     http://localhost:8099/app/index.html
@@ -300,7 +352,7 @@ provado falso; está provado não confiável. A execução que vier o substitui.
 
 ---
 
-## 0b. ONDE PARAMOS — 14/09/2026, noite
+## 0c. ONDE PARAMOS — 14/09/2026, noite
 
 ```text
 o LINK     http://localhost:8099/app/index.html
@@ -362,7 +414,7 @@ está em `docs/TAREFA_1.27f_CARTAO.md`, escrita para quem não acompanhou nada.
 
 ---
 
-## 0c. ONDE PARAMOS — 14/09/2026, manhã
+## 0d. ONDE PARAMOS — 14/09/2026, manhã
 
 ```text
 o LINK     http://localhost:8099/app/index.html
@@ -411,7 +463,7 @@ está em `docs/TAREFA_1.27f_CARTAO.md`, escrita para quem não acompanhou nada.
 
 ---
 
-## 0d. ONDE PARAMOS — 13/09/2026
+## 0e. ONDE PARAMOS — 13/09/2026
 
 ```text
 o LINK     http://localhost:8099/app/index.html

@@ -1,0 +1,3541 @@
+[
+  {
+    "registro": "L-019#1",
+    "id_historico": "L-019",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-019 — a varredura de símbolos não é verificador de escopo ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 24,
+    "indicacoes_textuais_historicas": [
+      "**Fechada em:** F0.3c · **Notada em:** F0.3b"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-001#1",
+    "id_historico": "L-001",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-001 — 14 dos 66 golpes nunca são atribuídos a ninguém",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 77,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** F1.12 · **Medido em:** F0.1"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-002#1",
+    "id_historico": "L-002",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-002 — um lutador vence 4× mais que a média",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 94,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** F1.12 · **Medido em:** F0.1 (baseline: 35,24%)"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-003#1",
+    "id_historico": "L-003",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-003 — 13 dos 76 lutadores não conseguem causar dano a um oponente específico",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 109,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** F1.12 · **Medido em:** F0.1"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-004#1",
+    "id_historico": "L-004",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-004 — amplitude de 16,6× entre o melhor e o pior do elenco",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 120,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** F1.12 · **Medido em:** F0.1"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-005#1",
+    "id_historico": "L-005",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-005 — animação de entrada não acompanha o relógio da fase ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 137,
+    "indicacoes_textuais_historicas": [
+      "**Fechada em:** F0.3c · **Notada em:** leitura do protótipo"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-006#1",
+    "id_historico": "L-006",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-006 — a rodada depende de `requestAnimationFrame`",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 156,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** F1.5 · **Notado em:** leitura do protótipo"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-007#1",
+    "id_historico": "L-007",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-007 — sabotagem fácil demais enquanto os goldens forem byte-exatos ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 165,
+    "indicacoes_textuais_historicas": [
+      "**Fechada em:** F0.2 · **Notada em:** F0.1"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-014#1",
+    "id_historico": "L-014",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-014 — `spriteURL` mora no motor e é dado de conteúdo ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 190,
+    "indicacoes_textuais_historicas": [
+      "**Fechada em:** F0.4 · **Notada em:** F0.2"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-015#1",
+    "id_historico": "L-015",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-015 — quatro handlers `onclick` embutidos no HTML ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 206,
+    "indicacoes_textuais_historicas": [
+      "**Fechada em:** F0.3d · **Notada em:** F0.2"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-016#1",
+    "id_historico": "L-016",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-016 — o corte duro de tempo nunca é exercitado ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 217,
+    "indicacoes_textuais_historicas": [
+      "**Fechada em:** F0.3d · **Notada em:** F0.2"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-017#1",
+    "id_historico": "L-017",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-017 — a dependência de CDN de terceiros em tempo de execução ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 232,
+    "indicacoes_textuais_historicas": [
+      "**Fechada em:** F0.12 · **Notada em:** F0.2, ao verificar os sprites no navegador"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-018#1",
+    "id_historico": "L-018",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-018 — não existe sprite de ovo",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 280,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** F3.2 · **Notada em:** F0.2"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-020#1",
+    "id_historico": "L-020",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-020 — a ligação exporta 13 apelidos herdados ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 295,
+    "indicacoes_textuais_historicas": [
+      "**Fechada em:** F0.5 · **Notada em:** F0.4"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-021#1",
+    "id_historico": "L-021",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-021 — o motor exige um pool de golpes chamado `normal` ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 322,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** F1.12 · **Notada em:** F0.4"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-022#1",
+    "id_historico": "L-022",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-022 — a garantia de tipo na pool é um canal de informação sobre o clima ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 344,
+    "indicacoes_textuais_historicas": [
+      "**Fechada em:** F0.11 · **Notada em:** F0.6"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-023#1",
+    "id_historico": "L-023",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-023 — o viés de convexidade é medido, mas não corrigido ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 385,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** F1.5 · **Notada em:** F0.7 · **Fechada no:** F1.5 —"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-024#1",
+    "id_historico": "L-024",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-024 — o bucket `pendente` existe e nada o preenche",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 451,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** F1.4 · **Notada em:** F0.9"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-025#1",
+    "id_historico": "L-025",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-025 — o portão fecha bloco com uma execução só ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 475,
+    "indicacoes_textuais_historicas": [
+      "**Fechada em:** F0.10 · **Notada em:** F0.9, ao investigar o D-004"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-008#1",
+    "id_historico": "L-008",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-008 — o jogo não tem trilha sonora própria",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 515,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** F1.12 · **Trilha paralela:** arte"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-009#1",
+    "id_historico": "L-009",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-009 — os simuladores não incorporam os cenários novos ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 533,
+    "indicacoes_textuais_historicas": [
+      "**Fechada em:** 18/08/2026 · **Dono:** trilha `documento`"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-010#1",
+    "id_historico": "L-010",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-010 — não existe política de publicidade e afiliados",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 548,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** trilha `jurídico` / produto"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-011#1",
+    "id_historico": "L-011",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-011 — os limiares de risco são chute educado até haver coorte",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 557,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** trilha `dados de produção` · **Mecanismo:** F1.9"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-013#1",
+    "id_historico": "L-013",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-013 — os capítulos 6 a 9 da Spec ficaram desatualizados ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 566,
+    "indicacoes_textuais_historicas": [
+      "**Fechada em:** 18/08/2026 pela **Spec v1.5** · **Dono:** trilha `documento`"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-012#1",
+    "id_historico": "L-012",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-012 — a consulta de enquadramento regulatório não foi feita",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 598,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** trilha `jurídico` · **Bloqueia:** Etapa A item 8, Fase 5 inteira"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-026#1",
+    "id_historico": "L-026",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-026 — o baú não tem contra o que ser calibrado ✅ DESTRAVADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 608,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** V1.19 · **Destravada por:** a correção do **D-007**"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-027#1",
+    "id_historico": "L-027",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-027 — o véu de cor por arena foi documentado e não construído ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 638,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** V1.20 · **Fechada no:** V1.20"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-028#1",
+    "id_historico": "L-028",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-028 — o porte fechou; o que ele deixou aberto",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 683,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** nenhum bloco novo · **Estado:** informativo"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-029#1",
+    "id_historico": "L-029",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-029 — a tela principal reprova no teste dos 3 segundos",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 707,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** trilha `R` (proposta abaixo) · **Achado por:** crítico cego, portão Q7"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-032#1",
+    "id_historico": "L-032",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-032 — a idempotência tem duas redes e a suíte só alcança uma ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 779,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** F1.6 · **Achada por:** sabotagem do F1.4 · **Fechada com:**"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-033#1",
+    "id_historico": "L-033",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-033 — o backend inteiro existe e nada dele é alcançável por HTTP ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 839,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** **F1.13** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** F1.8"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-034#1",
+    "id_historico": "L-034",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-034 — dois dos sete sinais de risco não têm de onde medir",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 895,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** `recovery_deposit` → **F2.x, o gate do §25.1** · `odd_hour` → **F1.11**"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-035#1",
+    "id_historico": "L-035",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-035 — suíte que dispara processo filho invalida o cache do Q2 inteiro ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 919,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** **T4** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** a"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-038#1",
+    "id_historico": "L-038",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-038 — três mutantes equivalentes, e todos com a mesma forma",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 985,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** **T5** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** F1.14"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-036#1",
+    "id_historico": "L-036",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-036 — o cliente ainda guarda a própria carteira",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1041,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** **F1.14** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** F1.13"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-037#1",
+    "id_historico": "L-037",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-037 — a tela \"acertou e não ganhou\" nunca foi lida de perto ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1090,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** **V1.21** (é onde moram os itens de leitura da tela) · **Notada em:** F1.13,"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-031#1",
+    "id_historico": "L-031",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-031 — o que a TERCEIRA passada do crítico abriu",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1157,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** **V1.21** (proposto no `BUILD_BLOCKS`) · **Achado por:** crítico cego,"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-030#1",
+    "id_historico": "L-030",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-030 — o que a segunda passada do crítico deixou aberto ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1212,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** V1.20 · **Achado por:** crítico cego, Q7, segunda medição ·"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-039#1",
+    "id_historico": "L-039",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-039 — em modo servidor o cliente ainda cria uma carteira local no boot ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1304,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** **F1.16** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:**"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-040#1",
+    "id_historico": "L-040",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-040 — o valor do resgate é chute educado até haver coorte",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1352,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** trilha `dados de produção` · **Mecanismo:** F1.10 · **Notada em:** F1.10"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-041#1",
+    "id_historico": "L-041",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-041 — o operador do painel se declara, não se prova ✅ FECHADA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1378,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** **F1.17** (proposto no `BUILD_BLOCKS` neste commit) · **Notada em:** F1.11"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-042#1",
+    "id_historico": "L-042",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-042 — o ContentPack original existe, é jogável, e não tem arte",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1417,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** trilha `arte` · **Bloqueia:** a troca de `ID_ESCOLHIDO`, que é o"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-043#1",
+    "id_historico": "L-043",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-043 — o pack original tem outra distribuição de desfecho, e a economia foi medida na antiga",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1483,
+    "indicacoes_textuais_historicas": [
+      "**Dono:** **F2.1** (a recalibragem econômica da Fase 2) · **Notada em:** ao trocar"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-044#1",
+    "id_historico": "L-044",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-044 — o balão do golpe passa por baixo do crachá de clima ✅ FECHADA POR DECISÃO",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1523,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-045#1",
+    "id_historico": "L-045",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-045 — o portão de contraste não enxerga `filter` ✅ FECHADA no R19",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1548,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-046#1",
+    "id_historico": "L-046",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-046 — o Rayquaza ao fundo das arenas ✅ FECHADA no R17",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1573,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-047#1",
+    "id_historico": "L-047",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-047 — `margem.definir` tem papel e auditoria, e não tem rota ✅ FECHADA no R18",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1602,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-048#1",
+    "id_historico": "L-048",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-048 — as três cenas antigas não passam pelo catálogo do acervo",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1683,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-049#1",
+    "id_historico": "L-049",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-049 — a linha de base visual não fotografa mais a fase de contagem",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1706,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-050#1",
+    "id_historico": "L-050",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-050 — a Liga sabe colapsar contas ligadas, e ninguém as liga sozinho",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1733,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-051#1",
+    "id_historico": "L-051",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-051 — os testes de settlement apostam valor fixo no campeão, e a cauda continua aberta",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1761,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-052#1",
+    "id_historico": "L-052",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-052 — três testes de aposta aceitam QUALQUER recusa, e uma delas seria a errada",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1788,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-053#1",
+    "id_historico": "L-053",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-053 — o `conferirAbates` do killfeed continua com a própria travessia",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1812,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-054#1",
+    "id_historico": "L-054",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-054 — três dos cinco tipos de desafio ainda não têm quem os alimente",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1839,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-055#1",
+    "id_historico": "L-055",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-055 — o cosmético não sobrevive a limpar o navegador, e o F1.10 não o possui",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1867,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-056#1",
+    "id_historico": "L-056",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-056 — o gancho que limpa as caixas não tem teste direto",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1906,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-057#1",
+    "id_historico": "L-057",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-057 — os lendários como raid cooperativa, e o elenco de cada modo",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 1941,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-058#1",
+    "id_historico": "L-058",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-058 — a carência antes de anunciar no mercado não tem número",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2006,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-059#1",
+    "id_historico": "L-059",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-059 — as três decisões visuais do sub-jogo",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2026,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-060#1",
+    "id_historico": "L-060",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-060 — os 76 são da ARENA; o idle e a torre são 151, e faltam 75 sprites",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2048,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-061#1",
+    "id_historico": "L-061",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-061 — o mato alto, e por que ele não é enfeite",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2074,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-062#1",
+    "id_historico": "L-062",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-062 — a estética e a estrutura dos combates da Torre",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2095,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-063#1",
+    "id_historico": "L-063",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-063 — o cenário precisa de mais que árvore e pedra",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2169,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-064#1",
+    "id_historico": "L-064",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-064 — o 1.1 construiu a criatura, e ninguém a vê ainda",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2193,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-065#1",
+    "id_historico": "L-065",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-065 — `foco` existe na criatura e ninguém escreve nele",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2215,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-066#1",
+    "id_historico": "L-066",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-066 — a loja de dinheiro real, e o boost de stamina",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2233,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-067#1",
+    "id_historico": "L-067",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-067 — outfits autorais no lugar dos do Emerald",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2293,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-068#1",
+    "id_historico": "L-068",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-068 — cinco biomas sem item de assinatura",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2412,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-069#1",
+    "id_historico": "L-069",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-069 — o idle inteiro ainda não persiste",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2472,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-070#1",
+    "id_historico": "L-070",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-070 — de onde vem cada outfit: as quatro procedências",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2520,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-071#1",
+    "id_historico": "L-071",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-071 — o dossiê explicado ao dono, e o que ele ainda não faz",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2584,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-072#1",
+    "id_historico": "L-072",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-072 — como a área cosmética inteira separa o que é dado do que é ganho",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2630,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-073#1",
+    "id_historico": "L-073",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-073 — o alinhamento pela base do outfit não é exercido por nenhuma arte",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2710,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-074#1",
+    "id_historico": "L-074",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-074 — três outfits só têm a vista de frente na arte de origem",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2750,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-075#1",
+    "id_historico": "L-075",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-075 — o Pokémon que acompanha usa o sprite de BATALHA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2793,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-076#1",
+    "id_historico": "L-076",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-076 — o caderno de ideias do dono, tudo que ele lançou e ainda não virou bloco",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2830,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-077#1",
+    "id_historico": "L-077",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-077 — a tela da rota ajustável pelo jogador, e o relevo próprio de cada bioma",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2886,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-078#1",
+    "id_historico": "L-078",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-078 — a batalha de NPC, que é o resto do 1.7",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 2948,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-079#1",
+    "id_historico": "L-079",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-079 — sete defeitos plantados que nenhuma afirmação pega",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3049,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-080#1",
+    "id_historico": "L-080",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-080 — REGRA PERMANENTE: todo sprite de Pokémon mostrado ao jogador é GIF animado",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3127,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-081#1",
+    "id_historico": "L-081",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-081 — O banner do idle: o Pokémon do PERFIL, e o que o banner diz",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3144,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-082#1",
+    "id_historico": "L-082",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-082 — quatro expedições simultâneas, cada uma no seu bioma",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3182,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-083#1",
+    "id_historico": "L-083",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-083 — O quadro de \"onde está cada um\"",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3254,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-084#1",
+    "id_historico": "L-084",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-084 — Stages por bioma: como se abrem, e o que eles mostram antes",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3276,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-085#1",
+    "id_historico": "L-085",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-085 — O battle log do idle: provavelmente NÃO fazer",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3329,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-086#1",
+    "id_historico": "L-086",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-086 — A mochila, a equipe e o status: o painel que a prévia mostrava",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3348,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-087#1",
+    "id_historico": "L-087",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-087 — A moeda do idle ainda não tem nome nem cara",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3373,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-088#1",
+    "id_historico": "L-088",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-088 — A tela da rota é maior que a janela",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3388,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-089#1",
+    "id_historico": "L-089",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-089 — O som da arena toca em abas onde a arena não está",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3412,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-090#1",
+    "id_historico": "L-090",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-090 — A Torre: treze andares, e o que se perde ao sair",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3422,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-091#1",
+    "id_historico": "L-091",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-091 — o S642 escapa porque a sonda manda no bioma que ja esta na tela",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3475,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-092#1",
+    "id_historico": "L-092",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-092 — A ECONOMIA DE ITENS: de onde vem cada coisa",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3508,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-093#1",
+    "id_historico": "L-093",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-093 — A WIKI DE ITENS, e o que ela destrava",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3586,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-094#1",
+    "id_historico": "L-094",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-094 — O MERCADO DE DINHEIRO REAL: a porta que muda a categoria do produto",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3624,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-095#1",
+    "id_historico": "L-095",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-095 — AS TRÊS MOEDAS TÊM NOME, e a `Essência` mudou de papel",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3671,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** DECIDIDA — fecha a pergunta que a L-087 e a L-092 deixaram abertas."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-096#1",
+    "id_historico": "L-096",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-096 — O TETO DE USO, e por que ele é melhor que o teto de compra",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3732,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-097#1",
+    "id_historico": "L-097",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-097 — O REBALANCEAMENTO DA ESCALA: por que 100 parece mais que 10",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3776,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-098#1",
+    "id_historico": "L-098",
+    "ocorrencia": 1,
+    "id_duplicado": true,
+    "titulo_historico": "L-098 — A ARTE DO POKÉCASH — RESOLVIDA no mesmo dia",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3908,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-098#2",
+    "id_historico": "L-098",
+    "ocorrencia": 2,
+    "id_duplicado": true,
+    "titulo_historico": "L-098(a) — a pergunta, para quando ela voltar",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3915,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-099#1",
+    "id_historico": "L-099",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-099 — `nivel`, `vinculo` e `foco` existem e ninguém os move",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 3946,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-100#1",
+    "id_historico": "L-100",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-100 — a esteira de OLHAR não sabia abrir a aba do idle",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4000,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** RESOLVIDA no mesmo bloco — `tools/olhar-idle.mjs`."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-101#1",
+    "id_historico": "L-101",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-101 — no panorâmico o mundo fica largo e VAZIO",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4066,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CONSTRUÍDA em 02/09/2026."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-102#1",
+    "id_historico": "L-102",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-102 — o `foco` é uma escolha, e ainda não há onde fazê-la",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4120,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-103#1",
+    "id_historico": "L-103",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-103 — nenhuma guarda barata confere que um `import` acha o que importa",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4169,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-104#1",
+    "id_historico": "L-104",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-104 — sete itens ainda sem ícone confirmado",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4231,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-105#1",
+    "id_historico": "L-105",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-105 — a escada de estágios acaba no dia 13, e o nível vai até o 168",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4286,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-106#1",
+    "id_historico": "L-106",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-106 — a evolução não existe, e as dez pedras não são consumidas por nada",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4355,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-107#1",
+    "id_historico": "L-107",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-107 — o Vulcão está magro e SEM O MEIO DA TABELA",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4390,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-108#1",
+    "id_historico": "L-108",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-108 — a tipagem e os stats não influenciam o idle, e deveriam",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4426,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-109#1",
+    "id_historico": "L-109",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-109 — o HISTÓRICO DA EXPEDIÇÃO, e o VS que a batalha de NPC merece",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4469,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-110#1",
+    "id_historico": "L-110",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-110 — o quadro de colocação da Arena é pequeno demais para decidir",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4530,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-111#1",
+    "id_historico": "L-111",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-111 — o Pokémon SAI DA POKÉBOLA quando entra na equipe",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4547,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-112#1",
+    "id_historico": "L-112",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-112 — a aposta precisa ser CONFIRMADA, e a janela vai para 40 s",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4573,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-113#1",
+    "id_historico": "L-113",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-113 — a tela fica PEQUENA em 2560×1440, e não pode piorar em 1920×1080",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4618,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-114#1",
+    "id_historico": "L-114",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-114 — a EVOLUÇÃO existe no motor e ninguém a chama",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4660,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta. **CORRIGE A L-106, que eu registrei errado.**"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-115#1",
+    "id_historico": "L-115",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-115 — a captura não tem animação — CONSTRUÍDA no 1.23",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4715,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-116#1",
+    "id_historico": "L-116",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-116 — as faixas de raridade precisam de destaque — CONSTRUÍDA no 1.23",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4759,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-117#1",
+    "id_historico": "L-117",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-117 — o REPASSE DO RMT: o PokéCash bloqueado como trava contábil",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4834,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** PENDENTE DE DECISÃO DO DONO. Não implica em nada hoje — nenhuma"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-118#1",
+    "id_historico": "L-118",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-118 — a TORRE tem cura e poção, e o HP nasce lá",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4896,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta, e o dono trará os detalhes na hora."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-119#1",
+    "id_historico": "L-119",
+    "ocorrencia": 1,
+    "id_duplicado": true,
+    "titulo_historico": "L-119 — O CLIMA NO IDLE ✅ CONSTRUÍDA no 1.32 (10/09/2026)",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4933,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-119#2",
+    "id_historico": "L-119",
+    "ocorrencia": 2,
+    "id_duplicado": true,
+    "titulo_historico": "L-119 — O CLIMA NO IDLE: buff de FARM, e não de dano",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 4968,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta, com o desenho dele."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-120#1",
+    "id_historico": "L-120",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-120 — POP-UPS DE CONFIRMAÇÃO — a da EXPEDIÇÃO construída no 1.24",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5045,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** METADE CONSTRUÍDA em 03/09/2026 — a da expedição está de pé; a da"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-121#1",
+    "id_historico": "L-121",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-121 — A SELEÇÃO DA EQUIPE — a pokébola construída no 1.24",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5073,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-122#1",
+    "id_historico": "L-122",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-122 — O MOBILE, e a pergunta que ninguém tinha feito",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5102,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-123#1",
+    "id_historico": "L-123",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-123 — AS DUAS LOJAS, e a moeda de cada uma",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5140,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta, com a moeda decidida pelo dono."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-124#1",
+    "id_historico": "L-124",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-124 — DIA E NOITE, o relógio, e o banner que não anda",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5184,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-125#1",
+    "id_historico": "L-125",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-125 — OS NPCs DAS LOJAS, e o som que só toca com a loja aberta",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5213,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta. **O material está em disco.**"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-126#1",
+    "id_historico": "L-126",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-126 — O POKÉCASH COMPRADO USA CADEADO, e ele já tem onde morar",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5309,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta, e é a regra mais importante da economia até agora."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-127#1",
+    "id_historico": "L-127",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-127 — O MOBILE É TRILHA PARALELA, e não bloqueia nada",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5375,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-128#1",
+    "id_historico": "L-128",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-128 — a criatura DADA conta para a escada — DECIDIDA, conta",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5414,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** FECHADA em 03/09/2026, pelo dono. **A inicial CONTA.**"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-129#1",
+    "id_historico": "L-129",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-129 — a Pokébola gira, exceto para quem desligou animação no sistema",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5474,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-130#1",
+    "id_historico": "L-130",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-130 — a Pokédex abre numa ficha vazia, e a proporção está invertida em 1440",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5520,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-131#1",
+    "id_historico": "L-131",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-131 — o treinador é cortado no topo da cena a 420 px",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5569,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-132#1",
+    "id_historico": "L-132",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-132 — a escada da dex é rala no meio e mesquinha no fim",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5593,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-133#1",
+    "id_historico": "L-133",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-133 — a Poké Ball estava LARANJA — CORRIGIDA no 1.25",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5659,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-134#1",
+    "id_historico": "L-134",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-134 — `min-width: 320px` no palco garante rolagem lateral abaixo de 320",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5708,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-135#1",
+    "id_historico": "L-135",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-135 — os preços da loja ainda não passaram pelo estudo de economia",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5730,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-136#1",
+    "id_historico": "L-136",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-136 — a LOJA POKÉCASH ainda não existe, e o NPC dela já está pronto",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5767,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-137#1",
+    "id_historico": "L-137",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-137 — a qualidade dos ícones de item, e ela é 34 e não 368",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5823,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta, e o dono a RECOBROU em 08/09/2026 — com razão."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-138#1",
+    "id_historico": "L-138",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-138 — a ESSÊNCIA é 53% de tudo que cai e não tem uso nenhum",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5888,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta. **Prioridade alta — é o maior buraco de economia aberto.**"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-139#1",
+    "id_historico": "L-139",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-139 — 21 dos 40 itens da wiki têm porta que ainda não existe",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5958,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-140#1",
+    "id_historico": "L-140",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-140 — mandar DOIS no mesmo bioma custa o dobro e rende igual",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 5991,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-141#1",
+    "id_historico": "L-141",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-141 — o QUADRO DE LOG da expedição, e ele já foi pedido duas vezes",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 6052,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta na tela, **e a base dela já está construída**."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-142#1",
+    "id_historico": "L-142",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-142 — o AVANÇO: as três decisões que o dono ainda precisa tomar",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 6114,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta, e ela BLOQUEIA o arranjo da tela."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-143#1",
+    "id_historico": "L-143",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-143 — o VULCÃO não tem gente para quatro estágios",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 6195,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-144#1",
+    "id_historico": "L-144",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-144 — o LABORATÓRIO: conversado, e sem bloco",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 6255,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-145#1",
+    "id_historico": "L-145",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-145 — o VÍNCULO é uma barra invisível que agora decide combate",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 6345,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-146#1",
+    "id_historico": "L-146",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-146 — as decisões do dono sobre o modo ausente, 08/09/2026",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 6501,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** metade construída."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-147#1",
+    "id_historico": "L-147",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-147 — O BANNER É A IDENTIDADE DO JOGADOR, e ele é indispensável",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 6538,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-148#1",
+    "id_historico": "L-148",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-148 — a LOJA DE POKÉCASH: as abas, e o inventário do que já é cosmético",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 6598,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta, e o escopo agora está fechado."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-149#1",
+    "id_historico": "L-149",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-149 — a CAIXA precisa estar no layout novo",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 6664,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-150#1",
+    "id_historico": "L-150",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-150 — a run acontece na tela e ainda não PAGA nada",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 6694,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-151#1",
+    "id_historico": "L-151",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-151 — o TETO limita o que a run RENDE, e não o direito de rodá-la",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 6778,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-152#1",
+    "id_historico": "L-152",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-152 — a DURAÇÃO da run não responde à força, e o dono pegou isso na conta",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 6848,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-153#1",
+    "id_historico": "L-153",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-153 — o FOCO não entra no Avanço, e os cinco existentes são de expedição",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 6927,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-154#1",
+    "id_historico": "L-154",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-154 — o modo antigo vira ABA PRÓPRIA, e não uma escolha dentro de ROTAS",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 6970,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** decidida. **CORRIGE a L-146.**"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-155#1",
+    "id_historico": "L-155",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-155 — o log da run sabe desenhar item e treinador, e ninguém os emite",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7003,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-156#1",
+    "id_historico": "L-156",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-156 — um portão que pegue variável de CSS que não existe",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7030,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta. **Nasce do D-079.**"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-157#1",
+    "id_historico": "L-157",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-157 — a posse do traje e a posse dos cosméticos são duas listas",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7051,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-158#1",
+    "id_historico": "L-158",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-158 — os 9 trajes são arte NOSSA e nenhum está à venda",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7086,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-159#1",
+    "id_historico": "L-159",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-159 — o Estilhaço e o baú do estágio ainda não se conhecem",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7126,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-160#1",
+    "id_historico": "L-160",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-160 — o Estilhaço não aparece na mochila nem na wiki",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7154,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-161#1",
+    "id_historico": "L-161",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-161 — AS DECISÕES DO DONO DE 09/09/2026, e o que elas desfazem",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7176,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** decidido por ele; construção pendente."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-162#1",
+    "id_historico": "L-162",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-162 — a MESMA criatura podia avançar e ir à expedição",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7232,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta. **É um furo, e não uma escolha.**"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-163#1",
+    "id_historico": "L-163",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-163 — o DESLOGAR da Rota OFF, e o teto de tempo ausente",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7256,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-164#1",
+    "id_historico": "L-164",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-164 — o que os vídeos do Baiak mostram, OLHADOS",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7280,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-166#1",
+    "id_historico": "L-166",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-166 — a bola saiu da run; o \"QUEM APARECEU\" é o momento",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7354,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** FECHADA no mesmo bloco — está aqui porque a decisão precisa ficar"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-167#1",
+    "id_historico": "L-167",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-167 — `engine/avanco-bola.mjs` ficou sem chamador",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7397,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-168#1",
+    "id_historico": "L-168",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-168 — os golpes têm de ser LIBERADOS pelo nível",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7418,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta. **É defeito, e não pedido.**"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-169#1",
+    "id_historico": "L-169",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-169 — quatro por wave, e não seis",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7438,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-170#1",
+    "id_historico": "L-170",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-170 — o chefe do estágio vira UM boss, em 1x1, com anúncio",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7457,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta. **É a maior das cinco.**"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-171#1",
+    "id_historico": "L-171",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-171 — a arena tem SPRITE DE EFEITO, e o Avanço não",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7489,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-172#1",
+    "id_historico": "L-172",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-172 — os números de dano se atropelam",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7559,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-173#1",
+    "id_historico": "L-173",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-173 — varrer as ferramentas de plantio por campo DERIVADO escrito à mão",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7613,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-174#1",
+    "id_historico": "L-174",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-174 — o portão de navegador não alcança a TELA DA RUN",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7633,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-175#1",
+    "id_historico": "L-175",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-175 — em 420 px a janela da câmera tem 130 px de mundo",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7665,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-176#1",
+    "id_historico": "L-176",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-176 — o som e o vídeo dos NPCs dão 404 na tela da run",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7698,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-177#1",
+    "id_historico": "L-177",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-177 — o jogador não sabe QUE CLIMAS EXISTEM antes de escolher a equipe",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7723,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-178#1",
+    "id_historico": "L-178",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-178 — o clima não muda o ELENCO da wave, só o que ela rende",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7754,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberta, por decisão."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "L-179#1",
+    "id_historico": "L-179",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "L-179 — o Q2 encostou no teto de tempo do dono, e o número do `CLAUDE.md` mente em 3,5x",
+    "arquivo_original": "LACUNAS.md",
+    "linha_original": 7779,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-001#1",
+    "id_historico": "D-001",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-001 — o caminho rápido do motor perde o vencedor em varredura por tempestade ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 12,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-002#1",
+    "id_historico": "D-002",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-002 — o nome exibido é usado onde se espera o slug, e quebra o resgate de imagem ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 80,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-004#1",
+    "id_historico": "D-004",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-004 — o teste do corte por teto encheu a carteira por um campo morto ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 137,
+    "indicacoes_textuais_historicas": [
+      "**Corrigido em:** F0.9, no commit seguinte"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-005#1",
+    "id_historico": "D-005",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-005 — o teste do relógio dependia da velocidade da máquina ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 187,
+    "indicacoes_textuais_historicas": [
+      "**Corrigido em:** F0.11"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-006#1",
+    "id_historico": "D-006",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-006 — a barra de XP do treinador novo é negativa ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 230,
+    "indicacoes_textuais_historicas": [
+      "**Corrigido em:** porte da v1.0"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-003#1",
+    "id_historico": "D-003",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-003 — o corte duro de tempo é suave ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 288,
+    "indicacoes_textuais_historicas": [
+      "**Corrigido em:** F0.6",
+      "**Dono:** F0.6 (é o bloco que reexamina a distribuição de duração)"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-007#1",
+    "id_historico": "D-007",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-007 — os desafios diários emitem 6,5× o orçamento agregado ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 364,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-008#1",
+    "id_historico": "D-008",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-008 — a aposta era contada a cada clique, não no fecho da janela ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 460,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-009#1",
+    "id_historico": "D-009",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-009 — três dos dezesseis avatares de treinador nunca existiram ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 485,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-010#1",
+    "id_historico": "D-010",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-010 — um componente inteiro cabe sob o limite da linha de base visual ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 512,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-011#1",
+    "id_historico": "D-011",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-011 — a tela diz 20.000 simulações; o motor roda 154.000 ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 615,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-012#1",
+    "id_historico": "D-012",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-012 — a tela de resultado comemorava retorno igual ou menor que a aposta ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 679,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-013#1",
+    "id_historico": "D-013",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-013 — o teste do cooldown comparava a constante consigo mesma ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 726,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-014#1",
+    "id_historico": "D-014",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-014 — nada exercitava o caminho do settlement até o limite de perda ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 760,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-015#1",
+    "id_historico": "D-015",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-015 — a passada estreita da sabotagem dava PEGOU falso a todo defeito de navegador ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 788,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-016#1",
+    "id_historico": "D-016",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-016 — duas sondas de navegador mediam o relógio, e não o produto ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 877,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-017#1",
+    "id_historico": "D-017",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-017 — `npm run rapido` cobre 21 suítes das 35 que não precisam de navegador ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 952,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-018#1",
+    "id_historico": "D-018",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-018 — a raiz da rodada cabia num brute force ✅ CORRIGIDO no F1.15",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1003,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-019#1",
+    "id_historico": "D-019",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-019 — o servidor de produção importa um arquivo de `test/` ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1137,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-020#1",
+    "id_historico": "D-020",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-020 — valor ilegível de limite virava PEDIDO DE REMOÇÃO ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1190,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-021#1",
+    "id_historico": "D-021",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-021 — testes apostavam valor fixo contra uma rodada de raiz aleatória ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1247,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-022#1",
+    "id_historico": "D-022",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-022 — a sonda `sem-rede` espera o Monte Carlo e o teto media a máquina ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1303,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-023#1",
+    "id_historico": "D-023",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-023 — sete Chromiums ao mesmo tempo, e o portão parou de terminar ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1358,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-024#1",
+    "id_historico": "D-024",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-024 — versionar `assets/` derrubou o portão antes do primeiro defeito ✅ CORRIGIDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1422,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-028#1",
+    "id_historico": "D-028",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-028 — o cartão `SEU LUTADOR` não tinha CSS nenhum",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1464,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CORRIGIDO por remoção."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-029#1",
+    "id_historico": "D-029",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-029 — o portão de fechamento não passa: ele proíbe o que a própria suíte testa",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1514,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** **CORRIGIDO** no R12."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-030#1",
+    "id_historico": "D-030",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-030 — clone limpo não sobe: o SQLite não cria o diretório do banco",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1594,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CORRIGIDO em 29/08/2026. Ver \"A correção, medida num clone de"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-031#1",
+    "id_historico": "D-031",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-031 — o backend escuta só em `127.0.0.1`, e nenhum ajuste de firewall muda isso",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1666,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** ABERTO, e é decisão de produto/segurança, não conserto mecânico."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-032#1",
+    "id_historico": "D-032",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-032 — `semTexto` perde a sincronia em literal de expressão regular com aspas",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1712,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** ABERTO. Contornado no R20 evitando o literal, não corrigido."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-033#1",
+    "id_historico": "D-033",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-033 — a linha de base visual fotografa GIF animado, e por isso depende do relógio",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1767,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CORRIGIDO em 24/08/2026."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-034#1",
+    "id_historico": "D-034",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-034 — o §4.7 inteiro está construído e nunca é chamado",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1842,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** ABERTO ao ser achado."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-035#1",
+    "id_historico": "D-035",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-035 — a semana do §28.8 era `NaN-WNaN`, e o resgate virou um por conta",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1914,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CORRIGIDO."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-036#1",
+    "id_historico": "D-036",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-036 — o portão Q2 abandona as caixas de areia quando aborta",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 1987,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CORRIGIDO em 29/08/2026. Ver \"A correção, e o vazamento que a ficha"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-037#1",
+    "id_historico": "D-037",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-037 — as fontes do tema nunca carregaram: a folha é servida como binário",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 2089,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** ABERTO ao ser achado."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-038#1",
+    "id_historico": "D-038",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-038 — a música de batalha pede um arquivo que não existe",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 2194,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** ABERTO. Sem relação com o R26 — achado de passagem."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-039#1",
+    "id_historico": "D-039",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-039 — a caixa de areia do Q2 julgava contra uma linha de base velha",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 2232,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** ABERTO ao ser achado."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-040#1",
+    "id_historico": "D-040",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-040 — o portão Q2 aborta por variação na região do banner",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 2296,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** RESOLVIDO. Eram **três causas em camadas**, e cada uma escondia a"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-041#1",
+    "id_historico": "D-041",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-041 — a varredura das cenas ignorava movimento reduzido",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 2365,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-042#1",
+    "id_historico": "D-042",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-042 — movimento reduzido apagava todo aviso da arena",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 2453,
+    "indicacoes_textuais_historicas": [
+      "**Corrigido em:** R32. **Bloco dono:** R32."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-043#1",
+    "id_historico": "D-043",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-043 — o painel do protótipo continua sendo desenhado para o vazio",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 2534,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-044#1",
+    "id_historico": "D-044",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-044 — um teste de aposta depende da odd sorteada, e reprova sozinho",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 2588,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CORRIGIDO em 29/08/2026. Ver \"A correção, e o que a medição mudou"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-045#1",
+    "id_historico": "D-045",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-045 — a progressão do F1.10 está inteira no servidor, e o app nunca a chama",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 2679,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-046#1",
+    "id_historico": "D-046",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-046 — o portão de módulos é cego a símbolo usado só dentro de template literal",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 2809,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-047#1",
+    "id_historico": "D-047",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-047 — o modo servidor não tem caminho até o navegador",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 2913,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** ABERTO."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-048#1",
+    "id_historico": "D-048",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-048 — o teste do perfil de leitura se declarava determinístico e não era",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 2969,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CORRIGIDO em 29/08/2026."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-049#1",
+    "id_historico": "D-049",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-049 — o `--tocados` perde o arquivo que foi RENOMEADO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 3032,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** registrado, **não corrigido** — está fora do escopo do 1.1."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-050#1",
+    "id_historico": "D-050",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-050 — o portão saiu INSTÁVEL uma vez, e não reproduziu",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 3089,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** registrado, **causa não confirmada**. Um candidato foi endurecido."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-051#1",
+    "id_historico": "D-051",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-051 — o pack original tinha UMA espécie comum, e a suíte inteira estava verde",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 3218,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-053#1",
+    "id_historico": "D-053",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-053 — o conferidor de módulos lê `let a = 1, b = 2` como símbolo global",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 3295,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-054#1",
+    "id_historico": "D-054",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-054 — a chave de cor da aba de rotas apagava o contorno de todo outfit",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 3349,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-055#1",
+    "id_historico": "D-055",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-055 — a vara de pescar colava duas vistas numa célula só",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 3395,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-056#1",
+    "id_historico": "D-056",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-056 — a base visual local ficou anterior ao botão ROTAS no menu",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 3433,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-057#1",
+    "id_historico": "D-057",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-057 — a classe `.vivo` colidiu com o letrado da marca, e o logo cobriu o título",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 3504,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-058#1",
+    "id_historico": "D-058",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-058 — o alargamento do painel da rota nunca chegou a valer",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 3567,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-052#1",
+    "id_historico": "D-052",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-052 — o teto diário conta EXPEDIÇÕES, e devia contar ENCONTROS",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 3613,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-059#1",
+    "id_historico": "D-059",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-059 — `--sem-navegador` sobe os cinco Chromium e joga o resultado fora",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 3707,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-060#1",
+    "id_historico": "D-060",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-060 — `sala-cliente` falha com `fetch failed`, raramente, e aborta o Q2",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 3802,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-067#1",
+    "id_historico": "D-067",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-067 — a tela recusa a expedição pelo teto e esconde o número que explica",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 3895,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-068#1",
+    "id_historico": "D-068",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-068 — `loading=\"lazy\"` nas notas da aposta: a ficha pode aparecer vazia",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 3953,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CORRIGIDO."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-069#1",
+    "id_historico": "D-069",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-069 — o portão visual espera para sempre por uma imagem pendente",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 3990,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-070#1",
+    "id_historico": "D-070",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-070 — a afirmação da janela de 24 h era satisfeita pela STAMINA",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4056,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-071#1",
+    "id_historico": "D-071",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-071 — o título e a legenda da seção colidem a 420 px",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4113,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-072#1",
+    "id_historico": "D-072",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-072 — o número de vagas simultâneas era lido do `localStorage`",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4171,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CORRIGIDO."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-073#1",
+    "id_historico": "D-073",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-073 — o viés do Vigia é comido pelo teto, e o foco fica só com o custo",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4222,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-074#1",
+    "id_historico": "D-074",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-074 — um símbolo que eu inventei derrubou a aba de Rotas com a suíte VERDE",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4271,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-075#1",
+    "id_historico": "D-075",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-075 — a Pokédex desenhava `007 ? ???` com a Pokébola de \"capturada\" ao lado",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4397,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-076#1",
+    "id_historico": "D-076",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-076 — \"menos movimento\" apagava a cena da captura inteira",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4447,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-077#1",
+    "id_historico": "D-077",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-077 — a suíte `rotas` falhou UMA vez com `fetch failed`, e não reproduziu",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4522,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberto, **sem reprodução**. **Bloco dono:** T7 (estabilidade do arnês)."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-078#1",
+    "id_historico": "D-078",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-078 — a linha de base visual da ARENA é INSTÁVEL no estreito, e ela aborta o Q2",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4564,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-079#1",
+    "id_historico": "D-079",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-079 — a tela do Avanço pedia sete cores que a paleta não tem",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4635,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CORRIGIDO."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-080#1",
+    "id_historico": "D-080",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-080 — um teste de limites afirmava o que PEDIU, e não o que conseguiu",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4701,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-081#1",
+    "id_historico": "D-081",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-081 — as placas da cena empilham, e a leitura vira mingau",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4746,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CORRIGIDO no mesmo bloco — `separarPlacas`, medido de 1 par"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-082#1",
+    "id_historico": "D-082",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-082 — o rodapé do banner passa por baixo do Pokémon de vitrine",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4784,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** aberto."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-083#1",
+    "id_historico": "D-083",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-083 — o número do dano nascia no canto, e não sobre o lutador",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4807,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CORRIGIDO no mesmo bloco."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-084#1",
+    "id_historico": "D-084",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-084 — o duelo virou um soco só, e o \"-31\" nunca teve como aparecer",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4846,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CORRIGIDO no mesmo bloco."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-085#1",
+    "id_historico": "D-085",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-085 — apertar uma constante apagou o que um teste enxergava",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4880,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CORRIGIDO no mesmo bloco."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-086#1",
+    "id_historico": "D-086",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-086 — `sala-cliente` é INSTÁVEL, e instável é pior que vermelho",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4905,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-087#1",
+    "id_historico": "D-087",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-087 — a ferramenta de OLHAR inventava a raridade, e eu usei a foto como prova",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4941,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-088#1",
+    "id_historico": "D-088",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-088 — `pintarPrevia` chamava um `escrever` que não é dela",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 4989,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-089#1",
+    "id_historico": "D-089",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-089 — a cena inteira morreu, e a suíte ficou VERDE",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 5028,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-090#1",
+    "id_historico": "D-090",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-090 — o baixador de arte só cobria o elenco da ARENA",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 5081,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-091#1",
+    "id_historico": "D-091",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-091 — a escolha da folha perguntava à TABELA, e a tabela não sabe o que existe",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 5149,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** CORRIGIDO."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-092#1",
+    "id_historico": "D-092",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-092 — o estouro era posto em coordenada de TELA e pintado num canvas de MUNDO",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 5199,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-093#1",
+    "id_historico": "D-093",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-093 — a linha de base visual LOCAL é invisível ao git, e envelhece calada",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 5254,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** a deriva foi regravada; **a causa de fundo continua aberta.**"
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-094#1",
+    "id_historico": "D-094",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-094 — um script de reversão duplicou 3 725 linhas do `app/index.html`",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 5355,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-095#1",
+    "id_historico": "D-095",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-095 — os `tools/` calculam a raiz por um idioma que só existe no Windows",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 5434,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-096#1",
+    "id_historico": "D-096",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-096 — a passada ESTREITA do Q2 escrevia a linha de base que ela deveria só consultar",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 5508,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-097#1",
+    "id_historico": "D-097",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-097 — o portão reprova a si mesmo: quatro navegadores em quatro núcleos",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 5585,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-098#1",
+    "id_historico": "D-098",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-098 — o booleano do navegador era grosso demais, e subia sete sondas para ler uma",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 5664,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-099#1",
+    "id_historico": "D-099",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-099 — a tela da arena não reproduz ✅ RESOLVIDO, e a resolução é uma DESISTÊNCIA MEDIDA",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 5749,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-100#1",
+    "id_historico": "D-100",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-100 — o portão afoga a máquina e lê o afogamento como captura",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 5865,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-101#1",
+    "id_historico": "D-101",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-101 — o portão era dependência de si mesmo, e consertá-lo custava o portão inteiro",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 5938,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-103#1",
+    "id_historico": "D-103",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-103 — as guardas do S109 eram decorativas, e o portão provou",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 6029,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-104#1",
+    "id_historico": "D-104",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-104 — a digital de pixel fazia o trabalho de cinco asserções que ninguém escreveu",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 6096,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-105#1",
+    "id_historico": "D-105",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-105 — o `modulos` não entende literal de expressão regular, e a âncora `$` vira \"usa sem importar\"",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 6174,
+    "indicacoes_textuais_historicas": [
+      "**Estado:** REGISTRADO, não corrigido — está fora do escopo do 1.27f."
+    ],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  },
+  {
+    "registro": "D-106#1",
+    "id_historico": "D-106",
+    "ocorrencia": 1,
+    "id_duplicado": false,
+    "titulo_historico": "D-106 — a exclusão do `ARNES` não vale para quem tem fecho `TUDO`",
+    "arquivo_original": "DEFEITOS.md",
+    "linha_original": 6246,
+    "indicacoes_textuais_historicas": [],
+    "estado_na_revisao": "historico_a_reconciliar_no_checkout",
+    "destino_triagem": "ROADMAP.md / BASE-01"
+  }
+]
