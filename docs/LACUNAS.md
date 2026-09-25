@@ -8291,3 +8291,19 @@ posto do companheiro deixa o bando (que luta ABAIXO dele) a ~100 px do centro;
 o foco precisaria descer para o meio entre o companheiro e o bando. **O que a
 destrava:** a esteira medir com mais amostras em luta (não na investida) e,
 confirmado, o `focoDaCamera` mirar o centro da luta inteira.
+
+### L-189 — a tela nunca criou uma conta real
+
+**Registrada em:** 25/09/2026, ao preparar o piloto (ST-7.2a). **Bloco dono:**
+**ST-7.2b**. **Estado:** aberto.
+
+O modal "Criar treinador / Entrar" é a fachada LOCAL — ele ainda diz *"Não
+existe servidor ainda: o treinador é salvo só neste navegador"*. Nenhum
+módulo do `app/` chama `/api/auth/cadastrar` ou `/api/auth/entrar` (conferido
+com `grep` em 25/09). O token `ar_sessao` só existia nos testes, que o gravam
+à mão. Consequência: tudo que foi construído com conta real — carteira no
+servidor, aposta, posse de cosmético (E4), telemetria (ST-7.1a), Sair que
+revoga (ST-1.2b) — funciona e está testado, mas nenhum jogador chegava lá
+pelo navegador. **O que a destrava:** a ST-7.2a (um endereço, fechada) e o
+modal falando com o servidor quando ele está no ar.
+

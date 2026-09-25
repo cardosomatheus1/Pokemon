@@ -261,6 +261,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **ST-7.2a** · um endereço: o servidor serve o jogo e a API | 25/09 | por lista (app, arte, assets, content, engine, o contrato) — `dados/` nunca sai · CSP própria da página · aberto no Chromium pelo backend: 0 erro, 0 bloqueio de CSP · S1172–S1178 |
 | **L-187** · a luta sai da borda do mundo | 25/09 | a borda segurava a câmera (35 px de folga a 420 px) · pé do mob 97% → 69% · S1169–S1171 · captura `tools/previas/_idle/run-estreito.png` |
 | **ST-7.1b** · a cópia do banco, conferida e restaurada | 25/09 | cópia adulterada é recusada antes de tocar o destino · esquema antigo sobe · S1164–S1168 |
 | **ST-7.1a** · a telemetria mínima do piloto (OBS-01) | 25/09 | reenviar não duplica (índice único) · o cliente só relata o que só ele sabe · retenção D1/D7 por coorte no painel · S1151–S1163 |
@@ -295,6 +296,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | 4 | ~~**ST-3.6**~~ ✅ 25/09 · a emissão do Avanço decresce por run no mesmo dia | L-185 (DEC-14) | integridade de economia antes de enfeite |
 | 5 | **1.27g · UX-01** (resto) + o bloco do CENÁRIO · ~~ST-5.6~~ ✅, ~~ST-2.4~~ ✅, ~~D-110~~ ✅, 5.8 | L-175 ✅ (DEC-15), L-184 ✅, L-187 ✅, L-188 (o panorâmico), D-086 (não reproduzido) — o jato (L-186, ST-5.5b) fechou; o banner (D-082), o `est:` cru (L-160), a base visual (D-093), os números de dano (L-172, ST-5.4) e a carga e o projétil (L-171, ST-5.5) fecharam; os 404 (L-176) esperam o dono commitar os dois arquivos | o que impede ENTENDER a ação vem antes do que a enfeita |
 | 5b | ~~**ST-7.1**~~ ✅ 25/09 · telemetria mínima e restauração | a (eventos, retenção D1/D7) e b (`node tools/banco-copia.mjs copiar / conferir / restaurar`) | antecipada: o piloto (ST-7.2) só mede o que já estiver sendo gravado quando ele começar |
+| 5c | **ST-7.2** · o piloto com amigos, destravado pela DEC-01 — a ✅ (um endereço), **b** (conta real na tela), **c** (relatório e roteiro), e o piloto em si (o dono, com 5–10 amigos, 14 dias) | a ST-7.2a achou que a tela NUNCA criou conta real (L-189): sem a b, cada amigo jogaria no próprio navegador e o servidor não mediria nada | o piloto só mede o que a tela de fato manda |
 | 6 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
 | — | **E6** · higiene documental | ST-6.1 a 6.4 | não é código: corre em paralelo, um commit por story |
 | — | ~~**ST-0.6**~~ ✅ 25/09 · CI no GitHub | `npm test` a cada push (DEC-13: o Q2 noturno não) | — |
@@ -319,7 +321,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | ✅ **DEC-05** | Vulcão: **não inventar raro para cumprir cota** | identidade do bioma vale mais que simetria de tabela | E8 |
 | ✅ **DEC-06** | outfits: **pausa mantida**; vender só com catálogo, posse no servidor (E4) e arte completos | vender o que não se possui no servidor é o D-108 | depois do E4 |
 | ✅ DEC-08 · 09 · 10 · 12 | aplicadas em 25/09 (captura mostrada · stamina por wave · Brasília · Q2 do bloco adia) | ver o PLANO | — |
-| ⏸️ **DEC-01** | tema e direitos da franquia | **do dono + assessoria de IP** — não se desfaz com commit | distribuição/comercialização |
+| ✅ **DEC-01** (fase privada) | **decidido pelo dono em 25/09:** *"Os direitos não importam agora, pode ignorar por hora, pode continuar, eu tenho permissão pra isso"* — direitos não travam o desenvolvimento nem o piloto privado com amigos | o build é privado (regra de `assets/` do `CLAUDE.md`); **o que continua travado não muda:** publicar/comercializar com arte de terceiros (§0.3.1), e o `test/saida-v09.mjs` segue recusando a tag enquanto `ARTE_EMPRESTADA_DE` estiver preenchida | ST-7.2 (o piloto) |
 | ⏸️ **DEC-02** | RMT | **do dono + jurídico + pagamentos** | qualquer dinheiro real |
 | ⏸️ **L-176** | commitar `assets/npc/lojas.mp4` e `battle-theme.mp3` do PC dele | só existem lá; a regra do resgate proíbe trocar por outro arquivo | ST-5.1 |
 

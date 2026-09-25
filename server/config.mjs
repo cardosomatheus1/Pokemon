@@ -63,5 +63,9 @@ export function lerConfig(env = process.env, avisar = console.warn) {
     /* `|| 8080` engoliria `PORTA=0`, que é pedido legítimo de porta efêmera —
        e é justamente o que um orquestrador manda quando ele escolhe a porta. */
     porta: env.PORTA === undefined || env.PORTA === '' ? 8080 : Number(env.PORTA),
+    /* O JOGO NO MESMO ENDEREÇO (ST-7.2a). Ligado por padrão: é o que torna o
+       modo com conta real alcançável por um navegador. `SERVIR_JOGO=0` volta ao
+       servidor só de API, para quem servir o jogo por uma CDN à frente. */
+    servirJogo: env.SERVIR_JOGO !== '0',
   };
 }

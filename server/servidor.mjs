@@ -12,6 +12,7 @@
  * derrubar instâncias em porta efêmera, várias em paralelo, sem estado global —
  * e portão que não roda em paralelo desperdiça o que o T3 comprou.
  */
+import { servirJogo } from './estatico.mjs';
 import { createServer } from 'node:http';
 import { API_VERSAO, CABECALHO_VERSAO, ERROS, SEM_VERSAO, versaoAceita } from './contrato.mjs';
 import { lerConfig } from './config.mjs';
@@ -140,6 +141,12 @@ export function criarServidor(opcoes = {}) {
 
       aplicarCors(req, res, config);
       if (req.method === 'OPTIONS') return responder(res, 204, null);
+
+      /* O JOGO (ST-7.2a): tudo que não é `/api/` é arquivo, por lista — ver
+         `estatico.mjs`. Antes da versão e da sessão porque a página não tem
+         como mandar cabeçalho de versão para se pedir a si mesma. */
+      if (config.servirJogo && !caminho.startsWith('/api/') && !SEM_VERSAO.includes(caminho)
+          && servirJogo(req, res, caminho)) return;
 
       /* O CONTRATO É CONFERIDO ANTES DA ROTA. Se a versão fosse conferida
          dentro de cada rota, a rota nova nasceria sem a conferência — é a

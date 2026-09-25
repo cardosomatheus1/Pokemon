@@ -36,6 +36,20 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### DEC-01 DECIDIDA PELO DONO — e a ST-7.2a achou o que travava o piloto de verdade
+
+O dono, 25/09: *"Os direitos não importam agora, pode ignorar por hora, pode
+continuar, eu tenho permissão pra isso"*. O piloto privado está destravado; a
+tag pública continua travada pelo `saida-v09` como sempre.
+
+Ao preparar o piloto apareceu o que o travava de verdade (**L-189**): a tela
+NUNCA criou conta real — o modal é a fachada local, e nenhum módulo chama
+`/api/auth`. E ninguém servia jogo e API no mesmo endereço. A **ST-7.2a**
+fechou a segunda metade: `npm run servidor` agora serve o jogo por LISTA
+(`dados/` nunca sai) com CSP própria; aberto no Chromium pelo backend, 0 erro
+e 0 bloqueio. Próximas: **7.2b** (conta real na tela) e **7.2c** (relatório e
+roteiro do piloto).
+
 ### Q2 COMPLETO — 1165/1166, e o que escapou era um teste que morreu sozinho
 
 O primeiro Q2 completo desde o T14 (966 reavaliados, ~2 h 10 min num
