@@ -265,6 +265,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | **T9 · T10 · T13 · T11a** · o arnês | 16/09 | portão de 7 h para 3 min com a árvore intocada |
 | **1.34** · dia, tarde e noite | 25/09 | Q2 1017/1017 · suíte 2184/2184 · capturas em `tools/previas/_hora/` |
 | **1.33** · o elenco muda com a hora e o clima | 25/09 | 18 de 44 estágios mudam à noite · Q2 e suíte no commit · capturas `tools/previas/_hora/sala-*` |
+| **ST-5.2** · o rodapé do banner entre o avatar e o Pokémon (D-082) | 25/09 | a primeira correção caiu sobre o avatar e a FOTO pegou · a ferramenta mede os dois lados · S1084–S1085 |
 | **ST-3.3** · o mapa de emissão por recurso | 25/09 | fixture de medição determinística · achou a L-185 (maratona: 8,7× a Essência calibrada) · S1082–S1083 |
 | **ST-3.4 · ST-3.5** · DEC-08 travada por teste; o custo da nova tentativa antes de entrar | 25/09 | as duas decisões aplicadas como padrão (recomendação = código) · S1079–S1081 |
 | **ST-3.2** · duas abas não colhem a mesma coisa duas vezes | 25/09 | save com revisão (otimista) + evento `storage` · S1072–S1076 |
@@ -287,7 +288,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | 1 | ~~**1.32b (resto)** · ST-2.3~~ | ✅ fechada em 25/09 — a noite muda 7·8·3·3 rotas | — | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto. A prévia da NOITE já está na sala desde o 1.33 |
 | 2 | ~~**INT-01**~~ | ✅ fechado em 25/09 (ST-1.1, 3.1 a 3.5). Sobra a **ST-3.6** (calibrar a emissão), que espera a **DEC-14** | — | integridade de economia vem antes de calibrar quantidade |
 | 3 | **INT-02** · uma posse confiável | cosméticos e outfit entre dispositivos (L-157, L-055) | compra e equipar não podem depender do navegador |
-| 4 | **1.27g · UX-01** · efeitos e leitura da luta | L-171, L-172, L-175, L-176 | o que impede ENTENDER a ação vem antes do que a enfeita |
+| 4 | **1.27g · UX-01** (resto) · ST-5.4 a 5.8 | L-172, L-171, L-175, D-093, D-086 — o banner (D-082) e o `est:` cru (L-160) fecharam; os 404 (L-176) esperam o dono commitar os dois arquivos | o que impede ENTENDER a ação vem antes do que a enfeita |
 | 5 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
 | — | **E6** · higiene documental | ST-6.1 a 6.4 | não é código: corre em paralelo, um commit por story |
 | — | **ST-0.6** · CI no GitHub | `npm test` a cada push; Q2 fatiado à noite | espera a **DEC-13** |
@@ -298,6 +299,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | id | a pergunta | o que depende dela |
 |---|---|---|
 | **DEC-11** | manter os 154.000 sims? O argumento dos 19% caiu (L-182) | custo de servidor; nos testes é só 30% das sondas de navegador (medido, ST-0.8) — decide-se pela economia |
+| **L-176** | commitar `assets/npc/lojas.mp4` e `battle-theme.mp3` do seu PC (só existem aí) | ST-5.1 — a regra do resgate proíbe trocar por outro arquivo |
 | **DEC-14** | a emissão do Avanço (L-185): teto por recurso, rendimento decrescente, ou recalibrar o Estilhaço? | ST-3.6 · recomendação: rendimento decrescente por run no mesmo dia |
 | **DEC-13** | CI no GitHub Actions? | ST-0.6 — minutos de Actions num repositório privado |
 | ✅ DEC-12 | ~~o Q2 do bloco pode adiar o que só mudou de fecho?~~ **adotada** pelo pedido do dono de 25/09 ("minutos"); o preço está na ST-0.4 | o `portoes` |
@@ -342,7 +344,7 @@ Todos com dono nomeado, todos em `docs/LACUNAS.md`.
 | ~~D-107~~ | o teto de encontros volta cheio depois de colher a run | ✅ ST-1.1, 25/09 |
 | D-108 | com conta real, o cosmético da boutique sai de graça | 🟡 mitigado na ST-1.3 (não vende); o conserto é o E4 |
 | ~~D-109~~ | o ⏻ não desloga a conta real | ✅ ST-1.2, 25/09 |
-| **D-082** | o rodapé do banner passa por baixo do mon da vitrine na tela da run | aberto |
+| ~~D-082~~ | o rodapé do banner passa por baixo do mon da vitrine na tela da run | ✅ ST-5.2, 25/09 |
 | **D-086** | `sala-cliente` é INSTÁVEL — vermelho uma vez, verde na seguinte | aberto |
 | **D-093** | a linha de base visual LOCAL é invisível ao git e envelhece calada. Um clone novo não a tem, e a suíte passa **sem comparar nada** | a deriva foi regravada; a causa de fundo segue aberta |
 

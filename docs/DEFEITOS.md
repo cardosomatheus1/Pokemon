@@ -4781,10 +4781,19 @@ existe no mesmo lugar que desenha.
 
 ---
 
-## D-082 — o rodapé do banner passa por baixo do Pokémon de vitrine
+## D-082 — o rodapé do banner passa por baixo do Pokémon de vitrine ✅ CORRIGIDO
 
 **Achado em:** 09/09/2026, na mesma foto. **Bloco dono:** o do banner (trilha R).
-**Estado:** aberto.
+**Estado:** ✅ **CORRIGIDO em 25/09/2026, na ST-5.2.**
+
+> **O conserto, e o que a foto pegou no meio dele.** Com Pokémon no canto, o
+> rodapé ganha `comMon` e fica ENTRE o avatar (66 px a 9 px) e a arte (104 px a
+> 6 px): `left:84px; right:114px`. A primeira versão só reservou a direita — o
+> texto quebrou e foi parar em cima do avatar, e nenhum teste via isso; a foto
+> viu. A frase longa saía em três linhas espremidas; com menos espaçamento e
+> corpo .52rem, fica em duas. O `tools/olhar-climas.mjs` passou a MEDIR a
+> interseção com os dois, em 1920, 1440, 768 e 420, e reprova sozinho (sabotado:
+> acusa 43 px no Pokémon, 65 px no avatar). S1084–S1085.
 
 `.bnRodape` é uma faixa de largura inteira com texto centralizado; `.bnMon.vitrine`
 é uma arte de 104 px ancorada em `right:6px; bottom:14px`. Os dois ocupam o mesmo

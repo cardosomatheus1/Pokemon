@@ -413,8 +413,8 @@ Todas mexem em tela: Q5 com as duas metades, decisão em camada 0.
 
 | story | porte | aceite verificável |
 |---|---|---|
-| **ST-5.1** · zero 404 na abertura (L-176) | P | a abertura da run e da loja faz **0** pedidos 404, contados por nome na esteira. Saída: versionar `battle-theme.mp3` e `lojas.mp4` **da mesma fonte** (regra do resgate), ou tirar a referência — nunca trocar por outro arquivo |
-| **ST-5.2** · o banner não passa sob o mon (D-082) | P | com vitrine, o retângulo do texto do `.bnRodape` não cruza o do `.bnMon.vitrine` em 420, 768 e 1920, inclusive com "Nenhuma expedição em campo" |
+| **ST-5.1** ⏸️ espera o dono · zero 404 na abertura (L-176) — os dois arquivos existem só no PC dele (`assets/npc/lojas.mp4`, `battle-theme.mp3`); commitá-los de lá é a correção, e a regra do resgate proíbe substituí-los | P | a abertura da run e da loja faz **0** pedidos 404, contados por nome na esteira. Saída: versionar `battle-theme.mp3` e `lojas.mp4` **da mesma fonte** (regra do resgate), ou tirar a referência — nunca trocar por outro arquivo |
+| ~~**ST-5.2**~~ ✅ 25/09 · o banner não passa sob o mon (D-082) | P | com vitrine, o retângulo do texto do `.bnRodape` não cruza o do `.bnMon.vitrine` em 420, 768 e 1920, inclusive com "Nenhuma expedição em campo" |
 | ~~**ST-5.3**~~ ✅ 25/09, dentro da ST-3.1 · `est:` nunca aparece cru (L-160) | P | toda chave `est:<id>` tem nome e ícone; o teste varre o que a mochila e a loja pintam |
 | **ST-5.4** · números de dano não se tocam (L-172) | M | a sonda imprime os pares; meta **0** pares sobrepostos em 420 px em 3 execuções, 0 fora da janela |
 | **ST-5.5** · cast e projétil (L-171) | M | golpe com `cast`/`proj` no `MOVE_FX` produz folha no atacante e projétil do atacante ao alvo; a cena publica o par; o teste puro confere início e fim da trajetória |

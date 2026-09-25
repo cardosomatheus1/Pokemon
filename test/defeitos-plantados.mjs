@@ -2308,6 +2308,16 @@ export const DEFEITOS = [
     de:'  const partes = Math.min(PARTES - 1, Math.max(1, Math.floor(estagio)));',
     para:'  const partes = Math.min(PARTES - 1, Math.max(1, Math.floor(estagio) + 1));' },
 
+  /* ── ST-5.2 · D-082: O RODAPÉ DO BANNER NÃO CRUZA O POKÉMON ────────── */
+  { id:'S1084', arquivo:'app/modules/banner.mjs', nome:'o rodape do idle esquece a reserva do Pokemon',
+    real:'"NENHUMA EXPEDICAO EM CAMPO" volta a atravessar o bicho — o D-082',
+    de:"    `${avatar}<div class=\"bnRodape${esp ? ' comMon' : ''}\">${rodapeIdle(situacao)}</div>`;",
+    para:"    `${avatar}<div class=\"bnRodape\">${rodapeIdle(situacao)}</div>`;" },
+  { id:'S1085', arquivo:'app/index.html', nome:'o rodape com Pokemon so reserva a direita',
+    real:'o texto estreitado quebra e cai em cima do avatar — foi a primeira correcao do D-082',
+    de:'.bnRodape.comMon{left:84px;right:114px}',
+    para:'.bnRodape.comMon{right:114px}' },
+
   { id:'S1043', arquivo:'test/bandeiras.mjs', nome:'as caras passam a ser entregues por ultimo',
     real:'a fila termina quando a ultima termina: a mais cara no fim deixa tres trabalhadores ociosos',
     de:'    ((custo[b] ?? 0) - (custo[a] ?? 0)) || (pos.get(a) - pos.get(b)));',

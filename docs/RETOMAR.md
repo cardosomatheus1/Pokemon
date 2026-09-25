@@ -36,6 +36,16 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### ST-5.2 FECHADA — o banner não passa por cima do Pokémon (D-082)
+
+O rodapé com Pokémon no canto passou a ficar ENTRE o avatar e a arte. **A foto
+pegou o que nenhum teste pegaria:** a primeira correção só reservou a direita,
+e o texto quebrou em três linhas e caiu sobre o avatar. Agora são duas linhas
+entre os dois, e a ferramenta mede a interseção com os dois lados em quatro
+larguras (sabotada: ela acusa). **A ST-5.1 (os 404) espera você:** os arquivos
+`assets/npc/lojas.mp4` e `battle-theme.mp3` só existem no seu PC — commitá-los
+de lá é a correção.
+
 ### ST-3.3 FECHADA — o mapa de emissão, e ele achou a L-185
 
 `test/emissao-idle.mjs` mede, pelo motor, o que três perfis tiram por dia em

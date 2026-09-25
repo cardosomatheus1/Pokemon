@@ -3102,6 +3102,16 @@ td.od{text-shadow:0 0 8px rgba(var(--goldRGB),.6)}
   font-size:.62rem;color:#cfd6e6;text-align:center;
   background:linear-gradient(180deg,transparent,rgba(6,9,15,.92))}
 .bnRodape b{color:var(--gold)}
+/* D-082 · COM POKÉMON NO CANTO, O RODAPÉ FICA ENTRE O AVATAR E ELE. A arte tem
+   104 px a 6 px da borda (114 deixa ar); o avatar, 66 px a 9 px (84). Era faixa
+   inteira, e "NENHUMA EXPEDIÇÃO EM CAMPO" atravessava a vitrine. A primeira
+   correção só reservou a direita — o texto quebrou em duas linhas e foi parar
+   em cima do avatar. A foto pegou; a medida agora confere os dois lados. */
+.bnRodape.comMon{left:84px;right:114px}
+/* Entre os dois a faixa tem ~160 px na coluna de 1440, e com o espaçamento de
+   letra do selo a frase longa saía em TRÊS linhas espremidas. Menos espaço
+   entre letras, e ela fica em duas. */
+.bnRodape.comMon .bnEstado{letter-spacing:.03em;padding:2px 8px;font-size:.52rem}
 /* A linha da aposta — apostou / se vencer / odd — herdada do cartão
    `SEU LUTADOR`. Ela vai numa segunda linha porque é a resposta a uma pergunta
    diferente da de cima: em cima está COMO SEU LUTADOR ESTÁ, aqui está QUANTO

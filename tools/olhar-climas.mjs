@@ -229,15 +229,40 @@ await pg.reload({ waitUntil: 'load', timeout: 60000 });
 await pg.waitForTimeout(1500);
 await (await pg.$('[data-view="viewIdle"]'))?.click();
 await pg.waitForTimeout(3000);
-for (const largura of [1440, 420]) {
+/* D-082 · O RODAPÉ DO BANNER NÃO CRUZA O POKÉMON — medido por interseção,
+   nas larguras em que o banner muda de forma. */
+for (const largura of [1920, 1440, 768, 420]) {
   await pg.setViewportSize({ width: largura, height: 1200 });
   await pg.waitForTimeout(600);
-  await pg.screenshot({ path: join(SAIDA, `run-${largura}.png`), fullPage: false });
+  const cruz = await pg.evaluate(() => {
+    const fora = [];
+    for (const b of document.querySelectorAll('.bnRodape')) {
+      const box = b.closest('[class*="banner"], .bnBox, div')?.parentElement ?? document;
+      const mon = b.parentElement?.querySelector('.bnMon');
+      const txt = b.querySelector('.bnEstado') ?? b;
+      if (!mon || !b.offsetParent) continue;
+      const r = txt.getBoundingClientRect();
+      /* O POKÉMON E O AVATAR: a primeira correção só olhou um lado, e o texto
+         estreitado foi cair em cima do outro. */
+      for (const [quem, el] of [['Pokémon', mon], ['avatar', b.parentElement?.querySelector('.bnMold')]]) {
+        if (!el) continue;
+        const m = el.getBoundingClientRect();
+        const i = Math.min(r.right, m.right) - Math.max(r.left, m.left);
+        const j = Math.min(r.bottom, m.bottom) - Math.max(r.top, m.top);
+        if (i > 0 && j > 0) fora.push(`${quem} ${Math.round(i)}x${Math.round(j)} px`);
+      }
+    }
+    return fora;
+  });
+  if (cruz.length) erros.push(`D-082 em ${largura}px: rodapé cruza o Pokémon (${cruz.join(', ')})`);
+  console.log(`  banner ${largura}px: ${cruz.length ? 'CRUZA ' + cruz.join(', ') : 'rodapé livre do Pokémon e do avatar'}`);
+  if (largura === 1440 || largura === 420)
+    await pg.screenshot({ path: join(SAIDA, `run-${largura}.png`), fullPage: false });
 }
 
 await b.close();
 srv.close();
 console.log(`legenda: ${itens} climas · linhas de elenco na run: ${linha}` +
             (erros.length ? `\nERROS: ${erros.join(' | ').slice(0, 300)}` : ''));
-if (erros.length) { console.log('REPROVADO: pageerror'); process.exit(1); }
+if (erros.length) { console.log('REPROVADO: erro de página ou medida fora (ver acima)'); process.exit(1); }
 console.log(`capturas em ${SAIDA}`);

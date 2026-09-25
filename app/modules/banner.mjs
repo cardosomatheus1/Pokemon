@@ -256,7 +256,7 @@ function renderBattleBanner(){
        arena pela atenção sem carregar informação nenhuma. */
     ? `${retratoAnimado(meu, 'class="bnMon"', gifShinyAtivo(perfil, meu.dex))}${avatar}<div class="bnRodape">${rodapeDaAposta()}</div>`
     : `${dexImg(vitrineDex, '', 'class="bnMon vitrine"', gifShinyAtivo(perfil, vitrineDex))}${avatar}
-       <div class="bnRodape"><span class="bnEstado">${
+       <div class="bnRodape comMon"><span class="bnEstado">${
          S.state === 'betting' ? 'Escolha um lutador na arena' : 'Assistindo esta rodada'}</span></div>`;
 
   /* ── O CORPO DO MODO IDLE ─────────────────────────────────────────────
@@ -281,7 +281,8 @@ function renderBattleBanner(){
       /* NENHUM escolhido: o quadro fica com a cena, o nome e o nivel, e sem
          Pokemon — que e exatamente o que o jogador pediu ao escolher nenhum. */
       : '') +
-    `${avatar}<div class="bnRodape">${rodapeIdle(situacao)}</div>`;
+    /* D-082: com Pokémon no canto, o rodapé reserva a largura dele. */
+    `${avatar}<div class="bnRodape${esp ? ' comMon' : ''}">${rodapeIdle(situacao)}</div>`;
 
   const htmlDe = box => `
     <div class="bnCena cn-${cena}"></div>

@@ -676,5 +676,29 @@ export function suite() {
         'distância, e valor adulterado tem de cair no padrão como qualquer ' +
         'cosmético inválido — mesma guarda do tema (S70).');
   });
+  /* ══ ST-5.2 · D-082 — O RODAPÉ NÃO PASSA POR BAIXO DO POKÉMON ══════════
+   *
+   * `.bnRodape` era faixa de largura inteira com texto centralizado, e a arte
+   * do Pokémon (104 px, ancorada à direita) ocupava o mesmo canto: "NENHUMA
+   * EXPEDIÇÃO EM CAMPO" atravessava o bicho. Quando há arte no canto, o rodapé
+   * reserva a largura dela. A geometria é conferida no navegador pelo
+   * `tools/olhar-climas.mjs` (interseção medida); aqui fica a ligação. */
+  s.teste('D-082: o rodapé com Pokémon no canto reserva a largura da arte', () => {
+    const css = ler('../app/index.html');
+    const m = /\.bnRodape\.comMon\{[^}]*right:(\d+)px/.exec(css);
+    ok(m, 'não há regra .bnRodape.comMon com `right` — o rodapé volta a passar sob a arte');
+    ok(Number(m[1]) >= 104, `a reserva é de ${m?.[1]} px e a arte tem 104 — o texto ainda cruza o bicho`);
+    const e = /\.bnRodape\.comMon\{[^}]*left:(\d+)px/.exec(css);
+    ok(e && Number(e[1]) >= 75,
+      'o rodapé com Pokémon não reserva a esquerda: estreitado só de um lado, o texto quebra e cai sobre o avatar (66 px a 9 px)');
+  });
+
+  s.teste('D-082: os dois rodapés que têm Pokémon no canto pedem a reserva', () => {
+    const js = ler('../app/modules/banner.mjs');
+    ok(/class="bnMon vitrine"[\s\S]{0,200}class="bnRodape comMon"/.test(js),
+      'o rodapé da vitrine da Arena não reserva a arte');
+    ok(/\$\{esp \? ' comMon' : ''\}/.test(js), 'o rodapé do idle não reserva a arte quando há Pokémon');
+  });
+
   return s;
 }
