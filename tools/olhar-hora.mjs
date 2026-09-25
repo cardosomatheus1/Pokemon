@@ -248,6 +248,49 @@ for (const H of HORAS) {
   const arq = join(SAIDA, `hora-${H.nome}.png`);
   await palco.screenshot({ path: arq });
 
+  /* ── QUEM DORME (ST-2.4) ───────────────────────────────────────────────
+     A foto do palco inteiro pode não ter morador nenhum na janela da câmera —
+     e foto sem o objeto não prova nada. Então a esteira CONTA os moradores
+     visíveis e quantos dormem pela regra da fauna, e recorta o primeiro que
+     dorme, com folga para cima, onde o "Zz" sobe. */
+  const contarSono = () => pg.evaluate(async () => {
+    const { vivos } = await import('/app/modules/vivos.mjs');
+    const { PACK } = await import('/app/modules/motor.mjs');
+    const f = await import('/app/modules/fauna.mjs');
+    const h = await import('/app/modules/hora-do-dia.mjs');
+    const noite = h.periodoEm(h.relogioDoMundo(Date.now())) === 'noite';
+    const vis = [...vivos].filter(([k, v]) => /^h\d+$/.test(k) && v.moldura?.style.display !== 'none')
+      .map(([, v]) => ({ r: v.moldura.getBoundingClientRect(), arq: (v.img?.src ?? '').split('/').pop().replace('.png', '') }))
+      /* VISÍVEL É DENTRO DO PALCO, e não da janela do navegador: a moldura de
+         um morador fora da câmera existe, tem retângulo, e o palco a recorta.
+         A primeira versão contou esse como "visível" e recortou o fundo. */
+      .filter(x => { const p = document.querySelector('#idlePalco')?.getBoundingClientRect();
+                     return p && x.r.width > 0 && x.r.right > p.left && x.r.left < p.right
+                            && x.r.bottom > p.top && x.r.top < p.bottom; });
+    const dormem = vis.filter(x => noite && f.dormeANoite(PACK, f.tiposDoMorador(PACK, x.arq)));
+    const r = dormem[0]?.r;
+    return { visiveis: vis.length, dormem: dormem.length, quem: dormem.map(x => x.arq), noite,
+             todos: vis.map(x => `${x.arq}[${f.tiposDoMorador(PACK, x.arq).join('/')}]`),
+             /* `clip` é em coordenada de PÁGINA; o retângulo é da JANELA — a página
+                rolou até o palco, e sem o `scroll` o recorte pegava o fundo. */
+             recorte: r ? { x: Math.max(0, r.x + scrollX - 40), y: Math.max(0, r.y + scrollY - 60),
+                            width: r.width + 80, height: r.height + 80 } : null };
+  });
+  let sono = await contarSono();
+  /* À noite, se a janela não tem nenhum dorminhoco, AFASTA a câmera até ter —
+     o morador que a noite desfavorece existe no bioma, só não estava no quadro. */
+  for (let i = 0; i < 4 && sono.noite && !sono.dormem; i++) {
+    await pg.click('#idleZoom [data-zoom="-1"]').catch(() => {});
+    await pg.waitForTimeout(500);
+    sono = await contarSono();
+  }
+  if (sono.recorte) await pg.screenshot({ path: join(SAIDA, `sono-${H.nome}.png`), clip: sono.recorte, fullPage: true });
+  if (sono.noite) await palco.screenshot({ path: join(SAIDA, `hora-${H.nome}-afastada.png`) });
+  if (process.env.OLHAR_DEBUG) console.log('   recorte', JSON.stringify(sono.recorte),
+    'palco', JSON.stringify(await palco.boundingBox()));
+  console.log(`  ${H.nome}${sono.noite ? ' (noite)' : ''}: ${sono.visiveis} morador(es) na janela ${sono.todos.join(' ')}, ${sono.dormem} dormindo` +
+    (sono.quem.length ? ` (${sono.quem.join(', ')})` : ''));
+
   /* ── A SALA DE ROTAS NA MESMA HORA (1.33) ─────────────────────────────
      O elenco muda com a noite, e a sala é onde o jogador VÊ isso: a frase da
      régua e a lua nos rostos noturnos. Fotografada em 1440 e em 420 — a

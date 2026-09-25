@@ -104,6 +104,39 @@ const sementeDe = id => [...String(id)].reduce((a, c) => a + c.charCodeAt(0) * 1
  *
  * Devolve coordenadas de MUNDO em pixels, já com os pés na linha de baixo do
  * tile — que é como todo o resto desta cena se posiciona. */
+/* ── A FAUNA SABE QUE É NOITE (ST-2.4, L-184) ─────────────────────────────
+ *
+ * O 1.33 fez a WAVE noturna — os mobs da run que começa de noite são outros.
+ * Os moradores de ENFEITE continuavam os mesmos às 14h e às 2h: o Pidgey
+ * acordado sob a lua, na tela que o jogador deixa aberta por horas.
+ *
+ * A regra é a MESMA tabela do elenco (`preferenciasDaNoite` do pack): quem a
+ * noite desfavorece DORME; quem ela favorece — ou é neutro — segue acordado.
+ * Favorecer vence: o Oddish é planta, mas é veneno, e veneno é da noite. Uma
+ * tabela só é o que impede o cenário de dizer "noite" e a wave dizer "dia".
+ *
+ * Trocar o dorminhoco por um noturno pediria arte que o pack não tem; dormir
+ * pede só um quadro parado e um "Zz" — e o "Zz" é o detalhe que faz a noite
+ * existir no cenário e não só na luz. */
+const normal = s => String(s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+export function tiposDoMorador(pack, arq) {
+  const alvo = normal(String(arq ?? '').replace(/^ow_/, ''));
+  return (pack?.especies ?? []).find(e => normal(e.n) === alvo)?.t ?? [];
+}
+export function dormeANoite(pack, tipos) {
+  const p = pack?.preferenciasDaNoite;
+  if (!p || !tipos?.length) return false;
+  if (tipos.some(t => (p.favorece ?? []).includes(t))) return false;
+  return tipos.some(t => (p.desfavorece ?? []).includes(t));
+}
+/* O "Zz" de quem dorme: sobe devagar e some, em ciclo, com a fase do morador
+   para dois vizinhos não roncarem em coro. `dy` em px de mundo, acima da cabeça. */
+export const ZZ_PERIODO = 2600;
+export function zzDoHabitante(h, t) {
+  const k = (((Number(t) || 0) / ZZ_PERIODO + (h?.fase ?? 0)) % 1 + 1) % 1;
+  return { dy: -k * 7, alfa: k < 0.2 ? k / 0.2 : 1 - (k - 0.2) / 0.8 };
+}
+
 export function povoar(planta, pack, T = 16) {
   const semente = sementeDe(planta.bioma);
   const lista = (pack?.fauna?.[planta.bioma]) ?? [];
@@ -128,7 +161,7 @@ export function povoar(planta, pack, T = 16) {
       const ang = mistura(semente + i * 53, 23) * 2 * Math.PI;
       const r = Math.sqrt(mistura(semente + i * 71, 29)) * LAGO_FOLGA;
       out.push({
-        arq: f.arq, onde: f.onde, qw, qh, boia: true,
+        arq: f.arq, onde: f.onde, qw, qh, boia: true, tipos: tiposDoMorador(pack, f.arq),
         x: l.x + Math.cos(ang) * l.rx * r,
         y: l.y + Math.sin(ang) * l.ry * r,
         fase,
@@ -144,7 +177,7 @@ export function povoar(planta, pack, T = 16) {
        daquela coluna, e não na linha reta que a faixa supôs. */
     const ly = assentar(planta, f.onde, lx, cru);
     out.push({
-      arq: f.arq, onde: f.onde, qw, qh,
+      arq: f.arq, onde: f.onde, qw, qh, tipos: tiposDoMorador(pack, f.arq),
       x: lx * T + qw / 2,          // centro
       y: (ly + 1) * T,             // os PÉS
       fase,
@@ -183,7 +216,8 @@ export function adornar(planta, pack, T = 16) {
    critério de quem se desloca, e nenhum deles se desloca. */
 export const MS_POR_QUADRO = 300;
 
-export function quadroDoHabitante(h, t, quadros) {
-  if (quadros <= 1) return 0;
+export function quadroDoHabitante(h, t, quadros, dormindo = false) {
+  /* Quem dorme não pisca nem bate asa: o quadro de descanso (ST-2.4). */
+  if (dormindo || quadros <= 1) return 0;
   return Math.floor(t / MS_POR_QUADRO + h.fase * quadros) % quadros;
 }

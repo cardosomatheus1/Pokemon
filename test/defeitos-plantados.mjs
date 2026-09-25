@@ -7627,6 +7627,28 @@ export const DEFEITOS = [
     de:'    const usa = Math.min(falta, Math.max(0, d[b] ?? 0));',
     para:'    const usa = falta;' },
 
+  /* ── ST-2.4 · a fauna sabe que é noite (L-184) ──────────────────────── */
+  { id:'S1139', arquivo:'app/modules/fauna.mjs', nome:'o morador da noite dorme porque tambem e de um tipo do dia',
+    real:'o Oddish (planta e veneno) dorme — a fauna e o elenco discordam sobre quem e da noite',
+    de:'  if (tipos.some(t => (p.favorece ?? []).includes(t))) return false;\n', para:'' },
+  { id:'S1140', arquivo:'app/modules/fauna.mjs', nome:'o morador de terra nasce sem tipo',
+    real:'so quem mora no lago dorme; o resto da fauna fica acordado sob a lua',
+    de:"      arq: f.arq, onde: f.onde, qw, qh, tipos: tiposDoMorador(pack, f.arq),\n      x: lx",
+    para:"      arq: f.arq, onde: f.onde, qw, qh,\n      x: lx" },
+  { id:'S1141', arquivo:'app/modules/fauna.mjs', nome:'quem dorme continua piscando',
+    real:'o Zz sobe sobre um bicho batendo asa — o sono nao se le',
+    de:'  if (dormindo || quadros <= 1) return 0;', para:'  if (quadros <= 1) return 0;' },
+  { id:'S1142', arquivo:'app/modules/idle-mundo.mjs', nome:'a noite da fauna le o relogio de Greenwich',
+    real:'no Brasil a fauna dorme tres horas antes da noite da luz',
+    de:"desenharHabitantes(g, alvo, escala, t, eu.y, periodoEm(agoraDoMundo) === 'noite');",
+    para:"desenharHabitantes(g, alvo, escala, t, eu.y, periodoEm(Date.now()) === 'noite');" },
+  { id:'S1143', arquivo:'app/modules/idle-mundo.mjs', nome:'o Zz deixa de ser desenhado',
+    real:'a fauna para, mas nada diz que ela dorme — parece travada',
+    de:"      if (periodoEm(agoraDoMundo) === 'noite') desenharSono(gb, alvo, t);", para:'' },
+  { id:'S1144', arquivo:'app/modules/fauna.mjs', nome:'o Zz fica parado no lugar',
+    real:'um z fixo sobre a cabeca le como marca de erro, nao como sono',
+    de:'  return { dy: -k * 7, alfa:', para:'  return { dy: 0, alfa:' },
+
   /* ── ST-5.6 · na run, a luta cabe (DEC-15, L-175) ─────────────────── */
   { id:'S1135', arquivo:'app/modules/viewport.mjs', nome:'o minimo da luta volta a caber tres criaturas',
     real:'em 420 px a run mostra 130 px de mundo e a luta sai da janela (L-175)',

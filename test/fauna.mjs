@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 /* Q1/Q3 · OS HABITANTES DO BIOMA (bloco 1.5f).
  *
  * ── O QUE ESTE MÓDULO PODE ESTRAGAR ───────────────────────────────────────
@@ -325,5 +326,53 @@ export function suite() {
       'inteiro no mesmo compasso vira letreiro de LED.');
   });
 
+  /* ══ ST-2.4 · A FAUNA SABE QUE É NOITE (L-184) ════════════════════════
+   * O 1.33 fez a WAVE noturna; os moradores de enfeite continuavam os mesmos,
+   * acordados, sob a lua. A regra é a MESMA tabela do elenco
+   * (`preferenciasDaNoite`), para os dois nunca discordarem: quem a noite
+   * desfavorece dorme; quem ela favorece, ou é neutro, segue acordado. */
+  s.teste('ST-2.4: quem a noite desfavorece dorme; quem ela favorece, não', async () => {
+    const { dormeANoite, tiposDoMorador } = await import('../app/modules/fauna.mjs');
+    ok(dormeANoite(kanto, ['bug']), 'um inseto ficou acordado à noite');
+    ok(dormeANoite(kanto, ['normal', 'flying']), 'o Pidgey (normal) ficou acordado');
+    igual(dormeANoite(kanto, ['ghost']), false, 'o fantasma dormiu — ele é da noite');
+    igual(dormeANoite(kanto, ['grass', 'poison']), false, 'o Oddish dormiu — o veneno é da noite, e favorecer vence');
+    igual(dormeANoite(kanto, ['water']), false, 'o neutro dormiu');
+    igual(dormeANoite({}, ['bug']), false, 'sem tabela no pack, alguém dormiu — a regra inventou dado');
+    ok(tiposDoMorador(kanto, 'ow_pidgey').includes('normal'), 'o morador não achou a própria espécie');
+    igual(tiposDoMorador(kanto, 'ow_inexistente').length, 0, 'morador sem espécie ganhou tipo');
+    const src = readFileSync(new URL('../app/modules/fauna.mjs', import.meta.url), 'utf8');
+    ok(/preferenciasDaNoite/.test(src), 'a fauna tem regra de noite própria — ela e o elenco vão discordar');
+  });
+
+  s.teste('ST-2.4: o povoamento carrega o tipo de cada morador', () => {
+    const planta = plantaDo(kanto, 'floresta');
+    const hs = povoar(planta, kanto, 16);
+    ok(hs.length > 0 && hs.every(h => Array.isArray(h.tipos)), 'o morador saiu sem a lista de tipos');
+    ok(hs.some(h => h.tipos.length), 'nenhum morador da floresta achou a própria espécie');
+  });
+
+  s.teste('ST-2.4: quem dorme fica parado, e o "Zz" sobe e some em ciclo', async () => {
+    const { zzDoHabitante } = await import('../app/modules/fauna.mjs');
+    const h = { fase: 0.3 };
+    for (let t = 0; t < 5000; t += 137) igual(quadroDoHabitante(h, t, 3, true), 0, 'quem dorme continuou animando');
+    ok(new Set([0, 300, 600, 900].map(t => quadroDoHabitante(h, t, 3, false))).size > 1, 'acordado, o morador parou');
+    const a = zzDoHabitante(h, 0), b = zzDoHabitante(h, 1000);
+    ok(a.alfa >= 0 && a.alfa <= 1 && b.alfa >= 0 && b.alfa <= 1, 'o alfa do Zz saiu de [0, 1]');
+    ok(b.dy !== a.dy, 'o Zz não sobe');
+  });
+
+  s.teste('ST-2.4: a tela pergunta à fauna se é noite, e pelo relógio do MUNDO', () => {
+    const hab = readFileSync(new URL('../app/modules/idle-habitantes.mjs', import.meta.url), 'utf8');
+    ok(/dormeANoite\(/.test(hab) && /zzDoHabitante\(/.test(hab), 'os habitantes não dormem na tela');
+    ok(/if \(periodoEm\(agoraDoMundo\) === 'noite'\) desenharSono\(gb,/.test(
+         readFileSync(new URL('../app/modules/idle-mundo.mjs', import.meta.url), 'utf8')),
+      'o "Zz" não sai no canvas do brilho — sob a luz da noite o escuro o engole');
+    const mundo = readFileSync(new URL('../app/modules/idle-mundo.mjs', import.meta.url), 'utf8');
+    ok(/desenharHabitantes\([^;]*periodoEm\(agoraDoMundo\) === 'noite'\)/.test(mundo),
+      'o mundo não diz aos habitantes que é noite — ou diz por outro relógio que não o da luz');
+    igual((mundo.match(/relogioDoMundo\(Date\.now\(\)\)/g) ?? []).length, 1,
+      'o mundo lê o relógio mais de uma vez por quadro — a fauna e a luz podem discordar, e o S1021 escapa');
+  });
   return s;
 }

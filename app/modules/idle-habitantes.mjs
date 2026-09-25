@@ -16,7 +16,7 @@
 import { PACK } from './motor.mjs';
 import { T } from './mundo.mjs';
 import { vivos, molduraDe } from './vivos.mjs';
-import { povoar, adornar, quadroDoHabitante, boiar } from './fauna.mjs';
+import { povoar, adornar, quadroDoHabitante, boiar, dormeANoite, zzDoHabitante } from './fauna.mjs';
 import { decorar, recorteCel, LADO, LARGURA_FOLHA, ALTURA_FOLHA } from './decoracao.mjs';
 
 /* SÃO ELEMENTOS, e não desenho no canvas, pelo mesmo motivo do companheiro:
@@ -154,12 +154,14 @@ function desenharDecor(g, cam, escala, yTreinador) {
   }
 }
 
-export function desenharHabitantes(g, cam, escala, t, yTreinador) {
+export function desenharHabitantes(g, cam, escala, t, yTreinador, noite = false) {
   for (const [i, h] of habitantes.entries()) {
     const v = molduraDe('h' + i, `${OW_ARTE}/${h.arq}.png`);
     if (!v || !v.folha) continue;
     const quadros = Math.max(1, Math.round(v.folha.w / h.qw));
-    const q = quadroDoHabitante(h, t, quadros);
+    /* À NOITE, QUEM A NOITE DESFAVORECE DORME (ST-2.4) — a mesma tabela do
+       elenco. Parado; o "Zz" sai em `desenharSono`, no canvas do brilho. */
+    const q = quadroDoHabitante(h, t, quadros, noite && dormeANoite(PACK, h.tipos));
     const Lt = h.qw * escala, At = h.qh * escala;
     /* QUEM ESTA NO LAGO BOIA, e a agua reage em contrafase. Ver `boiar`. */
     const { dy, raio } = boiar(h, t);
@@ -197,5 +199,31 @@ export function desenharHabitantes(g, cam, escala, t, yTreinador) {
   }
 
   desenharDecor(g, cam, escala, yTreinador);
+}
+
+/* ── O "Zz" DE QUEM DORME (ST-2.4) ────────────────────────────────────────
+ *
+ * No canvas do BRILHO, e não no do mundo: o do mundo fica SOB a luz da noite
+ * (`multiply`), e a primeira versão pôs o "Zz" lá — o escuro o engoliu, e a
+ * foto noturna saiu sem ele. O brilho é o mesmo canvas dos vaga-lumes e das
+ * brasas, por cima do escuro e em `screen`: ele SOMA à noite, que é o que um
+ * "Zz" branco-azulado precisa fazer. Coordenadas de mundo, como lá. */
+export function desenharSono(gb, cam, t) {
+  if (!gb) return 0;
+  let n = 0;
+  gb.fillStyle = '#dfe9ff';
+  for (const h of habitantes) {
+    if (!dormeANoite(PACK, h.tipos)) continue;
+    const z = zzDoHabitante(h, t);
+    const x = h.x - cam.x + h.qw * 0.2, y = h.y - cam.y - h.qh - 1 + z.dy;
+    gb.globalAlpha = Math.max(0, z.alfa);
+    gb.font = 'bold 7px monospace';
+    gb.fillText('z', x, y);
+    gb.font = 'bold 5px monospace';
+    gb.fillText('z', x + 5, y - 4);
+    n++;
+  }
+  gb.globalAlpha = 1;
+  return n;
 }
 

@@ -36,6 +36,22 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### ST-2.4 FECHADA — a fauna do cenário dorme à noite (L-184)
+
+A mesma tabela do elenco (`preferenciasDaNoite`): quem a noite desfavorece
+dorme — quadro parado e um "Zz" que sobe; quem ela favorece segue acordado
+(favorecer vence). O "Zz" mora no canvas do BRILHO, por cima do escuro: a
+primeira versão o pôs no canvas do mundo, sob a luz em `multiply`, e a foto
+noturna saiu sem ele. A esteira `olhar-hora` passou a contar os moradores
+visíveis e quantos dormem (à 01h: 2 de 5 na floresta — Pidgey e Meowth), a
+afastar a câmera até achar um, e a recortá-lo — e a sonda errou duas vezes
+antes (contava moldura fora do palco como visível; recortava em coordenada de
+janela). **E o Q2 do bloco pegou um teste virando decorativo:** a primeira
+ligação lia o relógio do mundo uma segunda vez no quadro, e o S1021 (a cena
+lendo o UTC cru) passou a escapar pela âncora duplicada. Agora é UMA leitura
+por quadro, antes da fauna, e um teste cobra isso. Suíte 2322/2322; Q2 do
+bloco 11/11 (S1139–S1144).
+
 ### ST-5.6 FECHADA — em 420 px a luta cabe na câmera (DEC-15, L-175)
 
 Na run, o zoom efetivo é o menor entre o escolhido e o que mostra 260 px de

@@ -8180,7 +8180,7 @@ vizinha.
 ### L-184 — a fauna de cenário do idle não sabe que é noite
 
 **Registrada em:** 25/09/2026, pela regra "o cenário do idle nunca está pronto".
-**Bloco dono:** **o do CENÁRIO** (o mesmo da L-175). **Estado:** aberta.
+**Bloco dono:** **o do CENÁRIO** (o mesmo da L-175). **Estado:** ✅ fechada em 25/09/2026 (ST-2.4) — à noite, quem a `preferenciasDaNoite` desfavorece DORME (quadro parado e um "Zz" que sobe, no canvas do brilho, por cima do escuro); quem ela favorece segue acordado — favorecer vence (o Oddish, planta e veneno, fica de pé). A mesma tabela do elenco: o cenário e a wave não têm como discordar.
 
 O 1.33 fez a WAVE ficar noturna — os mobs da run que começou de noite são outros.
 Mas os moradores de ENFEITE do cenário (`fauna.mjs`, lidos do pack) são os

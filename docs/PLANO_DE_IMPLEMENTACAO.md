@@ -302,7 +302,7 @@ isso trouxe. O sigilo do clima sorteado (L-177) não se quebra.
   estágios seguem **idênticos** a `test/fixtures/elenco-base.json`.
 - **Fora:** mexer no motor do 1.33 (`REGRA_DO_ELENCO` continua 1).
 
-### ST-2.4 · a fauna de enfeite sabe que é noite (L-184) — **o do CENÁRIO**
+### ST-2.4 · a fauna de enfeite sabe que é noite (L-184) — ✅ **fechada em 25/09** (o bloco do cenário abriu com a DEC-15): quem a noite desfavorece dorme, com "Zz" por cima do escuro; medido pela esteira (`olhar-hora`: à 01h, 2 de 5 moradores da floresta dormem — Pidgey e Meowth)
 
 - **Porte** P · regra permanente do `CLAUDE.md` ("o cenário do idle nunca está
   pronto"): entra quando um bloco passar pelo cenário, e não antes.

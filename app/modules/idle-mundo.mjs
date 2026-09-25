@@ -41,7 +41,7 @@ import { vidaDe, semear, mover, opacidade, mistura } from './particulas.mjs';
 import { vivos } from './vivos.mjs';
 import { desenharCompanheiro, acompanhar as acompanharBicho,
          quemAcompanha } from './idle-companheiro.mjs';
-import { prepararHabitantes, desenharHabitantes } from './idle-habitantes.mjs';
+import { prepararHabitantes, desenharHabitantes, desenharSono } from './idle-habitantes.mjs';
 import { janela, niveis, nivelMaisProximo, rotuloZoom, zoomDaRun } from './viewport.mjs';
 import { prepararNpcs, desenharNpcs } from './idle-npc.mjs';
 
@@ -453,7 +453,14 @@ async function laçoDoAtor(t) {
        está mais perto do jogador que a fauna de fundo. */
     desenharMobs(g, alvo, escala, t, eu, cenaAgora, sombra, nomeDoDex, golpeDoDex,
                  { w: mundoW, h: mundoH });
-    desenharHabitantes(g, alvo, escala, t, eu.y);
+    /* O RELÓGIO DO MUNDO — Brasília para todos, decisão do dono (DEC-10). Não o
+       UTC cru (três horas adiantado no Brasil) e não o fuso do aparelho (que
+       viraria alavanca para forçar a noite). Ver `relogioDoMundo`.
+       UM por quadro, lido ANTES da fauna: a fauna que dorme (ST-2.4) e a luz
+       que escurece têm de ler a MESMA hora. Duas leituras eram também duas
+       âncoras, e o S1021 passou a escapar pela segunda. */
+    const agoraDoMundo = relogioDoMundo(Date.now());
+    desenharHabitantes(g, alvo, escala, t, eu.y, periodoEm(agoraDoMundo) === 'noite');
     desenharNpcs(g, plantaAtual, alvo, escala, t, sombra, eu.y);
     /* ── E AS PARTÍCULAS NA FRENTE DE TUDO (1.32) ───────────────────
        A chuva cai entre o jogador e a cena, como na Arena e como na vida.
@@ -467,13 +474,9 @@ async function laçoDoAtor(t) {
        caísse só no chão, os bonecos ficariam acesos numa cena escura — e é
        assim que o jogador descobre que a noite é um filtro e não uma hora.
 
-       `Date.now()` aqui e não `t`: `t` é o relógio da ANIMAÇÃO, que começa em
-       zero quando a aba abre. A hora é do MUNDO — ver a nota longa no
-       `hora-do-dia.mjs`. */
-    /* O RELÓGIO DO MUNDO — Brasília para todos, decisão do dono (DEC-10). Não o
-       UTC cru (três horas adiantado no Brasil) e não o fuso do aparelho (que
-       viraria alavanca para forçar a noite). Ver `relogioDoMundo`. */
-    const agoraDoMundo = relogioDoMundo(Date.now());
+       `Date.now()` e não `t`: `t` é o relógio da ANIMAÇÃO, que começa em
+       zero quando a aba abre. A hora é do MUNDO — o `agoraDoMundo` lido acima,
+       antes da fauna. */
     /* A LUZ É UMA CAMADA DO PALCO, com `multiply` — ver o CSS de `#idleLuz`
        e as duas tentativas reprovadas que ele conta. Só escreve o estilo quando
        ele muda: a string é a mesma por minutos, e tocar o estilo a 60 Hz
@@ -494,6 +497,8 @@ async function laçoDoAtor(t) {
       const gb = brilhoCv.getContext('2d');
       gb.clearRect(0, 0, W, H);
       brilhoDaVida(gb, alvo, W, H, t, brilhoNoturno(agoraDoMundo));
+      /* E QUEM DORME, POR CIMA DO ESCURO (ST-2.4) — ver `desenharSono`. */
+      if (periodoEm(agoraDoMundo) === 'noite') desenharSono(gb, alvo, t);
     }
     /* A JANELA DO CÉU, no canto. Um mundo top-down não tem céu, então o céu
        ganhou um lugar — ver o cabeçalho do `idle-ceu.mjs`. */
@@ -524,7 +529,7 @@ import { veuDoClima, desenharClima } from './idle-clima.mjs';
    da vida atravessando a noite.
    Quem DECIDE é o `hora-do-dia.mjs`, em camada 0; estes dois só pintam. */
 import { estiloDaLuz, pintarJanelaDoCeu, falaDaHora } from './idle-ceu.mjs';
-import { brilhoNoturno, relogioDoMundo } from './hora-do-dia.mjs';
+import { brilhoNoturno, relogioDoMundo, periodoEm } from './hora-do-dia.mjs';
 export { ESPUMA_MS } from './idle-bioma-vivo.mjs';
 
 function esconder(chave) {
