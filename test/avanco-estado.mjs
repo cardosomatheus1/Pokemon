@@ -164,6 +164,40 @@ export function suite() {
     igual(linhas[0].fonte, 'polen', 'a linha diz outra fonte que não a do clima da run');
   });
 
+  /* ST-3.1 · L-159 — o baú da run, de ponta a ponta. A semente 'bau0' na
+     Floresta dá uma Pedra das Folhas no baú dos estágios 3 e 4 (medido). No 3
+     entram 3 partes; no 4, a pedra inteira. A criatura é forte e a Pokédex
+     cheia para os estágios estarem abertos — é o que um veterano tem. */
+  const veterano = () => {
+    const e = jogador();
+    e.criaturas[0].xp = 9_999_999;
+    e.registro = Object.fromEntries((kanto.especies ?? []).map(x => [x.dex, 3]));
+    return e;
+  };
+  const bauDo = estagio => {
+    const e = veterano();
+    comecarAvanco(e, { pack: kanto, bioma: 'floresta', estagio,
+      equipe: [e.criaturas[0].id], agora: AGORA, raiz: 'bau0' });
+    const T = AGORA + 10 * 3600_000;
+    sincronizar(e, { pack: kanto, agora: T });
+    const r = colherAvancoDaRun(e, { pack: kanto, agora: T, raiz: 'bau0' });
+    return { e, r };
+  };
+
+  s.teste('ST-3.1: o baú do estágio 3 entrega PARTES da pedra, e o quadro diz isso', () => {
+    const { e, r } = bauDo(3);
+    igual(e.bolsa['est:folha'] ?? 0, 3, 'o baú do estágio 3 não entregou as 3 partes da pedra');
+    igual(e.bolsa.folha ?? 0, 0, 'o baú do estágio 3 entregou a pedra INTEIRA (L-159)');
+    ok(r.rendeu.itens.some(x => x.id === 'est:folha' && x.quantidade === 3),
+      'o saque guardado diz outra coisa do que entrou na bolsa — o quadro mentiria');
+  });
+
+  s.teste('ST-3.1: o baú do estágio 4 entrega a pedra inteira', () => {
+    const { e } = bauDo(4);
+    igual(e.bolsa.folha ?? 0, 1, 'o estágio 4 deixou de entregar o item inteiro');
+    igual(e.bolsa['est:folha'] ?? 0, 0, 'o estágio 4 entregou partes');
+  });
+
   s.teste('a segunda run é recusada enquanto a primeira está de pé', () => {
     const e = jogador();
     comecarAvanco(e, { pack: kanto, bioma: 'floresta', estagio: 1,

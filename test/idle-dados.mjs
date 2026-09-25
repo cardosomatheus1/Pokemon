@@ -20,6 +20,7 @@
  *    aproveitar. Perder uma expedição é ruim; perder a aba é pior, e é
  *    irreversível para quem não sabe abrir o console.
  */
+import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import {
   VAZIO, carregar, salvar, ultimoDiagnostico,
@@ -722,5 +723,72 @@ export function suite() {
     for (const k of ['ofensiva', 'defesa', 'velocidade'])
       igual(f[k], 0, `forma.${k} com IV ausente devia ser 0, e veio ${f[k]}`);
   });
+  /* ══ ST-3.2 · DUAS ABAS NÃO COLHEM A MESMA COISA DUAS VEZES ════════════
+   *
+   * O idle é do navegador (`ar_idle`), e duas abas carregavam o mesmo estado e
+   * gravavam por cima uma da outra: a colheita da aba A entrava na bolsa, a
+   * aba B — carregada antes — colhia a mesma expedição e gravava de novo. A
+   * gravação passa a ser OTIMISTA: cada save tem uma revisão, e quem carregou
+   * uma revisão velha não grava por cima de uma nova. O disco vence; a tela
+   * recarrega (evento `storage`). Enquanto o idle for do navegador, isto é o
+   * máximo honesto — a garantia de servidor é o E8. */
+  s.teste('ST-3.2: duas abas colhem a mesma expedição — só um crédito fica', () => {
+    const d = deposito();
+    const e0 = comInicial();
+    const x = iniciarExpedicao(e0, { pack: kanto, bioma: 'floresta', perfil: 'vigilia',
+                                     equipe: [e0.criaturas[0].id], agora: AGORA });
+    salvar(e0, d);
+    const abaA = carregar(d), abaB = carregar(d);
+    colher(abaA, { pack: kanto, id: x.id, agora: x.terminaEm });
+    igual(salvar(abaA, d), true, 'a primeira aba não conseguiu gravar a colheita');
+    colher(abaB, { pack: kanto, id: x.id, agora: x.terminaEm });
+    igual(salvar(abaB, d), false,
+      'a segunda aba gravou por cima: a mesma expedição foi colhida duas vezes');
+    const disco = carregar(d);
+    igual(JSON.stringify(disco.bolsa), JSON.stringify(abaA.bolsa),
+      'o que ficou no disco não é a colheita da primeira aba');
+  });
+
+  s.teste('ST-3.2: a mesma aba grava em sequência sem se recusar', () => {
+    const d = deposito();
+    const e = comInicial();
+    for (let i = 0; i < 3; i++) igual(salvar(e, d), true, `o ${i + 1}º save seguido da mesma aba foi recusado`);
+    igual(carregar(d).rev, 3, 'a revisão não conta os saves');
+  });
+
+  s.teste('ST-3.2: save antigo, sem revisão, carrega e grava normalmente', () => {
+    const velho = { ...comInicial() }; delete velho.rev;
+    const d = deposito(JSON.stringify(velho));
+    const e = carregar(d);
+    igual(e.rev, 0, 'o save de antes da ST-3.2 não começou na revisão 0');
+    igual(salvar(e, d), true, 'o save antigo não pôde ser regravado — o jogador ficaria preso');
+  });
+
+  s.teste('ST-3.2: revisão forjada no disco não trava o jogador para sempre', () => {
+    const d = deposito(JSON.stringify({ ...comInicial(), rev: 'x' }));
+    const e = carregar(d);
+    igual(salvar(e, d), true, 'uma revisão ilegível no disco impediu todo save seguinte');
+  });
+
+  s.teste('ST-3.2: a tela ouve a OUTRA aba — e só a chave do idle', async () => {
+    const { vigiarOutraAba } = await import('../app/modules/idle-abas.mjs');
+    const ouvintes = [];
+    const alvo = { addEventListener: (tipo, fn) => ouvintes.push({ tipo, fn }) };
+    let vezes = 0;
+    ok(vigiarOutraAba({ chave: 'ar_idle', aoMudar: () => vezes++, alvo }), 'não registrou o ouvinte');
+    igual(ouvintes[0]?.tipo, 'storage', 'o ouvinte não é do evento storage');
+    ouvintes[0].fn({ key: 'ar_carteira' });
+    igual(vezes, 0, 'a carteira mudou e o idle recarregou — recarregar à toa numa tela aberta por horas');
+    ouvintes[0].fn({ key: 'ar_idle' });
+    igual(vezes, 1, 'a outra aba gravou o idle e esta não recarregou');
+  });
+
+  s.teste('ST-3.2: a tela liga o ouvinte e trata o save recusado', () => {
+    const src = readFileSync(new URL('../app/modules/idle-tela.mjs', import.meta.url), 'utf8');
+    ok(/vigiarOutraAba\(\{ chave: CHAVE_DO_IDLE/.test(src), 'a tela do idle não ouve a outra aba');
+    ok(/const g = salvar\(E\); if \(!g\)/.test(src),
+      'a tela ignora o save recusado — seguiria mostrando uma colheita que não ficou');
+  });
+
   return s;
 }

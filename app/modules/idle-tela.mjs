@@ -39,13 +39,14 @@ import { $, nosDois, nasAbasDoFarm } from './dom.mjs';
    linhas. A divisao e por assunto: la vive tudo que a tela DIZ fora dos
    paineis — o banner, quem acompanha, e a faixa de recado. */
 import { avisarBanner, avisarCompanheiro, avisar } from './idle-avisos.mjs';
+import { vigiarOutraAba, AVISO_OUTRA_ABA } from './idle-abas.mjs';
 import {
   VAZIO, carregar, salvar, iniciaisDo, escolherInicial, criaturasDe,
   staminaDe, iniciarExpedicao, emCampo, concluidasHoje, pronta, colher,
   TETO_DIARIO, TETO_ENCONTROS, EQUIPE_MAX,
   STAMINA_MAX, PERFIS, encontrosHoje, estadoDoTeto, cabeExpedicao,
   lancarBola, naEquipe, naCaixa, mover, PARTY_MAX, restamEncontros, comprometido,
-  vagasDe, proximaVagaDe, estagioMaximoDe,
+  vagasDe, proximaVagaDe, estagioMaximoDe, CHAVE_DO_IDLE,
 } from './idle-dados.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { dexImg, retratoAnimado } from './sprites.mjs';
@@ -109,7 +110,7 @@ const agora = () => Date.now();
 const escolhaDaRota = () => ({
   bioma: biomaEscolhido, estagio: estagioEscolhido, equipe: equipeEscolhida,
 });
-const salvarE = () => salvar(E);
+const salvarE = () => { const g = salvar(E); if (!g) { avisar(AVISO_OUTRA_ABA); ultimaColheita = null; renderIdle(); } return g; };  // ST-3.2, ver idle-abas
 
 /* ── O MUNDO ───────────────────────────────────────────────────────────────
  *
@@ -240,7 +241,7 @@ let avancoLigado = false;
 export function renderIdle() {
   ligarFoco();
   if (!avancoLigado) {
-    avancoLigado = true;
+    avancoLigado = true; vigiarOutraAba({ chave: CHAVE_DO_IDLE, aoMudar: () => { ultimaColheita = null; renderIdle(); } });
     ligarAvanco({ estado: () => E, escolha: escolhaDaRota,
                   recarregar: () => { ultimaColheita = null; renderIdle(); },
                   avisar, agora });

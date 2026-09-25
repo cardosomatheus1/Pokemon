@@ -988,7 +988,12 @@ export const pokemonKantoV1 = {
      regra de anular tipo duplo neutralizava todo Veneno da Floresta, e o bioma
      que abre por padrão nunca mudava à noite. Com esta tabela, a noite traz
      Oddish, Zubat, Koffing e Hypno, e leva Metapod, Paras e Voltorb. */
-  preferenciasDaNoite: { favorece: ['ghost', 'poison', 'psychic'],
+  /* FADA ENTROU NO ST-2.3 (L-183): com três tipos o estágio 4 mudava 2 de 11
+     rotas à noite, e quem mais fica na sala quase não via a regra. Clefairy é
+     o Pokémon da lua — a sala diz "quem tem a lua só sai a esta hora". Medido,
+     estágios 1..4: 6·7·3·2 -> 7·8·3·3. Três é o teto do conteúdo no estágio 4:
+     a troca não muda a raridade do slot, e Kanto tem poucos noturnos raros. */
+  preferenciasDaNoite: { favorece: ['ghost', 'poison', 'psychic', 'fairy'],
                          desfavorece: ['bug', 'grass', 'normal'] },
   moeda:    MOEDA,
   /* O CATALOGO COMPLETO (1.12): nome, funcao, faixa, e por qual PORTA o item

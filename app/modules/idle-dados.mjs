@@ -55,6 +55,10 @@ const VERSAO = 1;
 const DIA_MS = 24 * 3600_000;
 
 export const VAZIO = () => ({
+  /* A REVISÃO DO SAVE (ST-3.2): quantas vezes ESTE estado foi gravado. Duas
+     abas que carregaram a mesma revisão não gravam uma por cima da outra — ver
+     `salvar`. */
+  rev: 0,
   v: VERSAO, criaturas: [], expedicoes: [], bolsa: {}, registro: {},
   encontros: [],
   /* As runs colhidas nas últimas 24 h, só com o que o TETO precisa (D-107).
@@ -128,6 +132,9 @@ export function carregar(deposito = globalThis.localStorage) {
      aqui: duas definições da mesma coisa divergem no dia em que uma ganhar um
      campo, e o lado que só guarda seria o que não sabe o que ele significa. */
   e.avancos = avancosDoDisco(cru.avancos, problemas);
+  /* Revisão ilegível vira 0 — e 0 casa com o disco pelo mesmo `revDoDisco`,
+     então um valor forjado não trava todo save seguinte. */
+  e.rev = revDe(cru.rev);
   e.run = runDoDisco(cru.run);
   if (cru.run != null && !e.run) problemas.push('a run guardada não era objeto');
 
@@ -147,10 +154,46 @@ export function carregar(deposito = globalThis.localStorage) {
   return e;
 }
 
+/* ── A GRAVAÇÃO OTIMISTA (ST-3.2) ─────────────────────────────────────────
+ *
+ * Duas abas carregavam o mesmo `ar_idle` e gravavam por cima uma da outra: a
+ * aba A colhia uma expedição e gravava; a aba B, carregada antes, colhia a
+ * MESMA expedição e gravava de novo. O crédito entrava duas vezes.
+ *
+ * Agora cada save leva a revisão. Quem vai gravar confere a do disco: se ela
+ * não é a que esta aba carregou (ou gravou por último), outra aba gravou no
+ * meio — e ESTA não grava. O disco vence, a função devolve `false`, e a tela
+ * recarrega (ela escuta o evento `storage`). O que esta aba fez em memória e
+ * não gravou é descartado, e é o certo: foi feito sobre um estado que já não
+ * existia.
+ *
+ * O limite, dito: é o máximo honesto enquanto o idle morar no navegador. Duas
+ * abas no mesmo instante exato ainda podem se cruzar entre ler e gravar; a
+ * garantia de verdade é o idle no servidor (E8). */
+const revDe = v => (Number.isInteger(v) && v >= 0 ? v : 0);
+export let ultimoConflito = false;
+
 export function salvar(e, deposito = globalThis.localStorage) {
-  try { deposito?.setItem(CHAVE, JSON.stringify({ ...e, v: VERSAO })); return true; }
+  /* SEM DEPÓSITO NÃO HÁ O QUE GRAVAR, e a revisão não anda. Em Node (teste)
+     não existe `localStorage`: subir a revisão sem gravar faria o save
+     seguinte, num depósito de verdade, ser recusado por um conflito que nunca
+     houve. O `true` é o de sempre — nada falhou, só não havia onde guardar. */
+  if (!deposito) return true;
+  try {
+    let noDisco = 0;
+    try { noDisco = revDe(JSON.parse(deposito?.getItem(CHAVE) ?? 'null')?.rev); } catch { noDisco = 0; }
+    if (noDisco !== revDe(e.rev)) { ultimoConflito = true; return false; }
+    const proxima = revDe(e.rev) + 1;
+    deposito?.setItem(CHAVE, JSON.stringify({ ...e, rev: proxima, v: VERSAO }));
+    e.rev = proxima;
+    ultimoConflito = false;
+    return true;
+  }
   catch { return false; }
 }
+
+/* A chave do depósito, para a tela escutar o evento `storage` da outra aba. */
+export const CHAVE_DO_IDLE = CHAVE;
 
 /* ── A CRIATURA INICIAL ────────────────────────────────────────────────────
  *

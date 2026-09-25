@@ -259,6 +259,22 @@ export function suite() {
   const NOITE = { fonte: 'noite', favorece: ['ghost', 'poison', 'psychic'], desfavorece: ['bug', 'grass', 'normal'] };
   const tiposDe = dex => (kanto.especies ?? []).find(e => e.dex === dex)?.t ?? [];
 
+  /* ST-2.3 · L-183 — O VETERANO VÊ A NOITE. Medido em 25/09: com a tabela do
+     1.33 (fantasma, veneno, psíquico) a noite mudava 6·7·3·2 rotas de 11 nos
+     estágios 1..4 — o jogador do estágio 4, o que mais fica na sala, quase não
+     via a regra. O teto é de CONTEÚDO: a troca não muda a raridade do slot
+     (invariante 3 do cartão 1.33), e Kanto tem poucos noturnos raros. Fada
+     entrou — Clefairy é o Pokémon da lua, e a sala diz "quem tem a lua só sai a
+     esta hora" — e leva a 7·8·3·3. Três é o número que o conteúdo permite no
+     estágio 4; mais que isso pede espécies novas, não regra nova. */
+  s.teste('ST-2.3: a noite do PACK muda ao menos 3 de 11 rotas em todo estágio', () => {
+    const noite = { fonte: 'noite', ...kanto.preferenciasDaNoite };
+    for (let n = 1; n <= ESTAGIOS_POR_BIOMA; n++) {
+      const mudam = BIOMAS.filter(b => (elencoDoEstagio(kanto, b, n, [noite]).trocas ?? []).length).length;
+      ok(mudam >= 3, `estágio ${n}: a noite muda ${mudam} de ${BIOMAS.length} rotas — o veterano quase não a vê (L-183)`);
+    }
+  });
+
   s.teste('sem condição, o elenco é EXATAMENTE o de antes — ordem e desempates', () => {
     /* A fixture foi fotografada ANTES de o 1.33 mexer no motor. É o invariante
        nº 2 do cartão, e o que protege toda run que já existe. */

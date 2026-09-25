@@ -179,6 +179,8 @@ const CAMADA = {
   'idle-lance.mjs': 0,
   'idle-banco.mjs': 0,
   'idle-colheita.mjs': 0,
+  /* Duas abas no mesmo idle (ST-3.2): o evento `storage` e o aviso. */
+  'idle-abas.mjs': 0,
   /* A leitura do foco e a fala dele: DADO e CONTA, sem DOM. As duas saíram de
      camada 4 quando o portão Q2 provou que frase dentro de `innerHTML` não tem
      como ser afirmada — ver o cabeçalho do `avanco-foco.mjs`. */

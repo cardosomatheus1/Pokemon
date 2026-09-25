@@ -36,6 +36,36 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### ST-3.2 FECHADA — duas abas não colhem a mesma coisa duas vezes
+
+O save do idle ganhou revisão: quem carregou uma revisão velha não grava por
+cima de uma nova — o disco vence, a tela avisa e recarrega. E a tela ouve o
+evento `storage`, que é o que faz a recusa quase nunca acontecer. O limite,
+dito: é o máximo honesto enquanto o idle morar no navegador; a garantia de
+verdade é o idle no servidor (E8).
+
+**E o T14c:** o Q2 do 1.32b ia avaliar 130 mutantes de navegador (~2,7 h)
+porque 30 linhas do `index.html` mudaram. "Tocado" passou a ser o TRECHO (a até
+25 linhas do diff), não o arquivo.
+
+### ST-3.1 FECHADA — o baú do Avanço cai em Estilhaço até o estágio 3 (L-159 e L-160)
+
+A recomendação da L-159, construída: o item montável do baú vira partes — 1, 2
+e 3 por unidade conforme o estágio — e vem inteiro do 4 em diante. A sondagem
+pegou, antes da tela, a primeira versão transformando Essência e PokéCoin em
+"estilhaço" (têm porta de drop e nenhum bioma); estilhaçável passou a ser o que
+a loja do Estilhaço vende. E a parte ganhou nome ("Estilhaço de Pedra das
+Folhas") e o ícone do item — a L-160, que só não aparecia porque nada punha
+`est:` num saque. **A calibragem 1·2·3 é minha recomendação, reversível**.
+
+### ST-2.3 FECHADA — o veterano vê a noite (L-183)
+
+Fada entrou na noite do pack (Clefairy é o Pokémon da lua): as rotas que mudam
+à noite passaram de 6·7·3·2 para **7·8·3·3** nos estágios 1..4. Três é o teto do
+conteúdo no estágio 4 — medido com cada tipo e com combinações —, porque a troca
+não pode mudar a raridade do slot (invariante do cartão 1.33). Mais que isso
+pede espécies noturnas raras, que Kanto não tem.
+
 ### 1.32b (ST-2.1 e ST-2.2) FECHADO — os climas à vista, e a L-177 caiu
 
 A sala de rotas ganhou a legenda dos climas, fechada por padrão. Cada clima diz

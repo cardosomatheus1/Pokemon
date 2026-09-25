@@ -140,5 +140,13 @@ export function suite() {
     }
   });
 
+  s.teste('L-160: a parte de estilhaço usa o ícone do item de origem', () => {
+    usarCatalogo(kanto.catalogo);
+    const pedra = (kanto.catalogo ?? []).find(i => i.porta === 'drop' && temIcone(i.id));
+    ok(pedra, 'nenhum item de drop com ícone — o teste perdeu o que medir');
+    igual(estiloItem('est:' + pedra.id), estiloItem(pedra.id),
+      'a parte de estilhaço ficou sem ícone, ou com outro — a mochila mostraria um quadrado vazio');
+  });
+
   return s;
 }

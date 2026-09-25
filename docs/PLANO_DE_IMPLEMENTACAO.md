@@ -291,7 +291,7 @@ isso trouxe. O sigilo do clima sorteado (L-177) não se quebra.
   efetivo, e ele é **igual** ao de `preferenciasDaRun`; a run que já estava em
   curso não muda (regra do 1.33).
 
-### ST-2.3 · o veterano vê a noite (L-183) e o Sol ganha sentido
+### ST-2.3 · o veterano vê a noite (L-183) e o Sol ganha sentido — ✅ fechada em 25/09 (noite 7·8·3·3; o Sol segue sem troca, e a legenda diz isso)
 
 - **Porte** P–M (conteúdo) · **Depende de** decisão de conteúdo (a tabela de
   preferências é dado do pack)
@@ -311,7 +311,7 @@ isso trouxe. O sigilo do clima sorteado (L-177) não se quebra.
 
 ## E3 · Economia que não duplica (INT-01)
 
-### ST-3.1 · o baú dá Estilhaço nos estágios iniciais (L-159)
+### ST-3.1 · o baú dá Estilhaço nos estágios iniciais (L-159) — ✅ fechada em 25/09, junto com a L-160 (ST-5.3)
 
 - **Porte** P–M · **Depende de** decisão de produto sobre a curva (a
   recomendação está na L-159)
@@ -319,7 +319,7 @@ isso trouxe. O sigilo do clima sorteado (L-177) não se quebra.
   só a partir do estágio definido; o teste afirma a **distribuição** em 10.000
   sorteios semeados, e ela é reprodutível.
 
-### ST-3.2 · colher duas vezes não credita duas vezes
+### ST-3.2 · colher duas vezes não credita duas vezes — ✅ fechada em 25/09 (gravação otimista + evento `storage`)
 
 - **Porte** M · **Depende de** ST-1.1
 - **Escopo:** a colheita (expedição e run) grava uma **marca de versão** no save
@@ -415,7 +415,7 @@ Todas mexem em tela: Q5 com as duas metades, decisão em camada 0.
 |---|---|---|
 | **ST-5.1** · zero 404 na abertura (L-176) | P | a abertura da run e da loja faz **0** pedidos 404, contados por nome na esteira. Saída: versionar `battle-theme.mp3` e `lojas.mp4` **da mesma fonte** (regra do resgate), ou tirar a referência — nunca trocar por outro arquivo |
 | **ST-5.2** · o banner não passa sob o mon (D-082) | P | com vitrine, o retângulo do texto do `.bnRodape` não cruza o do `.bnMon.vitrine` em 420, 768 e 1920, inclusive com "Nenhuma expedição em campo" |
-| **ST-5.3** · `est:` nunca aparece cru (L-160) | P | toda chave `est:<id>` tem nome e ícone; o teste varre o que a mochila e a loja pintam |
+| ~~**ST-5.3**~~ ✅ 25/09, dentro da ST-3.1 · `est:` nunca aparece cru (L-160) | P | toda chave `est:<id>` tem nome e ícone; o teste varre o que a mochila e a loja pintam |
 | **ST-5.4** · números de dano não se tocam (L-172) | M | a sonda imprime os pares; meta **0** pares sobrepostos em 420 px em 3 execuções, 0 fora da janela |
 | **ST-5.5** · cast e projétil (L-171) | M | golpe com `cast`/`proj` no `MOVE_FX` produz folha no atacante e projétil do atacante ao alvo; a cena publica o par; o teste puro confere início e fim da trajetória |
 | **ST-5.6** · a janela de 420 px cabe a luta (L-175) | M | em 420 px o bando de 4, companheiro e treinador cabem; o zoom depende da largura sem violar o piso (o S616 continua reprovando) |

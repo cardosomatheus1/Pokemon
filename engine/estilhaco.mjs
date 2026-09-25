@@ -185,3 +185,37 @@ export function montar(lista = []) {
   if (!id) return { montou: false, consumiu: 0, sobra: (lista ?? []).length };
   return { montou: true, id, consumiu: PARTES, sobra: n - PARTES };
 }
+
+/* ── O BAÚ DO AVANÇO CAI EM ESTILHAÇO ANTES DO ESTÁGIO 4 (ST-3.1, L-159) ──
+ *
+ * A run pagava o baú com o item INTEIRO. A expedição paga Essência, que vira
+ * estilhaço na loja; o baú atropelava essa curva — e o estilhaço existe
+ * justamente para o item pronto não sair fácil. Duas economias que não se
+ * falavam.
+ *
+ * A regra, recomendada na L-159 antes de construir: o item de porta de
+ * estilhaço (`PORTAS`) que o baú sortear vira PARTES até o estágio 3, e vem
+ * inteiro a partir do 4. As partes crescem com o estágio — 1, 2, 3 de `PARTES`
+ * —, para o baú do estágio 1 continuar valendo a pena sem montar o item
+ * sozinho: nenhuma UNIDADE abaixo do 4 chega a sete partes. Um baú com várias
+ * unidades pode montar — medido: o baú do estágio 3 com três pedras, que antes
+ * dava três inteiras, dá nove partes (uma pedra e dois sétimos).
+ *
+ * Devolve `null` para o que não é item (bola, essência): quem chama segue o
+ * caminho de sempre. Item sem cadastro passa inteiro — virar "estilhaço de
+ * nada" seria pior que deixá-lo como está. */
+export const ESTAGIO_DO_ITEM_INTEIRO = 4;
+
+export function lancamentoDoBau(linha, { estagio = 1, catalogo = [] } = {}) {
+  if (linha?.classe !== 'item') return null;
+  const q = Math.max(0, Math.floor(Number(linha.quantidade) || 0));
+  const cad = (catalogo ?? []).find(i => i?.id === linha.id);
+  /* ESTILHAÇÁVEL É O QUE A LOJA DO ESTILHAÇO VENDE: porta de estilhaço E um
+     bioma de origem — a mesma definição do `bolsoDoBioma`. Só a porta não
+     basta: a Essência e a moeda têm porta `drop` e nenhum bioma, e a primeira
+     versão desta regra os transformou em "Estilhaço de Essência". */
+  if (!cad || !PORTAS.includes(cad.porta) || !cad.fonte || estagio >= ESTAGIO_DO_ITEM_INTEIRO)
+    return { chave: linha.id, quantidade: q, estilhaco: false };
+  const partes = Math.min(PARTES - 1, Math.max(1, Math.floor(estagio)));
+  return { chave: 'est:' + linha.id, quantidade: q * partes, estilhaco: true, de: linha.id };
+}

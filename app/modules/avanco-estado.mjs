@@ -31,6 +31,7 @@ import {
 import { creditar } from '../../engine/nivel-criatura.mjs';
 import { moedasDa, idDaMoeda, idDoMaterial } from '../../engine/economia-idle.mjs';
 import { sortearItens, agrupar } from '../../engine/drops.mjs';
+import { lancamentoDoBau } from '../../engine/estilhaco.mjs';
 import { viesFinal, cabeNoEstagio } from '../../engine/estagios.mjs';
 import { PERFIS, pesoDaRaridade, staminaAgora } from '../../engine/expedicao.mjs';
 import { FRAGMENTOS_POR_ENCONTRO } from '../../engine/captura.mjs';
@@ -436,9 +437,19 @@ export function colherAvancoDaRun(e, { pack, agora, raiz = novaRaiz() }) {
         focoMaterial: aplicarClima(efeitos.material, bonusClima, 'material'),
       }))
     : [];
-  for (const it of itens) {
-    const chave = it.classe === 'essencia' ? idDoMaterial(pack) : it.id;
-    e.bolsa[chave] = (e.bolsa[chave] ?? 0) + it.quantidade;
+  /* ── O QUE ENTRA NA BOLSA É O QUE O BAÚ VIRA (ST-3.1, L-159) ─────────
+     Até o estágio 3, o item de porta de estilhaço vira PARTES — a regra mora
+     em `lancamentoDoBau`, no motor. A lista `itens` que a run guarda passa a
+     ser a do que ENTROU: mostrar "Pedra do Fogo" quando a bolsa recebeu duas
+     partes seria o quadro mentindo sobre o próprio saque. */
+  for (let k = 0; k < itens.length; k++) {
+    const it = itens[k];
+    const l = it.classe === 'essencia'
+      ? { chave: idDoMaterial(pack), quantidade: it.quantidade }
+      : lancamentoDoBau(it, { estagio: run.estagio, catalogo: pack.catalogo })
+        ?? { chave: it.id, quantidade: it.quantidade };
+    e.bolsa[l.chave] = (e.bolsa[l.chave] ?? 0) + l.quantidade;
+    if (l.estilhaco) itens[k] = { ...it, id: l.chave, quantidade: l.quantidade, estilhaco: true };
   }
 
   /* ── OS ENCONTROS FICAM PENDENTES, esperando bola ──────────────────────

@@ -41,6 +41,10 @@ import { idDaMoeda, idDoMaterial } from '../../engine/economia-idle.mjs';
 export function nomeDoItem(pack, id) {
   if (id == null) return '';
   const chave = String(id);
+  /* A PARTE DE ESTILHAÇO (L-160, ST-3.1). A bolsa guarda `est:<id>`, e desde
+     a ST-3.1 o baú do Avanço também entrega partes — o quadro da run as lista.
+     O nome é o do item de origem: "Estilhaço de Pedra do Fogo". */
+  if (chave.startsWith('est:')) return `Estilhaço de ${nomeDoItem(pack, chave.slice(4))}`;
   return (pack?.catalogo ?? []).find(i => i.id === chave)?.nome
       ?? (pack?.bolas ?? []).find(b => b.id === chave)?.rotulo
       ?? (pack?.itens ?? []).find(i => i.id === chave)?.rotulo

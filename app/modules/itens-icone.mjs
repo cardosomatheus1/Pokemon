@@ -77,6 +77,9 @@ export const casaDe = id => (temIcone(id) ? CASA[id] : -1);
  * tamanho e a suavização são a MESMA decisão, e separá-los é como um dos dois
  * se perde na próxima refatoração. */
 export function estiloItem(id, tam = LADO) {
+  /* A parte de estilhaço (`est:<id>`, L-160) usa o ícone do item de origem: é
+     o item que ela monta, e é por ele que o jogador a reconhece. */
+  if (String(id ?? '').startsWith('est:')) id = String(id).slice(4);
   if (!temIcone(id)) return null;
   const i = CASA[id];
   const t = tamanhoValido(tam);

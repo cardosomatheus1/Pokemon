@@ -7139,10 +7139,21 @@ que é verdade, e não uma tela quebrada.
 
 ---
 
-### L-159 — o Estilhaço e o baú do estágio ainda não se conhecem
+### L-159 — o Estilhaço e o baú do estágio ainda não se conhecem ✅ FECHADA
 
 **Registrada em:** 09/09/2026, ao fechar o 1.29. **Bloco dono:** 1.27.
-**Estado:** aberta.
+**Estado:** ✅ **FECHADA em 25/09/2026, na ST-3.1** (a recomendação abaixo, construída).
+
+> **O que foi construído, e medido:** `lancamentoDoBau` (`engine/estilhaco.mjs`)
+> — até o estágio 3, o item estilhaçável do baú vira partes, **1, 2 e 3 por
+> unidade** conforme o estágio; do 4 em diante vem inteiro. Estilhaçável é o
+> que a loja do Estilhaço vende: porta de estilhaço **e** bioma de origem — a
+> primeira versão olhava só a porta e fez "Estilhaço de Essência" (pego na
+> sondagem, antes da tela). Em 60 runs por estágio: Floresta e Vulcão só têm
+> item montável no baú a partir do 3; Estufa e Praia já no 1 e no 2. O baú do
+> estágio 3 com três pedras, que dava três inteiras, dá nove partes — uma pedra
+> e dois sétimos. **A calibragem (1·2·3) é recomendação minha e é reversível**:
+> é uma linha no motor.
 
 O Estilhaço fechou a porta da Essência, e no caminho ficou visível uma segunda
 que ainda não existe: **a run do Avanço não paga estilhaço.**
@@ -7167,10 +7178,12 @@ que é justamente onde a L-140 já mudou de forma.
 
 ---
 
-### L-160 — o Estilhaço não aparece na mochila nem na wiki
+### L-160 — o Estilhaço não aparece na mochila nem na wiki ✅ FECHADA
 
 **Registrada em:** 09/09/2026. **Bloco dono:** 1.30 (os ícones) ou o primeiro
-bloco que passar pela mochila. **Estado:** aberta, e ela é pequena.
+bloco que passar pela mochila. **Estado:** ✅ **FECHADA em 25/09/2026, na ST-3.1**
+— que foi o primeiro bloco a pôr `est:<id>` num saque: `nomeDoItem` diz
+"Estilhaço de <item>" e `estiloItem` usa o ícone do item de origem.
 
 As partes são guardadas na bolsa sob `est:<id>` e **só a aba do Estilhaço as
 mostra**. A mochila lista a bolsa e vai listá-las com o id cru — `est:folha` —
@@ -7949,12 +7962,21 @@ manual e custa uma linha: ao trocar o navegador, rodar `npm run sabotagem:comple
 
 ---
 
-### L-183 — o veterano quase não vê a noite: 2 das 11 rotas mudam no estágio 4
+### L-183 — o veterano quase não vê a noite: 2 das 11 rotas mudam no estágio 4 ✅ FECHADA (no teto do conteúdo)
 
 **Registrada em:** 25/09/2026, na captura da sala de rotas do 1.33. **Bloco
 dono:** **1.32b** — o bloco que ensina ao jogador que as condições existem é o
 que precisa de uma condição que ele consiga ver em todo estágio. **Estado:**
-aberta.
+✅ **FECHADA em 25/09/2026, na ST-2.3 — no teto que o conteúdo permite.**
+
+> **Medido e decidido.** Um quarto tipo sozinho leva o estágio 4 a no máximo 3
+> de 11 (fada, elétrico ou voador); combinações não passam de 3. A outra saída
+> desta ficha — "aceitar a troca na faixa vizinha" — é vetada pelo invariante 3
+> do cartão 1.33 (a troca não muda a raridade do slot). **Fada entrou**, porque
+> Clefairy é o Pokémon da lua e a sala diz "quem tem a lua só sai a esta hora":
+> 6·7·3·2 → **7·8·3·3**. Passar de 3 no estágio 4 pede ESPÉCIES noturnas raras
+> (outro pack, outra geração), e não regra nova. Teste: `elenco-estagio` cobra
+> ≥ 3 de 11 em todo estágio; defeito S1064.
 
 **Medido:** 18 dos 44 estágios mudam à noite, mas concentrados no começo:
 

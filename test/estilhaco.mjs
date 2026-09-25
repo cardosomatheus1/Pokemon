@@ -35,6 +35,7 @@ import { criarSuite, ok, igual } from './harness.mjs';
 import {
   PARTES, POR_ESTILHACO, custoDoEstilhaco, custoDoItem, DIAS_DE_FARM,
   bolsoDoBioma, sortearEstilhaco, podeTrocar, montaveis, montar,
+  PORTAS, lancamentoDoBau, ESTAGIO_DO_ITEM_INTEIRO,
 } from '../engine/estilhaco.mjs';
 import { rngTeste } from './harness.mjs';
 import kanto from '../content/pokemon_kanto_v1.mjs';
@@ -270,6 +271,60 @@ export function suite() {
     ok(vistos.size >= 2,
       'doze trocas seguidas devolveram a mesma parte — foi exatamente o que o ' +
       'navegador mostrou quando o contador não persistia');
+  });
+
+  /* ══ ST-3.1 · O BAÚ CAI EM ESTILHAÇO ANTES DO ESTÁGIO 4 (L-159) ════════
+   *
+   * A run pagava o BAÚ com o item INTEIRO, e a expedição paga Essência que vira
+   * estilhaço na loja: duas economias que não se falavam, e o item pronto saía
+   * fácil pelo Avanço — justamente o que o estilhaço existe para impedir.
+   * Recomendação escrita na L-159 antes de construir: o baú pode cair em
+   * estilhaço, com o inteiro reservado ao estágio 4. As partes crescem com o
+   * estágio (1, 2, 3 de 7), para o baú do começo continuar valendo a pena. */
+  const pedra = (kanto.catalogo ?? []).find(i => PORTAS.includes(i.porta) && i.fonte);
+  const linha = (classe, id, q = 1) => ({ classe, id, quantidade: q });
+
+  s.teste('ST-3.1: nos estágios 1..3 o item do baú vira partes, tantas quanto o estágio', () => {
+    for (const estagio of [1, 2, 3]) {
+      const l = lancamentoDoBau(linha('item', pedra.id), { estagio, catalogo: kanto.catalogo });
+      igual(l.chave, 'est:' + pedra.id, `estágio ${estagio}: o baú entregou o item inteiro (L-159)`);
+      igual(l.quantidade, estagio, `estágio ${estagio}: ${l.quantidade} parte(s) — a curva é 1, 2, 3`);
+    }
+  });
+
+  s.teste('ST-3.1: no estágio 4 o item vem inteiro', () => {
+    const l = lancamentoDoBau(linha('item', pedra.id), { estagio: ESTAGIO_DO_ITEM_INTEIRO, catalogo: kanto.catalogo });
+    igual(l.chave, pedra.id, 'o estágio 4 deixou de entregar o item inteiro');
+    igual(l.quantidade, 1);
+  });
+
+  /* POR UNIDADE, e não por baú: a sondagem da ST-3.1 achou um baú do
+     estágio 3 com três pedras — nove partes, que montam uma e sobram duas. É o
+     desenho (antes eram três pedras inteiras), mas a promessa que se pode
+     fazer é esta: uma unidade sorteada nunca vira sozinha um item inteiro. */
+  s.teste('ST-3.1: uma unidade do baú nunca vira, sozinha, as 7 partes de um item', () => {
+    for (let estagio = 1; estagio < ESTAGIO_DO_ITEM_INTEIRO; estagio++) {
+      const l = lancamentoDoBau(linha('item', pedra.id), { estagio, catalogo: kanto.catalogo });
+      ok(l.quantidade < PARTES,
+        `estágio ${estagio}: ${l.quantidade} partes de um baú só já montam o item — o baú virou o inteiro com outro nome`);
+    }
+  });
+
+  s.teste('ST-3.1: Essência e moeda não viram estilhaço — não têm bioma de origem', () => {
+    /* A primeira versão desta regra olhava só a porta, e a sondagem pegou
+       "Estilhaço de Essência" e "Estilhaço de PokéCoin" no baú da Floresta. */
+    for (const id of ['essencia', 'pokecoin']) {
+      const l = lancamentoDoBau(linha('item', id, 3), { estagio: 1, catalogo: kanto.catalogo });
+      igual(l.chave, id, `${id} virou estilhaço — ele não se monta, ele se gasta`);
+      igual(l.quantidade, 3);
+    }
+  });
+
+  s.teste('ST-3.1: bola, material e item fora do estilhaço passam intactos', () => {
+    igual(lancamentoDoBau(linha('bola', 'poke', 2), { estagio: 1, catalogo: kanto.catalogo }), null,
+      'a bola do baú virou estilhaço — só item de porta de estilhaço vira parte');
+    const fora = lancamentoDoBau(linha('item', 'nao-existe'), { estagio: 1, catalogo: kanto.catalogo });
+    igual(fora.chave, 'nao-existe', 'item sem cadastro virou estilhaço de nada');
   });
 
   return s;

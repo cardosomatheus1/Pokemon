@@ -14,6 +14,7 @@
  *   > **Quando a função certa não tem endereço público, o segundo chamador
  *   > inventa um.** Um inventou o silêncio; o outro inventou o nome.
  */
+import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { nomeDoItem, nomesDe } from '../app/modules/itens-nome.mjs';
 import kanto from '../content/pokemon_kanto_v1.mjs';
@@ -75,7 +76,15 @@ export function suite() {
     }
   });
 
+  /* ST-3.1 · L-160 — a parte de estilhaço tem nome. Desde a ST-3.1 o baú do
+     Avanço entrega `est:<id>`, e o quadro da run lista o que entrou: sem isto
+     o jogador leria "est:fogo", que é o defeito que o 1.12 corrigiu. */
+  s.teste('L-160: a parte de estilhaço se chama pelo item de origem, nunca pelo id cru', () => {
+    const pedra = (kanto.catalogo ?? []).find(i => i.porta === 'drop');
+    const nome = nomeDoItem(kanto, 'est:' + pedra.id);
+    igual(nome, `Estilhaço de ${pedra.nome}`, 'a parte de estilhaço saiu com outro nome');
+    ok(!nome.includes('est:'), `o id cru apareceu: "${nome}"`);
+  });
+
   return s;
 }
-
-import { readFileSync } from 'node:fs';

@@ -265,6 +265,10 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | **T9 · T10 · T13 · T11a** · o arnês | 16/09 | portão de 7 h para 3 min com a árvore intocada |
 | **1.34** · dia, tarde e noite | 25/09 | Q2 1017/1017 · suíte 2184/2184 · capturas em `tools/previas/_hora/` |
 | **1.33** · o elenco muda com a hora e o clima | 25/09 | 18 de 44 estágios mudam à noite · Q2 e suíte no commit · capturas `tools/previas/_hora/sala-*` |
+| **ST-3.2** · duas abas não colhem a mesma coisa duas vezes | 25/09 | save com revisão (otimista) + evento `storage` · S1072–S1076 |
+| **T14c** · Q2 do bloco por TRECHO, não por arquivo | 25/09 | o 1.32b ia a 130 mutantes (~2,7 h) por 30 linhas no index.html · S1077–S1078 |
+| **ST-3.1** · o baú cai em Estilhaço até o estágio 3 (L-159, e a L-160 junto) | 25/09 | 1·2·3 partes por unidade; inteiro no 4 · S1065–S1071 |
+| **ST-2.3** · o veterano vê a noite (L-183) | 25/09 | fada na noite: 7·8·3·3 rotas · S1064 |
 | **1.32b · ST-2.1 · ST-2.2** · os climas à vista (fecha a L-177) | 25/09 | legenda por estágio, perguntada ao motor · a run diz quem a condição trouxe · S1057–S1063 · capturas `tools/previas/_climas/` |
 | **ST-1.2 · ST-1.3** · o Sair desloga; a boutique não vende sem cobrar (D-109, D-108) | 25/09 | `sair.mjs` em camada 0 · `podeComprar` com `contaOnline` · S1050–S1056 |
 | **ST-1.1** · o teto sente a run colhida (D-107) | 25/09 | 6 testes · S1044–S1049 · reserva até a colheita |
@@ -278,8 +282,8 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | # | bloco | o que é | por que aqui |
 |---|---|---|---|
-| 1 | **1.32b (resto)** · ST-2.3: o veterano vê a noite | L-183 — a L-177 fechou (ST-2.1/2.2) | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto. A prévia da NOITE já está na sala desde o 1.33 |
-| 2 | **INT-01** · recompensas que não duplicam | da Revisão 2.0: Estilhaço no baú (L-159), reservas, resgate concorrente | integridade de economia vem antes de calibrar quantidade |
+| 1 | ~~**1.32b (resto)** · ST-2.3~~ | ✅ fechada em 25/09 — a noite muda 7·8·3·3 rotas | — | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto. A prévia da NOITE já está na sala desde o 1.33 |
+| 2 | **INT-01** (resto) · ST-3.3 a 3.5 | mapa de emissão, DEC-08/09 — Estilhaço no baú (ST-3.1), reservas (ST-1.1) e colheita entre abas (ST-3.2) já fecharam | integridade de economia vem antes de calibrar quantidade |
 | 3 | **INT-02** · uma posse confiável | cosméticos e outfit entre dispositivos (L-157, L-055) | compra e equipar não podem depender do navegador |
 | 4 | **1.27g · UX-01** · efeitos e leitura da luta | L-171, L-172, L-175, L-176 | o que impede ENTENDER a ação vem antes do que a enfeita |
 | 5 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
