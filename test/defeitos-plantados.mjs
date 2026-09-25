@@ -7627,6 +7627,19 @@ export const DEFEITOS = [
     de:'    const usa = Math.min(falta, Math.max(0, d[b] ?? 0));',
     para:'    const usa = falta;' },
 
+  /* ── D-110 · a fila de abas do perfil a 420 px ─────────────────────── */
+  { id:'S1148', arquivo:'app/index.html', nome:'a fila de abas volta a nao quebrar linha',
+    real:'a aba Boutique empurra a pagina 16 px para o lado a 420 px (D-110)',
+    de:'  flex-wrap:wrap}', para:'  flex-wrap:nowrap}' },
+
+  { id:'S1149', arquivo:'app/index.html', nome:'o nome da lista de apostas volta a nao encolher',
+    real:'a 420 px a arena rola 16 px para o lado — a tela principal (D-110)',
+    de:'  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+    para:'  overflow:hidden;white-space:nowrap}' },
+  { id:'S1150', arquivo:'app/index.html', nome:'a margem de erro volta a ocupar a linha estreita',
+    real:'os nomes voltam a ser cortados em cinco letras — Kan..., Oma...',
+    de:'  .pick .p i{display:none}\n', para:'' },
+
   /* ── L-187 · na luta, a câmera centra no trio ──────────────────────── */
   { id:'S1145', arquivo:'app/modules/avanco-geometria.mjs', nome:'na luta a camera volta a seguir so o treinador',
     real:'o bando mora no fundo da janela, com a placa encostando na borda (L-187)',

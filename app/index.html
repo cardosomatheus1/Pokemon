@@ -1035,7 +1035,21 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
    *"ao invés desse gif estático minúsculo, coloque em um tamanho legal, que a
    pessoa consiga identificar onde está o seu bicho"*. */
 .pick img{width:34px;height:34px;object-fit:contain;image-rendering:pixelated}
-.pick .n{flex:1;font-size:14px;font-weight:600}
+.pick .n{flex:1;font-size:14px;font-weight:600;
+  /* D-110: sem `min-width:0` o nome não encolhe, e a 420 px a linha empurrava a
+     página 16 px para o lado. Quem cede é o NOME — ele só serve para
+     reconhecer, e o sprite ao lado reconhece junto; a odd nunca é cortada. */
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:520px){
+  /* E o teto perde a largura mínima: ele é o terciário da linha. */
+  .pick .lim{min-width:0}
+  /* A MARGEM DE ERRO DA CHANCE SAI da linha estreita (ela segue no título):
+     a primeira versão deste conserto cortou os NOMES em cinco letras —
+     "Kan…", "Oma…" —, e nome que não reconhece não serve para nada. O ± é
+     informação de segunda ordem; o nome é a primeira coisa que o olho procura. */
+  .pick .p i{display:none}
+  .pick{gap:7px;padding:9px 9px}
+}
 /* A ODD É O SEGUNDO NÚMERO DA TELA e estava no menor corpo da linha, atrás do
    limite e da chance. 8px de fonte pixel contra 12,5px de chance invertia a
    ordem de leitura da coluna que dá nome ao produto. */
@@ -1448,7 +1462,11 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 #profHead .who .sub{font-size:.65rem;color:var(--dim);margin-top:3px}
 
 /* abas */
-.tabs{display:flex;gap:5px;margin:13px 0 11px}
+.tabs{display:flex;gap:5px;margin:13px 0 11px;
+  /* D-110: as seis abas do perfil não cabem em 420 px, e a última (Boutique)
+     empurrava a página 16 px para o lado. Onde cabe, nada muda; onde não
+     cabe, a aba desce para a linha de baixo. */
+  flex-wrap:wrap}
 .tab{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:7px;
   color:var(--dim);padding:7px 0;font-size:.7rem;cursor:pointer;transition:.15s}
 .tab:hover{border-color:var(--gold);color:var(--txt)}

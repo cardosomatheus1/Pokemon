@@ -203,5 +203,30 @@ export function suite() {
     ok(/rotuloZoom\(zoomEfetivo\)/.test(t),
       'o rótulo mostra o zoom escolhido enquanto a tela usa outro — a mentira pequena do controle');
   });
+  /* D-110: a fila de abas do perfil empurrava a página 16 px para o lado a
+     420 px (medido pela esteira `olhar-telas`, que agora diz QUEM empurra:
+     `button.tab.lcPorta` até 451 px). A regra é de CSS, e a conferência
+     também: a fila quebra linha em vez de vazar. */
+  s.teste('D-110: a fila de abas quebra linha em vez de empurrar a página', () => {
+    const html = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
+    const regra = /\.tabs\{[^}]*\}/.exec(html)?.[0] ?? '';
+    ok(regra, 'a regra .tabs sumiu — o teste perdeu a âncora');
+    ok(/flex-wrap:\s*wrap/.test(regra), `a fila de abas não quebra linha: ${regra.replace(/\s+/g, ' ').slice(0, 80)}`);
+  });
+
+  /* E O CULPADO MAIOR ERA A ARENA: a lista de apostas empurrava a página 16 px
+     a 420 px — a tela principal do produto. Quem cede é o nome (com
+     reticências), e antes dele a margem de erro da chance; a odd, nunca. */
+  s.teste('D-110: na arena estreita a linha cabe — o nome encolhe, a odd não', () => {
+    const html = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
+    const nome = /\.pick \.n\{[^}]*\}/.exec(html)?.[0] ?? '';
+    ok(/min-width:\s*0/.test(nome) && /text-overflow:\s*ellipsis/.test(nome),
+      'o nome da linha não encolhe — a 420 px a lista empurra a página para o lado');
+    const estreito = /@media \(max-width:520px\)\{[^@]*\.pick \.lim\{min-width:0\}[^@]*\.pick \.p i\{display:none\}/.test(html);
+    ok(estreito, 'na tela estreita o teto não solta a largura, ou a margem de erro não sai — o nome volta a ser cortado em 5 letras');
+    const odd = /\.pick \.o\{[^}]*\}/g;
+    for (const m of html.match(odd) ?? [])
+      ok(!/text-overflow|overflow:\s*hidden/.test(m), `a odd pode ser cortada: ${m}`);
+  });
   return s;
 }

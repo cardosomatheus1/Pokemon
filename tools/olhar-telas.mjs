@@ -129,8 +129,21 @@ async function tela(nome, largura, altura, roteiro, preparar) {
   await pg.screenshot({ path: join(SAIDA, nome + '.png') });
   /* Rolagem horizontal é defeito de layout, sempre — e é barato conferir aqui,
      já que a página está aberta. */
-  const r = await pg.evaluate(() => ({ doc: document.documentElement.scrollWidth, win: window.innerWidth }));
-  if (r.doc > r.win) avisos.push(`${nome}: ROLAGEM HORIZONTAL (documento ${r.doc}px em janela ${r.win}px)`);
+  const r = await pg.evaluate(() => {
+    const doc = document.documentElement.scrollWidth, win = window.innerWidth;
+    /* E QUEM EMPURRA (D-110): o aviso dizia só "436 em 420", e a primeira
+       investigação procurou no lugar errado. O elemento mais à direita, com
+       classe e id, é a pergunta seguinte já respondida. */
+    let pior = null;
+    if (doc > win) for (const el of document.querySelectorAll('body *')) {
+      const q = el.getBoundingClientRect();
+      if (q.width && q.right > win + 0.5 && (!pior || q.right > pior.right) && getComputedStyle(el).display !== 'none')
+        pior = { right: Math.round(q.right), quem: `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}.${String(el.className).split(' ').slice(0, 2).join('.')}` };
+    }
+    return { doc, win, pior };
+  });
+  if (r.doc > r.win) avisos.push(`${nome}: ROLAGEM HORIZONTAL (documento ${r.doc}px em janela ${r.win}px)` +
+    (r.pior ? ` — o mais à direita: ${r.pior.quem} até ${r.pior.right}px` : ''));
   await ctx.close();
   console.log(`  ${nome}.png`);
 }

@@ -36,6 +36,16 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### D-110 CORRIGIDO — a arena rolava 16 px para o lado a 420 px
+
+Registrado como "o modal de perfil rola"; a esteira `olhar-telas` passou a
+dizer QUEM empurra, e o culpado maior era a **lista de apostas da arena** —
+a tela principal — com o modal só por cima. Na linha cede o nome (reticências)
+e, na tela estreita, a margem de erro da chance; a odd nunca. A primeira
+tentativa cortou os nomes em 5 letras ("Kan…") — a captura pegou, e a segunda
+os devolveu inteiros (Blastoise, Kangaskhan). Sem rolagem em arena-420,
+resultado-420 e customização-420. Suíte 2327/2327; Q2 do bloco 5/5.
+
 ### L-187 PARCIAL — na luta a câmera mira o meio do trio
 
 A câmera da run mira o posto do companheiro (entre o treinador e o bando) e

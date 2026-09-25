@@ -6454,11 +6454,20 @@ servidor não tem como revogá-lo (`server/auth.mjs:216-246`).
 
 ---
 
-## D-110 — o modal de perfil rola na horizontal a 420 px
+## D-110 — a 420 px a página rola na horizontal (a ARENA, e o modal de perfil) ✅ CORRIGIDO
 
 **Achado em:** 25/09/2026, no passo OLHAR do E4 (`node tools/olhar-telas.mjs
 --so customizacao-trancada-420`). **Bloco dono:** **1.27g · UX-01** (a fila de
-leitura de tela). **Estado:** aberto.
+leitura de tela). **Estado:** ✅ corrigido em 25/09/2026 (UX-01). **A atribuição
+estava errada, e a medição a corrigiu:** a esteira passou a dizer QUEM empurra,
+e eram dois — a aba Boutique do perfil (`button.tab.lcPorta` até 451 px) e,
+por baixo do modal, **a lista de apostas da ARENA** (`span.lim.tiny` até
+436 px): a tela principal do produto rolava 16 px a 420. Conserto por
+hierarquia: a fila de abas quebra linha; na linha de aposta cede o NOME (com
+reticências) e, na tela estreita, a margem de erro da chance (segue no título)
+— a primeira tentativa cortou os nomes em cinco letras ("Kan…"), e a
+segunda os devolveu inteiros. A odd nunca é cortada. **Testes que travam:**
+`test/viewport.mjs` → `D-110:` (2); S1148–S1150.
 **Medição:** documento de **436 px** numa janela de 420 com o modal de perfil
 aberto na aba de customização. **Não é do E4:** a mesma captura com o
 `index.html` de antes do E4 dá os mesmos 436 px.
