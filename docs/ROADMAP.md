@@ -291,7 +291,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | id | a pergunta | o que depende dela |
 |---|---|---|
-| **DEC-11** | manter os 154.000 sims? O argumento dos 19% caiu (L-182) | custo de servidor e de testes — é o maior custo que sobrou na suíte de navegador (ST-0.8) |
+| **DEC-11** | manter os 154.000 sims? O argumento dos 19% caiu (L-182) | custo de servidor; nos testes é só 30% das sondas de navegador (medido, ST-0.8) — decide-se pela economia |
 | **DEC-13** | CI no GitHub Actions? | ST-0.6 — minutos de Actions num repositório privado |
 | ✅ DEC-12 | ~~o Q2 do bloco pode adiar o que só mudou de fecho?~~ **adotada** pelo pedido do dono de 25/09 ("minutos"); o preço está na ST-0.4 | o `portoes` |
 | DEC-01 · 02 · 03 | tema e direitos · RMT · pagamento e poder | qualquer coisa com dinheiro real |

@@ -160,10 +160,34 @@ mudança de produto. Achado de arnês que não couber vai para DEFEITOS/LACUNAS.
 
 ### ST-0.8 · o que a DEC-11 compraria na suíte — **aberta, espera o dono**
 
-- Cada página do jogo precifica 154 k no navegador (~5 s por carga), e é o
-  maior custo restante das sondas. Se a DEC-11 reduzir os sims, a suíte de
-  navegador cai junto. **Não se reduz sims para acelerar teste**: é decisão
-  econômica, e o teste mede o que o jogador recebe.
+- ~~Cada página precifica 154 k (~5 s por carga), e é o maior custo restante
+  das sondas.~~ **Errado — corrigido no mesmo dia, medindo:**
+
+  **MEDIDO em 25/09, numa cópia descartável com `SIMS: 2000`** — as 8 sondas,
+  uma fila:
+
+  ```text
+  sonda            154 k     2 k      diferença
+  base             62,1      37,7     24,4
+  rodar            29,3      20,6      8,7
+  luta             25,1      15,7      9,4
+  semRede          10,2       1,5      8,7
+  semBackend       31,3      31,1      0,2
+  rodadaCompleta   16,4      15,3      1,1
+  as outras duas    1,1       1,0      0,1
+  total           175,5     122,9     52,6 s  (30%)
+  ```
+
+  Em `npm test`, com as duas filas, isso vale ~20–25 s dos 1 min 45 s. **Os
+  outros 70% são carregar a página, avançar quadros e as quatro larguras** —
+  não Monte Carlo. Na caixa do Q2, um mutante de navegador pouparia ~50 s de
+  ~3 min.
+
+- **Recomendação: desacoplar.** A DEC-11 se decide pela economia (ruído da odd
+  contra a margem de 8%), nunca pelo relógio do teste — o teste mede o que o
+  jogador recebe. E não vale criar um modo de teste com sims baixo: ele muda o
+  que as sondas veem (odds e a marca "154.000" na tela), obriga regravar a base
+  visual, e compraria 30% de uma suíte que já não impede nada.
 
 ---
 

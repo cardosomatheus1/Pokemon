@@ -112,7 +112,7 @@ principal" — com endereço.
 | DEC-07 | o que o OFF encerra | o "Enviar" da Rota OFF é local (`idle-tela.mjs:567-588`), não fala com o servidor; o ⏻ não desloga (D-109) | a decisão tem dois pedaços: o OFF (presença) e o Sair (sessão). O segundo é **defeito**, não decisão |
 | DEC-08 | captura: espécie mostrada ou a base | entrega a espécie mostrada (`idle-lance.mjs:46`), **inclusive chefe evoluído** | o código já segue a recomendação; falta registrar — e o D-107 torna o chefe evoluído capturável sem teto |
 | DEC-09 | stamina por tentativa ou por vitória | cobra **por wave alcançada** no fim (2/wave, 5 no chefe, total 23: `engine/avanco.mjs:139-153`); queda encerra a run e a próxima é run nova | o texto da revisão ("por tentativa iniciada") **não descreve o código**; o painel não mostra o custo de nova tentativa (`avanco-painel.mjs:59,79-81`) |
-| DEC-11 | manter 154.000 sims | cada página e cada servidor precificam 154 k (~5 s de CPU) | é também o **maior custo restante da suíte de navegador** — ver seção 6 |
+| DEC-11 | manter 154.000 sims | cada página e cada servidor precificam 154 k (~5 s de CPU) | ~~é também o maior custo restante da suíte de navegador~~ — medido depois: é **30%** das sondas (52,6 s de 175,5); ver a ST-0.8 |
 
 ## 5. Os documentos contra eles mesmos
 
@@ -177,6 +177,7 @@ suítes rodam com os mesmos dados; a sabotagem continua em fila dentro da caixa
 de areia (o D-100 continua valendo); o Q2 completo continua existindo com o
 cache de sempre.
 
-**O que resta de lento, com dono:** a sonda `base` (62 s, 4 larguras) e as
-páginas que precificam 154 k no navegador (~5 s por carga). A primeira é o T11
-(congelado); a segunda depende da **DEC-11**. Ver o plano, épico E0.
+**O que resta de lento, com dono:** a sonda `base` (62 s, 4 larguras), que é o
+T11 (congelado). O Monte Carlo de 154 k nas páginas é **30%** das sondas
+(medido: 175,5 s → 122,9 s com 2 k) — não é o maior custo, e a DEC-11 não deve
+ser decidida por ele. Ver a ST-0.8.

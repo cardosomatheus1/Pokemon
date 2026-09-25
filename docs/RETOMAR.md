@@ -95,8 +95,8 @@ porque alguns testes leem `docs/`.
 
 ### O que espera o dono
 
-DEC-13 (CI no GitHub) · DEC-11 (os 154 k sims — hoje é também o maior custo que
-sobrou na suíte de navegador) · DEC-07/08/09 com o que o código JÁ faz escrito
+DEC-13 (CI no GitHub) · DEC-11 (os 154 k sims — ~~o maior custo que
+sobrou nos testes~~: medido, são 30% das sondas; decide-se pela economia) · DEC-07/08/09 com o que o código JÁ faz escrito
 ao lado (plano, seção final) · DEC-01..06.
 
 ## 0-. ANTES — 25/09/2026, fim do dia
