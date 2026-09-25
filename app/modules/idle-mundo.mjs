@@ -27,7 +27,7 @@ import { PACK, nomeExibido } from './motor.mjs';
 import { folhaVestida, porId, carregar as carregarGuardaRoupa } from './outfit-acervo.mjs';
 import { areaAndavel, passeio, companheiro, quadroDe, camera } from './vida.mjs';
 /* O TRECHO DA WAVE (L-164): a jornada progressiva. Ver o cabeçalho de lá. */
-import { trechoDaWave } from './avanco-geometria.mjs';
+import { trechoDaWave, focoDaCamera, aproximarFoco } from './avanco-geometria.mjs';
 import { WAVES } from '../../engine/wave.mjs';
 /* OS MOBS DA WAVE (A4b). Entram no MESMO laço, e não num próprio: dois laços
    desenhando no mesmo canvas seriam duas mãos no mesmo papel — a ordem entre
@@ -78,6 +78,8 @@ export const acompanhar = acompanharBicho;
 let niveisAtuais = [1, 2, 3, 4, 5];
 /* O zoom que a tela USA agora — o escolhido, ou o da run estreita (DEC-15). */
 let zoomEfetivo = 1;
+/* O foco da câmera, suavizado entre quadros (L-187). */
+let focoCam = null, tFoco = null;
 const CHAVE_ZOOM = 'pa.idle.zoom';
 let zoom = 3;
 try {
@@ -403,7 +405,10 @@ async function laçoDoAtor(t) {
     const emLuta = !!(cenaAgora?.duelando || cenaAgora?.emCena?.length);
     const tPasseio = relogioDoPasseio(t, emLuta);
     const eu = passeio(semente, area, tPasseio, opcoes);
-    const alvo = camera(eu, W, H, mundoW, mundoH);
+    /* L-187: na luta a câmera mira o meio do trio, e chega lá sem pular. */
+    focoCam = aproximarFoco(focoCam, focoDaCamera(eu, emLuta, { w: mundoW, h: mundoH }), t - (tFoco ?? t));
+    tFoco = t;
+    const alvo = camera(focoCam, W, H, mundoW, mundoH);
 
     /* O chão: uma janela do mundo já pintado, MAIS a vida do bioma por cima.
        O chão não muda e por isso vive num canvas guardado; a vida muda a cada

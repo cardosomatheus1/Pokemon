@@ -36,6 +36,18 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### L-187 PARCIAL — na luta a câmera mira o meio do trio
+
+A câmera da run mira o posto do companheiro (entre o treinador e o bando) e
+chega lá suavizada, em vez de pular. Medido com a esteira — que passou a tirar
+a MEDIANA de 8 amostras, porque uma foto pôs a mesma cena em 77% numa execução
+e 83% na outra: o pé do mob mais baixo foi de 96% para 88% da altura da janela
+a 420 px. Não centrou; a hipótese (a borda do mundo) está escrita na L-187. De
+brinde: no panorâmico os estouros fora da tela foram de 6 para 0 por wave. E a
+sonda dos números passou a separar o par em que o mais velho já está abaixo de
+25% de opacidade (sumindo) — contado à parte, não escondido. Suíte 2325/2325;
+Q2 do bloco 4/4 (S1145–S1147).
+
 ### ST-2.4 FECHADA — a fauna do cenário dorme à noite (L-184)
 
 A mesma tabela do elenco (`preferenciasDaNoite`): quem a noite desfavorece

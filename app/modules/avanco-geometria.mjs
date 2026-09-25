@@ -338,6 +338,29 @@ export const postoDoCompanheiro = (eu, mundo = null) => {
    lugar, não de pergunta. */
 export const pontoDeBatalha = (eu, mundo = null) => postoDoCompanheiro(eu, mundo);
 
+/* ── NA LUTA, A CÂMERA CENTRA NO TRIO (L-187) ─────────────────────────────
+ *
+ * A DEC-15 fez a luta CABER em 420 px; ela não a pôs no MEIO. A câmera
+ * seguia o treinador, e o bando — que fica abaixo do companheiro — morava no
+ * último terço da janela, com a placa do mob de baixo encostando na borda.
+ *
+ * O posto do companheiro É o meio: o treinador fica acima dele e o arco dos
+ * selvagens abaixo, os dois à mesma distância de assistir. Mirar ali centra o
+ * trio sem conta nova. */
+export const focoDaCamera = (eu, emLuta, mundo = null) =>
+  (emLuta ? postoDoCompanheiro(eu, mundo) : { x: eu.x, y: eu.y });
+
+/* E ELA CHEGA, EM VEZ DE PULAR: o foco muda de lugar no instante em que o mob
+   entra, e uma câmera que teleporta vinte pixels de mundo lê como tranco. A
+   aproximação é exponencial no TEMPO (e não por quadro), para a mesma tela
+   em 30 e em 144 Hz andar igual. Sem ponto anterior, nasce no foco. */
+export const TAU_DA_CAMERA = 300;
+export function aproximarFoco(atual, alvo, dt, tau = TAU_DA_CAMERA) {
+  if (!atual) return { x: alvo.x, y: alvo.y };
+  const k = dt > 0 ? 1 - Math.exp(-dt / tau) : 0;
+  return { x: atual.x + (alvo.x - atual.x) * k, y: atual.y + (alvo.y - atual.y) * k };
+}
+
 /* ── SEPARAR O QUE SE ENCOSTA — a geometria do D-081 ──────────────────────
  *
  * As placas de nome e vida têm largura fixa e se centram no lutador. O desenho

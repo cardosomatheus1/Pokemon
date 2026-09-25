@@ -1311,5 +1311,38 @@ export function suite() {
     igual(inteiro.x0, area.x0); igual(inteiro.x1, area.x1);
   });
 
+  /* ══ L-187 · NA LUTA, A CÂMERA CENTRA NO TRIO ═════════════════════════
+   * Com a DEC-15 a luta cabe em 420 px, mas a câmera seguia o TREINADOR e o
+   * bando ficava no último terço, com a placa encostando na borda. Na luta o
+   * foco vira o posto do companheiro — o meio entre o treinador (em cima) e o
+   * bando (embaixo) —, e a câmera CHEGA lá em vez de pular. */
+  s.teste('L-187: fora da luta a câmera segue o treinador; na luta, o posto do companheiro', async () => {
+    const G = await import('../app/modules/avanco-geometria.mjs');
+    const eu = { x: 200, y: 100 }, mundo = { w: 2000, h: 2000 };
+    const fora = G.focoDaCamera(eu, false, mundo);
+    igual(fora.x, 200, 'fora da luta a câmera saiu do treinador'); igual(fora.y, 100, 'idem no Y');
+    const dentro = G.focoDaCamera(eu, true, mundo), posto = G.postoDoCompanheiro(eu, mundo);
+    igual(dentro.x, posto.x, 'na luta o foco não é o posto do companheiro'); igual(dentro.y, posto.y, 'idem no Y');
+  });
+
+  s.teste('L-187: a câmera CHEGA ao foco novo, e não pula', async () => {
+    const { aproximarFoco } = await import('../app/modules/avanco-geometria.mjs');
+    const a = { x: 0, y: 0 }, b = { x: 100, y: 40 };
+    const p1 = aproximarFoco(null, b, 16);
+    igual(p1.x, 100, 'no primeiro quadro não há de onde vir — a câmera deve nascer no foco');
+    const p = aproximarFoco(a, b, 16);
+    ok(p.x > 0 && p.x < 20, `num quadro de 16 ms a câmera andou ${p.x} de 100 — pulou ou travou`);
+    const longe = aproximarFoco(a, b, 5000);
+    ok(Math.abs(longe.x - 100) < 0.5 && Math.abs(longe.y - 40) < 0.5, 'depois de 5 s a câmera ainda não chegou');
+    igual(aproximarFoco(a, b, 0).x, 0, 'sem tempo passado a câmera andou');
+    igual(aproximarFoco(a, b, -50).x, 0, 'relógio voltando empurrou a câmera');
+  });
+
+  s.teste('L-187: o mundo mira a câmera pelo foco suavizado', () => {
+    const t = readFileSync(new URL('../app/modules/idle-mundo.mjs', import.meta.url), 'utf8');
+    ok(/aproximarFoco\(focoCam, focoDaCamera\(eu, emLuta/.test(t),
+      'o idle-mundo não mira pelo foco suavizado da luta — a câmera segue o treinador');
+    ok(/camera\(focoCam, W, H, mundoW, mundoH\)/.test(t), 'a câmera não usa o foco calculado');
+  });
   return s;
 }

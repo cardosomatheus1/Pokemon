@@ -7627,6 +7627,19 @@ export const DEFEITOS = [
     de:'    const usa = Math.min(falta, Math.max(0, d[b] ?? 0));',
     para:'    const usa = falta;' },
 
+  /* ── L-187 · na luta, a câmera centra no trio ──────────────────────── */
+  { id:'S1145', arquivo:'app/modules/avanco-geometria.mjs', nome:'na luta a camera volta a seguir so o treinador',
+    real:'o bando mora no fundo da janela, com a placa encostando na borda (L-187)',
+    de:'  (emLuta ? postoDoCompanheiro(eu, mundo) : { x: eu.x, y: eu.y });',
+    para:'  ({ x: eu.x, y: eu.y });' },
+  { id:'S1146', arquivo:'app/modules/avanco-geometria.mjs', nome:'a camera pula para o foco novo',
+    real:'o mob entra e a tela da um tranco de vinte pixels de mundo',
+    de:'  const k = dt > 0 ? 1 - Math.exp(-dt / tau) : 0;', para:'  const k = 1;' },
+  { id:'S1147', arquivo:'app/modules/idle-mundo.mjs', nome:'a camera ignora o foco calculado',
+    real:'a conta do foco existe e a camera segue o treinador do mesmo jeito',
+    de:'    const alvo = camera(focoCam, W, H, mundoW, mundoH);',
+    para:'    const alvo = camera(eu, W, H, mundoW, mundoH);' },
+
   /* ── ST-2.4 · a fauna sabe que é noite (L-184) ──────────────────────── */
   { id:'S1139', arquivo:'app/modules/fauna.mjs', nome:'o morador da noite dorme porque tambem e de um tipo do dia',
     real:'o Oddish (planta e veneno) dorme — a fauna e o elenco discordam sobre quem e da noite',

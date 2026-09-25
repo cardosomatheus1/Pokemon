@@ -654,7 +654,7 @@ for (const { L, chefe, raiz } of [
     const VIDA_MS = 1100;      /* a duração do `floatUp` */
     const SUBIDA = 1.4;        /* de -50% a -190% da altura, em alturas */
     let n = 0;
-    const pares = [];
+    const pares = [], sumindo = [];
     for (let i = 0; i < dmg.length; i++)
       for (let j = i + 1; j < dmg.length; j++) {
         const [velho, novo] = (dmg[i].t ?? 0) <= (dmg[j].t ?? 0)
@@ -665,12 +665,18 @@ for (const { L, chefe, raiz } of [
         const vy = velho.y - subiu;
         if (velho.x < novo.x + novo.w && novo.x < velho.x + velho.w &&
             vy < novo.y + novo.h && novo.y < vy + (velho.h || 20)) {
-          n++;
-          pares.push(`${velho.texto}@${velho.x},${velho.y}→${velho.x},${Math.round(vy)} × ` +
-                     `${novo.texto}@${novo.x},${novo.y}  dt ${Math.round(dt)} ms`);
+          /* E A CONTA OLHA SE O VELHO AINDA SE VÊ (L-187). O `floatUp` vai de
+             opacidade 1 em 15% da vida a 0 em 100%: aos 1000 de 1100 ms ele
+             está a ~10%, sumindo sob o novo. Contar esse par é contar o que o
+             olho não vê — o mesmo erro da 1ª versão desta sonda. Ele sai
+             SEPARADO, contado, e não escondido. */
+          const opVelho = Math.max(0, Math.min(1, 1 - (dt / VIDA_MS - 0.15) / 0.85));
+          const txt = `${velho.texto}@${velho.x},${velho.y}→${velho.x},${Math.round(vy)} × ` +
+                      `${novo.texto}@${novo.x},${novo.y}  dt ${Math.round(dt)} ms · velho a ${Math.round(opVelho * 100)}%`;
+          if (opVelho >= 0.25) { n++; pares.push(txt); } else sumindo.push(txt);
         }
       }
-    return { n, pares };
+    return { n, pares, sumindo };
   })();
   /* Quando sobra par, DIZER qual: dois números sem endereço voltam a ser "meio
      zoado", que é a palavra que eu preciso deixar de usar. */
@@ -682,6 +688,9 @@ for (const { L, chefe, raiz } of [
   /* O PAR, com endereço (ST-5.4): o velho onde nasceu → onde estava quando o
      novo nasceu, e o novo. Sem isto a próxima tentativa é chute. */
   for (const par of dmgJuntos.pares) console.log(`      par: ${par}`);
+  if (dmgJuntos.sumindo.length)
+    console.log(`    encostos no fim da vida (velho abaixo de 25%, nao contados): ${dmgJuntos.sumindo.length}` +
+                dmgJuntos.sumindo.map(x => `\n      ${x}`).join(''));
 
   /* ── O EFEITO DO GOLPE CHEGOU AOS OLHOS? (L-171) ──────────────────────
      O estouro é desenhado no CANVAS, então nenhum observador de DOM o vê. A
@@ -728,7 +737,10 @@ for (const { L, chefe, raiz } of [
 
        > Um número sem a pergunta seguinte vira palpite. A esteira existe para
        > que a pergunta seguinte também tenha número. */
-  const janelaCam = await pg.evaluate(() => {
+  /* UMA FOTO É RUÍDO (L-187): o mob faz a investida, a câmera suaviza — uma
+     amostra só pôs a mesma cena em 77% numa execução e 83% na outra. Oito
+     amostras, 250 ms entre elas; o relatório diz a MEDIANA da faixa. */
+  const medirCam = () => pg.evaluate(() => {
     const cv = document.querySelector('#idleAtor');
     const palco = document.querySelector('#idlePalco');
     if (!cv || !palco) return null;
@@ -744,11 +756,23 @@ for (const { L, chefe, raiz } of [
       mobs: mobs.length,
       fora: mobs.filter(m => m.x + m.w <= 0 || m.y + m.h <= 0 ||
                              m.x >= cr.width || m.y >= cr.height).length,
+      /* ONDE A LUTA ESTÁ NA JANELA (L-187), em % da altura: a base de cada
+         mob, do mais alto ao mais baixo. Centrada, a faixa fica no meio; com a
+         câmera no treinador, ela encostava no fundo. */
+      faixa: mobs.length ? [Math.min(...mobs.map(m => m.y + m.h)), Math.max(...mobs.map(m => m.y + m.h))]
+        .map(y => Math.round(y / cr.height * 100)) : null,
     };
   }).catch(() => null);
+  const amostras = [];
+  for (let k = 0; k < 8; k++) { const a = await medirCam(); if (a) amostras.push(a); await pg.waitForTimeout(250); }
+  const janelaCam = amostras[amostras.length - 1] ?? null;
+  const comFaixa = amostras.filter(a => a.faixa).map(a => a.faixa[1]).sort((x, y) => x - y);
+  if (janelaCam) janelaCam.faixa = comFaixa.length
+    ? [comFaixa[0], comFaixa[Math.floor(comFaixa.length / 2)], comFaixa[comFaixa.length - 1]] : null;
   if (janelaCam) console.log(
     `    janela da camera: canvas ${janelaCam.canvas} · palco ${janelaCam.palco} · ` +
     `escala ${janelaCam.escala} · ${janelaCam.mobs} moldura(s), ${janelaCam.fora} fora` +
+    (janelaCam.faixa ? ` · pé do mob mais baixo: mediana ${janelaCam.faixa[1]}% da altura (${janelaCam.faixa[0]}–${janelaCam.faixa[2]}%, ${comFaixa.length} amostras)` : '') +
     (janelaCam.fora ? '  <-- o mob esta fora, e nao o estouro' : ''));
 
   /* ── O CLIMA DA RUN (1.32) ──────────────────────────────────────────────

@@ -8253,7 +8253,15 @@ a emissão real. Minha recomendação: **(b)** — preserva a sessão curta do c
 
 **Registrada em:** 25/09/2026, no passo OLHAR da ST-5.6, pela regra "o cenário
 do idle nunca está pronto". **Bloco dono:** o do CENÁRIO (o mesmo da ST-2.4).
-**Estado:** aberta.
+**Estado:** 🟡 parcial (25/09/2026) — na luta a câmera mira o posto do
+companheiro (o meio do trio) e chega lá suavizada (`focoDaCamera`,
+`aproximarFoco`). Medido pela esteira, mediana de 8 amostras a 420 px: o pé do
+mob mais baixo foi de **96%** da altura da janela (91–97) para **88%** (87–89).
+Não centrou. **Hipótese, não conferida:** a borda do MUNDO — a câmera não passa
+do mapa, e com a janela de 413 px de mundo (1,5×) o trecho da luta fica perto
+do fim dele. **O que falta:** medir a folga da câmera até a borda de baixo no
+instante da luta; se for a borda, a saída é o trecho da wave (L-164) nunca
+parar a luta no último terço do mapa.
 
 Com a DEC-15 a luta inteira cabe em 420 px (260×413 de mundo), mas a câmera
 continua centrada no TREINADOR, e o bando fica no último terço da janela — a
