@@ -29,7 +29,7 @@ o LINK     http://localhost:8099/app/index.html
            sobe com:  node tools/servir.mjs --porta 8099
 a PASTA    C:\Users\gdult\pa4
 o ESTADO   1.33 FECHADO · o elenco muda com a noite e com o clima
-           (Q2 e suíte: ver a mensagem do commit do 1.33)
+           Q2 VERDE 1032/1032 · suíte VERDE 2204/2204
 o PRÓXIMO  1.32b — mostrar que climas existem (L-177), junto com a L-183
 ```
 

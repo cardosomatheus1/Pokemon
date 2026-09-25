@@ -261,7 +261,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | **1.27f** · o cartão da equipe | 16/09 | Q2 998/998 · capturas em `tools/previas/_cartao/` |
 | **T9 · T10 · T13 · T11a** · o arnês | 16/09 | portão de 7 h para 3 min com a árvore intocada |
 | **1.34** · dia, tarde e noite | 25/09 | Q2 1017/1017 · suíte 2184/2184 · capturas em `tools/previas/_hora/` |
-| **1.33** · o elenco muda com a hora e o clima | 25/09 | 18 de 44 estágios mudam à noite · Q2 e suíte no commit · capturas `tools/previas/_hora/sala-*` |
+| **1.33** · o elenco muda com a hora e o clima | 25/09 | 18 de 44 estágios mudam à noite · Q2 1032/1032 · suíte 2204/2204 · capturas `tools/previas/_hora/sala-*` |
 
 ### A fila, na ordem
 
