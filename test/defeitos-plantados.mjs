@@ -7568,6 +7568,11 @@ export const DEFEITOS = [
     de:"             'lc' + cena.wave + ':' + golpe.de + golpe.i + ':' + golpe.t, t + (golpe.t - cena.t));",
     para:"             'lc' + cena.wave + ':' + golpe.de + golpe.i + ':' + golpe.t, t);" },
 
+  { id:'S1119', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de guardar a base visual local',
+    real:'todo runner cria a base e nunca compara — verde com lacuna para sempre (o D-093 na CI)',
+    de:'            test/fixtures/visual-base-local.json\n',
+    para:'' },
+
   /* ── E4 · a posse de cosmético no servidor (ST-4.1 a 4.4) ───────────── */
   { id:'S1113', arquivo:'server/cosmeticos.mjs', nome:'a compra deixa de cobrar o preco do catalogo',
     real:'toda peca sai por 1 — o cliente, ou um erro, escolhe quanto pagar',

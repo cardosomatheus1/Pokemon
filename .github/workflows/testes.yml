@@ -37,5 +37,18 @@ jobs:
           test -x "$CHROME" || { echo "Chromium não encontrado"; exit 1; }
           echo "PW_CHROME=$CHROME" >> "$GITHUB_ENV"
 
+      # A LINHA DE BASE VISUAL LOCAL PASSA DE UMA EXECUÇÃO PARA A OUTRA.
+      # Sem isto, todo runner novo a CRIA e não compara com nada: a suíte
+      # termina "VERDE COM LACUNA" para sempre (é o D-093 na CI). A chave muda
+      # quando a base versionada muda — tela alterada de propósito — ou quando
+      # o Chromium muda, e aí a primeira execução recria e as seguintes comparam.
+      - name: linha de base visual da CI
+        uses: actions/cache@v4
+        with:
+          path: |
+            test/fixtures/visual-base-local.json
+            test/fixtures/visual-base-local.meta.json
+          key: visual-base-chromium1194-${{ hashFiles('test/fixtures/visual-base.json') }}
+
       - name: a suíte
         run: npm test

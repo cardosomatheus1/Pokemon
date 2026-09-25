@@ -23,6 +23,11 @@ export function suite() {
     ok(/^\s*push:/m.test(y), 'o workflow não dispara no push');
     ok(/^\s*run:\s*npm test\s*$/m.test(y), 'o workflow não roda `npm test` — o que ele roda não é a suíte');
     ok(/PW_CHROME=/.test(y), 'o workflow não aponta o Chromium: a suíte pularia o Q5 e ficaria verde sem abrir o jogo');
+    /* D-093 NA CI: sem guardar a base local entre execuções, todo runner novo
+       a cria e nunca compara — "VERDE COM LACUNA" para sempre, medido na
+       primeira execução no GitHub (25/09). */
+    ok(/visual-base-local\.json/.test(y) && /actions\/cache/.test(y),
+      'a CI não guarda a linha de base visual local: toda execução a recria e a comparação nunca acontece');
   });
 
   s.teste('a CI nunca roda um recorte', () => {
