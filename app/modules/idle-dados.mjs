@@ -57,6 +57,9 @@ const DIA_MS = 24 * 3600_000;
 export const VAZIO = () => ({
   v: VERSAO, criaturas: [], expedicoes: [], bolsa: {}, registro: {},
   encontros: [],
+  /* As runs colhidas nas últimas 24 h, só com o que o TETO precisa (D-107).
+     Ver `lancarRunNoTeto`. */
+  avancos: [],
   /* A run do Avanço: uma só, `null` quando não há. Ela sobrevive a fechar a
      aba porque o §7.22.16 se apoia nisso — quem fecha recebe a MESMA run de
      quem fica olhando. */
@@ -124,6 +127,7 @@ export function carregar(deposito = globalThis.localStorage) {
   /* A DEFINIÇÃO de "run válida" mora no motor que a lê (`runDoDisco`), e não
      aqui: duas definições da mesma coisa divergem no dia em que uma ganhar um
      campo, e o lado que só guarda seria o que não sabe o que ele significa. */
+  e.avancos = avancosDoDisco(cru.avancos, problemas);
   e.run = runDoDisco(cru.run);
   if (cru.run != null && !e.run) problemas.push('a run guardada não era objeto');
 
@@ -295,10 +299,48 @@ export const concluidasHoje = (e, agora) =>
  * JANELA MÓVEL, e não meia-noite de calendário: uma virada fixa dá a todo mundo
  * um instante em que o teto zera, e quem descobre passa a jogar em volta dela,
  * que é o oposto de um idle. */
+/* AS RUNS COLHIDAS ENTRAM NA MESMA SOMA (D-107). Elas saíam de `e.run` para
+   `e.avancos`, que esta soma não lia — e o teto voltava cheio a cada colheita:
+   30 -> 24 durante a run -> 30 depois de colher 4. Avanço atrás de Avanço, a
+   captura não tinha teto. Os dois registros têm os mesmos dois campos, e é de
+   propósito: o teto não precisa saber de que modo o encontro veio. */
 export const encontrosHoje = (e, agora) =>
-  e.expedicoes
+  [...e.expedicoes, ...(e.avancos ?? [])]
     .filter(x => x.colhidaEm && x.colhidaEm > agora - DIA_MS)
     .reduce((a, x) => a + (x.encontros ?? 0), 0);
+
+/* ── O LANÇAMENTO DA RUN COLHIDA NO TETO (D-107) ──────────────────────────
+ *
+ * Guarda SÓ o que o teto lê — quando foi colhida e quantos encontros rendeu —
+ * mais bioma e estágio para quem for ler depois. Guardar a run inteira (com os
+ * eventos de cada wave) encheria o `localStorage` numa aba que fica aberta por
+ * semanas; o histórico completo que a L-141 pede é outra peça, com desenho
+ * próprio, e não pode nascer por acidente aqui.
+ *
+ * PODA o que saiu da janela: fora das 24 h o registro não pesa em nada, e
+ * mantê-lo seria só crescer. */
+export function lancarRunNoTeto(e, run) {
+  const agora = run.colhidaEm;
+  e.avancos = [
+    ...(e.avancos ?? []).filter(x => x.colhidaEm > agora - DIA_MS),
+    { colhidaEm: run.colhidaEm, encontros: run.encontros ?? 0,
+      bioma: run.bioma, estagio: run.estagio },
+  ];
+  return e.avancos;
+}
+
+/* O que volta do disco precisa ser um lançamento de verdade: número finito e
+   encontros inteiros não negativos. Um `encontros: -40` gravado à mão daria
+   quarenta encontros a mais no dia — é campo de VANTAGEM lido de onde o
+   jogador escreve, a mesma forma do D-072. */
+function avancosDoDisco(v, problemas) {
+  const lista = arrayOu(v, 'avancos', problemas);
+  const bons = lista.filter(x => x && Number.isFinite(x.colhidaEm)
+    && Number.isInteger(x.encontros) && x.encontros >= 0);
+  if (bons.length !== lista.length)
+    problemas.push(`${lista.length - bons.length} registro(s) de avanço inválido(s) descartado(s)`);
+  return bons;
+}
 
 /* O estado que o motor lê: só o que JÁ ACONTECEU. `emCampo` vai como lista de
    PERFIS porque é o máximo de cada um que fica reservado — o motor não precisa
@@ -322,7 +364,12 @@ export const estadoDoTeto = (e, agora, pack = null) => ({
   /* A RUN EM CURSO RESERVA, e é o que faz os dois modos dividirem o teto
      (§7.22.3). Lista de NÚMEROS: o `comprometido` do motor não pode conhecer
      o Avanço — ele é a camada de baixo, e a seta aponta para cá. */
-  reservas: (e.run && !e.run.fim) ? [ENCONTROS_POR_AVANCO] : [],
+  /* ATÉ A COLHEITA, e não até o fim (D-107). Uma run que acabou entrega os
+     encontros dela só ao ser colhida; soltar a reserva no `fim` deixava o
+     jogador mandar expedições com esses mesmos encontros no intervalo, e a
+     colheita os entregava por cima do teto. Colhida, a run sai de `e.run` e
+     passa a pesar por `e.avancos`. */
+  reservas: e.run ? [ENCONTROS_POR_AVANCO] : [],
 });
 
 export const pronta = (x, agora) => agora >= x.terminaEm;

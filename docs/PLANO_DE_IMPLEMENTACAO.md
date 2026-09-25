@@ -193,7 +193,7 @@ mudança de produto. Achado de arnês que não couber vai para DEFEITOS/LACUNAS.
 
 ## E1 · Integridade urgente
 
-### ST-1.1 · o teto de encontros sente a run colhida (D-107)
+### ST-1.1 · o teto de encontros sente a run colhida (D-107) — ✅ fechada em 25/09
 
 - **Porte** P · **Bloco dono** INT-01 (antecipado) · **Depende de** nada
 - **Por que agora:** reproduzido — `30 → 24 → 30` depois de colher 4

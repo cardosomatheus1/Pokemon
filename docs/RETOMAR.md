@@ -33,8 +33,19 @@ o ESTADO   T14 FECHADO · os testes em minutos
            npm run rapido  3 min 10 s -> 38,6 s
            Q2 DO BLOCO VERDE 39/39 em 13 min 17 s · 351 reaproveitados ·
            648 ADIADOS (a dívida do Q2 do 1.33, interrompido em 300/1032)
-o PRÓXIMO  ST-1.1 — o teto de encontros sente a run colhida (D-107)
+o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
+
+### ST-1.1 FECHADA — o teto sente a run colhida (D-107)
+
+`encontrosHoje` passa a somar as runs colhidas das últimas 24 h, que o
+`carregar` agora guarda e valida. **E a segunda metade do furo, achada no
+conserto:** a reserva de 6 sumia no FIM da run, e não na colheita — no
+intervalo, as expedições usavam os mesmos encontros que a colheita depois
+entregava. O teste antigo `recuar … para de reservar quando colhida` afirmava
+exatamente essa brecha (cobrava 0 antes da colheita); a asserção passou a
+concordar com o título. Suíte 2223/2223 em 1 min 40 s; S1044–S1049 pegos; S879
+realvado.
 
 ### Pedido do dono, 25/09: "cruze os documentos com o código, revise o planejamento, e os testes que levam horas precisam virar minutos"
 

@@ -20,7 +20,7 @@
  * é ultrapassado, e a recusa acontece no CLIQUE, onde o jogador entende.
  */
 import { acharCriatura, criaturasDe, estadoDoTeto, salvar,
-         criarCriatura, motivoDaOcupada } from './idle-dados.mjs';
+         criarCriatura, motivoDaOcupada, lancarRunNoTeto } from './idle-dados.mjs';
 import { forcaDe } from '../../engine/bioma.mjs';
 import { elencoDoEstagio } from '../../engine/elenco-estagio.mjs';
 import { estagioAberto, estagioMaximo, nivelDoEstagio } from '../../engine/estagios.mjs';
@@ -496,10 +496,11 @@ export function colherAvancoDaRun(e, { pack, agora, raiz = novaRaiz() }) {
     } : null,
   };
 
-  /* ── A RUN COLHIDA SAI DE `e.run` E VAI PARA O HISTÓRICO ───────────────
-     O histórico é o que a L-141 pede, e é o que faz o teto poder contar os
-     encontros de hoje sem depender da run em curso. */
-  e.avancos = [...(e.avancos ?? []), run];
+  /* ── A RUN COLHIDA SAI DE `e.run` E ENTRA NO TETO ──────────────────────
+     Antes ela ia inteira para `e.avancos`, que o teto não lia e o `carregar`
+     não guardava — o D-107. Agora vai só o lançamento do teto; o histórico
+     completo que a L-141 pede é outra peça. */
+  lancarRunNoTeto(e, run);
   e.run = null;
   salvar(e);
   return run;

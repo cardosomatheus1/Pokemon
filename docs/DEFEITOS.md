@@ -6336,13 +6336,20 @@ um cai por um motivo diferente. Medir os dois juntos esconderia qual pagou — q
 
 ---
 
-## D-107 — o teto de encontros do Avanço volta cheio depois de colher a run
+## D-107 — o teto de encontros do Avanço volta cheio depois de colher a run ✅ CORRIGIDO
 
 **Achado em:** 25/09/2026, no cruzamento documentos × código
 (`docs/CRUZAMENTO_DOCS_CODIGO_2026-09-25.md`).
-**Bloco dono:** **ST-1.1** (INT-01, antecipado). **Estado:** aberto.
+**Bloco dono:** **ST-1.1** (INT-01, antecipado). **Estado:** ✅ **CORRIGIDO em 25/09/2026, no ST-1.1.**
 **Gravidade:** alta — fura o §P5.
-**Teste que trava:** `test/avanco-estado.mjs` → `D-107 (afirma o defeito)`.
+**Testes que travam:** `test/avanco-estado.mjs` → os seis `D-107:` (o "afirma o
+defeito" ficou vermelho no conserto e foi invertido); defeitos S1044–S1049.
+
+> **O conserto:** `encontrosHoje` soma `e.avancos`; a colheita lança no teto só
+> `{colhidaEm, encontros, bioma, estagio}` (`lancarRunNoTeto`), podando o que
+> saiu das 24 h; o `carregar` lê e valida esse histórico; e a reserva de 6 vai
+> até a COLHEITA, não até o fim — a segunda metade do furo, achada no conserto:
+> entre o fim e a colheita os mesmos encontros serviam duas vezes.
 
 ### O que acontece, medido
 

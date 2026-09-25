@@ -16,7 +16,8 @@ import { criarSuite, ok, igual } from './harness.mjs';
 
 const ler = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 import { VAZIO, carregar, salvar, escolherInicial, estadoDoTeto,
-         iniciarExpedicao, emCampo, encontrosDaRun } from '../app/modules/idle-dados.mjs';
+         iniciarExpedicao, emCampo, encontrosDaRun, lancarRunNoTeto,
+         ultimoDiagnostico } from '../app/modules/idle-dados.mjs';
 import {
   comecarAvanco, porQueNaoAvancar, avancoEmCurso, sincronizar, cena, recuar,
   avisoDoTeto, encontrosValemNa, colherAvancoDaRun, equipeDaRun,
@@ -70,34 +71,84 @@ export function suite() {
       'o teto do dia não sentiu a run');
   });
 
-  /* ══ D-107 · ESTE TESTE AFIRMA O DEFEITO, DE PROPÓSITO ══════════════════
+  /* ══ D-107 · O TETO SENTE A RUN COLHIDA (ST-1.1, 25/09/2026) ═══════════
    *
-   * Achado no cruzamento documentos × código de 25/09/2026. A run RESERVA 6
-   * encontros enquanto está de pé (o teste acima), mas ao ser colhida ela sai
-   * de `e.run` e vai para `e.avancos` — e `encontrosHoje` só soma
-   * `e.expedicoes`. O teto do §P5 volta cheio:
+   * Até aqui a run RESERVAVA 6 encontros enquanto estava de pé, e ao ser
+   * colhida ia para `e.avancos` — que `encontrosHoje` não somava e o
+   * `carregar` nem lia. O teto voltava cheio:
    *
    *     livre 30  ->  durante a run 24  ->  depois de colher 4 encontros: 30
    *
-   * Rodando Avanço atrás de Avanço, a captura não tem teto nenhum.
-   *
-   * Este teste fica VERDE enquanto o defeito existir e VERMELHO no dia em que
-   * o bloco dono (ST-1.1 do PLANO_DE_IMPLEMENTACAO) consertar — é o sinal de
-   * que a ficha em DEFEITOS.md virou mentira e este teste tem de ser invertido
-   * para "o teto cai N depois de colher, e continua caído depois de carregar". */
-  s.teste('D-107 (afirma o defeito): colher a run devolve ao teto os encontros que ela rendeu', () => {
-    const e = jogador();
-    const livre = restamEncontros(estadoDoTeto(e, AGORA, kanto));
+   * Avanço atrás de Avanço, a captura não tinha teto. Os quatro testes abaixo
+   * são o comportamento certo, e o primeiro é o antigo "afirma o defeito"
+   * invertido — ele ficou vermelho no conserto, que é como se sabe que caiu. */
+  const colhida = (e, raiz = 'teto') => {
     comecarAvanco(e, { pack: kanto, bioma: 'floresta', estagio: 1,
-      equipe: [e.criaturas[0].id], agora: AGORA, raiz: 'teto' });
+      equipe: [e.criaturas[0].id], agora: AGORA, raiz });
     const T = AGORA + 60 * 60_000;
     sincronizar(e, { pack: kanto, agora: T });
-    colherAvancoDaRun(e, { pack: kanto, agora: T, raiz: 'teto' });
+    colherAvancoDaRun(e, { pack: kanto, agora: T, raiz });
+    return T;
+  };
+
+  s.teste('D-107: colher a run desconta do teto os encontros que ela rendeu', () => {
+    const e = jogador();
+    const livre = restamEncontros(estadoDoTeto(e, AGORA, kanto));
+    const T = colhida(e);
     const vistos = e.encontros.filter(x => x.origem === 'avanco').length;
     ok(vistos > 0, 'a run desta semente não rendeu encontro — o teste perdeu o que medir');
-    igual(restamEncontros(estadoDoTeto(e, T, kanto)), livre,
-      'O TETO PASSOU A SENTIR A RUN COLHIDA. Se foi de propósito, o D-107 foi ' +
-      'corrigido: marque a ficha em docs/DEFEITOS.md e inverta este teste');
+    igual(restamEncontros(estadoDoTeto(e, T, kanto)), livre - vistos,
+      'o teto voltou cheio depois de colher: é o D-107, Avanço atrás de Avanço sem teto');
+  });
+
+  s.teste('D-107: o desconto sobrevive a fechar o navegador', () => {
+    const d = deposito();
+    const e = jogador();
+    const T = colhida(e);
+    const antes = restamEncontros(estadoDoTeto(e, T, kanto));
+    salvar(e, d);
+    igual(restamEncontros(estadoDoTeto(carregar(d), T, kanto)), antes,
+      'recarregar a página devolveu os encontros — o carregar esqueceu as runs colhidas');
+  });
+
+  s.teste('D-107: a janela é móvel — 24 h depois de colher, os encontros voltam', () => {
+    const e = jogador();
+    const livre = restamEncontros(estadoDoTeto(e, AGORA, kanto));
+    const T = colhida(e);
+    igual(restamEncontros(estadoDoTeto(e, T + 24 * 3600_000 + 1, kanto)), livre,
+      'a run colhida ficou pesando para sempre — o teto é diário (D-052)');
+  });
+
+  s.teste('D-107: entre o fim da run e a colheita, a reserva continua de pé', () => {
+    const e = jogador();
+    comecarAvanco(e, { pack: kanto, bioma: 'floresta', estagio: 1,
+      equipe: [e.criaturas[0].id], agora: AGORA, raiz: 'teto' });
+    const durante = restamEncontros(estadoDoTeto(e, AGORA, kanto));
+    const T = AGORA + 60 * 60_000;
+    sincronizar(e, { pack: kanto, agora: T });
+    ok(e.run?.fim, 'a run desta semente não acabou em uma hora — o teste perdeu o que medir');
+    igual(restamEncontros(estadoDoTeto(e, T, kanto)), durante,
+      'a run acabou, ainda não foi colhida, e a reserva sumiu: o jogador manda ' +
+      'expedições com esses encontros e a colheita entrega os da run por cima do teto');
+  });
+
+  s.teste('D-107: o histórico do teto é podado — não cresce para sempre no disco', () => {
+    const e = jogador();
+    colhida(e, 'a');
+    lancarRunNoTeto(e, { colhidaEm: AGORA + 3 * 24 * 3600_000, encontros: 2 });
+    igual(e.avancos.length, 1,
+      'a run de três dias atrás continuou no disco: o localStorage tem 5 MB e a ' +
+      'aba fica aberta por semanas');
+  });
+
+  s.teste('D-107: registro forjado no disco é descartado, e o diagnóstico diz', () => {
+    const d = deposito(JSON.stringify({ ...VAZIO(), avancos: [
+      { colhidaEm: AGORA, encontros: 3 }, { colhidaEm: 'ontem', encontros: 2 },
+      { colhidaEm: AGORA, encontros: -40 }, null ] }));
+    const e = carregar(d);
+    igual(e.avancos.length, 1, 'entrada inválida entrou no teto');
+    ok(ultimoDiagnostico.problemas.some(p => /avan/.test(p)),
+      'o conserto do disco foi calado');
   });
 
   s.teste('a segunda run é recusada enquanto a primeira está de pé', () => {
@@ -281,8 +332,16 @@ export function suite() {
     sincronizar(e, { pack: kanto, agora: AGORA + 6 * 60_000 });
     recuar(e, AGORA + 6 * 60_000);
     ok(!avancoEmCurso(e), 'recuar não encerrou a run');
-    igual(comprometido(estadoDoTeto(e, AGORA, kanto)), 0,
-      'a run encerrada continuou reservando encontros');
+    /* ATÉ 25/09 ESTA LINHA COBRAVA 0 AQUI, antes da colheita — e era a
+       metade do D-107: a reserva sumia no recuo, e a colheita entregava os
+       encontros da run por cima do que as expedições já tinham usado. O título
+       do teste sempre disse "quando colhida"; a asserção agora concorda. */
+    igual(comprometido(estadoDoTeto(e, AGORA, kanto)), ENCONTROS_POR_AVANCO,
+      'a run encerrada e ainda não colhida soltou a reserva (D-107)');
+    colherAvancoDaRun(e, { pack: kanto, agora: AGORA + 7 * 60_000, raiz: 'recuo' });
+    const vistos = e.encontros.filter(x => x.origem === 'avanco').length;
+    igual(comprometido(estadoDoTeto(e, AGORA + 7 * 60_000, kanto)), vistos,
+      'colhida, a run deixa de RESERVAR 6 e passa a pesar só o que de fato rendeu');
   });
 
   /* ── O TETO AVISA, E NÃO RECUSA (L-151) ────────────────────────────────

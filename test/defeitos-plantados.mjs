@@ -2114,6 +2114,35 @@ export const DEFEITOS = [
     real:'a mesma suite contada duas vezes infla o total e esconde a que faltou',
     de:'  const repetidas = [...vieram].filter(([, k]) => k > 1).map(([n]) => n);',
     para:'  const repetidas = [];' },
+  /* ── ST-1.1 · O TETO SENTE A RUN COLHIDA (D-107) ─────────────────────
+     Cada um devolve uma forma do furo: a soma que esquece as runs, o disco que
+     as perde, a reserva que some antes da colheita, a poda que não poda, e o
+     disco que aceita encontro negativo. */
+  { id:'S1044', arquivo:'app/modules/idle-dados.mjs', nome:'o teto volta a somar so as expedicoes',
+    real:'o D-107 de volta: Avanco atras de Avanco, a captura nao tem teto',
+    de:'  [...e.expedicoes, ...(e.avancos ?? [])]',
+    para:'  [...e.expedicoes]' },
+  { id:'S1045', arquivo:'app/modules/idle-dados.mjs', nome:'o carregar volta a esquecer as runs colhidas',
+    real:'recarregar a pagina devolve os encontros do dia',
+    de:'  e.avancos = avancosDoDisco(cru.avancos, problemas);',
+    para:'  e.avancos = [];' },
+  { id:'S1046', arquivo:'app/modules/idle-dados.mjs', nome:'a reserva volta a sumir no fim da run',
+    real:'entre o fim e a colheita o jogador usa os mesmos encontros duas vezes',
+    de:'  reservas: e.run ? [ENCONTROS_POR_AVANCO] : [],',
+    para:'  reservas: (e.run && !e.run.fim) ? [ENCONTROS_POR_AVANCO] : [],' },
+  { id:'S1047', arquivo:'app/modules/idle-dados.mjs', nome:'o historico do teto para de ser podado',
+    real:'o localStorage cresce a cada run numa aba aberta por semanas',
+    de:'    ...(e.avancos ?? []).filter(x => x.colhidaEm > agora - DIA_MS),',
+    para:'    ...(e.avancos ?? []),' },
+  { id:'S1048', arquivo:'app/modules/idle-dados.mjs', nome:'o disco aceita encontro negativo',
+    real:'um -40 gravado a mao da quarenta encontros a mais no dia',
+    de:'    && Number.isInteger(x.encontros) && x.encontros >= 0);',
+    para:'    && Number.isFinite(x.encontros));' },
+  { id:'S1049', arquivo:'app/modules/avanco-estado.mjs', nome:'a colheita deixa de lancar a run no teto',
+    real:'a run colhida some sem pesar em nada',
+    de:'  lancarRunNoTeto(e, run);',
+    para:'  e.avancos = e.avancos ?? [];' },
+
   { id:'S1043', arquivo:'test/bandeiras.mjs', nome:'as caras passam a ser entregues por ultimo',
     real:'a fila termina quando a ultima termina: a mais cara no fim deixa tres trabalhadores ociosos',
     de:'    ((custo[b] ?? 0) - (custo[a] ?? 0)) || (pos.get(a) - pos.get(b)));',
@@ -6796,8 +6825,8 @@ export const DEFEITOS = [
 
   { id:'S879', arquivo:IDADOS, nome:'a run em curso deixa de reservar encontros',
     real:'dormir com uma Vigilia E avancar o dia inteiro viram dois farms empilhados, e o teto do §P5 vale metade',
-    de:'  reservas: (e.run && !e.run.fim) ? [ENCONTROS_POR_AVANCO] : [],',
-    para:'  reservas: [],' },
+    de:'  reservas: e.run ? [ENCONTROS_POR_AVANCO] : [],',
+    para:'  reservas: [],' },   /* realvado no ST-1.1: a reserva vai até a colheita */
 
   { id:'S880', arquivo:IDADOS, nome:'a run nao volta do disco',
     real:'fechar a aba encerra o avanco em silencio, e o §7.22.16 deixa de valer para metade dos jogadores',

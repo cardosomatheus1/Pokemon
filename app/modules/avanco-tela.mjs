@@ -175,7 +175,8 @@ let laco = null;
 let biomaNaTela = null;
 /* O que a última run rendeu, para a tela de escolha poder mostrar. Mora aqui
    e não no estado porque é MENSAGEM, e não dado: some quando a aba fecha, e
-   o histórico permanente é o `e.avancos`. */
+   `e.avancos` é só o lançamento do teto das últimas 24 h (D-107); o
+   histórico permanente é a L-141, ainda por construir. */
 let ultimoSaque = null;
 export const saqueDaUltimaRun = () => ultimoSaque;
 

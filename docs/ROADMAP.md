@@ -265,6 +265,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | **T9 · T10 · T13 · T11a** · o arnês | 16/09 | portão de 7 h para 3 min com a árvore intocada |
 | **1.34** · dia, tarde e noite | 25/09 | Q2 1017/1017 · suíte 2184/2184 · capturas em `tools/previas/_hora/` |
 | **1.33** · o elenco muda com a hora e o clima | 25/09 | 18 de 44 estágios mudam à noite · Q2 e suíte no commit · capturas `tools/previas/_hora/sala-*` |
+| **ST-1.1** · o teto sente a run colhida (D-107) | 25/09 | 6 testes · S1044–S1049 · reserva até a colheita |
 | **T14** · os testes em minutos | 25/09 | `npm test` 6 min 10 s → 1 min 45 s · `repetir` 2/2 · Q2 do bloco 39/39 em 13 min · pedido do dono |
 
 ### A fila, na ordem
@@ -275,7 +276,6 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | # | bloco | o que é | por que aqui |
 |---|---|---|---|
-| 1 | **ST-1.1** · o teto sente a run colhida | **D-107**: `30 → 24 → 30` depois de colher; captura sem teto pelo Avanço | fura o §P5. A revisão manda antecipar integridade quando a base a reproduz — e o cruzamento reproduziu |
 | 2 | **ST-1.2** · o Sair desloga a conta real | **D-109** | P, sem decisão pendente para o Sair |
 | 3 | **ST-1.3** · a boutique não dá peça sem cobrar | **D-108**: com sessão, débito só na tela | P; mitiga até o E4 |
 | 4 | **1.32b** · mostrar que climas existem | L-177, e a L-183 (o veterano quase não vê a noite) | a revisão juntou os dois (PROD-134): o jogador entende as POSSIBILIDADES antes e o elenco efetivo depois, sem revelar o clima oculto. A prévia da NOITE já está na sala desde o 1.33 |
@@ -331,7 +331,7 @@ Todos com dono nomeado, todos em `docs/LACUNAS.md`.
 
 | defeito | o que é | estado |
 |---|---|---|
-| **D-107** | o teto de encontros volta cheio depois de colher a run — fura o §P5 | aberto · ST-1.1 |
+| ~~D-107~~ | o teto de encontros volta cheio depois de colher a run | ✅ ST-1.1, 25/09 |
 | **D-108** | com conta real, o cosmético da boutique sai de graça | aberto · ST-1.3 e E4 |
 | **D-109** | o ⏻ não desloga a conta real | aberto · ST-1.2 |
 | **D-082** | o rodapé do banner passa por baixo do mon da vitrine na tela da run | aberto |
