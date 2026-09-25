@@ -2005,6 +2005,16 @@ export const DEFEITOS = [
     de:'  pointer-events:none;mix-blend-mode:screen;image-rendering:pixelated}',
     para:'  pointer-events:none;mix-blend-mode:normal;image-rendering:pixelated}' },
 
+  { id:'S1020', arquivo:HORA, nome:'o relogio de parede soma o fuso em vez de subtrair',
+    real:'"e so um sinal" — e a Bahia passa a ter a cena seis horas errada em vez de tres',
+    de:'export const relogioDeParede = (agora, fusoMin = 0) => agora - (Number(fusoMin) || 0) * 60000;',
+    para:'export const relogioDeParede = (agora, fusoMin = 0) => agora + (Number(fusoMin) || 0) * 60000;' },
+
+  { id:'S1021', arquivo:'app/modules/idle-mundo.mjs', nome:'a cena volta a ler o UTC cru',
+    real:'"Date.now() ja e a hora" — e o sol do jogo nasce tres horas antes do sol da janela do dono (DEC-10)',
+    de:'    const agoraDoMundo = relogioDeParede(Date.now(), new Date().getTimezoneOffset());',
+    para:'    const agoraDoMundo = Date.now();' },
+
   /* ── OS TRÊS DO T11a: QUEM AVANÇA OS QUADROS ──────────────────────────
      O defeito que estes guardam ficou 30 s por largura escondido atrás de uma
      linha de base VERDE. Nenhum deles deixa a base vermelha — eles deixam a

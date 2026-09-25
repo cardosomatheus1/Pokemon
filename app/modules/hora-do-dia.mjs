@@ -83,6 +83,23 @@ const mistura = (a, b, t) => a + (b - a) * t;
  * 0 é meia-noite e 1 é a meia-noite seguinte — mas 1 nunca é devolvido, porque
  * ele É o zero. A volta tem de FECHAR: sem isso a cena dá um salto de luz na
  * virada, toda noite, na frente de quem deixou a tela aberta. */
+/* ── O RELÓGIO DE PAREDE DO JOGADOR ───────────────────────────────────────
+ *
+ * Tudo neste arquivo lê as horas com `getUTC*`, e isso é de propósito: é o que
+ * faz a mesma entrada dar a mesma cena em qualquer máquina, inclusive a que roda
+ * a suíte. Então o instante que entra aqui é o RELÓGIO DE PAREDE do jogador,
+ * codificado como se fosse UTC — e quem chama converte, com esta função.
+ *
+ * Ela existe por um defeito que a revisão externa de 24/09 apontou (DEC-10,
+ * "qual fuso governa o mundo?"): a cena lia o UTC cru, e para o dono, na Bahia,
+ * ficava TRÊS HORAS adiantada. Às 5h da madrugada dele, era dia claro no jogo.
+ * Todos os testes rodavam em UTC; nenhum via.
+ *
+ * `fusoMin` é o `Date#getTimezoneOffset()`: minutos a SOMAR à hora local para
+ * chegar ao UTC — +180 na Bahia, −540 em Tóquio. O sinal é o do navegador, para
+ * quem chama não ter de lembrar de inverter nada. */
+export const relogioDeParede = (agora, fusoMin = 0) => agora - (Number(fusoMin) || 0) * 60000;
+
 export function horaDecimal(agora) {
   const d = new Date(agora);
   return d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600

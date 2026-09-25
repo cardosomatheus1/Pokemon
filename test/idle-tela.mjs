@@ -383,6 +383,18 @@ export function suite() {
       'as camadas de luz e brilho sumiram do palco');
   });
 
+  /* ── A CENA USA A HORA DO JOGADOR (DEC-10, revisão de 24/09) ─────────
+     O `hora-do-dia.mjs` lê as horas em UTC de propósito — é o que o torna
+     determinístico —, então quem chama TEM de converter. Sem isto, a cena ficava
+     três horas adiantada para o dono, na Bahia. */
+  s.teste('a cena do idle converte o relógio para a hora local do jogador', () => {
+    const src = semComentario(ler('../app/modules/idle-mundo.mjs'));
+    ok(/relogioDeParede\(\s*Date\.now\(\)\s*,\s*new Date\(\)\.getTimezoneOffset\(\)\s*\)/.test(src),
+      'a cena do idle passa o UTC cru para a camada 0. Para quem não mora em ' +
+      'Greenwich o sol nasce na hora errada — na Bahia, três horas antes do ' +
+      'sol da janela.');
+  });
+
   s.teste('o nível mostra a PORCENTAGEM ao lado da barra', () => {
     /* A barra sozinha diz "perto" ou "longe" e não diz QUANTO. Duas criaturas a
        71% e a 79% desenham o mesmo tracinho, e a decisão de qual mandar depende

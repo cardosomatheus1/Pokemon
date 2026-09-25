@@ -51,6 +51,10 @@ const HORAS = [
    arranjo — esse o `olhar-idle` já cobre nas quatro larguras. */
 const VISTA = { w: 1440, h: 1200 };
 
+/* O fuso do dono. Setembro na Bahia não tem horário de verão: UTC−3 fixo. */
+const FUSO = 'America/Bahia';
+const DESLOCAMENTO_H = 3;
+
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.mjs': 'text/javascript', '.js': 'text/javascript',
   '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.gif': 'image/gif',
@@ -187,7 +191,12 @@ const PLANTAR = async () => {
 
 const relato = [];
 for (const H of HORAS) {
-  const ctx = await b.newContext({ viewport: { width: VISTA.w, height: VISTA.h } });
+  /* NO FUSO DO DONO, e não em UTC. Com o contêiner em UTC, uma cena que lê o
+     UTC cru e uma que converte para a hora local saem IGUAIS na foto — e foi
+     assim que o defeito do fuso passou pela primeira captura (DEC-10). Na
+     Bahia as duas divergem em três horas, e a foto passa a provar a ligação. */
+  const ctx = await b.newContext({ viewport: { width: VISTA.w, height: VISTA.h },
+                                   timezoneId: FUSO });
   const pg = await ctx.newPage();
   const erros = [];
   pg.on('pageerror', e => erros.push(String(e).split('\n')[0]));
@@ -195,7 +204,8 @@ for (const H of HORAS) {
   /* A HORA, FIXADA ANTES DE O APP CARREGAR. `Date.now` e `new Date()` sem
      argumento — os dois, porque o app usa os dois e fixar só um deixaria
      metade da cena numa hora e metade na outra. */
-  const alvo = Date.UTC(2026, 8, 16, H.h, 0, 0);
+  /* A hora pedida é a do RELÓGIO DE PAREDE da Bahia (UTC−3): 01h lá são 04h UTC. */
+  const alvo = Date.UTC(2026, 8, 16, H.h, 0, 0) + DESLOCAMENTO_H * 3600000;
   await pg.addInitScript(`(() => {
     const D = Date, T = ${alvo};
     const F = function (...a) { return a.length ? new D(...a) : new D(T); };
@@ -218,7 +228,9 @@ for (const H of HORAS) {
      nenhuma das duas sozinha mostraria isso. */
   const diz = await pg.evaluate(async () => {
     const h = await import('/app/modules/hora-do-dia.mjs');
-    const t = Date.now();
+    /* O MESMO caminho que a cena usa, com o fuso da página: o relatório diz o
+       que a cena DEVERIA mostrar, e a foto mostra o que ela mostrou. */
+    const t = h.relogioDeParede(Date.now(), new Date().getTimezoneOffset());
     const a = h.astroEm(t), l = h.luzEm(t);
     return { periodo: h.periodoEm(t), alfa: l.alfa, cor: `${l.r},${l.g},${l.b}`,
              astro: a.qual, x: a.x, y: a.y, brilho: a.brilho,

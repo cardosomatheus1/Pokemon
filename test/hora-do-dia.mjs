@@ -26,6 +26,7 @@ import { criarSuite, ok, igual } from './harness.mjs';
 import {
   PERIODOS, fracaoDoDia, periodoEm, luzEm, astroEm, forcaDoEfeito, estrelasEm,
   brilhoNoturno, ceuEm, estrelasNaJanela, ESTRELAS_NA_JANELA, luzRestanteEm,
+  relogioDeParede,
 } from '../app/modules/hora-do-dia.mjs';
 import { VIDA_QUE_BRILHA } from '../app/modules/particulas.mjs';
 
@@ -273,6 +274,28 @@ export function suite() {
     const n = estrelasNaJanela(aos(1));
     ok(n > 0 && n <= ESTRELAS_NA_JANELA,
       `à 1h a janela tem ${n} estrelas, e o teto dela é ${ESTRELAS_NA_JANELA}.`);
+  });
+
+  /* ══ A HORA É A DO JOGADOR, E NÃO A DE GREENWICH ════════════════════════
+     Achado pela revisão externa de 24/09 (DEC-10: "qual fuso governa o
+     mundo?"). O módulo lia `getUTCHours()` e ninguém convertia: para o dono,
+     na Bahia (UTC−3), a cena ficava TRÊS HORAS adiantada — às 5h da madrugada
+     dele, já era dia claro. Todos os testes rodavam em UTC, e por isso nenhum
+     via. */
+  s.teste('o relógio de parede converte o instante para a hora LOCAL do jogador', () => {
+    /* `getTimezoneOffset()` devolve +180 na Bahia: minutos a SOMAR à hora
+       local para chegar ao UTC. Às 08h UTC são 05h lá — ainda noite. */
+    const oitoUtc = aos(8);
+    igual(periodoEm(relogioDeParede(oitoUtc, 180)), 'noite',
+      'às 08h UTC — 05h na Bahia — a cena diz que é dia. O sol do jogo nasce ' +
+      'três horas antes do sol da janela dele.');
+    igual(periodoEm(relogioDeParede(oitoUtc, 0)), 'dia',
+      'em UTC, 08h tem de continuar sendo dia — a conversão não pode mexer em ' +
+      'quem mora em Greenwich');
+    /* E o outro lado do mundo: Tóquio é −540. Às 00h UTC são 09h lá. */
+    igual(periodoEm(relogioDeParede(aos(0), -540)), 'dia',
+      'à 00h UTC, 09h em Tóquio, a cena diz noite — o fuso a leste do ' +
+      'meridiano entra com o sinal trocado');
   });
 
   /* ══ NADA AQUI LÊ O RELÓGIO SOZINHO ══════════════════════════════════════ */
