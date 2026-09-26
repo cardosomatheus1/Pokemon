@@ -808,7 +808,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Sabotagem:** incluir a rodada em curso; contar por travessia própria; agregado sem n.
 - **Portões:** Q1 Q2 Q3 Q6 (varrer o payload durante a janela) Q8.
 
-### ST-9.6 · A aposta muda quem aparece nas rotas
+### ~~ST-9.6~~ ✅ 26/09 · A aposta muda quem aparece nas rotas — `pesoComBonus` religado por `pesosDoSorteio` (sorteio E prévia), ×4 na LINHA por 6 h, chave própria no cliente, última aposta no servidor · S1336–S1342
 - **Porte** P · **Servidor** não · **Bloco dono** F3.8 (antecipado) · **Spec** §7.3 · **Depende de** nada
 - **Entrega ao jogador:** apostar numa espécie torna a linha dela mais comum nas rotas por 6 h, sem mudar quantos encontros há.
 - **Escopo:** religar `pesoComBonus` (achado A). A aposta, local ou com conta, grava `bonusArena {linha, ate}`; o sorteio de encontro aplica o peso à linha presente no bioma.

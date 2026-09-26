@@ -116,7 +116,7 @@ export function suite() {
     const fases = semComentario(fonte('../app/modules/fases.mjs'));
     igual((fases.match(/S\.fighters = sortearPool\(S\.seeds\.elenco\);\s*registrarVistas\(S\.fighters\.map\(f => f\.dex\)\)/g) ?? []).length, 2,
       'uma das duas rodadas (servidor e local) não marca as vistas');
-    ok(/S\.myBet\?\.idx === idx[^\n]*registrarEncontrada\(S\.fighters\[idx\]\.dex\)/.test(semComentario(fonte('../app/modules/aposta.mjs'))),
+    ok(/if \(S\.myBet\?\.idx !== idx \|\| !S\.fighters\[idx\]\) return;\s*registrarEncontrada\(S\.fighters\[idx\]\.dex\);/.test(semComentario(fonte('../app/modules/aposta.mjs'))),
       'a aposta não marca encontrada, ou marca sem conferir que a aposta ficou');
     ok(/Math\.max\(\.\.\.pesos\)[\s\S]{0,120}registrarEncontrada\(S\.fighters\[topo\]\.dex\)/.test(semComentario(fonte('../app/modules/liga-tela.mjs'))),
       'a Liga não marca encontrada a escolha de maior peso');

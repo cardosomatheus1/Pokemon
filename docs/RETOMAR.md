@@ -64,7 +64,8 @@ dossiê da Arena, 200.000 rodadas pela luta paga, cada número com o seu n).
 aplicado; D-120 e L-194 registrados). **T15 ✅** (D-120 corrigido: a sonda
 dos avisos pela linha do tempo — a suíte dupla tinha saído instável duas vezes).
 **ST-9.4 ✅** (o dossiê ao lado da aposta). **ST-9.5 ✅** (o dossiê realizado, do
-servidor). O próximo bloco é a **ST-9.6** (a aposta muda quem aparece nas rotas).
+servidor). **ST-9.6 ✅** (a aposta muda quem aparece nas rotas). O próximo bloco é a
+**ST-9.7** (o doce: a regra).
 
 **Hospedagem pública: decisão do dono, 26/09 — *"Isso vai ser configurável
 depois, primeiro vamos fechar o jogo"*.** Sai da lista de perguntas; volta

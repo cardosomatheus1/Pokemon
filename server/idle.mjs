@@ -46,7 +46,8 @@ import {
   STAMINA_MAX, staminaAgora, podeEnviar, custoDe, sortearEncontros,
 } from '../engine/expedicao.mjs';
 import { sortearItens, agrupar } from '../engine/drops.mjs';
-import { chanceDe, tentar, FRAGMENTOS_POR_ENCONTRO } from '../engine/captura.mjs';
+import { chanceDe, tentar, FRAGMENTOS_POR_ENCONTRO, DURACAO_BONUS_MS } from '../engine/captura.mjs';
+import { baseDe } from '../engine/evolucao.mjs';
 import { gerar as gerarCriatura } from './criaturas.mjs';
 
 const DIA_MS = 24 * 3600_000;
@@ -170,6 +171,15 @@ export function iniciar(db, { userId, pack, bioma, perfil, equipe, agora,
  * decide o vencedor entre dois pedidos simultâneos; quem perder vê zero linhas
  * alteradas e sai sem colher. Um `SELECT` antes do `UPDATE` deixaria a janela
  * entre os dois aberta, e é exatamente por ali que um saque dobra. */
+/* O BÔNUS DA ARENA COM CONTA (ST-9.6): a aposta mais recente que não foi
+   cancelada — a mesma regra do cliente, lida de onde a aposta de verdade
+   mora. Nem `stake` nem `odd` entram na consulta: o bônus é da ESCOLHA. */
+export function bonusDoServidor(db, userId, pack) {
+  const b = db.prepare(`SELECT species_id, created_at FROM bets WHERE user_id = ? AND status != 'cancelada'
+                         ORDER BY created_at DESC LIMIT 1`).get(userId);
+  return b ? { linha: baseDe(pack, b.species_id), ate: b.created_at + DURACAO_BONUS_MS } : null;
+}
+
 export function colher(db, { id, pack, agora }) {
   const exp = db.prepare(`SELECT * FROM expedicoes WHERE id = ?`).get(id);
   if (!exp) throw new Error('expedição não existe');
@@ -188,7 +198,7 @@ export function colher(db, { id, pack, agora }) {
        amanhã não move os que já existem, e as expedições já colhidas continuam
        recalculáveis. */
     const encontros = sortearEncontros(semente(derivar(raiz, 'encontro')),
-      { pack, bioma: exp.bioma, perfil: exp.perfil });
+      { pack, bioma: exp.bioma, perfil: exp.perfil, bonus: bonusDoServidor(db, exp.user_id, pack), agora });
     const itens = agrupar(sortearItens(semente(derivar(raiz, 'saque')),
       { pack, bioma: exp.bioma, perfil: exp.perfil }));
 

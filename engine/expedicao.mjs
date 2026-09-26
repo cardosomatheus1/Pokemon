@@ -67,6 +67,8 @@
 import { elencoDoBioma } from './bioma.mjs';
 import { encontrosCom } from './foco.mjs';
 import { viesFinal, cabeNoEstagio, VIES_TETO, faixasDoEstagio } from './estagios.mjs';
+import { pesoComBonus, bonusVivo } from './captura.mjs';
+import { baseDe } from './evolucao.mjs';
 
 export const STAMINA_MAX = 100;
 export const REGEN_POR_HORA = 8;          /* cheia em ~12 h a partir do zero */
@@ -555,17 +557,19 @@ export const elencoDoEstagio = (pack, bioma, elenco = null, estagio = 1) =>
  * E a soma bate 100 por construcao, porque a lista e o espaco amostral inteiro
  * — o que faz a prevbia ser conferivel a olho, e nao so plausivel. */
 export function previaDeEncontros({ pack, bioma, perfil, estagio = 1, elenco = null,
-                                    efeitos = null }) {
+                                    efeitos = null, bonus = null, agora = 0 }) {
   const p = PERFIS[perfil];
   if (!p) return [];
   const lista = elencoDoEstagio(pack, bioma, elenco, estagio);
   if (!lista.length) return [];
-  const ordem = ordemDe(pack);
-  const vies = viesFinal(p.vies, estagio);
-  const pesos = lista.map(e => pesoDaRaridade(e.raridade, vies, ordem));
+  const pesos = pesosDoSorteio(pack, lista, viesFinal(p.vies, estagio), bonus, agora);
   const total = pesos.reduce((a, b) => a + b, 0);
   if (total <= 0) return [];
-  return lista.map((e, i) => ({ ...e, chance: (pesos[i] / total) * 100 }))
+  /* `daArena`: a espécie está pesando ×4 pela aposta (ST-9.6) — a tela diz
+     por que a chance dela subiu, em vez de o número mudar sem explicação. */
+  const alvo = bonusVivo(bonus, agora) ? Number(bonus.linha) : null;
+  return lista.map((e, i) => ({ ...e, chance: (pesos[i] / total) * 100,
+                                daArena: alvo !== null && baseDe(pack, e.dex) === alvo }))
     .sort((a, b) => b.chance - a.chance);
 }
 
@@ -580,8 +584,31 @@ export function previaDeEncontros({ pack, bioma, perfil, estagio = 1, elenco = n
  * um pode ser. Sao os dois lados da mesma troca — o Batedor traz muitos e
  * comuns, o Vigia traz poucos e raros —, e mexer so num deixaria um dos dois
  * focos sem a metade que o justifica. */
+/* O PESO DE CADA ESPÉCIE, num lugar só: o sorteio e a prévia o leem daqui.
+   Com o bônus (ST-9.6) eles passaram a ter uma razão a mais para divergir, e
+   a divergência aqui é a tela prometendo uma lista e a colheita sorteando
+   outra. */
+export function pesosDoSorteio(pack, lista, vies, bonus = null, agora = 0) {
+  const ordem = ordemDe(pack);
+  const daLinha = bonus && { dex: Number(bonus.linha), ate: bonus.ate };
+  return lista.map(e => pesoComBonus(pesoDaRaridade(e.raridade, vies, ordem), baseDe(pack, e.dex), daLinha, agora));
+}
+
+/* ── O BÔNUS DA ARENA, RELIGADO (ST-9.6 · F3.8 · §7.3) ─────────────────────
+ *
+ * `pesoComBonus` existia desde o 1.2 e ninguém o chamava (achado A do
+ * cruzamento). `bonus` é `{ linha, ate }`: a LINHA (o dex da base) de quem o
+ * jogador apostou, e até quando vale. Ele entra no PESO de cada espécie da
+ * linha presente neste bioma, e em mais nada:
+ *
+ *   QUANTOS encontros   não muda — o gerador é consumido igual, com ou sem
+ *   QUAL raridade       não muda — o viés e o teto são os mesmos
+ *   QUAL espécie        muda: a linha apostada pesa ×4 contra as outras
+ *
+ * Opcional e no fim, pela mesma razão do `efeitos`: quem não passa recebe o
+ * que recebia. */
 export function sortearEncontros(rnd, { pack, bioma, perfil, estagio = 1, elenco = null,
-                                        efeitos = null, membros = 1 }) {
+                                        efeitos = null, membros = 1, bonus = null, agora = 0 }) {
   const p = PERFIS[perfil];
   if (!p) throw new Error(`perfil desconhecido: ${perfil}`);
 
@@ -603,7 +630,7 @@ export function sortearEncontros(rnd, { pack, bioma, perfil, estagio = 1, elenco
      sentido que seja — o perfil escolhe quanto tempo, o estagio escolhe quao
      fundo, e as duas decisoes sao independentes. */
   const vies = viesFinal(p.vies, estagio);
-  const pesos = lista.map(e => pesoDaRaridade(e.raridade, vies, ordem));
+  const pesos = pesosDoSorteio(pack, lista, vies, bonus, agora);
   const total = pesos.reduce((a, b) => a + b, 0);
   if (total <= 0) return [];
 

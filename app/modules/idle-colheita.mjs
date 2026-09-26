@@ -40,6 +40,7 @@ import { xpDaExpedicao, vinculoDaExpedicao, creditar } from '../../engine/nivel-
 import { FRAGMENTOS_POR_ENCONTRO } from '../../engine/captura.mjs';
 import { creditarTreino } from './idle-banco.mjs';
 import { pronta, acharCriatura, hidratar } from './idle-dados.mjs';
+import { carregarBonus } from './bonus-arena.mjs';
 
 /* ── A COLHEITA ────────────────────────────────────────────────────────────
  *
@@ -50,7 +51,7 @@ import { pronta, acharCriatura, hidratar } from './idle-dados.mjs';
  *
  * A recusa vem ANTES de qualquer crédito. Colher duas vezes não pode dobrar o
  * saque nem pela metade. */
-export function colher(e, { pack, id, agora, raiz = novaRaiz() }) {
+export function colher(e, { pack, id, agora, raiz = novaRaiz(), bonus = carregarBonus() }) {
   const x = e.expedicoes.find(y => y.id === id);
   if (!x) throw new Error('expedição não existe');
   if (!pronta(x, agora)) throw new Error('a expedição ainda não terminou');
@@ -71,7 +72,9 @@ export function colher(e, { pack, id, agora, raiz = novaRaiz() }) {
   const quantosForam = (x.equipe ?? []).length || 1;
   const encontros = sortearEncontros(semente(derivar(raiz, 'encontro')),
     { pack, bioma: x.bioma, perfil: x.perfil, estagio: x.estagio ?? 1, efeitos,
-      membros: quantosForam });
+      membros: quantosForam,
+      /* ST-9.6: a linha apostada na Arena pesa ×4 — no instante da colheita. */
+      bonus, agora });
   /* O SAQUE TAMBEM CONHECE O ESTAGIO (1.12). Sem isso o catalogo novo seria
      filtrado por um estagio fixo em 1, e nenhuma pedra cairia nunca — as
      pedras sao `raro`, e o estagio 1 so tem comum e incomum. */

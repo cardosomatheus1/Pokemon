@@ -981,6 +981,13 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 /* ── ST-9.4 · o histórico sob o nome, na lista de apostas ──────────────────
    Segunda linha do nome, menor e apagada: é leitura de segunda ordem, e a
    palavra "histórico" a separa da chance DESTA rodada, que é a coluna. */
+/* ── ST-9.6 · a linha apostada na Arena, na prévia da rota ──────────────── */
+.prvArena{font-style:normal;color:var(--neon);font-weight:700}
+/* No canto do cartão, e não colado à chance: a 1440 o "×4" quebrava a linha e
+   caía em cima do número (Q5). */
+.prvItem{position:relative}
+.prvSelo{position:absolute;top:4px;right:5px;font-size:.62rem;padding:0 4px;border-radius:4px;
+  background:rgba(var(--goldRGB),.14);border:1px solid rgba(var(--goldRGB),.45)}
 .pick .n .hist{display:block;font-style:normal;font-weight:400;font-size:.66rem;line-height:1.2;color:var(--dim);
   white-space:normal}
 #pickList .histLeg{margin:6px 12px 2px;color:var(--dim);font-size:.66rem;line-height:1.35}

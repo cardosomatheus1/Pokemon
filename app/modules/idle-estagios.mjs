@@ -37,6 +37,7 @@
  * projeto que a mesma regra decide QUANDO uma coisa entra na tela — a barra de
  * XP esperou o 1.14, o `foco` continua esperando (L-102), e esta esperou aqui.
  */
+import { carregarBonus } from './bonus-arena.mjs';
 import { $, nosDois } from './dom.mjs';
 import { estiloDa, classeDa } from './raridade.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
@@ -152,7 +153,10 @@ export function pintarPrevia(bioma, perfil, estagio) {
    * vai mexer, e não um teste. */
   const escreverNaPrevia = html => { for (const el of alvos) el.innerHTML = html; };
   if (!alvo) return;
-  const lista = previaDeEncontros({ pack: PACK, bioma, perfil, estagio });
+  /* ST-9.6: a prévia pesa o bônus da Arena como a colheita pesa — a tela
+     não pode prometer uma lista e a colheita sortear outra. */
+  const bonus = carregarBonus();
+  const lista = previaDeEncontros({ pack: PACK, bioma, perfil, estagio, bonus, agora: Date.now() });
   if (!lista.length) {
     escreverNaPrevia('<p class="tiny">Nada aparece aqui neste estágio.</p>');
     return;
@@ -168,9 +172,12 @@ export function pintarPrevia(bioma, perfil, estagio) {
         ${retratoAnimado(s, 'class=\"prvArte\"', false)}
         <b class="prvNome">${nomeExibido(s.n)}</b>
         <u class="prvChance">${e.chance.toFixed(1)}%</u>
+        ${e.daArena ? '<i class="prvArena prvSelo" title="apostada na Arena: pesa ×4 nesta rota">×4</i>' : ''}
       </span>`;
     }).join('')}</div>` +
     `<p class="tiny prvRodape">${lista.length} espécie(s) neste estágio` +
     `${restam > 0 ? ` · mostrando as ${QUANTAS} mais prováveis` : ''}` +
-    ` · ${PERFIS[perfil]?.rotulo ?? perfil}</p>`);
+    ` · ${PERFIS[perfil]?.rotulo ?? perfil}` +
+    `${lista.some(e => e.daArena) ? ` · <b class="prvArena">×4</b> apostada na Arena, até ${
+      new Date(bonus.ate).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''}</p>`);
 }

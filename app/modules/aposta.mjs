@@ -11,6 +11,8 @@
  * paga resultado — o pagamento continua em `fases.mjs`, junto do fim da rodada.
  */
 import { registrarEncontrada } from './pokedex-estado.mjs';
+import { registrarBonus } from './bonus-arena.mjs';
+import { PACK } from './motor.mjs';
 import { $ } from './dom.mjs';
 import { retornoLiquidoEstimado } from '../../engine/resultado.mjs';
 import { APOSTA_MIN, valorAposta } from './banco.mjs';
@@ -183,10 +185,15 @@ document.addEventListener('click', ev => {
     if (escolhido == null) return;
     const idx = escolhido;
     limparEscolha();
-    /* ST-9.3: a escada — apostar nela a torna ENCONTRADA. Só se a aposta
-       ficou: saldo curto não é aposta. */
+    /* ST-9.3: a escada — apostar nela a torna ENCONTRADA. ST-9.6: e a linha
+       dela fica mais comum nas rotas por 6 h. Só se a aposta ficou: saldo
+       curto não é aposta. Nenhum dos dois recebe o valor. */
     placeBet(idx, document.querySelector(`.pick[data-i="${idx}"]`))
-      .then(() => { if (S.myBet?.idx === idx && S.fighters[idx]) registrarEncontrada(S.fighters[idx].dex); });
+      .then(() => {
+        if (S.myBet?.idx !== idx || !S.fighters[idx]) return;
+        registrarEncontrada(S.fighters[idx].dex);
+        registrarBonus(PACK, S.fighters[idx].dex, Date.now());
+      });
     return;
   }
   if (ev.target.closest('#btnCancelarEscolha')) limparEscolha();
