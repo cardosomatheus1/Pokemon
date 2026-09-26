@@ -29,6 +29,8 @@ import { lerSessao, abrirSessao, cadastrar, entrar, ERRO_AUTH,
 import { saldos, ledgerDe, creditar } from './carteira.mjs';
 import { SALDO_INICIAL } from '../engine/carteira.mjs';
 import { apostar, cancelar, ERRO_APOSTA } from './aposta.mjs';
+import { ERRO_MERCADO } from './mercado.mjs';
+import { rotasDoMercado } from './mercado-rotas.mjs';
 import { definirLimite, confirmarAumento, limitesDe, pedidosDe, TIPOS_LIMITE,
          ERRO_LIMITE } from './limites.mjs';
 import { pausar, pausaAtiva, pedirReentrada, concederReentrada, realityCheck,
@@ -129,6 +131,11 @@ const STATUS_DE = {
   [ERRO_LIGA.REPETIDA]: 409,
   [ERRO_LIGA.LIQUIDADA]: 409,
   [ERRO_LIGA.DISTRIBUICAO]: 400,
+  /* O bolo mútuo (ST-12.3): sem bolo aberto é conflito com o estado, como a
+     janela fechada. */
+  [ERRO_MERCADO.SEM_MERCADO]: 409,
+  [ERRO_MERCADO.SELECAO]: 400,
+  [ERRO_MERCADO.SEM_ENTRADA]: 404,
 };
 
 /* Converte a exceção do domínio em resposta. O `limite` e a `pausa` viajam
@@ -150,6 +157,9 @@ const inteiro = v => (typeof v === 'number' && Number.isInteger(v) ? v : null);
  * lê-lo de outro lugar, porque ele não está em `corpo` nem em `query` para ela.
  */
 export const ROTAS = {
+  /* O bolo mútuo (ST-12.3) mora no próprio arquivo; exige sessão como todas. */
+  ...rotasDoMercado(daExcecao),
+
 
   /* --- autenticação ----------------------------------------------------- */
 

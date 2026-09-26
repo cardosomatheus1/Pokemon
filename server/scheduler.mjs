@@ -33,6 +33,7 @@ import { mensagemCommit } from '../engine/commit.mjs';
 import { CONF } from '../engine/engine.mjs';
 import { ordemDeQuedas, posicaoFinalDe, abatesNosEventos } from '../engine/colocacao.mjs';
 import { travarApostas } from './aposta.mjs';
+import { abrirMercados, travarMercados } from './mercado.mjs';
 
 export const ESTADOS = {
   AGENDADA:  'agendada',
@@ -115,6 +116,9 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
          VALUES (?,?,?,?,?,?,?)`);
       preco.lutadores.forEach((l, slot) =>
         ins.run(id, slot, l.dex, l.prob, l.erroRelativo, l.fair, l.odd));
+      /* O BOLO MÚTUO NASCE NA MESMA TRANSAÇÃO (ST-12.3): rodada sem bolo, ou
+         bolo sem rodada, é estado que ninguém deveria conseguir observar. */
+      abrirMercados(db, { roundId: id, abreEm: agora, travaEm: agora + FASE_MS.APOSTA });
       db.exec('COMMIT');
     } catch (e) { db.exec('ROLLBACK'); throw e; }
 
@@ -159,6 +163,7 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
          num passo separado. Qualquer folga entre as duas coisas é uma janela em
          que alguém conhece o resultado e a aposta ainda aceita mudança. */
       travarApostas(db, { roundId: atual.id, agora });
+      travarMercados(db, { roundId: atual.id, agora });
       return atual;
     }
 

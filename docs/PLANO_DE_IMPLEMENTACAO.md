@@ -624,7 +624,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
   resolvido pelo primeiro; contar pela exibição e não pelo motor.
 - **Portões:** Q1 Q2 Q3 · Q6: sem superfície nova.
 
-### ST-12.3 · O bolo no servidor: tabelas, entrada e limite (F2.1, parte a)
+### ~~ST-12.3~~ ✅ 26/09 · O bolo no servidor: tabelas, entrada e limite (F2.1, parte a) — `server/mercado.mjs` + `mercado-rotas.mjs`, migração `mercados-mutuos-st12.3`; uma posição por jogador por bolo · S1230–S1242
 - **Porte** M · **Servidor** sim · **Bloco dono** F2.1 · **Spec** §6.10, §6.11, §6.13 · **Depende de** ST-12.1, ST-12.2
 - **Entrega ao jogador:** com conta, dá para entrar no bolo de abates pela API.
 - **Escopo:** migração aditiva `markets` e `market_entries` (colunas do

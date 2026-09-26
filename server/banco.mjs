@@ -1082,6 +1082,66 @@ export const MIGRACOES = [
       db.exec(`ALTER TABLE telemetry_events DROP COLUMN chave`);
     },
   },
+  {
+    nome: 'mercados-mutuos-st12.3',
+    /* O BOLO MÚTUO (ST-12.3 · F2.1 · Spec §6.10).
+     *
+     * `markets` guarda o que o jogador leu ANTES de entrar — taxa e destino
+     * "sem acerto" (§6.4: "escolhido por parâmetro e exibido antes") — e o que
+     * a liquidação escreve depois. As colunas do preço do modelo nascem aqui e
+     * ficam nulas até a ST-12.5; nenhuma rota as lê durante a janela (§6.6).
+     *
+     * UMA POSIÇÃO POR JOGADOR POR MERCADO, como no §5.6: trocar é UPDATE, e
+     * sair-e-voltar reaproveita a linha. Várias posições no mesmo bolo não
+     * dariam vantagem (a taxa come a cobertura), mas fariam o limite do §28.3
+     * contar posições em vez de exposição.
+     *
+     * ADITIVA: descer apaga as duas; os lançamentos MARKET_* do ledger ficam,
+     * porque o ledger é append-only e é a história do dinheiro. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE markets (
+          id                    TEXT PRIMARY KEY,
+          round_id              TEXT NOT NULL REFERENCES rounds(id),
+          kind                  TEXT NOT NULL CHECK (kind IN ('abates','podio','duracao')),
+          status                TEXT NOT NULL CHECK (status IN ('aberto','travado','liquidado','cancelado')),
+          opens_at              INTEGER NOT NULL,
+          locks_at              INTEGER NOT NULL,
+          settled_at            INTEGER,
+          fee_rate              REAL NOT NULL CHECK (fee_rate >= 0 AND fee_rate <= 0.5),
+          no_winner_destination TEXT NOT NULL CHECK (no_winner_destination IN ('devolver','tesouraria')),
+          residue_destination   TEXT NOT NULL DEFAULT 'tesouraria',
+          pot_gross             INTEGER,
+          pot_net               INTEGER,
+          model_price_json      TEXT,
+          model_priced_at       INTEGER,
+          published_at          INTEGER,
+          UNIQUE (round_id, kind),
+          CHECK (locks_at > opens_at)
+        )`);
+      db.exec(`
+        CREATE TABLE market_entries (
+          id              TEXT PRIMARY KEY,
+          market_id       TEXT NOT NULL REFERENCES markets(id),
+          user_id         TEXT NOT NULL REFERENCES users(id),
+          selection       INTEGER NOT NULL CHECK (selection >= 0),
+          amount          INTEGER NOT NULL CHECK (amount > 0),
+          stake_breakdown TEXT NOT NULL,
+          status          TEXT NOT NULL
+                            CHECK (status IN ('aberta','travada','cancelada','ganha','perdida','devolvida')),
+          created_at      INTEGER NOT NULL,
+          locked_at       INTEGER,
+          payout          INTEGER CHECK (payout IS NULL OR payout >= 0),
+          settled_at      INTEGER,
+          UNIQUE (market_id, user_id)
+        )`);
+      db.exec(`CREATE INDEX idx_market_entries_mercado ON market_entries(market_id, status)`);
+    },
+    desce: db => {
+      db.exec(`DROP TABLE IF EXISTS market_entries`);
+      db.exec(`DROP TABLE IF EXISTS markets`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

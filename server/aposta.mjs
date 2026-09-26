@@ -34,6 +34,7 @@ import { avaliarAposta, avaliarRodada, registrarRodada, registrarPerda,
 import { podeAgir, ERRO_PROTECAO } from './protecao.mjs';
 import { darXP, registrarFeito } from './progressao.mjs';
 import { xpDaRodada } from '../engine/progressao.mjs';
+import { exposicaoNaRodada, jogaNaRodada } from './mercado.mjs';
 
 export const ERRO_APOSTA = {
   JANELA_FECHADA:  'janela_fechada',
@@ -110,8 +111,13 @@ export function apostar(db, { sched, userId, slot, valor, agora = Date.now() }) 
   /* Rodada NOVA conta como rodada; trocar de lutador não. Contar a troca faria
      `max_rounds_dia` medir indecisão em vez de exposição — e o jogador que
      hesita seria punido mais que o que não pensa. */
-  const veredito = jaTem ? avaliarAposta(db, { userId, valor, agora })
-    : (r => r.ok ? avaliarAposta(db, { userId, valor, agora }) : r)(
+  /* §6.13 (ST-12.3): o limite vale sobre a SOMA de todos os mercados. A
+     exposição é esta aposta mais o que já está no bolo desta rodada; e quem
+     já entrou no bolo não está numa rodada nova. */
+  const novaRodada = !jaTem && !jogaNaRodada(db, { userId, roundId: rodada.id });
+  const exposicao = valor + exposicaoNaRodada(db, { userId, roundId: rodada.id, excetoAposta: true });
+  const veredito = !novaRodada ? avaliarAposta(db, { userId, valor: exposicao, agora })
+    : (r => r.ok ? avaliarAposta(db, { userId, valor: exposicao, agora }) : r)(
         avaliarRodada(db, { userId, agora }));
   if (!veredito.ok) {
     /* O EVENTO É GRAVADO ANTES DE LANÇAR, e não num `catch` de quem chama.
@@ -179,7 +185,7 @@ export function apostar(db, { sched, userId, slot, valor, agora = Date.now() }) 
     /* A rodada só conta DEPOIS de o ticket existir. Contar antes faria uma
        recusa de saldo consumir uma rodada do limite diário — cobrar exposição
        de quem não se expôs. */
-    registrarRodada(db, { userId, agora });
+    if (novaRodada) registrarRodada(db, { userId, agora });
   }
   return { id, slot, odd: oferta.offered_odd, valor, composicao: reserva.composicao };
 }

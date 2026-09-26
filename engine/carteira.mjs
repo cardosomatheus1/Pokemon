@@ -128,6 +128,14 @@ export const TIPOS = [
    * a partir do que está gravado. E a `ref` carrega a peça (`loja:familia:id`),
    * então "o que ele comprou" também se refaz. */
   'COSMETIC_PURCHASE',
+  /* ── O BOLO MÚTUO (ST-12.3 · §6.11) ──────────────────────────────────────
+   *
+   * Tipos PRÓPRIOS, pela mesma razão da loja: um bolo lançado como aposta
+   * contaria ao auditor que o jogador apostou contra a casa, e no bolo a casa
+   * não toma posição. A taxa e o resíduo têm tipo porque são os dois lugares
+   * por onde dinheiro sai do bolo sem ir a um jogador (§6.4). */
+  'MARKET_ENTRY_RESERVE', 'MARKET_ENTRY_RELEASE', 'MARKET_LOSS',
+  'MARKET_PAYOUT_TRANSFERABLE', 'MARKET_PAYOUT_BONUS', 'MARKET_FEE', 'MARKET_RESIDUE',
 ];
 
 const zerado = () => Object.fromEntries(BUCKETS.map(b => [b, 0]));

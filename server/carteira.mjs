@@ -163,7 +163,11 @@ export function creditar(db, { userId, tipo, bucket, valor, ref, refTipo, idem, 
 /* RESERVAR — a ordem de consumo vem do MOTOR, e a composição volta para o
    ticket. O §5.5 é explícito: o ticket nunca grava só `stake = 100`; grava de
    onde os 100 saíram. Sem isso, o settlement não tem como preservar a origem. */
-export function reservarNoBanco(db, { userId, valor, ref, agora = Date.now() }) {
+/* `tipo` e `refTipo` existem desde a ST-12.3: a entrada no bolo mútuo reserva
+   pelo MESMO caminho (a ordem de consumo e a composição valem igual), com o
+   lançamento que diz o que ela é — `MARKET_ENTRY_RESERVE`, e não aposta. */
+export function reservarNoBanco(db, { userId, valor, ref, agora = Date.now(),
+                                      tipo = 'BET_RESERVE', refTipo = 'bet' }) {
   if (!ehInteiroPositivo(valor)) return { ok: false, motivo: ERRO_CARTEIRA.VALOR };
 
   const disp = saldos(db, userId);
@@ -176,16 +180,17 @@ export function reservarNoBanco(db, { userId, valor, ref, agora = Date.now() }) 
   }
   if (falta > 0) return { ok: false, motivo: ERRO_CARTEIRA.SALDO };
 
-  const r = aplicar(db, { userId, ref, refTipo: 'bet', agora,
+  const r = aplicar(db, { userId, ref, refTipo, agora,
     linhas: Object.entries(composicao).map(([bucket, n]) =>
-      ({ bucket, tipo: 'BET_RESERVE', delta: -n, reservaDelta: n })) });
+      ({ bucket, tipo, delta: -n, reservaDelta: n })) });
   return r.ok ? { ok: true, composicao } : r;
 }
 
-export function liberarNoBanco(db, { userId, composicao, ref, idem, agora = Date.now() }) {
-  return aplicar(db, { userId, ref, refTipo: 'bet', idem, agora,
+export function liberarNoBanco(db, { userId, composicao, ref, idem, agora = Date.now(),
+                                    tipo = 'BET_RELEASE', refTipo = 'bet' }) {
+  return aplicar(db, { userId, ref, refTipo, idem, agora,
     linhas: Object.entries(composicao).map(([bucket, n]) =>
-      ({ bucket, tipo: 'BET_RELEASE', delta: n, reservaDelta: -n })) });
+      ({ bucket, tipo, delta: n, reservaDelta: -n })) });
 }
 
 /* LIQUIDAR — o payout HERDA A ORIGEM (§5.5), e é esta função que impede a Arena
@@ -214,6 +219,12 @@ export function liquidarNoBanco(db, { userId, composicao, ganhou, odd, ref, idem
  * transforma "saldo adulterado" em "saldo adulterado E DETECTADO" — e o que um
  * caminho novo com bug produz é exatamente isso: escrita direta na tabela de
  * saldo sem o lançamento correspondente. */
+/* As perdas só mexem no reservado (ver o comentário abaixo); as reservas tiram
+   do disponível. O bolo tem as suas (ST-12.3) — esquecê-las aqui faria toda
+   conta que entrou num bolo parecer adulterada na cópia diária do piloto. */
+const SO_RESERVA = new Set(['BET_LOSS', 'MARKET_LOSS']);
+const RESERVAS = new Set(['BET_RESERVE', 'MARKET_ENTRY_RESERVE']);
+
 export function reconciliarNoBanco(db, userId) {
   const problemas = [];
   const calc = Object.fromEntries(BUCKETS.map(b => [b, 0]));
@@ -221,8 +232,8 @@ export function reconciliarNoBanco(db, userId) {
     /* `amount` carrega o delta do DISPONÍVEL quando ele existe; quando o
        movimento só mexe em reservado (a perda), `amount` traz o delta da
        reserva e não deve entrar nesta soma. */
-    if (l.type === 'BET_LOSS') continue;
-    calc[l.bucket] += l.type === 'BET_RESERVE' ? -Math.abs(l.amount) : l.amount;
+    if (SO_RESERVA.has(l.type)) continue;
+    calc[l.bucket] += RESERVAS.has(l.type) ? -Math.abs(l.amount) : l.amount;
   }
   const guardado = saldos(db, userId);
   for (const b of BUCKETS)
