@@ -59,8 +59,9 @@ mostrava — corrigido antes de qualquer conta real). **ST-12.8 ✅** (a faixa d
 duração). **A V2 está construída inteira** (E12: 12.1 a 12.10). Abrir pódio e
 duração: `MERCADOS=abates,podio,duracao`. **Q2 completo VERDE 1293/1293** (26/09,
 17bd5f3: 676 reavaliados, 617 reaproveitados). **E9 (V3) em curso: ST-9.1 ✅** (o
-dossiê da Arena, 200.000 rodadas pela luta paga, cada número com o seu n). O
-próximo bloco é a **ST-9.2** (a escada da Pokédex).
+dossiê da Arena, 200.000 rodadas pela luta paga, cada número com o seu n).
+**ST-9.2 ✅** (a escada da Pokédex). O próximo bloco é a **ST-9.3** (o dossiê na
+ficha).
 
 **Hospedagem pública: decisão do dono, 26/09 — *"Isso vai ser configurável
 depois, primeiro vamos fechar o jogo"*.** Sai da lista de perguntas; volta

@@ -765,7 +765,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Sabotagem:** contar abate de tempestade como abate; usar RNG solto em vez de `derivarIndice`; esquecer o clima; calcular posição por travessia própria; omitir o n de um campo.
 - **Portões:** Q1 Q2 Q3 Q4 · Q6: sem superfície nova.
 
-### ST-9.2 · A escada de informação da Pokédex
+### ~~ST-9.2~~ ✅ 26/09 · A escada de informação da Pokédex — `app/modules/pokedex-estado.mjs`; marcas da Arena em chave própria (`ar_escada_arena`), `jaPossuiu` aditivo no save; DOMINADA pelo registro da LINHA · S1304–S1309
 - **Porte** P–M · **Servidor** não · **Bloco dono** F3.10 (motor) · **Spec** §7.4, §6.13 · **Depende de** ST-9.1
 - **Entrega ao jogador:** cada espécie da Arena passa a ter um estado (vista, encontrada, capturada, dominada), e o jogo sabe o que falta para o próximo.
 - **Escopo:** `pokedex-estado.mjs` (camada 0). Estados:

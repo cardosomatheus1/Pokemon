@@ -27,6 +27,7 @@
  * aproveitar, e o que não dá vira lista vazia. Perder uma expedição é ruim;
  * perder a aba é pior, e é irreversível para quem não sabe abrir o console.
  */
+import { camposDaEscada, sincronizarPossuidas } from './pokedex-estado.mjs';
 import { novaRaiz, derivar } from '../../engine/seed.mjs';
 import { efeitosDa } from '../../engine/foco.mjs';
 import { semente, gerarInstancia, potencialDe, formaDe } from '../../engine/instancia.mjs';
@@ -79,6 +80,7 @@ export const VAZIO = () => ({
      defeito apareceu na primeira medição: oito trocas seguidas devolveram o
      mesmo item, porque o contador nascia em 1 a cada leitura. */
   estilhacos: 0,
+  jaPossuiu: [],   // ST-9.2 · `pokedex-estado.mjs`
 });
 
 /* Diagnóstico do último carregamento, para a interface poder DIZER algo em vez
@@ -112,6 +114,7 @@ export function carregar(deposito = globalThis.localStorage) {
   e.encontros  = arrayOu(cru.encontros,  'encontros',  problemas);
   e.bolsa      = objetoOu(cru.bolsa,     'bolsa',      problemas);
   e.registro     = objetoOu(cru.registro,    'registro',     problemas);
+  Object.assign(e, camposDaEscada(cru, e.criaturas));   // ST-9.2: aditivos
   /* ── `simultaneas` NAO E LIDO DO DISCO, E ISSO E A CORRECAO (D-072) ────
      A versao anterior aceitava o numero salvo e o apertava no maximo. Parecia
      defensivo — o clamp esta la — e nao era: `localStorage` esta a um F12 de
@@ -183,6 +186,8 @@ export function salvar(e, deposito = globalThis.localStorage) {
     let noDisco = 0;
     try { noDisco = revDe(JSON.parse(deposito?.getItem(CHAVE) ?? 'null')?.rev); } catch { noDisco = 0; }
     if (noDisco !== revDe(e.rev)) { ultimoConflito = true; return false; }
+    /* ST-9.2: quem ele TEM entra em "já possuiu" — soltar não desce o degrau. */
+    sincronizarPossuidas(e);
     const proxima = revDe(e.rev) + 1;
     deposito?.setItem(CHAVE, JSON.stringify({ ...e, rev: proxima, v: VERSAO }));
     e.rev = proxima;

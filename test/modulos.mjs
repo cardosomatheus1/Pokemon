@@ -344,6 +344,8 @@ const CAMADA = {
      recebe o pack e devolve dados, entao a ficha inteira e conferivel sem
      navegador. */
   'pokedex-dados.mjs': 0,
+  /* ST-9.2 · a escada de informação: em que degrau cada espécie está. */
+  'pokedex-estado.mjs': 0,
   /* A tela da Pokedex. Camada 4: lista, busca e ficha. */
   'pokedex.mjs': 4,
   /* Quem TOCA a transicao. So `setTimeout` e troca de classe. */

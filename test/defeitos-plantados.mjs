@@ -8005,6 +8005,27 @@ export const DEFEITOS = [
     real:'"vence 10%" sem "de 40" — o dossie vira autoengano',
     de:'      vitoria: taxa(e.vitorias, e.n),', para:'      vitoria: { taxa: e.n ? e.vitorias / e.n : null },' },
 
+  /* ── ST-9.2 · a escada de informação da Pokédex ─────────────────────── */
+  { id:'S1304', arquivo:'app/modules/pokedex-dados.mjs', nome:'ver na Arena passa a contar como especie vista do idle',
+    real:'assistir rodadas da vagas de expedicao e sobe o teto de encontros — a escada do 1.19 comprada com tempo de tela',
+    de:"  const s = new Set(Object.keys(e?.registro ?? {}).map(Number).filter(Number.isFinite));",
+    para:"  const s = new Set([...Object.keys(e?.registro ?? {}), ...(e?.vistasArena ?? [])].map(Number).filter(Number.isFinite));" },
+  { id:'S1305', arquivo:'app/modules/pokedex-estado.mjs', nome:'soltar a ultima criatura desce o degrau',
+    real:'o dossie tranca de novo o que o jogador ja tinha liberado — a escada deixa de ser progresso',
+    de:'  const possuiu = conjunto(e?.jaPossuiu).has(d) || capturados(e).has(d);', para:'  const possuiu = capturados(e).has(d);' },
+  { id:'S1306', arquivo:'app/modules/pokedex-estado.mjs', nome:'dominada sem nunca ter possuido',
+    real:'farmar registro da linha basta para o ultimo degrau, sem capturar nem evoluir',
+    de:"  if (possuiu && registroDaLinha(pack, e, d).completo) return 'dominada';", para:"  if (registroDaLinha(pack, e, d).completo) return 'dominada';" },
+  { id:'S1307', arquivo:'app/modules/pokedex-estado.mjs', nome:'encontrada so por ter aparecido',
+    real:'ver passar vira "encontrar": o degrau que pede uma decisao (apostar) sai de graca',
+    de:"  if (conjunto(marcas?.encontradas).has(d)) return 'encontrada';", para:"  if (conjunto(marcas?.encontradas).has(d) || conjunto(marcas?.vistas).has(d)) return 'encontrada';" },
+  { id:'S1308', arquivo:'app/modules/idle-dados.mjs', nome:'a gravacao nao guarda quem ele ja possuiu',
+    real:'soltar a ultima criatura e recarregar desce o degrau',
+    de:'    sincronizarPossuidas(e);\n', para:'' },
+  { id:'S1309', arquivo:'app/modules/pokedex-estado.mjs', nome:'o registro de dominada conta so o dex da forma final',
+    real:'formas finais quase nao aparecem na natureza: ninguem domina o Charizard',
+    de:'  const fragmentos = linha.reduce((a, d) => a + (Number(e?.registro?.[d]) || 0), 0);', para:'  const fragmentos = Number(e?.registro?.[dex]) || 0;' },
+
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
     real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',
