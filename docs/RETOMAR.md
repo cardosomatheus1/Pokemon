@@ -57,8 +57,10 @@ só abates). **D-118 ✅** (dois "1º" com a tempestade). **D-119 ✅** (o servi
 uma luta sem clima: 771 de 2.000 rodadas com campeão diferente do que a tela
 mostrava — corrigido antes de qualquer conta real). **ST-12.8 ✅** (a faixa de
 duração). **A V2 está construída inteira** (E12: 12.1 a 12.10). Abrir pódio e
-duração: `MERCADOS=abates,podio,duracao`. **O próximo passo é o Q2 completo**
-(676 adiados), depois o **E9** (V3), começando pela ST-9.1.
+duração: `MERCADOS=abates,podio,duracao`. **Q2 completo VERDE 1293/1293** (26/09,
+17bd5f3: 676 reavaliados, 617 reaproveitados). **E9 (V3) em curso: ST-9.1 ✅** (o
+dossiê da Arena, 200.000 rodadas pela luta paga, cada número com o seu n). O
+próximo bloco é a **ST-9.2** (a escada da Pokédex).
 
 **Hospedagem pública: decisão do dono, 26/09 — *"Isso vai ser configurável
 depois, primeiro vamos fechar o jogo"*.** Sai da lista de perguntas; volta

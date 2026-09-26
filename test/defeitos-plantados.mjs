@@ -7987,6 +7987,24 @@ export const DEFEITOS = [
     real:'o jogador le uma regra de outro mercado antes de entrar (achado no OLHAR)',
     de:'    mercado.regra.empateDivide === false\n', para:'    false\n' },
 
+  /* ── ST-9.1 · o dossiê da Arena ─────────────────────────────────────── */
+  { id:'S1299', arquivo:'engine/dossie.mjs', nome:'o dossie conta a vitima da tempestade como abate',
+    real:'a tempestade nao tem autor; o dossie diria que uma especie abate mais do que abate',
+    de:'    const ab = abatesNosEventos(i, batalha.events);', para:"    const ab = batalha.events.filter(e => e.storm ? e.hits.some(h => h.ko && h.i === i) : (e.ko && e.a === i)).length;" },
+  { id:'S1300', arquivo:'engine/dossie.mjs', nome:'o dossie sorteia a rodada com RNG solto',
+    real:'regerar da outro arquivo — o dossie deixa de ser auditavel pela raiz',
+    de:"  const t = sementes(derivarIndice(raiz, 'dossie', k));", para:'  const t = sementes(Math.floor(Math.random() * 2 ** 32));' },
+  { id:'S1301', arquivo:'engine/dossie.mjs', nome:'o dossie mede a luta sem o clima',
+    real:'o dossie descreve uma Arena que nao e a que paga (o D-119 pela porta do dossie)',
+    de:'  const { clima, batalha } = lutaDaRodada(M, { pool, ambiente: t.ambiente, batalha: t.batalha });',
+    para:"  const clima = { key: 'neutro' }, batalha = M.simular(pool, t.batalha, true);" },
+  { id:'S1302', arquivo:'engine/dossie.mjs', nome:'o dossie calcula a posicao por conta propria',
+    real:'o campeao entre os caidos (D-118) vira dois 1o no dossie',
+    de:'    const pos = posicaoFinalDe(i, batalha.winner, ordem, n);', para:'    const pos = ordem.includes(i) ? n - ordem.indexOf(i) : 1;' },
+  { id:'S1303', arquivo:'engine/dossie.mjs', nome:'a taxa de vitoria sai sem o n',
+    real:'"vence 10%" sem "de 40" — o dossie vira autoengano',
+    de:'      vitoria: taxa(e.vitorias, e.n),', para:'      vitoria: { taxa: e.n ? e.vitorias / e.n : null },' },
+
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
     real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',

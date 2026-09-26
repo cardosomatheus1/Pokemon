@@ -749,7 +749,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 
 **Depende de:** o E12 na fila. **Não espera o piloto** (decisão do dono, 26/09: terminar o jogo); o piloto, quando rodar, mede o que já estiver construído. Toda story é aditiva: nenhuma tira comportamento de hoje.
 
-### ST-9.1 · O histórico da Arena por espécie
+### ~~ST-9.1~~ ✅ 26/09 · O histórico da Arena por espécie — `engine/dossie.mjs` + `content/dossie_pokemon_kanto_v1.mjs` (200.000 rodadas, 13,7 s), pela luta paga (`lutaDaRodada`) · S1299–S1303
 - **Porte** M · **Servidor** não · **Bloco dono** F3.9 · **Spec** §7.12, §22 · **Depende de** nada
 - **Entrega ao jogador:** nada visível ainda; o jogo passa a saber o que o dossiê vai mostrar.
 - **Escopo:**
