@@ -988,7 +988,8 @@ Fatiada em duas (a original seria G).
 - **Sabotagem:** componente não exibido; criatura não possuída aceita.
 - **Portões:** Q1 Q2 Q3.
 
-### ST-10.5 · A probabilidade exibida
+### ST-10.5 · A probabilidade exibida ✅ 26/09
+> Feito: `engine/treino-preco.mjs` + calibração (fixture `treino-calibracao.json`, 20.000 confrontos, 0 faixas fora); S1444–S1448.
 - **Porte** M–G · **Servidor** não · **Bloco dono** F4.3 · **Spec** §8.1.1
 - **Entrega ao jogador:** "seu time vence 23% (±2)", e a maior fraqueza do time.
 - **Escopo:** `engine/treino-preco.mjs`, Monte Carlo sobre `simular` com erro, fatiado no cliente. "Maior fraqueza" sai da tabela de tipos. Fixture de medição: `p` exibida contra frequência observada em 20.000 combates por faixa.

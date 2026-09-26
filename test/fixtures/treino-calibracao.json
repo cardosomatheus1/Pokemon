@@ -1,0 +1,68 @@
+{
+ "medidoEm": "2026-09-26",
+ "confrontos": 20000,
+ "simsPorChance": 200,
+ "formato": "3v3, níveis 20–50, elenco",
+ "faixas": [
+  {
+   "faixa": "0–10%",
+   "n": 7568,
+   "exibida": 0.0141,
+   "observada": 0.0181
+  },
+  {
+   "faixa": "10–20%",
+   "n": 1054,
+   "exibida": 0.1406,
+   "observada": 0.1423
+  },
+  {
+   "faixa": "20–30%",
+   "n": 653,
+   "exibida": 0.2443,
+   "observada": 0.2358
+  },
+  {
+   "faixa": "30–40%",
+   "n": 413,
+   "exibida": 0.345,
+   "observada": 0.3366
+  },
+  {
+   "faixa": "40–50%",
+   "n": 357,
+   "exibida": 0.449,
+   "observada": 0.437
+  },
+  {
+   "faixa": "50–60%",
+   "n": 337,
+   "exibida": 0.5499,
+   "observada": 0.5846
+  },
+  {
+   "faixa": "60–70%",
+   "n": 420,
+   "exibida": 0.6486,
+   "observada": 0.6643
+  },
+  {
+   "faixa": "70–80%",
+   "n": 620,
+   "exibida": 0.7478,
+   "observada": 0.771
+  },
+  {
+   "faixa": "80–90%",
+   "n": 1005,
+   "exibida": 0.8523,
+   "observada": 0.8438
+  },
+  {
+   "faixa": "90–100%",
+   "n": 7573,
+   "exibida": 0.986,
+   "observada": 0.9857
+  }
+ ]
+}
