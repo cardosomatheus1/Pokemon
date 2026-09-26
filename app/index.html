@@ -981,6 +981,36 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 /* ── ST-9.4 · o histórico sob o nome, na lista de apostas ──────────────────
    Segunda linha do nome, menor e apagada: é leitura de segunda ordem, e a
    palavra "histórico" a separa da chance DESTA rodada, que é a coluna. */
+/* ── ST-9.16b · a aba Minha Coleção ─────────────────────────────────────── */
+.pdxAbas{display:flex;gap:6px;margin:4px 0 10px}
+.pdxAba{font:inherit;font-size:.78rem;font-weight:700;letter-spacing:.03em;color:var(--dim);background:none;
+  border:1px solid var(--line);border-radius:8px;padding:5px 12px;cursor:pointer}
+.pdxAba.on{color:var(--txt);border-color:var(--neon);background:rgba(var(--goldRGB),.1)}
+.mcResumo{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.74rem;color:var(--dim);margin-bottom:8px}
+.mcResumo b{color:var(--txt)}
+.mcRodada h4{margin:6px 0 4px;font-size:.8rem}
+.mcLinha{display:grid;grid-template-columns:34px 1fr auto auto;align-items:center;gap:2px 10px;padding:5px 0;border-top:1px solid var(--line)}
+.mcLinha img{width:32px;height:32px;object-fit:contain;image-rendering:pixelated}
+.mcNome{font-weight:600;font-size:.8rem}
+.mcNome i{font-style:normal;font-weight:400;font-size:.64rem;margin-left:6px;padding:0 5px;border-radius:5px;border:1px solid var(--line);color:var(--dim)}
+.mcNome i.encontrada,.mcNome i.capturada,.mcNome i.dominada{color:var(--neon);border-color:rgba(var(--goldRGB),.5)}
+.mcSobre{grid-column:2 / 3;font-size:.66rem;color:var(--dim)}
+.mcSobre b{color:var(--txt);font-weight:600}
+.mcOdd{font-family:var(--px);font-size:.8rem;color:var(--gold);text-align:right}
+.mcOdd small{display:block;font-family:'Segoe UI',system-ui,sans-serif;font-size:.64rem;color:var(--dim);white-space:nowrap}
+.mcDica{font-size:.7rem;color:var(--dim);margin:0 0 6px;line-height:1.6}
+/* O Q7 reprovou a leitura sem legenda: "vista" ao lado de "0 espécies" parecia
+   contradição, e "histórico 29%" colado em "23% de vencer" parecia a mesma conta. */
+.mcDica i{font-style:normal;font-size:.64rem;padding:0 5px;border-radius:5px;border:1px solid var(--line)}
+.mcDica i.encontrada,.mcDica i.capturada{color:var(--neon);border-color:rgba(var(--goldRGB),.5)}
+.mcDica b{color:var(--txt);font-weight:600}
+/* Duas colunas quando cabem (Q5): a linha de 1400 px punha o nome a um metro
+   da odd, e doze linhas empurravam a Coleção para baixo da dobra. */
+.mcLista{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(440px,100%),1fr));column-gap:28px}
+.mcLinha .btn{grid-row:1 / 3;grid-column:4;font-size:.7rem;padding:4px 10px}
+.mcVazio{font-size:.76rem;color:var(--dim);padding:8px 0}
+#pdxColecao{margin-top:14px}
+@media (max-width:520px){ .mcLista{grid-template-columns:1fr;padding-right:8px} .mcLinha{grid-template-columns:30px 1fr auto} .mcLinha .btn{grid-row:2;grid-column:3;justify-self:end} }
 /* ── ST-9.15 · a coleção: medalhas e missões da semana ─────────────────── */
 .colMedalhas{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
 .colMed{display:flex;flex-direction:column;padding:4px 8px;border:1px solid var(--line);border-radius:8px;font-size:.7rem;min-width:120px}
@@ -7319,6 +7349,12 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 <div id="viewPokedex" class="view">
   <div class="card">
     <h3>Pokédex <span class="tiny">o que existe, onde mora, e quanto falta</span></h3>
+    <!-- ST-9.16b: Minha Coleção é uma ABA da Pokédex (R10) -->
+    <div class="pdxAbas">
+      <button class="pdxAba on" data-pdx-aba="pokedex">Pokédex</button>
+      <button class="pdxAba" data-pdx-aba="colecao">Minha Coleção</button>
+    </div>
+    <div id="pdxAbaPokedex">
     <div class="pdxTopo">
       <input id="pdxBusca" type="search" autocomplete="off" spellcheck="false"
              placeholder="buscar por número, tipo ou nome…">
@@ -7328,9 +7364,13 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <div class="pdxColuna" id="pdxLista"></div>
       <div class="pdxPainel" id="pdxFicha"></div>
     </div>
+    </div>
+    <div id="pdxAbaColecao" hidden>
+      <div id="pdxMinha"></div>
+      <!-- ST-9.15: medalhas e missões de coleção -->
+      <div id="pdxColecao"></div>
+    </div>
   </div>
-  <!-- ST-9.15: medalhas e missões de coleção -->
-  <div class="card" id="pdxColecao"></div>
 </div>
 
 <div id="viewWiki" class="view">

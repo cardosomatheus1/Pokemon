@@ -908,7 +908,7 @@ Fatiada em duas (a original seria G).
 
 - **Bloco dono** F3.12 · **Spec** §7.15, §12 tela 10 · **Servidor** não · **Depende de** ST-9.4, 9.10, 9.14
 - ✅ 26/09 **9.16a · o painel (camada 0), M:** (feito em `app/modules/minha-colecao.mjs` — o nome `colecao-dados.mjs` já era das medalhas da ST-9.15; S1385–S1387) `colecao-dados.mjs` junta equipe, estados da Pokédex, doces, expedições e dossiês, e **cruza a pool da rodada atual com o que o jogador sabe**. Aceite: contagens batem com o save; nunca expõe camada trancada; nada é recalculado fora do dossiê.
-- **9.16b · a tela, M:** uma aba da Pokédex (R10), com atalho para apostar. Aceite: dá para decidir em quem apostar sem sair dela (critério do §7.15); Q5 com coleção vazia, parcial e cheia nas 4 larguras; Q7 com a barra de F3.12.
+- ✅ 26/09 **9.16b · a tela, M:** (aba lembrada; atalho escolhe o lutador e rola até a confirmação; texto da linha em camada 0; Q7 aplicado, L-196, D-123; S1389–S1395) uma aba da Pokédex (R10), com atalho para apostar. Aceite: dá para decidir em quem apostar sem sair dela (critério do §7.15); Q5 com coleção vazia, parcial e cheia nas 4 larguras; Q7 com a barra de F3.12.
 - **Portões:** Q1 Q2 Q5 Q7.
 
 ### ST-9.17 · O laço de retorno na Início

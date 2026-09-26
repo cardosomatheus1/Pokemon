@@ -6768,3 +6768,22 @@ processo e renomeia (atômico no mesmo disco). **Teste que trava:**
 caixa de areia a S1388 PASSOU, porque a corrida depende do relógio da
 máquina. Teste que pode passar por sorte não trava — a versão final é
 determinística.
+
+## D-123 — com o lutador escolhido, a caixa de aposta ainda manda "escolher um lutador"
+
+**Achado em:** 26/09/2026, no Q5 da ST-9.16b (captura do atalho "Apostar" a
+420 px). **Bloco dono:** UX-01. **Estado:** aberto; não impede produto (a
+confirmação logo abaixo diz o lutador, o valor e a odd).
+
+**Causa.** `fases.mjs` escreve "Escolha um lutador na lista para entrar na
+rodada." em `#betInfo` ao abrir a janela, e `selecionarLutador` (`aposta.mjs`)
+só pinta a confirmação — quem reescreve `#betInfo` é a aposta feita, a
+recusada e a cancelada. Entre escolher e confirmar, as duas caixas se
+contradizem na mesma tela.
+
+**Medição.** `tools/olhar-minha.mjs`, captura `atalho-cheio-420.png`: "Escolha
+um lutador na lista…" acima de "💵 50 em Nidoking · x10.74 ✓ Confirmar".
+
+**Teste que trava:** `minha-colecao` — "D-123 · AFIRMA O DEFEITO", que fica
+vermelho quando a escolha passar a reescrever a frase.
+

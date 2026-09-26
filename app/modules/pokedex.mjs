@@ -41,7 +41,7 @@ import { carregar } from './idle-dados.mjs';
 import { escadaDe, carregarMarcas, vistosNaPokedex, dossieDoPack } from './pokedex-estado.mjs';
 import { secoesDoDossie } from './dossie-ficha.mjs';
 import { api } from './api.mjs';
-import { pintarColecao } from './colecao-tela.mjs';
+import { mostrarAba, abaLembrada } from './colecao-tela.mjs';
 import { linhaDe } from '../../engine/evolucao.mjs';
 import {
   STATS, tetoDeStat, somaDeStats, ondeMora, linhaComExigencia,
@@ -251,7 +251,7 @@ export function renderPokedex() {
      idle seguem contando só o registro). */
   const marcas = carregarMarcas();
   pedirRealizado();
-  pintarColecao();   // ST-9.15: medalhas e missões, no cartão de baixo
+  mostrarAba(abaLembrada());   // ST-9.16b: a aba lembrada (a Coleção pinta a si mesma)
   const vistos = vistosNaPokedex(estado, marcas);
   const pegos = capturados(estado);
   const lista = filtrar(PACK, { busca, vistos });

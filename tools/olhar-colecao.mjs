@@ -26,6 +26,7 @@ for (const w of [1920, 1440, 1100, 420]) {
     const agora = Date.now();
     const semana = Math.floor(Math.floor((agora - 180 * 60000) / 86400000) / 7);
     localStorage.setItem('ar_session', '1');
+    localStorage.setItem('ar_pdx_aba', 'colecao');   // ST-9.16b: o cartão mora na aba
     localStorage.setItem('ar_escada_arena', JSON.stringify({ vistas: [6, 9, 3, 59, 38, 126, 136, 78, 146, 26, 125, 65], encontradas: [6] }));
     localStorage.setItem('ar_idle', JSON.stringify({ v: 1, registro: { 10: 40, 16: 5 }, bolsa: {}, expedicoes: [], encontros: [],
       jaPossuiu: [4, 5, 7, 1, 16, 10, 13, 19, 25, 58, 37],

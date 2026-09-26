@@ -47,3 +47,28 @@ export function painelDaColecao({ pack, estado, marcas, dossie, pool = null, odd
   }).sort((a, b) => (a.odd ?? Infinity) - (b.odd ?? Infinity));
   return { resumo, rodada };
 }
+
+/* O TEXTO de uma linha da rodada (ST-9.16b). Mora aqui, e não na tela, pelo
+   custo do portão: o que a linha diz é decisão, e decisão colada no HTML só é
+   pega por navegador. A nota vem em destaque; as do jogador e o doce só
+   aparecem quando existem — zero não é informação.
+
+   O QUE FALTA para ter a nota NÃO vai na linha. Na primeira captura (Q5) a
+   mesma frase de vinte palavras se repetia doze vezes numa rodada de jogador
+   novo, e o que decide a aposta — odd e nome — afogava nela. Vai uma vez, no
+   cabeçalho (`dicaDaRodada`); a linha diz só que ainda não há histórico. */
+export function textoDaLinha(r) {
+  return {
+    odd: r.odd ? `x${r.odd.toFixed(2)}` : '—',
+    chance: r.chance ? `${(r.chance * 100).toFixed(1)}% de vencer` : '',
+    nota: r.nota?.texto ?? null,
+    sobre: [r.nota ? '' : 'sem histórico ainda',
+            r.minhasDaLinha ? `você tem ${r.minhasDaLinha} da linha` : '',
+            r.docesDaLinha ? `${r.docesDaLinha} ${r.docesDaLinha === 1 ? 'doce' : 'doces'} da linha` : ''].filter(Boolean),
+  };
+}
+
+/* A frase do que falta, uma vez para a rodada: a de quem está sem nota. */
+export function dicaDaRodada(rodada) {
+  return (rodada ?? []).find(r => !r.nota && r.falta)?.falta ?? null;
+}
