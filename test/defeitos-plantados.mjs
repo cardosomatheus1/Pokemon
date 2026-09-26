@@ -8026,10 +8026,10 @@ export const DEFEITOS = [
     real:'formas finais quase nao aparecem na natureza: ninguem domina o Charizard',
     de:'  const fragmentos = linha.reduce((a, d) => a + (Number(e?.registro?.[d]) || 0), 0);', para:'  const fragmentos = Number(e?.registro?.[dex]) || 0;' },
 
-  /* ── D-120 · o registro afirmado da sonda dos avisos ────────────────── */
-  { id:'S1348', arquivo:'test/visual.mjs', nome:'a sonda dos avisos muda de relogio sem o D-120 saber',
-    real:'o registro do defeito fica mentindo sobre como a sonda mede — e ninguem e avisado de que a entrada em DEFEITOS envelheceu',
-    de:'          for (const t of [40, 120, 200, 320]) {', para:'          for (const t of [40, 120, 200, 320, 800]) {' },
+  /* ── D-120 · a sonda dos avisos pela linha do tempo (T15) ────────────── */
+  { id:'S1348', arquivo:'test/visual.mjs', nome:'a sonda dos avisos le a animacao sem posiciona-la',
+    real:'a sonda pausa no quadro zero e le opacidade 0 — o aviso que aparece seria dado como invisivel (ou, ao contrario, o invisivel passaria)',
+    de:'            for (const a of anims) { a.pause(); a.currentTime = t; }', para:'            for (const a of anims) { a.pause(); }' },
 
   /* ── ST-9.3 · o dossie na ficha da Pokedex ─────────────────────────── */
   { id:'S1310', arquivo:'app/modules/dossie-ficha.mjs', nome:'a secao trancada mostra o conteudo mesmo assim',

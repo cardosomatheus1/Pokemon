@@ -61,8 +61,9 @@ duração: `MERCADOS=abates,podio,duracao`. **Q2 completo VERDE 1293/1293** (26/
 17bd5f3: 676 reavaliados, 617 reaproveitados). **E9 (V3) em curso: ST-9.1 ✅** (o
 dossiê da Arena, 200.000 rodadas pela luta paga, cada número com o seu n).
 **ST-9.2 ✅** (a escada da Pokédex). **ST-9.3 ✅** (o dossiê na ficha — Q7 cego
-aplicado; D-120 e L-194 registrados). O próximo bloco é a **ST-9.4** (o dossiê ao
-lado da aposta).
+aplicado; D-120 e L-194 registrados). **T15 ✅** (D-120 corrigido: a sonda
+dos avisos pela linha do tempo — a suíte dupla tinha saído instável duas vezes).
+O próximo bloco é a **ST-9.4** (o dossiê ao lado da aposta).
 
 **Hospedagem pública: decisão do dono, 26/09 — *"Isso vai ser configurável
 depois, primeiro vamos fechar o jogo"*.** Sai da lista de perguntas; volta

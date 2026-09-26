@@ -2100,11 +2100,20 @@ export async function rodar() {
           const antes = el.className;
           el.className = ''; el.innerHTML = html; void el.offsetWidth;
           el.className = classes.join(' ');
-          let pico = 0;
-          for (const t of [40, 120, 200, 320]) {
-            await dorme(t);
+          /* D-120 (T15): A LINHA DO TEMPO DA ANIMAÇÃO, E NÃO O RELÓGIO. A
+             versão anterior dormia 40/120/200/320 ms entre leituras; com a CPU
+             afogada o primeiro timer disparou depois dos 2,6 s da animação e o
+             pico lido foi 0 — vermelho sem defeito de produto. Aqui cada
+             animação é PAUSADA e posta nos mesmos instantes (40, 160, 360 e
+             680 ms desde o começo), e a opacidade é lida em cada um. O que se
+             mede é o mesmo; quem decide o instante deixa de ser o agendador. */
+          const anims = el.getAnimations();
+          let pico = anims.length ? 0 : +getComputedStyle(el).opacity;
+          for (const t of [40, 160, 360, 680]) {
+            for (const a of anims) { a.pause(); a.currentTime = t; }
             pico = Math.max(pico, +getComputedStyle(el).opacity);
           }
+          for (const a of anims) a.cancel();
           el.className = antes;
           out[sel] = +pico.toFixed(3);
         }

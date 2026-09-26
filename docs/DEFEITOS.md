@@ -6685,12 +6685,11 @@ trava:** `test/luta-rodada.mjs` (400 rodadas: o campeão do servidor é o da lut
 com clima, e o clima muda o campeão em mais de 40 delas — o teste distingue o
 defeito; e os dois lados chamam a função comum). Sabotagens S1292 e S1293.
 
-## D-120 — a sonda dos avisos lê a opacidade pelo relógio de parede, e a CPU afogada a engana
+## D-120 — a sonda dos avisos lê a opacidade pelo relógio de parede, e a CPU afogada a engana ✅ CORRIGIDO
 
 **Achado em:** 26/09/2026, rodando a suíte inteira na árvore de trabalho da
-ST-9.4 enquanto o Q2 completo rodava na principal. **Bloco dono:** T15 (arnês —
-proposto abaixo). **Estado:** aberto; **não impede** trabalho de produto (só
-aparece sob carga paralela), então espera, pela regra do arnês do `CLAUDE.md`.
+ST-9.4 enquanto o Q2 completo rodava na principal. **Bloco dono:** T15 (arnês).
+**Estado:** fechado em 26/09/2026 — ver abaixo por que ele deixou de esperar.
 
 **Causa.** `test/visual.mjs`, a medição dos avisos com "reduzir movimento":
 o pico de opacidade do `#koToast` é amostrado com `setTimeout(40)`, `(120)`,
@@ -6700,9 +6699,22 @@ disparou depois do fim dela e o pico lido foi 0.
 **Medição.** Uma vez em 2469 testes, com o Q2 completo (4 caixas) rodando ao
 lado. A mesma suíte sozinha: verde 3 vezes seguidas.
 
-**Correção proposta (T15, não construída).** Ler pela linha do tempo da
-animação — `el.getAnimations()[0]`, `currentTime = 800`, `pause()` — em vez
-de esperar o relógio. **Teste que trava:** `test/invariantes.mjs`, "D-120 · a
-sonda dos avisos amostra por relógio de parede" — AFIRMA o defeito e fica
-vermelho quando ele for corrigido.
+**Voltou na mesma tarde e passou a IMPEDIR.** Na suíte dupla da ST-9.4 ficou
+vermelho de novo (outra carga ao lado: goldens na árvore da ST-9.11). Suíte
+instável não fecha bloco — pela regra do arnês, "impede" vira "constrói agora",
+com orçamento: 30 min, gastos ~20.
+
+**Correção (T15, 26/09/2026).** A sonda pausa cada animação do aviso e a põe
+nos mesmos instantes de antes (40, 160, 360, 680 ms), lendo a opacidade em
+cada um — `el.getAnimations()`, `pause()`, `currentTime`. O agendador deixa de
+decidir o instante. O teste que AFIRMAVA o defeito saiu de
+`test/invariantes.mjs`. **Teste que trava:** a própria suíte `rodada-viva`;
+sabotagem S1348 (pausar sem posicionar lê o quadro zero).
+
+**O que a medição NÃO provou, dito com todas as letras.** Uma carga sintética
+(4 threads em laço, 4 núcleos) não reproduziu: a sonda VELHA passou 3/3 sob
+ela, e a nova também. As duas falhas reais vieram de contenção mais pesada —
+suíte + Q2 completo com Chromium, e suíte + goldens em outra árvore. A
+correção se sustenta pelo mecanismo (instante decidido pelo agendador), e não
+por uma reprodução; se o sintoma voltar com a sonda nova, a causa é outra.
 
