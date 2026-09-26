@@ -6718,3 +6718,27 @@ suíte + Q2 completo com Chromium, e suíte + goldens em outra árvore. A
 correção se sustenta pelo mecanismo (instante decidido pelo agendador), e não
 por uma reprodução; se o sintoma voltar com a sonda nova, a causa é outra.
 
+## D-121 — a captura do "acertou" não sai: a raiz plantada não faz mais o favorito vencer
+
+**Achado em:** 26/09/2026, no Q5 da ST-9.8 (o doce no resultado). **Bloco dono:**
+T16 (arnês de captura — proposto). **Estado:** aberto; **não impede** produto
+(o caso de vitória usa o mesmo elemento e o mesmo estilo dos outros dois, e o
+teste de fonte cobra o doce nos três desfechos).
+
+**Causa (parcial).** Dois defeitos no roteiro de resultado de
+`tools/olhar-telas.mjs`, e só o primeiro foi corrigido:
+1. o roteiro clicava a linha do lutador e não CONFIRMAVA — desde a caixa de
+   confirmação da aposta, as três capturas de resultado voltavam "sem aposta"
+   e ninguém notou. **Corrigido na ST-9.8** (clica `#btnConfirmarAposta`);
+2. o modo `favoritoVence` planta `RAIZES_FAVORITO_VENCE` no primeiro
+   `Uint32Array(1)` do boot, e o favorito não vence mais: a ordem de consumo
+   do `getRandomValues` na partida mudou em algum bloco, e a raiz plantada cai
+   em outra coisa. Não investigado.
+
+**Medição.** 10 rodadas seguidas "errou" (resultado-a/b ×5), mais o
+`resultado-devolvido`, que devia ser "acertou" por construção.
+
+**O que a destrava.** O T16 medir de novo a ordem de consumo do
+`getRandomValues` na partida e atualizar as raízes. **Teste que trava:** nenhum
+ainda — a captura é ferramenta, e o sintoma é o próprio relatório do
+`olhar-telas` ("desfecho sorteado = errou" no caso que devia acertar).

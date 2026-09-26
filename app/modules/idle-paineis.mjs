@@ -21,6 +21,7 @@ import { dexImg, retratoAnimado } from './sprites.mjs';
 import { estiloIcone } from './icones.mjs';
 import { chanceDe } from '../../engine/captura.mjs';
 import { naEquipe, naCaixa, PARTY_MAX, bolsaEmLista, registroEmLista, encontrosDaRun } from './idle-dados.mjs';
+import { doceAoSoltar } from './doce-dados.mjs';
 import { estiloItem, usarCatalogo } from './itens-icone.mjs';
 
 /* O CATALOGO DO PACK ALIMENTA OS ICONES. Uma vez, na carga do modulo: o mapa
@@ -200,7 +201,10 @@ export function pintarCentro(E) {
     <div class="idleLinha">${ativos.map(c => ficha(c, false)).join('')}</div>
     ${guardados.length ? `
       <h4 class="idleSub">Na caixa</h4>
-      <div class="idleLinha">${guardados.map(c => ficha(c, true)).join('')}</div>` : ''}`);
+      <div class="idleLinha">${guardados.map(c => `<div class="idleCaixaItem">${ficha(c, true)}
+        <button class="idleSoltar" data-soltar="${c.id}" data-doce="${doceAoSoltar(PACK, c.dex)}"
+          title="soltar vira doce da linha — a Pokédex continua lembrando que você a teve">soltar · +${doceAoSoltar(PACK, c.dex)} doce</button>
+      </div>`).join('')}</div>` : ''}`);
 }
 
 /* ── A MOCHILA E O POKÉDEX ─────────────────────────────────────────────────

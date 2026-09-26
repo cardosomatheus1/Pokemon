@@ -65,7 +65,8 @@ aplicado; D-120 e L-194 registrados). **T15 ✅** (D-120 corrigido: a sonda
 dos avisos pela linha do tempo — a suíte dupla tinha saído instável duas vezes).
 **ST-9.4 ✅** (o dossiê ao lado da aposta). **ST-9.5 ✅** (o dossiê realizado, do
 servidor). **ST-9.6 ✅** (a aposta muda quem aparece nas rotas). **ST-9.7 ✅** (o doce:
-a regra). O próximo bloco é a **ST-9.8** (o doce cai na aposta e na duplicata).
+a regra). **ST-9.8 ✅** (o doce
+sem conta; D-121 registrado). O próximo bloco é a **ST-9.9** (o doce da conta real).
 
 **Hospedagem pública: decisão do dono, 26/09 — *"Isso vai ser configurável
 depois, primeiro vamos fechar o jogo"*.** Sai da lista de perguntas; volta

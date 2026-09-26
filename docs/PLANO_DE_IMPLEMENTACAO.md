@@ -830,7 +830,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Sabotagem:** escalar com o valor; escalar com a odd; emitir em pausa; chave pela forma final.
 - **Portões:** Q1 Q2 Q3 · Q6: sem superfície nova.
 
-### ST-9.8 · O doce cai na aposta e na duplicata (sem conta)
+### ~~ST-9.8~~ ✅ 26/09 · O doce cai na aposta e na duplicata (sem conta) — `doce-dados.mjs` (camada 0) + gravação otimista com releitura; "+3 doces da linha do X" neutro nos três desfechos; soltar da caixa em dois cliques · S1349–S1354, S1379
 - **Porte** M · **Servidor** não · **Bloco dono** F3.8 · **Spec** §7.8, §7.6, §28.5 · **Depende de** ST-9.7
 - **Entrega ao jogador:** o resultado mostra "+3 doces da linha do Charmander", e soltar uma duplicata vira doce.
 - **Escopo:** a liquidação local credita `doces[linha]` no save (campo aditivo, gravação otimista da ST-3.2). Na aposta perdida não há coreografia de vitória. Ação "soltar" na caixa, com confirmação, recusada para criatura na equipe ou em expedição.

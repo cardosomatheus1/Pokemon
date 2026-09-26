@@ -381,6 +381,12 @@ const resultado = (ajuste, nome = 'resultado') => async pg => {
     const banco = await import('/app/modules/banco.mjs');
     banco.creditarCompra(20000, 'olhar');
     document.querySelector('.pick')?.click();
+    /* A APOSTA TEM DOIS PASSOS desde a caixa de confirmação: escolher e
+       CONFIRMAR. Só o clique na linha deixava o roteiro sem aposta — e as três
+       capturas de resultado voltavam "sem aposta" sem ninguém notar (achado
+       no Q5 da ST-9.8). */
+    document.querySelector('#btnConfirmarAposta')?.click();
+    for (let i = 0; i < 40 && !S.myBet; i++) await new Promise(r => setTimeout(r, 50));
     if (S.myBet && aj.odd) S.myBet.odd = aj.odd;
     return S.seeds?.raiz ?? null;
   }, ajuste);

@@ -347,6 +347,10 @@ const CAMADA = {
   /* ST-9.2 · a escada de informação: em que degrau cada espécie está. */
   'pokedex-estado.mjs': 0,
   'dossie-ficha.mjs': 0,
+  /* ST-9.8 · o doce no save (camada 0), a gravação otimista, e o clique de soltar. */
+  'doce-dados.mjs': 0,
+  'doce-local.mjs': 1,
+  'doce-tela.mjs': 4,
   /* ST-9.6 · o bônus da Arena nas rotas: a aposta deixa a linha ×4 por 6 h. */
   'bonus-arena.mjs': 0,
   /* ST-9.4 · as notas do histórico da rodada; o painel as recebe por gancho. */

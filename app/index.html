@@ -981,6 +981,17 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 /* ── ST-9.4 · o histórico sob o nome, na lista de apostas ──────────────────
    Segunda linha do nome, menor e apagada: é leitura de segunda ordem, e a
    palavra "histórico" a separa da chance DESTA rodada, que é a coluna. */
+/* ── ST-9.8 · o doce no resultado — neutro nos três desfechos (§28.5) ───── */
+#winBox .doceLinha{margin:8px auto 0;font-size:.8rem;color:var(--txt);opacity:.9;
+  padding:3px 10px;border:1px solid var(--line);border-radius:999px;width:max-content;max-width:95%}
+/* ── ST-9.8 · soltar na caixa ───────────────────────────────────────────── */
+/* Largura FIXA: aberto, o painel de golpes esticava o cartão até a borda e
+   deixava a ficha enorme e vazia (Q5). Fixa, o painel quebra linha dentro. */
+.idleCaixaItem{display:flex;flex-direction:column;align-items:stretch;gap:3px;width:176px;max-width:100%}
+.idleSoltar{font:inherit;font-size:.62rem;color:var(--dim);background:none;border:1px dashed var(--line);
+  border-radius:6px;padding:1px 6px;cursor:pointer}
+.idleSoltar:hover{color:var(--txt);border-color:var(--neon)}
+.idleSoltar.armado{color:var(--red);border-style:solid;border-color:var(--red)}
 /* ── ST-9.6 · a linha apostada na Arena, na prévia da rota ──────────────── */
 .prvArena{font-style:normal;color:var(--neon);font-weight:700}
 /* No canto do cartão, e não colado à chance: a 1440 o "×4" quebrava a linha e
@@ -7926,6 +7937,8 @@ import { buildPickList, computeOdds, refreshOddsTable, usarNotasDaLinha } from '
 /* ST-9.4: a nota do histórico entra no painel por gancho — o módulo que
    precifica não importa a escada nem o dossiê. */
 import { notasDaRodada } from './modules/historico-aposta.mjs';
+/* ST-9.8: soltar na caixa vira doce — o módulo se liga sozinho ao clique. */
+import './modules/doce-tela.mjs';
 usarNotasDaLinha(lutadores => notasDaRodada(lutadores));
 import { conferirAbates, limparPodio, mostrarPodio, renderKillfeed, resetKillfeed } from './modules/killfeed.mjs';
 import { reiniciarMovimento, stepMovement } from './modules/coreografia.mjs';

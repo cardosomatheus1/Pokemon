@@ -22,7 +22,9 @@
  * gravada, porque a função morria antes de chegar lá.
  */
 import { $, log } from './dom.mjs';
-import { CUR, MOEDA } from './motor.mjs';
+import { CUR, MOEDA, PACK, nomeExibido } from './motor.mjs';
+import { creditarDoceLocal } from './doce-local.mjs';
+import { textoDoDoce } from './doce-dados.mjs';
 import { S } from './estado.mjs';
 import { pontuarFimDeRodada } from './liga-tela.mjs';
 import { emitir } from './telemetria.mjs';
@@ -333,6 +335,19 @@ function finish(){
     }
     atualizarSaldo();
 
+    /* ── O DOCE (ST-9.8, §7.8) ──────────────────────────────────────────
+       Da espécie APOSTADA, pela vitória DELA — nunca pelo valor. Sem conta,
+       credita aqui; com conta, o servidor credita na liquidação (ST-9.9). A
+       chave da rodada é o que impede a segunda aba de creditar de novo. */
+    const doceDaRodada = modoServidor() ? null : creditarDoceLocal({ pack: PACK, chave: S.rodadaId ?? S.commit?.commit,
+      dex: S.fighters[S.myBet.idx].dex, venceu: acertou, agora: Date.now() });
+    /* Sem doce (com conta, ou rodada repetida) não há nome a pedir: o
+       `nomeExibido` do pack não aceita nome vazio — foi o erro de página que
+       a suíte pegou jogando contra o servidor. */
+    const especieDoDoce = PACK.especies.find(x => x.dex === doceDaRodada?.linha);
+    const fraseDoDoce = especieDoDoce ? textoDoDoce(doceDaRodada, nomeExibido(especieDoDoce.n)) : null;
+    const blocoDoce = fraseDoDoce ? `<div class="doceLinha">${fraseDoDoce}</div>` : '';
+
     const alvo = acertou ? f : S.fighters[S.myBet.idx];
     recordBetResult(acertou, S.myBet.amount, retorno, alvo);
     registrarAposta({t:Date.now(), mon:alvo.n, amount:S.myBet.amount, odd:S.myBet.odd,
@@ -355,6 +370,7 @@ function finish(){
           <div class="payout">${rotuloLiquido(res.liquido)} ${CUR}
             <small>retorno de ${CUR} ${retorno.toLocaleString('pt-BR')} sobre ${CUR} ${S.myBet.amount.toLocaleString('pt-BR')} · x${S.myBet.odd.toFixed(2)}</small>
           </div>
+          ${blocoDoce}
           ${blocoXP(xpInfo, feitos)}
         </div>`;
       dropConfetti($('#winBox'));
@@ -377,6 +393,7 @@ function finish(){
               res.desfecho === 'devolvido' ? 'o mesmo valor de volta'
                                            : 'menos do que apostou'}.</small>
           </div>
+          ${blocoDoce}
           ${blocoXP(xpInfo, feitos)}
         </div>`;
 
@@ -395,6 +412,7 @@ function finish(){
             <small>você tinha ${meu.n}</small>
           </div>
           <div class="cheer">${cheer}</div>
+          ${blocoDoce}
           ${blocoXP(xpInfo, feitos)}
         </div>`;
     }
