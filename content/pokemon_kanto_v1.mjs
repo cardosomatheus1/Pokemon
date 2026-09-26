@@ -1,4 +1,5 @@
 import { TODOS as CATALOGO_ITENS } from './itens_v1.mjs';
+import { EXCLUSIVOS } from './exclusivos_kanto_v1.mjs';
 /* ContentPack — pokemon_kanto_v1
  *
  * TODO dado de tema mora aqui: espécies, tipos, tabela de efetividade, golpes,
@@ -974,6 +975,8 @@ export const pokemonKantoV1 = {
   faixas:    FAIXAS,
   raridade:  RARIDADE_FAIXAS,
   evolucoes: EVOLUCOES,
+  /* ST-10.3: os golpes que só a forma de antes aprende (evoluir ou esperar). */
+  exclusivos: EXCLUSIVOS,
   bolas:     BOLAS,
   itens:     ITENS,
   iniciais: INICIAIS,

@@ -40,7 +40,7 @@ function fecho(inicios) {
 /* Quem DECIDE a Arena: o elenco, o preço, a luta, a colocação e os mercados. */
 const DECIDEM = ['server/rodada.mjs', 'engine/luta-rodada.mjs', 'engine/preco.mjs', 'engine/colocacao.mjs', 'engine/mercado-abates.mjs'];
 /* O que carrega estado de coleção — nenhum pode estar no fecho. */
-const COLECAO = /^(app\/|server\/(?!rodada\.mjs)|engine\/(doce|instancia|evolucao|captura|repertorio|gate-v3|dossie)\.mjs)/;
+const COLECAO = /^(app\/|server\/(?!rodada\.mjs)|engine\/(doce|instancia|evolucao|captura|repertorio|gate-v3|dossie|exclusivos)\.mjs)/;
 
 export async function suite() {
   const s = criarSuite('p4-v3');

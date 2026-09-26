@@ -12,6 +12,7 @@
  * lista só decide qual nome sai. O combate com golpe de verdade é o E10.
  */
 import { repertorio } from '../../engine/repertorio.mjs';
+import { exclusivosAbertos } from '../../engine/exclusivos.mjs';
 
 export const GOLPES_MAX = 4;
 
@@ -30,23 +31,34 @@ export const listasDaEspecie = (pack, dex) => {
 export const listaDaEspecie = (pack, dex) => listasDaEspecie(pack, dex)[0] ?? [];
 
 /* Os golpes que o nível já abriu, sem repetir, na ordem das listas. */
-export const liberados = (pack, dex, nivel) =>
+const liberadosDasListas = (pack, dex, nivel) =>
   [...new Set(listasDaEspecie(pack, dex).flatMap(l => repertorio(nivel, l).map(g => g.n)))];
+
+/* ST-10.3: e os EXCLUSIVOS — os que esta forma abriu no nível, mais os que a
+   criatura GUARDOU ao evoluir (`guardados`, o campo `exclusivos` dela). */
+export const liberados = (pack, dex, nivel, guardados = []) =>
+  [...new Set([...liberadosDasListas(pack, dex, nivel), ...exclusivosAbertos(pack, dex, nivel), ...(guardados ?? [])])];
+
+/* Quais, dos liberados, são exclusivos — a tela os marca. */
+export const exclusivosDaCriatura = (pack, c) =>
+  new Set([...exclusivosAbertos(pack, c?.dex, c?.nivel), ...(c?.exclusivos ?? [])]);
 
 /* O padrão: os quatro mais recentes que o nível abriu NA LISTA DO TIPO —
    o que o balão já mostrava antes deste bloco, para o save antigo não mudar
    de golpes do nada; completa com os outros liberados se faltar. */
 export function padraoDoMoveset(pack, dex, nivel) {
   const doTipo = repertorio(nivel, listaDaEspecie(pack, dex)).map(g => g.n).slice(-GOLPES_MAX);
-  const resto = liberados(pack, dex, nivel).filter(n => !doTipo.includes(n));
+  /* Sem os exclusivos: o padrão é o de sempre, e o save antigo não troca de
+     golpe sozinho (ST-10.3). O exclusivo entra quando o jogador o escolhe. */
+  const resto = liberadosDasListas(pack, dex, nivel).filter(n => !doTipo.includes(n));
   return [...doTipo, ...resto].slice(0, GOLPES_MAX);
 }
 
-export function movesetValido(pack, dex, nivel, golpes) {
+export function movesetValido(pack, dex, nivel, golpes, guardados = []) {
   if (!Array.isArray(golpes) || golpes.length < 1) return { ok: false, motivo: 'escolha ao menos um golpe' };
   if (golpes.length > GOLPES_MAX) return { ok: false, motivo: `no máximo ${GOLPES_MAX} golpes` };
   if (new Set(golpes).size !== golpes.length) return { ok: false, motivo: 'golpe repetido' };
-  const pode = new Set(liberados(pack, dex, nivel));
+  const pode = new Set(liberados(pack, dex, nivel, guardados));
   const fora = golpes.find(g => !pode.has(g));
   if (fora) return { ok: false, motivo: `${fora} ainda não foi liberado para ela` };
   return { ok: true };
@@ -57,13 +69,13 @@ export function movesetValido(pack, dex, nivel, golpes) {
    calar o balão. */
 export function golpesDaCriatura(pack, c) {
   const nivel = Number(c?.nivel) || 1;
-  return movesetValido(pack, c?.dex, nivel, c?.golpes).ok ? [...c.golpes] : padraoDoMoveset(pack, c?.dex, nivel);
+  return movesetValido(pack, c?.dex, nivel, c?.golpes, c?.exclusivos).ok ? [...c.golpes] : padraoDoMoveset(pack, c?.dex, nivel);
 }
 
 /* Liga/desliga um golpe no moveset, devolvendo o NOVO (ou a recusa). */
 export function alternarGolpe(pack, c, nome) {
   const atual = golpesDaCriatura(pack, c);
   const novo = atual.includes(nome) ? atual.filter(g => g !== nome) : [...atual, nome];
-  const v = movesetValido(pack, c.dex, Number(c.nivel) || 1, novo);
+  const v = movesetValido(pack, c.dex, Number(c.nivel) || 1, novo, c.exclusivos);
   return v.ok ? { ok: true, golpes: novo } : v;
 }

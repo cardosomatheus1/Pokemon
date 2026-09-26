@@ -8451,3 +8451,18 @@ reconhecer a anômala. **O que a destrava:** medir a taxa na simulação do idle
 (o mesmo método da fixture `emissao-idle.json`) e escrever a banda no
 `engine/gate-v3.mjs`, ao lado das outras metas.
 
+### L-198 — o pack original não tem golpes exclusivos
+
+**Registrada em:** 26/09/2026, na ST-10.3 (evoluir ou esperar). **Bloco dono:**
+F1.12 (o ContentPack original). **Estado:** aberto.
+
+O `pokemon_kanto_v1` ganhou `exclusivos` (58 formas, 54 linhas); o
+`original_v1` não tem nenhum, e com ele o jogo funciona igual — só não há o
+que esperar para evoluir. A ficha da ST-10.3 já previa esta lacuna: o conteúdo
+original é trabalho de autoria (linhas, golpes e tipos próprios), e não cabe
+num bloco de mecânica.
+
+**O que a destrava:** a F1.12 escrevendo as linhas do pack original; a regra
+(`problemasDosExclusivos`) já valida qualquer pack, e o teste de conteúdo
+passa a cobrar o original no mesmo dia.
+

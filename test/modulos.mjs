@@ -351,6 +351,8 @@ const CAMADA = {
   'doce-dados.mjs': 0,
   'doce-local.mjs': 1,
   'doce-tela.mjs': 4,
+  /* ST-10.3 · evoluir ou esperar: o clique em dois tempos. */
+  'exclusivos-tela.mjs': 4,
   /* ST-9.18 · os eventos da V3: montados (camada 0) e ligados aos gestos. */
   'telemetria-v3.mjs': 0,
   'telemetria-v3-tela.mjs': 4,

@@ -971,7 +971,8 @@ Fatiada em duas (a original seria G).
 - **Sabotagem:** importar estado da Arena; ignorar imunidade; velocidade sem efeito; usar `atribuirGolpes` em vez do moveset.
 - **Portões:** Q1 Q2 Q3 Q4 · Q6: sem superfície nova.
 
-### ST-10.3 · Evoluir ou esperar
+### ST-10.3 · Evoluir ou esperar ✅ 26/09
+> Feito: 58 formas com exclusivo (nível da evolução + 6), guardado ao evoluir, selo âmbar e clique em dois tempos; S1431–S1438; L-198 (o pack original).
 - **Porte** M, com conteúdo · **Servidor** não · **Bloco dono** F3.5 (resto) · **Spec** §7.10
 - **Entrega ao jogador:** segurar a evolução passa a render golpes que a forma final não aprende.
 - **Escopo:** dado `exclusivos` no pack (1–2 golpes por linha, com nível). Só se aprende na forma pré-evoluída, e o golpe é mantido ao evoluir. A tela de evolução avisa o que se perde.

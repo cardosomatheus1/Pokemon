@@ -29,6 +29,7 @@
  * Camada 0: recebe pack, criatura e bolsa; devolve o que dá para fazer. Sem DOM
  * e sem estado — a decisão é pura, e a transição só desenha.
  */
+import { guardadosAoEvoluir } from '../../engine/exclusivos.mjs';
 import { evolucoesDisponiveis, saidasDe, evoluir, estagioDe }
   from '../../engine/evolucao.mjs';
 
@@ -109,7 +110,11 @@ export function aplicar(pack, criatura, bolsa, alvo = null) {
   /* Volta ao vocabulário do save: `dex` é o nome que o armazenamento usa, e
      deixar `especie` junto criaria a segunda verdade que este projeto persegue. */
   const { especie, ...resto } = nova;
-  return { criatura: { ...resto, dex: especie }, de: antes, para: especie, aresta };
+  /* ST-10.3: os exclusivos que esta forma já aprendeu vão junto; os que ela
+     não aprendeu ficam para trás, para sempre. Só grava o campo se houver. */
+  const guardados = guardadosAoEvoluir(pack, criatura);
+  return { criatura: { ...resto, dex: especie, ...(guardados.length ? { exclusivos: guardados } : {}) },
+           de: antes, para: especie, aresta };
 }
 
 /* Quem, da caixa inteira, está pronto agora. É o que a tela usa para o selo, e

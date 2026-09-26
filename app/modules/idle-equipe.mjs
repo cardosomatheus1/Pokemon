@@ -11,6 +11,7 @@
  * A divisao e por assunto e nao por tamanho: as duas leem a criatura e o
  * relogio, e nenhuma delas decide nada — a decisao mora no `engine/foco.mjs`.
  */
+import { avisoDeEvolucao } from '../../engine/exclusivos.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { fatorDaEquipe } from '../../engine/expedicao.mjs';
 import { retratoAnimado } from './sprites.mjs';
@@ -56,9 +57,13 @@ const esp = dex => (PACK.especies ?? []).find(e => e.dex === dex) ?? { n: '?', d
 export function seloDaEvolucao(c, bolsa, nomeDoItem) {
   const r = oQueFalta(PACK, c, bolsa, nomeDoItem);
   if (!r.evolui) return '';
-  if (!r.falta)
-    return `<span class="criaEvo pronta" data-evoluir="${c.id}"
-                  title="esta criatura pode evoluir agora">evoluir</span>`;
+  if (!r.falta) {
+    /* ST-10.3: evoluir agora pode custar um golpe exclusivo — o selo avisa, e
+       o primeiro clique só ARMA (exclusivos-tela.mjs). */
+    const aviso = avisoDeEvolucao(PACK, c);
+    return `<span class="criaEvo pronta${aviso ? ' perde' : ''}" data-evoluir="${c.id}"
+                  title="${aviso ?? 'esta criatura pode evoluir agora'}">evoluir${aviso ? ' ⚠' : ''}</span>`;
+  }
   /* O RECORTE NO CORPO, A FRASE INTEIRA NO `title` (1.27f).
 
      `"evolui com nível 32"` tem 19 caracteres e quebrava em TRES linhas em

@@ -24,7 +24,7 @@ import { estiloIcone } from './icones.mjs';
 import { chanceDe } from '../../engine/captura.mjs';
 import { naEquipe, naCaixa, PARTY_MAX, bolsaEmLista, registroEmLista, encontrosDaRun } from './idle-dados.mjs';
 import { doceAoSoltar } from './doce-dados.mjs';
-import { golpesDaCriatura, liberados, GOLPES_MAX } from './moveset-dados.mjs';
+import { golpesDaCriatura, liberados, GOLPES_MAX, exclusivosDaCriatura } from './moveset-dados.mjs';
 import { compararGolpes } from './comparador-golpes.mjs';
 import { chaveDoDoce, XP_POR_DOCE } from '../../engine/doce.mjs';
 import { estiloItem, usarCatalogo } from './itens-icone.mjs';
@@ -207,12 +207,16 @@ export function pintarCentro(E) {
   const item = (c, guardado) => {
     const doces = (E.doces ?? {})[chaveDoDoce(PACK, c.dex)] ?? 0;
     /* ST-9.12: os golpes dela, escolhidos entre os que o nível liberou. */
-    const emUso = golpesDaCriatura(PACK, c), podem = liberados(PACK, c.dex, c.nivel);
+    const emUso = golpesDaCriatura(PACK, c), podem = liberados(PACK, c.dex, c.nivel, c.exclusivos);
+    /* ST-10.3: o exclusivo leva a marca — é o que esperar para evoluir rendeu. */
+    const excl = exclusivosDaCriatura(PACK, c);
     /* ST-9.13: e o que a Arena escolheria para a forma que luta, com o porquê. */
     const cmp = compararGolpes(PACK, c, { nomeDe: nomeExibido });
     /* Fechado, o resumo já diz QUAIS são (Q7: "golpes · 4/4" não respondia). */
     const golpes = `<details class="idleGolpes" data-golpes-de="${c.id}"><summary>golpes: ${emUso.join(' · ')} <i>(trocar)</i></summary>
-      ${podem.map(n => `<button class="idleGolpe${emUso.includes(n) ? ' on' : ''}" data-golpe="${n}" data-cria="${c.id}">${n}</button>`).join('')}
+      ${podem.map(n => `<button class="idleGolpe${emUso.includes(n) ? ' on' : ''}${excl.has(n) ? ' excl' : ''}" data-golpe="${n}" data-cria="${c.id}"${
+        excl.has(n) ? ' title="exclusivo: só a forma de antes aprende"' : ''}>${excl.has(n) ? '✦ ' : ''}${n}</button>`).join('')}
+      ${podem.some(n => excl.has(n)) ? '<span class="idleLeg">✦ exclusivo: só a forma de antes aprende, e fica ao evoluir</span>' : ''}
       ${cmp ? `<p class="idleArena"><b>${cmp.rotulo}:</b> ${cmp.arena.map(n => cmp.emComum.includes(n) ? `<u>${n}</u>` : n).join(' · ')}
         ${cmp.emComum.length ? '<span class="idleLeg">(sublinhado: você também tem)</span>' : ''}
         <br><i>${cmp.razao}</i></p>` : ''}
