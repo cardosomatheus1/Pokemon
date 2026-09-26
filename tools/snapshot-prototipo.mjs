@@ -15,7 +15,7 @@
  *
  * Uso: node tools/snapshot-prototipo.mjs
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, renameSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -83,5 +83,15 @@ ${ALVOS.map(a => '  ' + a + ',').join('\n')}
 };
 `;
 
-writeFileSync(join(raiz, 'tools/.snapshot-prototipo.mjs'), saida);
+/* ESCRITA ATÔMICA (D-122, T17). A suíte `paridade` gera este arquivo ao ser
+   MONTADA, e a lista de suítes é montada no processo principal e em cada
+   trabalhador do executor paralelo: quatro processos regravam o mesmo arquivo
+   ao mesmo tempo. `writeFileSync` trunca antes de escrever, e o `import` de um
+   deles pegava o arquivo vazio — "PROTO.assignMoves is not a function", uma
+   vez em ~10 suítes. Escrever num temporário e RENOMEAR é atômico no mesmo
+   disco: quem importa vê o arquivo velho inteiro ou o novo inteiro. */
+const destino = join(raiz, 'tools/.snapshot-prototipo.mjs');
+const temporario = `${destino}.${process.pid}.tmp`;
+writeFileSync(temporario, saida);
+renameSync(temporario, destino);
 console.log(`instantâneo do protótipo · ${ALVOS.length} declarações · ${saida.length} bytes`);

@@ -6742,3 +6742,29 @@ teste de fonte cobra o doce nos três desfechos).
 `getRandomValues` na partida e atualizar as raízes. **Teste que trava:** nenhum
 ainda — a captura é ferramenta, e o sintoma é o próprio relatório do
 `olhar-telas` ("desfecho sorteado = errou" no caso que devia acertar).
+
+## D-122 — a suíte `paridade` importava o instantâneo do protótipo pela metade ✅ CORRIGIDO
+
+**Achado em:** 26/09/2026, na suíte dupla da ST-9.16a (2ª execução: quatro
+testes da `paridade` vermelhos, "PROTO.assignMoves is not a function"; a 1ª
+e três execuções isoladas, verdes). **Bloco dono:** T17 (arnês). **Estado:**
+fechado em 26/09/2026 — suíte instável não fecha bloco, então impediu.
+
+**Causa.** `await paridade.suite()` regrava `tools/.snapshot-prototipo.mjs` ao
+ser MONTADA, e a lista de suítes é montada no processo principal e em cada
+trabalhador do executor paralelo (T14): quatro processos gravando e
+importando o mesmo arquivo ao mesmo tempo. `writeFileSync` trunca antes de
+escrever, e um `import` pegava o arquivo vazio ou pela metade.
+
+**Medição.** 8 levas de 6 gravadores + 10 leitores concorrentes: **8 de 80**
+importações viram o arquivo truncado com a gravação direta; **0 de 80** com
+temporário + `renameSync`.
+
+**Correção (T17).** `tools/snapshot-prototipo.mjs` grava num temporário por
+processo e renomeia (atômico no mesmo disco). **Teste que trava:**
+`test/snapshot-atomico.mjs` — um gancho carregado antes do gerador espia o
+`fs` e exige que o destino só seja tocado por `rename`; sabotagem S1388.
+**A primeira versão do teste reproduzia a CORRIDA, e o Q2 a derrubou:** na
+caixa de areia a S1388 PASSOU, porque a corrida depende do relógio da
+máquina. Teste que pode passar por sorte não trava — a versão final é
+determinística.

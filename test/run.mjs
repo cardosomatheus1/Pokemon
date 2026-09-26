@@ -11,6 +11,7 @@ import * as invariantes from './invariantes.mjs';
 import * as estatistica from './estatistica.mjs';
 import * as fonteUnica from './fonte-unica.mjs';
 import * as paridade from './paridade.mjs';
+import * as snapshotAtomico from './snapshot-atomico.mjs';
 import * as estado from './estado.mjs';
 import * as modulos from './modulos.mjs';
 import * as conteudo from './conteudo.mjs';
@@ -605,7 +606,7 @@ const todas = [
     ...(rRodadaCompleta ? [visual.suiteRodadaCompleta(rRodadaCompleta)] : []),
     ...(rSemRede        ? [visual.suiteSemRede(rSemRede)] : []),
   ] : []),
-  await paridade.suite(),
+  await paridade.suite(), snapshotAtomico.suite(),
   /* caras: medições estatísticas grandes, por último de propósito */
   informacao.suite(), margem.suite(),
 ];

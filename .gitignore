@@ -1,5 +1,6 @@
 node_modules/
 tools/.snapshot-prototipo.mjs
+tools/.snapshot-prototipo.mjs.*.tmp
 engine/*.bak
 # assets/ — VERSIONADO desde a decisão do build entre amigos.
 #

@@ -8288,6 +8288,11 @@ export const DEFEITOS = [
     real:'o botao desligado e so pintura: qualquer clique forjado paga',
     de:"  if (!m.pronta) return { ok: false, motivo: `faltam ${m.meta - m.feito}` };\n", para:'' },
 
+  /* ── D-122 · o instantaneo do prototipo, gravado atomicamente (T17) ─── */
+  { id:'S1388', arquivo:'tools/snapshot-prototipo.mjs', nome:'o instantaneo volta a ser gravado no lugar',
+    real:'a suite fica instavel de novo: um trabalhador importa o arquivo truncado por outro (8 de 80 medidos)',
+    de:'writeFileSync(temporario, saida);\nrenameSync(temporario, destino);', para:'writeFileSync(destino, saida);' },
+
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
     real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',
