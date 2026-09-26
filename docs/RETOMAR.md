@@ -41,8 +41,9 @@ o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 O ensaio mediu: abrir o jogo com conta durante a luta deixava a tela de
 carregamento ("simulando 154.000 batalhas" — falso no modo servidor) por 40 a
 54 s, porque o boot esperava a PRÓXIMA rodada abrir. Agora o app abre em 0,8 s
-e a arena diz "a próxima abre em N s". Em fila, achado no mesmo ensaio: o
-botão "Iniciar rodada" no modo servidor começa uma luta local (D-114).
+e a arena diz "a próxima abre em N s". Achado no mesmo ensaio e já corrigido:
+o botão "Iniciar rodada", com conta, levava a arena à contagem no meio da
+janela e travava a aposta (D-114) — no modo servidor ele e o "Auto" somem.
 
 ### D-112 CORRIGIDO — nenhuma aposta do servidor era liquidada (26/09)
 

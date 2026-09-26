@@ -6553,3 +6553,22 @@ a tela de carregamento diz "conectando à arena…". **Medido depois:** 0,8 s
 nas duas larguras, 0 erro de página, e a aposta funciona quando a janela
 abre. Capturas em `tools/previas/_piloto/espera-*.png`. **Testes que travam:**
 `test/espera-rodada.mjs`; S1203–S1206.
+
+## D-114 — no modo servidor, "Iniciar rodada" travava a aposta do jogador ✅ CORRIGIDO
+
+**Achado em:** 26/09/2026, no ensaio do piloto (a captura da D-113 mostrou o
+botão à mostra com conta). **Bloco dono:** ST-7.2. **Estado:** ✅ corrigido em
+26/09/2026.
+
+**Reproduzido no Chromium pelo backend:** com a janela ABERTA no servidor, um
+clique em "Iniciar rodada" levou a arena à contagem ("1"); a aposta ficou
+impossível (o confirmar não respondeu em 30 s) e "BATTLE!!" apareceu fora de
+hora. **Causa:** o botão e o "Auto" são controles do modo LOCAL; no modo
+servidor `startFight` contava a aposta na estatística (a segunda contagem do
+D-008), punha a fase em `countdown` e voltava por não haver raiz revelada — a
+tela presa numa fase que o servidor não estava.
+
+**Conserto:** a página marca `modo-servidor` no boot e o CSS esconde os dois
+botões; o clique recusa por baixo (`if (modoServidor()) return;`). Conferido:
+com conta o botão não aparece; sem conta, a suíte visual segue igual.
+**Testes que travam:** `test/espera-rodada.mjs` → `D-114:`; S1207–S1209.

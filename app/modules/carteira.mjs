@@ -9,7 +9,7 @@ import { CUR, MOEDA } from './motor.mjs';
 import { S } from './estado.mjs';
 import { alternarSom, music , somLigado } from './audio.mjs';
 import { atualizarSaldo } from './controles.mjs';
-import { APOSTA_MIN, creditarCompra, saldo, valorAposta } from './banco.mjs';
+import { APOSTA_MIN, creditarCompra, modoServidor, saldo, valorAposta } from './banco.mjs';
 import { closeModal, openModal } from './navegacao.mjs';
 import { newRound, startFight } from './fases.mjs';
 import { saveProfile } from './perfil.mjs';
@@ -314,6 +314,10 @@ document.querySelectorAll('#walletModal .tab').forEach(b => b.onclick = () => {
 });
 
 $('#btnStart').onclick = () => {
+  /* D-114: no modo servidor quem decide a rodada é o servidor. O botão some
+     (CSS), e o clique recusa por baixo — antes ele levava a tela à contagem
+     no meio da janela e o jogador ficava sem poder apostar. */
+  if (modoServidor()) return;
   if (S.state === 'betting') startFight();
   else if (S.state === 'result' || S.state === 'idle') newRound();
 };

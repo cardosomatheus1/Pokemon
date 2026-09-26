@@ -7684,6 +7684,17 @@ export const DEFEITOS = [
     real:'o idle volta a morrer no navegador — a parte do jogo que fica aberta por horas nao aparece no piloto',
     de:'      relatar(api, eventosDoEstado(E, agora));', para:'      void eventosDoEstado(E, agora);' },
 
+  /* ── D-114 · "Iniciar rodada" no modo servidor travava a aposta ─────────── */
+  { id:'S1207', arquivo:'app/index.html', nome:'os controles do modo local voltam a aparecer com conta',
+    real:'o botao vermelho "Iniciar rodada" leva a tela a contagem no meio da janela e o jogador perde a aposta',
+    de:'.modo-servidor #btnStart, .modo-servidor #btnAuto{display:none}\n', para:'' },
+  { id:'S1208', arquivo:'app/modules/carteira.mjs', nome:'o clique em "Iniciar rodada" volta a agir no modo servidor',
+    real:'um atalho de teclado ou um clique antes do CSS carregar volta a travar a aposta',
+    de:'  if (modoServidor()) return;\n  if (S.state === \'betting\') startFight();', para:'  if (S.state === \'betting\') startFight();' },
+  { id:'S1209', arquivo:'app/index.html', nome:'a pagina deixa de saber o modo',
+    real:'a regra do CSS existe e nunca casa — os botoes do modo local seguem a mostra',
+    de:"  document.body.classList.toggle('modo-servidor', modoServidor());\n", para:'' },
+
   /* ── D-113 · quem entra no meio da luta ficava preso no carregamento ──── */
   { id:'S1203', arquivo:'app/index.html', nome:'o boot volta a esperar a proxima rodada',
     real:'com conta real, abrir o jogo durante a luta prende a tela de carregamento por ate 54 s (medido)',

@@ -52,5 +52,18 @@ export function suite() {
     ok(/conectando à arena/.test(html), 'no modo servidor a tela de carregamento ainda diz que simula');
   });
 
+  /* D-114: no modo servidor o botão "Iniciar rodada" chamava `startFight`
+     local no meio da janela — a tela ia para a contagem, a aposta ficava
+     impossível e a luta saía fora de hora. Quem decide a rodada é o servidor. */
+  s.teste('D-114: no modo servidor, "Iniciar rodada" e "Auto" somem e não agem', () => {
+    const html = fonte('../app/index.html'), cart = fonte('../app/modules/carteira.mjs');
+    ok(/document\.body\.classList\.toggle\('modo-servidor', modoServidor\(\)\)/.test(html),
+      'o boot não marca o modo servidor na página');
+    ok(/\.modo-servidor #btnStart,\s*\.modo-servidor #btnAuto\s*\{\s*display:\s*none/.test(html),
+      'os dois botões continuam à mostra no modo servidor');
+    ok(/\$\('#btnStart'\)\.onclick = \(\) => \{[\s\S]{0,400}?if \(modoServidor\(\)\) return;\s*\n\s*if \(S\.state === 'betting'\)/.test(cart),
+      'o clique em "Iniciar rodada" ainda age no modo servidor');
+  });
+
   return s;
 }

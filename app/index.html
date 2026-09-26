@@ -1363,6 +1363,10 @@ td.hpc{text-align:right;font-size:.68rem;color:var(--dim);width:42px}
 .tiny{font-size:.66rem;color:var(--dim);line-height:1.5;margin-top:8px}
 input[type=range]{width:100%;accent-color:var(--gold)}
 
+/* D-114: no modo servidor a rodada é do servidor — iniciar e automático são
+   controles do modo local, e à mostra eles levavam a tela à contagem no meio
+   da janela de aposta. */
+.modo-servidor #btnStart, .modo-servidor #btnAuto{display:none}
 #boot{position:fixed;inset:0;background:var(--bg);z-index:99;display:flex;
   flex-direction:column;align-items:center;justify-content:center;gap:14px}
 #boot .b1{font-family:var(--px);font-size:13px;color:var(--gold)}
@@ -8102,6 +8106,8 @@ async function ligarModoServidor(){
   /* No modo servidor a tela de carregamento não fala em simular: quem simula
      é o servidor (D-113). */
   if (modoServidor()) $('#bootMsg').textContent = 'conectando à arena…';
+  /* D-114: a página sabe o modo, e o CSS esconde o que só o modo local usa. */
+  document.body.classList.toggle('modo-servidor', modoServidor());
   await ligarModoServidor();
   /* A RODADA NÃO SEGURA O APP (D-113). No modo local ela precisa das odds que
      o próprio navegador calcula; no servidor, quem chegou no meio da luta
