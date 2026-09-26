@@ -351,6 +351,8 @@ const CAMADA = {
   'doce-dados.mjs': 0,
   'doce-local.mjs': 1,
   'doce-tela.mjs': 4,
+  /* ST-9.16 · Minha Coleção: o painel (camada 0). */
+  'minha-colecao.mjs': 0,
   /* ST-9.15 · medalhas e missões de coleção: a regra, a gravação, a tela. */
   'colecao-dados.mjs': 0,
   'colecao-local.mjs': 1,

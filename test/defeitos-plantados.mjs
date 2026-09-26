@@ -8292,6 +8292,16 @@ export const DEFEITOS = [
   { id:'S1388', arquivo:'tools/snapshot-prototipo.mjs', nome:'o instantaneo volta a ser gravado no lugar',
     real:'a suite fica instavel de novo: um trabalhador importa o arquivo truncado por outro (8 de 80 medidos)',
     de:'writeFileSync(temporario, saida);\nrenameSync(temporario, destino);', para:'writeFileSync(destino, saida);' },
+  /* ── ST-9.16a · Minha Colecao, o painel ─────────────────────────────── */
+  { id:'S1385', arquivo:'app/modules/minha-colecao.mjs', nome:'o painel mostra o historico de quem so foi visto',
+    real:'a escada perde o degrau encontrada: o painel entrega o numero que so apostar liberava',
+    de:'      nota: notaDaAposta({ dossie, degrau: escada.degrau, dex: f.dex }),', para:"      nota: notaDaAposta({ dossie, degrau: 'dominada', dex: f.dex })," },
+  { id:'S1386', arquivo:'app/modules/minha-colecao.mjs', nome:'a caixa conta quem esta na equipe',
+    real:'o album diz "4 na caixa" com a caixa vazia — o painel e o save discordam',
+    de:'    naCaixa: e.criaturas.filter(c => c.naCaixa).length,', para:'    naCaixa: e.criaturas.filter(c => !c.naCaixa).length,' },
+  { id:'S1387', arquivo:'app/modules/minha-colecao.mjs', nome:'o painel le a taxa do dossie por conta propria',
+    real:'duas contas para o mesmo numero, e a segunda nao conhece a escada',
+    de:'      odd: o?.odd ?? null, chance: o?.prob ?? null,', para:'      odd: o?.odd ?? null, chance: o?.prob ?? null, hist: dossie?.especies?.[f.dex]?.vitoria?.taxa,' },
 
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
