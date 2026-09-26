@@ -6590,3 +6590,18 @@ até ela.
 **Conserto:** o ouvinte só pega `.tab[data-pane]`. Conferido no Chromium:
 depois de fechar a boutique, `paneStats` e 0 erro. **Testes que travam:**
 `test/viewport.mjs` → `D-115:`; S1210–S1211.
+
+## D-116 — a 420 px a primeira escolha do idle estourava o painel ✅ CORRIGIDO
+
+**Achado em:** 26/09/2026, no ensaio do piloto (o idle com conta a 420 px).
+**Bloco dono:** UX-01 (a fila de leitura de tela). **Estado:** ✅ corrigido em
+26/09/2026.
+
+**Medição:** o painel da escolha ia de 14 a 406 px; a terceira carta
+(Squirtle), de 291 a **417** — 12 px fora do painel, dentro da margem. Sem
+rolagem horizontal (por isso a esteira de rolagem não viu), mas visível na
+PRIMEIRA tela do idle de todo jogador novo. **Causa:** `repeat(3,1fr)` —
+`1fr` não encolhe abaixo do conteúdo (a arte de 104 px mais o respiro).
+**Conserto:** `repeat(3,minmax(0,1fr))` e `max-width:100%` na arte. Medido
+depois: a carta vai de 283 a 405. Captura `tools/previas/_piloto/iniciais-420.png`.
+**Testes que travam:** `test/viewport.mjs` → `D-116:`; S1212–S1213.

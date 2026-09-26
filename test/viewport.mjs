@@ -262,5 +262,17 @@ export function suite() {
       'a aba da boutique mudou de forma — reveja o D-115');
   });
 
+  /* D-116: a escolha da primeira criatura — a PRIMEIRA tela do idle de todo
+     jogador novo — estourava o painel a 420 px: a terceira carta ia de 291 a
+     417 num painel que acaba em 405. `1fr` não encolhe abaixo do conteúdo (a
+     arte de 104 px mais o respiro); `minmax(0,1fr)` encolhe. */
+  s.teste('D-116: as três cartas da primeira escolha cabem no painel estreito', () => {
+    const html = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
+    ok(/#idleIniciais\{[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/.test(html),
+      'a grade das iniciais usa 1fr cru — a terceira carta estoura o painel a 420 px');
+    ok(/\.idleInicialArte\{[^}]*max-width:100%/.test(html),
+      'a arte das iniciais não cabe na coluna quando ela encolhe');
+  });
+
   return s;
 }

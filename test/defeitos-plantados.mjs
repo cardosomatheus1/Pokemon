@@ -7684,6 +7684,15 @@ export const DEFEITOS = [
     real:'o idle volta a morrer no navegador — a parte do jogo que fica aberta por horas nao aparece no piloto',
     de:'      relatar(api, eventosDoEstado(E, agora));', para:'      void eventosDoEstado(E, agora);' },
 
+  /* ── D-116 · a primeira escolha estourava o painel a 420 px ─────────── */
+  { id:'S1212', arquivo:'app/index.html', nome:'a grade das iniciais volta a nao encolher',
+    real:'a 420 px a terceira carta sai 12 px do painel — na primeira tela do idle de todo jogador novo',
+    de:'#idleIniciais{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));',
+    para:'#idleIniciais{display:grid;grid-template-columns:repeat(3,1fr);' },
+  { id:'S1213', arquivo:'app/index.html', nome:'a arte das iniciais deixa de caber na coluna',
+    real:'a coluna encolhe e a arte de 104 px transborda por cima da carta vizinha',
+    de:'.idleInicialArte{width:104px;height:104px;max-width:100%;', para:'.idleInicialArte{width:104px;height:104px;' },
+
   /* ── D-115 · a aba Boutique esvaziava o perfil ───────────────────────── */
   { id:'S1210', arquivo:'app/modules/controles.mjs', nome:'as abas do perfil voltam a pegar a que nao tem painel',
     real:'clicar em Boutique dispara erro de pagina e o perfil volta da boutique sem conteudo (medido no ensaio)',

@@ -6565,12 +6565,14 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   text-shadow:0 1px 2px #000; font-variant-numeric:tabular-nums}
 
 #viewIdle:not(.primeiraVez) .idleAntes{display:none}
-#idleIniciais{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+/* minmax(0,1fr) e não 1fr (D-116): 1fr não encolhe abaixo da arte, e a 420 px a
+   terceira carta estourava o painel em 12 px. */
+#idleIniciais{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
 .idleInicial{display:flex;flex-direction:column;align-items:center;gap:4px;
   background:#161f2e;border:1px solid var(--line);border-radius:14px;padding:18px 10px;
   cursor:pointer;color:var(--dim);transition:.16s}
 .idleInicial:hover{border-color:var(--gold);transform:translateY(-2px)}
-.idleInicialArte{width:104px;height:104px;object-fit:contain;image-rendering:pixelated}
+.idleInicialArte{width:104px;height:104px;max-width:100%;object-fit:contain;image-rendering:pixelated}
 .idleInicial b{font:700 .9rem/1.2 var(--dsp);color:var(--txt);text-transform:capitalize}
 
 #idleAviso,#offAviso{display:none;margin-top:10px;padding:9px 12px;border-radius:8px;

@@ -8321,3 +8321,15 @@ revoga (ST-1.2b) — funciona e está testado, mas nenhum jogador chegava lá
 pelo navegador. **O que a destrava:** a ST-7.2a (um endereço, fechada) e o
 modal falando com o servidor quando ele está no ar.
 
+### L-190 — a 420 px o texto da primeira escolha encosta na borda do painel
+
+**Registrada em:** 26/09/2026, no passo OLHAR do D-116. **Bloco dono:** UX-01
+(a fila de leitura de tela). **Estado:** aberto.
+
+Na captura `tools/previas/_piloto/iniciais-420.png`, o parágrafo "As três são
+igualmente fortes…" e as cartas começam colados à borda esquerda do painel
+(x=15 num painel que começa em 14): o `.card idleAntes` não tem respiro
+interno na coluna estreita. Não quebra nada e não rola; lê como descuido na
+primeira tela do idle. **O que a destrava:** o respiro interno do painel na
+coluna estreita, conferido nas quatro larguras com a esteira `olhar-telas`.
+
