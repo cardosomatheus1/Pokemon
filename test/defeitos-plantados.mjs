@@ -8205,6 +8205,20 @@ export const DEFEITOS = [
     real:'a resposta perdida no caminho leva o doce junto: o servidor zerou, e o aparelho pede com outra chave',
     de:'  gravar(chave);\n  emVoo = api.post', para:'  emVoo = api.post' },
 
+  /* ── ST-9.10 · dar doce sobe o nivel ─────────────────────────────── */
+  { id:'S1361', arquivo:'engine/doce.mjs', nome:'o doce da XP acima do teto medido',
+    real:'30 doces viram metade do dia do casual — apostar passa a valer mais que jogar o idle',
+    de:'export const XP_POR_DOCE = 2;', para:'export const XP_POR_DOCE = 5;' },
+  { id:'S1362', arquivo:'app/modules/doce-dados.mjs', nome:'dar doce aceita doce de qualquer linha',
+    real:'o doce do Bulbasaur sobe o Charmeleon — a ponte "apostar molda o time" vira moeda generica',
+    de:'  const linha = chaveDoDoce(pack, c.dex);\n  const tem', para:'  const linha = Object.keys(e.doces ?? {}).find(k => e.doces[k] > 0) ?? chaveDoDoce(pack, c.dex);\n  const tem' },
+  { id:'S1363', arquivo:'app/modules/doce-dados.mjs', nome:'dar doce nao desconta o doce',
+    real:'um doce sobe o nivel para sempre — o pote nunca esvazia',
+    de:'  e.doces[linha] = tem - n;', para:'  e.doces[linha] = tem;' },
+  { id:'S1364', arquivo:'app/modules/doce-dados.mjs', nome:'dar doce no nivel maximo gasta o doce',
+    real:'o jogador gasta doce numa criatura que nao sobe mais — e a tela aceita em silencio',
+    de:"  if (nivelDe(c.xp) >= NIVEL_MAX) return { ok: false, motivo: 'já está no nível máximo' };\n", para:'' },
+
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
     real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',

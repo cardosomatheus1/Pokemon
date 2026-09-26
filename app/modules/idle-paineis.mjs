@@ -22,6 +22,7 @@ import { estiloIcone } from './icones.mjs';
 import { chanceDe } from '../../engine/captura.mjs';
 import { naEquipe, naCaixa, PARTY_MAX, bolsaEmLista, registroEmLista, encontrosDaRun } from './idle-dados.mjs';
 import { doceAoSoltar } from './doce-dados.mjs';
+import { chaveDoDoce, XP_POR_DOCE } from '../../engine/doce.mjs';
 import { estiloItem, usarCatalogo } from './itens-icone.mjs';
 
 /* O CATALOGO DO PACK ALIMENTA OS ICONES. Uma vez, na carga do modulo: o mapa
@@ -193,18 +194,26 @@ export function pintarCentro(E) {
       <span class="idleAcao">${guardado ? 'tirar' : 'guardar'}</span>
     </button>`;
 
+  /* ST-9.8/9.10: sob a ficha, as ações do doce — dar (se há doce da linha) e,
+     na caixa, soltar. Botões irmãos, e não dentro da ficha: a ficha já é um
+     botão (tirar/guardar). */
+  const item = (c, guardado) => {
+    const doces = (E.doces ?? {})[chaveDoDoce(PACK, c.dex)] ?? 0;
+    return `<div class="idleCaixaItem">${ficha(c, guardado)}
+      ${doces > 0 ? `<button class="idleDarDoce" data-dar-doce="${c.id}" title="${XP_POR_DOCE} XP por doce · doce da linha dela">dar doce · ${doces}</button>` : ''}
+      ${guardado ? `<button class="idleSoltar" data-soltar="${c.id}" data-doce="${doceAoSoltar(PACK, c.dex)}"
+        title="soltar vira doce da linha — a Pokédex continua lembrando que você a teve">soltar · +${doceAoSoltar(PACK, c.dex)} doce</button>` : ''}
+    </div>`;
+  };
   escrever(`
     <h3>Centro <span class="tiny">${ativos.length}/${PARTY_MAX} na equipe ·
         ${guardados.length} na caixa</span></h3>
     <p class="tiny">Só quem está na equipe vai a campo. Quando a equipe está cheia,
        a captura vai para a caixa — ela nunca é recusada.</p>
-    <div class="idleLinha">${ativos.map(c => ficha(c, false)).join('')}</div>
+    <div class="idleLinha">${ativos.map(c => item(c, false)).join('')}</div>
     ${guardados.length ? `
       <h4 class="idleSub">Na caixa</h4>
-      <div class="idleLinha">${guardados.map(c => `<div class="idleCaixaItem">${ficha(c, true)}
-        <button class="idleSoltar" data-soltar="${c.id}" data-doce="${doceAoSoltar(PACK, c.dex)}"
-          title="soltar vira doce da linha — a Pokédex continua lembrando que você a teve">soltar · +${doceAoSoltar(PACK, c.dex)} doce</button>
-      </div>`).join('')}</div>` : ''}`);
+      <div class="idleLinha">${guardados.map(c => item(c, true)).join('')}</div>` : ''}`);
 }
 
 /* ── A MOCHILA E O POKÉDEX ─────────────────────────────────────────────────

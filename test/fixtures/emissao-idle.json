@@ -14,7 +14,8 @@
      "pokecoin": 1439.86,
      "item": 0.43,
      "xp": 303.1,
-     "encontros": 15.43
+     "encontros": 15.43,
+     "xpDoce": 60
     }
    },
    "estagio3": {
@@ -30,7 +31,8 @@
      "ultra": 0.57,
      "estilhaco": 5.14,
      "xp": 431.1,
-     "encontros": 22
+     "encontros": 22,
+     "xpDoce": 60
     }
    }
   },
@@ -47,7 +49,8 @@
      "pokecoin": 1855.86,
      "ultra": 2.14,
      "xp": 422.9,
-     "encontros": 19.43
+     "encontros": 19.43,
+     "xpDoce": 60
     }
    },
    "estagio3": {
@@ -63,7 +66,8 @@
      "estilhaco": 15,
      "ultra": 1,
      "xp": 732,
-     "encontros": 36.86
+     "encontros": 36.86,
+     "xpDoce": 60
     }
    }
   },
@@ -79,7 +83,8 @@
      "essencia": 57.43,
      "ultra": 11.29,
      "xp": 1089.4,
-     "encontros": 20.29
+     "encontros": 20.29,
+     "xpDoce": 60
     }
    },
    "estagio3": {
@@ -94,7 +99,8 @@
      "essencia": 49.71,
      "ultra": 11,
      "xp": 1374,
-     "encontros": 39.86
+     "encontros": 39.86,
+     "xpDoce": 60
     }
    }
   }

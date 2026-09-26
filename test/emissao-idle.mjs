@@ -19,6 +19,7 @@
  * E a outra metade do aceite: todo recurso que aparece no mapa tem, em
  * `TETOS`, OU o limite que o segura OU a justificativa de não ter — escrita. */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { TETO_APOSTAS_COM_DOCE, DOCE_VITORIA, XP_POR_DOCE } from '../engine/doce.mjs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import * as A from '../app/modules/avanco-estado.mjs';
 import * as D from '../app/modules/idle-dados.mjs';
@@ -43,6 +44,7 @@ export const PERFIS = {
 export const TETOS = {
   encontros: 'TETO: 30 por dia + o bônus da coleção (MARCOS_ENCONTROS; o veterano medido tem 50), janela móvel (D-052, §P5) — e a run colhida pesa nele desde o ST-1.1',
   xp:        'sem teto próprio: a stamina (192/dia/criatura) e a curva de nível seguram',
+  xpDoce:    'TETO: 10 apostas com doce por dia × 3 × XP_POR_DOCE — no máximo 25% do XP diário do casual (ST-9.10)',
   pokecoin:  'rendimento decrescente por run no dia do mundo: 6 cheias, depois ×0,75 por run, piso de 5% (ST-3.6, DEC-14)',
   essencia:  'o mesmo rendimento decrescente da moeda (ST-3.6, DEC-14); o maratona caiu de 8,7× para ~2,5× a calibragem',
   poke:      'sem teto: consumível, gasto no lance',
@@ -106,6 +108,10 @@ function umPerfil(nome, p, estagio) {
   }
   porDia.xp = +((e.criaturas.reduce((a, c) => a + (c.xp || 0), 0) - xp0) / DIAS).toFixed(1);
   porDia.encontros = +(encontros / DIAS).toFixed(2);
+  /* A COLUNA DO DOCE (ST-9.10): o XP que o doce pode dar num dia, no teto —
+     10 apostas × 3 doces × XP_POR_DOCE. Igual em todo perfil: o doce vem da
+     aposta, e não do idle. */
+  porDia.xpDoce = TETO_APOSTAS_COM_DOCE * DOCE_VITORIA * XP_POR_DOCE;
   return { runsPorDia: +(runs / DIAS).toFixed(2), vigiliasPorDia: +(vigilias / DIAS).toFixed(2),
            vigiliasRecusadasPeloTeto: recusadas, porDia };
 }

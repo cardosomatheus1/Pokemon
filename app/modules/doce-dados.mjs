@@ -16,7 +16,8 @@
  * Só da caixa, nunca em aventura (expedição ou Avanço), e soltar não desce a
  * escada (`jaPossuiu`, ST-9.2). A duplicata vira doce da LINHA pela raridade.
  */
-import { doceDaAposta, doceDaDuplicata, chaveDoDoce, apostasComDoceNoDia } from '../../engine/doce.mjs';
+import { doceDaAposta, doceDaDuplicata, chaveDoDoce, apostasComDoceNoDia, XP_POR_DOCE } from '../../engine/doce.mjs';
+import { creditar, nivelDe, NIVEL_MAX } from '../../engine/nivel-criatura.mjs';
 import { raridadeDe } from '../../engine/bioma.mjs';
 
 const MEMORIA_RODADAS = 60;
@@ -79,6 +80,27 @@ export function soltarCriatura(e, { pack, id, ondeAventura }) {
   e.criaturas = e.criaturas.filter(x => x.id !== id);
   if (doce > 0) somar(e, linha, doce);
   return { ok: true, doce, linha, dex: c.dex };
+}
+
+/* ── DAR DOCE (ST-9.10 · §7.9) ─────────────────────────────────────────────
+ *
+ * O doce da LINHA da criatura, e só ele: não há parâmetro de linha, então
+ * doce de outra linha não tem por onde entrar. No nível máximo recusa — gastar
+ * doce que não vira nada seria a tela aceitando um erro do jogador em
+ * silêncio. Doce não é requisito de evolução (R7). */
+export function darDoce(e, { pack, id, quantos = 1 }) {
+  const c = (e.criaturas ?? []).find(x => x.id === id);
+  if (!c) return { ok: false, motivo: 'esta criatura não existe' };
+  const linha = chaveDoDoce(pack, c.dex);
+  const tem = e.doces?.[linha] ?? 0;
+  const n = Math.min(Math.max(1, Math.floor(Number(quantos) || 1)), tem);
+  if (n <= 0) return { ok: false, motivo: 'sem doce da linha dela' };
+  if (nivelDe(c.xp) >= NIVEL_MAX) return { ok: false, motivo: 'já está no nível máximo' };
+  const novo = creditar(c, { xp: n * XP_POR_DOCE });
+  c.xp = novo.xp; c.nivel = novo.nivel;
+  e.doces[linha] = tem - n;
+  if (!e.doces[linha]) delete e.doces[linha];
+  return { ok: true, gastos: n, xp: n * XP_POR_DOCE, subiu: novo.subiu, nivel: novo.nivel, linha };
 }
 
 /* A frase do resultado — neutra: o doce não é festa (§28.5). Numa derrota

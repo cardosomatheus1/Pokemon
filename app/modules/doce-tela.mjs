@@ -9,10 +9,19 @@
  * botão ficaria na tela sem fazer nada.
  */
 import { PACK } from './motor.mjs';
-import { soltarLocal } from './doce-local.mjs';
+import { soltarLocal, darDoceLocal } from './doce-local.mjs';
 import { renderIdle } from './idle-tela.mjs';
 
 document.addEventListener('click', ev => {
+  /* ST-9.10: dar doce não pede confirmação — ele não tira nada que não volte
+     (é o doce da própria linha virando nível). */
+  const d = ev.target.closest('[data-dar-doce]');
+  if (d) {
+    const r = darDoceLocal({ pack: PACK, id: d.dataset.darDoce });
+    if (r?.ok === false) { d.textContent = r.motivo; return; }
+    renderIdle();
+    return;
+  }
   const b = ev.target.closest('[data-soltar]');
   if (!b) return;
   if (b.dataset.armado !== '1') {

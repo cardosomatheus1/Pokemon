@@ -28,6 +28,15 @@ export const DOCE_VITORIA = 3;
 export const DOCE_DERROTA = 1;
 export const TETO_APOSTAS_COM_DOCE = 10;
 
+/* ── QUANTO XP UM DOCE DÁ (ST-9.10 · §7.9) — fixado pela MEDIÇÃO ───────────
+ *
+ * Regra do PLANO: o máximo de doce de um dia (10 apostas × 3 = 30) rende no
+ * máximo 25% do XP diário do perfil CASUAL (ST-3.3). Medido na fixture
+ * `emissao-idle.json`: o casual no estágio 1 faz 303,1 XP/dia →
+ * 0,25 × 303,1 / 30 = 2,53 → 2 por doce (60 XP/dia no teto, 19,8%). O doce
+ * acelera quem já joga o idle; não o substitui. A suíte refaz a conta. */
+export const XP_POR_DOCE = 2;
+
 /* A ÚNICA assinatura do doce da aposta. `comDoceHoje`: quantas apostas já
    renderam doce HOJE (a conta é de quem guarda o histórico). */
 export function doceDaAposta({ venceu, houveAposta, protecaoAtiva, comDoceHoje }) {

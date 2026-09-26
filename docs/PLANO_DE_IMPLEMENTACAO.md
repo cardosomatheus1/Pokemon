@@ -847,7 +847,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Portões:** Q1 Q2 Q3 Q6 (resgatar o de outro, forjar quantidade) Q8 Q9 (`candy_credited`).
 - **Nota:** tabela nova aditiva, mesma forma do E4, que foi aprovado por delegação.
 
-### ST-9.10 · Dar doce sobe o nível
+### ~~ST-9.10~~ ✅ 26/09 · Dar doce sobe o nível — `XP_POR_DOCE = 2` pela medição (30 doces/dia = 60 XP = 19,8% do casual); fixture `emissao-idle.json` com a coluna `xpDoce` · S1361–S1364
 - **Porte** M · **Servidor** não · **Bloco dono** F3.4 (resto) · **Spec** §7.9, §7.18 · **Depende de** ST-9.8
 - **Entrega ao jogador:** os doces da linha sobem o nível do seu Charmander.
 - **Escopo:** ação "dar doce". O XP por doce é fixado pela medição: o máximo de doce de um dia (30) rende no máximo 25% do XP diário do perfil casual da ST-3.3. Só aceita doce da própria linha. A fixture de emissão é regravada de propósito, com o número novo na mensagem.
