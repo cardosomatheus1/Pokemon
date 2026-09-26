@@ -8336,3 +8336,16 @@ interno na coluna estreita. Não quebra nada e não rola; lê como descuido na
 primeira tela do idle. **O que a destrava:** o respiro interno do painel na
 coluna estreita, conferido nas quatro larguras com a esteira `olhar-telas`.
 
+
+### L-191 — a aposta não muda quem aparece nas rotas: `pesoComBonus` sem chamador
+
+**Registrada em:** 26/09/2026, no levantamento da Parte 2 do PLANO (achado A).
+**Bloco dono:** ST-9.6 (F3.8 antecipado). **Estado:** aberto.
+
+`pesoComBonus` e `bonusVivo` (`engine/captura.mjs`) são a ponte Arena → rotas
+do §7.3: apostar numa espécie torna a linha dela mais comum no idle por algumas
+horas. A função existe e é testada em `test/captura.mjs`, e **nenhum módulo do
+app, do motor ou do servidor a chama** — é "testar a peça não testa o
+encaixe", de novo. **Por que não cabe agora:** é escopo da ST-9.6, que tem
+aceite próprio (o total de encontros não muda; o bônus não escala com o
+valor). **O que a destrava:** a ST-9.6 na frente da fila.

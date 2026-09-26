@@ -308,6 +308,11 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 | 5b | ~~**ST-7.1**~~ ✅ 25/09 · telemetria mínima e restauração | a (eventos, retenção D1/D7) e b (`node tools/banco-copia.mjs copiar / conferir / restaurar`) | antecipada: o piloto (ST-7.2) só mede o que já estiver sendo gravado quando ele começar |
 | 5c | **ST-7.2** · o piloto com amigos, destravado pela DEC-01 — a ✅ (um endereço), b ✅ (conta real na tela), c ✅ (relatório e roteiro — `docs/PILOTO.md`); falta **o piloto em si**: o dono, com 5–10 amigos, 14 dias, seguindo o roteiro | a ST-7.2a achou que a tela NUNCA criou conta real (L-189): sem a b, cada amigo jogaria no próprio navegador e o servidor não mediria nada | o piloto só mede o que a tela de fato manda |
 | 6 | **1.30** · os 34 ícones de item | L-137 | ⏸️ **espera o dono** mandar a arte |
+| 7 | **E12** · V2: mercados mútuos (ST-12.1 a 12.10) | o bolo de abates, depois pódio e duração; preço do modelo carimbado antes e publicado depois; perfil de leitura; gate §6.15 medido | *"pode botar o v2 tbm nos storys"* (dono, 26/09): é o que dá teto de habilidade — sem ele, ler a Arena não paga (§6.2), e o dossiê do E9 ensinaria a ler um mercado onde ler não rende |
+| 8 | **E9** · V3: fechar a coleção (ST-9.1 a 9.18) | dossiê, escada de informação, doce, golpes e comparador, pesquisa, medalhas e missões, Minha Coleção, laço de retorno (achado A: L-191) | o que o jogador coleciona passa a dizer algo da Arena, e o que ele aposta passa a alimentar o que ele cria |
+| 9 | **E10** · V4: Time e Jornada (ST-10.1 a 10.20) | Trainer Battle Engine, time de seis, probabilidade exibida, presets, jornada e ginásios como aulas | precisa dos golpes escolhidos (E9) |
+| 10 | **E13** · o idle no servidor (ST-13.1 a 13.6) | coleção, colheita e operações com o servidor como fonte de verdade; **a ST-13.4 (migrar o save) pergunta ao dono** | pré-condição dura do E11: time forjado no navegador tira o sentido da Liga |
+| 11 | **E11** · V5: Liga de Equipe (ST-11.1 a 11.11) | snapshot, confronto assíncrono, matchmaking, Liga MMR, temporada, recompensas, anti-win-trading; stake construído atrás de bandeira DESLIGADA (D2) | é o que dá motivo para otimizar coleção e time por meses |
 | — | **E6** · higiene documental | ST-6.1 a 6.4 | não é código: corre em paralelo, um commit por story |
 | — | ~~**ST-0.6**~~ ✅ 25/09 · CI no GitHub | `npm test` a cada push (DEC-13: o Q2 noturno não) | — |
 | — | **T11 · T12 · T7** · arnês | ❄️ **CONGELADO** — *(ST-6.2, 25/09: a linha dizia "T11 · T8 · T4 · T7", e só o T11 era arnês pendente: o **T4 está fechado ✅** no BUILD_BLOCKS, e o **T8** era a tarefa de documentos feita em 08/09. Entram o **T12** — dono do D-105, que estava órfão da fila — e o **T7**, dono da L-173, que ainda não tem ficha)* | entra só quando IMPEDIR um bloco desta tabela, com orçamento nomeado antes (`CLAUDE.md`, 16/09) |
@@ -804,7 +809,11 @@ Isso é o diagnóstico mais importante do documento inteiro, e ele explica por q
 a retenção tem limite hoje: quem joga bem e quem joga mal têm o mesmo resultado
 esperado. Um produto assim entretém, mas não fideliza.
 
-#### P3.1 — Liga de Previsão ⏳ *(§6.8 — antecipada de propósito)*
+#### P3.1 — Liga de Previsão ✅ *(§6.8 — antecipada de propósito)*
+
+> ✅ **No ar** (F2.5–F2.7): `engine/calibracao.mjs`, `server/liga.mjs`,
+> `/api/liga/*`, `viewLiga`, `app/modules/liga-*.mjs`. Esta linha dizia ⏳ até
+> 26/09 (achado B do levantamento da Parte 2 do PLANO).
 
 **Por que ANTES dos mercados mútuos:** é barata, **não tem risco regulatório**
 (não move dinheiro) e ataca a retenção imediatamente. A Spec a antecipou da V5
@@ -818,7 +827,12 @@ na economia. E produz o dado que a P3.2 precisa para calibrar.
 
 **Tamanho:** M. **Portões:** Q1 Q2 Q4 Q9.
 
-#### P3.2 — Mercados mútuos ⏳ *(§6.3 a §6.7)*
+#### P3.2 — Mercados mútuos ⏳ *(§6.3 a §6.7)* → épico **E12** na fila
+
+> **26/09, decisão do dono:** entra como trabalho de verdade — *"não to me
+> importando com consulta regulatoria agora, isso sera feito quando finalizar o
+> jogo"*. A consulta continua obrigatória antes de PUBLICAR, não de construir;
+> o bolo roda em moeda simulada. Fichas ST-12.1 a 12.10 no PLANO.
 
 Preço formado por jogadores, com apuração mútua e rake — em vez de odd fixa da
 casa. É a mudança que dá teto de habilidade de verdade.
