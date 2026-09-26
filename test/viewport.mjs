@@ -274,5 +274,32 @@ export function suite() {
       'a arte das iniciais não cabe na coluna quando ela encolhe');
   });
 
+  /* D-117: UMA CHAVE SOLTA MATAVA A REGRA SEGUINTE — a do `.card`.
+     Um `}` sobrando depois do `#ticker.aberto` fazia o CSS ler `} .card{…}`
+     como seletor inválido e descartar a regra inteira: todo cartão do app
+     perdeu o padding (medido: 0 px em 420, 1100 e 1440), e o texto encostou
+     na borda em toda tela. Nenhum teste via, porque a folha "carregava". O
+     guarda é da CLASSE: em toda folha do `index.html`, as chaves fecham na
+     ordem, e nunca mais do que abriram. */
+  s.teste('D-117: as chaves de toda folha de estilo fecham na ordem', () => {
+    const html = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
+    const folhas = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]);
+    ok(folhas.length > 0, 'nenhuma folha de estilo achada');
+    folhas.forEach((css, n) => {
+      const limpo = css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, '""');
+      let prof = 0, linha = 1;
+      for (const ch of limpo) {
+        if (ch === '\n') linha++;
+        if (ch === '{') prof++;
+        if (ch === '}') { prof--; ok(prof >= 0, `folha ${n + 1}: "}" sobrando perto da linha ${linha} — a regra seguinte é descartada inteira`); if (prof < 0) prof = 0; }
+      }
+      igual(prof, 0, `folha ${n + 1}: ${prof} chave(s) aberta(s) no fim — o resto da folha vira parte de uma regra`);
+    });
+    /* E A LISTA DE ODDS FICA DE FORA DO RESPIRO: medido, com o padding do
+       cartão de volta "Kangaskhan" e "Hitmonchan" viravam "Kangask…" a 1440. */
+    ok(/#cardLista\{padding-left:0;padding-right:0\}/.test(html),
+      'a lista de odds ganhou o respiro lateral do cartão — os nomes longos são cortados a 1440');
+  });
+
   return s;
 }

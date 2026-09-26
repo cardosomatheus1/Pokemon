@@ -7684,6 +7684,15 @@ export const DEFEITOS = [
     real:'o idle volta a morrer no navegador — a parte do jogo que fica aberta por horas nao aparece no piloto',
     de:'      relatar(api, eventosDoEstado(E, agora));', para:'      void eventosDoEstado(E, agora);' },
 
+  /* ── D-117 · a chave solta que matava o padding de todo cartão ───────── */
+  { id:'S1214', arquivo:'app/index.html', nome:'a chave solta volta depois do ticker',
+    real:'a regra .card inteira e descartada: todo cartao do app perde o padding e o texto encosta na borda (medido: 0 px em toda largura)',
+    de:'  overflow:auto;resize:vertical;padding-right:14px}\n\n\n/* O padding da direita',
+    para:'  overflow:auto;resize:vertical;padding-right:14px}\n\n}\n/* O padding da direita' },
+  { id:'S1215', arquivo:'app/index.html', nome:'a lista de odds ganha o respiro lateral do cartao',
+    real:'a 1440 "Kangaskhan" e "Hitmonchan" viram "Kangask…" — o nome e a primeira coisa que o apostador le',
+    de:'#cardLista{padding-left:0;padding-right:0}\n', para:'' },
+
   /* ── D-116 · a primeira escolha estourava o painel a 420 px ─────────── */
   { id:'S1212', arquivo:'app/index.html', nome:'a grade das iniciais volta a nao encolher',
     real:'a 420 px a terceira carta sai 12 px do painel — na primeira tela do idle de todo jogador novo',

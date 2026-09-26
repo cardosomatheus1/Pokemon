@@ -261,7 +261,8 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
-| **D-116** · a primeira escolha do idle cabe no painel a 420 px | 26/09 | a terceira carta saía 12 px · `minmax(0,1fr)` · S1212–S1213 · a L-190 (o respiro do texto) ficou registrada |
+| **D-117** · o padding de todo cartão volta (uma chave solta no CSS o matava) | 26/09 | 30 telas olhadas antes e depois, 4 larguras · a lista de odds fica sem respiro lateral para os nomes caberem · guarda de classe: as chaves de toda folha fecham na ordem · S1214–S1215 · fecha a L-190 |
+| **D-116** · a primeira escolha do idle cabe no painel a 420 px | 26/09 | a terceira carta saía 12 px · `minmax(0,1fr)` · S1212–S1213 |
 | **D-115** · a aba Boutique não esvazia mais o perfil | 26/09 | erro de página e perfil sem painel depois da boutique, com e sem conta · S1210–S1211 |
 | **D-114** · com conta, "Iniciar rodada" não trava mais a aposta | 26/09 | reproduzido no navegador: a arena ia à contagem com a janela aberta · os controles do modo local somem com conta · S1207–S1209 |
 | **D-113** · com conta, abrir o jogo no meio da luta não trava mais | 26/09 | 53,8 s → 0,8 s de tela de carregamento · a arena diz quando a próxima abre (`proximaEm` do servidor) · S1203–S1206 |

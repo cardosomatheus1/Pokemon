@@ -6605,3 +6605,33 @@ PRIMEIRA tela do idle de todo jogador novo. **Causa:** `repeat(3,1fr)` —
 **Conserto:** `repeat(3,minmax(0,1fr))` e `max-width:100%` na arte. Medido
 depois: a carta vai de 283 a 405. Captura `tools/previas/_piloto/iniciais-420.png`.
 **Testes que travam:** `test/viewport.mjs` → `D-116:`; S1212–S1213.
+
+## D-117 — uma chave solta no CSS tirava o padding de TODO cartão do app ✅ CORRIGIDO
+
+**Achado em:** 26/09/2026, ao investigar a L-190 (o texto da primeira escolha
+encostado na borda). **Bloco dono:** UX-01 (a fila de leitura de tela).
+**Estado:** ✅ corrigido em 26/09/2026.
+
+**Medição:** o `.card idleAntes` tinha padding **0 px** em 420, 1100 e 1440; o
+CDP mostrou que a única regra de padding aplicada era o reset `*{padding:0}`.
+**Causa:** um `}` sobrando depois do `#ticker.aberto` (linha ~512 do
+`index.html`, anterior ao import de 15/09). Para o CSS, `} .card{…}` é um
+seletor inválido, e a regra inteira do `.card` — com o
+`padding:12px 16px 12px 12px` e o motivo escrito dele — era descartada. Todo
+cartão do app ficou com o texto colado à borda, o que a nota da L-030 já
+descrevia como "o tipo de defeito que se para de ver por repetição". A suíte
+não via: a folha carregava, só não valia.
+
+**Conserto:** a chave sai. Um custo apareceu no passo OLHAR e foi pago na
+hora: com o respiro de volta, a lista de odds cortava "Kangaskhan" e
+"Hitmonchan" a 1440 — ela fica sem respiro lateral (`#cardLista`), porque
+cada linha já tem 12 px próprios; o título ganha o respiro à direita.
+**Olhado antes e depois, 30 telas nas quatro larguras** (`olhar-telas`): 0
+rolagem horizontal nas duas execuções, 0 erro de página; arena, rotas,
+resultado, perfil e customização lidos. Capturas em `tools/previas/_piloto/`.
+**Testes que travam:** `test/viewport.mjs` → `D-117:` — o guarda é da CLASSE:
+em toda folha do `index.html` as chaves fecham na ordem; S1214–S1215.
+
+**E um defeito da esteira, de passagem (dentro do orçamento — ele IMPEDIA
+esta verificação):** o `olhar-telas` travava sem prazo em `adm-recusa`, porque
+esperava o `avisar()` que pede um clique. Um `await` a menos (classe do D-069).

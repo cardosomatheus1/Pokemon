@@ -509,12 +509,17 @@ body{
 #ticker.aberto{max-height:70vh;height:220px;min-height:80px;
   overflow:auto;resize:vertical;padding-right:14px}
 
-}
 
 /* O padding da direita é maior que o da esquerda de propósito: é onde a
    cantoneira inferior mora, e texto que enche a linha terminava dentro dela. */
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
   padding:12px 16px 12px 12px}
+/* A LISTA DE ODDS FICA SEM RESPIRO LATERAL (D-117). Cada linha já tem 12 px
+   próprios, e a lista precisa da largura para o NOME: com o respiro do cartão
+   de volta, "Kangaskhan" e "Hitmonchan" viravam "Kangask…" a 1440. O título
+   ganha o respiro que o cartão não dá, à direita, onde encostava. */
+#cardLista{padding-left:0;padding-right:0}
+#cardLista > h3{padding-right:12px}
 /* ── O TITULO E A LEGENDA NAO PODEM ENCOSTAR (D-071) ─────────────────────
    A regra tinha `space-between` e `gap` nenhum. Em tela larga o `space-between`
    mantem os dois afastados e a ausencia de `gap` e inofensiva. A 420 px os dois

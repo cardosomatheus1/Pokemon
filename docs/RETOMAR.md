@@ -36,6 +36,15 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### D-117 CORRIGIDO — uma chave solta no CSS tirava o padding de todo cartão (26/09)
+
+Investigando um texto encostado na borda (L-190), a causa era global: um `}`
+sobrando no CSS fazia o navegador descartar a regra inteira do `.card` — todo
+cartão do app estava com padding 0, desde antes de 15/09. A chave saiu; 30
+telas foram olhadas antes e depois nas quatro larguras (0 rolagem, 0 erro). A
+lista de odds ficou sem o respiro lateral, porque com ele os nomes longos
+eram cortados. E a esteira `olhar-telas` deixou de travar em `adm-recusa`.
+
 ### D-115 CORRIGIDO — a aba Boutique esvaziava o perfil (26/09)
 
 No ensaio da compra a 420 px: clicar em "💵 Boutique" no perfil dava erro de

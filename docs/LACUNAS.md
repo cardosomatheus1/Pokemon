@@ -8324,7 +8324,10 @@ modal falando com o servidor quando ele está no ar.
 ### L-190 — a 420 px o texto da primeira escolha encosta na borda do painel
 
 **Registrada em:** 26/09/2026, no passo OLHAR do D-116. **Bloco dono:** UX-01
-(a fila de leitura de tela). **Estado:** aberto.
+(a fila de leitura de tela). **Estado:** ✅ fechada em 26/09/2026 — era
+sintoma do **D-117** (uma chave solta no CSS tirava o padding de todo cartão).
+
+*Estado anterior:* aberto.
 
 Na captura `tools/previas/_piloto/iniciais-420.png`, o parágrafo "As três são
 igualmente fortes…" e as cartas começam colados à borda esquerda do painel

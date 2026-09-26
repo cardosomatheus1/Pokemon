@@ -508,7 +508,10 @@ for (const [nome, w, h] of [['protecao', 1440, 1200], ['protecao-420', 420, 1200
  * `adm` é o painel DESENHADO, para continuar dando para ler o que ele mostra.
  * Ele é chamado pelo `admRender`, que só desenha: abrir exige o servidor. */
 await tela('adm-recusa', 1440, 900, async pg => {
-  await pg.evaluate(async () => (await import('/app/modules/adm.mjs')).admAbrir());
+  /* SEM `await` no admAbrir: a recusa é um `avisar()`, que espera o jogador
+     clicar OK — e esperar por ele dentro do `evaluate` travava a esteira
+     inteira aqui, sem prazo (a classe do D-069). A foto é do aviso aberto. */
+  await pg.evaluate(async () => { (await import('/app/modules/adm.mjs')).admAbrir(); });
   await pg.waitForTimeout(700);
 });
 
