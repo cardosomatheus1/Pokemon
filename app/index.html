@@ -985,6 +985,15 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
    (crítico cego, Q7), e é o número mais importante do cartão. */
 #boloTopo{font-family:var(--dsp);font-weight:700;font-size:.85rem;letter-spacing:.02em;text-transform:none;color:var(--txt)}
 .boloAcao{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+/* ST-12.7 · as abas do bolo (só com mais de um aberto) e a trinca do pódio */
+.boloAbas{display:flex;gap:6px;margin:0 0 8px}
+.boloAba{flex:1;font-size:.75rem;padding:4px 8px}
+.boloAba.on{border-color:var(--neon);color:var(--neon)}
+.boloTrinca{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 8px;font-size:.72rem;color:var(--dim)}
+.boloTrinca label{display:flex;flex-direction:column;gap:2px;min-width:0}
+.boloTrinca select{min-width:0;width:100%}
+/* No pódio o rótulo é a trinca ("A › B › C"): o nome ganha a largura e a barra encolhe. */
+#boloLista.podio .boloLinha{grid-template-columns:minmax(0,1fr) minmax(24px,56px) auto}
 .boloAcao input{width:7em;min-width:0}
 .boloEstim{margin:6px 0 4px;min-height:1.2em}
 .boloRegras{font-size:.7rem;color:var(--dim)}
@@ -7545,7 +7554,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
          fechamento. Aparece na aposta e no resultado; `bolo-tela.mjs` decide
          quando, `bolo-dados.mjs` decide o que diz. -->
     <div class="card" id="cardBolo" hidden>
-      <h3><span>Bolo · quem faz mais abates?</span> <span class="tiny" id="boloTopo"></span></h3>
+      <h3><span id="boloTitulo">Bolo · quem faz mais abates?</span> <span class="tiny" id="boloTopo"></span></h3>
       <div id="boloCorpo"></div>
     </div>
 

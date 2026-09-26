@@ -698,7 +698,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
   pagamento menor que a entrada; aba local fingindo bolo.
 - **Portões:** Q1 Q2 Q5 Q7.
 
-### ST-12.7 · O mercado de pódio
+### ~~ST-12.7~~ ✅ 26/09 · O mercado de pódio — `engine/mercado-podio.mjs`, registro de tipos (`server/mercado-tipos.mjs`), aberto por `MERCADOS=abates,podio` (fechado por padrão, §6.5), abas na tela · achou o D-118 · S1285–S1291
 - **Ordem (26/09):** vem DEPOIS da ST-12.10 — o §6.5 manda abrir um mercado por vez e a ficha já dependia da leitura de liquidez; fila: 12.9 → 12.10 → 12.7 → 12.8.
 - **Porte** P–M · **Servidor** sim · **Bloco dono** F2.2 (extensão) · **Spec** §6.5 · **Depende de** ST-12.6 e a leitura de liquidez do 12.10
 - **Escopo:** top 3 **em ordem**, pela ordem de eliminação do motor; empate na

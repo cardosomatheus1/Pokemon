@@ -32,7 +32,7 @@ import { TAXA_PADRAO, SEM_ACERTO, apurar } from '../engine/mutuo.mjs';
 import { lerRaiz } from '../engine/seed.mjs';
 import { lerLeitura } from '../engine/leitura-bolo.mjs';
 import { anotar } from './telemetria.mjs';
-import { selecoesDeAbates, vencedorasPorAbates, REGRA_ABATES } from '../engine/mercado-abates.mjs';
+import { TIPOS_DE_MERCADO, MERCADOS_PADRAO } from './mercado-tipos.mjs';
 
 export const ERRO_MERCADO = {
   SEM_MERCADO: 'sem_mercado',
@@ -41,15 +41,14 @@ export const ERRO_MERCADO = {
   DIVERGENCIA: 'rodada_divergente',
 };
 
-/* UM MERCADO POR VEZ (§6.5): um bolo sem liquidez não forma preço, e vários
-   rasos são piores que um líquido. Pódio e duração entram quando a leitura de
-   liquidez (ST-12.10) disser que o de abates tem gente. */
-export const MERCADOS_ABERTOS = ['abates'];
+/* UM MERCADO POR VEZ (§6.5): o padrão é só o de abates; os outros abrem por
+   configuração (`MERCADOS`), ver `mercado-tipos.mjs`. */
+export { MERCADOS_PADRAO };
 /* A recomendação R15 do PLANO: "ninguém acertou" devolve. É o destino que não
    transforma o azar de todos em receita da casa. */
 export const SEM_ACERTO_PADRAO = SEM_ACERTO.DEVOLVER;
 
-const REGRAS = { abates: REGRA_ABATES };
+const tipo = kind => TIPOS_DE_MERCADO[kind] ?? null;
 
 const erro = (codigo, mensagem, extra) => Object.assign(new Error(mensagem), { codigo, ...extra });
 const inteiroPositivo = v => typeof v === 'number' && Number.isSafeInteger(v) && v > 0;
@@ -58,16 +57,18 @@ const inteiroPositivo = v => typeof v === 'number' && Number.isSafeInteger(v) &&
  *
  * Chamado DENTRO da transação que cria a rodada: rodada sem bolo, ou bolo sem
  * rodada, é um estado que ninguém deveria conseguir observar. */
-export function abrirMercados(db, { roundId, abreEm, travaEm, modelo = null }) {
+export function abrirMercados(db, { roundId, abreEm, travaEm, mercados = MERCADOS_PADRAO, modelos = {} }) {
   const ins = db.prepare(
     `INSERT INTO markets (id, round_id, kind, status, opens_at, locks_at, fee_rate, no_winner_destination,
                           model_price_json, model_priced_at)
      VALUES (?,?,?,?,?,?,?,?,?,?)`);
   /* O preço do modelo entra GRAVADO na abertura (ST-12.5): é a prova de que
      ele existia antes do resultado. `model_priced_at` = abertura. */
-  for (const kind of MERCADOS_ABERTOS)
+  for (const kind of mercados) {
+    const modelo = modelos[kind] ?? null;
     ins.run(randomUUID(), roundId, kind, 'aberto', abreEm, travaEm, TAXA_PADRAO, SEM_ACERTO_PADRAO,
             modelo ? JSON.stringify(modelo) : null, modelo ? abreEm : null);
+  }
 }
 
 export function travarMercados(db, { roundId, agora = Date.now() }) {
@@ -109,7 +110,7 @@ function mercadoAberto(db, sched, kind) {
   if (!rodada) throw erro(ERRO_APOSTA.RODADA, 'não há rodada');
   if (rodada.status !== ESTADOS.ABERTA)
     throw erro(ERRO_APOSTA.JANELA_FECHADA, 'a janela do bolo está fechada');
-  const m = db.prepare(`SELECT * FROM markets WHERE round_id = ? AND kind = ?`).get(rodada.id, kind);
+  const m = tipo(kind) && db.prepare(`SELECT * FROM markets WHERE round_id = ? AND kind = ?`).get(rodada.id, kind);
   if (!m || m.status !== 'aberto') throw erro(ERRO_MERCADO.SEM_MERCADO, 'não há bolo aberto nesta rodada');
   return { rodada, m };
 }
@@ -129,7 +130,7 @@ export function entrarNoMercado(db, { sched, userId, kind = 'abates', selecao, v
     throw erro(ERRO_PROTECAO.PAUSADO, 'conta em pausa', { pausa: pausa.pausa });
 
   const n = db.prepare(`SELECT COUNT(*) AS n FROM round_fighters WHERE round_id = ?`).get(rodada.id).n;
-  if (!Number.isInteger(selecao) || !selecoesDeAbates(n).includes(selecao))
+  if (!tipo(kind).valida(selecao, n))
     throw erro(ERRO_MERCADO.SELECAO, 'seleção inválida');
   if (!inteiroPositivo(valor)) throw erro(ERRO_APOSTA.VALOR, 'valor inválido');
 
@@ -206,7 +207,7 @@ export function liquidarMercado(db, { sched, marketId, agora = Date.now() }) {
   const pool = db.prepare(`SELECT species_id FROM round_fighters WHERE round_id = ? ORDER BY slot`).all(m.round_id);
   if (resultado.length !== pool.length || resultado.some((x, i) => x.dex !== pool[i].species_id))
     throw erro(ERRO_MERCADO.DIVERGENCIA, `a rodada ${m.round_id} recalculada não bate com a publicada`);
-  const vencedoras = vencedorasPorAbates(resultado.map(x => x.abates));
+  const vencedoras = tipo(m.kind).vencedoras(resultado);
 
   const entradas = db.prepare(`SELECT * FROM market_entries WHERE market_id = ? AND status = 'travada'`).all(m.id);
   const ap = apurar({ entradas: entradas.map(e => ({ id: e.id, selecao: e.selection, valor: e.amount })),
@@ -272,15 +273,18 @@ export function mercadoParaCliente(db, { sched, userId, kind = 'abates' }) {
   const por = new Map(db.prepare(
     `SELECT selection, SUM(amount) AS total, COUNT(*) AS entradas FROM market_entries
       WHERE market_id = ? AND status IN ('aberta','travada') GROUP BY selection`).all(m.id).map(r => [r.selection, r]));
-  const selecoes = selecoesDeAbates(n).map(i => ({ selecao: i, total: por.get(i)?.total ?? 0,
-                                                    entradas: por.get(i)?.entradas ?? 0 }));
+  /* Abates lista os doze; o pódio, só as trincas com entrada (1.320 não cabem
+     numa tela) — `listaTodas` em `mercado-tipos.mjs`. */
+  const todas = tipo(m.kind).listaTodas ? Array.from({ length: n }, (_, i) => i) : [...por.keys()].sort((a, b) => a - b);
+  const selecoes = todas.map(i => ({ selecao: i, total: por.get(i)?.total ?? 0,
+                                     entradas: por.get(i)?.entradas ?? 0 }));
   const minha = userId ? db.prepare(
     `SELECT selection, amount FROM market_entries
       WHERE market_id = ? AND user_id = ? AND status IN ('aberta','travada')`)
     .get(m.id, userId) : null;
   return {
     id: m.id, kind: m.kind, fase: m.status, taxa: m.fee_rate, semAcerto: m.no_winner_destination,
-    travaEm: m.locks_at, regra: REGRAS[m.kind],
+    travaEm: m.locks_at, regra: tipo(m.kind).regra,
     bruto: selecoes.reduce((a, x) => a + x.total, 0), selecoes,
     minha: minha ? { selecao: minha.selection, valor: minha.amount } : null,
   };
@@ -315,14 +319,16 @@ export function resultadoDoMercado(db, { kind = 'abates', userId = null } = {}) 
   return {
     id: m.id, rodada: m.round_id, bruto: m.pot_gross, liquido: m.pot_net, taxa: m.fee_amount,
     publicadoEm: m.published_at, simulacoes: modelo?.sims ?? null, semAcerto: m.no_winner_destination,
-    selecoes: selecoesDeAbates(n).map(i => ({
+    selecoes: (tipo(kind).listaTodas ? Array.from({ length: n }, (_, i) => i)
+               : [...new Set([...por.keys(), ...vencedoras])].sort((a, b) => a - b)).map(i => ({
       selecao: i,
       total: por.get(i)?.total ?? 0,
       /* O multiplicador que o bolo PAGAVA a quem acertou: líquido ÷ soma das
          entradas vencedoras. Só para quem venceu — para os outros, "pagaria"
          seria um contrafactual que o bolo nunca ofereceu. */
       pagou: vencedoras.includes(i) && somaCertas ? m.pot_net / somaCertas : null,
-      modelo: modelo ? modelo.vence[i] / modelo.sims : null,
+      /* `vence` é lista (abates) ou mapa esparso (pódio): ausente é zero. */
+      modelo: modelo ? (modelo.vence[i] ?? 0) / modelo.sims : null,
     })),
     vencedoras,
     /* A entrada de QUEM PERGUNTA, e só a dele (ST-12.6): a tela diz "voltaram
@@ -352,10 +358,12 @@ export function leituraNoBolo(db, { userId, kind = 'abates', limite = 200 }) {
   const n = db.prepare(`SELECT COUNT(*) AS n FROM round_fighters
                          WHERE round_id = (SELECT round_id FROM markets WHERE id = ?)`);
   const linhas = minhas.map(e => {
-    const tamanho = n.get(e.market_id).n;
+    const tamanho = tipo(kind).espaco(n.get(e.market_id).n);
     const tot = new Array(tamanho).fill(0);
     for (const r of totais.all(e.market_id, userId)) tot[r.selection] = r.t;
-    const modelo = e.model_price_json ? JSON.parse(e.model_price_json).vence : null;
+    const v = e.model_price_json ? JSON.parse(e.model_price_json).vence : null;
+    /* Lista (abates) ou mapa esparso (pódio): a leitura quer lista. */
+    const modelo = !v ? null : Array.isArray(v) ? v : Array.from({ length: tamanho }, (_, i) => v[i] ?? 0);
     return { minha: e.selection, totais: tot, modelo, vencedoras: JSON.parse(e.winners_json ?? '[]') };
   });
   return lerLeitura(linhas);

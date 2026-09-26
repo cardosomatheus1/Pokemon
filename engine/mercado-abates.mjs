@@ -70,17 +70,26 @@ export function vencedorasPorAbates(abates) {
  * suporta — a mesma condicional do `simularLote`, pelo mesmo motivo (F0.6). */
 export const SIMS_MERCADO = 20_000;
 
-export function precoDoModeloAbates(M, pool, raiz, sims = SIMS_MERCADO) {
+/* O LOTE DO MERCADO, comum a todos os bolos (ST-12.7): cada simulação com o
+   clima sorteado como na luta, os eventos gravados, e quem pergunta decide o
+   que contar. Mesmos ramos da árvore para todos os mercados — o preço de
+   abates e o de pódio de uma rodada saem das MESMAS lutas simuladas. */
+export function loteDoMercado(M, pool, raiz, sims, contar) {
   const tipos = tiposDaPool(pool);
-  const vence = new Array(pool.length).fill(0);
-  let nenhum = 0;
   for (let i = 0; i < sims; i++) {
     const clima = M.sortearClima(derivarIndice(raiz, 'mercado-ambiente', i), tipos);
     const f = clima.type ? M.aplicarClima(pool, clima) : pool;
-    const b = M.simular(f, derivarIndice(raiz, 'mercado', i), true);
+    contar(M.simular(f, derivarIndice(raiz, 'mercado', i), true));
+  }
+}
+
+export function precoDoModeloAbates(M, pool, raiz, sims = SIMS_MERCADO) {
+  const vence = new Array(pool.length).fill(0);
+  let nenhum = 0;
+  loteDoMercado(M, pool, raiz, sims, b => {
     const v = vencedorasDeAbates(b.events, pool.length);
     if (!v.length) nenhum++;
     for (const x of v) vence[x]++;
-  }
+  });
   return { sims, vence, nenhum };
 }

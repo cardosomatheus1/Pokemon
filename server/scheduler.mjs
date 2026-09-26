@@ -26,7 +26,8 @@
  * de conferir. Aqui, campo novo não aparece até alguém o escrever nesta função.
  */
 import { randomUUID, randomBytes, createHash } from 'node:crypto';
-import { montarRodadaServidor, precoDoBoloServidor, M, VERSAO_MOTOR } from './rodada.mjs';
+import { montarRodadaServidor, M, VERSAO_MOTOR } from './rodada.mjs';
+import { TIPOS_DE_MERCADO, MERCADOS_PADRAO } from './mercado-tipos.mjs';
 import { SIMS_MERCADO } from '../engine/mercado-abates.mjs';
 import { margemDaCasa } from './admin.mjs';
 import { sementes, novaRaiz as raizNova, derivar } from '../engine/seed.mjs';
@@ -58,7 +59,8 @@ export const FASE_MS = {
   LUTA:    45_000,
 };
 
-export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambiente = 'teste' }) {
+export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambiente = 'teste',
+                                 mercados = MERCADOS_PADRAO }) {
   let atual = null;      // a rodada em memória, com o segredo
   const segredos = new Map();
 
@@ -101,7 +103,8 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
     /* O PREÇO DO MODELO PARA O BOLO (ST-12.5), carimbado AGORA, antes de
        qualquer resultado existir; publicado só depois da liquidação (§6.6).
        O lote acompanha o `sims` da rodada para baixo (teste), nunca para cima. */
-    const modeloBolo = precoDoBoloServidor(raiz, Math.min(SIMS_MERCADO, sims));
+    const modelos = Object.fromEntries(mercados.map(k =>
+      [k, TIPOS_DE_MERCADO[k].modelo(raiz, Math.min(SIMS_MERCADO, sims))]));
 
     db.exec('BEGIN IMMEDIATE');
     try {
@@ -123,7 +126,7 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
         ins.run(id, slot, l.dex, l.prob, l.erroRelativo, l.fair, l.odd));
       /* O BOLO MÚTUO NASCE NA MESMA TRANSAÇÃO (ST-12.3): rodada sem bolo, ou
          bolo sem rodada, é estado que ninguém deveria conseguir observar. */
-      abrirMercados(db, { roundId: id, abreEm: agora, travaEm: agora + FASE_MS.APOSTA, modelo: modeloBolo });
+      abrirMercados(db, { roundId: id, abreEm: agora, travaEm: agora + FASE_MS.APOSTA, mercados, modelos });
       db.exec('COMMIT');
     } catch (e) { db.exec('ROLLBACK'); throw e; }
 
@@ -305,6 +308,8 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
     abrirRodada, tick, paraCliente,
     rodadaAtual: () => atual,
     espiarCampeao, campeaoDaRaiz, resultadoDaRodada, resultadoDaRaiz,
+    /* Os bolos que esta instância abre (ST-12.7) — a tela pergunta. */
+    mercados: [...mercados],
   };
 }
 

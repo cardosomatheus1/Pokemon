@@ -173,7 +173,9 @@ export async function suite() {
       igual(JSON.stringify(m.minha), '{"selecao":4,"valor":100}', 'a entrada do próprio jogador');
       ok(m.regra?.empate && m.regra?.zero, 'a regra do mercado não vai junto');
       const txt = JSON.stringify(m);
-      ok(!/model|modelo|preco|price|0\.3141|0\.2718|3141|2718/i.test(txt), `o preço do modelo vazou: ${txt.slice(0, 300)}`);
+      /* Os VALORES exatos e as chaves — e não dígitos soltos: "3141" aparecia
+         num UUID de vez em quando e o teste ficava instável (achado no Q2). */
+      ok(!/"model|"modelo|preco|price|0\.3141|0\.2718/i.test(txt), `o preço do modelo vazou: ${txt.slice(0, 300)}`);
       ok(!/user|j0|j1|j2/.test(txt.replace('"minha"', '')), 'a composição expõe quem entrou');
     } finally { await c.s.fechar(); }
   });

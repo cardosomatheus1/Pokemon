@@ -21,7 +21,6 @@ import { criarMotor, CONF, VERSAO } from '../engine/engine.mjs';
 import pack from '../content/escolhido.mjs';
 import { sementes } from '../engine/seed.mjs';
 import { precificar, simularLote } from '../engine/preco.mjs';
-import { precoDoModeloAbates, SIMS_MERCADO } from '../engine/mercado-abates.mjs';
 
 /* UMA instância, no processo inteiro. `criarMotor` monta tabelas derivadas do
    pack; refazê-las por requisição é trabalho puro jogado fora, e o motor é
@@ -60,10 +59,4 @@ export function montarRodadaServidor(raiz, sims = CONF.SIMS, opcoes = {}) {
       dex: lutadores[o.idx].dex,
     })),
   };
-}
-
-/* O preço do modelo para o bolo de abates (ST-12.5). A pool sai do mesmo ramo
-   `elenco` que o preço principal usa; o lote, do ramo `mercado`. */
-export function precoDoBoloServidor(raiz, sims = SIMS_MERCADO) {
-  return precoDoModeloAbates(M, elencoDaRaiz(raiz), raiz, sims);
 }

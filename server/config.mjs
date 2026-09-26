@@ -15,6 +15,7 @@
  *     desenvolvimento" e produção é uma variável de ambiente esquecida;
  *   · AVISADO em voz alta.
  */
+import { lerMercados } from './mercados-config.mjs';
 import { randomBytes } from 'node:crypto';
 
 const AMBIENTES = ['producao', 'homologacao', 'desenvolvimento', 'teste'];
@@ -67,5 +68,8 @@ export function lerConfig(env = process.env, avisar = console.warn) {
        modo com conta real alcançável por um navegador. `SERVIR_JOGO=0` volta ao
        servidor só de API, para quem servir o jogo por uma CDN à frente. */
     servirJogo: env.SERVIR_JOGO !== '0',
+    /* OS BOLOS ABERTOS (ST-12.7, §6.5): só abates por padrão. `MERCADOS=abates,podio`
+       abre o pódio junto; nome desconhecido recusa o processo. */
+    mercados: lerMercados(env.MERCADOS),
   };
 }

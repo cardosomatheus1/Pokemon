@@ -78,7 +78,8 @@ export function criarServidor(opcoes = {}) {
   const db = abrirBanco(opcoes.banco ?? config.banco ?? ':memory:');
   migrar(db);
   const relogio = opcoes.relogio ?? Date.now;
-  const sched = criarScheduler({ db, sims: opcoes.sims, relogio, ambiente: config.ambiente });
+  const sched = criarScheduler({ db, sims: opcoes.sims, relogio, ambiente: config.ambiente,
+                                 mercados: config.mercados });
   const sala = criarSala();
 
   /* O LAÇO. Ele existe aqui, e não no `principal.mjs`, porque a alternativa é

@@ -9,7 +9,9 @@
  */
 import { criarSuite, ok, igual, rngTeste } from './harness.mjs';
 import { linhasDoBolo, estimativaDaMinha, textoDaEstimativa, textoDaLinha, textoDasRegras,
-         erroDaEntrada, linhasDoResultado, textoDaMinhaPaga, TEXTO_SEM_CONTA } from '../app/modules/bolo-dados.mjs';
+         erroDaEntrada, linhasDoResultado, textoDaMinhaPaga, TEXTO_SEM_CONTA,
+         rotuloDaTrinca, trincaEscolhida, respostaServe } from '../app/modules/bolo-dados.mjs';
+import { codificar } from '../engine/mercado-podio.mjs';
 import { REGRA_ABATES } from '../engine/mercado-abates.mjs';
 
 const nomes = Array.from({ length: 12 }, (_, i) => `L${i}`);
@@ -106,6 +108,30 @@ export function suite() {
     igual(textoDaMinhaPaga({ entrou: 100, recebeu: 0 }).tom, 'perdeu', 'perda');
     igual(textoDaMinhaPaga({ entrou: 100, recebeu: 410 }).tom, 'ganhou', 'ganho');
     igual(textoDaMinhaPaga({ entrou: 0, recebeu: 0 }), null, 'quem não entrou recebeu texto');
+  });
+
+  s.teste('pódio: a trinca vira rótulo, a montagem exige três diferentes, e a minha trinca entra na lista', () => {
+    igual(rotuloDaTrinca(nomes)(codificar([4, 0, 9])), 'L4 › L0 › L9', 'rótulo da trinca');
+    igual(trincaEscolhida([1, null, 2]).selecao, null, 'trinca incompleta virou seleção');
+    igual(trincaEscolhida([1, 1, 2]).erro, 'três lutadores diferentes', 'repetido aceito');
+    igual(trincaEscolhida([1, 2, 3]).selecao, codificar([1, 2, 3]), 'trinca válida');
+    const m = { fase: 'aberto', taxa: 0.08, semAcerto: 'devolver', regra: REGRA_ABATES, bruto: 200,
+                selecoes: [{ selecao: codificar([0, 1, 2]), total: 200, entradas: 2 }], minha: null };
+    const e = linhasDoBolo(m, rotuloDaTrinca(nomes), { selecao: codificar([3, 4, 5]), valor: 50 });
+    const minha = e.linhas.find(l => l.minha);
+    ok(minha && minha.nome === 'L3 › L4 › L5', 'a trinca que estou montando não virou linha');
+    igual(minha.paga, (250 - 20) / 50, 'a trinca nova paga o líquido ÷ a minha entrada');
+    const res = { bruto: 200, vencedoras: [codificar([3, 4, 5])], simulacoes: 10,
+                  selecoes: [{ selecao: codificar([3, 4, 5]), total: 0, pagou: null, modelo: 0.01 }] };
+    ok(/L3 › L4 › L5 foi o pódio e ninguém estava nele/.test(linhasDoResultado(res, rotuloDaTrinca(nomes), { kind: 'podio' }).linhas[0]),
+      'o resultado do pódio fala em abates');
+  });
+
+  s.teste('a resposta só serve à aba que pediu, e do mesmo bolo', () => {
+    ok(respostaServe('podio', 'podio', { kind: 'podio', selecoes: [] }), 'a resposta certa foi recusada');
+    ok(!respostaServe('abates', 'podio', { kind: 'abates', selecoes: [] }), 'a busca em voo da aba antiga foi pintada');
+    ok(!respostaServe('podio', 'podio', { kind: 'abates', selecoes: [] }), 'o servidor devolveu outro bolo e a tela pintou');
+    ok(!respostaServe('abates', 'abates', { fase: null }), 'resposta sem bolo foi pintada');
   });
 
   return s;

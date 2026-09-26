@@ -18,7 +18,13 @@
  *                                           comemora (§28.5)
  */
 
+import { decodificar, codificar } from '../../engine/mercado-podio.mjs';
+
 const pct = x => `${Math.round(x * 100)}%`;
+/* O NOME DE UMA SELEÇÃO. `nomes` é a lista dos lutadores (abates) ou uma
+   função (pódio: a trinca vira "A › B › C"). */
+const rotuloDe = nomes => typeof nomes === 'function' ? nomes : i => nomes?.[i] ?? `#${i + 1}`;
+export const rotuloDaTrinca = nomes => x => decodificar(x).map(i => nomes?.[i] ?? `#${i + 1}`).join(' › ');
 const mult = x => `x${x.toFixed(2).replace('.', ',')}`;
 
 /* O bolo como ficaria com a MINHA entrada hipotética: `valor` em `selecao`,
@@ -47,12 +53,17 @@ export function linhasDoBolo(mercado, nomes, { selecao = null, valor = 0 } = {})
   const minhaSel = selecao ?? mercado.minha?.selecao ?? null;
   const meuValor = selecao !== null ? valor : (mercado.minha?.valor ?? 0);
   const { tot, bruto } = comMinha(mercado, minhaSel, meuValor);
-  const linhas = mercado.selecoes.map(s => {
+  const nome = rotuloDe(nomes);
+  /* No pódio a lista só tem as trincas com entrada: a trinca que EU estou
+     montando entra como linha, senão a estimativa não teria onde aparecer. */
+  const lista = minhaSel !== null && !mercado.selecoes.some(s => s.selecao === minhaSel)
+    ? [...mercado.selecoes, { selecao: minhaSel, total: 0, entradas: 0 }] : mercado.selecoes;
+  const linhas = lista.map(s => {
     const total = tot.get(s.selecao) ?? 0;
     const minha = s.selecao === minhaSel && meuValor > 0;
     return {
       selecao: s.selecao,
-      nome: nomes?.[s.selecao] ?? `#${s.selecao + 1}`,
+      nome: nome(s.selecao),
       total,
       /* A parte que é MINHA dentro do total — dita na linha. O crítico cego
          leu "180" como o bolo sem a minha entrada e concluiu que a estimativa
@@ -125,9 +136,12 @@ export function erroDaEntrada({ selecao, valor, saldo }) {
 
 /* ── O RESULTADO, DEPOIS DE PAGO (§6.6, §6.9) ──────────────────────────── */
 
-export function linhasDoResultado(res, nomes) {
+/* O que o vencedor FEZ, por mercado — o resto do texto é o mesmo. */
+const FEZ = { abates: 'liderou os abates', podio: 'foi o pódio' };
+
+export function linhasDoResultado(res, nomes, { kind = 'abates' } = {}) {
   if (!res?.selecoes) return null;
-  const nome = i => nomes?.[i] ?? `#${i + 1}`;
+  const nome = rotuloDe(nomes);
   /* Chance, e não multiplicador: "x1,94" do modelo ao lado de um bolo que
      pagou outra coisa se lia como odd do bolo (crítico cego, Q7). */
   const modeloDe = s => (s?.modelo !== null && s?.modelo !== undefined)
@@ -137,7 +151,7 @@ export function linhasDoResultado(res, nomes) {
     /* O CASO QUE O §6.9 QUER: o líder sem ninguém nele. O bolo inteiro errou,
        e a linha diz quem era e quanto o modelo dava. */
     return s?.pagou ? `${nome(i)}: o bolo pagou ${mult(s.pagou)}${modeloDe(s)}`
-                    : `${nome(i)} liderou os abates e ninguém estava nele${modeloDe(s)}`;
+                    : `${nome(i)} ${FEZ[kind] ?? 'venceu'} e ninguém estava nele${modeloDe(s)}`;
   });
   const alguemPago = res.vencedoras.some(i => res.selecoes.find(x => x.selecao === i)?.pagou);
   if (!res.vencedoras.length) linhas.push('Nenhum abate na rodada: ninguém venceu o bolo.');
@@ -162,6 +176,24 @@ export function textoDaMinhaPaga({ entrou, recebeu }) {
   if (recebeu < entrou) return { tom: 'neutro', texto: `voltaram ${recebeu} dos ${entrou}` };
   return { tom: 'ganhou', texto: `recebeu ${recebeu} pelos ${entrou}` };
 }
+
+/* O título do cartão e o nome da aba, por mercado (ST-12.7). */
+export const TITULO_DO_BOLO = Object.freeze({ abates: 'Bolo · quem faz mais abates?', podio: 'Bolo · 1º, 2º e 3º, em ordem' });
+export const ABA_DO_BOLO = Object.freeze({ abates: 'Mais abates', podio: 'Pódio' });
+
+/* A trinca que o jogador monta nos três seletores: só vira seleção quando os
+   três estão escolhidos e são lutadores diferentes. */
+export function trincaEscolhida(casas) {
+  if (!Array.isArray(casas) || casas.length !== 3 || casas.some(x => !Number.isInteger(x))) return { selecao: null, erro: 'escolha 1º, 2º e 3º' };
+  if (new Set(casas).size !== 3) return { selecao: null, erro: 'três lutadores diferentes' };
+  return { selecao: codificar(casas), erro: null };
+}
+
+/* A RESPOSTA SERVE À ABA? Só se foi pedida pela aba que está na tela e é
+   do mesmo bolo. Uma busca em voo quando o jogador troca de aba chegava
+   depois e era pintada como a outra (achado no OLHAR do pódio). */
+export const respostaServe = (pedido, atual, corpo) =>
+  !!corpo?.selecoes && pedido === atual && (!corpo.kind || corpo.kind === atual);
 
 export const TEXTO_SEM_CONTA =
   'O bolo é entre jogadores: o retorno sai do que os outros põem. Entre com uma conta para participar.';

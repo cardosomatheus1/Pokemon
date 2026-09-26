@@ -52,9 +52,9 @@ e a hospedagem pública. **ST-12.1 ✅** (`engine/mutuo.mjs`, o bolo fecha no br
 modelo, carimbado antes e publicado depois). **ST-12.6 ✅** (a tela do bolo —
 `node tools/olhar-bolo.mjs` captura com o servidor de pé). **ST-12.9 ✅** (a leitura no bolo, na aba
 Liga). **ST-12.10 ✅** (o gate da V2, medido: `node tools/relatorio-piloto.mjs`
-imprime a seção BOLO). **O próximo bloco é a ST-12.7** (pódio) e depois a
-12.8 (duração) — construídos e abertos só quando a liquidez justificar
-(§6.5). 662 adiados para o próximo Q2 completo.
+imprime a seção BOLO). **ST-12.7 ✅** (o pódio — `MERCADOS=abates,podio` abre; o padrão é
+só abates). **D-118 ✅** (dois "1º" com a tempestade). **O próximo bloco é a
+ST-12.8** (faixa de duração). 639 adiados para o próximo Q2 completo.
 
 **Hospedagem pública: decisão do dono, 26/09 — *"Isso vai ser configurável
 depois, primeiro vamos fechar o jogo"*.** Sai da lista de perguntas; volta
