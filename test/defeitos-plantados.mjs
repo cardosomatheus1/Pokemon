@@ -8143,6 +8143,23 @@ export const DEFEITOS = [
     real:'a previa mostra x4, a aposta foi feita, e a colheita sorteia como se nada tivesse acontecido',
     de:'      bonus, agora });', para:'      });' },
 
+  /* ── ST-9.7 · o doce: a regra ─────────────────────────────────────── */
+  { id:'S1343', arquivo:'engine/doce.mjs', nome:'o doce escala com o valor apostado',
+    real:'apostar 5.000 rende mais doce que 50 — criar Pokemon vira motivo para apostar mais alto, o incentivo que o §28 proibe',
+    de:'  return venceu ? DOCE_VITORIA : DOCE_DERROTA;', para:'  return venceu ? DOCE_VITORIA + (arguments[0].stake >= 1000 ? 1 : 0) : DOCE_DERROTA;' },
+  { id:'S1344', arquivo:'engine/doce.mjs', nome:'o doce escala com a odd',
+    real:'apostar no azarao rende mais doce — a longshot vira a aposta "certa" para a colecao',
+    de:'  return venceu ? DOCE_VITORIA : DOCE_DERROTA;', para:'  return venceu ? Math.round(DOCE_VITORIA * Math.max(1, arguments[0].odd / 3)) : DOCE_DERROTA;' },
+  { id:'S1345', arquivo:'engine/doce.mjs', nome:'o doce e emitido em pausa',
+    real:'quem pediu pausa continua sendo recompensado por apostar — o §28.4 passa a ser decoracao',
+    de:'  if (!houveAposta || protecaoAtiva) return 0;', para:'  if (!houveAposta) return 0;' },
+  { id:'S1346', arquivo:'engine/doce.mjs', nome:'a chave do doce e a forma final',
+    real:'doce do Charizard fica no Charizard, que ninguem captura — a ponte Arena → colecao nao chega a lugar nenhum',
+    de:'export const chaveDoDoce = (pack, dex) => baseDe(pack, Number(dex));', para:'export const chaveDoDoce = (pack, dex) => Number(dex);' },
+  { id:'S1347', arquivo:'engine/doce.mjs', nome:'o teto deixa passar a 11a aposta',
+    real:'o teto vira 11 — e o numero escrito deixa de ser o numero aplicado',
+    de:'  if ((Number(comDoceHoje) || 0) >= TETO_APOSTAS_COM_DOCE) return 0;', para:'  if ((Number(comDoceHoje) || 0) > TETO_APOSTAS_COM_DOCE) return 0;' },
+
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
     real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',

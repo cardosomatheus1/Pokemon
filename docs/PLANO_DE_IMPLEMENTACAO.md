@@ -817,7 +817,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Sabotagem:** bônus proporcional ao valor; bônus mexendo no teto; bônus que não expira.
 - **Portões:** Q1 Q2 Q3 · Q6: sem superfície nova.
 
-### ST-9.7 · O doce: a regra
+### ~~ST-9.7~~ ✅ 26/09 · O doce: a regra — `engine/doce.mjs`: 3 na vitória, 1 na derrota, teto de 10 por dia de Brasília, 0 em pausa, chave pela linha; espião `Proxy` reprova ler stake/valor/odd · S1343–S1347
 - **Porte** P · **Servidor** não · **Bloco dono** F3.8 · **Spec** §7.8, §7.6, §22, §28.4 · **Depende de** nada
 - **Entrega ao jogador:** nada visível (é a regra pura).
 - **Escopo:** `engine/doce.mjs` com `doceDaAposta({venceu, houveAposta, protecaoAtiva, comDoceHoje})` e `doceDaDuplicata(raridade)`.
