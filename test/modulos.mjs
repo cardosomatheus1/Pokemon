@@ -351,6 +351,10 @@ const CAMADA = {
   'doce-dados.mjs': 0,
   'doce-local.mjs': 1,
   'doce-tela.mjs': 4,
+  /* ST-9.15 · medalhas e missões de coleção: a regra, a gravação, a tela. */
+  'colecao-dados.mjs': 0,
+  'colecao-local.mjs': 1,
+  'colecao-tela.mjs': 4,
   /* ST-9.12 · os quatro golpes: a regra (camada 0) e o clique. */
   'moveset-dados.mjs': 0,
   'moveset-tela.mjs': 4,

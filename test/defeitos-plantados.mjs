@@ -8270,6 +8270,24 @@ export const DEFEITOS = [
     real:'a frase diz que dominar libera "Vitorias", que abre na primeira vista — a escada contada errada',
     de:'  const libera = LIBERA.dominada.map(tituloDaSecao).join', para:'  const libera = LIBERA.vista.map(tituloDaSecao).join' },
 
+  /* ── ST-9.15 · medalhas e missoes de colecao ─────────────────────── */
+  { id:'S1380', arquivo:'app/modules/colecao-dados.mjs', nome:'a missao passa a pagar PokeCash',
+    real:'a colecao vira uma torneira de moeda da Arena — o que se ganha no idle entra na aposta',
+    de:"    premio: { pokecoin: 300, poke: 2 } },", para:"    premio: { pokecoin: 300, poke: 2, pokecash: 200 } }," },
+  { id:'S1381', arquivo:'app/modules/colecao-dados.mjs', nome:'o resgate nao anota a missao',
+    real:'resgatar de novo paga de novo — a missao da semana vira uma fonte infinita',
+    de:'  e.missoes.resgatadas = [...e.missoes.resgatadas, id];\n', para:'' },
+  { id:'S1382', arquivo:'app/modules/colecao-dados.mjs', nome:'a medalha passa a ser guardada como estado',
+    real:'a medalha concedida uma vez fica mesmo que o dado que a justificava mude — duas verdades para a mesma pergunta',
+    de:'  const tem = possuidas(e);\n  const out = [];', para:'  const tem = possuidas(e);\n  const out = [];\n  e.medalhas = (e.medalhas ?? 0) + 1;' },
+  { id:'S1383', arquivo:'app/modules/colecao-dados.mjs', nome:'o progresso ignora a base da semana',
+    real:'quem ja tinha 30 fichas antes da semana resgata na hora, sem jogar — a missao deixa de pedir nada',
+    de:"    const feito = Math.max(0, Math.min(x.meta, x.medida(e, marcas) - (e.missoes.base[x.id] ?? 0)));",
+    para:"    const feito = Math.max(0, Math.min(x.meta, x.medida(e, marcas)));" },
+  { id:'S1384', arquivo:'app/modules/colecao-dados.mjs', nome:'resgata missao nao feita',
+    real:'o botao desligado e so pintura: qualquer clique forjado paga',
+    de:"  if (!m.pronta) return { ok: false, motivo: `faltam ${m.meta - m.feito}` };\n", para:'' },
+
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
     real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',

@@ -28,7 +28,7 @@
  * perder a aba é pior, e é irreversível para quem não sabe abrir o console.
  */
 import { camposDaEscada, sincronizarPossuidas } from './pokedex-estado.mjs';
-import { camposDoDoce } from './doce-dados.mjs';
+import { camposDoDoce } from './doce-dados.mjs'; import { camposDaColecao } from './colecao-dados.mjs';
 import { novaRaiz, derivar } from '../../engine/seed.mjs';
 import { efeitosDa } from '../../engine/foco.mjs';
 import { semente, gerarInstancia, potencialDe, formaDe } from '../../engine/instancia.mjs';
@@ -81,7 +81,7 @@ export const VAZIO = () => ({
      defeito apareceu na primeira medição: oito trocas seguidas devolveram o
      mesmo item, porque o contador nascia em 1 a cada leitura. */
   estilhacos: 0,
-  jaPossuiu: [], doces: {}, docesRodadas: [], docesEm: [],   // ST-9.2 · `pokedex-estado` · ST-9.8 · `doce-dados`
+  jaPossuiu: [], doces: {}, docesRodadas: [], docesEm: [], missoes: null,   // ST-9.2, 9.8, 9.15 (aditivos)
 });
 
 /* Diagnóstico do último carregamento, para a interface poder DIZER algo em vez
@@ -115,7 +115,7 @@ export function carregar(deposito = globalThis.localStorage) {
   e.encontros  = arrayOu(cru.encontros,  'encontros',  problemas);
   e.bolsa      = objetoOu(cru.bolsa,     'bolsa',      problemas);
   e.registro     = objetoOu(cru.registro,    'registro',     problemas);
-  Object.assign(e, camposDaEscada(cru, e.criaturas), camposDoDoce(cru));   // ST-9.2, 9.8: aditivos
+  Object.assign(e, camposDaEscada(cru, e.criaturas), camposDoDoce(cru), camposDaColecao(cru));   // ST-9.2, 9.8, 9.15
   /* ── `simultaneas` NAO E LIDO DO DISCO, E ISSO E A CORRECAO (D-072) ────
      A versao anterior aceitava o numero salvo e o apertava no maximo. Parecia
      defensivo — o clamp esta la — e nao era: `localStorage` esta a um F12 de

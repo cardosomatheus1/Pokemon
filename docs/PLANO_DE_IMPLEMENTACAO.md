@@ -891,7 +891,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Sabotagem:** prometer camada que o estado não libera; contar o fragmento duas vezes.
 - **Portões:** Q1 Q2 Q5.
 
-### ST-9.15 · Medalhas e missões de coleção, e PokéCoin é o Trainer Coins
+### ~~ST-9.15~~ ✅ 26/09 · Medalhas e missões de coleção, e PokéCoin é o Trainer Coins — `colecao-dados.mjs`: medalhas derivadas, 3 missões semanais (orçamento 1.200 PokéCoin + 7 bolas), fronteira contra a carteira de PokéCash; Spec §10.4 diz `pack.moedaPve` · S1380–S1384
 - **Porte** M · **Servidor** não · **Spec** §7.15, §7.6, §7.18, §10.4, §22 · **Depende de** ST-9.2
 - **Entrega ao jogador:** medalhas por tipo capturado, por % da Pokédex e por "viu todos de um tipo na Arena"; missões semanais que pagam bolas e PokéCoin.
 - **Escopo:**

@@ -3016,6 +3016,10 @@ Se no futuro o produto quiser intermediar venda, escrow, marketplace, cash-out o
 
 ## 10.4 Trainer Coins
 
+> **No código: `pack.moedaPve`** (no pack de Kanto, "PokéCoin"). O nome do tema
+> muda; o papel é este. Nunca conversível em PokéCash, nem ao contrário — há
+> teste de fronteira (`test/colecao.mjs`, ST-9.15).
+
 Faucets:
 
 - expeditions;
