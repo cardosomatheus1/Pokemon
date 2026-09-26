@@ -1285,7 +1285,7 @@ local vira cache; sem conta, nada muda.
 - **D3 = DEC-02 · tudo com dinheiro real** (PC-T, PC-C, fila transferível,
   Exchange, P2P). O bolo do E12 roda com a moeda simulada.
 - **ST-13.4 · a migração do save local** (dado com acervo).
-- **Hospedagem pública** para o piloto e para o teste contínuo: (1) o PC do
-  dono com túnel da Cloudflare, ou (2) um VPS/Fly.io na conta dele.
+- ~~**Hospedagem pública**~~ — adiada pelo dono em 26/09: *"vai ser
+  configurável depois, primeiro vamos fechar o jogo"*. Volta com o jogo fechado.
 - **Lembrete:** nomes de líderes de ginásio são IP; a DEC-01 cobre a fase
   privada, não a publicação (§0.3.1).
