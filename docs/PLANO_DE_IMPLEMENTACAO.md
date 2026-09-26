@@ -980,7 +980,8 @@ Fatiada em duas (a original seria G).
 - **Aceite:** evoluir antes do nível torna o golpe inalcançável; depois, o golpe fica; a Arena continua idêntica.
 - **Portões:** Q1 Q2 Q3 Q5.
 
-### ST-10.4 · O time de seis e o power score
+### ST-10.4 · O time de seis e o power score ✅ 26/09
+> Feito: `engine/time.mjs` (validar, paraTreino, power em quatro partes somadas, fraquezas do time); espião prova que nenhum motor lê o power; S1439–S1443.
 - **Porte** M · **Servidor** não · **Bloco dono** F4.2, F4.8 (parte) · **Spec** §8.3, §8.13
 - **Escopo:** `engine/time.mjs` valida o time (até 6, possuídas, sem repetir, golpes válidos) e calcula um `powerScore` decomposto (nível, espécie, golpes, potencial). A sinergia é só recomendação.
 - **Aceite:** a soma das partes dá o total (nada oculto); um espião prova que nem a Trainer Engine nem a Arena leem o power.
