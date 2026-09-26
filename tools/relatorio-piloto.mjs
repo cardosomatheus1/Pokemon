@@ -52,3 +52,14 @@ for (const [b, q] of Object.entries(r.saldos))
 secao('ARENA E BOUTIQUE');
 linha(`apostas ${n(r.arena.apostas)} de ${n(r.arena.apostadores)} jogador(es)`, `apostado ${n(r.arena.apostado)}`,
       `compras ${n(r.arena.compras)}`, `gasto ${n(r.arena.gasto)}`);
+
+secao('BOLO E O GATE DA V2 (§6.14, §6.15)');
+const bi = r.bolo.indicadores, g = r.bolo.gate;
+linha(`bolos pagos ${n(bi.bolos)}`, `com entrada ${n(bi.bolosComEntrada)}`, `jogadores ${n(bi.jogadores)}`,
+      `entrantes/bolo (mediana) ${n(bi.entrantesPorBolo)}`, `entradas/bolo ${n(bi.entradasPorBolo)}`,
+      `concentração ${n(bi.concentracaoMedia)}`, `divergências ${n(bi.divergencias)}`);
+linha(`calibração da Liga · 1ª semana ${n(r.bolo.calibracao.primeira.brier)} (n ${n(r.bolo.calibracao.primeira.n)})`,
+      `depois ${n(r.bolo.calibracao.depois.brier)} (n ${n(r.bolo.calibracao.depois.n)}) — menor é melhor`);
+for (const [k, c] of Object.entries(g.criterios))
+  linha(k.padEnd(13), c.veredito, c.precisa ? `(n ${Array.isArray(c.n) ? c.n.join(' / ') : n(c.n)}, precisa ${c.precisa})` : '');
+linha(`VEREDITO DO GATE: ${g.veredito}`);

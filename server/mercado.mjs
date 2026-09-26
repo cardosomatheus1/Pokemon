@@ -31,6 +31,7 @@ import { ERRO_APOSTA } from './aposta.mjs';
 import { TAXA_PADRAO, SEM_ACERTO, apurar } from '../engine/mutuo.mjs';
 import { lerRaiz } from '../engine/seed.mjs';
 import { lerLeitura } from '../engine/leitura-bolo.mjs';
+import { anotar } from './telemetria.mjs';
 import { selecoesDeAbates, vencedorasPorAbates, REGRA_ABATES } from '../engine/mercado-abates.mjs';
 
 export const ERRO_MERCADO = {
@@ -233,6 +234,12 @@ export function liquidarMercado(db, { sched, marketId, agora = Date.now() }) {
                  WHERE id = ?`)
       .run(agora, agora, ap.bruto, ap.liquido, ap.taxa, ap.residuo, ap.tesouraria, JSON.stringify(vencedoras), m.id);
   });
+  /* ST-12.10: um evento por entrada paga, SEM amostragem (Q9) e fora da
+     transação do dinheiro — telemetria que falha não pode desfazer um
+     pagamento. Chave = a entrada: reprocessar não duplica. */
+  for (const e of entradas)
+    anotar(db, { nome: 'market_settled', userId: e.user_id, roundId: m.round_id, chave: e.id, agora,
+                 campos: { valor: e.amount, recebeu: ap.pagamentos[e.id], destino: ap.destino, mercado: m.kind } });
   return { entradas: entradas.length, vencedoras, destino: ap.destino, bruto: ap.bruto };
 }
 

@@ -727,7 +727,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
   esconder o n.
 - **Portões:** Q1 Q2 Q5 Q9.
 
-### ST-12.10 · Telemetria, KPIs e o gate da V2
+### ~~ST-12.10~~ ✅ 26/09 · Telemetria, KPIs e o gate da V2 — `engine/gate-v2.mjs` (metas declaradas: 5 pessoas/bolo sobre 30 bolos; Brier depois da 1ª semana < o da 1ª, 30 de cada; divergência zero), `server/gate-v2.mjs` no painel e no relatório do piloto · S1277–S1283
 - **Porte** M · **Servidor** sim · **Bloco dono** F2.8 · **Spec** §6.14, §6.15 · **Depende de** ST-12.4
 - **Escopo:** eventos `market_entry`, `market_settled` (anotados pelo
   servidor, sem amostragem); o painel de política ganha participação por

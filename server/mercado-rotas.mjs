@@ -4,6 +4,7 @@
  * sessão, nunca do pedido. O CORPO É LIDO CAMPO A CAMPO: `mercado`, `rodada` e
  * `odd`, se vierem, são descartados aqui — o bolo é sempre o da rodada aberta.
  */
+import { anotar } from './telemetria.mjs';
 import { entrarNoMercado, sairDoMercado, mercadoParaCliente, resultadoDoMercado, leituraNoBolo } from './mercado.mjs';
 
 const inteiro = v => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
@@ -23,8 +24,14 @@ export function rotasDoMercado(daExcecao) {
 
     'POST /api/mercado/entrar': ({ db, sched, corpo, userId, agora }) => {
       try {
-        return { corpo: entrarNoMercado(db, { sched, userId, selecao: inteiro(corpo?.selecao),
-                                              valor: inteiro(corpo?.valor), agora }) };
+        const e = entrarNoMercado(db, { sched, userId, selecao: inteiro(corpo?.selecao),
+                                        valor: inteiro(corpo?.valor), agora });
+        /* ST-12.10: a entrada vira evento de produto, anotado AQUI e sem
+           amostragem — o cliente nunca diz quanto pôs. Chave = a entrada + o
+           valor (trocar é outro fato). */
+        anotar(db, { nome: 'market_entry', userId, chave: `${e.id}:${e.selecao}:${e.valor}`, agora,
+                     campos: { valor: e.valor, selecao: e.selecao, mercado: e.kind } });
+        return { corpo: e };
       } catch (e) { return daExcecao(e); }
     },
 

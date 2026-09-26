@@ -34,6 +34,7 @@
 import { BUCKETS } from './banco.mjs';
 import { painelEconomico } from './admin.mjs';
 import { retencao } from './coorte.mjs';
+import { gateDaV2Servidor } from './gate-v2.mjs';
 import { percentil, gini, shareDoTopo, razao } from '../engine/distribuicao.mjs';
 
 const DIA = 86_400_000;
@@ -156,5 +157,7 @@ export function politicaMonetaria(db, {
   return { ...base, dau, wau, porDau, porWau, fsr, fluxo, velocidade, arena,
            distribuicao, stakeBronze: STAKE_BRONZE,
            /* ST-7.1a: quem entrou volta? D1/D7 por coorte de cadastro. */
-           retencao: retencao(db, { agora }) };
+           retencao: retencao(db, { agora }),
+           /* ST-12.10: o bolo (§6.14) e o gate da V2 (§6.15), medidos. */
+           bolo: gateDaV2Servidor(db, { agora }) };
 }
