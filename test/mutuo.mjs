@@ -14,7 +14,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual, rngTeste } from './harness.mjs';
-import { apurar, erros, SEM_ACERTO, TAXA_PADRAO } from '../engine/mutuo.mjs';
+import { apurar, erros, repartirPorBalde, SEM_ACERTO, TAXA_PADRAO } from '../engine/mutuo.mjs';
 
 const soma = o => Object.values(o).reduce((a, b) => a + b, 0);
 const fecha = r => soma(r.pagamentos) + r.taxa + r.residuo + r.tesouraria;
@@ -139,6 +139,21 @@ export function suite() {
       ok(erros({ ...base, taxa, entradas: [] }).length > 0, `taxa ${taxa} aceita`);
     ok(erros({ ...base, semAcerto: 'casa', entradas: [] }).length > 0, 'destino "sem acerto" desconhecido aceito');
     igual(erros({ ...base, entradas: [{ id: 'a', selecao: 1, valor: 10 }] }).length, 0, 'entrada válida recusada');
+  });
+
+  s.teste('o pagamento volta pelos baldes da entrada, e a sobra do piso fica no balde que mais pôs', () => {
+    igual(JSON.stringify(repartirPorBalde({ bonus: 70, transferivel: 30 }, 250)), '{"bonus":175,"transferivel":75}',
+      'o pagamento não seguiu a composição — bônus virou transferível');
+    const r = repartirPorBalde({ transferivel: 1, bonus: 2 }, 10);
+    igual(r.bonus + r.transferivel, 10, 'a repartição não fecha no pagamento');
+    igual(r.bonus, 7, 'a sobra do piso não foi ao balde que mais pôs');
+    igual(JSON.stringify(repartirPorBalde({ bonus: 40 }, 0)), '{"bonus":0}', 'perda não é zero');
+    const rnd = rngTeste(7);
+    for (let k = 0; k < 2000; k++) {
+      const comp = { bonus: Math.floor(rnd() * 500), transferivel: 1 + Math.floor(rnd() * 500), pendente: Math.floor(rnd() * 50) };
+      const pag = Math.floor(rnd() * 5000);
+      igual(Object.values(repartirPorBalde(comp, pag)).reduce((a, x) => a + x, 0), pag, `caso ${k} não fecha`);
+    }
   });
 
   s.teste('a conta é pura: sem relógio, sem sorteio, sem import', () => {

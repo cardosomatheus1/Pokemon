@@ -25,6 +25,7 @@ import { abrirBanco, migrar } from './banco.mjs';
 import { criarScheduler } from './scheduler.mjs';
 import { criarSala } from './transporte.mjs';
 import { liquidarPendentes } from './aposta.mjs';
+import { liquidarMercadosPendentes } from './mercado.mjs';
 import { criarLaco } from './laco.mjs';
 import { ROTAS, ROTAS_PUBLICAS, ROTAS_ADMIN, usuarioDa } from './rotas.mjs';
 
@@ -86,7 +87,12 @@ export function criarServidor(opcoes = {}) {
      respondia `null` para sempre porque nada girava. */
   const laco = criarLaco({ sched, sala,
     /* D-112: sem isto, nenhuma aposta do servidor era liquidada. */
-    aoEncerrar: () => liquidarPendentes(db, { sched, agora: relogio() }),
+    aoEncerrar: () => {
+      /* O bolo mútuo (ST-12.4) paga na mesma hora, e depois da aposta: uma
+         falha num não segura o outro no laço, porque cada um lança sozinho. */
+      try { liquidarPendentes(db, { sched, agora: relogio() }); }
+      finally { liquidarMercadosPendentes(db, { sched, agora: relogio() }); }
+    },
     aoErro: e => { if (!config.silencioso) console.error('[laço]', e); } });
 
   /* --- as rotas do F1.1 --------------------------------------------------- */
@@ -245,6 +251,8 @@ export function criarServidor(opcoes = {}) {
         /* O que ficou travado na última vez que o servidor caiu (D-112). */
         try { liquidarPendentes(db, { sched, agora: relogio() }); }
         catch (e) { if (!config.silencioso) console.error('[liquidação ao ligar]', e); }
+        try { liquidarMercadosPendentes(db, { sched, agora: relogio() }); }
+        catch (e) { if (!config.silencioso) console.error('[bolo ao ligar]', e); }
         if (opcoes.laco !== false) laco.iniciar();
         r(servidor.address().port);
       })),

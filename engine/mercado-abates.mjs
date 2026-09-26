@@ -41,9 +41,12 @@ export function abatesPorSlot(eventos, n) {
   return selecoesDeAbates(n).map(i => abatesNosEventos(i, eventos));
 }
 
-export function vencedorasDeAbates(eventos, n) {
-  const abates = abatesPorSlot(eventos, n);
+export const vencedorasDeAbates = (eventos, n) => vencedorasPorAbates(abatesPorSlot(eventos, n));
+
+/* A mesma regra a partir da contagem já feita — é o que a liquidação recebe
+   do `resultadoDaRodada`, que conta pelo `colocacao.mjs` (ST-12.4). */
+export function vencedorasPorAbates(abates) {
   const topo = Math.max(0, ...abates);
   if (topo === 0) return [];
-  return selecoesDeAbates(n).filter(i => abates[i] === topo);
+  return selecoesDeAbates(abates.length).filter(i => abates[i] === topo);
 }

@@ -136,6 +136,11 @@ export const TIPOS = [
    * por onde dinheiro sai do bolo sem ir a um jogador (§6.4). */
   'MARKET_ENTRY_RESERVE', 'MARKET_ENTRY_RELEASE', 'MARKET_LOSS',
   'MARKET_PAYOUT_TRANSFERABLE', 'MARKET_PAYOUT_BONUS', 'MARKET_FEE', 'MARKET_RESIDUE',
+  /* ST-12.4: o §6.11 listava só dois pagamentos, e a entrada reserva em cinco
+     baldes. Competitivo paga em competitivo; comprado paga em comprado — a
+     DEC-03 manda o lucro feito com saldo comprado herdar a linhagem. A Spec
+     foi corrigida no mesmo commit. */
+  'MARKET_PAYOUT_COMPETITIVE', 'MARKET_PAYOUT_PURCHASED',
 ];
 
 const zerado = () => Object.fromEntries(BUCKETS.map(b => [b, 0]));

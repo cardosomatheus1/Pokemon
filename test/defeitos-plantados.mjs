@@ -1147,7 +1147,8 @@ export const DEFEITOS = [
 
   { id:'S151', arquivo:SRVCAR, nome:'o movimento de carteira sai de dentro da transação',
     real:'"é só um UPDATE e um INSERT" — falha no meio deixa o ledger contando outra história',
-    de:"  db.exec('BEGIN IMMEDIATE');", para:"  db.exec('-- sem transacao');" },
+    /* realvado na ST-12.4: a abertura da transação mora em `abrirTx` */
+    de:"    db.exec('BEGIN IMMEDIATE');\n    return { fechar:", para:"    db.exec('-- sem transacao');\n    return { fechar:" },
   /* ---------- F1.5: o scheduler autoritativo ---------- */
 
   { id:'S152', arquivo:SRVSCH, nome:'o servidor aceita a semente que o cliente mandar',
@@ -1279,7 +1280,8 @@ export const DEFEITOS = [
      que alguém comete de verdade ao "simplificar" a linha. */
   { id:'S174', arquivo:SRVCAR, nome:'a transação da carteira vira BEGIN DEFERRED',
     real:'"IMMEDIATE é agressivo demais" — e dois processos travam em vez de esperar a vez',
-    de:"  db.exec('BEGIN IMMEDIATE');", para:"  db.exec('BEGIN DEFERRED');" },
+    /* realvado na ST-12.4: a abertura da transação mora em `abrirTx` */
+    de:"    db.exec('BEGIN IMMEDIATE');\n    return { fechar:", para:"    db.exec('BEGIN DEFERRED');\n    return { fechar:" },
   /* ---------- D-007: a emissão de PC-B ---------- */
 
   { id:'S175', arquivo:EMISSAO, nome:'o orçamento de emissão é inflado no código',
@@ -7610,8 +7612,9 @@ export const DEFEITOS = [
     para:"  const plano = planoDoGasto(disp, 1, 'cosmetico');" },
   { id:'S1114', arquivo:'server/carteira.mjs', nome:'a posse e gravada DEPOIS do commit do debito',
     real:'se gravar a posse falhar, o dinheiro ja saiu — meia transacao',
-    de:"    if (depois) depois(db);\n    db.exec('COMMIT');",
-    para:"    db.exec('COMMIT');\n    if (depois) depois(db);" },
+    /* realvado na ST-12.4: o COMMIT virou `tx.fechar()` (transação aninhada) */
+    de:"    if (depois) depois(db);\n    tx.fechar();",
+    para:"    tx.fechar();\n    if (depois) depois(db);" },
   { id:'S1115', arquivo:'server/cosmeticos.mjs', nome:'o servidor vende o que nao e da loja',
     real:'a peca padrao, ou a de missao, passa a ser cobrada',
     de:"  if (peca.procedencia !== 'loja') return recusa(",
@@ -7719,7 +7722,7 @@ export const DEFEITOS = [
   /* ── ST-12.2 · o mercado de abates: quem venceu (F2.2) ──────────────── */
   { id:'S1225', arquivo:'engine/mercado-abates.mjs', nome:'o empate se resolve pelo primeiro slot',
     real:'quem acertou o outro empatado perde o bolo por uma regra que ninguem leu antes de entrar',
-    de:'  return selecoesDeAbates(n).filter(i => abates[i] === topo);', para:'  return selecoesDeAbates(n).filter(i => abates[i] === topo).slice(0, 1);' },
+    de:'  return selecoesDeAbates(abates.length).filter(i => abates[i] === topo);', para:'  return selecoesDeAbates(abates.length).filter(i => abates[i] === topo).slice(0, 1);' },
   { id:'S1226', arquivo:'engine/mercado-abates.mjs', nome:'rodada sem abate declara os doze vencedores',
     real:'o bolo inteiro volta disfarcado de acerto, com festa, quando ninguem acertou nada',
     de:'  if (topo === 0) return [];\n', para:'' },
@@ -7780,6 +7783,47 @@ export const DEFEITOS = [
   { id:'S1242', arquivo:'server/mercado.mjs', nome:'sair do bolo nao devolve o dinheiro',
     real:'a entrada vira cancelada e o valor fica reservado para sempre — o D-112 com outra roupa',
     de:"  liberarNoBanco(db, { userId, composicao: JSON.parse(e.stake_breakdown), ref: e.id, agora,\n                       tipo: 'MARKET_ENTRY_RELEASE', refTipo: 'market_entry' });\n", para:'' },
+
+  /* ── ST-12.4 · a liquidação do bolo ────────────────────────────────── */
+  { id:'S1243', arquivo:'server/carteira.mjs', nome:'o pagamento do bolo cai no transferivel qualquer que seja a entrada',
+    real:'o bolo vira rota de bonus para transferivel — o que o 6.11 proibe com todas as letras',
+    de:'    ? { bucket, tipo: TIPO_PAYOUT_BOLO[bucket], delta: parte[bucket], reservaDelta: -n }',
+    para:"    ? { bucket: 'transferivel', tipo: 'MARKET_PAYOUT_TRANSFERABLE', delta: parte[bucket], reservaDelta: -n }" },
+  { id:'S1244', arquivo:'server/mercado.mjs', nome:'o bolo liquida sem a transacao de fora',
+    real:'uma falha no meio deixa metade do bolo paga e o bolo travado — reprocessar paga o resto sem ninguem saber quem ja recebeu',
+    de:'  emTransacao(db, () => {', para:'  (f => f())(() => {' },
+  { id:'S1245', arquivo:'server/mercado.mjs', nome:'o residuo da divisao nao e lancado',
+    real:'moedas saem do bolo sem destino no livro — o 6.4 exige destino declarado e registrado',
+    de:"['MARKET_RESIDUE', ap.residuo], ", para:'' },
+  { id:'S1246', arquivo:'server/mercado.mjs', nome:'a taxa nao e lancada na tesouraria',
+    real:'o sink do 6.12 some da contabilidade: a economia perde a torneira de saida que o estudo conta',
+    de:"[['MARKET_FEE', ap.taxa], ", para:'[' },
+  { id:'S1247', arquivo:'server/mercado.mjs', nome:'o bolo liquida antes de a rodada encerrar',
+    real:'paga-se uma luta que ainda nao aconteceu',
+    de:"  if (r?.status !== ESTADOS.ENCERRADA || m.status !== 'travado')", para:"  if (m.status !== 'travado')" },
+  { id:'S1248', arquivo:'server/mercado.mjs', nome:'a liquidacao nao confere a rodada recalculada',
+    real:'com o motor de outra versao, o bolo paga o lider de abates de uma luta que nao foi a publicada',
+    de:'  if (resultado.length !== pool.length || resultado.some((x, i) => x.dex !== pool[i].species_id))',
+    para:'  if (false)' },
+  { id:'S1249', arquivo:'server/mercado.mjs', nome:'o bolo e pago pela memoria e nao pela raiz revelada',
+    real:'o servidor cai entre o fim e o pagamento, e o bolo fica travado para sempre com o dinheiro reservado',
+    de:'  const resultado = sched.resultadoDaRaiz(lerRaiz(r.round_seed_reveal));',
+    para:'  const resultado = sched.resultadoDaRodada(m.round_id);' },
+  { id:'S1250', arquivo:'server/servidor.mjs', nome:'o laco nao paga o bolo',
+    real:'o D-112 de novo, no bolo: a rodada encerra e o dinheiro de todo mundo fica reservado',
+    de:'      finally { liquidarMercadosPendentes(db, { sched, agora: relogio() }); }', para:'      finally { }' },
+  { id:'S1251', arquivo:'server/servidor.mjs', nome:'ao ligar, o bolo que ficou para tras nao e pago',
+    real:'um reinicio no meio do piloto prende o dinheiro de quem entrou no bolo',
+    de:"        try { liquidarMercadosPendentes(db, { sched, agora: relogio() }); }\n", para:'        try { }\n' },
+  { id:'S1252', arquivo:'server/mercado.mjs', nome:'a perda do bolo nao entra no limite de perda',
+    real:'o limite de perda do 28.3 so ve a aposta: quem perde no bolo nunca encosta nele (6.13)',
+    de:'      registrarPerda(db, { userId: e.user_id, valor: e.amount - pag, agora });\n', para:'' },
+  { id:'S1253', arquivo:'server/carteira.mjs', nome:'a carteira abre BEGIN mesmo dentro da transacao de fora',
+    real:'o SQLite recusa BEGIN aninhado: nenhum bolo liquida, e a rodada seguinte acumula dinheiro preso',
+    de:'  if (!db[DENTRO]) {', para:'  if (true) {' },
+  { id:'S1254', arquivo:'engine/mutuo.mjs', nome:'a sobra do piso na reparticao por balde some',
+    real:'o jogador recebe 1 a menos por entrada mista, sem lancamento — dinheiro que ninguem sabe onde esta',
+    de:'  parte[baldes[0][0]] += pagamento - Object.values(parte).reduce((a, x) => a + x, 0);\n', para:'' },
 
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
@@ -7843,7 +7887,8 @@ export const DEFEITOS = [
   /* ── D-112 · a aposta do servidor nunca era liquidada ─────────────────── */
   { id:'S1198', arquivo:'server/servidor.mjs', nome:'o laco volta a nao liquidar as rodadas',
     real:'a rodada fecha, a aposta fica travada para sempre e o dinheiro reservado nao volta (achado no ensaio do piloto)',
-    de:'    aoEncerrar: () => liquidarPendentes(db, { sched, agora: relogio() }),\n', para:'' },
+    /* realvado na ST-12.4: o laço liquida a aposta e depois o bolo */
+    de:'      try { liquidarPendentes(db, { sched, agora: relogio() }); }\n      finally', para:'      try { }\n      finally' },
   { id:'S1199', arquivo:'server/laco.mjs', nome:'a liquidacao passa a acontecer depois do anuncio',
     real:'o cliente recarrega o saldo ao ouvir "encerrada" e le o saldo de antes do pagamento',
     de:'      if (aoEncerrar && r.status === ESTADOS.ENCERRADA && liquidada !== r.id) {',

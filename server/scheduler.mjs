@@ -278,8 +278,14 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
    * sem nenhum teste ficar vermelho. */
   const resultadoDaRodada = id => {
     const seg = segredos.get(id);
-    if (!seg) return null;
-    const { eventos, lutadores, campeaoDex } = simularDaRaiz(seg.raiz);
+    return seg ? resultadoDaRaiz(seg.raiz) : null;
+  };
+  /* A MESMA CONTA A PARTIR DA RAIZ REVELADA (ST-12.4). O segredo em memória
+     morre com o processo; a raiz revelada fica em `rounds.round_seed_reveal`
+     desde o lock. É ela que deixa o bolo ser pago depois de o servidor cair —
+     dinheiro não pode depender de memória, como o XP depende hoje. */
+  const resultadoDaRaiz = raiz => {
+    const { eventos, lutadores, campeaoDex } = simularDaRaiz(raiz);
     const ordem = ordemDeQuedas(eventos);
     const campeaoIdx = lutadores.findIndex(l => l.dex === campeaoDex);
     return lutadores.map((l, i) => ({
@@ -293,7 +299,7 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
   return {
     abrirRodada, tick, paraCliente,
     rodadaAtual: () => atual,
-    espiarCampeao, campeaoDaRaiz, resultadoDaRodada,
+    espiarCampeao, campeaoDaRaiz, resultadoDaRodada, resultadoDaRaiz,
   };
 }
 

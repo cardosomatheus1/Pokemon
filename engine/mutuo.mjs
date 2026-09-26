@@ -107,3 +107,22 @@ export function apurar({ entradas, vencedoras, taxa, semAcerto, selecoes }) {
   return { bruto, taxa: taxaV, liquido, pagamentos, residuo: liquido - pago, tesouraria: 0,
            destino, acertadores: certas.length, contemplados: base.length };
 }
+
+/* ── O PAGAMENTO VOLTA PELOS BALDES DE ONDE A ENTRADA SAIU (§6.11) ─────────
+ *
+ * "Entrada em PC-B paga em PC-B": o bolo não é rota de bônus para
+ * transferível. Uma entrada de 70 bônus + 30 transferível que recebe 250 volta
+ * 175 + 75 — na proporção da composição, por piso, e o que o piso deixa vai ao
+ * balde que mais pôs (empate: a ordem alfabética, para ser sempre a mesma).
+ * Mandar a sobra ao transferível seria o vazamento por arredondamento que a
+ * regra existe para fechar. */
+export function repartirPorBalde(composicao, pagamento) {
+  const baldes = Object.entries(composicao ?? {}).filter(([, n]) => n > 0)
+    .sort(([a, x], [b, y]) => y - x || (a < b ? -1 : 1));
+  if (!baldes.length) throw new Error('entrada sem composição');
+  if (!Number.isSafeInteger(pagamento) || pagamento < 0) throw new Error(`pagamento inválido: ${pagamento}`);
+  const total = baldes.reduce((a, [, n]) => a + n, 0);
+  const parte = Object.fromEntries(baldes.map(([b, n]) => [b, proporcao(pagamento, n, total)]));
+  parte[baldes[0][0]] += pagamento - Object.values(parte).reduce((a, x) => a + x, 0);
+  return parte;
+}

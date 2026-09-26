@@ -23,17 +23,20 @@
  */
 import { randomUUID } from 'node:crypto';
 import { ESTADOS } from './scheduler.mjs';
-import { reservarNoBanco, liberarNoBanco } from './carteira.mjs';
-import { avaliarAposta, avaliarRodada, registrarRodada, registrarBloqueio, ERRO_LIMITE } from './limites.mjs';
+import { reservarNoBanco, liberarNoBanco, liquidarEntradaNoBanco, emTransacao } from './carteira.mjs';
+import { avaliarAposta, avaliarRodada, registrarRodada, registrarBloqueio, registrarPerda,
+         ERRO_LIMITE } from './limites.mjs';
 import { podeAgir, ERRO_PROTECAO } from './protecao.mjs';
 import { ERRO_APOSTA } from './aposta.mjs';
-import { TAXA_PADRAO, SEM_ACERTO } from '../engine/mutuo.mjs';
-import { selecoesDeAbates, REGRA_ABATES } from '../engine/mercado-abates.mjs';
+import { TAXA_PADRAO, SEM_ACERTO, apurar } from '../engine/mutuo.mjs';
+import { lerRaiz } from '../engine/seed.mjs';
+import { selecoesDeAbates, vencedorasPorAbates, REGRA_ABATES } from '../engine/mercado-abates.mjs';
 
 export const ERRO_MERCADO = {
   SEM_MERCADO: 'sem_mercado',
   SELECAO:     'selecao_invalida',
   SEM_ENTRADA: 'sem_entrada',
+  DIVERGENCIA: 'rodada_divergente',
 };
 
 /* UM MERCADO POR VEZ (§6.5): um bolo sem liquidez não forma preço, e vários
@@ -170,6 +173,73 @@ export function sairDoMercado(db, { sched, userId, kind = 'abates', agora = Date
                        tipo: 'MARKET_ENTRY_RELEASE', refTipo: 'market_entry' });
   db.prepare(`UPDATE market_entries SET status = 'cancelada' WHERE id = ?`).run(e.id);
   return { id: e.id };
+}
+
+/* ── A LIQUIDAÇÃO (ST-12.4 · F2.1b) ──────────────────────────────────────
+ *
+ * UMA TRANSAÇÃO POR BOLO: todas as entradas, a tesouraria e o status do bolo,
+ * ou nada. Metade do bolo pago é o estado que ninguém consegue explicar depois.
+ *
+ * IDEMPOTENTE EM DOIS NÍVEIS, como a aposta: o bolo `liquidado` não é
+ * reprocessado, e cada lançamento carrega chave derivada da entrada.
+ *
+ * A RESPOSTA SAI DA RAIZ REVELADA, e não da memória do scheduler: um bolo tem
+ * de ser pago mesmo que o servidor tenha caído entre o fim e a liquidação. E a
+ * pool recalculada é conferida contra `round_fighters` ANTES de pagar — se o
+ * motor de hoje não reproduz a rodada de ontem (versão mudou), o bolo não
+ * paga ninguém em silêncio: recusa, e o erro tem endereço. */
+export function liquidarMercado(db, { sched, marketId, agora = Date.now() }) {
+  const m = db.prepare(`SELECT * FROM markets WHERE id = ?`).get(marketId);
+  if (!m) throw erro(ERRO_MERCADO.SEM_MERCADO, 'bolo desconhecido');
+  if (m.status === 'liquidado') return { repetida: true };
+  const r = db.prepare(`SELECT status, round_seed_reveal FROM rounds WHERE id = ?`).get(m.round_id);
+  if (r?.status !== ESTADOS.ENCERRADA || m.status !== 'travado')
+    throw erro(ERRO_APOSTA.RODADA, 'a rodada do bolo ainda não terminou');
+
+  const resultado = sched.resultadoDaRaiz(lerRaiz(r.round_seed_reveal));
+  const pool = db.prepare(`SELECT species_id FROM round_fighters WHERE round_id = ? ORDER BY slot`).all(m.round_id);
+  if (resultado.length !== pool.length || resultado.some((x, i) => x.dex !== pool[i].species_id))
+    throw erro(ERRO_MERCADO.DIVERGENCIA, `a rodada ${m.round_id} recalculada não bate com a publicada`);
+  const vencedoras = vencedorasPorAbates(resultado.map(x => x.abates));
+
+  const entradas = db.prepare(`SELECT * FROM market_entries WHERE market_id = ? AND status = 'travada'`).all(m.id);
+  const ap = apurar({ entradas: entradas.map(e => ({ id: e.id, selecao: e.selection, valor: e.amount })),
+                      vencedoras, taxa: m.fee_rate, semAcerto: m.no_winner_destination });
+
+  emTransacao(db, () => {
+    const marcar = db.prepare(`UPDATE market_entries SET status = ?, payout = ?, settled_at = ? WHERE id = ?`);
+    for (const e of entradas) {
+      const pag = ap.pagamentos[e.id];
+      const res = liquidarEntradaNoBanco(db, { userId: e.user_id, composicao: JSON.parse(e.stake_breakdown),
+                                              pagamento: pag, ref: e.id, idem: `msettle-${e.id}`, agora });
+      if (!res.ok) throw new Error(`a entrada ${e.id} não liquidou: ${res.motivo}`);
+      marcar.run(ap.destino === 'devolucao' ? 'devolvida' : pag > 0 ? 'ganha' : 'perdida', pag, agora, e.id);
+      /* A perda LÍQUIDA entra no mesmo limite da aposta (§6.13): um limite só. */
+      registrarPerda(db, { userId: e.user_id, valor: e.amount - pag, agora });
+    }
+    const casa = db.prepare(`INSERT INTO treasury_ledger (id, type, amount, reference_type, reference_id,
+                                                          idem_key, created_at) VALUES (?,?,?,?,?,?,?)`);
+    for (const [tipo, v] of [['MARKET_FEE', ap.taxa], ['MARKET_RESIDUE', ap.residuo], ['MARKET_UNCLAIMED', ap.tesouraria]])
+      if (v > 0) casa.run(randomUUID(), tipo, v, 'market', m.id, `${tipo}-${m.id}`, agora);
+    db.prepare(`UPDATE markets SET status = 'liquidado', settled_at = ?, pot_gross = ?, pot_net = ?,
+                       fee_amount = ?, residue_amount = ?, treasury_amount = ? WHERE id = ?`)
+      .run(agora, ap.bruto, ap.liquido, ap.taxa, ap.residuo, ap.tesouraria, m.id);
+  });
+  return { entradas: entradas.length, vencedoras, destino: ap.destino, bruto: ap.bruto };
+}
+
+/* Todo bolo travado de rodada encerrada — o que o laço chama a cada fim de
+   rodada e o servidor chama ao ligar, ao lado do `liquidarPendentes`. Um bolo
+   que falha não segura os outros: o erro sobe no fim, com todos tentados. */
+export function liquidarMercadosPendentes(db, { sched, agora = Date.now() }) {
+  const ids = db.prepare(`SELECT m.id FROM markets m JOIN rounds r ON r.id = m.round_id
+                           WHERE m.status = 'travado' AND r.status = ?`).all(ESTADOS.ENCERRADA).map(x => x.id);
+  const erros = [];
+  for (const marketId of ids) {
+    try { liquidarMercado(db, { sched, marketId, agora }); } catch (e) { erros.push(e); }
+  }
+  if (erros.length) throw erros[0];
+  return ids.length;
 }
 
 /* ── O QUE O CLIENTE VÊ ──────────────────────────────────────────────────

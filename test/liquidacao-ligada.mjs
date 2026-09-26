@@ -115,7 +115,7 @@ export async function suite() {
 
   s.teste('o servidor liga a liquidação no laço, e confere pendências ao ligar', () => {
     const f = readFileSync(new URL('../server/servidor.mjs', import.meta.url), 'utf8');
-    ok(/aoEncerrar: .*liquidarPendentes\(db/.test(f), 'o laço do servidor não liquida as rodadas');
+    ok(/aoEncerrar:[\s\S]{0,300}?liquidarPendentes\(db/.test(f), 'o laço do servidor não liquida as rodadas');
     ok(/liquidarPendentes\(db, \{ sched, agora: relogio\(\) \}\);\s*\n\s*return laco\.iniciar/.test(f) || /ouvir[\s\S]{0,400}liquidarPendentes\(db/.test(f),
       'ao ligar, o servidor não liquida o que ficou para trás');
   });

@@ -30,6 +30,7 @@
  */
 import { randomUUID } from 'node:crypto';
 import { BUCKETS, ORDEM_CONSUMO, TIPOS } from '../engine/carteira.mjs';
+import { repartirPorBalde } from '../engine/mutuo.mjs';
 
 export const ERRO_CARTEIRA = {
   VALOR:        'valor_invalido',
@@ -79,20 +80,50 @@ export const ledgerDe = (db, userId) =>
  * reserva é uma coisa só: sai do disponível E entra no reservado, e separá-las
  * em dois lançamentos criaria um instante em que o dinheiro não está em lugar
  * nenhum. */
+/* ── UMA TRANSAÇÃO POR FORA, E AS DA CARTEIRA DENTRO DELA (ST-12.4) ───────
+ *
+ * A liquidação de um bolo são N movimentos de carteira que têm de acontecer
+ * TODOS ou NENHUM — metade do bolo pago é pior que nenhum. `emTransacao` abre
+ * a transação de fora e marca o banco; dentro dela, `aplicar` usa SAVEPOINT em
+ * vez de BEGIN (o SQLite recusa BEGIN aninhado). Fora dela, nada muda.
+ *
+ * A marca é nossa, e não `db.isTransaction`: ela só existe do Node 22.16 em
+ * diante, e o piloto pede 22.5. */
+const DENTRO = Symbol('transacao-externa');
+
+export function emTransacao(db, fn) {
+  if (db[DENTRO]) return fn();
+  db.exec('BEGIN IMMEDIATE');
+  db[DENTRO] = true;
+  try { const r = fn(); db.exec('COMMIT'); return r; }
+  catch (e) { db.exec('ROLLBACK'); throw e; }
+  finally { db[DENTRO] = false; }
+}
+
+function abrirTx(db) {
+  if (!db[DENTRO]) {
+    db.exec('BEGIN IMMEDIATE');
+    return { fechar: () => db.exec('COMMIT'), desfazer: () => db.exec('ROLLBACK') };
+  }
+  db.exec('SAVEPOINT carteira');
+  return { fechar: () => db.exec('RELEASE carteira'),
+           desfazer: () => { db.exec('ROLLBACK TO carteira'); db.exec('RELEASE carteira'); } };
+}
+
 function aplicar(db, { userId, linhas, ref, refTipo, idem, memo, agora, antes = null, depois = null }) {
   for (const l of linhas) {
     if (!TIPOS.includes(l.tipo)) throw erro(ERRO_CARTEIRA.TIPO, `tipo desconhecido: ${l.tipo}`);
     if (!BUCKETS.includes(l.bucket)) throw erro(ERRO_CARTEIRA.BUCKET, `bucket desconhecido: ${l.bucket}`);
   }
 
-  db.exec('BEGIN IMMEDIATE');
+  const tx = abrirTx(db);
   try {
     /* A CHAVE É CONFERIDA DENTRO DA TRANSAÇÃO, e por inserção — não por
        consulta prévia. Consultar antes é o mesmo TOCTOU da concorrência: duas
        chamadas leem "não existe" e as duas escrevem. */
     if (idem) {
       const ja = db.prepare(`SELECT 1 FROM wallet_ledger WHERE idem_key = ?`).get(idem);
-      if (ja) { db.exec('ROLLBACK'); return { ok: true, repetida: true }; }
+      if (ja) { tx.desfazer(); return { ok: true, repetida: true }; }
     }
     /* `antes` e `depois` (E4, ST-4.2) rodam DENTRO da transação. `antes` pode
        encerrar sem mexer em nada (devolve a resposta); `depois` grava o que o
@@ -100,7 +131,7 @@ function aplicar(db, { userId, linhas, ref, refTipo, idem, memo, agora, antes = 
        compra ser UMA transação, e não um débito seguido de uma esperança. */
     if (antes) {
       const curto = antes(db);
-      if (curto !== undefined) { db.exec('ROLLBACK'); return curto; }
+      if (curto !== undefined) { tx.desfazer(); return curto; }
     }
 
     for (const [i, l] of linhas.entries()) {
@@ -126,10 +157,10 @@ function aplicar(db, { userId, linhas, ref, refTipo, idem, memo, agora, antes = 
              memo ?? null, agora);
     }
     if (depois) depois(db);
-    db.exec('COMMIT');
+    tx.fechar();
     return { ok: true };
   } catch (e) {
-    db.exec('ROLLBACK');
+    tx.desfazer();
     if (/CHECK constraint failed|saldo/.test(e.message))
       return { ok: false, motivo: ERRO_CARTEIRA.SALDO };
     if (/UNIQUE constraint failed: wallet_ledger.idem_key/.test(e.message))
@@ -211,6 +242,25 @@ export function liquidarNoBanco(db, { userId, composicao, ganhou, odd, ref, idem
     ? { bucket, tipo: TIPO_PAYOUT[bucket], delta: Math.floor(n * odd), reservaDelta: -n }
     : { bucket, tipo: 'BET_LOSS', delta: 0, reservaDelta: -n });
   return aplicar(db, { userId, ref, refTipo: 'bet', idem, agora, linhas });
+}
+
+/* LIQUIDAR UMA ENTRADA DO BOLO (ST-12.4). O pagamento volta pelos baldes de
+   onde a entrada saiu (`repartirPorBalde`); o balde que não recebe nada lança a
+   perda, que só solta o reservado. Um tipo por balde, como na aposta. */
+const TIPO_PAYOUT_BOLO = {
+  transferivel: 'MARKET_PAYOUT_TRANSFERABLE',
+  pendente:     'MARKET_PAYOUT_TRANSFERABLE',
+  bonus:        'MARKET_PAYOUT_BONUS',
+  competitivo:  'MARKET_PAYOUT_COMPETITIVE',
+  comprado:     'MARKET_PAYOUT_PURCHASED',
+};
+
+export function liquidarEntradaNoBanco(db, { userId, composicao, pagamento, ref, idem, agora = Date.now() }) {
+  const parte = repartirPorBalde(composicao, pagamento);
+  const linhas = Object.entries(composicao).filter(([, n]) => n > 0).map(([bucket, n]) => parte[bucket] > 0
+    ? { bucket, tipo: TIPO_PAYOUT_BOLO[bucket], delta: parte[bucket], reservaDelta: -n }
+    : { bucket, tipo: 'MARKET_LOSS', delta: 0, reservaDelta: -n });
+  return aplicar(db, { userId, ref, refTipo: 'market_entry', idem, agora, linhas });
 }
 
 /* ── RECONCILIAÇÃO ────────────────────────────────────────────────────────

@@ -644,7 +644,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
   não reserva.
 - **Portões:** Q1 Q2 Q3 Q6 Q8.
 
-### ST-12.4 · A liquidação do bolo (F2.1, parte b)
+### ~~ST-12.4~~ ✅ 26/09 · A liquidação do bolo (F2.1, parte b) — uma transação por bolo (`emTransacao` + SAVEPOINT na carteira), paga pela raiz revelada, `treasury_ledger` para taxa, resíduo e sem acerto; 1.000 rodadas sem divergência · S1243–S1254
 - **Porte** M · **Servidor** sim · **Bloco dono** F2.1 · **Spec** §6.4, §6.11, §6.12 · **Depende de** ST-12.3
 - **Entrega ao jogador:** o bolo paga quando a rodada encerra.
 - **Escopo:** `liquidarMercado(db, marketId)` na **mesma transação** por

@@ -47,9 +47,9 @@ linhas 7 a 11 da fila do `ROADMAP.md`: **E12 (V2 bolo mútuo) → E9 (V3) → E1
 medidos e registrados, sem trancar a fila. Ficam com o dono: a migração do
 save local (ST-13.4), ligar stake entre jogadores (D2), dinheiro real (DEC-02)
 e a hospedagem pública. **ST-12.1 ✅** (`engine/mutuo.mjs`, o bolo fecha no bruto em
-10.000 casos semeados). **ST-12.2 ✅** (quem venceu o mercado de abates). **ST-12.3 ✅** (o bolo no servidor). **O próximo bloco é a ST-12.4** (a
-liquidação do bolo). Há 578 defeitos ADIADOS para o Q2 completo — rodar
-com a sessão ativa depois da ST-12.4.
+10.000 casos semeados). **ST-12.2 ✅** (quem venceu o mercado de abates). **ST-12.3 ✅** (o bolo no servidor). **ST-12.4 ✅** (o bolo paga). **O próximo passo é o Q2
+completo** (597 adiados), depois a ST-12.5 (o preço do modelo carimbado
+antes, publicado depois).
 
 ### Q2 COMPLETO VERDE — 1210/1210 (26/09, commit 3ad44ef)
 

@@ -1142,6 +1142,45 @@ export const MIGRACOES = [
       db.exec(`DROP TABLE IF EXISTS markets`);
     },
   },
+  {
+    nome: 'mercados-liquidacao-st12.4',
+    /* PARA ONDE VAI O QUE NENHUM JOGADOR RECEBE (ST-12.4 · §6.4, §6.12).
+     *
+     * A taxa, o resíduo do piso e — quando o destino "sem acerto" é tesouraria —
+     * o líquido de um bolo sem acertador saem do bolo sem ir a um jogador. O
+     * `wallet_ledger` é por usuário e a casa não é usuário: inventar uma conta
+     * "casa" em `users` daria à tesouraria senha, idade e limite. Ela ganha um
+     * livro próprio, append-only como o outro, com chave por mercado.
+     *
+     * E o bolo guarda os quatro números da apuração, para a invariante
+     * Σ pagamentos + taxa + resíduo + tesouraria == bruto ser conferível por
+     * SELECT, sem refazer a conta.
+     *
+     * ADITIVA: descer apaga o livro e as colunas. */
+    sobe: db => {
+      for (const c of ['fee_amount', 'residue_amount', 'treasury_amount'])
+        db.exec(`ALTER TABLE markets ADD COLUMN ${c} INTEGER`);
+      db.exec(`
+        CREATE TABLE treasury_ledger (
+          id             TEXT PRIMARY KEY,
+          type           TEXT NOT NULL CHECK (type IN ('MARKET_FEE','MARKET_RESIDUE','MARKET_UNCLAIMED')),
+          amount         INTEGER NOT NULL CHECK (amount > 0),
+          reference_type TEXT NOT NULL,
+          reference_id   TEXT NOT NULL,
+          idem_key       TEXT NOT NULL UNIQUE,
+          created_at     INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE TRIGGER tesouraria_sem_update BEFORE UPDATE ON treasury_ledger
+               BEGIN SELECT RAISE(ABORT, 'treasury_ledger é append-only'); END`);
+      db.exec(`CREATE TRIGGER tesouraria_sem_delete BEFORE DELETE ON treasury_ledger
+               BEGIN SELECT RAISE(ABORT, 'treasury_ledger é append-only'); END`);
+    },
+    desce: db => {
+      db.exec(`DROP TABLE IF EXISTS treasury_ledger`);
+      for (const c of ['fee_amount', 'residue_amount', 'treasury_amount'])
+        db.exec(`ALTER TABLE markets DROP COLUMN ${c}`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

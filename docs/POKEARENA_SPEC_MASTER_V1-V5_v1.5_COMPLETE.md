@@ -1304,6 +1304,16 @@ MARKET_RESIDUE
 
 A proveniência é preservada como no §5.5: entrada em PC-B paga em PC-B. Apuração mútua **não** é rota de conversão de bônus em transferível.
 
+> **Corrigido em 26/09/2026 (ST-12.4).** A entrada reserva pelos mesmos cinco
+> baldes da aposta, e a lista acima só tinha pagamento para dois. Entram
+> `MARKET_PAYOUT_COMPETITIVE` (competitivo paga em competitivo) e
+> `MARKET_PAYOUT_PURCHASED` (comprado paga em comprado — a DEC-03 manda o lucro
+> feito com saldo comprado herdar a linhagem). E o que nenhum jogador recebe —
+> `MARKET_FEE`, `MARKET_RESIDUE` e, com destino "tesouraria", o líquido de um
+> bolo sem acertador (`MARKET_UNCLAIMED`) — vai a um livro próprio da
+> tesouraria (`treasury_ledger`, append-only), porque o ledger de carteira é
+> por jogador e a casa não é jogador.
+
 ## 6.12 Economia da fase
 
 - a taxa de mercado é **sink**, com a mesma regra do rake do §10: não é receita em reais no instante da retirada;

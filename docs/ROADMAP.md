@@ -261,6 +261,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **ST-12.4** · o bolo paga | 26/09 | uma transação por bolo: falha no meio não deixa metade paga · paga pela raiz REVELADA (sobrevive ao servidor cair) e confere a pool recalculada contra a publicada · bônus paga em bônus · taxa, resíduo e "sem acerto" num livro da tesouraria · 1.000 rodadas: Σ saída == Σ entrada em cada bolo · Spec §6.11 corrigida · S1243–S1254 |
 | **ST-12.3** · o bolo no servidor | 26/09 | `markets`/`market_entries` nascem e travam com a rodada · `GET /api/mercado`, `POST /api/mercado/entrar` e `/sair` · o limite por rodada soma aposta + bolo nos dois caminhos, e os dois contam UMA rodada (§6.13) · a composição sai por lista branca, sem o preço do modelo · 100 entradas concorrentes somam exato · S1230–S1242 |
 | **ST-12.2** · quem venceu o mercado de abates | 26/09 | `engine/mercado-abates.mjs`: a contagem é a do `colocacao.mjs`, empate = todos os empatados vencem, rodada sem abate = ninguém vence · 1.000 rodadas: abates somados = quedas por golpe · S1225–S1229 |
 | **ST-12.1** · o motor do bolo mútuo (a V2 começa) | 26/09 | `engine/mutuo.mjs`, camada 0: em 10.000 bolos semeados pagamentos + taxa + resíduo + tesouraria == bruto · taxa em pontos-base (0,29 × 100 não vira 28) · S1217–S1224 |
