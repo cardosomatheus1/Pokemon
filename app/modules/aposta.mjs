@@ -10,6 +10,7 @@
  * mexe no passivo da rodada. Não sabe o que é uma fase, não inicia batalha, não
  * paga resultado — o pagamento continua em `fases.mjs`, junto do fim da rodada.
  */
+import { registrarEncontrada } from './pokedex-estado.mjs';
 import { $ } from './dom.mjs';
 import { retornoLiquidoEstimado } from '../../engine/resultado.mjs';
 import { APOSTA_MIN, valorAposta } from './banco.mjs';
@@ -182,7 +183,10 @@ document.addEventListener('click', ev => {
     if (escolhido == null) return;
     const idx = escolhido;
     limparEscolha();
-    placeBet(idx, document.querySelector(`.pick[data-i="${idx}"]`));
+    /* ST-9.3: a escada — apostar nela a torna ENCONTRADA. Só se a aposta
+       ficou: saldo curto não é aposta. */
+    placeBet(idx, document.querySelector(`.pick[data-i="${idx}"]`))
+      .then(() => { if (S.myBet?.idx === idx && S.fighters[idx]) registrarEncontrada(S.fighters[idx].dex); });
     return;
   }
   if (ev.target.closest('#btnCancelarEscolha')) limparEscolha();

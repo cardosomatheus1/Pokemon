@@ -425,5 +425,23 @@ export function suite() {
       'é pior que nenhum registro, porque ensina a não confiar na lista.');
   });
 
+  /* D-120 · A SONDA DOS AVISOS AMOSTRA PELO RELÓGIO DE PAREDE.
+   *
+   * `test/visual.mjs` mede o pico de opacidade do #koToast com
+   * `setTimeout(40/120/200/320)`. Com a CPU afogada (Q2 completo e suíte ao
+   * mesmo tempo, 26/09) o primeiro timer disparou depois dos 2,6 s da
+   * animação, e o pico lido foi 0 — vermelho sem defeito de produto.
+   *
+   * Este teste AFIRMA O DEFEITO: fica vermelho no dia em que a sonda passar a
+   * ler a linha do tempo da animação (`getAnimations()`), e aí o D-120 sai de
+   * docs/DEFEITOS.md. */
+  s.teste('D-120 · a sonda dos avisos amostra por relógio de parede', () => {
+    const visual = readFileSync(new URL('./visual.mjs', import.meta.url), 'utf8');
+    const sonda = visual.split('const avisos = await')[1]?.split('return r;')[0] ?? '';
+    ok(/for \(const t of \[40, 120, 200, 320\]\) \{\s*await dorme\(t\);/.test(sonda) && !/getAnimations\(\)/.test(sonda),
+      'a sonda dos avisos deixou de amostrar pelo relógio — o D-120 foi corrigido. ' +
+      'Apague este teste e tire o D-120 de docs/DEFEITOS.md.');
+  });
+
   return s;
 }

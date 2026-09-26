@@ -41,6 +41,7 @@ import { capturados, vistosDe } from './pokedex-dados.mjs';
 import { linhaDe, baseDe } from '../../engine/evolucao.mjs';
 import { raridadeDe } from '../../engine/bioma.mjs';
 import { alvoRegistro } from '../../engine/captura.mjs';
+import { DOSSIES } from '../../content/escolhido.mjs';
 
 export const DEGRAUS = Object.freeze(['desconhecida', 'vista', 'encontrada', 'capturada', 'dominada']);
 
@@ -73,6 +74,13 @@ export function carregarMarcas(deposito = globalThis.localStorage) {
 }
 export function gravarMarcas(m, deposito = globalThis.localStorage) {
   try { deposito?.setItem(CHAVE_MARCAS, JSON.stringify(m)); return true; } catch { return false; }
+}
+/* Quem vê a rodada e quem aposta chamam isto: lê, acrescenta, grava. */
+export function registrarVistas(dexes, deposito = globalThis.localStorage) {
+  const m = carregarMarcas(deposito); marcarVistas(m, dexes); return gravarMarcas(m, deposito);
+}
+export function registrarEncontrada(dex, deposito = globalThis.localStorage) {
+  const m = carregarMarcas(deposito); marcarEncontrada(m, dex); return gravarMarcas(m, deposito);
 }
 /* Cada uma só ACRESCENTA. */
 export const marcarVistas = (m, dexes) => { m.vistas = [...new Set([...(m.vistas ?? []), ...dexes.map(Number)])]; };
@@ -108,7 +116,9 @@ export function escadaDe(pack, e, dex, marcas) {
     desconhecida: 'veja-a numa rodada da Arena',
     vista: 'aposte nela uma vez, ou dê a ela o maior peso numa previsão da Liga',
     encontrada: 'tenha uma: capture ou evolua até ela',
-    capturada: `complete o registro da linha (${reg.fragmentos} de ${reg.alvo} fragmentos)`,
+    /* "da linha, somando as formas": sem isso o topo dizia "3 de 8" e o rodapé
+       da ficha "0 fragmento(s)" — os dois certos, e a leitura sem saída (Q7). */
+    capturada: `junte os fragmentos da linha nos encontros do idle (${reg.fragmentos} de ${reg.alvo}, somando as formas)`,
     dominada: null,
   }[degrau];
   return { degrau, liberado, proximo: DEGRAUS[i + 1] ?? null, falta };
@@ -117,3 +127,7 @@ export function escadaDe(pack, e, dex, marcas) {
 /* O que a POKÉDEX conta como visto: o que o idle viu, mais o que a Arena
    mostrou. Só a Pokédex — vagas e teto seguem com `especiesVistas`. */
 export const vistosNaPokedex = (e, marcas) => new Set([...vistosDe(e), ...conjunto(marcas?.vistas)]);
+
+/* O dossiê DESTE pack (ST-9.3). Um pack sem dossiê gerado não inventa um:
+   a seção "Na Arena" simplesmente não aparece. */
+export const dossieDoPack = pack => DOSSIES[pack?.id] ?? null;

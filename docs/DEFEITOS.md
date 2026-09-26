@@ -6684,3 +6684,25 @@ batalha})`, uma função chamada pelo servidor e pelo cliente. **Teste que
 trava:** `test/luta-rodada.mjs` (400 rodadas: o campeão do servidor é o da luta
 com clima, e o clima muda o campeão em mais de 40 delas — o teste distingue o
 defeito; e os dois lados chamam a função comum). Sabotagens S1292 e S1293.
+
+## D-120 — a sonda dos avisos lê a opacidade pelo relógio de parede, e a CPU afogada a engana
+
+**Achado em:** 26/09/2026, rodando a suíte inteira na árvore de trabalho da
+ST-9.4 enquanto o Q2 completo rodava na principal. **Bloco dono:** T15 (arnês —
+proposto abaixo). **Estado:** aberto; **não impede** trabalho de produto (só
+aparece sob carga paralela), então espera, pela regra do arnês do `CLAUDE.md`.
+
+**Causa.** `test/visual.mjs`, a medição dos avisos com "reduzir movimento":
+o pico de opacidade do `#koToast` é amostrado com `setTimeout(40)`, `(120)`,
+`(200)`, `(320)`. A animação dura 2,6 s. Com a CPU afogada, o primeiro timer
+disparou depois do fim dela e o pico lido foi 0.
+
+**Medição.** Uma vez em 2469 testes, com o Q2 completo (4 caixas) rodando ao
+lado. A mesma suíte sozinha: verde 3 vezes seguidas.
+
+**Correção proposta (T15, não construída).** Ler pela linha do tempo da
+animação — `el.getAnimations()[0]`, `currentTime = 800`, `pause()` — em vez
+de esperar o relógio. **Teste que trava:** `test/invariantes.mjs`, "D-120 · a
+sonda dos avisos amostra por relógio de parede" — AFIRMA o defeito e fica
+vermelho quando ele for corrigido.
+

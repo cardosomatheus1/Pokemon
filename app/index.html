@@ -966,6 +966,15 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
    clicável. Se a tela for baixa demais, ela rola DENTRO do bloco, e o
    cabeçalho declara o total. */
 #pickList{max-height:none;overflow:visible}
+/* ── ST-9.3 · o dossiê na ficha da Pokédex ─────────────────────────────── */
+.pdxArena .pdxFalta{margin:0 0 6px;color:var(--neon)}
+.pdxDos{margin:4px 0;padding:4px 8px;border-left:2px solid var(--line);font-size:.78rem}
+.pdxDos b{display:block;font-size:.72rem;color:var(--dim);letter-spacing:.04em;text-transform:uppercase}
+.pdxDos p{margin:2px 0}
+.pdxDos.trancada{border-left-style:dashed}
+.pdxDos.trancada p{color:var(--dim);font-size:.72rem}
+.pdxIr{font:inherit;font-weight:700;color:var(--neon);background:none;border:1px solid var(--line);border-radius:6px;padding:1px 8px;margin-left:4px;cursor:pointer}
+.pdxIr:hover,.pdxIr:focus-visible{border-color:var(--neon)}
 /* ── ST-12.6 · O BOLO ─────────────────────────────────────────────────────
    Uma linha por lutador, compacta: nome, a barra da fatia do bolo e o que
    ele pagaria. A barra é a leitura de 1 segundo ("onde está o dinheiro"); o

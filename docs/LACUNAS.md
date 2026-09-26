@@ -8380,3 +8380,19 @@ Os três já corrigidos no bloco estão no commit (a linha diz "+100 seus",
 "paga agora" em vez de "até", "de volta (lucro …)", onde estava o bolo no
 resultado, o total na Orbitron). **O que a destrava:** a ST-12.10 medindo
 participação no bolo.
+
+### L-194 — a ficha da Pokédex a 1920, e os emojis de sistema no "Por clima"
+
+**Registrada em:** 26/09/2026, no Q7 da ST-9.3 (crítico cego, barra "TESTE DA
+FICHA DE 5 SEGUNDOS"). **Bloco dono:** UX-01. **Estado:** aberto.
+
+Duas sobras que o bloco não construiu, e por quê:
+- **a 1920 a ficha usa ~740 px de texto** e deixa o selo do degrau a ~800 px
+  dele — é o arranjo da ficha inteira (pré-existente), e não da seção nova;
+- **os emojis de sistema do clima** (☀️ 🌬️ ⛅ ❄️ 🌧️) destoam do tema
+  pixel/neon — são os mesmos da legenda dos climas (ST-2.1), e trocar num
+  lugar só deixaria as duas telas discordando.
+
+O que o bloco corrigiu depois do crítico está no commit da ST-9.3. **O que a
+destrava:** a UX-01 revisando a ficha inteira e o ícone de clima do tema.
+

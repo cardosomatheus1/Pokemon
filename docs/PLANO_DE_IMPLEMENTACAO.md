@@ -780,7 +780,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Sabotagem:** VISTA entrando em `especiesVistas`; regredir ao soltar; DOMINADA sem captura; ENCONTRADA só por ter aparecido.
 - **Portões:** Q1 Q2 Q3 · Q6: sem superfície nova.
 
-### ST-9.3 · O dossiê na ficha da Pokédex
+### ~~ST-9.3~~ ✅ 26/09 · O dossiê na ficha da Pokédex — seção "Na Arena" (`dossie-ficha.mjs`, camada 0), veredito em palavra ao lado de todo número, n pequeno marcado; a rodada marca vista, a aposta e a Liga marcam encontrada · Q7 aplicado · S1310–S1320, S1348
 - **Porte** M · **Servidor** não · **Bloco dono** F3.9/F3.10 (tela) · **Spec** §7.4, §7.12, §12 tela 11 · **Depende de** ST-9.2
 - **Entrega ao jogador:** a ficha do Charizard mostra o que ele faz na Arena, com o tamanho da amostra, e o que falta para ver mais.
 - **Escopo:** seção "Na Arena" com as camadas liberadas pelo estado. A camada trancada diz o requisito ("aposte nele uma vez", "evolua o seu Charmander"). A pré-evolução aponta para a forma que luta. Decisão em camada 0; a tela só pinta.

@@ -29,6 +29,7 @@
  * deixar isso óbvio. Ver o teste que afirma a ausência em `test/liga-local.mjs`.
  */
 
+import { registrarEncontrada } from './pokedex-estado.mjs';
 import { renderLeituraBolo } from './bolo-tela.mjs';
 import { $ } from './dom.mjs';
 import { S } from './estado.mjs';
@@ -267,6 +268,10 @@ document.addEventListener('click', (ev) => {
     const e = carregada();
     const r = registrar(e, { roundId: id, distribuicao: normalizar(pesos) });
     if (r.ok) salvar(e);
+    /* ST-9.3 (R3): a escolha de MAIOR peso vira ENCONTRADA — sob limite de
+       proteção a Liga continua sendo caminho de progressão (§6.13). */
+    const topo = pesos.indexOf(Math.max(...pesos));
+    if (r.ok && S.fighters[topo]) registrarEncontrada(S.fighters[topo].dex);
     renderLiga();
     return;
   }

@@ -38,9 +38,12 @@ import { PACK, nomeExibido } from './motor.mjs';
 import { estiloIcone } from './icones.mjs';
 import { retratoAnimado, dexImg } from './sprites.mjs';
 import { carregar } from './idle-dados.mjs';
+import { escadaDe, carregarMarcas, vistosNaPokedex, dossieDoPack } from './pokedex-estado.mjs';
+import { secoesDoDossie } from './dossie-ficha.mjs';
+import { linhaDe } from '../../engine/evolucao.mjs';
 import {
   STATS, tetoDeStat, somaDeStats, ondeMora, linhaComExigencia,
-  falaDaExigencia, filtrar, progresso, capturados, vistosDe,
+  falaDaExigencia, filtrar, progresso, capturados,
 } from './pokedex-dados.mjs';
 import { nomesDe } from './itens-nome.mjs';
 import { corDa, daFaixa, estiloDa, classeDa } from './raridade.mjs';
@@ -108,8 +111,29 @@ function linhaDaLista(e, viu, sel, pegou) {
 }
 
 /* ── A FICHA ──────────────────────────────────────────────────────────── */
-function ficha(e, estado) {
-  const viu = vistosDe(estado).has(e.dex);
+/* ── NA ARENA (ST-9.3): o dossiê, aberto até o degrau da escada ────────── */
+const NOME_DO_DEGRAU = { vista: 'vista na Arena', encontrada: 'encontrada', capturada: 'capturada', dominada: 'dominada' };
+function naArena(e, estado, marcas) {
+  const escada = escadaDe(PACK, estado, e.dex, marcas);
+  const d = secoesDoDossie({ dossie: dossieDoPack(PACK), escada, dex: e.dex, linha: linhaDe(PACK, e.dex), climas: PACK.clima });
+  if (!d.luta) {
+    /* O nome é um BOTÃO: o `data-dex` já é o clique da lista, e a ficha que
+       ele abre é a que tem o dossiê (Q7: "não parece clicável"). */
+    const lutam = d.formasQueLutam.map(x => `<button class="pdxIr" data-dex="${x}">${nomeExibido(esp(x)?.n ?? '?')} →</button>`);
+    return lutam.length ? `<div class="pdxBloco pdxArena"><h5>Na Arena</h5>
+      <p class="pdxDos">Não luta na Arena. ${lutam.length > 1 ? 'As formas que lutam' : 'A forma que luta'}: ${lutam.join(' ')}</p></div>` : '';
+  }
+  const secoes = d.secoes.filter(s => !s.trancada)
+    .map(s => `<div class="pdxDos"><b>${s.titulo}</b>${s.linhas.map(l => `<p>${l}</p>`).join('')}</div>`).join('') +
+    d.trancadas.map(t => `<div class="pdxDos trancada"><b>🔒 ${t.titulos.join(' · ')}</b><p>${t.requisito}</p></div>`).join('');
+  return `<div class="pdxBloco pdxArena">
+      <h5>Na Arena <s class="pdxSoma">${NOME_DO_DEGRAU[escada.degrau] ?? ''}</s></h5>
+      ${escada.falta ? `<p class="tiny pdxFalta">Próximo passo: ${escada.falta}.</p>` : ''}
+      ${secoes}</div>`;
+}
+
+function ficha(e, estado, marcas) {
+  const viu = vistosNaPokedex(estado, marcas).has(e.dex);
   const pegou = capturados(estado).has(e.dex);
   const fragmentos = estado?.registro?.[e.dex] ?? 0;
   const num = String(e.dex).padStart(3, '0');
@@ -194,9 +218,11 @@ function ficha(e, estado) {
         <div class="pdxEvo">${evo}</div>
       </div>
 
+      ${naArena(e, estado, marcas)}
+
       <p class="pdxFrag">
         ${pegou ? '<i class="pdxBola grande"></i><b>Capturada.</b> ' : ''}
-        <b>${fragmentos}</b> fragmento(s) — eles caem no <b>encontro</b>,
+        <b>${fragmentos}</b> fragmento(s) desta forma — eles caem no <b>encontro</b>,
         e não na captura.</p>
     </div>`;
 }
@@ -205,7 +231,10 @@ export function renderPokedex() {
   const alvo = $('#pdxLista');
   if (!alvo) return 0;
   const estado = lerEstado() ?? { registro: {} };
-  const vistos = vistosDe(estado);
+  /* ST-9.3: o que a Arena mostrou também é "visto" NA POKÉDEX (as vagas do
+     idle seguem contando só o registro). */
+  const marcas = carregarMarcas();
+  const vistos = vistosNaPokedex(estado, marcas);
   const pegos = capturados(estado);
   const lista = filtrar(PACK, { busca, vistos });
 
@@ -226,7 +255,7 @@ export function renderPokedex() {
   const cx = $('#pdxFicha');
   const alvoEsp = esp(escolhido);
   if (cx) cx.innerHTML = alvoEsp
-    ? ficha(alvoEsp, estado)
+    ? ficha(alvoEsp, estado, marcas)
     : `<p class="tiny">Escolha uma espécie na lista.</p>`;
 
   return lista.length;

@@ -3,6 +3,7 @@
  * Fronteira: é a máquina de estados da rodada, e o único lugar que muda
  * S.state. Chama todo o resto; por isso é a camada mais alta antes do laço. */
 
+import { registrarVistas } from './pokedex-estado.mjs';
 import { lutaDaRodada } from '../../engine/luta-rodada.mjs';
 import { $, limparMini, log } from './dom.mjs';
 import { registrarAposta } from './carteira.mjs';
@@ -163,6 +164,7 @@ async function newRound(){
        completo aqui seria o cliente sabendo o clima antes da hora. */
     S.seeds = { elenco: r.sementeElenco, visual: r.sementeVisual };
     S.fighters = sortearPool(S.seeds.elenco);
+    registrarVistas(S.fighters.map(f => f.dex));   // ST-9.3: a escada — vista na Arena
     S.weather = null;
     S.odds = oddsDoServidor(r);
     S.travaEm = r.travaEm;
@@ -189,6 +191,7 @@ async function newRound(){
      pool não sabe do clima e não tem o que vazar; a garantia continua
      valendo porque o clima é sorteado só entre os que a pool suporta. */
   S.fighters = sortearPool(S.seeds.elenco);
+  registrarVistas(S.fighters.map(f => f.dex));   // ST-9.3
   S.weather = sortearClima(S.seeds.ambiente, tiposDaPool(S.fighters));
 
   overlay.classList.remove('hide');

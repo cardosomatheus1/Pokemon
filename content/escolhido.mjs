@@ -28,12 +28,21 @@
 import kanto from './pokemon_kanto_v1.mjs';
 import original from './original_v1.mjs';
 import { comArteEmprestada } from './arte-emprestada.mjs';
+import dossieKanto from './dossie_pokemon_kanto_v1.mjs';
 
 /* Os packs que existem, por id. Um mapa e não uma cadeia de `if`: acrescentar
    um pack é uma linha, e a lista é auditável de uma olhada. */
 export const PACKS = {
   [kanto.id]: kanto,
   [original.id]: original,
+};
+
+/* Os DOSSIÊS da Arena (ST-9.1), por id do pack. Gerados offline por
+   `tools/gerar-dossie.mjs`; um pack sem dossiê não inventa um — a ficha da
+   Pokédex (ST-9.3) simplesmente não mostra a seção "Na Arena". Mora aqui pelo
+   mesmo motivo dos packs: é o único lugar que pode nomeá-los. */
+export const DOSSIES = {
+  [dossieKanto.pack]: dossieKanto,
 };
 
 /* O ESCOLHIDO. Trocar esta linha é a troca de tema do §0.3.1, e ela é o
