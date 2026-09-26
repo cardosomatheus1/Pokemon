@@ -6658,3 +6658,29 @@ tratava o caso; a função do motor, não.
 ser o 2º. **Teste que trava:** `test/colocacao.mjs`, `D-118:` — o caso
 construído e a rodada real `emp-754` (posições 1 a 12, um só 1º). Sabotagem
 S1284.
+
+## D-119 — o servidor pagava uma luta sem clima: o campeão pago não era o que o jogador via ✅ CORRIGIDO
+
+**Achado em:** 26/09/2026, lendo o `simularDaRaiz` do scheduler para a ST-12.8
+(o bolo de duração precisava da duração da luta). **Bloco dono:** o próprio
+D-119, antes da ST-12.8 — é dinheiro pago ao lutador errado. **Estado:**
+fechado em 26/09/2026.
+
+**Causa.** O cliente (`fases.mjs`) sorteava o clima pela pool e o aplicava
+antes de `simular`; o servidor (`scheduler.mjs`, `simularDaRaiz`) simulava a
+pool crua. Os dois estavam certos sozinhos — o erro foi haver DOIS lugares
+montando a mesma luta. O preço do servidor já contava com o clima
+(`simularLote`, F0.6), então a luta paga nem era a luta precificada.
+
+**Medição.** Em 2.000 rodadas, 1.002 tiveram clima de tipo, e em **771** o
+campeão do servidor (o que liquida apostas, XP e o bolo) diferia do campeão
+que o cliente anima. Nenhuma conta real foi afetada: o piloto não começou; os
+bancos existentes são de ensaio. A suíte inteira estava verde — nenhum teste
+comparava o campeão do servidor com a luta que a tela mostra, e o ensaio do
+piloto só confere que a aposta foi liquidada, não para quem.
+
+**Correção.** `engine/luta-rodada.mjs` — `lutaDaRodada(M, {pool, ambiente,
+batalha})`, uma função chamada pelo servidor e pelo cliente. **Teste que
+trava:** `test/luta-rodada.mjs` (400 rodadas: o campeão do servidor é o da luta
+com clima, e o clima muda o campeão em mais de 40 delas — o teste distingue o
+defeito; e os dois lados chamam a função comum). Sabotagens S1292 e S1293.

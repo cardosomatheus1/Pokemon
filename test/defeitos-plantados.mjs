@@ -7961,6 +7961,15 @@ export const DEFEITOS = [
     real:'12 linhas de abates com rotulo de trinca — a corrida da troca de aba',
     de:'  !!corpo?.selecoes && pedido === atual && (!corpo.kind || corpo.kind === atual);', para:'  !!corpo?.selecoes;' },
 
+  /* ── D-119 · o servidor pagava uma luta sem clima ──────────────────── */
+  { id:'S1292', arquivo:'server/scheduler.mjs', nome:'o servidor volta a simular a rodada sem o clima',
+    real:'o jogador ve um campeao e o dinheiro vai para outro (771 de 2.000 rodadas medidas)',
+    de:'  const { batalha: b } = lutaDaRodada(M, { pool: lutadores, ambiente: s.ambiente, batalha: s.batalha });',
+    para:'  const b = M.simular(lutadores, s.batalha, true);' },
+  { id:'S1293', arquivo:'engine/luta-rodada.mjs', nome:'a luta comum esquece de aplicar o clima',
+    real:'o preco conta com o clima (F0.6) e a luta nao: a margem e o campeao divergem do que foi publicado',
+    de:'  const b = M.simular(M.aplicarClima(pool, clima), batalha, true);', para:'  const b = M.simular(pool, batalha, true);' },
+
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
     real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',

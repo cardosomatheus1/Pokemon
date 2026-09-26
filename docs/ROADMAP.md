@@ -261,6 +261,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **D-119** · o servidor pagava uma luta sem clima | 26/09 | em 771 de 2.000 rodadas o campeão pago (aposta, XP, bolo) não era o que o jogador via vencer — o cliente aplicava o clima, o servidor não · agora `engine/luta-rodada.mjs`, uma função para os dois lados · nenhuma conta real afetada (o piloto não começou) · S1292–S1293 |
 | **ST-12.7** · o bolo de pódio (1º, 2º e 3º em ordem) | 26/09 | trinca = um inteiro; empate = quem empata ocupa todas as casas que a posição cobre (medido: 0 empates em 50.000 lutas depois do D-118) · fechado por padrão, `MERCADOS=abates,podio` abre · limite soma os dois bolos e a aposta · abas "Mais abates / Pódio" com três seletores · achados no OLHAR: a rota lia a query errado, e uma busca em voo pintava a aba errada · capturas `tools/previas/_bolo/podio-*` · S1285–S1291 |
 | **D-118** · a tempestade que derruba todos dava dois "1º" | 26/09 | achado pelo pódio do bolo: o campeão (desempate por vida) ficava na ordem de quedas e o último a cair também recebia 1 — na tela de resultado e no XP · 3 em 20.000 rodadas · S1284 |
 | **ST-12.10** · os números do bolo e o gate da V2 | 26/09 | `market_entry` e `market_settled` sem amostragem · painel de política e `tools/relatorio-piloto.mjs` com a seção BOLO: pessoas por bolo, concentração, divergências · o gate MEDE e diz "amostra insuficiente" em vez de fingir; uma divergência reprova sozinha · S1277–S1283 |

@@ -3,6 +3,7 @@
  * Fronteira: é a máquina de estados da rodada, e o único lugar que muda
  * S.state. Chama todo o resto; por isso é a camada mais alta antes do laço. */
 
+import { lutaDaRodada } from '../../engine/luta-rodada.mjs';
 import { $, limparMini, log } from './dom.mjs';
 import { registrarAposta } from './carteira.mjs';
 import { CONF, CUR, MOEDA, aplicarClima, sortearPool, rng, sortearClima, simular } from './motor.mjs';
@@ -313,7 +314,6 @@ function startFight(){
       return;
     }
     S.seeds = completa;
-    S.weather = sortearClima(S.seeds.ambiente, tiposDaPool(S.fighters));
   }
 
   // O clima já foi sorteado em segredo lá em newRound() — só pra garantir
@@ -321,10 +321,16 @@ function startFight(){
   // visual, bônus nos stats) e a batalha DE VERDADE só nascem agora,
   // depois que as apostas fecharam — é o que garante que as odds
   // mostradas na fase anterior não conheciam o bônus climático.
-  initWeatherFx(S.weather);
-  const battleFighters = aplicarClima(S.fighters, S.weather);
+  /* D-119: A LUTA SAI DA MESMA FUNÇÃO QUE O SERVIDOR USA PARA PAGAR — clima
+     sorteado pela pool e aplicado antes do combate. Eram dois lugares, e o
+     servidor não aplicava o clima: o jogador via um campeão e o dinheiro ia
+     para outro. */
   const seed = S.seeds.batalha;
-  S.battle = simular(battleFighters, seed, true);
+  const luta = lutaDaRodada({ sortearClima, aplicarClima, simular },
+                            { pool: S.fighters, ambiente: S.seeds.ambiente, batalha: seed });
+  S.weather = luta.clima;
+  initWeatherFx(S.weather);
+  S.battle = luta.batalha;
   S.battle.seed = seed; S.battle.stormWarned = false;
   /* Fluxo visual próprio para a luta, derivado do ramo visual — a mesma raiz
      reproduz a coreografia, e ela continua independente da batalha. */

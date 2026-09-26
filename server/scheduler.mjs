@@ -33,6 +33,7 @@ import { margemDaCasa } from './admin.mjs';
 import { sementes, novaRaiz as raizNova, derivar } from '../engine/seed.mjs';
 import { mensagemCommit } from '../engine/commit.mjs';
 import { CONF } from '../engine/engine.mjs';
+import { lutaDaRodada } from '../engine/luta-rodada.mjs';
 import { ordemDeQuedas, posicaoFinalDe, abatesNosEventos } from '../engine/colocacao.mjs';
 import { travarApostas } from './aposta.mjs';
 import { abrirMercados, travarMercados } from './mercado.mjs';
@@ -321,8 +322,11 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
 function simularDaRaiz(raiz) {
   const s = sementes(raiz);
   const lutadores = M.sortearPool(s.elenco);
-  const b = M.simular(lutadores, s.batalha, true);
-  return { campeaoDex: lutadores[b.winner]?.dex ?? null, eventos: b.events, lutadores };
+  /* D-119: A LUTA COM O CLIMA, pela função que o cliente também usa. Sem o
+     clima, o servidor pagava um campeão que o jogador não viu vencer (771 de
+     2.000 rodadas medidas). */
+  const { batalha: b } = lutaDaRodada(M, { pool: lutadores, ambiente: s.ambiente, batalha: s.batalha });
+  return { campeaoDex: lutadores[b.winner]?.dex ?? null, eventos: b.events, lutadores, duracao: b.duration };
 }
 
 /* `engine/commit.mjs` expõe `comprometer` como async porque usa WebCrypto, e o
