@@ -19,7 +19,7 @@ import { api } from './api.mjs';
 import { modoServidor, hidratar, saldo } from './banco.mjs';
 import { atualizarSaldo } from './controles.mjs';
 import { linhasDoBolo, textoDaEstimativa, textoDaLinha, textoDasRegras, erroDaEntrada,
-         linhasDoResultado, textoDaMinhaPaga, TEXTO_SEM_CONTA } from './bolo-dados.mjs';
+         linhasDoResultado, textoDaMinhaPaga, textoDaLeitura, TEXTO_SEM_CONTA } from './bolo-dados.mjs';
 
 const BUSCA_MS = 2000;
 const E = { mercado: null, resultado: null, selecao: null, valor: 50, timer: null, msg: '',
@@ -158,4 +158,16 @@ export function renderBolo() {
     parar();
     if (E.modo !== 'resultado') { E.tentativas = 0; esqueleto('resultado'); buscarResultado(); }
   }
+}
+
+/* A LEITURA NO PERFIL DA LIGA (ST-12.9). Pede ao servidor ao abrir a aba —
+   é consulta rara, não precisa de busca periódica. */
+export async function renderLeituraBolo() {
+  const card = $('#cardLeituraBolo'), alvo = $('#leituraBolo');
+  if (!card || !alvo) return;
+  card.hidden = !modoServidor();
+  if (card.hidden) return;
+  const r = await api.get('/api/mercado/leitura');
+  alvo.innerHTML = (r.ok ? textoDaLeitura(r.corpo) : ['A leitura não carregou agora.'])
+    .map(t => `<p class="boloRes">${esc(t)}</p>`).join('');
 }

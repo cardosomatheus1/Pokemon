@@ -699,6 +699,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Portões:** Q1 Q2 Q5 Q7.
 
 ### ST-12.7 · O mercado de pódio
+- **Ordem (26/09):** vem DEPOIS da ST-12.10 — o §6.5 manda abrir um mercado por vez e a ficha já dependia da leitura de liquidez; fila: 12.9 → 12.10 → 12.7 → 12.8.
 - **Porte** P–M · **Servidor** sim · **Bloco dono** F2.2 (extensão) · **Spec** §6.5 · **Depende de** ST-12.6 e a leitura de liquidez do 12.10
 - **Escopo:** top 3 **em ordem**, pela ordem de eliminação do motor; empate na
   eliminação (mesmo tique) resolvido por regra declarada — os empatados
@@ -716,7 +717,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Aceite:** as faixas cobrem tudo sem sobrepor; a duração é a do motor.
 - **Portões:** Q1 Q2 Q3 Q4 Q5.
 
-### ST-12.9 · O perfil de leitura cobre o bolo
+### ~~ST-12.9~~ ✅ 26/09 · O perfil de leitura cobre o bolo — `engine/leitura-bolo.mjs`, `GET /api/mercado/leitura`, cartão na aba Liga · S1272–S1276
 - **Porte** M · **Servidor** sim · **Bloco dono** F2.7 (extensão) · **Spec** §6.9 · **Depende de** ST-12.5
 - **Entrega ao jogador:** no perfil de leitura da Liga, "onde você foi contra o
   bolo, e quem estava certo — você, o bolo ou o modelo", com n.

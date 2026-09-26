@@ -7884,6 +7884,25 @@ export const DEFEITOS = [
     real:'a multidao inteira noutro lutador enquanto o lider tinha zero — a historia que o 6.9 quer — some do resultado',
     de:'  if (onde) linhas.push(`O bolo estava em: ${onde}.`);\n', para:'' },
 
+  /* ── ST-12.9 · a leitura no bolo (§6.9) ───────────────────────────────── */
+  { id:'S1272', arquivo:'engine/leitura-bolo.mjs', nome:'a leitura so conta os acertos do jogador',
+    real:'a ferramenta de aprendizado vira maquina de autoengano — o que o 6.9 proibe',
+    de:'    if (outro) acc.outro++;\n', para:'' },
+  { id:'S1273', arquivo:'engine/leitura-bolo.mjs', nome:'empate no favorito vira discordancia',
+    real:'o jogador "foi contra o bolo" num bolo sem favorito — leitura inventada',
+    de:'  return empate || melhor <= 0 ? null : quem;', para:'  return melhor <= 0 ? null : quem;' },
+  { id:'S1274', arquivo:'server/mercado.mjs', nome:'o favorito do bolo inclui a entrada do proprio jogador',
+    real:'quem poe muito vira a propria multidao e nunca "vai contra o bolo"',
+    de:'      WHERE market_id = ? AND user_id <> ? AND status <> \'cancelada\' GROUP BY selection`);',
+    para:'      WHERE market_id = ? AND ? IS NOT NULL AND status <> \'cancelada\' GROUP BY selection`);' },
+  { id:'S1275', arquivo:'server/mercado.mjs', nome:'a leitura inclui o bolo em curso',
+    real:'o bolo em curso nao tem quem estava certo, e o preco dele nao pode sair (6.6)',
+    de:"      WHERE e.user_id = ? AND m.kind = ? AND m.status = 'liquidado' AND m.published_at IS NOT NULL\n        AND e.status IN ('ganha','perdida','devolvida')",
+    para:'      WHERE e.user_id = ? AND m.kind = ?' },
+  { id:'S1276', arquivo:'app/modules/bolo-dados.mjs', nome:'o texto da leitura esconde o n',
+    real:'"acertou 2" sem "de 7" — o n e metade da regra de honestidade',
+    de:"      (l.n < amostraPequena ? ' Amostra pequena: ainda não diz muito.' : ''),", para:"      ''," },
+
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
     real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',

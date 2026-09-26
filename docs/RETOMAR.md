@@ -50,8 +50,10 @@ e a hospedagem pública. **ST-12.1 ✅** (`engine/mutuo.mjs`, o bolo fecha no br
 10.000 casos semeados). **ST-12.2 ✅** (quem venceu o mercado de abates). **ST-12.3 ✅** (o bolo no servidor). **ST-12.4 ✅** (o bolo paga). **Q2 completo VERDE 1249/1249**
 (26/09, sobre edb9670: 598 reavaliados, 651 reaproveitados). **ST-12.5 ✅** (o preço do
 modelo, carimbado antes e publicado depois). **ST-12.6 ✅** (a tela do bolo —
-`node tools/olhar-bolo.mjs` captura com o servidor de pé). **O próximo bloco
-é a ST-12.7** (o mercado de pódio). 649 adiados para o próximo Q2 completo.
+`node tools/olhar-bolo.mjs` captura com o servidor de pé). **ST-12.9 ✅** (a leitura no bolo, na aba
+Liga). **O próximo bloco é a ST-12.10** (telemetria e o gate da V2); depois
+12.7 (pódio) e 12.8 (duração), abertos só se a liquidez justificar (§6.5).
+666 adiados para o próximo Q2 completo.
 
 **Hospedagem pública: decisão do dono, 26/09 — *"Isso vai ser configurável
 depois, primeiro vamos fechar o jogo"*.** Sai da lista de perguntas; volta

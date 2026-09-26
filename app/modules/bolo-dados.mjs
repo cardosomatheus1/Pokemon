@@ -165,3 +165,21 @@ export function textoDaMinhaPaga({ entrou, recebeu }) {
 
 export const TEXTO_SEM_CONTA =
   'O bolo é entre jogadores: o retorno sai do que os outros põem. Entre com uma conta para participar.';
+
+/* ── A LEITURA NO BOLO, NO PERFIL (ST-12.9 · §6.9) ───────────────────────
+ *
+ * Cada discordância com os TRÊS desfechos na mesma linha e no mesmo tom — você
+ * acertou, o outro lado acertou, ninguém — e o n sempre. Uma frase sobre os
+ * acertos sozinha seria a tela que o §6.9 proíbe. */
+export function textoDaLeitura(l, { amostraPequena = 10 } = {}) {
+  if (!l?.n) return ['Você ainda não tem bolo pago. A leitura aparece a partir do primeiro.'];
+  const lado = (acc, quem) => acc.n
+    ? `Contra ${quem}: ${acc.n} ${acc.n === 1 ? 'vez' : 'vezes'} — você acertou ${acc.eu} · ${quem === 'o bolo' ? 'o bolo' : 'o modelo'} acertou ${acc.outro} · ninguém ${acc.ninguem}.`
+    : `Você ainda não foi contra ${quem}.`;
+  return [
+    `Em ${l.n} ${l.n === 1 ? 'bolo pago' : 'bolos pagos'}, você acertou ${l.acertos}.` +
+      (l.n < amostraPequena ? ' Amostra pequena: ainda não diz muito.' : ''),
+    lado(l.contraBolo, 'o bolo'),
+    lado(l.contraModelo, 'o modelo'),
+  ];
+}

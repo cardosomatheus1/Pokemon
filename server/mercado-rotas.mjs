@@ -4,7 +4,7 @@
  * sessão, nunca do pedido. O CORPO É LIDO CAMPO A CAMPO: `mercado`, `rodada` e
  * `odd`, se vierem, são descartados aqui — o bolo é sempre o da rodada aberta.
  */
-import { entrarNoMercado, sairDoMercado, mercadoParaCliente, resultadoDoMercado } from './mercado.mjs';
+import { entrarNoMercado, sairDoMercado, mercadoParaCliente, resultadoDoMercado, leituraNoBolo } from './mercado.mjs';
 
 const inteiro = v => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
 
@@ -16,6 +16,10 @@ export function rotasDoMercado(daExcecao) {
     /* O último bolo PAGO, com o preço do modelo ao lado (ST-12.5). Nunca o em
        curso: a consulta só enxerga bolo liquidado e publicado. */
     'GET /api/mercado/resultado': ({ db, userId }) => ({ corpo: resultadoDoMercado(db, { userId }) ?? { id: null } }),
+
+    /* A leitura de QUEM PERGUNTA (ST-12.9): contra o bolo, contra o modelo, e
+       quem estava certo. Só bolos pagos. */
+    'GET /api/mercado/leitura': ({ db, userId }) => ({ corpo: leituraNoBolo(db, { userId }) }),
 
     'POST /api/mercado/entrar': ({ db, sched, corpo, userId, agora }) => {
       try {

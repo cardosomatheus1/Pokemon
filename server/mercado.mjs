@@ -30,6 +30,7 @@ import { podeAgir, ERRO_PROTECAO } from './protecao.mjs';
 import { ERRO_APOSTA } from './aposta.mjs';
 import { TAXA_PADRAO, SEM_ACERTO, apurar } from '../engine/mutuo.mjs';
 import { lerRaiz } from '../engine/seed.mjs';
+import { lerLeitura } from '../engine/leitura-bolo.mjs';
 import { selecoesDeAbates, vencedorasPorAbates, REGRA_ABATES } from '../engine/mercado-abates.mjs';
 
 export const ERRO_MERCADO = {
@@ -323,4 +324,32 @@ export function resultadoDoMercado(db, { kind = 'abates', userId = null } = {}) 
       `SELECT amount, payout FROM market_entries WHERE market_id = ? AND user_id = ? AND status <> 'cancelada'`)
       .get(m.id, userId)) : null,
   };
+}
+
+/* ── A LEITURA DO JOGADOR NO BOLO (ST-12.9 · §6.9) ────────────────────────
+ *
+ * As entradas PAGAS dele, cada uma com o bolo dos OUTROS naquele mercado e o
+ * preço carimbado do modelo; a conta é de `engine/leitura-bolo.mjs`. Só bolo
+ * liquidado: o bolo em curso não tem quem estava certo, e o preço dele não
+ * pode sair (§6.6). */
+export function leituraNoBolo(db, { userId, kind = 'abates', limite = 200 }) {
+  const minhas = db.prepare(
+    `SELECT e.market_id, e.selection, e.amount, m.model_price_json, m.winners_json
+       FROM market_entries e JOIN markets m ON m.id = e.market_id
+      WHERE e.user_id = ? AND m.kind = ? AND m.status = 'liquidado' AND m.published_at IS NOT NULL
+        AND e.status IN ('ganha','perdida','devolvida')
+      ORDER BY m.settled_at DESC LIMIT ?`).all(userId, kind, limite);
+  const totais = db.prepare(
+    `SELECT selection, SUM(amount) AS t FROM market_entries
+      WHERE market_id = ? AND user_id <> ? AND status <> 'cancelada' GROUP BY selection`);
+  const n = db.prepare(`SELECT COUNT(*) AS n FROM round_fighters
+                         WHERE round_id = (SELECT round_id FROM markets WHERE id = ?)`);
+  const linhas = minhas.map(e => {
+    const tamanho = n.get(e.market_id).n;
+    const tot = new Array(tamanho).fill(0);
+    for (const r of totais.all(e.market_id, userId)) tot[r.selection] = r.t;
+    const modelo = e.model_price_json ? JSON.parse(e.model_price_json).vence : null;
+    return { minha: e.selection, totais: tot, modelo, vencedoras: JSON.parse(e.winners_json ?? '[]') };
+  });
+  return lerLeitura(linhas);
 }

@@ -29,6 +29,7 @@
  * deixar isso óbvio. Ver o teste que afirma a ausência em `test/liga-local.mjs`.
  */
 
+import { renderLeituraBolo } from './bolo-tela.mjs';
 import { $ } from './dom.mjs';
 import { S } from './estado.mjs';
 import { nomeExibido } from './motor.mjs';
@@ -234,7 +235,8 @@ export function renderLiga() {
   const e = carregada();
   const n = S.fighters.length || 12;
   alvo.innerHTML = cabecalho(resumo(e, { n })) + grade() + `
-    <h3 class="liga-tit">Últimas rodadas</h3>` + lista(e);
+    <h3 class="liga-tit">Últimas rodadas</h3>` + lista(e);  /* ST-12.9: a leitura no bolo, no cartão ao lado. */
+  renderLeituraBolo();
 }
 
 /* ─── os cliques ────────────────────────────────────────────────────────── */
