@@ -920,7 +920,8 @@ Fatiada em duas (a original seria G).
 - **Sabotagem:** contar a mesma colheita em duas visitas; desenhar cartão vazio.
 - **Portões:** Q1 Q2 Q5.
 
-### ST-9.18 · Telemetria e gate da V3
+### ST-9.18 · Telemetria e gate da V3 ✅ 26/09
+> Feito: + `creature_captured` (sem ele o D7 não tem lado); gestos pela diferença do save; P4 em `test/p4-v3.mjs`; banda de captura sem meta (L-197); S1405–S1418. **O E9 fechou.**
 - **Porte** M · **Servidor** sim · **Bloco dono** F3.13 · **Spec** §7.20, §7.21, §17 · **Depende de** as anteriores
 - **Entrega ao jogador:** nada visível; dá para saber se a V3 funcionou.
 - **Escopo:**

@@ -81,7 +81,12 @@ export const ERRO_TELEMETRIA = {
  * dia. Aposta e compra NÃO estão aqui — quem as anota é o servidor, no
  * instante em que elas acontecem; aceitar do cliente seria deixar ele dizer
  * quanto apostou. */
-export const DO_CLIENTE = ['session_started', 'run_harvested', 'expedition_harvested'];
+export const DO_CLIENTE = ['session_started', 'run_harvested', 'expedition_harvested',
+  /* ST-9.18 · os KPIs da V3 (§7.20). O que só o navegador sabe: a ficha que ele
+     abriu, o comparador, e o que aconteceu com a coleção — que ainda mora no
+     save local (a coleção no servidor é o E13). `creature_captured` não estava
+     na lista da ficha, e sem ele o D7 "capturou × não capturou" não tem lado. */
+  'dossie_consultado', 'moveset_comparado', 'doce_gasto', 'evolucao_feita', 'criatura_solta', 'creature_captured'];
 export const LOTE_MAXIMO = 50;
 
 const erro = (codigo, msg) => Object.assign(new Error(msg), { codigo });

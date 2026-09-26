@@ -17,6 +17,7 @@
  * A referência é passada por parâmetro (a ferramenta lê a fixture da ST-3.3):
  * o servidor não lê arquivo de teste. */
 import { gateDaV2Servidor } from './gate-v2.mjs';
+import { gateDaV3Servidor } from './gate-v3.mjs';
 import { diaDe, retencao, instanteDoFato } from './coorte.mjs';
 
 const DIA = 86400e3;
@@ -125,5 +126,7 @@ export function relatorioDoPiloto(db, { agora = Date.now(), dias = 14, referenci
     ativosPorDia, eventos, idle, saldos, arena,
     /* ST-12.10: o bolo e o gate da V2, pela mesma conta do painel. */
     bolo: gateDaV2Servidor(db, { agora, dias }),
+    /* ST-9.18: os KPIs da V3 e o gate 3→4, pela mesma leitura. */
+    v3: gateDaV3Servidor(db, { agora }),
   };
 }

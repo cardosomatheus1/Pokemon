@@ -42,6 +42,7 @@ import { escadaDe, carregarMarcas, vistosNaPokedex, dossieDoPack } from './poked
 import { secoesDoDossie } from './dossie-ficha.mjs';
 import { api } from './api.mjs';
 import { mostrarAba, abaLembrada } from './colecao-tela.mjs';
+import { consultouDossie } from './telemetria-v3-tela.mjs';
 import { linhaDe } from '../../engine/evolucao.mjs';
 import {
   STATS, tetoDeStat, somaDeStats, ondeMora, linhaComExigencia,
@@ -137,6 +138,8 @@ function naArena(e, estado, marcas) {
     return lutam.length ? `<div class="pdxBloco pdxArena"><h5>Na Arena</h5>
       <p class="pdxDos">Não luta na Arena. ${lutam.length > 1 ? 'As formas que lutam' : 'A forma que luta'}: ${lutam.join(' ')}</p></div>` : '';
   }
+  /* ST-9.18: a ficha mostrou um dossiê aberto — é a consulta do §7.20. */
+  if (d.secoes.some(s => !s.trancada)) consultouDossie(e.dex);
   const secoes = d.secoes.filter(s => !s.trancada)
     .map(s => `<div class="pdxDos"><b>${s.titulo}</b>${s.linhas.map(l => `<p>${l}</p>`).join('')}${
       s.servidor.map(l => `<p class="pdxSrv">${l}</p>`).join('')}</div>`).join('') +

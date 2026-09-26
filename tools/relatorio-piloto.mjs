@@ -63,3 +63,18 @@ linha(`calibração da Liga · 1ª semana ${n(r.bolo.calibracao.primeira.brier)}
 for (const [k, c] of Object.entries(g.criterios))
   linha(k.padEnd(13), c.veredito, c.precisa ? `(n ${Array.isArray(c.n) ? c.n.join(' / ') : n(c.n)}, precisa ${c.precisa})` : '');
 linha(`VEREDITO DO GATE: ${g.veredito}`);
+
+secao('COLEÇÃO E O GATE DA V3 (§7.20, §7.21)');
+const k = r.v3.kpis, dv = r.v3.diversidade, d7 = r.v3.d7, g3 = r.v3.gate;
+const pct = x => (x === null || x === undefined ? '—' : `${(x * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`);
+linha(`ativos ${n(k.ativos)}`, `evoluíram ${pct(k.evoluiu)}`, `usaram o comparador ${pct(k.comparou)}`,
+      `consultas ao dossiê ${n(k.consultas)} (${pct(k.consultasAntesDeApostar)} antes de apostar)`);
+linha(`capturas ${n(k.capturas)} em ${n(k.jogadorDias)} jogador-dias`, `doces gastos ${n(k.docesGastos)}`, `soltas ${n(k.soltas)}`);
+linha(`diversidade das apostas (mesma janela dos dois lados) · antes ${n(dv.antes)} · depois ${n(dv.depois)}`,
+      `(n ${n(dv.n)}; subiram ${n(dv.subiram)}, desceram ${n(dv.desceram)})`);
+linha(`D7 capturou − não capturou, por faixa de atividade no dia 0: ${pct(d7.diferenca)} (n ${n(d7.n)})`,
+      `· sem controlar: ${pct(d7.diferencaCrua)}`);
+for (const [nome, c] of Object.entries(g3.criterios))
+  linha(nome.padEnd(11), c.veredito, c.precisa ? `(n ${n(c.n)}, precisa ${c.precisa})` : c.motivo ?? c.teste ?? '');
+linha(`VEREDITO DO GATE 3→4: ${g3.veredito}`);
+

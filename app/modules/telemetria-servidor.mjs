@@ -35,8 +35,12 @@ export function eventosDoEstado(e, agora) {
     .map(x => ({ nome: 'expedition_harvested', chave: `exp:${x.id}`,
                  campos: { em: x.colhidaEm, bioma: String(x.bioma ?? ''), perfil: String(x.perfil ?? ''),
                            encontros: x.encontros ?? 0 } }));
+  /* ST-9.18: a captura é ESTADO — a criatura nova no save, com a origem. */
+  const caps = (e?.criaturas ?? [])
+    .filter(c => c?.id && c.origem === 'captura' && recente(c.criadaEm, agora))
+    .map(c => ({ nome: 'creature_captured', chave: `cap:${c.id}`, campos: { em: c.criadaEm, dex: c.dex } }));
   /* O teto do servidor é 50 por relato; o dia normal fica muito abaixo. */
-  return [...runs, ...exps].slice(-50);
+  return [...runs, ...exps, ...caps].slice(-50);
 }
 
 export async function relatar(api, eventos) {

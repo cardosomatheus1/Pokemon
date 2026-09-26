@@ -8434,3 +8434,20 @@ não aparece para quem rola a tela.
 **O que a destrava:** a UX-01 revisando o cartão (teto de medalhas com "ver
 todas", subtítulo em texto corrido, missão em grade estreita).
 
+### L-197 — a banda de captura do gate 3→4 não está declarada
+
+**Registrada em:** 26/09/2026, na ST-9.18 (o gate da V3). **Bloco dono:**
+ST-13.6 (antifraude mínima da captura). **Estado:** aberto.
+
+O §7.21 pede "taxa de captura e progressão **nas bandas projetadas**", e nenhum
+documento declara a banda: nem a Spec, nem o Estudo Econômico (procurado por
+"captura" por dia/jogador). Sem meta, o gate MEDE capturas por jogador-dia e
+diz `medida` — nunca `passou`, que seria inventar a régua depois de ver o
+número.
+
+**Por que é da ST-13.6:** a antifraude precisa da mesma coisa — "taxa de
+detecção conhecida" pressupõe saber qual é a taxa NORMAL de captura, para
+reconhecer a anômala. **O que a destrava:** medir a taxa na simulação do idle
+(o mesmo método da fixture `emissao-idle.json`) e escrever a banda no
+`engine/gate-v3.mjs`, ao lado das outras metas.
+
