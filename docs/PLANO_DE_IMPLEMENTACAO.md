@@ -997,7 +997,8 @@ Fatiada em duas (a original seria G).
 - **Sabotagem:** arredondar a favor do jogador; menos simulações que o declarado; parâmetros divergentes.
 - **Portões:** Q1 Q2 Q3 Q4.
 
-### ST-10.6 · O efeito de cada troca
+### ST-10.6 · O efeito de cada troca ✅ 26/09
+> Feito: `engine/treino-trocas.mjs`, números aleatórios comuns e erro pareado; ≥95% em combates independentes; S1449–S1452.
 - **Porte** M · **Servidor** não · **Bloco dono** F4.3 (resto) · **Spec** §8.1.1
 - **Escopo:** para cada vaga, testar os K melhores candidatos da caixa com as **mesmas sementes** (números aleatórios comuns). Mostra as 3 melhores trocas, só quando a diferença supera o erro.
 - **Aceite:** em 20.000 combates independentes, a melhor troca exibida é melhor em pelo menos 95% das vezes; o cálculo é fatiado sem travar o quadro.
