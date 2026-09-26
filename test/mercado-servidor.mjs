@@ -60,7 +60,9 @@ export async function suite() {
       igual(m[0].locks_at, r.travaEm, 'o bolo trava num instante diferente das apostas');
       ok(m[0].fee_rate > 0 && m[0].fee_rate < 0.5, `taxa ${m[0].fee_rate}`);
       ok(['devolver', 'tesouraria'].includes(m[0].no_winner_destination), 'o destino "sem acerto" não está declarado');
-      igual(m[0].model_price_json, null, 'preço do modelo nasceu antes da ST-12.5');
+      /* ST-12.5: o preço do modelo nasce GRAVADO com a rodada, e não publicado. */
+      ok(m[0].model_price_json && m[0].model_priced_at === m[0].opens_at, 'o preço do modelo não foi carimbado na abertura');
+      igual(m[0].published_at, null, 'o preço do modelo nasceu publicado');
       for (const t of ['MARKET_ENTRY_RESERVE', 'MARKET_ENTRY_RELEASE', 'MARKET_LOSS', 'MARKET_PAYOUT_TRANSFERABLE',
                        'MARKET_PAYOUT_BONUS', 'MARKET_FEE', 'MARKET_RESIDUE'])
         ok(TIPOS.includes(t), `o ledger não conhece ${t} (§6.11)`);

@@ -56,12 +56,16 @@ const inteiroPositivo = v => typeof v === 'number' && Number.isSafeInteger(v) &&
  *
  * Chamado DENTRO da transação que cria a rodada: rodada sem bolo, ou bolo sem
  * rodada, é um estado que ninguém deveria conseguir observar. */
-export function abrirMercados(db, { roundId, abreEm, travaEm }) {
+export function abrirMercados(db, { roundId, abreEm, travaEm, modelo = null }) {
   const ins = db.prepare(
-    `INSERT INTO markets (id, round_id, kind, status, opens_at, locks_at, fee_rate, no_winner_destination)
-     VALUES (?,?,?,?,?,?,?,?)`);
+    `INSERT INTO markets (id, round_id, kind, status, opens_at, locks_at, fee_rate, no_winner_destination,
+                          model_price_json, model_priced_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?)`);
+  /* O preço do modelo entra GRAVADO na abertura (ST-12.5): é a prova de que
+     ele existia antes do resultado. `model_priced_at` = abertura. */
   for (const kind of MERCADOS_ABERTOS)
-    ins.run(randomUUID(), roundId, kind, 'aberto', abreEm, travaEm, TAXA_PADRAO, SEM_ACERTO_PADRAO);
+    ins.run(randomUUID(), roundId, kind, 'aberto', abreEm, travaEm, TAXA_PADRAO, SEM_ACERTO_PADRAO,
+            modelo ? JSON.stringify(modelo) : null, modelo ? abreEm : null);
 }
 
 export function travarMercados(db, { roundId, agora = Date.now() }) {
@@ -221,9 +225,11 @@ export function liquidarMercado(db, { sched, marketId, agora = Date.now() }) {
                                                           idem_key, created_at) VALUES (?,?,?,?,?,?,?)`);
     for (const [tipo, v] of [['MARKET_FEE', ap.taxa], ['MARKET_RESIDUE', ap.residuo], ['MARKET_UNCLAIMED', ap.tesouraria]])
       if (v > 0) casa.run(randomUUID(), tipo, v, 'market', m.id, `${tipo}-${m.id}`, agora);
-    db.prepare(`UPDATE markets SET status = 'liquidado', settled_at = ?, pot_gross = ?, pot_net = ?,
-                       fee_amount = ?, residue_amount = ?, treasury_amount = ? WHERE id = ?`)
-      .run(agora, ap.bruto, ap.liquido, ap.taxa, ap.residuo, ap.tesouraria, m.id);
+    /* PUBLICADO AGORA, e só agora (§6.6): `published_at` é o que a rota do
+       resultado confere antes de mostrar o preço do modelo. */
+    db.prepare(`UPDATE markets SET status = 'liquidado', settled_at = ?, published_at = ?, pot_gross = ?,
+                       pot_net = ?, fee_amount = ?, residue_amount = ?, treasury_amount = ? WHERE id = ?`)
+      .run(agora, agora, ap.bruto, ap.liquido, ap.taxa, ap.residuo, ap.tesouraria, m.id);
   });
   return { entradas: entradas.length, vencedoras, destino: ap.destino, bruto: ap.bruto };
 }
@@ -268,5 +274,45 @@ export function mercadoParaCliente(db, { sched, userId, kind = 'abates' }) {
     travaEm: m.locks_at, regra: REGRAS[m.kind],
     bruto: selecoes.reduce((a, x) => a + x.total, 0), selecoes,
     minha: minha ? { selecao: minha.selection, valor: minha.amount } : null,
+  };
+}
+
+/* ── O RESULTADO, COM O PREÇO DO MODELO AO LADO (ST-12.5 · §6.6) ──────────
+ *
+ * Só de bolo LIQUIDADO e PUBLICADO: a consulta filtra pelos dois, e não há
+ * parâmetro para pedir outro — o bolo em curso não tem como sair por aqui.
+ *
+ * Para cada lutador: quanto o bolo tinha nele, quanto ele PAGAVA por moeda se
+ * vencesse (o preço que os jogadores formaram), e com que frequência o modelo
+ * o punha no topo. É a tela do §6.9: onde o bolo errou, e por quanto. */
+export function resultadoDoMercado(db, { kind = 'abates' } = {}) {
+  const m = db.prepare(
+    `SELECT m.id, m.round_id, m.pot_gross, m.pot_net, m.fee_amount, m.model_price_json, m.published_at
+       FROM markets m WHERE m.kind = ? AND m.status = 'liquidado' AND m.published_at IS NOT NULL
+      ORDER BY m.settled_at DESC LIMIT 1`).get(kind);
+  if (!m) return null;
+  const modelo = m.model_price_json ? JSON.parse(m.model_price_json) : null;
+  const por = new Map(db.prepare(
+    `SELECT selection, SUM(amount) AS total, SUM(CASE WHEN status = 'ganha' THEN 1 ELSE 0 END) AS ganhas
+       FROM market_entries WHERE market_id = ? AND status <> 'cancelada' GROUP BY selection`)
+    .all(m.id).map(r => [r.selection, r]));
+  const n = db.prepare(`SELECT COUNT(*) AS n FROM round_fighters WHERE round_id = ?`).get(m.round_id).n;
+  const vencedoras = db.prepare(
+    `SELECT DISTINCT selection FROM market_entries WHERE market_id = ? AND status = 'ganha'`).all(m.id)
+    .map(x => x.selection);
+  const somaCertas = vencedoras.reduce((a, s) => a + (por.get(s)?.total ?? 0), 0);
+  return {
+    id: m.id, rodada: m.round_id, bruto: m.pot_gross, liquido: m.pot_net, taxa: m.fee_amount,
+    publicadoEm: m.published_at, simulacoes: modelo?.sims ?? null,
+    selecoes: selecoesDeAbates(n).map(i => ({
+      selecao: i,
+      total: por.get(i)?.total ?? 0,
+      /* O multiplicador que o bolo PAGAVA a quem acertou: líquido ÷ soma das
+         entradas vencedoras. Só para quem venceu — para os outros, "pagaria"
+         seria um contrafactual que o bolo nunca ofereceu. */
+      pagou: vencedoras.includes(i) && somaCertas ? m.pot_net / somaCertas : null,
+      modelo: modelo ? modelo.vence[i] / modelo.sims : null,
+    })),
+    vencedoras,
   };
 }

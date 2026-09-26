@@ -25,6 +25,8 @@
  * antes.
  */
 import { abatesNosEventos } from './colocacao.mjs';
+import { derivarIndice } from './seed.mjs';
+import { tiposDaPool } from './engine.mjs';
 
 export const REGRA_ABATES = Object.freeze({
   pergunta: 'quem faz mais abates nesta rodada',
@@ -49,4 +51,36 @@ export function vencedorasPorAbates(abates) {
   const topo = Math.max(0, ...abates);
   if (topo === 0) return [];
   return selecoesDeAbates(abates.length).filter(i => abates[i] === topo);
+}
+
+/* ── O PREÇO DO MODELO (ST-12.5 · §6.6) ────────────────────────────────────
+ *
+ * Com que frequência cada lutador termina no topo de abates — empates
+ * incluídos, porque empatado no topo também vence o bolo. É o número que o
+ * servidor grava ao ABRIR a rodada e só publica depois de pagar: publicado
+ * antes, o bolo convergiria para ele e ler a Arena deixaria de pagar.
+ *
+ * UM LOTE PRÓPRIO, NUM RAMO PRÓPRIO DA ÁRVORE ('mercado'). Reusar as
+ * simulações do preço principal exigiria gravar os eventos delas — e mexer no
+ * Monte Carlo que os goldens e a `margem.json` fotografam. Separado, o preço
+ * principal fica byte a byte igual, e este custa um lote curto: medido em
+ * 26/09, 20.000 simulações com eventos em ~0,8 s (sem eventos: ~0,6 s).
+ *
+ * O CLIMA ENTRA COMO NA LUTA: sorteado por simulação entre os que a pool
+ * suporta — a mesma condicional do `simularLote`, pelo mesmo motivo (F0.6). */
+export const SIMS_MERCADO = 20_000;
+
+export function precoDoModeloAbates(M, pool, raiz, sims = SIMS_MERCADO) {
+  const tipos = tiposDaPool(pool);
+  const vence = new Array(pool.length).fill(0);
+  let nenhum = 0;
+  for (let i = 0; i < sims; i++) {
+    const clima = M.sortearClima(derivarIndice(raiz, 'mercado-ambiente', i), tipos);
+    const f = clima.type ? M.aplicarClima(pool, clima) : pool;
+    const b = M.simular(f, derivarIndice(raiz, 'mercado', i), true);
+    const v = vencedorasDeAbates(b.events, pool.length);
+    if (!v.length) nenhum++;
+    for (const x of v) vence[x]++;
+  }
+  return { sims, vence, nenhum };
 }

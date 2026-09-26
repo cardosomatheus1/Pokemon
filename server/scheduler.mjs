@@ -26,7 +26,8 @@
  * de conferir. Aqui, campo novo não aparece até alguém o escrever nesta função.
  */
 import { randomUUID, randomBytes, createHash } from 'node:crypto';
-import { montarRodadaServidor, M, VERSAO_MOTOR } from './rodada.mjs';
+import { montarRodadaServidor, precoDoBoloServidor, M, VERSAO_MOTOR } from './rodada.mjs';
+import { SIMS_MERCADO } from '../engine/mercado-abates.mjs';
 import { margemDaCasa } from './admin.mjs';
 import { sementes, novaRaiz as raizNova, derivar } from '../engine/seed.mjs';
 import { mensagemCommit } from '../engine/commit.mjs';
@@ -97,6 +98,10 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
        scheduler precisa ser síncrono para o tick não deixar a rodada num
        estado intermediário. Resolvido pré-computando na abertura. */
     const compromisso = comprometerSync(raiz);
+    /* O PREÇO DO MODELO PARA O BOLO (ST-12.5), carimbado AGORA, antes de
+       qualquer resultado existir; publicado só depois da liquidação (§6.6).
+       O lote acompanha o `sims` da rodada para baixo (teste), nunca para cima. */
+    const modeloBolo = precoDoBoloServidor(raiz, Math.min(SIMS_MERCADO, sims));
 
     db.exec('BEGIN IMMEDIATE');
     try {
@@ -118,7 +123,7 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
         ins.run(id, slot, l.dex, l.prob, l.erroRelativo, l.fair, l.odd));
       /* O BOLO MÚTUO NASCE NA MESMA TRANSAÇÃO (ST-12.3): rodada sem bolo, ou
          bolo sem rodada, é estado que ninguém deveria conseguir observar. */
-      abrirMercados(db, { roundId: id, abreEm: agora, travaEm: agora + FASE_MS.APOSTA });
+      abrirMercados(db, { roundId: id, abreEm: agora, travaEm: agora + FASE_MS.APOSTA, modelo: modeloBolo });
       db.exec('COMMIT');
     } catch (e) { db.exec('ROLLBACK'); throw e; }
 

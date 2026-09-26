@@ -261,6 +261,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **ST-12.5** · o preço do modelo, carimbado antes e publicado depois | 26/09 | gravado na ABERTURA (refaz-se pela raiz revelada), publicado só na liquidação · varredura de toda rota GET e do estado da sala durante a janela: nada vaza · `GET /api/mercado/resultado`: quanto o bolo pagou × o que o modelo dava · a frequência do modelo bate com 2.000 lutas independentes · a odd principal fica idêntica · S1255–S1260 |
 | **ST-12.4** · o bolo paga | 26/09 | uma transação por bolo: falha no meio não deixa metade paga · paga pela raiz REVELADA (sobrevive ao servidor cair) e confere a pool recalculada contra a publicada · bônus paga em bônus · taxa, resíduo e "sem acerto" num livro da tesouraria · 1.000 rodadas: Σ saída == Σ entrada em cada bolo · Spec §6.11 corrigida · S1243–S1254 |
 | **ST-12.3** · o bolo no servidor | 26/09 | `markets`/`market_entries` nascem e travam com a rodada · `GET /api/mercado`, `POST /api/mercado/entrar` e `/sair` · o limite por rodada soma aposta + bolo nos dois caminhos, e os dois contam UMA rodada (§6.13) · a composição sai por lista branca, sem o preço do modelo · 100 entradas concorrentes somam exato · S1230–S1242 |
 | **ST-12.2** · quem venceu o mercado de abates | 26/09 | `engine/mercado-abates.mjs`: a contagem é a do `colocacao.mjs`, empate = todos os empatados vencem, rodada sem abate = ninguém vence · 1.000 rodadas: abates somados = quedas por golpe · S1225–S1229 |

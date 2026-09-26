@@ -7741,7 +7741,7 @@ export const DEFEITOS = [
   /* ── ST-12.3 · o bolo no servidor: tabelas, entrada, limite somado ──── */
   { id:'S1230', arquivo:'server/scheduler.mjs', nome:'a rodada abre sem o bolo',
     real:'o bolo nunca existe e a tela oferece um mercado que o servidor recusa',
-    de:'      abrirMercados(db, { roundId: id, abreEm: agora, travaEm: agora + FASE_MS.APOSTA });\n', para:'' },
+    de:'      abrirMercados(db, { roundId: id, abreEm: agora, travaEm: agora + FASE_MS.APOSTA, modelo: modeloBolo });\n', para:'' },
   { id:'S1231', arquivo:'server/scheduler.mjs', nome:'o bolo nao trava com as apostas',
     real:'a semente foi revelada e o bolo ainda aparece aberto: a liquidacao le um estado que nao aconteceu',
     de:'      travarMercados(db, { roundId: atual.id, agora });\n', para:'' },
@@ -7824,6 +7824,28 @@ export const DEFEITOS = [
   { id:'S1254', arquivo:'engine/mutuo.mjs', nome:'a sobra do piso na reparticao por balde some',
     real:'o jogador recebe 1 a menos por entrada mista, sem lancamento — dinheiro que ninguem sabe onde esta',
     de:'  parte[baldes[0][0]] += pagamento - Object.values(parte).reduce((a, x) => a + x, 0);\n', para:'' },
+
+  /* ── ST-12.5 · o preço do modelo: carimbado antes, publicado depois ──── */
+  { id:'S1255', arquivo:'server/mercado.mjs', nome:'a composicao do bolo leva o preco do modelo durante a janela',
+    real:'o bolo converge para o modelo e ler a Arena deixa de pagar — o defeito que anula a fase (6.6)',
+    de:'    minha: minha ? { selecao: minha.selection, valor: minha.amount } : null,',
+    para:"    minha: minha ? { selecao: minha.selection, valor: minha.amount } : null, modelo: JSON.parse(db.prepare('SELECT model_price_json AS j FROM markets WHERE id = ?').get(m.id).j)," },
+  { id:'S1256', arquivo:'server/mercado.mjs', nome:'o resultado devolve o bolo em curso',
+    real:'a rota do resultado publica o preco do modelo da rodada aberta — o vazamento pela porta da frente',
+    de:"WHERE m.kind = ? AND m.status = 'liquidado' AND m.published_at IS NOT NULL\n      ORDER BY m.settled_at DESC LIMIT 1",
+    para:"WHERE m.kind = ?\n      ORDER BY m.opens_at DESC LIMIT 1" },
+  { id:'S1257', arquivo:'server/scheduler.mjs', nome:'o preco do modelo nao e carimbado na abertura',
+    real:'sem o carimbo antes do resultado, nada prova que o preco nao foi calculado depois de a luta acontecer',
+    de:'agora + FASE_MS.APOSTA, modelo: modeloBolo });', para:'agora + FASE_MS.APOSTA });' },
+  { id:'S1258', arquivo:'server/mercado.mjs', nome:'o bolo e pago e o preco nunca e publicado',
+    real:'o jogador nunca ve onde o bolo errou — a tela do 6.9 fica sem materia-prima',
+    de:'      .run(agora, agora, ap.bruto, ap.liquido,', para:'      .run(agora, null, ap.bruto, ap.liquido,' },
+  { id:'S1259', arquivo:'engine/mercado-abates.mjs', nome:'o preco do modelo ignora os empates',
+    real:'o modelo subestima quem empata no topo, e o jogador aprende a ler um preco que o bolo nao paga',
+    de:'    for (const x of v) vence[x]++;', para:'    if (v.length === 1) vence[v[0]]++;' },
+  { id:'S1260', arquivo:'engine/mercado-abates.mjs', nome:'o preco do modelo ignora o clima',
+    real:'o F0.6 de novo, no bolo: o preco ve uma distribuicao e a luta outra',
+    de:'    const f = clima.type ? M.aplicarClima(pool, clima) : pool;', para:'    const f = pool;' },
 
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',

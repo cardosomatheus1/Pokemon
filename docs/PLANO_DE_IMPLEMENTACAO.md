@@ -660,7 +660,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
   lançar o resíduo; liquidar mercado de rodada não encerrada.
 - **Portões:** Q1 Q2 Q3 Q6 Q8.
 
-### ST-12.5 · O preço do modelo: carimbado antes, publicado depois
+### ~~ST-12.5~~ ✅ 26/09 · O preço do modelo: carimbado antes, publicado depois — lote PRÓPRIO de 20.000 simulações no ramo `mercado` (e não "nenhuma simulação a mais": reusar o lote principal exigiria mexer no Monte Carlo que os goldens fotografam); `GET /api/mercado/resultado` · S1255–S1260
 - **Porte** M · **Servidor** sim · **Bloco dono** F2.4 · **Spec** §6.6 · **Depende de** ST-12.4
 - **Entrega ao jogador:** depois da rodada, "o bolo pagava 4,1× no Gengar; o
   modelo dava 18% (5,6×)" — onde o mercado errou.
