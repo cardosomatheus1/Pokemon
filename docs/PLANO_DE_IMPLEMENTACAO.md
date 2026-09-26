@@ -948,7 +948,8 @@ Fatiada em duas (a original seria G).
 
 **Depende de:** o E9. O gate 3→4 (ST-9.18) é medido e registrado, e não tranca a fila (Parte 2, topo).
 
-### ST-10.1 · As primitivas compartilhadas
+### ST-10.1 · As primitivas compartilhadas ✅ 26/09
+> Feito: `engine/primitivas.mjs`, nível e crítico por parâmetro; goldens byte a byte; S1419–S1423.
 - **Porte** P–M · **Servidor** não · **Bloco dono** F4.1 · **Spec** §8.2
 - **Escopo:** extrair efetividade, fórmula de dano, `statAt` e `rng` para `engine/primitivas.mjs`. A Arena importa de lá; `engine/treino-*.mjs` pode importar `primitivas` e o pack, **nunca** `engine.mjs`.
 - **Aceite:** goldens e margem byte a byte; teste de grafo de import.

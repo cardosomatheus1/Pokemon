@@ -16,6 +16,7 @@
  */
 
 import { validarPack } from './pack.mjs';
+import { rng, statNoNivel, efeito, dano as danoPrimitivo } from './primitivas.mjs';
 
 /* Versão do motor, gravada no registro de precificação de cada rodada (§4.4.5).
    Sem ela, um preço auditado meses depois não diz contra qual código foi
@@ -159,42 +160,18 @@ function stormRate(t){
 }
 
 
-function rng(seed){
-  let a = seed >>> 0;
-  return function(){
-    a = (a + 0x6D2B79F5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 /* `newSeed` saiu daqui no F0.5. A raiz da rodada tem dono próprio —
    engine/seed.mjs — e vem do CSPRNG da plataforma, não de Math.random. Manter
    uma segunda fonte de semente no motor era manter a porta por onde a rodada
    voltava a ser irreconstituível. */
 
-function statAt(b){ return Math.floor((2*b + 31) * CONF.LEVEL / 100) + 5; }
-
-
-function efeito(chart, moveType, defTypes){
-  const row = chart[moveType] || {};
-  let e = 1;
-  for (const t of defTypes) if (row[t] !== undefined) e *= row[t];
-  return e;
-}
-
+/* ST-10.1: as primitivas moram em `primitivas.mjs`, e a Arena as chama com
+   o que ELA fixa — o nível 50 e o crítico de 1/16. O motor de treino chama a
+   mesma fórmula com o nível da criatura. */
+function statAt(b){ return statNoNivel(b, CONF.LEVEL); }
 
 function dano(chart, A, D, mv, R, aMul, dMul){
-  const atk = (mv.cat === 'fis' ? A.atk : A.spa) * (aMul || 1);
-  const dfs = (mv.cat === 'fis' ? D.def : D.spd) * (dMul || 1);
-  const eff = efeito(chart, mv.t, D.types);
-  if (eff === 0) return {dmg:0, eff:0, crit:false};
-  const crit = R() < CONF.CRIT;
-  const stab = A.types.includes(mv.t) ? 1.5 : 1;
-  const base = Math.floor(Math.floor(Math.floor(2*CONF.LEVEL/5 + 2) * mv.p * atk / dfs) / 50) + 2;
-  const dmg = base * stab * eff * (crit ? CONF.CRIT_MULT : 1) * (0.85 + R()*0.15);
-  return {dmg: Math.max(1, Math.round(dmg)), eff, crit};
+  return danoPrimitivo(chart, A, D, mv, R, aMul, dMul, CONF.LEVEL, CONF.CRIT, CONF.CRIT_MULT);
 }
 
 
