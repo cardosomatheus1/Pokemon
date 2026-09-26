@@ -153,6 +153,15 @@ mudança de produto. Achado de arnês que não couber vai para DEFEITOS/LACUNAS.
 - **Sabotagem:** um workflow que chama `--so` (recorte) tem de ser recusado —
   mesma regra do `portoes`.
 
+### ST-0.9 · o ensaio do piloto a cada push ✅ 26/09
+
+A suíte inteira estava verde e nenhuma aposta do servidor era paga (D-112).
+Quem achou foi o ensaio no navegador. O job `ensaio` da CI sobe o servidor
+com banco próprio, espera o `/saude` e roda `tools/ensaio-piloto.mjs`: cria
+conta, aposta, espera a LIQUIDAÇÃO (o XP sobe), sai e entra. Reprova a CI.
+Rodado localmente com os mesmos comandos: PRONTO PARA CONVIDAR. `test/ci.mjs`
+trava o job; S1216.
+
 ### ST-0.7 · a sonda `base` em uma passada por largura — **aberta, congelada**
 
 - É o T11 (um navegador vivo reaproveitado). Só entra se a sonda `base` (62 s)

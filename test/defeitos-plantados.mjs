@@ -7684,6 +7684,11 @@ export const DEFEITOS = [
     real:'o idle volta a morrer no navegador — a parte do jogo que fica aberta por horas nao aparece no piloto',
     de:'      relatar(api, eventosDoEstado(E, agora));', para:'      void eventosDoEstado(E, agora);' },
 
+  /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
+  { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
+    real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',
+    de:'          node tools/ensaio-piloto.mjs http://127.0.0.1:8080\n', para:'' },
+
   /* ── D-117 · a chave solta que matava o padding de todo cartão ───────── */
   { id:'S1214', arquivo:'app/index.html', nome:'a chave solta volta depois do ticker',
     real:'a regra .card inteira e descartada: todo cartao do app perde o padding e o texto encosta na borda (medido: 0 px em toda largura)',
@@ -7966,8 +7971,8 @@ export const DEFEITOS = [
     para:'        run: npm run rapido' },
   { id:'S1112', arquivo:'.github/workflows/testes.yml', nome:'a CI perde o endereco do Chromium',
     real:'a suite pula o Q5 com aviso e fica verde sem ter aberto o jogo',
-    de:'          echo "PW_CHROME=$CHROME" >> "$GITHUB_ENV"',
-    para:'          echo "CHROME=$CHROME" >> "$GITHUB_ENV"' },
+    de:'          echo "PW_CHROME=$CHROME" >> "$GITHUB_ENV"\n\n      # A LINHA DE BASE VISUAL LOCAL',
+    para:'          echo "CHROME=$CHROME" >> "$GITHUB_ENV"\n\n      # A LINHA DE BASE VISUAL LOCAL' },
 
   /* ── ST-1.2b · o Sair revoga no servidor (DEC-07) ──────────────────── */
   { id:'S1106', arquivo:SRVROT, nome:'o token revogado volta a abrir a conta',

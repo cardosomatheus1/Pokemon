@@ -52,3 +52,40 @@ jobs:
 
       - name: a suíte
         run: npm test
+
+  # O ENSAIO DO PILOTO A CADA PUSH (ST-0.9).
+  #
+  # A suíte inteira estava verde e nenhuma aposta do servidor era paga (D-112):
+  # cada peça testada, o encaixe não. Quem achou foi o ensaio — cria conta,
+  # aposta, espera a rodada ser LIQUIDADA (o XP sobe), sai e entra de novo, num
+  # navegador de verdade contra o servidor inteiro. Aqui ele reprova a CI.
+  ensaio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: playwright-core fora do projeto
+        run: |
+          mkdir -p /tmp/pw && cd /tmp/pw && npm init -y > /dev/null
+          npm i playwright-core@1.56.1
+          node node_modules/playwright-core/cli.js install --with-deps chromium
+
+      - name: apontar o Chromium
+        run: |
+          CHROME="$(find ~/.cache/ms-playwright -path '*chrome-linux*/chrome' -type f | head -1)"
+          test -x "$CHROME" || { echo "Chromium não encontrado"; exit 1; }
+          echo "PW_CHROME=$CHROME" >> "$GITHUB_ENV"
+
+      # UM PASSO SÓ: processo em segundo plano pode não sobreviver ao fim do
+      # passo que o criou, e o ensaio precisa do servidor vivo até o fim.
+      - name: o servidor, com banco próprio, e o ensaio contra ele
+        run: |
+          PORTA=8080 BANCO=/tmp/ensaio.db npm run servidor &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8080/saude && break; sleep 2; done
+          curl -sf http://127.0.0.1:8080/saude
+          node tools/ensaio-piloto.mjs http://127.0.0.1:8080
