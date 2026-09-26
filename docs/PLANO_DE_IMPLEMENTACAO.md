@@ -709,7 +709,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Sabotagem:** ordem invertida; empate resolvido pelo slot.
 - **Portões:** Q1 Q2 Q3 Q5.
 
-### ST-12.8 · O mercado de faixa de duração
+### ~~ST-12.8~~ ✅ 26/09 · O mercado de faixa de duração — `engine/mercado-duracao.mjs`, limites 28 · 30 · 33 s medidos (fixture `duracao.json`), `MERCADOS=…,duracao` abre · S1294–S1298
 - **Porte** P · **Servidor** sim · **Bloco dono** F2.2 (extensão) · **Spec** §6.5 · **Depende de** ST-12.6
 - **Escopo:** 4 faixas fixas de duração (em tiques do motor), com limites
   escolhidos pela mediana medida de 10.000 rodadas para cada faixa ter entre

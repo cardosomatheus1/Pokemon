@@ -274,8 +274,8 @@ export function mercadoParaCliente(db, { sched, userId, kind = 'abates' }) {
     `SELECT selection, SUM(amount) AS total, COUNT(*) AS entradas FROM market_entries
       WHERE market_id = ? AND status IN ('aberta','travada') GROUP BY selection`).all(m.id).map(r => [r.selection, r]));
   /* Abates lista os doze; o pódio, só as trincas com entrada (1.320 não cabem
-     numa tela) — `listaTodas` em `mercado-tipos.mjs`. */
-  const todas = tipo(m.kind).listaTodas ? Array.from({ length: n }, (_, i) => i) : [...por.keys()].sort((a, b) => a - b);
+     numa tela) — `lista` em `mercado-tipos.mjs`. */
+  const todas = tipo(m.kind).lista(n) ?? [...por.keys()].sort((a, b) => a - b);
   const selecoes = todas.map(i => ({ selecao: i, total: por.get(i)?.total ?? 0,
                                      entradas: por.get(i)?.entradas ?? 0 }));
   const minha = userId ? db.prepare(
@@ -319,8 +319,7 @@ export function resultadoDoMercado(db, { kind = 'abates', userId = null } = {}) 
   return {
     id: m.id, rodada: m.round_id, bruto: m.pot_gross, liquido: m.pot_net, taxa: m.fee_amount,
     publicadoEm: m.published_at, simulacoes: modelo?.sims ?? null, semAcerto: m.no_winner_destination,
-    selecoes: (tipo(kind).listaTodas ? Array.from({ length: n }, (_, i) => i)
-               : [...new Set([...por.keys(), ...vencedoras])].sort((a, b) => a - b)).map(i => ({
+    selecoes: (tipo(kind).lista(n) ?? [...new Set([...por.keys(), ...vencedoras])].sort((a, b) => a - b)).map(i => ({
       selecao: i,
       total: por.get(i)?.total ?? 0,
       /* O multiplicador que o bolo PAGAVA a quem acertou: líquido ÷ soma das

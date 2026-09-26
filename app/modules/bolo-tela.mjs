@@ -19,7 +19,7 @@ import { api } from './api.mjs';
 import { modoServidor, hidratar, saldo } from './banco.mjs';
 import { atualizarSaldo } from './controles.mjs';
 import { linhasDoBolo, textoDaEstimativa, textoDaLinha, textoDasRegras, erroDaEntrada,
-         linhasDoResultado, textoDaMinhaPaga, textoDaLeitura, rotuloDaTrinca, trincaEscolhida,
+         linhasDoResultado, textoDaMinhaPaga, textoDaLeitura, rotuloDoMercado, trincaEscolhida,
          TITULO_DO_BOLO, ABA_DO_BOLO, respostaServe, TEXTO_SEM_CONTA } from './bolo-dados.mjs';
 
 const BUSCA_MS = 2000;
@@ -31,7 +31,7 @@ const E = { mercado: null, resultado: null, selecao: null, valor: 50, timer: nul
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const nomes = () => (S.fighters ?? []).map(f => f.n);
-const rotulo = () => (E.kind === 'podio' ? rotuloDaTrinca(nomes()) : nomes());
+const rotulo = () => rotuloDoMercado(E.kind, nomes());
 const nomeDe = i => { const r = rotulo(); return typeof r === 'function' ? r(i) : r[i] ?? '?'; };
 
 function parar() { if (E.timer) { clearInterval(E.timer); E.timer = null; } }
@@ -114,6 +114,7 @@ function pintarLista() {
     (quem !== undefined && quem !== null
       ? `${minha && E.selecao === null ? 'Sua entrada' : 'Entrada'}: ${valor} em ${nomeDe(quem)} · ${textoDaEstimativa(est, valor) ?? ''}`
       : E.kind === 'podio' ? 'Monte a trinca acima, ou toque numa da lista.'
+      : E.kind === 'duracao' ? 'Toque numa faixa para ver quanto o bolo pagaria.'
       : 'Toque num lutador para ver quanto o bolo pagaria.');
   const regras = $('#boloRegrasLista');
   if (regras && !regras.childElementCount)

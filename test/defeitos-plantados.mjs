@@ -7970,6 +7970,23 @@ export const DEFEITOS = [
     real:'o preco conta com o clima (F0.6) e a luta nao: a margem e o campeao divergem do que foi publicado',
     de:'  const b = M.simular(M.aplicarClima(pool, clima), batalha, true);', para:'  const b = M.simular(pool, batalha, true);' },
 
+  /* ── ST-12.8 · o mercado de faixa de duração ─────────────────────────── */
+  { id:'S1294', arquivo:'engine/mercado-duracao.mjs', nome:'o limite da faixa passa a ser exclusivo',
+    real:'a luta de exatamente 28 s cai na faixa errada — a regra lida antes nao e a que paga',
+    de:'export const faixaDaDuracao = d => LIMITES_DURACAO.filter(l => d >= l).length;', para:'export const faixaDaDuracao = d => LIMITES_DURACAO.filter(l => d > l).length;' },
+  { id:'S1295', arquivo:'engine/mercado-duracao.mjs', nome:'os limites mudam sem remedir',
+    real:'uma faixa cai para 14% e o bolo fica torto sem ninguem saber — a fixture existe para isso',
+    de:'export const LIMITES_DURACAO = Object.freeze([28, 30, 33]);', para:'export const LIMITES_DURACAO = Object.freeze([27, 30, 33]);' },
+  { id:'S1296', arquivo:'server/mercado-tipos.mjs', nome:'o bolo de duracao paga sem olhar a luta',
+    real:'a faixa vencedora e sempre a primeira, qualquer que seja a luta',
+    de:'    vencedoras: resultado => vencedorasPorDuracao(resultado.duracao),', para:'    vencedoras: () => [0],' },
+  { id:'S1297', arquivo:'server/scheduler.mjs', nome:'o resultado da rodada perde a duracao',
+    real:'o bolo de duracao liquida sem vencedora e devolve tudo, rodada apos rodada',
+    de:'    resultado.duracao = duracao;\n', para:'' },
+  { id:'S1298', arquivo:'app/modules/bolo-dados.mjs', nome:'a regra da duracao fala em dividir um empate que nao existe',
+    real:'o jogador le uma regra de outro mercado antes de entrar (achado no OLHAR)',
+    de:'    mercado.regra.empateDivide === false\n', para:'    false\n' },
+
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
     real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',

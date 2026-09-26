@@ -2,7 +2,7 @@
  * variável, sem motor: o `config.mjs` importa isto, e config não carrega pack.
  * O registro do que cada mercado FAZ é `mercado-tipos.mjs`; um teste confere
  * que as duas listas são a mesma. */
-export const MERCADOS_CONHECIDOS = Object.freeze(['abates', 'podio']);
+export const MERCADOS_CONHECIDOS = Object.freeze(['abates', 'podio', 'duracao']);
 export const MERCADOS_PADRAO = Object.freeze(['abates']);
 
 /* `MERCADOS=abates,podio`. Nome desconhecido RECUSA o processo — um erro de

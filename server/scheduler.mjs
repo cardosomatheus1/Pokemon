@@ -294,14 +294,18 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
      desde o lock. É ela que deixa o bolo ser pago depois de o servidor cair —
      dinheiro não pode depender de memória, como o XP depende hoje. */
   const resultadoDaRaiz = raiz => {
-    const { eventos, lutadores, campeaoDex } = simularDaRaiz(raiz);
+    const { eventos, lutadores, campeaoDex, duracao } = simularDaRaiz(raiz);
     const ordem = ordemDeQuedas(eventos);
     const campeaoIdx = lutadores.findIndex(l => l.dex === campeaoDex);
-    return lutadores.map((l, i) => ({
+    const resultado = lutadores.map((l, i) => ({
       dex: l.dex,
       pos: posicaoFinalDe(i, campeaoIdx, ordem, lutadores.length),
       abates: abatesNosEventos(i, eventos),
     }));
+    /* A duração da luta vai junto, como propriedade da lista: quem lê por
+       lutador continua lendo a lista; o bolo de duração (ST-12.8) lê isto. */
+    resultado.duracao = duracao;
+    return resultado;
   };
   const campeaoDaRaiz = raiz => simularDaRaiz(raiz).campeaoDex;
 

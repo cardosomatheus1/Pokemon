@@ -19,12 +19,16 @@
  */
 
 import { decodificar, codificar } from '../../engine/mercado-podio.mjs';
+import { ROTULOS_DURACAO } from '../../engine/mercado-duracao.mjs';
 
 const pct = x => `${Math.round(x * 100)}%`;
 /* O NOME DE UMA SELEÇÃO. `nomes` é a lista dos lutadores (abates) ou uma
    função (pódio: a trinca vira "A › B › C"). */
 const rotuloDe = nomes => typeof nomes === 'function' ? nomes : i => nomes?.[i] ?? `#${i + 1}`;
 export const rotuloDaTrinca = nomes => x => decodificar(x).map(i => nomes?.[i] ?? `#${i + 1}`).join(' › ');
+/* O rótulo das seleções de CADA mercado, num lugar: lutador, trinca ou faixa. */
+export const rotuloDoMercado = (kind, nomes) =>
+  kind === 'podio' ? rotuloDaTrinca(nomes) : kind === 'duracao' ? [...ROTULOS_DURACAO] : nomes;
 const mult = x => `x${x.toFixed(2).replace('.', ',')}`;
 
 /* O bolo como ficaria com a MINHA entrada hipotética: `valor` em `selecao`,
@@ -118,7 +122,11 @@ export function textoDasRegras(mercado) {
     ? 'se ninguém acertar, o bolo volta a todos, menos a taxa'
     : 'se ninguém acertar, o bolo vai para a tesouraria';
   return [
-    `Empate: ${mercado.regra.empate} (na proporção de quanto cada um pôs) — por isso paga menos que o da linha.`,
+    /* A duração não tem empate: "divide pela entrada" ali seria texto de
+       outra regra (achado no OLHAR da ST-12.8). */
+    mercado.regra.empateDivide === false
+      ? `${mercado.regra.empate[0].toUpperCase()}${mercado.regra.empate.slice(1)}.`
+      : `Empate: ${mercado.regra.empate} (na proporção de quanto cada um pôs) — por isso paga menos que o da linha.`,
     `Taxa de ${pct(mercado.taxa)} sobre o bolo; ${destino}.`,
     `${mercado.regra.zero[0].toUpperCase()}${mercado.regra.zero.slice(1).replace('vale o destino "sem acerto" do bolo', 'vale a regra acima')}.`,
     'O retorno é formado por quem entra e muda até o fechamento.',
@@ -137,7 +145,7 @@ export function erroDaEntrada({ selecao, valor, saldo }) {
 /* ── O RESULTADO, DEPOIS DE PAGO (§6.6, §6.9) ──────────────────────────── */
 
 /* O que o vencedor FEZ, por mercado — o resto do texto é o mesmo. */
-const FEZ = { abates: 'liderou os abates', podio: 'foi o pódio' };
+const FEZ = { abates: 'liderou os abates', podio: 'foi o pódio', duracao: 'foi a duração' };
 
 export function linhasDoResultado(res, nomes, { kind = 'abates' } = {}) {
   if (!res?.selecoes) return null;
@@ -178,8 +186,9 @@ export function textoDaMinhaPaga({ entrou, recebeu }) {
 }
 
 /* O título do cartão e o nome da aba, por mercado (ST-12.7). */
-export const TITULO_DO_BOLO = Object.freeze({ abates: 'Bolo · quem faz mais abates?', podio: 'Bolo · 1º, 2º e 3º, em ordem' });
-export const ABA_DO_BOLO = Object.freeze({ abates: 'Mais abates', podio: 'Pódio' });
+export const TITULO_DO_BOLO = Object.freeze({ abates: 'Bolo · quem faz mais abates?', podio: 'Bolo · 1º, 2º e 3º, em ordem',
+                                              duracao: 'Bolo · quanto tempo dura a luta?' });
+export const ABA_DO_BOLO = Object.freeze({ abates: 'Mais abates', podio: 'Pódio', duracao: 'Duração' });
 
 /* A trinca que o jogador monta nos três seletores: só vira seleção quando os
    três estão escolhidos e são lutadores diferentes. */
