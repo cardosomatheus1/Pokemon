@@ -26,6 +26,7 @@ import { criarScheduler } from './scheduler.mjs';
 import { criarSala } from './transporte.mjs';
 import { liquidarPendentes } from './aposta.mjs';
 import { liquidarMercadosPendentes } from './mercado.mjs';
+import { gravarResultadosPendentes, dossieRealizado } from './dossie-realizado.mjs';
 import { criarLaco } from './laco.mjs';
 import { ROTAS, ROTAS_PUBLICAS, ROTAS_ADMIN, usuarioDa } from './rotas.mjs';
 
@@ -92,7 +93,12 @@ export function criarServidor(opcoes = {}) {
       /* O bolo mútuo (ST-12.4) paga na mesma hora, e depois da aposta: uma
          falha num não segura o outro no laço, porque cada um lança sozinho. */
       try { liquidarPendentes(db, { sched, agora: relogio() }); }
-      finally { liquidarMercadosPendentes(db, { sched, agora: relogio() }); }
+      finally {
+        /* E o dossiê realizado (ST-9.5) grava a rodada que acabou — por
+           último, e sem segurar o bolo: ele não paga ninguém. */
+        try { liquidarMercadosPendentes(db, { sched, agora: relogio() }); }
+        finally { gravarResultadosPendentes(db, { sched }); }
+      }
     },
     aoErro: e => { if (!config.silencioso) console.error('[laço]', e); } });
 
@@ -123,6 +129,10 @@ export function criarServidor(opcoes = {}) {
       return erro(400, ERROS.ENTRADA_INVALIDA, 'sims fora da faixa aceita');
     return { corpo: montarRodadaServidor(raiz, sims) };
   });
+
+  /* O DOSSIÊ REALIZADO (ST-9.5): pública, como o resto da rodada — é o
+     agregado das rodadas ENCERRADAS, e a rodada em curso não entra nele. */
+  registrar('GET', '/api/rodada/dossie', () => ({ corpo: dossieRealizado(db) }));
 
   /* AS ROTAS DO F1.13, montadas a partir da tabela. Registrar por laço e não à
      mão: uma rota que existe na tabela e não no servidor é uma rota morta, e

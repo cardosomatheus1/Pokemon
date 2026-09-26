@@ -40,6 +40,7 @@ import { retratoAnimado, dexImg } from './sprites.mjs';
 import { carregar } from './idle-dados.mjs';
 import { escadaDe, carregarMarcas, vistosNaPokedex, dossieDoPack } from './pokedex-estado.mjs';
 import { secoesDoDossie } from './dossie-ficha.mjs';
+import { api } from './api.mjs';
 import { linhaDe } from '../../engine/evolucao.mjs';
 import {
   STATS, tetoDeStat, somaDeStats, ondeMora, linhaComExigencia,
@@ -112,10 +113,22 @@ function linhaDaLista(e, viu, sel, pegou) {
 
 /* ── A FICHA ──────────────────────────────────────────────────────────── */
 /* ── NA ARENA (ST-9.3): o dossiê, aberto até o degrau da escada ────────── */
+/* O REALIZADO DO SERVIDOR (ST-9.5): pedido no máximo uma vez por minuto, e a
+   ficha se repinta quando ele chega. Sem servidor (arquivo estático), a rota
+   não responde JSON e a ficha segue só com o modelo. */
+let realizado = null, pedidoEm = -Infinity;
+function pedirRealizado() {
+  if (Date.now() - pedidoEm < 60_000) return;
+  pedidoEm = Date.now();
+  api.get('/api/rodada/dossie').then(r => {
+    if (r.ok && r.corpo?.especies) { realizado = r.corpo; renderPokedex(); }
+  });
+}
 const NOME_DO_DEGRAU = { vista: 'vista na Arena', encontrada: 'encontrada', capturada: 'capturada', dominada: 'dominada' };
 function naArena(e, estado, marcas) {
   const escada = escadaDe(PACK, estado, e.dex, marcas);
-  const d = secoesDoDossie({ dossie: dossieDoPack(PACK), escada, dex: e.dex, linha: linhaDe(PACK, e.dex), climas: PACK.clima });
+  const d = secoesDoDossie({ dossie: dossieDoPack(PACK), escada, dex: e.dex, linha: linhaDe(PACK, e.dex), climas: PACK.clima,
+                            realizado });
   if (!d.luta) {
     /* O nome é um BOTÃO: o `data-dex` já é o clique da lista, e a ficha que
        ele abre é a que tem o dossiê (Q7: "não parece clicável"). */
@@ -124,11 +137,13 @@ function naArena(e, estado, marcas) {
       <p class="pdxDos">Não luta na Arena. ${lutam.length > 1 ? 'As formas que lutam' : 'A forma que luta'}: ${lutam.join(' ')}</p></div>` : '';
   }
   const secoes = d.secoes.filter(s => !s.trancada)
-    .map(s => `<div class="pdxDos"><b>${s.titulo}</b>${s.linhas.map(l => `<p>${l}</p>`).join('')}</div>`).join('') +
+    .map(s => `<div class="pdxDos"><b>${s.titulo}</b>${s.linhas.map(l => `<p>${l}</p>`).join('')}${
+      s.servidor.map(l => `<p class="pdxSrv">${l}</p>`).join('')}</div>`).join('') +
     d.trancadas.map(t => `<div class="pdxDos trancada"><b>🔒 ${t.titulos.join(' · ')}</b><p>${t.requisito}</p></div>`).join('');
   return `<div class="pdxBloco pdxArena">
       <h5>Na Arena <s class="pdxSoma">${NOME_DO_DEGRAU[escada.degrau] ?? ''}</s></h5>
       ${escada.falta ? `<p class="tiny pdxFalta">Próximo passo: ${escada.falta}.</p>` : ''}
+      <p class="tiny pdxFonte">${d.fonte}</p>
       ${secoes}</div>`;
 }
 
@@ -234,6 +249,7 @@ export function renderPokedex() {
   /* ST-9.3: o que a Arena mostrou também é "visto" NA POKÉDEX (as vagas do
      idle seguem contando só o registro). */
   const marcas = carregarMarcas();
+  pedirRealizado();
   const vistos = vistosNaPokedex(estado, marcas);
   const pegos = capturados(estado);
   const lista = filtrar(PACK, { busca, vistos });

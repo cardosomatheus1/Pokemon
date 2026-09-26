@@ -105,7 +105,16 @@ function texto(secao, e, climas, medias) {
 
 /* `dossie`: o arquivo de content/dossie_*.mjs; `escada`: `escadaDe(...)`;
    `linha`: a linha evolutiva do dex (para achar a forma que luta). */
-export function secoesDoDossie({ dossie, escada, dex, linha = [], climas = [] }) {
+/* O REALIZADO (ST-9.5): as rodadas que o servidor lutou, ao lado do modelo.
+   Só nas três seções que o servidor mede, e só nas abertas — a trava do degrau
+   vale para os dois. */
+const DO_SERVIDOR = {
+  vitoria: r => `Neste servidor: vence ${pct(r.vitoria.taxa)} (${ctx(r.vitoria.n)}).`,
+  abates: r => `Neste servidor: ${dec(r.abates.media)} abates por rodada (${ctx(r.abates.n)}).`,
+  caiCedo: r => `Neste servidor: cai entre os ${CAI_CEDO} primeiros em ${pct(r.caiCedo.taxa)} (${ctx(r.caiCedo.n)}).`,
+};
+
+export function secoesDoDossie({ dossie, escada, dex, linha = [], climas = [], realizado = null }) {
   const e = dossie?.especies?.[dex];
   if (!e) {
     const lutam = linha.filter(d => d !== dex && dossie?.especies?.[d]);
@@ -114,7 +123,14 @@ export function secoesDoDossie({ dossie, escada, dex, linha = [], climas = [] })
   const liberado = new Set(escada?.liberado ?? []);
   const medias = mediasDo(dossie);
   const secoes = Object.keys(TITULOS).map(id => {
-    if (liberado.has(id)) return { id, titulo: TITULOS[id], trancada: false, linhas: texto(id, e, climas, medias) };
+    if (liberado.has(id)) {
+      const r = realizado?.especies?.[dex];
+      const doServidor = !realizado || !DO_SERVIDOR[id] ? []
+        : r?.n ? [DO_SERVIDOR[id](r)] : id === 'vitoria' ? ['Neste servidor: ainda não lutou.'] : [];
+      /* Separadas das do modelo: na tela elas ganham cor própria — lidas
+         juntas, "vence 12%" e "vence 15%" pareciam a mesma medida (Q5). */
+      return { id, titulo: TITULOS[id], trancada: false, linhas: texto(id, e, climas, medias), servidor: doServidor };
+    }
     const g = ABRE[id];
     return { id, titulo: TITULOS[id], trancada: true, linhas: null, requisito: `Para ver: ${COMO[g]}.`,
              degrau: g, ordem: DEGRAUS.indexOf(g) };
@@ -124,7 +140,11 @@ export function secoesDoDossie({ dossie, escada, dex, linha = [], climas = [] })
      linha por degrau diz o mesmo com metade do texto. */
   const trancadas = DEGRAUS.filter(g => secoes.some(x => x.trancada && x.degrau === g)).map(g => ({
     degrau: g, titulos: secoes.filter(x => x.trancada && x.degrau === g).map(x => x.titulo), requisito: `Para ver: ${COMO[g]}.` }));
-  return { luta: true, formasQueLutam: [], secoes, trancadas };
+  /* De onde vêm os números — sem isto, "vence 12%" do modelo e do servidor
+     seriam duas frases iguais sobre coisas diferentes. */
+  const fonte = `Simulado: ${num(dossie.rodadas ?? 0)} rodadas do motor.` +
+    (realizado ? ` Neste servidor: ${num(realizado.rodadas ?? 0)} ${realizado.rodadas === 1 ? 'rodada lutada' : 'rodadas lutadas'}.` : '');
+  return { luta: true, formasQueLutam: [], secoes, trancadas, fonte };
 }
 
 /* ── AO LADO DA APOSTA (ST-9.4 · §7.15, §28.7) ─────────────────────────────

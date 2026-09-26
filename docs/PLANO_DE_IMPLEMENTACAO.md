@@ -800,7 +800,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Sabotagem:** a linha usar o `p` da rodada; destacar o clima da rodada; a linha aparecer para VISTA.
 - **Portões:** Q1 Q2 Q3 Q5 · Q6: sem superfície nova.
 
-### ST-9.5 · O dossiê realizado, do servidor (pode esperar o piloto)
+### ~~ST-9.5~~ ✅ 26/09 · O dossiê realizado, do servidor — `round_results` gravado da raiz revelada depois do fim; `GET /api/rodada/dossie` público (o nome segue a regra das rotas públicas: só `rodada/*`); a ficha mostra "Neste servidor" em cor própria · S1328–S1335
 - **Porte** M · **Servidor** sim · **Bloco dono** F3.9 · **Spec** §7.12, §7.17 · **Depende de** ST-9.3
 - **Entrega ao jogador:** ao lado do "modelo", o que aconteceu de verdade nas rodadas do servidor.
 - **Escopo:** migração aditiva `round_results(round_id, slot, dex, pos, abates, clima)`, gravada na liquidação a partir de `resultadoDaRodada`; `GET /api/dossie` público, só com rodadas `encerrada` e com n; a ficha ganha duas colunas.

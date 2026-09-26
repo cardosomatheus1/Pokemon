@@ -294,7 +294,7 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
      desde o lock. É ela que deixa o bolo ser pago depois de o servidor cair —
      dinheiro não pode depender de memória, como o XP depende hoje. */
   const resultadoDaRaiz = raiz => {
-    const { eventos, lutadores, campeaoDex, duracao } = simularDaRaiz(raiz);
+    const { eventos, lutadores, campeaoDex, duracao, clima } = simularDaRaiz(raiz);
     const ordem = ordemDeQuedas(eventos);
     const campeaoIdx = lutadores.findIndex(l => l.dex === campeaoDex);
     const resultado = lutadores.map((l, i) => ({
@@ -305,6 +305,9 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
     /* A duração da luta vai junto, como propriedade da lista: quem lê por
        lutador continua lendo a lista; o bolo de duração (ST-12.8) lê isto. */
     resultado.duracao = duracao;
+    /* E o clima da luta (ST-9.5): o dossiê realizado guarda em que tempo cada
+       rodada foi lutada. */
+    resultado.clima = clima;
     return resultado;
   };
   const campeaoDaRaiz = raiz => simularDaRaiz(raiz).campeaoDex;
@@ -329,8 +332,8 @@ function simularDaRaiz(raiz) {
   /* D-119: A LUTA COM O CLIMA, pela função que o cliente também usa. Sem o
      clima, o servidor pagava um campeão que o jogador não viu vencer (771 de
      2.000 rodadas medidas). */
-  const { batalha: b } = lutaDaRodada(M, { pool: lutadores, ambiente: s.ambiente, batalha: s.batalha });
-  return { campeaoDex: lutadores[b.winner]?.dex ?? null, eventos: b.events, lutadores, duracao: b.duration };
+  const { batalha: b, clima } = lutaDaRodada(M, { pool: lutadores, ambiente: s.ambiente, batalha: s.batalha });
+  return { campeaoDex: lutadores[b.winner]?.dex ?? null, eventos: b.events, lutadores, duracao: b.duration, clima: clima?.key ?? null };
 }
 
 /* `engine/commit.mjs` expõe `comprometer` como async porque usa WebCrypto, e o

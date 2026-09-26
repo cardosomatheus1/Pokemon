@@ -1191,6 +1191,31 @@ export const MIGRACOES = [
      * ADITIVA. */
     sobe: db => { db.exec(`ALTER TABLE markets ADD COLUMN winners_json TEXT`); },
     desce: db => { db.exec(`ALTER TABLE markets DROP COLUMN winners_json`); },
+  },  {
+    nome: 'dossie-realizado-st9.5',
+    /* O QUE ACONTECEU DE VERDADE EM CADA RODADA, por lutador (ST-9.5 · §7.12).
+     *
+     * O dossiê do pack é MODELO: 200.000 rodadas simuladas offline. Esta tabela
+     * é o REALIZADO — as rodadas que este servidor lutou —, e é ela que deixa a
+     * ficha pôr os dois lado a lado. Gravada da raiz REVELADA depois do fim,
+     * nunca antes: a rodada em curso não pode entrar em agregado nenhum.
+     *
+     * A chave (rodada, vaga) é o que torna a gravação idempotente: liquidar
+     * duas vezes grava uma. ADITIVA. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE round_results (
+          round_id  TEXT NOT NULL REFERENCES rounds(id) ON DELETE CASCADE,
+          slot      INTEGER NOT NULL CHECK (slot >= 0 AND slot < 12),
+          dex       INTEGER NOT NULL,
+          pos       INTEGER NOT NULL CHECK (pos >= 1 AND pos <= 12),
+          abates    INTEGER NOT NULL CHECK (abates >= 0),
+          clima     TEXT,
+          PRIMARY KEY (round_id, slot)
+        )`);
+      db.exec(`CREATE INDEX round_results_dex ON round_results(dex)`);
+    },
+    desce: db => { db.exec(`DROP TABLE round_results`); },
   },
 ];
 

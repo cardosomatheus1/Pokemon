@@ -87,6 +87,9 @@ export const ROTAS_PUBLICAS = [
   'GET /api/rodada',
   'GET /api/rodada/preco',
   'GET /api/rodada/digital',
+  /* ST-9.5: o dossiê realizado — agregado de rodadas encerradas, público
+     como o resto da rodada. */
+  'GET /api/rodada/dossie',
 ];
 
 const erro = (status, codigo, mensagem, extra) =>

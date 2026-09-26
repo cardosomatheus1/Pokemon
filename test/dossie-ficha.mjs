@@ -84,6 +84,26 @@ export function suite() {
     ok(/capture|evolua/.test(d.secoes.find(x => x.id === 'porClima').requisito), 'o clima não diz que falta ter');
   });
 
+  s.teste('o realizado do servidor entra ao lado do modelo, só nas abertas, com n', () => {
+    const escada = { degrau: 'vista', liberado: [...LIBERA.vista] };
+    const realizado = { rodadas: 40, especies: { [CHARIZARD]: { n: 37, vitoria: { n: 37, taxa: 5 / 37 },
+      abates: { n: 37, media: 1.2 }, caiCedo: { n: 37, taxa: 0.2 } } } };
+    const d = secoesDoDossie({ dossie: DOSSIE, escada, dex: CHARIZARD, realizado });
+    const v = d.secoes.find(x => x.id === 'vitoria').servidor;
+    igual(v.join(), 'Neste servidor: vence 14% (37 rodadas — poucas).', `a linha do servidor: ${v}`);
+    ok(!d.secoes.some(x => x.linhas?.some(l => /servidor/.test(l))), 'a linha do servidor caiu entre as do modelo');
+    ok(d.secoes.filter(x => x.trancada).every(x => x.linhas === null), 'a trancada ganhou a linha do servidor');
+    ok(/^Simulado: 200\.000 rodadas do motor\. Neste servidor: 40 rodadas lutadas\.$/.test(d.fonte), `fonte: ${d.fonte}`);
+    /* Sem servidor, nenhuma linha dele e nenhuma menção. */
+    const local = secoesDoDossie({ dossie: DOSSIE, escada, dex: CHARIZARD });
+    ok(!local.secoes.some(x => x.servidor?.length) && !/servidor/.test(local.fonte), 'o modo local fala do servidor');
+    /* Espécie que ainda não lutou aqui diz isso, em vez de mostrar 0%. */
+    const nunca = secoesDoDossie({ dossie: DOSSIE, escada, dex: CHARIZARD, realizado: { rodadas: 3, especies: {} } });
+    igual(nunca.secoes.find(x => x.id === 'vitoria').servidor.join(), 'Neste servidor: ainda não lutou.', 'nunca lutou');
+    const tudo = secoesDoDossie({ dossie: DOSSIE, escada: { degrau: 'dominada', liberado: Object.values(LIBERA).flat() }, dex: CHARIZARD, realizado });
+    for (const sec of tudo.secoes) for (const l of [...sec.linhas, ...sec.servidor]) ok(!numeroSemN(l), `${sec.id}: número sem n — "${l}"`);
+  });
+
   s.teste('a pré-evolução não inventa dossiê: aponta para a forma que luta', () => {
     const d = secoesDoDossie({ dossie: DOSSIE, escada: { liberado: [] }, dex: CHARMANDER, linha: linhaDe(pack, CHARMANDER) });
     ok(!d.luta && d.secoes.length === 0, 'o Charmander ganhou dossiê');
@@ -103,6 +123,8 @@ export function suite() {
     const pdx = semComentario(fonte('../app/modules/pokedex.mjs'));
     ok(/vistosNaPokedex\(estado, marcas\)/.test(pdx) && /ficha\(alvoEsp, estado, marcas\)/.test(pdx),
       'a Pokédex não lê as marcas da Arena');
+    ok(/api\.get\('\/api\/rodada\/dossie'\)/.test(pdx) && /climas: PACK\.clima,\s*realizado \}\)/.test(pdx),
+      'a ficha não pede, ou não passa adiante, o realizado do servidor');
     /* A tela só pinta: nenhuma estatística do dossiê é lida ou refeita nela. */
     ok(!/\.taxa\b|\.vitorias?\b|\.contagem\b|\.porClima\b/.test(pdx), 'a Pokédex recalcula o dossiê por conta própria');
   });
