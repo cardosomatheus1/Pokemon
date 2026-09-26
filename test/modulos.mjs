@@ -347,6 +347,8 @@ const CAMADA = {
   /* ST-9.2 · a escada de informação: em que degrau cada espécie está. */
   'pokedex-estado.mjs': 0,
   'dossie-ficha.mjs': 0,
+  /* ST-9.4 · as notas do histórico da rodada; o painel as recebe por gancho. */
+  'historico-aposta.mjs': 1,
   /* A tela da Pokedex. Camada 4: lista, busca e ficha. */
   'pokedex.mjs': 4,
   /* Quem TOCA a transicao. So `setTimeout` e troca de classe. */

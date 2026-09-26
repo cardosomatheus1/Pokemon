@@ -63,7 +63,8 @@ dossiê da Arena, 200.000 rodadas pela luta paga, cada número com o seu n).
 **ST-9.2 ✅** (a escada da Pokédex). **ST-9.3 ✅** (o dossiê na ficha — Q7 cego
 aplicado; D-120 e L-194 registrados). **T15 ✅** (D-120 corrigido: a sonda
 dos avisos pela linha do tempo — a suíte dupla tinha saído instável duas vezes).
-O próximo bloco é a **ST-9.4** (o dossiê ao lado da aposta).
+**ST-9.4 ✅** (o dossiê ao lado da aposta). O próximo bloco é a **ST-9.5** (o
+dossiê realizado, do servidor).
 
 **Hospedagem pública: decisão do dono, 26/09 — *"Isso vai ser configurável
 depois, primeiro vamos fechar o jogo"*.** Sai da lista de perguntas; volta

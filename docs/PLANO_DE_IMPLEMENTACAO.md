@@ -788,7 +788,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Sabotagem:** mostrar camada de estado superior; esconder o n; a tela recalcular estatística por conta própria.
 - **Portões:** Q1 Q2 Q3 Q5 Q7 · Q6: sem superfície nova (R2).
 
-### ST-9.4 · O dossiê ao lado da aposta
+### ~~ST-9.4~~ ✅ 26/09 · O dossiê ao lado da aposta — "histórico 12%" sob o nome, a legenda com o n uma vez; entra no painel por gancho (o módulo que precifica não importa a escada) · S1321–S1327
 - **Porte** M · **Servidor** não · **Bloco dono** F3.12 (parte) · **Spec** §7.3, §7.15, §22, §28.7 · **Depende de** ST-9.3
 - **Entrega ao jogador:** na linha do lutador, "no histórico vence 11% (n=…)" para quem já liberou, sem mexer na odd.
 - **Escopo:** linha compacta no painel de odds para espécies ENCONTRADA ou acima; o texto separa "nesta rodada (odd)" de "no histórico".

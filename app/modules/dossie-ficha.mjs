@@ -126,3 +126,38 @@ export function secoesDoDossie({ dossie, escada, dex, linha = [], climas = [] })
     degrau: g, titulos: secoes.filter(x => x.trancada && x.degrau === g).map(x => x.titulo), requisito: `Para ver: ${COMO[g]}.` }));
   return { luta: true, formasQueLutam: [], secoes, trancadas };
 }
+
+/* ── AO LADO DA APOSTA (ST-9.4 · §7.15, §28.7) ─────────────────────────────
+ *
+ * Uma linha curta sob o nome do lutador, para quem já o ENCONTROU: o que ele
+ * faz no histórico, com o n. Separada da chance DESTA rodada pela palavra
+ * "histórico" — as duas são números de vitória, e confundi-las seria o
+ * jogador lendo o dossiê como preço.
+ *
+ * A assinatura é a garantia: ela não recebe clima, odd nem pool. O que não
+ * entra não tem como vazar o clima sorteado (técnica da ST-2.1), nem mudar
+ * com a rodada — a linha de um lutador é a mesma em toda rodada. */
+const PRIMEIRO_COM_NOTA = DEGRAUS.indexOf('encontrada');
+const nCompacto = n => (n >= 1000 ? `${(n / 1000).toFixed(1).replace('.', ',')} mil` : num(n));
+export function notaDaAposta({ dossie, degrau, dex }) {
+  const e = dossie?.especies?.[dex];
+  if (!e || DEGRAUS.indexOf(degrau) < PRIMEIRO_COM_NOTA) return null;
+  /* Curta de propósito: a primeira versão ("histórico: vence 12% em 31.555")
+     saía cortada em reticências nas quatro larguras, e o corte comia o NÚMERO;
+     a segunda quebrava "(31,6 / mil)" em duas linhas, repetido doze vezes com
+     quase o mesmo n (Q5). O n comum vai UMA vez, na legenda da lista; a linha
+     só repete o seu quando ele é pequeno — aí ele é a informação. */
+  const pouco = e.vitoria.n < N_POUCO;
+  return { n: e.vitoria.n,
+           texto: `histórico ${pct(e.vitoria.taxa)}${pouco ? ` (${num(e.vitoria.n)} — poucas)` : ''}`,
+           titulo: `No histórico da Arena (não nesta rodada): venceu ${pct(e.vitoria.taxa)} de ${ctx(e.vitoria.n)}. ` +
+                   'A chance DESTA rodada é a da coluna ao lado.' };
+}
+
+/* A legenda, uma vez sob a lista: o que "histórico" quer dizer e o n. */
+export function legendaDasNotas(notas) {
+  const ns = (notas ?? []).filter(Boolean).map(x => x.n);
+  if (!ns.length) return null;
+  return `"histórico" = quanto cada um venceu em ${nCompacto(Math.min(...ns))} rodadas ou mais da Arena — ` +
+         'não é a chance desta rodada.';
+}

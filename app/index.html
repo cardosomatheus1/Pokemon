@@ -975,6 +975,12 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .pdxDos.trancada p{color:var(--dim);font-size:.72rem}
 .pdxIr{font:inherit;font-weight:700;color:var(--neon);background:none;border:1px solid var(--line);border-radius:6px;padding:1px 8px;margin-left:4px;cursor:pointer}
 .pdxIr:hover,.pdxIr:focus-visible{border-color:var(--neon)}
+/* ── ST-9.4 · o histórico sob o nome, na lista de apostas ──────────────────
+   Segunda linha do nome, menor e apagada: é leitura de segunda ordem, e a
+   palavra "histórico" a separa da chance DESTA rodada, que é a coluna. */
+.pick .n .hist{display:block;font-style:normal;font-weight:400;font-size:.66rem;line-height:1.2;color:var(--dim);
+  white-space:normal}
+#pickList .histLeg{margin:6px 12px 2px;color:var(--dim);font-size:.66rem;line-height:1.35}
 /* ── ST-12.6 · O BOLO ─────────────────────────────────────────────────────
    Uma linha por lutador, compacta: nome, a barra da fatia do bolo e o que
    ele pagaria. A barra é a leitura de 1 segundo ("onde está o dinheiro"); o
@@ -7906,7 +7912,11 @@ import { carregar as carregarCarteira } from './modules/banco.mjs';
 import { applyEvent } from './modules/eventos.mjs';
 import { alternarSom, audio, bgm, music, musicOn, sfx, somLigado } from './modules/audio.mjs';
 import { buildEntities, koToast, overlay, preloadSheets, selRing, uiLayer, updatePlate } from './modules/rodada.mjs';
-import { buildPickList, computeOdds, refreshOddsTable } from './modules/odds.mjs';
+import { buildPickList, computeOdds, refreshOddsTable, usarNotasDaLinha } from './modules/odds.mjs';
+/* ST-9.4: a nota do histórico entra no painel por gancho — o módulo que
+   precifica não importa a escada nem o dossiê. */
+import { notasDaRodada } from './modules/historico-aposta.mjs';
+usarNotasDaLinha(lutadores => notasDaRodada(lutadores));
 import { conferirAbates, limparPodio, mostrarPodio, renderKillfeed, resetKillfeed } from './modules/killfeed.mjs';
 import { reiniciarMovimento, stepMovement } from './modules/coreografia.mjs';
 import { PMD, SPRITE_MAX_H, conferirFolha, dexImg, dexURL, dirOf, folhasFalhas, folhasOk, imgTag, sheetURL, urlFolha } from './modules/sprites.mjs';

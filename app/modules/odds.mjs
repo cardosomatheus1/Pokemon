@@ -82,8 +82,14 @@ function computeOdds(fighters, sims, onProgress, raiz, margem){
  * tela do cliente mostrava "100 %" em doze linhas, que é VIDA e não chance, e
  * lê como defeito.
  */
+/* ST-9.4: a nota do histórico sob o nome, por GANCHO — ver
+   `historico-aposta.mjs`. Sem ninguém ligado, a lista é a de sempre. */
+let notasDaLinha = () => [];
+const usarNotasDaLinha = fn => { notasDaLinha = fn; };
+
 function buildPickList(){
   const rows = S.odds.lutadores.slice().sort((a,b) => a.odd - b.odd);
+  const notas = notasDaLinha(S.fighters) ?? [];
   /* Uma leitura só, fora do laço: `valorAposta` consulta o saldo, e doze
      consultas para o mesmo número seriam doze respostas iguais e uma chance de
      serem diferentes. */
@@ -99,7 +105,7 @@ function buildPickList(){
     const meu = S.myBet && S.myBet.idx === o.idx;
     return `<div class="pick ${fechado ? 'fechado' : ''} ${meu ? 'sel' : ''}" data-i="${o.idx}">
       ${imgTag(f)}
-      <span class="n">${f.n}</span>
+      <span class="n">${f.n}${notas[o.idx] ? `<i class="hist" title="${notas[o.idx].titulo}">${notas[o.idx].texto}</i>` : ''}</span>
       <span class="p" title="chance de vencer, medida em ${S.odds.sims.toLocaleString('pt-BR')} simulações">${
         (o.prob*100).toFixed(1)}%<i>±${(o.erroRelativo*100).toFixed(1)}</i></span>
       <span class="o">x${o.odd.toFixed(2)}<i class="liq">${
@@ -108,7 +114,7 @@ function buildPickList(){
         fechado ? 'mercado fechado'
         : `máx ${cabe.toLocaleString('pt-BR')}`}</span>
     </div>`;
-  }).join('');
+  }).join('') + (notas.legenda ? `<p class="histLeg tiny">${notas.legenda}</p>` : '');
 }
 
 /* O MESMO componente, durante a luta. A ordem passa a ser a colocação — é a
@@ -199,6 +205,7 @@ function refreshOddsTable(){
 const vivos = () => (S.ents || []).filter(e => e.alive).length;
 
 export {
+  usarNotasDaLinha,
   buildLiveList,
   buildPickList,
   computeOdds,
