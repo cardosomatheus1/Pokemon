@@ -1216,6 +1216,37 @@ export const MIGRACOES = [
       db.exec(`CREATE INDEX round_results_dex ON round_results(dex)`);
     },
     desce: db => { db.exec(`DROP TABLE round_results`); },
+  },  {
+    nome: 'doce-st9.9',
+    /* O DOCE DA CONTA REAL (ST-9.9 · §7.8, §P2, §16.2).
+     *
+     * `candy_ledger` é o livro, só de inserção, como o da carteira: todo doce
+     * que nasce (motivo `aposta`) ou que desce ao aparelho (motivo `resgate`)
+     * é uma linha, e a chave de idempotência é a do fato — o id da aposta, ou
+     * a chave do resgate. `species_candy` é o saldo materializado POR LINHA
+     * (`species_id` guarda a base, R4), e a soma do livro tem de bater com ele.
+     * ADITIVA. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE candy_ledger (
+          id          INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id     TEXT NOT NULL REFERENCES users(id),
+          species_id  INTEGER NOT NULL,
+          delta       INTEGER NOT NULL CHECK (delta != 0),
+          motivo      TEXT NOT NULL CHECK (motivo IN ('aposta', 'resgate')),
+          idem_key    TEXT NOT NULL UNIQUE,
+          created_at  INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE INDEX candy_ledger_user ON candy_ledger(user_id, motivo, created_at)`);
+      db.exec(`
+        CREATE TABLE species_candy (
+          user_id     TEXT NOT NULL REFERENCES users(id),
+          species_id  INTEGER NOT NULL,
+          quantidade  INTEGER NOT NULL CHECK (quantidade >= 0),
+          PRIMARY KEY (user_id, species_id)
+        )`);
+    },
+    desce: db => { db.exec(`DROP TABLE species_candy`); db.exec(`DROP TABLE candy_ledger`); },
   },
 ];
 

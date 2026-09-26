@@ -48,6 +48,21 @@ export function aplicarDoceDaAposta(e, { pack, chave, dex, venceu, agora, protec
   return { quantidade, linha };
 }
 
+/* O RESGATE DA CONTA (ST-9.9): o doce que nasceu no servidor desce ao save.
+   A chave do resgate fica anotada como uma rodada — a mesma resposta pedida
+   de novo (o aparelho caiu no meio) não credita duas vezes. */
+export function aplicarResgate(e, { chave, doces }) {
+  const marca = `resgate:${chave}`;
+  if ((e.docesRodadas ?? []).includes(marca)) return { quantidade: 0, repetida: true };
+  let quantidade = 0;
+  for (const [linha, n] of Object.entries(doces ?? {})) {
+    const q = Math.floor(Number(n));
+    if (Number.isFinite(q) && q > 0) { somar(e, Number(linha), q); quantidade += q; }
+  }
+  e.docesRodadas = [...(e.docesRodadas ?? []), marca].slice(-MEMORIA_RODADAS);
+  return { quantidade };
+}
+
 /* Quanto a criatura vira ao ser solta — a tela diz ANTES de confirmar. */
 export function doceAoSoltar(pack, dex) {
   const especie = (pack.especies ?? []).find(x => x.dex === dex);

@@ -6,7 +6,7 @@
  * outra aba que creditou. Com conta, quem credita é o servidor (ST-9.9).
  */
 import { carregar, salvar, ondeAventura } from './idle-dados.mjs';
-import { aplicarDoceDaAposta, soltarCriatura } from './doce-dados.mjs';
+import { aplicarDoceDaAposta, soltarCriatura, aplicarResgate } from './doce-dados.mjs';
 
 function comRevisao(fn, deposito) {
   for (let tentativa = 0; tentativa < 2; tentativa++) {
@@ -23,3 +23,6 @@ export const creditarDoceLocal = (args, deposito = globalThis.localStorage) =>
 
 export const soltarLocal = ({ pack, id }, deposito = globalThis.localStorage) =>
   comRevisao(e => soltarCriatura(e, { pack, id, ondeAventura }), deposito);
+
+export const creditarResgateLocal = (args, deposito = globalThis.localStorage) =>
+  comRevisao(e => aplicarResgate(e, args), deposito);

@@ -28,7 +28,9 @@
 import { randomUUID } from 'node:crypto';
 import { CONF } from '../engine/engine.mjs';
 import { ESTADOS } from './scheduler.mjs';
-import { reservarNoBanco, liberarNoBanco, liquidarNoBanco } from './carteira.mjs';
+import { reservarNoBanco, liberarNoBanco, liquidarNoBanco, emTransacao } from './carteira.mjs';
+import { creditarDoceDaAposta } from './doce.mjs';
+import PACK from '../content/escolhido.mjs';
 import { avaliarAposta, avaliarRodada, registrarRodada, registrarPerda,
          registrarBloqueio, ERRO_LIMITE } from './limites.mjs';
 import { podeAgir, ERRO_PROTECAO } from './protecao.mjs';
@@ -246,8 +248,16 @@ export function liquidarRodada(db, { sched, roundId, agora = Date.now() }) {
   for (const t of tickets) {
     const ganhou = t.species_id === rodada.champion_species_id;
     const composicao = JSON.parse(t.stake_breakdown);
+    /* ── UM BILHETE, UMA TRANSAÇÃO (ST-9.9) ─────────────────────────────
+       O pagamento, o doce e o fecho do bilhete acontecem todos ou nenhum: um
+       doce creditado com a aposta revertida seria doce sem aposta. O corpo
+       não foi reindentado de propósito — as âncoras do Q2 moram nele. */
+    emTransacao(db, () => {
     liquidarNoBanco(db, { userId: t.user_id, composicao, ganhou, odd: t.odd,
                           ref: t.id, idem: `settle-${t.id}`, agora });
+    /* O DOCE (§7.8): da espécie APOSTADA, pela vitória dela — o valor não
+       entra. A proteção é conferida AGORA, no instante da liquidação. */
+    creditarDoceDaAposta(db, { pack: PACK, userId: t.user_id, betId: t.id, speciesId: t.species_id, venceu: ganhou, agora });
     const retorno = ganhou ? Math.floor(t.stake * t.odd) : 0;
     db.prepare(`UPDATE bets SET status=?, payout=?, settled_at=? WHERE id=?`)
       .run(ganhou ? 'ganha' : 'perdida', retorno, agora, t.id);
@@ -308,6 +318,7 @@ export function liquidarRodada(db, { sched, roundId, agora = Date.now() }) {
       }
     }
 
+    });
     ganhou ? pagos++ : perdidos++;
   }
   return { pagos, perdidos, total: tickets.length };

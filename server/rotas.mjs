@@ -31,6 +31,8 @@ import { SALDO_INICIAL } from '../engine/carteira.mjs';
 import { apostar, cancelar, ERRO_APOSTA } from './aposta.mjs';
 import { ERRO_MERCADO } from './mercado.mjs';
 import { rotasDoMercado } from './mercado-rotas.mjs';
+import { rotasDoDoce } from './doce-rotas.mjs';
+import { ERRO_DOCE } from './doce.mjs';
 import { definirLimite, confirmarAumento, limitesDe, pedidosDe, TIPOS_LIMITE,
          ERRO_LIMITE } from './limites.mjs';
 import { pausar, pausaAtiva, pedirReentrada, concederReentrada, realityCheck,
@@ -100,6 +102,7 @@ const erro = (status, codigo, mensagem, extra) =>
    500 é "o servidor quebrou", que é uma mentira com custo: o cliente tenta de
    novo, o operador investiga, e o jogador não descobre o que fazer. */
 const STATUS_DE = {
+  [ERRO_DOCE.CHAVE]: 400,
   [ERRO_AUTH?.DADOS ?? 'x']: 400,
   [ERRO_LIMITE.BLOQUEADO]: 403,
   [ERRO_LIMITE.COOLDOWN]: 403,
@@ -162,6 +165,8 @@ const inteiro = v => (typeof v === 'number' && Number.isInteger(v) ? v : null);
 export const ROTAS = {
   /* O bolo mútuo (ST-12.3) mora no próprio arquivo; exige sessão como todas. */
   ...rotasDoMercado(daExcecao),
+  /* O doce da conta real (ST-9.9): o saldo e o resgate idempotente. */
+  ...rotasDoDoce(daExcecao),
 
 
   /* --- autenticação ----------------------------------------------------- */

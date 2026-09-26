@@ -351,6 +351,8 @@ const CAMADA = {
   'doce-dados.mjs': 0,
   'doce-local.mjs': 1,
   'doce-tela.mjs': 4,
+  /* ST-9.9 · o resgate do doce da conta, com a chave guardada antes do pedido. */
+  'doce-conta.mjs': 4,
   /* ST-9.6 · o bônus da Arena nas rotas: a aposta deixa a linha ×4 por 6 h. */
   'bonus-arena.mjs': 0,
   /* ST-9.4 · as notas do histórico da rodada; o painel as recebe por gancho. */

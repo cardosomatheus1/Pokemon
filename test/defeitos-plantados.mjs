@@ -8185,6 +8185,26 @@ export const DEFEITOS = [
     de:'    const fraseDoDoce = especieDoDoce ? textoDoDoce(doceDaRodada, nomeExibido(especieDoDoce.n)) : null;',
     para:"    const fraseDoDoce = textoDoDoce(doceDaRodada, nomeExibido(especieDoDoce?.n ?? ''));" },
 
+  /* ── ST-9.9 · o doce da conta real ───────────────────────────────── */
+  { id:'S1355', arquivo:'server/aposta.mjs', nome:'o doce e creditado fora da transacao do bilhete',
+    real:'uma falha no fecho do bilhete deixa o doce creditado e a aposta de pe — doce sem aposta, e a reliquidacao nao o repete nem o desfaz',
+    de:'    emTransacao(db, () => {\n    liquidarNoBanco(', para:'    emTransacao({ exec: () => {} }, () => {\n    liquidarNoBanco(' },
+  { id:'S1356', arquivo:'server/doce.mjs', nome:'o resgate esquece a chave',
+    real:'o aparelho que caiu no meio pede de novo com a mesma chave e recebe vazio — o doce resgatado some no caminho',
+    de:"    if (ja.length) return { doces: Object.fromEntries(ja.map(x => [x.species_id, -x.delta])), repetido: true };\n", para:'' },
+  { id:'S1357', arquivo:'server/doce.mjs', nome:'o doce do servidor escala com o stake',
+    real:'5.000 rendem o dobro de 50 — o §7.8 inteiro, pelo lado do servidor',
+    de:'  const quantidade = doceDaAposta({', para:"  const quantidade = (db.prepare('SELECT stake FROM bets WHERE id = ?').get(betId)?.stake >= 1000 ? 2 : 1) * doceDaAposta({" },
+  { id:'S1358', arquivo:'server/doce.mjs', nome:'a pausa deixa de ser conferida na liquidacao',
+    real:'quem pediu pausa depois de apostar recebe doce da rodada — o §28.4 vale so no instante da aposta',
+    de:'protecaoAtiva: !!pausaAtiva(db, userId, agora),', para:'protecaoAtiva: false,' },
+  { id:'S1359', arquivo:'app/modules/doce-dados.mjs', nome:'o resgate credita de novo a mesma resposta',
+    real:'a aba que recarregou no meio do resgate dobra o doce no save',
+    de:"  if ((e.docesRodadas ?? []).includes(marca)) return { quantidade: 0, repetida: true };\n", para:'' },
+  { id:'S1360', arquivo:'app/modules/doce-conta.mjs', nome:'a chave do resgate nasce so depois do pedido',
+    real:'a resposta perdida no caminho leva o doce junto: o servidor zerou, e o aparelho pede com outra chave',
+    de:'  gravar(chave);\n  emVoo = api.post', para:'  emVoo = api.post' },
+
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
     real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',

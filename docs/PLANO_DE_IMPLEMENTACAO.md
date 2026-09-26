@@ -838,7 +838,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Sabotagem:** festa no resultado perdido por causa do doce; soltar criatura em campo; crédito duplo.
 - **Portões:** Q1 Q2 Q3 Q5 · Q6: sem superfície nova.
 
-### ST-9.9 · O doce da conta real
+### ~~ST-9.9~~ ✅ 26/09 · O doce da conta real — `candy_ledger` + `species_candy`, crédito DENTRO da transação do bilhete, resgate idempotente por chave guardada antes do pedido · S1355–S1360
 - **Porte** M · **Servidor** sim · **Bloco dono** F3.8 · **Spec** §7.8, §P2, §16.2 · **Depende de** ST-9.8
 - **Entrega ao jogador:** com conta, o doce nasce no servidor junto com a liquidação e chega ao aparelho.
 - **Escopo:** migração aditiva `species_candy` e `candy_ledger` (append-only, `idem_key` = id da aposta). O crédito acontece **dentro** da transação de `liquidarRodada`, conferindo a proteção no instante da liquidação. Rotas `GET /api/doces` e `POST /api/doces/resgatar {chaveIdem}` (R5).

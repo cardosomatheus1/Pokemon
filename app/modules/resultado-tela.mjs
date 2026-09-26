@@ -24,6 +24,7 @@
 import { $, log } from './dom.mjs';
 import { CUR, MOEDA, PACK, nomeExibido } from './motor.mjs';
 import { creditarDoceLocal } from './doce-local.mjs';
+import { trazerDocesDoServidor } from './doce-conta.mjs';
 import { textoDoDoce } from './doce-dados.mjs';
 import { S } from './estado.mjs';
 import { pontuarFimDeRodada } from './liga-tela.mjs';
@@ -210,6 +211,9 @@ function finish(){
    * parada em cima do momento mais esperado da rodada — e, sem rede,
    * parada para sempre. */
   if (modoServidor()) hidratar().then(atualizarSaldo);
+  /* ST-9.9: o doce da conta nasce na liquidação do servidor e desce ao save —
+     com folga, para a liquidação desta rodada já ter acontecido. */
+  if (modoServidor()) setTimeout(trazerDocesDoServidor, 3000);
   // o loop de balões só roda na fase 'fighting'; sem isso o último
   // ataque fica com o balão travado na tela até a rodada seguinte
   S.ents.forEach(e => { e.bub.classList.remove('on'); e.bubbleUntil = -1; });
