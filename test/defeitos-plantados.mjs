@@ -7714,6 +7714,25 @@ export const DEFEITOS = [
     de:"  if (certas.length) { destino = 'acertadores'; base = certas; }",
     para:"  if (certas.length) { destino = 'acertadores'; base = entradas; }" },
 
+  /* ── ST-12.2 · o mercado de abates: quem venceu (F2.2) ──────────────── */
+  { id:'S1225', arquivo:'engine/mercado-abates.mjs', nome:'o empate se resolve pelo primeiro slot',
+    real:'quem acertou o outro empatado perde o bolo por uma regra que ninguem leu antes de entrar',
+    de:'  return selecoesDeAbates(n).filter(i => abates[i] === topo);', para:'  return selecoesDeAbates(n).filter(i => abates[i] === topo).slice(0, 1);' },
+  { id:'S1226', arquivo:'engine/mercado-abates.mjs', nome:'rodada sem abate declara os doze vencedores',
+    real:'o bolo inteiro volta disfarcado de acerto, com festa, quando ninguem acertou nada',
+    de:'  if (topo === 0) return [];\n', para:'' },
+  { id:'S1227', arquivo:'engine/mercado-abates.mjs', nome:'o mercado conta os abates por travessia propria',
+    real:'o anuncio de killstreak vira abate: o mercado paga um lider que o placar e o XP nao reconhecem',
+    de:'  return selecoesDeAbates(n).map(i => abatesNosEventos(i, eventos));',
+    para:'  return selecoesDeAbates(n).map(i => eventos.filter(e => e.ko && e.a === i).length);' },
+  { id:'S1228', arquivo:'engine/mercado-abates.mjs', nome:'queda por tempestade conta como abate',
+    real:'a tempestade nao tem autor; contar a vitima como abate paga o bolo a quem so morreu',
+    de:'  return selecoesDeAbates(n).map(i => abatesNosEventos(i, eventos));',
+    para:'  return selecoesDeAbates(n).map(i => abatesNosEventos(i, eventos) + eventos.filter(e => e.storm && e.hits.some(h => h.ko && h.i === i)).length);' },
+  { id:'S1229', arquivo:'engine/mercado-abates.mjs', nome:'vence quem abateu menos',
+    real:'o mercado paga o contrario da pergunta',
+    de:'  const topo = Math.max(0, ...abates);', para:'  const topo = Math.min(...abates);' },
+
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
     real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',

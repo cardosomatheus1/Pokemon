@@ -610,7 +610,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
   sumir; arredondar para cima; ignorar `semAcerto`.
 - **Portões:** Q1 Q2 Q3 · Q6: sem superfície nova.
 
-### ST-12.2 · O mercado de abates: quem venceu o mercado (camada 0)
+### ~~ST-12.2~~ ✅ 26/09 · O mercado de abates: quem venceu o mercado (camada 0) — `engine/mercado-abates.mjs`; zero abate = ninguém vence (vale o "sem acerto"); 1.000 rodadas da árvore de sementes sem divergência · S1225–S1229
 - **Porte** P · **Servidor** não · **Bloco dono** F2.2 · **Spec** §6.5 · **Depende de** ST-12.1
 - **Entrega ao jogador:** nada visível — a resposta do mercado sai dos eventos da luta.
 - **Escopo:** `engine/mercado-abates.mjs`: `selecoesDeAbates(pool)` (os 12

@@ -47,8 +47,8 @@ linhas 7 a 11 da fila do `ROADMAP.md`: **E12 (V2 bolo mútuo) → E9 (V3) → E1
 medidos e registrados, sem trancar a fila. Ficam com o dono: a migração do
 save local (ST-13.4), ligar stake entre jogadores (D2), dinheiro real (DEC-02)
 e a hospedagem pública. **ST-12.1 ✅** (`engine/mutuo.mjs`, o bolo fecha no bruto em
-10.000 casos semeados). **O próximo bloco é a ST-12.2** (quem venceu o
-mercado de abates, pelos eventos do motor).
+10.000 casos semeados). **ST-12.2 ✅** (quem venceu o mercado de abates). **O próximo bloco é a
+ST-12.3** (o bolo no servidor: tabelas, entrada, limite somado).
 
 ### Q2 COMPLETO VERDE — 1210/1210 (26/09, commit 3ad44ef)
 
