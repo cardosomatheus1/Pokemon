@@ -261,6 +261,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **ST-12.1** · o motor do bolo mútuo (a V2 começa) | 26/09 | `engine/mutuo.mjs`, camada 0: em 10.000 bolos semeados pagamentos + taxa + resíduo + tesouraria == bruto · taxa em pontos-base (0,29 × 100 não vira 28) · S1217–S1224 |
 | **ST-0.9** · o ensaio do piloto roda na CI a cada push | 26/09 | servidor + navegador: conta, aposta, liquidação, sair e entrar · reprova a CI · S1216 |
 | **D-117** · o padding de todo cartão volta (uma chave solta no CSS o matava) | 26/09 | 30 telas olhadas antes e depois, 4 larguras · a lista de odds fica sem respiro lateral para os nomes caberem · guarda de classe: as chaves de toda folha fecham na ordem · S1214–S1215 · fecha a L-190 |
 | **D-116** · a primeira escolha do idle cabe no painel a 420 px | 26/09 | a terceira carta saía 12 px · `minmax(0,1fr)` · S1212–S1213 |

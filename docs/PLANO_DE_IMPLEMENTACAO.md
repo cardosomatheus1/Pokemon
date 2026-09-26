@@ -588,7 +588,7 @@ dois a escolha óbvia); sem acertador → **devolução proporcional** das entra
 (menos a taxa), exibida antes; resíduo de divisão → `MARKET_RESIDUE` para a
 tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 
-### ST-12.1 · O motor de apuração mútua (camada 0)
+### ~~ST-12.1~~ ✅ 26/09 · O motor de apuração mútua (camada 0) — `engine/mutuo.mjs`, 10 testes (10.000 bolos semeados fecham no bruto) · S1217–S1224
 - **Porte** M · **Servidor** não · **Bloco dono** F2.1 · **Spec** §6.4, §6.12 · **Depende de** nada
 - **Entrega ao jogador:** nada visível — a regra que torna o bolo honesto.
 - **Escopo:** `engine/mutuo.mjs`, puro: `apurar({ entradas, vencedoras, taxa, semAcerto })`
