@@ -7684,6 +7684,26 @@ export const DEFEITOS = [
     real:'o idle volta a morrer no navegador — a parte do jogo que fica aberta por horas nao aparece no piloto',
     de:'      relatar(api, eventosDoEstado(E, agora));', para:'      void eventosDoEstado(E, agora);' },
 
+  /* ── D-112 · a aposta do servidor nunca era liquidada ─────────────────── */
+  { id:'S1198', arquivo:'server/servidor.mjs', nome:'o laco volta a nao liquidar as rodadas',
+    real:'a rodada fecha, a aposta fica travada para sempre e o dinheiro reservado nao volta (achado no ensaio do piloto)',
+    de:'    aoEncerrar: () => liquidarPendentes(db, { sched, agora: relogio() }),\n', para:'' },
+  { id:'S1199', arquivo:'server/laco.mjs', nome:'a liquidacao passa a acontecer depois do anuncio',
+    real:'o cliente recarrega o saldo ao ouvir "encerrada" e le o saldo de antes do pagamento',
+    de:'      if (aoEncerrar && r.status === ESTADOS.ENCERRADA && liquidada !== r.id) {',
+    para:'      if (aoEncerrar && r.status === ESTADOS.ENCERRADA && liquidada !== r.id && ultimo?.fase === r.status) {' },
+  { id:'S1200', arquivo:'server/laco.mjs', nome:'uma liquidacao que falha segura o anuncio',
+    real:'o jogo para numa rodada encerrada que a sala nunca ouve — o desligamento silencioso',
+    de:"        catch (e) { ultimoErro = e; if (aoErro) aoErro(e); else console.error('[laço · liquidação]', e); }",
+    para:'        catch (e) { throw e; }' },
+  { id:'S1201', arquivo:'server/aposta.mjs', nome:'as pendencias deixam de ser achadas',
+    real:'o servidor que caiu entre fechar e liquidar deixa as apostas daquela rodada presas',
+    de:"                          WHERE b.status = 'travada' AND r.status = ? AND r.champion_species_id IS NOT NULL`)",
+    para:"                          WHERE b.status = 'ganha' AND r.status = ? AND r.champion_species_id IS NOT NULL`)" },
+  { id:'S1202', arquivo:'server/servidor.mjs', nome:'ao ligar, o servidor deixa de liquidar o que ficou para tras',
+    real:'depois de uma queda, a rodada interrompida so e paga quando outra rodada encerrar — ou nunca, se o servidor cair de novo',
+    de:'        try { liquidarPendentes(db, { sched, agora: relogio() }); }\n', para:'        try { }\n' },
+
   /* ── ST-7.2c · o relatório do piloto ─────────────────────────────────── */
   { id:'S1187', arquivo:'server/piloto.mjs', nome:'o perfil mais proximo passa a ser linear',
     real:'um dia de 26 runs e contado como diario, e a razao da maratona contra a ST-3.3 sai de um grupo errado',

@@ -261,6 +261,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **D-112** · a aposta do servidor passa a ser liquidada | 25/09 | achado no primeiro ENSAIO do piloto no navegador, com a suíte verde: `liquidarRodada` não tinha chamador · o laço liquida antes de anunciar, e o servidor paga o pendente ao ligar · `tools/ensaio-piloto.mjs` → PRONTO PARA CONVIDAR · S1198–S1202 |
 | **L-188** · no panorâmico a luta cabe na altura | 25/09 | a DEC-15 garantia só a largura: a 3× o trio ocupava 182 de 207 px · regra estendida à altura · pé do mob 88% → 75% · S1194–S1197 · captura `tools/previas/_idle/run-panoramico.png` |
 | **ST-7.2c** · o relatório e o roteiro do piloto | 25/09 | `node tools/relatorio-piloto.mjs` — contas, D1/D7, ativos por dia, idle por jogador-dia contra a ST-3.3, saldos por balde, arena e boutique · `docs/PILOTO.md` · S1187–S1193 |
 | **ST-7.2b** · a conta real na tela (fecha a L-189) | 25/09 | cadastro e login pelo navegador, pela primeira vez · a mensagem não vira consulta de conta · Chromium pelo backend: 2 contas, página volta logada com 1.000 do grant · S1179–S1186 · capturas `tools/previas/_conta/` |

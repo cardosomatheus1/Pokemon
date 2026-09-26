@@ -24,6 +24,7 @@ import { RAIZ_LARGA } from '../engine/seed.mjs';
 import { abrirBanco, migrar } from './banco.mjs';
 import { criarScheduler } from './scheduler.mjs';
 import { criarSala } from './transporte.mjs';
+import { liquidarPendentes } from './aposta.mjs';
 import { criarLaco } from './laco.mjs';
 import { ROTAS, ROTAS_PUBLICAS, ROTAS_ADMIN, usuarioDa } from './rotas.mjs';
 
@@ -84,6 +85,8 @@ export function criarServidor(opcoes = {}) {
      o scheduler estava pronto, a sala estava pronta, e `GET /api/rodada`
      respondia `null` para sempre porque nada girava. */
   const laco = criarLaco({ sched, sala,
+    /* D-112: sem isto, nenhuma aposta do servidor era liquidada. */
+    aoEncerrar: () => liquidarPendentes(db, { sched, agora: relogio() }),
     aoErro: e => { if (!config.silencioso) console.error('[laço]', e); } });
 
   /* --- as rotas do F1.1 --------------------------------------------------- */
@@ -239,6 +242,9 @@ export function criarServidor(opcoes = {}) {
        a rodada com a própria mão. */
     ouvir: porta => new Promise(r =>
       servidor.listen(porta ?? config.porta, '127.0.0.1', () => {
+        /* O que ficou travado na última vez que o servidor caiu (D-112). */
+        try { liquidarPendentes(db, { sched, agora: relogio() }); }
+        catch (e) { if (!config.silencioso) console.error('[liquidação ao ligar]', e); }
         if (opcoes.laco !== false) laco.iniciar();
         r(servidor.address().port);
       })),

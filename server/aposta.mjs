@@ -306,3 +306,17 @@ export function liquidarRodada(db, { sched, roundId, agora = Date.now() }) {
   }
   return { pagos, perdidos, total: tickets.length };
 }
+
+/* ── O QUE FICOU PARA TRÁS (D-112) ─────────────────────────────────────────
+ *
+ * Toda rodada ENCERRADA com bilhete ainda `travada`. É o que o laço chama a
+ * cada encerramento — e o que o servidor chama ao ligar: se ele caiu entre
+ * fechar a rodada e liquidá-la, o dinheiro de quem apostou não pode ficar
+ * reservado para sempre. Idempotente pela mesma razão do `liquidarRodada`. */
+export function liquidarPendentes(db, { sched, agora = Date.now() }) {
+  const ids = db.prepare(`SELECT DISTINCT b.round_id AS id FROM bets b JOIN rounds r ON r.id = b.round_id
+                          WHERE b.status = 'travada' AND r.status = ? AND r.champion_species_id IS NOT NULL`)
+    .all(ESTADOS.ENCERRADA).map(x => x.id);
+  for (const roundId of ids) liquidarRodada(db, { sched, roundId, agora });
+  return ids.length;
+}

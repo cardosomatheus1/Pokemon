@@ -36,6 +36,16 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### D-112 CORRIGIDO — nenhuma aposta do servidor era liquidada (26/09)
+
+O primeiro ENSAIO do piloto num navegador de verdade — conta, aposta, rodada,
+resultado — achou o defeito mais sério da semana, com a suíte inteira verde: a
+rodada fechava e a aposta ficava `travada` para sempre (sem pagamento, sem
+perda, sem XP, o dinheiro reservado preso). `liquidarRodada` existia e só a
+suíte a chamava. Agora o laço liquida antes de anunciar o fim, e o servidor
+paga o que ficou pendente ao ligar. **`node tools/ensaio-piloto.mjs` virou o
+passo obrigatório antes de mandar o link** — termina em PRONTO PARA CONVIDAR.
+
 ### L-188 FECHADA — no panorâmico a luta passou a caber na altura
 
 A esteira achou primeiro o próprio erro: uma amostra com mob ainda ENTRANDO

@@ -6496,3 +6496,36 @@ caso S15 do V1.14, pelo mesmo caminho: só a execução completa vê.
 mutante, `origem` 2/3; sem ele, 3/3. **Teste que trava:** o próprio S765.
 **A lição que fica:** teste que afirma uma constante não pode iterar a
 constante — a afirmação vira tautologia no dia em que a constante muda.
+
+## D-112 — nenhuma aposta do servidor era liquidada ✅ CORRIGIDO
+
+**Achado em:** 25/09/2026, no primeiro ENSAIO do piloto num navegador de verdade
+(conta real → aposta → rodada → resultado). **Bloco dono:** ST-7.2 (o piloto:
+é o laço central do que os amigos vão jogar). **Estado:** ✅ corrigido em
+25/09/2026.
+
+**Medição:** 50 apostados em Omastar; a rodada foi a `encerrada` e a seguinte
+já lutava; o bilhete continuava `travada`, `settled_at` nulo, e o ledger tinha
+só `WELCOME_GRANT` e `BET_RESERVE`. Sem pagamento, sem `BET_LOSS`, sem perda no
+limite diário, sem XP — e os 50 reservados para sempre.
+
+**Causa:** `liquidarRodada` (`server/aposta.mjs`) existia, idempotente e
+testada, e o ÚNICO chamador era `test/aposta-servidor.mjs`. O laço (F1.14)
+fecha a rodada pelo scheduler e abre a próxima; ninguém liquidava. `git log -S`
+mostra que o chamador nunca existiu. É a quarta vez da forma "testar a peça não
+testa o encaixe" (S30, S53, L-033, e o próprio laço do F1.14) — e a suíte
+inteira estava verde.
+
+**Conserto:** o laço ganhou `aoEncerrar`, chamado uma vez por rodada ANTES do
+anúncio de "encerrada" (o cliente recarrega o saldo ao ouvir); uma falha ali é
+registrada e não segura o anúncio. O servidor liga `aoEncerrar` a
+`liquidarPendentes` — toda rodada encerrada com bilhete travado —, e chama o
+mesmo ao ligar, para pagar o que ficou para trás numa queda.
+
+**Testes que travam:** `test/liquidacao-ligada.mjs` (o servidor INTEIRO com o
+relógio andando; a ordem liquidação → anúncio; a falha que não trava; a
+pendência depois de uma queda) e `tools/ensaio-piloto.mjs`, que refaz no
+navegador o laço que achou o defeito. S1198–S1202.
+
+**A lição, a mesma de sempre e por isso escrita de novo:** a suíte responde
+"cada peça faz o que diz". Só o ENSAIO responde "um jogador consegue jogar".

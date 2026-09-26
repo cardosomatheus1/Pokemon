@@ -64,8 +64,20 @@ O jogo e a API saem pelo mesmo endereço, então não há CORS a configurar. O
 endereço do túnel rápido muda a cada vez que ele sobe — para 14 dias, vale um
 túnel nomeado (conta gratuita da Cloudflare) ou um VPS pequeno.
 
-**Conferir antes de mandar o link:** abrir o endereço público num celular fora
-do Wi-Fi de casa, criar uma conta, apostar uma rodada, sair e entrar de novo.
+O servidor escuta só em `127.0.0.1` (a própria máquina) — é o que o túnel
+precisa, e é o que impede alguém da rede da casa de chegar nele sem o túnel.
+
+**Conferir antes de mandar o link — o ENSAIO:**
+
+```powershell
+node tools/ensaio-piloto.mjs http://localhost:8080
+```
+
+Ele cria uma conta de ensaio, aposta uma rodada, confere no servidor que a
+aposta foi **liquidada** (o XP sobe), sai e entra de novo. Termina com
+`PRONTO PARA CONVIDAR` ou `NÃO CONVIDE AINDA`. Foi o primeiro ensaio que achou
+o D-112 (nenhuma aposta era liquidada, com a suíte inteira verde). Depois,
+abra o endereço público num celular fora do Wi-Fi de casa e repita à mão.
 
 ## 3. A rotina de todo dia (5 minutos)
 

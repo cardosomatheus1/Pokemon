@@ -27,9 +27,10 @@ import { ESTADOS } from './scheduler.mjs';
 
 export const INTERVALO_MS = 250;
 
-export function criarLaco({ sched, sala, intervalo = INTERVALO_MS, aoErro = null }) {
+export function criarLaco({ sched, sala, intervalo = INTERVALO_MS, aoErro = null, aoEncerrar = null }) {
   let timer = null;
   let ultimo = null;          // { id, fase } — o que a sala já sabe
+  let liquidada = null;       // a última rodada entregue ao `aoEncerrar`
   let ultimoErro = null;
 
   /* O ANÚNCIO CARREGA O ESTADO INTEIRO, e nunca um delta.
@@ -60,6 +61,19 @@ export function criarLaco({ sched, sala, intervalo = INTERVALO_MS, aoErro = null
       }
 
       sched.tick();
+      /* A RODADA QUE ENCERRA É LIQUIDADA AQUI, e ANTES do anúncio (D-112).
+         Até o ensaio do piloto nada chamava a liquidação: a rodada fechava e
+         a aposta ficava `travada` para sempre. A ordem importa — o cliente
+         recarrega o saldo quando ouve "encerrada", e ouvir antes do pagamento
+         é ler o saldo velho. Uma falha aqui é registrada e NÃO segura o
+         anúncio: o jogo que para porque a liquidação falhou é o desligamento
+         silencioso que este arquivo existe para impedir; o que ficou travado
+         é pago na próxima vez (`liquidarPendentes`). */
+      if (aoEncerrar && r.status === ESTADOS.ENCERRADA && liquidada !== r.id) {
+        liquidada = r.id;
+        try { aoEncerrar(r); }
+        catch (e) { ultimoErro = e; if (aoErro) aoErro(e); else console.error('[laço · liquidação]', e); }
+      }
       /* MUDOU? A comparação é contra o que a SALA sabe, e não contra o que o
          passo anterior viu. São a mesma coisa hoje; se um dia deixarem de ser
          — outro caminho transmitindo, um teste chamando `tick` direto —, o que
