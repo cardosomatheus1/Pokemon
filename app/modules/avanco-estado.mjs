@@ -19,6 +19,7 @@
  * colher — a mesma forma da expedição, e pelo mesmo motivo: assim o teto nunca
  * é ultrapassado, e a recusa acontece no CLIQUE, onde o jogador entende.
  */
+import { golpesDaCriatura } from './moveset-dados.mjs';
 import { acharCriatura, criaturasDe, estadoDoTeto, salvar,
          criarCriatura, motivoDaOcupada, lancarRunNoTeto } from './idle-dados.mjs';
 import { forcaDe } from '../../engine/bioma.mjs';
@@ -252,7 +253,10 @@ export function sincronizar(e, { pack, agora }) {
    não pode conhecer o tema (§0.3) —, então quem sabe o tamanho da lista é
    quem conhece o pack. Um piso de 1 porque uma espécie sem golpe declarado não
    pode zerar a conta e apagar o balão de todo mundo. */
-const quantosGolpes = (pack, dex, nivel = null) => {
+const quantosGolpes = (pack, dex, nivel = null, escolhidos = null) => {
+  /* ST-9.12: com moveset escolhido, o tamanho é o DELE — a mesma lista que o
+     balão vai peneirar (a regra de cima, L-168, continua valendo). */
+  if (escolhidos?.length) return escolhidos.length;
   const e = (pack?.especies ?? []).find(x => x.dex === dex);
   const todos = (pack?.golpes ?? {})[(e?.t ?? [])[0]] ?? [];
   /* ── O TAMANHO É O DO REPERTÓRIO, E NÃO O DA LISTA (L-168) ──────────
@@ -268,9 +272,10 @@ export function cena(e, { pack, agora }) {
   if (!run) return null;
   const equipe = equipeDaRun(e, pack, run);
   const elenco = elencoDaRun(pack, run);
+  const meusGolpes = equipe[0] ? golpesDaCriatura(pack, equipe[0]) : null;
   const c = cenaDaRun(run, {
     elenco, equipe, agora, climaRitmo: ritmoDoClima(pack, run, equipe),
-    golpesMeus: quantosGolpes(pack, equipe[0]?.dex, equipe[0]?.nivel),
+    golpesMeus: quantosGolpes(pack, equipe[0]?.dex, equipe[0]?.nivel, meusGolpes),
     golpesDele: quantosGolpes(pack, (elenco.comuns ?? [])[0]?.dex,
                               nivelDoEstagio(run.estagio)),
   });
@@ -294,7 +299,7 @@ export function cena(e, { pack, agora }) {
      este arquivo. O campo é o `fx` — o VOCABULÁRIO de desenho —, e não a
      chave do clima: o app sabe desenhar chuva, e não sabe o que é Nevasca. */
   const cl = climaDaRun(pack, run);
-  return { ...c, nivelMeu: Math.floor(Number(equipe[0]?.nivel) || 1),
+  return { ...c, nivelMeu: Math.floor(Number(equipe[0]?.nivel) || 1), golpesMeu: meusGolpes,
            nivelDeles: nivelDoEstagio(run.estagio),
            climaFx: cl?.fx ?? null };
 }

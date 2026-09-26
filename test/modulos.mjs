@@ -351,6 +351,11 @@ const CAMADA = {
   'doce-dados.mjs': 0,
   'doce-local.mjs': 1,
   'doce-tela.mjs': 4,
+  /* ST-9.12 · os quatro golpes: a regra (camada 0) e o clique. */
+  'moveset-dados.mjs': 0,
+  'moveset-tela.mjs': 4,
+  /* ST-9.13 · o comparador: a função da Arena, por referência. */
+  'comparador-golpes.mjs': 0,
   /* ST-9.9 · o resgate do doce da conta, com a chave guardada antes do pedido. */
   'doce-conta.mjs': 4,
   /* ST-9.6 · o bônus da Arena nas rotas: a aposta deixa a linha ×4 por 6 h. */

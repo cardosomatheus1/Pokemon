@@ -346,7 +346,7 @@ export function desenharMobs(g, cam, escala, t, eu, cena, sombra, nomeDe, golpeD
                 '-' + golpe.dano, cena.wave + ':' + golpe.i + ':' + golpe.t, 'meu');
         /* E o EFEITO no mob, que é quem levou (L-171). */
         estourar(golpeDe && meu.dex != null
-                   ? golpeDe(meu.dex, golpe.golpe, cena.nivelMeu)?.nome : null,
+                   ? golpeDe(meu.dex, golpe.golpe, cena.nivelMeu, cena.golpesMeu)?.nome : null,
                  s.x, s.y - fh * 0.45, cam,
                  'fx' + cena.wave + ':' + golpe.i + ':' + golpe.t, t);
       }
@@ -360,7 +360,7 @@ export function desenharMobs(g, cam, escala, t, eu, cena, sombra, nomeDe, golpeD
     if (meu.pronto) for (const golpe of (cena.aCaminho ?? []).filter(x => x.i === m.i)) {
       const dele = golpe.de === 'dele';
       const nome = !golpeDe ? null : dele ? golpeDe(m.dex, golpe.golpe, cena.nivelDeles)?.nome
-                 : meu.dex != null ? golpeDe(meu.dex, golpe.golpe, cena.nivelMeu)?.nome : null;
+                 : meu.dex != null ? golpeDe(meu.dex, golpe.golpe, cena.nivelMeu, cena.golpesMeu)?.nome : null;
       const mob = { x: s.x, y: s.y - fh * 0.45 }, eu = { x: meu.x, y: meu.y - 14 };
       lancar(nome, dele ? mob : eu, dele ? eu : mob, cam,
              'lc' + cena.wave + ':' + golpe.de + golpe.i + ':' + golpe.t, t + (golpe.t - cena.t));
@@ -405,7 +405,7 @@ export function desenharMobs(g, cam, escala, t, eu, cena, sombra, nomeDe, golpeD
         balao('meu', camada, mx, my - 52,
               /* E o MEU é o da criatura que foi — ela sobe no meio da run. */
               golpeDe && meu.dex != null
-                ? golpeDe(meu.dex, golpe.golpe, cena.nivelMeu) : null,
+                ? golpeDe(meu.dex, golpe.golpe, cena.nivelMeu, cena.golpesMeu) : null,
               meu.dex);
         if (!golpe.dano)
           flutuar(camada, mx, my - 46, 'ERROU', 'm' + cena.wave + ':e:' + golpe.t, 'meu');

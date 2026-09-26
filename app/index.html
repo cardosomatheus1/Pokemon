@@ -992,6 +992,20 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
   border-radius:6px;padding:1px 6px;cursor:pointer}
 .idleSoltar:hover{color:var(--txt);border-color:var(--neon)}
 .idleSoltar.armado{color:var(--red);border-style:solid;border-color:var(--red)}
+/* ST-9.12 · os golpes escolhidos, sob a ficha da criatura */
+.idleGolpes{font-size:.62rem;color:var(--dim)}
+.idleGolpes summary{cursor:pointer}
+.idleGolpes[open]{display:flex;flex-wrap:wrap;gap:3px}
+.idleGolpes[open] summary{flex-basis:100%}
+.idleGolpe{font:inherit;font-size:.6rem;color:var(--dim);background:none;border:1px solid var(--line);border-radius:5px;padding:1px 5px;cursor:pointer;margin:0 3px 3px 0}
+.idleGolpes summary i{font-style:normal;color:var(--neon)}
+.idleArena .idleLeg{color:var(--dim);font-size:.56rem}
+.idleGolpe.on{color:var(--txt);border-color:var(--neon);background:rgba(var(--goldRGB),.1)}
+.idleGolpe.recusado{border-color:var(--red)}
+/* ST-9.13 · o que a Arena escolheria — sublinhado o que vocês têm em comum */
+.idleArena{flex-basis:100%;margin:3px 0 0;font-size:.6rem;color:var(--dim);line-height:1.35}
+.idleArena b{color:var(--txt)}
+.idleArena u{color:var(--neon);text-decoration:none;border-bottom:1px solid var(--neon)}
 /* ST-9.10 · dar doce: o botão que sobe o nível, em cor de ação */
 .idleDarDoce{font:inherit;font-size:.62rem;font-weight:700;color:var(--neon);background:rgba(var(--goldRGB),.08);
   border:1px solid rgba(var(--goldRGB),.4);border-radius:6px;padding:1px 6px;cursor:pointer}
@@ -7943,6 +7957,8 @@ import { buildPickList, computeOdds, refreshOddsTable, usarNotasDaLinha } from '
 import { notasDaRodada } from './modules/historico-aposta.mjs';
 /* ST-9.8: soltar na caixa vira doce — o módulo se liga sozinho ao clique. */
 import './modules/doce-tela.mjs';
+/* ST-9.12: escolher os golpes — o módulo se liga sozinho ao clique. */
+import './modules/moveset-tela.mjs';
 usarNotasDaLinha(lutadores => notasDaRodada(lutadores));
 import { conferirAbates, limparPodio, mostrarPodio, renderKillfeed, resetKillfeed } from './modules/killfeed.mjs';
 import { reiniciarMovimento, stepMovement } from './modules/coreografia.mjs';

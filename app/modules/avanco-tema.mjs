@@ -50,9 +50,14 @@ export const nomeDoDex = dex => nomeExibido((especieDe(dex) ?? { n: '?' }).n);
  * SEM NÍVEL, a peneira não acontece: quem chamar sem o argumento recebe o
  * comportamento de antes. É deliberado — um chamador esquecido não pode ficar
  * com balão vazio, e a suíte cobra o argumento onde ele importa. */
-export function golpeDoDex(dex, i, nivel = null) {
+export function golpeDoDex(dex, i, nivel = null, escolhidos = null) {
   const todos = (PACK.golpes ?? {})[(especieDe(dex)?.t ?? [])[0]] ?? [];
-  const lista = nivel == null ? todos : repertorio(nivel, todos);
+  /* ST-9.12: com moveset, a lista é a dos ESCOLHIDOS, na ordem do jogador —
+     e `avanco-estado` contou esse mesmo tamanho para o motor sortear. */
+  /* O escolhido pode vir de outro tipo ou da reserva: procura em todas. */
+  const qualquer = n => Object.values(PACK.golpes ?? {}).flat().find(g => g.n === n);
+  const lista = escolhidos?.length ? escolhidos.map(qualquer).filter(Boolean)
+    : nivel == null ? todos : repertorio(nivel, todos);
   const mv = lista.length ? lista[i % lista.length] : null;
   if (!mv) return null;
   /* ── A COR VEM DO TIPO, COMO NA ARENA ─────────────────────────────────

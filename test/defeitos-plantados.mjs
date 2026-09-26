@@ -8230,6 +8230,35 @@ export const DEFEITOS = [
     real:'a tela credita ao viés golpes que sairiam de qualquer jeito — a razao conta outra historia',
     de:'    const peloVies = sorte < gap && encaixa(b) && !encaixa(a);', para:'    const peloVies = sorte < gap && encaixa(b);' },
 
+  /* ── ST-9.12 · o jogador escolhe os quatro golpes ───────────────────── */
+  { id:'S1368', arquivo:'app/modules/moveset-dados.mjs', nome:'o moveset aceita cinco golpes',
+    real:'o limite de quatro deixa de existir — e o comparador da Arena (quatro) deixa de ser comparavel',
+    de:'  if (golpes.length > GOLPES_MAX) return', para:'  if (golpes.length > GOLPES_MAX + 1) return' },
+  { id:'S1369', arquivo:'app/modules/moveset-dados.mjs', nome:'o moveset aceita golpe de qualquer tipo',
+    real:'o Charmander aprende Surf — o moveset deixa de ser da especie',
+    de:'  [...new Set(listasDaEspecie(pack, dex).flatMap(l => repertorio(nivel, l).map(g => g.n)))];',
+    para:'  [...new Set(Object.values(pack?.golpes ?? {}).flatMap(l => repertorio(nivel, l).map(g => g.n)))];' },
+  { id:'S1370', arquivo:'app/modules/moveset-dados.mjs', nome:'o moveset aceita golpe acima do nivel',
+    real:'o Charmander nivel 1 com Fire Blast — a gradacao do 1.x volta a mentir, agora por escolha do jogador',
+    de:'listasDaEspecie(pack, dex).flatMap(l => repertorio(nivel, l).map(g => g.n))', para:'listasDaEspecie(pack, dex).flatMap(l => l.map(g => g.n))' },
+  { id:'S1371', arquivo:'engine/engine.mjs', nome:'o moveset do jogador vaza para a Arena',
+    real:'a escolha do idle muda a luta paga — P4 cai, e a odd deixa de descrever a luta',
+    de:'  return atribuirGolpesExplicado(golpes, entry, nomeReserva).golpes;', para:'  return entry.moveset ?? atribuirGolpesExplicado(golpes, entry, nomeReserva).golpes;' },
+  { id:'S1372', arquivo:'app/modules/avanco-estado.mjs', nome:'o motor sorteia o indice fora do moveset',
+    real:'com dois golpes escolhidos o motor sorteia entre cinco, e o balao mostra o golpe errado pelo modulo',
+    de:'equipe[0]?.nivel, meusGolpes),', para:'equipe[0]?.nivel),' },
+
+  /* ── ST-9.13 · o comparador ───────────────────────────────────────── */
+  { id:'S1373', arquivo:'app/modules/comparador-golpes.mjs', nome:'o comparador reimplementa a escolha da Arena',
+    real:'no primeiro ajuste de balanco o jogador monta o time contra uma Arena que nao existe',
+    de:'export const funcaoDaArena = atribuirGolpesExplicado;', para:'export const funcaoDaArena = e => ({ ...atribuirGolpesExplicado(e) });' },
+  { id:'S1374', arquivo:'app/modules/comparador-golpes.mjs', nome:'a razao sai com o viés invertido',
+    real:'"prioriza especial" para quem a Arena arma no braco — a frase contradiz os golpes logo acima dela',
+    de:"  return r.prefEsp ? `bate mais forte no especial", para:"  return !r.prefEsp ? `bate mais forte no especial" },
+  { id:'S1375', arquivo:'app/modules/comparador-golpes.mjs', nome:'a pre-evolucao se compara consigo mesma',
+    real:'o Charmander e comparado com um "Charmander da Arena" que nao luta — a comparacao nao existe',
+    de:'  return linhaDe(pack, dex).find(luta) ?? null;', para:'  return dex;' },
+
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
     real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',

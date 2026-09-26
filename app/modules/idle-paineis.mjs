@@ -22,6 +22,8 @@ import { estiloIcone } from './icones.mjs';
 import { chanceDe } from '../../engine/captura.mjs';
 import { naEquipe, naCaixa, PARTY_MAX, bolsaEmLista, registroEmLista, encontrosDaRun } from './idle-dados.mjs';
 import { doceAoSoltar } from './doce-dados.mjs';
+import { golpesDaCriatura, liberados, GOLPES_MAX } from './moveset-dados.mjs';
+import { compararGolpes } from './comparador-golpes.mjs';
 import { chaveDoDoce, XP_POR_DOCE } from '../../engine/doce.mjs';
 import { estiloItem, usarCatalogo } from './itens-icone.mjs';
 
@@ -199,8 +201,20 @@ export function pintarCentro(E) {
      botão (tirar/guardar). */
   const item = (c, guardado) => {
     const doces = (E.doces ?? {})[chaveDoDoce(PACK, c.dex)] ?? 0;
+    /* ST-9.12: os golpes dela, escolhidos entre os que o nível liberou. */
+    const emUso = golpesDaCriatura(PACK, c), podem = liberados(PACK, c.dex, c.nivel);
+    /* ST-9.13: e o que a Arena escolheria para a forma que luta, com o porquê. */
+    const cmp = compararGolpes(PACK, c, { nomeDe: nomeExibido });
+    /* Fechado, o resumo já diz QUAIS são (Q7: "golpes · 4/4" não respondia). */
+    const golpes = `<details class="idleGolpes" data-golpes-de="${c.id}"><summary>golpes: ${emUso.join(' · ')} <i>(trocar)</i></summary>
+      ${podem.map(n => `<button class="idleGolpe${emUso.includes(n) ? ' on' : ''}" data-golpe="${n}" data-cria="${c.id}">${n}</button>`).join('')}
+      ${cmp ? `<p class="idleArena"><b>${cmp.rotulo}:</b> ${cmp.arena.map(n => cmp.emComum.includes(n) ? `<u>${n}</u>` : n).join(' · ')}
+        ${cmp.emComum.length ? '<span class="idleLeg">(sublinhado: você também tem)</span>' : ''}
+        <br><i>${cmp.razao}</i></p>` : ''}
+    </details>`;
     return `<div class="idleCaixaItem">${ficha(c, guardado)}
-      ${doces > 0 ? `<button class="idleDarDoce" data-dar-doce="${c.id}" title="${XP_POR_DOCE} XP por doce · doce da linha dela">dar doce · ${doces}</button>` : ''}
+      ${golpes}
+      ${doces > 0 ? `<button class="idleDarDoce" data-dar-doce="${c.id}" title="${XP_POR_DOCE} XP por doce · o doce é da linha inteira">dar doce · nv ${c.nivel} · ${doces} da linha</button>` : ''}
       ${guardado ? `<button class="idleSoltar" data-soltar="${c.id}" data-doce="${doceAoSoltar(PACK, c.dex)}"
         title="soltar vira doce da linha — a Pokédex continua lembrando que você a teve">soltar · +${doceAoSoltar(PACK, c.dex)} doce</button>` : ''}
     </div>`;

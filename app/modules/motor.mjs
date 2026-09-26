@@ -20,7 +20,7 @@ import pack from '../../content/escolhido.mjs';
 export const M = criarMotor(pack);
 
 export const {
-  elenco, efeito, dano, simular, montarElenco, atribuirGolpes,
+  elenco, efeito, dano, simular, montarElenco, atribuirGolpes, atribuirGolpesExplicado,
   sortearPool, sortearClima, aplicarClima, nomeExibido, slugExterno, sprite, spriteShiny,
   tipoCor, tipoNome,
 } = M;

@@ -8396,3 +8396,19 @@ Duas sobras que o bloco não construiu, e por quê:
 O que o bloco corrigiu depois do crítico está no commit da ST-9.3. **O que a
 destrava:** a UX-01 revisando a ficha inteira e o ícone de clima do tema.
 
+### L-195 — o Centro ainda fala baixo: GUARDAR/TIRAR, colunas, e o soltar armado sem "cancelar"
+
+**Registrada em:** 26/09/2026, no Q7 da ST-9.13 (crítico cego, barra "TESTE DO
+COMPARADOR DE 5 SEGUNDOS"). **Bloco dono:** UX-01. **Estado:** aberto.
+
+Sobras que o bloco não construiu, e por quê:
+- **"GUARDAR/TIRAR" quase invisível** no rodapé de cada cartão (texto escuro no
+  cartão escuro) — é a ação principal da equipe, e é pré-existente;
+- **a 1920/1440/1100 o Centro usa 2 colunas** e deixa ~170 px vazios;
+- **pilhas de botões desiguais** por cartão (dar doce, soltar, os dois ou
+  nenhum), e o painel aberto empurra a linha inteira;
+- **"potencial 65" em todo cartão e nenhum nível na ficha** — o nível agora
+  aparece no botão "dar doce", e não no cartão;
+- **o soltar armado não tem "cancelar"** visível: desarma quando a tela repinta.
+
+**O que a destrava:** a UX-01 revisando o cartão da criatura inteiro.

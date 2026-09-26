@@ -864,7 +864,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Sabotagem:** reimplementar a razão; viés invertido na razão; consumir o RNG a mais.
 - **Portões:** Q1 Q2 Q3 Q4 · Q6: sem superfície nova.
 
-### ST-9.12 · O jogador escolhe os quatro golpes
+### ~~ST-9.12~~ ✅ 26/09 · O jogador escolhe os quatro golpes — `moveset-dados.mjs`: até 4, sem repetir, das listas da Arena (tipos + reserva) filtradas pelo nível; o Avanço sorteia no tamanho do moveset; P4 medido · S1368–S1372
 - **Porte** M · **Servidor** não · **Bloco dono** F3.6 · **Spec** §7.11, §8.6 · **Depende de** nada
 - **Entrega ao jogador:** cada criatura usa quatro golpes escolhidos entre os que o nível dela já liberou.
 - **Escopo:** campo aditivo `golpes` (padrão: os 4 últimos do `repertorio`); validação em camada 0 (até 4, sem repetir, só do repertório); no Avanço, balões e efeitos usam os escolhidos (R8).
@@ -875,7 +875,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Sabotagem:** aceitar 5 golpes; golpe de outro tipo; golpe acima do nível; moveset vazando para `atribuirGolpes`.
 - **Portões:** Q1 Q2 Q3 Q5 · Q6: sem superfície nova.
 
-### ST-9.13 · O comparador
+### ~~ST-9.13~~ ✅ 26/09 · O comparador — `comparador-golpes.mjs` usa `atribuirGolpesExplicado` por REFERÊNCIA (teste de identidade); Q7 aplicado · S1373–S1375
 - **Porte** M · **Servidor** não · **Bloco dono** F3.7 · **Spec** §7.11 · **Depende de** ST-9.11, ST-9.12
 - **Entrega ao jogador:** ao montar os golpes, ele vê o que a Arena escolheria para a forma que luta, e por quê.
 - **Escopo:** "seu X × X da Arena" e a razão em uma frase ("ESP 109 > ATQ 84 → prioriza especial"). Na pré-evolução, compara com a forma da Arena, rotulada.
