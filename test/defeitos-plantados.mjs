@@ -8219,6 +8219,17 @@ export const DEFEITOS = [
     real:'o jogador gasta doce numa criatura que nao sobe mais — e a tela aceita em silencio',
     de:"  if (nivelDe(c.xp) >= NIVEL_MAX) return { ok: false, motivo: 'já está no nível máximo' };\n", para:'' },
 
+  /* ── ST-9.11 · a Arena explica a propria escolha ───────────────────── */
+  { id:'S1365', arquivo:'engine/engine.mjs', nome:'a razao anota o viés invertido',
+    real:'o comparador diria "prioriza especial" para quem a Arena armou fisico — a explicacao mente sobre a escolha',
+    de:'  return { golpes: picks, razao: { atk, spa, prefEsp, gap, torneios } };', para:'  return { golpes: picks, razao: { atk, spa, prefEsp: !prefEsp, gap, torneios } };' },
+  { id:'S1366', arquivo:'engine/engine.mjs', nome:'a explicacao consome o gerador a mais',
+    real:'explicar muda a escolha: todo golden da Arena e a margem saem do lugar',
+    de:'    const sorte = R();', para:'    R(); const sorte = R();' },
+  { id:'S1367', arquivo:'engine/engine.mjs', nome:'o torneio anota o viés sem ele ter decidido',
+    real:'a tela credita ao viés golpes que sairiam de qualquer jeito — a razao conta outra historia',
+    de:'    const peloVies = sorte < gap && encaixa(b) && !encaixa(a);', para:'    const peloVies = sorte < gap && encaixa(b);' },
+
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
     real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',

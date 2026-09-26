@@ -856,7 +856,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Sabotagem:** XP acima do teto; aceitar doce de outra linha; não descontar o doce.
 - **Portões:** Q1 Q2 Q3 Q4 Q5.
 
-### ST-9.11 · A Arena explica a própria escolha de golpes
+### ~~ST-9.11~~ ✅ 26/09 · A Arena explica a própria escolha de golpes — `atribuirGolpes` é `atribuirGolpesExplicado(...).golpes`; goldens e margem byte a byte · S1365–S1367
 - **Porte** P · **Servidor** não · **Bloco dono** F3.7 (pré-requisito) · **Spec** §7.11 · **Depende de** nada
 - **Entrega ao jogador:** nada visível (prepara o comparador).
 - **Escopo:** `atribuirGolpes` passa a ser `atribuirGolpesExplicado(...).golpes`, que devolve também a razão: ATQ contra ESP, `prefEsp`, `gap` e os torneios decididos pelo viés. `criarMotor` expõe as duas.

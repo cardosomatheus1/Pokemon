@@ -201,7 +201,21 @@ function dano(chart, A, D, mv, R, aMul, dMul){
 /* `nomeReserva` é do PACK, e chega como parâmetro em vez de ser lido de uma
    variável de módulo: esta função é pura de propósito, e o `criarMotor` a expõe
    para o teste chamar com um pack qualquer. Ver L-021. */
+/* ── A ESCOLHA, EXPLICADA (ST-9.11 · F3.7 · §7.11) ───────────────────────
+ *
+ * O comparador de golpes (ST-9.13) precisa dizer POR QUE a Arena escolheu o
+ * que escolheu. A razão sai DAQUI, da mesma execução que escolhe — e não de
+ * uma segunda implementação que "explica" por fora: uma explicação que
+ * reimplementa a escolha diverge no primeiro ajuste, e a tela mente.
+ *
+ * O gerador é consumido EXATAMENTE como antes (goldens e margem byte a byte):
+ * o `R()` do torneio continua sendo chamado sempre, só que o resultado dele
+ * agora fica anotado. `atribuirGolpes` é esta função sem a razão. */
 function atribuirGolpes(golpes, entry, nomeReserva = 'normal'){
+  return atribuirGolpesExplicado(golpes, entry, nomeReserva).golpes;
+}
+
+function atribuirGolpesExplicado(golpes, entry, nomeReserva = 'normal'){
   const R = rng(entry.dex * 7919 + 104729);
   const reserva = golpes[nomeReserva] || golpes.normal;
   const pools = entry.t.map(t => golpes[t] || reserva);
@@ -225,13 +239,16 @@ function atribuirGolpes(golpes, entry, nomeReserva = 'normal'){
   const gap = Math.abs(spa - atk) / Math.max(spa, atk, 1);
   const encaixa = m => (m.cat === 'esp') === prefEsp;
 
+  const torneios = [];
   const takeFrom = (pool) => {
     const opts = pool.filter(m => !used.has(m.n));
     if (!opts.length) return false;
     const a = opts[(R() * opts.length) | 0];
     const b = opts[(R() * opts.length) | 0];
-    let m = a;
-    if (R() < gap && encaixa(b) && !encaixa(a)) m = b;
+    const sorte = R();
+    const peloVies = sorte < gap && encaixa(b) && !encaixa(a);
+    const m = peloVies ? b : a;
+    torneios.push({ a: a.n, b: b.n, escolhido: m.n, peloVies });
     picks.push(m); used.add(m.n);
     return true;
   };
@@ -243,7 +260,7 @@ function atribuirGolpes(golpes, entry, nomeReserva = 'normal'){
     const pool = wantStab ? pools[(R() * pools.length) | 0] : reserva;
     if (!takeFrom(pool) && !takeFrom(reserva)) break;
   }
-  return picks;
+  return { golpes: picks, razao: { atk, spa, prefEsp, gap, torneios } };
 }
 
 
@@ -519,6 +536,8 @@ function criarMotor(pack){
     simular:       (f, seed, gravar)   => simular(chart, f, seed, gravar),
     montarElenco:  (lista)             => montarElenco(pack, lista),
     atribuirGolpes:(esp)               => atribuirGolpes(pack.golpes, esp, pack.poolReserva),
+    /* ST-9.11: a mesma escolha, com a razão — para o comparador (ST-9.13). */
+    atribuirGolpesExplicado:(esp)      => atribuirGolpesExplicado(pack.golpes, esp, pack.poolReserva),
     sortearPool:   (semente)            => sortearPool(pack, elenco, semente),
     sortearClima:  (seed, tipos)       => sortearClima(pack.clima, seed, tipos),
     aplicarClima:  (lista, clima)      => aplicarClima(lista, clima),
