@@ -36,6 +36,15 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### Q2 COMPLETO VERDE — 1210/1210 (26/09, commit 3ad44ef)
+
+Depois do ensaio do piloto e dos D-112 a D-117, o Q2 completo reavaliou 651
+defeitos e reaproveitou 559: **nenhum escapou**. Três tentativas anteriores
+morreram no começo — o container é recolhido quando a sessão fica ociosa, e
+um processo em segundo plano morre junto. A que terminou rodou com a sessão
+ativa (~1h30). Para a próxima: rodar o completo COM a sessão ativa, e não
+agendar e sair.
+
 ### D-117 CORRIGIDO — uma chave solta no CSS tirava o padding de todo cartão (26/09)
 
 Investigando um texto encostado na borda (L-190), a causa era global: um `}`
