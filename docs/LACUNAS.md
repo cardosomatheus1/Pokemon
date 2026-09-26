@@ -8349,3 +8349,34 @@ app, do motor ou do servidor a chama** — é "testar a peça não testa o
 encaixe", de novo. **Por que não cabe agora:** é escopo da ST-9.6, que tem
 aceite próprio (o total de encontros não muda; o bônus não escala com o
 valor). **O que a destrava:** a ST-9.6 na frente da fila.
+
+### L-192 — os campos numéricos são o `<input>` nativo, branco, no tema neon
+
+**Registrada em:** 26/09/2026, no Q7 (crítico cego) da ST-12.6. **Bloco dono:**
+UX-01 (a fila de leitura de tela). **Estado:** aberto.
+
+O crítico cego apontou o campo de valor do bolo como sinal de "protótipo":
+fundo branco, setas do navegador, destoando do tema escuro. É o MESMO estilo
+do `#betCustom` da aposta principal, que existe desde antes: não é do bolo, é
+de todo campo numérico do app. **Por que não cabe agora:** mexer no estilo de
+todo campo é bloco de tela próprio, com captura das telas que os têm (aposta,
+bolo, limites, boutique). **O que a destrava:** a UX-01 na frente da fila.
+
+### L-193 — o bolo ainda sussurra: relógio, movimento e o botão que não diz em quem
+
+**Registrada em:** 26/09/2026, no Q7 da ST-12.6. **Bloco dono:** ST-12.10 (a
+medição de liquidez diz se o bolo está sendo usado antes de investir em
+espetáculo). **Estado:** aberto.
+
+Três itens do crítico cego que a ST-12.6 não construiu, e por quê:
+- **relógio de fechamento no próprio cartão** — o HUD já mostra "APOSTAS 39s"
+  no topo; um segundo relógio é redundante até a medição dizer que o jogador
+  não o liga ao bolo;
+- **o número que se move pisca** (o tote board pisca, a Polymarket desenha o
+  gráfico) — a barra já anda a cada 2 s, mas sem destaque de mudança;
+- **"Entrar no bolo" não diz em quem** — a linha abaixo diz; o botão, não.
+
+Os três já corrigidos no bloco estão no commit (a linha diz "+100 seus",
+"paga agora" em vez de "até", "de volta (lucro …)", onde estava o bolo no
+resultado, o total na Orbitron). **O que a destrava:** a ST-12.10 medindo
+participação no bolo.

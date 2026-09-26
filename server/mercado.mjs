@@ -228,8 +228,9 @@ export function liquidarMercado(db, { sched, marketId, agora = Date.now() }) {
     /* PUBLICADO AGORA, e só agora (§6.6): `published_at` é o que a rota do
        resultado confere antes de mostrar o preço do modelo. */
     db.prepare(`UPDATE markets SET status = 'liquidado', settled_at = ?, published_at = ?, pot_gross = ?,
-                       pot_net = ?, fee_amount = ?, residue_amount = ?, treasury_amount = ? WHERE id = ?`)
-      .run(agora, agora, ap.bruto, ap.liquido, ap.taxa, ap.residuo, ap.tesouraria, m.id);
+                       pot_net = ?, fee_amount = ?, residue_amount = ?, treasury_amount = ?, winners_json = ?
+                 WHERE id = ?`)
+      .run(agora, agora, ap.bruto, ap.liquido, ap.taxa, ap.residuo, ap.tesouraria, JSON.stringify(vencedoras), m.id);
   });
   return { entradas: entradas.length, vencedoras, destino: ap.destino, bruto: ap.bruto };
 }
@@ -285,9 +286,10 @@ export function mercadoParaCliente(db, { sched, userId, kind = 'abates' }) {
  * Para cada lutador: quanto o bolo tinha nele, quanto ele PAGAVA por moeda se
  * vencesse (o preço que os jogadores formaram), e com que frequência o modelo
  * o punha no topo. É a tela do §6.9: onde o bolo errou, e por quanto. */
-export function resultadoDoMercado(db, { kind = 'abates' } = {}) {
+export function resultadoDoMercado(db, { kind = 'abates', userId = null } = {}) {
   const m = db.prepare(
-    `SELECT m.id, m.round_id, m.pot_gross, m.pot_net, m.fee_amount, m.model_price_json, m.published_at
+    `SELECT m.id, m.round_id, m.pot_gross, m.pot_net, m.fee_amount, m.model_price_json, m.published_at,
+            m.winners_json, m.no_winner_destination
        FROM markets m WHERE m.kind = ? AND m.status = 'liquidado' AND m.published_at IS NOT NULL
       ORDER BY m.settled_at DESC LIMIT 1`).get(kind);
   if (!m) return null;
@@ -297,13 +299,14 @@ export function resultadoDoMercado(db, { kind = 'abates' } = {}) {
        FROM market_entries WHERE market_id = ? AND status <> 'cancelada' GROUP BY selection`)
     .all(m.id).map(r => [r.selection, r]));
   const n = db.prepare(`SELECT COUNT(*) AS n FROM round_fighters WHERE round_id = ?`).get(m.round_id).n;
-  const vencedoras = db.prepare(
+  /* Os vencedores DO MERCADO (o topo de abates), com ou sem entrada neles. */
+  const vencedoras = m.winners_json ? JSON.parse(m.winners_json) : db.prepare(
     `SELECT DISTINCT selection FROM market_entries WHERE market_id = ? AND status = 'ganha'`).all(m.id)
     .map(x => x.selection);
   const somaCertas = vencedoras.reduce((a, s) => a + (por.get(s)?.total ?? 0), 0);
   return {
     id: m.id, rodada: m.round_id, bruto: m.pot_gross, liquido: m.pot_net, taxa: m.fee_amount,
-    publicadoEm: m.published_at, simulacoes: modelo?.sims ?? null,
+    publicadoEm: m.published_at, simulacoes: modelo?.sims ?? null, semAcerto: m.no_winner_destination,
     selecoes: selecoesDeAbates(n).map(i => ({
       selecao: i,
       total: por.get(i)?.total ?? 0,
@@ -314,5 +317,10 @@ export function resultadoDoMercado(db, { kind = 'abates' } = {}) {
       modelo: modelo ? modelo.vence[i] / modelo.sims : null,
     })),
     vencedoras,
+    /* A entrada de QUEM PERGUNTA, e só a dele (ST-12.6): a tela diz "voltaram
+       92 dos 100" sem tom de vitória. O bolo dos outros não tem nome. */
+    minha: userId ? (e => e ? { entrou: e.amount, recebeu: e.payout ?? 0 } : null)(db.prepare(
+      `SELECT amount, payout FROM market_entries WHERE market_id = ? AND user_id = ? AND status <> 'cancelada'`)
+      .get(m.id, userId)) : null,
   };
 }

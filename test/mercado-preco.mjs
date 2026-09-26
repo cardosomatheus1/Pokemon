@@ -20,7 +20,7 @@ import { ESTADOS } from '../server/scheduler.mjs';
 import { montarRodadaServidor } from '../server/rodada.mjs';
 import { ROTAS } from '../server/rotas.mjs';
 import { sementes, lerRaiz } from '../engine/seed.mjs';
-import { precoDoModeloAbates, vencedorasDeAbates } from '../engine/mercado-abates.mjs';
+import { precoDoModeloAbates, vencedorasDeAbates, vencedorasPorAbates } from '../engine/mercado-abates.mjs';
 import { tiposDaPool } from '../engine/engine.mjs';
 import { API_VERSAO, CABECALHO_VERSAO } from '../server/contrato.mjs';
 
@@ -127,11 +127,20 @@ export async function suite() {
       ok(nova.id !== r.id && nova.status === ESTADOS.ABERTA, 'a rodada seguinte não abriu');
       const res = JSON.parse((await pedir('/api/mercado/resultado', { sessao: sessoes[0] })).texto);
       igual(res.rodada, r.id, 'o resultado não é o do bolo pago');
+      const minha = srv.db.prepare(`SELECT amount, payout FROM market_entries WHERE market_id = ? AND selection = 0`).get(m.id);
+      igual(JSON.stringify(res.minha), JSON.stringify({ entrou: minha.amount, recebeu: minha.payout ?? 0 }),
+        'o resultado não traz a entrada de quem pergunta');
+      ok(!/"user|user_id|username/.test(JSON.stringify(res)), 'o resultado expõe quem entrou');
       const modelo = JSON.parse(m.model_price_json);
       for (const x of res.selecoes) igual(x.modelo, modelo.vence[x.selecao] / modelo.sims, `modelo da seleção ${x.selecao}`);
       const eventos = srv.sched.resultadoDaRaiz(lerRaiz(srv.db.prepare(
         `SELECT round_seed_reveal FROM rounds WHERE id = ?`).get(r.id).round_seed_reveal));
       ok(Array.isArray(eventos), 'a raiz revelada não refaz a rodada');
+      igual(m.winners_json,
+        JSON.stringify(vencedorasPorAbates(eventos.map(x => x.abates))),
+        'o bolo não gravou quem venceu o mercado — com ninguém no líder, a tela não saberia quem liderou');
+      igual(JSON.stringify(res.vencedoras), JSON.stringify(vencedorasPorAbates(eventos.map(x => x.abates))),
+        'os vencedores do resultado não são o topo de abates da rodada');
       for (const x of res.selecoes) {
         if (res.vencedoras.includes(x.selecao)) ok(x.pagou > 1, `o bolo pagava ${x.pagou} ao vencedor ${x.selecao}`);
         else igual(x.pagou, null, 'o resultado inventou quanto pagaria quem não venceu');

@@ -471,6 +471,10 @@ const CAMADA = {
      que é camada 4 — o `meu-lutador.mjs` que ela substitui era camada 2 porque
      desenhava sozinho; este só coordena. */
   'zona-acao.mjs': 4,
+  /* ST-12.6 · o bolo: a conta e os textos em camada 0; a tela, que fala com
+     o servidor e pinta, em camada 4 (a zona de ação a chama). */
+  'bolo-dados.mjs': 0,
+  'bolo-tela.mjs': 4,
   /* Pintura das arenas: usa a geometria do render para desenhar, então fica
      ACIMA dele. A direção importa — o render recebe o cenário por injeção e
      não importa o catálogo, senão os dois se fechariam num ciclo. */

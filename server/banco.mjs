@@ -1180,6 +1180,17 @@ export const MIGRACOES = [
       for (const c of ['fee_amount', 'residue_amount', 'treasury_amount'])
         db.exec(`ALTER TABLE markets DROP COLUMN ${c}`);
     },
+  },  {
+    nome: 'mercados-vencedoras-st12.6',
+    /* QUEM VENCEU O MERCADO, GRAVADO NO BOLO (ST-12.6).
+     *
+     * O resultado derivava os vencedores das entradas `ganha` — e com ninguém
+     * no líder de abates não havia entrada ganha, então a tela dizia "ninguém
+     * acertou" sem dizer QUEM liderou. É justamente o caso que o §6.9 quer
+     * mostrar: o bolo inteiro errou, e por quanto o modelo teria acertado.
+     * ADITIVA. */
+    sobe: db => { db.exec(`ALTER TABLE markets ADD COLUMN winners_json TEXT`); },
+    desce: db => { db.exec(`ALTER TABLE markets DROP COLUMN winners_json`); },
   },
 ];
 

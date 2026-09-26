@@ -15,7 +15,7 @@ export function rotasDoMercado(daExcecao) {
 
     /* O último bolo PAGO, com o preço do modelo ao lado (ST-12.5). Nunca o em
        curso: a consulta só enxerga bolo liquidado e publicado. */
-    'GET /api/mercado/resultado': ({ db }) => ({ corpo: resultadoDoMercado(db) ?? { id: null } }),
+    'GET /api/mercado/resultado': ({ db, userId }) => ({ corpo: resultadoDoMercado(db, { userId }) ?? { id: null } }),
 
     'POST /api/mercado/entrar': ({ db, sched, corpo, userId, agora }) => {
       try {

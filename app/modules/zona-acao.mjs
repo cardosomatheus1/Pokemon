@@ -22,11 +22,14 @@
 import { $ } from './dom.mjs';
 import { S } from './estado.mjs';
 import { renderBattleBanner } from './banner.mjs';
+import { renderBolo } from './bolo-tela.mjs';
 
 function renderZonaAcao(){
   const aposta = $('#cardAposta');
   if (aposta) aposta.hidden = S.state === 'fighting' || S.state === 'result';
   renderBattleBanner();
+  /* O bolo (ST-12.6) troca de modo junto com a aposta: mesma fase, mesmo lugar. */
+  renderBolo();
 }
 
 export { renderZonaAcao };

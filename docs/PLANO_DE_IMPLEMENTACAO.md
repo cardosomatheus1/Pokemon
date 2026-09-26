@@ -679,7 +679,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
   calcular o preço depois do resultado; gastar simulações a mais.
 - **Portões:** Q1 Q2 Q3 Q4 Q6 Q9.
 
-### ST-12.6 · A tela do bolo
+### ~~ST-12.6~~ ✅ 26/09 · A tela do bolo — `bolo-dados.mjs` (camada 0) + `bolo-tela.mjs`; Q5 em 4 larguras + sem conta; Q7 cego com a barra do tote board / Polymarket (achados corrigidos; o resto em L-192, L-193) · S1261–S1271
 - **Porte** M · **Servidor** não (consome 12.3–12.5) · **Bloco dono** F2.3 · **Spec** §6.3, §6.13, §28.5 · **Depende de** ST-12.5
 - **Entrega ao jogador:** uma aba "Bolo" na janela de aposta: quanto há em cada
   lutador, o retorno **estimado** que se move enquanto outros entram, a regra de

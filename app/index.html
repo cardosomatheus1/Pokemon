@@ -966,6 +966,34 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
    clicável. Se a tela for baixa demais, ela rola DENTRO do bloco, e o
    cabeçalho declara o total. */
 #pickList{max-height:none;overflow:visible}
+/* ── ST-12.6 · O BOLO ─────────────────────────────────────────────────────
+   Uma linha por lutador, compacta: nome, a barra da fatia do bolo e o que
+   ele pagaria. A barra é a leitura de 1 segundo ("onde está o dinheiro"); o
+   número é a de 3. A MINHA linha leva a cor de acerto, como a aposta. */
+#boloLista{display:flex;flex-direction:column;gap:2px;margin:2px 0 8px}
+.boloLinha{display:grid;grid-template-columns:minmax(0,7.5em) minmax(24px,1fr) auto;align-items:center;
+  gap:8px;padding:3px 6px;border-radius:6px;cursor:pointer;font-size:.78rem;line-height:1.2}
+.boloLinha:hover,.boloLinha:focus-visible{background:rgba(255,255,255,.05);outline:none}
+.boloLinha.minha{background:rgba(var(--okRGB),.14);box-shadow:inset 2px 0 0 var(--ok)}
+.boloLinha .bn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.boloLinha .bb{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+.boloLinha .bb i{display:block;height:100%;background:var(--neon);border-radius:3px}
+.boloLinha .bt{font-size:.7rem;color:var(--dim);white-space:nowrap;text-align:right}
+.boloLinha.vazia .bn{color:var(--dim)}
+.boloLinha:not(.vazia) .bt{color:var(--txt)}
+/* O total do bolo na fonte do TEXTO: na pixelada o 5 e o 6 se confundiam
+   (crítico cego, Q7), e é o número mais importante do cartão. */
+#boloTopo{font-family:var(--dsp);font-weight:700;font-size:.85rem;letter-spacing:.02em;text-transform:none;color:var(--txt)}
+.boloAcao{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.boloAcao input{width:7em;min-width:0}
+.boloEstim{margin:6px 0 4px;min-height:1.2em}
+.boloRegras{font-size:.7rem;color:var(--dim)}
+.boloRegras summary{cursor:pointer}
+.boloRegras ul{margin:4px 0 0 1.1em;padding:0}
+.boloRes{margin:2px 0;font-size:.8rem}
+.boloMinha{margin:6px 0 2px;font-size:.8rem}
+.boloMinha.ganhou{color:var(--ok)}
+.boloMinha.neutro,.boloMinha.perdeu{color:var(--dim)}
 @media (max-height:760px){ #pickList{max-height:62vh;overflow-y:auto} }
 /* A PROBABILIDADE E A ODD SÃO OS MAIORES NÚMEROS DA LINHA. Mediu-se o
    contrário: saldo 17px, probabilidade 6px, multiplicador 5px — a interface
@@ -7502,6 +7530,16 @@ body.tremeTela{animation:tremeTela .7s ease-out}
           <button class="btn btnCancelarEscolha" id="btnCancelarEscolha">✗ Cancelar</button>
         </span>
       </div>
+    </div>
+
+    <!-- ═══ ST-12.6 · O BOLO: QUEM FAZ MAIS ABATES? ═══════════════════════
+         Abaixo da aposta de odd FIXA, e com a diferença dita na própria
+         linha: aqui o retorno é formado por quem entra e se move até o
+         fechamento. Aparece na aposta e no resultado; `bolo-tela.mjs` decide
+         quando, `bolo-dados.mjs` decide o que diz. -->
+    <div class="card" id="cardBolo" hidden>
+      <h3><span>Bolo · quem faz mais abates?</span> <span class="tiny" id="boloTopo"></span></h3>
+      <div id="boloCorpo"></div>
     </div>
 
     <!-- ═══ R39 · OS CONTROLES DA RODADA, ABAIXO DA APOSTA ════════════════
