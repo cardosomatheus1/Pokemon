@@ -16,7 +16,9 @@
  * Quem desenha não guarda.
  */
 import { $, nosDois } from './dom.mjs';
-import { PACK, nomeExibido } from './motor.mjs';
+import { PACK, nomeExibido, elenco } from './motor.mjs';
+import { pesquisaDaColheita } from './pesquisa-dados.mjs';
+import { carregarMarcas } from './pokedex-estado.mjs';
 import { dexImg, retratoAnimado } from './sprites.mjs';
 import { estiloIcone } from './icones.mjs';
 import { chanceDe } from '../../engine/captura.mjs';
@@ -60,6 +62,8 @@ export function pintarSaque(E, ultimaColheita) {
   if (!alvo) return;
   if (!ultimaColheita) { alvo.innerHTML = ''; return; }
   const { encontros, itens, npc, xp, moedas } = ultimaColheita;
+  /* ST-9.14: o que estes fragmentos fazem pela escada da Pokédex. */
+  const pesquisa = pesquisaDaColheita(PACK, E, encontros, { marcas: carregarMarcas(), naArena: elenco, nomeDe: nomeExibido });
   /* ── O QUE ACONTECEU LA FORA, EM UMA LINHA (bloco 1.7b) ────────────────
      A batalha e a unica coisa do idle que ACONTECE sem o jogador — ele manda a
      expedicao e volta horas depois. Se ela nao for CONTADA aqui, ela nao
@@ -83,7 +87,8 @@ export function pintarSaque(E, ultimaColheita) {
         <span class="tiny rarNome">${daFaixa(en.raridade).rotulo}</span>
       </span>`).join('')}</div>
     <div class="idleLinha">${itens.map(i => `
-      <span class="idleItem">${i.rotulo ?? 'Essência'} ×${i.quantidade}</span>`).join('')}</div>`;
+      <span class="idleItem">${i.rotulo ?? 'Essência'} ×${i.quantidade}</span>`).join('')}</div>
+    ${pesquisa.length ? `<ul class="saquePesquisa">${pesquisa.map(p => `<li>${p.texto}</li>`).join('')}</ul>` : ''}`;
 }
 
 

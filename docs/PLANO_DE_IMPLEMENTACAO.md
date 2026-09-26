@@ -883,7 +883,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Sabotagem:** reimplementar `atribuirGolpes`; razão com viés diferente do real.
 - **Portões:** Q1 Q2 Q3 Q5 Q7.
 
-### ST-9.14 · A expedição volta com pesquisa
+### ~~ST-9.14~~ ✅ 26/09 · A expedição volta com pesquisa — `pesquisa-dados.mjs`: "+2 fichas da linha do Bulbasaur (Venusaur na Arena): faltam 6…", pela escada · S1376–S1378
 - **Porte** P · **Servidor** não · **Bloco dono** F3.11 (resto) · **Spec** §7.13 · **Depende de** ST-9.2
 - **Entrega ao jogador:** a colheita diz "+1 ficha do Onix: faltam 3 para dominar (libera: por clima)".
 - **Escopo:** o resumo da colheita (expedição e Avanço) traduz fragmentos em progresso da escada (R9).

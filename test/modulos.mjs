@@ -356,6 +356,8 @@ const CAMADA = {
   'moveset-tela.mjs': 4,
   /* ST-9.13 · o comparador: a função da Arena, por referência. */
   'comparador-golpes.mjs': 0,
+  /* ST-9.14 · a pesquisa da colheita, em frase da escada. */
+  'pesquisa-dados.mjs': 0,
   /* ST-9.9 · o resgate do doce da conta, com a chave guardada antes do pedido. */
   'doce-conta.mjs': 4,
   /* ST-9.6 · o bônus da Arena nas rotas: a aposta deixa a linha ×4 por 6 h. */

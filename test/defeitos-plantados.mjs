@@ -8259,6 +8259,17 @@ export const DEFEITOS = [
     real:'o Charmander e comparado com um "Charmander da Arena" que nao luta — a comparacao nao existe',
     de:'  return linhaDe(pack, dex).find(luta) ?? null;', para:'  return dex;' },
 
+  /* ── ST-9.14 · a expedicao volta com pesquisa ─────────────────────── */
+  { id:'S1376', arquivo:'app/modules/pesquisa-dados.mjs', nome:'o fragmento conta duas vezes na pesquisa',
+    real:'a colheita diz "+4 fichas" onde entraram 2 — e o "faltam N" deixa de bater com a Pokedex',
+    de:'    porLinha.set(linha, (porLinha.get(linha) ?? 0) + FRAGMENTOS_POR_ENCONTRO);', para:'    porLinha.set(linha, (porLinha.get(linha) ?? 0) + 2 * FRAGMENTOS_POR_ENCONTRO);' },
+  { id:'S1377', arquivo:'app/modules/pesquisa-dados.mjs', nome:'a pesquisa promete dossie a quem nao luta',
+    real:'"+1 ficha do Caterpie: faltam 8" para uma linha que nunca aparece na Arena — o dossie prometido nao existe',
+    de:'    if (forma == null) continue;', para:'    if (forma == null && false) continue;' },
+  { id:'S1378', arquivo:'app/modules/pesquisa-dados.mjs', nome:'a pesquisa promete a camada que o degrau nao libera',
+    real:'a frase diz que dominar libera "Vitorias", que abre na primeira vista — a escada contada errada',
+    de:'  const libera = LIBERA.dominada.map(tituloDaSecao).join', para:'  const libera = LIBERA.vista.map(tituloDaSecao).join' },
+
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
     real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',

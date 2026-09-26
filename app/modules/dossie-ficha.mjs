@@ -46,6 +46,7 @@ const COMO = {
   dominada: 'junte os fragmentos da linha dela nos encontros do idle',
 };
 
+export const tituloDaSecao = id => TITULOS[id] ?? id;
 const TITULOS = {
   vitoria: 'Vitórias', abates: 'Abates', caiCedo: 'Cai cedo', porClima: 'Por clima', rival: 'Contra rival de tipo', posicoes: 'Onde termina',
 };
