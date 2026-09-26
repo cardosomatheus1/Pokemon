@@ -203,6 +203,10 @@ export function criarScheduler({ db, sims = CONF.SIMS, relogio = Date.now, ambie
       erroPior: atual.preco.erroPior,
       abreEm: atual.abreEm,
       travaEm: atual.travaEm,
+      /* QUANDO A PRÓXIMA ABRE (D-113): quem chega no meio da luta precisa de um
+         número, e a conta mora aqui, junto das durações. Não é segredo: é a
+         soma de três constantes publicadas. */
+      proximaEm: atual.travaEm + FASE_MS.PREPARO + FASE_MS.LUTA,
       /* AS DUAS SEMENTES COSMÉTICAS, e a escolha de publicá-las é do F1.14.
        *
        * O cliente em modo servidor monta a pool e a arena DURANTE a janela de

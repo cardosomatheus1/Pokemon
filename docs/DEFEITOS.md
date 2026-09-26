@@ -6529,3 +6529,27 @@ navegador o laço que achou o defeito. S1198–S1202.
 
 **A lição, a mesma de sempre e por isso escrita de novo:** a suíte responde
 "cada peça faz o que diz". Só o ENSAIO responde "um jogador consegue jogar".
+
+## D-113 — com conta real, abrir o jogo no meio da luta prendia a tela por até 54 s ✅ CORRIGIDO
+
+**Achado em:** 26/09/2026, no ensaio do piloto (medição de recargas). **Bloco
+dono:** ST-7.2. **Estado:** ✅ corrigido em 26/09/2026.
+
+**Medição:** quatro recargas com conta real — 53,8 s, 0,1 s, 39,9 s e 53,3 s
+de tela de carregamento. Sem conta, 7,6 s. A tela dizia "simulando 154.000
+batalhas para calcular as odds", o que no modo servidor é falso.
+
+**Causa:** o boot fazia `await newRound()` antes de tirar a tela, e no modo
+servidor `newRound` espera a PRÓXIMA rodada abrir (`esperarAbertura`, que
+espera para sempre de propósito). Quem chegava durante os 48 s de preparo e
+luta esperava a rodada seguinte com o app inteiro bloqueado. A rodada tem 88 s:
+era mais da metade das aberturas.
+
+**Conserto:** no modo servidor o boot não espera a rodada (`const primeira =
+newRound(); if (!modoServidor()) await primeira;`); a arena mostra "A rodada
+atual já está em luta. A próxima abre em N s", contada a partir de
+`proximaEm`, que o servidor passou a publicar (a soma das durações mora lá);
+a tela de carregamento diz "conectando à arena…". **Medido depois:** 0,8 s
+nas duas larguras, 0 erro de página, e a aposta funciona quando a janela
+abre. Capturas em `tools/previas/_piloto/espera-*.png`. **Testes que travam:**
+`test/espera-rodada.mjs`; S1203–S1206.

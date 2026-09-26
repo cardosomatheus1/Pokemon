@@ -7684,6 +7684,21 @@ export const DEFEITOS = [
     real:'o idle volta a morrer no navegador — a parte do jogo que fica aberta por horas nao aparece no piloto',
     de:'      relatar(api, eventosDoEstado(E, agora));', para:'      void eventosDoEstado(E, agora);' },
 
+  /* ── D-113 · quem entra no meio da luta ficava preso no carregamento ──── */
+  { id:'S1203', arquivo:'app/index.html', nome:'o boot volta a esperar a proxima rodada',
+    real:'com conta real, abrir o jogo durante a luta prende a tela de carregamento por ate 54 s (medido)',
+    de:'  if (!modoServidor()) await primeira;\n', para:'  await primeira;\n' },
+  { id:'S1204', arquivo:'app/modules/espera-rodada.mjs', nome:'a espera passa a contar do fim da janela, e nao da luta',
+    real:'a arena promete a proxima rodada 48 s antes de ela abrir',
+    de:'  const segundos = Math.max(0, Math.ceil((rodada.proximaEm - agora) / 1000));',
+    para:'  const segundos = Math.max(0, Math.ceil((rodada.proximaEm - 48000 - agora) / 1000));' },
+  { id:'S1205', arquivo:'server/scheduler.mjs', nome:'o servidor deixa de dizer quando a proxima abre',
+    real:'a arena de quem chega no meio da luta fica em "Conectando à arena…" sem numero',
+    de:'      proximaEm: atual.travaEm + FASE_MS.PREPARO + FASE_MS.LUTA,\n', para:'' },
+  { id:'S1206', arquivo:'app/modules/espera-rodada.mjs', nome:'a janela aberta passa a mostrar espera',
+    real:'quem chega com a aposta aberta le "a proxima abre em N s" por cima da lista que pode apostar agora',
+    de:"  if (rodada?.fase === 'aberta') return null;", para:"  if (false) return null;" },
+
   /* ── D-112 · a aposta do servidor nunca era liquidada ─────────────────── */
   { id:'S1198', arquivo:'server/servidor.mjs', nome:'o laco volta a nao liquidar as rodadas',
     real:'a rodada fecha, a aposta fica travada para sempre e o dinheiro reservado nao volta (achado no ensaio do piloto)',

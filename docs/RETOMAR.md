@@ -36,6 +36,14 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### D-113 CORRIGIDO — com conta, a tela de carregamento prendia até 54 s (26/09)
+
+O ensaio mediu: abrir o jogo com conta durante a luta deixava a tela de
+carregamento ("simulando 154.000 batalhas" — falso no modo servidor) por 40 a
+54 s, porque o boot esperava a PRÓXIMA rodada abrir. Agora o app abre em 0,8 s
+e a arena diz "a próxima abre em N s". Em fila, achado no mesmo ensaio: o
+botão "Iniciar rodada" no modo servidor começa uma luta local (D-114).
+
 ### D-112 CORRIGIDO — nenhuma aposta do servidor era liquidada (26/09)
 
 O primeiro ENSAIO do piloto num navegador de verdade — conta, aposta, rodada,

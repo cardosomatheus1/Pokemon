@@ -17,6 +17,7 @@ import { emitir } from './telemetria.mjs';
 import { S } from './estado.mjs';
 import { modoServidor, hidratar } from './banco.mjs';
 import { arvoreConferida, esperarAbertura, oddsDoServidor, rodadaViva } from './modo-servidor.mjs';
+import { textoDaEspera } from './espera-rodada.mjs';
 import { enfeite, semearVisual } from './sorte.mjs';
 import { arenaDaRodada } from './arenas.mjs';
 import { buildEntities, overlay, preloadSheets, selRing } from './rodada.mjs';
@@ -80,6 +81,21 @@ function setPhase(s){
    no anel do vencedor: `ents` e `fighters` ficavam temporariamente
    dessincronizados no meio da troca. */
 let roundPending = false;
+/* A ESPERA NA ARENA (D-113): quem entra no meio da luta vê quanto falta, e o
+   resto do app fica livre enquanto isso — o boot não espera mais a rodada. */
+let relogioDaEspera = null;
+function mostrarEspera(){
+  const pintar = () => {
+    const e = textoDaEspera(rodadaViva(), Date.now());
+    if (!e) return;
+    overlay.classList.remove('hide');
+    overlay.innerHTML = `<div class="banner">${e.texto}</div>`;
+  };
+  clearInterval(relogioDaEspera);
+  pintar();
+  relogioDaEspera = setInterval(pintar, 1000);
+}
+
 async function newRound(){
   if (roundPending) return;
   roundPending = true;
@@ -132,7 +148,9 @@ async function newRound(){
    * local quando a rede some é o primeiro item da sabotagem declarada
    * do bloco. Quem conta isso ao jogador é a tela de conexão. */
   if (modoServidor()) {
+    mostrarEspera();
     const r = await esperarAbertura();
+    clearInterval(relogioDaEspera);
     S.rodadaId = r.id;
     S.commit = { commit: r.commit };
     /* O SEGREDO É DO SERVIDOR. Guardar `null` e não um objeto vazio: quem

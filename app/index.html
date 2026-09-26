@@ -8099,8 +8099,16 @@ async function ligarModoServidor(){
      jogador acabara de aumentar. */
   ligarTicker($('#ticker'));
   drawMap(0);
+  /* No modo servidor a tela de carregamento não fala em simular: quem simula
+     é o servidor (D-113). */
+  if (modoServidor()) $('#bootMsg').textContent = 'conectando à arena…';
   await ligarModoServidor();
-  await newRound();
+  /* A RODADA NÃO SEGURA O APP (D-113). No modo local ela precisa das odds que
+     o próprio navegador calcula; no servidor, quem chegou no meio da luta
+     esperaria a PRÓXIMA rodada com a tela inteira bloqueada — até 54 s
+     medidos. A arena mostra a espera; o resto do jogo abre já. */
+  const primeira = newRound();
+  if (!modoServidor()) await primeira;
   $('#boot').remove();
   admChecarHash();
   requestAnimationFrame(frame);

@@ -91,6 +91,7 @@ const CAMADA = {
      não decide regra, não conhece DOM — traduz o que a sala entrega e guarda a
      última rodada. Camada 0 porque quem interpreta é quem escuta. */
   'modo-servidor.mjs': 0,
+  'espera-rodada.mjs': 0,
   /* Rótulos e a frase da recusa do §28.3. Puro: nada de DOM, nada de rede.
      Separado da tela porque o §28.3 exige coisas sobre TEXTO, e texto se
      confere sem abrir navegador. */
