@@ -911,7 +911,8 @@ Fatiada em duas (a original seria G).
 - ✅ 26/09 **9.16b · a tela, M:** (aba lembrada; atalho escolhe o lutador e rola até a confirmação; texto da linha em camada 0; Q7 aplicado, L-196, D-123; S1389–S1395) uma aba da Pokédex (R10), com atalho para apostar. Aceite: dá para decidir em quem apostar sem sair dela (critério do §7.15); Q5 com coleção vazia, parcial e cheia nas 4 larguras; Q7 com a barra de F3.12.
 - **Portões:** Q1 Q2 Q5 Q7.
 
-### ST-9.17 · O laço de retorno na Início
+### ST-9.17 · O laço de retorno na Início ✅ 26/09
+> Feito: só NOVIDADE abre o cartão (a expedição que já esperava e a ficha perto de dominar são contexto); quem volta com novidade abre na Início, sem novidade vai à Arena; S1396–S1404.
 - **Porte** P–M · **Servidor** não · **Spec** §7.16, §13 · **Depende de** ST-9.16a
 - **Entrega ao jogador:** ao abrir, "desde a sua última visita": expedições prontas, quem subiu de nível, doces ganhos, a ficha a um passo de mudar, e o próximo passo.
 - **Escopo:** `retorno-dados.mjs` (camada 0) e um cartão na Início; sem notificação por rodada.

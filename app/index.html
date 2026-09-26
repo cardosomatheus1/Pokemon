@@ -982,6 +982,22 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
    Segunda linha do nome, menor e apagada: é leitura de segunda ordem, e a
    palavra "histórico" a separa da chance DESTA rodada, que é a coluna. */
 /* ── ST-9.16b · a aba Minha Coleção ─────────────────────────────────────── */
+/* ST-9.17 · o cartão de retorno: o neon da interface, com a borda que o
+   diferencia de um aviso — é novidade do jogador, e não do sistema. */
+.retorno{max-width:1180px;margin:0 auto 16px;padding:16px 20px;border-radius:16px;border:1px solid rgba(var(--goldRGB),.55);
+  box-shadow:0 0 18px rgba(var(--goldRGB),.15) inset}
+.rtTopo{display:flex;align-items:baseline;gap:10px}
+.rtTopo h3{margin:0;font-family:var(--dsp);font-size:.9rem;letter-spacing:.06em;color:var(--neon)}
+.rtTopo .tiny{white-space:nowrap}
+.rtFechar{margin-left:auto;background:none;border:0;color:var(--dim);font-size:1.2rem;cursor:pointer;line-height:1}
+/* Cada novidade com o retrato de quem ela fala, num chão escuro: o mundo GBA
+   dentro da moldura neon, como no resto da interface. */
+.rtLista{list-style:none;margin:10px 0 14px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:6px 18px}
+.rtLista li{display:flex;align-items:center;gap:10px;font-size:.84rem;line-height:1.35}
+.rtSprite{flex:none;width:40px;height:40px;object-fit:contain;image-rendering:pixelated;border-radius:10px;
+  background:radial-gradient(circle at 50% 70%, rgba(var(--goldRGB),.16), transparent 70%)}
+.rt-nivel span b,.rt-doce span b{color:var(--neon)}
+.rt-ficha span{color:var(--dim)}
 .pdxAbas{display:flex;gap:6px;margin:4px 0 10px}
 .pdxAba{font:inherit;font-size:.78rem;font-weight:700;letter-spacing:.03em;color:var(--dim);background:none;
   border:1px solid var(--line);border-radius:8px;padding:5px 12px;cursor:pointer}
@@ -6841,6 +6857,9 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 </header>
 
 <div id="viewHome" class="view">
+  <!-- ST-9.17 · "desde a sua última visita" (§7.16): só existe quando há o que
+       saber, e termina num próximo passo. Nasce escondido. -->
+  <section id="retorno" class="card retorno" hidden></section>
   <section class="hero">
     <!-- A ARTE DA TELA DE ENTRADA (R7). A regra `.hero-art` existia no CSS,
          com a deriva lenta e tudo, e nenhum elemento a usava — a tela abria
@@ -8019,6 +8038,7 @@ import { buildPickList, computeOdds, refreshOddsTable, usarNotasDaLinha } from '
 import { notasDaRodada } from './modules/historico-aposta.mjs';
 /* ST-9.8: soltar na caixa vira doce — o módulo se liga sozinho ao clique. */
 import './modules/doce-tela.mjs';
+import { temRetorno } from './modules/retorno-tela.mjs';
 /* ST-9.12: escolher os golpes — o módulo se liga sozinho ao clique. */
 import './modules/moveset-tela.mjs';
 usarNotasDaLinha(lutadores => notasDaRodada(lutadores));
@@ -8275,8 +8295,9 @@ async function ligarModoServidor(){
   $('#btnAuto').classList.add('on');
   ensureDaily();          // garante os 3 desafios do dia já no carregamento
   renderSession();
-  // quem ainda não entrou cai na home; quem já tem sessão vai direto à arena
-  goView(sessaoAtiva() ? 'viewArena' : 'viewHome');
+  // quem ainda não entrou cai na home; quem já tem sessão vai direto à arena —
+  // a não ser que haja o que saber desde a última visita (ST-9.17, §7.16)
+  goView(sessaoAtiva() ? (temRetorno() ? 'viewHome' : 'viewArena') : 'viewHome');
   /* Um cenário antes do primeiro quadro. `drawMap` não desenha sem cenário
      aplicado, e o boot pinta o mapa antes de a primeira rodada existir. */
   aplicarArena(ARENAS[0]);
