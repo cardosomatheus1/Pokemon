@@ -956,7 +956,8 @@ Fatiada em duas (a original seria G).
 - **Sabotagem:** o motor de treino importar `engine.mjs`.
 - **Portões:** Q1 Q2 Q4 · Q6: sem superfície nova.
 
-### ST-10.2 · A Trainer Battle Engine
+### ST-10.2 · A Trainer Battle Engine ✅ 26/09
+> Feito inteira (não precisou do corte a/b): `engine/treino-batalha.mjs`, eventos por turno como formato de replay; ocultos e natureza ±5% (Spec §21 corrigida, C4); S1424–S1430.
 - **Porte** M–G (se passar de 4 dias: a = regras, b = eventos e replay) · **Servidor** não · **Bloco dono** F4.1 · **Spec** §8.2, §8.4, §8.9
 - **Escopo:** `simular(timeA, timeB, semente, opcoes)` determinístico.
   - times de 1 a 6 em campo (R11);

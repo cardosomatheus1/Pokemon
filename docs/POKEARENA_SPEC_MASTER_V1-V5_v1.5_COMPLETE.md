@@ -3878,7 +3878,7 @@ Para controlar escopo:
 - trading de Pokémon;
 - marketplace/RMT oficial antes de gate jurídico;
 - breeding complexo;
-- IV/EV/Natures completos;
+- IV/EV/Natures completos; *(ST-10.2, 26/09 — C4: os seis ocultos e a natureza entram SÓ na Trainer Battle Engine, com peso limitado e declarado: ±5% cada no stat, contra os ±10% do gênero; EV não existe. A Arena continua normalizada e não os lê — P4. Ver `engine/treino-batalha.mjs`, `REGRAS`.)*
 - centenas de equipamentos;
 - guild wars;
 - open world;
