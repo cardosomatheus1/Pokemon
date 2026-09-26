@@ -261,6 +261,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **D-118** · a tempestade que derruba todos dava dois "1º" | 26/09 | achado pelo pódio do bolo: o campeão (desempate por vida) ficava na ordem de quedas e o último a cair também recebia 1 — na tela de resultado e no XP · 3 em 20.000 rodadas · S1284 |
 | **ST-12.10** · os números do bolo e o gate da V2 | 26/09 | `market_entry` e `market_settled` sem amostragem · painel de política e `tools/relatorio-piloto.mjs` com a seção BOLO: pessoas por bolo, concentração, divergências · o gate MEDE e diz "amostra insuficiente" em vez de fingir; uma divergência reprova sozinha · S1277–S1283 |
 | **ST-12.9** · a leitura no bolo | 26/09 | aba Liga: "contra o bolo: N vezes — você acertou a · o bolo acertou b · ninguém c", e o mesmo contra o modelo · o bolo é o dos OUTROS (a minha entrada não é a multidão) · empate de favorito não é discordância · só bolos pagos · S1272–S1276 |
 | **ST-12.6** · a tela do bolo | 26/09 | cartão "Bolo · quem faz mais abates?" abaixo da aposta: onde está o dinheiro, quanto pagaria AGORA (com "+100 seus" na linha), "de volta (lucro …)", as regras abrindo ao escolher · no resultado: quem liderou, onde estava o bolo, o que o modelo dava, e "voltaram 276 dos 300" sem festa · crítico cego (Q7) corrigiu 6 leituras · capturas `tools/previas/_bolo/` · S1261–S1271 |

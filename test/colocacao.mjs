@@ -19,6 +19,8 @@
 import { criarSuite, ok, igual, elencoDeterministico } from './harness.mjs';
 import { colocacaoDe, ordemDeQuedas, rankingColocacao } from '../app/modules/colocacao.mjs';
 import * as E from './motor.mjs';
+import { posicaoFinalDe, ordemDeQuedas as ordemMotor } from '../engine/colocacao.mjs';
+import { sementes } from '../engine/seed.mjs';
 
 const N = 12;
 const time = () => elencoDeterministico(E.elenco, E.montarElenco, 31337, N);
@@ -154,6 +156,27 @@ export function suite() {
         `${oque} passou a ler a batalha inteira: a tela entrega o vencedor antes da hora`);
     });
   }
+
+  /* D-118 · A TEMPESTADE QUE DERRUBA TODOS DAVA DOIS "1º".
+     Quando a tempestade derruba todos no mesmo instante, o campeão (desempate
+     por vida, REGRA 8) também está na ordem de quedas — e o último a cair
+     recebia `n - (n-1)` = 1. Dois lutadores em 1º: o perdedor via "1º" na tela
+     de resultado e ganhava o XP de desempenho do campeão. Achado pelo pódio
+     do bolo (ST-12.7), que pagaria as duas trincas. */
+  s.teste('D-118: o campeão sai da ordem de quedas — um só 1º, e o último a cair é o 2º', () => {
+    const ev = [{ storm: true, hits: [{ i: 0, ko: true }, { i: 1, ko: true }, { i: 2, ko: true }] }];
+    const ordem = ordemMotor(ev);
+    const pos = [0, 1, 2].map(i => posicaoFinalDe(i, 1, ordem, 3));
+    igual(JSON.stringify(pos), '[3,1,2]', `posições com o campeão entre os caídos: ${pos}`);
+    /* E na rodada real em que isso acontece (semente emp-754, medida: 3 em 20.000). */
+    const t0 = sementes('emp-754');
+    const pool = E.sortearPool(t0.elenco);
+    const b = E.simular(pool, t0.batalha, true);
+    const ps = pool.map((_, i) => posicaoFinalDe(i, b.winner, ordemMotor(b.events), pool.length));
+    igual(ps.filter(p => p === 1).length, 1, `a rodada real tem ${ps.filter(p => p === 1).length} lutadores em 1º`);
+    igual(JSON.stringify([...ps].sort((a, c) => a - c)), JSON.stringify(Array.from({ length: 12 }, (_, i) => i + 1)),
+      'as posições não são 1 a 12');
+  });
 
   return s;
 }

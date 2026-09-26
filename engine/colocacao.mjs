@@ -84,7 +84,11 @@ export function colocacaoDe(i, ordem, n) {
  */
 export function posicaoFinalDe(i, campeaoIdx, ordem, n) {
   if (i === campeaoIdx) return 1;
-  const pos = colocacaoDe(i, ordem, n);
+  /* D-118: o campeão pode estar ENTRE os caídos (a tempestade derruba todos
+     no mesmo instante e ele vence no desempate por vida, REGRA 8). Contado
+     ali, o último a cair recebia 1 também — dois "1º". Ele sai da ordem antes
+     da conta, e o último a cair passa a ser o 2º. */
+  const pos = colocacaoDe(i, ordem.filter(x => x !== campeaoIdx), n);
   return pos === null ? 2 : pos;
 }
 

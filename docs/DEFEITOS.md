@@ -6635,3 +6635,26 @@ em toda folha do `index.html` as chaves fecham na ordem; S1214–S1215.
 **E um defeito da esteira, de passagem (dentro do orçamento — ele IMPEDIA
 esta verificação):** o `olhar-telas` travava sem prazo em `adm-recusa`, porque
 esperava o `avisar()` que pede um clique. Um `await` a menos (classe do D-069).
+
+## D-118 — a tempestade que derruba todos dava dois "1º" ✅ CORRIGIDO
+
+**Achado em:** 26/09/2026, construindo o pódio do bolo (ST-12.7) — a rodada
+real `emp-754` deu duas trincas com 1º diferentes. **Bloco dono:** o próprio
+D-118, fechado antes de a ST-12.7 continuar (o pódio pagaria errado sem ele).
+**Estado:** fechado em 26/09/2026.
+
+**Causa.** Quando a tempestade derruba todos no mesmo instante, o campeão é
+decidido por vida (REGRA 8) e TAMBÉM aparece na ordem de quedas.
+`posicaoFinalDe` (`engine/colocacao.mjs`) contava a colocação com ele lá
+dentro, e o último a cair recebia `n − (n−1) = 1`. A tela de resultado do
+cliente e o XP de desempenho do servidor usam essa função: o perdedor via "1º"
+e ganhava o XP do campeão. A lista da arena (`app/modules/colocacao.mjs`) já
+tratava o caso; a função do motor, não.
+
+**Medição.** 3 em 20.000 rodadas da árvore de sementes (sementes `emp-754`,
+`emp-17948`, `emp-19478`).
+
+**Correção.** O campeão sai da ordem antes da conta; o último a cair passa a
+ser o 2º. **Teste que trava:** `test/colocacao.mjs`, `D-118:` — o caso
+construído e a rodada real `emp-754` (posições 1 a 12, um só 1º). Sabotagem
+S1284.

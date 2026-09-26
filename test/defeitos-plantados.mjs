@@ -7930,6 +7930,11 @@ export const DEFEITOS = [
     real:'todo bolo com taxa aparece como divergente, e a divergencia de verdade se perde no ruido',
     de:'saiu: pago.get(m.id).s + casa.get(m.id).s };', para:'saiu: pago.get(m.id).s };' },
 
+  /* ── D-118 · a tempestade que derruba todos dava dois "1º" ──────────── */
+  { id:'S1284', arquivo:'engine/colocacao.mjs', nome:'o campeao volta a ser contado entre os caidos',
+    real:'o ultimo a cair recebe 1 tambem: dois 1º na tela, XP de campeao para quem perdeu, e o podio do bolo paga duas trincas',
+    de:'  const pos = colocacaoDe(i, ordem.filter(x => x !== campeaoIdx), n);', para:'  const pos = colocacaoDe(i, ordem, n);' },
+
   /* ── ST-0.9 · o ensaio do piloto na CI ──────────────────────────────── */
   { id:'S1216', arquivo:'.github/workflows/testes.yml', nome:'a CI deixa de rodar o ensaio',
     real:'a CI volta a ficar verde com a aposta sem pagamento — o D-112 passou assim pela suite inteira',
