@@ -261,6 +261,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **D-115** · a aba Boutique não esvazia mais o perfil | 26/09 | erro de página e perfil sem painel depois da boutique, com e sem conta · S1210–S1211 |
 | **D-114** · com conta, "Iniciar rodada" não trava mais a aposta | 26/09 | reproduzido no navegador: a arena ia à contagem com a janela aberta · os controles do modo local somem com conta · S1207–S1209 |
 | **D-113** · com conta, abrir o jogo no meio da luta não trava mais | 26/09 | 53,8 s → 0,8 s de tela de carregamento · a arena diz quando a próxima abre (`proximaEm` do servidor) · S1203–S1206 |
 | **D-112** · a aposta do servidor passa a ser liquidada | 25/09 | achado no primeiro ENSAIO do piloto no navegador, com a suíte verde: `liquidarRodada` não tinha chamador · o laço liquida antes de anunciar, e o servidor paga o pendente ao ligar · `tools/ensaio-piloto.mjs` → PRONTO PARA CONVIDAR · S1198–S1202 |

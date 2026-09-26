@@ -6572,3 +6572,21 @@ tela presa numa fase que o servidor não estava.
 botões; o clique recusa por baixo (`if (modoServidor()) return;`). Conferido:
 com conta o botão não aparece; sem conta, a suíte visual segue igual.
 **Testes que travam:** `test/espera-rodada.mjs` → `D-114:`; S1207–S1209.
+
+## D-115 — a aba "Boutique" do perfil esvaziava o perfil ✅ CORRIGIDO
+
+**Achado em:** 26/09/2026, no ensaio do piloto (a compra na boutique a 420 px
+deu `TypeError ... reading 'classList'`). **Bloco dono:** ST-7.2. **Estado:** ✅
+corrigido em 26/09/2026. **Não é do modo servidor:** acontece com e sem conta.
+
+**Medição:** perfil aberto → painel `paneStats`; clique em "💵 Boutique",
+fechar a boutique → painel **nenhum**, a aba Boutique acesa, erro de página.
+**Causa:** a "💵 Boutique" é uma `.tab` sem `data-pane` (ela abre a boutique);
+o ouvinte das abas do perfil (`controles.mjs`) pegava todas as `.tab`, apagava
+todos os painéis e procurava `#undefined`. A suíte não via porque nenhum
+teste clica essa aba — o portão visual reprova `pageerror`, mas não navega
+até ela.
+
+**Conserto:** o ouvinte só pega `.tab[data-pane]`. Conferido no Chromium:
+depois de fechar a boutique, `paneStats` e 0 erro. **Testes que travam:**
+`test/viewport.mjs` → `D-115:`; S1210–S1211.

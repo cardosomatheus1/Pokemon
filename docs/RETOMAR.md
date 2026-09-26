@@ -36,6 +36,13 @@ o ESTADO   T14 FECHADO · os testes em minutos
 o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
 ```
 
+### D-115 CORRIGIDO — a aba Boutique esvaziava o perfil (26/09)
+
+No ensaio da compra a 420 px: clicar em "💵 Boutique" no perfil dava erro de
+página e, ao fechar a boutique, o perfil ficava sem conteúdo nenhum. Não era
+do modo servidor — acontecia sempre. A compra em si, com conta, funcionou nas
+duas larguras (posse, débito de 750 e o evento `cosmetic_purchased`).
+
 ### D-113 CORRIGIDO — com conta, a tela de carregamento prendia até 54 s (26/09)
 
 O ensaio mediu: abrir o jogo com conta durante a luta deixava a tela de

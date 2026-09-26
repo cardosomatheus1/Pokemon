@@ -7684,6 +7684,16 @@ export const DEFEITOS = [
     real:'o idle volta a morrer no navegador — a parte do jogo que fica aberta por horas nao aparece no piloto',
     de:'      relatar(api, eventosDoEstado(E, agora));', para:'      void eventosDoEstado(E, agora);' },
 
+  /* ── D-115 · a aba Boutique esvaziava o perfil ───────────────────────── */
+  { id:'S1210', arquivo:'app/modules/controles.mjs', nome:'as abas do perfil voltam a pegar a que nao tem painel',
+    real:'clicar em Boutique dispara erro de pagina e o perfil volta da boutique sem conteudo (medido no ensaio)',
+    de:"document.querySelectorAll('#profileModal .tab[data-pane]').forEach(b => b.onclick = () => {",
+    para:"document.querySelectorAll('#profileModal .tab').forEach(b => b.onclick = () => {" },
+  { id:'S1211', arquivo:'app/modules/controles.mjs', nome:'trocar de aba volta a apagar o destaque de todas',
+    real:'a Boutique pode ficar acesa ao lado da aba de verdade — dois destaques, um so painel',
+    de:"  document.querySelectorAll('#profileModal .tab[data-pane]').forEach(x => x.classList.remove('on'));",
+    para:"  document.querySelectorAll('#profileModal .tab').forEach(x => x.classList.remove('on'));" },
+
   /* ── D-114 · "Iniciar rodada" no modo servidor travava a aposta ─────────── */
   { id:'S1207', arquivo:'app/index.html', nome:'os controles do modo local voltam a aparecer com conta',
     real:'o botao vermelho "Iniciar rodada" leva a tela a contagem no meio da janela e o jogador perde a aposta',

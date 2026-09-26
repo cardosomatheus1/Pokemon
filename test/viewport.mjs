@@ -247,5 +247,20 @@ export function suite() {
     for (const m of html.match(odd) ?? [])
       ok(!/text-overflow|overflow:\s*hidden/.test(m), `a odd pode ser cortada: ${m}`);
   });
+  /* D-115: a "💵 Boutique" do perfil é uma `.tab` SEM painel — ela abre a
+     boutique, e não um pane. O ouvinte das abas apagava todos os painéis e
+     depois procurava `#undefined`: erro de página, e o perfil voltava da
+     boutique sem conteúdo nenhum (medido no ensaio do piloto). */
+  s.teste('D-115: as abas do perfil ignoram a que não tem painel', () => {
+    const c = readFileSync(new URL('../app/modules/controles.mjs', import.meta.url), 'utf8');
+    const html = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
+    ok(/querySelectorAll\('#profileModal \.tab\[data-pane\]'\)\.forEach\(b => b\.onclick/.test(c),
+      'o ouvinte das abas do perfil pega também a aba sem painel');
+    ok(/querySelectorAll\('#profileModal \.tab\[data-pane\]'\)\.forEach\(x => x\.classList\.remove\('on'\)\)/.test(c),
+      'trocar de aba apaga o destaque da Boutique também — ela nunca deveria ter ganhado');
+    ok(/class="tab lcPorta" data-cash-abrir/.test(html) && !/class="tab lcPorta"[^>]*data-pane/.test(html),
+      'a aba da boutique mudou de forma — reveja o D-115');
+  });
+
   return s;
 }

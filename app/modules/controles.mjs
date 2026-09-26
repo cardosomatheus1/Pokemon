@@ -60,8 +60,11 @@ $('#btnProfSave').onclick = () => {
 };
 
 /* --------- abas do perfil --------- */
-document.querySelectorAll('#profileModal .tab').forEach(b => b.onclick = () => {
-  document.querySelectorAll('#profileModal .tab').forEach(x => x.classList.remove('on'));
+/* SÓ AS QUE TÊM PAINEL (D-115). A "💵 Boutique" é uma `.tab` que abre a
+   boutique, e não um pane: pegá-la aqui apagava todos os painéis e depois
+   procurava `#undefined` — erro de página, e o perfil voltava vazio. */
+document.querySelectorAll('#profileModal .tab[data-pane]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#profileModal .tab[data-pane]').forEach(x => x.classList.remove('on'));
   document.querySelectorAll('#profileModal .pane').forEach(x => x.classList.remove('on'));
   b.classList.add('on');
   $('#' + b.dataset.pane).classList.add('on');
