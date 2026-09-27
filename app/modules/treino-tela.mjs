@@ -88,7 +88,9 @@ export function renderTreino() {
       <div class="tbRival">${rival.map(r => `<span>${dexImg(r.dex, '', 'class="tbSpriteP"')}<b>${nomeDo(r.dex)}</b><i>NV ${r.nivel}</i>
         <em>${tiposDo(r.dex).map(chip).join('')}</em></span>`).join('')}</div>
       <p class="tbFraqueza" id="tbFraqueza"></p>
+      <button class="btn gold tbLutar" id="tbLutar" data-pve-lutar data-adv="${t.id}" disabled>lutar contra ${t.nome}</button>
     </div>
+    <div id="pveArea" class="pveArea" hidden></div>
     <h4 class="tbSec">Trocas que sobem a chance <span class="tiny">medidas com as mesmas lutas do número acima</span></h4>
     <div id="tbTrocas" class="tbTrocas">${ultimaTroca ? `<p class="tbFeita">${ultimaTroca}</p>` : ''}<p class="tiny">procurando…</p></div>
     <h4 class="tbSec">Seu time <span class="tiny">${painel.membros.length} de 6 · poder ${painel.total}${
@@ -120,6 +122,12 @@ function calcular(g, estado, rival) {
     const n = $('#tbNumero'), e = $('#tbErro');
     if (n) { n.textContent = `${arredondarNeutro(r.p * 100)}%`; n.classList.toggle('parcial', !pronto); }
     if (e) e.textContent = pronto ? textoDaMargem(r) : `calculando · ${acum.sims} de ${SIMS_TREINO} lutas`;
+    if (pronto) {
+      /* ST-10.9: a luta só acende com a chance de ANTES calculada — o resultado
+         compara o que aconteceu com ela. */
+      const lb = $('#tbLutar');
+      if (lb) Object.assign(lb.dataset, { p: r.p, erro: r.erro, sims: r.sims, preset }), lb.disabled = false;
+    }
     if (!pronto) setTimeout(passo, 0); else calcularTrocas(g, estado, rival);
   };
   setTimeout(passo, 0);

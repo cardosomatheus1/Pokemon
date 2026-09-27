@@ -1038,6 +1038,57 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 @media (max-width:520px){ .tbPlacar{grid-template-columns:1fr} .tbRival{justify-self:start;padding-left:0;border-left:0}
   .tbTroca{grid-template-columns:32px auto 32px 1fr} .tbTroca .btn{grid-column:1 / -1;justify-self:end} .tbDelta{display:block;margin:2px 0 0}
   .tbAdv{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px} .tbAdvBtn{flex:none} }
+/* ST-10.9 · a batalha PvE. O palco é o mundo GBA — o rival no alto à direita,
+   o seu time embaixo à esquerda, cada um com a placa de vida colada ao
+   retrato, chão e sombra —; a moldura e o texto são a interface neon (Q5: a
+   primeira versão, esticada a 1440, parecia planilha). */
+.tbLutar{grid-column:1 / -1;justify-self:start;margin-top:6px}
+.pveArea{margin:0 0 14px}
+.pveLuta{max-width:860px;border:1px solid rgba(var(--goldRGB),.5);border-radius:14px;overflow:hidden;background:var(--bg2)}
+.pveTopo{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding:8px 12px;font-size:.78rem;border-bottom:1px solid var(--line)}
+.pveTopo span{color:var(--dim)}.pveTopo .btn{margin-left:auto;width:auto;flex:none;min-width:0;font-size:.7rem;padding:3px 12px}
+.pvePalco{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px 18px;min-height:300px;
+  background:radial-gradient(60% 22% at 75% 38%,rgba(0,0,0,.18),transparent 70%),radial-gradient(60% 22% at 25% 86%,rgba(0,0,0,.2),transparent 70%),
+    linear-gradient(180deg,#27466b 0%,#3b6a8c 46%,#6f9c5a 47%,#557d45 100%)}
+.pveLado{display:flex;flex-direction:column;gap:10px}
+.pveA{justify-content:flex-end;grid-column:1;grid-row:1}
+.pveB{justify-content:flex-start;align-items:flex-end;grid-column:2;grid-row:1}
+.pveLutador{display:flex;align-items:center;gap:8px;transition:opacity .4s,filter .4s}
+.pveB .pveLutador{flex-direction:row-reverse}
+.pveSprite{position:relative;flex:none;width:72px;height:72px}
+.pveImg{width:72px;height:72px;object-fit:contain;image-rendering:pixelated;position:relative;z-index:1}
+.pveB .pveImg{transform:scaleX(-1)}
+.pveSombra{position:absolute;left:14px;right:14px;bottom:6px;height:9px;border-radius:50%;background:rgba(0,0,0,.35)}
+.pvePlaca{min-width:150px;padding:5px 9px 4px;border-radius:8px;background:rgba(10,18,30,.82);border:1px solid rgba(255,255,255,.18);
+  color:#fff;font-size:.74rem;box-shadow:0 2px 0 rgba(0,0,0,.4)}
+.pveNome{display:flex;justify-content:space-between;gap:8px}.pveNv{font-size:.62rem;opacity:.8}
+.pveVida{height:6px;margin:4px 0 2px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}
+.pveVida i{display:block;height:100%;background:#5fe07a;transition:width .35s}
+.pveVida i.baixa{background:#ff6b5a}
+.pveHp{display:block;text-align:right;font-size:.6rem;opacity:.85}
+.pveLutador.ataca .pveSprite{animation:pveAtaca .45s}
+.pveB .pveLutador.ataca .pveSprite{animation:pveAtacaB .45s}
+.pveLutador.leva .pveImg{animation:pveLeva .4s}
+.pveLutador.caido{opacity:.35;filter:grayscale(1)}
+@keyframes pveAtaca{40%{transform:translate(24px,-8px)}}
+@keyframes pveAtacaB{40%{transform:translate(-24px,8px)}}
+@keyframes pveLeva{25%{transform:translateX(-4px);filter:brightness(2.2)}60%{transform:translateX(4px)}}
+.pveB .pveLutador.leva .pveImg{animation:none;filter:brightness(1.8)}
+.pveNum{position:absolute;left:50%;top:-4px;transform:translateX(-50%);z-index:3;font-family:var(--px);font-size:.8rem;color:#fff;
+  text-shadow:0 0 4px #000,0 2px 0 #000;animation:pveSobe .9s forwards;pointer-events:none;white-space:nowrap}
+.pveNum.super{color:#ffd23f}.pveNum.nada{color:#ccd}
+@keyframes pveSobe{to{transform:translate(-50%,-26px);opacity:0}}
+.pveFx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.pveLog{margin:0;padding:8px 12px;font-size:.8rem;min-height:1.4em;border-top:1px solid var(--line)}
+.pveFim{padding:10px 12px 12px;border-top:1px solid var(--line)}
+.pveFim h4{margin:0 0 4px;font-family:var(--dsp);letter-spacing:.06em}
+.pveFim.venceu h4{color:var(--neon)}.pveFim.perdeu h4{color:#ff8a7a}.pveFim.empate h4{color:var(--dim)}
+.pveFim p{margin:0 0 8px;font-size:.8rem}
+.pveBotoes{display:flex;gap:8px;flex-wrap:wrap}.pveBotoes .btn{width:auto}
+@media (max-width:520px){ .pvePalco{grid-template-columns:1fr;grid-template-rows:auto auto;min-height:0;padding:12px 8px}
+  .pveB{grid-column:1;grid-row:1} .pveA{grid-column:1;grid-row:2;margin-top:18px}
+  .pveSprite,.pveImg{width:56px;height:56px} .pvePlaca{min-width:120px} }
+
 /* ST-10.3 · evoluir ou esperar: o selo que custa um golpe fica ÂMBAR (não o
    verde de "pronta"), e armado pede o segundo clique; o golpe exclusivo no
    moveset leva a estrela. */
@@ -8114,6 +8165,7 @@ import './modules/doce-tela.mjs';
 import { temRetorno } from './modules/retorno-tela.mjs';
 import './modules/exclusivos-tela.mjs';
 import './modules/treino-tela.mjs';
+import './modules/pve-tela.mjs';
 import './modules/telemetria-v3-tela.mjs';
 /* ST-9.12: escolher os golpes — o módulo se liga sozinho ao clique. */
 import './modules/moveset-tela.mjs';

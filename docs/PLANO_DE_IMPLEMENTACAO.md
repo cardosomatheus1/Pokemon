@@ -1019,7 +1019,8 @@ Fatiada em duas (a original seria G).
 - **Sabotagem:** preset sem efeito; Focus Weakness escolhendo golpe neutro havendo um super-efetivo.
 - **Portões:** Q1 Q2 Q3.
 
-### ST-10.9 · A batalha PvE na tela e o resultado
+### ST-10.9 · A batalha PvE na tela e o resultado ✅ 27/09
+> Feito: linha do tempo em camada 0 só dos eventos; palco GBA com o estouro da Arena; resultado como fato medido; S1462–S1465.
 - **Porte** M–G · **Servidor** não · **Spec** §8.9, §12 telas 23–24
 - **Escopo:** replay dos eventos com a coreografia e o `MOVE_FX` da Arena; resultado com "`p` antes × o que aconteceu" (fato medido, §28.7); o primeiro adversário é o treinador da Rota 1.
 - **Aceite:** tudo derivado dos eventos, por um caminho só; uma luta jogada de ponta a ponta e capturada.

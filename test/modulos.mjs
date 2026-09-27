@@ -351,6 +351,9 @@ const CAMADA = {
   'doce-dados.mjs': 0,
   'doce-local.mjs': 1,
   'doce-tela.mjs': 4,
+  /* ST-10.9 · a batalha PvE: a linha do tempo (0) e a encenação (4). */
+  'pve-dados.mjs': 0,
+  'pve-tela.mjs': 4,
   /* ST-10.7 · o Team Builder: os dados (0), a gravação (1) e a tela (4). */
   'treino-dados.mjs': 0,
   'time-local.mjs': 1,
