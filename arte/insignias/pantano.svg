@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" shape-rendering="crispEdges">
+  <!-- A INSÍGNIA PÂNTANO (ST-10.16) — arte nossa. Dois círculos lapidados em
+       ouro e violeta, lado a lado — as duas defesas da lição, o físico e o
+       especial — no octógono da família, com o fio neon. -->
+  <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="#0e0a1c"/>
+  <polygon points="10,4 22,4 28,10 28,22 22,28 10,28 4,22 4,10" fill="#2a1f45"/>
+  <polygon points="6,16 8,11 12,9 15,11 16,16 15,21 12,23 8,21" fill="#c98a1b"/>
+  <polygon points="8,11 12,9 12,16 6,16" fill="#ffe27a"/>
+  <polygon points="12,16 16,16 15,21 12,23" fill="#8a5a00"/>
+  <polygon points="16,16 17,11 20,9 24,11 26,16 24,21 20,23 17,21" fill="#7a4fd0"/>
+  <polygon points="17,11 20,9 20,16 16,16" fill="#c8a8ff"/>
+  <polygon points="20,16 26,16 24,21 20,23" fill="#4b2c8f"/>
+  <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="none" stroke="#00e5ff" stroke-width="1"/>
+  <rect x="9" y="12" width="2" height="2" fill="#ffffff" opacity=".85"/>
+  <rect x="18" y="12" width="2" height="2" fill="#ffffff" opacity=".85"/>
+</svg>

@@ -41,6 +41,11 @@ export const REFERENCIAS = {
      imune a Elétrico). O teste cobra as três coisas: imune de um lado, não do
      outro, e o que ignora não é mais fraco. */
   vermilion: { varia: 'imune', tipo: 'electric', ignora: [[59, 22], [20, 22]], aplica: [[111, 22], [20, 22]] },
+  /* Físico × especial (ST-10.16): o MESMO Arcanine 42 (ataque 110, especial
+     100 — equilibrado, para a diferença ser o lado fraco de quem apanha, e não
+     o atacante), só golpes especiais × só físicos, com um Snorlax 36 ao lado. */
+  saffron: { varia: 'categoria', ignora: [[59, 42, { golpes: ['Flamethrower', 'Hyper Voice'] }], [143, 36]],
+                                 aplica: [[59, 42, { golpes: ['Fire Punch', 'Body Slam', 'Extreme Speed', 'Quick Attack'] }], [143, 36]] },
 };
 
 export const medida = (A, idRival) => resumo(lote(pack, A, rivalDe(pack, treinador(pack, idRival)), RAIZ, 0, SIMS));

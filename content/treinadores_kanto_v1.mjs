@@ -27,4 +27,7 @@ export const TREINADORES = [
   { id: 'misty',  nome: 'Misty',                     onde: 'Ginásio de Cerulean', time: [{ dex: 120, nivel: 18 }, { dex: 121, nivel: 21 }], ow: 'swimmer_f' },
   /* ST-10.15 · o terceiro ginásio: a aula é IMUNIDADE — um time todo elétrico. */
   { id: 'surge',  nome: 'Lt. Surge',                 onde: 'Ginásio de Vermilion', time: [{ dex: 100, nivel: 21 }, { dex: 25, nivel: 18 }, { dex: 26, nivel: 24 }], ow: 'sailor' },
+  /* ST-10.16 · o quarto ginásio: a aula é FÍSICO × ESPECIAL. Os três aguentam
+     golpe especial e quebram com físico (defesa < defesa especial). */
+  { id: 'sabrina', nome: 'Sabrina',                  onde: 'Ginásio de Saffron', time: [{ dex: 64, nivel: 38 }, { dex: 122, nivel: 37 }, { dex: 65, nivel: 43 }], ow: 'beauty' },
 ];

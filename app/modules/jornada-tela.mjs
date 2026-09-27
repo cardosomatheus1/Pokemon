@@ -13,7 +13,7 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
-import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ARTE_DO_MAPA } from './jornada-dados.mjs';
+import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido } from './treino-dados.mjs';
 import { lote, resumo, arredondarNeutro, textoDaMargem, SIMS_TREINO } from '../../engine/treino-preco.mjs';
 import { lutarNaJornadaLocal } from './jornada-local.mjs';
@@ -50,6 +50,35 @@ function pintarPainel(mapa) {
   if (!A.length) { $('#jnErro').textContent = 'o time está vazio — escolha o inicial nas Rotas'; return; }
   /* A lição da velocidade com a velocidade NA TELA: o seu mais rápido, e quem
      dos rivais ele passa. */
+  /* ST-10.16: a lição físico × especial — as duas defesas de cada rival lado
+     a lado, e quantos dos seus golpes batem no lado fraco. */
+  if (no.licao?.mostra === 'categoria') {
+    const lf = ladoFraco(PACK, A, rival), causa = $('#jnCausa'), nomeCat = { fis: 'físico', esp: 'especial' };
+    const topo = Math.max(...lf.deles.flatMap(x => [x.def, x.spd]), 1);
+    $('#jnVel').innerHTML = `<div class="jnVel"><b>as defesas delas — o lado fraco é o ${nomeCat[lf.fraco]}</b>`
+      + lf.deles.map(x => `<span class="jnDuelo2"><span>${nomeDo(x.dex)}</span>`
+        + `<i class="${lf.fraco === 'fis' ? 'fraco' : ''}" style="width:${Math.round(x.def / topo * 100)}%"></i><strong>${x.def} fís</strong>`
+        + `<i class="${lf.fraco === 'esp' ? 'fraco' : ''}" style="width:${Math.round(x.spd / topo * 100)}%"></i><strong>${x.spd} esp</strong></span>`).join('')
+      /* A metade "confira no SEU time" (Q7 da ST-10.16): cada criatura sua com
+         os golpes por categoria, nas mesmas colunas — e em vermelho quem bate
+         pelo lado forte delas. */
+      + `<b>os seus golpes</b>` + lf.seus.map(x => `<span class="jnDuelo2 seu${lf.pelaForte.includes(x) ? ' ruim' : ''}"><span>${nomeDo(x.dex)}</span>`
+        + `<i class="${lf.fraco === 'fis' ? 'fraco' : ''}" style="width:${x.fis * 25}%"></i><strong>${x.fis} fís</strong>`
+        + `<i class="${lf.fraco === 'esp' ? 'fraco' : ''}" style="width:${x.esp * 25}%"></i><strong>${x.esp} esp</strong></span>`).join('') + '</div>';
+    if (causa) {
+      const forte = nomeCat[lf.fraco === 'fis' ? 'esp' : 'fis'];
+      causa.hidden = false;
+      causa.className = `tiny jnCausa ${lf.pelaForte.length ? 'nao' : 'passa'}`;
+      /* A saída NOMEADA: quais golpes trocar, e o link direto — o "reforce o
+         time" genérico sugeria subir nível, que não é a lição. */
+      const catDe = n => PACK.golpes && Object.values(PACK.golpes).flat().find(g => g.n === n)?.cat;
+      const trocar = lf.pelaForte.map(x => `${nomeDo(x.dex)}: troque ${A.find(c => c.dex === x.dex).golpes.filter(n => catDe(n) !== lf.fraco).join(' e ')}`);
+      causa.innerHTML = lf.pelaForte.length
+        ? `${lf.pelaForte.map(x => nomeDo(x.dex)).join(' e ')} ${lf.pelaForte.length > 1 ? 'batem' : 'bate'} mais pelo ${forte}, o lado forte delas. ${trocar.join('; ')} por golpes ${nomeCat[lf.fraco]}s — <button class="lnk" data-treino-aba="time">escolher os golpes</button>`
+        : `todo o seu time bate mais pelo ${nomeCat[lf.fraco]}: o lado fraco delas`;
+      causa.dataset.licao = lf.pelaForte.length ? 'golpes' : '';
+    }
+  }
   /* ST-10.15: a lição da imunidade — quem do seu time o tipo não toca, com a
      mesma causa embaixo do número. */
   if (no.licao?.mostra === 'imune') {
@@ -91,7 +120,9 @@ function pintarPainel(mapa) {
     const n = $('#jnNumero'), e = $('#jnErro'), b = $('#jnLutar');
     if (n) { n.textContent = `${arredondarNeutro(r.p * 100)}%`; n.classList.toggle('parcial', !pronto); n.dataset.faixa = pronto ? faixaDaChance(r.p) : ''; }
     const aviso = $('#jnRisco');
-    if (aviso) aviso.hidden = !(pronto && no.estado !== 'trancado' && faixaDaChance(r.p) === 'baixa');
+    /* Com a causa da lição nomeando os golpes, o "reforce o time" sai: ele
+       contradiz a lição (sugere nível, e o que falta é escolher golpe). */
+    if (aviso) aviso.hidden = !(pronto && no.estado !== 'trancado' && faixaDaChance(r.p) === 'baixa') || $('#jnCausa')?.dataset.licao === 'golpes';
     if (e) e.textContent = pronto ? textoDaMargem(r) : `calculando · ${acum.sims} de ${SIMS_TREINO}`;
     if (pronto) { chanceNaTela = r; if (b && no.estado !== 'trancado') b.disabled = false; }
     else setTimeout(passo, 0);
@@ -187,6 +218,10 @@ document.addEventListener('click', ev => {
       : `contra ${nome(x.dex)} o rival nem tentou ${lic.tipo}${x.outros.length ? ` — só ${x.outros.join(' e ')} (dano ${x.danoOutros})` : ''}`);
     const maiuscula = t => t.charAt(0).toUpperCase() + t.slice(1);
     licaoNoFim = pv.length ? ` ${maiuscula(pv.map(frase).join('; '))}: a lição deste ginásio.` : ` Ninguém do seu time era imune a ${lic.tipo}: todo golpe acertou.`;
+  }
+  if (lic?.mostra === 'categoria') {
+    const d = danoPorCategoria(PACK, r.resultado.eventos);
+    licaoNoFim = ` Seus golpes físicos: ${d.fis.golpes}, dano ${d.fis.dano} · especiais: ${d.esp.golpes}, dano ${d.esp.dano} — a lição deste ginásio.`;
   }
   $('#jornadaCorpo')?.classList.add('emLuta');
   encenar({ alvo: $('#jnLuta'), A: r.timeA, B: r.timeB, r: r.resultado, antes, titulo: `${PACK.jornada.find(n => n.id === id)?.nome} · ${t.nome}`,

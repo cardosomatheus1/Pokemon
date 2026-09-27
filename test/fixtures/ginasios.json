@@ -44,6 +44,14 @@
    "ignora": 0.1355,
    "aplica": 0.9025,
    "erro": 0.015
+  },
+  {
+   "id": "saffron",
+   "rival": "sabrina",
+   "ensina": "físico contra especial",
+   "ignora": 0.122,
+   "aplica": 0.7995,
+   "erro": 0.0175
   }
  ]
 }

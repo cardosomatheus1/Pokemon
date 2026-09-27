@@ -8557,6 +8557,13 @@ faixa quando um nó está escolhido, ou fixar o painel no topo.
 **A metade de 420 px foi resolvida na ST-10.15** (com 7 nós o mapa em pé tem
 ~1.000 px e o crítico cego da Surge deu 2/10 à lição "abaixo da dobra"): no
 estreito, o painel do nó escolhido vem ANTES do mapa, e tocar num nó rola até
-ele. Fica para a ST-10.19 a metade deitada (mais de 8 nós em 1440).
+ele. ~~Fica para a ST-10.19 a metade deitada (mais de 8 nós em 1440).~~
+
+**E a metade deitada chegou antes, na ST-10.16**: o 8º nó cobriu três pares de
+nomes em 1100 px (medido pela captura). A partir de 7 nós os vizinhos alternam
+acima e abaixo da curva (`ZIGUE_A_PARTIR_DE`, testado até 16 nós), e você fica
+ao lado do nó atual — 0 sobrepostos nas quatro larguras com 8 nós. Fica para a
+ST-10.19 medir de novo com a jornada inteira (~16 nós: passo de ~60 px em 1100,
+menos que um nome de ginásio mesmo alternando).
 
 **O que a destrava:** a ST-10.19 medir com a lista inteira e escolher.

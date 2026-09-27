@@ -30,4 +30,7 @@ export const JORNADA = [
   { id: 'vermilion', nome: 'Ginásio de Vermilion', rival: 'surge', insignia: 'trovao', insigniaNome: 'Insígnia Trovão', cena: 'agua',
     licao: { ensina: 'imunidade', tipo: 'Elétrico', tipoGolpe: 'electric', mostra: 'imune',
              dica: 'Terrestre não é tocado por Elétrico: dano zero, o golpe todo perdido. Um imune no time vale mais que força.' } },
+  { id: 'saffron',  nome: 'Ginásio de Saffron', rival: 'sabrina', insignia: 'pantano', insigniaNome: 'Insígnia Pântano',
+    licao: { ensina: 'físico contra especial', tipo: 'Psíquico', mostra: 'categoria',
+             dica: 'As criaturas dela aguentam golpe especial e quebram com golpe físico: bata pelo lado fraco.' } },
 ];

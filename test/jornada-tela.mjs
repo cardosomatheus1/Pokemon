@@ -13,7 +13,7 @@ import { aberto, noAtual, progressoVazio } from '../engine/jornada.mjs';
 import { montarLutador, simular } from '../engine/treino-batalha.mjs';
 import { movesetDoRival, padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { treinador } from '../app/modules/treino-dados.mjs';
-import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
+import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 const semComentario = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
@@ -67,6 +67,10 @@ export function suite() {
       for (const p of pos) ok(p.x >= 5 && p.x <= 95 && p.y >= 15 && p.y <= 85, `${n} nós: (${p.x}, ${p.y}) fora da caixa`);
       for (let i = 1; i < n; i++) ok(pos[i].x > pos[i - 1].x, `${n} nós: o caminho volta para trás no ${i}`);
     }
+    /* Com muitos nós, vizinhos em alturas diferentes o bastante para os
+       nomes não se cobrirem (ST-10.16). */
+    for (let n = ZIGUE_A_PARTIR_DE; n <= 16; n++) for (let i = 1; i < n; i++)
+      ok(Math.abs(posicaoNoCaminho(i, n).y - posicaoNoCaminho(i - 1, n).y) >= 14, `${n} nós: os vizinhos ${i - 1} e ${i} estão na mesma altura`);
     const q = posicaoNoCaminho(0, 4), u = posicaoNoCaminho(3, 4);
     ok(q.x < 10 && u.x > 90, 'o caminho não atravessa a caixa');
     const m = mapaDaJornada(pack, progressoVazio());
@@ -104,6 +108,7 @@ export function suite() {
     igual(JSON.stringify(ondeEstou(fim)), JSON.stringify({ x: fim.nos[3].x, y: fim.nos[3].y, fim: true, ao: { x: fim.nos[3].x, y: fim.nos[3].y } }), 'no fim, no último — a tela põe ao lado');
     igual(JSON.stringify(ondeEstou(meio).ao), JSON.stringify({ x: c.x, y: c.y }), 'o nó de referência é o atual (o caminho em pé usa ele)');
     ok(/\.jnPos\.jnVoce\{left:calc\(var\(--ay\) \* 1%\)/.test(fonte('../app/index.html')), 'o caminho em pé põe você na trilha, em cima dos nomes');
+    ok(/\.jnPos\.jnVoce\{left:calc\(var\(--ax\) \* 1%\);top:calc\(var\(--ay\) \* 1%\)\}/.test(fonte('../app/index.html')), 'no caminho deitado você volta para a trilha, em cima dos nomes do zigue-zague');
     ok(!ondeEstou(meio).fim && !ondeEstou(vazio).fim, 'fim antes do fim');
     igual(ondeEstou({ nos: [] }), null, 'sem nós');
   });
@@ -128,8 +133,8 @@ export function suite() {
 
   s.teste('o mundo em volta: o treinador do nó, a parede de árvores, a cena longe do caminho e do nome', () => {
     const m = mapaDaJornada(pack, progressoVazio());
-    igual(m.nos.map(n => n.ow).join(), 'youngster,lass,camper,hiker,expert_m,swimmer_f,sailor', 'a folha de cada treinador');
-    igual(m.nos.map(n => n.cena ?? '-').join(), '-,arvores,-,rochas,rochas,agua,agua', 'a cena de cada nó');
+    igual(m.nos.map(n => n.ow).join(), 'youngster,lass,camper,hiker,expert_m,swimmer_f,sailor,beauty', 'a folha de cada treinador');
+    igual(m.nos.map(n => n.cena ?? '-').join(), '-,arvores,-,rochas,rochas,agua,agua,-', 'a cena de cada nó');
     const b = bordaDoMapa();
     ok(b.length >= 40 && b.every(p => p.x >= 0 && p.x <= 100 && (p.y <= 6 || p.y >= 94)), 'a parede não é borda');
     igual(JSON.stringify(b), JSON.stringify(bordaDoMapa()), 'a parede dança a cada repintura');
@@ -239,6 +244,31 @@ export function suite() {
       'no estreito o painel do nó continua abaixo de um mapa de 1.000 px');
     ok(/no\.licao\?\.mostra === 'imune'/.test(tela) && /imunesNoTime\(PACK, A, no\.licao\.tipoGolpe\)/.test(tela), 'o painel da imunidade não mostra quem é imune');
     ok(/if \(lic\?\.mostra === 'imune'\) \{/.test(tela), 'o fim da luta não fecha a lição da imunidade');
+  });
+
+  s.teste('a lição físico × especial mostra o lado fraco (ST-10.16)', () => {
+    const B = treinador(pack, 'sabrina').time.map(x => ({ dex: x.dex, nivel: x.nivel, golpes: movesetDoRival(pack, x.dex, x.nivel) }));
+    const fis = [{ dex: 59, nivel: 42, golpes: ['Fire Punch', 'Body Slam'] }], esp = [{ dex: 59, nivel: 42, golpes: ['Flamethrower', 'Hyper Voice'] }];
+    const lf = ladoFraco(pack, fis, B);
+    igual(lf.fraco, 'fis', 'o lado fraco do time da Sabrina');
+    igual(lf.deles.map(x => `${x.def}/${x.spd}`).join(), B.map((b, i) => { const f = montarLutador(pack, b, 'B', i); return `${f.def}/${f.spd}`; }).join(), 'as defesas não são as do motor');
+    igual(JSON.stringify(lf.seus), '[{"dex":59,"fis":2,"esp":0}]', 'os seus golpes por categoria');
+    igual(lf.pelaForte.length, 0, 'o físico não bate pelo lado forte');
+    /* O caso da captura: o Arcanine só de especiais AO LADO de um Snorlax de
+       físicos — a soma do time escondia o Arcanine. */
+    const misto = ladoFraco(pack, [...esp, { dex: 143, nivel: 36, golpes: ['Body Slam', 'Extreme Speed', 'Quick Attack'] }], B);
+    igual(misto.pelaForte.map(x => x.dex).join(), '59', 'quem bate pelo lado forte some na soma do time');
+    /* O fim da luta: o dano de cada categoria, contado dos eventos do lado A. */
+    const r = simular(pack, [{ ...fis[0], golpes: ['Fire Punch', 'Flamethrower'] }], B, 5), d = danoPorCategoria(pack, r.eventos);
+    const cat = n => Object.values(pack.golpes).flat().find(g => g.n === n).cat;
+    igual(d.fis.dano, r.eventos.filter(e => e.de[0] === 'A' && cat(e.golpe) === 'fis').reduce((a, e) => a + e.dano, 0), 'o dano físico');
+    igual(d.esp.golpes, r.eventos.filter(e => e.de[0] === 'A' && cat(e.golpe) === 'esp').length, 'os golpes especiais');
+    const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
+    ok(/no\.licao\?\.mostra === 'categoria'/.test(tela) && /ladoFraco\(PACK, A, rival\)/.test(tela), 'o painel não mostra o lado fraco');
+    ok(/lf\.pelaForte\.includes\(x\) \? ' ruim' : ''/.test(tela), 'o seu time não aparece ao lado das defesas delas, com quem bate errado marcado');
+    ok(/causa\.dataset\.licao = lf\.pelaForte\.length \? 'golpes' : ''/.test(tela) && /\$\('#jnCausa'\)\?\.dataset\.licao === 'golpes'/.test(tela), 'o "reforce o time" genérico contradiz a lição dos golpes');
+    ok(/troque \$\{A\.find\(c => c\.dex === x\.dex\)\.golpes\.filter\(n => catDe\(n\) !== lf\.fraco\)/.test(tela), 'a saída não nomeia os golpes a trocar');
+    ok(/if \(lic\?\.mostra === 'categoria'\) \{/.test(tela) && /danoPorCategoria\(PACK, r\.resultado\.eventos\)/.test(tela), 'o fim da luta não mostra o dano por categoria');
   });
 
   /* D-125 — o inicial sozinho perdia o primeiro nó — foi consertado na ST-10.13;

@@ -1069,6 +1069,11 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnDuelo i{display:block;height:10px;border-radius:3px;background:var(--dim)}.jnDuelo strong{text-align:right;font-family:var(--px);color:var(--txt)}
 .jnDuelo.seu i{background:var(--neon)}.jnDuelo.seu span{color:var(--txt);font-weight:700}
 .jnDuelo.passa i{background:rgba(61,242,166,.55)}.jnDuelo.nao i{background:var(--red)}.jnDuelo.nao strong{color:var(--red)}
+.jnDuelo2{display:grid;grid-template-columns:96px 1fr 52px 1fr 52px;align-items:center;gap:6px}
+.jnDuelo2 i{display:block;height:9px;border-radius:3px;background:var(--dim)}.jnDuelo2 i.fraco{background:var(--green)}
+.jnDuelo2 strong{font-size:.66rem;color:var(--txt);white-space:nowrap}
+.jnDuelo2.seu span{color:var(--txt);font-weight:700}.jnDuelo2.ruim span,.jnDuelo2.ruim strong{color:var(--red)}.jnDuelo2.ruim i:not(.fraco){background:var(--red)}
+.jnCausa .lnk{background:none;border:0;padding:0;color:var(--neon);text-decoration:underline;cursor:pointer;font:inherit}.jnVel em{font-style:normal;color:var(--txt);margin-top:2px}
 .jnImune{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:10px 0 2px;font-size:.76rem}
 .jnImune b{flex-basis:100%;color:var(--neon);text-transform:uppercase;letter-spacing:.08em;font-size:.62rem}
 .jnImune span{display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 2px;border-radius:8px;border:1px solid var(--line)}
@@ -1097,7 +1102,10 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnProp,.jnOw{position:absolute;display:block;background-repeat:no-repeat;pointer-events:none;filter:drop-shadow(0 3px 0 rgba(0,0,0,.28))}
 .jnProp{width:32px;height:32px;background-size:128px 32px;background-position:0 0;left:calc(var(--dx,0px) - 16px);top:calc(var(--dy,0px) - 16px)}
 .jnOw{width:32px;height:64px;background-size:288px 64px;background-position:0 0;left:-16px;top:-80px}
-.jnVoce{z-index:3}.jnVoce.jnFim .jnEu{transform:translateX(26px)}.jnEu{position:absolute;left:0;top:-48px;transform:translateX(-50%);height:52px;width:25px;overflow:hidden;pointer-events:none;z-index:2;filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
+/* VOCÊ ao lado do nó atual em toda largura (Q7 da ST-10.16): na trilha, com
+   o caminho em zigue-zague, você cobria o nome do ginásio de cima. */
+.jnVoce{z-index:3}.jnPos.jnVoce{left:calc(var(--ax) * 1%);top:calc(var(--ay) * 1%)}
+.jnVoce .jnEu,.jnVoce.jnFim .jnEu{transform:translateX(calc(-100% - 22px))}.jnEu{position:absolute;left:0;top:-48px;transform:translateX(-50%);height:52px;width:25px;overflow:hidden;pointer-events:none;z-index:2;filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
 .jnEu img{height:52px;width:auto;max-width:none;display:block;image-rendering:pixelated}
 .jnPos.jn-trancado .jnOw{filter:grayscale(1) brightness(.75) drop-shadow(0 3px 0 rgba(0,0,0,.28))}
 .jnPos.jn-vencido .jnOw{opacity:.7}
@@ -1137,7 +1145,7 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
   .jnMapa{height:calc(var(--n) * 130px + 60px)} .jnDeitado{display:none} .jnEmPe{display:block}
   .jnPos{left:calc(var(--y) * 1%);top:calc(70px + (100% - 110px) * var(--x) / 100)} .jnPos.jnB{top:calc(var(--x) * 1%)}
   .jnEmPe{top:70px;bottom:auto;height:calc(100% - 110px)}
-  .jnPos.jnVoce{left:calc(var(--ay) * 1%);top:calc(70px + (100% - 110px) * var(--ax) / 100)} .jnVoce .jnEu,.jnVoce.jnFim .jnEu{transform:translateX(calc(-100% - 22px))} .jnPainel{grid-template-columns:1fr;grid-template-areas:'titulo' 'chance' 'info';gap:10px} .jnChance{align-items:flex-start} .jnCausa{text-align:left} }
+  .jnPos.jnVoce{left:calc(var(--ay) * 1%);top:calc(70px + (100% - 110px) * var(--ax) / 100)} .jnPainel{grid-template-columns:1fr;grid-template-areas:'titulo' 'chance' 'info';gap:10px} .jnChance{align-items:flex-start} .jnCausa{text-align:left} }
 /* ST-10.9 · a batalha PvE. O palco é o mundo GBA — o rival no alto à direita,
    o seu time embaixo à esquerda, cada um com a placa de vida colada ao
    retrato, chão e sombra —; a moldura e o texto são a interface neon (Q5: a

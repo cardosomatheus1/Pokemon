@@ -12,7 +12,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import pack from '../content/pokemon_kanto_v1.mjs';
-import { movesetDoRival, padraoDoMoveset, liberados } from '../app/modules/moveset-dados.mjs';
+import { movesetDoRival, padraoDoMoveset, liberados, movesetValido } from '../app/modules/moveset-dados.mjs';
 import { rivalDe, treinador } from '../app/modules/treino-dados.mjs';
 import { lote, resumo } from '../engine/treino-preco.mjs';
 import { efeito } from '../engine/primitivas.mjs';
@@ -69,6 +69,22 @@ export function suite() {
     ok(efeito(pack.tipos.efetividade, 'electric', tiposDe(r.ignora[i][0])) > 0, 'o membro que ignora a lição também é imune');
     ok(soma(r.ignora[i][0]) >= soma(r.aplica[i][0]), 'o membro que ignora é mais fraco no papel — a medição mede força, e não imunidade');
     ok(treinador(pack, 'surge').time.every(x => tiposDe(x.dex).includes('electric')), 'o time do líder não é elétrico');
+    /* ST-10.16: "inverter a categoria do atacante" — o MESMO atacante, mesmo
+       nível, só os golpes mudam: todos físicos de um lado, todos especiais do
+       outro, válidos para ele; e o atacante é EQUILIBRADO (ataque e especial a
+       10% um do outro) — senão a medição mede o atacante, e não o lado fraco
+       de quem apanha. */
+    const c = REFERENCIAS.saffron;
+    ok(c?.varia === 'categoria', 'a lição físico × especial não varia só a categoria');
+    const k = c.ignora.findIndex((x, j) => JSON.stringify(x) !== JSON.stringify(c.aplica[j]));
+    const [ig, ap] = [c.ignora[k], c.aplica[k]];
+    igual(`${ig[0]}@${ig[1]}`, `${ap[0]}@${ap[1]}`, 'o atacante ou o nível mudou junto com a categoria');
+    ok(ap[2].golpes.every(n => golpe(n).cat === 'fis') && ig[2].golpes.every(n => golpe(n).cat === 'esp'), 'as categorias não estão separadas');
+    ok(movesetValido(pack, ap[0], ap[1], ap[2].golpes).ok && movesetValido(pack, ig[0], ig[1], ig[2].golpes).ok, 'golpe que o atacante não poderia ter');
+    const st = pack.especies.find(e => e.dex === ap[0]).s;
+    ok(Math.abs(st[1] - st[3]) / Math.max(st[1], st[3]) <= 0.1, 'o atacante não é equilibrado — a medição mede o atacante');
+    ok(treinador(pack, 'sabrina').time.every(x => { const s2 = pack.especies.find(e => e.dex === x.dex).s; return s2[2] < s2[4]; }),
+      'o time da líder não é mais frágil no físico — a lição do lado fraco não vale');
   });
 
   s.teste('a diferença entre os dois times passa de 3× o erro (ST-10.14)', () => {

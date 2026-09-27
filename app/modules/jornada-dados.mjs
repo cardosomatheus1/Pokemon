@@ -37,9 +37,15 @@ export const ARTE_DO_MAPA = '../assets/raw_githubusercontent_com/pret/pokeemeral
 /* A arte da insígnia é NOSSA (`arte/insignias/<id>.svg`, ST-10.13 · L-202). */
 export const arteDaInsignia = id => (id ? `../arte/insignias/${id}.svg` : null);
 
+/* A partir de 7 nós os vizinhos ALTERNAM acima e abaixo da curva: com 8 nós
+   em 1100 px o passo é ~125 px e o nome de dois andares do ginásio tem ~120 —
+   três pares se cobriam (medido na captura da ST-10.16). Com o zigue-zague, o
+   nome de um vizinho nunca está na mesma altura que o do outro. */
+export const ZIGUE_A_PARTIR_DE = 7;
 export function posicaoNoCaminho(i, n) {
   const x = n <= 1 ? 50 : 8 + (84 * i) / (n - 1);
-  const y = 52 + 24 * Math.sin((i / Math.max(1, n - 1)) * Math.PI * 1.5);
+  const zigue = n >= ZIGUE_A_PARTIR_DE ? (i % 2 ? 13 : -13) : 0;
+  const y = 52 + (zigue ? 5 : 24) * Math.sin((i / Math.max(1, n - 1)) * Math.PI * 1.5) + zigue;
   return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
 }
 
@@ -184,4 +190,32 @@ export function provaDaImunidade(pack, A, eventos, tipo) {
     return { dex: c.dex, golpes: doTipo.length, dano: doTipo.reduce((a, e) => a + (e.dano ?? 0), 0),
              outros: [...new Set(outros.map(e => e.golpe))], danoOutros: outros.reduce((a, e) => a + (e.dano ?? 0), 0) };
   });
+}
+
+/* A LIÇÃO FÍSICO × ESPECIAL NA TELA (ST-10.16): as duas defesas de cada rival
+   (como o motor as monta), o lado FRACO da maioria, e quantos dos seus golpes
+   são de cada categoria. */
+export function ladoFraco(pack, A, B) {
+  const deles = (B ?? []).map((c, i) => { const f = montarLutador(pack, c, 'B', i); return { dex: f.dex, def: f.def, spd: f.spd }; });
+  const fis = deles.filter(x => x.def < x.spd).length;
+  const cat = n => Object.values(pack.golpes ?? {}).flat().find(g => g.n === n)?.cat;
+  const fraco = fis * 2 >= deles.length ? 'fis' : 'esp', forte = fraco === 'fis' ? 'esp' : 'fis';
+  /* POR CRIATURA, e não o time somado: com o Arcanine só de especiais e o
+     Snorlax de físicos, a soma dizia "3 físicos, bate no lado fraco" em verde
+     com 8% na tela (captura da ST-10.16). Quem bate MAIS pelo lado forte é
+     nomeado. */
+  const seus = (A ?? []).map(c => ({ dex: c.dex, fis: (c.golpes ?? []).filter(n => cat(n) === 'fis').length, esp: (c.golpes ?? []).filter(n => cat(n) === 'esp').length }));
+  return { deles, fraco, seus, pelaForte: seus.filter(x => x[forte] > x[fraco]) };
+}
+
+/* O dano do SEU lado por categoria, dos eventos da luta — a prova da lição. */
+export function danoPorCategoria(pack, eventos) {
+  const cat = n => Object.values(pack.golpes ?? {}).flat().find(g => g.n === n)?.cat;
+  const saida = { fis: { golpes: 0, dano: 0 }, esp: { golpes: 0, dano: 0 } };
+  for (const e of eventos ?? []) {
+    const c = cat(e.golpe);
+    if (e.de?.[0] !== 'A' || !saida[c]) continue;
+    saida[c].golpes++; saida[c].dano += e.dano ?? 0;
+  }
+  return saida;
 }
