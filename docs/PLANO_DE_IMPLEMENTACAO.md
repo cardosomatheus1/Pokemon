@@ -323,7 +323,7 @@ isso trouxe. O sigilo do clima sorteado (L-177) não se quebra.
 - **Porte** P · regra permanente do `CLAUDE.md` ("o cenário do idle nunca está
   pronto"): entra quando um bloco passar pelo cenário, e não antes.
 
-### ST-2.5 · o clima e o teto valem na run (D-127, D-128)
+### ST-2.5 · o clima e o teto valem na run (D-127, D-128) — ✅ fechada em 27/09 (a emissão medida está na linha do ROADMAP)
 
 - **Porte** P · **Método** INV · **Depende de** ST-13.2c1 (a conta única: o
   conserto vale para o aparelho e o servidor de uma vez)

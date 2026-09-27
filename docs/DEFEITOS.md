@@ -6885,7 +6885,7 @@ continua "100%"/"0%" com "venceu/perdeu todas" embaixo. A conta "em N de cada
 de cada 100"). Aplicado nas três telas (Time, jornada, luta). O teste que
 afirmava o defeito virou o aceite: `recompensa-pve` — "D-126 consertado".
 
-## D-127 — o bônus de clima nunca vale no Avanço
+## D-127 — o bônus de clima nunca vale no Avanço ✅ CORRIGIDO
 
 **Achado em:** 27/09/2026, na extração da conta da run (ST-13.2c1). **Bloco
 dono:** ST-2.5 (o clima e o teto valem na run — nova, proposta no PLANO no
@@ -6911,7 +6911,7 @@ medição nova na mensagem.
 **Teste que trava:** `run-servidor` — "D-127 (afirma o defeito)". Fica
 vermelho quando a ST-2.5 consertar.
 
-## D-128 — o aviso diz que cabe, e a run nasce sem encontros
+## D-128 — o aviso diz que cabe, e a run nasce sem encontros ✅ CORRIGIDO
 
 **Achado em:** 27/09/2026, na extração da conta da run (ST-13.2c1). **Bloco
 dono:** ST-2.5. **Estado:** aberto.
@@ -6930,4 +6930,12 @@ o comportamento de propósito, pela mesma conta — a ST-2.5 conserta os dois
 lados numa linha.
 
 **Teste que trava:** `run-servidor` — "D-128 (afirma o defeito)".
+
+**D-127 e D-128 corrigidos na ST-2.5 (27/09).** `paraOMotor` leva os `tipos`
+da espécie (o campo não é `t`: na run, `t` é instante); `semEncontros` faz a
+MESMA pergunta do `avisoDoTeto`, sem a run nova no estado — no aparelho e no
+servidor, pela conta única. Os testes que afirmavam os defeitos viraram o
+aceite (`run-servidor`): 44 de 44 runs com o tipo do clima recebem o bônus, e
+o aviso e a run concordam de 10 a 30 encontros feitos. E o cartão diz de quem é o bônus: a equipe do motor leva o nome, e a lista de quem aproveita sai da mesma `quemAproveita` do motor (ela lia só `c.t` — o mesmo defeito por outra porta). A fixture
+`emissao-idle.json` foi regravada, com a diferença na mensagem do commit.
 

@@ -222,15 +222,20 @@ for (const largura of [1440, 420]) {
 }
 
 /* A LINHA DA RUN (ST-2.2): uma run na Floresta com a semente medida. */
-const linha = await pg.evaluate(async () => {
+/* `--quem N` e `--raiz R` escolhem a criatura e a raiz da run (padrão: a 5ª,
+   um Charmeleon, sob o Pólen de 'r9' — que ele NÃO aproveita). A ST-2.5
+   precisou ver o outro lado: `--raiz r1` dá Sol na Floresta, e o Charmeleon é
+   de Fogo — o cartão e o log dizem quem aproveita. */
+const QUEM = Number(arg('--quem') ?? 4), RAIZ_RUN = arg('--raiz') ?? 'r9';
+const linha = await pg.evaluate(async ([quem, raiz]) => {
   const A = await import('/app/modules/avanco-estado.mjs');
   const D = await import('/app/modules/idle-dados.mjs');
   const { PACK } = await import('/app/modules/motor.mjs');
   const e = D.carregar();
   A.comecarAvanco(e, { pack: PACK, bioma: 'floresta', estagio: 1,
-    equipe: [e.criaturas[4].id], agora: Date.now(), raiz: 'r9' });
+    equipe: [e.criaturas[quem].id], agora: Date.now(), raiz });
   return (e.run.eventos ?? []).filter(x => x.tipo === 'elenco').length;
-});
+}, [QUEM, RAIZ_RUN]);
 await pg.reload({ waitUntil: 'load', timeout: 60000 });
 await pg.waitForTimeout(1500);
 await (await pg.$('[data-view="viewIdle"]'))?.click();

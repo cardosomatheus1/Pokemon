@@ -43,7 +43,7 @@
  * quem ele quer e às vezes é premiado, que é a diferença entre um bônus e uma
  * obrigação.
  */
-import { sortearClimaIdle, bonusDoClima } from '../../engine/clima-idle.mjs';
+import { sortearClimaIdle, bonusDoClima, quemAproveita } from '../../engine/clima-idle.mjs';
 import { semente } from '../../engine/instancia.mjs';
 import { derivar } from '../../engine/seed.mjs';
 
@@ -65,8 +65,11 @@ export function leituraDoClima(pack, run, equipe = []) {
   const clima = climaDaRun(pack, run);
   if (!clima) return null;
   const bonus = bonusDoClima(clima, { equipe, especies: pack?.especies ?? [] });
-  const tipos = new Set(bonus.tipos ?? []);
-  const gracas = (equipe ?? []).filter(c => (c?.t ?? []).some(t => tipos.has(t)));
+  /* QUEM APROVEITA sai da MESMA função que decide o bônus (ST-2.5). A lista
+     lia só `c.t`, e o motor lê `c.t ?? c.tipos`: com a equipe do motor (que
+     leva `tipos`) o bônus valia e o cartão dizia "+9% de XP" sem dizer de quem
+     — dois leitores da mesma pergunta respondendo diferente. */
+  const gracas = quemAproveita(equipe, bonus.tipos ?? []).map(i => equipe[i]);
   return { clima, bonus, gracas };
 }
 

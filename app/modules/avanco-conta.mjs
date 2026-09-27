@@ -41,12 +41,24 @@ export const PERFIL_DO_AVANCO = 'trilha';
    com TEMPO JUNTOS; contar encontros faria dele um segundo XP. */
 export const VINCULO_DA_RUN = 1;
 
-/* A criatura na forma que o motor da wave lê. A FORÇA é derivada do pack, e
-   não guardada: seria uma segunda verdade envelhecendo ao lado da primeira. */
-export const paraOMotor = (pack, c) => ({
-  id: c.id, dex: c.dex, nivel: c.nivel ?? 1, vinculo: c.vinculo ?? 0, foco: c.foco ?? null,
-  forca: forcaDe((pack?.especies ?? []).find(e => e.dex === c.dex) ?? {}),
-});
+/* A criatura na forma que o motor da wave lê. A FORÇA e os TIPOS são
+   derivados do pack, e não guardados: seriam uma segunda verdade envelhecendo
+   ao lado da primeira.
+
+   OS TIPOS ENTRARAM NA ST-2.5 (D-127). Sem eles, `quemAproveita` não achava
+   ninguém e o bônus de clima do Avanço saía com fator 1 em todas as runs desde
+   o 1.32 — a tela anunciava o clima, e a run não pagava nada por ele. O campo
+   é `tipos`, e não `t`: na run, `t` é instante. E o NOME, pela mesma razão:
+   o cartão do clima diz "graças a Charmeleon" (`falaDoClima`), e sem nome a
+   frase saía sem dizer de quem era o bônus. O nome é o de exibição do pack. */
+const exibido = (pack, n) => (pack?.nomeExibido ?? (x => (x ? x[0].toUpperCase() + x.slice(1) : '')))(n ?? '');
+export const paraOMotor = (pack, c) => {
+  const especie = (pack?.especies ?? []).find(e => e.dex === c.dex) ?? {};
+  return {
+    id: c.id, dex: c.dex, nivel: c.nivel ?? 1, vinculo: c.vinculo ?? 0, foco: c.foco ?? null,
+    forca: forcaDe(especie), tipos: [...(especie.t ?? [])], nome: exibido(pack, especie.n),
+  };
+};
 
 /* A equipe da run, a partir das criaturas HIDRATADAS (nível do XP). Sai das
    criaturas a cada consulta, e não de uma cópia na run: o nível pode ter

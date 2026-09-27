@@ -25,7 +25,7 @@
 import { randomUUID } from 'node:crypto';
 import { novaRaiz } from '../engine/seed.mjs';
 import { emCurso, recuarRun } from '../engine/run-avanco.mjs';
-import { podeAvancar, cabeAvanco, ENCONTROS_POR_AVANCO, STAMINA_DO_AVANCO, curaDe } from '../engine/avanco.mjs';
+import { podeAvancar, cabeAvanco, STAMINA_DO_AVANCO, curaDe } from '../engine/avanco.mjs';
 import { EQUIPE_MAX } from '../engine/expedicao.mjs';
 import { estagioAberto, nivelDoEstagio, estagioMaximo } from '../engine/estagios.mjs';
 import { equipeDoMotor, runComecada, runNoInstante, runCurada, contaDaRun } from '../app/modules/avanco-conta.mjs';
@@ -89,9 +89,10 @@ export function comecarRun(db, { userId, pack, bioma, estagio = 1, equipe, agora
   const { pode, semStamina } = podeAvancar(membros, agora);
   if (!pode) throw new Error(`${semStamina.length} criatura(s) sem os ${STAMINA_DO_AVANCO} de stamina que um avanço custa`);
 
-  /* O contrato do momento em que ele entrou (L-151), com a reserva da própria
-     run no estado — como o aparelho (D-128). */
-  const semEncontros = !cabeAvanco({ ...estadoDoTeto(db, userId, agora, pack), reservas: [ENCONTROS_POR_AVANCO] });
+  /* O contrato do momento em que ele entrou (L-151): a mesma pergunta do
+     aviso — `cabeAvanco` já soma a reserva desta run (D-128, ST-2.5). Aqui não
+     há run aberta (a recusa acima), então o estado já está sem ela. */
+  const semEncontros = !cabeAvanco(estadoDoTeto(db, userId, agora, pack));
   const run = runComecada(pack, { bioma, estagio: est, equipe, raiz, agora, semEncontros,
                                   motor: equipeDoMotor(pack, { equipe }, colecao) });
   const id = randomUUID();

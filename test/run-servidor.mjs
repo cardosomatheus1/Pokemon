@@ -25,7 +25,7 @@ import * as D from '../app/modules/idle-dados.mjs';
 import * as A from '../app/modules/avanco-estado.mjs';
 import { STAMINA_MAX, restamEncontros } from '../engine/expedicao.mjs';
 import { xpParaNivel } from '../engine/nivel-criatura.mjs';
-import { leituraDoClima } from '../app/modules/avanco-clima.mjs';
+import { leituraDoClima, falaDoClima } from '../app/modules/avanco-clima.mjs';
 
 const T0 = Date.UTC(2026, 8, 27, 13);
 const MIN = 60_000;
@@ -182,27 +182,49 @@ export function suite() {
     ok(/não há run/.test(recusa(() => colherRun(c.db, { userId: c.u, pack: PACK, agora: T0 + 201 * MIN }))?.message ?? ''), 'colheu a run duas vezes');
   });
 
-  /* ── OS DOIS DEFEITOS QUE A EXTRAÇÃO ACHOU — afirmados DE PROPÓSITO ─────
-     Ficam vermelhos quando a ST-2.5 consertar (docs/DEFEITOS.md). */
-  s.teste('D-127 (afirma o defeito): o bônus de clima nunca vale no Avanço — a equipe do motor não tem tipo', () => {
-    let casavam = 0, valeram = 0;
+  /* ── OS DOIS DEFEITOS QUE A EXTRAÇÃO ACHOU, CONSERTADOS (ST-2.5) ──────
+     Os testes que os AFIRMAVAM viraram o aceite — nos dois lados, porque a
+     conta é uma só. */
+  s.teste('D-127 consertado: o bônus de clima vale no Avanço para quem é do tipo — no aparelho e no servidor', () => {
+    let casavam = 0, valeram = 0, fora = 0;
     for (let k = 0; k < 120; k++) for (const dex of PACK.iniciais) {
       const e = D.VAZIO(); D.escolherInicial(e, PACK, dex, T0 - 1000);
       const run = A.comecarAvanco(e, { pack: PACK, bioma: 'floresta', estagio: 1, equipe: [e.criaturas[0].id], agora: T0, raiz: raizDe(3000 + k) });
       const l = leituraDoClima(PACK, run, A.equipeDaRun(e, PACK, run));
       const tipos = PACK.especies.find(x => x.dex === dex).t;
-      if (l && (l.bonus.tipos ?? []).some(t => tipos.includes(t))) { casavam++; if (l.bonus.quantos > 0) valeram++; }
+      const casa = l && (l.bonus.tipos ?? []).some(t => tipos.includes(t));
+      if (casa) { casavam++; if (l.bonus.quantos > 0) valeram++; } else if (l?.bonus.quantos > 0) fora++;
     }
     ok(casavam > 0, 'nenhuma run com a inicial do tipo do clima — o teste não mede nada');
-    igual(valeram, 0, `D-127 consertado? ${valeram} de ${casavam} runs com o tipo do clima receberam o bônus`);
+    igual(valeram, casavam, `${valeram} de ${casavam} runs com o tipo do clima receberam o bônus`);
+    igual(fora, 0, 'o bônus valeu para quem não é do tipo');
+    /* E o servidor lê a mesma equipe: a identidade acima já compara o
+       `rendeu.clima` byte a byte, e aqui fica o caso de quem aproveita. */
+    const c = cena({ xp: [xpParaNivel(8), 0, 0, 0] });
+    let achou = null;
+    for (let k = 0; k < 200 && !achou; k++) {
+      const r = comecarRun(c.db, { userId: c.u, pack: PACK, bioma: 'floresta', equipe: [c.ids[0]], agora: T0 + k * 300 * MIN, raiz: raizDe(4000 + k) });
+      const cs = colherRun(c.db, { userId: c.u, pack: PACK, agora: T0 + k * 300 * MIN + 200 * MIN });
+      if (cs.rendeu.clima?.quantos > 0) achou = cs;
+      void r;
+    }
+    ok(achou, 'nenhuma run do servidor recebeu o bônus de clima em 200 tentativas');
+    /* E o cartão diz DE QUEM é o bônus (1.32: "o clima MAIS quem o aproveita"). */
+    const e = D.VAZIO(); D.escolherInicial(e, PACK, 4, T0 - 1000);
+    const run = A.comecarAvanco(e, { pack: PACK, bioma: 'floresta', equipe: [e.criaturas[0].id], agora: T0, raiz: 'r1' });
+    const fala = falaDoClima(leituraDoClima(PACK, run, A.equipeDaRun(e, PACK, run)));
+    igual(fala.estado, 'ativo', 'o Sol de r1 não rende para o Charmander');
+    ok(/graças a Charmander/.test(fala.frase), `o cartão do clima não diz de quem é o bônus: "${fala.frase}"`);
   });
 
-  s.teste('D-128 (afirma o defeito): o aviso diz que cabe, e a run nasce sem encontros — a reserva dela conta duas vezes', () => {
-    const e = D.VAZIO(); D.escolherInicial(e, PACK, PACK.iniciais[0], T0 - 1000);
-    e.avancos = [{ colhidaEm: T0 - 1000, encontros: 20 }];
-    igual(A.avisoDoTeto(e, { pack: PACK, agora: T0 }), null, 'com 20 feitos, o aviso diz que cabe');
-    const run = A.comecarAvanco(e, { pack: PACK, bioma: 'floresta', equipe: [e.criaturas[0].id], agora: T0 });
-    igual(run.semEncontros, true, 'D-128 consertado? com 20 feitos a run nasceu com encontros');
+  s.teste('D-128 consertado: o aviso e a run concordam — a reserva da run conta uma vez, nos dois lados', () => {
+    for (let feitos = 10; feitos <= 30; feitos++) {
+      const e = D.VAZIO(); D.escolherInicial(e, PACK, PACK.iniciais[0], T0 - 1000);
+      e.avancos = [{ colhidaEm: T0 - 1000, encontros: feitos }];
+      const aviso = A.avisoDoTeto(e, { pack: PACK, agora: T0 });
+      const run = A.comecarAvanco(e, { pack: PACK, bioma: 'floresta', equipe: [e.criaturas[0].id], agora: T0 });
+      igual(run.semEncontros, aviso !== null, `com ${feitos} feitos o aviso diz "${aviso ? 'sem encontros' : 'cabe'}" e a run nasceu ${run.semEncontros ? 'sem' : 'com'} encontros`);
+    }
   });
 
   return s;

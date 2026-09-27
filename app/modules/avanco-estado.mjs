@@ -23,7 +23,7 @@ import { golpesDaCriatura } from './moveset-dados.mjs';
 import { acharCriatura, criaturasDe, estadoDoTeto, salvar,
          motivoDaOcupada, lancarRunNoTeto } from './idle-dados.mjs';
 import { estagioAberto, estagioMaximo, nivelDoEstagio } from '../../engine/estagios.mjs';
-import { podeAvancar, cabeAvanco, STAMINA_DO_AVANCO, ENCONTROS_POR_AVANCO, curaDe } from '../../engine/avanco.mjs';
+import { podeAvancar, cabeAvanco, STAMINA_DO_AVANCO, curaDe } from '../../engine/avanco.mjs';
 /* A COSTURA DO CLIMA mora em `avanco-clima.mjs`: aqui é o que a run FAZ, lá é o
    que o tempo faz com ela. */
 import { climaDaRun, ritmoDoClima } from './avanco-clima.mjs';
@@ -128,10 +128,12 @@ export function comecarAvanco(e, { pack, bioma, estagio, equipe, agora, raiz = n
    * a colheita da run põe, e o que não tem marca fica. */
   e.encontros = (e.encontros ?? []).filter(x => x?.origem !== 'avanco');
   /* O CONTRATO DO MOMENTO EM QUE ELE ENTROU (L-151): se os encontros cabem
-     no teto, perguntado AGORA e guardado na run. A reserva da própria run já
-     conta no estado — é como sempre foi, e é a D-128 (a ST-2.5 conserta nos
-     dois lados, pela conta única). */
-  const semEncontros = !cabeAvanco({ ...estadoDoTeto(e, agora, pack), reservas: [ENCONTROS_POR_AVANCO] });
+     no teto, perguntado AGORA e guardado na run. A pergunta é a MESMA do
+     `avisoDoTeto` que a tela mostra antes — `cabeAvanco` já soma a reserva da
+     run que vai nascer. A versão antiga perguntava com a run nova já no
+     estado, e a reserva contava duas vezes (D-128, ST-2.5): o aviso dizia
+     "cabe" e a run nascia sem encontros. */
+  const semEncontros = !cabeAvanco(estadoDoTeto({ ...e, run: null }, agora, pack));
   e.run = runComecada(pack, { bioma, estagio, equipe, raiz, agora, semEncontros,
                               motor: equipeDoMotor(pack, { equipe }, criaturasDe(e)) });
   salvar(e);
