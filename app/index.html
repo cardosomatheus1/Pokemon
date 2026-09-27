@@ -1063,6 +1063,20 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnTrofeu b{display:block;font-size:1.05rem;color:var(--neon)}.jnTrofeu span span{display:block;font-size:.74rem;color:var(--dim)}
 .jnInsigniaFim{width:88px;height:88px;flex:none;image-rendering:pixelated;filter:drop-shadow(0 0 10px rgba(var(--goldRGB),.8));animation:jnInsigniaEntra 1.4s cubic-bezier(.2,1.6,.4,1) both}
 @media (prefers-reduced-motion:reduce){ .jnInsigniaFim{animation:none} }
+.jnVel{display:grid;gap:4px;margin:10px 0 2px;max-width:460px;font-size:.74rem;color:var(--dim)}
+.jnVel b{color:var(--neon);text-transform:uppercase;letter-spacing:.08em;font-size:.62rem}
+.jnDuelo{display:grid;grid-template-columns:118px 1fr 34px;align-items:center;gap:8px}
+.jnDuelo i{display:block;height:10px;border-radius:3px;background:var(--dim)}.jnDuelo strong{text-align:right;font-family:var(--px);color:var(--txt)}
+.jnDuelo.seu i{background:var(--neon)}.jnDuelo.seu span{color:var(--txt);font-weight:700}
+.jnDuelo.passa i{background:rgba(61,242,166,.55)}.jnDuelo.nao i{background:var(--red)}.jnDuelo.nao strong{color:var(--red)}
+.jnCausa{max-width:300px;text-align:right;font-weight:700}.jnCausa.nao{color:var(--red)}.jnCausa.passa{color:var(--green)}
+/* O lago da cena de água: pixel de verdade não há na folha; um oval em degraus
+   com a borda de areia e o brilho que anda, no mesmo lugar dos props. */
+.jnLago{position:absolute;width:46px;height:24px;left:calc(var(--dx) - 23px);top:calc(var(--dy) - 12px);border-radius:50%;pointer-events:none;
+  background:radial-gradient(ellipse at 40% 40%,#8fd3ff 0 18%,#3f8fd6 19% 62%,#2a6aa8 63% 100%);box-shadow:0 0 0 3px #d9c28a,0 3px 0 3px rgba(0,0,0,.25);overflow:hidden}
+.jnLago::after{content:'';position:absolute;left:-30%;top:35%;width:40%;height:3px;background:rgba(255,255,255,.75);animation:jnOnda 3.2s linear infinite}
+@keyframes jnOnda{to{left:110%}}
+@media (prefers-reduced-motion:reduce){ .jnLago::after{animation:none} }
 .jnLicao{display:flex;align-items:center;gap:8px;margin:8px 0 0;font-size:.74rem;color:var(--txt)}
 .jnLicao img{width:28px;height:28px;image-rendering:pixelated;flex:none}.jnLicao b{color:var(--neon)}
 .jnMapa{position:relative;height:340px;border-radius:14px;overflow:hidden;border:1px solid rgba(var(--goldRGB),.35);image-rendering:pixelated;
@@ -1114,7 +1128,8 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 /* Em pé: o MESMO caminho transposto, e a altura cresce com os nós. */
 @media (max-width:520px){ .jnMapa{height:calc(var(--n) * 130px + 60px)} .jnDeitado{display:none} .jnEmPe{display:block}
   .jnPos{left:calc(var(--y) * 1%);top:calc(70px + (100% - 110px) * var(--x) / 100)} .jnPos.jnB{top:calc(var(--x) * 1%)}
-  .jnEmPe{top:70px;bottom:auto;height:calc(100% - 110px)} .jnPainel{grid-template-columns:1fr;grid-template-areas:'titulo' 'chance' 'info';gap:10px} .jnChance{align-items:flex-start} }
+  .jnEmPe{top:70px;bottom:auto;height:calc(100% - 110px)}
+  .jnPos.jnVoce{left:calc(var(--ay) * 1%);top:calc(70px + (100% - 110px) * var(--ax) / 100)} .jnVoce .jnEu,.jnVoce.jnFim .jnEu{transform:translateX(calc(-100% - 22px))} .jnPainel{grid-template-columns:1fr;grid-template-areas:'titulo' 'chance' 'info';gap:10px} .jnChance{align-items:flex-start} .jnCausa{text-align:left} }
 /* ST-10.9 · a batalha PvE. O palco é o mundo GBA — o rival no alto à direita,
    o seu time embaixo à esquerda, cada um com a placa de vida colada ao
    retrato, chão e sombra —; a moldura e o texto são a interface neon (Q5: a

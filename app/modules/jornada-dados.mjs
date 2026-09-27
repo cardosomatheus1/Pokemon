@@ -29,6 +29,7 @@
  * caminho deitado nem o em pé passam, e longe do nome, que fica embaixo.
  */
 import { nosDa, noAtual } from '../../engine/jornada.mjs';
+import { montarLutador } from '../../engine/treino-batalha.mjs';
 
 export const INSIGNIAS_DO_CAMINHO = 8;
 export const ARTE_DO_MAPA = '../assets/raw_githubusercontent_com/pret/pokeemerald/alfa';
@@ -102,10 +103,14 @@ export function ondeEstou(mapa) {
   if (!nos.length) return null;
   const r = v => Math.round(v * 10) / 10;
   const i = mapa.atual ? nos.findIndex(n => n.id === mapa.atual) : -1;
-  if (i < 0) return { x: nos.at(-1).x, y: nos.at(-1).y, fim: true };
-  if (i === 0) return { x: r(Math.max(3, nos[0].x - 4)), y: nos[0].y };
+  /* `ao`: o nó de referência. No caminho EM PÉ a tela usa ele, e não a trilha:
+     com 6 nós, a 60% da trilha você caía no nome de dois andares do ginásio
+     de cima (captura da ST-10.14, 420 px). Ao lado do nó não há nome nem
+     treinador — o nome fica embaixo e o treinador em cima. */
+  if (i < 0) return { x: nos.at(-1).x, y: nos.at(-1).y, fim: true, ao: { x: nos.at(-1).x, y: nos.at(-1).y } };
+  if (i === 0) return { x: r(Math.max(3, nos[0].x - 4)), y: nos[0].y, ao: { x: nos[0].x, y: nos[0].y } };
   const a = nos[i - 1], b = nos[i];
-  return { x: r(a.x + (b.x - a.x) * 0.6), y: r(a.y + (b.y - a.y) * 0.6) };
+  return { x: r(a.x + (b.x - a.x) * 0.6), y: r(a.y + (b.y - a.y) * 0.6), ao: { x: b.x, y: b.y } };
 }
 
 /* A PAREDE DE ÁRVORES das bordas, em porcentagem: uma fileira em cima e uma
@@ -126,8 +131,31 @@ export function bordaDoMapa(passo = 4.2) {
 const CENAS = {
   arvores: { folha: 'cuttable_tree', pos: [[-44, -30], [44, -34], [-70, -52], [72, -56], [-40, -70], [40, -74]] },
   rochas:  { folha: 'breakable_rock', pos: [[-42, -26], [46, -30], [-64, -44], [66, -48]] },
+  /* A água não tem folha no `pret` que já usamos: são dois lagos desenhados
+     em CSS (`forma`), nas mesmas diagonais de cima (ST-10.14). */
+  agua:    { forma: 'lago', pos: [[-54, -36], [56, -42]] },
 };
 export function cenaDoNo(no) {
   const c = CENAS[no?.cena];
-  return c ? c.pos.map(([dx, dy]) => ({ folha: c.folha, dx, dy })) : [];
+  return c ? c.pos.map(([dx, dy]) => (c.forma ? { forma: c.forma, dx, dy } : { folha: c.folha, dx, dy })) : [];
+}
+
+/* A LIÇÃO DA VELOCIDADE NA TELA (ST-10.14): o seu mais rápido contra cada
+   rival, com a velocidade que o MOTOR monta (`montarLutador` — nível, oculto
+   e natureza), e quantos dele o seu passa. Empate não passa: o motor sorteia. */
+export function comparaVelocidade(pack, A, B) {
+  const meus = (A ?? []).map((c, i) => montarLutador(pack, c, 'A', i));
+  const seu = meus.length ? meus.reduce((m, f) => (f.spe > m.spe ? f : m)) : null;
+  const deles = (B ?? []).map((c, i) => { const f = montarLutador(pack, c, 'B', i); return { dex: f.dex, nivel: f.nivel, spe: f.spe }; });
+  const alvo = deles.length ? Math.max(...deles.map(x => x.spe)) : 0;
+  /* A ALAVANCA (Q7 da ST-10.14): em que nível o seu mais rápido passa o mais
+     rápido deles — o motor monta de novo, nível a nível, até 10 acima. */
+  let passaNoNivel = null;
+  if (seu && seu.spe <= alvo) {
+    const c = A[seu.i];
+    for (let n = seu.nivel + 1; n <= Math.min(100, seu.nivel + 10); n++)
+      if (montarLutador(pack, { ...c, nivel: n }, 'A', 0).spe > alvo) { passaNoNivel = n; break; }
+  }
+  return { seu: seu && { dex: seu.dex, nivel: seu.nivel, spe: seu.spe }, deles, alvo,
+           passa: seu ? deles.filter(x => seu.spe > x.spe).length : 0, falta: seu ? Math.max(0, alvo - seu.spe + 1) : 0, passaNoNivel };
 }

@@ -24,22 +24,30 @@ import { padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { rivalDe, treinador } from '../app/modules/treino-dados.mjs';
 
 export const RAIZ = 20260928, SIMS = 2000, INICIAIS = [1, 4, 7], NIVEL_INICIAL = 5;
-export const time = l => l.map(([dex, nivel]) => ({ dex, nivel, golpes: padraoDoMoveset(pack, dex, nivel) }));
+/* Cada membro: [dex, nível] ou [dex, nível, { iv, natureza }] — o terceiro é o
+   que a Misty precisa para variar SÓ a velocidade (o oculto de velocidade). */
+export const time = l => l.map(([dex, nivel, extra]) => ({ dex, nivel, golpes: padraoDoMoveset(pack, dex, nivel), ...(extra ?? {}) }));
+const IV = vel => [15, 15, 15, 15, 15, vel];
 
 /* Os times de referência de cada ginásio. `ignora` e `aplica` diferem num
    membro só: a diferença de chance É a lição, e nada mais. */
 export const REFERENCIAS = {
   pewter: { ignora: [[4, 14], [16, 13], [19, 13]], aplica: [[7, 14], [16, 13], [19, 13]] },
+  /* "Mesmo time, só a velocidade invertida" (plano, ST-10.14): o mesmo Raichu
+     22, o oculto de velocidade 0 × 31 — 57 contra 63, com o Starmie em 59. */
+  cerulean: { varia: 'vel', ignora: [[26, 22, { iv: IV(0) }]], aplica: [[26, 22, { iv: IV(31) }]] },
 };
 
-export const chance = (A, idRival) => resumo(lote(pack, A, rivalDe(pack, treinador(pack, idRival)), RAIZ, 0, SIMS)).p;
+export const medida = (A, idRival) => resumo(lote(pack, A, rivalDe(pack, treinador(pack, idRival)), RAIZ, 0, SIMS));
+export const chance = (A, idRival) => medida(A, idRival).p;
 
 export function medir() {
   const ginasios = (pack.jornada ?? []).filter(n => n.insignia).map(n => {
     const ref = REFERENCIAS[n.id];
     if (!ref) return { id: n.id, rival: n.rival, semReferencia: true };
+    const ig = medida(time(ref.ignora), n.rival), ap = medida(time(ref.aplica), n.rival);
     return { id: n.id, rival: n.rival, ensina: n.licao?.ensina ?? null,
-             ignora: +chance(time(ref.ignora), n.rival).toFixed(4), aplica: +chance(time(ref.aplica), n.rival).toFixed(4) };
+             ignora: +ig.p.toFixed(4), aplica: +ap.p.toFixed(4), erro: +Math.max(ig.erro, ap.erro).toFixed(4) };
   });
   const primeiro = (pack.jornada ?? [])[0];
   const inicial = INICIAIS.map(dex => ({ dex, p: +chance(time([[dex, NIVEL_INICIAL]]), primeiro.rival).toFixed(4) }));

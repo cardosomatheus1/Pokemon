@@ -1050,7 +1050,7 @@ Bloco dono F4.6 · §8.1.2, §8.8 · M cada, com conteúdo · portões Q1 Q2 Q3 
 | story | ensina | aceite medido pelo simulador (ST-10.10) |
 |---|---|---|
 | 10.13 · Brock ✅ 27/09 | fraqueza de tipo | time sem golpe super-efetivo contra Pedra perde ≥ 70%; time que aplica a lição vence ≥ 60% — **medido: ignora 0%, aplica 99,95%** (`test/fixtures/ginasios.json`) |
-| 10.14 · Misty | velocidade decide trocas apertadas | mesmo time, só a velocidade invertida: a diferença de `p` passa de 3× o erro |
+| 10.14 · Misty ✅ 27/09 | velocidade decide trocas apertadas | mesmo time, só a velocidade invertida: a diferença de `p` passa de 3× o erro — **medido: 6,0% × 75,0%, ≈ 40× o erro** (o mesmo Raichu 22, oculto de velocidade 0 × 31) |
 | 10.15 · Lt. Surge | imunidade | time com imune a Elétrico vence ≥ 60%; sem imune, perde ≥ 70% |
 | 10.16 · Sabrina | físico × especial | inverter a categoria do atacante move `p` de lado |
 

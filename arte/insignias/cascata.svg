@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" shape-rendering="crispEdges">
+  <!-- A INSÍGNIA CASCATA (ST-10.14) — arte nossa. Uma gota lapidada em facetas
+       de azul, com o mesmo fio neon da Rocha: as insígnias do estojo são uma
+       família (pedra cortada + borda da interface), e não oito desenhos soltos. -->
+  <polygon points="16,1 24,11 28,19 26,25 21,30 11,30 6,25 4,19 8,11" fill="#06121c"/>
+  <polygon points="16,3 23,12 26,19 24,24 20,28 12,28 8,24 6,19 9,12" fill="#2a6aa8"/>
+  <polygon points="16,3 16,14 9,12" fill="#8fd3ff"/>
+  <polygon points="16,3 23,12 16,14" fill="#5fb0f0"/>
+  <polygon points="9,12 16,14 11,20 6,19" fill="#4a95dc"/>
+  <polygon points="23,12 26,19 21,20 16,14" fill="#2f78bf"/>
+  <polygon points="11,20 16,14 21,20 16,24" fill="#6cc0f5"/>
+  <polygon points="6,19 11,20 12,28 8,24" fill="#2560a0"/>
+  <polygon points="26,19 24,24 20,28 21,20" fill="#1c4f86"/>
+  <polygon points="12,28 11,20 16,24 20,28" fill="#1a4677"/>
+  <polygon points="16,1 24,11 28,19 26,25 21,30 11,30 6,25 4,19 8,11" fill="none" stroke="#00e5ff" stroke-width="1"/>
+  <rect x="12" y="8" width="2" height="3" fill="#ffffff" opacity=".85"/>
+  <rect x="13" y="12" width="1" height="1" fill="#ffffff" opacity=".6"/>
+</svg>

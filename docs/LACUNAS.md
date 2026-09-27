@@ -8549,4 +8549,9 @@ sobreposição (`tools/olhar-jornada.mjs`), então o defeito aparece sozinho
 quando a lista crescer — mas a forma da solução (mapa em trechos por região,
 rolagem lateral, ou o caminho em duas voltas) é decisão daquele bloco.
 
+E o caminho EM PÉ (420 px) tem o problema espelhado, medido no Q7 da ST-10.14:
+com 6 nós o mapa já ocupa ~840 px, e o painel do nó (a chance, a lição, a
+velocidade) fica abaixo da dobra. O crítico cego pediu encolher o mapa numa
+faixa quando um nó está escolhido, ou fixar o painel no topo.
+
 **O que a destrava:** a ST-10.19 medir com a lista inteira e escolher.

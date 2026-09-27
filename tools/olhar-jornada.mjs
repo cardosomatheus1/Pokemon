@@ -21,7 +21,11 @@ const PONTOS = {
   meio: { vencidos: ['rota1', 'floresta'], insignias: [], time: [[4, 12], [16, 10], [10, 9]] },
   /* ST-10.13: diante de Brock, com a lição aplicada (Squirtle) — a luta dá a insígnia. */
   ginasio: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra'], insignias: [], time: [[7, 14], [16, 13], [19, 13]] },
-  fim: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter'], insignias: ['rocha'], time: [[5, 18], [17, 17], [25, 15]] },
+  /* ST-10.14: diante de Misty com o MESMO Raichu 22 da medição — o que passa
+     o Starmie (oculto de velocidade 31) e o que não passa (0). */
+  misty: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter'], insignias: ['rocha'], time: [[26, 22, 31]] },
+  mistyLento: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter'], insignias: ['rocha'], time: [[26, 22, 0]] },
+  fim: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean'], insignias: ['rocha', 'cascata'], time: [[5, 18], [17, 17], [25, 15]] },
 };
 
 const b = await chromium.launch({ executablePath: CHROME });
@@ -34,12 +38,12 @@ async function abrir(w, ponto) {
     if (sessionStorage.getItem('ja')) return;
     sessionStorage.setItem('ja', '1');
     const agora = Date.now();
-    const cria = (id, dex, nivel) => ({ id, dex, nivel, xp: Math.round(4 * Math.pow(nivel, 2.2)), vinculo: 1, foco: null,
-      iv: [15, 15, 15, 15, 15, 15], natureza: 'Hardy', origem: 'inicial', stamina: 100, staminaEm: agora, criadaEm: agora, naCaixa: false });
+    const cria = (id, dex, nivel, vel = 15) => ({ id, dex, nivel, xp: Math.round(4 * Math.pow(nivel, 2.2)), vinculo: 1, foco: null,
+      iv: [15, 15, 15, 15, 15, vel], natureza: 'Hardy', origem: 'inicial', stamina: 100, staminaEm: agora, criadaEm: agora, naCaixa: false });
     localStorage.setItem('ar_session', '1');
     localStorage.setItem('ar_treino_aba', 'jornada');
     localStorage.setItem('ar_idle', JSON.stringify({ v: 1, registro: {}, bolsa: {}, expedicoes: [], encontros: [], doces: {},
-      criaturas: p.time.map(([dex, nivel], i) => cria(`c${i}`, dex, nivel)), jornada: { vencidos: p.vencidos, insignias: p.insignias } }));
+      criaturas: p.time.map(([dex, nivel, vel], i) => cria(`c${i}`, dex, nivel, vel)), jornada: { vencidos: p.vencidos, insignias: p.insignias } }));
   }, PONTOS[ponto]);
   await pg.goto(`${BASE}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
   await pg.waitForFunction(() => document.querySelectorAll('.pick').length > 0, null, { timeout: 90000, polling: 250 });
@@ -70,7 +74,7 @@ for (const ponto of Object.keys(PONTOS)) for (const w of [1920, 1440, 1100, 420]
   await ctx.close();
 }
 
-for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420, 'ginasio']]) {
+for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420, 'ginasio'], [1440, 'misty'], [420, 'misty']]) {
   const { ctx, pg } = await abrir(w, ponto);
   await pg.$eval('#jnLutar', el => el.click());
   await pg.waitForSelector('#jnLuta #pvePalco', { timeout: 10000 });
@@ -79,7 +83,7 @@ for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420
   await pg.$eval('#jnLuta [data-pve-pular]', el => el.click());
   await pg.waitForTimeout(600);
   await (await pg.$('#jnLuta')).screenshot({ path: `${PASTA}/luta-${ponto}-fim-${w}.png` });
-  if (ponto === 'ginasio') await (await pg.$('.jnTopo')).screenshot({ path: `${PASTA}/estojo-entrando-${w}.png` });
+  if (ponto === 'ginasio' || ponto === 'misty') await (await pg.$('.jnTopo')).screenshot({ path: `${PASTA}/estojo-entrando-${ponto}-${w}.png` });
   await pg.waitForFunction(() => { const n = document.getElementById('jnNumero'); return n && !n.classList.contains('parcial'); }, null, { timeout: 120000, polling: 250 });
   const resultado = await pg.evaluate(() => ({ fim: document.querySelector('#pveFim h4')?.textContent, texto: document.querySelector('#pveFim p')?.textContent }));
   await pg.$eval('#jnLuta [data-pve-fechar]', el => el.click());

@@ -42,10 +42,24 @@ export function suite() {
   s.teste('a lição é a ÚNICA diferença entre os dois times de referência', () => {
     for (const [id, r] of Object.entries(REFERENCIAS)) {
       igual(r.ignora.length, r.aplica.length, `${id}: tamanhos`);
-      const dif = r.ignora.filter((x, i) => x[0] !== r.aplica[i][0] || x[1] !== r.aplica[i][1]);
+      const dif = r.ignora.map((x, i) => i).filter(i => JSON.stringify(r.ignora[i]) !== JSON.stringify(r.aplica[i]));
       igual(dif.length, 1, `${id}: os times diferem em ${dif.length} membros`);
       igual(r.ignora.map(x => x[1]).join(), r.aplica.map(x => x[1]).join(), `${id}: os níveis mudaram junto`);
+      /* ST-10.14: "mesmo time, só a velocidade invertida" — quem declara
+         `varia: 'vel'` só pode diferir no oculto de velocidade. */
+      if (r.varia === 'vel') {
+        const [a, b] = [r.ignora[dif[0]], r.aplica[dif[0]]];
+        igual(`${a[0]}@${a[1]}`, `${b[0]}@${b[1]}`, `${id}: a espécie ou o nível mudou junto com a velocidade`);
+        igual(JSON.stringify(a[2].iv.slice(0, 5)), JSON.stringify(b[2].iv.slice(0, 5)), `${id}: mudou outro oculto além da velocidade`);
+        ok(a[2].iv[5] < b[2].iv[5], `${id}: o time que aplica a lição não é o mais rápido`);
+        ok(!a[2].natureza && !b[2].natureza, `${id}: natureza mexe em dois atributos`);
+      }
     }
+    ok(REFERENCIAS.cerulean?.varia === 'vel', 'a lição da velocidade não é medida com só a velocidade variando');
+  });
+
+  s.teste('a diferença entre os dois times passa de 3× o erro (ST-10.14)', () => {
+    for (const g of fx.ginasios) ok(g.aplica - g.ignora > 3 * g.erro, `${g.id}: ${g.aplica} − ${g.ignora} não passa de 3 × ${g.erro}`);
   });
 
   s.teste('o aceite: ignorar a lição perde, aplicá-la vence', () => {

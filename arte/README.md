@@ -39,3 +39,4 @@ nossa é pedra LAPIDADA em facetas com o fio neon da interface na borda.
 | Arquivo | Insígnia | Ginásio |
 |---|---|---|
 | `insignias/rocha.svg` | rocha | Ginásio de Pewter (ST-10.13) |
+| `insignias/cascata.svg` | cascata | Ginásio de Cerulean (ST-10.14) — gota lapidada, a mesma família da Rocha |

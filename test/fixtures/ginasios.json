@@ -26,7 +26,16 @@
    "rival": "brock",
    "ensina": "fraqueza de tipo",
    "ignora": 0,
-   "aplica": 0.9995
+   "aplica": 0.9995,
+   "erro": 0.001
+  },
+  {
+   "id": "cerulean",
+   "rival": "misty",
+   "ensina": "a velocidade decide trocas apertadas",
+   "ignora": 0.06,
+   "aplica": 0.7495,
+   "erro": 0.019
   }
  ]
 }

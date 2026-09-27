@@ -20,4 +20,9 @@ export const JORNADA = [
   { id: 'pedra',    nome: 'Caminho da Pedra',  rival: 'pedra', cena: 'rochas' },
   { id: 'pewter',   nome: 'Ginásio de Pewter', rival: 'brock', insignia: 'rocha', insigniaNome: 'Insígnia Rocha', cena: 'rochas',
     licao: { ensina: 'fraqueza de tipo', tipo: 'Pedra', dica: 'Pedra apanha em dobro de Água e de Planta — e aguenta Fogo, Voador e Normal.' } },
+  /* `mostra: 'vel'`: o painel põe a velocidade do seu mais rápido ao lado da
+     de cada rival — a lição tem de estar na tela, e não só no texto. */
+  { id: 'cerulean', nome: 'Ginásio de Cerulean', rival: 'misty', insignia: 'cascata', insigniaNome: 'Insígnia Cascata', cena: 'agua',
+    licao: { ensina: 'a velocidade decide trocas apertadas', tipo: 'Água', mostra: 'vel',
+             dica: 'Quando os dois caem em poucos golpes, quem age antes vence. Passe a velocidade do Starmie.' } },
 ];

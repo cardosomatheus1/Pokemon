@@ -13,7 +13,7 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
-import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, ARTE_DO_MAPA } from './jornada-dados.mjs';
+import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido } from './treino-dados.mjs';
 import { lote, resumo, arredondarNeutro, textoDaMargem, SIMS_TREINO } from '../../engine/treino-preco.mjs';
 import { lutarNaJornadaLocal } from './jornada-local.mjs';
@@ -39,13 +39,34 @@ function pintarPainel(mapa) {
   alvo.innerHTML = `<h4 class="jnTitulo">${no.nome}${no.tipo === 'ginasio' ? ` <span class="jnSelo">ginásio${no.lider ? ` · líder ${no.lider}` : ''}</span>` : ''}</h4>
     <div class="jnChance${vencido ? ' jnVencido' : ''}">${vencido ? `<span class="jnFeitoSelo">${no.insignia ? `<img src="${arteDaInsignia(no.insignia)}" alt="">` : ''}vencido ✓</span>` : ''}
       <span class="tiny">seu time vence</span><strong id="jnNumero">…</strong><span class="tiny" id="jnErro">calculando</span>
+      <span class="tiny jnCausa" id="jnCausa" hidden></span>
       <span class="tiny jnRisco" id="jnRisco" hidden>arriscado — <button class="lnk" data-treino-aba="time">reforce o time</button></span>
       <button class="btn${vencido ? '' : ' gold'} jnCta" id="jnLutar" data-jn-lutar="${no.id}" disabled>${no.estado === 'trancado' ? 'trancado' : vencido ? 'revanche (treino)' : `lutar contra ${t.nome}`}</button></div>
     <div class="jnInfo"><p class="jnFrase">${fraseDoNo(no, t.nome)}</p>
       ${no.licao ? `<p class="jnLicao"><img src="${arteDaInsignia(no.insignia)}" alt=""><span><b>Ensina: ${no.licao.ensina}.</b> ${no.lider ?? t.nome} usa ${no.licao.tipo}. ${no.licao.dica}</span></p>` : ''}
+      <div id="jnVel"></div>
       <p class="jnRival">${t.nome}: ${rival.map(r => `<span>${dexImg(r.dex, '', 'class="jnSprite"')}${nomeDo(r.dex)} <i>NV ${r.nivel}</i></span>`).join('')}</p></div>`;
   const g = ++geracao, A = entradasDoTime(PACK, carregar()), preset = presetDoJogador();
   if (!A.length) { $('#jnErro').textContent = 'o time está vazio — escolha o inicial nas Rotas'; return; }
+  /* A lição da velocidade com a velocidade NA TELA: o seu mais rápido, e quem
+     dos rivais ele passa. */
+  /* Q7 da ST-10.14: a comparação é um DUELO de barras colado à lição, e a
+     CAUSA vai para baixo do número — o 5% dizia "arriscado" sem dizer por quê. */
+  if (no.licao?.mostra === 'vel') {
+    const v = comparaVelocidade(PACK, A, rival), topo = Math.max(v.seu.spe, v.alvo) || 1;
+    const barra = (nome, spe, cls) => `<span class="jnDuelo ${cls}"><span>${nome}</span><i style="width:${Math.round(spe / topo * 100)}%"></i><strong>${spe}</strong></span>`;
+    $('#jnVel').innerHTML = `<div class="jnVel"><b>velocidade — quem age antes</b>${barra(`você: ${nomeDo(v.seu.dex)}`, v.seu.spe, 'seu')}`
+      + v.deles.map(x => barra(nomeDo(x.dex), x.spe, v.seu.spe > x.spe ? 'passa' : 'nao')).join('') + '</div>';
+    const rapido = v.deles.find(x => x.spe === v.alvo);
+    const causa = $('#jnCausa');
+    if (causa) {
+      causa.hidden = false;
+      causa.className = `tiny jnCausa ${v.falta ? 'nao' : 'passa'}`;
+      causa.textContent = v.falta
+        ? `${nomeDo(rapido.dex)} age antes: ${v.alvo} contra ${v.seu.spe} — faltam ${v.falta} de velocidade${v.passaNoNivel ? ` (o ${nomeDo(v.seu.dex)} passa no nível ${v.passaNoNivel})` : ''}`
+        : `você age antes: ${nomeDo(v.seu.dex)} ${v.seu.spe} contra ${nomeDo(rapido.dex)} ${v.alvo}`;
+    }
+  }
   const acum = { vitorias: 0, empates: 0, sims: 0 };
   const passo = () => {
     if (g !== geracao) return;
@@ -87,10 +108,10 @@ export function renderJornada({ nova = null } = {}) {
       <svg class="jnCaminho jnEmPe" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${trilha(true)}</svg>
       ${bordaDoMapa().map(p => `<div class="jnPos jnB" style="--x:${p.x};--y:${p.y}">${quadro('cuttable_tree', 'jnProp')}</div>`).join('')}
       ${mapa.nos.map(n => `<div class="jnPos jn-${n.estado}" style="--x:${n.x};--y:${n.y}">
-          ${cenaDoNo(n).map(c => quadro(c.folha, 'jnProp', `;--dx:${c.dx}px;--dy:${c.dy}px`)).join('')}
+          ${cenaDoNo(n).map(c => (c.forma ? `<b class="jnLago" style="--dx:${c.dx}px;--dy:${c.dy}px"></b>` : quadro(c.folha, 'jnProp', `;--dx:${c.dx}px;--dy:${c.dy}px`))).join('')}
           ${n.ow ? quadro(n.ow, 'jnOw') : ''}
           <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}" data-jn-no="${n.id}" title="${n.nome}"><i${n.tipo === 'ginasio' && n.estado === 'vencido' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : ''}</span></button></div>`).join('')}
-      ${onde && eu ? `<div class="jnPos jnVoce${onde.fim ? ' jnFim' : ''}" style="--x:${onde.x};--y:${onde.y}"><b class="jnEu"><img src="${eu}" alt="você"></b></div>` : ''}
+      ${onde && eu ? `<div class="jnPos jnVoce${onde.fim ? ' jnFim' : ''}" style="--x:${onde.x};--y:${onde.y};--ax:${onde.ao.x};--ay:${onde.ao.y}"><b class="jnEu"><img src="${eu}" alt="você"></b></div>` : ''}
     </div>
     <div class="jnPainel" id="jnPainel"></div>`;
   const im = alvo.querySelector('.jnEu img');
@@ -128,9 +149,22 @@ document.addEventListener('click', ev => {
   const extra = r.ganhouInsignia ? `<span class="jnTrofeu"><img class="jnInsigniaFim" src="${arteDaInsignia(r.ganhouInsignia)}" alt="">
       <span><b>${ganha?.nome ?? 'A insígnia'} é sua.</b><span>${ganha?.onde ?? ''} · ${mapa.insignias.filter(x => x.ganha).length} de ${mapa.insignias.length} no estojo do mapa</span></span></span>` : r.primeiraVez ? (proximo ? `O caminho abriu: próximo, ${proximo.nome}.` : 'A jornada está completa.') : '';
   const t = treinador(PACK, PACK.jornada.find(n => n.id === id)?.rival);
+  /* A lição fecha no fim da luta: quem agiu antes (Q7 da ST-10.14 — o fim só
+     falava de "super-efetivo", que é a lição do ginásio anterior). */
+  let licaoNoFim = '';
+  if (PACK.jornada.find(n => n.id === id)?.licao?.mostra === 'vel') {
+    const v = comparaVelocidade(PACK, r.timeA, r.timeB), nome = dex => nomeExibido(PACK.especies.find(e => e.dex === dex)?.n ?? '?');
+    const rapido = v.deles.find(x => x.spe === v.alvo);
+    /* A frase casa QUEM agiu antes com O QUE aconteceu: agir antes e perder é
+       a fatia que a chance já dizia, e não a lição desmentida. */
+    const venceu = r.resultado.vencedor === 'A';
+    licaoNoFim = v.falta
+      ? ` ${nome(rapido.dex)} agiu antes (${v.alvo} contra ${v.seu.spe})${venceu ? ', e desta vez você venceu mesmo assim.' : ': a lição deste ginásio.'}`
+      : ` Você agiu antes (${nome(v.seu.dex)} ${v.seu.spe} contra ${nome(rapido.dex)} ${v.alvo})${venceu ? ': a lição deste ginásio.' : ', e desta vez não bastou.'}`;
+  }
   $('#jornadaCorpo')?.classList.add('emLuta');
   encenar({ alvo: $('#jnLuta'), A: r.timeA, B: r.timeB, r: r.resultado, antes, titulo: `${PACK.jornada.find(n => n.id === id)?.nome} · ${t.nome}`,
-            extraNoFim: extra, voltar: 'voltar ao mapa', aoFim: () => { if (r.primeiraVez && proximo) escolhido = proximo.id; renderJornada({ nova: r.ganhouInsignia }); } });
+            extraNoFim: licaoNoFim + extra, voltar: 'voltar ao mapa', aoFim: () => { if (r.primeiraVez && proximo) escolhido = proximo.id; renderJornada({ nova: r.ganhouInsignia }); } });
 });
 
 /* Voltar ao mapa devolve o painel: enquanto o resultado está na tela, o

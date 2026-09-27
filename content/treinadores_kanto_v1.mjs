@@ -22,4 +22,7 @@ export const TREINADORES = [
   { id: 'pedra',  nome: 'Montanhista',               onde: 'caminho da Pedra', time: [{ dex: 74, nivel: 10 }, { dex: 27, nivel: 11 }, { dex: 95, nivel: 12 }], ow: 'hiker' },
   /* ST-10.13 · o primeiro ginásio: a aula é FRAQUEZA DE TIPO (Spec §8.1.2). */
   { id: 'brock',  nome: 'Brock',                     onde: 'Ginásio de Pewter', time: [{ dex: 74, nivel: 12 }, { dex: 95, nivel: 14 }], ow: 'expert_m' },
+  /* ST-10.14 · o segundo ginásio: a aula é VELOCIDADE. O Starmie (59 de
+     velocidade no 21) é o eixo — quem o passa bate primeiro. */
+  { id: 'misty',  nome: 'Misty',                     onde: 'Ginásio de Cerulean', time: [{ dex: 120, nivel: 18 }, { dex: 121, nivel: 21 }], ow: 'swimmer_f' },
 ];
