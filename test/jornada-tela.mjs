@@ -14,7 +14,7 @@ import { montarLutador, simular } from '../engine/treino-batalha.mjs';
 import { movesetDoRival, padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { treinador } from '../app/modules/treino-dados.mjs';
 import { correcaoDaLicao, aplicarCorrecao } from '../app/modules/jornada-correcao.mjs';
-import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, golpesLevados, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, rivaisDerrubados, setasDoCaminho, faixaDoCaminho, pagamentoDoNo, fraseDoPagamento, DUAS_VOLTAS_A_PARTIR_DE, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
+import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, golpesLevados, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, rivaisDerrubados, setasDoCaminho, faixaDoCaminho, avisoDoRisco, pagamentoDoNo, fraseDoPagamento, DUAS_VOLTAS_A_PARTIR_DE, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 const semComentario = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
@@ -134,7 +134,7 @@ export function suite() {
     ok(!/simular\(|lutarNo\(|\.vencidos\.push|insignias\.push|salvar\(/.test(tela), 'a tela decide ou grava progresso por conta própria');
     ok(/encenar\(\{ alvo: \$\('#jnLuta'\), A: r\.timeA, B: r\.timeB, r: r\.resultado/.test(tela), 'a luta não é encenada pelo caminho da 10.9');
     ok(/lote\(PACK, A, rival, RAIZ, acum\.sims/.test(tela) && /const RAIZ = 1;/.test(tela), 'a chance do mapa não é a do Team Builder');
-    ok(/disabled>\$\{no\.estado === 'trancado' \? 'trancado' : vencido \? 'revanche \(treino\)' : `lutar contra \$\{t\.nome\}`\}/.test(tela) && /if \(pronto\) \{ chanceNaTela = r; if \(b && no\.estado !== 'trancado'\) b\.disabled = false; projetar\(r\);/.test(tela),
+    ok(/disabled>\$\{no\.estado === 'trancado' \? 'trancado' : vencido \? 'revanche \(treino\)' : `lutar contra \$\{t\.nome\.replace/.test(tela) && /if \(pronto\) \{ chanceNaTela = r; if \(b && no\.estado !== 'trancado'\) b\.disabled = false; projetar\(r\);/.test(tela),
       'lutar acende antes da chance ou num nó trancado');
     ok(/if \(!lutar \|\| lutar\.disabled \|\| !chanceNaTela\) return;/.test(tela), 'a luta sai sem a chance');
     const pve = semComentario(fonte('../app/modules/pve-tela.mjs'));
@@ -486,6 +486,30 @@ export function suite() {
     ok(/lote\(PACK, corr\.timeA, rival, RAIZ/.test(tela), 'a chance projetada não é a do time corrigido');
     ok(/era \$\{porcentagemExibida\(aplicada\.antes\)\}, agora \$\{porcentagemExibida\(r\.p\)\}/.test(tela), 'a correção aplicada não diz de onde veio o número');
     ok(/\$\('#jnCausa \.lnk'\)\?\.remove\(\)/.test(tela), 'duas ações para a mesma correção');
+  });
+
+  s.teste('ST-10.21 (L-206): o acabamento — o nó atual, as setas, o risco, o título, a cena longe de você', () => {
+    /* O RISCO diz o tamanho do risco: 2% não é "arriscado". */
+    igual([0.02, 0.09, 0.1, 0.29, 0.3, 0.8].map(avisoDoRisco).map(x => x ?? '-').join('|'), 'derrota quase certa|derrota quase certa|arriscado|arriscado|-|-', 'o aviso de cada faixa');
+    /* As SETAS sabem se o trecho já foi andado: as do por andar são as que
+       precisam aparecer sobre a trilha tracejada. */
+    const m = mapaDaJornada(pack, { vencidos: ['rota1', 'floresta', 'rota22'], insignias: [] }), sx = setasDoCaminho(m);
+    igual(sx.map(x => (x.andado ? 'a' : 'p')).join('').slice(0, 5), 'aaapp', 'o trecho andado e o por andar');
+    igual(setasDoCaminho(mapaDaJornada(pack, progressoVazio())).filter(x => x.andado).length, 0, 'seta andada antes do primeiro passo');
+    const tela = semComentario(fonte('../app/modules/jornada-tela.mjs')), html = fonte('../app/index.html');
+    ok(/n\.estado === 'atual' \? '<b class="jnAnel"><\/b>' : ''/.test(tela), 'o nó atual sem o anel');
+    ok(/jn-\$\{sx\.dir\}\$\{sx\.andado \? ' andado' : ''\}/.test(tela), 'a seta não sabe se foi andada');
+    ok(/avisoDoRisco\(r\.p\)/.test(tela), 'o aviso de risco não é o da camada 0');
+    ok(/titulo\.textContent = jornada \? 'Jornada' : 'Time'/.test(tela) && /id="treinoTitulo"/.test(html), 'o título diz "Time" na aba Jornada');
+    ok(/\.jnEu/.test(tela.slice(tela.indexOf('function afastarCena'), tela.indexOf('let reafastar'))), 'a cena não desvia de você');
+    const afastar = tela.slice(tela.indexOf('function afastarCena'), tela.indexOf('let reafastar'));
+    ok(/querySelectorAll\('\.jnSetaPos'\)/.test(afastar) && /\.jnLend/.test(afastar), 'a seta não procura outro ponto, ou você fica sob o lendário');
+    /* A seta tem para onde ir: outros pontos do MESMO trecho, entre os nós. */
+    const s1 = setasDoCaminho(mapaDaJornada(pack, progressoVazio()))[3], a1 = mapaDaJornada(pack, progressoVazio()).nos[3], b1 = mapaDaJornada(pack, progressoVazio()).nos[4];
+    ok(s1.outros.length >= 4 && s1.outros.every(p => p.x >= Math.min(a1.x, b1.x) && p.x <= Math.max(a1.x, b1.x)), 'os outros pontos saem do trecho');
+    ok(/lutar contra \$\{t\.nome\.replace\(\/\^\(O\|A\) \//.test(tela), '"lutar contra O Rival" com maiúscula no meio da frase');
+    ok(/\.jnPainel\{[^}]*max-width:1240px/.test(html), 'o painel sem largura máxima em 1920');
+    ok(/cz\.innerHTML = cz\.innerHTML\.replace\(\/\\s\*—\\s\*\$\/, ''\)/.test(tela), 'o travessão fica pendurado quando o link sai');
   });
 
   /* D-125 — o inicial sozinho perdia o primeiro nó — foi consertado na ST-10.13;

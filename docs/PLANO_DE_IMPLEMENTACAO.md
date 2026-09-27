@@ -1084,10 +1084,15 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **10.19c ✅ 27/09** — a Liga: Lorelei, Bruno, Agatha e Lance REVISAM uma lição de ginásio cada (o preset Defensivo, a imunidade, físico × especial, a resistência), e o Campeão dá a última: o preset não é receita (o Agressivo que venceu o Blaine perde aqui). L-201 fechada (o rival é especialista: Skull Bash de 17,6% a 3,1% do dano dos rivais da jornada), L-203 fechada (o caminho em duas voltas; 0 rótulos cobertos por sprite nas quatro larguras).
 - **10.19d ✅ 27/09** — a correção da lição como botão com a chance projetada (L-205): preset certo ou troca da caixa, decidida na camada 0 (`jornada-correcao.mjs`), com o clique entregando o número prometido; a faixa do caminho em 420, as setas da trilha, a coluna da chance ancorada, a cena e você longe dos nomes.
 
-### ST-10.21 · O acabamento do mapa da jornada (L-206)
+### ST-10.21 · O acabamento do mapa da jornada (L-206) ✅ 27/09
 - **Porte** P–M · **Bloco dono** F4.5 · **Spec** §8.7, §12 tela 22 · **Portões:** Q1 Q2 Q5 Q7.
 - **Escopo:** o nó atual com anel e o ícone do tipo; as setas legíveis sobre a trilha por andar; você fora dos lagos; em 1920, a chance perto da frase que a explica; o título da aba; o aviso de risco que diz o tamanho do risco.
 - **Aceite:** o crítico cego com a mesma barra da 10.19d dá ≥ 8 às quatro perguntas nas quatro larguras.
+
+### ST-10.22 · O mundo do mapa (L-209)
+- **Porte** M · **Bloco dono** F4.5 · **Spec** §8.7, §12 tela 22 · **Portões:** Q1 Q2 Q5 Q7.
+- **Escopo:** regiões no mapa (a água de Cerulean, a lava de Cinnabar, a floresta, a pedra), props variados, água que parece água, a etiqueta "PRÓXIMO", o fundo da tela comprida (a casca: `html,body{height:100%}`) que acaba no meio do mapa em 420, o bloco de leitura do chefe, a faixa do celular com o mini-trecho, e o título.
+- **Aceite:** o crítico cego com a barra do Super Mario World dá ≥ 8 ao acabamento nas quatro larguras.
 
 ### ST-10.20 · A jornada ensina a apostar? ✅ 27/09
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16

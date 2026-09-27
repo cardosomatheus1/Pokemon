@@ -119,16 +119,20 @@ for (const ponto of Object.keys(PONTOS).filter(quer)) for (const w of [1920, 144
        (o Q7 da Liga viu em Pewter, Vermilion, Viridian e Saffron, em 1100). */
     const cenas = [...document.querySelectorAll('.jnPos:not(.jnB) .jnLago, .jnPos:not(.jnB) .jnProp')].filter(n => getComputedStyle(n).display !== 'none').map(n => n.getBoundingClientRect()).filter(r => r.width && r.height);
     const sobCena = rotulos.filter(a => cenas.some(c => toca(a.r, c))).map(a => a.t);
+    /* ST-10.21: e peça da cena cortada pela borda do mapa. */
+    const mapaR = document.querySelector('.jnMapa').getBoundingClientRect();
+    const cortadas = cenas.filter(r => r.left < mapaR.left - 1 || r.right > mapaR.right + 1 || r.top < mapaR.top - 1 || r.bottom > mapaR.bottom + 1).length;
         const nosR = [...document.querySelectorAll('.jnNo')].map(n => ({ r: n.getBoundingClientRect(), t: n.title }));
     const pares = [];
     for (let i = 0; i < nosR.length; i++) for (let j = i + 1; j < nosR.length; j++) if (toca(nosR[i].r, nosR[j].r) || (nosR[i].r.left < nosR[j].r.right && nosR[j].r.left < nosR[i].r.right && nosR[i].r.top < nosR[j].r.bottom && nosR[j].r.top < nosR[i].r.bottom)) pares.push(`${nosR[i].t}×${nosR[j].t}:${Math.round(Math.min(nosR[i].r.bottom, nosR[j].r.bottom) - Math.max(nosR[i].r.top, nosR[j].r.top))}px`);
-    return { cobre, quem, cena: sobCena.length, sobCena: sobCena.slice(0, 4), pares: pares.slice(0, 3), topo: document.querySelector('.jnTopo')?.textContent.replace(/\s+/g, ' ').trim(), painel: document.querySelector('#jnPainel h4')?.textContent,
+    return { cobre, quem, cortadas, cena: sobCena.length, sobCena: sobCena.slice(0, 4), pares: pares.slice(0, 3), topo: document.querySelector('.jnTopo')?.textContent.replace(/\s+/g, ' ').trim(), painel: document.querySelector('#jnPainel h4')?.textContent,
       chance: document.getElementById('jnNumero')?.textContent, erro: document.getElementById('jnErro')?.textContent,
       lutar: document.getElementById('jnLutar')?.disabled === false, fora, sobre };
   });
   achados.push(`${ponto} ${w}: ${JSON.stringify(r)}`);
   if (r.fora || r.sobre) erros.push(`${ponto} ${w}: ${r.fora} nós fora da caixa, ${r.sobre} pares sobrepostos`);
   if (r.cobre) erros.push(`${ponto} ${w}: ${r.cobre} rótulos cobertos por sprite`);
+  if (r.cortadas) erros.push(`${ponto} ${w}: ${r.cortadas} peças da cena cortadas pela borda`);
   if (r.cena) erros.push(`${ponto} ${w}: ${r.cena} rótulos sobre a cena (${r.sobCena.join(', ')})`);
   await ctx.close();
 }

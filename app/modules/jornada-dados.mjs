@@ -119,6 +119,8 @@ export function fraseDoNo(no, nome = 'o rival') {
 /* A FAIXA DA CHANCE, para a cor do número e o aviso ao lado do "lutar": 7% e
    99% na mesma cor não avisam nada (Q7 da ST-10.12). O botão continua lá — a
    decisão é do jogador —, mas abaixo de 30% ele lê o risco antes. */
+/* ST-10.21: o AVISO diz o tamanho do risco — a 2%, "arriscado" era pouco (Q7). */
+export const avisoDoRisco = p => (!Number.isFinite(p) || p >= 0.3 ? null : p < 0.1 ? 'derrota quase certa' : 'arriscado');
 export const faixaDaChance = p => (p < 0.3 ? 'baixa' : p < 0.7 ? 'media' : 'alta');
 
 /* O CAMINHO ANDADO: do começo até o nó atual, o resto é por andar — como o
@@ -161,9 +163,16 @@ export function ondeEstou(mapa) {
    abaixo do painel: a faixa do anterior, do escolhido e do próximo vai antes. */
 export function setasDoCaminho(mapa) {
   const nos = mapa?.nos ?? [], r = v => Math.round(v * 100) / 100;
+  /* ST-10.21: e se o trecho já foi ANDADO — a seta do por andar é a que
+     precisa aparecer sobre a trilha tracejada (Q7 da 10.19d). */
+  const ate = mapa?.atual ? nos.findIndex(n => n.id === mapa.atual) : nos.length - 1;
   return nos.slice(1).map((b, i) => {
     const a = nos[i], dx = b.x - a.x;
-    return { x: r((a.x + b.x) / 2), y: r((a.y + b.y) / 2), dir: Math.abs(dx) < 1 ? 'baixo' : dx > 0 ? 'dir' : 'esq' };
+    /* E OUTROS PONTOS do mesmo trecho, para a tela tentar quando o meio cai
+       sobre um nome — esconder a seta apagou a fileira inteira em 1100 (Q7). */
+    const em = t => ({ x: r(a.x + (b.x - a.x) * t), y: r(a.y + (b.y - a.y) * t) });
+    return { ...em(0.5), dir: Math.abs(dx) < 1 ? 'baixo' : dx > 0 ? 'dir' : 'esq', andado: i + 1 <= ate,
+             outros: [0.38, 0.62, 0.3, 0.7].map(em) };
   });
 }
 export function faixaDoCaminho(mapa, id) {
@@ -290,7 +299,7 @@ export function fraseDoPagamento(pack, r, { depois = false } = {}) {
   if (r.motivo === 'derrota') return depois ? 'A derrota não tira nada.' : '';
   if (r.motivo === 'teto') return depois ? `O teto de hoje (${r.teto} ${moeda}) já foi: esta valeu como treino.` : `o teto de hoje (${r.teto}) já foi — a revanche vale como treino`;
   if (r.motivo === 'primeira') {
-    const doce = Object.keys(r.doces).length || !depois ? [depois ? `${Object.keys(r.doces).length} doce${Object.keys(r.doces).length === 1 ? '' : 's'}` : 'doce da linha de cada um'] : [];
+    const doce = Object.keys(r.doces).length || !depois ? [depois ? `${Object.keys(r.doces).length} doce${Object.keys(r.doces).length === 1 ? '' : 's'}` : 'um doce por criatura do time'] : [];
     const partes = [`${r.pokecoin} ${moeda}`, ...bolas, ...(essencias.length ? essencias : doce)];
     return depois ? `Ganhou: ${partes.join(' · ')}.` : `a primeira vitória paga ${partes.join(' · ')}`;
   }

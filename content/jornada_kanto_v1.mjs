@@ -44,8 +44,8 @@ export const JORNADA = [
              dica: 'As criaturas dela aguentam golpe especial e quebram com golpe físico: bata pelo lado fraco.' } },
   /* ST-10.19b · os dois últimos ginásios antes do chefe. */
   { id: 'cinnabar', nome: 'Ginásio de Cinnabar', curto: 'Cinnabar', rival: 'blaine', insignia: 'vulcao', insigniaNome: 'Insígnia Vulcão', cena: 'agua',
-    licao: { ensina: 'derrube quem está caindo — um a menos bate a menos', tipo: 'Fogo', mostra: 'preset', presetCerto: 'aggressive',
-             porque: 'termina o ferido: um a menos bate a menos',
+    licao: { ensina: 'termine o ferido primeiro — cada um que cai é um golpe a menos', tipo: 'Fogo', mostra: 'preset', presetCerto: 'aggressive',
+             porque: 'termina o ferido: cada um que cai é um golpe a menos',
              dica: 'Os quatro dele batem forte até cair. Espalhar dano deixa os quatro batendo; terminar o ferido tira um da luta mais cedo.' } },
   { id: 'viridian', nome: 'Ginásio de Viridian', curto: 'Viridian', rival: 'giovanni', insignia: 'terra', insigniaNome: 'Insígnia Terra', cena: 'arvores',
     licao: { ensina: 'o tipo duplo — os dois tipos contam', tipo: 'Terrestre', mostra: 'duplo',

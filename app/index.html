@@ -1128,7 +1128,7 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnNo{position:absolute;left:0;top:0;transform:translate(-50%,-15px);display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;padding:0;cursor:pointer;font:inherit;z-index:1}
 .jnNo i{display:block;width:30px;height:30px;box-sizing:border-box;border-radius:50%;background:#f5ecd4;border:3px solid #7a5a2a;box-shadow:0 3px 0 rgba(0,0,0,.3)}
 .jnNo.jn-ginasio{transform:translate(-50%,-19px)}.jnNo.jn-ginasio i{width:38px;height:38px;border-radius:0;clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);background:#c9d2e0;border:0}
-.jnNo span{font-size:.68rem;font-weight:700;color:#fff;padding:1px 6px;border-radius:6px;background:rgba(10,14,24,.62);white-space:nowrap}
+.jnNo span{font-size:.68rem;font-weight:700;color:#fff;padding:1px 6px;border-radius:6px;background:rgba(10,14,24,.86);white-space:nowrap}
 .jnNo.jn-vencido i{background:linear-gradient(135deg,#ffe27a,#c98a1b);border-color:#6b4a0e}
 .jnNo.jn-ginasio.jn-vencido i[style]{background-color:transparent;background-size:cover;image-rendering:pixelated;clip-path:none}
 .jnNo.jn-atual i{background:var(--neon);border-color:#fff;animation:jnPulsa 1.6s infinite}
@@ -1158,7 +1158,19 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 /* ST-10.19d · o SENTIDO da trilha: uma divisa no meio de cada trecho, discreta
    (é leitura, não enfeite), abaixo dos nós. No celular o mapa é transposto, e
    a divisa gira junto. */
-.jnSetaPos{z-index:0}.jnSeta{position:absolute;left:-5px;top:-5px;width:9px;height:9px;border-top:3px solid rgba(255,244,214,.85);border-right:3px solid rgba(255,244,214,.85);filter:drop-shadow(0 1px 0 rgba(0,0,0,.45))}
+/* ST-10.21: acima das pedras e das árvores da cena — elas escondiam a seta do próximo passo (Q7). */
+.jnSetaPos{z-index:2}.jnSeta{position:absolute;left:-6px;top:-6px;width:11px;height:11px;border-top:4px solid var(--neon);border-right:4px solid var(--neon);filter:drop-shadow(0 0 3px rgba(0,0,0,.8)) drop-shadow(0 0 4px var(--neon))}
+.jnSeta.andado{border-color:#fff4d6;filter:drop-shadow(0 0 1px #000) drop-shadow(0 0 2px rgba(0,0,0,.8))}
+/* ST-10.21: o nome TRANCADO apagado — tão vivo quanto o aberto, ele disputava o olho (Q7). */
+.jnNo.jn-trancado span{opacity:.62}
+.jnNo.jn-chefe.jn-trancado i{filter:grayscale(1) brightness(.85)}.jnNo.jn-chefe.jn-trancado span{border-color:#8a8a8a}.jnNo.jn-chefe.jn-trancado span em{color:#cfcfcf}.jnNo.jn-trancado span em{color:#9fb3c8}
+/* ST-10.21 · o NÓ ATUAL: um anel que pulsa em volta, e no ginásio a insígnia
+   que falta ganhar desenhada dentro — era um octógono ciano chapado (Q7). */
+.jnAnel{position:absolute;left:50%;top:15px;width:42px;height:42px;margin:-21px 0 0 -21px;border-radius:50%;border:3px solid var(--neon);box-shadow:0 0 6px var(--neon);pointer-events:none;animation:jnAnel 1.8s ease-out infinite}
+.jnNo.jn-ginasio .jnAnel{top:19px;width:50px;height:50px;margin:-25px 0 0 -25px}
+@keyframes jnAnel{0%{transform:scale(.9);opacity:1}100%{transform:scale(1.15);opacity:0}}
+@media (prefers-reduced-motion:reduce){ .jnAnel{animation:none;opacity:.8} }
+.jnNo.jn-ginasio.jn-atual i[style]{background-size:78%;background-position:center;background-repeat:no-repeat;clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%)}
 .jnSeta.jn-dir{transform:rotate(45deg)}.jnSeta.jn-esq{transform:rotate(-135deg)}.jnSeta.jn-baixo{transform:rotate(135deg)}
 /* A FAIXA do caminho, só no celular: o anterior, o escolhido e o próximo. */
 .jnFaixa{display:none}
@@ -1170,7 +1182,7 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 /* ST-10.19d (Q7 da Liga): a coluna da chance ancorada na borda direita do
    painel — com `760px auto` e `start` ela parava em x≈1124 e deixava até
    750 px vazios; o texto da lição continua com medida de leitura (820 px). */
-.jnPainel{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,340px);grid-template-rows:auto 1fr;grid-template-areas:'titulo chance' 'info chance';justify-content:stretch;gap:6px 36px;align-items:center;margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg2)}
+.jnPainel{display:grid;max-width:1240px;grid-template-columns:minmax(0,1fr) minmax(240px,340px);grid-template-rows:auto 1fr;grid-template-areas:'titulo chance' 'info chance';justify-content:stretch;gap:6px 36px;align-items:center;margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg2)}
 .jnTitulo{grid-area:titulo;margin:0;align-self:end}.jnInfo{grid-area:info;max-width:820px;align-self:start}.jnChance{grid-area:chance}
 .jnFrase{margin:0;font-size:.8rem;color:var(--txt);opacity:.85}
 .jnFeitoSelo{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--green)}.jnFeitoSelo img{width:22px;height:22px;image-rendering:pixelated}
@@ -7644,7 +7656,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
      que trocar para subir. Treino, sem aposta: a Arena não lê nada daqui (P4). -->
 <div id="viewTreino" class="view">
   <div class="card">
-    <h3>Time <span class="tiny" id="treinoLema">monte o time e veja a chance mexer — treino, sem aposta</span></h3>
+    <h3><span id="treinoTitulo">Time</span> <span class="tiny" id="treinoLema">monte o time e veja a chance mexer — treino, sem aposta</span></h3>
     <!-- ST-10.12: a Jornada é uma aba do Time (o mesmo time luta nos dois) -->
     <div class="pdxAbas">
       <button class="pdxAba on" data-treino-aba="time">Time</button>

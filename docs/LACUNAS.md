@@ -8707,7 +8707,7 @@ correção de UMA troca; o link para a aba Time continua sendo a saída delas.
 ### L-206 — o acabamento do mapa da jornada ainda tem cara de rascunho
 
 **Registrada em:** 27/09/2026, no Q7 da ST-10.19d. **Bloco dono:** ST-10.21 (o
-acabamento do mapa, proposta no PLANO no mesmo commit). **Estado:** aberto.
+acabamento do mapa, proposta no PLANO no mesmo commit). **Estado:** ✅ **fechada na ST-10.21 (27/09)** — ver o fim da ficha; o que o crítico ainda cobra foi para a L-209.
 
 O crítico cego (Into the Breach + Showdown) deu 7–8 ao painel e à correção, e
 apontou o que é de ARTE e de arranjo, e não de lição:
@@ -8729,6 +8729,18 @@ que merece a própria passada de Q5/Q7 — e o cenário do mapa é de olhar, com
 do idle.
 
 **O que a destrava:** nada; é a ST-10.21.
+
+**Feito na ST-10.21 (27/09):** o nó atual com anel que pulsa (e a insígnia a
+ganhar dentro, no ginásio); as setas do trecho por andar em neon, as do andado
+com contorno, acima da cena, e cada uma procura um ponto do próprio trecho
+longe dos nomes (esconder apagou a fileira inteira em 1100 — o Q7 pegou); o
+aviso que diz o tamanho do risco ("derrota quase certa" abaixo de 10%); o
+título "Jornada"; você longe dos lagos e do lendário; a cena dentro do mapa;
+o painel com largura máxima em 1920; nomes trancados e a Usina trancada
+apagados; o fundo do rótulo opaco (a trilha não atravessa o texto); "lutar
+contra o Rival" em minúscula. Duas rodadas de Q7 cego: o PAINEL ficou em 7–8
+(a correção com número: 8); o MUNDO e a leitura no celular ficaram abaixo de 8
+— o que falta foi para a **L-209**, nomeado.
 
 ### L-207 — apostar tira a arena de vista
 
@@ -8762,3 +8774,33 @@ Para o piloto entre amigos, é o bastante; para decidir a V5 com dinheiro, não.
 
 **O que a destrava:** a ST-13.2/13.3 levar a luta da jornada para o servidor —
 aí `ginasio_vencido` passa a ser anotado por quem decide a luta.
+
+### L-209 — o mundo do mapa não tem regiões, e o fundo da tela comprida acaba
+
+**Registrada em:** 27/09/2026, no Q7 da ST-10.21. **Bloco dono:** ST-10.22 (o
+mundo do mapa, proposta no PLANO no mesmo commit). **Estado:** aberto.
+
+O crítico cego (Super Mario World + Into the Breach) deu 4–5 ao acabamento do
+MUNDO, e não ao da lição:
+
+```text
+bioma      campo verde uniforme, a mesma árvore em fileira; nada de lava perto
+           de Cinnabar nem de água de verdade em Cerulean — o SMW tem regiões
+lagos      "disco empilhado", não água
+fundo      em 420, a página muda de azul-marinho para ardósia no meio do mapa:
+           o fundo do corpo para na altura da janela (html,body{height:100%}),
+           e a tela comprida passa dele — é da casca, e vale para toda tela longa
+próximo    falta a etiqueta "PRÓXIMO" no nó seguinte ao atual
+chefe      a Usina não tem o bloco "Ensina" nem o "quanto machuca" que os
+           ginásios têm — o chefe é o nó onde a leitura mais faria falta
+celular    o mapa inteiro abaixo da dobra: pediu a faixa com o mini-trecho do
+           caminho, e não só os nomes; e o "lutar" antes da explicação
+título     "JORNADA" pequeno, e o lema no canto oposto
+```
+
+**Por que não cabe agora:** é ARTE do mundo (regiões, props, água), com Q5/Q7
+próprios, e a casca do app (o fundo) toca todas as telas. A ST-10.21 fechou o
+acabamento da LEITURA (nó atual, setas, risco, título, cena longe de você).
+
+**O que a destrava:** nada; é a ST-10.22. O cenário do mapa é de olhar, como o
+do idle — "parece de um jogo publicado?".

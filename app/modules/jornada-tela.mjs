@@ -14,7 +14,7 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
-import { setasDoCaminho, faixaDoCaminho } from './jornada-dados.mjs';
+import { setasDoCaminho, faixaDoCaminho, avisoDoRisco } from './jornada-dados.mjs';
 import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, turnosDaAmeaca, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { diaDoMundo } from '../../engine/avanco.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido, candidatosDaCaixa, membrosParaTrocas } from './treino-dados.mjs';
@@ -46,10 +46,10 @@ function pintarPainel(mapa) {
     <div class="jnChance${vencido ? ' jnVencido' : ''}">${vencido ? `<span class="jnFeitoSelo">${no.insignia ? `<img src="${arteDaInsignia(no.insignia)}" alt="">` : ''}vencido ✓</span>` : ''}
       <span class="tiny">seu time vence</span><strong id="jnNumero">…</strong><span class="tiny" id="jnErro">calculando</span>
       <span class="tiny jnCausa" id="jnCausa" hidden></span>
-      <span class="tiny jnRisco" id="jnRisco" hidden>arriscado — <button class="lnk" data-treino-aba="time">reforce o time</button></span>
+      <span class="tiny jnRisco" id="jnRisco" hidden><span id="jnRiscoTxt">arriscado</span> — <button class="lnk" data-treino-aba="time">reforce o time</button></span>
       <button class="btn gold jnCorrige" id="jnCorrige" data-jn-corrige hidden></button>
       <span class="tiny jnPaga">${fraseDoPagamento(PACK, pagamentoDoNo(no, carregar().jornada?.pve, diaDoMundo(Date.now())))}</span>
-      <button class="btn${vencido ? '' : ' gold'} jnCta" id="jnLutar" data-jn-lutar="${no.id}" disabled>${no.estado === 'trancado' ? 'trancado' : vencido ? 'revanche (treino)' : `lutar contra ${t.nome}`}</button></div>
+      <button class="btn${vencido ? '' : ' gold'} jnCta" id="jnLutar" data-jn-lutar="${no.id}" disabled>${no.estado === 'trancado' ? 'trancado' : vencido ? 'revanche (treino)' : `lutar contra ${t.nome.replace(/^(O|A) /, m => m.toLowerCase())}`}</button></div>
     <div class="jnInfo"><p class="jnFrase">${fraseDoNo(no, t.nome)}</p>
       ${no.licao ? `<p class="jnLicao">${arteDaInsignia(no.insignia ?? no.revisa?.insignia) ? `<img src="${arteDaInsignia(no.insignia ?? no.revisa?.insignia)}" alt="">` : ''}<span><b>${no.revisa ? `Revisa ${no.revisa.nome}` : no.final ? 'A lição final' : 'Ensina'}: ${no.licao.ensina}.</b> ${no.lider ?? t.nome} usa ${no.licao.tipo}. ${no.licao.dica}</span></p>` : ''}
       <div id="jnVel"></div>
@@ -89,7 +89,7 @@ function pintarPainel(mapa) {
     const causa = $('#jnCausa'), certo = no.licao.presetCerto;
     const NOME_PRESET = { balanced: 'Equilibrado', aggressive: 'Agressivo', defensive: 'Defensivo', focus: 'Foco' };
     const ERRO = { balanced: 'espalha dano', aggressive: 'persegue o ferido', defensive: 'fixa num alvo só', focus: 'só olha o tipo' };
-    $('#jnVel').innerHTML = `<div class="jnImune"><b>o seu preset — os ${rival.length} dele batem até cair</b>`
+    $('#jnVel').innerHTML = `<div class="jnImune"><b>o seu preset</b>`
       + `<span class="${preset === certo ? 'sim' : 'nao'}">o seu: ${NOME_PRESET[preset] ?? preset} <i>${preset === certo ? `✓ ${no.licao.porque}` : `✗ ${ERRO[preset] ?? ''}`}</i></span>`
       + (preset === certo ? '' : `<span class="sim">${NOME_PRESET[certo]} <i>✓ ${no.licao.porque}</i></span>`) + '</div>';
     if (causa) {
@@ -211,7 +211,8 @@ function pintarPainel(mapa) {
     const r = resumo(acum), pronto = acum.sims >= SIMS_TREINO;
     const n = $('#jnNumero'), e = $('#jnErro'), b = $('#jnLutar');
     if (n) { n.textContent = porcentagemExibida(r.p); n.classList.toggle('parcial', !pronto); n.dataset.faixa = pronto ? faixaDaChance(r.p) : ''; }
-    const aviso = $('#jnRisco');
+    const aviso = $('#jnRisco'), txt = $('#jnRiscoTxt');
+    if (txt && pronto) txt.textContent = avisoDoRisco(r.p) ?? 'arriscado';
     /* Com a causa da lição nomeando os golpes, o "reforce o time" sai: ele
        contradiz a lição (sugere nível, e o que falta é escolher golpe). */
     if (aviso) aviso.hidden = !(pronto && no.estado !== 'trancado' && faixaDaChance(r.p) === 'baixa') || $('#jnCausa')?.dataset.licao === 'golpes';
@@ -248,6 +249,8 @@ function pintarPainel(mapa) {
       /* Uma ação só por painel (Q7): o link repetido da causa e o "reforce o
          time" saem quando o botão da correção está na tela. */
       $('#jnCausa .lnk')?.remove(); const rs = $('#jnRisco'); if (rs) rs.hidden = true;
+      /* Sem o link, o travessão que o anunciava fica pendurado (captura da 10.21). */
+      const cz = $('#jnCausa'); if (cz) cz.innerHTML = cz.innerHTML.replace(/\s*—\s*$/, '');
       if (bl && atual.p < 0.5) bl.classList.remove('gold');
     };
     setTimeout(passo2, 0);
@@ -262,24 +265,51 @@ function pintarPainel(mapa) {
    lado; se ainda encosta, sai. Idempotente: parte sempre do lado original. */
 function afastarCena(alvo) {
   const rot = [...alvo.querySelectorAll('.jnNo span')].map(n => n.getBoundingClientRect());
-  const toca = r => rot.some(a => a.left < r.right - 2 && r.left + 2 < a.right && a.top < r.bottom - 2 && r.top + 2 < a.bottom);
-  for (const el of alvo.querySelectorAll('.jnPos:not(.jnB) .jnLago, .jnPos:not(.jnB) .jnProp')) {
-    el.dataset.dx0 ??= el.style.getPropertyValue('--dx');
-    el.style.setProperty('--dx', el.dataset.dx0); el.style.display = '';
-    if (!toca(el.getBoundingClientRect())) continue;
-    el.style.setProperty('--dx', `${-parseFloat(el.dataset.dx0)}px`);
-    if (toca(el.getBoundingClientRect())) el.style.display = 'none';
-  }
-  /* E VOCÊ: o lado vem da camada 0 (de onde você chegou); se nele o seu
+  const tocaEm = (lista, r) => lista.some(a => a.left < r.right - 2 && r.left + 2 < a.right && a.top < r.bottom - 2 && r.top + 2 < a.bottom);
+  const toca = r => tocaEm(rot, r);
+  /* VOCÊ primeiro: o lado vem da camada 0 (de onde você chegou); se nele o seu
      sprite encosta no nome do vizinho — um nome de ginásio de dois andares,
      em 1100 —, você passa para o outro lado do nó. */
   const voce = alvo.querySelector('.jnVoce'), eu = voce?.querySelector('.jnEu');
-  if (!eu) return;
-  voce.dataset.lado0 ??= voce.classList.contains('jnDireita') ? 'd' : 'e';
-  voce.classList.toggle('jnDireita', voce.dataset.lado0 === 'd');
-  if (toca(eu.getBoundingClientRect())) {
-    voce.classList.toggle('jnDireita');
-    if (toca(eu.getBoundingClientRect())) voce.classList.toggle('jnDireita');
+  /* ST-10.21: e o LENDÁRIO — o Zapdos cobria a sua cabeça na Usina (Q7). */
+  const lend = [...alvo.querySelectorAll('.jnLend')].map(n => n.getBoundingClientRect());
+  const tocaVoce = r => toca(r) || tocaEm(lend, r);
+  if (eu) {
+    voce.dataset.lado0 ??= voce.classList.contains('jnDireita') ? 'd' : 'e';
+    voce.classList.toggle('jnDireita', voce.dataset.lado0 === 'd');
+    if (tocaVoce(eu.getBoundingClientRect())) {
+      voce.classList.toggle('jnDireita');
+      /* Os dois lados esbarram (a Usina em 1100: o nome de um lado, o Zapdos do
+         outro): fica o lado que não cobre TEXTO — o nome ganha do enfeite. */
+      if (tocaVoce(eu.getBoundingClientRect()) && toca(eu.getBoundingClientRect())) voce.classList.toggle('jnDireita');
+    }
+  }
+  /* ST-10.21: a SETA que encosta num nome sai — ela é leitura do sentido, e o
+     nome é leitura do lugar; o nome ganha (Q7: Pewter, Vermilion, Campeão). */
+  for (const pos of alvo.querySelectorAll('.jnSetaPos')) {
+    const el = pos.querySelector('.jnSeta');
+    pos.dataset.xy0 ??= `${pos.style.getPropertyValue('--x')},${pos.style.getPropertyValue('--y')}`;
+    const [x0, y0] = pos.dataset.xy0.split(',');
+    const pontos = [{ x: x0, y: y0 }, ...JSON.parse(pos.dataset.outros ?? '[]')];
+    el.style.display = '';
+    /* A seta procura um ponto do PRÓPRIO trecho longe dos nomes; só sai se
+       nenhum servir. */
+    const bom = pontos.find(p => { pos.style.setProperty('--x', p.x); pos.style.setProperty('--y', p.y); return !toca(el.getBoundingClientRect()); });
+    if (!bom) { pos.style.setProperty('--x', x0); pos.style.setProperty('--y', y0); el.style.display = 'none'; }
+  }
+  /* Depois a CENA, longe dos nomes e de você (ST-10.21: você de pé em cima
+     dos laguinhos de Cinnabar e Vermilion, Q7 da 10.19d). */
+  const obstaculos = [...rot, ...(eu ? [eu.getBoundingClientRect()] : [])];
+  /* E dentro do mapa: lago cortado pela borda, no celular, é peça pela metade. */
+  const caixa = alvo.querySelector('.jnMapa')?.getBoundingClientRect();
+  const fora = r => caixa && (r.left < caixa.left || r.right > caixa.right || r.top < caixa.top || r.bottom > caixa.bottom);
+  const ruim = r => tocaEm(obstaculos, r) || fora(r);
+  for (const el of alvo.querySelectorAll('.jnPos:not(.jnB) .jnLago, .jnPos:not(.jnB) .jnProp')) {
+    el.dataset.dx0 ??= el.style.getPropertyValue('--dx');
+    el.style.setProperty('--dx', el.dataset.dx0); el.style.display = '';
+    if (!ruim(el.getBoundingClientRect())) continue;
+    el.style.setProperty('--dx', `${-parseFloat(el.dataset.dx0)}px`);
+    if (ruim(el.getBoundingClientRect())) el.style.display = 'none';
   }
 }
 let reafastar = 0;
@@ -308,12 +338,12 @@ export function renderJornada({ nova = null } = {}) {
     <div class="jnMapa${mapa.voltas === 2 ? ' jnVoltas2' : ''}" style="--n:${mapa.voltas === 2 ? Math.ceil(mapa.nos.length / 2) : mapa.nos.length}">
       <svg class="jnCaminho jnDeitado" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${trilha(false)}</svg>
       <svg class="jnCaminho jnEmPe" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${trilha(true)}</svg>
-      ${setasDoCaminho(mapa).map(sx => `<div class="jnPos jnSetaPos" style="--x:${sx.x};--y:${sx.y}"><i class="jnSeta jn-${sx.dir}"></i></div>`).join('')}
+      ${setasDoCaminho(mapa).map(sx => `<div class="jnPos jnSetaPos" style="--x:${sx.x};--y:${sx.y}" data-outros='${JSON.stringify(sx.outros)}'><i class="jnSeta jn-${sx.dir}${sx.andado ? ' andado' : ''}"></i></div>`).join('')}
       ${bordaDoMapa().map(p => `<div class="jnPos jnB" style="--x:${p.x};--y:${p.y}">${quadro('cuttable_tree', 'jnProp')}</div>`).join('')}
       ${mapa.nos.map(n => `<div class="jnPos jn-${n.estado}" style="--x:${n.x};--y:${n.y}">
           ${cenaDoNo(n).map(c => (c.forma ? `<b class="jnLago" style="--dx:${c.dx}px;--dy:${c.dy}px"></b>` : quadro(c.folha, 'jnProp', `;--dx:${c.dx}px;--dy:${c.dy}px`))).join('')}
           ${n.ow ? quadro(n.ow, 'jnOw') : ''}${n.lendario ? `<b class="jnLend">${dexImg(n.lendario, '', 'class="jnLendImg"')}</b>` : ''}
-          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}" data-jn-no="${n.id}" title="${n.nome}"><i${n.tipo === 'ginasio' && n.estado === 'vencido' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.tipo === 'liga' ? `<em>${n.selo ?? ''} · ${n.licao?.tipo ?? ''}</em>` : n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : n.tipo === 'chefe' ? '<em>chefe · lendário</em>' : ''}</span></button></div>`).join('')}
+          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}" data-jn-no="${n.id}" title="${n.nome}">${n.estado === 'atual' ? '<b class="jnAnel"></b>' : ''}<i${n.tipo === 'ginasio' && n.estado !== 'trancado' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.tipo === 'liga' ? `<em>${n.selo ?? ''} · ${n.licao?.tipo ?? ''}</em>` : n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : n.tipo === 'chefe' ? '<em>chefe · lendário</em>' : ''}</span></button></div>`).join('')}
       ${onde && eu ? `<div class="jnPos jnVoce${onde.fim ? ' jnFim' : ''}${onde.lado === 'direita' ? ' jnDireita' : ''}" style="--x:${onde.x};--y:${onde.y};--ax:${onde.ao.x};--ay:${onde.ao.y}"><b class="jnEu"><img src="${eu}" alt="você"></b></div>` : ''}
     </div>
     ${(f => `<div class="jnFaixa">${[f.antes, f.este, f.depois].map((n, k) => (n ? `<button class="jnFaixaNo jn-${n.estado}${k === 1 ? ' este' : ''}" data-jn-no="${n.id}">${k === 0 ? '‹ ' : ''}${n.curto}${k === 2 ? ' ›' : ''}</button>` : '<span></span>')).join('')}</div>`)(faixaDoCaminho(mapa, escolhido))}
@@ -327,7 +357,8 @@ export function renderJornada({ nova = null } = {}) {
 
 export function mostrarAbaTreino(aba) {
   const jornada = aba === 'jornada';
-  const t = $('#treinoCorpo'), j = $('#jornadaCorpo'), lema = $('#treinoLema');
+  const t = $('#treinoCorpo'), j = $('#jornadaCorpo'), lema = $('#treinoLema'), titulo = $('#treinoTitulo');
+  if (titulo) titulo.textContent = jornada ? 'Jornada' : 'Time';
   if (lema) lema.textContent = jornada ? 'o caminho da jornada — vença cada nó para abrir o próximo' : 'monte o time e veja a chance mexer — treino, sem aposta';
   if (t) t.hidden = jornada;
   if (j) j.hidden = !jornada;
