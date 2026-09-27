@@ -21,89 +21,28 @@
  */
 import { golpesDaCriatura } from './moveset-dados.mjs';
 import { acharCriatura, criaturasDe, estadoDoTeto, salvar,
-         criarCriatura, motivoDaOcupada, lancarRunNoTeto } from './idle-dados.mjs';
-import { forcaDe } from '../../engine/bioma.mjs';
-import { elencoDoEstagio } from '../../engine/elenco-estagio.mjs';
+         motivoDaOcupada, lancarRunNoTeto } from './idle-dados.mjs';
 import { estagioAberto, estagioMaximo, nivelDoEstagio } from '../../engine/estagios.mjs';
-import {
-  podeAvancar, cabeAvanco, STAMINA_DO_AVANCO, ENCONTROS_POR_AVANCO,
-  premioDo, ganhoDaRun, POR_ABATE, curaDe,
-  fatorDoRendimento, runsNoDia, comRendimento,
-} from '../../engine/avanco.mjs';
-import { creditar } from '../../engine/nivel-criatura.mjs';
-import { moedasDa, idDaMoeda, idDoMaterial } from '../../engine/economia-idle.mjs';
-import { sortearItens, agrupar } from '../../engine/drops.mjs';
-import { lancamentoDoBau } from '../../engine/estilhaco.mjs';
-import { viesFinal, cabeNoEstagio } from '../../engine/estagios.mjs';
-import { PERFIS, pesoDaRaridade, staminaAgora } from '../../engine/expedicao.mjs';
-import { FRAGMENTOS_POR_ENCONTRO } from '../../engine/captura.mjs';
-import { raridadeDe } from '../../engine/bioma.mjs';
-import { efeitosDa } from '../../engine/foco.mjs';
-import { aplicarClima } from '../../engine/clima-idle.mjs';
-/* A COSTURA DO CLIMA mora em `avanco-clima.mjs` desde que este arquivo chegou
-   a 567 das 600 linhas. A divisão é por responsabilidade: aqui é o que a run
-   FAZ, lá é o que o tempo faz com ela. */
-import { climaDaRun, leituraDoClima, ritmoDoClima, falaDoClima } from './avanco-clima.mjs';
-import { preferenciasDaRun, eventosDoElenco } from './elenco-condicao.mjs';
-import { semente } from '../../engine/instancia.mjs';
+import { podeAvancar, cabeAvanco, STAMINA_DO_AVANCO, ENCONTROS_POR_AVANCO, curaDe } from '../../engine/avanco.mjs';
+/* A COSTURA DO CLIMA mora em `avanco-clima.mjs`: aqui é o que a run FAZ, lá é o
+   que o tempo faz com ela. */
+import { climaDaRun, ritmoDoClima } from './avanco-clima.mjs';
 import { repertorio } from '../../engine/repertorio.mjs';
-
-/* ── QUAL PERFIL O AVANÇO USA PARA PAGAR ─────────────────────────────────
- *
- * A TRILHA, e a escolha não é arbitrária: ela é a do meio das três, e o
- * avanço é o modo do meio em quase tudo — rende mais por hora que a Vigília e
- * menos por envio que a Batida.
- *
- * Reusar um perfil existente em vez de criar um quarto é o que mantém UMA
- * régua de economia. Um perfil próprio seria uma segunda tabela de XP, moeda
- * e viés de raridade para calibrar em paralelo, e elas divergiriam. */
-/* EXPORTADO a partir do A4f: o Hunt Analyzer mostra o XP acumulado da run, e
-   ele tem de sair da MESMA `ganhoDaRun` que credita no fecho — com o mesmo
-   perfil. Uma tela que calcula o próprio XP com um perfil escolhido à parte
-   divergiria do bolso, e a que mente é sempre a da tela. */
-export const PERFIL_DO_AVANCO = 'trilha';
-
-/* O vínculo de uma run inteira. Um ponto, como uma Vigília curta: o vínculo
-   cresce com TEMPO JUNTOS (§7.22, nivel-criatura), e ~37 min de avanço são
-   isso. Ele não conta encontros de propósito — se contasse, viraria um
-   segundo XP, e duas barras que sobem juntas são uma barra com duas cores. */
-const VINCULO_DA_RUN = 1;
 import { restamEncontros } from '../../engine/expedicao.mjs';
-import {
-  novaRun, avancarRun, cenaDaRun, recuarRun, emCurso, resultadoDa, curarRun,
-} from '../../engine/run-avanco.mjs';
-import { novaRaiz, derivar } from '../../engine/seed.mjs';
-
-/* A criatura na forma que o motor da wave lê. A FORÇA é DERIVADA do pack, e
-   não guardada na criatura: guardá-la seria uma segunda verdade envelhecendo
-   ao lado da primeira — o mesmo motivo de `potencial` e `nivel` serem
-   derivados no `hidratar`. */
-export const paraOMotor = (pack, c) => ({
-  id: c.id, dex: c.dex, nivel: c.nivel ?? 1, vinculo: c.vinculo ?? 0, foco: c.foco ?? null,
-  forca: forcaDe((pack?.especies ?? []).find(e => e.dex === c.dex) ?? {}),
-});
+import { cenaDaRun, recuarRun, emCurso } from '../../engine/run-avanco.mjs';
+import { novaRaiz } from '../../engine/seed.mjs';
+/* A CONTA DA RUN MORA EM `avanco-conta.mjs` (ST-13.2c1): camada 0, a MESMA
+   que o servidor chama. Reexportadas aqui porque é por este endereço que o
+   resto do jogo as conhece. */
+import { PERFIL_DO_AVANCO, paraOMotor, elencoDaRun, equipeDoMotor,
+         runComecada, runNoInstante, runCurada, contaDaRun } from './avanco-conta.mjs';
+export { PERFIL_DO_AVANCO, paraOMotor, elencoDaRun };
 
 export const runDe = e => e?.run ?? null;
 export const avancoEmCurso = e => emCurso(runDe(e));
 
-/* COM A CONDIÇÃO DA RUN (1.33): a noite em que ela começou, no relógio do
-   mundo, e o clima dela. Quem traduz é o `elenco-condicao.mjs`, em camada 0; o
-   motor só vê tipos. Run antiga, sem `regraElenco`, recebe lista vazia — e a
-   lista vazia devolve o elenco-base intacto. */
-export const elencoDaRun = (pack, run) =>
-  run ? elencoDoEstagio(pack, run.bioma, run.estagio, preferenciasDaRun(pack, run))
-      : { comuns: [], chefes: [] };
-
-/* A equipe da run, hidratada. Ela sai do estado a cada consulta em vez de ser
-   guardada na run: o nível pode ter subido no meio, e uma cópia congelada
-   lutaria com a criatura de ontem. */
-export const equipeDaRun = (e, pack, run) => {
-  const vivas = criaturasDe(e);
-  return (run?.equipe ?? [])
-    .map(id => vivas.find(c => c.id === id))
-    .filter(Boolean)
-    .map(c => paraOMotor(pack, c));
-};
+/* A equipe da run, hidratada do save — a conta mora em `equipeDoMotor`. */
+export const equipeDaRun = (e, pack, run) => equipeDoMotor(pack, run, criaturasDe(e));
 
 /* ── PODE COMEÇAR? ────────────────────────────────────────────────────────
  *
@@ -188,44 +127,13 @@ export function comecarAvanco(e, { pack, bioma, estagio, equipe, agora, raiz = n
    * dele o preço de uma decisão que ele não tomou. O filtro é pela marca que
    * a colheita da run põe, e o que não tem marca fica. */
   e.encontros = (e.encontros ?? []).filter(x => x?.origem !== 'avanco');
-  e.run = novaRun({ bioma, estagio, equipe: [...equipe], raiz, agora });
-  /* ── O CONTRATO DO MOMENTO EM QUE ELE ENTROU ─────────────────────────
-     Guardado na run, e não recalculado ao colher: uma run que começou sem
-     teto não pode ganhar espécies porque o dia virou no meio dela, nem
-     perdê-las porque outra run consumiu o orçamento enquanto esta acontecia. */
-  e.run.semEncontros = !cabeAvanco(estadoDoTeto(e, agora, pack));
-
-  /* ── O CLIMA ENTRA NO LOG NO PRIMEIRO SEGUNDO (1.32) ────────────────
-   *
-   * E não no fim. O pedido do dono era que o jogador SENTISSE o bônus, e uma
-   * linha que só aparece quando a run acaba chega tarde para isso: ele passou
-   * dezesseis minutos vendo a tela sem saber que havia algo diferente.
-   *
-   *   > Bônus que só se descobre no extrato não é bônus sentido: é bônus
-   *   > conferido.
-   *
-   * No topo do log, ele é a primeira coisa que se lê ao entrar — junto do
-   * cartão da direita, que diz a mesma coisa com o número grande. Duas peças
-   * dizendo o mesmo é redundância de propósito: uma o jogador vê, a outra ele
-   * relê depois, e a run dura horas.
-   *
-   * O evento guarda a CHAVE e o NOME. A chave para quem for filtrar o
-   * histórico um dia; o nome porque o histórico é lido meses depois, e uma
-   * chave crua não diz nada a ninguém. */
-  const climaInicial = leituraDoClima(pack, e.run, equipeDaRun(e, pack, e.run));
-  if (climaInicial) {
-    const f = falaDoClima(climaInicial);
-    e.run.eventos = [...(e.run.eventos ?? []), {
-      tipo: 'clima', em: agora,
-      key: climaInicial.clima.key,
-      nome: f.nome, emoji: f.emoji, estado: f.estado,
-      frase: f.frase, pct: f.pct,
-    }];
-  }
-  /* E QUEM A NOITE OU O CLIMA TROUXE (1.32b): uma linha por troca, logo depois
-     da do clima — é ela que liga o bônus revelado ao rosto novo na wave. */
-  e.run.eventos = [...(e.run.eventos ?? []), ...eventosDoElenco(pack, e.run, agora)];
-
+  /* O CONTRATO DO MOMENTO EM QUE ELE ENTROU (L-151): se os encontros cabem
+     no teto, perguntado AGORA e guardado na run. A reserva da própria run já
+     conta no estado — é como sempre foi, e é a D-128 (a ST-2.5 conserta nos
+     dois lados, pela conta única). */
+  const semEncontros = !cabeAvanco({ ...estadoDoTeto(e, agora, pack), reservas: [ENCONTROS_POR_AVANCO] });
+  e.run = runComecada(pack, { bioma, estagio, equipe, raiz, agora, semEncontros,
+                              motor: equipeDoMotor(pack, { equipe }, criaturasDe(e)) });
   salvar(e);
   return e.run;
 }
@@ -238,13 +146,7 @@ export function comecarAvanco(e, { pack, bioma, estagio, equipe, agora, raiz = n
 export function sincronizar(e, { pack, agora }) {
   const run = runDe(e);
   if (!emCurso(run)) return { run, aconteceu: [] };
-  const ctx = { elenco: elencoDaRun(pack, run), equipe: equipeDaRun(e, pack, run), agora,
-                /* A CHUVA DA TELA É A MESMA QUE ENCURTA A WAVE (1.32). O dono
-                   foi explícito sobre isso quando pediu clima e dia/noite:
-                   efeito tem de ser VISÍVEL na wave, e não um número que
-                   ninguém vê. Este é o canal que se vê sem ler nada. */
-                climaRitmo: ritmoDoClima(pack, run, equipeDaRun(e, pack, run)) };
-  const r = avancarRun(run, ctx);
+  const r = runNoInstante(pack, run, equipeDaRun(e, pack, run), agora);
   if (r.aconteceu.length) { e.run = r.run; salvar(e); }
   return r;
 }
@@ -346,192 +248,23 @@ export function colherAvancoDaRun(e, { pack, agora, raiz = novaRaiz() }) {
   run.colhidaEm = agora;
   run.semente = String(raiz);
 
-  const valem = encontrosValemNa(run);
-  const premio = premioDo(resultadoDa(run), { encontrosValem: valem });
-  /* O RENDIMENTO DO DIA (ST-3.6, DEC-14): a posição desta run no dia do mundo
-     decide quanto de moeda e Essência ela paga. Ver o motor. */
-  const naJanela = runsNoDia(e.avancos, agora) + 1;
-  const fator = fatorDoRendimento(naJanela);
-  const sorteioR = semente(derivar(raiz, 'avanco:rendimento'));
-
-  /* ── O CLIMA, LIDO UMA VEZ (1.32) ──────────────────────────────────────
-   *
-   * Uma leitura só para os quatro canais que se pagam aqui. Ler de novo em
-   * cada um daria a MESMA resposta — a função é derivada da raiz — e ainda
-   * assim seria errado: quatro chamadas são quatro lugares onde alguém pode
-   * esquecer de passar a mesma equipe, e aí o mesmo clima pagaria diferente em
-   * dois canais da mesma run. */
-  const climaAqui = leituraDoClima(pack, run, equipeDaRun(e, pack, run));
-  const bonusClima = climaAqui?.bonus ?? null;
-
-  /* ── A STAMINA, PELAS WAVES ALCANÇADAS ─────────────────────────────────
-     Cobrada no FIM, e não ao começar: o §7.22.7 cobra 2 por wave e 5 na do
-     chefe, então o preço só existe quando se sabe até onde a run foi. Cobrar
-     23 adiantado e devolver a sobra daria o mesmo número e uma tela pior —
-     quem recua na wave 3 veria a barra despencar e voltar. */
-  for (const id of run.equipe ?? []) {
-    const c = acharCriatura(e, id);
-    if (!c) continue;
-    c.stamina = Math.round(Math.max(0, staminaAgora(c, agora) - premio.stamina));
-    c.staminaEm = agora;
-  }
-
-  /* ── O XP, PELA MESMA FUNÇÃO DA EXPEDIÇÃO ──────────────────────────────
-     O abate entra como fração do encontro (`ganhoDaRun`), então recalibrar o
-     XP por encontro um dia arrasta o abate junto. */
-  const ganhoCru = ganhoDaRun({
-    abates: premio.abates, encontros: premio.encontros.length, perfil: PERFIL_DO_AVANCO,
+  /* A CONTA é `contaDaRun` (ST-13.2c1), a mesma do servidor; aqui só se
+     escreve no save — a stamina e o XP de quem foi, a bolsa na ordem da
+     conta, os pendentes (com a origem marcada, L-166) e os fragmentos. */
+  const c = contaDaRun(pack, {
+    run, motor: equipeDaRun(e, pack, run), avancos: e.avancos, raiz, agora,
+    criaturas: (run.equipe ?? []).map(id => acharCriatura(e, id)).filter(Boolean),
   });
-  /* O CLIMA ENTRA DEPOIS DA CONTA, e não dentro dela: `ganhoDaRun` é a régua
-     partilhada com a expedição, e um fator de clima lá dentro faria o Avanço
-     mexer no rendimento de um modo que não tem clima nenhum. */
-  const ganho = { ...ganhoCru, xp: Math.round(aplicarClima(ganhoCru.xp, bonusClima, 'xp')) };
-  const subiram = [];
-  for (const id of run.equipe ?? []) {
-    const c = e.criaturas.find(y => y.id === id);
-    if (!c) continue;
-    const novo = creditar(c, { xp: ganho.xp, vinculo: VINCULO_DA_RUN });
-    c.xp = novo.xp; c.nivel = novo.nivel; c.vinculo = novo.vinculo;
-    if (novo.subiu > 0) subiram.push({ id, para: novo.nivel, quantos: novo.subiu });
-  }
+  for (const k of c.stamina) Object.assign(acharCriatura(e, k.id), { stamina: k.stamina, staminaEm: k.staminaEm });
+  for (const k of c.credito) Object.assign(acharCriatura(e, k.id), { xp: k.xp, nivel: k.nivel, vinculo: k.vinculo });
+  for (const [chave, n] of Object.entries(c.bolsa)) e.bolsa[chave] = (e.bolsa[chave] ?? 0) + n;
+  e.encontros.push(...c.pendentes);
+  for (const f of c.fragmentos) e.registro[f.dex] = (e.registro[f.dex] ?? 0) + f.n;
+  /* O QUE O TETO CONTA, e o que a run pagou (o clima em número absoluto). */
+  run.encontros = c.encontros;
+  run.rendeu = c.rendeu;
 
-  /* ── A MOEDA ───────────────────────────────────────────────────────────
-     Ramo próprio da semente, como na colheita da expedição: "quantos itens
-     caíram" e "quanto você ganhou" são perguntas diferentes, e amarrá-las
-     faria uma mexer na outra sem que ninguém quisesse. */
-  /* O rendimento entra ANTES do clima: o "+52 por clima" continua dizendo o
-     que o clima de fato somou a esta run. */
-  const moedas = comRendimento(moedasDa(semente(derivar(raiz, 'avanco:moeda')), {
-    perfil: PERFIL_DO_AVANCO,
-    /* O abate paga moeda pela mesma régua com que paga XP. */
-    encontros: premio.encontros.length + Math.round(premio.abates * POR_ABATE),
-  }), fator, sorteioR());
-  const moedasComClima = Math.round(aplicarClima(moedas, bonusClima, 'moeda'));
-  const km = idDaMoeda(pack);
-  e.bolsa[km] = (e.bolsa[km] ?? 0) + moedasComClima;
-
-  /* ── O BAÚ, E ELE SÓ EXISTE SE A RUN LIMPOU ────────────────────────────
-     §7.22.8: falhar custa o baú e nunca o farm. O sorteio é o MESMO da
-     expedição, com o viés do estágio — uma segunda tabela de drops seria uma
-     segunda economia. */
-  /* ── O FOCO ENTRA NO BAÚ, PELA MESMA FUNÇÃO DA EXPEDIÇÃO ─────────────
-     Correção do dono: *"o foco deve ser aplicado nesse novo modo"*, e
-     *"mantém também para ROTA OFF"*. É literalmente a mesma `efeitosDa` que a
-     colheita da expedição usa, com o mesmo perfil que o Avanço paga.
-
-     Assim UMA tabela de foco serve aos dois modos:
-
-         guia        entra no PODER (engine/wave.mjs) — é o único de combate
-         trilheiro   mais material aqui
-         sortudo     melhor item raro aqui
-         batedor     neutro no Avanço, e não por esquecimento: o elenco do
-         vigia       estágio é FIXO em seis, então não há o que "achar mais".
-                     Eles seguem valendo inteiros na Rota OFF, que é onde o
-                     encontro é sorteado
-
-     Um foco que faz coisas diferentes em cada modo seria duas tabelas com um
-     nome só, e o jogador teria de aprender duas. */
-  const efeitos = efeitosDa(equipeDaRun(e, pack, run), PERFIL_DO_AVANCO);
-  const itens = premio.bau
-    ? agrupar(sortearItens(semente(derivar(raiz, 'avanco:bau')), {
-        pack, bioma: run.bioma, perfil: PERFIL_DO_AVANCO, estagio: run.estagio,
-        vies: viesFinal(PERFIS[PERFIL_DO_AVANCO]?.vies ?? 0, run.estagio),
-        cabe: cabeNoEstagio, peso: pesoDaRaridade,
-        /* ── O CLIMA MONTA NO CANAL DO FOCO, e não abre um segundo ──────
-           O baú já sabe receber um viés de material e um de item raro: é por
-           ali que o Trilheiro e o Sortudo pagam. O clima multiplica o MESMO
-           número em vez de somar um caminho novo.
-
-           Duas vantagens, e a segunda é a que importa: uma tabela só continua
-           valendo para os dois modos, e o dia em que o baú for recalibrado o
-           clima acompanha sozinho — que é a mesma razão pela qual o abate paga
-           XP pela função da expedição. */
-        focoItemRaro: aplicarClima(efeitos.itemRaro, bonusClima, 'itemRaro'),
-        focoMaterial: aplicarClima(efeitos.material, bonusClima, 'material'),
-      }))
-    : [];
-  /* ── O QUE ENTRA NA BOLSA É O QUE O BAÚ VIRA (ST-3.1, L-159) ─────────
-     Até o estágio 3, o item de porta de estilhaço vira PARTES — a regra mora
-     em `lancamentoDoBau`, no motor. A lista `itens` que a run guarda passa a
-     ser a do que ENTROU: mostrar "Pedra do Fogo" quando a bolsa recebeu duas
-     partes seria o quadro mentindo sobre o próprio saque. */
-  for (let k = 0; k < itens.length; k++) {
-    const it = itens[k];
-    const l = it.classe === 'essencia'
-      ? { chave: idDoMaterial(pack), quantidade: comRendimento(it.quantidade, fator, sorteioR()) }
-      : lancamentoDoBau(it, { estagio: run.estagio, catalogo: pack.catalogo })
-        ?? { chave: it.id, quantidade: it.quantidade };
-    e.bolsa[l.chave] = (e.bolsa[l.chave] ?? 0) + l.quantidade;
-    if (l.estilhaco) itens[k] = { ...it, id: l.chave, quantidade: l.quantidade, estilhaco: true };
-    else if (it.classe === 'essencia') itens[k] = { ...it, quantidade: l.quantidade };
-  }
-  /* A Essência que o rendimento zerou some da lista: "Essência ×0" no quadro
-     seria o saque mentindo em outra direção. */
-  for (let k = itens.length - 1; k >= 0; k--) if (!itens[k].quantidade) itens.splice(k, 1);
-
-  /* ── OS ENCONTROS FICAM PENDENTES, esperando bola ──────────────────────
-     Mesma forma da expedição (1.2b): guardar aqui é o que impede a colheita
-     de ser destrutiva — o jogador fecha a aba e volta sem perder o que
-     apareceu. Numa run sem teto a lista é vazia, e é só isso que muda. */
-  const pendentes = premio.encontros.map((dex, i) => ({
-    /* A ORIGEM É MARCADA (L-166) para que começar outra run possa limpar o
-       quadro DESTA sem encostar no que a Rota OFF trouxe. Ver o comentário
-       longo em `comecarAvanco`. */
-    chave: `${run.raiz}:${i}`, expedicao: null, origem: 'avanco', dex,
-    raridade: raridadeDe(pack, (pack.especies ?? []).find(x => x.dex === dex) ?? {}),
-    bioma: run.bioma, em: agora,
-  }));
-  e.encontros.push(...pendentes);
-  for (const dex of premio.encontros)
-    e.registro[dex] = (e.registro[dex] ?? 0) + FRAGMENTOS_POR_ENCONTRO;
-
-  /* O QUE O TETO CONTA. Zero numa run sem encontros — que é justamente o que
-     faz ela não empurrar o dia de ninguém. */
-  run.encontros = premio.encontros.length;
-  /* ── E O QUE O CLIMA PAGOU FICA GRAVADO, EM NÚMERO ABSOLUTO (1.32) ─────
-   *
-   * O dono pediu a linha, e a frase dele diz por quê:
-   *
-   *   > "+52 [moeda] por buff de clima: Vendaval" — sem isso o buff acontece
-   *   >  e o jogador não sabe que aconteceu.
-   *
-   * Ele está certo, e a regra é maior que o clima: **bônus que não aparece não
-   * é bônus, é ruído no gerador de números.** O jogador não tem como comparar
-   * uma run com a anterior de cabeça; se o jogo não disser, não houve melhoria
-   * nenhuma do ponto de vista dele — e era exatamente "sentir a melhoria na
-   * prática" o que ele pediu.
-   *
-   * Guardado em ABSOLUTO, e não em fator: "+52" é a frase que ele escreveu, e
-   * "x1,15" obrigaria quem lê a fazer a conta com um número que ele não tem.
-   * O `ganhou` é o que ENTROU a mais — a diferença contra a run sem clima. */
-  const semClima = {
-    xp: ganhoCru.xp,
-    moedas,
-  };
-  run.rendeu = {
-    xp: ganho.xp, moedas: moedasComClima, itens, subiram, bau: premio.bau,
-    rendimento: { run: naJanela, fator },
-    clima: climaAqui ? {
-      key: climaAqui.clima.key,
-      /* O NOME VEM DO PACK, e é ele que fica gravado: o histórico é lido meses
-         depois, e uma chave crua como "nevoa" não diz nada a ninguém. */
-      nome: climaAqui.clima.name ?? climaAqui.clima.key,
-      emoji: climaAqui.clima.emoji ?? '',
-      canal: bonusClima?.canal ?? null,
-      fator: bonusClima?.fator ?? 1,
-      quantos: bonusClima?.quantos ?? 0,
-      gracas: climaAqui.gracas.map(c => c.dex),
-      ganhou: {
-        xp: ganho.xp - semClima.xp,
-        moedas: moedasComClima - semClima.moedas,
-      },
-    } : null,
-  };
-
-  /* ── A RUN COLHIDA SAI DE `e.run` E ENTRA NO TETO ──────────────────────
-     Antes ela ia inteira para `e.avancos`, que o teto não lia e o `carregar`
-     não guardava — o D-107. Agora vai só o lançamento do teto; o histórico
-     completo que a L-141 pede é outra peça. */
+  /* ── A RUN COLHIDA SAI DE `e.run` E ENTRA NO TETO (D-107) ──────────── */
   lancarRunNoTeto(e, run);
   e.run = null;
   salvar(e);
@@ -556,12 +289,7 @@ export function usarPocao(e, { pack, item, agora }) {
   if (!cura) throw new Error('esse item não restaura vida');
   if ((e.bolsa[item] ?? 0) < 1) throw new Error('você não tem esse item');
 
-  const ctx = { elenco: elencoDaRun(pack, run), equipe: equipeDaRun(e, pack, run) };
-  const antes = cenaDaRun(run, { ...ctx, agora });
-  if (antes.hp >= antes.hpMax)
-    throw new Error('a vida já está cheia — guarde a poção');
-
-  const { run: nova, curou } = curarRun(run, { cura, agora, ...ctx });
+  const { run: nova, curou } = runCurada(pack, run, equipeDaRun(e, pack, run), { cura, agora });
   e.bolsa[item] = e.bolsa[item] - 1;
   e.run = nova;
   salvar(e);

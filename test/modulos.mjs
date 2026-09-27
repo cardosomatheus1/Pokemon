@@ -308,6 +308,10 @@ const CAMADA = {
      estado exigiria importar o avanco-estado.mjs, que importa este, e o
      ciclo ja derrubou a aba inteira uma vez (D-074). */
   'avanco-clima.mjs': 0,
+  /* CAMADA 0: a conta e o estado da run (ST-13.2c1) — pura, recebe a run, a
+     equipe já hidratada e o instante. O SERVIDOR a importa: por isso ela não
+     pode tocar save, DOM nem relógio. */
+  'avanco-conta.mjs': 0,
   /* CAMADA 0: a posicao de cada particula e funcao pura de (t, i, W, H).
      Sem estado de modulo de proposito — foi uma let de modulo deixada para
      tras numa divisao que matou a cena inteira com a suite verde (D-089). */

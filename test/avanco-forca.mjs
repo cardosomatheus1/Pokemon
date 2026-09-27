@@ -195,7 +195,9 @@ export function suite() {
      também para ROTA OFF"*. A afirmação é sobre a FONTE: se o Avanço tivesse
      uma tabela própria, elas divergiriam na primeira calibração. */
   s.teste('a colheita da run usa a MESMA função de foco da expedição', () => {
-    const cola = ler('../app/modules/avanco-estado.mjs');
+    /* A conta da run saiu da cola para `avanco-conta.mjs` na ST-13.2c1 — a
+       que o servidor também chama. */
+    const cola = ler('../app/modules/avanco-conta.mjs');
     ok(cola.includes('efeitosDa('),
       'a run não aplica o foco no baú — o trilheiro e o sortudo não valem nela');
     ok(cola.includes('focoItemRaro') && cola.includes('focoMaterial'),

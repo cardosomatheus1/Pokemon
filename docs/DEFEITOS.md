@@ -6884,3 +6884,50 @@ continua "100%"/"0%" com "venceu/perdeu todas" embaixo. A conta "em N de cada
 100" usa `pontosExibidos`, preso a 1–99 (a derrota rara deixou de dizer "em 0
 de cada 100"). Aplicado nas três telas (Time, jornada, luta). O teste que
 afirmava o defeito virou o aceite: `recompensa-pve` — "D-126 consertado".
+
+## D-127 — o bônus de clima nunca vale no Avanço
+
+**Achado em:** 27/09/2026, na extração da conta da run (ST-13.2c1). **Bloco
+dono:** ST-2.5 (o clima e o teto valem na run — nova, proposta no PLANO no
+mesmo commit). **Estado:** aberto.
+
+**Causa.** `quemAproveita` (`engine/clima-idle.mjs`) lê o TIPO da criatura
+(`c.t`, `c.tipos`), e a equipe que a run entrega ao clima vem de `paraOMotor`
+(`avanco-conta.mjs`), que monta `{ id, dex, nivel, vinculo, foco, forca }` —
+sem tipo. Ninguém aproveita nunca, e o bônus sai com fator 1 em todos os cinco
+canais (XP, moeda, material, item raro, ritmo). A tela anuncia o clima (1.32)
+e a run não paga nada por ele. Os testes do clima passavam porque montam a
+equipe à mão, já com `t`.
+
+**Medição.** 900 runs pelo fluxo real (`comecarAvanco`, as três iniciais, 300
+raízes): 118 com a inicial do tipo que o clima favorece — **0** receberam o
+bônus.
+
+**Por que não conserto aqui.** A ST-13.2c1 é uma extração que não pode mudar
+comportamento (a fixture de emissão é a prova). Consertar muda o que a run
+paga, e por isso a fixture `emissao-idle.json` — é bloco próprio, com a
+medição nova na mensagem.
+
+**Teste que trava:** `run-servidor` — "D-127 (afirma o defeito)". Fica
+vermelho quando a ST-2.5 consertar.
+
+## D-128 — o aviso diz que cabe, e a run nasce sem encontros
+
+**Achado em:** 27/09/2026, na extração da conta da run (ST-13.2c1). **Bloco
+dono:** ST-2.5. **Estado:** aberto.
+
+**Causa.** `comecarAvanco` perguntava `cabeAvanco(estadoDoTeto(e))` DEPOIS de
+pôr a run nova em `e.run` — e `estadoDoTeto` já conta a reserva de `e.run`.
+`cabeAvanco` soma a reserva de novo: a run é cobrada duas vezes contra o
+próprio teto. O `avisoDoTeto`, mostrado antes de entrar, conta uma vez só.
+
+**Medição.** Teto 30, reserva 6: com **19 a 24** encontros feitos no dia, o
+aviso diz "cabe" e a run nasce `semEncontros` — o jogador entra achando que vai
+registrar espécies e não registra nenhuma. De 25 em diante os dois concordam.
+
+**Por que não conserto aqui.** O mesmo da D-127. O servidor (ST-13.2c1) copia
+o comportamento de propósito, pela mesma conta — a ST-2.5 conserta os dois
+lados numa linha.
+
+**Teste que trava:** `run-servidor` — "D-128 (afirma o defeito)".
+

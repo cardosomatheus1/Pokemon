@@ -8760,9 +8760,9 @@ a luta começa.
 
 ### L-208 — o gate da V4 confia no que o navegador relata
 
-**Registrada em:** 27/09/2026, na ST-10.20 (Q6). **Bloco dono:** ST-13.2c (a
-run e a luta da jornada no servidor — a ST-13.2 foi dividida em a/b/c em
-27/09). **Estado:** aberto.
+**Registrada em:** 27/09/2026, na ST-10.20 (Q6). **Bloco dono:** ST-13.7 (a
+luta da jornada no servidor — saiu da 13.2c em 27/09, porque depende do time e
+dos golpes no servidor, que são da ST-13.3). **Estado:** aberto.
 
 `pve_iniciado`, `ginasio_vencido` e `p_exibida` vêm do cliente, porque a
 jornada ainda mora no save local. O servidor filtra os campos (número,

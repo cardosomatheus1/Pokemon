@@ -323,6 +323,17 @@ isso trouxe. O sigilo do clima sorteado (L-177) não se quebra.
 - **Porte** P · regra permanente do `CLAUDE.md` ("o cenário do idle nunca está
   pronto"): entra quando um bloco passar pelo cenário, e não antes.
 
+### ST-2.5 · o clima e o teto valem na run (D-127, D-128)
+
+- **Porte** P · **Método** INV · **Depende de** ST-13.2c1 (a conta única: o
+  conserto vale para o aparelho e o servidor de uma vez)
+- **Escopo:** `paraOMotor` leva o tipo da espécie (o clima passa a achar quem
+  aproveita); `semEncontros` perguntado com a reserva da run contada UMA vez.
+- **Aceite:** os dois testes que afirmam os defeitos viram o aceite; a
+  fixture `emissao-idle.json` regravada com a diferença medida na mensagem
+  (o clima passa a pagar); a identidade da `run-servidor` continua verde.
+- **Portões:** Q1 Q2 Q3 Q4.
+
 ---
 
 ## E3 · Economia que não duplica (INT-01)
@@ -1276,10 +1287,39 @@ local vira cache; sem conta, nada muda.
   ST-3.3 é medida pelas funções do aparelho, bater com o aparelho é bater com
   ela. `test/colheita-rotas.mjs` · S1601–S1612.
 
-#### ST-13.2c · A run do Avanço e a luta da jornada no servidor
-- **Escopo:** a run começa e se colhe pelo servidor (a reserva no teto, o
-  rendimento decrescente da ST-3.6 pelo relógio dele); a luta PvE da jornada
-  é refeita no servidor pela semente (fecha a **L-208**).
+#### ST-13.2c · A run do Avanço no servidor — dividida (27/09)
+A luta da jornada saiu daqui: ela precisa do time de seis e dos golpes
+escolhidos, que o servidor só terá com a ST-13.3 — virou a **ST-13.7**.
+
+##### ST-13.2c1 · A run é uma conta só ✅ 27/09
+- `app/modules/avanco-conta.mjs` (camada 0): `runComecada`, `runNoInstante`,
+  `runCurada`, `contaDaRun`, `equipeDoMotor`. O aparelho (`avanco-estado.mjs`,
+  593 → 343 linhas) e o servidor (`server/run.mjs`) chamam as mesmas.
+- Migração `run-st13.2c1`: a tabela `runs` (uma ABERTA por conta, pelo índice
+  parcial) e `encontros_pendentes` com a origem (`expedicao` | `avanco`).
+- O servidor avança a run a cada pedido que a toca, e ANTES de toda escrita
+  que muda o que ela lê (a colheita de uma expedição treina quem está nela);
+  o teto conta a run aberta e a colhida; "ocupada" vale nos dois sentidos.
+- Diferença escrita: o aparelho deixa começar outra run por cima de uma
+  terminada e não colhida (o saque some); o servidor recusa e manda colher.
+- `test/run-servidor.mjs`: 20 runs (caiu, limpou, recuou, com poção), sete
+  no mesmo dia, e a expedição colhida no meio da run — iguais a cada passo.
+- Achados: **D-127** (o clima nunca vale no Avanço) e **D-128** (a reserva da
+  run conta duas vezes), dona a nova **ST-2.5**.
+
+##### ST-13.2c2 · As rotas da run
+- **Escopo:** `POST /api/idle/run` (começar), `/run/pocao`, `/run/recuar`,
+  `/run/colher` (idempotente: a colhida devolve a resposta gravada); o `GET
+  /api/idle` avança e devolve a run; o lance aceita os pendentes da run.
+- **Portões:** Q1 Q2 Q3 Q6 Q8.
+
+#### ST-13.7 · A luta da jornada no servidor (L-208)
+- **Porte** M · **Servidor** sim · **Depende de** ST-13.3 (o time e os golpes)
+- **Escopo:** a luta de nó é refeita no servidor pela semente dele, com o time
+  que o servidor conhece; o progresso da jornada e a recompensa PvE passam a
+  ser do servidor; `ginasio_vencido` e `pve_iniciado` deixam de vir do
+  cliente e passam a nascer da luta (fecha a **L-208**).
+- **Portões:** Q1 Q2 Q3 Q6 Q9.
 
 ### ST-13.3 · XP, evolução, golpes e doce como operações
 - **Porte** M · **Servidor** sim · **Depende de** ST-13.2, ST-9.9, ST-9.10, ST-9.12

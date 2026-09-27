@@ -1293,6 +1293,72 @@ export const MIGRACOES = [
       db.exec(`ALTER TABLE criaturas DROP COLUMN xp`);
     },
   },
+  {
+    nome: 'run-st13.2c1',
+    /* A RUN DO AVANÇO NO SERVIDOR (ST-13.2c1, E13).
+     *
+     *   runs            o ESTADO da run (o mesmo objeto que o save guarda),
+     *                   avançado pelo relógio do servidor a cada pedido que
+     *                   toca a conta. Uma run ABERTA (não colhida) por conta —
+     *                   o índice parcial é quem garante, e não o código; e a
+     *                   semente da colheita anda com a colheita, como na
+     *                   expedição (o CHECK).
+     *   encontros_pendentes  refeita para aceitar a ORIGEM (L-166): o da run
+     *                   não tem expedição, e começar outra run descarta os
+     *                   pendentes da anterior, e só eles. A tabela nasceu na
+     *                   2.13a; o SQLite não afrouxa NOT NULL, então ela é
+     *                   copiada para a forma nova. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE runs (
+          id            TEXT PRIMARY KEY,
+          user_id       TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          pack_id       TEXT NOT NULL,
+          estado_json   TEXT NOT NULL,
+          iniciada_em   INTEGER NOT NULL,
+          terminada_em  INTEGER,
+          colhida_em    INTEGER,
+          semente       TEXT,
+          encontros     INTEGER,
+          resultado_json TEXT,
+          CHECK ((colhida_em IS NULL) = (semente IS NULL))
+        )`);
+      db.exec(`CREATE UNIQUE INDEX runs_uma_aberta ON runs(user_id) WHERE colhida_em IS NULL`);
+      db.exec(`CREATE INDEX runs_colhidas ON runs(user_id, colhida_em)`);
+      db.exec(`
+        CREATE TABLE encontros_pendentes_novo (
+          chave         TEXT PRIMARY KEY,
+          user_id       TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          origem        TEXT NOT NULL DEFAULT 'expedicao' CHECK (origem IN ('expedicao', 'avanco')),
+          expedicao_id  TEXT REFERENCES expedicoes(id),
+          run_id        TEXT REFERENCES runs(id),
+          dex           INTEGER NOT NULL CHECK (dex >= 1),
+          raridade      TEXT NOT NULL,
+          bioma         TEXT NOT NULL,
+          em            INTEGER NOT NULL,
+          resolvido_em  INTEGER,
+          CHECK ((origem = 'expedicao') = (expedicao_id IS NOT NULL))
+        )`);
+      db.exec(`INSERT INTO encontros_pendentes_novo (chave, user_id, expedicao_id, dex, raridade, bioma, em, resolvido_em)
+               SELECT chave, user_id, expedicao_id, dex, raridade, bioma, em, resolvido_em FROM encontros_pendentes`);
+      db.exec(`DROP TABLE encontros_pendentes`);
+      db.exec(`ALTER TABLE encontros_pendentes_novo RENAME TO encontros_pendentes`);
+      db.exec(`CREATE INDEX idx_pendentes_dono ON encontros_pendentes(user_id, resolvido_em)`);
+    },
+    desce: db => {
+      db.exec(`DELETE FROM encontros_pendentes WHERE origem = 'avanco'`);
+      db.exec(`
+        CREATE TABLE encontros_pendentes_velho (
+          chave TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          expedicao_id TEXT NOT NULL REFERENCES expedicoes(id), dex INTEGER NOT NULL CHECK (dex >= 1),
+          raridade TEXT NOT NULL, bioma TEXT NOT NULL, em INTEGER NOT NULL, resolvido_em INTEGER)`);
+      db.exec(`INSERT INTO encontros_pendentes_velho SELECT chave, user_id, expedicao_id, dex, raridade, bioma, em, resolvido_em FROM encontros_pendentes`);
+      db.exec(`DROP TABLE encontros_pendentes`);
+      db.exec(`ALTER TABLE encontros_pendentes_velho RENAME TO encontros_pendentes`);
+      db.exec(`CREATE INDEX idx_pendentes_dono ON encontros_pendentes(user_id, resolvido_em)`);
+      db.exec(`DROP TABLE runs`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

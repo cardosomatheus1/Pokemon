@@ -2071,7 +2071,7 @@ export const DEFEITOS = [
     real:'o campo parece redundante; sem ele toda run nova e tratada como antiga e o 1.33 vira codigo morto',
     de:'    regraElenco: REGRA_DO_ELENCO,',
     para:'' },
-  { id:'S1033', arquivo:AVEST, nome:'o elenco da run ignora a condicao',
+  { id:'S1033', arquivo:'app/modules/avanco-conta.mjs', nome:'o elenco da run ignora a condicao',
     real:'a ligacao que some num refactor — o motor sabe trocar, e ninguem pede',
     de:'run.estagio, preferenciasDaRun(pack, run))',
     para:'run.estagio)' },
@@ -2240,10 +2240,9 @@ export const DEFEITOS = [
     real:'a linha diz "noite trouxe" com a chave crua — a esteira ja pegou "para quem e water"',
     de:"             fonteNome: daNoite ? 'A noite' : (clima?.key === t.fonte ? clima.name : t.fonte),",
     para:'             fonteNome: t.fonte,' },
-  { id:'S1063', arquivo:'app/modules/avanco-estado.mjs', nome:'o comeco da run para de gravar a linha do elenco',
+  { id:'S1063', arquivo:'app/modules/avanco-conta.mjs', nome:'o comeco da run para de gravar a linha do elenco',
     real:'o rosto novo aparece na wave e parece sorte — a regra da legenda nunca e vista acontecendo',
-    de:'  e.run.eventos = [...(e.run.eventos ?? []), ...eventosDoElenco(pack, e.run, agora)];',
-    para:'  e.run.eventos = [...(e.run.eventos ?? [])];' },
+    de:'  run.eventos = [...(run.eventos ?? []), ...eventosDoElenco(pack, run, agora)];', para:'  run.eventos = [...(run.eventos ?? [])];' },
 
   /* ── ST-2.3 · O VETERANO VÊ A NOITE (L-183) ───────────────────────── */
   { id:'S1064', arquivo:'content/pokemon_kanto_v1.mjs', nome:'a fada sai da noite',
@@ -2264,11 +2263,11 @@ export const DEFEITOS = [
     real:'o bau do estagio 3 paga o mesmo que o do 1 — ir fundo deixa de valer',
     de:'  const partes = Math.min(PARTES - 1, Math.max(1, Math.floor(estagio)));',
     para:'  const partes = 1;' },
-  { id:'S1068', arquivo:'app/modules/avanco-estado.mjs', nome:'a colheita volta a creditar o item inteiro',
+  { id:'S1068', arquivo:'app/modules/avanco-conta.mjs', nome:'a colheita volta a creditar o item inteiro',
     real:'a regra existe no motor e a colheita a contorna — a L-159 de volta',
     de:"      : lancamentoDoBau(it, { estagio: run.estagio, catalogo: pack.catalogo })",
     para:"      : lancamentoDoBau(it, { estagio: 99, catalogo: pack.catalogo })" },
-  { id:'S1069', arquivo:'app/modules/avanco-estado.mjs', nome:'o saque guardado mostra o item e a bolsa recebe partes',
+  { id:'S1069', arquivo:'app/modules/avanco-conta.mjs', nome:'o saque guardado mostra o item e a bolsa recebe partes',
     real:'o quadro diz "Pedra das Folhas" e o jogador procura uma pedra que nao tem',
     de:'    if (l.estilhaco) itens[k] = { ...it, id: l.chave, quantidade: l.quantidade, estilhaco: true };',
     para:'    /* saque guardado intocado */' },
@@ -4633,12 +4632,7 @@ export const DEFEITOS = [
      vezes. A ancora passa a citar a linha do SUM, que e a que o teto usa. */
   { id:'S568', arquivo:IDLE, nome:'o teto diario deixa de ter janela e vira teto para sempre',
     real:'"conta os encontros" — conta os encontros DE HOJE',
-    de: 'SUM(encontros), 0) AS n FROM expedicoes\n' +
-        '               WHERE user_id = ? AND colhida_em IS NOT NULL AND colhida_em > ?`)\n' +
-        '    .get(userId, agora - DIA_MS).n;',
-    para: 'SUM(encontros), 0) AS n FROM expedicoes\n' +
-          '               WHERE user_id = ? AND colhida_em IS NOT NULL`)\n' +
-          '    .get(userId).n;' },
+    de:'SELECT encontros FROM expedicoes WHERE user_id = ? AND colhida_em IS NOT NULL AND colhida_em > ?', para:'SELECT encontros FROM expedicoes WHERE user_id = ? AND colhida_em IS NOT NULL AND ? > 0' },
 
   /* A EQUIPE DEIXA DE SER CONFERIDA CONTRA O DONO. Mandar o id da criatura de
      outro jogador passa a funcionar — e num jogo onde criatura e vendavel isso
@@ -4660,8 +4654,7 @@ export const DEFEITOS = [
      jogador colher, com janela para cancelar a expedicao ruim. */
   { id:'S570', arquivo:SRVDB, nome:'a semente do saque pode voltar a existir antes da colheita',
     real:'"o codigo so grava junto" — o CHECK existe para nao depender do codigo',
-    de:'          CHECK ((colhida_em IS NULL) = (semente IS NULL))',
-    para:'          CHECK (1 = 1)' },
+    de:'          /* A SEMENTE E A COLHEITA ANDAM JUNTAS — ver o comentário acima. */\n          CHECK ((colhida_em IS NULL) = (semente IS NULL))', para:'          /* A SEMENTE E A COLHEITA ANDAM JUNTAS — ver o comentário acima. */\n          CHECK (1 = 1)' },
 
   /* O CHECK DE NAO NEGATIVO DA BOLSA SOME. Bolsa negativa e bola de graca, e
      bola de graca e criatura de graca. */
@@ -7062,8 +7055,7 @@ export const DEFEITOS = [
 
   { id:'S882', arquivo:AVEST, nome:'a equipe da run congela no nivel de quando ela comecou',
     real:'a criatura que subiu de nivel no meio da run continua lutando com a forca de ontem',
-    de:'  const vivas = criaturasDe(e);',
-    para:'  const vivas = (e.criaturas ?? []).map(c => ({ ...c, nivel: 1 }));' },
+    de:'export const equipeDaRun = (e, pack, run) => equipeDoMotor(pack, run, criaturasDe(e));', para:'export const equipeDaRun = (e, pack, run) => equipeDoMotor(pack, run, (e.criaturas ?? []).map(c => ({ ...c, nivel: 1 })));' },
 
   { id:'S883', arquivo:AVGEO, nome:'o mob nasce no posto, em vez de vir andando',
     real:'os primeiros segundos da wave ficam vazios, e as oito direcoes da folha viram uma so',
@@ -8303,6 +8295,43 @@ export const DEFEITOS = [
   { id:'S1387', arquivo:'app/modules/minha-colecao.mjs', nome:'o painel le a taxa do dossie por conta propria',
     real:'duas contas para o mesmo numero, e a segunda nao conhece a escada',
     de:'      odd: o?.odd ?? null, chance: o?.prob ?? null,', para:'      odd: o?.odd ?? null, chance: o?.prob ?? null, hist: dossie?.especies?.[f.dex]?.vitoria?.taxa,' },
+  /* ── ST-13.2c1 · a run do Avanço é uma conta só (cliente e servidor) ─── */
+  { id:'S1613', arquivo:'server/run.mjs', nome:'o rendimento do dia não conhece as runs do servidor',
+    real:'a sétima run do dia paga cheio na conta real — a DEC-14 vale só no aparelho',
+    de:'avancos: avancosDe(db, userId, agora), raiz, agora,', para:'avancos: [], raiz, agora,' },
+  { id:'S1614', arquivo:'server/run.mjs', nome:'a run nova não limpa o quadro da anterior',
+    real:'os aparecidos empilham run a run, e a decisão da bola deixa de custar (L-166)',
+    de:"    db.prepare(`UPDATE encontros_pendentes SET resolvido_em = ? WHERE user_id = ? AND origem = 'avanco' AND resolvido_em IS NULL`)\n      .run(agora, userId);", para:'' },
+  { id:'S1615', arquivo:'server/run.mjs', nome:'a criatura da expedição entra na run',
+    real:'a mesma criatura rende na expedição e no avanço ao mesmo tempo',
+    de:"  if (equipe.some(id => fora.has(id))) throw new Error('esta criatura já está numa expedição", para:"  if (false) throw new Error('esta criatura já está numa expedição" },
+  { id:'S1616', arquivo:'server/run.mjs', nome:'a poção não sai da bolsa',
+    real:'a mesma poção cura a run inteira',
+    de:"    if (!debitarBolsa(db, userId, item, 1)) throw new Error('você não tem esse item');", para:'' },
+  { id:'S1617', arquivo:'server/run.mjs', nome:'duas runs abertas por conta',
+    real:'começar outra por cima da run terminada e não colhida — o saque dela some, ou as duas reservam o teto',
+    de:"  if (runAberta(db, userId)) throw falha(ERRO_RUN.ABERTA,", para:"  if (false) throw falha(ERRO_RUN.ABERTA," },
+  { id:'S1618', arquivo:'server/idle.mjs', nome:'a run aberta não reserva o teto do servidor',
+    real:'a expedição sai com os encontros que a run já reservou — o teto do §P5 é furado pelos dois modos juntos',
+    de:'    ? [ENCONTROS_POR_AVANCO] : [],', para:'    ? [] : [],' },
+  { id:'S1619', arquivo:'server/idle.mjs', nome:'a run colhida não conta no teto do servidor',
+    real:'Avanço atrás de Avanço, a captura não tem teto na conta real (a D-107 de novo)',
+    de:'                UNION ALL SELECT encontros FROM runs WHERE user_id = ? AND colhida_em IS NOT NULL AND colhida_em > ?)`)', para:'                UNION ALL SELECT 0 WHERE ? AND ?)`)' },
+  { id:'S1620', arquivo:'server/idle.mjs', nome:'a criatura da run sai em expedição',
+    real:'a mesma criatura rende no avanço e na expedição ao mesmo tempo',
+    de:"  if (equipe.some(id => avancando.has(id)))", para:'  if (false)' },
+  { id:'S1621', arquivo:'server/idle.mjs', nome:'a colheita da expedição não avança a run antes',
+    real:'as waves que já passaram voltam a lutar com o nível novo — a run da conta diverge da do aparelho',
+    de:'  sincronizarRun(db, { userId: exp.user_id, pack, agora });\n', para:'' },
+  { id:'S1622', arquivo:'app/modules/avanco-conta.mjs', nome:'a poção cura com a barra cheia',
+    real:'um clique errado gasta a poção que salvaria a run três waves adiante',
+    de:"  if (antes.hp >= antes.hpMax) throw new Error('a vida já está cheia — guarde a poção');", para:'' },
+  { id:'S1623', arquivo:'app/modules/avanco-conta.mjs', nome:'o conserto da D-127 chega sem bloco (a equipe ganha tipo)',
+    real:'o clima passa a pagar e a fixture de emissão muda sem medição — o conserto é da ST-2.5',
+    de:'  id: c.id, dex: c.dex, nivel: c.nivel ?? 1, vinculo: c.vinculo ?? 0, foco: c.foco ?? null,', para:'  id: c.id, dex: c.dex, t: (pack?.especies ?? []).find(e => e.dex === c.dex)?.t, nivel: c.nivel ?? 1, vinculo: c.vinculo ?? 0, foco: c.foco ?? null,' },
+  { id:'S1624', arquivo:'app/modules/avanco-estado.mjs', nome:'o conserto da D-128 chega sem bloco (a reserva conta uma vez)',
+    real:'o teto da run muda sem a ST-2.5 e sem o servidor junto',
+    de:'reservas: [ENCONTROS_POR_AVANCO] });', para:'reservas: [] });' },
   /* ── ST-13.2b · as rotas da expedição e o lance pela chave ──────────── */
   { id:'S1601', arquivo:'server/idle.mjs', nome:'a mesma criatura duas vezes na equipe',
     real:'[a, a] passa a contagem e rende como equipe de dois — a concentração paga por uma criatura só',
@@ -9307,10 +9336,10 @@ export const DEFEITOS = [
     real:'uma Essencia com rendimento de 80% vira zero toda vez — o rendimento morde o dobro',
     de:'  Math.floor((Number(quantidade) || 0) * fator + (Number(u) || 0));',
     para:'  Math.floor((Number(quantidade) || 0) * fator);' },
-  { id:'S1132', arquivo:'app/modules/avanco-estado.mjs', nome:'a moeda da run ignora o rendimento',
+  { id:'S1132', arquivo:'app/modules/avanco-conta.mjs', nome:'a moeda da run ignora o rendimento',
     real:'a maratona volta a tirar a moeda inteira — a L-185 reabre pela moeda',
     de:'  }), fator, sorteioR());', para:'  }), 1, sorteioR());' },
-  { id:'S1133', arquivo:'app/modules/avanco-estado.mjs', nome:'a Essencia do bau ignora o rendimento',
+  { id:'S1133', arquivo:'app/modules/avanco-conta.mjs', nome:'a Essencia do bau ignora o rendimento',
     real:'a maratona volta a tirar 8,7x a Essencia calibrada',
     de:'quantidade: comRendimento(it.quantidade, fator, sorteioR()) }',
     para:'quantidade: it.quantidade }' },

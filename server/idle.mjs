@@ -51,6 +51,8 @@ import { contaDaColheita } from '../engine/colheita.mjs';
 import { estagioAberto, estagioMaximo, nivelDoEstagio } from '../engine/estagios.mjs';
 import { nivelDe } from '../engine/nivel-criatura.mjs';
 import { gerar as gerarCriatura } from './criaturas.mjs';
+import { naRun, sincronizarRun } from './run.mjs';
+import { ENCONTROS_POR_AVANCO } from '../engine/avanco.mjs';
 
 const DIA_MS = 24 * 3600_000;
 
@@ -101,10 +103,13 @@ export const concluidasHoje = (db, userId, agora) =>
 
 /* QUANTOS ENCONTROS JÁ SAÍRAM HOJE (D-052). É o que o teto conta — não a
    contagem de expedições. Mesma janela móvel de 24 h, pelo mesmo motivo. */
+/* AS RUNS COLHIDAS ENTRAM NA MESMA SOMA (D-107, ST-13.2c1): o teto não
+   precisa saber de que modo o encontro veio. */
 export const encontrosHoje = (db, userId, agora) =>
-  db.prepare(`SELECT COALESCE(SUM(encontros), 0) AS n FROM expedicoes
-               WHERE user_id = ? AND colhida_em IS NOT NULL AND colhida_em > ?`)
-    .get(userId, agora - DIA_MS).n;
+  db.prepare(`SELECT COALESCE(SUM(encontros), 0) AS n FROM (
+                SELECT encontros FROM expedicoes WHERE user_id = ? AND colhida_em IS NOT NULL AND colhida_em > ?
+                UNION ALL SELECT encontros FROM runs WHERE user_id = ? AND colhida_em IS NOT NULL AND colhida_em > ?)`)
+    .get(userId, agora - DIA_MS, userId, agora - DIA_MS).n;
 
 /* O estado que o motor lê: só o que JÁ ACONTECEU — na MESMA forma do
    `estadoDoTeto` do cliente (ST-13.2a). A primeira versão mandava só a lista de
@@ -116,6 +121,9 @@ export const estadoDoTeto = (db, userId, agora, pack = null) => ({
   emCampo: emCampo(db, userId).map(x => ({ perfil: x.perfil, membros: JSON.parse(x.equipe_json).length })),
   vistas: pack ? especiesVistas(db, userId, pack.id) : 0,
   total: (pack?.especies ?? []).length || undefined,
+  /* A RUN ABERTA RESERVA até ser colhida (D-107) — como `e.run` no aparelho. */
+  reservas: db.prepare(`SELECT 1 FROM runs WHERE user_id = ? AND colhida_em IS NULL`).get(userId)
+    ? [ENCONTROS_POR_AVANCO] : [],
 });
 
 /* VER É TER ENCONTRADO OU TER NA CAIXA (1.22, D-075) — a inicial nunca passou
@@ -129,9 +137,10 @@ export const especiesVistas = (db, userId, packId) =>
 /* As criaturas do jogador no formato que a CONTA lê (o do save): o XP, e não o
    nível, porque o nível é derivado dele. */
 export const criaturasDaConta = (db, userId) =>
-  db.prepare(`SELECT id, dex, xp, vinculo, foco, treinado_ate FROM criaturas
+  db.prepare(`SELECT id, dex, xp, vinculo, foco, treinado_ate, stamina, stamina_em FROM criaturas
                WHERE user_id = ? ORDER BY criada_em, id`).all(userId)
     .map(l => ({ id: l.id, dex: l.dex, xp: l.xp, nivel: nivelDe(l.xp), vinculo: l.vinculo, foco: l.foco,
+                 stamina: l.stamina, staminaEm: l.stamina_em,
                  ...(l.treinado_ate != null ? { treinadoAte: l.treinado_ate } : {}) }));
 
 export const emCampo = (db, userId) =>
@@ -176,6 +185,9 @@ export function iniciar(db, { userId, pack, bioma, perfil, equipe, agora, estagi
      mesmo tempo, rendendo nas duas. */
   const fora = new Set(emCampo(db, userId).flatMap(x => JSON.parse(x.equipe_json)));
   if (equipe.some(id => fora.has(id))) throw new Error('uma das escolhidas já está em expedição — recolha-a antes');
+  /* E QUEM ESTÁ NUMA RUN QUE AINDA ACONTECE (ST-13.2c1) — o outro sentido. */
+  const avancando = naRun(db, { userId, pack, agora });
+  if (equipe.some(id => avancando.has(id))) throw new Error('uma das escolhidas já está no avanço — recolha-a antes');
 
   const { pode, semStamina } = podeEnviar(membros, perfil, agora);
   if (!pode) throw new Error(`sem stamina: ${semStamina.join(', ')}`);
@@ -235,6 +247,10 @@ export function colher(db, { id, pack, agora, raiz = novaRaiz() }) {
   const exp = db.prepare(`SELECT * FROM expedicoes WHERE id = ?`).get(id);
   if (!exp) throw falha(ERRO_IDLE.SEM_EXPEDICAO, 'expedição não existe');
   if (agora < exp.termina_em) throw falha(ERRO_IDLE.NAO_TERMINOU, 'a expedição ainda não terminou');
+  /* A RUN AVANÇA ANTES (ST-13.2c1): esta colheita treina quem ficou no
+     banco, e quem está na run fica no banco — as waves que já passaram lutaram
+     com o nível de antes, como no aparelho, que sincroniza a cada quadro. */
+  sincronizarRun(db, { userId: exp.user_id, pack, agora });
 
   db.exec('BEGIN');
   try {
