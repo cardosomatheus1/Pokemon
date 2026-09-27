@@ -17,7 +17,7 @@ import { folhaDoImpacto } from './avanco-efeito.mjs';
 import { simular } from '../../engine/treino-batalha.mjs';
 import { entradasDoTime, rivalDe, treinador } from './treino-dados.mjs';
 import { linhaDoTempo, fraseDoResultado, PASSO_MS } from './pve-dados.mjs';
-import { arredondarNeutro, textoDaMargem } from '../../engine/treino-preco.mjs';
+import { porcentagemExibida, textoDaMargem } from '../../engine/treino-preco.mjs';
 
 const QUADROS_POR_S = 18;
 let geracao = 0, deNovo = null;
@@ -106,7 +106,7 @@ export function encenar({ alvo, A, B, r, antes, titulo, extraNoFim = '', aoFim =
   const L = linhaDoTempo(PACK, A, B, r, nomeExibido);
   if (!alvo) return;
   alvo.innerHTML = `<div class="pveLuta">
-    <div class="pveTopo"><b>${titulo}</b><span>antes da luta: ${arredondarNeutro(antes.p * 100)}% · ${textoDaMargem(antes)}</span>
+    <div class="pveTopo"><b>${titulo}</b><span>antes da luta: ${porcentagemExibida(antes.p)} · ${textoDaMargem(antes)}</span>
       <button class="btn" data-pve-pular>pular</button></div>
     <div class="pvePalco" id="pvePalco">
       <div class="pveLado pveA">${L.lados.A.map(lutador).join('')}</div>

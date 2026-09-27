@@ -58,6 +58,20 @@ export function arredondarNeutro(x) {
   return Math.round(x);
 }
 
+/* A PORCENTAGEM NA TELA (ST-10.17 · D-126): um lote que NÃO foi unânime nunca
+   mostra 100% nem 0% — 1.999 de 2.000 é "mais de 99%", e não o número que o
+   próprio lote desmente. Unânime diz o que foi (a linha de baixo diz "venceu
+   todas"). */
+export function porcentagemExibida(p) {
+  if (p === 1) return '100%';
+  if (p === 0) return '0%';
+  const n = arredondarNeutro(p * 100);
+  return n >= 100 ? '>99%' : n <= 0 ? '<1%' : `${n}%`;
+}
+/* O número inteiro correspondente, preso a 1–99 fora do unânime — para a conta
+   "em N de cada 100". */
+export const pontosExibidos = p => (p === 1 ? 100 : p === 0 ? 0 : Math.min(99, Math.max(1, arredondarNeutro(p * 100))));
+
 /* A margem em pontos, nunca menor que 1: "±0" diria certeza que 2.000 lutas não dão. */
 export const margemDaChance = ({ erro }) => Math.max(1, arredondarNeutro(erro * 100));
 
@@ -73,7 +87,7 @@ export function textoDaMargem(r) {
 }
 
 export const textoDaChance = r =>
-  `seu time vence ${arredondarNeutro(r.p * 100)}% (±${margemDaChance(r)})`;
+  `seu time vence ${porcentagemExibida(r.p)} (±${margemDaChance(r)})`;
 
 /* ── A MAIOR FRAQUEZA, pela tabela de tipos ────────────────────────────────
  *

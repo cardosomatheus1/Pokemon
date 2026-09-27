@@ -9,8 +9,15 @@
 import { comRevisao } from './doce-local.mjs';
 import { entradasDoTime, rivalDe, treinador } from './treino-dados.mjs';
 import { lutarNo, nosDa } from '../../engine/jornada.mjs';
+import { recompensaPve } from '../../engine/recompensa-pve.mjs';
+import { chaveDoDoce } from '../../engine/doce.mjs';
+import { diaDoMundo } from '../../engine/avanco.mjs';
+import { idDaMoeda } from '../../engine/economia-idle.mjs';
 
-export function lutarNaJornadaLocal({ pack, id, preset = 'balanced', semente = crypto.getRandomValues(new Uint32Array(1))[0] },
+/* ST-10.17: a luta PAGA na mesma gravação em que conta — a vitória e o
+   pagamento não podem se separar (uma aba que grava a vitória e perde o
+   pagamento, ou o contrário, é moeda criada ou sumida). */
+export function lutarNaJornadaLocal({ pack, id, preset = 'balanced', semente = crypto.getRandomValues(new Uint32Array(1))[0], agora = Date.now() },
                                     deposito = globalThis.localStorage) {
   let saida = null;
   const r = comRevisao(e => {
@@ -21,7 +28,16 @@ export function lutarNaJornadaLocal({ pack, id, preset = 'balanced', semente = c
     try {
       saida = { ...lutarNo(pack, e.jornada, id, timeA, timeB, { semente, preset }), semente, timeA, timeB };
     } catch (x) { return { ok: false, motivo: x.message }; }
-    e.jornada = saida.progresso;
+    const linhas = [...new Set(timeA.map(c => chaveDoDoce(pack, c.dex)))];
+    const rec = recompensaPve({ no: { id, ginasio: !!no.insignia }, venceu: saida.resultado.vencedor === 'A', primeiraVez: saida.primeiraVez,
+                                dia: diaDoMundo(agora), hoje: e.jornada?.pve, linhas });
+    e.jornada = { ...saida.progresso, pve: rec.hoje };
+    e.bolsa ??= {};
+    if (rec.pokecoin) e.bolsa[idDaMoeda(pack)] = (e.bolsa[idDaMoeda(pack)] ?? 0) + rec.pokecoin;
+    for (const [b, n] of Object.entries(rec.bolas)) e.bolsa[b] = (e.bolsa[b] ?? 0) + n;
+    e.doces ??= {};
+    for (const [l, n] of Object.entries(rec.doces)) e.doces[l] = (e.doces[l] ?? 0) + n;
+    saida.recompensa = rec;
     return { ok: true };
   }, deposito);
   return r?.ok === false || r?.conflito ? r : { ok: true, ...saida };

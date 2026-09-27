@@ -13,7 +13,7 @@
  * chance de 23% vence uma em cada quatro vezes, e perder com 77% acontece.
  */
 import { montarLutador } from '../../engine/treino-batalha.mjs';
-import { arredondarNeutro, margemDaChance } from '../../engine/treino-preco.mjs';
+import { margemDaChance, porcentagemExibida, pontosExibidos } from '../../engine/treino-preco.mjs';
 
 export const PASSO_MS = 900;
 
@@ -48,12 +48,12 @@ export function linhaDoTempo(pack, timeA, timeB, resultado, nomeDe = n => n) {
 
 /* O resultado, com a chance de ANTES da luta. */
 export function fraseDoResultado({ vencedor, turnos }, antes) {
-  const pct = arredondarNeutro(antes.p * 100), m = margemDaChance(antes);
+  const pct = pontosExibidos(antes.p), m = margemDaChance(antes);
   /* Lote unânime não tem "±1" (o mesmo Q7 da ST-10.7): diz o que foi. */
   const lutas = Number(antes.sims || 0).toLocaleString('pt-BR');
   const chance = antes.p === 1 ? `o seu time tinha vencido todas as ${lutas} lutas simuladas`
     : antes.p === 0 ? `o seu time tinha perdido todas as ${lutas} lutas simuladas`
-    : `a chance antes da luta era ${pct}% (±${m})`;
+    : `a chance antes da luta era ${porcentagemExibida(antes.p)} (±${m})`;
   if (vencedor === 'A') return { titulo: 'Você venceu', texto: `${chance[0].toUpperCase()}${chance.slice(1)}.` };
   if (vencedor === 'B') return { titulo: 'Você perdeu', texto: `${chance[0].toUpperCase()}${chance.slice(1)}: em ${100 - pct} de cada 100 lutas assim, o rival vence.` };
   return { titulo: 'Empate', texto: `Ninguém caiu em ${turnos} turnos. ${chance[0].toUpperCase()}${chance.slice(1)}.` };

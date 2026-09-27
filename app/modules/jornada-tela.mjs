@@ -13,9 +13,10 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
-import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, ARTE_DO_MAPA } from './jornada-dados.mjs';
+import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, ARTE_DO_MAPA } from './jornada-dados.mjs';
+import { diaDoMundo } from '../../engine/avanco.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido } from './treino-dados.mjs';
-import { lote, resumo, arredondarNeutro, textoDaMargem, SIMS_TREINO } from '../../engine/treino-preco.mjs';
+import { lote, resumo, porcentagemExibida, textoDaMargem, SIMS_TREINO } from '../../engine/treino-preco.mjs';
 import { lutarNaJornadaLocal } from './jornada-local.mjs';
 import { encenar } from './pve-tela.mjs';
 import { renderTreino } from './treino-tela.mjs';
@@ -41,6 +42,7 @@ function pintarPainel(mapa) {
       <span class="tiny">seu time vence</span><strong id="jnNumero">…</strong><span class="tiny" id="jnErro">calculando</span>
       <span class="tiny jnCausa" id="jnCausa" hidden></span>
       <span class="tiny jnRisco" id="jnRisco" hidden>arriscado — <button class="lnk" data-treino-aba="time">reforce o time</button></span>
+      <span class="tiny jnPaga">${fraseDoPagamento(PACK, pagamentoDoNo(no, carregar().jornada?.pve, diaDoMundo(Date.now())))}</span>
       <button class="btn${vencido ? '' : ' gold'} jnCta" id="jnLutar" data-jn-lutar="${no.id}" disabled>${no.estado === 'trancado' ? 'trancado' : vencido ? 'revanche (treino)' : `lutar contra ${t.nome}`}</button></div>
     <div class="jnInfo"><p class="jnFrase">${fraseDoNo(no, t.nome)}</p>
       ${no.licao ? `<p class="jnLicao"><img src="${arteDaInsignia(no.insignia)}" alt=""><span><b>Ensina: ${no.licao.ensina}.</b> ${no.lider ?? t.nome} usa ${no.licao.tipo}. ${no.licao.dica}</span></p>` : ''}
@@ -118,7 +120,7 @@ function pintarPainel(mapa) {
     lote(PACK, A, rival, RAIZ, acum.sims, Math.min(100, SIMS_TREINO - acum.sims), acum, preset);
     const r = resumo(acum), pronto = acum.sims >= SIMS_TREINO;
     const n = $('#jnNumero'), e = $('#jnErro'), b = $('#jnLutar');
-    if (n) { n.textContent = `${arredondarNeutro(r.p * 100)}%`; n.classList.toggle('parcial', !pronto); n.dataset.faixa = pronto ? faixaDaChance(r.p) : ''; }
+    if (n) { n.textContent = porcentagemExibida(r.p); n.classList.toggle('parcial', !pronto); n.dataset.faixa = pronto ? faixaDaChance(r.p) : ''; }
     const aviso = $('#jnRisco');
     /* Com a causa da lição nomeando os golpes, o "reforce o time" sai: ele
        contradiz a lição (sugere nível, e o que falta é escolher golpe). */
@@ -225,7 +227,7 @@ document.addEventListener('click', ev => {
   }
   $('#jornadaCorpo')?.classList.add('emLuta');
   encenar({ alvo: $('#jnLuta'), A: r.timeA, B: r.timeB, r: r.resultado, antes, titulo: `${PACK.jornada.find(n => n.id === id)?.nome} · ${t.nome}`,
-            extraNoFim: licaoNoFim + extra, voltar: 'voltar ao mapa', aoFim: () => { if (r.primeiraVez && proximo) escolhido = proximo.id; renderJornada({ nova: r.ganhouInsignia }); } });
+            extraNoFim: [licaoNoFim.trim(), fraseDoPagamento(PACK, r.recompensa, { depois: true }), extra].filter(Boolean).join(' '), voltar: 'voltar ao mapa', aoFim: () => { if (r.primeiraVez && proximo) escolhido = proximo.id; renderJornada({ nova: r.ganhouInsignia }); } });
 });
 
 /* Voltar ao mapa devolve o painel: enquanto o resultado está na tela, o

@@ -207,7 +207,7 @@ export function suite() {
     const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
     ok(/no\.licao\?\.mostra === 'vel'/.test(tela) && /comparaVelocidade\(PACK, A, rival\)/.test(tela), 'o painel da lição da velocidade não mostra a velocidade');
     ok(/causa\.textContent = v\.falta/.test(tela) && /<span class="tiny jnCausa" id="jnCausa" hidden><\/span>/.test(tela), 'a causa não vai para baixo do número');
-    ok(/comparaVelocidade\(PACK, r\.timeA, r\.timeB\)/.test(tela) && /extraNoFim: licaoNoFim \+ extra/.test(tela), 'o fim da luta não fecha a lição da velocidade');
+    ok(/comparaVelocidade\(PACK, r\.timeA, r\.timeB\)/.test(tela) && /extraNoFim: \[licaoNoFim\.trim\(\), fraseDoPagamento/.test(tela), 'o fim da luta não fecha a lição da velocidade');
     ok(/venceu \? ': a lição deste ginásio\.' : ', e desta vez não bastou\.'/.test(tela), 'agir antes e perder é contado como a lição');
   });
 

@@ -16,7 +16,6 @@ import { movesetDoRival, padraoDoMoveset, liberados, movesetValido } from '../ap
 import { rivalDe, treinador } from '../app/modules/treino-dados.mjs';
 import { lote, resumo } from '../engine/treino-preco.mjs';
 import { efeito } from '../engine/primitivas.mjs';
-import { fraseDoResultado } from '../app/modules/pve-dados.mjs';
 import { REFERENCIAS, INICIAIS, NIVEL_INICIAL, medir } from '../tools/medir-ginasios.mjs';
 
 const fx = JSON.parse(readFileSync(new URL('./fixtures/ginasios.json', import.meta.url), 'utf8'));
@@ -130,10 +129,8 @@ export function suite() {
     ok(p(movesetDoRival(pack, 113, 50)) < p(padraoDoMoveset(pack, 113, 50)), 'o Chansey rival não ficou mais forte');
   });
 
-  s.teste('D-126 (afirma o defeito): 99,95% aparece como 100%', () => {
-    const t = fraseDoResultado({ vencedor: 'A', turnos: 3 }, { p: 0.9995, erro: 0.0005, sims: 2000 }).texto;
-    ok(/100%/.test(t), `D-126 CONSERTADO? "${t}" — mova este teste para o aceite da ST-10.17`);
-  });
+  /* D-126 — 99,95% aparecia como 100% — consertado na ST-10.17; o aceite mora
+     em `recompensa-pve` ("D-126 consertado"). */
 
   return s;
 }

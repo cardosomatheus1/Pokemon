@@ -6855,7 +6855,7 @@ muro. Medido em `tools/medir-ginasios.mjs`, gravado em
 `ginasios` — "D-125 consertado: o inicial sozinho no nível 5 dá o primeiro
 passo" (≥ 80%, refeito pela raiz).
 
-## D-126 — "100% (±1)" com uma derrota em 2.000
+## D-126 — "100% (±1)" com uma derrota em 2.000 ✅ CORRIGIDO
 
 **Achado em:** 27/09/2026, na captura da luta contra Brock (ST-10.13): o
 resultado diz "A chance antes da luta era 100% (±1)." com o lote em 1.999 de
@@ -6877,3 +6877,10 @@ lugar de decidir a forma ("mais de 99%", ou o "venceu 1.999 de 2.000").
 
 **Teste que trava:** `ginasios` — "D-126 (afirma o defeito): 99,95% aparece
 como 100%". Fica vermelho quando a ST-10.17 consertar.
+
+**Corrigido na ST-10.17 (27/09).** `porcentagemExibida` (engine/treino-preco):
+lote não unânime nunca mostra 100% nem 0% — vira ">99%" e "<1%"; o unânime
+continua "100%"/"0%" com "venceu/perdeu todas" embaixo. A conta "em N de cada
+100" usa `pontosExibidos`, preso a 1–99 (a derrota rara deixou de dizer "em 0
+de cada 100"). Aplicado nas três telas (Time, jornada, luta). O teste que
+afirmava o defeito virou o aceite: `recompensa-pve` — "D-126 consertado".

@@ -71,16 +71,16 @@ export function suite() {
   });
 
   s.teste('o progresso é aditivo no save', () => {
-    igual(JSON.stringify(camposDaJornada({})), '{"jornada":{"vencidos":[],"insignias":[]}}', 'save antigo');
+    igual(JSON.stringify(camposDaJornada({})), '{"jornada":{"vencidos":[],"insignias":[],"pve":{"dia":null,"pago":0,"nos":[]}}}', 'save antigo');
     igual(JSON.stringify(camposDaJornada({ jornada: { vencidos: ['a', 'a', 3], insignias: 'x' } })),
-      '{"jornada":{"vencidos":["a","3"],"insignias":[]}}', 'lixo no save');
+      '{"jornada":{"vencidos":["a","3"],"insignias":[],"pve":{"dia":null,"pago":0,"nos":[]}}}', 'lixo no save');
     const d = deposito();
     const e = VAZIO(); e.criaturas = [cria('x', 6, 60)];
     salvar(e, d);
     igual(lutarNaJornadaLocal({ pack: P, id: 'g', semente: 3 }, d).ok, false, 'fora de ordem gravou');
     const r = lutarNaJornadaLocal({ pack: P, id: 'a', semente: 3 }, d);
     ok(r.ok && r.resultado.vencedor === 'A', `a luta local: ${JSON.stringify(r).slice(0, 120)}`);
-    igual(JSON.stringify(carregar(d).jornada), '{"vencidos":["a"],"insignias":[]}', 'o progresso não ficou no save');
+    igual(JSON.stringify({ vencidos: carregar(d).jornada.vencidos, insignias: carregar(d).jornada.insignias }), '{"vencidos":["a"],"insignias":[]}', 'o progresso não ficou no save');
     igual(JSON.stringify(r.resultado), JSON.stringify(simular(P, r.timeA, r.timeB, 3)), 'a luta local não é a simulação com a semente escolhida');
   });
 

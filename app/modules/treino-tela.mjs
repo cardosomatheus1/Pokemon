@@ -19,7 +19,7 @@ import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
 import { painelDoTime, treinadoresDo, treinador, rivalDe, entradasDoTime, candidatosDaCaixa, membrosParaTrocas,
          PARTES_DO_POWER } from './treino-dados.mjs';
-import { lote, resumo, textoDaMargem, maiorFraqueza, arredondarNeutro, SIMS_TREINO } from '../../engine/treino-preco.mjs';
+import { lote, resumo, textoDaMargem, maiorFraqueza, porcentagemExibida, SIMS_TREINO } from '../../engine/treino-preco.mjs';
 import { variantes, lotePareado, trocasDoAcumulado, textoDaTrocaFeita, SIMS_TROCAS } from '../../engine/treino-trocas.mjs';
 import { moverLocal, trocarLocal } from './time-local.mjs';
 import { PRESETS_NA_TELA, presetValido } from './treino-dados.mjs';
@@ -120,7 +120,7 @@ function calcular(g, estado, rival) {
     lote(PACK, A, rival, RAIZ, acum.sims, Math.min(PASSO, SIMS_TREINO - acum.sims), acum, preset);
     const r = resumo(acum), pronto = acum.sims >= SIMS_TREINO;
     const n = $('#tbNumero'), e = $('#tbErro');
-    if (n) { n.textContent = `${arredondarNeutro(r.p * 100)}%`; n.classList.toggle('parcial', !pronto); }
+    if (n) { n.textContent = porcentagemExibida(r.p); n.classList.toggle('parcial', !pronto); }
     if (e) e.textContent = pronto ? textoDaMargem(r) : `calculando · ${acum.sims} de ${SIMS_TREINO} lutas`;
     if (pronto) {
       /* ST-10.9: a luta só acende com a chance de ANTES calculada — o resultado
@@ -155,7 +155,7 @@ function calcularTrocas(g, estado, rival) {
     el.innerHTML = feita + (trocas.length ? trocas.map(x => `<div class="tbTroca">
         ${dexImg(dexDe(x.sai), '', 'class="tbSpriteP"')}<span class="tbSeta">→</span>${dexImg(dexDe(x.entra), '', 'class="tbSpriteP"')}
         <span class="tbFrase">trocar <b>${nome(x.sai)}</b> por <b>${nome(x.entra)}</b>
-          <span class="tbDelta">${arredondarNeutro(x.antes * 100)}% → <b>${arredondarNeutro(x.p * 100)}%</b></span></span>
+          <span class="tbDelta">${porcentagemExibida(x.antes)} → <b>${porcentagemExibida(x.p)}</b></span></span>
         <button class="btn gold" data-trocar-sai="${x.sai}" data-trocar-entra="${x.entra}">trocar</button></div>`).join('')
       : '<p class="tiny">Nenhuma troca da caixa sobe a chance além do erro — o time já é o melhor que você tem para este rival. Poder maior não garante vitória: quem decide é a luta.</p>');
   };

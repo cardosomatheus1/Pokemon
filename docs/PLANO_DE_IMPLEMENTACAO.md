@@ -1056,7 +1056,7 @@ Bloco dono F4.6 · §8.1.2, §8.8 · M cada, com conteúdo · portões Q1 Q2 Q3 
 
 Os percentuais são recomendação. Os valores finais ficam na fixture, e "dificuldade estimada" sem fixture reprova.
 
-### ST-10.17 · Recompensas PvE sem torneira
+### ST-10.17 · Recompensas PvE sem torneira ✅ 27/09
 - **Porte** M · **Servidor** não · **Bloco dono** F4.7 · **Spec** §8.10, §8.11, §10.4
 - **Escopo:** a primeira vitória paga cheio (PokéCoin, doce da linha usada, bolas, insígnia, área). Repetição paga reduzido, com teto diário e bônus de diversidade (R13). Nunca PokéCash. O mapa de emissão ganha a coluna PvE.
 - **Aceite:** 100 repetições não passam do teto.

@@ -8505,8 +8505,8 @@ intocado.
 
 ### L-201 — Skull Bash, da reserva, é 18% de todo o dano do treino
 
-**Registrada em:** 27/09/2026, na ST-10.10. **Bloco dono:** ST-10.17 (recompensas
-e balanceamento PvE). **Estado:** aberto.
+**Registrada em:** 27/09/2026, na ST-10.10. **Bloco dono:** ~~ST-10.17~~ ST-10.19
+(a jornada acima do nível 45 — decidido na ST-10.17). **Estado:** aberto.
 
 A matriz do elenco no nível 50 põe o Skull Bash (normal, 130, físico) em
 primeiro entre os golpes: 18,0% do dano de todas as lutas, contra 10,8% do
@@ -8517,6 +8517,16 @@ baixar o poder, ou deixar) é de balanceamento, não deste bloco.
 
 **O que a destrava:** a ST-10.17 decidir com a matriz na mão (`tools/simular-builds.mjs`
 refaz em 7 s).
+
+**Decidido na ST-10.17 (27/09): fica como está, e a dona passa a ser a ST-10.19.**
+Medido: o Skull Bash abre no nível **45** para toda espécie (é da lista de
+reserva, na escala de nível da própria lista), e o ginásio mais alto de hoje
+é o Alakazam 43 — nenhuma luta da jornada que existe o alcança. Mexer no poder
+agora mexeria na ARENA (a lista é a mesma, e o `atribuirGolpes` a usa): goldens,
+`margem.json` e a calibração das odds, para corrigir um problema que o PvE
+ainda não tem. A ST-10.19 (Erika em diante, Elite Four, Campeão) é quem leva
+a jornada acima do 45 — ela mede com o simulador e decide, com a Arena na
+conta.
 
 
 ### L-202 — a insígnia do estojo não tem forma, nome nem momento de conquista

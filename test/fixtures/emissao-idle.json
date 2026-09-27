@@ -104,5 +104,27 @@
     }
    }
   }
+ },
+ "pve": {
+  "casual": {
+   "lutasPorDia": 3,
+   "nosDistintos": 1,
+   "pokecoinPorDia": 60
+  },
+  "diario": {
+   "lutasPorDia": 10,
+   "nosDistintos": 3,
+   "pokecoinPorDia": 200
+  },
+  "maratona": {
+   "lutasPorDia": 100,
+   "nosDistintos": 8,
+   "pokecoinPorDia": 200
+  },
+  "primeiraVezInteira": {
+   "nos": 8,
+   "ginasios": 4,
+   "pokecoin": 2800
+  }
  }
 }

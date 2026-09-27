@@ -31,6 +31,7 @@
 import { nosDa, noAtual } from '../../engine/jornada.mjs';
 import { montarLutador } from '../../engine/treino-batalha.mjs';
 import { efeito } from '../../engine/primitivas.mjs';
+import { recompensaPve } from '../../engine/recompensa-pve.mjs';
 
 export const INSIGNIAS_DO_CAMINHO = 8;
 export const ARTE_DO_MAPA = '../assets/raw_githubusercontent_com/pret/pokeemerald/alfa';
@@ -218,4 +219,27 @@ export function danoPorCategoria(pack, eventos) {
     saida[c].golpes++; saida[c].dano += e.dano ?? 0;
   }
   return saida;
+}
+
+/* O QUE O NÓ PAGA, antes da luta (ST-10.17): a mesma conta que a vitória vai
+   fazer (`recompensaPve`), com o dia de hoje do save — a tela não promete um
+   número que a luta não paga. */
+export function pagamentoDoNo(no, hoje, dia) {
+  if (!no || no.estado === 'trancado') return null;
+  return recompensaPve({ no: { id: no.id, ginasio: no.tipo === 'ginasio' }, venceu: true, primeiraVez: no.estado !== 'vencido', dia, hoje, linhas: ['?'] });
+}
+
+/* A frase do pagamento — antes (o que paga) e depois (o que pagou). */
+export function fraseDoPagamento(pack, r, { depois = false } = {}) {
+  if (!r) return '';
+  const moeda = pack.moedaPve?.nome ?? 'moeda';
+  const bolas = Object.entries(r.bolas ?? {}).map(([b, n]) => `${n} ${(pack.bolas ?? []).find(x => x.id === b)?.rotulo ?? b}`);
+  if (r.motivo === 'derrota') return depois ? 'A derrota não tira nada.' : '';
+  if (r.motivo === 'teto') return depois ? `O teto de hoje (${r.teto} ${moeda}) já foi: esta valeu como treino.` : `o teto de hoje (${r.teto}) já foi — a revanche vale como treino`;
+  if (r.motivo === 'primeira') {
+    const partes = [`${r.pokecoin} ${moeda}`, ...bolas, depois ? `${Object.keys(r.doces).length} doce${Object.keys(r.doces).length === 1 ? '' : 's'}` : 'doce da linha de cada um'];
+    return depois ? `Ganhou: ${partes.join(' · ')}.` : `a primeira vitória paga ${partes.join(' · ')}`;
+  }
+  return depois ? `Ganhou ${r.pokecoin} ${moeda} (hoje: ${r.hoje.pago} de ${r.teto}).`
+                : `a revanche paga ${r.pokecoin} ${moeda} (hoje: ${r.hoje.pago - r.pokecoin} de ${r.teto})`;
 }

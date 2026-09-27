@@ -25,7 +25,11 @@ export const progressoVazio = () => ({ vencidos: [], insignias: [] });
 export function camposDaJornada(cru) {
   const j = cru?.jornada;
   const lista = v => (Array.isArray(v) ? [...new Set(v.map(String))] : []);
-  return { jornada: { vencidos: lista(j?.vencidos), insignias: lista(j?.insignias) } };
+  /* ST-10.17: o dia do PvE (o que a repetição já pagou hoje) — aditivo. */
+  const pve = j?.pve;
+  const dia = Number.isInteger(pve?.dia) ? pve.dia : null;
+  return { jornada: { vencidos: lista(j?.vencidos), insignias: lista(j?.insignias),
+                      pve: { dia, pago: dia !== null && Number.isFinite(pve?.pago) && pve.pago > 0 ? Math.floor(pve.pago) : 0, nos: dia !== null ? lista(pve?.nos) : [] } } };
 }
 
 /* Aberto: todos os nós ANTES dele vencidos. */

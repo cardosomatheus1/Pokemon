@@ -28,6 +28,7 @@ import { DIAS_DE_FARM } from '../engine/estilhaco.mjs';
 import { fatorDoRendimento, runsNoDia, diaDoMundo, comRendimento, falaDoRendimento,
          FUSO_DO_RENDIMENTO_MIN, RUNS_CHEIAS, PISO_DO_RENDIMENTO } from '../engine/avanco.mjs';
 import { FUSO_DO_MUNDO_MIN } from '../app/modules/hora-do-dia.mjs';
+import { recompensaPve, PVE } from '../engine/recompensa-pve.mjs';
 
 const ARQ = new URL('./fixtures/emissao-idle.json', import.meta.url);
 const H = 3600e3, DIA = 24 * H, T0 = Date.UTC(2026, 8, 1, 3);   /* 00h de Brasília */
@@ -116,10 +117,37 @@ function umPerfil(nome, p, estagio) {
            vigiliasRecusadasPeloTeto: recusadas, porDia };
 }
 
+/* ── A COLUNA PvE (ST-10.17) ───────────────────────────────────────────────
+   O que a jornada paga por dia, pelo MOTOR da recompensa (`recompensaPve`),
+   com a jornada já vencida: só repetição — a primeira vitória de cada nó paga
+   uma vez na vida do save, e fica medida à parte (`primeiraVezInteira`).
+   Quantas lutas cada perfil repete por dia, e em quantos nós distintos: */
+export const PERFIS_PVE = {
+  casual:   { lutas: 3, nos: 1 },
+  diario:   { lutas: 10, nos: 3 },
+  maratona: { lutas: 100, nos: 8 },
+};
+function colunaPve() {
+  const col = {};
+  for (const [nome, p] of Object.entries(PERFIS_PVE)) {
+    let hoje = null, soma = 0;
+    for (let d = 0; d < DIAS; d++) for (let k = 0; k < p.lutas; k++) {
+      const r = recompensaPve({ no: { id: `n${k % p.nos}`, ginasio: k % p.nos === p.nos - 1 && p.nos > 1 }, venceu: true, primeiraVez: false, dia: d, hoje, linhas: [] });
+      hoje = r.hoje; soma += r.pokecoin;
+    }
+    col[nome] = { lutasPorDia: p.lutas, nosDistintos: p.nos, pokecoinPorDia: +(soma / DIAS).toFixed(2) };
+  }
+  const nos = kanto.jornada ?? [];
+  col.primeiraVezInteira = { nos: nos.length, ginasios: nos.filter(n => n.insignia).length,
+    pokecoin: nos.reduce((a, n) => a + PVE.PRIMEIRA[n.insignia ? 'ginasio' : 'rota'], 0) };
+  return col;
+}
+
 export function medir() {
   const fora = { dias: DIAS, perfis: {} };
   for (const [nome, p] of Object.entries(PERFIS))
     fora.perfis[nome] = { estagio1: umPerfil(nome, p, 1), estagio3: umPerfil(nome, p, 3) };
+  fora.pve = colunaPve();
   return fora;
 }
 
@@ -149,6 +177,21 @@ export function suite() {
     const semLinha = [...vistos].filter(k => !TETOS[k]);
     igual(semLinha.join(', '), '',
       'recurso emitido sem ninguém ter escrito o que o segura — é o REV-14 voltando');
+  });
+
+  /* A coluna PvE tem o teto escrito, e ele segura: nenhum perfil tira mais
+     que o teto diário, e nem o maratona passa de 15% do que o casual colhe
+     no idle — repetir nó ajuda, e não vira a fonte principal. */
+  s.teste('ST-10.17: a coluna PvE do mapa — o teto diário segura todo perfil', () => {
+    const guardado = existsSync(ARQ) ? JSON.parse(readFileSync(ARQ, 'utf8')) : medir();
+    ok(guardado.pve, 'o mapa de emissão não tem a coluna PvE');
+    const casualIdle = guardado.perfis.casual.estagio1.porDia.pokecoin;
+    for (const nome of Object.keys(PERFIS_PVE)) {
+      const v = guardado.pve[nome].pokecoinPorDia;
+      ok(v <= PVE.TETO_DIARIO, `${nome}: o PvE paga ${v}/dia, o teto é ${PVE.TETO_DIARIO}`);
+      ok(v <= 0.15 * casualIdle, `${nome}: o PvE paga ${v}/dia, mais de 15% dos ${casualIdle} do casual no idle`);
+    }
+    ok(guardado.pve.maratona.pokecoinPorDia === PVE.TETO_DIARIO, 'o maratona não bate no teto — as 100 lutas não foram medidas');
   });
 
   s.teste('o mapa é determinístico — duas medições dão o mesmo número', () => {
