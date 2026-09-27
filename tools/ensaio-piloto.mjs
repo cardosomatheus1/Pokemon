@@ -77,7 +77,10 @@ await seguir('a rodada acaba e a aposta é LIQUIDADA (XP sobe)', async () => {
 });
 await seguir('sai e entra de novo pelo e-mail', async () => {
   await pg.click('button:has-text("⏻")'); await pg.waitForTimeout(400);
-  const conf = await pg.$('button:has-text("Sair")'); if (conf) await conf.click();
+  /* D-124: o botão da CONFIRMAÇÃO, e não "o primeiro botão com Sair" — o
+     `#btnBoloSair` (ST-12.6), escondido, vinha antes no DOM quando o painel do
+     bolo já tinha sido pintado, e o clique esperava 30 s por ele. */
+  const conf = await pg.$('.dlgBotoes button[data-dlg="sim"]'); if (conf) await conf.click();
   await pg.waitForSelector('#btnLogin', { timeout: 20000 });
   await pg.click('#btnLogin'); await pg.waitForTimeout(800);
   await pg.fill('#authEmail', email); await pg.fill('#authSenha', senha);

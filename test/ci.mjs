@@ -53,5 +53,14 @@ export function suite() {
     ok(/node tools\/ensaio-piloto\.mjs http:\/\/127\.0\.0\.1:8080/.test(y), 'o job não roda o ensaio contra o servidor');
   });
 
+  s.teste('D-124: o ensaio sai pelo botão da CONFIRMAÇÃO, e não pelo primeiro "Sair" do DOM', () => {
+    /* O `#btnBoloSair` (ST-12.6), escondido, casava com `button:has-text("Sair")`
+       quando o painel do bolo já estava pintado: o clique esperava 30 s e a CI
+       ficava vermelha sem causa no produto — em 5 de 8 pushes. */
+    const e = readFileSync(new URL('../tools/ensaio-piloto.mjs', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    ok(/pg\.\$\('\.dlgBotoes button\[data-dlg="sim"\]'\)/.test(e) && !/button:has-text\("Sair"\)/.test(e),
+      'o ensaio volta a clicar no primeiro "Sair" que achar');
+  });
+
   return s;
 }

@@ -6787,3 +6787,28 @@ um lutador na lista…" acima de "💵 50 em Nidoking · x10.74 ✓ Confirmar".
 **Teste que trava:** `minha-colecao` — "D-123 · AFIRMA O DEFEITO", que fica
 vermelho quando a escolha passar a reescrever a frase.
 
+## D-124 — o ensaio da CI clicava no "Sair" do bolo, escondido ✅ CORRIGIDO
+
+**Achado em:** 27/09/2026, olhando a CI da branch: o job `ensaio` vermelho em 5
+de 8 pushes (da ST-9.17 à ST-10.6), sempre no passo "sai e entra de novo pelo
+e-mail" — `elementHandle.click: Timeout 30000ms`. A suíte, verde em todos.
+**Bloco dono:** ST-0.9 (o ensaio na CI). **Estado:** corrigido no mesmo dia.
+
+**Causa.** `tools/ensaio-piloto.mjs` confirmava a saída com
+`pg.$('button:has-text("Sair")')` — o PRIMEIRO botão com "Sair" no DOM. Desde a
+ST-12.6 existe o `#btnBoloSair`, escondido, antes do diálogo; quando o painel do
+bolo já tinha sido pintado (depende de quando o mercado responde), o ensaio
+pegava ele e esperava 30 s por um clique impossível. Não era defeito do jogo:
+o botão de verdade estava na tela.
+
+**Medição.** Reproduzido localmente na primeira tentativa, com servidor e banco
+próprios; a lista de botões com "Sair" depois do ⏻ mostrou
+`btnBoloSair (vis=false)` antes do `tbtn gold (vis=true)`. Com o seletor do
+diálogo, o ensaio passou duas vezes seguidas ("PRONTO PARA CONVIDAR").
+
+**Teste que trava:** `ci` — "D-124: o ensaio sai pelo botão da CONFIRMAÇÃO".
+
+**A lição, e ela é minha.** Eu fechei cinco blocos olhando a suíte local e
+não a CI da branch. A regra do ambiente é clara: CI vermelha num PR meu é
+trabalho agora. Passo a conferir a CI a cada push.
+
