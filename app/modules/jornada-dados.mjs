@@ -32,6 +32,8 @@ import { nosDa, noAtual } from '../../engine/jornada.mjs';
 
 export const INSIGNIAS_DO_CAMINHO = 8;
 export const ARTE_DO_MAPA = '../assets/raw_githubusercontent_com/pret/pokeemerald/alfa';
+/* A arte da insígnia é NOSSA (`arte/insignias/<id>.svg`, ST-10.13 · L-202). */
+export const arteDaInsignia = id => (id ? `../arte/insignias/${id}.svg` : null);
 
 export function posicaoNoCaminho(i, n) {
   const x = n <= 1 ? 50 : 8 + (84 * i) / (n - 1);
@@ -44,8 +46,9 @@ export function mapaDaJornada(pack, prog) {
   const vencidos = new Set(prog?.vencidos ?? []);
   const lista = nos.map((no, i) => ({
     id: no.id, nome: no.nome ?? no.id, rival: no.rival, insignia: no.insignia ?? null,
-    tipo: no.insignia ? 'ginasio' : 'rota', cena: no.cena ?? null,
+    tipo: no.insignia ? 'ginasio' : 'rota', cena: no.cena ?? null, licao: no.licao ?? null,
     ow: (pack.treinadores ?? []).find(t => t.id === no.rival)?.ow ?? null,
+    lider: no.insignia ? (pack.treinadores ?? []).find(t => t.id === no.rival)?.nome ?? null : null,
     estado: vencidos.has(no.id) ? 'vencido' : atual?.id === no.id ? 'atual' : 'trancado',
     ...posicaoNoCaminho(i, nos.length),
   }));
@@ -57,7 +60,9 @@ export function mapaDaJornada(pack, prog) {
     total: lista.length,
     insignias: Array.from({ length: Math.max(INSIGNIAS_DO_CAMINHO, ginasios.length) }, (_, i) => {
       const g = ginasios[i];
-      return g ? { id: g.insignia, nome: g.nome ?? g.id, ganha: (prog?.insignias ?? []).includes(g.insignia) } : { id: null, nome: null, ganha: false };
+      return g ? { id: g.insignia, nome: g.insigniaNome ?? `insígnia de ${g.nome ?? g.id}`, onde: g.nome ?? g.id, arte: arteDaInsignia(g.insignia),
+                   ganha: (prog?.insignias ?? []).includes(g.insignia) }
+               : { id: null, nome: null, onde: null, arte: null, ganha: false };
     }),
   };
 }
@@ -88,14 +93,16 @@ export function caminhoAndado(mapa) {
 /* ONDE VOCÊ ESTÁ: na trilha, a 60% do nó vencido para o próximo — de frente
    para o desafio, e não em cima do marcador (que o treinador ocupa). Com 75%,
    no caminho em pé, você ficava em cima do treinador do nó (medido em 420).
-   Antes do primeiro, um passo antes dele; com tudo vencido, um passo depois
-   do último. */
+   Antes do primeiro, um passo antes dele. Com tudo vencido, NO último, com
+   `fim` — a tela o põe AO LADO do marcador. "Um passo depois" era para baixo
+   no caminho em pé, e em 420 px você caía em cima do nome e do treinador
+   (achado na captura da ST-10.13). */
 export function ondeEstou(mapa) {
   const nos = mapa.nos;
   if (!nos.length) return null;
   const r = v => Math.round(v * 10) / 10;
   const i = mapa.atual ? nos.findIndex(n => n.id === mapa.atual) : -1;
-  if (i < 0) return { x: r(Math.min(97, nos.at(-1).x + 4)), y: nos.at(-1).y };
+  if (i < 0) return { x: nos.at(-1).x, y: nos.at(-1).y, fim: true };
   if (i === 0) return { x: r(Math.max(3, nos[0].x - 4)), y: nos[0].y };
   const a = nos[i - 1], b = nos[i];
   return { x: r(a.x + (b.x - a.x) * 0.6), y: r(a.y + (b.y - a.y) * 0.6) };

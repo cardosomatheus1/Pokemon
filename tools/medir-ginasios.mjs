@@ -1,0 +1,56 @@
+/* OS GINÁSIOS COMO AULAS — a medição (ST-10.13 · F4.6 · Spec §8.1.2).
+ *
+ *   node tools/medir-ginasios.mjs      grava test/fixtures/ginasios.json
+ *
+ * "Dificuldade de cada ginásio é MEDIDA, não estimada." Para cada ginásio, dois
+ * times de referência que diferem em UM membro — o que ignora a lição e o que
+ * a aplica —, 2.000 lutas cada pela mesma conta da chance exibida (`lote`,
+ * raiz fixa). O aceite (a Spec pede que ignorar a lição perca a maior parte
+ * das vezes; o plano recomenda ≥ 70% de derrota e ≥ 60% de vitória) é cobrado
+ * pelo `test/ginasios.mjs` contra o NÚMERO GRAVADO, e o teste refaz a conta.
+ *
+ * E o primeiro nó (D-125): o inicial SOZINHO, no nível 5, contra o primeiro
+ * rival do caminho — quem acabou de chegar tem de conseguir dar o primeiro
+ * passo.
+ *
+ * O jogador luta com o padrão do moveset (o que ele tem sem escolher); o
+ * rival, com `rivalDe` (o moveset pela força de quem bate). Fixture de
+ * MEDIÇÃO: regrava quando a medição muda de propósito, com o número novo ao
+ * lado do antigo na mensagem do commit. */
+import { writeFileSync } from 'node:fs';
+import pack from '../content/pokemon_kanto_v1.mjs';
+import { lote, resumo } from '../engine/treino-preco.mjs';
+import { padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
+import { rivalDe, treinador } from '../app/modules/treino-dados.mjs';
+
+export const RAIZ = 20260928, SIMS = 2000, INICIAIS = [1, 4, 7], NIVEL_INICIAL = 5;
+export const time = l => l.map(([dex, nivel]) => ({ dex, nivel, golpes: padraoDoMoveset(pack, dex, nivel) }));
+
+/* Os times de referência de cada ginásio. `ignora` e `aplica` diferem num
+   membro só: a diferença de chance É a lição, e nada mais. */
+export const REFERENCIAS = {
+  pewter: { ignora: [[4, 14], [16, 13], [19, 13]], aplica: [[7, 14], [16, 13], [19, 13]] },
+};
+
+export const chance = (A, idRival) => resumo(lote(pack, A, rivalDe(pack, treinador(pack, idRival)), RAIZ, 0, SIMS)).p;
+
+export function medir() {
+  const ginasios = (pack.jornada ?? []).filter(n => n.insignia).map(n => {
+    const ref = REFERENCIAS[n.id];
+    if (!ref) return { id: n.id, rival: n.rival, semReferencia: true };
+    return { id: n.id, rival: n.rival, ensina: n.licao?.ensina ?? null,
+             ignora: +chance(time(ref.ignora), n.rival).toFixed(4), aplica: +chance(time(ref.aplica), n.rival).toFixed(4) };
+  });
+  const primeiro = (pack.jornada ?? [])[0];
+  const inicial = INICIAIS.map(dex => ({ dex, p: +chance(time([[dex, NIVEL_INICIAL]]), primeiro.rival).toFixed(4) }));
+  return { medidoEm: '2026-09-27', raiz: RAIZ, sims: SIMS, primeiroNo: { id: primeiro.id, rival: primeiro.rival, inicial }, ginasios };
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const t0 = performance.now();
+  const saida = medir();
+  writeFileSync(new URL('../test/fixtures/ginasios.json', import.meta.url), JSON.stringify(saida, null, 1) + '\n');
+  console.log(`primeiro nó (${saida.primeiroNo.id}):`, saida.primeiroNo.inicial.map(x => `${x.dex}: ${(x.p * 100).toFixed(1)}%`).join(' · '));
+  for (const g of saida.ginasios) console.log(g.id.padEnd(8), g.semReferencia ? 'SEM REFERÊNCIA' : `ignora ${(g.ignora * 100).toFixed(1)}% · aplica ${(g.aplica * 100).toFixed(1)}%`);
+  console.log(((performance.now() - t0) / 1000).toFixed(1), 's');
+}

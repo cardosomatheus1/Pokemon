@@ -12,6 +12,7 @@ import { writeFileSync } from 'node:fs';
 import pack from '../content/pokemon_kanto_v1.mjs';
 import { matrizDeBuilds, dominantes, dificuldadePorFaixa } from '../engine/treino-builds.mjs';
 import { padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
+import { rivalDe } from '../app/modules/treino-dados.mjs';
 
 export const RAIZ = 20260927, NIVEL = 50, SIMS = 200, SIMS_RIVAL = 400;
 export const buildsDoElenco = () => pack.elenco.map(dex => ({ dex, nivel: NIVEL, golpes: padraoDoMoveset(pack, dex, NIVEL) }));
@@ -23,7 +24,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const builds = buildsDoElenco();
   const m = matrizDeBuilds(pack, builds, { raiz: RAIZ, sims: SIMS });
   const dom = dominantes(builds, m);
-  const rivais = (pack.treinadores ?? []).map(t => ({ id: t.id, time: t.time.map(x => ({ dex: x.dex, nivel: x.nivel, golpes: padraoDoMoveset(pack, x.dex, x.nivel) })) }));
+  /* ST-10.13: o rival luta com `rivalDe` — o mesmo moveset da tela e da jornada. */
+  const rivais = (pack.treinadores ?? []).map(t => ({ id: t.id, time: rivalDe(pack, t) }));
   const dif = dificuldadePorFaixa(pack, rivais, referencia, { raiz: RAIZ, sims: SIMS_RIVAL, niveis: NIVEIS });
   const saida = {
     medidoEm: '2026-09-27', raiz: RAIZ, nivel: NIVEL, simsPorPar: SIMS, elenco: builds.map(b => b.dex),

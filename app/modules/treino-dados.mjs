@@ -12,7 +12,7 @@
  * verdades sobre "quem está comigo".
  */
 import { naEquipe, naCaixa } from './idle-dados.mjs';
-import { golpesDaCriatura, padraoDoMoveset } from './moveset-dados.mjs';
+import { golpesDaCriatura, movesetDoRival } from './moveset-dados.mjs';
 import { paraTreino, powerDe, fraquezasDoTime, TIME_MAX } from '../../engine/time.mjs';
 import { montarLutador, PRESETS } from '../../engine/treino-batalha.mjs';
 
@@ -22,8 +22,9 @@ const especie = (pack, dex) => (pack.especies ?? []).find(e => e.dex === Number(
 export const treinadoresDo = pack => pack?.treinadores ?? [];
 export const treinador = (pack, id) => treinadoresDo(pack).find(t => t.id === id) ?? treinadoresDo(pack)[0] ?? null;
 
-/* O rival luta com o padrão do moveset no nível dele — o mesmo do jogador. */
-export const rivalDe = (pack, t) => (t?.time ?? []).map(x => ({ dex: x.dex, nivel: x.nivel, golpes: padraoDoMoveset(pack, x.dex, x.nivel) }));
+/* O rival luta com os golpes liberados no nível dele, escolhidos pela força
+   de quem bate (ST-10.13 · L-200: `movesetDoRival`). */
+export const rivalDe = (pack, t) => (t?.time ?? []).map(x => ({ dex: x.dex, nivel: x.nivel, golpes: movesetDoRival(pack, x.dex, x.nivel) }));
 
 export const entradasDoTime = (pack, estado) => naEquipe(estado).map(c => paraTreino(c, golpesDaCriatura(pack, c)));
 

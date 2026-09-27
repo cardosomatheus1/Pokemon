@@ -79,3 +79,29 @@ export function alternarGolpe(pack, c, nome) {
   const v = movesetValido(pack, c.dex, Number(c.nivel) || 1, novo, c.exclusivos);
   return v.ok ? { ok: true, golpes: novo } : v;
 }
+
+/* O MOVESET DO RIVAL (ST-10.13 · L-200): os quatro liberados que mais BATEM
+   por quem os usa — poder × precisão × mesmo tipo (1,5) × categoria. A
+   categoria conta pela maior das duas forças: golpe físico num atacante
+   especial vale metade, e o inverso também. Sem isso o Chansey (ataque 5,
+   especial 35) recebia quatro golpes físicos e vencia 0,1% no nível 50 — um
+   ginásio com ele ensinaria que a espécie é inútil, e não que o golpe estava
+   errado.
+
+   Só o RIVAL usa esta regra. O padrão do jogador continua o de sempre, para o
+   save antigo não trocar de golpe sozinho (ST-9.12); o jogador escolhe os
+   dele. Os golpes vêm da mesma lista liberada pelo nível — o rival não tem
+   golpe que o jogador não pudesse ter. Empate de nota: ordem alfabética. */
+export function movesetDoRival(pack, dex, nivel) {
+  const e = (pack?.especies ?? []).find(x => x.dex === dex);
+  if (!e) return padraoDoMoveset(pack, dex, nivel);
+  const fisico = e.s[1] >= e.s[3];
+  const todos = Object.values(pack.golpes ?? {}).flat();
+  const nota = n => {
+    const g = todos.find(x => x.n === n);
+    if (!g) return 0;
+    return g.p * (g.acc ?? 1) * (e.t.includes(g.t) ? 1.5 : 1) * ((g.cat === 'fis') === fisico ? 1 : 0.5);
+  };
+  return liberadosDasListas(pack, dex, nivel).map(n => [n, nota(n)])
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, GOLPES_MAX).map(([n]) => n);
+}

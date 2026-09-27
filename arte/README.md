@@ -27,3 +27,15 @@ por engano.
 Geradas na rodada de identidade visual da v0.9.3 do trabalho paralelo. Nenhum
 texto de marca depende delas: **o letrado é CSS puro**, então escala sozinho,
 troca de cor com o tema e continua legível se a arte não carregar.
+
+## Insígnias (ST-10.13)
+
+`insignias/<id>.svg` — uma por insígnia do pack, desenhada aqui (SVG à mão,
+32 × 32, `crispEdges` para ler como pixel). O estojo do mapa da jornada mostra
+a silhueta enquanto ela não é ganha, e a arte inteira depois. A regra de cópia
+do `CLAUDE.md`: a referência é o estojo do cartão de treinador da era GBA; a
+nossa é pedra LAPIDADA em facetas com o fio neon da interface na borda.
+
+| Arquivo | Insígnia | Ginásio |
+|---|---|---|
+| `insignias/rocha.svg` | rocha | Ginásio de Pewter (ST-10.13) |

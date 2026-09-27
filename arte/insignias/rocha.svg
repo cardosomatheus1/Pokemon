@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" shape-rendering="crispEdges">
+  <!-- A INSÍGNIA ROCHA (ST-10.13) — arte nossa. Pedra de ardósia lapidada em
+       oito faces, com o fio neon da interface na borda: o objeto do mundo GBA
+       vestido na cor do estojo. A diferença para a referência é essa borda
+       e o corte em facetas, e não um octógono cinza liso. -->
+  <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="#0a1a22"/>
+  <polygon points="10,4 22,4 28,10 28,22 22,28 10,28 4,22 4,10" fill="#5d6673"/>
+  <polygon points="10,4 22,4 16,12" fill="#aeb6c2"/>
+  <polygon points="4,10 10,4 16,12 9,16" fill="#8d96a3"/>
+  <polygon points="22,4 28,10 23,16 16,12" fill="#77808d"/>
+  <polygon points="4,10 9,16 4,22" fill="#6d7683"/>
+  <polygon points="28,10 28,22 23,16" fill="#4c5461"/>
+  <polygon points="9,16 16,12 23,16 16,21" fill="#9aa3af"/>
+  <polygon points="4,22 9,16 16,21 10,28" fill="#565f6b"/>
+  <polygon points="28,22 23,16 16,21 22,28" fill="#3e4652"/>
+  <polygon points="10,28 16,21 22,28" fill="#353c47"/>
+  <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="none" stroke="#00e5ff" stroke-width="1"/>
+  <rect x="11" y="6" width="3" height="2" fill="#ffffff" opacity=".85"/>
+  <rect x="12" y="8" width="1" height="1" fill="#ffffff" opacity=".6"/>
+</svg>

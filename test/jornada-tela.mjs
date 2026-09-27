@@ -10,10 +10,7 @@ import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import pack from '../content/pokemon_kanto_v1.mjs';
 import { aberto, noAtual, progressoVazio } from '../engine/jornada.mjs';
-import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
-import { lote, resumo } from '../engine/treino-preco.mjs';
-import { rivalDe, treinador } from '../app/modules/treino-dados.mjs';
-import { padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
+import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 const semComentario = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
@@ -52,7 +49,9 @@ export function suite() {
     const m = mapaDaJornada(P, { vencidos: ['a', 'g'], insignias: ['rocha'] });
     igual(m.insignias.length, INSIGNIAS_DO_CAMINHO, 'o estojo não tem as oito');
     igual(m.insignias.map(x => x.ganha ? 1 : 0).join(''), '10000000', 'as ganhas');
-    igual(m.insignias[1].nome, 'H', 'o segundo ginásio não é o segundo do estojo');
+    igual(m.insignias[1].onde, 'H', 'o segundo ginásio não é o segundo do estojo');
+    igual(m.insignias[1].nome, 'insígnia de H', 'o nome de quem não tem nome de insígnia');
+    igual(mapaDaJornada(pack, progressoVazio()).insignias[0].nome, 'Insígnia Rocha', 'o nome da insígnia do pack');
     igual(m.insignias[2].id, null, 'lugar sem ginásio ganhou insígnia');
     /* Insígnia no save sem ginásio no pack não acende nada. */
     igual(mapaDaJornada(P, { vencidos: [], insignias: ['alheia'] }).insignias.filter(x => x.ganha).length, 0, 'insígnia estranha acendeu');
@@ -99,7 +98,8 @@ export function suite() {
     const [g, c] = [meio.nos[1], meio.nos[2]], v = ondeEstou(meio);
     ok(Math.abs(v.x - (g.x + (c.x - g.x) * 0.6)) < 0.11 && Math.abs(v.y - (g.y + (c.y - g.y) * 0.6)) < 0.11, 'você não está na trilha, a caminho do atual');
     ok(ondeEstou(vazio).x < vazio.nos[0].x && ondeEstou(vazio).x >= 3, 'antes do primeiro');
-    ok(ondeEstou(fim).x > fim.nos[3].x && ondeEstou(fim).x <= 97, 'depois do último');
+    igual(JSON.stringify(ondeEstou(fim)), JSON.stringify({ x: fim.nos[3].x, y: fim.nos[3].y, fim: true }), 'no fim, no último — a tela põe ao lado');
+    ok(!ondeEstou(meio).fim && !ondeEstou(vazio).fim, 'fim antes do fim');
     igual(ondeEstou({ nos: [] }), null, 'sem nós');
   });
 
@@ -110,7 +110,7 @@ export function suite() {
     ok(!/simular\(|lutarNo\(|\.vencidos\.push|insignias\.push|salvar\(/.test(tela), 'a tela decide ou grava progresso por conta própria');
     ok(/encenar\(\{ alvo: \$\('#jnLuta'\), A: r\.timeA, B: r\.timeB, r: r\.resultado/.test(tela), 'a luta não é encenada pelo caminho da 10.9');
     ok(/lote\(PACK, A, rival, RAIZ, acum\.sims/.test(tela) && /const RAIZ = 1;/.test(tela), 'a chance do mapa não é a do Team Builder');
-    ok(/disabled>\$\{no\.estado === 'trancado' \? 'trancado' : `lutar contra \$\{t\.nome\}`\}/.test(tela) && /if \(pronto\) \{ chanceNaTela = r; if \(b && no\.estado !== 'trancado'\) b\.disabled = false; \}/.test(tela),
+    ok(/disabled>\$\{no\.estado === 'trancado' \? 'trancado' : vencido \? 'revanche \(treino\)' : `lutar contra \$\{t\.nome\}`\}/.test(tela) && /if \(pronto\) \{ chanceNaTela = r; if \(b && no\.estado !== 'trancado'\) b\.disabled = false; \}/.test(tela),
       'lutar acende antes da chance ou num nó trancado');
     ok(/if \(!lutar \|\| lutar\.disabled \|\| !chanceNaTela\) return;/.test(tela), 'a luta sai sem a chance');
     const pve = semComentario(fonte('../app/modules/pve-tela.mjs'));
@@ -123,8 +123,8 @@ export function suite() {
 
   s.teste('o mundo em volta: o treinador do nó, a parede de árvores, a cena longe do caminho e do nome', () => {
     const m = mapaDaJornada(pack, progressoVazio());
-    igual(m.nos.map(n => n.ow).join(), 'youngster,lass,camper,hiker', 'a folha de cada treinador');
-    igual(m.nos.map(n => n.cena ?? '-').join(), '-,arvores,-,rochas', 'a cena de cada nó');
+    igual(m.nos.map(n => n.ow).join(), 'youngster,lass,camper,hiker,expert_m', 'a folha de cada treinador');
+    igual(m.nos.map(n => n.cena ?? '-').join(), '-,arvores,-,rochas,rochas', 'a cena de cada nó');
     const b = bordaDoMapa();
     ok(b.length >= 40 && b.every(p => p.x >= 0 && p.x <= 100 && (p.y <= 6 || p.y >= 94)), 'a parede não é borda');
     igual(JSON.stringify(b), JSON.stringify(bordaDoMapa()), 'a parede dança a cada repintura');
@@ -143,17 +143,29 @@ export function suite() {
     ok(/\$\{deNovo \? '<button class="btn gold" data-pve-de-novo>lutar de novo<\/button>' : ''\}/.test(pve), 'o botão aparece sem ação');
     const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
     ok(/voltar: 'voltar ao mapa'/.test(tela) && !/deNovo:/.test(tela), 'a jornada volta ao time ou repete o nó velho');
-    ok(/classList\.add\('emLuta'\)/.test(tela) && /#jnLuta \[data-pve-fechar\]'\)\) \{ \$\('#jornadaCorpo'\)\?\.classList\.remove\('emLuta'\)/.test(tela)
+    ok(/classList\.add\('emLuta'\)/.test(tela) && /#jnLuta \[data-pve-fechar\]'\)\) \$\('#jornadaCorpo'\)\?\.classList\.remove\('emLuta'\);\n\}, true\);/.test(tela)
       && /#jornadaCorpo\.emLuta #jnPainel\{display:none\}/.test(fonte('../app/index.html')), 'o resultado e o painel do próximo nó aparecem juntos');
   });
 
-  s.teste('D-125 (afirma o defeito): o inicial sozinho no nível 5 perde o primeiro nó', () => {
-    const B = rivalDe(pack, treinador(pack, pack.jornada[0].rival));
-    for (const dex of [1, 4, 7]) {
-      const p = resumo(lote(pack, [{ dex, nivel: 5, golpes: padraoDoMoveset(pack, dex, 5) }], B, 1, 0, 400)).p;
-      ok(p < 0.2, `D-125 CONSERTADO? o inicial ${dex} no nível 5 vence ${Math.round(p * 100)}% — mova este teste para o aceite da ST-10.13`);
-    }
+  s.teste('a insígnia tem forma (L-202): silhueta até ser ganha, e entra quando a luta a dá', () => {
+    const m = mapaDaJornada(P, { vencidos: ['a', 'g'], insignias: ['rocha'] });
+    igual(m.insignias[0].arte, '../arte/insignias/rocha.svg', 'a arte da insígnia ganha');
+    igual(m.insignias[1].arte, '../arte/insignias/cascata.svg', 'a arte da que ainda não é sua (a silhueta)');
+    igual(m.insignias[2].arte, null, 'lugar sem ginásio ganhou arte');
+    igual(arteDaInsignia(null), null, 'sem id');
+    igual(m.nos[1].licao, null, 'nó sem lição inventou uma');
+    igual(mapaDaJornada(pack, progressoVazio()).nos.find(n => n.tipo === 'ginasio').licao.ensina, 'fraqueza de tipo', 'a lição do ginásio do pack');
+    const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
+    ok(/renderJornada\(\{ nova: r\.ganhouInsignia \}\)/.test(tela) && /x\.id && x\.id === nova \? ' nova' : ''/.test(tela), 'a insígnia nova não entra animada');
+    ok(/\$\{x\.ganha \? ' ganha' : ''\}/.test(tela) && /\.jnInsignia\.conhecida:not\(\.ganha\) img\{filter:brightness\(0\)/.test(fonte('../app/index.html')), 'a silhueta');
+    ok(/no\.licao \? `<p class="jnLicao">/.test(tela), 'o painel não mostra a lição');
+    ok(/r\.ganhouInsignia \? `<span class="jnTrofeu"><img class="jnInsigniaFim" src="\$\{arteDaInsignia\(r\.ganhouInsignia\)\}"/.test(tela)
+      && /\$\{ganha\?\.nome \?\? 'A insígnia'\} é sua\./.test(tela), 'o resultado da luta não mostra a insígnia ganha, com o nome');
+    ok(/const vencido = no\.estado === 'vencido';/.test(tela) && /<button class="btn\$\{vencido \? '' : ' gold'\} jnCta"/.test(tela), 'o nó vencido continua pedindo a mesma luta como ação principal');
   });
+
+  /* D-125 — o inicial sozinho perdia o primeiro nó — foi consertado na ST-10.13;
+     o aceite mora em `ginasios` ("D-125 consertado"). */
 
   return s;
 }

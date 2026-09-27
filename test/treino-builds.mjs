@@ -11,6 +11,7 @@ import { confronto, dominantes, dificuldadePorFaixa } from '../engine/treino-bui
 import { RAIZ, NIVEL, SIMS, SIMS_RIVAL, NIVEIS, buildsDoElenco, referencia } from '../tools/simular-builds.mjs';
 import { padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { rng } from '../engine/primitivas.mjs';
+import { rivalDe } from '../app/modules/treino-dados.mjs';
 
 const fx = JSON.parse(readFileSync(new URL('./fixtures/treino-builds.json', import.meta.url), 'utf8'));
 
@@ -48,7 +49,7 @@ export function suite() {
     ok(fx.dificuldade[0].chances[0].p >= 0.9, 'o treinador da Rota 1 não é vencível com o inicial no nível 5');
     /* E a dificuldade sai da mesma conta da chance exibida: refazer um ponto dá o gravado. */
     const t = pack.treinadores[2];
-    const rival = { id: t.id, time: t.time.map(x => ({ dex: x.dex, nivel: x.nivel, golpes: padraoDoMoveset(pack, x.dex, x.nivel) })) };
+    const rival = { id: t.id, time: rivalDe(pack, t) };
     const p = dificuldadePorFaixa(pack, [rival], referencia, { raiz: RAIZ, sims: SIMS_RIVAL, niveis: [8] })[0].chances[0].p;
     igual(+p.toFixed(3), fx.dificuldade[2].chances[1].p, 'a dificuldade não se refaz pela raiz');
   });

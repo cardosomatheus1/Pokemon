@@ -13,7 +13,7 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
-import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, ARTE_DO_MAPA } from './jornada-dados.mjs';
+import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido } from './treino-dados.mjs';
 import { lote, resumo, arredondarNeutro, textoDaMargem, SIMS_TREINO } from '../../engine/treino-preco.mjs';
 import { lutarNaJornadaLocal } from './jornada-local.mjs';
@@ -32,12 +32,18 @@ function pintarPainel(mapa) {
   escolhido = no.id; chanceNaTela = null;
   const t = treinador(PACK, no.rival), rival = rivalDe(PACK, t);
   const nomeDo = dex => nomeExibido(PACK.especies.find(e => e.dex === dex)?.n ?? '?');
-  alvo.innerHTML = `<div class="jnInfo"><h4>${no.nome}${no.tipo === 'ginasio' ? ' <span class="jnSelo">ginásio</span>' : ''}</h4>
-      <p class="tiny">${fraseDoNo(no, t.nome)}</p>
-      <p class="jnRival">${t.nome}: ${rival.map(r => `<span>${dexImg(r.dex, '', 'class="jnSprite"')}${nomeDo(r.dex)} <i>NV ${r.nivel}</i></span>`).join('')}</p></div>
-    <div class="jnChance"><span class="tiny">seu time vence</span><strong id="jnNumero">…</strong><span class="tiny" id="jnErro">calculando</span>
+  /* Título, e LOGO a decisão (chance e botão): em 420 px a chance estava a
+     1.080 px do topo, fora da tela (Q7 da ST-10.13). Nó vencido: o estado
+     diz "vencido", e a revanche é ação secundária — a insígnia não repete. */
+  const vencido = no.estado === 'vencido';
+  alvo.innerHTML = `<h4 class="jnTitulo">${no.nome}${no.tipo === 'ginasio' ? ` <span class="jnSelo">ginásio${no.lider ? ` · líder ${no.lider}` : ''}</span>` : ''}</h4>
+    <div class="jnChance${vencido ? ' jnVencido' : ''}">${vencido ? `<span class="jnFeitoSelo">${no.insignia ? `<img src="${arteDaInsignia(no.insignia)}" alt="">` : ''}vencido ✓</span>` : ''}
+      <span class="tiny">seu time vence</span><strong id="jnNumero">…</strong><span class="tiny" id="jnErro">calculando</span>
       <span class="tiny jnRisco" id="jnRisco" hidden>arriscado — <button class="lnk" data-treino-aba="time">reforce o time</button></span>
-      <button class="btn gold jnCta" id="jnLutar" data-jn-lutar="${no.id}" disabled>${no.estado === 'trancado' ? 'trancado' : `lutar contra ${t.nome}`}</button></div>`;
+      <button class="btn${vencido ? '' : ' gold'} jnCta" id="jnLutar" data-jn-lutar="${no.id}" disabled>${no.estado === 'trancado' ? 'trancado' : vencido ? 'revanche (treino)' : `lutar contra ${t.nome}`}</button></div>
+    <div class="jnInfo"><p class="jnFrase">${fraseDoNo(no, t.nome)}</p>
+      ${no.licao ? `<p class="jnLicao"><img src="${arteDaInsignia(no.insignia)}" alt=""><span><b>Ensina: ${no.licao.ensina}.</b> ${no.lider ?? t.nome} usa ${no.licao.tipo}. ${no.licao.dica}</span></p>` : ''}
+      <p class="jnRival">${t.nome}: ${rival.map(r => `<span>${dexImg(r.dex, '', 'class="jnSprite"')}${nomeDo(r.dex)} <i>NV ${r.nivel}</i></span>`).join('')}</p></div>`;
   const g = ++geracao, A = entradasDoTime(PACK, carregar()), preset = presetDoJogador();
   if (!A.length) { $('#jnErro').textContent = 'o time está vazio — escolha o inicial nas Rotas'; return; }
   const acum = { vitorias: 0, empates: 0, sims: 0 };
@@ -58,7 +64,7 @@ function pintarPainel(mapa) {
 
 const quadro = (folha, cls, extra = '') => `<b class="${cls}" style="background-image:url(${ARTE_DO_MAPA}/${folha}.png)${extra}"></b>`;
 
-export function renderJornada() {
+export function renderJornada({ nova = null } = {}) {
   const alvo = $('#jnMapaArea');
   if (!alvo) return;
   const estado = carregar();
@@ -74,7 +80,8 @@ export function renderJornada() {
     + (resto.length > 1 ? `<polyline class="jnPorAndar" points="${linha(resto, empe)}"/>` : '');
   alvo.innerHTML = `
     <div class="jnTopo"><span><b>${mapa.feitos}</b> de ${mapa.total} passos · <b>${ganhas}</b> de ${mapa.insignias.length} insígnias${mapa.atual ? '' : ' · <b class="jnFeito">caminho vencido de ponta a ponta</b>'}</span>
-      <div class="jnEstojo">${mapa.insignias.map(x => `<i class="jnInsignia${x.ganha ? ' ganha' : ''}" title="${x.nome ?? 'ainda não há ginásio aqui'}"></i>`).join('')}</div></div>
+      <div class="jnEstojo"><span class="jnEstojoRot">insígnias</span>${mapa.insignias.map(x => `<i class="jnInsignia${x.arte ? ' conhecida' : ''}${x.ganha ? ' ganha' : ''}${x.id && x.id === nova ? ' nova' : ''}"
+          title="${x.nome ? `${x.nome} (${x.onde})${x.ganha ? '' : ' — ainda não é sua'}` : 'ainda não há ginásio aqui'}">${x.arte ? `<img src="${x.arte}" alt="">` : ''}</i>`).join('')}</div></div>
     <div class="jnMapa" style="--n:${mapa.nos.length}">
       <svg class="jnCaminho jnDeitado" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${trilha(false)}</svg>
       <svg class="jnCaminho jnEmPe" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${trilha(true)}</svg>
@@ -82,8 +89,8 @@ export function renderJornada() {
       ${mapa.nos.map(n => `<div class="jnPos jn-${n.estado}" style="--x:${n.x};--y:${n.y}">
           ${cenaDoNo(n).map(c => quadro(c.folha, 'jnProp', `;--dx:${c.dx}px;--dy:${c.dy}px`)).join('')}
           ${n.ow ? quadro(n.ow, 'jnOw') : ''}
-          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}" data-jn-no="${n.id}" title="${n.nome}"><i></i><span>${n.nome}</span></button></div>`).join('')}
-      ${onde && eu ? `<div class="jnPos jnVoce" style="--x:${onde.x};--y:${onde.y}"><b class="jnEu"><img src="${eu}" alt="você"></b></div>` : ''}
+          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}" data-jn-no="${n.id}" title="${n.nome}"><i${n.tipo === 'ginasio' && n.estado === 'vencido' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : ''}</span></button></div>`).join('')}
+      ${onde && eu ? `<div class="jnPos jnVoce${onde.fim ? ' jnFim' : ''}" style="--x:${onde.x};--y:${onde.y}"><b class="jnEu"><img src="${eu}" alt="você"></b></div>` : ''}
     </div>
     <div class="jnPainel" id="jnPainel"></div>`;
   const im = alvo.querySelector('.jnEu img');
@@ -107,9 +114,6 @@ document.addEventListener('click', ev => {
   if (ev.target.closest('.nav[data-view="viewTreino"], [data-goto="viewTreino"]')) { setTimeout(() => mostrarAbaTreino(abaLembrada()), 0); return; }
   const aba = ev.target.closest('[data-treino-aba]');
   if (aba) { mostrarAbaTreino(aba.dataset.treinoAba); return; }
-  /* Voltar ao mapa devolve o painel: enquanto o resultado está na tela, o
-     painel do PRÓXIMO nó não aparece junto (duas mensagens, dois nós). */
-  if (ev.target.closest('#jnLuta [data-pve-fechar]')) { $('#jornadaCorpo')?.classList.remove('emLuta'); return; }
   const no = ev.target.closest('[data-jn-no]');
   if (no) { escolhido = no.dataset.jnNo; renderJornada(); return; }
   const lutar = ev.target.closest('[data-jn-lutar]');
@@ -118,9 +122,22 @@ document.addEventListener('click', ev => {
   const r = lutarNaJornadaLocal({ pack: PACK, id, preset: presetDoJogador() });
   if (!r.ok) { $('#jnErro').textContent = r.motivo ?? 'não deu para lutar agora'; return; }
   const mapa = mapaDaJornada(PACK, r.progresso), proximo = mapa.nos.find(n => n.id === mapa.atual);
-  const extra = r.ganhouInsignia ? 'A insígnia é sua.' : r.primeiraVez ? (proximo ? `O caminho abriu: próximo, ${proximo.nome}.` : 'A jornada está completa.') : '';
+  /* A insígnia entra no RESULTADO também: o estojo fica lá em cima, fora da
+     vista de quem está lendo o fim da luta. */
+  const ganha = mapa.insignias.find(x => x.id === r.ganhouInsignia);
+  const extra = r.ganhouInsignia ? `<span class="jnTrofeu"><img class="jnInsigniaFim" src="${arteDaInsignia(r.ganhouInsignia)}" alt="">
+      <span><b>${ganha?.nome ?? 'A insígnia'} é sua.</b><span>${ganha?.onde ?? ''} · ${mapa.insignias.filter(x => x.ganha).length} de ${mapa.insignias.length} no estojo do mapa</span></span></span>` : r.primeiraVez ? (proximo ? `O caminho abriu: próximo, ${proximo.nome}.` : 'A jornada está completa.') : '';
   const t = treinador(PACK, PACK.jornada.find(n => n.id === id)?.rival);
   $('#jornadaCorpo')?.classList.add('emLuta');
   encenar({ alvo: $('#jnLuta'), A: r.timeA, B: r.timeB, r: r.resultado, antes, titulo: `${PACK.jornada.find(n => n.id === id)?.nome} · ${t.nome}`,
-            extraNoFim: extra, voltar: 'voltar ao mapa', aoFim: () => { if (r.primeiraVez && proximo) escolhido = proximo.id; renderJornada(); } });
+            extraNoFim: extra, voltar: 'voltar ao mapa', aoFim: () => { if (r.primeiraVez && proximo) escolhido = proximo.id; renderJornada({ nova: r.ganhouInsignia }); } });
 });
+
+/* Voltar ao mapa devolve o painel: enquanto o resultado está na tela, o
+   painel do PRÓXIMO nó não aparece junto (duas mensagens, dois nós). Na fase
+   de CAPTURA: o `pve-tela` esvazia a área da luta no clique, e depois disso o
+   botão já não tem o `#jnLuta` acima dele (achado na captura da ST-10.13 —
+   o painel não voltava). */
+document.addEventListener('click', ev => {
+  if (ev.target.closest('#jnLuta [data-pve-fechar]')) $('#jornadaCorpo')?.classList.remove('emLuta');
+}, true);

@@ -13,8 +13,13 @@
  * ARQUIVO de arte, como a gente dos biomas — por isso mora no pack, e não no
  * motor. */
 export const TREINADORES = [
-  { id: 'rota1',  nome: 'Caçador da Rota 1',        onde: 'Rota 1',            time: [{ dex: 19, nivel: 4 }, { dex: 16, nivel: 5 }], ow: 'youngster' },
+  /* ST-10.13 · D-125: era Rattata 4 + Pidgey 5, e o inicial SOZINHO no nível
+     5 vencia 0–4%. Um Rattata 5: o inicial vence 89–97% — uma luta, e não um
+     muro (medido: tools/medir-ginasios.mjs, fixture ginasios.json). */
+  { id: 'rota1',  nome: 'Caçador da Rota 1',        onde: 'Rota 1',            time: [{ dex: 19, nivel: 5 }], ow: 'youngster' },
   { id: 'insetos', nome: 'Colecionadora de Insetos', onde: 'Floresta',          time: [{ dex: 10, nivel: 6 }, { dex: 13, nivel: 6 }, { dex: 11, nivel: 7 }], ow: 'lass' },
   { id: 'rival1', nome: 'O Rival',                   onde: 'Rota 22',           time: [{ dex: 16, nivel: 9 }, { dex: 7, nivel: 9 }], ow: 'camper' },
   { id: 'pedra',  nome: 'Montanhista',               onde: 'caminho da Pedra', time: [{ dex: 74, nivel: 10 }, { dex: 27, nivel: 11 }, { dex: 95, nivel: 12 }], ow: 'hiker' },
+  /* ST-10.13 · o primeiro ginásio: a aula é FRAQUEZA DE TIPO (Spec §8.1.2). */
+  { id: 'brock',  nome: 'Brock',                     onde: 'Ginásio de Pewter', time: [{ dex: 74, nivel: 12 }, { dex: 95, nivel: 14 }], ow: 'expert_m' },
 ];

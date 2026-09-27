@@ -6813,7 +6813,7 @@ não a CI da branch. A regra do ambiente é clara: CI vermelha num PR meu é
 trabalho agora. Passo a conferir a CI a cada push.
 
 
-## D-125 — o primeiro nó da jornada é invencível para o inicial sozinho
+## D-125 — o primeiro nó da jornada é invencível para o inicial sozinho ✅ CORRIGIDO
 
 **Achado em:** 27/09/2026, na primeira captura do mapa de Kanto (ST-10.12): o
 jogador recém-chegado, com o Charmander no nível 6 e mais nada, vê **7%** no
@@ -6846,3 +6846,34 @@ falso foi corrigido aqui, porque número documentado errado é mentira.
 **Teste que trava:** `jornada-tela` — "D-125 (afirma o defeito): o inicial
 sozinho no nível 5 perde o primeiro nó". Fica VERMELHO quando a ST-10.13
 consertar, e aí vira o aceite dela.
+
+**Corrigido na ST-10.13 (27/09).** O Caçador da Rota 1 passou de Rattata 4 +
+Pidgey 5 a um Rattata 5: o inicial sozinho no nível 5 vence **88,7%**
+(Bulbasaur), **92,6%** (Charmander) e **97,3%** (Squirtle) — uma luta, e não um
+muro. Medido em `tools/medir-ginasios.mjs`, gravado em
+`test/fixtures/ginasios.json`. O teste que afirmava o defeito virou o aceite:
+`ginasios` — "D-125 consertado: o inicial sozinho no nível 5 dá o primeiro
+passo" (≥ 80%, refeito pela raiz).
+
+## D-126 — "100% (±1)" com uma derrota em 2.000
+
+**Achado em:** 27/09/2026, na captura da luta contra Brock (ST-10.13): o
+resultado diz "A chance antes da luta era 100% (±1)." com o lote em 1.999 de
+2.000 (99,95%). **Bloco dono:** ST-10.17 (recompensas PvE — é ela que refaz o
+fim da luta, com o que a vitória paga). **Estado:** aberto.
+
+**Causa.** `arredondarNeutro(99,95)` dá 100, e a frase do "venceu todas" (o Q7
+da ST-10.7) só vale para o lote UNÂNIME — então o não-unânime quase certo cai
+no "100%", que é exatamente o número que o lote desmente. O mesmo vale do
+outro lado: 0,05% vira "0%" com uma vitória.
+
+**Medição.** `fraseDoResultado({ vencedor: 'A' }, { p: 0.9995, erro: 0.0005, sims: 2000 })`
+→ "A chance antes da luta era 100% (±1)."
+
+**Por que não conserto aqui.** É a regra de exibição da chance (ST-10.5), e ela
+aparece em três telas (Time, jornada, resultado). Mudá-la dentro do bloco do
+Brock mudaria as três sem o Q5 delas; a ST-10.17 refaz o fim da luta e é o
+lugar de decidir a forma ("mais de 99%", ou o "venceu 1.999 de 2.000").
+
+**Teste que trava:** `ginasios` — "D-126 (afirma o defeito): 99,95% aparece
+como 100%". Fica vermelho quando a ST-10.17 consertar.

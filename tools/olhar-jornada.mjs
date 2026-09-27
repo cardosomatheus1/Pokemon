@@ -17,9 +17,11 @@ mkdirSync(PASTA, { recursive: true });
 const { chromium } = await import(pathToFileURL(PW).href);
 
 const PONTOS = {
-  comeco: { vencidos: [], time: [[4, 6]] },
-  meio: { vencidos: ['rota1', 'floresta'], time: [[4, 12], [16, 10], [10, 9]] },
-  fim: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra'], time: [[5, 18], [17, 17], [25, 15]] },
+  comeco: { vencidos: [], insignias: [], time: [[4, 5]] },
+  meio: { vencidos: ['rota1', 'floresta'], insignias: [], time: [[4, 12], [16, 10], [10, 9]] },
+  /* ST-10.13: diante de Brock, com a lição aplicada (Squirtle) — a luta dá a insígnia. */
+  ginasio: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra'], insignias: [], time: [[7, 14], [16, 13], [19, 13]] },
+  fim: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter'], insignias: ['rocha'], time: [[5, 18], [17, 17], [25, 15]] },
 };
 
 const b = await chromium.launch({ executablePath: CHROME });
@@ -37,7 +39,7 @@ async function abrir(w, ponto) {
     localStorage.setItem('ar_session', '1');
     localStorage.setItem('ar_treino_aba', 'jornada');
     localStorage.setItem('ar_idle', JSON.stringify({ v: 1, registro: {}, bolsa: {}, expedicoes: [], encontros: [], doces: {},
-      criaturas: p.time.map(([dex, nivel], i) => cria(`c${i}`, dex, nivel)), jornada: { vencidos: p.vencidos, insignias: [] } }));
+      criaturas: p.time.map(([dex, nivel], i) => cria(`c${i}`, dex, nivel)), jornada: { vencidos: p.vencidos, insignias: p.insignias } }));
   }, PONTOS[ponto]);
   await pg.goto(`${BASE}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
   await pg.waitForFunction(() => document.querySelectorAll('.pick').length > 0, null, { timeout: 90000, polling: 250 });
@@ -68,21 +70,27 @@ for (const ponto of Object.keys(PONTOS)) for (const w of [1920, 1440, 1100, 420]
   await ctx.close();
 }
 
-for (const w of [1440, 420]) {
-  const { ctx, pg } = await abrir(w, 'meio');
+for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420, 'ginasio']]) {
+  const { ctx, pg } = await abrir(w, ponto);
   await pg.$eval('#jnLutar', el => el.click());
   await pg.waitForSelector('#jnLuta #pvePalco', { timeout: 10000 });
   await pg.waitForTimeout(2400);
-  await (await pg.$('#jnLuta')).screenshot({ path: `${PASTA}/luta-meio-${w}.png` });
+  await (await pg.$('#jnLuta')).screenshot({ path: `${PASTA}/luta-${ponto}-meio-${w}.png` });
   await pg.$eval('#jnLuta [data-pve-pular]', el => el.click());
   await pg.waitForTimeout(600);
-  await (await pg.$('#jnLuta')).screenshot({ path: `${PASTA}/luta-fim-${w}.png` });
+  await (await pg.$('#jnLuta')).screenshot({ path: `${PASTA}/luta-${ponto}-fim-${w}.png` });
+  if (ponto === 'ginasio') await (await pg.$('.jnTopo')).screenshot({ path: `${PASTA}/estojo-entrando-${w}.png` });
   await pg.waitForFunction(() => { const n = document.getElementById('jnNumero'); return n && !n.classList.contains('parcial'); }, null, { timeout: 120000, polling: 250 });
-  await (await pg.$('#viewTreino .card')).screenshot({ path: `${PASTA}/mapa-depois-${w}.png` });
-  const r = await pg.evaluate(() => ({ fim: document.querySelector('#pveFim h4')?.textContent, texto: document.querySelector('#pveFim p')?.textContent,
+  const resultado = await pg.evaluate(() => ({ fim: document.querySelector('#pveFim h4')?.textContent, texto: document.querySelector('#pveFim p')?.textContent }));
+  await pg.$eval('#jnLuta [data-pve-fechar]', el => el.click());
+  await pg.waitForTimeout(1600);
+  await (await pg.$('#viewTreino .card')).screenshot({ path: `${PASTA}/mapa-depois-${ponto}-${w}.png` });
+  const r = await pg.evaluate(() => ({
     topo: document.querySelector('.jnTopo')?.textContent.replace(/\s+/g, ' ').trim(), painel: document.querySelector('#jnPainel h4')?.textContent,
-    salvo: JSON.parse(localStorage.getItem('ar_idle')).jornada }));
-  achados.push(`luta ${w}: ${JSON.stringify(r)}`);
+    salvo: JSON.parse(localStorage.getItem('ar_idle')).jornada, nova: !!document.querySelector('.jnInsignia.nova'), painelVisivel: !!document.getElementById('jnPainel')?.offsetParent }));
+  Object.assign(r, resultado);
+  if (!r.painelVisivel) erros.push(`luta ${ponto} ${w}: o painel não voltou`);
+  achados.push(`luta ${ponto} ${w}: ${JSON.stringify(r)}`);
   if (!r.fim) erros.push(`luta ${w}: sem resultado`);
   await ctx.close();
 }

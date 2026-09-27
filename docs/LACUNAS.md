@@ -8488,7 +8488,7 @@ local muda telas que a versionada tem.
 ### L-200 — o moveset padrão ignora físico × especial (o Chansey vence 0,1%)
 
 **Registrada em:** 27/09/2026, na ST-10.10 (o simulador de confrontos).
-**Bloco dono:** ST-10.13 (os ginásios como aulas). **Estado:** aberto.
+**Bloco dono:** ST-10.13 (os ginásios como aulas). **Estado:** ✅ fechada para o RIVAL na ST-10.13 (27/09): `movesetDoRival` escolhe os liberados por poder × precisão × mesmo tipo × categoria (a do lado mais forte, ataque ou especial); o Chansey rival passa a ter golpe especial e o Machamp perde o Aura Sphere. O padrão do JOGADOR ficou como está, de propósito: mudá-lo trocaria os golpes de todo save sem `golpes` escolhidos, e ele escolhe os dele (ST-9.12).
 
 `padraoDoMoveset` escolhe os golpes mais recentes que o nível abriu, sem olhar
 se a criatura bate pelo ataque ou pelo especial. Medido na matriz 1×1 do
@@ -8522,7 +8522,7 @@ refaz em 7 s).
 ### L-202 — a insígnia do estojo não tem forma, nome nem momento de conquista
 
 **Registrada em:** 27/09/2026, no Q7 cego da ST-10.12 (o mapa de Kanto).
-**Bloco dono:** ST-10.13 (Brock — a primeira insígnia que existe). **Estado:** aberto.
+**Bloco dono:** ST-10.13 (Brock — a primeira insígnia que existe). **Estado:** ✅ fechada na ST-10.13 (27/09): `arte/insignias/rocha.svg` (nossa: pedra lapidada com o fio neon), silhueta no estojo até ser ganha, nome no título, a arte no nó do ginásio vencido e ao lado da lição, e a entrada animada no fim da luta que a dá.
 
 O crítico cego deu **2 de 10** à pergunta "o que coleciono e quanto tenho?": o
 estojo são oito octógonos cinza iguais, e ao fim do caminho o jogador tem

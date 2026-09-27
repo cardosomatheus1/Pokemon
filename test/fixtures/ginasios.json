@@ -1,0 +1,32 @@
+{
+ "medidoEm": "2026-09-27",
+ "raiz": 20260928,
+ "sims": 2000,
+ "primeiroNo": {
+  "id": "rota1",
+  "rival": "rota1",
+  "inicial": [
+   {
+    "dex": 1,
+    "p": 0.887
+   },
+   {
+    "dex": 4,
+    "p": 0.926
+   },
+   {
+    "dex": 7,
+    "p": 0.9725
+   }
+  ]
+ },
+ "ginasios": [
+  {
+   "id": "pewter",
+   "rival": "brock",
+   "ensina": "fraqueza de tipo",
+   "ignora": 0,
+   "aplica": 0.9995
+  }
+ ]
+}
