@@ -14,9 +14,9 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
-import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, ARTE_DO_MAPA } from './jornada-dados.mjs';
+import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, turnosDaAmeaca, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { diaDoMundo } from '../../engine/avanco.mjs';
-import { entradasDoTime, rivalDe, treinador, presetValido } from './treino-dados.mjs';
+import { entradasDoTime, rivalDe, treinador, presetValido, candidatosDaCaixa } from './treino-dados.mjs';
 import { lote, resumo, porcentagemExibida, textoDaMargem, SIMS_TREINO } from '../../engine/treino-preco.mjs';
 import { lutarNaJornadaLocal } from './jornada-local.mjs';
 import { encenar } from './pve-tela.mjs';
@@ -53,6 +53,46 @@ function pintarPainel(mapa) {
   if (!A.length) { $('#jnErro').textContent = 'o time está vazio — escolha o inicial nas Rotas'; return; }
   /* A lição da velocidade com a velocidade NA TELA: o seu mais rápido, e quem
      dos rivais ele passa. */
+  /* ST-10.19a: a lição da RESISTÊNCIA — quanto os golpes da líder machucam
+     cada criatura sua, e o que levar se ninguém resiste. */
+  if (no.licao?.mostra === 'resiste') {
+    const rs = resistenciaNoTime(PACK, A, no.licao.tiposGolpe), causa = $('#jnCausa');
+    const nomeT = t => PACK.tipos.nomes?.[t] ?? t;
+    const frac = m => (m === 0 ? 'nada' : m < 1 ? `${m === 0.25 ? '¼' : '½'}` : m > 1 ? `${m}×` : 'cheio');
+    $('#jnVel').innerHTML = `<div class="jnImune"><b>quanto os golpes dela (${no.licao.tiposGolpe.map(nomeT).join(' e ')}) machucam</b>${rs.map(x =>
+      `<span class="${x.mult <= 0.5 ? 'sim' : 'nao'}">${dexImg(x.dex, '', 'class="jnSprite"')}${nomeDo(x.dex)} <i>${x.mult <= 0.5 ? `apanha ${frac(x.mult)} ✓` : `apanha ${frac(x.mult)}`}</i></span>`).join('')}</div>`;
+    if (causa) {
+      const bons = rs.filter(x => x.mult <= 0.5);
+      causa.hidden = false;
+      causa.className = `tiny jnCausa ${bons.length ? 'passa' : 'nao'}`;
+      /* A saída em CRIATURA quando a caixa tem quem resista (Q7 da ST-10.19a:
+         "leve um Venenoso" dava tipo, e não a troca). */
+      const daCaixa = resistenciaNoTime(PACK, candidatosDaCaixa(PACK, carregar()).map(x => x.entrada), no.licao.tiposGolpe).filter(x => x.mult <= 0.5);
+      const pior = [...rs].sort((a, b) => b.mult - a.mult)[0];
+      causa.textContent = bons.length ? `${bons.map(x => nomeDo(x.dex)).join(' e ')} ${bons.length > 1 ? 'resistem' : 'resiste'} aos golpes dela`
+        : daCaixa.length ? `ninguém do seu time resiste aos golpes dela — troque ${nomeDo(pior.dex)} por ${nomeDo(daCaixa[0].dex)}, da sua caixa (na aba Time)`
+        : `ninguém do seu time resiste aos golpes dela — leve um ${tiposQueResistem(PACK, no.licao.tiposGolpe).slice(0, 3).map(nomeT).join(' ou ')}`;
+    }
+  }
+  /* ST-10.19a: a lição do PRESET — qual é a ameaça, e o preset que a derruba
+     primeiro. A chance com o preset certo é calculada ao lado. */
+  if (no.licao?.mostra === 'preset') {
+    const ameaca = ameacaDoRival(PACK, A, rival), causa = $('#jnCausa'), certo = no.licao.presetCerto;
+    const NOME_PRESET = { balanced: 'Equilibrado', aggressive: 'Agressivo', defensive: 'Defensivo', focus: 'Foco' };
+    /* Q7 da ST-10.19a: os presets como CHIPS (a gramática da Erika — ✓ e ✗),
+       e a ameaça MARCADA na fila do rival. */
+    $('#jnVel').innerHTML = `<div class="jnImune"><b>o preset — quem cai primeiro: ${nomeDo(ameaca)}, a ameaça</b>`
+      + `<span class="${preset === certo ? 'sim' : 'nao'}">o seu: ${NOME_PRESET[preset] ?? preset} <i>${preset === certo ? '✓' : '✗ espalha dano'}</i></span>`
+      + (preset === certo ? '' : `<span class="sim">${NOME_PRESET[certo]} <i>✓ derruba ${nomeDo(ameaca)} primeiro</i></span>`) + '</div>';
+    alvo.querySelectorAll('.jnRival span').forEach((el, i) => { if (rival[i]?.dex === ameaca) el.insertAdjacentHTML('beforeend', ' <b class="jnAmeaca">ameaça</b>'); });
+    if (causa) {
+      causa.hidden = false;
+      causa.className = `tiny jnCausa ${preset === certo ? 'passa' : 'nao'}`;
+      causa.innerHTML = preset === certo ? `o ${NOME_PRESET[certo]} derruba ${nomeDo(ameaca)} primeiro`
+        : `com o ${NOME_PRESET[preset] ?? preset} você espalha dano e ${nomeDo(ameaca)} bate o tempo todo — <button class="lnk" data-treino-aba="time">troque para o ${NOME_PRESET[certo]}</button>`;
+      causa.dataset.licao = preset === certo ? '' : 'golpes';
+    }
+  }
   /* ST-10.16: a lição físico × especial — as duas defesas de cada rival lado
      a lado, e quantos dos seus golpes batem no lado fraco. */
   if (no.licao?.mostra === 'categoria') {
@@ -221,6 +261,19 @@ document.addEventListener('click', ev => {
       : `contra ${nome(x.dex)} o rival nem tentou ${lic.tipo}${x.outros.length ? ` — só ${x.outros.join(' e ')} (dano ${x.danoOutros})` : ''}`);
     const maiuscula = t => t.charAt(0).toUpperCase() + t.slice(1);
     licaoNoFim = pv.length ? ` ${maiuscula(pv.map(frase).join('; '))}: a lição deste ginásio.` : ` Ninguém do seu time era imune a ${lic.tipo}: todo golpe acertou.`;
+  }
+  if (lic?.mostra === 'resiste') {
+    const pv = provaDaResistencia(PACK, r.timeA, r.resultado.eventos, lic.tiposGolpe), nome = dex => nomeExibido(especieDe(PACK, dex)?.n ?? '?');
+    licaoNoFim = pv.length ? ` ${pv.map(x => `${nome(x.dex)} levou ${x.golpes} ${x.golpes === 1 ? 'golpe' : 'golpes'} dela, dano ${x.dano} (apanha ${x.mult === 0.25 ? '¼' : '½'})`).join('; ')}: a lição deste ginásio.`
+                           : ' Ninguém do seu time resistia aos golpes dela.';
+  }
+  if (lic?.mostra === 'preset') {
+    /* A PROVA: a mesma luta com o outro preset (`turnosDaAmeaca`, camada 0). */
+    const NOMEP = { balanced: 'Equilibrado', aggressive: 'Agressivo', defensive: 'Defensivo', focus: 'Foco' };
+    const nome = dex => nomeExibido(especieDe(PACK, dex)?.n ?? '?');
+    const tt = turnosDaAmeaca(PACK, { timeA: r.timeA, timeB: r.timeB, semente: r.semente, eventos: r.resultado.eventos, usado: presetDoJogador(), certo: lic.presetCerto });
+    const quando = x => (x ? `caiu no turno ${x}` : 'ficou de pé a luta inteira');
+    licaoNoFim = ` No ${NOMEP[tt.usado] ?? tt.usado}, ${nome(tt.ameaca)} (a ameaça) ${quando(tt.noUsado)}; nesta mesma luta com o ${NOMEP[tt.outro]}, ${quando(tt.noOutro)}.`;
   }
   if (lic?.mostra === 'categoria') {
     const d = danoPorCategoria(PACK, r.resultado.eventos);

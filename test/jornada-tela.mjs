@@ -13,7 +13,7 @@ import { aberto, noAtual, progressoVazio } from '../engine/jornada.mjs';
 import { montarLutador, simular } from '../engine/treino-batalha.mjs';
 import { movesetDoRival, padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { treinador } from '../app/modules/treino-dados.mjs';
-import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
+import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 const semComentario = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
@@ -133,8 +133,8 @@ export function suite() {
 
   s.teste('o mundo em volta: o treinador do nó, a parede de árvores, a cena longe do caminho e do nome', () => {
     const m = mapaDaJornada(pack, progressoVazio());
-    igual(m.nos.map(n => n.ow).join(), 'youngster,lass,camper,hiker,expert_m,swimmer_f,sailor,beauty,', 'a folha de cada treinador');
-    igual(m.nos.map(n => n.cena ?? '-').join(), '-,arvores,-,rochas,rochas,agua,agua,-,-', 'a cena de cada nó');
+    igual(m.nos.map(n => n.ow).join(), 'youngster,lass,camper,hiker,expert_m,swimmer_f,sailor,picnicker,black_belt,beauty,', 'a folha de cada treinador');
+    igual(m.nos.map(n => n.cena ?? '-').join(), '-,arvores,-,rochas,rochas,agua,agua,arvores,-,-,-', 'a cena de cada nó');
     const b = bordaDoMapa();
     ok(b.length >= 40 && b.every(p => p.x >= 0 && p.x <= 100 && (p.y <= 6 || p.y >= 94)), 'a parede não é borda');
     igual(JSON.stringify(b), JSON.stringify(bordaDoMapa()), 'a parede dança a cada repintura');
@@ -269,6 +269,50 @@ export function suite() {
     ok(/causa\.dataset\.licao = lf\.pelaForte\.length \? 'golpes' : ''/.test(tela) && /\$\('#jnCausa'\)\?\.dataset\.licao === 'golpes'/.test(tela), 'o "reforce o time" genérico contradiz a lição dos golpes');
     ok(/troque \$\{A\.find\(c => c\.dex === x\.dex\)\.golpes\.filter\(n => catDe\(n\) !== lf\.fraco\)/.test(tela), 'a saída não nomeia os golpes a trocar');
     ok(/if \(lic\?\.mostra === 'categoria'\) \{/.test(tela) && /danoPorCategoria\(PACK, r\.resultado\.eventos\)/.test(tela), 'o fim da luta não mostra o dano por categoria');
+  });
+
+  s.teste('ST-10.19a: a lição da resistência e a do preset aparecem no painel e no fim da luta', () => {
+    const tipos = ['grass', 'poison'];
+    const A = [{ dex: 24, nivel: 36, golpes: ['Poison Jab'] }, { dex: 53, nivel: 36, golpes: ['Body Slam'] }];
+    const rs = resistenciaNoTime(pack, A, tipos);
+    igual(rs.map(x => `${x.dex}:${x.mult}`).join(), '24:0.5,53:1', 'quanto a líder machuca cada um');
+    ok(tiposQueResistem(pack, tipos).includes('poison') && !tiposQueResistem(pack, tipos).includes('normal'), 'quem resiste a Planta e Veneno');
+    ok(!tiposQueResistem(pack, tipos).includes('fire'), 'o Fogo resiste só à Planta — não aos DOIS');
+    /* A prova: os golpes dos tipos da líder no resistente, e o dano deles. */
+    const B = treinador(pack, 'erika').time.map(x => ({ dex: x.dex, nivel: x.nivel, golpes: movesetDoRival(pack, x.dex, x.nivel) }));
+    const r = simular(pack, [{ ...A[0], golpes: padraoDoMoveset(pack, 24, 36) }], B, 4);
+    const pr = provaDaResistencia(pack, [{ ...A[0], golpes: padraoDoMoveset(pack, 24, 36) }], r.eventos, tipos);
+    const tipoDe = n => Object.values(pack.golpes).flat().find(g => g.n === n)?.t;
+    const nele = r.eventos.filter(e => e.para === 'A0' && tipos.includes(tipoDe(e.golpe)));
+    igual(pr[0].golpes, nele.length, 'a contagem dos golpes da líder no resistente');
+    igual(pr[0].dano, nele.reduce((a, e) => a + e.dano, 0), 'o dano deles');
+    /* A ameaça do Koga: a Venomoth (a que mais machuca o time). */
+    const K = treinador(pack, 'koga').time.map(x => ({ dex: x.dex, nivel: x.nivel, golpes: movesetDoRival(pack, x.dex, x.nivel) }));
+    igual(ameacaDoRival(pack, [{ dex: 112, nivel: 42, golpes: padraoDoMoveset(pack, 112, 42) }, { dex: 135, nivel: 38, golpes: padraoDoMoveset(pack, 135, 38) }], K), 49, 'a ameaça do Koga');
+    const rk = simular(pack, [{ dex: 112, nivel: 42, golpes: padraoDoMoveset(pack, 112, 42) }], K, 3);
+    const q = quandoCaiu(rk.eventos, 'B1');
+    const esperado = rk.eventos.find(e => e.para === 'B1' && e.caiu)?.turno ?? null;
+    igual(q, esperado, 'o turno em que a ameaça caiu');
+    const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
+    ok(/no\.licao\?\.mostra === 'resiste'/.test(tela) && /resistenciaNoTime\(PACK, A, no\.licao\.tiposGolpe\)/.test(tela), 'o painel da resistência');
+    ok(/no\.licao\?\.mostra === 'preset'/.test(tela) && /no\.licao\.presetCerto/.test(tela), 'o painel do preset');
+    ok(/if \(lic\?\.mostra === 'resiste'\) \{/.test(tela) && /provaDaResistencia\(PACK, r\.timeA, r\.resultado\.eventos, lic\.tiposGolpe\)/.test(tela), 'o fim da luta da resistência');
+    ok(/if \(lic\?\.mostra === 'preset'\) \{/.test(tela) && /turnosDaAmeaca\(PACK, \{ timeA: r\.timeA, timeB: r\.timeB, semente: r\.semente/.test(tela), 'o fim da luta do preset');
+    /* A prova do preset é a MESMA luta com o outro preset: mesma semente. */
+    const As = [{ dex: 112, nivel: 42, golpes: padraoDoMoveset(pack, 112, 42) }, { dex: 135, nivel: 38, golpes: padraoDoMoveset(pack, 135, 38) }];
+    const r1 = simular(pack, As, K, 11, { preset: 'balanced' });
+    const tt = turnosDaAmeaca(pack, { timeA: As, timeB: K, semente: 11, eventos: r1.eventos, usado: 'balanced', certo: 'defensive' });
+    igual(tt.outro, 'defensive', 'o outro preset');
+    igual(tt.noUsado, quandoCaiu(r1.eventos, 'B1'), 'o turno no preset usado');
+    igual(tt.noOutro, quandoCaiu(simular(pack, As, K, 11, { preset: 'defensive' }).eventos, 'B1'), 'o turno no outro preset (mesma semente)');
+    /* Várias sementes: um caso só não distingue "a mesma luta" de "outra luta
+       que calhou de dar o mesmo turno" (o S1531 escapou assim). */
+    for (let k = 1; k <= 25; k++) {
+      const rk2 = simular(pack, As, K, k, { preset: 'balanced' });
+      igual(turnosDaAmeaca(pack, { timeA: As, timeB: K, semente: k, eventos: rk2.eventos, usado: 'balanced', certo: 'defensive' }).noOutro,
+        quandoCaiu(simular(pack, As, K, k, { preset: 'defensive' }).eventos, 'B1'), `semente ${k}: a prova não é a mesma luta`);
+    }
+    igual(turnosDaAmeaca(pack, { timeA: As, timeB: K, semente: 11, eventos: r1.eventos, usado: 'defensive', certo: 'defensive' }).outro, 'balanced', 'no certo, compara com o Equilibrado');
   });
 
   /* D-125 — o inicial sozinho perdia o primeiro nó — foi consertado na ST-10.13;

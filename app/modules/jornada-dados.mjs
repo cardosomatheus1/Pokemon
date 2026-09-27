@@ -30,7 +30,7 @@
  */
 import { especieDe } from '../../engine/especie.mjs';
 import { nosDa, noAtual } from '../../engine/jornada.mjs';
-import { montarLutador } from '../../engine/treino-batalha.mjs';
+import { montarLutador, danoEsperado, simular } from '../../engine/treino-batalha.mjs';
 import { efeito } from '../../engine/primitivas.mjs';
 import { recompensaPve } from '../../engine/recompensa-pve.mjs';
 
@@ -253,4 +253,49 @@ export function fraseDoPagamento(pack, r, { depois = false } = {}) {
   const mais = essencias.length ? ` + ${essencias.join(' · ')}` : '';
   return depois ? `Ganhou ${r.pokecoin} ${moeda}${mais} (hoje: ${r.hoje.pago} de ${r.teto}).`
                 : `a revanche paga ${r.pokecoin} ${moeda}${mais} (hoje: ${r.hoje.pago - r.pokecoin} de ${r.teto})`;
+}
+
+/* ── ST-10.19a · A LIÇÃO DA RESISTÊNCIA ────────────────────────────────────
+   Quanto os tipos de golpe da líder machucam cada criatura sua (o PIOR dos
+   tipos, pela tabela da luta), quais tipos resistem a todos, e a PROVA no fim:
+   os golpes desses tipos no resistente, e o dano deles. */
+export const resistenciaNoTime = (pack, A, tipos) => (A ?? []).map(c => ({
+  dex: c.dex, mult: Math.max(...tipos.map(t => efeito(pack.tipos.efetividade, t, especieDe(pack, c.dex)?.t ?? []))) }));
+
+export const tiposQueResistem = (pack, tipos) =>
+  Object.keys(pack.tipos.efetividade).filter(d => tipos.every(t => efeito(pack.tipos.efetividade, t, [d]) <= 0.5));
+
+export function provaDaResistencia(pack, A, eventos, tipos) {
+  const tipoDe = n => Object.values(pack.golpes ?? {}).flat().find(g => g.n === n)?.t;
+  return resistenciaNoTime(pack, A, tipos).map((x, i) => ({ ...x, i })).filter(x => x.mult <= 0.5).map(x => {
+    const nele = (eventos ?? []).filter(e => e.para === `A${x.i}` && tipos.includes(tipoDe(e.golpe)));
+    return { dex: x.dex, mult: x.mult, golpes: nele.length, dano: nele.reduce((a, e) => a + (e.dano ?? 0), 0) };
+  });
+}
+
+/* ── ST-10.19a · A LIÇÃO DO PRESET ─────────────────────────────────────────
+   A AMEAÇA do rival: quem dele tem o maior dano esperado contra alguém do seu
+   time — a mesma conta que o preset Defensivo usa para escolher o alvo. E o
+   turno em que ela caiu, dos eventos da luta. */
+export function ameacaDoRival(pack, A, B) {
+  const chart = pack.tipos.efetividade;
+  const nossos = (A ?? []).map((c, i) => montarLutador(pack, c, 'A', i)), deles = (B ?? []).map((c, i) => montarLutador(pack, c, 'B', i));
+  let melhor = null, maior = -1;
+  for (const D of deles) {
+    const v = Math.max(0, ...nossos.map(N => Math.max(...D.golpes.map(g => danoEsperado(chart, D, N, g)))));
+    if (v > maior) { maior = v; melhor = D; }
+  }
+  return melhor?.dex ?? null;
+}
+export const quandoCaiu = (eventos, slot) => (eventos ?? []).find(e => e.para === slot && e.caiu)?.turno ?? null;
+
+/* A PROVA DO PRESET (Q7 da ST-10.19a): a MESMA luta — mesma semente, mesmos
+   times — com o outro preset, e o turno em que a ameaça caiu em cada uma. O
+   motor é determinístico pela semente, então a comparação é exata, e não uma
+   estimativa. Mora aqui, e não na tela: a tela nunca roda luta. */
+export function turnosDaAmeaca(pack, { timeA, timeB, semente, eventos, usado, certo }) {
+  const ameaca = ameacaDoRival(pack, timeA, timeB), slot = `B${timeB.findIndex(c => c.dex === ameaca)}`;
+  const outro = usado === certo ? 'balanced' : certo;
+  return { ameaca, usado, outro, noUsado: quandoCaiu(eventos, slot),
+           noOutro: quandoCaiu(simular(pack, timeA, timeB, semente, { preset: outro }).eventos, slot) };
 }

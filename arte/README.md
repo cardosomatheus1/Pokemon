@@ -41,4 +41,6 @@ nossa é pedra LAPIDADA em facetas com o fio neon da interface na borda.
 | `insignias/rocha.svg` | rocha | Ginásio de Pewter (ST-10.13) |
 | `insignias/cascata.svg` | cascata | Ginásio de Cerulean (ST-10.14) — gota lapidada, a mesma família da Rocha |
 | `insignias/trovao.svg` | trovao | Ginásio de Vermilion (ST-10.15) — raio lapidado em âmbar sobre o octógono escuro |
+| `insignias/arcoiris.svg` | arcoiris | Ginásio de Celadon (ST-10.19a) — flor de sete pétalas lapidadas |
+| `insignias/alma.svg` | alma | Ginásio de Fuchsia (ST-10.19a) — coração lapidado em magenta |
 | `insignias/pantano.svg` | pantano | Ginásio de Saffron (ST-10.16) — dois círculos lapidados (ouro e violeta), as duas defesas da lição |

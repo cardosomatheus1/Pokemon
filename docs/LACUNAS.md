@@ -8548,7 +8548,7 @@ entrada animada no fim da luta que a dá — o texto "A insígnia é sua." já e
 
 ### L-203 — o mapa deitado aperta com mais de oito nós
 
-**Registrada em:** 27/09/2026, na ST-10.12. **Bloco dono:** ST-10.19 (o resto
+**Registrada em:** 27/09/2026, na ST-10.12. **Bloco dono:** ST-10.19c (o resto
 da jornada — é ela que passa de oito nós). **Estado:** aberto.
 
 O caminho deitado divide 84% da largura entre os nós. Com 4 (hoje), o passo é
@@ -8576,4 +8576,28 @@ ao lado do nó atual — 0 sobrepostos nas quatro larguras com 8 nós. Fica para
 ST-10.19 medir de novo com a jornada inteira (~16 nós: passo de ~60 px em 1100,
 menos que um nome de ginásio mesmo alternando).
 
-**O que a destrava:** a ST-10.19 medir com a lista inteira e escolher.
+**Medido de novo na ST-10.19a (11 nós):** 0 nós fora da caixa e 0 sobrepostos
+nas quatro larguras — o zigue-zague aguenta. Sobra um vazio à direita do mapa
+em 1440 (o painel é estreito e o mapa não cresce para ocupar), menor, e que se
+resolve junto com a forma final do mapa. Fica para a ST-10.19c, que leva a
+lista a ~16 nós.
+
+**O que a destrava:** a ST-10.19c medir com a lista inteira e escolher.
+
+### L-204 — a peneira `origem` só conhece o primeiro declarador de um `const`
+
+**Registrada em:** 27/09/2026, na ST-10.19a. **Bloco dono:** ST-0.10 (congelada:
+arnês, entra só se impedir). **Estado:** aberto.
+
+`test/origem.mjs` acha declarações com `\b(?:const|let|var)\s+(nome)` — o
+nome logo depois da palavra, e só ele. Em `const nomeT = t => …, frac = m => …`
+o `frac` não vira origem, e `frac(x.mult)` na `jornada-tela` saiu como "símbolo
+chamado sem origem". É falso VERMELHO — o lado seguro: nunca deixa passar um
+órfão de verdade. Contornado com uma declaração por linha, que é a forma do
+resto do repositório.
+
+**Por que não cabe agora:** mexer na `origem` muda o fecho de todas as suítes
+que a leem, e o Q2 do bloco deixaria de ser do bloco. Não impede produto.
+
+**O que a destrava:** a forma de vários declaradores com função virar comum a
+ponto de custar mais que uma linha a cada vez.

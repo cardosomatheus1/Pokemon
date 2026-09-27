@@ -43,6 +43,14 @@ export function suite() {
     for (const [id, r] of Object.entries(REFERENCIAS)) {
       igual(r.ignora.length, r.aplica.length, `${id}: tamanhos`);
       const dif = r.ignora.map((x, i) => i).filter(i => JSON.stringify(r.ignora[i]) !== JSON.stringify(r.aplica[i]));
+      /* ST-10.19a: a lição do PRESET não troca ninguém — o time é o mesmo, e
+         só o preset muda. Toda outra lição troca exatamente um membro. */
+      if (r.varia === 'preset') {
+        igual(dif.length, 0, `${id}: a lição do preset trocou membro do time`);
+        ok(r.presets?.ignora && r.presets?.aplica && r.presets.ignora !== r.presets.aplica, `${id}: os presets não diferem`);
+        continue;
+      }
+      ok(!r.presets, `${id}: preset diferente numa lição que não é de preset`);
       igual(dif.length, 1, `${id}: os times diferem em ${dif.length} membros`);
       igual(r.ignora.map(x => x[1]).join(), r.aplica.map(x => x[1]).join(), `${id}: os níveis mudaram junto`);
       /* ST-10.14: "mesmo time, só a velocidade invertida" — quem declara
@@ -56,6 +64,25 @@ export function suite() {
       }
     }
     ok(REFERENCIAS.cerulean?.varia === 'vel', 'a lição da velocidade não é medida com só a velocidade variando');
+    /* ST-10.19a · Erika: "resistência" — o membro que muda RESISTE a todo
+       tipo de golpe da líder (≤ ½) no time que aplica, e apanha cheio (≥ 1) no
+       que ignora, e o que ignora não é mais fraco no papel. */
+    const er = REFERENCIAS.celadon;
+    ok(er?.varia === 'resiste', 'a lição da resistência não é medida');
+    /* Os tipos da lição são os da PRÓPRIA líder (todo membro dela tem um
+       deles) — o golpe Normal da reserva, que todo mundo tem, não é a lição. */
+    const golpesDaLider = pack.jornada.find(n => n.id === 'celadon').licao.tiposGolpe;
+    ok(treinador(pack, 'erika').time.every(x => pack.especies.find(e => e.dex === x.dex).t.some(t => golpesDaLider.includes(t))), 'os tipos da lição não são os da líder');
+    ok(treinador(pack, 'erika').time.some(x => movesetDoRival(pack, x.dex, x.nivel).some(n => golpesDaLider.includes(golpe(n).t))), 'a líder não usa golpe dos tipos da lição');
+    const i2 = er.ignora.findIndex((x, j) => JSON.stringify(x) !== JSON.stringify(er.aplica[j]));
+    const tiposDeR = dex => pack.especies.find(e => e.dex === dex).t, somaR = dex => pack.especies.find(e => e.dex === dex).s.reduce((a, b) => a + b, 0);
+    for (const t of golpesDaLider) {
+      ok(efeito(pack.tipos.efetividade, t, tiposDeR(er.aplica[i2][0])) <= 0.5, `o membro que aplica a lição não resiste a ${t}`);
+      ok(efeito(pack.tipos.efetividade, t, tiposDeR(er.ignora[i2][0])) >= 1, `o membro que ignora a lição resiste a ${t}`);
+    }
+    ok(somaR(er.ignora[i2][0]) >= somaR(er.aplica[i2][0]), 'o membro que ignora a resistência é mais fraco no papel');
+    ok(REFERENCIAS.fuchsia?.varia === 'preset' && REFERENCIAS.fuchsia.presets.aplica === pack.jornada.find(n => n.id === 'fuchsia').licao.presetCerto,
+      'a lição do Koga não mede o preset que a lição ensina');
     /* ST-10.15: "imunidade" — o membro que muda é IMUNE ao tipo do líder no
        time que aplica, e NÃO no que ignora; e o que ignora não é mais fraco no
        papel (soma dos atributos base maior ou igual) — senão a diferença

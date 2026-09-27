@@ -168,6 +168,12 @@ trava o job; S1216.
 - É o T11 (um navegador vivo reaproveitado). Só entra se a sonda `base` (62 s)
   virar impedimento. Registrado para não ser redescoberto.
 
+### ST-0.10 · a peneira `origem` lê só o PRIMEIRO declarador — **aberta, congelada** (L-204)
+
+- `const a = …, f = x => …` e depois `f(…)`: a `origem` acusa `f` de órfão
+  (falso VERMELHO, o lado seguro). Contornado na ST-10.19a com uma declaração
+  por linha. Só entra se a forma virar impedimento — é arnês (regra de 16/09).
+
 ### ST-0.8 · o que a DEC-11 compraria na suíte — ✅ **fechada em 25/09 sem mudança: a DEC-11 manteve os 154 k** (a medição abaixo fica como o preço conhecido)
 
 - ~~Cada página precifica 154 k (~5 s por carga), e é o maior custo restante
@@ -1072,6 +1078,9 @@ Os percentuais são recomendação. Os valores finais ficam na fixture, e "dific
 Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **Porte** G por corte: dois ginásios por story (10.19a a c), com o mesmo aceite dos ginásios acima.
 - **IP:** os nomes moram no pack.
+- **10.19a ✅ 27/09** — Erika (resistência: quem apanha pouco, `licao.tiposGolpe`) e Koga (o preset certo: derrube a ameaça primeiro, `licao.presetCerto`). Medido: Celadon 21,6% × 87,0% (Tauros × Arbok), Fuchsia 14,8% × 71,4% (Equilibrado × Defensivo, o mesmo time).
+- **10.19b** — Blaine e Giovanni, cada um com lição nova e medida.
+- **10.19c** — Elite Four e Campeão; leva a L-201 (Skull Bash ≥ 45) e a L-203 (o mapa com ~16 nós).
 
 ### ST-10.20 · A jornada ensina a apostar?
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16

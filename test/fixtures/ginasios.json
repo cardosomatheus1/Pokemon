@@ -46,6 +46,22 @@
    "erro": 0.015
   },
   {
+   "id": "celadon",
+   "rival": "erika",
+   "ensina": "resistência: quem apanha pouco",
+   "ignora": 0.216,
+   "aplica": 0.87,
+   "erro": 0.018
+  },
+  {
+   "id": "fuchsia",
+   "rival": "koga",
+   "ensina": "o preset certo: derrube a ameaça primeiro",
+   "ignora": 0.1475,
+   "aplica": 0.7135,
+   "erro": 0.0198
+  },
+  {
    "id": "saffron",
    "rival": "sabrina",
    "ensina": "físico contra especial",

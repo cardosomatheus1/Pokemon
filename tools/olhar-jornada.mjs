@@ -29,16 +29,22 @@ const PONTOS = {
      Raticate ao lado, como na medição. */
   surge: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean'], insignias: ['rocha', 'cascata'], time: [[111, 22], [20, 22]] },
   surgeSem: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean'], insignias: ['rocha', 'cascata'], time: [[59, 22], [20, 22]] },
+  /* ST-10.19a: diante da Erika, com e sem quem resiste (Arbok × Tauros); e
+     diante do Koga, o MESMO time com o preset errado e com o certo. */
+  erika: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion'], insignias: ['rocha', 'cascata', 'trovao'], time: [[24, 36], [20, 30]] },
+  erikaSem: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion'], insignias: ['rocha', 'cascata', 'trovao'], time: [[128, 36], [20, 30]] },
+  koga: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'celadon'], insignias: ['rocha', 'cascata', 'trovao', 'arcoiris'], time: [[112, 42], [135, 38]], preset: 'balanced' },
+  kogaCerto: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'celadon'], insignias: ['rocha', 'cascata', 'trovao', 'arcoiris'], time: [[112, 42], [135, 38]], preset: 'defensive' },
   /* ST-10.16: diante de Sabrina, o MESMO Arcanine 42 com golpes só físicos
      × só especiais (escolhidos, como o jogador escolhe na aba Time). */
-  sabrina: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion'], insignias: ['rocha', 'cascata', 'trovao'],
+  sabrina: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia'], insignias: ['rocha', 'cascata', 'trovao', 'arcoiris', 'alma'],
              time: [[59, 42, 15, ['Fire Punch', 'Body Slam', 'Extreme Speed', 'Quick Attack']], [143, 36]] },
-  sabrinaEsp: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion'], insignias: ['rocha', 'cascata', 'trovao'],
+  sabrinaEsp: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia'], insignias: ['rocha', 'cascata', 'trovao', 'arcoiris', 'alma'],
              time: [[59, 42, 15, ['Flamethrower', 'Hyper Voice']], [143, 36]] },
   /* ST-10.18: diante do chefe (Zapdos 50), com um time de fim de jogo. */
-  chefe: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'saffron'], insignias: ['rocha', 'cascata', 'trovao', 'pantano'],
+  chefe: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron'], insignias: ['rocha', 'cascata', 'trovao', 'arcoiris', 'alma', 'pantano'],
            time: [[76, 45], [65, 45], [91, 45]] },
-  fim: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'saffron', 'usina'], insignias: ['rocha', 'cascata', 'trovao', 'pantano'], time: [[5, 18], [17, 17], [25, 15]] },
+  fim: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'usina'], insignias: ['rocha', 'cascata', 'trovao', 'arcoiris', 'alma', 'pantano'], time: [[5, 18], [17, 17], [25, 15]] },
 };
 
 const b = await chromium.launch({ executablePath: CHROME });
@@ -55,6 +61,7 @@ async function abrir(w, ponto) {
       iv: [15, 15, 15, 15, 15, vel], natureza: 'Hardy', origem: 'inicial', stamina: 100, staminaEm: agora, criadaEm: agora, naCaixa: false });
     localStorage.setItem('ar_session', '1');
     localStorage.setItem('ar_treino_aba', 'jornada');
+    if (p.preset) localStorage.setItem('ar_treino_preset', p.preset);
     localStorage.setItem('ar_idle', JSON.stringify({ v: 1, registro: {}, bolsa: {}, expedicoes: [], encontros: [], doces: {},
       criaturas: p.time.map(([dex, nivel, vel, golpes], i) => cria(`c${i}`, dex, nivel, vel, golpes)), jornada: { vencidos: p.vencidos, insignias: p.insignias } }));
   }, PONTOS[ponto]);
@@ -66,7 +73,11 @@ async function abrir(w, ponto) {
   return { ctx, pg };
 }
 
-for (const ponto of Object.keys(PONTOS)) for (const w of [1920, 1440, 1100, 420]) {
+/* `SO=erika,koga` captura só esses pontos (e as lutas deles): com 15 pontos a
+   passada inteira passa de 10 min (ST-10.19a). Sem SO, tudo. */
+const SO = process.env.SO ? new Set(process.env.SO.split(',')) : null;
+const quer = p => !SO || SO.has(p);
+for (const ponto of Object.keys(PONTOS).filter(quer)) for (const w of [1920, 1440, 1100, 420]) {
   const { ctx, pg } = await abrir(w, ponto);
   await (await pg.$('#viewTreino .card')).screenshot({ path: `${PASTA}/mapa-${ponto}-${w}.png` });
   const r = await pg.evaluate(() => {
@@ -87,7 +98,7 @@ for (const ponto of Object.keys(PONTOS)) for (const w of [1920, 1440, 1100, 420]
   await ctx.close();
 }
 
-for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420, 'ginasio'], [1440, 'misty'], [420, 'misty'], [1440, 'surge'], [420, 'surge'], [1440, 'sabrina'], [420, 'sabrina'], [1440, 'chefe'], [420, 'chefe']]) {
+for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420, 'ginasio'], [1440, 'misty'], [420, 'misty'], [1440, 'surge'], [420, 'surge'], [1440, 'sabrina'], [420, 'sabrina'], [1440, 'chefe'], [420, 'chefe'], [1440, 'erika'], [420, 'kogaCerto']].filter(([, p]) => quer(p))) {
   const { ctx, pg } = await abrir(w, ponto);
   await pg.$eval('#jnLutar', el => el.click());
   await pg.waitForSelector('#jnLuta #pvePalco', { timeout: 10000 });
@@ -96,7 +107,7 @@ for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420
   await pg.$eval('#jnLuta [data-pve-pular]', el => el.click());
   await pg.waitForTimeout(600);
   await (await pg.$('#jnLuta')).screenshot({ path: `${PASTA}/luta-${ponto}-fim-${w}.png` });
-  if (ponto === 'ginasio' || ponto === 'misty' || ponto === 'surge' || ponto === 'sabrina') await (await pg.$('.jnTopo')).screenshot({ path: `${PASTA}/estojo-entrando-${ponto}-${w}.png` });
+  if (ponto === 'ginasio' || ponto === 'misty' || ponto === 'surge' || ponto === 'sabrina' || ponto === 'erika' || ponto === 'kogaCerto') await (await pg.$('.jnTopo')).screenshot({ path: `${PASTA}/estojo-entrando-${ponto}-${w}.png` });
   await pg.waitForFunction(() => { const n = document.getElementById('jnNumero'); return n && !n.classList.contains('parcial'); }, null, { timeout: 120000, polling: 250 });
   const resultado = await pg.evaluate(() => ({ fim: document.querySelector('#pveFim h4')?.textContent, texto: document.querySelector('#pveFim p')?.textContent }));
   await pg.$eval('#jnLuta [data-pve-fechar]', el => el.click());

@@ -30,6 +30,15 @@ export const JORNADA = [
   { id: 'vermilion', nome: 'Ginásio de Vermilion', rival: 'surge', insignia: 'trovao', insigniaNome: 'Insígnia Trovão', cena: 'agua',
     licao: { ensina: 'imunidade', tipo: 'Elétrico', tipoGolpe: 'electric', mostra: 'imune',
              dica: 'Terrestre não é tocado por Elétrico: dano zero, o golpe todo perdido. Um imune no time vale mais que força.' } },
+  /* ST-10.19a: na ordem do material de origem — Erika e Koga ANTES da
+     Sabrina (29 → 42 → 43). Save que já venceu a Sabrina não perde nada: o
+     que foi vencido segue vencido, e o próximo nó passa a ser a Erika. */
+  { id: 'celadon',  nome: 'Ginásio de Celadon', rival: 'erika', insignia: 'arcoiris', insigniaNome: 'Insígnia Arco-Íris', cena: 'arvores',
+    licao: { ensina: 'resistência: quem apanha pouco', tipo: 'Planta', mostra: 'resiste', tiposGolpe: ['grass', 'poison'],
+             dica: 'Os golpes dela são de Planta e Venenoso. Quem resiste aos dois apanha metade — e dura o dobro.' } },
+  { id: 'fuchsia',  nome: 'Ginásio de Fuchsia', rival: 'koga', insignia: 'alma', insigniaNome: 'Insígnia Alma',
+    licao: { ensina: 'o preset certo: derrube a ameaça primeiro', tipo: 'Venenoso', mostra: 'preset', presetCerto: 'defensive',
+             dica: 'Dois tanques e uma ameaça. Espalhar dano deixa a ameaça bater o tempo todo; o preset Defensivo derruba ela primeiro.' } },
   { id: 'saffron',  nome: 'Ginásio de Saffron', rival: 'sabrina', insignia: 'pantano', insigniaNome: 'Insígnia Pântano',
     licao: { ensina: 'físico contra especial', tipo: 'Psíquico', mostra: 'categoria',
              dica: 'As criaturas dela aguentam golpe especial e quebram com golpe físico: bata pelo lado fraco.' } },

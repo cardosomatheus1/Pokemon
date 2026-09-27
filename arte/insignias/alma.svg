@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" shape-rendering="crispEdges">
+  <!-- A INSÍGNIA ALMA (ST-10.19a) — arte nossa. Um coração lapidado em
+       magenta sobre o octógono escuro, com o fio neon da família. -->
+  <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="#140a14"/>
+  <polygon points="10,4 22,4 28,10 28,22 22,28 10,28 4,22 4,10" fill="#2f1430"/>
+  <polygon points="16,11 12,7 7,8 5,13 7,18 16,26 25,18 27,13 25,8 20,7" fill="#b3246e"/>
+  <polygon points="12,7 7,8 5,13 11,13" fill="#ff7ab8"/>
+  <polygon points="20,7 25,8 27,13 21,13" fill="#e4478f"/>
+  <polygon points="11,13 16,11 21,13 16,19" fill="#ff9fcc"/>
+  <polygon points="5,13 11,13 16,19 16,26 7,18" fill="#8f1a57"/>
+  <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="none" stroke="#00e5ff" stroke-width="1"/>
+  <rect x="9" y="9" width="2" height="2" fill="#ffffff" opacity=".85"/>
+</svg>

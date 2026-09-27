@@ -44,18 +44,26 @@ export const REFERENCIAS = {
   /* Físico × especial (ST-10.16): o MESMO Arcanine 42 (ataque 110, especial
      100 — equilibrado, para a diferença ser o lado fraco de quem apanha, e não
      o atacante), só golpes especiais × só físicos, com um Snorlax 36 ao lado. */
+  /* Resistência (ST-10.19a): o mesmo Raticate 30 ao lado; o membro que muda é
+     um Tauros 36 (Normal: apanha cheio de Planta e de Veneno, e é MAIS forte
+     no papel — 490 contra 448) × um Arbok 36 (Veneno: resiste aos dois). O
+     Persian foi a primeira escolha e o teste o recusou: 440, mais fraco. */
+  celadon: { varia: 'resiste', ignora: [[128, 36], [20, 30]], aplica: [[24, 36], [20, 30]] },
+  /* O preset (ST-10.19a): o MESMO time (Rhydon 42, Jolteon 38), só o preset
+     muda — Balanced espalha dano, Defensive derruba a ameaça primeiro. */
+  fuchsia: { varia: 'preset', presets: { ignora: 'balanced', aplica: 'defensive' }, ignora: [[112, 42], [135, 38]], aplica: [[112, 42], [135, 38]] },
   saffron: { varia: 'categoria', ignora: [[59, 42, { golpes: ['Flamethrower', 'Hyper Voice'] }], [143, 36]],
                                  aplica: [[59, 42, { golpes: ['Fire Punch', 'Body Slam', 'Extreme Speed', 'Quick Attack'] }], [143, 36]] },
 };
 
-export const medida = (A, idRival) => resumo(lote(pack, A, rivalDe(pack, treinador(pack, idRival)), RAIZ, 0, SIMS));
+export const medida = (A, idRival, preset = 'balanced') => resumo(lote(pack, A, rivalDe(pack, treinador(pack, idRival)), RAIZ, 0, SIMS, undefined, preset));
 export const chance = (A, idRival) => medida(A, idRival).p;
 
 export function medir() {
   const ginasios = (pack.jornada ?? []).filter(n => n.insignia).map(n => {
     const ref = REFERENCIAS[n.id];
     if (!ref) return { id: n.id, rival: n.rival, semReferencia: true };
-    const ig = medida(time(ref.ignora), n.rival), ap = medida(time(ref.aplica), n.rival);
+    const ig = medida(time(ref.ignora), n.rival, ref.presets?.ignora), ap = medida(time(ref.aplica), n.rival, ref.presets?.aplica);
     return { id: n.id, rival: n.rival, ensina: n.licao?.ensina ?? null,
              ignora: +ig.p.toFixed(4), aplica: +ap.p.toFixed(4), erro: +Math.max(ig.erro, ap.erro).toFixed(4) };
   });
