@@ -1307,11 +1307,16 @@ escolhidos, que o servidor só terá com a ST-13.3 — virou a **ST-13.7**.
 - Achados: **D-127** (o clima nunca vale no Avanço) e **D-128** (a reserva da
   run conta duas vezes), dona a nova **ST-2.5**.
 
-##### ST-13.2c2 · As rotas da run
+##### ST-13.2c2 · As rotas da run ✅ 27/09
 - **Escopo:** `POST /api/idle/run` (começar), `/run/pocao`, `/run/recuar`,
   `/run/colher` (idempotente: a colhida devolve a resposta gravada); o `GET
   /api/idle` avança e devolve a run; o lance aceita os pendentes da run.
 - **Portões:** Q1 Q2 Q3 Q6 Q8.
+- **Feito:** as quatro rotas em `OPERACOES_DO_IDLE`; o corpo traz a intenção,
+  e raiz, instante, wave e contrato do teto são do servidor; a leitura avança
+  a run e a devolve com a raiz (o aparelho encena as waves a partir dela — o
+  que ela decide já estava decidido; o saque sai da raiz da colheita);
+  `test/run-rotas.mjs` · S1628–S1632.
 
 #### ST-13.7 · A luta da jornada no servidor (L-208)
 - **Porte** M · **Servidor** sim · **Depende de** ST-13.3 (o time e os golpes)

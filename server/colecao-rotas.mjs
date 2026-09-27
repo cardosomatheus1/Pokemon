@@ -35,11 +35,14 @@ import { doJogador } from './criaturas.mjs';
 import { bolsaDe, registroDe, emCampo, estadoDoTeto, especiesVistas, pendentesDe,
          iniciar, colher, lancarPendente, escolherInicial } from './idle.mjs';
 import { staminaAgora, restamEncontros, vagasPor, EQUIPE_MAX } from '../engine/expedicao.mjs';
+import { sincronizarRun, comecarRun, pocaoNaRun, recuarNaRun, colherRun } from './run.mjs';
 import { estagioMaximo, proximoEstagio } from '../engine/estagios.mjs';
 
 /* As ESCRITAS permitidas sob `/api/idle`, por nome. */
 export const OPERACOES_DO_IDLE = Object.freeze([
   'POST /api/idle/inicial', 'POST /api/idle/expedicao', 'POST /api/idle/colher', 'POST /api/idle/lancar',
+  /* A run do Avanço (ST-13.2c2). */
+  'POST /api/idle/run', 'POST /api/idle/run/pocao', 'POST /api/idle/run/recuar', 'POST /api/idle/run/colher',
 ]);
 
 /* A criatura como o cliente a lê: sem a semente dos ocultos e sem o dono. */
@@ -54,6 +57,12 @@ const expedicaoParaCliente = (x, agora) => ({
 });
 
 export function colecaoDe(db, { userId, agora, pack = PACK }) {
+  /* A RUN AVANÇA PRIMEIRO (ST-13.2c2): a leitura é um dos pedidos que a tocam,
+     e o que ela devolve é a run no relógio do servidor. Vai COM a raiz: o
+     aparelho encena as waves e o clima a partir dela (§7.22.16 — quem fecha a
+     aba recebe a mesma run de quem fica olhando). O que ela decide já estava
+     decidido no começo; o saque sai da raiz da COLHEITA, que nasce depois. */
+  const aberta = sincronizarRun(db, { userId, pack, agora });
   const stamina = new Map(db.prepare(`SELECT id, stamina, stamina_em FROM criaturas WHERE user_id = ?`)
     .all(userId).map(l => [l.id, { stamina: l.stamina, staminaEm: l.stamina_em }]));
   const criaturas = doJogador(db, userId, pack)
@@ -65,6 +74,7 @@ export function colecaoDe(db, { userId, agora, pack = PACK }) {
     registro: registroDe(db, userId, pack.id).map(r => ({ dex: r.dex, fragmentos: r.fragmentos, vistoEm: r.visto_em })),
     bolsa: Object.fromEntries(bolsaDe(db, userId).map(b => [b.item_id, b.quantidade])),
     expedicoes,
+    run: aberta.run ? { id: aberta.id, ...aberta.run } : null,
     /* Os encontros que esperam bola — a chave é o que o lance manda. */
     encontros: pendentesDe(db, userId),
     teto: { restam: restamEncontros(estadoDoTeto(db, userId, agora, pack)) },
@@ -105,6 +115,42 @@ export function rotasDaColecao(daExcecao) {
       if (x.colhida_em != null)
         return { corpo: { ...(x.resultado_json ? JSON.parse(x.resultado_json) : { expedicao: id }), repetido: true } };
       return tentar(() => colher(db, { id, pack: PACK, agora }));
+    },
+
+    /* ── A RUN DO AVANÇO (ST-13.2c2) ─────────────────────────────────────
+       O corpo traz a INTENÇÃO (onde, quão fundo, quem); a raiz, o instante e
+       o contrato do teto são do servidor — um `raiz` ou `semEncontros` no
+       corpo é ignorado, como o `agora` da expedição. */
+    'POST /api/idle/run': ({ db, corpo, userId, agora }) => {
+      const { bioma, equipe, estagio = 1 } = corpo ?? {};
+      if (!texto(bioma) || !Array.isArray(equipe) || !equipe.length || equipe.length > EQUIPE_MAX
+          || !equipe.every(texto) || !Number.isInteger(estagio)) return recusa('run inválida');
+      return tentar(() => {
+        const r = comecarRun(db, { userId, pack: PACK, bioma, estagio, equipe, agora });
+        return { run: { id: r.id, ...r.run } };
+      });
+    },
+
+    'POST /api/idle/run/pocao': ({ db, corpo, userId, agora }) => {
+      const item = texto(corpo?.item);
+      if (!item) return recusa('poção inválida');
+      return tentar(() => {
+        const r = pocaoNaRun(db, { userId, pack: PACK, item, agora });
+        return { curou: r.curou, item: r.item, run: r.run };
+      });
+    },
+
+    'POST /api/idle/run/recuar': ({ db, userId, agora }) =>
+      tentar(() => ({ run: recuarNaRun(db, { userId, pack: PACK, agora }) })),
+
+    /* IDEMPOTENTE pela run: a já colhida devolve a resposta GRAVADA. O id vem
+       da leitura (`run.id`), como o da expedição. */
+    'POST /api/idle/run/colher': ({ db, corpo, userId, agora }) => {
+      const id = texto(corpo?.run);
+      const x = id && db.prepare(`SELECT colhida_em, resultado_json FROM runs WHERE id = ? AND user_id = ?`).get(id, userId);
+      if (!x) return { status: 404, corpo: { codigo: 'RUN_SEM_RUN', erro: 'run não existe' } };
+      if (x.colhida_em != null) return { corpo: { run: JSON.parse(x.resultado_json), repetido: true } };
+      return tentar(() => ({ run: colherRun(db, { userId, pack: PACK, agora }) }));
     },
 
     'POST /api/idle/lancar': ({ db, corpo, userId, agora }) => {
