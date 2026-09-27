@@ -95,6 +95,9 @@ function hidratar(linha, pack) {
        colecao-st13.3a; num banco anterior, ausentes, valem o padrão). */
     xp: linha.xp ?? 0, naCaixa: linha.na_caixa === 1,
     focoEm: linha.foco_em ?? null, descansaAte: linha.descansa_ate ?? null,
+    /* ST-13.3b: o moveset escolhido e os exclusivos guardados. */
+    ...(linha.golpes_json ? { golpes: JSON.parse(linha.golpes_json) } : {}),
+    ...(linha.exclusivos_json ? { exclusivos: JSON.parse(linha.exclusivos_json) } : {}),
   };
 }
 

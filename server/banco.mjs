@@ -1410,6 +1410,21 @@ export const MIGRACOES = [
       db.exec(`ALTER TABLE criaturas DROP COLUMN na_caixa`);
     },
   },
+  {
+    nome: 'golpes-st13.3b',
+    /* OS GOLPES ESCOLHIDOS E OS EXCLUSIVOS GUARDADOS (ST-13.3b, ST-9.12,
+     * ST-10.3). Listas curtas de nomes, validadas pela regra do moveset a cada
+     * leitura (`golpesDaCriatura` cai no padrão se o escolhido deixar de
+     * valer) — por isso texto, e não tabela. ADITIVA. */
+    sobe: db => {
+      db.exec(`ALTER TABLE criaturas ADD COLUMN golpes_json TEXT`);
+      db.exec(`ALTER TABLE criaturas ADD COLUMN exclusivos_json TEXT`);
+    },
+    desce: db => {
+      db.exec(`ALTER TABLE criaturas DROP COLUMN exclusivos_json`);
+      db.exec(`ALTER TABLE criaturas DROP COLUMN golpes_json`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

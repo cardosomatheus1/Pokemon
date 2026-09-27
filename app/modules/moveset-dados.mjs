@@ -60,8 +60,11 @@ export function movesetValido(pack, dex, nivel, golpes, guardados = []) {
   if (golpes.length > GOLPES_MAX) return { ok: false, motivo: `no máximo ${GOLPES_MAX} golpes` };
   if (new Set(golpes).size !== golpes.length) return { ok: false, motivo: 'golpe repetido' };
   const pode = new Set(liberados(pack, dex, nivel, guardados));
-  const fora = golpes.find(g => !pode.has(g));
-  if (fora) return { ok: false, motivo: `${fora} ainda não foi liberado para ela` };
+  /* O ÍNDICE, e não o elemento (ST-13.3b): `find` devolve o próprio golpe
+     inválido — e quando ele é vazio (`undefined`, ''), o `if` o lia como "não
+     achou" e o moveset passava. O servidor passou a confiar nesta regra. */
+  const i = golpes.findIndex(g => typeof g !== 'string' || !pode.has(g));
+  if (i >= 0) return { ok: false, motivo: `${golpes[i] || 'um golpe vazio'} ainda não foi liberado para ela` };
   return { ok: true };
 }
 

@@ -6153,10 +6153,9 @@ export const DEFEITOS = [
   /* A PEDRA DEIXA DE SER CONSUMIDA. Uma so evoluiria a caixa inteira, e o
      gargalo do requisito do dono — "a pedra cobra presenca" — sumiria na
      primeira evolucao por item. */
-  { id:'S754', arquivo:TELA, nome:'a pedra deixa de ser consumida',
+  { id:'S754', arquivo:'app/modules/evolucao-idle.mjs', nome:'a pedra deixa de ser consumida',
     real:'uma Pedra do Fogo evoluiria a caixa inteira',
-    de:'    if (item && (E.bolsa[item] ?? 0) > 0) E.bolsa[item] -= 1;',
-    para:'' },
+    de:'consome: aresta.exige?.item ?? null };', para:"consome: aresta.exige?.nivel ?? null };" },
 
   { id:'S755', arquivo:TELA, nome:'a animacao toca ANTES de gravar',
     real:'quem fechar a aba no meio perde a evolucao — e ela aconteceu no JOGO',
@@ -8294,6 +8293,25 @@ export const DEFEITOS = [
   { id:'S1387', arquivo:'app/modules/minha-colecao.mjs', nome:'o painel le a taxa do dossie por conta propria',
     real:'duas contas para o mesmo numero, e a segunda nao conhece a escada',
     de:'      odd: o?.odd ?? null, chance: o?.prob ?? null,', para:'      odd: o?.odd ?? null, chance: o?.prob ?? null, hist: dossie?.especies?.[f.dex]?.vitoria?.taxa,' },
+  /* ── ST-13.3b · golpes e evolução no servidor ─────────────────────────── */
+  { id:'S1643', arquivo:'app/modules/evolucao-idle.mjs', nome:'a evolução não diz qual pedra consome',
+    real:'uma Pedra do Trovão evolui a caixa inteira — no aparelho e na conta',
+    de:'consome: aresta.exige?.item ?? null };', para:'consome: null };' },
+  { id:'S1644', arquivo:'server/colecao.mjs', nome:'o servidor evolui sem debitar a pedra',
+    real:'a pedra continua na bolsa da conta depois de usada',
+    de:'    if (r.consome && !debitarBolsa(db, userId, r.consome, 1))', para:'    if (false)' },
+  { id:'S1645', arquivo:'server/colecao.mjs', nome:'o moveset escolhido não é gravado',
+    real:'o jogador escolhe os golpes na conta e a luta usa os de antes',
+    de:'.run(JSON.stringify(r.golpes), id, userId);', para:'.run(null, id, userId);' },
+  { id:'S1646', arquivo:'app/modules/moveset-dados.mjs', nome:'o golpe vazio volta a passar na regra',
+    real:'um moveset com um buraco — o balão sorteia o vazio e a luta perde um golpe',
+    de:"  const i = golpes.findIndex(g => typeof g !== 'string' || !pode.has(g));", para:'  const i = golpes.findIndex(g => g && !pode.has(g));' },
+  { id:'S1647', arquivo:'server/colecao-rotas.mjs', nome:'a rota da evolução aceita qualquer alvo',
+    real:'"26" em texto não acha a aresta e responde 400 por outro motivo — ou acha, no dia em que o motor comparar frouxo',
+    de:'      if (!id || (alvo !== null && !Number.isInteger(alvo))) return recusa', para:'      if (!id) return recusa' },
+  { id:'S1648', arquivo:'app/modules/idle-tela.mjs', nome:'a tela não consome a pedra que a evolução diz',
+    real:'no aparelho, uma pedra evolui a caixa inteira',
+    de:'    if (r.consome && (E.bolsa[r.consome] ?? 0) > 0) E.bolsa[r.consome] -= 1;', para:'' },
   /* ── ST-13.3a · caixa, soltar e foco no servidor (L-210) ────────────── */
   { id:'S1633', arquivo:'server/colecao.mjs', nome:'o servidor move sem perguntar a regra',
     real:'a equipe passa de seis, ou fica vazia e o jogador se tranca fora do jogo',

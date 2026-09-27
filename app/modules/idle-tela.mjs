@@ -521,11 +521,9 @@ document.addEventListener('click', async ev => {
     let r;
     try { r = aplicarEvolucao(PACK, E.criaturas[i], E.bolsa); }
     catch { return; }
-    /* A PEDRA E CONSUMIDA. Sem isto, uma pedra evoluiria a caixa inteira — e o
-       gargalo que o requisito do dono cria ("a pedra cobra presenca") deixaria
-       de existir na primeira evolucao por item. */
-    const item = r.aresta?.exige?.item;
-    if (item && (E.bolsa[item] ?? 0) > 0) E.bolsa[item] -= 1;
+    /* A PEDRA É CONSUMIDA — quem decide é `aplicar` (ST-13.3b); aqui só se
+       escreve no save. */
+    if (r.consome && (E.bolsa[r.consome] ?? 0) > 0) E.bolsa[r.consome] -= 1;
     E.criaturas[i] = r.criatura;
     salvarE();
     ligarEvolucao();

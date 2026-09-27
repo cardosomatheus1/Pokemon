@@ -14,16 +14,18 @@ import PACK from '../content/escolhido.mjs';
 import { abrirBanco, migrar } from '../server/banco.mjs';
 import { cadastrar } from '../server/auth.mjs';
 import { gerar } from '../server/criaturas.mjs';
-import { iniciar, creditarBolsa, lancarPendente, criaturasDaConta } from '../server/idle.mjs';
+import { iniciar, creditarBolsa, lancarPendente, criaturasDaConta, bolsaDe } from '../server/idle.mjs';
 import { comecarRun } from '../server/run.mjs';
-import { moverNaConta, trocarNaConta, soltarNaConta, escolherFocoNaConta } from '../server/colecao.mjs';
+import { moverNaConta, trocarNaConta, soltarNaConta, escolherFocoNaConta, trocarGolpeNaConta, evoluirNaConta } from '../server/colecao.mjs';
 import { docesDe } from '../server/doce.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import * as D from '../app/modules/idle-dados.mjs';
 import { soltarCriatura } from '../app/modules/doce-dados.mjs';
 import { ordemDaTroca } from '../app/modules/colecao-regras.mjs';
 import { escolher, MS_DE_TROCA } from '../engine/foco.mjs';
-import { xpParaNivel } from '../engine/nivel-criatura.mjs';
+import { xpParaNivel, nivelDe } from '../engine/nivel-criatura.mjs';
+import { alternarGolpe, padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
+import { aplicar as aplicarEvolucao } from '../app/modules/evolucao-idle.mjs';
 import { API_VERSAO, CABECALHO_VERSAO } from '../server/contrato.mjs';
 
 const T0 = Date.UTC(2026, 8, 28, 10);
@@ -128,9 +130,65 @@ export async function suite() {
     ok(Object.keys(estadoServidor(c.db, c.u).doces).length > 0, 'soltar não virou doce');
   });
 
+  s.teste('identidade dos golpes: ligar e desligar dá a mesma resposta e o mesmo moveset nos dois lados (ST-13.3b)', () => {
+    const c = cena();
+    const id = c.ids[1];   // dex 4, nível 15
+    const liberados = padraoDoMoveset(PACK, 4, 15);   // os do nível dela: desligar e religar
+    const outro = (PACK.golpes.water ?? [])[0]?.n;
+    const [l0, l1] = liberados;
+    /* desliga, tenta esvaziar, religa, e as recusas: outro tipo, inexistente e o
+       VAZIO — que a regra aceitava (o `find` devolvia o próprio vazio) */
+    const passos = [l0, l1, l0, outro, 'inexistente', undefined, l1, l1];
+    let aceitos = 0, recusados = 0;
+    for (const nome of passos) {
+      const sv = recusa(() => trocarGolpeNaConta(c.db, { userId: c.u, pack: PACK, id, nome }))?.message ?? 'ok';
+      const alvo = c.e.criaturas.find(x => x.id === id);
+      const r = alternarGolpe(PACK, D.hidratar(alvo), nome);
+      if (r.ok) alvo.golpes = r.golpes;
+      igual(sv, r.ok ? 'ok' : r.motivo, `o golpe ${nome}: responderam diferente`);
+      const g = criaturasDaConta(c.db, c.u).find(x => x.id === id).golpes ?? null;
+      igual(JSON.stringify(g), JSON.stringify(alvo.golpes ?? null), `o golpe ${nome}: o moveset divergiu`);
+      if (sv === 'ok') aceitos++; else recusados++;
+      if (nome === undefined) ok(sv !== 'ok', 'o golpe vazio entrou no moveset');
+    }
+    ok(aceitos >= 3 && recusados >= 2, `a sequência não exercitou aceites (${aceitos}) e recusas (${recusados})`);
+  });
+
+  s.teste('identidade da evolução: por nível, por pedra (consumida), pelo ramo escolhido, e as recusas (ST-13.3b)', () => {
+    const c = cena();
+    const nova = (dex, xp) => {
+      const g = gerar(c.db, { userId: c.u, pack: PACK, dex });
+      c.db.prepare(`UPDATE criaturas SET xp = ?, na_caixa = 1 WHERE id = ?`).run(xp, g.id);
+      c.e.criaturas.push({ id: g.id, dex, iv: g.iv, natureza: g.natureza.nome, exemplar: g.exemplar, xp,
+                           nivel: nivelDe(xp), vinculo: 0, foco: null, stamina: 100, staminaEm: T0, origem: 'captura', criadaEm: T0, naCaixa: true });
+      return g.id;
+    };
+    const carmander = nova(4, xpParaNivel(16)), cedo = nova(4, xpParaNivel(10)), pika = nova(25, 0), eevee = nova(133, 0);
+    for (const [item, n] of [['trovao', 2], ['agua', 1]]) { creditarBolsa(c.db, c.u, item, n); c.e.bolsa[item] = n; }
+    const casos = [[carmander, null], [cedo, null], [pika, null], [eevee, 135], [eevee, 134], [pika, null], [eevee, null]];
+    let aceitos = 0;
+    for (const [id, alvo] of casos) {
+      const sv = recusa(() => evoluirNaConta(c.db, { userId: c.u, pack: PACK, id, alvo }))?.message ?? 'ok';
+      const i = c.e.criaturas.findIndex(x => x.id === id);
+      const ap = recusa(() => {
+        const r = aplicarEvolucao(PACK, c.e.criaturas[i], c.e.bolsa, alvo);
+        if (r.consome && (c.e.bolsa[r.consome] ?? 0) > 0) c.e.bolsa[r.consome] -= 1;
+        c.e.criaturas[i] = r.criatura;
+      })?.message ?? 'ok';
+      igual(sv, ap, `evoluir ${id.slice(0, 6)} para ${alvo}: responderam diferente`);
+      const sc = criaturasDaConta(c.db, c.u).find(x => x.id === id);
+      igual(JSON.stringify([sc.dex, sc.exclusivos ?? null]), JSON.stringify([c.e.criaturas[i].dex, c.e.criaturas[i].exclusivos ?? null]), 'a criatura evoluída divergiu');
+      const bs = Object.fromEntries(bolsaDe(c.db, c.u).map(b => [b.item_id, b.quantidade]));
+      igual(JSON.stringify([bs.trovao ?? 0, bs.agua ?? 0]), JSON.stringify([c.e.bolsa.trovao ?? 0, c.e.bolsa.agua ?? 0]), 'a pedra consumida divergiu');
+      if (sv === 'ok') aceitos++;
+    }
+    igual(aceitos, 3, 'os aceites esperados: Charmander no 16, Pikachu com a pedra, Eevee pelo Trovão');
+    igual(Object.fromEntries(bolsaDe(c.db, c.u).map(b => [b.item_id, b.quantidade])).trovao, undefined, 'duas evoluções por Trovão e a pedra sobrou');
+  });
+
   s.teste('a migração manda para a caixa quem passava de seis ativas, pela ordem de chegada', async () => {
     const { MIGRACOES } = await import('../server/banco.mjs');
-    const db = abrirBanco(':memory:'); migrar(db, MIGRACOES.length - 1);
+    const db = abrirBanco(':memory:'); migrar(db, MIGRACOES.findIndex(m => m.nome === 'colecao-st13.3a'));
     const u = cadastrar(db, { username: 'mig', email: 'mig@x.test', senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01', agora: T0 }).id;
     const ids = [1, 4, 7, 10, 13, 16, 19, 25].map((dex, i) => {
       const c = gerar(db, { userId: u, pack: PACK, dex });
@@ -190,6 +248,19 @@ export async function suite() {
       ok(sol.corpo.doce > 0, 'soltar não pagou doce');
       igual((await pedir('/api/idle/soltar', { id: ids[0] }, a.sessao)).status, 404, 'soltou duas vezes');
       igual(JSON.stringify(docesDe(srv.db, b.id)), '{}', 'o doce foi para outro');
+      /* os golpes e a evolução pela porta (ST-13.3b) */
+      const pk = gerar(srv.db, { userId: a.id, pack: PACK, dex: 25 }).id;
+      igual((await pedir('/api/idle/golpe', { id: pk, nome: 7 }, a.sessao)).status, 400, 'golpe em número');
+      /* a recusa tem de ser a da ROTA (tipo), e não a do domínio por acaso —
+         o S1647 passou pela primeira versão, que só olhava o status */
+      const txt = await pedir('/api/idle/evoluir', { id: pk, alvo: '26' }, a.sessao);
+      igual(`${txt.status} ${txt.corpo?.erro}`, '400 evolução inválida', 'alvo em texto');
+      igual((await pedir('/api/idle/evoluir', { id: pk }, a.sessao)).status, 400, 'evoluiu sem a pedra');
+      creditarBolsa(srv.db, a.id, 'trovao', 1);
+      igual((await pedir('/api/idle/evoluir', { id: pk }, b.sessao)).status, 404, 'B evoluiu a criatura de A');
+      const ev = await pedir('/api/idle/evoluir', { id: pk, alvo: 26 }, a.sessao);
+      igual(ev.status, 200, `evoluir: ${JSON.stringify(ev.corpo)}`);
+      igual(ev.corpo.para, 26, 'a espécie depois');
     } finally { await srv.fechar(); }
   });
 

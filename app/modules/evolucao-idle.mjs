@@ -113,8 +113,11 @@ export function aplicar(pack, criatura, bolsa, alvo = null) {
   /* ST-10.3: os exclusivos que esta forma já aprendeu vão junto; os que ela
      não aprendeu ficam para trás, para sempre. Só grava o campo se houver. */
   const guardados = guardadosAoEvoluir(pack, criatura);
+  /* A PEDRA É CONSUMIDA (ST-13.3b): a regra morava na TELA (`idle-tela`), e o
+     servidor precisa da mesma. Sem consumo, uma pedra evoluiria a caixa
+     inteira — e "a pedra cobra presença" deixaria de existir. */
   return { criatura: { ...resto, dex: especie, ...(guardados.length ? { exclusivos: guardados } : {}) },
-           de: antes, para: especie, aresta };
+           de: antes, para: especie, aresta, consome: aresta.exige?.item ?? null };
 }
 
 /* Quem, da caixa inteira, está pronto agora. É o que a tela usa para o selo, e

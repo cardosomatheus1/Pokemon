@@ -138,12 +138,15 @@ export const especiesVistas = (db, userId, packId) =>
 /* As criaturas do jogador no formato que a CONTA lê (o do save): o XP, e não o
    nível, porque o nível é derivado dele. */
 export const criaturasDaConta = (db, userId) =>
-  db.prepare(`SELECT id, dex, xp, vinculo, foco, treinado_ate, stamina, stamina_em, na_caixa, foco_em, descansa_ate
+  db.prepare(`SELECT id, dex, xp, vinculo, foco, treinado_ate, stamina, stamina_em, na_caixa, foco_em, descansa_ate,
+                      golpes_json, exclusivos_json
                FROM criaturas WHERE user_id = ? ORDER BY criada_em, id`).all(userId)
     .map(l => ({ id: l.id, dex: l.dex, xp: l.xp, nivel: nivelDe(l.xp), vinculo: l.vinculo, foco: l.foco,
                  stamina: l.stamina, staminaEm: l.stamina_em, naCaixa: l.na_caixa === 1,
                  ...(l.foco_em != null ? { focoEm: l.foco_em } : {}),
                  ...(l.descansa_ate != null ? { descansaAte: l.descansa_ate } : {}),
+                 ...(l.golpes_json ? { golpes: JSON.parse(l.golpes_json) } : {}),
+                 ...(l.exclusivos_json ? { exclusivos: JSON.parse(l.exclusivos_json) } : {}),
                  ...(l.treinado_ate != null ? { treinadoAte: l.treinado_ate } : {}) }));
 
 export const emCampo = (db, userId) =>

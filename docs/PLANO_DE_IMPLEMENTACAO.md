@@ -1342,10 +1342,16 @@ do servidor. Três partes:
   `/foco`; a captura com a equipe cheia cai na caixa; a expedição e a run
   recusam quem está nela. `test/colecao-ops.mjs` · S1633–S1642.
 
-#### ST-13.3b · Golpes e evolução
+#### ST-13.3b · Golpes e evolução ✅ 27/09
 - **Escopo:** o moveset escolhido (`golpes`, `exclusivos`) e a evolução (com
   o item consumido e os exclusivos que vão junto) como rotas, pelas funções
   do aparelho (`moveset-dados`, `evolucao-idle`); identidade.
+- **Feito:** `POST /api/idle/golpe` e `/evoluir`, pelas funções do aparelho;
+  migração `golpes-st13.3b` (os golpes escolhidos e os exclusivos guardados);
+  **a pedra consumida desceu da tela para a camada 0** (`aplicar` diz o que
+  consome — a regra morava na `idle-tela`); o furo do golpe vazio no
+  `movesetValido` fechado (o `find` devolvia o próprio vazio). `test/colecao-ops`
+  · S1643–S1648.
 
 #### ST-13.3c · Dar doce
 - **Escopo:** gastar o doce da linha no servidor (motivo `uso` no livro), a

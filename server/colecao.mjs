@@ -10,7 +10,9 @@ import { motivoDeMover, ordemDaTroca, motivoDeSoltar } from '../app/modules/cole
 import { doceAoSoltar } from '../app/modules/doce-dados.mjs';
 import { chaveDoDoce } from '../engine/doce.mjs';
 import { escolher } from '../engine/foco.mjs';
-import { criaturasDaConta, emCampo } from './idle.mjs';
+import { alternarGolpe } from '../app/modules/moveset-dados.mjs';
+import { aplicar as aplicarEvolucao } from '../app/modules/evolucao-idle.mjs';
+import { criaturasDaConta, emCampo, bolsaDe, debitarBolsa } from './idle.mjs';
 import { naRun } from './run.mjs';
 
 export const ERRO_COLECAO = Object.freeze({ SEM_CRIATURA: 'COLECAO_SEM_CRIATURA' });
@@ -70,4 +72,31 @@ export function escolherFocoNaConta(db, { userId, id, foco, agora }) {
   db.prepare(`UPDATE criaturas SET foco = ?, foco_em = ?, descansa_ate = ? WHERE id = ? AND user_id = ?`)
     .run(novo.foco ?? null, novo.focoEm ?? null, novo.descansaAte ?? null, id, userId);
   return { id, foco: novo.foco, focoEm: novo.focoEm ?? null, descansaAte: novo.descansaAte ?? null };
+}
+
+/* ── OS GOLPES (ST-13.3b) ── `alternarGolpe` do aparelho: até quatro, sem
+   repetir, só o que o nível (e os exclusivos guardados) liberou. */
+export function trocarGolpeNaConta(db, { userId, pack, id, nome }) {
+  const c = criaturasDaConta(db, userId).find(x => x.id === id);
+  if (!c) throw falha(ERRO_COLECAO.SEM_CRIATURA, 'esta criatura não existe');
+  const r = alternarGolpe(pack, c, nome);
+  if (!r.ok) throw new Error(r.motivo);
+  db.prepare(`UPDATE criaturas SET golpes_json = ? WHERE id = ? AND user_id = ?`).run(JSON.stringify(r.golpes), id, userId);
+  return { id, golpes: r.golpes };
+}
+
+/* ── A EVOLUÇÃO (ST-13.3b) ── `aplicar` do aparelho decide a aresta, os
+   exclusivos que vão junto e a pedra consumida; aqui, na MESMA transação,
+   muda a espécie, guarda os exclusivos e debita a pedra. */
+export function evoluirNaConta(db, { userId, pack, id, alvo = null }) {
+  const c = criaturasDaConta(db, userId).find(x => x.id === id);
+  if (!c) throw falha(ERRO_COLECAO.SEM_CRIATURA, 'esta criatura não existe');
+  const bolsa = Object.fromEntries(bolsaDe(db, userId).map(b => [b.item_id, b.quantidade]));
+  const r = aplicarEvolucao(pack, c, bolsa, alvo);
+  return emTransacao(db, () => {
+    if (r.consome && !debitarBolsa(db, userId, r.consome, 1)) throw new Error(`não há ${r.consome} na bolsa`);
+    db.prepare(`UPDATE criaturas SET dex = ?, exclusivos_json = ? WHERE id = ? AND user_id = ?`)
+      .run(r.para, r.criatura.exclusivos ? JSON.stringify(r.criatura.exclusivos) : null, id, userId);
+    return { id, de: r.de, para: r.para, consome: r.consome, exclusivos: r.criatura.exclusivos ?? null };
+  });
 }
