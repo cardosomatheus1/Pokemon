@@ -34,14 +34,21 @@ export const JORNADA = [
      Sabrina (29 → 42 → 43). Save que já venceu a Sabrina não perde nada: o
      que foi vencido segue vencido, e o próximo nó passa a ser a Erika. */
   { id: 'celadon',  nome: 'Ginásio de Celadon', rival: 'erika', insignia: 'arcoiris', insigniaNome: 'Insígnia Arco-Íris', cena: 'arvores',
-    licao: { ensina: 'resistência: quem apanha pouco', tipo: 'Planta', mostra: 'resiste', tiposGolpe: ['grass', 'poison'],
+    licao: { ensina: 'resistência — quem apanha pouco', tipo: 'Planta', mostra: 'resiste', tiposGolpe: ['grass', 'poison'],
              dica: 'Os golpes dela são de Planta e Venenoso. Quem resiste aos dois apanha metade — e dura o dobro.' } },
   { id: 'fuchsia',  nome: 'Ginásio de Fuchsia', rival: 'koga', insignia: 'alma', insigniaNome: 'Insígnia Alma',
-    licao: { ensina: 'o preset certo: derrube a ameaça primeiro', tipo: 'Venenoso', mostra: 'preset', presetCerto: 'defensive',
+    licao: { ensina: 'o preset certo — derrube a ameaça primeiro', tipo: 'Venenoso', mostra: 'preset', presetCerto: 'defensive',
              dica: 'Dois tanques e uma ameaça. Espalhar dano deixa a ameaça bater o tempo todo; o preset Defensivo derruba ela primeiro.' } },
   { id: 'saffron',  nome: 'Ginásio de Saffron', rival: 'sabrina', insignia: 'pantano', insigniaNome: 'Insígnia Pântano',
     licao: { ensina: 'físico contra especial', tipo: 'Psíquico', mostra: 'categoria',
              dica: 'As criaturas dela aguentam golpe especial e quebram com golpe físico: bata pelo lado fraco.' } },
+  /* ST-10.19b · os dois últimos ginásios antes do chefe. */
+  { id: 'cinnabar', nome: 'Ginásio de Cinnabar', rival: 'blaine', insignia: 'vulcao', insigniaNome: 'Insígnia Vulcão', cena: 'agua',
+    licao: { ensina: 'derrube quem está caindo — um a menos bate a menos', tipo: 'Fogo', mostra: 'preset', presetCerto: 'aggressive',
+             dica: 'Os quatro dele batem forte até cair. Espalhar dano deixa os quatro batendo; terminar o ferido tira um da luta mais cedo.' } },
+  { id: 'viridian', nome: 'Ginásio de Viridian', rival: 'giovanni', insignia: 'terra', insigniaNome: 'Insígnia Terra', cena: 'arvores',
+    licao: { ensina: 'o tipo duplo — os dois tipos contam', tipo: 'Terrestre', mostra: 'duplo',
+             dica: 'Quatro dos cinco dele têm dois tipos, e o golpe conta com os dois: Lutador bate Pedra, mas o Venenoso do Nidoking corta pela metade — e corta a Planta também. Água e Gelo batem nos dois lados.' } },
   /* ST-10.18 · o CHEFE: um lendário (§8.12, L-057). Não dá insígnia; paga a
      essência da espécie, uma por dia, e nunca a criatura. */
   { id: 'usina',    nome: 'Usina Abandonada', rival: 'zapdos', chefe: true },

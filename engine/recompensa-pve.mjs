@@ -24,8 +24,9 @@
  * O casual colhe ~1.440 da moeda por dia no idle (`emissao-idle.json`). O teto
  * diário do PvE repetido é 200 (~14% disso): repetir nó ajuda, e não vira a
  * fonte principal — a primeira vitória de cada nó é o que paga, e ela é uma só.
- * A jornada inteira de hoje (8 nós, 4 ginásios) paga 2.800 de uma vez só na
- * vida do save: ~2 dias de idle do casual.
+ * A jornada inteira de hoje (13 nós: 4 rotas, 8 ginásios, 1 chefe) paga 5.600
+ * de uma vez só na vida do save: ~4 dias de idle do casual. (Era 8 nós e
+ * 2.800 na ST-10.17; o número é do `emissao-idle.json`, e envelhece com ele.)
  *
  * Nomes de moeda não entram aqui: a moeda é "a do treinador" (`pokecoin` é a
  * chave genérica que a camada de cima traduz por `idDaMoeda`), e bolas são as

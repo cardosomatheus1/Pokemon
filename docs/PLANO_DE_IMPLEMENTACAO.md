@@ -1079,8 +1079,8 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **Porte** G por corte: dois ginásios por story (10.19a a c), com o mesmo aceite dos ginásios acima.
 - **IP:** os nomes moram no pack.
 - **10.19a ✅ 27/09** — Erika (resistência: quem apanha pouco, `licao.tiposGolpe`) e Koga (o preset certo: derrube a ameaça primeiro, `licao.presetCerto`). Medido: Celadon 21,6% × 87,0% (Tauros × Arbok), Fuchsia 14,8% × 71,4% (Equilibrado × Defensivo, o mesmo time).
-- **10.19b** — Blaine e Giovanni, cada um com lição nova e medida.
-- **10.19c** — Elite Four e Campeão; leva a L-201 (Skull Bash ≥ 45) e a L-203 (o mapa com ~16 nós).
+- **10.19b ✅ 27/09** — Blaine (o preset Agressivo: um a menos bate a menos) e Giovanni (o tipo duplo: os dois tipos contam). Medido: Cinnabar 24,3% × 76,4% (Equilibrado × Agressivo, o mesmo Blastoise e Starmie 44), Viridian 6,1% × 98,0% (Machamp × Golduck 50).
+- **10.19c** — Elite Four e Campeão; leva a L-201 (Skull Bash ≥ 45 — o Giovanni já o usa), a L-203 (o mapa com ~16 nós, sprite × rótulo) e a L-205 (a correção como botão com a chance projetada).
 
 ### ST-10.20 · A jornada ensina a apostar?
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16

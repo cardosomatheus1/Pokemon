@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" shape-rendering="crispEdges">
+  <!-- A INSÍGNIA VULCÃO (ST-10.19b) — arte nossa. Uma chama lapidada em três
+       camadas (brasa, laranja, miolo claro) no octógono da família. -->
+  <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="#160a06"/>
+  <polygon points="10,4 22,4 28,10 28,22 22,28 10,28 4,22 4,10" fill="#35160c"/>
+  <polygon points="16,5 21,11 20,8 25,15 24,22 16,27 8,22 7,15 12,8 11,12" fill="#c0301c"/>
+  <polygon points="16,10 20,15 19,13 22,18 21,23 16,26 11,23 10,18 13,13 13,16" fill="#ff7a2a"/>
+  <polygon points="16,16 19,20 18,24 16,25 14,24 13,20" fill="#ffe08a"/>
+  <polygon points="8,22 16,27 16,26 11,23" fill="#8a1f12"/>
+  <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="none" stroke="#00e5ff" stroke-width="1"/>
+  <rect x="12" y="9" width="2" height="2" fill="#ffffff" opacity=".8"/>
+</svg>

@@ -14,7 +14,7 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
-import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, turnosDaAmeaca, ARTE_DO_MAPA } from './jornada-dados.mjs';
+import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, turnosDaAmeaca, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { diaDoMundo } from '../../engine/avanco.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido, candidatosDaCaixa } from './treino-dados.mjs';
 import { lote, resumo, porcentagemExibida, textoDaMargem, SIMS_TREINO } from '../../engine/treino-preco.mjs';
@@ -76,7 +76,22 @@ function pintarPainel(mapa) {
   }
   /* ST-10.19a: a lição do PRESET — qual é a ameaça, e o preset que a derruba
      primeiro. A chance com o preset certo é calculada ao lado. */
-  if (no.licao?.mostra === 'preset') {
+  /* ST-10.19b: e o do Blaine — o Agressivo, que termina o ferido. Não há
+     ameaça a marcar: a lição é o número de atacantes, e não quem. */
+  if (no.licao?.mostra === 'preset' && no.licao.presetCerto === 'aggressive') {
+    const causa = $('#jnCausa'), certo = no.licao.presetCerto;
+    const NOME_PRESET = { balanced: 'Equilibrado', aggressive: 'Agressivo', defensive: 'Defensivo', focus: 'Foco' };
+    $('#jnVel').innerHTML = `<div class="jnImune"><b>o seu preset — os ${rival.length} dele batem até cair</b>`
+      + `<span class="${preset === certo ? 'sim' : 'nao'}">o seu: ${NOME_PRESET[preset] ?? preset} <i>${preset === certo ? '✓ termina o ferido' : '✗ espalha dano'}</i></span>`
+      + (preset === certo ? '' : `<span class="sim">${NOME_PRESET[certo]} <i>✓ termina o ferido: um a menos bate a menos</i></span>`) + '</div>';
+    if (causa) {
+      causa.hidden = false;
+      causa.className = `tiny jnCausa ${preset === certo ? 'passa' : 'nao'}`;
+      causa.innerHTML = preset === certo ? `o ${NOME_PRESET[certo]} tira um atacante da luta de cada vez`
+        : `com o ${NOME_PRESET[preset] ?? preset} você fere todos e os ${rival.length} seguem batendo — <button class="lnk" data-treino-aba="time">troque para o ${NOME_PRESET[certo]}</button>`;
+      causa.dataset.licao = preset === certo ? '' : 'golpes';
+    }
+  } else if (no.licao?.mostra === 'preset') {
     const ameaca = ameacaDoRival(PACK, A, rival), causa = $('#jnCausa'), certo = no.licao.presetCerto;
     const NOME_PRESET = { balanced: 'Equilibrado', aggressive: 'Agressivo', defensive: 'Defensivo', focus: 'Foco' };
     /* Q7 da ST-10.19a: os presets como CHIPS (a gramática da Erika — ✓ e ✗),
@@ -91,6 +106,32 @@ function pintarPainel(mapa) {
       causa.innerHTML = preset === certo ? `o ${NOME_PRESET[certo]} derruba ${nomeDo(ameaca)} primeiro`
         : `com o ${NOME_PRESET[preset] ?? preset} você espalha dano e ${nomeDo(ameaca)} bate o tempo todo — <button class="lnk" data-treino-aba="time">troque para o ${NOME_PRESET[certo]}</button>`;
       causa.dataset.licao = preset === certo ? '' : 'golpes';
+    }
+  }
+  /* ST-10.19b: a lição do TIPO DUPLO — a tabela de quanto o melhor golpe de
+     cada criatura sua multiplica em cada uma dele, pelos dois tipos. */
+  if (no.licao?.mostra === 'duplo') {
+    const mm = multiplicadoresNoRival(PACK, A, rival), causa = $('#jnCausa');
+    const nomeT = t => PACK.tipos.nomes?.[t] ?? t;
+    const fx = m => (m === 0 ? '0' : m === 0.25 ? '¼' : m === 0.5 ? '½' : `${m}×`);
+    const cls = m => (m >= 4 ? 'q4' : m >= 2 ? 'q2' : m >= 1 ? 'q1' : 'q0');
+    $('#jnVel').innerHTML = `<div class="jnDuplo"><b>quanto o seu melhor golpe multiplica em cada um dele</b><table>`
+      /* Q7 da ST-10.19b: os DOIS tipos de cada um sob o nome — é a lição. */
+      + `<tr><td class="vazio"></td>${rival.map(r => `<th>${dexImg(r.dex, '', 'class="jnSprite"')}<span>${nomeDo(r.dex)}</span><em>${(especieDe(PACK, r.dex)?.t ?? []).map(nomeT).join(' · ')}</em></th>`).join('')}</tr>`
+      + mm.map(x => `<tr class="${x.todos ? 'sim' : ''}"><th>${nomeDo(x.dex)}</th>${x.contra.map(c => `<td class="${cls(c.mult)}">${fx(c.mult)}</td>`).join('')}</tr>`).join('')
+      + '</table></div>';
+    if (causa) {
+      const { bons, corte, pior } = leituraDoDuplo(mm);
+      causa.hidden = false;
+      causa.className = `tiny jnCausa ${bons.length ? 'passa' : 'nao'}`;
+      const daCaixa = multiplicadoresNoRival(PACK, candidatosDaCaixa(PACK, carregar()).map(x => x.entrada), rival).filter(x => x.todos);
+      const porque = corte ? `${nomeDo(corte.dex)} bate ${fx(corte.alto.mult)} em ${nomeDo(corte.alto.dex)} e ${fx(corte.baixo.mult)} em ${nomeDo(corte.baixo.dex)}: o segundo tipo conta. ` : '';
+      const irTime = '<button class="lnk" data-treino-aba="time">montar na aba Time</button>';
+      causa.innerHTML = bons.length ? `${bons.map(x => nomeDo(x.dex)).join(' e ')} ${bons.length > 1 ? 'batem' : 'bate'} forte nos ${rival.length}`
+        : daCaixa.length ? `${porque}Troque ${nomeDo(pior.dex)} por ${nomeDo(daCaixa[0].dex)}, da sua caixa — ${irTime}`
+        : `${porque}Leve um ${tiposQueBatemEmTodos(PACK, rival).slice(0, 3).map(nomeT).join(' ou ')}: bate forte nos ${rival.length} — ${irTime}`;
+      /* A causa já diz o que fazer: o "reforce o time" (subir nível) não é a lição. */
+      causa.dataset.licao = bons.length ? '' : 'golpes';
     }
   }
   /* ST-10.16: a lição físico × especial — as duas defesas de cada rival lado
@@ -267,13 +308,29 @@ document.addEventListener('click', ev => {
     licaoNoFim = pv.length ? ` ${pv.map(x => `${nome(x.dex)} levou ${x.golpes} ${x.golpes === 1 ? 'golpe' : 'golpes'} dela, dano ${x.dano} (apanha ${x.mult === 0.25 ? '¼' : '½'})`).join('; ')}: a lição deste ginásio.`
                            : ' Ninguém do seu time resistia aos golpes dela.';
   }
-  if (lic?.mostra === 'preset') {
+  if (lic?.mostra === 'preset' && lic.presetCerto === 'aggressive') {
+    /* A PROVA do Agressivo: os golpes que você levou, nesta luta e na mesma
+       com o outro preset (`provaDoPreset`, camada 0). */
+    const NOMEP = { balanced: 'Equilibrado', aggressive: 'Agressivo', defensive: 'Defensivo', focus: 'Foco' };
+    const pp = provaDoPreset(PACK, { timeA: r.timeA, timeB: r.timeB, semente: r.semente, eventos: r.resultado.eventos, usado: presetDoJogador(), certo: lic.presetCerto });
+    /* Q7 da ST-10.19b: qual luta foi a REAL e qual a hipotética, e a vitória
+       sem a lição dita como o que é — a fatia que a chance já mostrava. */
+    const semLicao = pp.usado !== lic.presetCerto, venceu = r.resultado.vencedor === 'A';
+    licaoNoFim = ` Nesta luta (${NOMEP[pp.usado] ?? pp.usado}) o rival acertou ${pp.levadosUsado} golpes em você; a mesma luta no ${NOMEP[pp.outro]}: ${pp.levadosOutro}${pp.venceuOutro !== venceu ? (pp.venceuOutro ? ', e você venceria' : ', e você perderia') : ''}.`
+      + (semLicao && venceu ? ` Você venceu sem a lição: foi a fatia dos ${porcentagemExibida(antes.p)}.` : '');
+  } else if (lic?.mostra === 'preset') {
     /* A PROVA: a mesma luta com o outro preset (`turnosDaAmeaca`, camada 0). */
     const NOMEP = { balanced: 'Equilibrado', aggressive: 'Agressivo', defensive: 'Defensivo', focus: 'Foco' };
     const nome = dex => nomeExibido(especieDe(PACK, dex)?.n ?? '?');
     const tt = turnosDaAmeaca(PACK, { timeA: r.timeA, timeB: r.timeB, semente: r.semente, eventos: r.resultado.eventos, usado: presetDoJogador(), certo: lic.presetCerto });
     const quando = x => (x ? `caiu no turno ${x}` : 'ficou de pé a luta inteira');
     licaoNoFim = ` No ${NOMEP[tt.usado] ?? tt.usado}, ${nome(tt.ameaca)} (a ameaça) ${quando(tt.noUsado)}; nesta mesma luta com o ${NOMEP[tt.outro]}, ${quando(tt.noOutro)}.`;
+  }
+  if (lic?.mostra === 'duplo') {
+    const pd = provaDoDuplo(PACK, r.timeA, r.resultado.eventos), nome = dex => nomeExibido(especieDe(PACK, dex)?.n ?? '?');
+    const frase = x => `${nome(x.dex)}: ${x.fortes} super-efetivos${x.quadruplos ? ` (${x.quadruplos} de 4×)` : ''}${x.cortados ? `, ${x.cortados} cortados pelo segundo tipo` : ''}`;
+    const fez = pd.filter(x => x.fortes || x.cortados);
+    licaoNoFim = fez.length ? ` O tipo duplo nesta luta — ${fez.map(frase).join('; ')}.` : ' Nenhum golpe seu foi super-efetivo nem cortado: todos neutros.';
   }
   if (lic?.mostra === 'categoria') {
     const d = danoPorCategoria(PACK, r.resultado.eventos);

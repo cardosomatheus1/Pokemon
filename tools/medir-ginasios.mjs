@@ -52,6 +52,16 @@ export const REFERENCIAS = {
   /* O preset (ST-10.19a): o MESMO time (Rhydon 42, Jolteon 38), só o preset
      muda — Balanced espalha dano, Defensive derruba a ameaça primeiro. */
   fuchsia: { varia: 'preset', presets: { ignora: 'balanced', aplica: 'defensive' }, ignora: [[112, 42], [135, 38]], aplica: [[112, 42], [135, 38]] },
+  /* O preset Agressivo (ST-10.19b): o MESMO time — dois de Água, o tipo certo
+     contra Fogo — e só o preset muda. Equilibrado espalha dano e os quatro do
+     Blaine seguem batendo; Agressivo termina o ferido. Medido na busca: o
+     Defensivo e o Foco ficam onde o Equilibrado fica — a lição é esta. */
+  cinnabar: { varia: 'preset', presets: { ignora: 'balanced', aplica: 'aggressive' }, ignora: [[9, 44], [121, 44]], aplica: [[9, 44], [121, 44]] },
+  /* O tipo duplo (ST-10.19b): o mesmo Snorlax e o mesmo Arcanine ao lado; o
+     membro que muda é um Machamp 50 (Lutador: 2× nos Rhyhorn/Rhydon, e ½ nos
+     Nidos — o Venenoso corta) × um Golduck 50 (Água: 4× nos Pedra/Terrestre,
+     2× nos outros). O Machamp é o mais forte no papel: 505 contra 500. */
+  viridian: { varia: 'duplo', ignora: [[68, 50], [143, 50], [59, 50]], aplica: [[55, 50], [143, 50], [59, 50]] },
   saffron: { varia: 'categoria', ignora: [[59, 42, { golpes: ['Flamethrower', 'Hyper Voice'] }], [143, 36]],
                                  aplica: [[59, 42, { golpes: ['Fire Punch', 'Body Slam', 'Extreme Speed', 'Quick Attack'] }], [143, 36]] },
 };

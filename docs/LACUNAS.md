@@ -8582,6 +8582,14 @@ em 1440 (o painel é estreito e o mapa não cresce para ocupar), menor, e que se
 resolve junto com a forma final do mapa. Fica para a ST-10.19c, que leva a
 lista a ~16 nós.
 
+**E com 13 nós (ST-10.19b):** a captura segue com 0 fora da caixa e 0
+sobrepostos NÓ com NÓ — mas o crítico cego do Q7 achou o que a medição não
+mede: em 1100, você e o treinador do nó atual cobrem o fim de "líder Blaine ·
+Fogo", o sprite do Giovanni encosta no rótulo da Usina, e lagos da cena passam
+por baixo dos rótulos de Pewter e Vermilion. A medição conta nó × nó e nó ×
+caixa; não conta SPRITE × RÓTULO. A 10.19c leva a lista a ~16 nós e mede os
+dois.
+
 **O que a destrava:** a ST-10.19c medir com a lista inteira e escolher.
 
 ### L-204 — a peneira `origem` só conhece o primeiro declarador de um `const`
@@ -8601,3 +8609,27 @@ que a leem, e o Q2 do bloco deixaria de ser do bloco. Não impede produto.
 
 **O que a destrava:** a forma de vários declaradores com função virar comum a
 ponto de custar mais que uma linha a cada vez.
+
+### L-205 — a correção da lição é um link dentro do texto, e não um botão com a chance projetada
+
+**Registrada em:** 27/09/2026, no Q7 da ST-10.19b. **Bloco dono:** ST-10.19c (a
+última da jornada; mexe no painel de todos os ginásios). **Estado:** aberto.
+
+O crítico cego (barra: a calculadora de dano do Showdown + o card de dica do
+Into the Breach) deu 3–5 à pergunta "o que mudar, e onde clicar" em todos os
+painéis de lição: a correção é um link sublinhado dentro do texto vermelho
+("troque para o Agressivo", "montar na aba Time"), e o botão que pesa é o
+"lutar contra X" — mesmo a 6%. Pediu:
+
+```text
+a correção como botão primário, com a chance projetada ("Agressivo → 75%")
+o "lutar" rebaixado a secundário enquanto a chance estiver abaixo de 50%
+em 420 px: lição → tabela → chance → correção → lutar (hoje a chance vem antes)
+```
+
+**Por que não cabe agora:** a projeção pede uma SEGUNDA medição por painel
+(a chance com a correção aplicada), e a ordem de 420 px foi decisão do Q7 da
+ST-10.13 (a chance ficava a 1.080 px do topo) — mudar pede medir as duas
+coisas nos oito ginásios de uma vez, e não em dois.
+
+**O que a destrava:** a ST-10.19c, com a jornada inteira no pack.

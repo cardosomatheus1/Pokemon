@@ -37,6 +37,14 @@ export const TREINADORES = [
   /* ST-10.16 · o quarto ginásio: a aula é FÍSICO × ESPECIAL. Os três aguentam
      golpe especial e quebram com físico (defesa < defesa especial). */
   { id: 'sabrina', nome: 'Sabrina',                  onde: 'Ginásio de Saffron', time: [{ dex: 64, nivel: 38 }, { dex: 122, nivel: 37 }, { dex: 65, nivel: 43 }], ow: 'beauty' },
+  /* ST-10.19b · Blaine: a aula é o preset AGRESSIVO — quatro de Fogo, e quem
+     está quase caindo ainda bate. Terminar o ferido (Aggressive) tira um
+     atacante da luta antes; espalhar dano (Balanced) deixa os quatro batendo.
+     Medido com dois de Água: o tipo certo e mesmo assim perdendo. */
+  { id: 'blaine', nome: 'Blaine',                    onde: 'Ginásio de Cinnabar', time: [{ dex: 58, nivel: 42 }, { dex: 77, nivel: 40 }, { dex: 78, nivel: 42 }, { dex: 59, nivel: 47 }], ow: 'psychic_m' },
+  /* ST-10.19b · Giovanni: a aula é o TIPO DUPLO — quatro dos cinco têm dois
+     tipos, e os dois contam na conta do golpe. */
+  { id: 'giovanni', nome: 'Giovanni',                onde: 'Ginásio de Viridian', time: [{ dex: 111, nivel: 45 }, { dex: 51, nivel: 42 }, { dex: 31, nivel: 44 }, { dex: 34, nivel: 45 }, { dex: 112, nivel: 50 }], ow: 'gentleman' },
   /* ST-10.18 · o chefe da campanha: um lendário sozinho, sem treinador. A
      `essencia` é o que a vitória paga dele (L-057) — nunca a criatura.
      `vidaX: 3` é a vida de chefe: sozinho e sem ela, um trio de nível 45

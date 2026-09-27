@@ -44,3 +44,5 @@ nossa é pedra LAPIDADA em facetas com o fio neon da interface na borda.
 | `insignias/arcoiris.svg` | arcoiris | Ginásio de Celadon (ST-10.19a) — flor de sete pétalas lapidadas |
 | `insignias/alma.svg` | alma | Ginásio de Fuchsia (ST-10.19a) — coração lapidado em magenta |
 | `insignias/pantano.svg` | pantano | Ginásio de Saffron (ST-10.16) — dois círculos lapidados (ouro e violeta), as duas defesas da lição |
+| `insignias/vulcao.svg` | vulcao | Ginásio de Cinnabar (ST-10.19b) — chama lapidada em três camadas |
+| `insignias/terra.svg` | terra | Ginásio de Viridian (ST-10.19b) — dois picos colados, pedra e terra: os dois tipos que contam juntos |

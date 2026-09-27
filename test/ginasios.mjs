@@ -81,8 +81,29 @@ export function suite() {
       ok(efeito(pack.tipos.efetividade, t, tiposDeR(er.ignora[i2][0])) >= 1, `o membro que ignora a lição resiste a ${t}`);
     }
     ok(somaR(er.ignora[i2][0]) >= somaR(er.aplica[i2][0]), 'o membro que ignora a resistência é mais fraco no papel');
-    ok(REFERENCIAS.fuchsia?.varia === 'preset' && REFERENCIAS.fuchsia.presets.aplica === pack.jornada.find(n => n.id === 'fuchsia').licao.presetCerto,
-      'a lição do Koga não mede o preset que a lição ensina');
+    /* Toda lição de preset mede o preset que ENSINA (Koga, Blaine). */
+    for (const n of pack.jornada.filter(x => x.licao?.mostra === 'preset'))
+      ok(REFERENCIAS[n.id]?.varia === 'preset' && REFERENCIAS[n.id].presets.aplica === n.licao.presetCerto, `${n.id}: a lição não mede o preset que ensina`);
+    ok(REFERENCIAS.fuchsia?.varia === 'preset' && REFERENCIAS.cinnabar?.varia === 'preset', 'as duas lições de preset');
+    /* ST-10.19b · "cada ginásio ensina UMA interação" (§8.1.2) — e nenhuma
+       repetida: duas lições de preset só se ensinam presets diferentes. */
+    const aulas = pack.jornada.filter(n => n.licao?.mostra).map(n => `${n.licao.mostra}:${n.licao.presetCerto ?? ''}`);
+    igual(new Set(aulas).size, aulas.length, `lição repetida entre ginásios: ${aulas.join(' ')}`);
+    /* ST-10.19b · Giovanni: "o tipo duplo" — o membro que ignora PARECE bater
+       (≥ 2× em alguém dele) e é cortado pelo segundo tipo (≤ ½ em alguém); o
+       que aplica bate ≥ 2× em TODOS; o que ignora não é mais fraco no papel;
+       e o time do líder tem de fato tipo duplo (três ou mais). */
+    const du = REFERENCIAS.viridian;
+    ok(du?.varia === 'duplo', 'a lição do tipo duplo não é medida');
+    const lider = treinador(pack, 'giovanni').time;
+    ok(lider.filter(x => pack.especies.find(e => e.dex === x.dex).t.length === 2).length >= 3, 'o time do líder não tem tipo duplo');
+    const j2 = du.ignora.findIndex((x, j) => JSON.stringify(x) !== JSON.stringify(du.aplica[j]));
+    const melhor = (dex, nivel, alvo) => Math.max(...padraoDoMoveset(pack, dex, nivel).map(n => efeito(pack.tipos.efetividade, golpe(n).t, pack.especies.find(e => e.dex === alvo).t)));
+    const multIg = lider.map(x => melhor(du.ignora[j2][0], du.ignora[j2][1], x.dex)), multAp = lider.map(x => melhor(du.aplica[j2][0], du.aplica[j2][1], x.dex));
+    ok(multIg.some(v => v >= 2) && multIg.some(v => v <= 0.5), `o membro que ignora não PARECE aplicar (${multIg.join(' ')})`);
+    ok(multAp.every(v => v >= 2), `o membro que aplica não bate forte em todos (${multAp.join(' ')})`);
+    const somaD = dex => pack.especies.find(e => e.dex === dex).s.reduce((a, b) => a + b, 0);
+    ok(somaD(du.ignora[j2][0]) >= somaD(du.aplica[j2][0]), 'o membro que ignora o tipo duplo é mais fraco no papel');
     /* ST-10.15: "imunidade" — o membro que muda é IMUNE ao tipo do líder no
        time que aplica, e NÃO no que ignora; e o que ignora não é mais fraco no
        papel (soma dos atributos base maior ou igual) — senão a diferença

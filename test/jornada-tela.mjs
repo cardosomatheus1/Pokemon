@@ -13,7 +13,7 @@ import { aberto, noAtual, progressoVazio } from '../engine/jornada.mjs';
 import { montarLutador, simular } from '../engine/treino-batalha.mjs';
 import { movesetDoRival, padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { treinador } from '../app/modules/treino-dados.mjs';
-import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
+import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, golpesLevados, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 const semComentario = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
@@ -133,8 +133,8 @@ export function suite() {
 
   s.teste('o mundo em volta: o treinador do nó, a parede de árvores, a cena longe do caminho e do nome', () => {
     const m = mapaDaJornada(pack, progressoVazio());
-    igual(m.nos.map(n => n.ow).join(), 'youngster,lass,camper,hiker,expert_m,swimmer_f,sailor,picnicker,black_belt,beauty,', 'a folha de cada treinador');
-    igual(m.nos.map(n => n.cena ?? '-').join(), '-,arvores,-,rochas,rochas,agua,agua,arvores,-,-,-', 'a cena de cada nó');
+    igual(m.nos.map(n => n.ow).join(), 'youngster,lass,camper,hiker,expert_m,swimmer_f,sailor,picnicker,black_belt,beauty,psychic_m,gentleman,', 'a folha de cada treinador');
+    igual(m.nos.map(n => n.cena ?? '-').join(), '-,arvores,-,rochas,rochas,agua,agua,arvores,-,-,agua,arvores,-', 'a cena de cada nó');
     const b = bordaDoMapa();
     ok(b.length >= 40 && b.every(p => p.x >= 0 && p.x <= 100 && (p.y <= 6 || p.y >= 94)), 'a parede não é borda');
     igual(JSON.stringify(b), JSON.stringify(bordaDoMapa()), 'a parede dança a cada repintura');
@@ -313,6 +313,63 @@ export function suite() {
         quandoCaiu(simular(pack, As, K, k, { preset: 'defensive' }).eventos, 'B1'), `semente ${k}: a prova não é a mesma luta`);
     }
     igual(turnosDaAmeaca(pack, { timeA: As, timeB: K, semente: 11, eventos: r1.eventos, usado: 'defensive', certo: 'defensive' }).outro, 'balanced', 'no certo, compara com o Equilibrado');
+  });
+
+  s.teste('ST-10.19b: o preset Agressivo (Blaine) e o tipo duplo (Giovanni), no painel e no fim da luta', () => {
+    const mk = (dex, nivel) => ({ dex, nivel, golpes: padraoDoMoveset(pack, dex, nivel) });
+    const rivalDo = id => treinador(pack, id).time.map(x => ({ dex: x.dex, nivel: x.nivel, golpes: movesetDoRival(pack, x.dex, x.nivel) }));
+    /* A prova do Agressivo: os golpes que o rival ACERTOU em você (dano > 0),
+       nos dois presets, na MESMA luta (mesma semente). */
+    const Bl = rivalDo('blaine'), Ab = [mk(9, 44), mk(121, 44)];
+    const r1 = simular(pack, Ab, Bl, 5, { preset: 'balanced' });
+    igual(golpesLevados(r1.eventos), r1.eventos.filter(e => e.para.startsWith('A') && e.dano > 0).length, 'os golpes levados');
+    igual(golpesLevados([{ para: 'A0', dano: 0 }, { para: 'B0', dano: 9 }, { para: 'A1', dano: 3 }]), 1, 'golpe que errou ou no rival contou');
+    let menos = 0, soma = { b: 0, a: 0 };
+    for (let k = 1; k <= 25; k++) {
+      const rb = simular(pack, Ab, Bl, k, { preset: 'balanced' });
+      const pv = provaDoPreset(pack, { timeA: Ab, timeB: Bl, semente: k, eventos: rb.eventos, usado: 'balanced', certo: 'aggressive' });
+      const ra = simular(pack, Ab, Bl, k, { preset: 'aggressive' });
+      igual(pv.outro, 'aggressive', 'o outro preset');
+      igual(pv.levadosUsado, golpesLevados(rb.eventos), `semente ${k}: os levados no preset usado`);
+      igual(pv.levadosOutro, golpesLevados(ra.eventos), `semente ${k}: a prova não é a mesma luta`);
+      igual(pv.venceuOutro, ra.vencedor === 'A', `semente ${k}: quem venceria com o outro`);
+      soma.b += pv.levadosUsado; soma.a += pv.levadosOutro; if (pv.levadosOutro < pv.levadosUsado) menos++;
+    }
+    /* A lição é verdadeira na média: um a menos bate a menos. */
+    ok(soma.a < soma.b, `no Agressivo você levou ${soma.a} golpes, e no Equilibrado ${soma.b} — a lição não é verdade`);
+    igual(provaDoPreset(pack, { timeA: Ab, timeB: Bl, semente: 5, eventos: r1.eventos, usado: 'aggressive', certo: 'aggressive' }).outro, 'balanced', 'no certo, compara com o Equilibrado');
+    /* O tipo duplo: o MELHOR multiplicador de cada criatura sua em cada uma
+       dele, pelos DOIS tipos de quem apanha. */
+    const G = rivalDo('giovanni');
+    const m = multiplicadoresNoRival(pack, [mk(68, 50), mk(55, 50)], G);
+    igual(m[0].contra.map(x => `${x.dex}:${x.mult}`).join(), '111:2,51:1,31:0.5,34:0.5,112:2', 'o Lutador: bate Pedra, e o Venenoso corta');
+    igual(m[1].contra.map(x => `${x.dex}:${x.mult}`).join(), '111:4,51:2,31:2,34:2,112:4', 'a Água: os dois lados');
+    ok(!m[0].todos && m[1].todos, 'quem bate forte em todos');
+    igual(multiplicadoresNoRival(pack, [{ dex: 68, nivel: 50, golpes: ['Body Slam'] }], G)[0].contra.map(x => x.mult).join(), '0.5,1,1,1,0.5', 'o golpe Normal (a Pedra resiste)');
+    /* Água e Gelo batem em todos; a Planta NÃO — o Venenoso dos Nidos corta
+       (½ × 2 = 1): o mesmo corte do Lutador, pelo outro lado. */
+    igual(tiposQueBatemEmTodos(pack, G).join(), 'water,ice', 'quem bate em todos');
+    /* A leitura, para a causa: quem bate em todos, o CORTE e o pior. */
+    const lt = leituraDoDuplo(m);
+    igual(lt.bons.map(x => x.dex).join(), '55', 'quem bate forte em todos');
+    igual(`${lt.corte.dex}:${lt.corte.alto.dex}:${lt.corte.baixo.dex}`, '68:111:31', 'o exemplo do corte');
+    igual(lt.pior.dex, 68, 'o pior');
+    igual(leituraDoDuplo(multiplicadoresNoRival(pack, [mk(55, 50)], G)).corte, null, 'corte onde não há');
+    /* A prova do duplo: dos eventos, por criatura sua. */
+    const rg = simular(pack, [mk(55, 50), mk(68, 50)], G, 3);
+    const pd = provaDoDuplo(pack, [mk(55, 50), mk(68, 50)], rg.eventos);
+    const deA = i => rg.eventos.filter(e => e.de === `A${i}` && !e.errou);
+    igual(pd[0].fortes, deA(0).filter(e => e.eff >= 2).length, 'os super-efetivos');
+    igual(pd[0].quadruplos, deA(0).filter(e => e.eff >= 4).length, 'os de 4×');
+    igual(pd[1].cortados, deA(1).filter(e => e.eff > 0 && e.eff < 1).length, 'os cortados');
+    const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
+    ok(/no\.licao\.presetCerto === 'aggressive'/.test(tela), 'o painel do Agressivo');
+    ok(/if \(lic\?\.mostra === 'preset' && lic\.presetCerto === 'aggressive'\) \{/.test(tela)
+      && /provaDoPreset\(PACK, \{ timeA: r\.timeA, timeB: r\.timeB, semente: r\.semente/.test(tela), 'o fim da luta do Agressivo');
+    /* Q7 da ST-10.19b: vencer sem a lição é dito como a fatia da chance. */
+    ok(/\(semLicao && venceu \? ` Você venceu sem a lição: foi a fatia dos \$\{porcentagemExibida\(antes\.p\)\}\.`/.test(tela), 'a vitória sem a lição não é dita');
+    ok(/no\.licao\?\.mostra === 'duplo'/.test(tela) && /multiplicadoresNoRival\(PACK, A, rival\)/.test(tela), 'o painel do tipo duplo');
+    ok(/if \(lic\?\.mostra === 'duplo'\) \{/.test(tela) && /provaDoDuplo\(PACK, r\.timeA, r\.resultado\.eventos\)/.test(tela), 'o fim da luta do tipo duplo');
   });
 
   /* D-125 — o inicial sozinho perdia o primeiro nó — foi consertado na ST-10.13;

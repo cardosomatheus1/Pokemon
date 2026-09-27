@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" shape-rendering="crispEdges">
+  <!-- A INSÍGNIA TERRA (ST-10.19b) — arte nossa. Dois picos lapidados, um de
+       pedra e um de terra, colados: os dois tipos que contam juntos, que é a
+       lição do ginásio. No octógono da família, com o fio neon. -->
+  <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="#0e0c08"/>
+  <polygon points="10,4 22,4 28,10 28,22 22,28 10,28 4,22 4,10" fill="#2a2416"/>
+  <polygon points="12,7 19,24 5,24" fill="#8a8f96"/>
+  <polygon points="12,7 12,24 5,24" fill="#5d6269"/>
+  <polygon points="21,10 27,24 13,24" fill="#3fae5a"/>
+  <polygon points="21,10 21,24 27,24" fill="#237a3a"/>
+  <polygon points="12,7 14,12 10,12" fill="#d7dce2"/>
+  <polygon points="21,10 23,14 19,14" fill="#9dff9a"/>
+  <rect x="5" y="24" width="22" height="2" fill="#6b4a24"/>
+  <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="none" stroke="#00e5ff" stroke-width="1"/>
+</svg>

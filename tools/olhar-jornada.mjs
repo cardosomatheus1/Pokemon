@@ -41,10 +41,17 @@ const PONTOS = {
              time: [[59, 42, 15, ['Fire Punch', 'Body Slam', 'Extreme Speed', 'Quick Attack']], [143, 36]] },
   sabrinaEsp: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia'], insignias: ['rocha', 'cascata', 'trovao', 'arcoiris', 'alma'],
              time: [[59, 42, 15, ['Flamethrower', 'Hyper Voice']], [143, 36]] },
+  /* ST-10.19b: diante do Blaine, o MESMO time (Blastoise e Starmie 44) com o
+     preset errado e com o certo; diante do Giovanni, Machamp × Golduck com o
+     mesmo Snorlax e o mesmo Arcanine ao lado, como na medição. */
+  blaine: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron'], insignias: ['rocha', 'cascata', 'trovao', 'arcoiris', 'alma', 'pantano'], time: [[9, 44], [121, 44]], preset: 'balanced' },
+  blaineCerto: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron'], insignias: ['rocha', 'cascata', 'trovao', 'arcoiris', 'alma', 'pantano'], time: [[9, 44], [121, 44]], preset: 'aggressive' },
+  giovanni: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar'], insignias: ['rocha', 'cascata', 'trovao', 'arcoiris', 'alma', 'pantano', 'vulcao'], time: [[68, 50], [143, 50], [59, 50]] },
+  giovanniCerto: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar'], insignias: ['rocha', 'cascata', 'trovao', 'arcoiris', 'alma', 'pantano', 'vulcao'], time: [[55, 50], [143, 50], [59, 50]] },
   /* ST-10.18: diante do chefe (Zapdos 50), com um time de fim de jogo. */
-  chefe: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron'], insignias: ['rocha', 'cascata', 'trovao', 'arcoiris', 'alma', 'pantano'],
+  chefe: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'], insignias: ['rocha', 'cascata', 'trovao', 'arcoiris', 'alma', 'pantano', 'vulcao', 'terra'],
            time: [[76, 45], [65, 45], [91, 45]] },
-  fim: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'usina'], insignias: ['rocha', 'cascata', 'trovao', 'arcoiris', 'alma', 'pantano'], time: [[5, 18], [17, 17], [25, 15]] },
+  fim: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian', 'usina'], insignias: ['rocha', 'cascata', 'trovao', 'arcoiris', 'alma', 'pantano', 'vulcao', 'terra'], time: [[5, 18], [17, 17], [25, 15]] },
 };
 
 const b = await chromium.launch({ executablePath: CHROME });
@@ -98,7 +105,7 @@ for (const ponto of Object.keys(PONTOS).filter(quer)) for (const w of [1920, 144
   await ctx.close();
 }
 
-for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420, 'ginasio'], [1440, 'misty'], [420, 'misty'], [1440, 'surge'], [420, 'surge'], [1440, 'sabrina'], [420, 'sabrina'], [1440, 'chefe'], [420, 'chefe'], [1440, 'erika'], [420, 'kogaCerto']].filter(([, p]) => quer(p))) {
+for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420, 'ginasio'], [1440, 'misty'], [420, 'misty'], [1440, 'surge'], [420, 'surge'], [1440, 'sabrina'], [420, 'sabrina'], [1440, 'chefe'], [420, 'chefe'], [1440, 'erika'], [420, 'kogaCerto'], [1440, 'blaine'], [420, 'giovanniCerto']].filter(([, p]) => quer(p))) {
   const { ctx, pg } = await abrir(w, ponto);
   await pg.$eval('#jnLutar', el => el.click());
   await pg.waitForSelector('#jnLuta #pvePalco', { timeout: 10000 });
@@ -107,7 +114,7 @@ for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420
   await pg.$eval('#jnLuta [data-pve-pular]', el => el.click());
   await pg.waitForTimeout(600);
   await (await pg.$('#jnLuta')).screenshot({ path: `${PASTA}/luta-${ponto}-fim-${w}.png` });
-  if (ponto === 'ginasio' || ponto === 'misty' || ponto === 'surge' || ponto === 'sabrina' || ponto === 'erika' || ponto === 'kogaCerto') await (await pg.$('.jnTopo')).screenshot({ path: `${PASTA}/estojo-entrando-${ponto}-${w}.png` });
+  if (ponto === 'ginasio' || ponto === 'misty' || ponto === 'surge' || ponto === 'sabrina' || ponto === 'erika' || ponto === 'kogaCerto' || ponto === 'giovanniCerto') await (await pg.$('.jnTopo')).screenshot({ path: `${PASTA}/estojo-entrando-${ponto}-${w}.png` });
   await pg.waitForFunction(() => { const n = document.getElementById('jnNumero'); return n && !n.classList.contains('parcial'); }, null, { timeout: 120000, polling: 250 });
   const resultado = await pg.evaluate(() => ({ fim: document.querySelector('#pveFim h4')?.textContent, texto: document.querySelector('#pveFim p')?.textContent }));
   await pg.$eval('#jnLuta [data-pve-fechar]', el => el.click());

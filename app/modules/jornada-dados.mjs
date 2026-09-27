@@ -299,3 +299,48 @@ export function turnosDaAmeaca(pack, { timeA, timeB, semente, eventos, usado, ce
   return { ameaca, usado, outro, noUsado: quandoCaiu(eventos, slot),
            noOutro: quandoCaiu(simular(pack, timeA, timeB, semente, { preset: outro }).eventos, slot) };
 }
+
+/* ── ST-10.19b · A LIÇÃO DO AGRESSIVO ──────────────────────────────────────
+   "Um a menos bate a menos": a prova é quantos golpes o rival ACERTOU em você
+   (dano > 0), na luta que houve e na MESMA luta com o outro preset. */
+export const golpesLevados = eventos => (eventos ?? []).filter(e => e.para?.startsWith('A') && e.dano > 0).length;
+
+export function provaDoPreset(pack, { timeA, timeB, semente, eventos, usado, certo }) {
+  const outro = usado === certo ? 'balanced' : certo;
+  const r = simular(pack, timeA, timeB, semente, { preset: outro });
+  return { usado, outro, levadosUsado: golpesLevados(eventos), levadosOutro: golpesLevados(r.eventos), venceuOutro: r.vencedor === 'A' };
+}
+
+/* ── ST-10.19b · A LIÇÃO DO TIPO DUPLO ─────────────────────────────────────
+   O MELHOR multiplicador de tipo de cada criatura sua (pelos golpes dela) em
+   cada criatura do rival — pelos DOIS tipos de quem apanha, que é a lição:
+   Lutador bate Pedra, e o Venenoso do mesmo alvo corta pela metade. */
+const tipoDoGolpe = (pack, n) => Object.values(pack.golpes ?? {}).flat().find(g => g.n === n)?.t;
+export const multiplicadoresNoRival = (pack, A, B) => (A ?? []).map(c => {
+  const contra = (B ?? []).map(D => ({ dex: D.dex,
+    mult: Math.max(0, ...(c.golpes ?? []).map(n => efeito(pack.tipos.efetividade, tipoDoGolpe(pack, n), especieDe(pack, D.dex)?.t ?? []))) }));
+  return { dex: c.dex, contra, todos: contra.length > 0 && contra.every(x => x.mult >= 2) };
+});
+
+/* Os tipos de golpe que batem ≥ 2× em TODOS do rival — a saída em tipo. */
+export const tiposQueBatemEmTodos = (pack, B) =>
+  Object.keys(pack.tipos.efetividade).filter(t => (B ?? []).every(D => efeito(pack.tipos.efetividade, t, especieDe(pack, D.dex)?.t ?? []) >= 2));
+
+/* A prova no fim: por criatura sua, os golpes que ACERTARAM super-efetivos
+   (e quantos de 4×) e os que o segundo tipo cortou (entre 0 e 1). */
+export const provaDoDuplo = (pack, A, eventos) => (A ?? []).map((c, i) => {
+  const dela = (eventos ?? []).filter(e => e.de === `A${i}` && !e.errou);
+  return { dex: c.dex, fortes: dela.filter(e => e.eff >= 2).length, quadruplos: dela.filter(e => e.eff >= 4).length,
+           cortados: dela.filter(e => e.eff > 0 && e.eff < 1).length };
+});
+
+/* A LEITURA da tabela, para a causa: quem bate forte em todos, o exemplo do
+   CORTE (quem bate ≥ 2× num e < 1× noutro — o que a tabela sozinha não diz) e
+   o pior (o menor multiplicador), que é quem a troca da caixa substitui. */
+export function leituraDoDuplo(mm) {
+  const corte = (mm ?? []).find(x => x.contra.some(c => c.mult >= 2) && x.contra.some(c => c.mult < 1));
+  const menor = x => Math.min(...x.contra.map(c => c.mult));
+  return { bons: (mm ?? []).filter(x => x.todos),
+           corte: corte ? { dex: corte.dex, alto: corte.contra.find(c => c.mult >= 2), baixo: corte.contra.find(c => c.mult < 1) } : null,
+           pior: [...(mm ?? [])].sort((a, b) => menor(a) - menor(b))[0] ?? null };
+}
