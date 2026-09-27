@@ -86,7 +86,11 @@ export const DO_CLIENTE = ['session_started', 'run_harvested', 'expedition_harve
      abriu, o comparador, e o que aconteceu com a coleção — que ainda mora no
      save local (a coleção no servidor é o E13). `creature_captured` não estava
      na lista da ficha, e sem ele o D7 "capturou × não capturou" não tem lado. */
-  'dossie_consultado', 'moveset_comparado', 'doce_gasto', 'evolucao_feita', 'criatura_solta', 'creature_captured'];
+  'dossie_consultado', 'moveset_comparado', 'doce_gasto', 'evolucao_feita', 'criatura_solta', 'creature_captured',
+  /* ST-10.20 · os KPIs da V4 (§8.15): a luta da jornada, o ginásio vencido e a
+     chance exibida. O TIME REFEITO não está aqui de propósito: o servidor o
+     deriva da sequência de lutas, e o cliente não tem como declará-lo. */
+  'pve_iniciado', 'ginasio_vencido', 'p_exibida'];
 export const LOTE_MAXIMO = 50;
 
 const erro = (codigo, msg) => Object.assign(new Error(msg), { codigo });

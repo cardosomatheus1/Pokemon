@@ -78,3 +78,17 @@ for (const [nome, c] of Object.entries(g3.criterios))
   linha(nome.padEnd(11), c.veredito, c.precisa ? `(n ${n(c.n)}, precisa ${c.precisa})` : c.motivo ?? c.teste ?? '');
 linha(`VEREDITO DO GATE 3→4: ${g3.veredito}`);
 
+secao('A JORNADA E O GATE DA V4 (§8.15, §8.16)');
+const k4 = r.v4.kpis, ap = r.v4.aprendizado, g4 = r.v4.gate;
+linha(`jogadores na jornada ${n(k4.jogadores)}`, `lutas ${n(k4.lutas)} (${n(k4.lutasPorJogadorDia)} por jogador-dia)`,
+      `time completo ${pct(k4.timeCompleto.valor)}`, `chances vistas ${n(k4.chancesVistas)}`);
+for (const [no, c] of Object.entries(k4.conclusao)) linha(`  ${no.padEnd(10)} venceram ${n(c.venceram)} de ${n(c.tentaram)} que TENTARAM (${pct(c.valor)})`);
+linha(`abandono por dificuldade ${pct(k4.abandono.valor)} (n ${n(k4.abandono.n)})`, `time refeito depois da derrota ${pct(k4.rebuilds.valor)} (n ${n(k4.rebuilds.derrotas)})`,
+      `variedade ${n(k4.variedade)} espécies`, `a mais usada ${pct(k4.concentracao.valor)} das vagas`, `D30 ${pct(k4.d30.valor)} (n ${n(k4.d30.n)})`);
+linha('a chance exibida é calibrada?', ...k4.calibracao.map(f => `${pct(f.de)}–${pct(f.ate)}: venceu ${n(f.venceu)} de ${n(f.n)}`));
+linha(`a jornada ensina a apostar? Brier antes × depois do 1º ginásio, menos o controle: ${n(ap.efeito)}`,
+      `(tratados ${n(ap.tratados.n)}, controle ${n(ap.controle.n)}; melhora crua ${n(ap.tratados.melhora)})`);
+for (const [nome, c] of Object.entries(g4.criterios))
+  linha(nome.padEnd(13), c.veredito, c.precisa ? `(n ${n(c.n)}, precisa ${c.precisa})` : '');
+linha(`VEREDITO DO GATE 4→5: ${g4.veredito}`);
+

@@ -20,6 +20,7 @@ import { diaDoMundo } from '../../engine/avanco.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido, candidatosDaCaixa, membrosParaTrocas } from './treino-dados.mjs';
 import { correcaoDaLicao, aplicarCorrecao } from './jornada-correcao.mjs';
 import { trocarLocal } from './time-local.mjs';
+import { relatarLuta, relatarChance } from './telemetria-v4-tela.mjs';
 import { lote, resumo, porcentagemExibida, textoDaMargem, SIMS_TREINO } from '../../engine/treino-preco.mjs';
 import { lutarNaJornadaLocal } from './jornada-local.mjs';
 import { encenar } from './pve-tela.mjs';
@@ -222,7 +223,7 @@ function pintarPainel(mapa) {
       if (c) { c.hidden = false; c.className = 'tiny jnCausa passa jnAplicada'; c.textContent = `✓ ${aplicada.feito} — era ${porcentagemExibida(aplicada.antes)}, agora ${porcentagemExibida(r.p)}`; }
       aplicada = null;
     }
-    if (pronto) { chanceNaTela = r; if (b && no.estado !== 'trancado') b.disabled = false; projetar(r); }
+    if (pronto) { chanceNaTela = r; if (b && no.estado !== 'trancado') b.disabled = false; projetar(r); if (no.estado !== 'trancado') relatarChance({ no: no.id, p: r.p, preset, timeA: A }); }
     else setTimeout(passo, 0);
   };
   /* ST-10.19d (L-205): a CORREÇÃO da lição como botão, com a chance que ela
@@ -355,6 +356,8 @@ document.addEventListener('click', ev => {
   const id = lutar.dataset.jnLutar, antes = chanceNaTela;
   const r = lutarNaJornadaLocal({ pack: PACK, id, preset: presetDoJogador() });
   if (!r.ok) { $('#jnErro').textContent = r.motivo ?? 'não deu para lutar agora'; return; }
+  /* ST-10.20: a luta e a chance que a tela mostrou antes dela (§8.15). */
+  relatarLuta(r, { no: id, p: antes.p, preset: presetDoJogador() });
   const mapa = mapaDaJornada(PACK, r.progresso), proximo = mapa.nos.find(n => n.id === mapa.atual);
   /* A insígnia entra no RESULTADO também: o estojo fica lá em cima, fora da
      vista de quem está lendo o fim da luta. */

@@ -8729,3 +8729,36 @@ que merece a própria passada de Q5/Q7 — e o cenário do mapa é de olhar, com
 do idle.
 
 **O que a destrava:** nada; é a ST-10.21.
+
+### L-207 — apostar tira a arena de vista
+
+**Registrada em:** 27/09/2026, no vídeo de uma rodada completa pedido pelo
+dono. **Bloco dono:** ST-5.9 (proposta no PLANO no mesmo commit). **Estado:**
+aberto.
+
+Em 1440×900, clicar no lutador e confirmar a aposta rola a página até o
+painel "Sua aposta" — e o campo da arena sai de vista, cortado no alto, até a
+fase virar AO VIVO. Não sei se é de propósito (levar o olho ao valor e ao
+retorno) ou efeito colateral de foco/scroll. Não quebra nada; mas é a fase em
+que o jogador deveria estar olhando os lutadores.
+
+**O que a destrava:** medir de onde vem a rolagem (foco? `scrollIntoView`?) e
+decidir: manter o painel na dobra sem mover a arena, ou voltar à arena quando
+a luta começa.
+
+### L-208 — o gate da V4 confia no que o navegador relata
+
+**Registrada em:** 27/09/2026, na ST-10.20 (Q6). **Bloco dono:** ST-13.2 (a
+colheita é do servidor — e a jornada vai junto com a coleção). **Estado:**
+aberto.
+
+`pve_iniciado`, `ginasio_vencido` e `p_exibida` vêm do cliente, porque a
+jornada ainda mora no save local. O servidor filtra os campos (número,
+booleano, texto de 40) e ignora a chave repetida, mas não tem como provar que
+a luta aconteceu nem que o jogador venceu. O KPI que só o servidor sabe — a
+PREVISÃO, pontuada em `predictions` — é o lado sólido da pergunta "a jornada
+ensina a apostar?"; o outro lado (quando o Brock foi vencido) é declarado.
+Para o piloto entre amigos, é o bastante; para decidir a V5 com dinheiro, não.
+
+**O que a destrava:** a ST-13.2/13.3 levar a luta da jornada para o servidor —
+aí `ginasio_vencido` passa a ser anotado por quem decide a luta.

@@ -134,7 +134,7 @@ export function suite() {
     ok(!/simular\(|lutarNo\(|\.vencidos\.push|insignias\.push|salvar\(/.test(tela), 'a tela decide ou grava progresso por conta própria');
     ok(/encenar\(\{ alvo: \$\('#jnLuta'\), A: r\.timeA, B: r\.timeB, r: r\.resultado/.test(tela), 'a luta não é encenada pelo caminho da 10.9');
     ok(/lote\(PACK, A, rival, RAIZ, acum\.sims/.test(tela) && /const RAIZ = 1;/.test(tela), 'a chance do mapa não é a do Team Builder');
-    ok(/disabled>\$\{no\.estado === 'trancado' \? 'trancado' : vencido \? 'revanche \(treino\)' : `lutar contra \$\{t\.nome\}`\}/.test(tela) && /if \(pronto\) \{ chanceNaTela = r; if \(b && no\.estado !== 'trancado'\) b\.disabled = false; projetar\(r\); \}/.test(tela),
+    ok(/disabled>\$\{no\.estado === 'trancado' \? 'trancado' : vencido \? 'revanche \(treino\)' : `lutar contra \$\{t\.nome\}`\}/.test(tela) && /if \(pronto\) \{ chanceNaTela = r; if \(b && no\.estado !== 'trancado'\) b\.disabled = false; projetar\(r\);/.test(tela),
       'lutar acende antes da chance ou num nó trancado');
     ok(/if \(!lutar \|\| lutar\.disabled \|\| !chanceNaTela\) return;/.test(tela), 'a luta sai sem a chance');
     const pve = semComentario(fonte('../app/modules/pve-tela.mjs'));

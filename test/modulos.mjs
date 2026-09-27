@@ -369,6 +369,8 @@ const CAMADA = {
   /* ST-9.18 · os eventos da V3: montados (camada 0) e ligados aos gestos. */
   'telemetria-v3.mjs': 0,
   'telemetria-v3-tela.mjs': 4,
+  'telemetria-v4.mjs': 0,
+  'telemetria-v4-tela.mjs': 4,
   /* ST-9.17 · o laço de retorno: a regra (camada 0) e o cartão na Início. */
   'retorno-dados.mjs': 0,
   'retorno-tela.mjs': 4,

@@ -455,6 +455,7 @@ Todas mexem em tela: Q5 com as duas metades, decisão em camada 0.
 | ~~**ST-5.6**~~ ✅ 25/09 (DEC-15) · a janela de 420 px cabe a luta (L-175) — zoom da run = `min(escolhido, largura ÷ 260)`: 130 → 260 px de mundo a 420, 0 estouros fora da tela; no largo nada muda; o piso (S616) vale por cima | M | em 420 px o bando, companheiro e treinador cabem |
 | ~~**ST-5.7**~~ ✅ 25/09 · base visual ausente não conta como verde (D-093) | P | sem a base local, `visual-base` aparece como **NÃO EXECUTADA** no relatório (e o `portoes` reprova), nunca como verde; a base local ganha carimbo de data e commit |
 | **ST-5.8** · `sala-cliente` estável (D-086) — **não reproduzido** em 20 execuções sob carga (25/09); fica aberto esperando uma falha lida | P | reproduzir com carga; se for o teto de 3 s, a espera passa a ser por evento com prazo nomeado; `npm run repetir` 5/5 |
+| **ST-5.9** · apostar não tira a arena de vista (L-207) — no vídeo da rodada (27/09, 1440×900) o clique no lutador rola a página até o painel da aposta, e o alto da arena some até a batalha | P | em 1440, 1100 e 420: depois de escolher e confirmar, o campo da arena continua na dobra, ou volta a ela sozinho quando a fase vira AO VIVO; Q5 com vídeo |
 
 **Evidência de fecho do E5:** uma run real jogada de ponta a ponta (entrar,
 lutar a wave, chegar ao fim), capturada — não componente isolado.
@@ -1088,7 +1089,7 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **Escopo:** o nó atual com anel e o ícone do tipo; as setas legíveis sobre a trilha por andar; você fora dos lagos; em 1920, a chance perto da frase que a explica; o título da aba; o aviso de risco que diz o tamanho do risco.
 - **Aceite:** o crítico cego com a mesma barra da 10.19d dá ≥ 8 às quatro perguntas nas quatro larguras.
 
-### ST-10.20 · A jornada ensina a apostar?
+### ST-10.20 · A jornada ensina a apostar? ✅ 27/09
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16
 - **Escopo:** eventos `pve_iniciado`, `ginasio_vencido`, `time_refeito`, `p_exibida`; coortes controlando o tempo de jogo; calibração na Liga de Previsão antes e depois de Brock.
 - **Aceite:** a resposta sai com número e n, ou "amostra insuficiente"; nunca mede só quem terminou.
