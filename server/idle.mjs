@@ -54,6 +54,15 @@ import { gerar as gerarCriatura } from './criaturas.mjs';
 
 const DIA_MS = 24 * 3600_000;
 
+/* Os erros que a ROTA traduz em status (ST-13.2b). "Ainda não terminou" é
+   conflito com o estado, e não pedido errado: 409 manda esperar, 400 mandaria
+   corrigir o pedido — e o pedido estava certo. */
+export const ERRO_IDLE = Object.freeze({
+  SEM_EXPEDICAO: 'IDLE_SEM_EXPEDICAO', NAO_TERMINOU: 'IDLE_NAO_TERMINOU',
+  SEM_ENCONTRO: 'IDLE_SEM_ENCONTRO', SEM_BOLA: 'IDLE_SEM_BOLA', INICIAL: 'IDLE_INICIAL',
+});
+const falha = (codigo, msg) => Object.assign(new Error(msg), { codigo });
+
 /* ── A LEITURA DA EQUIPE ───────────────────────────────────────────────────
  *
  * As criaturas vêm do banco com a stamina no formato (valor, instante), e o
@@ -141,6 +150,10 @@ export function iniciar(db, { userId, pack, bioma, perfil, equipe, agora, estagi
   if (!(pack?.biomas ?? []).some(b => b.id === bioma))
     throw new Error(`o bioma "${bioma}" não existe no pack ${pack?.id}`);
   if (!equipe?.length) throw new Error('expedição sem equipe');
+  /* A MESMA CRIATURA DUAS VEZES passaria na contagem abaixo (cada id acha a
+     sua linha) e renderia como equipe de dois — o multiplicador de
+     concentração pago por uma criatura só (ST-13.2b). */
+  if (new Set(equipe).size !== equipe.length) throw new Error('a mesma criatura duas vezes na equipe');
   if (equipe.length > EQUIPE_MAX)
     throw new Error(`a equipe tem ${equipe.length}, e o teto é ${EQUIPE_MAX}`);
 
@@ -157,6 +170,12 @@ export function iniciar(db, { userId, pack, bioma, perfil, equipe, agora, estagi
   if (!estagioAberto(colecao, est))
     throw new Error(`o estágio ${est} pede uma criatura no nível ${nivelDoEstagio(est)}, ` +
       `e a sua melhor está no ${estagioMaximo(colecao)}º`);
+
+  /* QUEM JÁ ESTÁ EM CAMPO NÃO SAI DE NOVO (L-162 no cliente). Sem isto, uma
+     criatura com stamina para duas Batidas estaria em duas expedições ao
+     mesmo tempo, rendendo nas duas. */
+  const fora = new Set(emCampo(db, userId).flatMap(x => JSON.parse(x.equipe_json)));
+  if (equipe.some(id => fora.has(id))) throw new Error('uma das escolhidas já está em expedição — recolha-a antes');
 
   const { pode, semStamina } = podeEnviar(membros, perfil, agora);
   if (!pode) throw new Error(`sem stamina: ${semStamina.join(', ')}`);
@@ -214,8 +233,8 @@ export function bonusDoServidor(db, userId, pack) {
 
 export function colher(db, { id, pack, agora, raiz = novaRaiz() }) {
   const exp = db.prepare(`SELECT * FROM expedicoes WHERE id = ?`).get(id);
-  if (!exp) throw new Error('expedição não existe');
-  if (agora < exp.termina_em) throw new Error('a expedição ainda não terminou');
+  if (!exp) throw falha(ERRO_IDLE.SEM_EXPEDICAO, 'expedição não existe');
+  if (agora < exp.termina_em) throw falha(ERRO_IDLE.NAO_TERMINOU, 'a expedição ainda não terminou');
 
   db.exec('BEGIN');
   try {
@@ -329,6 +348,60 @@ export function lancar(db, { userId, pack, dex, raridade, bola, agora,
     ? gerarCriatura(db, { userId, pack, dex, origem: 'captura' })
     : null;
   return { ...r, dex, criatura, semente: String(raiz) };
+}
+
+/* ── O LANCE PELA CHAVE DO ENCONTRO (ST-13.2b) ────────────────────────────
+ *
+ * O `lancar` acima recebe o dex e a raridade de quem chama — servia enquanto
+ * ninguém de fora chamava. Pela rota, isso seria o cliente dizendo "joguei a
+ * bola num Mewtwo comum". Aqui o cliente manda só a CHAVE do encontro que a
+ * colheita gravou, e a bola; o resto vem do banco.
+ *
+ * UM ENCONTRO, UM LANCE — como no aparelho, onde o encontro sai da fila acerte
+ * ou erre. A marca `resolvido_em` é decidida na cláusula, como a colheita.
+ *
+ * E A RAIZ DO LANCE É NOVA, do servidor. No aparelho ela deriva da semente da
+ * colheita; aqui essa semente vai na resposta da colheita, e derivar dela
+ * deixaria o cliente saber, antes de lançar, qual bola acerta — escolher a
+ * bola deixaria de ser decisão. */
+export function lancarPendente(db, { userId, pack, chave, bola, agora, raiz = novaRaiz() }) {
+  /* O DONO é conferido aqui, e só aqui; QUEM VENCE o lance é decidido na
+     cláusula do UPDATE, e só lá. Uma guarda em cada lugar, e não as duas
+     nos dois: repetida, a falha de uma seria coberta pela outra por acidente
+     (o S564 da ST-13.2a), e o teste não saberia qual das duas o protege. */
+  const en = db.prepare(`SELECT * FROM encontros_pendentes WHERE chave = ? AND user_id = ?`).get(chave, userId);
+  if (!en) throw falha(ERRO_IDLE.SEM_ENCONTRO, 'esse encontro não está mais aqui');
+  if (!chanceDe(pack, { raridade: en.raridade, bola }))
+    throw new Error(`a bola ${bola} não tem chance contra um ${en.raridade}`);
+
+  db.exec('BEGIN');
+  try {
+    const r = db.prepare(`UPDATE encontros_pendentes SET resolvido_em = ?
+                           WHERE chave = ? AND resolvido_em IS NULL`).run(agora, chave);
+    if (!r.changes) throw falha(ERRO_IDLE.SEM_ENCONTRO, 'esse encontro não está mais aqui');
+    if (!debitarBolsa(db, userId, bola, 1)) throw falha(ERRO_IDLE.SEM_BOLA, `não há ${bola} na bolsa`);
+    const t = tentar(semente(derivar(raiz, 'lance')), pack, { raridade: en.raridade, bola });
+    const criatura = t.capturou ? gerarCriatura(db, { userId, pack, dex: en.dex, origem: 'captura' }) : null;
+    db.exec('COMMIT');
+    return { ...t, chave, dex: en.dex, raridade: en.raridade, criatura };
+  } catch (e) {
+    try { db.exec('ROLLBACK'); } catch {}
+    throw e;
+  }
+}
+
+export const pendentesDe = (db, userId) =>
+  db.prepare(`SELECT chave, dex, raridade, bioma, em FROM encontros_pendentes
+               WHERE user_id = ? AND resolvido_em IS NULL ORDER BY em, chave`).all(userId);
+
+/* A INICIAL, uma vez por conta (ST-13.2b) — sem ela, a conta nova não tem
+   quem mandar a campo. A mesma regra do aparelho: só entre as do pack, e só
+   com a coleção vazia. */
+export function escolherInicial(db, { userId, pack, dex }) {
+  if (!(pack?.iniciais ?? []).includes(dex)) throw falha(ERRO_IDLE.INICIAL, `o ${dex} não é uma das iniciais`);
+  if (db.prepare(`SELECT 1 FROM criaturas WHERE user_id = ? LIMIT 1`).get(userId))
+    throw falha(ERRO_IDLE.INICIAL, 'a criatura inicial só se escolhe uma vez');
+  return gerarCriatura(db, { userId, pack, dex, origem: 'inicial' });
 }
 
 /* A stamina de uma criatura, agora — para a tela e para a decisão de quem

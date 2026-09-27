@@ -1254,7 +1254,7 @@ local vira cache; sem conta, nada muda.
   cliente (a reserva pelo tamanho da equipe, L-140; o registro, 1.19).
 - `creditarTreino` (cliente) removido: sem chamador depois da extração.
 
-#### ST-13.2b · As rotas da expedição e o lance pelo servidor
+#### ST-13.2b · As rotas da expedição e o lance pelo servidor ✅ 27/09
 - **Escopo:** `POST /api/idle/expedicao` (iniciar), `POST /api/idle/colher`
   (idempotente: a mesma expedição devolve a resposta gravada), `POST
   /api/idle/lancar` pela CHAVE do encontro pendente — o dex e a raridade vêm
@@ -1262,6 +1262,19 @@ local vira cache; sem conta, nada muda.
   encontro, um lance. O relógio é o do servidor.
 - **Aceite:** o da ficha acima; e a emissão por jogador-dia do servidor bate
   com a fixture da ST-3.3.
+- **Feito:** `POST /api/idle/inicial` (uma vez por conta, só as do pack —
+  sem ela a conta nova não tem quem mandar), `/expedicao` (as vagas do
+  registro do servidor), `/colher` (a segunda devolve a resposta gravada,
+  `repetido`), `/lancar` (`lancarPendente`: a chave, a raiz NOVA do servidor —
+  derivar da semente da colheita, que vai na resposta, deixaria saber antes
+  qual bola acerta). O relógio é o do servidor em todas; um instante no corpo
+  é ignorado. Guardas novas no `iniciar`: a mesma criatura duas vezes, e
+  quem já está em campo. `GET /api/idle` passa a listar os pendentes.
+- **A emissão:** um dia de 36 h com raízes fixas — o servidor e o aparelho
+  aceitam e recusam as MESMAS saídas (5, com recusas de teto e stamina) e
+  terminam com a mesma bolsa e os mesmos encontros no teto. Como a fixture da
+  ST-3.3 é medida pelas funções do aparelho, bater com o aparelho é bater com
+  ela. `test/colheita-rotas.mjs` · S1601–S1612.
 
 #### ST-13.2c · A run do Avanço e a luta da jornada no servidor
 - **Escopo:** a run começa e se colhe pelo servidor (a reserva no teto, o

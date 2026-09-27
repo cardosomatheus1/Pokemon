@@ -33,6 +33,7 @@ import { ERRO_MERCADO } from './mercado.mjs';
 import { rotasDoMercado } from './mercado-rotas.mjs';
 import { rotasDoDoce } from './doce-rotas.mjs';
 import { rotasDaColecao } from './colecao-rotas.mjs';
+import { ERRO_IDLE } from './idle.mjs';
 import { ERRO_DOCE } from './doce.mjs';
 import { definirLimite, confirmarAumento, limitesDe, pedidosDe, TIPOS_LIMITE,
          ERRO_LIMITE } from './limites.mjs';
@@ -143,6 +144,12 @@ const STATUS_DE = {
   [ERRO_MERCADO.SEM_MERCADO]: 409,
   [ERRO_MERCADO.SELECAO]: 400,
   [ERRO_MERCADO.SEM_ENTRADA]: 404,
+  /* O idle com conta (ST-13.2b): esperar o fim é conflito com o estado. */
+  [ERRO_IDLE.SEM_EXPEDICAO]: 404,
+  [ERRO_IDLE.NAO_TERMINOU]: 409,
+  [ERRO_IDLE.SEM_ENCONTRO]: 404,
+  [ERRO_IDLE.SEM_BOLA]: 409,
+  [ERRO_IDLE.INICIAL]: 409,
 };
 
 /* Converte a exceção do domínio em resposta. O `limite` e a `pausa` viajam
@@ -170,7 +177,7 @@ export const ROTAS = {
   ...rotasDoDoce(daExcecao),
   /* A coleção do idle com conta (ST-13.1): só leitura; a escrita é por
      operação nomeada, na lista de `colecao-rotas.mjs`. */
-  ...rotasDaColecao(),
+  ...rotasDaColecao(daExcecao),
 
 
   /* --- autenticação ----------------------------------------------------- */

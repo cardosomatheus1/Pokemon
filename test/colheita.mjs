@@ -23,7 +23,6 @@ import { VAZIO } from '../app/modules/idle-dados.mjs';
 import { colher as colherNoCliente } from '../app/modules/idle-colheita.mjs';
 import { PERFIS, STAMINA_MAX, restamEncontros, TETO_ENCONTROS, tetoDeEncontros } from '../engine/expedicao.mjs';
 import { xpParaNivel } from '../engine/nivel-criatura.mjs';
-import { novaRaiz } from '../engine/seed.mjs';
 
 const T0 = Date.UTC(2026, 8, 27, 9);
 const recusa = fn => { try { fn(); return null; } catch (e) { return e; } };
@@ -78,7 +77,8 @@ export function suite() {
     let comparadas = 0, comNpc = 0, comTreino = 0;
     for (const caso of casos) for (let k = 0; k < 6; k++) {
       const c = cena(caso);
-      const raiz = novaRaiz();
+      /* Raiz FIXA por caso: "houve treinador" não pode depender da sorte do dia. */
+      const raiz = (0xc01e000 + comparadas).toString(16).padStart(32, '0');
       const rs = colherNoServidor(c.db, { id: c.exp.id, pack: PACK, agora: c.fim, raiz });
       const rc = colherNoCliente(c.e, { pack: PACK, id: c.exp.id, agora: c.fim, raiz, bonus: null });
       igual(JSON.stringify(rs), JSON.stringify(rc), `${caso.perfil}/${caso.equipe}: a resposta do servidor e a do cliente divergem`);
