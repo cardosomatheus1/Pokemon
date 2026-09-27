@@ -19,6 +19,7 @@
 import { doceDaAposta, doceDaDuplicata, chaveDoDoce, apostasComDoceNoDia, XP_POR_DOCE } from '../../engine/doce.mjs';
 import { creditar, nivelDe, NIVEL_MAX } from '../../engine/nivel-criatura.mjs';
 import { raridadeDe } from '../../engine/bioma.mjs';
+import { motivoDeSoltar } from './colecao-regras.mjs';
 
 const MEMORIA_RODADAS = 60;
 const DIA_MS = 24 * 3600_000;
@@ -72,9 +73,9 @@ export function doceAoSoltar(pack, dex) {
 
 export function soltarCriatura(e, { pack, id, ondeAventura }) {
   const c = (e.criaturas ?? []).find(x => x.id === id);
-  if (!c) return { ok: false, motivo: 'esta criatura não existe' };
-  if (!c.naCaixa) return { ok: false, motivo: 'só dá para soltar quem está na caixa' };
-  if (ondeAventura?.(e, id)) return { ok: false, motivo: 'ela está em aventura — recolha-a antes' };
+  /* A regra é a de `colecao-regras.mjs` (ST-13.3a) — a mesma do servidor. */
+  const motivo = motivoDeSoltar(c, !!ondeAventura?.(e, id));
+  if (motivo) return { ok: false, motivo };
   const doce = doceAoSoltar(pack, c.dex);
   const linha = chaveDoDoce(pack, c.dex);
   e.criaturas = e.criaturas.filter(x => x.id !== id);

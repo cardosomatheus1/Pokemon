@@ -36,6 +36,7 @@ import { bolsaDe, registroDe, emCampo, estadoDoTeto, especiesVistas, pendentesDe
          iniciar, colher, lancarPendente, escolherInicial } from './idle.mjs';
 import { staminaAgora, restamEncontros, vagasPor, EQUIPE_MAX } from '../engine/expedicao.mjs';
 import { sincronizarRun, comecarRun, pocaoNaRun, recuarNaRun, colherRun } from './run.mjs';
+import { moverNaConta, trocarNaConta, soltarNaConta, escolherFocoNaConta } from './colecao.mjs';
 import { estagioMaximo, proximoEstagio } from '../engine/estagios.mjs';
 
 /* As ESCRITAS permitidas sob `/api/idle`, por nome. */
@@ -43,12 +44,15 @@ export const OPERACOES_DO_IDLE = Object.freeze([
   'POST /api/idle/inicial', 'POST /api/idle/expedicao', 'POST /api/idle/colher', 'POST /api/idle/lancar',
   /* A run do Avanço (ST-13.2c2). */
   'POST /api/idle/run', 'POST /api/idle/run/pocao', 'POST /api/idle/run/recuar', 'POST /api/idle/run/colher',
+  /* A coleção (ST-13.3a): a caixa, a troca, soltar e o foco. */
+  'POST /api/idle/mover', 'POST /api/idle/trocar', 'POST /api/idle/soltar', 'POST /api/idle/foco',
 ]);
 
 /* A criatura como o cliente a lê: sem a semente dos ocultos e sem o dono. */
 const paraCliente = (c, stamina) => ({
   id: c.id, dex: c.especie, iv: c.iv, potencial: c.potencial, natureza: c.natureza.nome,
-  exemplar: c.exemplar, nivel: c.nivel, vinculo: c.vinculo, foco: c.foco,
+  exemplar: c.exemplar, nivel: c.nivel, xp: c.xp ?? 0, vinculo: c.vinculo, foco: c.foco,
+  naCaixa: !!c.naCaixa, descansaAte: c.descansaAte ?? null,
   ...(stamina != null ? { stamina } : {}), origem: c.origem, criadaEm: c.criadaEm,
 });
 const expedicaoParaCliente = (x, agora) => ({
@@ -151,6 +155,31 @@ export function rotasDaColecao(daExcecao) {
       if (!x) return { status: 404, corpo: { codigo: 'RUN_SEM_RUN', erro: 'run não existe' } };
       if (x.colhida_em != null) return { corpo: { run: JSON.parse(x.resultado_json), repetido: true } };
       return tentar(() => ({ run: colherRun(db, { userId, pack: PACK, agora }) }));
+    },
+
+    /* ── A COLEÇÃO (ST-13.3a) ── a regra é a de `colecao-regras.mjs`. */
+    'POST /api/idle/mover': ({ db, corpo, userId }) => {
+      const id = texto(corpo?.id);
+      if (!id || typeof corpo?.caixa !== 'boolean') return recusa('movimento inválido');
+      return tentar(() => moverNaConta(db, { userId, id, paraCaixa: corpo.caixa }));
+    },
+
+    'POST /api/idle/trocar': ({ db, corpo, userId }) => {
+      const sai = texto(corpo?.sai), entra = texto(corpo?.entra);
+      if (!sai || !entra || sai === entra) return recusa('troca inválida');
+      return tentar(() => trocarNaConta(db, { userId, sai, entra }));
+    },
+
+    'POST /api/idle/soltar': ({ db, corpo, userId, agora }) => {
+      const id = texto(corpo?.id);
+      if (!id) return recusa('criatura inválida');
+      return tentar(() => soltarNaConta(db, { userId, pack: PACK, id, agora }));
+    },
+
+    'POST /api/idle/foco': ({ db, corpo, userId, agora }) => {
+      const id = texto(corpo?.id), foco = texto(corpo?.foco);
+      if (!id || !foco) return recusa('foco inválido');
+      return tentar(() => escolherFocoNaConta(db, { userId, id, foco, agora }));
     },
 
     'POST /api/idle/lancar': ({ db, corpo, userId, agora }) => {

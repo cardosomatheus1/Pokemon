@@ -84,6 +84,8 @@ export function comecarRun(db, { userId, pack, bioma, estagio = 1, equipe, agora
     throw new Error(`O estágio ${est} pede uma criatura no nível ${nivelDoEstagio(est)}, e a sua melhor está no ${estagioMaximo(colecao)}º`);
   const membros = equipe.map(id => colecao.find(c => c.id === id)).filter(Boolean);
   if (membros.length !== equipe.length) throw new Error('Criatura que não existe na equipe');
+  const guardadas = membros.filter(c => c.naCaixa).length;
+  if (guardadas) throw new Error(`${guardadas} criatura(s) estão na caixa — tire-as antes`);
   const fora = new Set(emCampo(db, userId).flatMap(x => JSON.parse(x.equipe_json)));
   if (equipe.some(id => fora.has(id))) throw new Error('esta criatura já está numa expedição — recolha-a antes');
   const { pode, semStamina } = podeAvancar(membros, agora);

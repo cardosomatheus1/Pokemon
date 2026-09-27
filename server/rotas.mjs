@@ -35,6 +35,7 @@ import { rotasDoDoce } from './doce-rotas.mjs';
 import { rotasDaColecao } from './colecao-rotas.mjs';
 import { ERRO_IDLE } from './idle.mjs';
 import { ERRO_RUN } from './run.mjs';
+import { ERRO_COLECAO } from './colecao.mjs';
 import { ERRO_DOCE } from './doce.mjs';
 import { definirLimite, confirmarAumento, limitesDe, pedidosDe, TIPOS_LIMITE,
          ERRO_LIMITE } from './limites.mjs';
@@ -155,6 +156,7 @@ const STATUS_DE = {
   [ERRO_RUN.SEM_RUN]: 409,
   [ERRO_RUN.EM_CURSO]: 409,
   [ERRO_RUN.ABERTA]: 409,
+  [ERRO_COLECAO.SEM_CRIATURA]: 404,
 };
 
 /* Converte a exceção do domínio em resposta. O `limite` e a `pausa` viajam

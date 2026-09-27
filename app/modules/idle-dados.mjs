@@ -27,6 +27,7 @@
  * aproveitar, e o que não dá vira lista vazia. Perder uma expedição é ruim;
  * perder a aba é pior, e é irreversível para quem não sabe abrir o console.
  */
+import { PARTY_MAX, equipeCheiaEm, motivoDeMover } from './colecao-regras.mjs';
 import { camposDaEscada, sincronizarPossuidas } from './pokedex-estado.mjs';
 import { camposDoDoce } from './doce-dados.mjs'; import { camposDaColecao, camposDaJornada } from './colecao-dados.mjs';
 import { novaRaiz, derivar } from '../../engine/seed.mjs';
@@ -510,7 +511,7 @@ export { colher } from './idle-colheita.mjs';
  *
  * A EXPEDIÇÃO SÓ LEVA QUEM ESTÁ NA EQUIPE. Mandar da caixa faria a caixa ser um
  * segundo bolso sem custo, e aí os seis deixariam de significar alguma coisa. */
-export const PARTY_MAX = 6;
+export { PARTY_MAX };
 
 /* HIDRATADAS, como `criaturasDe`. Sem isto elas devolvem a criatura CRUA — sem
    `potencial`, que e derivado do IV e nao guardado —, e a tela do Centro
@@ -521,20 +522,17 @@ export const PARTY_MAX = 6;
    como saber qual e a certa olhando a chamada. */
 export const naEquipe = e => e.criaturas.filter(c => !c.naCaixa).map(hidratar);
 export const naCaixa  = e => e.criaturas.filter(c => c.naCaixa).map(hidratar);
-export const equipeCheia = e => naEquipe(e).length >= PARTY_MAX;
+export const equipeCheia = e => equipeCheiaEm(e.criaturas);
 
 /* MOVER ENTRE OS DOIS. A única regra é o teto da equipe — a caixa não tem teto,
    porque um teto de caixa transformaria a coleção num problema de logística, e
    o que se quer dela é que ela seja um lugar para onde as coisas vão. */
+/* A REGRA mora em `colecao-regras.mjs` (ST-13.3a), a mesma que o servidor
+   pergunta: o teto de seis, e a equipe nunca vazia. */
 export function mover(e, id, paraCaixa) {
+  const motivo = motivoDeMover(e.criaturas, id, paraCaixa);
+  if (motivo) throw new Error(motivo);
   const c = acharCriatura(e, id);
-  if (!c) throw new Error('essa criatura não existe');
-  if (!paraCaixa && equipeCheia(e) && c.naCaixa)
-    throw new Error(`a equipe já tem ${PARTY_MAX} — guarde uma antes de tirar outra`);
-  /* NÃO SE ESVAZIA A EQUIPE. Sem ninguém ativo não há expedição possível, e o
-     jogador se tranca fora do próprio jogo sem nenhum aviso. */
-  if (paraCaixa && naEquipe(e).length <= 1)
-    throw new Error('a equipe não pode ficar vazia');
   c.naCaixa = !!paraCaixa;
   return c;
 }

@@ -1326,7 +1326,33 @@ escolhidos, que o servidor só terá com a ST-13.3 — virou a **ST-13.7**.
   cliente e passam a nascer da luta (fecha a **L-208**).
 - **Portões:** Q1 Q2 Q3 Q6 Q9.
 
-### ST-13.3 · XP, evolução, golpes e doce como operações
+### ST-13.3 · XP, evolução, golpes e doce como operações — dividida (27/09)
+O levantamento achou seis operações (caixa, soltar, foco, golpes, evolução,
+doce), cada uma com a identidade contra o aparelho; e o doce mexe no livro
+do servidor. Três partes:
+
+#### ST-13.3a · Caixa, soltar e foco ✅ 27/09 (fecha a L-210)
+- `app/modules/colecao-regras.mjs` (camada 0): o teto de seis, a equipe
+  nunca vazia, a ordem da troca e quem pode ser solto — o aparelho
+  (`idle-dados`, `time-local`, `doce-dados`) e o servidor perguntam ali.
+- Migração `colecao-st13.3a`: `na_caixa` (quem passava de seis ativas vai
+  para a caixa pela ordem de chegada), `foco_em`, `descansa_ate`; o livro do
+  doce aceita `soltar` e `uso`.
+- `server/colecao.mjs` + `POST /api/idle/mover`, `/trocar`, `/soltar`,
+  `/foco`; a captura com a equipe cheia cai na caixa; a expedição e a run
+  recusam quem está nela. `test/colecao-ops.mjs` · S1633–S1642.
+
+#### ST-13.3b · Golpes e evolução
+- **Escopo:** o moveset escolhido (`golpes`, `exclusivos`) e a evolução (com
+  o item consumido e os exclusivos que vão junto) como rotas, pelas funções
+  do aparelho (`moveset-dados`, `evolucao-idle`); identidade.
+
+#### ST-13.3c · Dar doce
+- **Escopo:** gastar o doce da linha no servidor (motivo `uso` no livro), a
+  mesma regra do `darDoce`; e o que muda no resgate quando o servidor é a
+  fonte (o doce deixa de descer ao aparelho de quem tem conta — a ST-13.5).
+
+### ST-13.3 · (a ficha original)
 - **Porte** M · **Servidor** sim · **Depende de** ST-13.2, ST-9.9, ST-9.10, ST-9.12
 - **Escopo:** dar doce, evoluir, trocar golpes e soltar viram rotas; a regra é
   a mesma função da camada 0 que o cliente usa (um caminho só).

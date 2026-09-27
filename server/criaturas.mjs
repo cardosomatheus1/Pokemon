@@ -91,6 +91,10 @@ function hidratar(linha, pack) {
                   : { nome: linha.natureza, sobe: null, desce: null },
     nivel: linha.nivel, vinculo: linha.vinculo, foco: linha.foco,
     origem: linha.origem, semente: linha.semente, criadaEm: linha.criada_em,
+    /* ST-13.3a: a caixa e o descanso do foco (as colunas nascem na migração
+       colecao-st13.3a; num banco anterior, ausentes, valem o padrão). */
+    xp: linha.xp ?? 0, naCaixa: linha.na_caixa === 1,
+    focoEm: linha.foco_em ?? null, descansaAte: linha.descansa_ate ?? null,
   };
 }
 

@@ -312,6 +312,9 @@ const CAMADA = {
      equipe já hidratada e o instante. O SERVIDOR a importa: por isso ela não
      pode tocar save, DOM nem relógio. */
   'avanco-conta.mjs': 0,
+  /* CAMADA 0: as regras da coleção (ST-13.3a) — a caixa, a troca e o soltar.
+     O servidor as importa, e por isso não tocam save, DOM nem relógio. */
+  'colecao-regras.mjs': 0,
   /* CAMADA 0: a posicao de cada particula e funcao pura de (t, i, W, H).
      Sem estado de modulo de proposito — foi uma let de modulo deixada para
      tras numa divisao que matou a cena inteira com a suite verde (D-089). */

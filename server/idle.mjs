@@ -52,6 +52,7 @@ import { estagioAberto, estagioMaximo, nivelDoEstagio } from '../engine/estagios
 import { nivelDe } from '../engine/nivel-criatura.mjs';
 import { gerar as gerarCriatura } from './criaturas.mjs';
 import { naRun, sincronizarRun } from './run.mjs';
+import { equipeCheiaEm } from '../app/modules/colecao-regras.mjs';
 import { ENCONTROS_POR_AVANCO } from '../engine/avanco.mjs';
 
 const DIA_MS = 24 * 3600_000;
@@ -137,10 +138,12 @@ export const especiesVistas = (db, userId, packId) =>
 /* As criaturas do jogador no formato que a CONTA lê (o do save): o XP, e não o
    nível, porque o nível é derivado dele. */
 export const criaturasDaConta = (db, userId) =>
-  db.prepare(`SELECT id, dex, xp, vinculo, foco, treinado_ate, stamina, stamina_em FROM criaturas
-               WHERE user_id = ? ORDER BY criada_em, id`).all(userId)
+  db.prepare(`SELECT id, dex, xp, vinculo, foco, treinado_ate, stamina, stamina_em, na_caixa, foco_em, descansa_ate
+               FROM criaturas WHERE user_id = ? ORDER BY criada_em, id`).all(userId)
     .map(l => ({ id: l.id, dex: l.dex, xp: l.xp, nivel: nivelDe(l.xp), vinculo: l.vinculo, foco: l.foco,
-                 stamina: l.stamina, staminaEm: l.stamina_em,
+                 stamina: l.stamina, staminaEm: l.stamina_em, naCaixa: l.na_caixa === 1,
+                 ...(l.foco_em != null ? { focoEm: l.foco_em } : {}),
+                 ...(l.descansa_ate != null ? { descansaAte: l.descansa_ate } : {}),
                  ...(l.treinado_ate != null ? { treinadoAte: l.treinado_ate } : {}) }));
 
 export const emCampo = (db, userId) =>
@@ -171,6 +174,10 @@ export function iniciar(db, { userId, pack, bioma, perfil, equipe, agora, estagi
   const membros = equipeDe(db, userId, equipe);
   if (membros.length !== equipe.length)
     throw new Error('a equipe tem criatura que não é sua ou não existe');
+  /* SÓ QUEM ESTÁ NA EQUIPE ATIVA VAI A CAMPO (ST-13.3a): mandar da caixa
+     faria dela um segundo bolso sem custo, e os seis deixariam de ser escolha. */
+  const guardadas = equipe.filter(id => db.prepare(`SELECT na_caixa FROM criaturas WHERE id = ?`).get(id)?.na_caixa === 1).length;
+  if (guardadas) throw new Error(`${guardadas} criatura(s) estão na caixa — tire-as antes`);
 
   /* O ESTÁGIO É CONFERIDO AQUI, como no cliente (1.10): pedir um estágio
      acima do que a coleção abre é RECUSADO, venha o pedido de onde vier. */
@@ -397,7 +404,13 @@ export function lancarPendente(db, { userId, pack, chave, bola, agora, raiz = no
     if (!r.changes) throw falha(ERRO_IDLE.SEM_ENCONTRO, 'esse encontro não está mais aqui');
     if (!debitarBolsa(db, userId, bola, 1)) throw falha(ERRO_IDLE.SEM_BOLA, `não há ${bola} na bolsa`);
     const t = tentar(semente(derivar(raiz, 'lance')), pack, { raridade: en.raridade, bola });
+    /* A CAPTURA NUNCA É RECUSADA por equipe cheia: vai para a caixa. */
+    const paraCaixa = equipeCheiaEm(criaturasDaConta(db, userId));
     const criatura = t.capturou ? gerarCriatura(db, { userId, pack, dex: en.dex, origem: 'captura' }) : null;
+    if (criatura && paraCaixa) {
+      db.prepare(`UPDATE criaturas SET na_caixa = 1 WHERE id = ?`).run(criatura.id);
+      criatura.naCaixa = true;
+    }
     db.exec('COMMIT');
     return { ...t, chave, dex: en.dex, raridade: en.raridade, criatura };
   } catch (e) {

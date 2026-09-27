@@ -8805,7 +8805,7 @@ acabamento da LEITURA (nó atual, setas, risco, título, cena longe de você).
 **O que a destrava:** nada; é a ST-10.22. O cenário do mapa é de olhar, como o
 do idle — "parece de um jogo publicado?".
 
-### L-210 — o servidor não sabe o que é equipe ativa e o que é caixa
+### L-210 — o servidor não sabe o que é equipe ativa e o que é caixa ✅ FECHADA na ST-13.3a (27/09)
 
 **Registrada em:** 27/09/2026, na ST-13.2a. **Bloco dono:** ST-13.3 (as
 operações da coleção — mover entre equipe e caixa é uma delas). **Estado:**

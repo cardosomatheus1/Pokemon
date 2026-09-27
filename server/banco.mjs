@@ -1359,6 +1359,57 @@ export const MIGRACOES = [
       db.exec(`DROP TABLE runs`);
     },
   },
+  {
+    nome: 'colecao-st13.3a',
+    /* A COLEÇÃO GANHA O QUE O APARELHO JÁ TINHA (ST-13.3a, L-210).
+     *
+     *   criaturas.na_caixa     a equipe ativa (seis) e a caixa. Quem já
+     *                          passava de seis ativas no banco (a captura da
+     *                          13.2b não sabia de caixa) vai para a caixa pela
+     *                          ordem de chegada — as seis mais antigas ficam
+     *   criaturas.foco_em, descansa_ate   o foco e o descanso da troca (1.16)
+     *   candy_ledger           o motivo ganha `soltar` (a criatura solta vira
+     *                          doce da linha) e `uso` (dar doce, ST-13.3c). O
+     *                          SQLite não afrouxa CHECK: a tabela é copiada. */
+    sobe: db => {
+      db.exec(`ALTER TABLE criaturas ADD COLUMN na_caixa INTEGER NOT NULL DEFAULT 0 CHECK (na_caixa IN (0, 1))`);
+      db.exec(`ALTER TABLE criaturas ADD COLUMN foco_em INTEGER`);
+      db.exec(`ALTER TABLE criaturas ADD COLUMN descansa_ate INTEGER`);
+      db.exec(`UPDATE criaturas SET na_caixa = 1 WHERE id IN (
+                 SELECT id FROM (SELECT id, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY criada_em, id) AS n FROM criaturas)
+                 WHERE n > 6)`);
+      db.exec(`
+        CREATE TABLE candy_ledger_novo (
+          id          INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id     TEXT NOT NULL REFERENCES users(id),
+          species_id  INTEGER NOT NULL,
+          delta       INTEGER NOT NULL CHECK (delta != 0),
+          motivo      TEXT NOT NULL CHECK (motivo IN ('aposta', 'resgate', 'soltar', 'uso')),
+          idem_key    TEXT NOT NULL UNIQUE,
+          created_at  INTEGER NOT NULL
+        )`);
+      db.exec(`INSERT INTO candy_ledger_novo SELECT id, user_id, species_id, delta, motivo, idem_key, created_at FROM candy_ledger`);
+      db.exec(`DROP TABLE candy_ledger`);
+      db.exec(`ALTER TABLE candy_ledger_novo RENAME TO candy_ledger`);
+      db.exec(`CREATE INDEX candy_ledger_user ON candy_ledger(user_id, motivo, created_at)`);
+    },
+    desce: db => {
+      db.exec(`DELETE FROM candy_ledger WHERE motivo IN ('soltar', 'uso')`);
+      db.exec(`
+        CREATE TABLE candy_ledger_velho (
+          id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL REFERENCES users(id),
+          species_id INTEGER NOT NULL, delta INTEGER NOT NULL CHECK (delta != 0),
+          motivo TEXT NOT NULL CHECK (motivo IN ('aposta', 'resgate')),
+          idem_key TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL)`);
+      db.exec(`INSERT INTO candy_ledger_velho SELECT * FROM candy_ledger`);
+      db.exec(`DROP TABLE candy_ledger`);
+      db.exec(`ALTER TABLE candy_ledger_velho RENAME TO candy_ledger`);
+      db.exec(`CREATE INDEX candy_ledger_user ON candy_ledger(user_id, motivo, created_at)`);
+      db.exec(`ALTER TABLE criaturas DROP COLUMN descansa_ate`);
+      db.exec(`ALTER TABLE criaturas DROP COLUMN foco_em`);
+      db.exec(`ALTER TABLE criaturas DROP COLUMN na_caixa`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `
