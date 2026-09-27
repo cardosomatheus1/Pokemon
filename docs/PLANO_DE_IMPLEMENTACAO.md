@@ -1033,7 +1033,8 @@ Fatiada em duas (a original seria G).
 - **Aceite:** reprodutível pela raiz.
 - **Portões:** Q1 Q2 Q4.
 
-### ST-10.11 · A jornada: motor e progresso
+### ST-10.11 · A jornada: motor e progresso ✅ 27/09
+> Feito: `engine/jornada.mjs`, nós em ordem, insígnia uma vez, progresso aditivo; `jornada-local.mjs` com a semente antes da gravação; S1469–S1473.
 - **Porte** M · **Servidor** não · **Bloco dono** F4.5 · **Spec** §8.7
 - **Escopo:** `engine/jornada.mjs` com nós e ginásios em ordem, insígnia que libera o próximo, e progresso aditivo no save.
 - **Aceite:** insígnia fora de ordem recusada; repetir não dá insígnia de novo; o resultado vem sempre da simulação semeada.

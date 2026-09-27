@@ -28,7 +28,7 @@
  * perder a aba é pior, e é irreversível para quem não sabe abrir o console.
  */
 import { camposDaEscada, sincronizarPossuidas } from './pokedex-estado.mjs';
-import { camposDoDoce } from './doce-dados.mjs'; import { camposDaColecao } from './colecao-dados.mjs';
+import { camposDoDoce } from './doce-dados.mjs'; import { camposDaColecao, camposDaJornada } from './colecao-dados.mjs';
 import { novaRaiz, derivar } from '../../engine/seed.mjs';
 import { efeitosDa } from '../../engine/foco.mjs';
 import { semente, gerarInstancia, potencialDe, formaDe } from '../../engine/instancia.mjs';
@@ -115,7 +115,7 @@ export function carregar(deposito = globalThis.localStorage) {
   e.encontros  = arrayOu(cru.encontros,  'encontros',  problemas);
   e.bolsa      = objetoOu(cru.bolsa,     'bolsa',      problemas);
   e.registro     = objetoOu(cru.registro,    'registro',     problemas);
-  Object.assign(e, camposDaEscada(cru, e.criaturas), camposDoDoce(cru), camposDaColecao(cru));   // ST-9.2, 9.8, 9.15
+  Object.assign(e, camposDaEscada(cru, e.criaturas), camposDoDoce(cru), camposDaColecao(cru), camposDaJornada(cru));   // ST-9.2, 9.8, 9.15, 10.11
   /* ── `simultaneas` NAO E LIDO DO DISCO, E ISSO E A CORRECAO (D-072) ────
      A versao anterior aceitava o numero salvo e o apertava no maximo. Parecia
      defensivo — o clamp esta la — e nao era: `localStorage` esta a um F12 de

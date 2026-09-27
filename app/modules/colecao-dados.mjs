@@ -65,6 +65,11 @@ export function medalhasDeColecao(pack, e, { marcas = { vistas: [] }, naArena = 
 
 /* ── AS MISSÕES DA SEMANA ─────────────────────────────────────────────── */
 /* O campo do save, aditivo; lixo vira "semana ainda não vista". */
+/* ST-10.11: o campo da jornada chega ao carregador do save por aqui, junto do
+   da coleção — o `idle-dados` está no teto de 600 linhas, e uma importação a
+   mais o passaria. A regra do campo é do motor (`engine/jornada.mjs`). */
+export { camposDaJornada } from '../../engine/jornada.mjs';
+
 export function camposDaColecao(cru) {
   const m = cru?.missoes;
   const ok = m && Number.isFinite(m.semana) && m.base && typeof m.base === 'object' && Array.isArray(m.resgatadas);
