@@ -8303,6 +8303,17 @@ export const DEFEITOS = [
   { id:'S1387', arquivo:'app/modules/minha-colecao.mjs', nome:'o painel le a taxa do dossie por conta propria',
     real:'duas contas para o mesmo numero, e a segunda nao conhece a escada',
     de:'      odd: o?.odd ?? null, chance: o?.prob ?? null,', para:'      odd: o?.odd ?? null, chance: o?.prob ?? null, hist: dossie?.especies?.[f.dex]?.vitoria?.taxa,' },
+  /* ── ST-10.10 · o simulador de confrontos ─────────────────────────── */
+  { id:'S1466', arquivo:'engine/treino-builds.mjs', nome:'o confronto sorteia fora da raiz',
+    real:'a matriz de balanceamento nao se refaz — ninguem consegue conferir o numero que decidiu mexer num golpe',
+    de:'    const r = simular(pack, [bi], [bj], derivarIndice(raiz >>> 0, ramoDoPar(i, j), k));', para:'    const r = simular(pack, [bi], [bj], (Math.random() * 2 ** 32) >>> 0);' },
+  { id:'S1467', arquivo:'engine/treino-builds.mjs', nome:'a dominante sai de tras para frente',
+    real:'o relatorio aponta a especie mais fraca como a quebrada',
+    de:'  }).sort((a, b) => b.media - a.media || a.dex - b.dex);', para:'  }).sort((a, b) => a.media - b.media || a.dex - b.dex);' },
+  { id:'S1468', arquivo:'engine/treino-builds.mjs', nome:'a dificuldade por faixa usa outra raiz por nivel',
+    real:'a dificuldade medida nao bate com a chance que a tela mostra para o mesmo rival',
+    de:'    chances: niveis.map(nivel => ({ nivel, p: resumo(lote(pack, referencia(nivel), t.time, raiz, 0, sims)).p })),',
+    para:'    chances: niveis.map(nivel => ({ nivel, p: resumo(lote(pack, referencia(nivel), t.time, raiz + nivel, 0, sims)).p })),' },
   /* ── ST-10.9 · a batalha PvE na tela ─────────────────────────────── */
   { id:'S1462', arquivo:'app/modules/pve-dados.mjs', nome:'a vida da tela nao acumula o dano',
     real:'a barra volta a encher a cada golpe — a tela mostra outra luta que a do motor',

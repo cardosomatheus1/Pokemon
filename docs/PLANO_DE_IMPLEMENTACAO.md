@@ -1026,7 +1026,8 @@ Fatiada em duas (a original seria G).
 - **Aceite:** tudo derivado dos eventos, por um caminho só; uma luta jogada de ponta a ponta e capturada.
 - **Portões:** Q1 Q2 Q5.
 
-### ST-10.10 · O simulador de confrontos
+### ST-10.10 · O simulador de confrontos ✅ 27/09
+> Feito: matriz do elenco, dominantes e dificuldade por faixa, fixture reprodutível pela raiz; L-200, L-201; S1466–S1468.
 - **Porte** M · **Servidor** não · **Spec** §8.14
 - **Escopo:** `tools/simular-builds.mjs` produz a matriz de vitória entre builds, a espécie ou o golpe dominante, e a dificuldade por faixa, gravadas como fixture de medição.
 - **Aceite:** reprodutível pela raiz.

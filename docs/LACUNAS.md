@@ -8485,3 +8485,36 @@ atualizar na `visual-base.json` versionada as telas que mudaram (commit do
 **O que a destrava:** o `gerar:visual` avisar — ou fazer — isso sozinho quando a
 local muda telas que a versionada tem.
 
+### L-200 — o moveset padrão ignora físico × especial (o Chansey vence 0,1%)
+
+**Registrada em:** 27/09/2026, na ST-10.10 (o simulador de confrontos).
+**Bloco dono:** ST-10.13 (os ginásios como aulas). **Estado:** aberto.
+
+`padraoDoMoveset` escolhe os golpes mais recentes que o nível abriu, sem olhar
+se a criatura bate pelo ataque ou pelo especial. Medido na matriz 1×1 do
+elenco no nível 50: o Chansey (ataque 5, especial 35) recebe quatro golpes
+FÍSICOS e vence 0,1% dos confrontos; o Ditto, 4,7%. Na Arena isso não
+acontece — `atribuirGolpes` pesa ATQ × ESP. O jogador pode escolher os golpes
+(ST-9.12), mas os RIVAIS de treino lutam com o padrão: um ginásio com um rival
+assim ensinaria que a espécie é inútil, e não que o golpe estava errado.
+
+**O que a destrava:** a ST-10.13, que mede a dificuldade de cada ginásio, dar
+aos rivais o moveset pela categoria (ou pelo `atribuirGolpes` da Arena, que
+já decide isso), e o padrão do jogador ganhar a mesma regra com save antigo
+intocado.
+
+### L-201 — Skull Bash, da reserva, é 18% de todo o dano do treino
+
+**Registrada em:** 27/09/2026, na ST-10.10. **Bloco dono:** ST-10.17 (recompensas
+e balanceamento PvE). **Estado:** aberto.
+
+A matriz do elenco no nível 50 põe o Skull Bash (normal, 130, físico) em
+primeiro entre os golpes: 18,0% do dano de todas as lutas, contra 10,8% do
+segundo (Surf). Não é o golpe que é forte demais sozinho: é que ele está na
+lista de RESERVA, que toda espécie alcança, e o padrão o pega. É o "golpe
+quebrado" que o §8.14 pede para detectar — e a decisão (tirá-lo da reserva,
+baixar o poder, ou deixar) é de balanceamento, não deste bloco.
+
+**O que a destrava:** a ST-10.17 decidir com a matriz na mão (`tools/simular-builds.mjs`
+refaz em 7 s).
+
