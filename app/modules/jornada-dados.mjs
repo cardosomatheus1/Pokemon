@@ -28,6 +28,7 @@
  * floresta, rochas no caminho da pedra) nas diagonais de cima, onde nem o
  * caminho deitado nem o em pé passam, e longe do nome, que fica embaixo.
  */
+import { especieDe } from '../../engine/especie.mjs';
 import { nosDa, noAtual } from '../../engine/jornada.mjs';
 import { montarLutador } from '../../engine/treino-batalha.mjs';
 import { efeito } from '../../engine/primitivas.mjs';
@@ -55,7 +56,11 @@ export function mapaDaJornada(pack, prog) {
   const vencidos = new Set(prog?.vencidos ?? []);
   const lista = nos.map((no, i) => ({
     id: no.id, nome: no.nome ?? no.id, rival: no.rival, insignia: no.insignia ?? null,
-    tipo: no.insignia ? 'ginasio' : 'rota', cena: no.cena ?? null, licao: no.licao ?? null,
+    tipo: no.chefe ? 'chefe' : no.insignia ? 'ginasio' : 'rota', cena: no.cena ?? null, licao: no.licao ?? null,
+    /* ST-10.18: o chefe é um lendário sozinho — o mapa desenha ELE, e não um
+       treinador; e o que ele paga é a essência dele. */
+    lendario: no.chefe ? (pack.treinadores ?? []).find(t => t.id === no.rival)?.time?.[0]?.dex ?? null : null,
+    essencia: no.chefe ? (pack.treinadores ?? []).find(t => t.id === no.rival)?.essencia ?? null : null,
     ow: (pack.treinadores ?? []).find(t => t.id === no.rival)?.ow ?? null,
     lider: no.insignia ? (pack.treinadores ?? []).find(t => t.id === no.rival)?.nome ?? null : null,
     estado: vencidos.has(no.id) ? 'vencido' : atual?.id === no.id ? 'atual' : 'trancado',
@@ -82,7 +87,9 @@ export function mapaDaJornada(pack, prog) {
 export function fraseDoNo(no, nome = 'o rival') {
   const rival = nome.replace(/^(O|A) /, m => m.toLowerCase());   /* "Vença o Rival", e não "Vença O Rival" */
   if (no.estado === 'trancado') return 'Trancado: vença o caminho antes dele.';
+  if (no.estado === 'vencido' && no.tipo === 'chefe') return `Vencido — a essência dele sai uma vez por dia; lutar de novo amanhã rende outra.`;
   if (no.estado === 'vencido') return no.tipo === 'ginasio' ? 'Vencido — a insígnia já é sua. Lutar de novo não a dá de novo.' : 'Vencido. Dá para lutar de novo, para treinar.';
+  if (no.tipo === 'chefe') return `O chefe: vença ${rival} para ganhar a essência dele — uma por dia. Ele nunca vira criatura sua.`;
   return no.tipo === 'ginasio' ? `Vença ${rival} para ganhar a insígnia.` : `Vença ${rival} para abrir o caminho.`;
 }
 
@@ -171,7 +178,7 @@ export function comparaVelocidade(pack, A, B) {
 /* A LIÇÃO DA IMUNIDADE NA TELA (ST-10.15): quem do seu time o tipo do líder
    não toca — pela MESMA tabela que a luta usa (`efeito`). */
 export const imunesNoTime = (pack, A, tipo) =>
-  (A ?? []).filter(c => efeito(pack.tipos.efetividade, tipo, (pack.especies ?? []).find(e => e.dex === c.dex)?.t ?? []) === 0);
+  (A ?? []).filter(c => efeito(pack.tipos.efetividade, tipo, especieDe(pack, c.dex)?.t ?? []) === 0);
 
 /* Os tipos que um tipo de golpe NÃO toca — para o painel dizer o que levar
    ("leve um Terrestre"), e não só que falta (Q7 da ST-10.15). */
@@ -226,7 +233,7 @@ export function danoPorCategoria(pack, eventos) {
    número que a luta não paga. */
 export function pagamentoDoNo(no, hoje, dia) {
   if (!no || no.estado === 'trancado') return null;
-  return recompensaPve({ no: { id: no.id, ginasio: no.tipo === 'ginasio' }, venceu: true, primeiraVez: no.estado !== 'vencido', dia, hoje, linhas: ['?'] });
+  return recompensaPve({ no: { id: no.id, ginasio: no.tipo === 'ginasio', chefe: no.tipo === 'chefe', essencia: no.essencia }, venceu: true, primeiraVez: no.estado !== 'vencido', dia, hoje, linhas: ['?'] });
 }
 
 /* A frase do pagamento — antes (o que paga) e depois (o que pagou). */
@@ -234,12 +241,16 @@ export function fraseDoPagamento(pack, r, { depois = false } = {}) {
   if (!r) return '';
   const moeda = pack.moedaPve?.nome ?? 'moeda';
   const bolas = Object.entries(r.bolas ?? {}).map(([b, n]) => `${n} ${(pack.bolas ?? []).find(x => x.id === b)?.rotulo ?? b}`);
+  const nomeDe = d => { const n = especieDe(pack, d)?.n ?? String(d); return (pack.nomeExibido ?? (x => x[0].toUpperCase() + x.slice(1)))(n); };
+  const essencias = Object.entries(r.essencias ?? {}).map(([d, n]) => `${n} essência de ${nomeDe(d)}`);
   if (r.motivo === 'derrota') return depois ? 'A derrota não tira nada.' : '';
   if (r.motivo === 'teto') return depois ? `O teto de hoje (${r.teto} ${moeda}) já foi: esta valeu como treino.` : `o teto de hoje (${r.teto}) já foi — a revanche vale como treino`;
   if (r.motivo === 'primeira') {
-    const partes = [`${r.pokecoin} ${moeda}`, ...bolas, depois ? `${Object.keys(r.doces).length} doce${Object.keys(r.doces).length === 1 ? '' : 's'}` : 'doce da linha de cada um'];
+    const doce = Object.keys(r.doces).length || !depois ? [depois ? `${Object.keys(r.doces).length} doce${Object.keys(r.doces).length === 1 ? '' : 's'}` : 'doce da linha de cada um'] : [];
+    const partes = [`${r.pokecoin} ${moeda}`, ...bolas, ...(essencias.length ? essencias : doce)];
     return depois ? `Ganhou: ${partes.join(' · ')}.` : `a primeira vitória paga ${partes.join(' · ')}`;
   }
-  return depois ? `Ganhou ${r.pokecoin} ${moeda} (hoje: ${r.hoje.pago} de ${r.teto}).`
-                : `a revanche paga ${r.pokecoin} ${moeda} (hoje: ${r.hoje.pago - r.pokecoin} de ${r.teto})`;
+  const mais = essencias.length ? ` + ${essencias.join(' · ')}` : '';
+  return depois ? `Ganhou ${r.pokecoin} ${moeda}${mais} (hoje: ${r.hoje.pago} de ${r.teto}).`
+                : `a revanche paga ${r.pokecoin} ${moeda}${mais} (hoje: ${r.hoje.pago - r.pokecoin} de ${r.teto})`;
 }

@@ -9,6 +9,7 @@
  * A tela não decide o que abriu, não conta insígnia e não grava progresso:
  * cada uma dessas é do motor e da camada 1.
  */
+import { especieDe } from '../../engine/especie.mjs';
 import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
@@ -32,12 +33,12 @@ function pintarPainel(mapa) {
   if (!alvo || !no) return;
   escolhido = no.id; chanceNaTela = null;
   const t = treinador(PACK, no.rival), rival = rivalDe(PACK, t);
-  const nomeDo = dex => nomeExibido(PACK.especies.find(e => e.dex === dex)?.n ?? '?');
+  const nomeDo = dex => nomeExibido(especieDe(PACK, dex)?.n ?? '?');
   /* Título, e LOGO a decisão (chance e botão): em 420 px a chance estava a
      1.080 px do topo, fora da tela (Q7 da ST-10.13). Nó vencido: o estado
      diz "vencido", e a revanche é ação secundária — a insígnia não repete. */
   const vencido = no.estado === 'vencido';
-  alvo.innerHTML = `<h4 class="jnTitulo">${no.nome}${no.tipo === 'ginasio' ? ` <span class="jnSelo">ginásio${no.lider ? ` · líder ${no.lider}` : ''}</span>` : ''}</h4>
+  alvo.innerHTML = `<h4 class="jnTitulo">${no.nome}${no.tipo === 'ginasio' ? ` <span class="jnSelo">ginásio${no.lider ? ` · líder ${no.lider}` : ''}</span>` : no.tipo === 'chefe' ? ' <span class="jnSelo jnSeloChefe">chefe · lendário</span>' : ''}</h4>
     <div class="jnChance${vencido ? ' jnVencido' : ''}">${vencido ? `<span class="jnFeitoSelo">${no.insignia ? `<img src="${arteDaInsignia(no.insignia)}" alt="">` : ''}vencido ✓</span>` : ''}
       <span class="tiny">seu time vence</span><strong id="jnNumero">…</strong><span class="tiny" id="jnErro">calculando</span>
       <span class="tiny jnCausa" id="jnCausa" hidden></span>
@@ -87,7 +88,7 @@ function pintarPainel(mapa) {
     const im = imunesNoTime(PACK, A, no.licao.tipoGolpe), causa = $('#jnCausa');
     $('#jnVel').innerHTML = `<div class="jnImune"><b>imune a ${no.licao.tipo}</b>${A.map(c => {
       const sim = im.includes(c);
-      const tipos = (PACK.especies.find(e => e.dex === c.dex)?.t ?? []).map(t => PACK.tipos.nomes?.[t] ?? t).join('/');
+      const tipos = (especieDe(PACK, c.dex)?.t ?? []).map(t => PACK.tipos.nomes?.[t] ?? t).join('/');
       return `<span class="${sim ? 'sim' : 'nao'}">${dexImg(c.dex, '', 'class="jnSprite"')}${nomeDo(c.dex)} <em>${tipos}</em> <i>${sim ? 'imune ✓' : 'leva o golpe'}</i></span>`;
     }).join('')}</div>`;
     if (causa) {
@@ -158,8 +159,8 @@ export function renderJornada({ nova = null } = {}) {
       ${bordaDoMapa().map(p => `<div class="jnPos jnB" style="--x:${p.x};--y:${p.y}">${quadro('cuttable_tree', 'jnProp')}</div>`).join('')}
       ${mapa.nos.map(n => `<div class="jnPos jn-${n.estado}" style="--x:${n.x};--y:${n.y}">
           ${cenaDoNo(n).map(c => (c.forma ? `<b class="jnLago" style="--dx:${c.dx}px;--dy:${c.dy}px"></b>` : quadro(c.folha, 'jnProp', `;--dx:${c.dx}px;--dy:${c.dy}px`))).join('')}
-          ${n.ow ? quadro(n.ow, 'jnOw') : ''}
-          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}" data-jn-no="${n.id}" title="${n.nome}"><i${n.tipo === 'ginasio' && n.estado === 'vencido' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : ''}</span></button></div>`).join('')}
+          ${n.ow ? quadro(n.ow, 'jnOw') : ''}${n.lendario ? `<b class="jnLend">${dexImg(n.lendario, '', 'class="jnLendImg"')}</b>` : ''}
+          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}" data-jn-no="${n.id}" title="${n.nome}"><i${n.tipo === 'ginasio' && n.estado === 'vencido' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : n.tipo === 'chefe' ? '<em>chefe · lendário</em>' : ''}</span></button></div>`).join('')}
       ${onde && eu ? `<div class="jnPos jnVoce${onde.fim ? ' jnFim' : ''}" style="--x:${onde.x};--y:${onde.y};--ax:${onde.ao.x};--ay:${onde.ao.y}"><b class="jnEu"><img src="${eu}" alt="você"></b></div>` : ''}
     </div>
     <div class="jnPainel" id="jnPainel"></div>`;
@@ -204,7 +205,7 @@ document.addEventListener('click', ev => {
      falava de "super-efetivo", que é a lição do ginásio anterior). */
   let licaoNoFim = '';
   if (PACK.jornada.find(n => n.id === id)?.licao?.mostra === 'vel') {
-    const v = comparaVelocidade(PACK, r.timeA, r.timeB), nome = dex => nomeExibido(PACK.especies.find(e => e.dex === dex)?.n ?? '?');
+    const v = comparaVelocidade(PACK, r.timeA, r.timeB), nome = dex => nomeExibido(especieDe(PACK, dex)?.n ?? '?');
     const rapido = v.deles.find(x => x.spe === v.alvo);
     /* A frase casa QUEM agiu antes com O QUE aconteceu: agir antes e perder é
        a fatia que a chance já dizia, e não a lição desmentida. */
@@ -215,7 +216,7 @@ document.addEventListener('click', ev => {
   }
   const lic = PACK.jornada.find(n => n.id === id)?.licao;
   if (lic?.mostra === 'imune') {
-    const pv = provaDaImunidade(PACK, r.timeA, r.resultado.eventos, lic.tipoGolpe), nome = dex => nomeExibido(PACK.especies.find(e => e.dex === dex)?.n ?? '?');
+    const pv = provaDaImunidade(PACK, r.timeA, r.resultado.eventos, lic.tipoGolpe), nome = dex => nomeExibido(especieDe(PACK, dex)?.n ?? '?');
     const frase = x => (x.golpes ? `${nome(x.dex)} levou ${x.golpes} ${x.golpes === 1 ? 'golpe' : 'golpes'} de ${lic.tipo}: dano ${x.dano}`
       : `contra ${nome(x.dex)} o rival nem tentou ${lic.tipo}${x.outros.length ? ` — só ${x.outros.join(' e ')} (dano ${x.danoOutros})` : ''}`);
     const maiuscula = t => t.charAt(0).toUpperCase() + t.slice(1);

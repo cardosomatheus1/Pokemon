@@ -29,7 +29,8 @@ export function lutarNaJornadaLocal({ pack, id, preset = 'balanced', semente = c
       saida = { ...lutarNo(pack, e.jornada, id, timeA, timeB, { semente, preset }), semente, timeA, timeB };
     } catch (x) { return { ok: false, motivo: x.message }; }
     const linhas = [...new Set(timeA.map(c => chaveDoDoce(pack, c.dex)))];
-    const rec = recompensaPve({ no: { id, ginasio: !!no.insignia }, venceu: saida.resultado.vencedor === 'A', primeiraVez: saida.primeiraVez,
+    const chefe = no.chefe ? treinador(pack, no.rival) : null;
+    const rec = recompensaPve({ no: { id, ginasio: !!no.insignia, chefe: !!no.chefe, essencia: chefe?.essencia }, venceu: saida.resultado.vencedor === 'A', primeiraVez: saida.primeiraVez,
                                 dia: diaDoMundo(agora), hoje: e.jornada?.pve, linhas });
     e.jornada = { ...saida.progresso, pve: rec.hoje };
     e.bolsa ??= {};
@@ -37,6 +38,9 @@ export function lutarNaJornadaLocal({ pack, id, preset = 'balanced', semente = c
     for (const [b, n] of Object.entries(rec.bolas)) e.bolsa[b] = (e.bolsa[b] ?? 0) + n;
     e.doces ??= {};
     for (const [l, n] of Object.entries(rec.doces)) e.doces[l] = (e.doces[l] ?? 0) + n;
+    /* A essência do chefe vai para a bolsa, com a espécie na chave — nunca a
+       criatura (L-057). */
+    for (const [d, n] of Object.entries(rec.essencias ?? {})) e.bolsa[`essencia:${d}`] = (e.bolsa[`essencia:${d}`] ?? 0) + n;
     saida.recompensa = rec;
     return { ok: true };
   }, deposito);

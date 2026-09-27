@@ -138,8 +138,8 @@ function colunaPve() {
     col[nome] = { lutasPorDia: p.lutas, nosDistintos: p.nos, pokecoinPorDia: +(soma / DIAS).toFixed(2) };
   }
   const nos = kanto.jornada ?? [];
-  col.primeiraVezInteira = { nos: nos.length, ginasios: nos.filter(n => n.insignia).length,
-    pokecoin: nos.reduce((a, n) => a + PVE.PRIMEIRA[n.insignia ? 'ginasio' : 'rota'], 0) };
+  col.primeiraVezInteira = { nos: nos.length, ginasios: nos.filter(n => n.insignia).length, chefes: nos.filter(n => n.chefe).length,
+    pokecoin: nos.reduce((a, n) => a + PVE.PRIMEIRA[n.chefe ? 'chefe' : n.insignia ? 'ginasio' : 'rota'], 0) };
   return col;
 }
 

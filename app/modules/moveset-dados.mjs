@@ -11,6 +11,7 @@
  * efeito, e nunca o poder da wave — o motor sorteia um índice, e o tamanho da
  * lista só decide qual nome sai. O combate com golpe de verdade é o E10.
  */
+import { especieDe } from '../../engine/especie.mjs';
 import { repertorio } from '../../engine/repertorio.mjs';
 import { exclusivosAbertos } from '../../engine/exclusivos.mjs';
 
@@ -22,7 +23,7 @@ export const GOLPES_MAX = 4;
    PRÓPRIA escala de nível (`repertorio`, 1.x): juntá-las antes mudaria em
    que nível cada golpe abre. */
 export const listasDaEspecie = (pack, dex) => {
-  const e = (pack?.especies ?? []).find(x => x.dex === dex);
+  const e = especieDe(pack, dex);
   const g = pack?.golpes ?? {};
   const reserva = g[pack?.poolReserva ?? 'normal'] ?? g.normal ?? [];
   return [...(e?.t ?? []).map(t => g[t] ?? reserva), reserva];
@@ -93,7 +94,7 @@ export function alternarGolpe(pack, c, nome) {
    dele. Os golpes vêm da mesma lista liberada pelo nível — o rival não tem
    golpe que o jogador não pudesse ter. Empate de nota: ordem alfabética. */
 export function movesetDoRival(pack, dex, nivel) {
-  const e = (pack?.especies ?? []).find(x => x.dex === dex);
+  const e = especieDe(pack, dex);
   if (!e) return padraoDoMoveset(pack, dex, nivel);
   const fisico = e.s[1] >= e.s[3];
   const todos = Object.values(pack.golpes ?? {}).flat();

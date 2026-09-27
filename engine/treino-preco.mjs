@@ -23,6 +23,7 @@
  * Empate (ninguém cai até o teto de turnos) não é vitória: a chance exibida é
  * de VENCER.
  */
+import { especieDe } from './especie.mjs';
 import { simular } from './treino-batalha.mjs';
 import { derivarIndice } from './seed.mjs';
 import { efeito } from './primitivas.mjs';
@@ -98,7 +99,7 @@ export const textoDaChance = r =>
 export function maiorFraqueza(pack, timeA, timeB) {
   const chart = pack.tipos.efetividade;
   const nome = t => pack.tipos.nomes?.[t] ?? t;
-  const tiposDe = c => (pack.especies ?? []).find(e => e.dex === Number(c.dex))?.t ?? [];
+  const tiposDe = c => especieDe(pack, c.dex)?.t ?? [];
   const tipoDoGolpe = n => Object.values(pack.golpes ?? {}).flat().find(g => g.n === n)?.t;
   const contagem = new Map();
   for (const c of timeB) for (const t of tiposDe(c)) contagem.set(t, (contagem.get(t) ?? 0) + 1);

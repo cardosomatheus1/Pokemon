@@ -30,4 +30,11 @@ export const TREINADORES = [
   /* ST-10.16 · o quarto ginásio: a aula é FÍSICO × ESPECIAL. Os três aguentam
      golpe especial e quebram com físico (defesa < defesa especial). */
   { id: 'sabrina', nome: 'Sabrina',                  onde: 'Ginásio de Saffron', time: [{ dex: 64, nivel: 38 }, { dex: 122, nivel: 37 }, { dex: 65, nivel: 43 }], ow: 'beauty' },
+  /* ST-10.18 · o chefe da campanha: um lendário sozinho, sem treinador. A
+     `essencia` é o que a vitória paga dele (L-057) — nunca a criatura.
+     `vidaX: 3` é a vida de chefe: sozinho e sem ela, um trio de nível 45
+     vencia 90%+ mesmo contra um Zapdos 65. Medido com ela, no 50: o trio que
+     tem dois fracos a Elétrico/Voador vence 25%, o que pensou a composição
+     98%, e um time cheio de nível 50, 100%. */
+  { id: 'zapdos', nome: 'Zapdos', onde: 'Usina Abandonada', time: [{ dex: 145, nivel: 50, vidaX: 3 }], ow: null, essencia: 145 },
 ];

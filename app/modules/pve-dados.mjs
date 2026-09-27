@@ -12,12 +12,13 @@
  * lado a lado, sem festa nem consolo: é a lição da fase inteira (§8.1) — uma
  * chance de 23% vence uma em cada quatro vezes, e perder com 77% acontece.
  */
+import { especieDe } from '../../engine/especie.mjs';
 import { montarLutador } from '../../engine/treino-batalha.mjs';
 import { margemDaChance, porcentagemExibida, pontosExibidos } from '../../engine/treino-preco.mjs';
 
 export const PASSO_MS = 900;
 
-const especie = (pack, dex) => (pack.especies ?? []).find(e => e.dex === Number(dex));
+const especie = (pack, dex) => especieDe(pack, dex);
 
 export function fraseDoEvento(e, nome) {
   const quem = nome(e.de), alvo = nome(e.para);

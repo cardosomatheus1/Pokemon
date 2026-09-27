@@ -33,4 +33,7 @@ export const JORNADA = [
   { id: 'saffron',  nome: 'Ginásio de Saffron', rival: 'sabrina', insignia: 'pantano', insigniaNome: 'Insígnia Pântano',
     licao: { ensina: 'físico contra especial', tipo: 'Psíquico', mostra: 'categoria',
              dica: 'As criaturas dela aguentam golpe especial e quebram com golpe físico: bata pelo lado fraco.' } },
+  /* ST-10.18 · o CHEFE: um lendário (§8.12, L-057). Não dá insígnia; paga a
+     essência da espécie, uma por dia, e nunca a criatura. */
+  { id: 'usina',    nome: 'Usina Abandonada', rival: 'zapdos', chefe: true },
 ];

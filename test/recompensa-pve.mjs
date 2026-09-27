@@ -92,7 +92,7 @@ export function suite() {
     for (const no of [ROTA, GIN]) {
       const r = recompensaPve({ no, venceu: true, primeiraVez: true, dia: 1, hoje: diaVazio(1), linhas: [4] });
       ok(Object.keys(r.bolas).every(k => permitidas.has(k)), `${no.id}: paga bola que o pack não tem`);
-      igual(Object.keys(r).filter(k => !['motivo', 'pokecoin', 'bolas', 'doces', 'hoje', 'teto'].includes(k)).join(), '', 'uma chave de pagamento nova');
+      igual(Object.keys(r).filter(k => !['motivo', 'pokecoin', 'bolas', 'doces', 'essencias', 'hoje', 'teto'].includes(k)).join(), '', 'uma chave de pagamento nova');
     }
     const local = fonte('../app/modules/jornada-local.mjs');
     ok(!/banco\.mjs|creditarRecompensa|pagarAposta/.test(local), 'a luta da jornada toca a carteira da Arena');

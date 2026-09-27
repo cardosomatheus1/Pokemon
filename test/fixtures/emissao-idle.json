@@ -122,9 +122,10 @@
    "pokecoinPorDia": 200
   },
   "primeiraVezInteira": {
-   "nos": 8,
+   "nos": 9,
    "ginasios": 4,
-   "pokecoin": 2800
+   "chefes": 1,
+   "pokecoin": 3600
   }
  }
 }

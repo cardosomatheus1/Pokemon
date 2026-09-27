@@ -48,6 +48,7 @@
  * O preset é do TIME do jogador (`preset`); o rival luta Balanced, a menos
  * que `presetRival` diga outra coisa.
  */
+import { especieDe } from './especie.mjs';
 import { rng, statNoNivel, efeito, dano } from './primitivas.mjs';
 
 export const REGRAS = Object.freeze({
@@ -70,7 +71,7 @@ function golpePorNome(pack, nome) {
 
 /* `c`: { dex, nivel, golpes: [nomes], iv?: [6], natureza?: nome } */
 export function montarLutador(pack, c, lado, i) {
-  const esp = (pack.especies ?? []).find(e => e.dex === Number(c?.dex));
+  const esp = especieDe(pack, c?.dex);
   if (!esp) throw new Error(`espécie ${c?.dex} não existe no pack`);
   const nivel = Number(c.nivel);
   if (!Number.isInteger(nivel) || nivel < 1 || nivel > 100) throw new Error(`nível inválido: ${c.nivel}`);
@@ -87,7 +88,12 @@ export function montarLutador(pack, c, lado, i) {
   const natureza = k => (!nat ? 1 : INDICE[nat[1]] === k ? 1 + REGRAS.PESO_NATUREZA
     : INDICE[nat[2]] === k ? 1 - REGRAS.PESO_NATUREZA : 1);
   const st = k => Math.floor(statNoNivel(esp.s[k], nivel) * oculto(k) * natureza(k));
-  const maxHp = Math.floor((Math.floor((2 * esp.s[0] + 31) * nivel / 100) + nivel + 10) * oculto(0));
+  /* O CHEFE (ST-10.18 · §8.12): um lendário sozinho contra um time de seis
+     cai em poucos turnos — medido: 90%+ para um trio de nível 45 contra um
+     Zapdos 65. O chefe de raid leva VIDA MULTIPLICADA (`vidaX`), e é só a
+     vida: o dano e a velocidade dele seguem a mesma conta de todo lutador. */
+  const vidaX = Number.isFinite(c.vidaX) && c.vidaX >= 1 && c.vidaX <= 10 ? c.vidaX : 1;
+  const maxHp = Math.floor((Math.floor((2 * esp.s[0] + 31) * nivel / 100) + nivel + 10) * oculto(0) * vidaX);
   return { lado, i, dex: esp.dex, nivel, types: esp.t.slice(), maxHp, hp: maxHp,
            atk: st(1), def: st(2), spa: st(3), spd: st(4), spe: st(5), golpes };
 }

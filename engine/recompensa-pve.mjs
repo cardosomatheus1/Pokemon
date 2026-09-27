@@ -33,8 +33,8 @@
  */
 
 export const PVE = Object.freeze({
-  PRIMEIRA: Object.freeze({ rota: 200, ginasio: 500 }),
-  BOLAS: Object.freeze({ rota: Object.freeze({ poke: 2 }), ginasio: Object.freeze({ great: 3 }) }),
+  PRIMEIRA: Object.freeze({ rota: 200, ginasio: 500, chefe: 800 }),
+  BOLAS: Object.freeze({ rota: Object.freeze({ poke: 2 }), ginasio: Object.freeze({ great: 3 }), chefe: Object.freeze({ ultra: 2 }) }),
   DOCES_POR_LINHA: 1,
   LINHAS_MAX: 3,
   FRACAO_REPETICAO: 0.1,
@@ -45,22 +45,34 @@ export const PVE = Object.freeze({
 
 /* O dia do PvE no save: `{ dia, pago, nos }` — o dia do mundo, quanto a
    repetição já pagou nele, e os nós repetidos (para a diversidade). */
-export const diaVazio = dia => ({ dia, pago: 0, nos: [] });
+export const diaVazio = dia => ({ dia, pago: 0, nos: [], chefes: [] });
+
+/* ── O CHEFE (ST-10.18 · §8.12 · L-057) ────────────────────────────────────
+ * Paga a ESSÊNCIA da espécie — nunca a criatura —, no máximo UMA por dia
+ * (`hoje.chefes` guarda de quem já saiu hoje), a primeira vitória inclusive.
+ * A moeda segue a mesma regra de todo nó: cheia na primeira, reduzida e sob o
+ * TETO DIÁRIO na repetição. Doce de linha não: a essência é a recompensa. */
+function essenciaDoDia(no, h) {
+  if (!no?.chefe || !no.essencia || h.chefes.includes(no.id)) return { essencias: {}, chefes: h.chefes };
+  return { essencias: { [String(no.essencia)]: 1 }, chefes: [...h.chefes, no.id] };
+}
 
 export function recompensaPve({ no, venceu, primeiraVez, dia, hoje, linhas = [] }) {
-  const tipo = no?.ginasio ? 'ginasio' : 'rota';
+  const tipo = no?.chefe ? 'chefe' : no?.ginasio ? 'ginasio' : 'rota';
   /* Outro dia: o teto recomeça. */
-  const h = hoje && hoje.dia === dia ? { dia, pago: hoje.pago ?? 0, nos: [...(hoje.nos ?? [])] } : diaVazio(dia);
-  const nada = { pokecoin: 0, bolas: {}, doces: {} };
+  const h = hoje && hoje.dia === dia ? { dia, pago: hoje.pago ?? 0, nos: [...(hoje.nos ?? [])], chefes: [...(hoje.chefes ?? [])] } : diaVazio(dia);
+  const nada = { pokecoin: 0, bolas: {}, doces: {}, essencias: {} };
   if (!venceu) return { motivo: 'derrota', ...nada, hoje: hoje ?? h, teto: PVE.TETO_DIARIO };
 
+  const ess = essenciaDoDia(no, h);
   if (primeiraVez) {
     const doces = {};
-    for (const l of linhas) {
+    for (const l of tipo === 'chefe' ? [] : linhas) {
       if (Object.keys(doces).length >= PVE.LINHAS_MAX) break;
       doces[String(l)] = PVE.DOCES_POR_LINHA;
     }
-    return { motivo: 'primeira', pokecoin: PVE.PRIMEIRA[tipo], bolas: { ...PVE.BOLAS[tipo] }, doces, hoje: h, teto: PVE.TETO_DIARIO };
+    return { motivo: 'primeira', pokecoin: PVE.PRIMEIRA[tipo], bolas: { ...PVE.BOLAS[tipo] }, doces, essencias: ess.essencias,
+             hoje: { ...h, chefes: ess.chefes }, teto: PVE.TETO_DIARIO };
   }
 
   /* REPETIÇÃO. A diversidade conta os nós DISTINTOS repetidos hoje, este
@@ -70,6 +82,6 @@ export function recompensaPve({ no, venceu, primeiraVez, dia, hoje, linhas = [] 
   const cheio = Math.round(PVE.PRIMEIRA[tipo] * PVE.FRACAO_REPETICAO * bonus);
   const cabe = Math.max(0, PVE.TETO_DIARIO - h.pago);
   const pokecoin = Math.min(cheio, cabe);
-  return { motivo: pokecoin > 0 ? 'repeticao' : 'teto', pokecoin, bolas: {}, doces: {},
-           hoje: { dia, pago: h.pago + pokecoin, nos }, teto: PVE.TETO_DIARIO };
+  return { motivo: pokecoin > 0 || Object.keys(ess.essencias).length ? 'repeticao' : 'teto', pokecoin, bolas: {}, doces: {}, essencias: ess.essencias,
+           hoje: { dia, pago: h.pago + pokecoin, nos, chefes: ess.chefes }, teto: PVE.TETO_DIARIO };
 }

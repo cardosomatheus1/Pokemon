@@ -1120,6 +1120,17 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnNo.jn-trancado{cursor:default}.jnNo.jn-trancado i{background:#7b7b7b;border-style:dashed;border-color:#3d3d3d}.jnNo.jn-trancado span{color:#c9c9c9}
 .jnNo span em{display:block;font-style:normal;font-size:.6rem;font-weight:600;color:var(--neon);text-align:center}
 .jnNo.jn-ginasio span{border:1px solid rgba(var(--goldRGB),.7)}
+/* ST-10.18 · O CHEFE: o lendário no lugar do treinador, maior, com a aura
+   que pulsa — ele é o único nó do mapa que não é gente. */
+.jnLend{position:absolute;left:-40px;top:-104px;width:80px;height:80px;display:grid;place-items:center;pointer-events:none;
+  border-radius:50%;background:radial-gradient(circle,rgba(255,210,63,.45),rgba(255,90,77,.12) 55%,transparent 70%);animation:jnAura 2.4s ease-in-out infinite}
+.jnLendImg{width:80px;height:80px;image-rendering:pixelated;filter:drop-shadow(0 4px 0 rgba(0,0,0,.35))}
+@keyframes jnAura{50%{box-shadow:0 0 22px 6px rgba(255,210,63,.35)}}
+@media (prefers-reduced-motion:reduce){ .jnLend{animation:none} }
+.jnPos.jn-trancado .jnLendImg{filter:brightness(0) drop-shadow(0 0 2px rgba(255,210,63,.9));opacity:.8}
+.jnNo.jn-chefe i{width:38px;height:38px;border-color:#ffd23f;background:radial-gradient(circle,#ff5a4d,#7a1b12)}
+.jnNo.jn-chefe{transform:translate(-50%,-19px)}.jnNo.jn-chefe span{border:1px solid #ffd23f}.jnNo.jn-chefe span em{color:#ffd23f}
+.jnSeloChefe{border-color:#ffd23f;color:#ffd23f}
 .jnNo.escolhido span{color:var(--neon);box-shadow:0 0 0 1px var(--neon)}
 @keyframes jnPulsa{0%,100%{box-shadow:0 0 0 0 rgba(var(--goldRGB),.7),0 3px 0 rgba(0,0,0,.3)}60%{box-shadow:0 0 0 10px rgba(var(--goldRGB),0),0 3px 0 rgba(0,0,0,.3)}}
 @media (prefers-reduced-motion:reduce){ .jnNo.jn-atual i{animation:none;box-shadow:0 0 0 4px rgba(var(--goldRGB),.6)} }

@@ -35,7 +35,10 @@ const PONTOS = {
              time: [[59, 42, 15, ['Fire Punch', 'Body Slam', 'Extreme Speed', 'Quick Attack']], [143, 36]] },
   sabrinaEsp: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion'], insignias: ['rocha', 'cascata', 'trovao'],
              time: [[59, 42, 15, ['Flamethrower', 'Hyper Voice']], [143, 36]] },
-  fim: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'saffron'], insignias: ['rocha', 'cascata', 'trovao', 'pantano'], time: [[5, 18], [17, 17], [25, 15]] },
+  /* ST-10.18: diante do chefe (Zapdos 50), com um time de fim de jogo. */
+  chefe: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'saffron'], insignias: ['rocha', 'cascata', 'trovao', 'pantano'],
+           time: [[76, 45], [65, 45], [91, 45]] },
+  fim: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion', 'saffron', 'usina'], insignias: ['rocha', 'cascata', 'trovao', 'pantano'], time: [[5, 18], [17, 17], [25, 15]] },
 };
 
 const b = await chromium.launch({ executablePath: CHROME });
@@ -84,7 +87,7 @@ for (const ponto of Object.keys(PONTOS)) for (const w of [1920, 1440, 1100, 420]
   await ctx.close();
 }
 
-for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420, 'ginasio'], [1440, 'misty'], [420, 'misty'], [1440, 'surge'], [420, 'surge'], [1440, 'sabrina'], [420, 'sabrina']]) {
+for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420, 'ginasio'], [1440, 'misty'], [420, 'misty'], [1440, 'surge'], [420, 'surge'], [1440, 'sabrina'], [420, 'sabrina'], [1440, 'chefe'], [420, 'chefe']]) {
   const { ctx, pg } = await abrir(w, ponto);
   await pg.$eval('#jnLutar', el => el.click());
   await pg.waitForSelector('#jnLuta #pvePalco', { timeout: 10000 });

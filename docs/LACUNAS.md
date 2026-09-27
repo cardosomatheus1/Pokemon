@@ -1998,7 +1998,7 @@ um teste de ponta a ponta caber, e aí o seam deixa de ser necessário.
 **Registrada em:** 30/08/2026, a partir de decisão do dono do projeto.
 **Bloco dono:** sem dono — é Fase 4 (§8.9, combate PvE). Registrado agora para
 o bloco 1.1 nascer sabendo, e não para ser construído já.
-**Estado:** aberta — Fase 4; nada da raid foi construído.
+**Estado:** aberta — Fase 4. **Parte feita na ST-10.18 (27/09):** os cinco fora da Arena e do idle (`pack.lendarios`, à parte das espécies), o Zapdos como CHEFE de campanha single-player com vida de chefe, e o drop de ESSÊNCIA da espécie (uma por dia, nunca a criatura) — a regra econômica desta ficha. **Continua aberto:** a raid COOPERATIVA (precisa do servidor como fonte de verdade — o E13 — e de multijogador), a recompensa por contribuição, e quantas essências montam um lendário (que esta ficha manda medir depois de uma raid de verdade).
 
 #### A decisão que já está tomada, e ela é do dono
 

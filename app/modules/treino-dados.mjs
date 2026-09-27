@@ -11,20 +11,23 @@
  * que sai em expedição. Montar um segundo time para o treino criaria duas
  * verdades sobre "quem está comigo".
  */
+import { especieDe } from '../../engine/especie.mjs';
 import { naEquipe, naCaixa } from './idle-dados.mjs';
 import { golpesDaCriatura, movesetDoRival } from './moveset-dados.mjs';
 import { paraTreino, powerDe, fraquezasDoTime, TIME_MAX } from '../../engine/time.mjs';
 import { montarLutador, PRESETS } from '../../engine/treino-batalha.mjs';
 
 const golpeDoPack = (pack, n) => Object.values(pack.golpes ?? {}).flat().find(g => g.n === n) ?? null;
-const especie = (pack, dex) => (pack.especies ?? []).find(e => e.dex === Number(dex));
+const especie = (pack, dex) => especieDe(pack, dex);
 
 export const treinadoresDo = pack => pack?.treinadores ?? [];
 export const treinador = (pack, id) => treinadoresDo(pack).find(t => t.id === id) ?? treinadoresDo(pack)[0] ?? null;
 
 /* O rival luta com os golpes liberados no nível dele, escolhidos pela força
    de quem bate (ST-10.13 · L-200: `movesetDoRival`). */
-export const rivalDe = (pack, t) => (t?.time ?? []).map(x => ({ dex: x.dex, nivel: x.nivel, golpes: movesetDoRival(pack, x.dex, x.nivel) }));
+export const rivalDe = (pack, t) => (t?.time ?? []).map(x => ({ dex: x.dex, nivel: x.nivel, golpes: movesetDoRival(pack, x.dex, x.nivel),
+  /* ST-10.18: o chefe leva a vida multiplicada do pack. */
+  ...(x.vidaX ? { vidaX: x.vidaX } : {}) }));
 
 export const entradasDoTime = (pack, estado) => naEquipe(estado).map(c => paraTreino(c, golpesDaCriatura(pack, c)));
 

@@ -1063,7 +1063,7 @@ Os percentuais são recomendação. Os valores finais ficam na fixture, e "dific
 - **Sabotagem:** farm por repetição; recompensa virando PokéCash.
 - **Portões:** Q1 Q2 Q3 Q4.
 
-### ST-10.18 · Chefes e lendários
+### ST-10.18 · Chefes e lendários ✅ 27/09
 - **Porte** M · **Bloco dono** F4.8 · **Spec** §8.12
 - **Escopo:** lendário como chefe de campanha ou evento, com recompensa controlada. A regra do idle (uma vaga no mapa, 1,5%) fica escrita no teste como "não é captura comum". Lendário nunca entra no elenco da Arena.
 - **Portões:** Q1 Q2 Q3.

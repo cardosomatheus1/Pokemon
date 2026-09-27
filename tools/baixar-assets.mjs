@@ -92,6 +92,13 @@ function alvos() {
      passou a desenhar o avatar já no boot e o vazamento apareceu. */
   for (const t of TRAINER_AVATARS) lista.push({ url: urlTreinadorOrigem(t.id), espelho: null });
 
+  /* OS LENDÁRIOS (ST-10.18): chefes da jornada, fora das espécies — só o
+     retrato do dex, que é o que a luta de treino e o mapa desenham. Mesmo
+     repositório dos outros retratos. */
+  for (const l of pack.lendarios ?? [])
+    lista.push({ url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${l.dex}.png`,
+                 espelho: `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${l.dex}.png` });
+
   /* folhas de EFEITO: outro repositório, mesma história. Foi o portão de
      egresso fechado que mostrou que elas existiam — 70 requisições saíam para
      fora mesmo com todas as folhas de sprite em disco. */

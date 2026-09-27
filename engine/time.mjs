@@ -21,6 +21,7 @@
  * A sinergia é RECOMENDAÇÃO (§8.13: "apenas UI recommendation"): as fraquezas
  * do time saem da tabela de tipos e não mexem no número.
  */
+import { especieDe } from './especie.mjs';
 import { efeito } from './primitivas.mjs';
 import { potencialDe } from './instancia.mjs';
 
@@ -52,7 +53,7 @@ export const paraTreino = (c, golpes) =>
   ({ dex: c.dex, nivel: c.nivel, golpes: [...golpes], ...(c.iv ? { iv: [...c.iv] } : {}), ...(c.natureza ? { natureza: c.natureza } : {}) });
 
 export function powerDe(pack, c, golpes) {
-  const esp = (pack.especies ?? []).find(e => e.dex === Number(c.dex));
+  const esp = especieDe(pack, c.dex);
   const gs = golpes.map(n => golpePorNome(pack, n)).filter(Boolean);
   const mediaGolpes = gs.length ? gs.reduce((a, g) => a + g.p * (esp?.t.includes(g.t) ? 1.5 : 1), 0) / gs.length : 0;
   const partes = {
@@ -73,7 +74,7 @@ export function powerDoTime(pack, time) {
    mais dos membros. Recomendação, e só. */
 export function fraquezasDoTime(pack, time) {
   const chart = pack.tipos.efetividade;
-  const tipos = (time ?? []).map(({ c }) => (pack.especies ?? []).find(e => e.dex === Number(c.dex))?.t ?? []);
+  const tipos = (time ?? []).map(({ c }) => especieDe(pack, c.dex)?.t ?? []);
   if (!tipos.length) return [];
   return Object.keys(chart)
     .map(t => ({ tipo: t, fracos: tipos.filter(ts => efeito(chart, t, ts) > 1).length }))

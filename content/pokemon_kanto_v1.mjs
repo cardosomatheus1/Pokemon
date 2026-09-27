@@ -2,6 +2,7 @@ import { TODOS as CATALOGO_ITENS } from './itens_v1.mjs';
 import { EXCLUSIVOS } from './exclusivos_kanto_v1.mjs';
 import { TREINADORES } from './treinadores_kanto_v1.mjs';
 import { JORNADA } from './jornada_kanto_v1.mjs';
+import { LENDARIOS } from './lendarios_kanto_v1.mjs';
 /* ContentPack — pokemon_kanto_v1
  *
  * TODO dado de tema mora aqui: espécies, tipos, tabela de efetividade, golpes,
@@ -983,6 +984,8 @@ export const pokemonKantoV1 = {
   treinadores: TREINADORES,
   /* ST-10.11: os nós da jornada, em ordem. */
   jornada: JORNADA,
+  /* ST-10.18: os cinco, à parte das espécies — só a luta de treino os vê. */
+  lendarios: LENDARIOS,
   bolas:     BOLAS,
   itens:     ITENS,
   iniciais: INICIAIS,
