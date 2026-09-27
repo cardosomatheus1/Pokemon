@@ -1,5 +1,6 @@
 import { TODOS as CATALOGO_ITENS } from './itens_v1.mjs';
 import { EXCLUSIVOS } from './exclusivos_kanto_v1.mjs';
+import { TREINADORES } from './treinadores_kanto_v1.mjs';
 /* ContentPack — pokemon_kanto_v1
  *
  * TODO dado de tema mora aqui: espécies, tipos, tabela de efetividade, golpes,
@@ -977,6 +978,8 @@ export const pokemonKantoV1 = {
   evolucoes: EVOLUCOES,
   /* ST-10.3: os golpes que só a forma de antes aprende (evoluir ou esperar). */
   exclusivos: EXCLUSIVOS,
+  /* ST-10.7: os primeiros rivais de treino (a jornada da ST-10.11 estende). */
+  treinadores: TREINADORES,
   bolas:     BOLAS,
   itens:     ITENS,
   iniciais: INICIAIS,

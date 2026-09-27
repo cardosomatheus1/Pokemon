@@ -8,7 +8,7 @@
 import { carregar, salvar, ondeAventura } from './idle-dados.mjs';
 import { aplicarDoceDaAposta, soltarCriatura, aplicarResgate, darDoce } from './doce-dados.mjs';
 
-function comRevisao(fn, deposito) {
+export function comRevisao(fn, deposito) {
   for (let tentativa = 0; tentativa < 2; tentativa++) {
     const e = carregar(deposito);
     const r = fn(e);

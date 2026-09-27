@@ -70,3 +70,8 @@ export function melhoresTrocas(pack, time, candidatos, rival, { raiz = 1, sims =
 
 export const textoDaTroca = (t, nomeDe) =>
   `se trocar ${nomeDe(t.sai)} por ${nomeDe(t.entra)}: ${arredondarNeutro(t.p * 100)}% (era ${arredondarNeutro(t.antes * 100)}%)`;
+
+/* A confirmação que fica na tela enquanto as novas trocas são medidas. */
+export const textoDaTrocaFeita = (t, nomeDe) =>
+  `Feito: você trocou ${nomeDe(t.sai)} por ${nomeDe(t.entra)} — ${arredondarNeutro(t.antes * 100)}% → ${arredondarNeutro(t.p * 100)}%.`;
+

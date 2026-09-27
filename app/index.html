@@ -982,6 +982,58 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
    Segunda linha do nome, menor e apagada: é leitura de segunda ordem, e a
    palavra "histórico" a separa da chance DESTA rodada, que é a coluna. */
 /* ── ST-9.16b · a aba Minha Coleção ─────────────────────────────────────── */
+/* ST-10.7 · o Team Builder. O NÚMERO é o protagonista: grande, no alto, e o
+   resto da tela existe para mexer nele. Neon na moldura, o mundo GBA nos
+   retratos. */
+.tbAdv{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}
+.tbAdvBtn{font:inherit;text-align:left;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:6px 10px;color:var(--dim);cursor:pointer}
+.tbAdvBtn b{display:block;color:var(--txt);font-size:.8rem}.tbAdvBtn span{font-size:.66rem}
+.tbAdvBtn.on{border-color:var(--neon);box-shadow:0 0 10px rgba(var(--goldRGB),.25)}
+.tbPlacar{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;align-items:center;padding:12px 16px;border:1px solid rgba(var(--goldRGB),.45);border-radius:14px;margin-bottom:14px;background:rgba(var(--goldRGB),.05)}
+.tbChance{display:flex;flex-direction:column}
+.tbRotulo{font-size:.7rem;color:var(--dim)}
+#tbNumero{font-family:var(--px);font-size:2.2rem;color:var(--neon);line-height:1.2}
+#tbNumero.parcial{opacity:.55}
+.tbErro{font-size:.72rem;color:var(--dim)}
+.tbRival{display:flex;gap:10px;flex-wrap:wrap;justify-self:start;padding-left:18px;border-left:1px solid var(--line)}
+.tbRival .tbSpriteP{width:44px;height:44px}
+.tbRival span{display:flex;flex-direction:column;align-items:center;font-size:.6rem;color:var(--dim);gap:1px}
+.tbRival b{color:var(--txt);font-size:.66rem}.tbRival em{font-style:normal;display:flex}
+.tbRival i{font-style:normal}
+.tbFraqueza{grid-column:1 / -1;margin:2px 0 0;font-size:.76rem;color:#ffd27a}
+.tbSec{margin:14px 0 6px;font-size:.82rem}
+.tbGrade{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:10px}
+.tbMembro{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg2)}
+.tbTopo{display:grid;grid-template-columns:48px 1fr auto;gap:8px;align-items:center}
+.tbSprite{width:48px;height:48px;object-fit:contain;image-rendering:pixelated}
+.tbSpriteP{width:32px;height:32px;object-fit:contain;image-rendering:pixelated}
+.tbNv{font-size:.66rem;color:var(--dim)}
+.tbTipo{font-style:normal;font-size:.6rem;padding:0 6px;margin-right:4px;border-radius:6px;border:1px solid var(--c);color:var(--c)}
+.tbPower{font-family:var(--px);font-size:.9rem;color:var(--gold)}
+.tbBarra{display:flex;height:6px;border-radius:3px;overflow:hidden;margin:8px 0 4px;background:var(--line)}
+.p-nivel{--p:#4fc3f7}.p-especie{--p:#ba68c8}.p-golpes{--p:#ffb74d}.p-potencial{--p:#81c784}
+.tbBarra i{background:var(--p)}
+.tbPartes{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:.64rem;color:var(--dim)}
+.tbPartes span::before{content:'';display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--p);margin-right:4px}
+.tbPartes b{color:var(--txt)}
+.tbGolpes{list-style:none;margin:8px 0;padding:0;font-size:.74rem}
+.tbGolpes li span{color:var(--dim);font-size:.66rem}
+.tbBuild summary{font-size:.7rem;color:var(--dim);cursor:pointer}
+.tbFicha{display:grid;grid-template-columns:repeat(3,1fr);gap:2px 8px;font-size:.7rem;margin-top:4px}
+.tbAcoes{display:flex;gap:6px;margin-top:8px}.tbAcoes .btn{font-size:.7rem;padding:4px 10px}
+.tbTrocas{max-width:760px}
+.tbTroca{display:grid;grid-template-columns:32px auto 32px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:.78rem}
+.tbDelta{margin-left:8px;white-space:nowrap}
+.tbFeita{font-size:.78rem;color:var(--neon);margin:0 0 6px}
+.tbSeta{color:var(--dim)}.tbDelta b{color:var(--neon)}
+.tbCaixa{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:4px 14px}
+.tbCaixaItem{display:grid;grid-template-columns:32px 1fr auto auto;gap:8px;align-items:center;font-size:.76rem;padding:4px 0;border-top:1px solid var(--line)}
+.tbCaixaItem .btn{font-size:.66rem;padding:3px 8px}
+.tbCaixaItem .btn[disabled]{opacity:.35;cursor:not-allowed}
+.tbVazio{font-size:.84rem;color:var(--dim)}
+@media (max-width:520px){ .tbPlacar{grid-template-columns:1fr} .tbRival{justify-self:start;padding-left:0;border-left:0}
+  .tbTroca{grid-template-columns:32px auto 32px 1fr} .tbTroca .btn{grid-column:1 / -1;justify-self:end} .tbDelta{display:block;margin:2px 0 0}
+  .tbAdv{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px} .tbAdvBtn{flex:none} }
 /* ST-10.3 · evoluir ou esperar: o selo que custa um golpe fica ÂMBAR (não o
    verde de "pronta"), e armado pede o segundo clique; o golpe exclusivo no
    moveset leva a estrela. */
@@ -6834,6 +6886,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
     <button class="nav on" data-view="viewArena">Arenas</button>
     <button class="nav" data-view="viewLiga">Liga</button>
     <button class="nav" data-view="viewIdle">Rotas</button>
+    <button class="nav" data-view="viewTreino">Time</button>
     <!-- ── A ROTA OFF É UMA ABA, E NÃO UMA ESCOLHA DENTRO DE ROTAS (L-154) ──
          Decisão do dono, e ela corrige a L-146. O problema do seletor só
          aparece quando se olha o que cada modo PEDE:
@@ -7369,6 +7422,15 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <div id="offTreino"></div>
     </div>
 
+  </div>
+</div>
+
+<!-- ST-10.7 · o Team Builder: o time das Rotas, a chance contra um rival, e o
+     que trocar para subir. Treino, sem aposta: a Arena não lê nada daqui (P4). -->
+<div id="viewTreino" class="view">
+  <div class="card">
+    <h3>Time <span class="tiny">monte o time e veja a chance mexer — treino, sem aposta</span></h3>
+    <div id="treinoCorpo"></div>
   </div>
 </div>
 
@@ -8047,6 +8109,7 @@ import { notasDaRodada } from './modules/historico-aposta.mjs';
 import './modules/doce-tela.mjs';
 import { temRetorno } from './modules/retorno-tela.mjs';
 import './modules/exclusivos-tela.mjs';
+import './modules/treino-tela.mjs';
 import './modules/telemetria-v3-tela.mjs';
 /* ST-9.12: escolher os golpes — o módulo se liga sozinho ao clique. */
 import './modules/moveset-tela.mjs';

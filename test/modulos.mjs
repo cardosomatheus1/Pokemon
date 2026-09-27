@@ -351,6 +351,10 @@ const CAMADA = {
   'doce-dados.mjs': 0,
   'doce-local.mjs': 1,
   'doce-tela.mjs': 4,
+  /* ST-10.7 · o Team Builder: os dados (0), a gravação (1) e a tela (4). */
+  'treino-dados.mjs': 0,
+  'time-local.mjs': 1,
+  'treino-tela.mjs': 4,
   /* ST-10.3 · evoluir ou esperar: o clique em dois tempos. */
   'exclusivos-tela.mjs': 4,
   /* ST-9.18 · os eventos da V3: montados (camada 0) e ligados aos gestos. */

@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import pack from '../content/pokemon_kanto_v1.mjs';
-import { lote, resumo, chanceDeVencer, arredondarNeutro, textoDaChance, maiorFraqueza, SIMS_TREINO } from '../engine/treino-preco.mjs';
+import { lote, resumo, chanceDeVencer, arredondarNeutro, textoDaChance, textoDaMargem, maiorFraqueza, SIMS_TREINO } from '../engine/treino-preco.mjs';
 import { medirCalibracao, foraDaTolerancia } from '../engine/treino-calibracao.mjs';
 import { simular } from '../engine/treino-batalha.mjs';
 import { derivarIndice } from '../engine/seed.mjs';
@@ -64,6 +64,11 @@ export function suite() {
     igual([23.5, 22.5, 22.4, 22.6, 0.5, 99.5].map(arredondarNeutro).join(), '24,22,22,23,0,100', 'arredondou a favor de alguém');
     igual(textoDaChance({ p: 0.225, erro: 0.021 }), 'seu time vence 22% (±2)', 'a frase');
     igual(textoDaChance({ p: 0.235, erro: 0.004 }), 'seu time vence 24% (±1)', 'o erro nunca some da frase');
+    /* Sob o número (Q7 da 10.7): lote unânime não tem "±1", e ponto no singular. */
+    igual(textoDaMargem({ p: 1, erro: 0, sims: 2000 }), 'venceu todas as 2.000 lutas simuladas', 'unânime');
+    igual(textoDaMargem({ p: 0, erro: 0, sims: 2000 }), 'perdeu todas as 2.000 lutas simuladas', 'unânime ao contrário');
+    igual(textoDaMargem({ p: 0.5, erro: 0.0219, sims: 2000 }), 'de 2.000 lutas simuladas · margem de ±2 pontos', 'plural');
+    igual(textoDaMargem({ p: 0.99, erro: 0.004, sims: 2000 }), 'de 2.000 lutas simuladas · margem de ±1 ponto', 'singular');
   });
 
   s.teste('a maior fraqueza, pela tabela de tipos', () => {

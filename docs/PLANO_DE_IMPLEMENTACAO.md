@@ -1004,7 +1004,8 @@ Fatiada em duas (a original seria G).
 - **Aceite:** em 20.000 combates independentes, a melhor troca exibida é melhor em pelo menos 95% das vezes; o cálculo é fatiado sem travar o quadro.
 - **Portões:** Q1 Q2 Q3 Q4.
 
-### ST-10.7 · Team Builder e Pokémon Build (telas)
+### ST-10.7 · Team Builder e Pokémon Build (telas) ✅ 27/09
+> Feito: vista Time (número, rival, trocas, membros com poder e build, caixa); 4 rivais de treino; Q5 + Q7 aplicado; S1453–S1457.
 - **Porte** M–G · **Servidor** não · **Bloco dono** F4.2 · **Spec** §8.3, §12 telas 20–21
 - **Escopo:** tipos, nível, power decomposto, golpes (com link para ST-9.12 e 9.13), fraquezas do time, e a probabilidade contra o adversário escolhido.
 - **Aceite:** Q5 com time vazio, parcial e cheio nas 4 larguras; trocar um membro move o número.

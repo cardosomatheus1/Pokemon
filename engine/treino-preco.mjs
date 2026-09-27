@@ -58,8 +58,22 @@ export function arredondarNeutro(x) {
   return Math.round(x);
 }
 
-export const textoDaChance = ({ p, erro }) =>
-  `seu time vence ${arredondarNeutro(p * 100)}% (±${Math.max(1, arredondarNeutro(erro * 100))})`;
+/* A margem em pontos, nunca menor que 1: "±0" diria certeza que 2.000 lutas não dão. */
+export const margemDaChance = ({ erro }) => Math.max(1, arredondarNeutro(erro * 100));
+
+/* A linha sob o número (Q7 da ST-10.7): "100% ±1" é impossível de ler. Quando
+   o lote foi unânime, diz isso; senão, quantas lutas e a margem, no singular
+   ou no plural certo. */
+export function textoDaMargem(r) {
+  const lutas = r.sims.toLocaleString('pt-BR');
+  if (r.p === 1) return `venceu todas as ${lutas} lutas simuladas`;
+  if (r.p === 0) return `perdeu todas as ${lutas} lutas simuladas`;
+  const m = margemDaChance(r);
+  return `de ${lutas} lutas simuladas · margem de ±${m} ${m === 1 ? 'ponto' : 'pontos'}`;
+}
+
+export const textoDaChance = r =>
+  `seu time vence ${arredondarNeutro(r.p * 100)}% (±${margemDaChance(r)})`;
 
 /* ── A MAIOR FRAQUEZA, pela tabela de tipos ────────────────────────────────
  *
