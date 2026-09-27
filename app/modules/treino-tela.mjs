@@ -22,11 +22,15 @@ import { painelDoTime, treinadoresDo, treinador, rivalDe, entradasDoTime, candid
 import { lote, resumo, textoDaMargem, maiorFraqueza, arredondarNeutro, SIMS_TREINO } from '../../engine/treino-preco.mjs';
 import { variantes, lotePareado, trocasDoAcumulado, textoDaTrocaFeita, SIMS_TROCAS } from '../../engine/treino-trocas.mjs';
 import { moverLocal, trocarLocal } from './time-local.mjs';
+import { PRESETS_NA_TELA, presetValido } from './treino-dados.mjs';
 import { renderIdle } from './idle-tela.mjs';
 
 const RAIZ = 1;
 const CHAVE_ADV = 'ar_treino_adv';
 const advLembrado = () => { try { return localStorage.getItem(CHAVE_ADV); } catch { return null; } };
+/* ST-10.8: o preset do time, lembrado por aparelho, como o rival. */
+const CHAVE_PRESET = 'ar_treino_preset';
+const presetLembrado = () => { try { return presetValido(localStorage.getItem(CHAVE_PRESET)); } catch { return presetValido(null); } };
 let geracao = 0;
 /* A última troca feita: fica na tela enquanto as novas sugestões são medidas
    (Q7: o salto de 0% a 97% passava sem confirmação). */
@@ -76,6 +80,9 @@ export function renderTreino() {
   alvo.innerHTML = `
     <div class="tbAdv">${treinadoresDo(PACK).map(x => `<button class="tbAdvBtn${x.id === t.id ? ' on' : ''}" data-treino-adv="${x.id}">
       <b>${x.nome}</b><span>${x.onde}</span></button>`).join('')}</div>
+    <div class="tbPresets"><span class="tiny">estratégia do seu time:</span>${PRESETS_NA_TELA.map(p => `<button class="tbPresetBtn${
+      p.id === presetLembrado() ? ' on' : ''}" data-treino-preset="${p.id}" title="${p.explica}">${p.nome}</button>`).join('')}
+      <span class="tbPresetRegra">${PRESETS_NA_TELA.find(p => p.id === presetLembrado())?.explica ?? ''}</span></div>
     <div class="tbPlacar">
       <div class="tbChance"><span class="tbRotulo">seu time vence contra ${t.nome}</span><strong id="tbNumero">…</strong><span id="tbErro" class="tbErro">calculando</span></div>
       <div class="tbRival">${rival.map(r => `<span>${dexImg(r.dex, '', 'class="tbSpriteP"')}<b>${nomeDo(r.dex)}</b><i>NV ${r.nivel}</i>
@@ -99,6 +106,7 @@ export function renderTreino() {
 }
 
 function calcular(g, estado, rival) {
+  const preset = presetLembrado();
   const A = entradasDoTime(PACK, estado);
   const f = maiorFraqueza(PACK, A, rival);
   const alvoF = $('#tbFraqueza');
@@ -107,7 +115,7 @@ function calcular(g, estado, rival) {
   const PASSO = 100;
   const passo = () => {
     if (g !== geracao) return;
-    lote(PACK, A, rival, RAIZ, acum.sims, Math.min(PASSO, SIMS_TREINO - acum.sims), acum);
+    lote(PACK, A, rival, RAIZ, acum.sims, Math.min(PASSO, SIMS_TREINO - acum.sims), acum, preset);
     const r = resumo(acum), pronto = acum.sims >= SIMS_TREINO;
     const n = $('#tbNumero'), e = $('#tbErro');
     if (n) { n.textContent = `${arredondarNeutro(r.p * 100)}%`; n.classList.toggle('parcial', !pronto); }
@@ -118,6 +126,7 @@ function calcular(g, estado, rival) {
 }
 
 function calcularTrocas(g, estado, rival) {
+  const preset = presetLembrado();
   const alvo = $('#tbTrocas');
   const vars = variantes(membrosParaTrocas(PACK, estado), candidatosDaCaixa(PACK, estado));
   if (vars.length < 2) { if (alvo) alvo.innerHTML = '<p class="tiny">Sem candidatos na caixa.</p>'; return; }
@@ -127,7 +136,7 @@ function calcularTrocas(g, estado, rival) {
   const PASSO = 20;
   const passo = () => {
     if (g !== geracao) return;
-    a = lotePareado(PACK, vars, rival, RAIZ, feitos, Math.min(PASSO, SIMS_TROCAS - feitos), a);
+    a = lotePareado(PACK, vars, rival, RAIZ, feitos, Math.min(PASSO, SIMS_TROCAS - feitos), a, preset);
     feitos = a.sims;
     const el = $('#tbTrocas');
     if (!el) return;
@@ -151,6 +160,8 @@ document.addEventListener('click', ev => {
   if (ev.target.closest('.nav[data-view="viewTreino"], [data-goto="viewTreino"]')) { setTimeout(renderTreino, 0); return; }
   const adv = ev.target.closest('[data-treino-adv]');
   if (adv) { try { localStorage.setItem(CHAVE_ADV, adv.dataset.treinoAdv); } catch { /* privativo */ } ultimaTroca = null; renderTreino(); return; }
+  const pr = ev.target.closest('[data-treino-preset]');
+  if (pr) { try { localStorage.setItem(CHAVE_PRESET, pr.dataset.treinoPreset); } catch { /* privativo */ } ultimaTroca = null; renderTreino(); return; }
   const tirar = ev.target.closest('[data-time-tirar]');
   if (tirar) { depois(moverLocal({ id: tirar.dataset.timeTirar, paraCaixa: true })); return; }
   const por = ev.target.closest('[data-time-por]');

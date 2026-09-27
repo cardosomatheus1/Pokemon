@@ -14,7 +14,7 @@
 import { naEquipe, naCaixa } from './idle-dados.mjs';
 import { golpesDaCriatura, padraoDoMoveset } from './moveset-dados.mjs';
 import { paraTreino, powerDe, fraquezasDoTime, TIME_MAX } from '../../engine/time.mjs';
-import { montarLutador } from '../../engine/treino-batalha.mjs';
+import { montarLutador, PRESETS } from '../../engine/treino-batalha.mjs';
 
 const golpeDoPack = (pack, n) => Object.values(pack.golpes ?? {}).flat().find(g => g.n === n) ?? null;
 const especie = (pack, dex) => (pack.especies ?? []).find(e => e.dex === Number(dex));
@@ -69,3 +69,13 @@ export function painelDoTime({ pack, estado, nomeDe = n => n }) {
 export const PARTES_DO_POWER = Object.freeze([
   { k: 'nivel', rotulo: 'nível' }, { k: 'especie', rotulo: 'espécie' },
   { k: 'golpes', rotulo: 'golpes' }, { k: 'potencial', rotulo: 'potencial' }]);
+
+/* ST-10.8 · os Tactical Presets na tela: o nome e a regra em uma linha. */
+export const PRESETS_NA_TELA = Object.freeze([
+  { id: 'balanced',   nome: 'Equilibrado',       explica: 'o golpe de maior dano esperado' },
+  { id: 'aggressive', nome: 'Agressivo',         explica: 'o golpe que mais perto chega de derrubar, no alvo mais frágil' },
+  { id: 'defensive',  nome: 'Defensivo',         explica: 'primeiro o rival que mais ameaça o seu time' },
+  { id: 'focus',      nome: 'Foco na fraqueza',  explica: 'o golpe super-efetivo antes de qualquer outro' },
+]);
+export const presetValido = p => (PRESETS.includes(p) ? p : 'balanced');
+

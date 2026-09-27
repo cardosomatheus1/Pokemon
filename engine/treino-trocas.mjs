@@ -38,11 +38,11 @@ export function variantes(time, candidatos, k = K_CANDIDATOS) {
 }
 
 /* Acumula `n` lutas pareadas: por variante, as vitórias e a soma de dᵢ e dᵢ². */
-export function lotePareado(pack, vars, rival, raiz, inicio, n, acum = null) {
+export function lotePareado(pack, vars, rival, raiz, inicio, n, acum = null, preset = 'balanced') {
   const a = acum ?? { sims: 0, vitorias: vars.map(() => 0), somaD: vars.map(() => 0), somaD2: vars.map(() => 0) };
   for (let i = inicio; i < inicio + n; i++) {
     const semente = derivarIndice(raiz >>> 0, RAMO, i);
-    const w = vars.map(v => (simular(pack, v.time, rival, semente, { registrar: false }).vencedor === 'A' ? 1 : 0));
+    const w = vars.map(v => (simular(pack, v.time, rival, semente, { registrar: false, preset }).vencedor === 'A' ? 1 : 0));
     for (let k = 0; k < vars.length; k++) {
       const d = w[k] - w[0];
       a.vitorias[k] += w[k]; a.somaD[k] += d; a.somaD2[k] += d * d;
@@ -63,9 +63,9 @@ export function trocasDoAcumulado(vars, a, mostrar = MOSTRAR) {
     .sort((x, y) => y.delta - x.delta || x.vaga - y.vaga).slice(0, mostrar);
 }
 
-export function melhoresTrocas(pack, time, candidatos, rival, { raiz = 1, sims = SIMS_TROCAS, k = K_CANDIDATOS } = {}) {
+export function melhoresTrocas(pack, time, candidatos, rival, { raiz = 1, sims = SIMS_TROCAS, k = K_CANDIDATOS, preset = 'balanced' } = {}) {
   const vars = variantes(time, candidatos, k);
-  return trocasDoAcumulado(vars, lotePareado(pack, vars, rival, raiz, 0, sims));
+  return trocasDoAcumulado(vars, lotePareado(pack, vars, rival, raiz, 0, sims, null, preset));
 }
 
 export const textoDaTroca = (t, nomeDe) =>

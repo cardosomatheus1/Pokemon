@@ -1011,7 +1011,8 @@ Fatiada em duas (a original seria G).
 - **Aceite:** Q5 com time vazio, parcial e cheio nas 4 larguras; trocar um membro move o número.
 - **Portões:** Q1 Q2 Q5 Q7.
 
-### ST-10.8 · Tactical Presets
+### ST-10.8 · Tactical Presets ✅ 27/09
+> Feito: quatro presets na Trainer Engine, na chance e nas trocas; seletor no Team Builder; S1458–S1461.
 - **Porte** M · **Servidor** não · **Bloco dono** F4.4 · **Spec** §8.5
 - **Escopo:** Aggressive, Balanced, Defensive e Focus Weakness como regras de alvo e de golpe; o preset entra na probabilidade exibida.
 - **Aceite:** cada preset tem ao menos um cenário em que move `p` além de 3× o erro; a Arena fica idêntica.

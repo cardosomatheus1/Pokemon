@@ -54,6 +54,14 @@ for (const [nome, lista] of Object.entries(SAVES)) for (const w of [1920, 1440, 
   const lido = await pg.evaluate(() => ({ numero: document.getElementById('tbNumero')?.textContent, erro: document.getElementById('tbErro')?.textContent,
     fraqueza: document.getElementById('tbFraqueza')?.textContent, trocas: document.querySelectorAll('#tbTrocas .tbTroca').length }));
   achados.push(`${nome}/${w}: ${JSON.stringify(lido)}`);
+  /* ST-10.8: trocar de estratégia mexe o número (no cheio, a 1100). */
+  if (nome === 'cheio' && w === 1100) {
+    const antes = lido.numero;
+    await pg.$eval('[data-treino-preset="aggressive"]', el => el.click());
+    await pg.waitForFunction(() => /lutas simuladas/.test(document.getElementById('tbErro')?.textContent ?? ''), null, { timeout: 120000, polling: 250 });
+    achados.push(`preset agressivo: ${antes} → ${await pg.$eval('#tbNumero', el => el.textContent)}`);
+    await card.screenshot({ path: `${PASTA}/time-preset-${w}.png` });
+  }
   if (nome === 'parcial' && w === 1440 && lido.trocas) {
     await pg.$eval('#tbTrocas [data-trocar-sai]', el => el.click());
     await pg.waitForFunction(n => /lutas simuladas/.test(document.getElementById('tbErro')?.textContent ?? '')

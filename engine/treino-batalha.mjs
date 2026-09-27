@@ -30,8 +30,23 @@
  *
  * Cada lutador escolhe o par (golpe, alvo) de maior dano ESPERADO — poder ×
  * mesmo-tipo × efetividade × ataque/defesa × precisão —, sem sorteio. Empate
- * fica com o alvo de menor índice e o golpe listado primeiro. Os outros
- * presets (Aggressive, Defensive, Focus Weakness) são a ST-10.8.
+ * fica com o alvo de menor índice e o golpe listado primeiro.
+ *
+ * ── OS TACTICAL PRESETS (ST-10.8 · §8.5) ──────────────────────────────────
+ *
+ * Estratégia ANTES da luta, sem controle em tempo real. Cada preset é uma
+ * regra de alvo e de golpe, determinística, sobre o mesmo dano esperado:
+ *
+ *   balanced    o maior dano esperado (o padrão)
+ *   aggressive  o golpe que mais perto chega de DERRUBAR — fração da vida que
+ *               resta, até 1 —, e no empate o alvo mais frágil
+ *   defensive   primeiro o rival que mais AMEAÇA o time (o maior dano esperado
+ *               dele contra qualquer um dos nossos), depois o melhor golpe nele
+ *   focus       a maior EFETIVIDADE primeiro; só depois o dano — um golpe
+ *               neutro nunca vence um super-efetivo
+ *
+ * O preset é do TIME do jogador (`preset`); o rival luta Balanced, a menos
+ * que `presetRival` diga outra coisa.
  */
 import { rng, statNoNivel, efeito, dano } from './primitivas.mjs';
 
@@ -43,7 +58,7 @@ export const REGRAS = Object.freeze({
   TIME_MAX: 6,
   GOLPES_MAX: 4,
 });
-export const PRESETS = Object.freeze(['balanced']);
+export const PRESETS = Object.freeze(['balanced', 'aggressive', 'defensive', 'focus']);
 /* A chave da natureza no pack → o índice do stat. */
 const INDICE = { atq: 1, def: 2, spa: 3, spd: 4, vel: 5 };
 
@@ -86,17 +101,27 @@ export function danoEsperado(chart, A, D, g) {
   return g.p * stab * eff * razao * (g.acc ?? REGRAS.ACERTO_PADRAO);
 }
 
-function escolher(chart, A, inimigos) {
+/* A AMEAÇA de um rival: o maior dano esperado dele contra algum dos nossos. */
+const ameaca = (chart, D, nossos) => Math.max(0, ...nossos.map(N => Math.max(...D.golpes.map(g => danoEsperado(chart, D, N, g)))));
+
+function escolher(chart, A, inimigos, preset, aliados) {
+  const alvos = preset === 'defensive'
+    ? [inimigos.reduce((m, D) => (ameaca(chart, D, aliados) > ameaca(chart, m, aliados) ? D : m), inimigos[0])]
+    : inimigos;
   let melhor = null;
-  for (const D of inimigos) for (const g of A.golpes) {
+  for (const D of alvos) for (const g of A.golpes) {
     const v = danoEsperado(chart, A, D, g);
-    if (!melhor || v > melhor.v) melhor = { v, g, D };
+    const chave = preset === 'aggressive' ? [Math.min(1, v / Math.max(1, D.hp)), -D.hp]
+      : preset === 'focus' ? [efeito(chart, g.t, D.types), v]
+      : [v, 0];
+    if (!melhor || chave[0] > melhor.chave[0] || (chave[0] === melhor.chave[0] && chave[1] > melhor.chave[1]))
+      melhor = { chave, g, D };
   }
   return melhor;
 }
 
-export function simular(pack, timeA, timeB, semente, { registrar = true, preset = 'balanced' } = {}) {
-  if (!PRESETS.includes(preset)) throw new Error(`preset desconhecido: ${preset}`);
+export function simular(pack, timeA, timeB, semente, { registrar = true, preset = 'balanced', presetRival = 'balanced' } = {}) {
+  for (const p of [preset, presetRival]) if (!PRESETS.includes(p)) throw new Error(`preset desconhecido: ${p}`);
   for (const t of [timeA, timeB])
     if (!Array.isArray(t) || !t.length || t.length > REGRAS.TIME_MAX) throw new Error(`um time tem de 1 a ${REGRAS.TIME_MAX}`);
   const chart = pack.tipos.efetividade;
@@ -115,7 +140,7 @@ export function simular(pack, timeA, timeB, semente, { registrar = true, preset 
       if (A.hp <= 0) continue;
       const inimigos = vivos(A.lado === 'A' ? 'B' : 'A');
       if (!inimigos.length) break;
-      const { g, D } = escolher(chart, A, inimigos);
+      const { g, D } = escolher(chart, A, inimigos, A.lado === 'A' ? preset : presetRival, vivos(A.lado));
       const errou = R() >= (g.acc ?? REGRAS.ACERTO_PADRAO);
       const r = errou ? { dmg: 0, eff: efeito(chart, g.t, D.types), crit: false }
         : dano(chart, A, D, g, R, 1, 1, A.nivel, REGRAS.CRITICO, REGRAS.MULT_CRITICO);

@@ -31,9 +31,9 @@ export const SIMS_TREINO = 2000;
 const RAMO = 'treino';
 
 /* Acumula `n` simulações a partir da `inicio`-ésima. */
-export function lote(pack, timeA, timeB, raiz, inicio, n, acum = { vitorias: 0, empates: 0, sims: 0 }) {
+export function lote(pack, timeA, timeB, raiz, inicio, n, acum = { vitorias: 0, empates: 0, sims: 0 }, preset = 'balanced') {
   for (let i = inicio; i < inicio + n; i++) {
-    const v = simular(pack, timeA, timeB, derivarIndice(raiz >>> 0, RAMO, i), { registrar: false }).vencedor;
+    const v = simular(pack, timeA, timeB, derivarIndice(raiz >>> 0, RAMO, i), { registrar: false, preset }).vencedor;
     if (v === 'A') acum.vitorias++;
     else if (v === null) acum.empates++;
     acum.sims++;
@@ -47,8 +47,8 @@ export function resumo(acum) {
   return { p, erro, sims: acum.sims, empates: acum.empates };
 }
 
-export function chanceDeVencer(pack, timeA, timeB, { raiz = 1, sims = SIMS_TREINO } = {}) {
-  return resumo(lote(pack, timeA, timeB, raiz, 0, sims));
+export function chanceDeVencer(pack, timeA, timeB, { raiz = 1, sims = SIMS_TREINO, preset = 'balanced' } = {}) {
+  return resumo(lote(pack, timeA, timeB, raiz, 0, sims, undefined, preset));
 }
 
 /* Meio ponto vai para o par — nem a favor, nem contra. */
