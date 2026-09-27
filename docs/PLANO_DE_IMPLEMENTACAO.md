@@ -1213,7 +1213,7 @@ precisam existir antes de virar operação do servidor.
 **Regra do épico:** com conta, **o servidor é a fonte de verdade** e o save
 local vira cache; sem conta, nada muda.
 
-### ST-13.1 · Rotas da coleção: criaturas, registro e bolsa
+### ST-13.1 · Rotas da coleção: criaturas, registro e bolsa ✅ 27/09
 - **Porte** M · **Servidor** sim · **Spec** §7.14, §P2 · **Depende de** nada
 - **Escopo:** `GET /api/idle` (criaturas, registro, bolsa, estágios) sobre as
   tabelas que `server/idle.mjs` e `criaturas.mjs` já têm; escrita só por
@@ -1221,6 +1221,12 @@ local vira cache; sem conta, nada muda.
 - **Aceite:** o cliente não consegue escrever criatura, item ou fragmento
   direto; o de outro usuário é invisível.
 - **Portões:** Q1 Q2 Q3 Q6.
+- **Feito:** `server/colecao-rotas.mjs` · `GET /api/idle` (sessão; o de outro
+  invisível) · `OPERACOES_DO_IDLE`, a lista fechada das escritas (vazia) · sem
+  semente, sem dono, só o pack carregado · stamina, expedição pronta e estágio
+  no relógio do servidor · `test/colecao-servidor.mjs` · S1582–S1589. O save
+  local guarda `xp` e golpes escolhidos e o servidor não — as colunas entram
+  com as operações da ST-13.3, que é quem as escreve.
 
 ### ST-13.2 · A colheita é do servidor
 - **Porte** M–G · **Servidor** sim · **Spec** §7.14 · **Depende de** ST-13.1

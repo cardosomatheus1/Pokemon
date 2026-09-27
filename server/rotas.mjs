@@ -32,6 +32,7 @@ import { apostar, cancelar, ERRO_APOSTA } from './aposta.mjs';
 import { ERRO_MERCADO } from './mercado.mjs';
 import { rotasDoMercado } from './mercado-rotas.mjs';
 import { rotasDoDoce } from './doce-rotas.mjs';
+import { rotasDaColecao } from './colecao-rotas.mjs';
 import { ERRO_DOCE } from './doce.mjs';
 import { definirLimite, confirmarAumento, limitesDe, pedidosDe, TIPOS_LIMITE,
          ERRO_LIMITE } from './limites.mjs';
@@ -167,6 +168,9 @@ export const ROTAS = {
   ...rotasDoMercado(daExcecao),
   /* O doce da conta real (ST-9.9): o saldo e o resgate idempotente. */
   ...rotasDoDoce(daExcecao),
+  /* A coleção do idle com conta (ST-13.1): só leitura; a escrita é por
+     operação nomeada, na lista de `colecao-rotas.mjs`. */
+  ...rotasDaColecao(),
 
 
   /* --- autenticação ----------------------------------------------------- */
