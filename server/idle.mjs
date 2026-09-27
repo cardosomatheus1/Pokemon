@@ -43,11 +43,13 @@ import { semente } from '../engine/instancia.mjs';
 import {
   PERFIS, TETO_DIARIO, TETO_ENCONTROS, cabeExpedicao, restamEncontros,
   SIMULTANEAS_INICIAIS, SIMULTANEAS_MAX, EQUIPE_MAX,
-  STAMINA_MAX, staminaAgora, podeEnviar, custoDe, sortearEncontros,
+  STAMINA_MAX, staminaAgora, podeEnviar, custoDe,
 } from '../engine/expedicao.mjs';
-import { sortearItens, agrupar } from '../engine/drops.mjs';
-import { chanceDe, tentar, FRAGMENTOS_POR_ENCONTRO, DURACAO_BONUS_MS } from '../engine/captura.mjs';
+import { chanceDe, tentar, DURACAO_BONUS_MS } from '../engine/captura.mjs';
 import { baseDe } from '../engine/evolucao.mjs';
+import { contaDaColheita } from '../engine/colheita.mjs';
+import { estagioAberto, estagioMaximo, nivelDoEstagio } from '../engine/estagios.mjs';
+import { nivelDe } from '../engine/nivel-criatura.mjs';
 import { gerar as gerarCriatura } from './criaturas.mjs';
 
 const DIA_MS = 24 * 3600_000;
@@ -95,11 +97,33 @@ export const encontrosHoje = (db, userId, agora) =>
                WHERE user_id = ? AND colhida_em IS NOT NULL AND colhida_em > ?`)
     .get(userId, agora - DIA_MS).n;
 
-/* O estado que o motor lê: só o que JÁ ACONTECEU. */
-export const estadoDoTeto = (db, userId, agora) => ({
+/* O estado que o motor lê: só o que JÁ ACONTECEU — na MESMA forma do
+   `estadoDoTeto` do cliente (ST-13.2a). A primeira versão mandava só a lista de
+   perfis: a reserva ignorava o tamanho da equipe (L-140, a Vigília de três
+   reserva mais) e o teto ignorava os marcos do registro (1.19) — o servidor
+   recusaria o que o cliente deixa, e deixaria o que o §P5 recusa. */
+export const estadoDoTeto = (db, userId, agora, pack = null) => ({
   encontrosHoje: encontrosHoje(db, userId, agora),
-  emCampo: emCampo(db, userId).map(x => x.perfil),
+  emCampo: emCampo(db, userId).map(x => ({ perfil: x.perfil, membros: JSON.parse(x.equipe_json).length })),
+  vistas: pack ? especiesVistas(db, userId, pack.id) : 0,
+  total: (pack?.especies ?? []).length || undefined,
 });
+
+/* VER É TER ENCONTRADO OU TER NA CAIXA (1.22, D-075) — a inicial nunca passou
+   por encontro, e conta. A mesma união do `vistosDe` do cliente. */
+export const especiesVistas = (db, userId, packId) =>
+  db.prepare(`SELECT COUNT(*) AS n FROM (
+                SELECT dex FROM registro WHERE user_id = ? AND pack_id = ?
+                UNION SELECT dex FROM criaturas WHERE user_id = ? AND pack_id = ?)`)
+    .get(userId, packId, userId, packId).n;
+
+/* As criaturas do jogador no formato que a CONTA lê (o do save): o XP, e não o
+   nível, porque o nível é derivado dele. */
+export const criaturasDaConta = (db, userId) =>
+  db.prepare(`SELECT id, dex, xp, vinculo, foco, treinado_ate FROM criaturas
+               WHERE user_id = ? ORDER BY criada_em, id`).all(userId)
+    .map(l => ({ id: l.id, dex: l.dex, xp: l.xp, nivel: nivelDe(l.xp), vinculo: l.vinculo, foco: l.foco,
+                 ...(l.treinado_ate != null ? { treinadoAte: l.treinado_ate } : {}) }));
 
 export const emCampo = (db, userId) =>
   db.prepare(`SELECT * FROM expedicoes WHERE user_id = ? AND colhida_em IS NULL
@@ -110,7 +134,7 @@ export const emCampo = (db, userId) =>
  * O TETO SAI DA CONSTANTE DO MOTOR, sempre. Ver o §P5 no `engine/expedicao.mjs`:
  * a loja da L-066 vai vender boost de stamina, e boost que levantasse o teto
  * seria dinheiro comprando dinheiro. Aqui não há por onde receber outro número. */
-export function iniciar(db, { userId, pack, bioma, perfil, equipe, agora,
+export function iniciar(db, { userId, pack, bioma, perfil, equipe, agora, estagio = 1,
                               limiteSimultaneas = SIMULTANEAS_INICIAIS }) {
   const p = PERFIS[perfil];
   if (!p) throw new Error(`perfil desconhecido: ${perfil}`);
@@ -126,13 +150,21 @@ export function iniciar(db, { userId, pack, bioma, perfil, equipe, agora,
   if (membros.length !== equipe.length)
     throw new Error('a equipe tem criatura que não é sua ou não existe');
 
+  /* O ESTÁGIO É CONFERIDO AQUI, como no cliente (1.10): pedir um estágio
+     acima do que a coleção abre é RECUSADO, venha o pedido de onde vier. */
+  const est = Math.max(1, Math.floor(Number(estagio) || 1));
+  const colecao = criaturasDaConta(db, userId);
+  if (!estagioAberto(colecao, est))
+    throw new Error(`o estágio ${est} pede uma criatura no nível ${nivelDoEstagio(est)}, ` +
+      `e a sua melhor está no ${estagioMaximo(colecao)}º`);
+
   const { pode, semStamina } = podeEnviar(membros, perfil, agora);
   if (!pode) throw new Error(`sem stamina: ${semStamina.join(', ')}`);
 
-  if (!cabeExpedicao(estadoDoTeto(db, userId, agora), perfil))
+  if (!cabeExpedicao(estadoDoTeto(db, userId, agora, pack), perfil, membros.length))
     throw new Error(
       `o teto diário de ${TETO_ENCONTROS} encontros não comporta mais uma ` +
-      `${p.rotulo} — restam ${restamEncontros(estadoDoTeto(db, userId, agora))}`);
+      `${p.rotulo} — restam ${restamEncontros(estadoDoTeto(db, userId, agora, pack))}`);
 
   const vagas = Math.min(limiteSimultaneas, SIMULTANEAS_MAX);
   if (emCampo(db, userId).length >= vagas)
@@ -152,10 +184,10 @@ export function iniciar(db, { userId, pack, bioma, perfil, equipe, agora,
     }
     db.prepare(`
       INSERT INTO expedicoes (id, user_id, pack_id, bioma, perfil, equipe_json,
-                              custo, iniciada_em, termina_em)
-      VALUES (?,?,?,?,?,?,?,?,?)`)
+                              custo, iniciada_em, termina_em, estagio)
+      VALUES (?,?,?,?,?,?,?,?,?,?)`)
       .run(id, userId, pack.id, bioma, perfil, JSON.stringify(equipe),
-           custo, agora, agora + p.minutos * 60_000);
+           custo, agora, agora + p.minutos * 60_000, est);
     db.exec('COMMIT');
   } catch (e) { db.exec('ROLLBACK'); throw e; }
 
@@ -180,12 +212,10 @@ export function bonusDoServidor(db, userId, pack) {
   return b ? { linha: baseDe(pack, b.species_id), ate: b.created_at + DURACAO_BONUS_MS } : null;
 }
 
-export function colher(db, { id, pack, agora }) {
+export function colher(db, { id, pack, agora, raiz = novaRaiz() }) {
   const exp = db.prepare(`SELECT * FROM expedicoes WHERE id = ?`).get(id);
   if (!exp) throw new Error('expedição não existe');
   if (agora < exp.termina_em) throw new Error('a expedição ainda não terminou');
-
-  const raiz = novaRaiz();
 
   db.exec('BEGIN');
   try {
@@ -194,34 +224,37 @@ export function colher(db, { id, pack, agora }) {
       .run(agora, String(raiz), id);
     if (r.changes === 0) { db.exec('ROLLBACK'); throw new Error('esta expedição já foi colhida'); }
 
-    /* DUAS SUB-SEMENTES POR RÓTULO, como a árvore do §P3: acrescentar um ramo
-       amanhã não move os que já existem, e as expedições já colhidas continuam
-       recalculáveis. */
-    const encontros = sortearEncontros(semente(derivar(raiz, 'encontro')),
-      { pack, bioma: exp.bioma, perfil: exp.perfil, bonus: bonusDoServidor(db, exp.user_id, pack), agora });
-    const itens = agrupar(sortearItens(semente(derivar(raiz, 'saque')),
-      { pack, bioma: exp.bioma, perfil: exp.perfil }));
+    /* A CONTA É A DO CLIENTE (ST-13.2a): `engine/colheita.mjs`, a mesma
+       função, com a raiz sorteada aqui e o bônus da aposta lido do banco. */
+    const x = { id, bioma: exp.bioma, perfil: exp.perfil, estagio: exp.estagio,
+                equipe: JSON.parse(exp.equipe_json), iniciadaEm: exp.iniciada_em, terminaEm: exp.termina_em };
+    const c = contaDaColheita({ pack, expedicao: x, criaturas: criaturasDaConta(db, exp.user_id),
+      raiz, bonus: bonusDoServidor(db, exp.user_id, pack), agora });
 
-    for (const it of itens) {
-      const chave = it.classe === 'essencia' ? 'essencia' : it.id;
-      creditarBolsa(db, exp.user_id, chave, it.quantidade);
-    }
-    /* O FRAGMENTO DE REGISTRO CAI NO ENCONTRO, e não na captura — é a decisão do
-       1.2b, e é aqui que ela vira linha no banco. */
-    for (const e of encontros)
-      creditarRegistro(db, exp.user_id, exp.pack_id, e.dex, FRAGMENTOS_POR_ENCONTRO, agora);
+    for (const [chave, n] of Object.entries(c.bolsa)) creditarBolsa(db, exp.user_id, chave, n);
+    /* O nível é escrito junto com o XP, pela mesma conta — duas escritas
+       separadas seriam o nível e o XP podendo discordar no banco. */
+    const escrever = db.prepare(`UPDATE criaturas SET xp = ?, nivel = ?, vinculo = ?,
+                                   treinado_ate = COALESCE(?, treinado_ate)
+                                  WHERE id = ? AND user_id = ?`);
+    for (const k of c.credito) escrever.run(k.xp, k.nivel, k.vinculo, k.treinadoAte ?? null, k.id, exp.user_id);
+    /* O FRAGMENTO CAI NO ENCONTRO, e não na captura (1.2b). */
+    for (const f of c.fragmentos) creditarRegistro(db, exp.user_id, exp.pack_id, f.dex, f.n, agora);
+    const pendente = db.prepare(`INSERT INTO encontros_pendentes
+      (chave, user_id, expedicao_id, dex, raridade, bioma, em) VALUES (?,?,?,?,?,?,?)`);
+    for (const p of c.pendentes) pendente.run(p.chave, exp.user_id, id, p.dex, p.raridade, p.bioma, p.em);
 
-    /* QUANTOS ENCONTROS ESTA COLHEITA RENDEU (D-052).
-
-       Gravado DENTRO da mesma transação que marcou a colheita: se ele ficasse
-       de fora, uma queda entre as duas escritas deixaria uma expedição colhida
-       valendo zero no teto — e o jogador ganharia encontros de graça toda vez
-       que o processo caísse na hora certa. */
-    db.prepare(`UPDATE expedicoes SET encontros = ? WHERE id = ?`)
-      .run(encontros.length, id);
+    const resposta = { expedicao: id, semente: String(raiz), encontros: c.pendentes, itens: c.itens,
+      moedas: c.moedas, xp: c.xp, vinculo: c.vinculo, subiram: c.subiram, npc: c.npc, treino: c.treino };
+    /* O TOTAL sorteado vai para o teto (D-052, 1.7b) e a resposta fica
+       gravada, os dois DENTRO da transação que marcou a colheita: uma queda
+       entre as escritas deixaria encontros de graça no teto, ou uma colheita
+       sem o que ela pagou. */
+    db.prepare(`UPDATE expedicoes SET encontros = ?, resultado_json = ? WHERE id = ?`)
+      .run(c.total, JSON.stringify(resposta), id);
 
     db.exec('COMMIT');
-    return { expedicao: id, semente: String(raiz), encontros, itens };
+    return resposta;
   } catch (e) {
     try { db.exec('ROLLBACK'); } catch {}
     throw e;

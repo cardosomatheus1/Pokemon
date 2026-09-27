@@ -96,10 +96,15 @@ export function suite() {
     const antes = bolsaDe(db, u.id).reduce((a, i) => a + i.quantidade, 0);
     ok(antes > 0, 'a primeira colheita não creditou nada na bolsa');
 
-    ok(recusa(() => colher(db, { id: e.id, pack: kanto, agora: t })),
-      'a segunda colheita passou. Dois cliques no botão, dois requests em voo ou ' +
+    const segunda = recusa(() => colher(db, { id: e.id, pack: kanto, agora: t }));
+    ok(segunda, 'a segunda colheita passou. Dois cliques no botão, dois requests em voo ou ' +
       'uma reconexão no meio dobrariam o saque, e a expedição continuaria ' +
       'parecendo uma expedição.');
+    /* A RECUSA TEM DE SER A DA GUARDA, e não um acidente do esquema (S564,
+       ST-13.2a): com os encontros pendentes gravados, a chave única deles
+       também barra a segunda — mas só quando há pendente. Uma colheita em que
+       todo encontro virou treinador não grava nenhum, e dobraria. */
+    ok(/já foi colhida/.test(segunda.message), `a segunda colheita foi recusada por outro motivo: ${segunda.message}`);
 
     const depois = bolsaDe(db, u.id).reduce((a, i) => a + i.quantidade, 0);
     igual(depois, antes,

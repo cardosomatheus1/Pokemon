@@ -1238,6 +1238,35 @@ local vira cache; sem conta, nada muda.
   colhe uma; a emissão por jogador-dia bate com a fixture da ST-3.3.
 - **Sabotagem:** confiar no instante do cliente; colheita sem idempotência.
 - **Portões:** Q1 Q2 Q3 Q4 Q6 Q8.
+- **Dividida em três (27/09, na abertura):** o levantamento mostrou que o
+  servidor do idle parou no 1.2d — sorteava sem equipe, estágio e foco, e não
+  pagava moeda, XP, vínculo, treino nem batalha. Rota sobre aquela colheita
+  seria uma segunda regra.
+
+#### ST-13.2a · A colheita é uma conta só ✅ 27/09
+- `engine/colheita.mjs` (`contaDaColheita`, pura): o que a colheita paga. O
+  cliente (`idle-colheita.mjs`) e o servidor (`server/idle.mjs`) a chamam; o
+  `test/colheita.mjs` afirma identidade (30 colheitas, cinco perfis de
+  equipe/estágio/foco, a resposta e o que foi escrito, byte a byte).
+- Migração `colheita-st13.2a` (aditiva): `criaturas.xp`, `treinado_ate`,
+  `expedicoes.estagio`, `resultado_json`, a tabela `encontros_pendentes`.
+- O servidor passa a conferir o estágio no início e a medir o teto como o
+  cliente (a reserva pelo tamanho da equipe, L-140; o registro, 1.19).
+- `creditarTreino` (cliente) removido: sem chamador depois da extração.
+
+#### ST-13.2b · As rotas da expedição e o lance pelo servidor
+- **Escopo:** `POST /api/idle/expedicao` (iniciar), `POST /api/idle/colher`
+  (idempotente: a mesma expedição devolve a resposta gravada), `POST
+  /api/idle/lancar` pela CHAVE do encontro pendente — o dex e a raridade vêm
+  do banco, e não do pedido (hoje `lancar` os recebe do chamador); um
+  encontro, um lance. O relógio é o do servidor.
+- **Aceite:** o da ficha acima; e a emissão por jogador-dia do servidor bate
+  com a fixture da ST-3.3.
+
+#### ST-13.2c · A run do Avanço e a luta da jornada no servidor
+- **Escopo:** a run começa e se colhe pelo servidor (a reserva no teto, o
+  rendimento decrescente da ST-3.6 pelo relógio dele); a luta PvE da jornada
+  é refeita no servidor pela semente (fecha a **L-208**).
 
 ### ST-13.3 · XP, evolução, golpes e doce como operações
 - **Porte** M · **Servidor** sim · **Depende de** ST-13.2, ST-9.9, ST-9.10, ST-9.12

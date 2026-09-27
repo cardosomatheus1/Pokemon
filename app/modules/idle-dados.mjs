@@ -47,7 +47,6 @@ import { batalhasDa } from '../../engine/npc.mjs';
 import { ENCONTROS_POR_AVANCO } from '../../engine/avanco.mjs';
 import { runDoDisco } from '../../engine/run-avanco.mjs';
 import { nivelDoTopo } from '../../engine/estagios.mjs';
-import { creditarTreino } from './idle-banco.mjs';
 import { vistosDe } from './pokedex-dados.mjs';
 import { xpDaExpedicao, vinculoDaExpedicao, creditar, nivelDe, progresso as progressoNivel } from '../../engine/nivel-criatura.mjs';
 import { FRAGMENTOS_POR_ENCONTRO, chanceDe, tentar } from '../../engine/captura.mjs';

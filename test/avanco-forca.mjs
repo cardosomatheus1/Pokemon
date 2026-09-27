@@ -202,8 +202,10 @@ export function suite() {
       'a run não passa os efeitos do foco ao sorteio de itens');
     /* E a expedição continua usando a mesma. A colheita mudou de arquivo no
        L-162 (o `idle-dados.mjs` passou das 600 linhas), e o teste segue o
-       comportamento para onde ele foi morar — a afirmação não mudou. */
-    ok(ler('../app/modules/idle-colheita.mjs').includes('efeitosDa('),
+       comportamento para onde ele foi morar — a afirmação não mudou. E mudou
+       de novo na ST-13.2a: a conta virou `engine/colheita.mjs`, a que o
+       servidor também chama. */
+    ok(ler('../engine/colheita.mjs').includes('efeitosDa('),
       'a expedição parou de aplicar o foco — a Rota OFF perderia o que já tinha');
   });
 

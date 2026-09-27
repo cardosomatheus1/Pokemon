@@ -1248,6 +1248,51 @@ export const MIGRACOES = [
     },
     desce: db => { db.exec(`DROP TABLE species_candy`); db.exec(`DROP TABLE candy_ledger`); },
   },
+  {
+    nome: 'colheita-st13.2a',
+    /* A COLHEITA DO SERVIDOR É A MESMA DO CLIENTE (ST-13.2a, E13).
+     *
+     * O 1.2d parou antes de o idle ganhar XP, treino do banco e estágio; a
+     * colheita do servidor não tinha onde escrever nenhum dos três. ADITIVA:
+     *
+     *   criaturas.xp            o nível é DERIVADO dele (`nivelDe`), como no
+     *                           save; `nivel` continua gravado ao lado, e os
+     *                           dois são escritos juntos, pela mesma conta
+     *   criaturas.treinado_ate  a marca do treino do banco (A7) — é da
+     *                           criatura, e não da expedição
+     *   expedicoes.estagio      quão fundo (1.10); o CHECK é o dos quatro
+     *   expedicoes.resultado_json  o que a colheita pagou, gravado na MESMA
+     *                           transação: colher de novo devolve a mesma
+     *                           resposta, e não uma recontagem
+     *   encontros_pendentes     o encontro que ainda espera bola — do
+     *                           SERVIDOR, para o lance não aceitar o dex e a
+     *                           raridade que o cliente disser */
+    sobe: db => {
+      db.exec(`ALTER TABLE criaturas ADD COLUMN xp INTEGER NOT NULL DEFAULT 0 CHECK (xp >= 0)`);
+      db.exec(`ALTER TABLE criaturas ADD COLUMN treinado_ate INTEGER`);
+      db.exec(`ALTER TABLE expedicoes ADD COLUMN estagio INTEGER NOT NULL DEFAULT 1 CHECK (estagio BETWEEN 1 AND 4)`);
+      db.exec(`ALTER TABLE expedicoes ADD COLUMN resultado_json TEXT`);
+      db.exec(`
+        CREATE TABLE encontros_pendentes (
+          chave         TEXT PRIMARY KEY,
+          user_id       TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          expedicao_id  TEXT NOT NULL REFERENCES expedicoes(id),
+          dex           INTEGER NOT NULL CHECK (dex >= 1),
+          raridade      TEXT NOT NULL,
+          bioma         TEXT NOT NULL,
+          em            INTEGER NOT NULL,
+          resolvido_em  INTEGER
+        )`);
+      db.exec(`CREATE INDEX idx_pendentes_dono ON encontros_pendentes(user_id, resolvido_em)`);
+    },
+    desce: db => {
+      db.exec(`DROP TABLE encontros_pendentes`);
+      db.exec(`ALTER TABLE expedicoes DROP COLUMN resultado_json`);
+      db.exec(`ALTER TABLE expedicoes DROP COLUMN estagio`);
+      db.exec(`ALTER TABLE criaturas DROP COLUMN treinado_ate`);
+      db.exec(`ALTER TABLE criaturas DROP COLUMN xp`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

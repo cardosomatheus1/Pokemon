@@ -115,9 +115,11 @@ export async function suite() {
 
   s.teste('a colheita pesa o bônus; o teto e a captura não o recebem', () => {
     const colheita = semComentario(fonte('../app/modules/idle-colheita.mjs'));
-    ok(/bonus = carregarBonus\(\)/.test(colheita) && /membros: quantosForam,\s*bonus, agora \}\)/.test(colheita), 'a colheita local não pesa o bônus');
+    ok(/bonus = carregarBonus\(\)/.test(colheita) && /contaDaColheita\(\{[^}]*raiz, bonus, agora \}\)/.test(colheita), 'a colheita local não passa o bônus para a conta');
+    /* ST-13.2a: a conta é uma só, e é ela que o leva ao sorteio. */
+    ok(/membros: \(x\.equipe \?\? \[\]\)\.length \|\| 1, bonus, agora \}\)/.test(semComentario(fonte('../engine/colheita.mjs'))), 'a conta da colheita não pesa o bônus');
     ok(/bonus: bonusDoServidor\(db, exp\.user_id, pack\), agora/.test(semComentario(fonte('../server/idle.mjs'))), 'a colheita do servidor não pesa o bônus');
-    for (const f of ['../app/modules/idle-colheita.mjs', '../server/idle.mjs'])
+    for (const f of ['../app/modules/idle-colheita.mjs', '../server/idle.mjs', '../engine/colheita.mjs'])
       ok(!/(chanceDe|tentar|tetoDeEncontros)\([^)]*bonus/.test(semComentario(fonte(f))), `${f}: o bônus chegou à captura ou ao teto`);
     ok(/previaDeEncontros\(\{ pack: PACK, bioma, perfil, estagio, bonus, agora: Date\.now\(\) \}\)/.test(fonte('../app/modules/idle-estagios.mjs')),
       'a prévia da rota não mostra o bônus que a colheita vai pesar');

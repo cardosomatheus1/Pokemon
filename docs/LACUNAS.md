@@ -8760,9 +8760,9 @@ a luta começa.
 
 ### L-208 — o gate da V4 confia no que o navegador relata
 
-**Registrada em:** 27/09/2026, na ST-10.20 (Q6). **Bloco dono:** ST-13.2 (a
-colheita é do servidor — e a jornada vai junto com a coleção). **Estado:**
-aberto.
+**Registrada em:** 27/09/2026, na ST-10.20 (Q6). **Bloco dono:** ST-13.2c (a
+run e a luta da jornada no servidor — a ST-13.2 foi dividida em a/b/c em
+27/09). **Estado:** aberto.
 
 `pve_iniciado`, `ginasio_vencido` e `p_exibida` vêm do cliente, porque a
 jornada ainda mora no save local. O servidor filtra os campos (número,
@@ -8804,3 +8804,17 @@ acabamento da LEITURA (nó atual, setas, risco, título, cena longe de você).
 
 **O que a destrava:** nada; é a ST-10.22. O cenário do mapa é de olhar, como o
 do idle — "parece de um jogo publicado?".
+
+### L-210 — o servidor não sabe o que é equipe ativa e o que é caixa
+
+**Registrada em:** 27/09/2026, na ST-13.2a. **Bloco dono:** ST-13.3 (as
+operações da coleção — mover entre equipe e caixa é uma delas). **Estado:**
+aberto.
+
+No aparelho, só quem está na equipe ativa (seis) vai a campo, e a captura com
+a equipe cheia vai para a caixa (`naCaixa`). O banco não tem a coluna: o
+`iniciar` do servidor aceita qualquer criatura do jogador, e o `gerar` não
+decide o destino. Não é furo de economia hoje — nada no servidor tem rota de
+mover —, mas a ST-13.5 (o cliente lê do servidor) precisa dela, e a regra tem
+de morar na camada 0 que os dois chamam, como a colheita.
+

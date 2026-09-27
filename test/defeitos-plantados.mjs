@@ -5641,7 +5641,7 @@ export const DEFEITOS = [
 
   /* A BATALHA DEIXA DE OCUPAR O ENCONTRO e vira renda paralela. O teto de
      encontros para de ser o unico limite do farm, e nada na tela avisa. */
-  { id:'S679', arquivo:IDCOLH, nome:'a batalha deixa de ocupar o encontro',
+  { id:'S679', arquivo:'engine/colheita.mjs', nome:'a batalha deixa de ocupar o encontro',
     real:'"o encontro aconteceu, a batalha tambem" — dois premios por um encontro',
     de:'  const selvagens = npc.quantas ? encontros.slice(0, encontros.length - npc.quantas) : encontros;',
     para:'  const selvagens = encontros;' },
@@ -5891,9 +5891,9 @@ export const DEFEITOS = [
 
   /* A COLHEITA PARA DE PASSAR A EQUIPE. Escapou na primeira leva: o teste de
      integracao media um campo que era sempre zero. */
-  { id:'S711', arquivo:IDCOLH, nome:'a colheita para de passar a equipe ao foco',
+  { id:'S711', arquivo:'engine/colheita.mjs', nome:'a colheita para de passar a equipe ao foco',
     real:'a conta do foco fica certa e ninguem a usa — o sistema inteiro desligado',
-    de:'const efeitos = efeitosDa(equipeFoco, x.perfil);',
+    de:'const efeitos = efeitosDa(equipe, x.perfil);',
     para:'const efeitos = efeitosDa([], x.perfil);' },
 
   { id:'S712', arquivo:'engine/expedicao.mjs', nome:'o sorteio ignora o foco nos encontros',
@@ -5918,12 +5918,12 @@ export const DEFEITOS = [
     de:'  const garantidos = Math.min(quantos, raros.length ? pedidos : 0);',
     para:'  const garantidos = 0;' },
 
-  { id:'S715', arquivo:IDCOLH, nome:'o material do foco nao chega no saque',
+  { id:'S715', arquivo:'engine/colheita.mjs', nome:'o material do foco nao chega no saque',
     real:'o Trilheiro e o Batedor perdem a metade que os define',
     de:'focoItemRaro: efeitos.itemRaro, focoMaterial: efeitos.material,',
     para:'focoItemRaro: efeitos.itemRaro,' },
 
-  { id:'S716', arquivo:IDCOLH, nome:'o item raro do foco nao chega no saque',
+  { id:'S716', arquivo:'engine/colheita.mjs', nome:'o item raro do foco nao chega no saque',
     real:'o Sortudo vira um foco que so custa material',
     de:'focoItemRaro: efeitos.itemRaro, focoMaterial: efeitos.material,',
     para:'focoMaterial: efeitos.material,' },
@@ -8142,7 +8142,7 @@ export const DEFEITOS = [
     de:'({ linha: baseDe(pack, Number(dex)), ate: agora + DURACAO_BONUS_MS })', para:'({ linha: Number(dex), ate: agora + DURACAO_BONUS_MS })' },
   { id:'S1342', arquivo:'app/modules/idle-colheita.mjs', nome:'a colheita local ignora o bonus',
     real:'a previa mostra x4, a aposta foi feita, e a colheita sorteia como se nada tivesse acontecido',
-    de:'      bonus, agora });', para:'      });' },
+    de:'contaDaColheita({ pack, expedicao: x, criaturas: e.criaturas, raiz, bonus, agora });', para:'contaDaColheita({ pack, expedicao: x, criaturas: e.criaturas, raiz, agora });' },
 
   /* ── ST-9.7 · o doce: a regra ─────────────────────────────────────── */
   { id:'S1343', arquivo:'engine/doce.mjs', nome:'o doce escala com o valor apostado',
@@ -8303,6 +8303,40 @@ export const DEFEITOS = [
   { id:'S1387', arquivo:'app/modules/minha-colecao.mjs', nome:'o painel le a taxa do dossie por conta propria',
     real:'duas contas para o mesmo numero, e a segunda nao conhece a escada',
     de:'      odd: o?.odd ?? null, chance: o?.prob ?? null,', para:'      odd: o?.odd ?? null, chance: o?.prob ?? null, hist: dossie?.especies?.[f.dex]?.vitoria?.taxa,' },
+  /* ── ST-13.2a · a colheita é uma conta só (engine/colheita.mjs) ─────── */
+  { id:'S1590', arquivo:'server/idle.mjs', nome:'o servidor não escreve o XP da colheita',
+    real:'a conta calcula o XP de quem foi e de quem treinou, e a criatura da conta real nunca sobe de nível',
+    de:'    for (const k of c.credito) escrever.run(', para:'    for (const k of []) escrever.run(' },
+  { id:'S1591', arquivo:'server/idle.mjs', nome:'o servidor colhe sem o bônus da aposta',
+    real:'a linha apostada pesa x4 no aparelho e x1 na conta real — o mesmo jogador recebe duas regras',
+    de:'raiz, bonus: bonusDoServidor(db, exp.user_id, pack), agora });', para:'raiz, bonus: null, agora });' },
+  { id:'S1592', arquivo:'server/idle.mjs', nome:'a reserva do servidor esquece o tamanho da equipe',
+    real:'a Vigília de três reserva o mesmo que a de um — o teto do §P5 vira sugestão no servidor (L-140)',
+    de:'membros: JSON.parse(x.equipe_json).length })', para:'membros: 1 })' },
+  { id:'S1593', arquivo:'server/idle.mjs', nome:'o teto do servidor não sobe com o registro',
+    real:'quem completou 60 espécies tem 31 encontros no aparelho e 30 na conta (1.19)',
+    de:'vistas: pack ? especiesVistas(db, userId, pack.id) : 0,', para:'vistas: 0,' },
+  { id:'S1594', arquivo:'server/idle.mjs', nome:'o servidor aceita qualquer estágio',
+    real:'um pedido forjado manda a equipe de nível 1 ao estágio 4 — o raro do jogo de graça',
+    de:'  if (!estagioAberto(colecao, est))', para:'  if (false)' },
+  { id:'S1595', arquivo:'server/idle.mjs', nome:'o estágio não é gravado na expedição',
+    real:'a equipe vai ao fundo e o servidor colhe como se fosse o estágio 1',
+    de:'custo, agora, agora + p.minutos * 60_000, est);', para:'custo, agora, agora + p.minutos * 60_000, 1);' },
+  { id:'S1596', arquivo:'server/idle.mjs', nome:'a marca do treino não é gravada',
+    real:'com duas vagas em campo, quem ficou recebe as mesmas horas de treino duas vezes',
+    de:'treinado_ate = COALESCE(?, treinado_ate)', para:'treinado_ate = treinado_ate + 0 * COALESCE(?, 0)' },
+  { id:'S1597', arquivo:'server/idle.mjs', nome:'os encontros pendentes não são gravados',
+    real:'a colheita diz "4 encontros" e não há onde jogar a bola',
+    de:'    for (const p of c.pendentes) pendente.run(', para:'    for (const p of []) pendente.run(' },
+  { id:'S1598', arquivo:'server/idle.mjs', nome:'a resposta da colheita não é gravada',
+    real:'colher de novo não tem o que devolver — o cliente que perdeu a resposta perde a colheita',
+    de:'.run(c.total, JSON.stringify(resposta), id);', para:'.run(c.total, null, id);' },
+  { id:'S1599', arquivo:'engine/colheita.mjs', nome:'a batalha usa o nível de nível 1',
+    real:'a equipe de nível 31 luta contra o treinador do estágio 4 como se tivesse nível 1 — e perde quase sempre',
+    de:'nivelEquipe: nivelDoTopo(equipe.map(c => ({ nivel: nivelDe(c.xp) }))),', para:'nivelEquipe: 1,' },
+  { id:'S1600', arquivo:'engine/colheita.mjs', nome:'o banco treina quem foi',
+    real:'quem foi ganha a expedição E o treino — dois prêmios pela mesma hora (A7)',
+    de:'treinoDaJanela({ criaturas, equipe: x.equipe ?? [],', para:'treinoDaJanela({ criaturas, equipe: [],' },
   /* ── ST-13.1 · a coleção no servidor (GET /api/idle) ────────────────── */
   { id:'S1582', arquivo:'server/colecao-rotas.mjs', nome:'a leitura devolve a criatura inteira, com semente e dono',
     real:'a raiz dos ocultos — a chave da auditoria — e o id do usuário viajam para o cliente a cada leitura',

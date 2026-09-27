@@ -19,37 +19,9 @@
  * A divisão é por RESPONSABILIDADE e não por tamanho, que é a regra do
  * `test/modulos.mjs`. O limite de 600 linhas foi só quem perguntou primeiro.
  */
-import { treinoDaJanela } from '../../engine/ausente.mjs';
-import { creditar } from '../../engine/nivel-criatura.mjs';
-
-/* ── E QUEM FICOU NO BANCO TREINOU (A7, §7.22.14) ─────────────────────────
- *
- * A janela é a da expedição, e o motor explica por quê. O que se decide AQUI é
- * onde a marca é guardada: em `treinadoAte`, na CRIATURA.
- *
- * Guardá-la na expedição não serviria: com duas vagas em campo as janelas se
- * cruzam, e quem precisa não receber a mesma hora duas vezes é a criatura.
- *
- * A janela termina em `terminaEm` e não em `agora`: o que passou disso é tempo
- * em que a expedição já estava parada esperando ser colhida, e pagar por ele
- * premiaria demorar a voltar.
- */
-export function creditarTreino(e, x) {
-  const treinados = treinoDaJanela({
-    criaturas: e.criaturas, equipe: x.equipe ?? [],
-    de: x.iniciadaEm, ate: x.terminaEm,
-  });
-  const subiram = [];
-  for (const t of treinados) {
-    const c = e.criaturas.find(y => y.id === t.id);
-    if (!c) continue;
-    const r = creditar(c, { xp: t.xp, vinculo: t.vinculo });
-    c.xp = r.xp; c.nivel = r.nivel; c.vinculo = r.vinculo;
-    c.treinadoAte = t.ate;
-    if (r.subiu > 0) subiram.push({ id: t.id, para: r.nivel, quantos: r.subiu, treino: true });
-  }
-  return { treino: treinados.map(t => ({ id: t.id, xp: t.xp, vinculo: t.vinculo })), subiram };
-}
+/* O CRÉDITO DO TREINO saiu daqui na ST-13.2a: ele é parte do que a colheita
+   paga, e a colheita é uma conta só (`engine/colheita.mjs`) que o cliente e o
+   servidor chamam. Fica aqui a pergunta que só a TELA faz. */
 
 /* ── QUEM ESTÁ NO BANCO AGORA ─────────────────────────────────────────────
  *
