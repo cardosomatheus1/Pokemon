@@ -8466,3 +8466,22 @@ num bloco de mecânica.
 (`problemasDosExclusivos`) já valida qualquer pack, e o teste de conteúdo
 passa a cobrar o original no mesmo dia.
 
+### L-199 — regravar a base visual LOCAL não atualiza a da CI
+
+**Registrada em:** 27/09/2026, na CI vermelha da ST-10.7. **Bloco dono:** T7
+(arnês — congelado; entra quando impedir). **Estado:** aberto, contornado.
+
+Não há ambiente de referência carimbado (`visual-base-ambiente.json` não
+existe), então toda máquina compara contra a própria base LOCAL, e
+`npm run gerar:visual` só regrava a local. A CI guarda a local dela em cache
+com a chave = hash do `visual-base.json` versionado: uma mudança de tela
+INTENCIONAL que não toca a versionada deixa a CI comparando contra a base
+velha, e ela fica vermelha sem defeito.
+
+**O contorno, e é o que se faz hoje:** num bloco que muda tela de propósito,
+atualizar na `visual-base.json` versionada as telas que mudaram (commit do
+10.7 + o seguinte), o que troca a chave do cache.
+
+**O que a destrava:** o `gerar:visual` avisar — ou fazer — isso sozinho quando a
+local muda telas que a versionada tem.
+
