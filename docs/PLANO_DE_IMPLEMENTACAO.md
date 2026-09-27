@@ -1040,7 +1040,7 @@ Fatiada em duas (a original seria G).
 - **Aceite:** insígnia fora de ordem recusada; repetir não dá insígnia de novo; o resultado vem sempre da simulação semeada.
 - **Portões:** Q1 Q2 Q3.
 
-### ST-10.12 · O mapa de Kanto
+### ST-10.12 · O mapa de Kanto ✅ 27/09
 - **Porte** M · **Servidor** não · **Bloco dono** F4.5 · **Spec** §12 tela 22
 - **Portões:** Q1 Q2 Q5 Q7 (barra de F4.5).
 

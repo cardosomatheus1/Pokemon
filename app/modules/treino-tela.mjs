@@ -165,7 +165,6 @@ function calcularTrocas(g, estado, rival) {
 const depois = r => { if (r?.ok === false) return; renderTreino(); try { renderIdle(); } catch { /* aba fechada */ } };
 
 document.addEventListener('click', ev => {
-  if (ev.target.closest('.nav[data-view="viewTreino"], [data-goto="viewTreino"]')) { setTimeout(renderTreino, 0); return; }
   const adv = ev.target.closest('[data-treino-adv]');
   if (adv) { try { localStorage.setItem(CHAVE_ADV, adv.dataset.treinoAdv); } catch { /* privativo */ } ultimaTroca = null; renderTreino(); return; }
   const pr = ev.target.closest('[data-treino-preset]');

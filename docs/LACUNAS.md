@@ -8518,3 +8518,35 @@ baixar o poder, ou deixar) é de balanceamento, não deste bloco.
 **O que a destrava:** a ST-10.17 decidir com a matriz na mão (`tools/simular-builds.mjs`
 refaz em 7 s).
 
+
+### L-202 — a insígnia do estojo não tem forma, nome nem momento de conquista
+
+**Registrada em:** 27/09/2026, no Q7 cego da ST-10.12 (o mapa de Kanto).
+**Bloco dono:** ST-10.13 (Brock — a primeira insígnia que existe). **Estado:** aberto.
+
+O crítico cego deu **2 de 10** à pergunta "o que coleciono e quanto tenho?": o
+estojo são oito octógonos cinza iguais, e ao fim do caminho o jogador tem
+"0 de 8". A contagem está CERTA — nenhum nó do pack dá insígnia ainda; os
+ginásios são a ST-10.13 em diante —, mas a peça não diz o que é. A barra dele
+(o estojo do cartão de treinador do FireRed) tem silhueta por insígnia, nome ao
+passar o dedo e uma animação quando ela entra.
+
+**O que a destrava:** a ST-10.13 criar a primeira insígnia, com a arte NOSSA
+dela (em `arte/`, regra do `CLAUDE.md`), a silhueta apagada no lugar vazio, e a
+entrada animada no fim da luta que a dá — o texto "A insígnia é sua." já existe
+(`jornada-tela.mjs`).
+
+### L-203 — o mapa deitado aperta com mais de oito nós
+
+**Registrada em:** 27/09/2026, na ST-10.12. **Bloco dono:** ST-10.19 (o resto
+da jornada — é ela que passa de oito nós). **Estado:** aberto.
+
+O caminho deitado divide 84% da largura entre os nós. Com 4 (hoje), o passo é
+~460 px em 1440; com os ~16 da jornada inteira, ~77 px — menos que o nome
+"Caminho da Pedra" (~110 px) e que o treinador de pé com a cena em volta. O
+teste cobra que nenhum nó sai da caixa (`jornada-tela`) e a captura mede
+sobreposição (`tools/olhar-jornada.mjs`), então o defeito aparece sozinho
+quando a lista crescer — mas a forma da solução (mapa em trechos por região,
+rolagem lateral, ou o caminho em duas voltas) é decisão daquele bloco.
+
+**O que a destrava:** a ST-10.19 medir com a lista inteira e escolher.

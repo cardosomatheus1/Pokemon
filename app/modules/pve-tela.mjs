@@ -20,7 +20,7 @@ import { linhaDoTempo, fraseDoResultado, PASSO_MS } from './pve-dados.mjs';
 import { arredondarNeutro, textoDaMargem } from '../../engine/treino-preco.mjs';
 
 const QUADROS_POR_S = 18;
-let geracao = 0, ultimoBotao = null;
+let geracao = 0, deNovo = null;
 const estouros = [];
 
 function lutador(f) {
@@ -84,31 +84,29 @@ function aplicar(passo, L, animar = true) {
   if (log) log.textContent = passo.texto;
 }
 
-function fim(L, antes, r) {
+function fim(L, antes, r, extra, voltar) {
   const el = $('#pveFim');
   if (!el) return;
   const f = fraseDoResultado(r, antes);
+  if (extra) f.texto += ` ${extra}`;
   el.hidden = false;
   el.className = `pveFim ${r.vencedor === 'A' ? 'venceu' : r.vencedor === 'B' ? 'perdeu' : 'empate'}`;
   el.innerHTML = `<h4>${f.titulo}</h4><p>${f.texto}</p>
-    <div class="pveBotoes"><button class="btn gold" data-pve-de-novo>lutar de novo</button><button class="btn" data-pve-fechar>voltar ao time</button></div>`;
+    <div class="pveBotoes">${deNovo ? '<button class="btn gold" data-pve-de-novo>lutar de novo</button>' : ''}<button class="btn" data-pve-fechar>${voltar}</button></div>`;
 }
 
-export function abrirLuta(btn) {
-  ultimoBotao = btn;
+/* ENCENAR uma luta já decidida — a do Team Builder (sorteada aqui) ou a da
+   jornada (decidida e gravada pelo `jornada-local`). Um caminho só para as
+   duas: a tela nunca tem uma segunda versão da luta.
+   Sem `deNovo`, o fim não oferece "lutar de novo": um botão que não faz nada
+   é pior que nenhum (a jornada pede o próximo nó pelo mapa). */
+export function encenar({ alvo, A, B, r, antes, titulo, extraNoFim = '', aoFim = null, deNovo: repetir = null, voltar = 'voltar ao time' }) {
+  deNovo = repetir;
   const g = ++geracao;
-  const estado = carregar();
-  const A = entradasDoTime(PACK, estado);
-  const t = treinador(PACK, btn.dataset.adv);
-  const B = rivalDe(PACK, t);
-  const semente = crypto.getRandomValues(new Uint32Array(1))[0];
-  const r = simular(PACK, A, B, semente, { preset: btn.dataset.preset || 'balanced' });
   const L = linhaDoTempo(PACK, A, B, r, nomeExibido);
-  const antes = { p: Number(btn.dataset.p), erro: Number(btn.dataset.erro), sims: Number(btn.dataset.sims) };
-  const alvo = $('#pveArea');
   if (!alvo) return;
   alvo.innerHTML = `<div class="pveLuta">
-    <div class="pveTopo"><b>contra ${t.nome}</b><span>antes da luta: ${arredondarNeutro(antes.p * 100)}% · ${textoDaMargem(antes)}</span>
+    <div class="pveTopo"><b>${titulo}</b><span>antes da luta: ${arredondarNeutro(antes.p * 100)}% · ${textoDaMargem(antes)}</span>
       <button class="btn" data-pve-pular>pular</button></div>
     <div class="pvePalco" id="pvePalco">
       <div class="pveLado pveA">${L.lados.A.map(lutador).join('')}</div>
@@ -121,15 +119,29 @@ export function abrirLuta(btn) {
   alvo.hidden = false;
   alvo.scrollIntoView({ block: 'start', behavior: 'smooth' });
   alvo.dataset.estado = 'lutando';
+  const acabar = () => { fim(L, antes, r, extraNoFim, voltar); alvo.dataset.estado = 'fim'; aoFim?.(); };
   L.passos.forEach(p => setTimeout(() => { if (g === geracao) aplicar(p, L); }, p.t + 400));
-  setTimeout(() => { if (g === geracao) { fim(L, antes, r); alvo.dataset.estado = 'fim'; } }, L.duracaoMs + 900);
-  alvo._pular = () => { if (g !== geracao) return; geracao++; L.passos.forEach(p => aplicar(p, L, false)); fim(L, antes, r); alvo.dataset.estado = 'fim'; };
+  setTimeout(() => { if (g === geracao) acabar(); }, L.duracaoMs + 900);
+  alvo._pular = () => { if (g !== geracao) return; geracao++; L.passos.forEach(p => aplicar(p, L, false)); acabar(); };
+}
+
+export function abrirLuta(btn) {
+  const estado = carregar();
+  const A = entradasDoTime(PACK, estado);
+  const t = treinador(PACK, btn.dataset.adv);
+  const B = rivalDe(PACK, t);
+  const semente = crypto.getRandomValues(new Uint32Array(1))[0];
+  const r = simular(PACK, A, B, semente, { preset: btn.dataset.preset || 'balanced' });
+  const antes = { p: Number(btn.dataset.p), erro: Number(btn.dataset.erro), sims: Number(btn.dataset.sims) };
+  encenar({ alvo: $('#pveArea'), A, B, r, antes, titulo: `contra ${t.nome}`, deNovo: () => abrirLuta(btn) });
 }
 
 document.addEventListener('click', ev => {
   const b = ev.target.closest('[data-pve-lutar]');
   if (b && !b.disabled) { abrirLuta(b); return; }
-  if (ev.target.closest('[data-pve-pular]')) { $('#pveArea')?._pular?.(); return; }
-  if (ev.target.closest('[data-pve-de-novo]') && ultimoBotao) { abrirLuta(ultimoBotao); return; }
-  if (ev.target.closest('[data-pve-fechar]')) { geracao++; const a = $('#pveArea'); if (a) { a.hidden = true; a.innerHTML = ''; } }
+  const pular = ev.target.closest('[data-pve-pular]');
+  if (pular) { pular.closest('.pveArea')?._pular?.(); return; }
+  if (ev.target.closest('[data-pve-de-novo]') && deNovo) { deNovo(); return; }
+  const fechar = ev.target.closest('[data-pve-fechar]');
+  if (fechar) { geracao++; const a = fechar.closest('.pveArea'); if (a) { a.hidden = true; a.innerHTML = ''; } }
 });

@@ -1,0 +1,126 @@
+/* O MAPA DE KANTO — os dados da tela (ST-10.12 · F4.5 · Spec §8.7, §12 tela 22).
+ *
+ * Camada 0. Cada nó da jornada com o ESTADO que o motor diz (`noAtual`: só o
+ * primeiro não vencido está aberto) e a POSIÇÃO no caminho que a tela desenha.
+ * A tela não decide o que está aberto — decide só a cor.
+ *
+ *   vencido    já vencido (pode lutar de novo: a insígnia não repete)
+ *   atual      o próximo a vencer — o único que pulsa
+ *   trancado   um anterior ainda não foi vencido
+ *
+ * ── O CAMINHO ─────────────────────────────────────────────────────────────
+ *
+ * Um zigue-zague em S, da esquerda para a direita, em porcentagem da caixa: a
+ * mesma forma em qualquer largura larga. Posição é dado, e não CSS solto, para
+ * o teste poder cobrar que nenhum nó cai fora da caixa.
+ *
+ * Em tela ESTREITA o caminho é o MESMO transposto (x ↔ y): desce em vez de
+ * andar para o lado. Medido na primeira captura: deitado em 420 px, o nome
+ * "Caminho da Pedra" saía da caixa — o nome é mais largo que o passo entre
+ * nós. Em pé, o passo é a altura, e a altura cresce com o número de nós.
+ *
+ * ── O MUNDO EM VOLTA ──────────────────────────────────────────────────────
+ *
+ * O caminho é o mundo GBA, e um campo liso com uma linha é protótipo. Três
+ * coisas o tornam lugar: o TREINADOR de pé no nó (a folha de andar do pack,
+ * quadro de frente — o mesmo formato da gente dos biomas), a PAREDE de
+ * árvores nas bordas, como as rotas da era, e a CENA do nó (árvores na
+ * floresta, rochas no caminho da pedra) nas diagonais de cima, onde nem o
+ * caminho deitado nem o em pé passam, e longe do nome, que fica embaixo.
+ */
+import { nosDa, noAtual } from '../../engine/jornada.mjs';
+
+export const INSIGNIAS_DO_CAMINHO = 8;
+export const ARTE_DO_MAPA = '../assets/raw_githubusercontent_com/pret/pokeemerald/alfa';
+
+export function posicaoNoCaminho(i, n) {
+  const x = n <= 1 ? 50 : 8 + (84 * i) / (n - 1);
+  const y = 52 + 24 * Math.sin((i / Math.max(1, n - 1)) * Math.PI * 1.5);
+  return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
+}
+
+export function mapaDaJornada(pack, prog) {
+  const nos = nosDa(pack), atual = noAtual(pack, prog);
+  const vencidos = new Set(prog?.vencidos ?? []);
+  const lista = nos.map((no, i) => ({
+    id: no.id, nome: no.nome ?? no.id, rival: no.rival, insignia: no.insignia ?? null,
+    tipo: no.insignia ? 'ginasio' : 'rota', cena: no.cena ?? null,
+    ow: (pack.treinadores ?? []).find(t => t.id === no.rival)?.ow ?? null,
+    estado: vencidos.has(no.id) ? 'vencido' : atual?.id === no.id ? 'atual' : 'trancado',
+    ...posicaoNoCaminho(i, nos.length),
+  }));
+  const ginasios = nos.filter(n => n.insignia);
+  return {
+    nos: lista,
+    atual: atual?.id ?? null,
+    feitos: lista.filter(n => n.estado === 'vencido').length,
+    total: lista.length,
+    insignias: Array.from({ length: Math.max(INSIGNIAS_DO_CAMINHO, ginasios.length) }, (_, i) => {
+      const g = ginasios[i];
+      return g ? { id: g.insignia, nome: g.nome ?? g.id, ganha: (prog?.insignias ?? []).includes(g.insignia) } : { id: null, nome: null, ganha: false };
+    }),
+  };
+}
+
+/* A frase do nó escolhido, para o painel de baixo: o que fazer com ele, e
+   contra quem (o crítico cego da ST-10.12 leu "o próximo passo do caminho"
+   como texto de enchimento — e era). */
+export function fraseDoNo(no, nome = 'o rival') {
+  const rival = nome.replace(/^(O|A) /, m => m.toLowerCase());   /* "Vença o Rival", e não "Vença O Rival" */
+  if (no.estado === 'trancado') return 'Trancado: vença o caminho antes dele.';
+  if (no.estado === 'vencido') return no.tipo === 'ginasio' ? 'Vencido — a insígnia já é sua. Lutar de novo não a dá de novo.' : 'Vencido. Dá para lutar de novo, para treinar.';
+  return no.tipo === 'ginasio' ? `Vença ${rival} para ganhar a insígnia.` : `Vença ${rival} para abrir o caminho.`;
+}
+
+/* A FAIXA DA CHANCE, para a cor do número e o aviso ao lado do "lutar": 7% e
+   99% na mesma cor não avisam nada (Q7 da ST-10.12). O botão continua lá — a
+   decisão é do jogador —, mas abaixo de 30% ele lê o risco antes. */
+export const faixaDaChance = p => (p < 0.3 ? 'baixa' : p < 0.7 ? 'media' : 'alta');
+
+/* O CAMINHO ANDADO: do começo até o nó atual, o resto é por andar — como o
+   mapa-múndi que só pinta a trilha até onde o jogador chegou. Jornada acabada:
+   tudo andado. Os dois pedaços dividem o nó atual. */
+export function caminhoAndado(mapa) {
+  const i = mapa.atual ? mapa.nos.findIndex(n => n.id === mapa.atual) : mapa.nos.length - 1;
+  return { andado: mapa.nos.slice(0, i + 1), resto: mapa.atual ? mapa.nos.slice(i) : [] };
+}
+
+/* ONDE VOCÊ ESTÁ: na trilha, a 60% do nó vencido para o próximo — de frente
+   para o desafio, e não em cima do marcador (que o treinador ocupa). Com 75%,
+   no caminho em pé, você ficava em cima do treinador do nó (medido em 420).
+   Antes do primeiro, um passo antes dele; com tudo vencido, um passo depois
+   do último. */
+export function ondeEstou(mapa) {
+  const nos = mapa.nos;
+  if (!nos.length) return null;
+  const r = v => Math.round(v * 10) / 10;
+  const i = mapa.atual ? nos.findIndex(n => n.id === mapa.atual) : -1;
+  if (i < 0) return { x: r(Math.min(97, nos.at(-1).x + 4)), y: nos.at(-1).y };
+  if (i === 0) return { x: r(Math.max(3, nos[0].x - 4)), y: nos[0].y };
+  const a = nos[i - 1], b = nos[i];
+  return { x: r(a.x + (b.x - a.x) * 0.6), y: r(a.y + (b.y - a.y) * 0.6) };
+}
+
+/* A PAREDE DE ÁRVORES das bordas, em porcentagem: uma fileira em cima e uma
+   embaixo (à esquerda e à direita, no caminho em pé). O desvio de cada árvore
+   é fixo pelo índice — a parede não dança a cada repintura. */
+export function bordaDoMapa(passo = 4.2) {
+  const lista = [];
+  for (let i = 0, x = 1; x <= 99; i++, x = 1 + i * passo) {
+    const d = ((i * 37) % 11) / 10;
+    lista.push({ x: Math.round((x + d) * 10) / 10, y: 3 + (i % 2) * 1.5 }, { x: Math.round((x + passo / 2 - d) * 10) / 10, y: 97 - (i % 2) * 1.5 });
+  }
+  return lista;
+}
+
+/* A CENA DE UM NÓ, em pixels a partir dele: nas diagonais de CIMA (o caminho
+   deitado passa dos lados, o em pé passa por cima e por baixo, e o nome fica
+   embaixo). O quadro é o da folha de 16×16 do `pret` — o zero, inteiro. */
+const CENAS = {
+  arvores: { folha: 'cuttable_tree', pos: [[-44, -30], [44, -34], [-70, -52], [72, -56], [-40, -70], [40, -74]] },
+  rochas:  { folha: 'breakable_rock', pos: [[-42, -26], [46, -30], [-64, -44], [66, -48]] },
+};
+export function cenaDoNo(no) {
+  const c = CENAS[no?.cena];
+  return c ? c.pos.map(([dx, dy]) => ({ folha: c.folha, dx, dy })) : [];
+}

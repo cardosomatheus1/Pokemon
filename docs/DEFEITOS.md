@@ -6812,3 +6812,37 @@ diálogo, o ensaio passou duas vezes seguidas ("PRONTO PARA CONVIDAR").
 não a CI da branch. A regra do ambiente é clara: CI vermelha num PR meu é
 trabalho agora. Passo a conferir a CI a cada push.
 
+
+## D-125 — o primeiro nó da jornada é invencível para o inicial sozinho
+
+**Achado em:** 27/09/2026, na primeira captura do mapa de Kanto (ST-10.12): o
+jogador recém-chegado, com o Charmander no nível 6 e mais nada, vê **7%** no
+nó da Rota 1. **Bloco dono:** ST-10.13 (os ginásios como aulas — é ela que
+mede e acerta a dificuldade de cada nó com o simulador da ST-10.10).
+**Estado:** aberto.
+
+**Causa.** O comentário da `content/jornada_kanto_v1.mjs` dizia "vencível pelo
+inicial no nível 5 (medido na ST-10.10)". A medição da ST-10.10 existe e é
+verdadeira, mas o time de referência dela é **os três iniciais juntos**
+(`referencia = nivel => [1, 4, 7]…` em `tools/simular-builds.mjs`): 99,8%. O
+inicial SOZINHO é outra conta, e ninguém a fez. Contribui o L-200 (o moveset
+padrão do Bulbasaur no nível 5 é Magical Leaf, Poison Jab, Quick Attack e ele
+não vence nunca).
+
+**Medição** (`lote`, raiz 1, 2.000 lutas, preset balanced, contra o Caçador —
+Rattata 4 e Pidgey 5):
+
+```text
+Charmander 5    4,4%        Charmander 6   6,6%       Charmander 8   87%
+Bulbasaur  5    0,0%        Squirtle   5   0,35%
+```
+
+**Por que não conserto aqui.** Acertar a dificuldade é decidir o nível do
+rival, o moveset padrão (L-200) e o que o jogador leva ao primeiro nó — é o
+escopo inteiro da ST-10.13, com fixture de medição. Mexer no time do Caçador
+dentro do bloco do MAPA seria o mapa decidindo balanceamento. O comentário
+falso foi corrigido aqui, porque número documentado errado é mentira.
+
+**Teste que trava:** `jornada-tela` — "D-125 (afirma o defeito): o inicial
+sozinho no nível 5 perde o primeiro nó". Fica VERMELHO quando a ST-10.13
+consertar, e aí vira o aceite dela.
