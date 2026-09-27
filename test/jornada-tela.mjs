@@ -13,7 +13,7 @@ import { aberto, noAtual, progressoVazio } from '../engine/jornada.mjs';
 import { montarLutador, simular } from '../engine/treino-batalha.mjs';
 import { movesetDoRival, padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { treinador } from '../app/modules/treino-dados.mjs';
-import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, golpesLevados, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
+import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, golpesLevados, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, rivaisDerrubados, pagamentoDoNo, fraseDoPagamento, DUAS_VOLTAS_A_PARTIR_DE, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 const semComentario = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
@@ -65,11 +65,24 @@ export function suite() {
     for (let n = 1; n <= 24; n++) {
       const pos = Array.from({ length: n }, (_, i) => posicaoNoCaminho(i, n));
       for (const p of pos) ok(p.x >= 5 && p.x <= 95 && p.y >= 15 && p.y <= 85, `${n} nós: (${p.x}, ${p.y}) fora da caixa`);
-      for (let i = 1; i < n; i++) ok(pos[i].x > pos[i - 1].x, `${n} nós: o caminho volta para trás no ${i}`);
+      /* Até DUAS_VOLTAS a trilha anda sempre para a direita; a partir dela, a
+         primeira volta vai para a direita e a segunda VOLTA, embaixo (L-203). */
+      const h = n >= DUAS_VOLTAS_A_PARTIR_DE ? Math.ceil(n / 2) : n;
+      for (let i = 1; i < n; i++) {
+        if (i < h) ok(pos[i].x > pos[i - 1].x, `${n} nós: a primeira volta anda para trás no ${i}`);
+        else if (i > h) ok(pos[i].x < pos[i - 1].x, `${n} nós: a segunda volta não volta no ${i}`);
+        else ok(pos[i].y > pos[i - 1].y + 25 && Math.abs(pos[i].x - pos[i - 1].x) < 1, `${n} nós: a curva entre as voltas não desce`);
+      }
+      /* E o que conta para os nomes: dois nós na mesma faixa de altura (menos
+         de 14 de diferença) nunca a menos de 9 um do outro em x. */
+      for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++)
+        if (Math.abs(pos[a].y - pos[b].y) < 14) ok(Math.abs(pos[a].x - pos[b].x) >= 9, `${n} nós: ${a} e ${b} se cobrem (${JSON.stringify(pos[a])} ${JSON.stringify(pos[b])})`);
     }
+    igual(mapaDaJornada(pack, progressoVazio()).voltas, 2, 'a jornada inteira não está em duas voltas');
+    igual(mapaDaJornada(P, progressoVazio()).voltas, 1, 'quatro nós em duas voltas');
     /* Com muitos nós, vizinhos em alturas diferentes o bastante para os
        nomes não se cobrirem (ST-10.16). */
-    for (let n = ZIGUE_A_PARTIR_DE; n <= 16; n++) for (let i = 1; i < n; i++)
+    for (let n = ZIGUE_A_PARTIR_DE; n < DUAS_VOLTAS_A_PARTIR_DE; n++) for (let i = 1; i < n; i++)
       ok(Math.abs(posicaoNoCaminho(i, n).y - posicaoNoCaminho(i - 1, n).y) >= 14, `${n} nós: os vizinhos ${i - 1} e ${i} estão na mesma altura`);
     const q = posicaoNoCaminho(0, 4), u = posicaoNoCaminho(3, 4);
     ok(q.x < 10 && u.x > 90, 'o caminho não atravessa a caixa');
@@ -133,8 +146,8 @@ export function suite() {
 
   s.teste('o mundo em volta: o treinador do nó, a parede de árvores, a cena longe do caminho e do nome', () => {
     const m = mapaDaJornada(pack, progressoVazio());
-    igual(m.nos.map(n => n.ow).join(), 'youngster,lass,camper,hiker,expert_m,swimmer_f,sailor,picnicker,black_belt,beauty,psychic_m,gentleman,', 'a folha de cada treinador');
-    igual(m.nos.map(n => n.cena ?? '-').join(), '-,arvores,-,rochas,rochas,agua,agua,arvores,-,-,agua,arvores,-', 'a cena de cada nó');
+    igual(m.nos.map(n => n.ow).join(), 'youngster,lass,camper,hiker,expert_m,swimmer_f,sailor,picnicker,black_belt,beauty,psychic_m,gentleman,,may_walking,swimmer_m,psychic_m,brendan_walking,camper', 'a folha de cada treinador');
+    igual(m.nos.map(n => n.cena ?? '-').join(), '-,arvores,-,rochas,rochas,agua,agua,arvores,-,-,agua,arvores,-,-,-,-,-,-', 'a cena de cada nó');
     const b = bordaDoMapa();
     ok(b.length >= 40 && b.every(p => p.x >= 0 && p.x <= 100 && (p.y <= 6 || p.y >= 94)), 'a parede não é borda');
     igual(JSON.stringify(b), JSON.stringify(bordaDoMapa()), 'a parede dança a cada repintura');
@@ -320,7 +333,7 @@ export function suite() {
     const rivalDo = id => treinador(pack, id).time.map(x => ({ dex: x.dex, nivel: x.nivel, golpes: movesetDoRival(pack, x.dex, x.nivel) }));
     /* A prova do Agressivo: os golpes que o rival ACERTOU em você (dano > 0),
        nos dois presets, na MESMA luta (mesma semente). */
-    const Bl = rivalDo('blaine'), Ab = [mk(9, 44), mk(121, 44)];
+    const Bl = rivalDo('blaine'), Ab = [mk(117, 40), mk(121, 40)];
     const r1 = simular(pack, Ab, Bl, 5, { preset: 'balanced' });
     igual(golpesLevados(r1.eventos), r1.eventos.filter(e => e.para.startsWith('A') && e.dano > 0).length, 'os golpes levados');
     igual(golpesLevados([{ para: 'A0', dano: 0 }, { para: 'B0', dano: 9 }, { para: 'A1', dano: 3 }]), 1, 'golpe que errou ou no rival contou');
@@ -363,13 +376,58 @@ export function suite() {
     igual(pd[0].quadruplos, deA(0).filter(e => e.eff >= 4).length, 'os de 4×');
     igual(pd[1].cortados, deA(1).filter(e => e.eff > 0 && e.eff < 1).length, 'os cortados');
     const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
-    ok(/no\.licao\.presetCerto === 'aggressive'/.test(tela), 'o painel do Agressivo');
-    ok(/if \(lic\?\.mostra === 'preset' && lic\.presetCerto === 'aggressive'\) \{/.test(tela)
+    ok(/no\.licao\.presetCerto !== 'defensive'/.test(tela), 'o painel do Agressivo');
+    ok(/if \(lic\?\.mostra === 'preset' && lic\.presetCerto !== 'defensive'\) \{/.test(tela)
       && /provaDoPreset\(PACK, \{ timeA: r\.timeA, timeB: r\.timeB, semente: r\.semente/.test(tela), 'o fim da luta do Agressivo');
     /* Q7 da ST-10.19b: vencer sem a lição é dito como a fatia da chance. */
     ok(/\(semLicao && venceu \? ` Você venceu sem a lição: foi a fatia dos \$\{porcentagemExibida\(antes\.p\)\}\.`/.test(tela), 'a vitória sem a lição não é dita');
     ok(/no\.licao\?\.mostra === 'duplo'/.test(tela) && /multiplicadoresNoRival\(PACK, A, rival\)/.test(tela), 'o painel do tipo duplo');
     ok(/if \(lic\?\.mostra === 'duplo'\) \{/.test(tela) && /provaDoDuplo\(PACK, r\.timeA, r\.resultado\.eventos\)/.test(tela), 'o fim da luta do tipo duplo');
+  });
+
+  s.teste('ST-10.19c: a Liga — o nó, a frase, a revisão, e o preset que não é receita', () => {
+    const m = mapaDaJornada(pack, progressoVazio()), liga = m.nos.filter(n => n.tipo === 'liga');
+    igual(liga.map(n => n.id).join(), 'lorelei,bruno,agatha,lance,campeao', 'os nós da Liga, em ordem');
+    igual(m.nos.at(-1).id, 'campeao', 'o Campeão não é o último nó');
+    igual(liga.map(n => n.lider).join(), 'Lorelei,Bruno,Agatha,Lance,O Rival, Campeão', 'o nome de cada um no mapa');
+    /* A revisão aponta o ginásio que ensinou — a insígnia dele desenha a lição. */
+    igual(liga.map(n => n.revisa?.insignia ?? '-').join(), 'alma,trovao,pantano,arcoiris,-', 'a insígnia do ginásio revisado');
+    ok(liga.every(n => !n.insignia), 'a Liga dando insígnia');
+    /* A promessa da Liga é a da Liga (achado na captura: prometia a de rota). */
+    ok(/800 PokéCoin · 2 Ultra Ball/.test(fraseDoPagamento(pack, pagamentoDoNo({ ...liga[0], estado: 'atual' }, null, 1))), 'a promessa da Liga');
+    /* Na segunda volta você fica à DIREITA do nó — do lado de onde chegou. */
+    const antesDe = id => ({ vencidos: pack.jornada.slice(0, pack.jornada.findIndex(n => n.id === id)).map(n => n.id), insignias: [] });
+    igual(ondeEstou(mapaDaJornada(pack, antesDe('bruno'))).lado, 'direita', 'na segunda volta, você do lado errado');
+    igual(ondeEstou(mapaDaJornada(pack, antesDe('floresta'))).lado, 'esquerda', 'na primeira volta, você do lado errado');
+    const f = { ...liga[0], estado: 'atual' };
+    ok(/Liga/.test(fraseDoNo(f, 'Lorelei')) && !/ganhar a insígnia/.test(fraseDoNo(f, 'Lorelei')), `a frase da Liga: ${fraseDoNo(f, 'Lorelei')}`);
+    ok(/Campeão/.test(fraseDoNo({ ...liga[4], estado: 'atual' }, 'O Rival, Campeão')), 'a frase do Campeão');
+    /* O Campeão: o preset certo é o Equilibrado, e o errado — o que venceu o
+       Blaine — é o Agressivo. Quem usa o certo compara com o ERRADO da lição. */
+    const mk = (dex, nivel) => ({ dex, nivel, golpes: padraoDoMoveset(pack, dex, nivel) });
+    const C = treinador(pack, 'campeao').time.map(x => ({ dex: x.dex, nivel: x.nivel, golpes: movesetDoRival(pack, x.dex, x.nivel) }));
+    const A6 = [3, 6, 9, 143, 65, 149].map(d => mk(d, 58));
+    const r = simular(pack, A6, C, 4, { preset: 'balanced' });
+    const pv = provaDoPreset(pack, { timeA: A6, timeB: C, semente: 4, eventos: r.eventos, usado: 'balanced', certo: 'balanced', errado: 'aggressive' });
+    igual(pv.outro, 'aggressive', 'no certo, o Campeão compara com o Agressivo');
+    igual(pv.levadosOutro, golpesLevados(simular(pack, A6, C, 4, { preset: 'aggressive' }).eventos), 'a prova não é a mesma luta');
+    /* A prova do Campeão é a que a lição declara (rivais derrubados), e ela é
+       VERDADEIRA na média: o crítico cego achou uma luta em que o certo levou
+       mais golpes (10 × 9) — a medida do Blaine não serve aqui. */
+    igual(pack.jornada.find(n => n.id === 'campeao').licao.prova, 'derrubados', 'a prova do Campeão');
+    igual(pv.derrubadosUsado, rivaisDerrubados(r.eventos), 'os derrubados no preset usado');
+    igual(rivaisDerrubados([{ para: 'B0', caiu: true }, { para: 'B0', caiu: true }, { para: 'A1', caiu: true }, { para: 'B2', caiu: false }]), 1, 'contou queda repetida, do lado A ou sem queda');
+    let certo = 0, errado = 0;
+    for (let k = 1; k <= 20; k++) {
+      const rk = simular(pack, A6, C, k, { preset: 'balanced' });
+      const p2 = provaDoPreset(pack, { timeA: A6, timeB: C, semente: k, eventos: rk.eventos, usado: 'balanced', certo: 'balanced', errado: 'aggressive' });
+      certo += p2.derrubadosUsado; errado += p2.derrubadosOutro;
+    }
+    ok(certo > errado, `o Equilibrado derrubou ${certo} e o Agressivo ${errado} em 20 lutas — a prova depõe contra a lição`);
+    const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
+    ok(/errado: lic\.presetErrado/.test(tela), 'o fim da luta ignora o preset errado da lição');
+    ok(/lic\.prova === 'derrubados'/.test(tela), 'o fim da luta ignora a medida da lição');
+    ok(/n\.tipo === 'liga'/.test(tela), 'o mapa não desenha a Liga');
   });
 
   /* D-125 — o inicial sozinho perdia o primeiro nó — foi consertado na ST-10.13;

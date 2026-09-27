@@ -28,7 +28,7 @@ import { DIAS_DE_FARM } from '../engine/estilhaco.mjs';
 import { fatorDoRendimento, runsNoDia, diaDoMundo, comRendimento, falaDoRendimento,
          FUSO_DO_RENDIMENTO_MIN, RUNS_CHEIAS, PISO_DO_RENDIMENTO } from '../engine/avanco.mjs';
 import { FUSO_DO_MUNDO_MIN } from '../app/modules/hora-do-dia.mjs';
-import { recompensaPve, PVE } from '../engine/recompensa-pve.mjs';
+import { recompensaPve, PVE, tipoDoNo } from '../engine/recompensa-pve.mjs';
 
 const ARQ = new URL('./fixtures/emissao-idle.json', import.meta.url);
 const H = 3600e3, DIA = 24 * H, T0 = Date.UTC(2026, 8, 1, 3);   /* 00h de Brasília */
@@ -139,7 +139,7 @@ function colunaPve() {
   }
   const nos = kanto.jornada ?? [];
   col.primeiraVezInteira = { nos: nos.length, ginasios: nos.filter(n => n.insignia).length, chefes: nos.filter(n => n.chefe).length,
-    pokecoin: nos.reduce((a, n) => a + PVE.PRIMEIRA[n.chefe ? 'chefe' : n.insignia ? 'ginasio' : 'rota'], 0) };
+    ligas: nos.filter(n => n.liga).length, pokecoin: nos.reduce((a, n) => a + PVE.PRIMEIRA[tipoDoNo(n)], 0) };
   return col;
 }
 

@@ -30,7 +30,7 @@ export function lutarNaJornadaLocal({ pack, id, preset = 'balanced', semente = c
     } catch (x) { return { ok: false, motivo: x.message }; }
     const linhas = [...new Set(timeA.map(c => chaveDoDoce(pack, c.dex)))];
     const chefe = no.chefe ? treinador(pack, no.rival) : null;
-    const rec = recompensaPve({ no: { id, ginasio: !!no.insignia, chefe: !!no.chefe, essencia: chefe?.essencia }, venceu: saida.resultado.vencedor === 'A', primeiraVez: saida.primeiraVez,
+    const rec = recompensaPve({ no: { id, ginasio: !!no.insignia, chefe: !!no.chefe, liga: !!no.liga, essencia: chefe?.essencia }, venceu: saida.resultado.vencedor === 'A', primeiraVez: saida.primeiraVez,
                                 dia: diaDoMundo(agora), hoje: e.jornada?.pve, linhas });
     e.jornada = { ...saida.progresso, pve: rec.hoje };
     e.bolsa ??= {};

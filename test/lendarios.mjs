@@ -108,7 +108,7 @@ export function suite() {
   });
 
   s.teste('o mapa desenha o LENDÁRIO no nó do chefe, e diz o que ele paga', () => {
-    const m = mapaDaJornada(pack, { vencidos: pack.jornada.slice(0, -1).map(n => n.id), insignias: [] });
+    const m = mapaDaJornada(pack, { vencidos: pack.jornada.slice(0, pack.jornada.findIndex(n => n.chefe)).map(n => n.id), insignias: [] });
     const no = m.nos.find(n => n.tipo === 'chefe');
     ok(no, 'o nó do chefe não é do tipo chefe');
     igual(no.lendario, 145, 'o mapa não sabe qual lendário desenhar');

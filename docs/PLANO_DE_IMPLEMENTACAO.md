@@ -1080,7 +1080,8 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **IP:** os nomes moram no pack.
 - **10.19a ✅ 27/09** — Erika (resistência: quem apanha pouco, `licao.tiposGolpe`) e Koga (o preset certo: derrube a ameaça primeiro, `licao.presetCerto`). Medido: Celadon 21,6% × 87,0% (Tauros × Arbok), Fuchsia 14,8% × 71,4% (Equilibrado × Defensivo, o mesmo time).
 - **10.19b ✅ 27/09** — Blaine (o preset Agressivo: um a menos bate a menos) e Giovanni (o tipo duplo: os dois tipos contam). Medido: Cinnabar 24,3% × 76,4% (Equilibrado × Agressivo, o mesmo Blastoise e Starmie 44), Viridian 6,1% × 98,0% (Machamp × Golduck 50).
-- **10.19c** — Elite Four e Campeão; leva a L-201 (Skull Bash ≥ 45 — o Giovanni já o usa), a L-203 (o mapa com ~16 nós, sprite × rótulo) e a L-205 (a correção como botão com a chance projetada).
+- **10.19c ✅ 27/09** — a Liga: Lorelei, Bruno, Agatha e Lance REVISAM uma lição de ginásio cada (o preset Defensivo, a imunidade, físico × especial, a resistência), e o Campeão dá a última: o preset não é receita (o Agressivo que venceu o Blaine perde aqui). L-201 fechada (o rival é especialista: Skull Bash de 17,6% a 3,1% do dano dos rivais da jornada), L-203 fechada (o caminho em duas voltas; 0 rótulos cobertos por sprite nas quatro larguras).
+- **10.19d** — a correção da lição como botão com a chance projetada, em todos os painéis (L-205), e o que o Q7 da Liga somou a ela: a faixa compacta do caminho em 420, o sentido da trilha, a coluna da chance que para em 1124 px, a cena longe dos nomes.
 
 ### ST-10.20 · A jornada ensina a apostar?
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16

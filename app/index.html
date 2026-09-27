@@ -1091,6 +1091,7 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnImune{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:10px 0 2px;font-size:.76rem}
 .jnImune b{flex-basis:100%;color:var(--neon);text-transform:uppercase;letter-spacing:.08em;font-size:.62rem}
 .jnImune span{display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 2px;border-radius:8px;border:1px solid var(--line)}
+.jnImune span:not(:has(img)){padding-left:8px;flex-wrap:wrap}
 .jnImune span.sim{border-color:var(--green);color:var(--txt)}.jnImune span.sim i{color:var(--green);font-style:normal;font-weight:700}
 .jnImune span.nao i{color:var(--red);font-style:normal}.jnImune em{font-style:normal;font-size:.64rem;color:var(--dim)}
 .jnPaga{max-width:300px;text-align:right;color:var(--gold)}
@@ -1120,7 +1121,7 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 /* VOCÊ ao lado do nó atual em toda largura (Q7 da ST-10.16): na trilha, com
    o caminho em zigue-zague, você cobria o nome do ginásio de cima. */
 .jnVoce{z-index:3}.jnPos.jnVoce{left:calc(var(--ax) * 1%);top:calc(var(--ay) * 1%)}
-.jnVoce .jnEu,.jnVoce.jnFim .jnEu{transform:translateX(calc(-100% - 22px))}.jnEu{position:absolute;left:0;top:-48px;transform:translateX(-50%);height:52px;width:25px;overflow:hidden;pointer-events:none;z-index:2;filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
+.jnVoce .jnEu,.jnVoce.jnFim .jnEu{transform:translateX(calc(-100% - 22px))}.jnVoce.jnDireita .jnEu{transform:translateX(17px)}.jnEu{position:absolute;left:0;top:-48px;transform:translateX(-50%);height:52px;width:25px;overflow:hidden;pointer-events:none;z-index:2;filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
 .jnEu img{height:52px;width:auto;max-width:none;display:block;image-rendering:pixelated}
 .jnPos.jn-trancado .jnOw{filter:grayscale(1) brightness(.75) drop-shadow(0 3px 0 rgba(0,0,0,.28))}
 .jnPos.jn-vencido .jnOw{opacity:.7}
@@ -1136,15 +1137,23 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnNo.jn-ginasio span{border:1px solid rgba(var(--goldRGB),.7)}
 /* ST-10.18 · O CHEFE: o lendário no lugar do treinador, maior, com a aura
    que pulsa — ele é o único nó do mapa que não é gente. */
-.jnLend{position:absolute;left:-40px;top:-104px;width:80px;height:80px;display:grid;place-items:center;pointer-events:none;
+/* 64 px, e não 80 (ST-10.19c): com duas voltas, a aura encostava 6 px no rótulo vizinho. */
+.jnLend{position:absolute;left:-32px;top:-84px;width:64px;height:64px;display:grid;place-items:center;pointer-events:none;
   border-radius:50%;background:radial-gradient(circle,rgba(255,210,63,.45),rgba(255,90,77,.12) 55%,transparent 70%);animation:jnAura 2.4s ease-in-out infinite}
-.jnLendImg{width:80px;height:80px;image-rendering:pixelated;filter:drop-shadow(0 4px 0 rgba(0,0,0,.35))}
+.jnLendImg{width:64px;height:64px;image-rendering:pixelated;filter:drop-shadow(0 4px 0 rgba(0,0,0,.35))}
 @keyframes jnAura{50%{box-shadow:0 0 22px 6px rgba(255,210,63,.35)}}
 @media (prefers-reduced-motion:reduce){ .jnLend{animation:none} }
 .jnPos.jn-trancado .jnLendImg{filter:brightness(0) drop-shadow(0 0 2px rgba(255,210,63,.9));opacity:.8}
 .jnNo.jn-chefe i{width:38px;height:38px;border-color:#ffd23f;background:radial-gradient(circle,#ff5a4d,#7a1b12)}
 .jnNo.jn-chefe{transform:translate(-50%,-19px)}.jnNo.jn-chefe span{border:1px solid #ffd23f}.jnNo.jn-chefe span em{color:#ffd23f}
 .jnSeloChefe{border-color:#ffd23f;color:#ffd23f}
+/* ST-10.19c · a Liga: o losango violeta — nem o octógono do ginásio, nem o
+   círculo da rota; e o mapa em DUAS VOLTAS ganha altura para as duas fileiras. */
+.jnNo.jn-liga{transform:translate(-50%,-18px)}.jnNo.jn-liga i{width:30px;height:30px;border-radius:4px;transform:rotate(45deg);margin:3px;background:linear-gradient(135deg,#c9a7ff,#6a3fc9);border:2px solid #efe3ff}
+.jnNo.jn-liga span{border:1px solid rgba(201,167,255,.8)}.jnNo.jn-liga span em{color:#d9c2ff}
+.jnNo.jn-liga.jn-trancado i{background:#7b7b7b;border:2px dashed #3d3d3d}.jnNo.jn-liga.jn-vencido i{background:linear-gradient(135deg,#ffe27a,#c98a1b);border-color:#6b4a0e}.jnNo.jn-liga.jn-atual i{background:var(--neon);border-color:#fff}
+.jnSeloLiga{border-color:#c9a7ff;color:#d9c2ff}
+.jnMapa.jnVoltas2{height:470px}
 .jnNo.escolhido span{color:var(--neon);box-shadow:0 0 0 1px var(--neon)}
 @keyframes jnPulsa{0%,100%{box-shadow:0 0 0 0 rgba(var(--goldRGB),.7),0 3px 0 rgba(0,0,0,.3)}60%{box-shadow:0 0 0 10px rgba(var(--goldRGB),0),0 3px 0 rgba(0,0,0,.3)}}
 @media (prefers-reduced-motion:reduce){ .jnNo.jn-atual i{animation:none;box-shadow:0 0 0 4px rgba(var(--goldRGB),.6)} }
@@ -1168,7 +1177,7 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 /* No estreito, o painel do nó escolhido vem ANTES do mapa: com 7 nós o mapa
    em pé tem ~1.000 px, e a lição ficava abaixo da dobra (Q7 da ST-10.15). */
 @media (max-width:520px){ #jnMapaArea{display:flex;flex-direction:column} .jnTopo{order:0} .jnPainel{order:1} .jnMapa{order:2;margin-top:12px}
-  .jnMapa{height:calc(var(--n) * 130px + 60px)} .jnDeitado{display:none} .jnEmPe{display:block}
+  .jnMapa{height:calc(var(--n) * 130px + 60px)} .jnMapa.jnVoltas2{height:calc(var(--n) * 150px + 60px)} .jnDeitado{display:none} .jnEmPe{display:block}
   .jnPos{left:calc(var(--y) * 1%);top:calc(70px + (100% - 110px) * var(--x) / 100)} .jnPos.jnB{top:calc(var(--x) * 1%)}
   .jnEmPe{top:70px;bottom:auto;height:calc(100% - 110px)}
   .jnPos.jnVoce{left:calc(var(--ay) * 1%);top:calc(70px + (100% - 110px) * var(--ax) / 100)} .jnPainel{grid-template-columns:1fr;grid-template-areas:'titulo' 'chance' 'info';gap:10px} .jnChance{align-items:flex-start} .jnCausa,.jnPaga{text-align:left} }

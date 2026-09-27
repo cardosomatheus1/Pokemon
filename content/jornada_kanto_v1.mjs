@@ -45,6 +45,7 @@ export const JORNADA = [
   /* ST-10.19b · os dois últimos ginásios antes do chefe. */
   { id: 'cinnabar', nome: 'Ginásio de Cinnabar', rival: 'blaine', insignia: 'vulcao', insigniaNome: 'Insígnia Vulcão', cena: 'agua',
     licao: { ensina: 'derrube quem está caindo — um a menos bate a menos', tipo: 'Fogo', mostra: 'preset', presetCerto: 'aggressive',
+             porque: 'termina o ferido: um a menos bate a menos',
              dica: 'Os quatro dele batem forte até cair. Espalhar dano deixa os quatro batendo; terminar o ferido tira um da luta mais cedo.' } },
   { id: 'viridian', nome: 'Ginásio de Viridian', rival: 'giovanni', insignia: 'terra', insigniaNome: 'Insígnia Terra', cena: 'arvores',
     licao: { ensina: 'o tipo duplo — os dois tipos contam', tipo: 'Terrestre', mostra: 'duplo',
@@ -52,4 +53,24 @@ export const JORNADA = [
   /* ST-10.18 · o CHEFE: um lendário (§8.12, L-057). Não dá insígnia; paga a
      essência da espécie, uma por dia, e nunca a criatura. */
   { id: 'usina',    nome: 'Usina Abandonada', rival: 'zapdos', chefe: true },
+  /* ST-10.19c · A LIGA: a Elite Four e o Campeão. A Liga não ensina lição
+     nova — REVISA uma de ginásio (`revisa`), num nível de fim de jogo, e o
+     Campeão dá a última: o preset não é receita. Sem insígnia; `selo` é o
+     nome do degrau no mapa. */
+  { id: 'lorelei',  nome: 'Lorelei', rival: 'lorelei', liga: true, selo: 'Elite Four',
+    licao: { ensina: 'o preset certo — derrube a ameaça primeiro', revisa: 'fuchsia', tipo: 'Gelo', mostra: 'preset', presetCerto: 'defensive',
+             dica: 'A Jynx bate forte e cai fácil. Espalhar dano a deixa batendo a luta inteira; derrubá-la primeiro vira a luta — o que o Koga ensinou.' } },
+  { id: 'bruno',    nome: 'Bruno', rival: 'bruno', liga: true, selo: 'Elite Four',
+    licao: { ensina: 'imunidade', revisa: 'vermilion', tipo: 'Lutador', tipoGolpe: 'fighting', mostra: 'imune',
+             dica: 'Fantasma não é tocado por Lutador nem por Normal: três dos cinco dele batem no vazio. Um imune no time vale mais que força — o que o Surge ensinou.' } },
+  { id: 'agatha',   nome: 'Agatha', rival: 'agatha', liga: true, selo: 'Elite Four',
+    licao: { ensina: 'físico contra especial', revisa: 'saffron', tipo: 'Fantasma', mostra: 'categoria',
+             dica: 'As criaturas dela aguentam golpe especial e quebram com físico — e golpe Normal não toca Fantasma. O que a Sabrina ensinou.' } },
+  { id: 'lance',    nome: 'Lance', rival: 'lance', liga: true, selo: 'Elite Four',
+    licao: { ensina: 'resistência — quem apanha pouco', revisa: 'celadon', tipo: 'Dragão', mostra: 'resiste', tiposGolpe: ['dragon', 'flying'],
+             dica: 'Os golpes dele são de Dragão e de Voador. Aço resiste aos dois, e o Elétrico ainda resiste ao Voador — o que a Erika ensinou.' } },
+  { id: 'campeao',  nome: 'Campeão', rival: 'campeao', liga: true, final: true, selo: 'a final',
+    licao: { ensina: 'não persiga o ferido — o preset certo depende de quem está do outro lado', tipo: 'de tudo', mostra: 'preset', presetCerto: 'balanced', presetErrado: 'aggressive', prova: 'derrubados',
+             porque: 'o maior dano a cada golpe — contra seis fortes, atalho perde',
+             dica: 'O Agressivo venceu o Blaine. Aqui, contra seis, ele gasta golpe terminando quem já ia cair e deixa o resto batendo. Nenhum preset vence sempre: o número muda com quem está do outro lado.' } },
 ];

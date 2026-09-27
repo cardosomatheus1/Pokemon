@@ -8506,7 +8506,8 @@ intocado.
 ### L-201 — Skull Bash, da reserva, é 18% de todo o dano do treino
 
 **Registrada em:** 27/09/2026, na ST-10.10. **Bloco dono:** ~~ST-10.17~~ ST-10.19
-(a jornada acima do nível 45 — decidido na ST-10.17). **Estado:** aberto.
+(a jornada acima do nível 45 — decidido na ST-10.17). **Estado:** ✅ **fechada na
+ST-10.19c (27/09)** — ver o fim da ficha.
 
 A matriz do elenco no nível 50 põe o Skull Bash (normal, 130, físico) em
 primeiro entre os golpes: 18,0% do dano de todas as lutas, contra 10,8% do
@@ -8528,6 +8529,20 @@ ainda não tem. A ST-10.19 (Erika em diante, Elite Four, Campeão) é quem leva
 a jornada acima do 45 — ela mede com o simulador e decide, com a Arena na
 conta.
 
+**Decidido e feito na ST-10.19c (27/09): o RIVAL é especialista.** A Liga
+mostrou o tamanho do problema no PvE: acima do 45 quase todo rival levava o
+Skull Bash, e a Lorelei deixava de "usar Água e Gelo". A regra nova mora só no
+`movesetDoRival` (PvE; a Arena usa `atribuirGolpes` e não muda — goldens,
+`margem.json` e odds intactos): o rival luta com os golpes do PRÓPRIO tipo, na
+categoria da força dele se tiver dois, e a reserva só completa quando ele tem
+menos de dois. Medido nas lutas de referência da jornada inteira (100 por lado
+por nó): o Skull Bash era **17,6%** do dano dos rivais e passou a **3,1%** — o
+que sobra é do Pidgeot do Campeão, que é Normal e usa o golpe do próprio tipo.
+O padrão do JOGADOR não muda (ST-9.12: o save antigo não troca de golpe
+sozinho), e a matriz do `simular-builds` (padrão × padrão) segue como era: o
+§8.14 continua apontando o golpe ali, que é a lista da Arena, e mexer nela é
+decisão de balanceamento da Arena — não desta jornada.
+
 
 ### L-202 — a insígnia do estojo não tem forma, nome nem momento de conquista
 
@@ -8548,7 +8563,8 @@ entrada animada no fim da luta que a dá — o texto "A insígnia é sua." já e
 
 ### L-203 — o mapa deitado aperta com mais de oito nós
 
-**Registrada em:** 27/09/2026, na ST-10.12. **Bloco dono:** ST-10.19c (o resto
+**Registrada em:** 27/09/2026, na ST-10.12. **Estado:** ✅ **fechada na ST-10.19c
+(27/09)** — ver o fim da ficha. **Bloco dono:** ST-10.19c (o resto
 da jornada — é ela que passa de oito nós). **Estado:** aberto.
 
 O caminho deitado divide 84% da largura entre os nós. Com 4 (hoje), o passo é
@@ -8592,6 +8608,20 @@ dois.
 
 **O que a destrava:** a ST-10.19c medir com a lista inteira e escolher.
 
+**Feito na ST-10.19c (18 nós): o caminho em DUAS VOLTAS.** A partir de 15 nós
+(`DUAS_VOLTAS_A_PARTIR_DE`) a primeira volta anda para a direita, em cima, e a
+segunda VOLTA, embaixo — o tabuleiro de trilha. O passo em cada volta é o
+dobro, e o zigue-zague de ±7,5 põe vizinhos em alturas diferentes (o teste
+cobra: dois nós na mesma faixa de altura nunca a menos de 9 em x, de 1 a 24
+nós). No celular, as duas voltas viram duas colunas. E a captura passou a medir
+SPRITE × RÓTULO (`cobre`), com o endereço de cada toque: achou 12 rótulos
+encostados em 420 px (o rótulo de dois andares no treinador do nó seguinte —
+150 px por nó em vez de 130), caixas vizinhas a 1–5 px em 1100 (o mapa a 470
+px), o lendário a 6 px de um nome (64 px em vez de 80) e você a 2 px do nome
+da Agatha (na segunda volta você fica à DIREITA do nó, do lado de onde chegou —
+`ondeEstou().lado`). Resultado: **0 fora da caixa, 0 sobrepostos, 0 rótulos
+cobertos, nas quatro larguras.**
+
 ### L-204 — a peneira `origem` só conhece o primeiro declarador de um `const`
 
 **Registrada em:** 27/09/2026, na ST-10.19a. **Bloco dono:** ST-0.10 (congelada:
@@ -8612,8 +8642,9 @@ ponto de custar mais que uma linha a cada vez.
 
 ### L-205 — a correção da lição é um link dentro do texto, e não um botão com a chance projetada
 
-**Registrada em:** 27/09/2026, no Q7 da ST-10.19b. **Bloco dono:** ST-10.19c (a
-última da jornada; mexe no painel de todos os ginásios). **Estado:** aberto.
+**Registrada em:** 27/09/2026, no Q7 da ST-10.19b. **Bloco dono:** ~~ST-10.19c~~
+**ST-10.19d** (a 10.19c ficou com a Liga, a L-201 e a L-203; esta mexe no painel
+de TODAS as lições e merece bloco próprio). **Estado:** aberto.
 
 O crítico cego (barra: a calculadora de dano do Showdown + o card de dica do
 Into the Breach) deu 3–5 à pergunta "o que mudar, e onde clicar" em todos os
@@ -8632,4 +8663,21 @@ em 420 px: lição → tabela → chance → correção → lutar (hoje a chance
 ST-10.13 (a chance ficava a 1.080 px do topo) — mudar pede medir as duas
 coisas nos oito ginásios de uma vez, e não em dois.
 
-**O que a destrava:** a ST-10.19c, com a jornada inteira no pack.
+**E o Q7 cego da ST-10.19c (a Liga) somou quatro, que ficam no mesmo bloco:**
+
+```text
+420 px    o mapa e o "você está aqui" abaixo da dobra; em duas colunas, o começo
+          e o fim ficam lado a lado no topo — pediu uma faixa compacta do
+          caminho (anterior · atual · próximo) antes do painel
+sentido   com tudo vencido, a segunda volta não diz que volta: pediu setas
+          (chevrons) na trilha no sentido do avanço
+1440+     a coluna da chance e do "lutar" para em x≈1124 e deixa ~270–750 px
+          vazios à direita do painel
+cena      lagos e pedras passam por baixo de rótulos (Pewter, Vermilion,
+          Viridian, Saffron em 1100) e lagos cortados pela borda em 420 — a
+          cena precisa de uma zona livre em volta do nome
+```
+
+A ST-10.19c aplicou o resto do Q7 (a prova do Campeão, o título, os chips, o
+nó vencido da Liga). **O que a destrava:** nada — a jornada inteira está no
+pack desde a ST-10.19c. É a ST-10.19d.

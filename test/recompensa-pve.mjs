@@ -10,7 +10,7 @@
 import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import pack from '../content/pokemon_kanto_v1.mjs';
-import { recompensaPve, diaVazio, PVE } from '../engine/recompensa-pve.mjs';
+import { recompensaPve, diaVazio, PVE, tipoDoNo } from '../engine/recompensa-pve.mjs';
 import { porcentagemExibida } from '../engine/treino-preco.mjs';
 import { pagamentoDoNo, fraseDoPagamento } from '../app/modules/jornada-dados.mjs';
 import { fraseDoResultado } from '../app/modules/pve-dados.mjs';
@@ -36,6 +36,14 @@ export function suite() {
     igual(JSON.stringify(r.doces), '{"4":1,"16":1}', 'um doce por linha usada');
     const g = recompensaPve({ no: GIN, venceu: true, primeiraVez: true, dia: 10, hoje: diaVazio(10), linhas: [7] });
     ok(g.pokecoin > r.pokecoin, 'o ginásio não paga mais que a rota');
+    /* ST-10.19c: a Liga paga como o chefe — sem a essência, e com doce. */
+    const l = recompensaPve({ no: { id: 'l', liga: true }, venceu: true, primeiraVez: true, dia: 10, hoje: diaVazio(10), linhas: [7] });
+    igual(l.pokecoin, PVE.PRIMEIRA.liga, 'a moeda da primeira vitória da Liga');
+    ok(PVE.PRIMEIRA.liga > PVE.PRIMEIRA.ginasio, 'a Liga não paga mais que o ginásio');
+    igual(JSON.stringify(l.bolas), JSON.stringify(PVE.BOLAS.liga), 'as bolas da Liga');
+    igual(Object.keys(l.essencias).length, 0, 'a Liga deu essência');
+    igual(tipoDoNo({ liga: true }), 'liga', 'o tipo do nó da Liga');
+    igual(tipoDoNo({ insignia: 'x' }) + tipoDoNo({ ginasio: true }) + tipoDoNo({ chefe: true }) + tipoDoNo({}), 'ginasioginasiochefe' + 'rota', 'o tipo de cada nó');
     igual(JSON.stringify(r.hoje), JSON.stringify(diaVazio(10)), 'a primeira vitória gastou o teto das repetições');
     /* Doce: no máximo três linhas, e sem repetir linha. */
     igual(Object.keys(recompensaPve({ no: ROTA, venceu: true, primeiraVez: true, dia: 1, hoje: diaVazio(1), linhas: [1, 1, 4, 7, 25, 16] }).doces).join(), '1,4,7', 'as linhas do doce');
@@ -115,6 +123,13 @@ export function suite() {
     igual(r2.recompensa.motivo, 'repeticao', 'a repetição');
     igual(carregar(d).bolsa[pack.moedaPve.id], PVE.PRIMEIRA.rota + r2.recompensa.pokecoin, 'a repetição não somou');
     igual(carregar(d).jornada.pve.pago, r2.recompensa.pokecoin, 'o dia do PvE não foi gravado');
+    /* ST-10.19c: a luta local num nó da Liga paga como a Liga. */
+    const d2 = deposito(), e2 = VAZIO();
+    e2.criaturas = [cria('y', 6, 90), cria('z', 131, 90)];
+    salvar(e2, d2);
+    const PL = { ...pack, jornada: [{ id: 'l', rival: 'rota1', liga: true }] };
+    const rl = lutarNaJornadaLocal({ pack: PL, id: 'l', semente: 3, agora: T }, d2);
+    igual(rl.recompensa.pokecoin, PVE.PRIMEIRA.liga, 'a luta local da Liga não paga como a Liga');
   });
 
   s.teste('a tela promete o que a luta paga: o mesmo motor antes e depois', () => {

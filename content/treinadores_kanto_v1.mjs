@@ -45,6 +45,14 @@ export const TREINADORES = [
   /* ST-10.19b · Giovanni: a aula é o TIPO DUPLO — quatro dos cinco têm dois
      tipos, e os dois contam na conta do golpe. */
   { id: 'giovanni', nome: 'Giovanni',                onde: 'Ginásio de Viridian', time: [{ dex: 111, nivel: 45 }, { dex: 51, nivel: 42 }, { dex: 31, nivel: 44 }, { dex: 34, nivel: 45 }, { dex: 112, nivel: 50 }], ow: 'gentleman' },
+  /* ST-10.19c · A LIGA: a Elite Four e o Campeão. Cada um REVISA uma lição de
+     ginásio num nível de fim de jogo — a Liga não ensina nada novo: cobra. O
+     Campeão é o Rival do começo do caminho (a mesma folha, `camper`). */
+  { id: 'lorelei', nome: 'Lorelei',                  onde: 'Liga · Elite Four', time: [{ dex: 87, nivel: 54 }, { dex: 91, nivel: 53 }, { dex: 80, nivel: 54 }, { dex: 124, nivel: 56 }, { dex: 131, nivel: 56 }], ow: 'may_walking' },
+  { id: 'bruno',   nome: 'Bruno',                    onde: 'Liga · Elite Four', time: [{ dex: 95, nivel: 53 }, { dex: 107, nivel: 55 }, { dex: 106, nivel: 55 }, { dex: 95, nivel: 56 }, { dex: 68, nivel: 58 }], ow: 'swimmer_m' },
+  { id: 'agatha',  nome: 'Agatha',                   onde: 'Liga · Elite Four', time: [{ dex: 94, nivel: 54 }, { dex: 42, nivel: 54 }, { dex: 93, nivel: 53 }, { dex: 24, nivel: 56 }, { dex: 94, nivel: 58 }], ow: 'psychic_m' },
+  { id: 'lance',   nome: 'Lance',                    onde: 'Liga · Elite Four', time: [{ dex: 130, nivel: 56 }, { dex: 148, nivel: 54 }, { dex: 148, nivel: 54 }, { dex: 142, nivel: 58 }, { dex: 149, nivel: 60 }], ow: 'brendan_walking' },
+  { id: 'campeao', nome: 'O Rival, Campeão',          onde: 'Liga · Campeão', time: [{ dex: 18, nivel: 59 }, { dex: 65, nivel: 57 }, { dex: 112, nivel: 59 }, { dex: 103, nivel: 59 }, { dex: 130, nivel: 61 }, { dex: 6, nivel: 63 }], ow: 'camper' },
   /* ST-10.18 · o chefe da campanha: um lendário sozinho, sem treinador. A
      `essencia` é o que a vitória paga dele (L-057) — nunca a criatura.
      `vidaX: 3` é a vida de chefe: sozinho e sem ela, um trio de nível 45

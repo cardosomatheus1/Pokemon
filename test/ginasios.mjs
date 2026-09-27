@@ -29,7 +29,15 @@ export function suite() {
   s.teste('todo ginásio do pack tem lição escrita e dificuldade MEDIDA', () => {
     const gin = pack.jornada.filter(n => n.insignia);
     ok(gin.length >= 1, 'o pack não tem ginásio');
-    igual(fx.ginasios.map(g => g.id).join(), gin.map(n => n.id).join(), 'ginásio sem medição (dificuldade estimada reprova)');
+    /* ST-10.19c: e a Liga também — todo nó com lição é medido. */
+    const comLicao = pack.jornada.filter(n => n.licao);
+    igual(fx.ginasios.map(g => g.id).join(), comLicao.map(n => n.id).join(), 'nó com lição sem medição (dificuldade estimada reprova)');
+    ok(pack.jornada.filter(n => n.liga).length === 5 && pack.jornada.filter(n => n.liga).every(n => n.licao), 'a Liga: cinco nós, todos com lição');
+    for (const n of comLicao) {
+      ok(n.licao?.ensina && n.licao?.dica, `${n.id}: sem a lição escrita`);
+      ok(REFERENCIAS[n.id], `${n.id}: sem times de referência`);
+      ok(!fx.ginasios.find(g => g.id === n.id).semReferencia, `${n.id}: medido sem referência`);
+    }
     for (const n of gin) {
       ok(n.licao?.ensina && n.licao?.dica, `${n.id}: sem a lição escrita`);
       ok(REFERENCIAS[n.id], `${n.id}: sem times de referência`);
@@ -64,74 +72,95 @@ export function suite() {
       }
     }
     ok(REFERENCIAS.cerulean?.varia === 'vel', 'a lição da velocidade não é medida com só a velocidade variando');
-    /* ST-10.19a · Erika: "resistência" — o membro que muda RESISTE a todo
-       tipo de golpe da líder (≤ ½) no time que aplica, e apanha cheio (≥ 1) no
-       que ignora, e o que ignora não é mais fraco no papel. */
-    const er = REFERENCIAS.celadon;
-    ok(er?.varia === 'resiste', 'a lição da resistência não é medida');
-    /* Os tipos da lição são os da PRÓPRIA líder (todo membro dela tem um
-       deles) — o golpe Normal da reserva, que todo mundo tem, não é a lição. */
-    const golpesDaLider = pack.jornada.find(n => n.id === 'celadon').licao.tiposGolpe;
-    ok(treinador(pack, 'erika').time.every(x => pack.especies.find(e => e.dex === x.dex).t.some(t => golpesDaLider.includes(t))), 'os tipos da lição não são os da líder');
-    ok(treinador(pack, 'erika').time.some(x => movesetDoRival(pack, x.dex, x.nivel).some(n => golpesDaLider.includes(golpe(n).t))), 'a líder não usa golpe dos tipos da lição');
-    const i2 = er.ignora.findIndex((x, j) => JSON.stringify(x) !== JSON.stringify(er.aplica[j]));
-    const tiposDeR = dex => pack.especies.find(e => e.dex === dex).t, somaR = dex => pack.especies.find(e => e.dex === dex).s.reduce((a, b) => a + b, 0);
-    for (const t of golpesDaLider) {
-      ok(efeito(pack.tipos.efetividade, t, tiposDeR(er.aplica[i2][0])) <= 0.5, `o membro que aplica a lição não resiste a ${t}`);
-      ok(efeito(pack.tipos.efetividade, t, tiposDeR(er.ignora[i2][0])) >= 1, `o membro que ignora a lição resiste a ${t}`);
+    /* ST-10.19c: cada regra vale para TODO nó que declara a lição — os
+       ginásios e a Liga, que os revisa. */
+    const especie = dex => pack.especies.find(e => e.dex === dex) ?? pack.lendarios.find(e => e.dex === dex);
+    const tiposDe = dex => especie(dex).t, soma = dex => especie(dex).s.reduce((a, b) => a + b, 0);
+    const trocado = r => r.ignora.findIndex((x, k) => JSON.stringify(x) !== JSON.stringify(r.aplica[k]));
+    const comLicao = m => pack.jornada.filter(n => n.licao?.mostra === m);
+    const liderDe = n => treinador(pack, n.rival).time;
+    /* ST-10.19a · "resistência" — o membro que muda RESISTE a todo tipo de
+       golpe do líder (≤ ½) no time que aplica, e apanha cheio (≥ 1) no que
+       ignora, e o que ignora não é mais fraco no papel. Os tipos da lição são
+       os do PRÓPRIO líder (todo membro tem um deles) — o golpe Normal da
+       reserva, que todo mundo tem, não é a lição. */
+    ok(comLicao('resiste').length >= 2, 'a resistência (Erika) e a revisão dela (Lance)');
+    for (const n of comLicao('resiste')) {
+      const r = REFERENCIAS[n.id], tg = n.licao.tiposGolpe, k = trocado(r);
+      ok(r?.varia === 'resiste', `${n.id}: a lição da resistência não é medida`);
+      ok(liderDe(n).every(x => tiposDe(x.dex).some(t => tg.includes(t))), `${n.id}: os tipos da lição não são os do líder`);
+      ok(liderDe(n).some(x => movesetDoRival(pack, x.dex, x.nivel).some(g => tg.includes(golpe(g).t))), `${n.id}: o líder não usa golpe dos tipos da lição`);
+      for (const t of tg) {
+        ok(efeito(pack.tipos.efetividade, t, tiposDe(r.aplica[k][0])) <= 0.5, `${n.id}: o membro que aplica a lição não resiste a ${t}`);
+        ok(efeito(pack.tipos.efetividade, t, tiposDe(r.ignora[k][0])) >= 1, `${n.id}: o membro que ignora a lição resiste a ${t}`);
+      }
+      ok(soma(r.ignora[k][0]) >= soma(r.aplica[k][0]), `${n.id}: o membro que ignora a resistência é mais fraco no papel`);
     }
-    ok(somaR(er.ignora[i2][0]) >= somaR(er.aplica[i2][0]), 'o membro que ignora a resistência é mais fraco no papel');
-    /* Toda lição de preset mede o preset que ENSINA (Koga, Blaine). */
-    for (const n of pack.jornada.filter(x => x.licao?.mostra === 'preset'))
-      ok(REFERENCIAS[n.id]?.varia === 'preset' && REFERENCIAS[n.id].presets.aplica === n.licao.presetCerto, `${n.id}: a lição não mede o preset que ensina`);
-    ok(REFERENCIAS.fuchsia?.varia === 'preset' && REFERENCIAS.cinnabar?.varia === 'preset', 'as duas lições de preset');
+    /* Toda lição de preset mede o preset que ENSINA, contra o que ela diz
+       estar errado (o Equilibrado, se não disser — o Campeão diz o Agressivo). */
+    for (const n of comLicao('preset')) {
+      const r = REFERENCIAS[n.id];
+      ok(r?.varia === 'preset' && r.presets.aplica === n.licao.presetCerto, `${n.id}: a lição não mede o preset que ensina`);
+      igual(r.presets.ignora, n.licao.presetErrado ?? 'balanced', `${n.id}: a medição ignora com outro preset que o da lição`);
+    }
+    ok(comLicao('preset').length >= 4, 'Koga, Blaine, Lorelei e o Campeão');
     /* ST-10.19b · "cada ginásio ensina UMA interação" (§8.1.2) — e nenhuma
-       repetida: duas lições de preset só se ensinam presets diferentes. */
-    const aulas = pack.jornada.filter(n => n.licao?.mostra).map(n => `${n.licao.mostra}:${n.licao.presetCerto ?? ''}`);
+       repetida ENTRE GINÁSIOS: duas lições de preset só se ensinam presets
+       diferentes. A Liga revisa, e por isso pode repetir. */
+    const aulas = pack.jornada.filter(n => n.insignia && n.licao?.mostra).map(n => `${n.licao.mostra}:${n.licao.presetCerto ?? ''}`);
     igual(new Set(aulas).size, aulas.length, `lição repetida entre ginásios: ${aulas.join(' ')}`);
+    /* A Liga só REVISA: toda lição dela aponta um ginásio que a ensinou, e o
+       Campeão ensina a única que falta — o preset não é receita. */
+    for (const n of pack.jornada.filter(x => x.liga && x.licao?.revisa)) {
+      const g = pack.jornada.find(x => x.id === n.licao.revisa);
+      ok(g?.insignia && g.licao?.mostra === n.licao.mostra, `${n.id}: revisa ${n.licao.revisa}, que não ensinou ${n.licao.mostra}`);
+    }
     /* ST-10.19b · Giovanni: "o tipo duplo" — o membro que ignora PARECE bater
        (≥ 2× em alguém dele) e é cortado pelo segundo tipo (≤ ½ em alguém); o
        que aplica bate ≥ 2× em TODOS; o que ignora não é mais fraco no papel;
        e o time do líder tem de fato tipo duplo (três ou mais). */
-    const du = REFERENCIAS.viridian;
-    ok(du?.varia === 'duplo', 'a lição do tipo duplo não é medida');
-    const lider = treinador(pack, 'giovanni').time;
-    ok(lider.filter(x => pack.especies.find(e => e.dex === x.dex).t.length === 2).length >= 3, 'o time do líder não tem tipo duplo');
-    const j2 = du.ignora.findIndex((x, j) => JSON.stringify(x) !== JSON.stringify(du.aplica[j]));
-    const melhor = (dex, nivel, alvo) => Math.max(...padraoDoMoveset(pack, dex, nivel).map(n => efeito(pack.tipos.efetividade, golpe(n).t, pack.especies.find(e => e.dex === alvo).t)));
-    const multIg = lider.map(x => melhor(du.ignora[j2][0], du.ignora[j2][1], x.dex)), multAp = lider.map(x => melhor(du.aplica[j2][0], du.aplica[j2][1], x.dex));
-    ok(multIg.some(v => v >= 2) && multIg.some(v => v <= 0.5), `o membro que ignora não PARECE aplicar (${multIg.join(' ')})`);
-    ok(multAp.every(v => v >= 2), `o membro que aplica não bate forte em todos (${multAp.join(' ')})`);
-    const somaD = dex => pack.especies.find(e => e.dex === dex).s.reduce((a, b) => a + b, 0);
-    ok(somaD(du.ignora[j2][0]) >= somaD(du.aplica[j2][0]), 'o membro que ignora o tipo duplo é mais fraco no papel');
+    for (const n of comLicao('duplo')) {
+      const du = REFERENCIAS[n.id], lider = liderDe(n), j2 = trocado(du);
+      ok(du?.varia === 'duplo', `${n.id}: a lição do tipo duplo não é medida`);
+      ok(lider.filter(x => tiposDe(x.dex).length === 2).length >= 3, `${n.id}: o time do líder não tem tipo duplo`);
+      const melhor = (dex, nivel, alvo) => Math.max(...padraoDoMoveset(pack, dex, nivel).map(g => efeito(pack.tipos.efetividade, golpe(g).t, tiposDe(alvo))));
+      const multIg = lider.map(x => melhor(du.ignora[j2][0], du.ignora[j2][1], x.dex)), multAp = lider.map(x => melhor(du.aplica[j2][0], du.aplica[j2][1], x.dex));
+      ok(multIg.some(v => v >= 2) && multIg.some(v => v <= 0.5), `${n.id}: o membro que ignora não PARECE aplicar (${multIg.join(' ')})`);
+      ok(multAp.every(v => v >= 2), `${n.id}: o membro que aplica não bate forte em todos (${multAp.join(' ')})`);
+      ok(soma(du.ignora[j2][0]) >= soma(du.aplica[j2][0]), `${n.id}: o membro que ignora o tipo duplo é mais fraco no papel`);
+    }
     /* ST-10.15: "imunidade" — o membro que muda é IMUNE ao tipo do líder no
        time que aplica, e NÃO no que ignora; e o que ignora não é mais fraco no
        papel (soma dos atributos base maior ou igual) — senão a diferença
-       seria força, e não imunidade. */
-    const r = REFERENCIAS.vermilion;
-    ok(r?.varia === 'imune' && r.tipo === 'electric', 'a lição da imunidade não declara o tipo');
-    const i = r.ignora.findIndex((x, k) => JSON.stringify(x) !== JSON.stringify(r.aplica[k]));
-    const tiposDe = dex => pack.especies.find(e => e.dex === dex).t, soma = dex => pack.especies.find(e => e.dex === dex).s.reduce((a, b) => a + b, 0);
-    igual(efeito(pack.tipos.efetividade, 'electric', tiposDe(r.aplica[i][0])), 0, 'o membro que aplica a lição não é imune a Elétrico');
-    ok(efeito(pack.tipos.efetividade, 'electric', tiposDe(r.ignora[i][0])) > 0, 'o membro que ignora a lição também é imune');
-    ok(soma(r.ignora[i][0]) >= soma(r.aplica[i][0]), 'o membro que ignora é mais fraco no papel — a medição mede força, e não imunidade');
-    ok(treinador(pack, 'surge').time.every(x => tiposDe(x.dex).includes('electric')), 'o time do líder não é elétrico');
+       seria força, e não imunidade. E o líder USA golpe daquele tipo. */
+    ok(comLicao('imune').length >= 2, 'a imunidade (Surge) e a revisão dela (Bruno)');
+    for (const n of comLicao('imune')) {
+      const r = REFERENCIAS[n.id], i = trocado(r), tg = n.licao.tipoGolpe;
+      ok(r?.varia === 'imune' && r.tipo === tg, `${n.id}: a lição da imunidade não declara o tipo`);
+      igual(efeito(pack.tipos.efetividade, tg, tiposDe(r.aplica[i][0])), 0, `${n.id}: o membro que aplica a lição não é imune a ${tg}`);
+      ok(efeito(pack.tipos.efetividade, tg, tiposDe(r.ignora[i][0])) > 0, `${n.id}: o membro que ignora a lição também é imune`);
+      ok(soma(r.ignora[i][0]) >= soma(r.aplica[i][0]), `${n.id}: o membro que ignora é mais fraco no papel — a medição mede força, e não imunidade`);
+      ok(liderDe(n).filter(x => movesetDoRival(pack, x.dex, x.nivel).some(g => golpe(g).t === tg)).length * 2 >= liderDe(n).length,
+        `${n.id}: menos da metade do time do líder usa golpe de ${tg}`);
+    }
+    ok(treinador(pack, 'surge').time.every(x => tiposDe(x.dex).includes('electric')), 'o time do Surge não é elétrico');
     /* ST-10.16: "inverter a categoria do atacante" — o MESMO atacante, mesmo
        nível, só os golpes mudam: todos físicos de um lado, todos especiais do
        outro, válidos para ele; e o atacante é EQUILIBRADO (ataque e especial a
        10% um do outro) — senão a medição mede o atacante, e não o lado fraco
        de quem apanha. */
-    const c = REFERENCIAS.saffron;
-    ok(c?.varia === 'categoria', 'a lição físico × especial não varia só a categoria');
-    const k = c.ignora.findIndex((x, j) => JSON.stringify(x) !== JSON.stringify(c.aplica[j]));
-    const [ig, ap] = [c.ignora[k], c.aplica[k]];
-    igual(`${ig[0]}@${ig[1]}`, `${ap[0]}@${ap[1]}`, 'o atacante ou o nível mudou junto com a categoria');
-    ok(ap[2].golpes.every(n => golpe(n).cat === 'fis') && ig[2].golpes.every(n => golpe(n).cat === 'esp'), 'as categorias não estão separadas');
-    ok(movesetValido(pack, ap[0], ap[1], ap[2].golpes).ok && movesetValido(pack, ig[0], ig[1], ig[2].golpes).ok, 'golpe que o atacante não poderia ter');
-    const st = pack.especies.find(e => e.dex === ap[0]).s;
-    ok(Math.abs(st[1] - st[3]) / Math.max(st[1], st[3]) <= 0.1, 'o atacante não é equilibrado — a medição mede o atacante');
-    ok(treinador(pack, 'sabrina').time.every(x => { const s2 = pack.especies.find(e => e.dex === x.dex).s; return s2[2] < s2[4]; }),
-      'o time da líder não é mais frágil no físico — a lição do lado fraco não vale');
+    ok(comLicao('categoria').length >= 2, 'físico × especial (Sabrina) e a revisão (Agatha)');
+    for (const n of comLicao('categoria')) {
+      const c = REFERENCIAS[n.id], k = trocado(c);
+      ok(c?.varia === 'categoria', `${n.id}: a lição físico × especial não varia só a categoria`);
+      const [ig, ap] = [c.ignora[k], c.aplica[k]];
+      igual(`${ig[0]}@${ig[1]}`, `${ap[0]}@${ap[1]}`, `${n.id}: o atacante ou o nível mudou junto com a categoria`);
+      ok(ap[2].golpes.every(g => golpe(g).cat === 'fis') && ig[2].golpes.every(g => golpe(g).cat === 'esp'), `${n.id}: as categorias não estão separadas`);
+      ok(movesetValido(pack, ap[0], ap[1], ap[2].golpes).ok && movesetValido(pack, ig[0], ig[1], ig[2].golpes).ok, `${n.id}: golpe que o atacante não poderia ter`);
+      const st = especie(ap[0]).s;
+      ok(Math.abs(st[1] - st[3]) / Math.max(st[1], st[3]) <= 0.1, `${n.id}: o atacante não é equilibrado — a medição mede o atacante`);
+      ok(liderDe(n).every(x => { const s2 = especie(x.dex).s; return s2[2] < s2[4]; }), `${n.id}: o time do líder não é mais frágil no físico — a lição do lado fraco não vale`);
+    }
   });
 
   s.teste('a diferença entre os dois times passa de 3× o erro (ST-10.14)', () => {
@@ -175,6 +204,26 @@ export function suite() {
     const outro = [{ dex: 19, nivel: 50, golpes: padraoDoMoveset(pack, 19, 50) }];
     const p = g => resumo(lote(pack, outro, [{ dex: 113, nivel: 50, golpes: g }], 7, 0, 600)).p;
     ok(p(movesetDoRival(pack, 113, 50)) < p(padraoDoMoveset(pack, 113, 50)), 'o Chansey rival não ficou mais forte');
+  });
+
+  s.teste('L-201 decidida (ST-10.19c): o rival luta com o PRÓPRIO tipo, e a reserva só completa', () => {
+    /* Acima do nível 45 a reserva (Normal) dava o Skull Bash — 130, o maior
+       poder da lista — a quase todo rival, e a Lorelei deixava de "usar Água e
+       Gelo". O rival é especialista: os golpes do tipo dele, e a reserva só
+       quando ele tem menos de dois. A Arena não usa esta regra. */
+    const tipoDe = n => golpe(n).t;
+    for (const t of pack.treinadores) for (const x of t.time) {
+      const e = pack.especies.find(s2 => s2.dex === x.dex) ?? pack.lendarios.find(s2 => s2.dex === x.dex);
+      const r = movesetDoRival(pack, x.dex, x.nivel), proprios = r.filter(n => e.t.includes(tipoDe(n)));
+      if (proprios.length >= 2) igual(proprios.length, r.length, `${t.id}/${x.dex}@${x.nivel}: golpe de fora do tipo com ${proprios.length} do próprio (${r.join(', ')})`);
+    }
+    /* O Skull Bash some de quem não é Normal; o Pidgeot (Normal/Voador) o mantém. */
+    ok(!movesetDoRival(pack, 87, 54).includes('Skull Bash'), 'o Dewgong rival ainda usa Skull Bash');
+    ok(!movesetDoRival(pack, 149, 60).includes('Skull Bash'), 'o Dragonite rival ainda usa Skull Bash');
+    ok(movesetDoRival(pack, 18, 59).includes('Skull Bash'), 'o Pidgeot (Normal) perdeu o golpe do próprio tipo');
+    /* E o jogador não muda: o padrão dele é o de sempre (ST-9.12). */
+    ok(padraoDoMoveset(pack, 143, 50).includes('Skull Bash') && padraoDoMoveset(pack, 59, 50).includes('Body Slam'), 'o padrão do JOGADOR mudou — não é desta regra');
+    ok(!movesetDoRival(pack, 59, 50).includes('Body Slam'), 'o Arcanine rival ainda usa a reserva com dois de Fogo');
   });
 
   /* D-126 — 99,95% aparecia como 100% — consertado na ST-10.17; o aceite mora

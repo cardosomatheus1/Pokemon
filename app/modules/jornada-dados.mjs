@@ -44,7 +44,19 @@ export const arteDaInsignia = id => (id ? `../arte/insignias/${id}.svg` : null);
    três pares se cobriam (medido na captura da ST-10.16). Com o zigue-zague, o
    nome de um vizinho nunca está na mesma altura que o do outro. */
 export const ZIGUE_A_PARTIR_DE = 7;
+/* L-203 (ST-10.19c): a partir de 15 nós o caminho faz DUAS VOLTAS — a
+   primeira para a direita, em cima, e a segunda de volta, embaixo, como o
+   tabuleiro de um jogo de trilha. Numa volta só, com os 18 da Liga, o passo em
+   1100 px caía a ~50 px, menos que meio nome. Em duas, é o dobro, e o
+   zigue-zague de ±7,5 põe os vizinhos em alturas diferentes. */
+export const DUAS_VOLTAS_A_PARTIR_DE = 15;
+export const voltasDoCaminho = n => (n >= DUAS_VOLTAS_A_PARTIR_DE ? 2 : 1);
 export function posicaoNoCaminho(i, n) {
+  if (voltasDoCaminho(n) === 2) {
+    const h = Math.ceil(n / 2), volta = i < h ? 0 : 1, k = volta ? h - 1 - (i - h) : i;
+    const x = 8 + (84 * k) / (h - 1), y = (volta ? 72 : 30) + (k % 2 ? 7.5 : -7.5);
+    return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
+  }
   const x = n <= 1 ? 50 : 8 + (84 * i) / (n - 1);
   const zigue = n >= ZIGUE_A_PARTIR_DE ? (i % 2 ? 13 : -13) : 0;
   const y = 52 + (zigue ? 5 : 24) * Math.sin((i / Math.max(1, n - 1)) * Math.PI * 1.5) + zigue;
@@ -56,13 +68,17 @@ export function mapaDaJornada(pack, prog) {
   const vencidos = new Set(prog?.vencidos ?? []);
   const lista = nos.map((no, i) => ({
     id: no.id, nome: no.nome ?? no.id, rival: no.rival, insignia: no.insignia ?? null,
-    tipo: no.chefe ? 'chefe' : no.insignia ? 'ginasio' : 'rota', cena: no.cena ?? null, licao: no.licao ?? null,
+    tipo: no.chefe ? 'chefe' : no.insignia ? 'ginasio' : no.liga ? 'liga' : 'rota', cena: no.cena ?? null, licao: no.licao ?? null,
+    /* ST-10.19c: a Liga não ensina — REVISA um ginásio, e o mapa desenha a
+       insígnia dele ao lado da lição. `selo` é o nome do degrau, do pack. */
+    selo: no.selo ?? null, final: !!no.final,
+    revisa: no.licao?.revisa ? (g => (g ? { id: g.id, nome: g.nome ?? g.id, insignia: g.insignia ?? null } : null))(nos.find(x => x.id === no.licao.revisa)) : null,
     /* ST-10.18: o chefe é um lendário sozinho — o mapa desenha ELE, e não um
        treinador; e o que ele paga é a essência dele. */
     lendario: no.chefe ? (pack.treinadores ?? []).find(t => t.id === no.rival)?.time?.[0]?.dex ?? null : null,
     essencia: no.chefe ? (pack.treinadores ?? []).find(t => t.id === no.rival)?.essencia ?? null : null,
     ow: (pack.treinadores ?? []).find(t => t.id === no.rival)?.ow ?? null,
-    lider: no.insignia ? (pack.treinadores ?? []).find(t => t.id === no.rival)?.nome ?? null : null,
+    lider: no.insignia || no.liga ? (pack.treinadores ?? []).find(t => t.id === no.rival)?.nome ?? null : null,
     estado: vencidos.has(no.id) ? 'vencido' : atual?.id === no.id ? 'atual' : 'trancado',
     ...posicaoNoCaminho(i, nos.length),
   }));
@@ -72,6 +88,7 @@ export function mapaDaJornada(pack, prog) {
     atual: atual?.id ?? null,
     feitos: lista.filter(n => n.estado === 'vencido').length,
     total: lista.length,
+    voltas: voltasDoCaminho(lista.length),
     insignias: Array.from({ length: Math.max(INSIGNIAS_DO_CAMINHO, ginasios.length) }, (_, i) => {
       const g = ginasios[i];
       return g ? { id: g.insignia, nome: g.insigniaNome ?? `insígnia de ${g.nome ?? g.id}`, onde: g.nome ?? g.id, arte: arteDaInsignia(g.insignia),
@@ -90,6 +107,9 @@ export function fraseDoNo(no, nome = 'o rival') {
   if (no.estado === 'vencido' && no.tipo === 'chefe') return `Vencido — a essência dele sai uma vez por dia; lutar de novo amanhã rende outra.`;
   if (no.estado === 'vencido') return no.tipo === 'ginasio' ? 'Vencido — a insígnia já é sua. Lutar de novo não a dá de novo.' : 'Vencido. Dá para lutar de novo, para treinar.';
   if (no.tipo === 'chefe') return `O chefe: vença ${rival} para ganhar a essência dele — uma por dia. Ele nunca vira criatura sua.`;
+  /* ST-10.19c: a Liga não dá insígnia — dá o caminho até o Campeão. */
+  if (no.tipo === 'liga' && no.final) return `O Campeão: vença ${rival} e a jornada está completa.`;
+  if (no.tipo === 'liga') return `A Liga: vença ${rival} para seguir até o Campeão. Aqui não há insígnia — há a prova do que os ginásios ensinaram.`;
   return no.tipo === 'ginasio' ? `Vença ${rival} para ganhar a insígnia.` : `Vença ${rival} para abrir o caminho.`;
 }
 
@@ -125,7 +145,10 @@ export function ondeEstou(mapa) {
   if (i < 0) return { x: nos.at(-1).x, y: nos.at(-1).y, fim: true, ao: { x: nos.at(-1).x, y: nos.at(-1).y } };
   if (i === 0) return { x: r(Math.max(3, nos[0].x - 4)), y: nos[0].y, ao: { x: nos[0].x, y: nos[0].y } };
   const a = nos[i - 1], b = nos[i];
-  return { x: r(a.x + (b.x - a.x) * 0.6), y: r(a.y + (b.y - a.y) * 0.6), ao: { x: b.x, y: b.y } };
+  /* ST-10.19c: na segunda volta o caminho vem da DIREITA — você fica do lado
+     de onde chegou, e não em cima do nome do próximo (medido em 1100). */
+  const lado = voltasDoCaminho(nos.length) === 2 && i >= Math.ceil(nos.length / 2) ? 'direita' : 'esquerda';
+  return { x: r(a.x + (b.x - a.x) * 0.6), y: r(a.y + (b.y - a.y) * 0.6), ao: { x: b.x, y: b.y }, lado };
 }
 
 /* A PAREDE DE ÁRVORES das bordas, em porcentagem: uma fileira em cima e uma
@@ -233,7 +256,7 @@ export function danoPorCategoria(pack, eventos) {
    número que a luta não paga. */
 export function pagamentoDoNo(no, hoje, dia) {
   if (!no || no.estado === 'trancado') return null;
-  return recompensaPve({ no: { id: no.id, ginasio: no.tipo === 'ginasio', chefe: no.tipo === 'chefe', essencia: no.essencia }, venceu: true, primeiraVez: no.estado !== 'vencido', dia, hoje, linhas: ['?'] });
+  return recompensaPve({ no: { id: no.id, ginasio: no.tipo === 'ginasio', chefe: no.tipo === 'chefe', liga: no.tipo === 'liga', essencia: no.essencia }, venceu: true, primeiraVez: no.estado !== 'vencido', dia, hoje, linhas: ['?'] });
 }
 
 /* A frase do pagamento — antes (o que paga) e depois (o que pagou). */
@@ -303,12 +326,20 @@ export function turnosDaAmeaca(pack, { timeA, timeB, semente, eventos, usado, ce
 /* ── ST-10.19b · A LIÇÃO DO AGRESSIVO ──────────────────────────────────────
    "Um a menos bate a menos": a prova é quantos golpes o rival ACERTOU em você
    (dano > 0), na luta que houve e na MESMA luta com o outro preset. */
+export const rivaisDerrubados = eventos => new Set((eventos ?? []).filter(e => e.para?.startsWith('B') && e.caiu).map(e => e.para)).size;
 export const golpesLevados = eventos => (eventos ?? []).filter(e => e.para?.startsWith('A') && e.dano > 0).length;
 
-export function provaDoPreset(pack, { timeA, timeB, semente, eventos, usado, certo }) {
-  const outro = usado === certo ? 'balanced' : certo;
+export function provaDoPreset(pack, { timeA, timeB, semente, eventos, usado, certo, errado = 'balanced' }) {
+  /* Quem usou o certo compara com o ERRADO da lição (o Campeão: o Agressivo
+     que venceu o Blaine); quem usou outro, com o certo. */
+  const outro = usado === certo ? errado : certo;
   const r = simular(pack, timeA, timeB, semente, { preset: outro });
-  return { usado, outro, levadosUsado: golpesLevados(eventos), levadosOutro: golpesLevados(r.eventos), venceuOutro: r.vencedor === 'A' };
+  /* ST-10.19c: e os rivais DERRUBADOS — a medida do Campeão. "Golpes levados"
+     é a lição do Blaine (um a menos bate a menos); contra seis, o Equilibrado
+     vence por derrubar mais, e pode até levar mais golpes numa luta longa (o
+     crítico cego achou 10 × 9 contra a lição). A lição declara a sua. */
+  return { usado, outro, levadosUsado: golpesLevados(eventos), levadosOutro: golpesLevados(r.eventos), venceuOutro: r.vencedor === 'A',
+           derrubadosUsado: rivaisDerrubados(eventos), derrubadosOutro: rivaisDerrubados(r.eventos), rivais: timeB.length };
 }
 
 /* ── ST-10.19b · A LIÇÃO DO TIPO DUPLO ─────────────────────────────────────

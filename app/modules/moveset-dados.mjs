@@ -103,6 +103,17 @@ export function movesetDoRival(pack, dex, nivel) {
     if (!g) return 0;
     return g.p * (g.acc ?? 1) * (e.t.includes(g.t) ? 1.5 : 1) * ((g.cat === 'fis') === fisico ? 1 : 0.5);
   };
-  return liberadosDasListas(pack, dex, nivel).map(n => [n, nota(n)])
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, GOLPES_MAX).map(([n]) => n);
+  const lista = liberadosDasListas(pack, dex, nivel).map(n => [n, nota(n)])
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([n]) => n);
+  /* L-201 (decidida na ST-10.19c): o rival é ESPECIALISTA — luta com os golpes
+     do próprio tipo, e a reserva só completa quando ele tem menos de dois.
+     Acima do nível 45 a reserva dava o Skull Bash (130, o maior poder da
+     lista) a quase todo rival: a Lorelei deixava de usar Água e Gelo, e a
+     lição do ginásio sumia debaixo de um golpe Normal. */
+  const tipo = n => todos.find(x => x.n === n)?.t;
+  const cat = n => todos.find(x => x.n === n)?.cat;
+  const proprios = lista.filter(n => e.t.includes(tipo(n)));
+  /* E dentro do tipo, a categoria da força dele (L-200), se sobrarem dois. */
+  const naForca = proprios.filter(n => (cat(n) === 'fis') === fisico);
+  return (naForca.length >= 2 ? naForca : proprios.length >= 2 ? proprios : lista).slice(0, GOLPES_MAX);
 }

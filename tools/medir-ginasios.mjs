@@ -55,13 +55,35 @@ export const REFERENCIAS = {
   /* O preset Agressivo (ST-10.19b): o MESMO time — dois de Água, o tipo certo
      contra Fogo — e só o preset muda. Equilibrado espalha dano e os quatro do
      Blaine seguem batendo; Agressivo termina o ferido. Medido na busca: o
-     Defensivo e o Foco ficam onde o Equilibrado fica — a lição é esta. */
-  cinnabar: { varia: 'preset', presets: { ignora: 'balanced', aplica: 'aggressive' }, ignora: [[9, 44], [121, 44]], aplica: [[9, 44], [121, 44]] },
+     Defensivo e o Foco ficam onde o Equilibrado fica — a lição é esta.
+     ST-10.19c (L-201): com o rival especialista, Blastoise e Starmie 44
+     passaram a vencer 100% nos dois presets; a busca refeita deu o Seadra e o
+     Starmie 40 (24% × 88%; o Defensivo 13%, o Foco 24%). */
+  cinnabar: { varia: 'preset', presets: { ignora: 'balanced', aplica: 'aggressive' }, ignora: [[117, 40], [121, 40]], aplica: [[117, 40], [121, 40]] },
   /* O tipo duplo (ST-10.19b): o mesmo Snorlax e o mesmo Arcanine ao lado; o
      membro que muda é um Machamp 50 (Lutador: 2× nos Rhyhorn/Rhydon, e ½ nos
      Nidos — o Venenoso corta) × um Golduck 50 (Água: 4× nos Pedra/Terrestre,
      2× nos outros). O Machamp é o mais forte no papel: 505 contra 500. */
   viridian: { varia: 'duplo', ignora: [[68, 50], [143, 50], [59, 50]], aplica: [[55, 50], [143, 50], [59, 50]] },
+  /* ── A LIGA (ST-10.19c): cada um revisa um ginásio, em nível de fim de
+     jogo, e o Campeão pede o time cheio. Medido na busca, 2.000 lutas aqui. */
+  /* Lorelei revisa o Koga: o MESMO trio, Equilibrado × Defensivo — a Jynx é
+     a ameaça. O Agressivo e o Foco ficam onde o Equilibrado fica. */
+  lorelei: { varia: 'preset', presets: { ignora: 'balanced', aplica: 'defensive' }, ignora: [[26, 60], [97, 60], [3, 60]], aplica: [[26, 60], [97, 60], [3, 60]] },
+  /* Bruno revisa o Surge: o Gengar (imune a Lutador E a Normal) × um
+     Arcanine, mais forte no papel (555 × 500), com o mesmo Snorlax e Charizard. */
+  bruno: { varia: 'imune', tipo: 'fighting', ignora: [[59, 58], [143, 58], [6, 58]], aplica: [[94, 58], [143, 58], [6, 58]] },
+  /* Agatha revisa a Sabrina: o MESMO Raichu 55 (90 × 90), só especiais × só
+     físicos, com o Rhydon e o Alakazam ao lado. */
+  agatha: { varia: 'categoria', ignora: [[26, 55, { golpes: ['Thunderbolt', 'Discharge'] }], [112, 55], [65, 55]],
+                                aplica: [[26, 55, { golpes: ['Volt Tackle', 'Thunder Fang'] }], [112, 55], [65, 55]] },
+  /* Lance revisa a Erika: o Magneton (Aço: resiste a Dragão; Elétrico e Aço:
+     ¼ de Voador) × um Arcanine (555 × 465), com o mesmo Snorlax e Lapras. */
+  lance: { varia: 'resiste', ignora: [[59, 65], [143, 65], [131, 65]], aplica: [[82, 65], [143, 65], [131, 65]] },
+  /* O Campeão: o MESMO time de seis, Agressivo × Equilibrado — o preset que
+     venceu o Blaine perde aqui. */
+  campeao: { varia: 'preset', presets: { ignora: 'aggressive', aplica: 'balanced' },
+             ignora: [[3, 58], [6, 58], [9, 58], [143, 58], [65, 58], [149, 58]], aplica: [[3, 58], [6, 58], [9, 58], [143, 58], [65, 58], [149, 58]] },
   saffron: { varia: 'categoria', ignora: [[59, 42, { golpes: ['Flamethrower', 'Hyper Voice'] }], [143, 36]],
                                  aplica: [[59, 42, { golpes: ['Fire Punch', 'Body Slam', 'Extreme Speed', 'Quick Attack'] }], [143, 36]] },
 };
@@ -70,7 +92,8 @@ export const medida = (A, idRival, preset = 'balanced') => resumo(lote(pack, A, 
 export const chance = (A, idRival) => medida(A, idRival).p;
 
 export function medir() {
-  const ginasios = (pack.jornada ?? []).filter(n => n.insignia).map(n => {
+  /* ST-10.19c: todo nó com lição — os ginásios e a Liga. */
+  const ginasios = (pack.jornada ?? []).filter(n => n.licao).map(n => {
     const ref = REFERENCIAS[n.id];
     if (!ref) return { id: n.id, rival: n.rival, semReferencia: true };
     const ig = medida(time(ref.ignora), n.rival, ref.presets?.ignora), ap = medida(time(ref.aplica), n.rival, ref.presets?.aplica);

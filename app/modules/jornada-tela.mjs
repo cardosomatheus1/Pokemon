@@ -38,7 +38,7 @@ function pintarPainel(mapa) {
      1.080 px do topo, fora da tela (Q7 da ST-10.13). Nó vencido: o estado
      diz "vencido", e a revanche é ação secundária — a insígnia não repete. */
   const vencido = no.estado === 'vencido';
-  alvo.innerHTML = `<h4 class="jnTitulo">${no.nome}${no.tipo === 'ginasio' ? ` <span class="jnSelo">ginásio${no.lider ? ` · líder ${no.lider}` : ''}</span>` : no.tipo === 'chefe' ? ' <span class="jnSelo jnSeloChefe">chefe · lendário</span>' : ''}</h4>
+  alvo.innerHTML = `<h4 class="jnTitulo">${no.nome}${no.tipo === 'ginasio' ? ` <span class="jnSelo">ginásio${no.lider ? ` · líder ${no.lider}` : ''}</span>` : no.tipo === 'chefe' ? ' <span class="jnSelo jnSeloChefe">chefe · lendário</span>' : no.tipo === 'liga' ? ` <span class="jnSelo jnSeloLiga">${no.selo ?? ''}</span>` : ''}</h4>
     <div class="jnChance${vencido ? ' jnVencido' : ''}">${vencido ? `<span class="jnFeitoSelo">${no.insignia ? `<img src="${arteDaInsignia(no.insignia)}" alt="">` : ''}vencido ✓</span>` : ''}
       <span class="tiny">seu time vence</span><strong id="jnNumero">…</strong><span class="tiny" id="jnErro">calculando</span>
       <span class="tiny jnCausa" id="jnCausa" hidden></span>
@@ -46,7 +46,7 @@ function pintarPainel(mapa) {
       <span class="tiny jnPaga">${fraseDoPagamento(PACK, pagamentoDoNo(no, carregar().jornada?.pve, diaDoMundo(Date.now())))}</span>
       <button class="btn${vencido ? '' : ' gold'} jnCta" id="jnLutar" data-jn-lutar="${no.id}" disabled>${no.estado === 'trancado' ? 'trancado' : vencido ? 'revanche (treino)' : `lutar contra ${t.nome}`}</button></div>
     <div class="jnInfo"><p class="jnFrase">${fraseDoNo(no, t.nome)}</p>
-      ${no.licao ? `<p class="jnLicao"><img src="${arteDaInsignia(no.insignia)}" alt=""><span><b>Ensina: ${no.licao.ensina}.</b> ${no.lider ?? t.nome} usa ${no.licao.tipo}. ${no.licao.dica}</span></p>` : ''}
+      ${no.licao ? `<p class="jnLicao">${arteDaInsignia(no.insignia ?? no.revisa?.insignia) ? `<img src="${arteDaInsignia(no.insignia ?? no.revisa?.insignia)}" alt="">` : ''}<span><b>${no.revisa ? `Revisa ${no.revisa.nome}` : no.final ? 'A lição final' : 'Ensina'}: ${no.licao.ensina}.</b> ${no.lider ?? t.nome} usa ${no.licao.tipo}. ${no.licao.dica}</span></p>` : ''}
       <div id="jnVel"></div>
       <p class="jnRival">${t.nome}: ${rival.map(r => `<span>${dexImg(r.dex, '', 'class="jnSprite"')}${nomeDo(r.dex)} <i>NV ${r.nivel}</i></span>`).join('')}</p></div>`;
   const g = ++geracao, A = entradasDoTime(PACK, carregar()), preset = presetDoJogador();
@@ -59,7 +59,7 @@ function pintarPainel(mapa) {
     const rs = resistenciaNoTime(PACK, A, no.licao.tiposGolpe), causa = $('#jnCausa');
     const nomeT = t => PACK.tipos.nomes?.[t] ?? t;
     const frac = m => (m === 0 ? 'nada' : m < 1 ? `${m === 0.25 ? '¼' : '½'}` : m > 1 ? `${m}×` : 'cheio');
-    $('#jnVel').innerHTML = `<div class="jnImune"><b>quanto os golpes dela (${no.licao.tiposGolpe.map(nomeT).join(' e ')}) machucam</b>${rs.map(x =>
+    $('#jnVel').innerHTML = `<div class="jnImune"><b>quanto os golpes de ${no.lider ?? t.nome} (${no.licao.tiposGolpe.map(nomeT).join(' e ')}) machucam</b>${rs.map(x =>
       `<span class="${x.mult <= 0.5 ? 'sim' : 'nao'}">${dexImg(x.dex, '', 'class="jnSprite"')}${nomeDo(x.dex)} <i>${x.mult <= 0.5 ? `apanha ${frac(x.mult)} ✓` : `apanha ${frac(x.mult)}`}</i></span>`).join('')}</div>`;
     if (causa) {
       const bons = rs.filter(x => x.mult <= 0.5);
@@ -69,26 +69,29 @@ function pintarPainel(mapa) {
          "leve um Venenoso" dava tipo, e não a troca). */
       const daCaixa = resistenciaNoTime(PACK, candidatosDaCaixa(PACK, carregar()).map(x => x.entrada), no.licao.tiposGolpe).filter(x => x.mult <= 0.5);
       const pior = [...rs].sort((a, b) => b.mult - a.mult)[0];
-      causa.textContent = bons.length ? `${bons.map(x => nomeDo(x.dex)).join(' e ')} ${bons.length > 1 ? 'resistem' : 'resiste'} aos golpes dela`
-        : daCaixa.length ? `ninguém do seu time resiste aos golpes dela — troque ${nomeDo(pior.dex)} por ${nomeDo(daCaixa[0].dex)}, da sua caixa (na aba Time)`
-        : `ninguém do seu time resiste aos golpes dela — leve um ${tiposQueResistem(PACK, no.licao.tiposGolpe).slice(0, 3).map(nomeT).join(' ou ')}`;
+      causa.textContent = bons.length ? `${bons.map(x => nomeDo(x.dex)).join(' e ')} ${bons.length > 1 ? 'resistem' : 'resiste'} aos golpes de ${no.lider ?? t.nome}`
+        : daCaixa.length ? `ninguém do seu time resiste aos golpes de ${no.lider ?? t.nome} — troque ${nomeDo(pior.dex)} por ${nomeDo(daCaixa[0].dex)}, da sua caixa (na aba Time)`
+        : `ninguém do seu time resiste aos golpes de ${no.lider ?? t.nome} — leve um ${tiposQueResistem(PACK, no.licao.tiposGolpe).slice(0, 3).map(nomeT).join(' ou ')}`;
     }
   }
   /* ST-10.19a: a lição do PRESET — qual é a ameaça, e o preset que a derruba
      primeiro. A chance com o preset certo é calculada ao lado. */
-  /* ST-10.19b: e o do Blaine — o Agressivo, que termina o ferido. Não há
-     ameaça a marcar: a lição é o número de atacantes, e não quem. */
-  if (no.licao?.mostra === 'preset' && no.licao.presetCerto === 'aggressive') {
+  /* ST-10.19b: e o do Blaine — o Agressivo, que termina o ferido; e o do
+     Campeão (ST-10.19c) — o Equilibrado, contra o Agressivo que venceu o
+     Blaine. Sem ameaça a marcar: a lição é o preset, e não um alvo. O porquê
+     do certo vem do pack (`porque`); o do errado, do preset que você usa. */
+  if (no.licao?.mostra === 'preset' && no.licao.presetCerto !== 'defensive') {
     const causa = $('#jnCausa'), certo = no.licao.presetCerto;
     const NOME_PRESET = { balanced: 'Equilibrado', aggressive: 'Agressivo', defensive: 'Defensivo', focus: 'Foco' };
+    const ERRO = { balanced: 'espalha dano', aggressive: 'persegue o ferido', defensive: 'fixa num alvo só', focus: 'só olha o tipo' };
     $('#jnVel').innerHTML = `<div class="jnImune"><b>o seu preset — os ${rival.length} dele batem até cair</b>`
-      + `<span class="${preset === certo ? 'sim' : 'nao'}">o seu: ${NOME_PRESET[preset] ?? preset} <i>${preset === certo ? '✓ termina o ferido' : '✗ espalha dano'}</i></span>`
-      + (preset === certo ? '' : `<span class="sim">${NOME_PRESET[certo]} <i>✓ termina o ferido: um a menos bate a menos</i></span>`) + '</div>';
+      + `<span class="${preset === certo ? 'sim' : 'nao'}">o seu: ${NOME_PRESET[preset] ?? preset} <i>${preset === certo ? `✓ ${no.licao.porque}` : `✗ ${ERRO[preset] ?? ''}`}</i></span>`
+      + (preset === certo ? '' : `<span class="sim">${NOME_PRESET[certo]} <i>✓ ${no.licao.porque}</i></span>`) + '</div>';
     if (causa) {
       causa.hidden = false;
       causa.className = `tiny jnCausa ${preset === certo ? 'passa' : 'nao'}`;
-      causa.innerHTML = preset === certo ? `o ${NOME_PRESET[certo]} tira um atacante da luta de cada vez`
-        : `com o ${NOME_PRESET[preset] ?? preset} você fere todos e os ${rival.length} seguem batendo — <button class="lnk" data-treino-aba="time">troque para o ${NOME_PRESET[certo]}</button>`;
+      causa.innerHTML = preset === certo ? `o ${NOME_PRESET[certo]}: ${no.licao.porque}`
+        : `com o ${NOME_PRESET[preset] ?? preset} você ${ERRO[preset] ?? 'luta de outro jeito'}, e os ${rival.length} seguem batendo — <button class="lnk" data-treino-aba="time">troque para o ${NOME_PRESET[certo]}</button>`;
       causa.dataset.licao = preset === certo ? '' : 'golpes';
     }
   } else if (no.licao?.mostra === 'preset') {
@@ -234,15 +237,15 @@ export function renderJornada({ nova = null } = {}) {
     <div class="jnTopo"><span><b>${mapa.feitos}</b> de ${mapa.total} passos · <b>${ganhas}</b> de ${mapa.insignias.length} insígnias${mapa.atual ? '' : ' · <b class="jnFeito">caminho vencido de ponta a ponta</b>'}</span>
       <div class="jnEstojo"><span class="jnEstojoRot">insígnias</span>${mapa.insignias.map(x => `<i class="jnInsignia${x.arte ? ' conhecida' : ''}${x.ganha ? ' ganha' : ''}${x.id && x.id === nova ? ' nova' : ''}"
           title="${x.nome ? `${x.nome} (${x.onde})${x.ganha ? '' : ' — ainda não é sua'}` : 'ainda não há ginásio aqui'}">${x.arte ? `<img src="${x.arte}" alt="">` : ''}</i>`).join('')}</div></div>
-    <div class="jnMapa" style="--n:${mapa.nos.length}">
+    <div class="jnMapa${mapa.voltas === 2 ? ' jnVoltas2' : ''}" style="--n:${mapa.voltas === 2 ? Math.ceil(mapa.nos.length / 2) : mapa.nos.length}">
       <svg class="jnCaminho jnDeitado" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${trilha(false)}</svg>
       <svg class="jnCaminho jnEmPe" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${trilha(true)}</svg>
       ${bordaDoMapa().map(p => `<div class="jnPos jnB" style="--x:${p.x};--y:${p.y}">${quadro('cuttable_tree', 'jnProp')}</div>`).join('')}
       ${mapa.nos.map(n => `<div class="jnPos jn-${n.estado}" style="--x:${n.x};--y:${n.y}">
           ${cenaDoNo(n).map(c => (c.forma ? `<b class="jnLago" style="--dx:${c.dx}px;--dy:${c.dy}px"></b>` : quadro(c.folha, 'jnProp', `;--dx:${c.dx}px;--dy:${c.dy}px`))).join('')}
           ${n.ow ? quadro(n.ow, 'jnOw') : ''}${n.lendario ? `<b class="jnLend">${dexImg(n.lendario, '', 'class="jnLendImg"')}</b>` : ''}
-          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}" data-jn-no="${n.id}" title="${n.nome}"><i${n.tipo === 'ginasio' && n.estado === 'vencido' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : n.tipo === 'chefe' ? '<em>chefe · lendário</em>' : ''}</span></button></div>`).join('')}
-      ${onde && eu ? `<div class="jnPos jnVoce${onde.fim ? ' jnFim' : ''}" style="--x:${onde.x};--y:${onde.y};--ax:${onde.ao.x};--ay:${onde.ao.y}"><b class="jnEu"><img src="${eu}" alt="você"></b></div>` : ''}
+          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}" data-jn-no="${n.id}" title="${n.nome}"><i${n.tipo === 'ginasio' && n.estado === 'vencido' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.tipo === 'liga' ? `<em>${n.selo ?? ''} · ${n.licao?.tipo ?? ''}</em>` : n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : n.tipo === 'chefe' ? '<em>chefe · lendário</em>' : ''}</span></button></div>`).join('')}
+      ${onde && eu ? `<div class="jnPos jnVoce${onde.fim ? ' jnFim' : ''}${onde.lado === 'direita' ? ' jnDireita' : ''}" style="--x:${onde.x};--y:${onde.y};--ax:${onde.ao.x};--ay:${onde.ao.y}"><b class="jnEu"><img src="${eu}" alt="você"></b></div>` : ''}
     </div>
     <div class="jnPainel" id="jnPainel"></div>`;
   const im = alvo.querySelector('.jnEu img');
@@ -296,27 +299,32 @@ document.addEventListener('click', ev => {
       : ` Você agiu antes (${nome(v.seu.dex)} ${v.seu.spe} contra ${nome(rapido.dex)} ${v.alvo})${venceu ? ': a lição deste ginásio.' : ', e desta vez não bastou.'}`;
   }
   const lic = PACK.jornada.find(n => n.id === id)?.licao;
+  /* ST-10.19c: a Liga não ensina — cobra o que um ginásio ensinou. */
+  const aLicao = lic?.revisa ? 'a lição que a Liga cobra' : 'a lição deste ginásio';
   if (lic?.mostra === 'imune') {
     const pv = provaDaImunidade(PACK, r.timeA, r.resultado.eventos, lic.tipoGolpe), nome = dex => nomeExibido(especieDe(PACK, dex)?.n ?? '?');
     const frase = x => (x.golpes ? `${nome(x.dex)} levou ${x.golpes} ${x.golpes === 1 ? 'golpe' : 'golpes'} de ${lic.tipo}: dano ${x.dano}`
       : `contra ${nome(x.dex)} o rival nem tentou ${lic.tipo}${x.outros.length ? ` — só ${x.outros.join(' e ')} (dano ${x.danoOutros})` : ''}`);
     const maiuscula = t => t.charAt(0).toUpperCase() + t.slice(1);
-    licaoNoFim = pv.length ? ` ${maiuscula(pv.map(frase).join('; '))}: a lição deste ginásio.` : ` Ninguém do seu time era imune a ${lic.tipo}: todo golpe acertou.`;
+    licaoNoFim = pv.length ? ` ${maiuscula(pv.map(frase).join('; '))} — ${aLicao}.` : ` Ninguém do seu time era imune a ${lic.tipo}: todo golpe acertou.`;
   }
   if (lic?.mostra === 'resiste') {
     const pv = provaDaResistencia(PACK, r.timeA, r.resultado.eventos, lic.tiposGolpe), nome = dex => nomeExibido(especieDe(PACK, dex)?.n ?? '?');
-    licaoNoFim = pv.length ? ` ${pv.map(x => `${nome(x.dex)} levou ${x.golpes} ${x.golpes === 1 ? 'golpe' : 'golpes'} dela, dano ${x.dano} (apanha ${x.mult === 0.25 ? '¼' : '½'})`).join('; ')}: a lição deste ginásio.`
-                           : ' Ninguém do seu time resistia aos golpes dela.';
+    licaoNoFim = pv.length ? ` ${pv.map(x => `${nome(x.dex)} levou ${x.golpes} ${x.golpes === 1 ? 'golpe' : 'golpes'} de ${t.nome}, dano ${x.dano} (apanha ${x.mult === 0.25 ? '¼' : '½'})`).join('; ')}: ${aLicao}.`
+                           : ` Ninguém do seu time resistia aos golpes de ${t.nome}.`;
   }
-  if (lic?.mostra === 'preset' && lic.presetCerto === 'aggressive') {
+  if (lic?.mostra === 'preset' && lic.presetCerto !== 'defensive') {
     /* A PROVA do Agressivo: os golpes que você levou, nesta luta e na mesma
        com o outro preset (`provaDoPreset`, camada 0). */
     const NOMEP = { balanced: 'Equilibrado', aggressive: 'Agressivo', defensive: 'Defensivo', focus: 'Foco' };
-    const pp = provaDoPreset(PACK, { timeA: r.timeA, timeB: r.timeB, semente: r.semente, eventos: r.resultado.eventos, usado: presetDoJogador(), certo: lic.presetCerto });
+    const pp = provaDoPreset(PACK, { timeA: r.timeA, timeB: r.timeB, semente: r.semente, eventos: r.resultado.eventos, usado: presetDoJogador(), certo: lic.presetCerto, errado: lic.presetErrado });
     /* Q7 da ST-10.19b: qual luta foi a REAL e qual a hipotética, e a vitória
        sem a lição dita como o que é — a fatia que a chance já mostrava. */
     const semLicao = pp.usado !== lic.presetCerto, venceu = r.resultado.vencedor === 'A';
-    licaoNoFim = ` Nesta luta (${NOMEP[pp.usado] ?? pp.usado}) o rival acertou ${pp.levadosUsado} golpes em você; a mesma luta no ${NOMEP[pp.outro]}: ${pp.levadosOutro}${pp.venceuOutro !== venceu ? (pp.venceuOutro ? ', e você venceria' : ', e você perderia') : ''}.`
+    const medida = lic.prova === 'derrubados'
+      ? `você derrubou ${pp.derrubadosUsado} dos ${pp.rivais}; a mesma luta no ${NOMEP[pp.outro]}: ${pp.derrubadosOutro} dos ${pp.rivais}`
+      : `o rival acertou ${pp.levadosUsado} golpes em você; a mesma luta no ${NOMEP[pp.outro]}: ${pp.levadosOutro}`;
+    licaoNoFim = ` Nesta luta (${NOMEP[pp.usado] ?? pp.usado}) ${medida}${pp.venceuOutro !== venceu ? (pp.venceuOutro ? ', e você venceria' : ', e você perderia') : ''}.`
       + (semLicao && venceu ? ` Você venceu sem a lição: foi a fatia dos ${porcentagemExibida(antes.p)}.` : '');
   } else if (lic?.mostra === 'preset') {
     /* A PROVA: a mesma luta com o outro preset (`turnosDaAmeaca`, camada 0). */
@@ -334,10 +342,10 @@ document.addEventListener('click', ev => {
   }
   if (lic?.mostra === 'categoria') {
     const d = danoPorCategoria(PACK, r.resultado.eventos);
-    licaoNoFim = ` Seus golpes físicos: ${d.fis.golpes}, dano ${d.fis.dano} · especiais: ${d.esp.golpes}, dano ${d.esp.dano} — a lição deste ginásio.`;
+    licaoNoFim = ` Seus golpes físicos: ${d.fis.golpes}, dano ${d.fis.dano} · especiais: ${d.esp.golpes}, dano ${d.esp.dano} — ${aLicao}.`;
   }
   $('#jornadaCorpo')?.classList.add('emLuta');
-  encenar({ alvo: $('#jnLuta'), A: r.timeA, B: r.timeB, r: r.resultado, antes, titulo: `${PACK.jornada.find(n => n.id === id)?.nome} · ${t.nome}`,
+  encenar({ alvo: $('#jnLuta'), A: r.timeA, B: r.timeB, r: r.resultado, antes, titulo: (nomeNo => (t.nome.includes(nomeNo) ? t.nome : `${nomeNo} · ${t.nome}`))(PACK.jornada.find(n => n.id === id)?.nome ?? ''),
             extraNoFim: [licaoNoFim.trim(), fraseDoPagamento(PACK, r.recompensa, { depois: true }), extra].filter(Boolean).join(' '), voltar: 'voltar ao mapa', aoFim: () => { if (r.primeiraVez && proximo) escolhido = proximo.id; renderJornada({ nova: r.ganhouInsignia }); } });
 });
 

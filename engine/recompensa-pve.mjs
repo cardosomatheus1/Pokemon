@@ -24,9 +24,10 @@
  * O casual colhe ~1.440 da moeda por dia no idle (`emissao-idle.json`). O teto
  * diário do PvE repetido é 200 (~14% disso): repetir nó ajuda, e não vira a
  * fonte principal — a primeira vitória de cada nó é o que paga, e ela é uma só.
- * A jornada inteira de hoje (13 nós: 4 rotas, 8 ginásios, 1 chefe) paga 5.600
- * de uma vez só na vida do save: ~4 dias de idle do casual. (Era 8 nós e
- * 2.800 na ST-10.17; o número é do `emissao-idle.json`, e envelhece com ele.)
+ * A jornada inteira de hoje (18 nós: 4 rotas, 8 ginásios, 1 chefe, 5 da Liga)
+ * paga 9.600 de uma vez só na vida do save: ~7 dias de idle do casual. (Era 8
+ * nós e 2.800 na ST-10.17, 13 e 5.600 na 10.19b; o número é do
+ * `emissao-idle.json`, e envelhece com ele.)
  *
  * Nomes de moeda não entram aqui: a moeda é "a do treinador" (`pokecoin` é a
  * chave genérica que a camada de cima traduz por `idDaMoeda`), e bolas são as
@@ -34,8 +35,9 @@
  */
 
 export const PVE = Object.freeze({
-  PRIMEIRA: Object.freeze({ rota: 200, ginasio: 500, chefe: 800 }),
-  BOLAS: Object.freeze({ rota: Object.freeze({ poke: 2 }), ginasio: Object.freeze({ great: 3 }), chefe: Object.freeze({ ultra: 2 }) }),
+  /* ST-10.19c: a Liga paga como o chefe — sem a essência, e com doce. */
+  PRIMEIRA: Object.freeze({ rota: 200, ginasio: 500, chefe: 800, liga: 800 }),
+  BOLAS: Object.freeze({ rota: Object.freeze({ poke: 2 }), ginasio: Object.freeze({ great: 3 }), chefe: Object.freeze({ ultra: 2 }), liga: Object.freeze({ ultra: 2 }) }),
   DOCES_POR_LINHA: 1,
   LINHAS_MAX: 3,
   FRACAO_REPETICAO: 0.1,
@@ -58,8 +60,13 @@ function essenciaDoDia(no, h) {
   return { essencias: { [String(no.essencia)]: 1 }, chefes: [...h.chefes, no.id] };
 }
 
+/* O tipo do nó para a tabela: o do pack (`insignia`, `liga`, `chefe`) ou o
+   que a camada de cima passa (`ginasio`). Um lugar só, para a emissão medir
+   o que a luta paga. */
+export const tipoDoNo = no => (no?.chefe ? 'chefe' : no?.ginasio || no?.insignia ? 'ginasio' : no?.liga ? 'liga' : 'rota');
+
 export function recompensaPve({ no, venceu, primeiraVez, dia, hoje, linhas = [] }) {
-  const tipo = no?.chefe ? 'chefe' : no?.ginasio ? 'ginasio' : 'rota';
+  const tipo = tipoDoNo(no);
   /* Outro dia: o teto recomeça. */
   const h = hoje && hoje.dia === dia ? { dia, pago: hoje.pago ?? 0, nos: [...(hoje.nos ?? [])], chefes: [...(hoje.chefes ?? [])] } : diaVazio(dia);
   const nada = { pokecoin: 0, bolas: {}, doces: {}, essencias: {} };

@@ -42,7 +42,7 @@
    "rival": "surge",
    "ensina": "imunidade",
    "ignora": 0.1355,
-   "aplica": 0.9025,
+   "aplica": 1,
    "erro": 0.015
   },
   {
@@ -50,7 +50,7 @@
    "rival": "erika",
    "ensina": "resistência — quem apanha pouco",
    "ignora": 0.216,
-   "aplica": 0.87,
+   "aplica": 0.9305,
    "erro": 0.018
   },
   {
@@ -73,17 +73,57 @@
    "id": "cinnabar",
    "rival": "blaine",
    "ensina": "derrube quem está caindo — um a menos bate a menos",
-   "ignora": 0.2435,
-   "aplica": 0.7645,
-   "erro": 0.0188
+   "ignora": 0.2155,
+   "aplica": 0.865,
+   "erro": 0.018
   },
   {
    "id": "viridian",
    "rival": "giovanni",
    "ensina": "o tipo duplo — os dois tipos contam",
-   "ignora": 0.061,
-   "aplica": 0.9805,
-   "erro": 0.0105
+   "ignora": 0.071,
+   "aplica": 0.982,
+   "erro": 0.0113
+  },
+  {
+   "id": "lorelei",
+   "rival": "lorelei",
+   "ensina": "o preset certo — derrube a ameaça primeiro",
+   "ignora": 0.214,
+   "aplica": 0.6855,
+   "erro": 0.0203
+  },
+  {
+   "id": "bruno",
+   "rival": "bruno",
+   "ensina": "imunidade",
+   "ignora": 0.002,
+   "aplica": 0.946,
+   "erro": 0.0099
+  },
+  {
+   "id": "agatha",
+   "rival": "agatha",
+   "ensina": "físico contra especial",
+   "ignora": 0.2,
+   "aplica": 0.7015,
+   "erro": 0.0201
+  },
+  {
+   "id": "lance",
+   "rival": "lance",
+   "ensina": "resistência — quem apanha pouco",
+   "ignora": 0.059,
+   "aplica": 0.8545,
+   "erro": 0.0155
+  },
+  {
+   "id": "campeao",
+   "rival": "campeao",
+   "ensina": "não persiga o ferido — o preset certo depende de quem está do outro lado",
+   "ignora": 0.0115,
+   "aplica": 0.698,
+   "erro": 0.0201
   }
  ]
 }
