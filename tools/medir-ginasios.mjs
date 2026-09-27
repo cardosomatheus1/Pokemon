@@ -36,6 +36,11 @@ export const REFERENCIAS = {
   /* "Mesmo time, só a velocidade invertida" (plano, ST-10.14): o mesmo Raichu
      22, o oculto de velocidade 0 × 31 — 57 contra 63, com o Starmie em 59. */
   cerulean: { varia: 'vel', ignora: [[26, 22, { iv: IV(0) }]], aplica: [[26, 22, { iv: IV(31) }]] },
+  /* Imunidade (ST-10.15): o mesmo Raticate 22 ao lado, e o membro que muda é
+     um Arcanine 22 (neutro, e MAIS forte no papel) × um Rhyhorn 22 (Terrestre,
+     imune a Elétrico). O teste cobra as três coisas: imune de um lado, não do
+     outro, e o que ignora não é mais fraco. */
+  vermilion: { varia: 'imune', tipo: 'electric', ignora: [[59, 22], [20, 22]], aplica: [[111, 22], [20, 22]] },
 };
 
 export const medida = (A, idRival) => resumo(lote(pack, A, rivalDe(pack, treinador(pack, idRival)), RAIZ, 0, SIMS));

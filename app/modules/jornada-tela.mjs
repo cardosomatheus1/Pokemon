@@ -13,7 +13,7 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
-import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, ARTE_DO_MAPA } from './jornada-dados.mjs';
+import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido } from './treino-dados.mjs';
 import { lote, resumo, arredondarNeutro, textoDaMargem, SIMS_TREINO } from '../../engine/treino-preco.mjs';
 import { lutarNaJornadaLocal } from './jornada-local.mjs';
@@ -50,6 +50,22 @@ function pintarPainel(mapa) {
   if (!A.length) { $('#jnErro').textContent = 'o time está vazio — escolha o inicial nas Rotas'; return; }
   /* A lição da velocidade com a velocidade NA TELA: o seu mais rápido, e quem
      dos rivais ele passa. */
+  /* ST-10.15: a lição da imunidade — quem do seu time o tipo não toca, com a
+     mesma causa embaixo do número. */
+  if (no.licao?.mostra === 'imune') {
+    const im = imunesNoTime(PACK, A, no.licao.tipoGolpe), causa = $('#jnCausa');
+    $('#jnVel').innerHTML = `<div class="jnImune"><b>imune a ${no.licao.tipo}</b>${A.map(c => {
+      const sim = im.includes(c);
+      const tipos = (PACK.especies.find(e => e.dex === c.dex)?.t ?? []).map(t => PACK.tipos.nomes?.[t] ?? t).join('/');
+      return `<span class="${sim ? 'sim' : 'nao'}">${dexImg(c.dex, '', 'class="jnSprite"')}${nomeDo(c.dex)} <em>${tipos}</em> <i>${sim ? 'imune ✓' : 'leva o golpe'}</i></span>`;
+    }).join('')}</div>`;
+    if (causa) {
+      causa.hidden = false;
+      causa.className = `tiny jnCausa ${im.length ? 'passa' : 'nao'}`;
+      causa.textContent = im.length ? `${im.map(c => nomeDo(c.dex)).join(' e ')} ${im.length > 1 ? 'são imunes' : 'é imune'} a ${no.licao.tipo}`
+                                    : `ninguém do seu time é imune a ${no.licao.tipo} — leve um ${tiposImunes(PACK, no.licao.tipoGolpe).map(t => PACK.tipos.nomes?.[t] ?? t).join(' ou ')}`;
+    }
+  }
   /* Q7 da ST-10.14: a comparação é um DUELO de barras colado à lição, e a
      CAUSA vai para baixo do número — o 5% dizia "arriscado" sem dizer por quê. */
   if (no.licao?.mostra === 'vel') {
@@ -136,7 +152,9 @@ document.addEventListener('click', ev => {
   const aba = ev.target.closest('[data-treino-aba]');
   if (aba) { mostrarAbaTreino(aba.dataset.treinoAba); return; }
   const no = ev.target.closest('[data-jn-no]');
-  if (no) { escolhido = no.dataset.jnNo; renderJornada(); return; }
+  /* No estreito o painel vem ANTES do mapa (Q7 da ST-10.15): escolher um nó
+     leva o olho de volta a ele. */
+  if (no) { escolhido = no.dataset.jnNo; renderJornada(); if (matchMedia('(max-width:520px)').matches) $('#jnPainel')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
   const lutar = ev.target.closest('[data-jn-lutar]');
   if (!lutar || lutar.disabled || !chanceNaTela) return;
   const id = lutar.dataset.jnLutar, antes = chanceNaTela;
@@ -161,6 +179,14 @@ document.addEventListener('click', ev => {
     licaoNoFim = v.falta
       ? ` ${nome(rapido.dex)} agiu antes (${v.alvo} contra ${v.seu.spe})${venceu ? ', e desta vez você venceu mesmo assim.' : ': a lição deste ginásio.'}`
       : ` Você agiu antes (${nome(v.seu.dex)} ${v.seu.spe} contra ${nome(rapido.dex)} ${v.alvo})${venceu ? ': a lição deste ginásio.' : ', e desta vez não bastou.'}`;
+  }
+  const lic = PACK.jornada.find(n => n.id === id)?.licao;
+  if (lic?.mostra === 'imune') {
+    const pv = provaDaImunidade(PACK, r.timeA, r.resultado.eventos, lic.tipoGolpe), nome = dex => nomeExibido(PACK.especies.find(e => e.dex === dex)?.n ?? '?');
+    const frase = x => (x.golpes ? `${nome(x.dex)} levou ${x.golpes} ${x.golpes === 1 ? 'golpe' : 'golpes'} de ${lic.tipo}: dano ${x.dano}`
+      : `contra ${nome(x.dex)} o rival nem tentou ${lic.tipo}${x.outros.length ? ` — só ${x.outros.join(' e ')} (dano ${x.danoOutros})` : ''}`);
+    const maiuscula = t => t.charAt(0).toUpperCase() + t.slice(1);
+    licaoNoFim = pv.length ? ` ${maiuscula(pv.map(frase).join('; '))}: a lição deste ginásio.` : ` Ninguém do seu time era imune a ${lic.tipo}: todo golpe acertou.`;
   }
   $('#jornadaCorpo')?.classList.add('emLuta');
   encenar({ alvo: $('#jnLuta'), A: r.timeA, B: r.timeB, r: r.resultado, antes, titulo: `${PACK.jornada.find(n => n.id === id)?.nome} · ${t.nome}`,

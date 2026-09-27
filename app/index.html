@@ -1069,6 +1069,11 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnDuelo i{display:block;height:10px;border-radius:3px;background:var(--dim)}.jnDuelo strong{text-align:right;font-family:var(--px);color:var(--txt)}
 .jnDuelo.seu i{background:var(--neon)}.jnDuelo.seu span{color:var(--txt);font-weight:700}
 .jnDuelo.passa i{background:rgba(61,242,166,.55)}.jnDuelo.nao i{background:var(--red)}.jnDuelo.nao strong{color:var(--red)}
+.jnImune{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:10px 0 2px;font-size:.76rem}
+.jnImune b{flex-basis:100%;color:var(--neon);text-transform:uppercase;letter-spacing:.08em;font-size:.62rem}
+.jnImune span{display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 2px;border-radius:8px;border:1px solid var(--line)}
+.jnImune span.sim{border-color:var(--green);color:var(--txt)}.jnImune span.sim i{color:var(--green);font-style:normal;font-weight:700}
+.jnImune span.nao i{color:var(--red);font-style:normal}.jnImune em{font-style:normal;font-size:.64rem;color:var(--dim)}
 .jnCausa{max-width:300px;text-align:right;font-weight:700}.jnCausa.nao{color:var(--red)}.jnCausa.passa{color:var(--green)}
 /* O lago da cena de água: pixel de verdade não há na folha; um oval em degraus
    com a borda de areia e o brilho que anda, no mesmo lugar dos props. */
@@ -1126,7 +1131,10 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 #jnLuta .pveLuta{max-width:none}
 #jnLuta{margin-top:12px}
 /* Em pé: o MESMO caminho transposto, e a altura cresce com os nós. */
-@media (max-width:520px){ .jnMapa{height:calc(var(--n) * 130px + 60px)} .jnDeitado{display:none} .jnEmPe{display:block}
+/* No estreito, o painel do nó escolhido vem ANTES do mapa: com 7 nós o mapa
+   em pé tem ~1.000 px, e a lição ficava abaixo da dobra (Q7 da ST-10.15). */
+@media (max-width:520px){ #jnMapaArea{display:flex;flex-direction:column} .jnTopo{order:0} .jnPainel{order:1} .jnMapa{order:2;margin-top:12px}
+  .jnMapa{height:calc(var(--n) * 130px + 60px)} .jnDeitado{display:none} .jnEmPe{display:block}
   .jnPos{left:calc(var(--y) * 1%);top:calc(70px + (100% - 110px) * var(--x) / 100)} .jnPos.jnB{top:calc(var(--x) * 1%)}
   .jnEmPe{top:70px;bottom:auto;height:calc(100% - 110px)}
   .jnPos.jnVoce{left:calc(var(--ay) * 1%);top:calc(70px + (100% - 110px) * var(--ax) / 100)} .jnVoce .jnEu,.jnVoce.jnFim .jnEu{transform:translateX(calc(-100% - 22px))} .jnPainel{grid-template-columns:1fr;grid-template-areas:'titulo' 'chance' 'info';gap:10px} .jnChance{align-items:flex-start} .jnCausa{text-align:left} }

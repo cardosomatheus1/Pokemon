@@ -30,6 +30,7 @@
  */
 import { nosDa, noAtual } from '../../engine/jornada.mjs';
 import { montarLutador } from '../../engine/treino-batalha.mjs';
+import { efeito } from '../../engine/primitivas.mjs';
 
 export const INSIGNIAS_DO_CAMINHO = 8;
 export const ARTE_DO_MAPA = '../assets/raw_githubusercontent_com/pret/pokeemerald/alfa';
@@ -158,4 +159,29 @@ export function comparaVelocidade(pack, A, B) {
   }
   return { seu: seu && { dex: seu.dex, nivel: seu.nivel, spe: seu.spe }, deles, alvo,
            passa: seu ? deles.filter(x => seu.spe > x.spe).length : 0, falta: seu ? Math.max(0, alvo - seu.spe + 1) : 0, passaNoNivel };
+}
+
+/* A LIÇÃO DA IMUNIDADE NA TELA (ST-10.15): quem do seu time o tipo do líder
+   não toca — pela MESMA tabela que a luta usa (`efeito`). */
+export const imunesNoTime = (pack, A, tipo) =>
+  (A ?? []).filter(c => efeito(pack.tipos.efetividade, tipo, (pack.especies ?? []).find(e => e.dex === c.dex)?.t ?? []) === 0);
+
+/* Os tipos que um tipo de golpe NÃO toca — para o painel dizer o que levar
+   ("leve um Terrestre"), e não só que falta (Q7 da ST-10.15). */
+export const tiposImunes = (pack, tipo) => Object.keys(pack.tipos.efetividade[tipo] ?? {}).filter(t => pack.tipos.efetividade[tipo][t] === 0);
+
+/* A PROVA da imunidade no fim da luta: quantos golpes do tipo cada imune
+   levou, e o dano deles — contados dos EVENTOS da luta. "Não levou dano"
+   afirmado, com a barra de vida do imune pela metade (o dano veio de outro
+   tipo), parecia mentira ao crítico cego. */
+export function provaDaImunidade(pack, A, eventos, tipo) {
+  const tipoDe = n => Object.values(pack.golpes ?? {}).flat().find(g => g.n === n)?.t;
+  return imunesNoTime(pack, A, tipo).map(c => {
+    const slot = `A${A.indexOf(c)}`, nele = (eventos ?? []).filter(e => e.para === slot);
+    const doTipo = nele.filter(e => tipoDe(e.golpe) === tipo), outros = nele.filter(e => tipoDe(e.golpe) !== tipo);
+    /* O rival que escolhe pelo dano esperado nem TENTA o tipo contra o imune:
+       troca para o que sobra. É a lição acontecendo, e a frase conta isso. */
+    return { dex: c.dex, golpes: doTipo.length, dano: doTipo.reduce((a, e) => a + (e.dano ?? 0), 0),
+             outros: [...new Set(outros.map(e => e.golpe))], danoOutros: outros.reduce((a, e) => a + (e.dano ?? 0), 0) };
+  });
 }

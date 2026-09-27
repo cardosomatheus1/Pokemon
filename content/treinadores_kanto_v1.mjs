@@ -25,4 +25,6 @@ export const TREINADORES = [
   /* ST-10.14 · o segundo ginásio: a aula é VELOCIDADE. O Starmie (59 de
      velocidade no 21) é o eixo — quem o passa bate primeiro. */
   { id: 'misty',  nome: 'Misty',                     onde: 'Ginásio de Cerulean', time: [{ dex: 120, nivel: 18 }, { dex: 121, nivel: 21 }], ow: 'swimmer_f' },
+  /* ST-10.15 · o terceiro ginásio: a aula é IMUNIDADE — um time todo elétrico. */
+  { id: 'surge',  nome: 'Lt. Surge',                 onde: 'Ginásio de Vermilion', time: [{ dex: 100, nivel: 21 }, { dex: 25, nivel: 18 }, { dex: 26, nivel: 24 }], ow: 'sailor' },
 ];

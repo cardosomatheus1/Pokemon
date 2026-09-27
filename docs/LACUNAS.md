@@ -8554,4 +8554,9 @@ com 6 nós o mapa já ocupa ~840 px, e o painel do nó (a chance, a lição, a
 velocidade) fica abaixo da dobra. O crítico cego pediu encolher o mapa numa
 faixa quando um nó está escolhido, ou fixar o painel no topo.
 
+**A metade de 420 px foi resolvida na ST-10.15** (com 7 nós o mapa em pé tem
+~1.000 px e o crítico cego da Surge deu 2/10 à lição "abaixo da dobra"): no
+estreito, o painel do nó escolhido vem ANTES do mapa, e tocar num nó rola até
+ele. Fica para a ST-10.19 a metade deitada (mais de 8 nós em 1440).
+
 **O que a destrava:** a ST-10.19 medir com a lista inteira e escolher.

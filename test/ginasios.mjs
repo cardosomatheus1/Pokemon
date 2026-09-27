@@ -15,6 +15,7 @@ import pack from '../content/pokemon_kanto_v1.mjs';
 import { movesetDoRival, padraoDoMoveset, liberados } from '../app/modules/moveset-dados.mjs';
 import { rivalDe, treinador } from '../app/modules/treino-dados.mjs';
 import { lote, resumo } from '../engine/treino-preco.mjs';
+import { efeito } from '../engine/primitivas.mjs';
 import { fraseDoResultado } from '../app/modules/pve-dados.mjs';
 import { REFERENCIAS, INICIAIS, NIVEL_INICIAL, medir } from '../tools/medir-ginasios.mjs';
 
@@ -56,6 +57,18 @@ export function suite() {
       }
     }
     ok(REFERENCIAS.cerulean?.varia === 'vel', 'a lição da velocidade não é medida com só a velocidade variando');
+    /* ST-10.15: "imunidade" — o membro que muda é IMUNE ao tipo do líder no
+       time que aplica, e NÃO no que ignora; e o que ignora não é mais fraco no
+       papel (soma dos atributos base maior ou igual) — senão a diferença
+       seria força, e não imunidade. */
+    const r = REFERENCIAS.vermilion;
+    ok(r?.varia === 'imune' && r.tipo === 'electric', 'a lição da imunidade não declara o tipo');
+    const i = r.ignora.findIndex((x, k) => JSON.stringify(x) !== JSON.stringify(r.aplica[k]));
+    const tiposDe = dex => pack.especies.find(e => e.dex === dex).t, soma = dex => pack.especies.find(e => e.dex === dex).s.reduce((a, b) => a + b, 0);
+    igual(efeito(pack.tipos.efetividade, 'electric', tiposDe(r.aplica[i][0])), 0, 'o membro que aplica a lição não é imune a Elétrico');
+    ok(efeito(pack.tipos.efetividade, 'electric', tiposDe(r.ignora[i][0])) > 0, 'o membro que ignora a lição também é imune');
+    ok(soma(r.ignora[i][0]) >= soma(r.aplica[i][0]), 'o membro que ignora é mais fraco no papel — a medição mede força, e não imunidade');
+    ok(treinador(pack, 'surge').time.every(x => tiposDe(x.dex).includes('electric')), 'o time do líder não é elétrico');
   });
 
   s.teste('a diferença entre os dois times passa de 3× o erro (ST-10.14)', () => {

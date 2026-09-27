@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" shape-rendering="crispEdges">
+  <!-- A INSÍGNIA TROVÃO (ST-10.15) — arte nossa. Um raio lapidado em facetas de
+       âmbar sobre um octógono escuro, com o fio neon da família (Rocha,
+       Cascata): a pedra cortada é o que une as insígnias, e o tipo é o que
+       muda. -->
+  <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="#0d0f1c"/>
+  <polygon points="10,4 22,4 28,10 28,22 22,28 10,28 4,22 4,10" fill="#262a45"/>
+  <polygon points="18,4 9,17 15,17 12,28 23,13 17,13 21,4" fill="#8a5a00"/>
+  <polygon points="18,4 21,4 17,13 14,13" fill="#ffe27a"/>
+  <polygon points="14,13 17,13 15,17 9,17" fill="#ffd23f"/>
+  <polygon points="17,13 23,13 18,19 15,17" fill="#f2a900"/>
+  <polygon points="15,17 18,19 12,28" fill="#c98a1b"/>
+  <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="none" stroke="#00e5ff" stroke-width="1"/>
+  <rect x="18" y="6" width="2" height="2" fill="#ffffff" opacity=".85"/>
+</svg>

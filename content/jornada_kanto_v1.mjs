@@ -25,4 +25,9 @@ export const JORNADA = [
   { id: 'cerulean', nome: 'Ginásio de Cerulean', rival: 'misty', insignia: 'cascata', insigniaNome: 'Insígnia Cascata', cena: 'agua',
     licao: { ensina: 'a velocidade decide trocas apertadas', tipo: 'Água', mostra: 'vel',
              dica: 'Quando os dois caem em poucos golpes, quem age antes vence. Passe a velocidade do Starmie.' } },
+  /* `mostra: 'imune'` com `tipoGolpe`: o painel diz quem do seu time o tipo
+     não toca. O porto de Vermilion tem água (a mesma cena de Cerulean). */
+  { id: 'vermilion', nome: 'Ginásio de Vermilion', rival: 'surge', insignia: 'trovao', insigniaNome: 'Insígnia Trovão', cena: 'agua',
+    licao: { ensina: 'imunidade', tipo: 'Elétrico', tipoGolpe: 'electric', mostra: 'imune',
+             dica: 'Terrestre não é tocado por Elétrico: dano zero, o golpe todo perdido. Um imune no time vale mais que força.' } },
 ];

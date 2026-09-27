@@ -10,8 +10,10 @@ import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import pack from '../content/pokemon_kanto_v1.mjs';
 import { aberto, noAtual, progressoVazio } from '../engine/jornada.mjs';
-import { montarLutador } from '../engine/treino-batalha.mjs';
-import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
+import { montarLutador, simular } from '../engine/treino-batalha.mjs';
+import { movesetDoRival, padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
+import { treinador } from '../app/modules/treino-dados.mjs';
+import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 const semComentario = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
@@ -126,8 +128,8 @@ export function suite() {
 
   s.teste('o mundo em volta: o treinador do nó, a parede de árvores, a cena longe do caminho e do nome', () => {
     const m = mapaDaJornada(pack, progressoVazio());
-    igual(m.nos.map(n => n.ow).join(), 'youngster,lass,camper,hiker,expert_m,swimmer_f', 'a folha de cada treinador');
-    igual(m.nos.map(n => n.cena ?? '-').join(), '-,arvores,-,rochas,rochas,agua', 'a cena de cada nó');
+    igual(m.nos.map(n => n.ow).join(), 'youngster,lass,camper,hiker,expert_m,swimmer_f,sailor', 'a folha de cada treinador');
+    igual(m.nos.map(n => n.cena ?? '-').join(), '-,arvores,-,rochas,rochas,agua,agua', 'a cena de cada nó');
     const b = bordaDoMapa();
     ok(b.length >= 40 && b.every(p => p.x >= 0 && p.x <= 100 && (p.y <= 6 || p.y >= 94)), 'a parede não é borda');
     igual(JSON.stringify(b), JSON.stringify(bordaDoMapa()), 'a parede dança a cada repintura');
@@ -202,6 +204,41 @@ export function suite() {
     ok(/causa\.textContent = v\.falta/.test(tela) && /<span class="tiny jnCausa" id="jnCausa" hidden><\/span>/.test(tela), 'a causa não vai para baixo do número');
     ok(/comparaVelocidade\(PACK, r\.timeA, r\.timeB\)/.test(tela) && /extraNoFim: licaoNoFim \+ extra/.test(tela), 'o fim da luta não fecha a lição da velocidade');
     ok(/venceu \? ': a lição deste ginásio\.' : ', e desta vez não bastou\.'/.test(tela), 'agir antes e perder é contado como a lição');
+  });
+
+  s.teste('a lição da imunidade mostra quem é imune (ST-10.15)', () => {
+    const A = [{ dex: 111, nivel: 22, golpes: ['Rock Tomb'] }, { dex: 20, nivel: 22, golpes: ['Quick Attack'] }, { dex: 50, nivel: 20, golpes: ['Dig'] }];
+    const im = imunesNoTime(pack, A, 'electric');
+    igual(im.map(x => x.dex).join(), '111,50', 'os imunes a Elétrico do time');
+    igual(imunesNoTime(pack, [A[1]], 'electric').length, 0, 'imune inventado');
+    igual(imunesNoTime(pack, A, 'ghost').map(x => x.dex).join(), '20', 'o tipo é parâmetro, e não Elétrico fixo');
+    igual(tiposImunes(pack, 'electric').join(), 'ground', 'quem o Elétrico não toca');
+    igual(tiposImunes(pack, 'normal').join(), 'ghost', 'o tipo é parâmetro');
+    /* A PROVA no fim da luta: os golpes do tipo em cada imune, e o dano deles
+       — contado dos eventos da luta, e não afirmado. */
+    const Bs = treinador(pack, 'surge').time.map(x => ({ dex: x.dex, nivel: x.nivel, golpes: movesetDoRival(pack, x.dex, x.nivel) }));
+    const As = [{ dex: 111, nivel: 22, golpes: padraoDoMoveset(pack, 111, 22) }, { dex: 20, nivel: 22, golpes: padraoDoMoveset(pack, 20, 22) }];
+    for (let k = 1; k <= 12; k++) {
+      const r = simular(pack, As, Bs, k), pv = provaDaImunidade(pack, As, r.eventos, 'electric');
+      igual(pv.map(x => x.dex).join(), '111', `semente ${k}: quem é imune`);
+      const golpes = r.eventos.filter(e => e.para === 'A0' && Object.values(pack.golpes).flat().find(g => g.n === e.golpe)?.t === 'electric');
+      igual(pv[0].golpes, golpes.length, `semente ${k}: a contagem dos golpes elétricos no imune`);
+      igual(pv[0].dano, 0, `semente ${k}: o imune levou dano elétrico`);
+    }
+    /* O caso forçado: um rival que SÓ tem Elétrico, contra o imune sozinho. */
+    const Bf = [{ dex: 25, nivel: 30, golpes: ['Discharge'] }], Af = [As[0]];
+    const rf = simular(pack, Af, Bf, 3), pf = provaDaImunidade(pack, Af, rf.eventos, 'electric');
+    ok(pf[0].golpes > 0, 'o rival só de Elétrico não usou Elétrico — a prova não foi exercida');
+    igual(pf[0].dano, 0, 'o imune levou dano do tipo que não o toca');
+    igual(pf[0].outros.length, 0, 'golpe de outro tipo inventado');
+    const semTentar = provaDaImunidade(pack, As, simular(pack, As, Bs, 1).eventos, 'electric')[0];
+    ok(semTentar.golpes === 0 ? semTentar.outros.length > 0 && semTentar.danoOutros >= 0 : true, 'sem tentar o tipo, a prova não diz o que o rival usou');
+    const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
+    ok(/provaDaImunidade\(PACK, r\.timeA, r\.resultado\.eventos, lic\.tipoGolpe\)/.test(tela), 'o fim da luta afirma a imunidade sem a prova');
+    ok(/@media \(max-width:520px\)\{[^}]*#jnMapaArea\{display:flex;flex-direction:column\}/.test(fonte('../app/index.html')) && /\.jnPainel\{order:1\}/.test(fonte('../app/index.html')),
+      'no estreito o painel do nó continua abaixo de um mapa de 1.000 px');
+    ok(/no\.licao\?\.mostra === 'imune'/.test(tela) && /imunesNoTime\(PACK, A, no\.licao\.tipoGolpe\)/.test(tela), 'o painel da imunidade não mostra quem é imune');
+    ok(/if \(lic\?\.mostra === 'imune'\) \{/.test(tela), 'o fim da luta não fecha a lição da imunidade');
   });
 
   /* D-125 — o inicial sozinho perdia o primeiro nó — foi consertado na ST-10.13;

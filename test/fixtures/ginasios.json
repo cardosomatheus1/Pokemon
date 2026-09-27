@@ -36,6 +36,14 @@
    "ignora": 0.06,
    "aplica": 0.7495,
    "erro": 0.019
+  },
+  {
+   "id": "vermilion",
+   "rival": "surge",
+   "ensina": "imunidade",
+   "ignora": 0.1355,
+   "aplica": 0.9025,
+   "erro": 0.015
   }
  ]
 }

@@ -25,7 +25,11 @@ const PONTOS = {
      o Starmie (oculto de velocidade 31) e o que não passa (0). */
   misty: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter'], insignias: ['rocha'], time: [[26, 22, 31]] },
   mistyLento: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter'], insignias: ['rocha'], time: [[26, 22, 0]] },
-  fim: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean'], insignias: ['rocha', 'cascata'], time: [[5, 18], [17, 17], [25, 15]] },
+  /* ST-10.15: diante de Lt. Surge, com e sem um imune a Elétrico — o mesmo
+     Raticate ao lado, como na medição. */
+  surge: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean'], insignias: ['rocha', 'cascata'], time: [[111, 22], [20, 22]] },
+  surgeSem: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean'], insignias: ['rocha', 'cascata'], time: [[59, 22], [20, 22]] },
+  fim: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean', 'vermilion'], insignias: ['rocha', 'cascata', 'trovao'], time: [[5, 18], [17, 17], [25, 15]] },
 };
 
 const b = await chromium.launch({ executablePath: CHROME });
@@ -74,7 +78,7 @@ for (const ponto of Object.keys(PONTOS)) for (const w of [1920, 1440, 1100, 420]
   await ctx.close();
 }
 
-for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420, 'ginasio'], [1440, 'misty'], [420, 'misty']]) {
+for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420, 'ginasio'], [1440, 'misty'], [420, 'misty'], [1440, 'surge'], [420, 'surge']]) {
   const { ctx, pg } = await abrir(w, ponto);
   await pg.$eval('#jnLutar', el => el.click());
   await pg.waitForSelector('#jnLuta #pvePalco', { timeout: 10000 });
@@ -83,7 +87,7 @@ for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420
   await pg.$eval('#jnLuta [data-pve-pular]', el => el.click());
   await pg.waitForTimeout(600);
   await (await pg.$('#jnLuta')).screenshot({ path: `${PASTA}/luta-${ponto}-fim-${w}.png` });
-  if (ponto === 'ginasio' || ponto === 'misty') await (await pg.$('.jnTopo')).screenshot({ path: `${PASTA}/estojo-entrando-${ponto}-${w}.png` });
+  if (ponto === 'ginasio' || ponto === 'misty' || ponto === 'surge') await (await pg.$('.jnTopo')).screenshot({ path: `${PASTA}/estojo-entrando-${ponto}-${w}.png` });
   await pg.waitForFunction(() => { const n = document.getElementById('jnNumero'); return n && !n.classList.contains('parcial'); }, null, { timeout: 120000, polling: 250 });
   const resultado = await pg.evaluate(() => ({ fim: document.querySelector('#pveFim h4')?.textContent, texto: document.querySelector('#pveFim p')?.textContent }));
   await pg.$eval('#jnLuta [data-pve-fechar]', el => el.click());
