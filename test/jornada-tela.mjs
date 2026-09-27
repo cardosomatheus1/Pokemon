@@ -13,7 +13,8 @@ import { aberto, noAtual, progressoVazio } from '../engine/jornada.mjs';
 import { montarLutador, simular } from '../engine/treino-batalha.mjs';
 import { movesetDoRival, padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { treinador } from '../app/modules/treino-dados.mjs';
-import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, golpesLevados, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, rivaisDerrubados, pagamentoDoNo, fraseDoPagamento, DUAS_VOLTAS_A_PARTIR_DE, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
+import { correcaoDaLicao, aplicarCorrecao } from '../app/modules/jornada-correcao.mjs';
+import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, golpesLevados, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, rivaisDerrubados, setasDoCaminho, faixaDoCaminho, pagamentoDoNo, fraseDoPagamento, DUAS_VOLTAS_A_PARTIR_DE, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 const semComentario = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
@@ -133,7 +134,7 @@ export function suite() {
     ok(!/simular\(|lutarNo\(|\.vencidos\.push|insignias\.push|salvar\(/.test(tela), 'a tela decide ou grava progresso por conta própria');
     ok(/encenar\(\{ alvo: \$\('#jnLuta'\), A: r\.timeA, B: r\.timeB, r: r\.resultado/.test(tela), 'a luta não é encenada pelo caminho da 10.9');
     ok(/lote\(PACK, A, rival, RAIZ, acum\.sims/.test(tela) && /const RAIZ = 1;/.test(tela), 'a chance do mapa não é a do Team Builder');
-    ok(/disabled>\$\{no\.estado === 'trancado' \? 'trancado' : vencido \? 'revanche \(treino\)' : `lutar contra \$\{t\.nome\}`\}/.test(tela) && /if \(pronto\) \{ chanceNaTela = r; if \(b && no\.estado !== 'trancado'\) b\.disabled = false; \}/.test(tela),
+    ok(/disabled>\$\{no\.estado === 'trancado' \? 'trancado' : vencido \? 'revanche \(treino\)' : `lutar contra \$\{t\.nome\}`\}/.test(tela) && /if \(pronto\) \{ chanceNaTela = r; if \(b && no\.estado !== 'trancado'\) b\.disabled = false; projetar\(r\); \}/.test(tela),
       'lutar acende antes da chance ou num nó trancado');
     ok(/if \(!lutar \|\| lutar\.disabled \|\| !chanceNaTela\) return;/.test(tela), 'a luta sai sem a chance');
     const pve = semComentario(fonte('../app/modules/pve-tela.mjs'));
@@ -253,7 +254,7 @@ export function suite() {
     ok(semTentar.golpes === 0 ? semTentar.outros.length > 0 && semTentar.danoOutros >= 0 : true, 'sem tentar o tipo, a prova não diz o que o rival usou');
     const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
     ok(/provaDaImunidade\(PACK, r\.timeA, r\.resultado\.eventos, lic\.tipoGolpe\)/.test(tela), 'o fim da luta afirma a imunidade sem a prova');
-    ok(/@media \(max-width:520px\)\{[^}]*#jnMapaArea\{display:flex;flex-direction:column\}/.test(fonte('../app/index.html')) && /\.jnPainel\{order:1\}/.test(fonte('../app/index.html')),
+    ok(/@media \(max-width:520px\)\{[^}]*#jnMapaArea\{display:flex;flex-direction:column\}/.test(fonte('../app/index.html')) && /\.jnFaixa\{order:1;/.test(fonte('../app/index.html')) && /\.jnPainel\{order:2\} \.jnMapa\{order:3/.test(fonte('../app/index.html')),
       'no estreito o painel do nó continua abaixo de um mapa de 1.000 px');
     ok(/no\.licao\?\.mostra === 'imune'/.test(tela) && /imunesNoTime\(PACK, A, no\.licao\.tipoGolpe\)/.test(tela), 'o painel da imunidade não mostra quem é imune');
     ok(/if \(lic\?\.mostra === 'imune'\) \{/.test(tela), 'o fim da luta não fecha a lição da imunidade');
@@ -428,6 +429,63 @@ export function suite() {
     ok(/errado: lic\.presetErrado/.test(tela), 'o fim da luta ignora o preset errado da lição');
     ok(/lic\.prova === 'derrubados'/.test(tela), 'o fim da luta ignora a medida da lição');
     ok(/n\.tipo === 'liga'/.test(tela), 'o mapa não desenha a Liga');
+  });
+
+  s.teste('ST-10.19d (L-205): a correção da lição — o que trocar, e o time que ela dá', () => {
+    const mk = (id, dex, nivel) => ({ id, power: dex, entrada: { dex, nivel, golpes: padraoDoMoveset(pack, dex, nivel) } });
+    const no = id => pack.jornada.find(n => n.id === id);
+    const rivalDo = id => treinador(pack, id).time.map(x => ({ dex: x.dex, nivel: x.nivel, golpes: movesetDoRival(pack, x.dex, x.nivel) }));
+    /* PRESET: errado → o certo da lição, o MESMO time. */
+    const eq = [mk('a', 117, 40), mk('b', 121, 40)];
+    const c1 = correcaoDaLicao(pack, { licao: no('cinnabar').licao, membros: eq, caixa: [], preset: 'balanced', rival: rivalDo('blaine') });
+    igual(`${c1.tipo}:${c1.preset}`, 'preset:aggressive', 'a correção do Blaine');
+    igual(JSON.stringify(c1.timeA), JSON.stringify(eq.map(x => x.entrada)), 'a correção de preset mexeu no time');
+    igual(correcaoDaLicao(pack, { licao: no('cinnabar').licao, membros: eq, caixa: [], preset: 'aggressive', rival: rivalDo('blaine') }), null, 'correção com o preset certo');
+    /* IMUNIDADE: ninguém imune no time, um imune na caixa → troca o mais fraco
+       por ele (o de maior power, se houver dois). */
+    const surge = [mk('x', 59, 22), mk('y', 20, 22)], caixa = [mk('p', 95, 22), mk('q', 111, 22), mk('r', 50, 22), mk('s', 16, 22)];
+    const c2 = correcaoDaLicao(pack, { licao: no('vermilion').licao, membros: surge, caixa, preset: 'balanced', rival: rivalDo('surge') });
+    igual(`${c2.tipo}:${c2.sai.id}>${c2.entra.id}`, 'troca:y>q', 'a troca da imunidade (sai o de menor power, entra o imune de maior power)');
+    igual(c2.timeA.map(x => x.dex).join(), '59,111', 'o time corrigido');
+    igual(correcaoDaLicao(pack, { licao: no('vermilion').licao, membros: [mk('x', 59, 22), mk('q', 111, 22)], caixa, preset: 'balanced', rival: rivalDo('surge') }), null, 'correção com um imune no time');
+    igual(correcaoDaLicao(pack, { licao: no('vermilion').licao, membros: surge, caixa: [mk('s', 16, 22)], preset: 'balanced', rival: rivalDo('surge') }), null, 'correção sem imune na caixa');
+    /* RESISTÊNCIA: sai quem apanha MAIS; entra quem resiste a tudo. */
+    const c3 = correcaoDaLicao(pack, { licao: no('celadon').licao, membros: [mk('t', 128, 36), mk('u', 20, 30)], caixa: [mk('v', 24, 36), mk('w', 6, 36)], preset: 'balanced', rival: rivalDo('erika') });
+    igual(`${c3.tipo}:${c3.entra.id}`, 'troca:v', 'a troca da resistência (o Charizard não resiste a Venenoso)');
+    /* TIPO DUPLO: sai o pior (menor multiplicador), entra quem bate em todos. */
+    const c4 = correcaoDaLicao(pack, { licao: no('viridian').licao, membros: [mk('m', 68, 50), mk('n', 143, 50)], caixa: [mk('o', 55, 50)], preset: 'balanced', rival: rivalDo('giovanni') });
+    igual(`${c4.tipo}:${c4.sai.id}>${c4.entra.id}`, 'troca:n>o', 'a troca do tipo duplo (sai o Snorlax, que bate ½ nas Pedras)');
+    /* Sem correção nomeável (velocidade, categoria, sem lição): nada. */
+    for (const id of ['cerulean', 'saffron', 'rota1']) igual(correcaoDaLicao(pack, { licao: no(id).licao, membros: eq, caixa, preset: 'balanced', rival: [] }), null, `${id}: correção inventada`);
+    /* A tela aplica o que a camada 0 decidiu, e mais nada. */
+    const d = { preset: null, trocas: [] };
+    aplicarCorrecao(c1, { preset: p => { d.preset = p; }, trocar: t => d.trocas.push(`${t.sai}>${t.entra}`) });
+    aplicarCorrecao(c2, { preset: p => { d.preset += `/${p}`; }, trocar: t => d.trocas.push(`${t.sai}>${t.entra}`) });
+    igual(`${d.preset}|${d.trocas.join()}`, 'aggressive|y>q', 'o que a correção aplicou');
+    /* O SENTIDO do caminho (Q7 da Liga): uma seta no meio de cada trecho —
+       para a direita na primeira volta, para baixo na curva, para a esquerda
+       na segunda. */
+    const m = mapaDaJornada(pack, progressoVazio()), setas = setasDoCaminho(m);
+    igual(setas.length, m.nos.length - 1, 'uma seta por trecho');
+    const h = Math.ceil(m.nos.length / 2);
+    igual(setas.map(x => x.dir[0]).join(''), 'd'.repeat(h - 1) + 'b' + 'e'.repeat(m.nos.length - h - 1), 'o sentido de cada trecho');
+    ok(setas.every((x, i) => Math.abs(x.x - (m.nos[i].x + m.nos[i + 1].x) / 2) < 0.06 && Math.abs(x.y - (m.nos[i].y + m.nos[i + 1].y) / 2) < 0.06), 'a seta fora do meio do trecho');
+    igual(setasDoCaminho(mapaDaJornada(P, progressoVazio())).map(x => x.dir).join(), 'dir,dir,dir', 'numa volta só, tudo para a direita');
+    /* A FAIXA do celular: o anterior, o escolhido e o próximo, na ordem. */
+    const f = faixaDoCaminho(m, 'pewter');
+    igual([f.antes?.id, f.este.id, f.depois?.id].join(), 'pedra,pewter,cerulean', 'a faixa do caminho');
+    /* O nome CURTO (Q7 da 10.19d): "Ginásio de …" cortado perdia o que distingue. */
+    igual([f.antes.curto, f.este.curto, f.depois.curto].join(), 'Caminho da Pedra,Pewter,Cerulean', 'o nome curto na faixa');
+    ok(m.nos.every(n => n.curto && n.curto.length <= 16), 'nó sem nome curto, ou longo demais para a faixa');
+    igual(faixaDoCaminho(m, 'rota1').antes, null, 'antes do primeiro');
+    igual(faixaDoCaminho(m, 'campeao').depois, null, 'depois do último');
+    igual(faixaDoCaminho(m, null).este.id, m.atual, 'sem escolha, a faixa é a do nó atual');
+    const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
+    ok(/setasDoCaminho\(mapa\)/.test(tela) && /faixaDoCaminho\(mapa, escolhido\)/.test(tela), 'a tela não desenha o sentido nem a faixa');
+    ok(/correcaoDaLicao\(PACK, \{/.test(tela) && /data-jn-corrige/.test(tela), 'a tela não mostra a correção');
+    ok(/lote\(PACK, corr\.timeA, rival, RAIZ/.test(tela), 'a chance projetada não é a do time corrigido');
+    ok(/era \$\{porcentagemExibida\(aplicada\.antes\)\}, agora \$\{porcentagemExibida\(r\.p\)\}/.test(tela), 'a correção aplicada não diz de onde veio o número');
+    ok(/\$\('#jnCausa \.lnk'\)\?\.remove\(\)/.test(tela), 'duas ações para a mesma correção');
   });
 
   /* D-125 — o inicial sozinho perdia o primeiro nó — foi consertado na ST-10.13;

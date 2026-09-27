@@ -8644,7 +8644,7 @@ ponto de custar mais que uma linha a cada vez.
 
 **Registrada em:** 27/09/2026, no Q7 da ST-10.19b. **Bloco dono:** ~~ST-10.19c~~
 **ST-10.19d** (a 10.19c ficou com a Liga, a L-201 e a L-203; esta mexe no painel
-de TODAS as lições e merece bloco próprio). **Estado:** aberto.
+de TODAS as lições e merece bloco próprio). **Estado:** ✅ **fechada na ST-10.19d (27/09)** — ver o fim da ficha.
 
 O crítico cego (barra: a calculadora de dano do Showdown + o card de dica do
 Into the Breach) deu 3–5 à pergunta "o que mudar, e onde clicar" em todos os
@@ -8681,3 +8681,51 @@ cena      lagos e pedras passam por baixo de rótulos (Pewter, Vermilion,
 A ST-10.19c aplicou o resto do Q7 (a prova do Campeão, o título, os chips, o
 nó vencido da Liga). **O que a destrava:** nada — a jornada inteira está no
 pack desde a ST-10.19c. É a ST-10.19d.
+
+**Feito na ST-10.19d (27/09):**
+
+```text
+a correção     `jornada-correcao.mjs` (camada 0) decide: o preset certo, ou a
+               troca da caixa (entra o de MAIOR power que aplica a lição; sai
+               quem menos a serve). A tela mede a chance do time corrigido (a
+               mesma raiz) e desenha "troque para o Agressivo → 60%" — só se
+               subir. Abaixo de 50%, ele é o dourado e o "lutar", o secundário.
+               Medido no navegador: o clique entrega o número prometido
+               (16% → 60% no Blaine; Raticate → Rhyhorn, 100%, no Surge)
+420 px         a faixa do caminho (‹ anterior · escolhido · próximo ›) antes
+               do painel
+sentido        uma divisa no meio de cada trecho (setasDoCaminho)
+1440+          a coluna da chance ancorada na borda direita do painel
+cena           a peça que encosta num nome troca de lado, e se ainda encosta
+               sai — e você também troca de lado se encostar; a captura mede
+               cena × rótulo e sprite × rótulo: 0 nas quatro larguras
+```
+
+Ficou de fora, e de propósito: a velocidade e a categoria (golpes) não têm
+correção de UMA troca; o link para a aba Time continua sendo a saída delas.
+
+### L-206 — o acabamento do mapa da jornada ainda tem cara de rascunho
+
+**Registrada em:** 27/09/2026, no Q7 da ST-10.19d. **Bloco dono:** ST-10.21 (o
+acabamento do mapa, proposta no PLANO no mesmo commit). **Estado:** aberto.
+
+O crítico cego (Into the Breach + Showdown) deu 7–8 ao painel e à correção, e
+apontou o que é de ARTE e de arranjo, e não de lição:
+
+```text
+nó atual     octógono ciano chapado, sem ícone — pediu anel que pulsa com o
+             ícone do tipo do ginásio
+setas        a divisa da trilha some sobre a trilha tracejada (por andar)
+avatar       você de pé sobre os laguinhos da cena (Cinnabar, Vermilion)
+1920         o número a ~1.000 px da frase que o explica — a faixa do meio do
+             painel fica vazia; pediu o bloco da chance ao lado do "seu preset"
+título       "TIME" com a aba Jornada ativa
+risco        "arriscado — reforce o time" a 2% é pouco ("derrota quase certa")
+```
+
+**Por que não cabe agora:** a ST-10.19d fechou a lição (a correção, a faixa, o
+sentido, a cena longe dos nomes); isto é o acabamento de ARTE da tela inteira,
+que merece a própria passada de Q5/Q7 — e o cenário do mapa é de olhar, como o
+do idle.
+
+**O que a destrava:** nada; é a ST-10.21.

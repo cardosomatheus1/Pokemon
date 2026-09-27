@@ -28,6 +28,9 @@ const PONTOS = {
   /* ST-10.15: diante de Lt. Surge, com e sem um imune a Elétrico — o mesmo
      Raticate ao lado, como na medição. */
   surge: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean'], insignias: ['rocha', 'cascata'], time: [[111, 22], [20, 22]] },
+  /* ST-10.19d: o mesmo Surge sem imune, e um Rhyhorn NA CAIXA — a correção
+     propõe a troca, e o clique a faz. */
+  surgeCaixa: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean'], insignias: ['rocha', 'cascata'], time: [[59, 22], [20, 22]], caixa: [[111, 22]] },
   surgeSem: { vencidos: ['rota1', 'floresta', 'rota22', 'pedra', 'pewter', 'cerulean'], insignias: ['rocha', 'cascata'], time: [[59, 22], [20, 22]] },
   /* ST-10.19a: diante da Erika, com e sem quem resiste (Arbok × Tauros); e
      diante do Koga, o MESMO time com o preset errado e com o certo. */
@@ -65,7 +68,7 @@ const PONTOS = {
 const b = await chromium.launch({ executablePath: CHROME });
 const erros = [], achados = [];
 async function abrir(w, ponto) {
-  const ctx = await b.newContext({ viewport: { width: w, height: 1000 } });
+  const ctx = await b.newContext({ viewport: { width: w, height: 1300 } });
   const pg = await ctx.newPage();
   pg.on('pageerror', e => erros.push(`${w}/${ponto}: ${e.message}`));
   await pg.addInitScript(p => {
@@ -78,7 +81,7 @@ async function abrir(w, ponto) {
     localStorage.setItem('ar_treino_aba', 'jornada');
     if (p.preset) localStorage.setItem('ar_treino_preset', p.preset);
     localStorage.setItem('ar_idle', JSON.stringify({ v: 1, registro: {}, bolsa: {}, expedicoes: [], encontros: [], doces: {},
-      criaturas: p.time.map(([dex, nivel, vel, golpes], i) => cria(`c${i}`, dex, nivel, vel, golpes)), jornada: { vencidos: p.vencidos, insignias: p.insignias } }));
+      criaturas: [...p.time.map(([dex, nivel, vel, golpes], i) => cria(`c${i}`, dex, nivel, vel, golpes)), ...(p.caixa ?? []).map(([dex, nivel], i) => ({ ...cria(`k${i}`, dex, nivel), naCaixa: true }))], jornada: { vencidos: p.vencidos, insignias: p.insignias } }));
   }, PONTOS[ponto]);
   await pg.goto(`${BASE}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
   await pg.waitForFunction(() => document.querySelectorAll('.pick').length > 0, null, { timeout: 90000, polling: 250 });
@@ -112,16 +115,21 @@ for (const ponto of Object.keys(PONTOS).filter(quer)) for (const w of [1920, 144
     const f = 2, toca = (a, c) => a.left + f < c.right && c.left + f < a.right && a.top + f < c.bottom && c.top + f < a.bottom;
     const cobertos = rotulos.filter(a => bonecos.some(c => toca(a.r, c.r)));
     const cobre = cobertos.length, quem = cobertos.slice(0, 4).map(a => `${a.t}←${bonecos.filter(c => toca(a.r, c.r)).map(c => `${c.c}:${[c.r.left, c.r.top, c.r.right, c.r.bottom].map(v => v | 0)}`).join('+')}@${[a.r.left, a.r.top, a.r.right, a.r.bottom].map(v => v | 0)}`);
-    const nosR = [...document.querySelectorAll('.jnNo')].map(n => ({ r: n.getBoundingClientRect(), t: n.title }));
+    /* ST-10.19d: CENA × RÓTULO — lago ou pedra da cena por baixo de um nome
+       (o Q7 da Liga viu em Pewter, Vermilion, Viridian e Saffron, em 1100). */
+    const cenas = [...document.querySelectorAll('.jnPos:not(.jnB) .jnLago, .jnPos:not(.jnB) .jnProp')].filter(n => getComputedStyle(n).display !== 'none').map(n => n.getBoundingClientRect()).filter(r => r.width && r.height);
+    const sobCena = rotulos.filter(a => cenas.some(c => toca(a.r, c))).map(a => a.t);
+        const nosR = [...document.querySelectorAll('.jnNo')].map(n => ({ r: n.getBoundingClientRect(), t: n.title }));
     const pares = [];
     for (let i = 0; i < nosR.length; i++) for (let j = i + 1; j < nosR.length; j++) if (toca(nosR[i].r, nosR[j].r) || (nosR[i].r.left < nosR[j].r.right && nosR[j].r.left < nosR[i].r.right && nosR[i].r.top < nosR[j].r.bottom && nosR[j].r.top < nosR[i].r.bottom)) pares.push(`${nosR[i].t}×${nosR[j].t}:${Math.round(Math.min(nosR[i].r.bottom, nosR[j].r.bottom) - Math.max(nosR[i].r.top, nosR[j].r.top))}px`);
-    return { cobre, quem, pares: pares.slice(0, 3), topo: document.querySelector('.jnTopo')?.textContent.replace(/\s+/g, ' ').trim(), painel: document.querySelector('#jnPainel h4')?.textContent,
+    return { cobre, quem, cena: sobCena.length, sobCena: sobCena.slice(0, 4), pares: pares.slice(0, 3), topo: document.querySelector('.jnTopo')?.textContent.replace(/\s+/g, ' ').trim(), painel: document.querySelector('#jnPainel h4')?.textContent,
       chance: document.getElementById('jnNumero')?.textContent, erro: document.getElementById('jnErro')?.textContent,
       lutar: document.getElementById('jnLutar')?.disabled === false, fora, sobre };
   });
   achados.push(`${ponto} ${w}: ${JSON.stringify(r)}`);
   if (r.fora || r.sobre) erros.push(`${ponto} ${w}: ${r.fora} nós fora da caixa, ${r.sobre} pares sobrepostos`);
   if (r.cobre) erros.push(`${ponto} ${w}: ${r.cobre} rótulos cobertos por sprite`);
+  if (r.cena) erros.push(`${ponto} ${w}: ${r.cena} rótulos sobre a cena (${r.sobCena.join(', ')})`);
   await ctx.close();
 }
 
@@ -147,6 +155,23 @@ for (const [w, ponto] of [[1440, 'meio'], [420, 'meio'], [1440, 'ginasio'], [420
   if (!r.painelVisivel) erros.push(`luta ${ponto} ${w}: o painel não voltou`);
   achados.push(`luta ${ponto} ${w}: ${JSON.stringify(r)}`);
   if (!r.fim) erros.push(`luta ${w}: sem resultado`);
+  await ctx.close();
+}
+/* ST-10.19d: o CLIQUE da correção — o botão aparece, aplica o que diz, e a
+   chance recalculada é a que ele prometeu (a mesma raiz). */
+for (const [w, ponto] of [[1440, 'blaine'], [420, 'surgeCaixa']].filter(([, p]) => quer(p))) {
+  const { ctx, pg } = await abrir(w, ponto);
+  const botao = await pg.waitForSelector('#jnCorrige:not([hidden])', { timeout: 120000 }).catch(() => null);
+  if (!botao) { erros.push(`correção ${ponto} ${w}: o botão não apareceu`); await ctx.close(); continue; }
+  const prometido = await botao.textContent();
+  await botao.click();
+  await pg.waitForFunction(() => { const n = document.getElementById('jnNumero'); return n && !n.classList.contains('parcial') && /%/.test(n.textContent); }, null, { timeout: 120000, polling: 250 });
+  const r = await pg.evaluate(() => ({ chance: document.getElementById('jnNumero').textContent, preset: localStorage.getItem('ar_treino_preset'),
+    equipe: JSON.parse(localStorage.getItem('ar_idle')).criaturas.filter(c => !c.naCaixa).map(c => c.dex).join(), botao: !document.getElementById('jnCorrige')?.hidden }));
+  await (await pg.$('#viewTreino .card')).screenshot({ path: `${PASTA}/corrigido-${ponto}-${w}.png` });
+  achados.push(`correção ${ponto} ${w}: prometido "${prometido}" → ${JSON.stringify(r)}`);
+  if (!prometido.includes(r.chance)) erros.push(`correção ${ponto} ${w}: prometeu "${prometido}" e deu ${r.chance}`);
+  if (r.botao) erros.push(`correção ${ponto} ${w}: o botão continua depois de aplicada`);
   await ctx.close();
 }
 await b.close();

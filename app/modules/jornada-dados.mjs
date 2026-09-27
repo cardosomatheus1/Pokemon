@@ -72,6 +72,9 @@ export function mapaDaJornada(pack, prog) {
     /* ST-10.19c: a Liga não ensina — REVISA um ginásio, e o mapa desenha a
        insígnia dele ao lado da lição. `selo` é o nome do degrau, do pack. */
     selo: no.selo ?? null, final: !!no.final,
+    /* ST-10.19d: o nome CURTO, para a faixa do celular — "Ginásio de …" cortado
+       perdia justamente a palavra que distingue um ginásio do outro. */
+    curto: no.curto ?? no.nome ?? no.id,
     revisa: no.licao?.revisa ? (g => (g ? { id: g.id, nome: g.nome ?? g.id, insignia: g.insignia ?? null } : null))(nos.find(x => x.id === no.licao.revisa)) : null,
     /* ST-10.18: o chefe é um lendário sozinho — o mapa desenha ELE, e não um
        treinador; e o que ele paga é a essência dele. */
@@ -149,6 +152,24 @@ export function ondeEstou(mapa) {
      de onde chegou, e não em cima do nome do próximo (medido em 1100). */
   const lado = voltasDoCaminho(nos.length) === 2 && i >= Math.ceil(nos.length / 2) ? 'direita' : 'esquerda';
   return { x: r(a.x + (b.x - a.x) * 0.6), y: r(a.y + (b.y - a.y) * 0.6), ao: { x: b.x, y: b.y }, lado };
+}
+
+/* ── ST-10.19d · O SENTIDO E A FAIXA (Q7 da Liga) ──────────────────────────
+   Com tudo vencido, a segunda volta não dizia que VOLTA: uma seta no meio de
+   cada trecho, com o sentido em que a trilha anda (a tela gira pelo `dir`, e
+   no celular, que transpõe o mapa, gira de novo). E no celular o mapa fica
+   abaixo do painel: a faixa do anterior, do escolhido e do próximo vai antes. */
+export function setasDoCaminho(mapa) {
+  const nos = mapa?.nos ?? [], r = v => Math.round(v * 100) / 100;
+  return nos.slice(1).map((b, i) => {
+    const a = nos[i], dx = b.x - a.x;
+    return { x: r((a.x + b.x) / 2), y: r((a.y + b.y) / 2), dir: Math.abs(dx) < 1 ? 'baixo' : dx > 0 ? 'dir' : 'esq' };
+  });
+}
+export function faixaDoCaminho(mapa, id) {
+  const nos = mapa?.nos ?? [];
+  const i = Math.max(0, nos.findIndex(n => n.id === (id ?? mapa?.atual ?? nos.at(-1)?.id)));
+  return { antes: nos[i - 1] ?? null, este: nos[i] ?? null, depois: nos[i + 1] ?? null };
 }
 
 /* A PAREDE DE ÁRVORES das bordas, em porcentagem: uma fileira em cima e uma

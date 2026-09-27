@@ -353,6 +353,7 @@ const CAMADA = {
   'doce-tela.mjs': 4,
   /* ST-10.12 · o mapa de Kanto: os dados (0) e a tela (4). */
   'jornada-dados.mjs': 0,
+  'jornada-correcao.mjs': 0,
   'jornada-tela.mjs': 4,
   /* ST-10.11 · a jornada: a luta gravada (1). */
   'jornada-local.mjs': 1,

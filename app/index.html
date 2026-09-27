@@ -1121,7 +1121,7 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 /* VOCÊ ao lado do nó atual em toda largura (Q7 da ST-10.16): na trilha, com
    o caminho em zigue-zague, você cobria o nome do ginásio de cima. */
 .jnVoce{z-index:3}.jnPos.jnVoce{left:calc(var(--ax) * 1%);top:calc(var(--ay) * 1%)}
-.jnVoce .jnEu,.jnVoce.jnFim .jnEu{transform:translateX(calc(-100% - 22px))}.jnVoce.jnDireita .jnEu{transform:translateX(17px)}.jnEu{position:absolute;left:0;top:-48px;transform:translateX(-50%);height:52px;width:25px;overflow:hidden;pointer-events:none;z-index:2;filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
+.jnVoce .jnEu,.jnVoce.jnFim .jnEu{transform:translateX(calc(-100% - 22px))}.jnVoce.jnDireita .jnEu{transform:translateX(14px)}.jnEu{position:absolute;left:0;top:-48px;transform:translateX(-50%);height:52px;width:25px;overflow:hidden;pointer-events:none;z-index:2;filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
 .jnEu img{height:52px;width:auto;max-width:none;display:block;image-rendering:pixelated}
 .jnPos.jn-trancado .jnOw{filter:grayscale(1) brightness(.75) drop-shadow(0 3px 0 rgba(0,0,0,.28))}
 .jnPos.jn-vencido .jnOw{opacity:.7}
@@ -1153,13 +1153,25 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnNo.jn-liga span{border:1px solid rgba(201,167,255,.8)}.jnNo.jn-liga span em{color:#d9c2ff}
 .jnNo.jn-liga.jn-trancado i{background:#7b7b7b;border:2px dashed #3d3d3d}.jnNo.jn-liga.jn-vencido i{background:linear-gradient(135deg,#ffe27a,#c98a1b);border-color:#6b4a0e}.jnNo.jn-liga.jn-atual i{background:var(--neon);border-color:#fff}
 .jnSeloLiga{border-color:#c9a7ff;color:#d9c2ff}
+.jnCorrige{margin-top:6px;white-space:normal;text-align:center}
+.jnSelo{white-space:nowrap}.jnAplicada{font-weight:700}
+/* ST-10.19d · o SENTIDO da trilha: uma divisa no meio de cada trecho, discreta
+   (é leitura, não enfeite), abaixo dos nós. No celular o mapa é transposto, e
+   a divisa gira junto. */
+.jnSetaPos{z-index:0}.jnSeta{position:absolute;left:-5px;top:-5px;width:9px;height:9px;border-top:3px solid rgba(255,244,214,.85);border-right:3px solid rgba(255,244,214,.85);filter:drop-shadow(0 1px 0 rgba(0,0,0,.45))}
+.jnSeta.jn-dir{transform:rotate(45deg)}.jnSeta.jn-esq{transform:rotate(-135deg)}.jnSeta.jn-baixo{transform:rotate(135deg)}
+/* A FAIXA do caminho, só no celular: o anterior, o escolhido e o próximo. */
+.jnFaixa{display:none}
 .jnMapa.jnVoltas2{height:470px}
 .jnNo.escolhido span{color:var(--neon);box-shadow:0 0 0 1px var(--neon)}
 @keyframes jnPulsa{0%,100%{box-shadow:0 0 0 0 rgba(var(--goldRGB),.7),0 3px 0 rgba(0,0,0,.3)}60%{box-shadow:0 0 0 10px rgba(var(--goldRGB),0),0 3px 0 rgba(0,0,0,.3)}}
 @media (prefers-reduced-motion:reduce){ .jnNo.jn-atual i{animation:none;box-shadow:0 0 0 4px rgba(var(--goldRGB),.6)} }
 .jnSprite{width:40px;height:40px;image-rendering:pixelated;object-fit:contain}
-.jnPainel{display:grid;grid-template-columns:minmax(0,760px) auto;grid-template-areas:'titulo chance' 'info chance';justify-content:start;gap:6px 36px;align-items:center;margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg2)}
-.jnTitulo{grid-area:titulo;margin:0}.jnInfo{grid-area:info}.jnChance{grid-area:chance}
+/* ST-10.19d (Q7 da Liga): a coluna da chance ancorada na borda direita do
+   painel — com `760px auto` e `start` ela parava em x≈1124 e deixava até
+   750 px vazios; o texto da lição continua com medida de leitura (820 px). */
+.jnPainel{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,340px);grid-template-rows:auto 1fr;grid-template-areas:'titulo chance' 'info chance';justify-content:stretch;gap:6px 36px;align-items:center;margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg2)}
+.jnTitulo{grid-area:titulo;margin:0;align-self:end}.jnInfo{grid-area:info;max-width:820px;align-self:start}.jnChance{grid-area:chance}
 .jnFrase{margin:0;font-size:.8rem;color:var(--txt);opacity:.85}
 .jnFeitoSelo{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--green)}.jnFeitoSelo img{width:22px;height:22px;image-rendering:pixelated}
 .jnVencido #jnNumero{font-size:1.2rem;opacity:.7}.jnSelo{font-size:.62rem;padding:0 6px;border-radius:6px;border:1px solid var(--neon);color:var(--neon);vertical-align:middle}
@@ -1176,11 +1188,16 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 /* Em pé: o MESMO caminho transposto, e a altura cresce com os nós. */
 /* No estreito, o painel do nó escolhido vem ANTES do mapa: com 7 nós o mapa
    em pé tem ~1.000 px, e a lição ficava abaixo da dobra (Q7 da ST-10.15). */
-@media (max-width:520px){ #jnMapaArea{display:flex;flex-direction:column} .jnTopo{order:0} .jnPainel{order:1} .jnMapa{order:2;margin-top:12px}
+@media (max-width:520px){ #jnMapaArea{display:flex;flex-direction:column} .jnTopo{order:0} .jnPainel{order:2} .jnMapa{order:3;margin-top:12px}
+  .jnFaixa{order:1;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center;margin-top:10px}
+  .jnFaixaNo{font:inherit;font-size:.72rem;padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg2);color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .jnFaixaNo:first-child{justify-self:start;max-width:100%}.jnFaixaNo:last-child{justify-self:end;max-width:100%}
+  .jnFaixaNo.este{color:#fff;border-color:var(--neon);font-weight:700}.jnFaixaNo.jn-vencido{color:var(--gold)}
+  .jnSeta.jn-dir{transform:rotate(135deg)}.jnSeta.jn-esq{transform:rotate(-45deg)}.jnSeta.jn-baixo{transform:rotate(45deg)}
   .jnMapa{height:calc(var(--n) * 130px + 60px)} .jnMapa.jnVoltas2{height:calc(var(--n) * 150px + 60px)} .jnDeitado{display:none} .jnEmPe{display:block}
   .jnPos{left:calc(var(--y) * 1%);top:calc(70px + (100% - 110px) * var(--x) / 100)} .jnPos.jnB{top:calc(var(--x) * 1%)}
   .jnEmPe{top:70px;bottom:auto;height:calc(100% - 110px)}
-  .jnPos.jnVoce{left:calc(var(--ay) * 1%);top:calc(70px + (100% - 110px) * var(--ax) / 100)} .jnPainel{grid-template-columns:1fr;grid-template-areas:'titulo' 'chance' 'info';gap:10px} .jnChance{align-items:flex-start} .jnCausa,.jnPaga{text-align:left} }
+  .jnPos.jnVoce{left:calc(var(--ay) * 1%);top:calc(70px + (100% - 110px) * var(--ax) / 100)} .jnPainel{grid-template-columns:1fr;grid-template-rows:none;grid-template-areas:'titulo' 'chance' 'info';gap:10px} .jnChance{align-items:flex-start} .jnCausa,.jnPaga{text-align:left} }
 /* ST-10.9 · a batalha PvE. O palco é o mundo GBA — o rival no alto à direita,
    o seu time embaixo à esquerda, cada um com a placa de vida colada ao
    retrato, chão e sombra —; a moldura e o texto são a interface neon (Q5: a

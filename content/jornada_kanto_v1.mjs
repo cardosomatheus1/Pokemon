@@ -18,41 +18,41 @@ export const JORNADA = [
   { id: 'floresta', nome: 'Floresta',          rival: 'insetos', cena: 'arvores' },
   { id: 'rota22',   nome: 'Rota 22',           rival: 'rival1' },
   { id: 'pedra',    nome: 'Caminho da Pedra',  rival: 'pedra', cena: 'rochas' },
-  { id: 'pewter',   nome: 'Ginásio de Pewter', rival: 'brock', insignia: 'rocha', insigniaNome: 'Insígnia Rocha', cena: 'rochas',
+  { id: 'pewter',   nome: 'Ginásio de Pewter', curto: 'Pewter', rival: 'brock', insignia: 'rocha', insigniaNome: 'Insígnia Rocha', cena: 'rochas',
     licao: { ensina: 'fraqueza de tipo', tipo: 'Pedra', dica: 'Pedra apanha em dobro de Água e de Planta — e aguenta Fogo, Voador e Normal.' } },
   /* `mostra: 'vel'`: o painel põe a velocidade do seu mais rápido ao lado da
      de cada rival — a lição tem de estar na tela, e não só no texto. */
-  { id: 'cerulean', nome: 'Ginásio de Cerulean', rival: 'misty', insignia: 'cascata', insigniaNome: 'Insígnia Cascata', cena: 'agua',
+  { id: 'cerulean', nome: 'Ginásio de Cerulean', curto: 'Cerulean', rival: 'misty', insignia: 'cascata', insigniaNome: 'Insígnia Cascata', cena: 'agua',
     licao: { ensina: 'a velocidade decide trocas apertadas', tipo: 'Água', mostra: 'vel',
              dica: 'Quando os dois caem em poucos golpes, quem age antes vence. Passe a velocidade do Starmie.' } },
   /* `mostra: 'imune'` com `tipoGolpe`: o painel diz quem do seu time o tipo
      não toca. O porto de Vermilion tem água (a mesma cena de Cerulean). */
-  { id: 'vermilion', nome: 'Ginásio de Vermilion', rival: 'surge', insignia: 'trovao', insigniaNome: 'Insígnia Trovão', cena: 'agua',
+  { id: 'vermilion', nome: 'Ginásio de Vermilion', curto: 'Vermilion', rival: 'surge', insignia: 'trovao', insigniaNome: 'Insígnia Trovão', cena: 'agua',
     licao: { ensina: 'imunidade', tipo: 'Elétrico', tipoGolpe: 'electric', mostra: 'imune',
              dica: 'Terrestre não é tocado por Elétrico: dano zero, o golpe todo perdido. Um imune no time vale mais que força.' } },
   /* ST-10.19a: na ordem do material de origem — Erika e Koga ANTES da
      Sabrina (29 → 42 → 43). Save que já venceu a Sabrina não perde nada: o
      que foi vencido segue vencido, e o próximo nó passa a ser a Erika. */
-  { id: 'celadon',  nome: 'Ginásio de Celadon', rival: 'erika', insignia: 'arcoiris', insigniaNome: 'Insígnia Arco-Íris', cena: 'arvores',
+  { id: 'celadon',  nome: 'Ginásio de Celadon', curto: 'Celadon', rival: 'erika', insignia: 'arcoiris', insigniaNome: 'Insígnia Arco-Íris', cena: 'arvores',
     licao: { ensina: 'resistência — quem apanha pouco', tipo: 'Planta', mostra: 'resiste', tiposGolpe: ['grass', 'poison'],
              dica: 'Os golpes dela são de Planta e Venenoso. Quem resiste aos dois apanha metade — e dura o dobro.' } },
-  { id: 'fuchsia',  nome: 'Ginásio de Fuchsia', rival: 'koga', insignia: 'alma', insigniaNome: 'Insígnia Alma',
+  { id: 'fuchsia',  nome: 'Ginásio de Fuchsia', curto: 'Fuchsia', rival: 'koga', insignia: 'alma', insigniaNome: 'Insígnia Alma',
     licao: { ensina: 'o preset certo — derrube a ameaça primeiro', tipo: 'Venenoso', mostra: 'preset', presetCerto: 'defensive',
              dica: 'Dois tanques e uma ameaça. Espalhar dano deixa a ameaça bater o tempo todo; o preset Defensivo derruba ela primeiro.' } },
-  { id: 'saffron',  nome: 'Ginásio de Saffron', rival: 'sabrina', insignia: 'pantano', insigniaNome: 'Insígnia Pântano',
+  { id: 'saffron',  nome: 'Ginásio de Saffron', curto: 'Saffron', rival: 'sabrina', insignia: 'pantano', insigniaNome: 'Insígnia Pântano',
     licao: { ensina: 'físico contra especial', tipo: 'Psíquico', mostra: 'categoria',
              dica: 'As criaturas dela aguentam golpe especial e quebram com golpe físico: bata pelo lado fraco.' } },
   /* ST-10.19b · os dois últimos ginásios antes do chefe. */
-  { id: 'cinnabar', nome: 'Ginásio de Cinnabar', rival: 'blaine', insignia: 'vulcao', insigniaNome: 'Insígnia Vulcão', cena: 'agua',
+  { id: 'cinnabar', nome: 'Ginásio de Cinnabar', curto: 'Cinnabar', rival: 'blaine', insignia: 'vulcao', insigniaNome: 'Insígnia Vulcão', cena: 'agua',
     licao: { ensina: 'derrube quem está caindo — um a menos bate a menos', tipo: 'Fogo', mostra: 'preset', presetCerto: 'aggressive',
              porque: 'termina o ferido: um a menos bate a menos',
              dica: 'Os quatro dele batem forte até cair. Espalhar dano deixa os quatro batendo; terminar o ferido tira um da luta mais cedo.' } },
-  { id: 'viridian', nome: 'Ginásio de Viridian', rival: 'giovanni', insignia: 'terra', insigniaNome: 'Insígnia Terra', cena: 'arvores',
+  { id: 'viridian', nome: 'Ginásio de Viridian', curto: 'Viridian', rival: 'giovanni', insignia: 'terra', insigniaNome: 'Insígnia Terra', cena: 'arvores',
     licao: { ensina: 'o tipo duplo — os dois tipos contam', tipo: 'Terrestre', mostra: 'duplo',
              dica: 'Quatro dos cinco dele têm dois tipos, e o golpe conta com os dois: Lutador bate Pedra, mas o Venenoso do Nidoking corta pela metade — e corta a Planta também. Água e Gelo batem nos dois lados.' } },
   /* ST-10.18 · o CHEFE: um lendário (§8.12, L-057). Não dá insígnia; paga a
      essência da espécie, uma por dia, e nunca a criatura. */
-  { id: 'usina',    nome: 'Usina Abandonada', rival: 'zapdos', chefe: true },
+  { id: 'usina',    nome: 'Usina Abandonada', curto: 'Usina', rival: 'zapdos', chefe: true },
   /* ST-10.19c · A LIGA: a Elite Four e o Campeão. A Liga não ensina lição
      nova — REVISA uma de ginásio (`revisa`), num nível de fim de jogo, e o
      Campeão dá a última: o preset não é receita. Sem insígnia; `selo` é o

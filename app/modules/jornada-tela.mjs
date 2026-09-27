@@ -14,9 +14,12 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
+import { setasDoCaminho, faixaDoCaminho } from './jornada-dados.mjs';
 import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, turnosDaAmeaca, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { diaDoMundo } from '../../engine/avanco.mjs';
-import { entradasDoTime, rivalDe, treinador, presetValido, candidatosDaCaixa } from './treino-dados.mjs';
+import { entradasDoTime, rivalDe, treinador, presetValido, candidatosDaCaixa, membrosParaTrocas } from './treino-dados.mjs';
+import { correcaoDaLicao, aplicarCorrecao } from './jornada-correcao.mjs';
+import { trocarLocal } from './time-local.mjs';
 import { lote, resumo, porcentagemExibida, textoDaMargem, SIMS_TREINO } from '../../engine/treino-preco.mjs';
 import { lutarNaJornadaLocal } from './jornada-local.mjs';
 import { encenar } from './pve-tela.mjs';
@@ -25,13 +28,13 @@ import { folhaVestida, carregar as carregarGuardaRoupa } from './outfit-acervo.m
 
 const RAIZ = 1;
 const presetDoJogador = () => { try { return presetValido(localStorage.getItem('ar_treino_preset')); } catch { return 'balanced'; } };
-let escolhido = null, geracao = 0, chanceNaTela = null;
+let escolhido = null, geracao = 0, chanceNaTela = null, correcaoNaTela = null, aplicada = null;
 
 function pintarPainel(mapa) {
   const alvo = $('#jnPainel');
   const no = mapa.nos.find(n => n.id === escolhido) ?? mapa.nos.find(n => n.id === mapa.atual) ?? mapa.nos.at(-1);
   if (!alvo || !no) return;
-  escolhido = no.id; chanceNaTela = null;
+  escolhido = no.id; chanceNaTela = null; correcaoNaTela = null;
   const t = treinador(PACK, no.rival), rival = rivalDe(PACK, t);
   const nomeDo = dex => nomeExibido(especieDe(PACK, dex)?.n ?? '?');
   /* Título, e LOGO a decisão (chance e botão): em 420 px a chance estava a
@@ -43,6 +46,7 @@ function pintarPainel(mapa) {
       <span class="tiny">seu time vence</span><strong id="jnNumero">…</strong><span class="tiny" id="jnErro">calculando</span>
       <span class="tiny jnCausa" id="jnCausa" hidden></span>
       <span class="tiny jnRisco" id="jnRisco" hidden>arriscado — <button class="lnk" data-treino-aba="time">reforce o time</button></span>
+      <button class="btn gold jnCorrige" id="jnCorrige" data-jn-corrige hidden></button>
       <span class="tiny jnPaga">${fraseDoPagamento(PACK, pagamentoDoNo(no, carregar().jornada?.pve, diaDoMundo(Date.now())))}</span>
       <button class="btn${vencido ? '' : ' gold'} jnCta" id="jnLutar" data-jn-lutar="${no.id}" disabled>${no.estado === 'trancado' ? 'trancado' : vencido ? 'revanche (treino)' : `lutar contra ${t.nome}`}</button></div>
     <div class="jnInfo"><p class="jnFrase">${fraseDoNo(no, t.nome)}</p>
@@ -90,7 +94,7 @@ function pintarPainel(mapa) {
     if (causa) {
       causa.hidden = false;
       causa.className = `tiny jnCausa ${preset === certo ? 'passa' : 'nao'}`;
-      causa.innerHTML = preset === certo ? `o ${NOME_PRESET[certo]}: ${no.licao.porque}`
+      causa.innerHTML = preset === certo ? `o ${NOME_PRESET[certo]} — ${no.licao.porque}`
         : `com o ${NOME_PRESET[preset] ?? preset} você ${ERRO[preset] ?? 'luta de outro jeito'}, e os ${rival.length} seguem batendo — <button class="lnk" data-treino-aba="time">troque para o ${NOME_PRESET[certo]}</button>`;
       causa.dataset.licao = preset === certo ? '' : 'golpes';
     }
@@ -211,11 +215,74 @@ function pintarPainel(mapa) {
        contradiz a lição (sugere nível, e o que falta é escolher golpe). */
     if (aviso) aviso.hidden = !(pronto && no.estado !== 'trancado' && faixaDaChance(r.p) === 'baixa') || $('#jnCausa')?.dataset.licao === 'golpes';
     if (e) e.textContent = pronto ? textoDaMargem(r) : `calculando · ${acum.sims} de ${SIMS_TREINO}`;
-    if (pronto) { chanceNaTela = r; if (b && no.estado !== 'trancado') b.disabled = false; }
+    if (pronto && aplicada?.no === no.id) {
+      /* Q7 da ST-10.19d: a correção APLICADA diz o que fez e de onde veio o
+         número — "era 16%" —, uma vez só. */
+      const c = $('#jnCausa');
+      if (c) { c.hidden = false; c.className = 'tiny jnCausa passa jnAplicada'; c.textContent = `✓ ${aplicada.feito} — era ${porcentagemExibida(aplicada.antes)}, agora ${porcentagemExibida(r.p)}`; }
+      aplicada = null;
+    }
+    if (pronto) { chanceNaTela = r; if (b && no.estado !== 'trancado') b.disabled = false; projetar(r); }
     else setTimeout(passo, 0);
+  };
+  /* ST-10.19d (L-205): a CORREÇÃO da lição como botão, com a chance que ela
+     dá — a mesma conta, no time corrigido. Só aparece se subir a chance; e
+     abaixo de 50% ela vira o botão dourado, e o "lutar", o secundário. */
+  const estado = carregar();
+  const corr = no.estado === 'trancado' ? null
+    : correcaoDaLicao(PACK, { licao: no.licao, membros: membrosParaTrocas(PACK, estado), caixa: candidatosDaCaixa(PACK, estado), preset, rival });
+  const projetar = atual => {
+    if (!corr) return;
+    const ac = { vitorias: 0, empates: 0, sims: 0 };
+    const passo2 = () => {
+      if (g !== geracao) return;
+      lote(PACK, corr.timeA, rival, RAIZ, ac.sims, Math.min(100, SIMS_TREINO - ac.sims), ac, corr.preset ?? preset);
+      if (ac.sims < SIMS_TREINO) { setTimeout(passo2, 0); return; }
+      const p2 = resumo(ac).p, bc = $('#jnCorrige'), bl = $('#jnLutar');
+      if (!bc || p2 <= atual.p) return;
+      const NOME_PRESET = { balanced: 'Equilibrado', aggressive: 'Agressivo', defensive: 'Defensivo', focus: 'Foco' };
+      bc.textContent = `${corr.tipo === 'preset' ? `troque para o ${NOME_PRESET[corr.preset]}` : `troque ${nomeDo(corr.sai.dex)} por ${nomeDo(corr.entra.dex)}`} → ${porcentagemExibida(p2)}`;
+      bc.hidden = false; correcaoNaTela = { ...corr, antes: atual.p, no: no.id,
+        feito: corr.tipo === 'preset' ? `${NOME_PRESET[corr.preset]} no lugar do ${NOME_PRESET[preset] ?? preset}` : `${nomeDo(corr.sai.dex)} saiu, ${nomeDo(corr.entra.dex)} entrou` };
+      /* Uma ação só por painel (Q7): o link repetido da causa e o "reforce o
+         time" saem quando o botão da correção está na tela. */
+      $('#jnCausa .lnk')?.remove(); const rs = $('#jnRisco'); if (rs) rs.hidden = true;
+      if (bl && atual.p < 0.5) bl.classList.remove('gold');
+    };
+    setTimeout(passo2, 0);
   };
   setTimeout(passo, 0);
 }
+
+/* ST-10.19d: a CENA longe dos nomes (Q7 da Liga: lagos e pedras por baixo de
+   Pewter, Vermilion, Viridian, Saffron). Depende da largura do texto JÁ
+   desenhado, que só o navegador sabe — por isso mora aqui, e não na camada
+   0: é layout, e não decisão de jogo. A peça que encosta num nome troca de
+   lado; se ainda encosta, sai. Idempotente: parte sempre do lado original. */
+function afastarCena(alvo) {
+  const rot = [...alvo.querySelectorAll('.jnNo span')].map(n => n.getBoundingClientRect());
+  const toca = r => rot.some(a => a.left < r.right - 2 && r.left + 2 < a.right && a.top < r.bottom - 2 && r.top + 2 < a.bottom);
+  for (const el of alvo.querySelectorAll('.jnPos:not(.jnB) .jnLago, .jnPos:not(.jnB) .jnProp')) {
+    el.dataset.dx0 ??= el.style.getPropertyValue('--dx');
+    el.style.setProperty('--dx', el.dataset.dx0); el.style.display = '';
+    if (!toca(el.getBoundingClientRect())) continue;
+    el.style.setProperty('--dx', `${-parseFloat(el.dataset.dx0)}px`);
+    if (toca(el.getBoundingClientRect())) el.style.display = 'none';
+  }
+  /* E VOCÊ: o lado vem da camada 0 (de onde você chegou); se nele o seu
+     sprite encosta no nome do vizinho — um nome de ginásio de dois andares,
+     em 1100 —, você passa para o outro lado do nó. */
+  const voce = alvo.querySelector('.jnVoce'), eu = voce?.querySelector('.jnEu');
+  if (!eu) return;
+  voce.dataset.lado0 ??= voce.classList.contains('jnDireita') ? 'd' : 'e';
+  voce.classList.toggle('jnDireita', voce.dataset.lado0 === 'd');
+  if (toca(eu.getBoundingClientRect())) {
+    voce.classList.toggle('jnDireita');
+    if (toca(eu.getBoundingClientRect())) voce.classList.toggle('jnDireita');
+  }
+}
+let reafastar = 0;
+addEventListener('resize', () => { clearTimeout(reafastar); reafastar = setTimeout(() => { const a = $('#jnMapaArea'); if (a) afastarCena(a); }, 150); });
 
 const quadro = (folha, cls, extra = '') => `<b class="${cls}" style="background-image:url(${ARTE_DO_MAPA}/${folha}.png)${extra}"></b>`;
 
@@ -240,6 +307,7 @@ export function renderJornada({ nova = null } = {}) {
     <div class="jnMapa${mapa.voltas === 2 ? ' jnVoltas2' : ''}" style="--n:${mapa.voltas === 2 ? Math.ceil(mapa.nos.length / 2) : mapa.nos.length}">
       <svg class="jnCaminho jnDeitado" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${trilha(false)}</svg>
       <svg class="jnCaminho jnEmPe" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${trilha(true)}</svg>
+      ${setasDoCaminho(mapa).map(sx => `<div class="jnPos jnSetaPos" style="--x:${sx.x};--y:${sx.y}"><i class="jnSeta jn-${sx.dir}"></i></div>`).join('')}
       ${bordaDoMapa().map(p => `<div class="jnPos jnB" style="--x:${p.x};--y:${p.y}">${quadro('cuttable_tree', 'jnProp')}</div>`).join('')}
       ${mapa.nos.map(n => `<div class="jnPos jn-${n.estado}" style="--x:${n.x};--y:${n.y}">
           ${cenaDoNo(n).map(c => (c.forma ? `<b class="jnLago" style="--dx:${c.dx}px;--dy:${c.dy}px"></b>` : quadro(c.folha, 'jnProp', `;--dx:${c.dx}px;--dy:${c.dy}px`))).join('')}
@@ -247,10 +315,13 @@ export function renderJornada({ nova = null } = {}) {
           <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}" data-jn-no="${n.id}" title="${n.nome}"><i${n.tipo === 'ginasio' && n.estado === 'vencido' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.tipo === 'liga' ? `<em>${n.selo ?? ''} · ${n.licao?.tipo ?? ''}</em>` : n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : n.tipo === 'chefe' ? '<em>chefe · lendário</em>' : ''}</span></button></div>`).join('')}
       ${onde && eu ? `<div class="jnPos jnVoce${onde.fim ? ' jnFim' : ''}${onde.lado === 'direita' ? ' jnDireita' : ''}" style="--x:${onde.x};--y:${onde.y};--ax:${onde.ao.x};--ay:${onde.ao.y}"><b class="jnEu"><img src="${eu}" alt="você"></b></div>` : ''}
     </div>
+    ${(f => `<div class="jnFaixa">${[f.antes, f.este, f.depois].map((n, k) => (n ? `<button class="jnFaixaNo jn-${n.estado}${k === 1 ? ' este' : ''}" data-jn-no="${n.id}">${k === 0 ? '‹ ' : ''}${n.curto}${k === 2 ? ' ›' : ''}</button>` : '<span></span>')).join('')}</div>`)(faixaDoCaminho(mapa, escolhido))}
     <div class="jnPainel" id="jnPainel"></div>`;
   const im = alvo.querySelector('.jnEu img');
   if (im) { const medir = () => { im.parentNode.style.width = `${im.naturalWidth / 9}px`; }; if (im.complete && im.naturalWidth) medir(); else im.onload = medir; }
   pintarPainel(mapa);
+  requestAnimationFrame(() => afastarCena(alvo));
+  document.fonts?.ready?.then(() => afastarCena(alvo));
 }
 
 export function mostrarAbaTreino(aba) {
@@ -267,6 +338,12 @@ const abaLembrada = () => { try { return localStorage.getItem('ar_treino_aba') =
 
 document.addEventListener('click', ev => {
   if (ev.target.closest('.nav[data-view="viewTreino"], [data-goto="viewTreino"]')) { setTimeout(() => mostrarAbaTreino(abaLembrada()), 0); return; }
+  /* A correção: a camada 0 decidiu o quê; aqui só se aplica e repinta. */
+  if (ev.target.closest('[data-jn-corrige]') && correcaoNaTela) {
+    aplicada = { no: correcaoNaTela.no, antes: correcaoNaTela.antes, feito: correcaoNaTela.feito };
+    aplicarCorrecao(correcaoNaTela, { preset: p => { try { localStorage.setItem('ar_treino_preset', p); } catch { /* sem armazenamento: nada muda */ } }, trocar: t => trocarLocal(t) });
+    renderJornada(); return;
+  }
   const aba = ev.target.closest('[data-treino-aba]');
   if (aba) { mostrarAbaTreino(aba.dataset.treinoAba); return; }
   const no = ev.target.closest('[data-jn-no]');
