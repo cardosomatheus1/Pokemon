@@ -22,18 +22,22 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 25/09/2026, noite
+## 0. ONDE PARAMOS — 28/09/2026, madrugada (pausa pedida pelo dono)
 
 ```text
 o LINK     http://localhost:8099/app/index.html
            sobe com:  node tools/servir.mjs --porta 8099
 a PASTA    C:\Users\gdult\pa4
-o ESTADO   T14 FECHADO · os testes em minutos
-           npm test   6 min 10 s -> 1 min 45 s   (2218/2218, repetir 2/2)
-           npm run rapido  3 min 10 s -> 38,6 s
-           Q2 DO BLOCO VERDE 39/39 em 13 min 17 s · 351 reaproveitados ·
-           648 ADIADOS (a dívida do Q2 do 1.33, interrompido em 300/1032)
-o PRÓXIMO  ver o topo desta seção: ST-1.1 fechada; a fila segue no ROADMAP
+o ESTADO   ST-11.9 FECHADA (bandeiras de feature) · suíte 2741/2741, repetir 2/2
+           Q2 do bloco VERDE 17/17 · ~1498 ADIADOS para o Q2 completo
+           Q2 completo em fatias: 1/10 VERDE; a 2/10 foi parada ao começar
+           (sem vereditos perdidos) — retomar com
+           node test/sabotagem.mjs --fatia=2/10  (e seguir até 10/10)
+o PRÓXIMO  ST-11.6 · as telas da Liga (Q5 + Q7; o rótulo do bot na tela)
+           NÃO começada. Depois: ST-11.7, e a 11.10/11.11 atrás da bandeira
+           `league_stake_enabled`, desligada
+com o DONO ST-13.4/13.5 (o save local para a conta) — recomendação na ficha:
+           importar uma vez, com teto de plausibilidade
 ```
 
 ### O RESTO DA SPEC VIROU STORIES — E12, E9, E10, E13, E11 (26/09)
