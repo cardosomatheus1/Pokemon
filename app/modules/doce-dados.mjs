@@ -94,14 +94,22 @@ export function darDoce(e, { pack, id, quantos = 1 }) {
   if (!c) return { ok: false, motivo: 'esta criatura não existe' };
   const linha = chaveDoDoce(pack, c.dex);
   const tem = e.doces?.[linha] ?? 0;
+  const r = usoDoDoce(c, { tem, quantos });
+  if (!r.ok) return r;
+  c.xp = r.novo.xp; c.nivel = r.novo.nivel;
+  e.doces[linha] = tem - r.gastos;
+  if (!e.doces[linha]) delete e.doces[linha];
+  return { ok: true, gastos: r.gastos, xp: r.xp, subiu: r.novo.subiu, nivel: r.novo.nivel, linha };
+}
+
+/* A DECISÃO do dar doce, sem o save (ST-13.3c): quanto se gasta (o pedido,
+   no mínimo 1, no máximo o que se tem) e o que a criatura vira. O aparelho e
+   o servidor perguntam aqui; o servidor lê o saldo do livro da conta. */
+export function usoDoDoce(c, { tem, quantos = 1 }) {
   const n = Math.min(Math.max(1, Math.floor(Number(quantos) || 1)), tem);
   if (n <= 0) return { ok: false, motivo: 'sem doce da linha dela' };
   if (nivelDe(c.xp) >= NIVEL_MAX) return { ok: false, motivo: 'já está no nível máximo' };
-  const novo = creditar(c, { xp: n * XP_POR_DOCE });
-  c.xp = novo.xp; c.nivel = novo.nivel;
-  e.doces[linha] = tem - n;
-  if (!e.doces[linha]) delete e.doces[linha];
-  return { ok: true, gastos: n, xp: n * XP_POR_DOCE, subiu: novo.subiu, nivel: novo.nivel, linha };
+  return { ok: true, gastos: n, xp: n * XP_POR_DOCE, novo: creditar(c, { xp: n * XP_POR_DOCE }) };
 }
 
 /* A frase do resultado — neutra: o doce não é festa (§28.5). Numa derrota

@@ -16,11 +16,11 @@ import { cadastrar } from '../server/auth.mjs';
 import { gerar } from '../server/criaturas.mjs';
 import { iniciar, creditarBolsa, lancarPendente, criaturasDaConta, bolsaDe } from '../server/idle.mjs';
 import { comecarRun } from '../server/run.mjs';
-import { moverNaConta, trocarNaConta, soltarNaConta, escolherFocoNaConta, trocarGolpeNaConta, evoluirNaConta } from '../server/colecao.mjs';
+import { moverNaConta, trocarNaConta, soltarNaConta, escolherFocoNaConta, trocarGolpeNaConta, evoluirNaConta, darDoceNaConta } from '../server/colecao.mjs';
 import { docesDe } from '../server/doce.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import * as D from '../app/modules/idle-dados.mjs';
-import { soltarCriatura } from '../app/modules/doce-dados.mjs';
+import { soltarCriatura, darDoce } from '../app/modules/doce-dados.mjs';
 import { ordemDaTroca } from '../app/modules/colecao-regras.mjs';
 import { escolher, MS_DE_TROCA } from '../engine/foco.mjs';
 import { xpParaNivel, nivelDe } from '../engine/nivel-criatura.mjs';
@@ -186,6 +186,38 @@ export async function suite() {
     igual(Object.fromEntries(bolsaDe(c.db, c.u).map(b => [b.item_id, b.quantidade])).trovao, undefined, 'duas evoluções por Trovão e a pedra sobrou');
   });
 
+  s.teste('identidade do doce: gastar da linha, no máximo o que se tem, nada no nível máximo, e a mesma chave gasta uma vez (ST-13.3c)', () => {
+    const c = cena();
+    const [a, b] = c.ids;                       // dex 1 (linha 1) e dex 4 (linha 4)
+    const linhaA = 1, linhaB = 4;
+    for (const [linha, n] of [[linhaA, 5], [linhaB, 2]]) {
+      c.db.prepare(`INSERT INTO species_candy (user_id, species_id, quantidade) VALUES (?, ?, ?)`).run(c.u, linha, n);
+      c.e.doces[linha] = n;
+    }
+    const topo = c.ids[2];
+    c.db.prepare(`UPDATE criaturas SET xp = ? WHERE id = ?`).run(xpParaNivel(100), topo);
+    c.e.criaturas.find(x => x.id === topo).xp = xpParaNivel(100);
+    const passos = [[a, 2], [a, 9], [a, 1], [b, 1], [b, 5], [topo, 1], ['nao-existe', 1]];
+    let k = 0, aceitos = 0;
+    for (const [id, quantos] of passos) {
+      const chave = `pedido-${++k}-abc`;
+      const sv = recusa(() => darDoceNaConta(c.db, { userId: c.u, pack: PACK, id, quantos, chaveIdem: chave, agora: T0 }));
+      const r = darDoce(c.e, { pack: PACK, id, quantos });
+      igual(sv?.message ?? 'ok', r.ok ? 'ok' : r.motivo, `doce ${quantos} para ${id.slice(0, 6)}: responderam diferente`);
+      igual(JSON.stringify(estadoServidor(c.db, c.u).doces), JSON.stringify(Object.fromEntries(Object.entries(c.e.doces).filter(([, n]) => n > 0))), 'o saldo divergiu');
+      const xs = criaturasDaConta(c.db, c.u).map(x => [x.id, x.xp]), xa = c.e.criaturas.map(x => [x.id, x.xp]);
+      igual(JSON.stringify(xs), JSON.stringify(xa), 'o XP divergiu');
+      if (!sv) aceitos++;
+    }
+    igual(aceitos, 4, 'os aceites: 2 e o resto da linha A (3), 1 da linha B, e o último da B');
+    /* a MESMA chave, de novo: devolve o que gastou, e não gasta */
+    const antes = JSON.stringify(estadoServidor(c.db, c.u));
+    const de_novo = darDoceNaConta(c.db, { userId: c.u, pack: PACK, id: a, quantos: 1, chaveIdem: 'pedido-1-abc', agora: T0 });
+    ok(de_novo.repetido && de_novo.gastos === 2, `a mesma chave: ${JSON.stringify(de_novo)}`);
+    igual(JSON.stringify(estadoServidor(c.db, c.u)), antes, 'a mesma chave gastou de novo');
+    ok(recusa(() => darDoceNaConta(c.db, { userId: c.u, pack: PACK, id: a, quantos: 1, chaveIdem: 'x', agora: T0 })), 'chave curta aceita');
+  });
+
   s.teste('a migração manda para a caixa quem passava de seis ativas, pela ordem de chegada', async () => {
     const { MIGRACOES } = await import('../server/banco.mjs');
     const db = abrirBanco(':memory:'); migrar(db, MIGRACOES.findIndex(m => m.nome === 'colecao-st13.3a'));
@@ -261,6 +293,13 @@ export async function suite() {
       const ev = await pedir('/api/idle/evoluir', { id: pk, alvo: 26 }, a.sessao);
       igual(ev.status, 200, `evoluir: ${JSON.stringify(ev.corpo)}`);
       igual(ev.corpo.para, 26, 'a espécie depois');
+      /* dar doce pela porta (ST-13.3c): a linha nunca vem do corpo */
+      srv.db.prepare(`INSERT INTO species_candy (user_id, species_id, quantidade) VALUES (?, 25, 3)`).run(a.id);
+      igual((await pedir('/api/idle/doce', { id: pk, quantos: 0, chaveIdem: 'chave-doce-1' }, a.sessao)).status, 400, 'zero doce');
+      igual((await pedir('/api/idle/doce', { id: pk, quantos: 1, chaveIdem: 'chave-doce-1' }, b.sessao)).status, 404, 'B deu o doce de A');
+      const dd = await pedir('/api/idle/doce', { id: pk, quantos: 2, chaveIdem: 'chave-doce-1', linha: 1, species_id: 1 }, a.sessao);
+      igual(dd.status, 200, `dar doce: ${JSON.stringify(dd.corpo)}`);
+      igual(docesDe(srv.db, a.id)[25], 1, 'o doce saiu de outra linha');
     } finally { await srv.fechar(); }
   });
 

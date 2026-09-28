@@ -1353,10 +1353,16 @@ do servidor. Três partes:
   `movesetValido` fechado (o `find` devolvia o próprio vazio). `test/colecao-ops`
   · S1643–S1648.
 
-#### ST-13.3c · Dar doce
+#### ST-13.3c · Dar doce ✅ 27/09
 - **Escopo:** gastar o doce da linha no servidor (motivo `uso` no livro), a
   mesma regra do `darDoce`; e o que muda no resgate quando o servidor é a
   fonte (o doce deixa de descer ao aparelho de quem tem conta — a ST-13.5).
+- **Feito:** `usoDoDoce` (camada 0, em `doce-dados`) decide; `POST
+  /api/idle/doce` gasta do saldo da conta com a guarda na cláusula e a chave
+  do pedido no livro (`uso:<conta>:<chave>` — o reenvio devolve o que o
+  primeiro gastou); a linha nunca vem do corpo. `test/colecao-ops` ·
+  S1649–S1653. O resgate que desce o doce ao aparelho fica como está até a
+  ST-13.5, que decide quem é a fonte com conta.
 
 ### ST-13.3 · (a ficha original)
 - **Porte** M · **Servidor** sim · **Depende de** ST-13.2, ST-9.9, ST-9.10, ST-9.12

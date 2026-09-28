@@ -7,7 +7,7 @@
  * a chave do fato (`soltar:<id>`), para soltar duas vezes pagar uma.
  */
 import { motivoDeMover, ordemDaTroca, motivoDeSoltar } from '../app/modules/colecao-regras.mjs';
-import { doceAoSoltar } from '../app/modules/doce-dados.mjs';
+import { doceAoSoltar, usoDoDoce } from '../app/modules/doce-dados.mjs';
 import { chaveDoDoce } from '../engine/doce.mjs';
 import { escolher } from '../engine/foco.mjs';
 import { alternarGolpe } from '../app/modules/moveset-dados.mjs';
@@ -15,7 +15,7 @@ import { aplicar as aplicarEvolucao } from '../app/modules/evolucao-idle.mjs';
 import { criaturasDaConta, emCampo, bolsaDe, debitarBolsa } from './idle.mjs';
 import { naRun } from './run.mjs';
 
-export const ERRO_COLECAO = Object.freeze({ SEM_CRIATURA: 'COLECAO_SEM_CRIATURA' });
+export const ERRO_COLECAO = Object.freeze({ SEM_CRIATURA: 'COLECAO_SEM_CRIATURA', CHAVE: 'COLECAO_CHAVE_INVALIDA' });
 const falha = (codigo, msg) => Object.assign(new Error(msg), { codigo });
 
 function emTransacao(db, fn) {
@@ -98,5 +98,39 @@ export function evoluirNaConta(db, { userId, pack, id, alvo = null }) {
     db.prepare(`UPDATE criaturas SET dex = ?, exclusivos_json = ? WHERE id = ? AND user_id = ?`)
       .run(r.para, r.criatura.exclusivos ? JSON.stringify(r.criatura.exclusivos) : null, id, userId);
     return { id, de: r.de, para: r.para, consome: r.consome, exclusivos: r.criatura.exclusivos ?? null };
+  });
+}
+
+/* ── DAR DOCE (ST-13.3c) ─────────────────────────────────────────────────
+ *
+ * `usoDoDoce` do aparelho decide; o saldo é o do LIVRO da conta. Três
+ * guardas, cada uma no seu lugar:
+ *
+ *   o doce é da LINHA da criatura — não há parâmetro de linha
+ *   o saldo só desce se tem (a cláusula `quantidade >= ?`, e não um SELECT
+ *   antes: entre ler e escrever caberia outro pedido)
+ *   a MESMA chave do pedido não gasta duas vezes (`uso:<conta>:<chave>` é
+ *   única no livro): o reenvio devolve o que o primeiro gastou */
+const CHAVE_OK = /^[\w-]{8,64}$/;
+export function darDoceNaConta(db, { userId, pack, id, quantos = 1, chaveIdem, agora }) {
+  if (typeof chaveIdem !== 'string' || !CHAVE_OK.test(chaveIdem))
+    throw falha(ERRO_COLECAO.CHAVE, 'chave do pedido inválida');
+  const idem = `uso:${userId}:${chaveIdem}`;
+  const ja = db.prepare(`SELECT delta FROM candy_ledger WHERE idem_key = ?`).get(idem);
+  if (ja) return { ok: true, gastos: -ja.delta, repetido: true };
+  const c = criaturasDaConta(db, userId).find(x => x.id === id);
+  if (!c) throw falha(ERRO_COLECAO.SEM_CRIATURA, 'esta criatura não existe');
+  const linha = chaveDoDoce(pack, c.dex);
+  const tem = db.prepare(`SELECT quantidade FROM species_candy WHERE user_id = ? AND species_id = ?`).get(userId, linha)?.quantidade ?? 0;
+  const r = usoDoDoce(c, { tem, quantos });
+  if (!r.ok) throw new Error(r.motivo);
+  return emTransacao(db, () => {
+    const d = db.prepare(`UPDATE species_candy SET quantidade = quantidade - ? WHERE user_id = ? AND species_id = ? AND quantidade >= ?`)
+      .run(r.gastos, userId, linha, r.gastos);
+    if (!d.changes) throw new Error('sem doce da linha dela');
+    db.prepare(`INSERT INTO candy_ledger (user_id, species_id, delta, motivo, idem_key, created_at) VALUES (?, ?, ?, 'uso', ?, ?)`)
+      .run(userId, linha, -r.gastos, idem, agora);
+    db.prepare(`UPDATE criaturas SET xp = ?, nivel = ? WHERE id = ? AND user_id = ?`).run(r.novo.xp, r.novo.nivel, id, userId);
+    return { ok: true, gastos: r.gastos, xp: r.xp, subiu: r.novo.subiu, nivel: r.novo.nivel, linha };
   });
 }

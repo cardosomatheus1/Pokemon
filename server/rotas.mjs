@@ -157,6 +157,7 @@ const STATUS_DE = {
   [ERRO_RUN.EM_CURSO]: 409,
   [ERRO_RUN.ABERTA]: 409,
   [ERRO_COLECAO.SEM_CRIATURA]: 404,
+  [ERRO_COLECAO.CHAVE]: 400,
 };
 
 /* Converte a exceção do domínio em resposta. O `limite` e a `pausa` viajam

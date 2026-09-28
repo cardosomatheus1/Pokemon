@@ -36,7 +36,7 @@ import { bolsaDe, registroDe, emCampo, estadoDoTeto, especiesVistas, pendentesDe
          iniciar, colher, lancarPendente, escolherInicial } from './idle.mjs';
 import { staminaAgora, restamEncontros, vagasPor, EQUIPE_MAX } from '../engine/expedicao.mjs';
 import { sincronizarRun, comecarRun, pocaoNaRun, recuarNaRun, colherRun } from './run.mjs';
-import { moverNaConta, trocarNaConta, soltarNaConta, escolherFocoNaConta, trocarGolpeNaConta, evoluirNaConta } from './colecao.mjs';
+import { moverNaConta, trocarNaConta, soltarNaConta, escolherFocoNaConta, trocarGolpeNaConta, evoluirNaConta, darDoceNaConta } from './colecao.mjs';
 import { estagioMaximo, proximoEstagio } from '../engine/estagios.mjs';
 
 /* As ESCRITAS permitidas sob `/api/idle`, por nome. */
@@ -48,6 +48,8 @@ export const OPERACOES_DO_IDLE = Object.freeze([
   'POST /api/idle/mover', 'POST /api/idle/trocar', 'POST /api/idle/soltar', 'POST /api/idle/foco',
   /* Os golpes e a evolução (ST-13.3b). */
   'POST /api/idle/golpe', 'POST /api/idle/evoluir',
+  /* Dar doce (ST-13.3c). */
+  'POST /api/idle/doce',
 ]);
 
 /* A criatura como o cliente a lê: sem a semente dos ocultos e sem o dono. */
@@ -197,6 +199,14 @@ export function rotasDaColecao(daExcecao) {
       const alvo = corpo?.alvo == null ? null : corpo.alvo;
       if (!id || (alvo !== null && !Number.isInteger(alvo))) return recusa('evolução inválida');
       return tentar(() => evoluirNaConta(db, { userId, pack: PACK, id, alvo }));
+    },
+
+    /* ── DAR DOCE (ST-13.3c) ── a quantidade é um pedido, e o saldo é do
+       livro: a linha nunca vem do corpo. */
+    'POST /api/idle/doce': ({ db, corpo, userId, agora }) => {
+      const id = texto(corpo?.id), quantos = corpo?.quantos ?? 1;
+      if (!id || !Number.isInteger(quantos) || quantos < 1 || quantos > 999) return recusa('doce inválido');
+      return tentar(() => darDoceNaConta(db, { userId, pack: PACK, id, quantos, chaveIdem: corpo?.chaveIdem, agora }));
     },
 
     'POST /api/idle/lancar': ({ db, corpo, userId, agora }) => {
