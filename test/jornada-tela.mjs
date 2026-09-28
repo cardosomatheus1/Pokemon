@@ -14,7 +14,7 @@ import { montarLutador, simular } from '../engine/treino-batalha.mjs';
 import { movesetDoRival, padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { treinador } from '../app/modules/treino-dados.mjs';
 import { correcaoDaLicao, aplicarCorrecao } from '../app/modules/jornada-correcao.mjs';
-import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, golpesLevados, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, rivaisDerrubados, setasDoCaminho, faixaDoCaminho, avisoDoRisco, pagamentoDoNo, fraseDoPagamento, DUAS_VOLTAS_A_PARTIR_DE, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
+import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, golpesLevados, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, rivaisDerrubados, setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, pagamentoDoNo, fraseDoPagamento, DUAS_VOLTAS_A_PARTIR_DE, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 const semComentario = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
@@ -512,6 +512,29 @@ export function suite() {
     ok(/lutar contra \$\{t\.nome\.replace\(\/\^\(O\|A\) \//.test(tela), '"lutar contra O Rival" com maiúscula no meio da frase');
     ok(/\.jnPainel\{[^}]*max-width:1240px/.test(html), 'o painel sem largura máxima em 1920');
     ok(/cz\.innerHTML = cz\.innerHTML\.replace\(\/\\s\*—\\s\*\$\/, ''\)/.test(tela), 'o travessão fica pendurado quando o link sai');
+  });
+
+  s.teste('ST-10.22a (L-209): a leitura do chefe, o "próximo", a faixa em trecho e o título junto do lema', () => {
+    /* O CHEFE: os tipos dos golpes que ele usa, sem repetir, a vida de chefe,
+       e quanto machuca cada um seu — o pior dos tipos. */
+    const rival = [{ dex: 145, nivel: 50, vidaX: 3, golpes: movesetDoRival(pack, 145, 50) }];
+    const A = [[76, 45], [65, 45], [91, 45], [135, 45]].map(([dex, nivel]) => ({ dex, nivel }));
+    const lc = leituraDoChefe(pack, A, rival);
+    igual(JSON.stringify(lc.tipos), '["electric","flying"]', 'os tipos do chefe');
+    igual(`${lc.vidaX}|${lc.nivel}|${lc.dex}`, '3|50|145', 'a vida, o nível e a espécie do chefe');
+    igual(lc.machuca.map(x => `${x.dex}:${x.mult}`).join(' '), '76:0.5 65:1 91:2 135:0.5', 'quanto machuca: Golem ½, Alakazam cheio, Cloyster 2×, Jolteon ½');
+    igual(JSON.stringify(lc.resistem), '["electric"]', 'quem resiste a todos');
+    igual(leituraDoChefe(pack, A, []), null, 'sem chefe, leitura inventada');
+    igual(leituraDoChefe(pack, A, [{ dex: 145, nivel: 50 }]).vidaX, 1, 'sem vidaX, a vida não é a de um');
+    const tela = semComentario(fonte('../app/modules/jornada-tela.mjs')), html = fonte('../app/index.html');
+    ok(/const chefe = no\.tipo === 'chefe' && !no\.licao \? leituraDoChefe\(PACK, \[\], rival\) : null;/.test(tela), 'o painel do chefe não pergunta à camada 0');
+    ok(/if \(chefe\) \{\s*const lc = leituraDoChefe\(PACK, A, rival\)/.test(tela), 'o quanto machuca do chefe não usa o seu time');
+    /* "próximo" só no nó que falta vencer. */
+    ok(/\$\{n\.estado === 'atual' \? '<strong class="jnProx">próximo<\/strong>' : ''\}<\/span>/.test(tela), 'a etiqueta "próximo" não é só do nó atual');
+    /* A faixa do celular é um trecho: o marco na cor do estado, e a insígnia do ginásio aberto. */
+    ok(/<i class="jnFaixaMarco"\$\{n\.tipo === 'ginasio' && n\.estado !== 'trancado' \? ` style="background-image:url\(\$\{arteDaInsignia\(n\.insignia\)\}\)"` : ''\}><\/i>/.test(tela), 'a faixa sem o marco do nó');
+    ok(/\.jnFaixa::before\{[^}]*dashed/.test(html) && /\.jnFaixaNo\.jn-atual \.jnFaixaMarco\{[^}]*var\(--neon\)/.test(html), 'a faixa sem a trilha ou sem a cor do atual');
+    ok(/#viewTreino > \.card > h3\{justify-content:flex-start/.test(html), 'o lema volta ao canto oposto do título');
   });
 
   /* D-125 — o inicial sozinho perdia o primeiro nó — foi consertado na ST-10.13;

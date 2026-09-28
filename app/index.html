@@ -1041,6 +1041,11 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 /* ST-10.12 · o mapa de Kanto. O caminho é o mundo GBA — campo, estrada de
    terra, nós no chão —; o estojo e o painel, a interface neon. Só o próximo
    nó pulsa: o olho acha em um segundo onde o jogador está. */
+/* ST-10.22a · L-209: o título da vista e o lema juntos — com o lema no canto
+   oposto, "JORNADA" ficava sozinho e pequeno, e o lema parecia de outro lugar. */
+#viewTreino > .card > h3{justify-content:flex-start;align-items:baseline}
+#viewTreino #treinoTitulo{font-size:1.02rem}
+#viewTreino #treinoLema{text-align:left}
 .jnTopo{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:8px 18px;margin:2px 0 10px;font-size:.78rem;color:var(--dim)}
 .jnTopo b{color:var(--txt)}.jnTopo b.jnFeito{color:var(--neon)}
 .jnEstojo{display:flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(0,0,0,.25)}
@@ -1135,6 +1140,13 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnNo.jn-trancado{cursor:default}.jnNo.jn-trancado i{background:#7b7b7b;border-style:dashed;border-color:#3d3d3d}.jnNo.jn-trancado span{color:#c9c9c9}
 .jnNo span em{display:block;font-style:normal;font-size:.6rem;font-weight:600;color:var(--neon);text-align:center}
 .jnNo.jn-ginasio span{border:1px solid rgba(var(--goldRGB),.7)}
+/* ST-10.22a · L-209: "PRÓXIMO" no nó que falta vencer. O anel pulsando dizia
+   "aqui", e o crítico cego leu "aqui" como "onde você está"; a etiqueta diz
+   "é o próximo a vencer". Embaixo do nome, e não em cima: em cima fica você. */
+.jnProx{display:block;margin:2px auto 0;width:max-content;font:700 .5rem/1.55 var(--dsp);letter-spacing:.16em;text-transform:uppercase;
+  color:#03141b;background:var(--neon);border-radius:3px;padding:0 5px;box-shadow:0 0 8px rgba(var(--neonRGB),.55)}
+/* O chefe ganha o bloco de leitura que os ginásios têm (a vida e os tipos). */
+.jnLicaoChefe .jnSprite{width:34px;height:34px}
 /* ST-10.18 · O CHEFE: o lendário no lugar do treinador, maior, com a aura
    que pulsa — ele é o único nó do mapa que não é gente. */
 /* 64 px, e não 80 (ST-10.19c): com duas voltas, a aura encostava 6 px no rótulo vizinho. */
@@ -1205,6 +1217,17 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
   .jnFaixaNo{font:inherit;font-size:.72rem;padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg2);color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .jnFaixaNo:first-child{justify-self:start;max-width:100%}.jnFaixaNo:last-child{justify-self:end;max-width:100%}
   .jnFaixaNo.este{color:#fff;border-color:var(--neon);font-weight:700}.jnFaixaNo.jn-vencido{color:var(--gold)}
+  /* ST-10.22a · L-209: a faixa é um MINI-TRECHO do caminho, e não três nomes —
+     o marco de cada nó na cor do estado dele, e a trilha passando por trás. */
+  .jnFaixa{position:relative}
+  .jnFaixa::before{content:"";position:absolute;left:14px;right:14px;top:50%;border-top:2px dashed rgba(var(--neonRGB),.35);z-index:0}
+  .jnFaixaNo{position:relative;z-index:1;display:inline-flex;align-items:center;gap:5px}
+  .jnFaixaMarco{flex:none;width:12px;height:12px;border-radius:50%;background:#7b7b7b;border:2px solid #3d3d3d;background-size:cover;image-rendering:pixelated}
+  .jnFaixaNo.jn-vencido .jnFaixaMarco{background-color:#e0a63a;border-color:#6b4a0e}
+  .jnFaixaNo.jn-atual .jnFaixaMarco{background-color:var(--neon);border-color:#fff}
+  .jnFaixaNo.jn-ginasio .jnFaixaMarco{border-radius:0;clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);border:0;width:14px;height:14px}
+  .jnFaixaNo.jn-chefe .jnFaixaMarco{background-color:#c9302c;border-color:#ffd24a}
+  .jnFaixaNo.jn-liga .jnFaixaMarco{border-radius:2px;transform:rotate(45deg)}
   .jnSeta.jn-dir{transform:rotate(135deg)}.jnSeta.jn-esq{transform:rotate(-45deg)}.jnSeta.jn-baixo{transform:rotate(45deg)}
   .jnMapa{height:calc(var(--n) * 130px + 60px)} .jnMapa.jnVoltas2{height:calc(var(--n) * 150px + 60px)} .jnDeitado{display:none} .jnEmPe{display:block}
   .jnPos{left:calc(var(--y) * 1%);top:calc(70px + (100% - 110px) * var(--x) / 100)} .jnPos.jnB{top:calc(var(--x) * 1%)}

@@ -97,6 +97,12 @@ const SO = process.env.SO ? new Set(process.env.SO.split(',')) : null;
 const quer = p => !SO || SO.has(p);
 for (const ponto of Object.keys(PONTOS).filter(quer)) for (const w of [1920, 1440, 1100, 420]) {
   const { ctx, pg } = await abrir(w, ponto);
+  /* ST-10.22a: a janela do tamanho do cartão. Capturado além da janela, o
+     fundo `fixed` da casca se repete a cada altura de janela, e a emenda
+     parecia defeito da tela (L-209: "o fundo acaba no meio do mapa") — num
+     aparelho de verdade, rolando, ela não existe. */
+  const alto = await pg.$eval('#viewTreino .card', el => Math.ceil(el.getBoundingClientRect().bottom + scrollY) + 40);
+  if (alto > 1300) await pg.setViewportSize({ width: w, height: alto });
   await (await pg.$('#viewTreino .card')).screenshot({ path: `${PASTA}/mapa-${ponto}-${w}.png` });
   const r = await pg.evaluate(() => {
     const caixa = document.querySelector('.jnMapa').getBoundingClientRect();

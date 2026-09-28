@@ -8818,6 +8818,12 @@ acabamento da LEITURA (nó atual, setas, risco, título, cena longe de você).
 **O que a destrava:** nada; é a ST-10.22. O cenário do mapa é de olhar, como o
 do idle — "parece de um jogo publicado?".
 
+**28/09, ST-10.22a:** fechada a parte de LEITURA — "próximo", o bloco do
+chefe, a faixa do celular em trecho e o título junto do lema. O "fundo que
+acaba" foi medido e não é da tela: é a captura além da janela repetindo o
+fundo `fixed` (consertado na ferramenta). O que resta é o MUNDO (bioma,
+props, água), dono a **ST-10.22b**.
+
 ### L-210 — o servidor não sabe o que é equipe ativa e o que é caixa ✅ FECHADA na ST-13.3a (27/09)
 
 **Registrada em:** 27/09/2026, na ST-13.2a. **Bloco dono:** ST-13.3 (as

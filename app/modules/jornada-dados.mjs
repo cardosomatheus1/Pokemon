@@ -318,6 +318,20 @@ export const resistenciaNoTime = (pack, A, tipos) => (A ?? []).map(c => ({
 export const tiposQueResistem = (pack, tipos) =>
   Object.keys(pack.tipos.efetividade).filter(d => tipos.every(t => efeito(pack.tipos.efetividade, t, [d]) <= 0.5));
 
+/* O CHEFE NA TELA (ST-10.22a · L-209). O chefe não é ginásio e não tem lição
+   MEDIDA — e por isso era o único nó sem leitura, justamente onde ela mais
+   faria falta. A leitura sai do que ele É, sem inventar lição: os TIPOS dos
+   golpes que ele usa (os do motor, `rival[0].golpes`), quanto eles machucam
+   cada criatura sua (a regra da Erika) e quantas vezes a vida dele vale. */
+const golpeDoPack = (pack, n) => Object.values(pack.golpes ?? {}).flat().find(g => g.n === n) ?? null;
+export function leituraDoChefe(pack, A, rival) {
+  const b = rival?.[0];
+  if (!b) return null;
+  const tipos = [...new Set((b.golpes ?? []).map(n => golpeDoPack(pack, n)?.t).filter(Boolean))];
+  return { dex: b.dex, nivel: b.nivel, vidaX: b.vidaX ?? 1, tipos,
+           machuca: tipos.length ? resistenciaNoTime(pack, A, tipos) : [], resistem: tipos.length ? tiposQueResistem(pack, tipos) : [] };
+}
+
 export function provaDaResistencia(pack, A, eventos, tipos) {
   const tipoDe = n => Object.values(pack.golpes ?? {}).flat().find(g => g.n === n)?.t;
   return resistenciaNoTime(pack, A, tipos).map((x, i) => ({ ...x, i })).filter(x => x.mult <= 0.5).map(x => {

@@ -1104,6 +1104,29 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **Porte** M · **Bloco dono** F4.5 · **Spec** §8.7, §12 tela 22 · **Portões:** Q1 Q2 Q5 Q7.
 - **Escopo:** regiões no mapa (a água de Cerulean, a lava de Cinnabar, a floresta, a pedra), props variados, água que parece água, a etiqueta "PRÓXIMO", o fundo da tela comprida (a casca: `html,body{height:100%}`) que acaba no meio do mapa em 420, o bloco de leitura do chefe, a faixa do celular com o mini-trecho, e o título.
 - **Aceite:** o crítico cego com a barra do Super Mario World dá ≥ 8 ao acabamento nas quatro larguras.
+- **Dividida em 28/09:** a LEITURA (a) e o MUNDO (b) são trabalhos diferentes — um é texto e marcação, o outro é arte com Q7 próprio.
+
+#### ST-10.22a · A leitura do mapa ✅ 28/09
+- **Feito:** a etiqueta "próximo" no nó que falta vencer (embaixo do nome — em
+  cima fica você); o bloco de leitura do CHEFE, que era o único nó sem ela —
+  `leituraDoChefe` (camada 0) tira dos golpes que ele usa os tipos, a vida de
+  chefe e quanto machuca cada um seu, sem inventar lição não medida; a faixa
+  do celular virou um mini-trecho (o marco de cada nó na cor do estado, a
+  insígnia do ginásio aberto, a trilha tracejada por trás); o título da vista
+  com o lema ao lado, e não no canto oposto.
+- **Medido: "o fundo acaba no meio do mapa" não é da tela.** O fundo da casca
+  é `fixed`; capturado ALÉM da janela (o cartão de 2.200 px numa janela de
+  1.300), ele se repete a cada altura de janela, e a emenda aparece na
+  imagem. Num aparelho, rolando, não existe (capturado em 420 × 900 em três
+  pontos da rolagem). O conserto foi na ferramenta: `olhar-jornada` abre a
+  janela do tamanho do cartão.
+- `test/jornada-tela.mjs` · S1680–S1686 (todos pegos em Node).
+
+#### ST-10.22b · O mundo do mapa
+- **Escopo:** o que sobra da L-209 — regiões (a água de Cerulean e do porto,
+  a lava de Cinnabar, a floresta, a pedra, a cidade), props variados no lugar
+  da mesma árvore em fileira, água que parece água.
+- **Aceite e portões:** os da ST-10.22.
 
 ### ST-10.20 · A jornada ensina a apostar? ✅ 27/09
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16

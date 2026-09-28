@@ -14,7 +14,7 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
-import { setasDoCaminho, faixaDoCaminho, avisoDoRisco } from './jornada-dados.mjs';
+import { setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe } from './jornada-dados.mjs';
 import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, turnosDaAmeaca, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { diaDoMundo } from '../../engine/avanco.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido, candidatosDaCaixa, membrosParaTrocas } from './treino-dados.mjs';
@@ -42,6 +42,10 @@ function pintarPainel(mapa) {
      1.080 px do topo, fora da tela (Q7 da ST-10.13). Nó vencido: o estado
      diz "vencido", e a revanche é ação secundária — a insígnia não repete. */
   const vencido = no.estado === 'vencido';
+  /* ST-10.22a · L-209: o chefe não tem lição medida — a leitura sai do que ele
+     é (os tipos dos golpes, a vida de chefe), pela camada 0. */
+  const chefe = no.tipo === 'chefe' && !no.licao ? leituraDoChefe(PACK, [], rival) : null;
+  const nomeTipo = tp => PACK.tipos.nomes?.[tp] ?? tp;
   alvo.innerHTML = `<h4 class="jnTitulo">${no.nome}${no.tipo === 'ginasio' ? ` <span class="jnSelo">ginásio${no.lider ? ` · líder ${no.lider}` : ''}</span>` : no.tipo === 'chefe' ? ' <span class="jnSelo jnSeloChefe">chefe · lendário</span>' : no.tipo === 'liga' ? ` <span class="jnSelo jnSeloLiga">${no.selo ?? ''}</span>` : ''}</h4>
     <div class="jnChance${vencido ? ' jnVencido' : ''}">${vencido ? `<span class="jnFeitoSelo">${no.insignia ? `<img src="${arteDaInsignia(no.insignia)}" alt="">` : ''}vencido ✓</span>` : ''}
       <span class="tiny">seu time vence</span><strong id="jnNumero">…</strong><span class="tiny" id="jnErro">calculando</span>
@@ -52,10 +56,16 @@ function pintarPainel(mapa) {
       <button class="btn${vencido ? '' : ' gold'} jnCta" id="jnLutar" data-jn-lutar="${no.id}" disabled>${no.estado === 'trancado' ? 'trancado' : vencido ? 'revanche (treino)' : `lutar contra ${t.nome.replace(/^(O|A) /, m => m.toLowerCase())}`}</button></div>
     <div class="jnInfo"><p class="jnFrase">${fraseDoNo(no, t.nome)}</p>
       ${no.licao ? `<p class="jnLicao">${arteDaInsignia(no.insignia ?? no.revisa?.insignia) ? `<img src="${arteDaInsignia(no.insignia ?? no.revisa?.insignia)}" alt="">` : ''}<span><b>${no.revisa ? `Revisa ${no.revisa.nome}` : no.final ? 'A lição final' : 'Ensina'}: ${no.licao.ensina}.</b> ${no.lider ?? t.nome} usa ${no.licao.tipo}. ${no.licao.dica}</span></p>` : ''}
+      ${chefe ? `<p class="jnLicao jnLicaoChefe">${dexImg(chefe.dex, '', 'class="jnSprite"')}<span><b>O chefe aguenta ${chefe.vidaX} vezes a vida de um ${nomeDo(chefe.dex)} NV ${chefe.nivel}.</b> Os golpes dele são de ${chefe.tipos.map(nomeTipo).join(' e ')}: quem apanha pouco deles dura a luta${chefe.resistem.length ? ` — ${chefe.resistem.map(nomeTipo).join(' e ')} resiste${chefe.resistem.length > 1 ? 'm' : ''} a todos` : ''}.</span></p>` : ''}
       <div id="jnVel"></div>
       <p class="jnRival">${t.nome}: ${rival.map(r => `<span>${dexImg(r.dex, '', 'class="jnSprite"')}${nomeDo(r.dex)} <i>NV ${r.nivel}</i></span>`).join('')}</p></div>`;
   const g = ++geracao, A = entradasDoTime(PACK, carregar()), preset = presetDoJogador();
   if (!A.length) { $('#jnErro').textContent = 'o time está vazio — escolha o inicial nas Rotas'; return; }
+  if (chefe) {
+    const lc = leituraDoChefe(PACK, A, rival), frac = m => (m === 0 ? 'nada' : m === 0.25 ? '¼' : m === 0.5 ? '½' : m > 1 ? `${m}×` : 'cheio');
+    $('#jnVel').innerHTML = `<div class="jnImune"><b>quanto os golpes de ${t.nome} (${lc.tipos.map(nomeTipo).join(' e ')}) machucam</b>${lc.machuca.map(x =>
+      `<span class="${x.mult <= 0.5 ? 'sim' : 'nao'}">${dexImg(x.dex, '', 'class="jnSprite"')}${nomeDo(x.dex)} <i>apanha ${frac(x.mult)}${x.mult <= 0.5 ? ' ✓' : ''}</i></span>`).join('')}</div>`;
+  }
   /* A lição da velocidade com a velocidade NA TELA: o seu mais rápido, e quem
      dos rivais ele passa. */
   /* ST-10.19a: a lição da RESISTÊNCIA — quanto os golpes da líder machucam
@@ -343,10 +353,10 @@ export function renderJornada({ nova = null } = {}) {
       ${mapa.nos.map(n => `<div class="jnPos jn-${n.estado}" style="--x:${n.x};--y:${n.y}">
           ${cenaDoNo(n).map(c => (c.forma ? `<b class="jnLago" style="--dx:${c.dx}px;--dy:${c.dy}px"></b>` : quadro(c.folha, 'jnProp', `;--dx:${c.dx}px;--dy:${c.dy}px`))).join('')}
           ${n.ow ? quadro(n.ow, 'jnOw') : ''}${n.lendario ? `<b class="jnLend">${dexImg(n.lendario, '', 'class="jnLendImg"')}</b>` : ''}
-          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}" data-jn-no="${n.id}" title="${n.nome}">${n.estado === 'atual' ? '<b class="jnAnel"></b>' : ''}<i${n.tipo === 'ginasio' && n.estado !== 'trancado' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.tipo === 'liga' ? `<em>${n.selo ?? ''} · ${n.licao?.tipo ?? ''}</em>` : n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : n.tipo === 'chefe' ? '<em>chefe · lendário</em>' : ''}</span></button></div>`).join('')}
+          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}" data-jn-no="${n.id}" title="${n.nome}">${n.estado === 'atual' ? '<b class="jnAnel"></b>' : ''}<i${n.tipo === 'ginasio' && n.estado !== 'trancado' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.tipo === 'liga' ? `<em>${n.selo ?? ''} · ${n.licao?.tipo ?? ''}</em>` : n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : n.tipo === 'chefe' ? '<em>chefe · lendário</em>' : ''}${n.estado === 'atual' ? '<strong class="jnProx">próximo</strong>' : ''}</span></button></div>`).join('')}
       ${onde && eu ? `<div class="jnPos jnVoce${onde.fim ? ' jnFim' : ''}${onde.lado === 'direita' ? ' jnDireita' : ''}" style="--x:${onde.x};--y:${onde.y};--ax:${onde.ao.x};--ay:${onde.ao.y}"><b class="jnEu"><img src="${eu}" alt="você"></b></div>` : ''}
     </div>
-    ${(f => `<div class="jnFaixa">${[f.antes, f.este, f.depois].map((n, k) => (n ? `<button class="jnFaixaNo jn-${n.estado}${k === 1 ? ' este' : ''}" data-jn-no="${n.id}">${k === 0 ? '‹ ' : ''}${n.curto}${k === 2 ? ' ›' : ''}</button>` : '<span></span>')).join('')}</div>`)(faixaDoCaminho(mapa, escolhido))}
+    ${(f => `<div class="jnFaixa">${[f.antes, f.este, f.depois].map((n, k) => (n ? `<button class="jnFaixaNo jn-${n.estado} jn-${n.tipo}${k === 1 ? ' este' : ''}" data-jn-no="${n.id}"><i class="jnFaixaMarco"${n.tipo === 'ginasio' && n.estado !== 'trancado' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i>${n.curto}</button>` : '<span></span>')).join('')}</div>`)(faixaDoCaminho(mapa, escolhido))}
     <div class="jnPainel" id="jnPainel"></div>`;
   const im = alvo.querySelector('.jnEu img');
   if (im) { const medir = () => { im.parentNode.style.width = `${im.naturalWidth / 9}px`; }; if (im.complete && im.naturalWidth) medir(); else im.onload = medir; }
