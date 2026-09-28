@@ -1231,11 +1231,24 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   recusado) e `GET /api/equipe/partida?id=` (o link próprio, com o reveal).
   `test/liga-partida.mjs` · S1717–S1726.
 
-### ST-11.3 · Matchmaking
+### ST-11.3 · Matchmaking ✅ 28/09 (a TELA do rótulo é da ST-11.6)
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.1 · **Spec** §9.5
 - **Escopo:** MMR, faixa de power, limite de diferença e anti-repetição. Treinadores da jornada preenchem a fila **rotulados como bots**.
 - **Aceite:** nunca pareia contas ligadas; o bot aparece rotulado no payload e na tela; 100 pedidos concorrentes criam uma partida.
 - **Portões:** Q1 Q2 Q3 Q6 Q8.
+- **Feito:** `app/modules/pareamento-dados.mjs` (camada 0): corta eu, as contas
+  ligadas, o time de regras velhas, a diferença de rating acima de 300, o power
+  fora de ±35% e os três últimos adversários; do que sobra, o mais perto em
+  rating, depois em power, depois pelo id (determinístico). O BOT: o treinador
+  da jornada de power mais perto — o chefe lendário não entra — rotulado no
+  payload (`bot`, o nome, "não é um jogador"). Migração `bots-st11.3`:
+  `league_bot_matches` à parte, e a partida contra o bot NÃO mexe no Liga MMR
+  (`rated: false` — farmar bot inflaria o rating). `POST /api/equipe/buscar`;
+  o desafio DIRETO também recusa conta ligada (sem isso, a rota direta era o
+  atalho). Cem pedidos concorrentes com a mesma chave: uma partida.
+  `test/liga-pareamento.mjs` · S1735–S1745.
+- **O que fica:** o rótulo do bot NA TELA é da ST-11.6 (as telas da Liga); o
+  payload já o carrega.
 
 ### ST-11.4 · O Liga MMR, separado dos outros dois ✅ 28/09
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.2 · **Spec** §9.7, §22

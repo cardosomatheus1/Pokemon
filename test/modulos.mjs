@@ -370,6 +370,8 @@ const CAMADA = {
   'snapshot-dados.mjs': 0,
   /* ST-11.2 · a partida da Liga e o replay do log (0). */
   'partida-dados.mjs': 0,
+  /* ST-11.3 · o pareamento da Liga (0). */
+  'pareamento-dados.mjs': 0,
   /* ST-10.9 · a batalha PvE: a linha do tempo (0) e a encenação (4). */
   'pve-dados.mjs': 0,
   'pve-tela.mjs': 4,

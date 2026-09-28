@@ -1625,6 +1625,46 @@ export const MIGRACOES = [
       db.exec(`DROP TABLE liga_mmr_eventos`);
       db.exec(`DROP TABLE liga_mmr`);
     },
+  },  {
+    nome: 'bots-st11.3',
+    /* A PARTIDA CONTRA O BOT (ST-11.3, §9.5). À PARTE da `league_matches`, de
+     * propósito: o bot não é conta, não tem snapshot gravado e não mexe no
+     * Liga MMR — a linha diz de qual treinador da jornada ele saiu, e mais
+     * nada finge que ele é gente. O resto é o da partida: a raiz com o
+     * compromisso, a semente, as versões, o log, a chave única e os gatilhos.
+     * ADITIVA. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE league_bot_matches (
+          id               TEXT PRIMARY KEY,
+          idem_key         TEXT NOT NULL UNIQUE,
+          bot_id           TEXT NOT NULL,
+          snap_b           TEXT NOT NULL REFERENCES team_snapshots(id),
+          user_b           TEXT NOT NULL REFERENCES users(id),
+          raiz             TEXT NOT NULL,
+          sal              TEXT NOT NULL,
+          commit_hash      TEXT NOT NULL,
+          semente          INTEGER NOT NULL,
+          versao_motor     TEXT NOT NULL,
+          versao_conteudo  TEXT NOT NULL,
+          vencedor         TEXT NOT NULL CHECK (vencedor IN ('A', 'B', 'empate')),
+          turnos           INTEGER NOT NULL,
+          log_json         TEXT NOT NULL,
+          criada_em        INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE INDEX league_bot_matches_b ON league_bot_matches(user_b, criada_em)`);
+      db.exec(`
+        CREATE TRIGGER bot_sem_update BEFORE UPDATE ON league_bot_matches
+        BEGIN SELECT RAISE(ABORT, 'league_bot_matches é imutável (§9.13)'); END`);
+      db.exec(`
+        CREATE TRIGGER bot_sem_delete BEFORE DELETE ON league_bot_matches
+        BEGIN SELECT RAISE(ABORT, 'league_bot_matches é imutável (§9.13)'); END`);
+    },
+    desce: db => {
+      db.exec(`DROP TRIGGER bot_sem_delete`);
+      db.exec(`DROP TRIGGER bot_sem_update`);
+      db.exec(`DROP TABLE league_bot_matches`);
+    },
   },
 ];
 
