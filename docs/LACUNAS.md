@@ -1781,7 +1781,10 @@ critério que fechou o D-040.
 ### L-050 — a Liga sabe colapsar contas ligadas, e ninguém as liga sozinho
 
 **Registrada em:** R36. **Bloco dono:** um bloco de antifraude, sem escopo ainda.
-**Estado:** aberta.
+**Estado:** PARCIAL (28/09, ST-13.6) — o sinal de HORÁRIO foi construído só
+com o que o banco já guarda (os instantes das ações), e registra suspeita para
+o operador, sem ligar contas sozinho. Dispositivo e rede continuam esperando a
+política de sinais do dono — é sinal novo a coletar.
 
 O §6.8 exige que "contas ligadas não somam", e o R36 cumpre a regra: o ranking
 colapsa o grupo inteiro num competidor só, com fecho transitivo, e representa o
@@ -8434,7 +8437,7 @@ não aparece para quem rola a tela.
 **O que a destrava:** a UX-01 revisando o cartão (teto de medalhas com "ver
 todas", subtítulo em texto corrido, missão em grade estreita).
 
-### L-197 — a banda de captura do gate 3→4 não está declarada
+### L-197 — a banda de captura do gate 3→4 não está declarada ✅ FECHADA na ST-13.6 (28/09: medida pela simulação do idle, 1,8–21,3 capturas por jogador-dia)
 
 **Registrada em:** 26/09/2026, na ST-9.18 (o gate da V3). **Bloco dono:**
 ST-13.6 (antifraude mínima da captura). **Estado:** aberto.

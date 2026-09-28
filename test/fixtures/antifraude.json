@@ -1,0 +1,59 @@
+{
+ "banda": {
+  "casual": {
+   "estagio1": {
+    "capturasPorDia": 5.94,
+    "encontrosPorDia": 16.86
+   },
+   "estagio3": {
+    "capturasPorDia": 3.64,
+    "encontrosPorDia": 22
+   }
+  },
+  "diario": {
+   "estagio1": {
+    "capturasPorDia": 11.98,
+    "encontrosPorDia": 23.71
+   },
+   "estagio3": {
+    "capturasPorDia": 7.98,
+    "encontrosPorDia": 40.86
+   }
+  },
+  "maratona": {
+   "estagio1": {
+    "capturasPorDia": 16.99,
+    "encontrosPorDia": 26.57
+   },
+   "estagio3": {
+    "capturasPorDia": 15.17,
+    "encontrosPorDia": 45.57
+   }
+  }
+ },
+ "detector": {
+  "janelaMs": 60000,
+  "minimo": 12,
+  "fracao": 0.5
+ },
+ "deteccao": [
+  {
+   "rajada": 0.8,
+   "deteccao": 0.908,
+   "falsoPositivo": 0,
+   "casaisAcusados": 0
+  },
+  {
+   "rajada": 0.5,
+   "deteccao": 0.4,
+   "falsoPositivo": 0,
+   "casaisAcusados": 0
+  },
+  {
+   "rajada": 0.3,
+   "deteccao": 0.008,
+   "falsoPositivo": 0,
+   "casaisAcusados": 0
+  }
+ ]
+}

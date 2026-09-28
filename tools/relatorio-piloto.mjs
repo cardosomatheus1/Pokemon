@@ -92,3 +92,9 @@ for (const [nome, c] of Object.entries(g4.criterios))
   linha(nome.padEnd(13), c.veredito, c.precisa ? `(n ${n(c.n)}, precisa ${c.precisa})` : '');
 linha(`VEREDITO DO GATE 4→5: ${g4.veredito}`);
 
+secao('ANTIFRAUDE (§7.19) — suspeitas para o operador olhar; nada é punido sozinho');
+const af = r.antifraude;
+linha(`contas varridas ${n(af.contas)}`, `novas nesta varredura ${n(af.novas)}`, `abertas ${n(af.abertas.length)}`);
+for (const x of af.abertas)
+  linha(`  ${x.sinal.padEnd(8)} ${x.conta_a}${x.conta_b ? ' × ' + x.conta_b : ''}`, JSON.stringify(x.medida));
+

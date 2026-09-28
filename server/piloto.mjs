@@ -19,6 +19,7 @@
 import { gateDaV2Servidor } from './gate-v2.mjs';
 import { gateDaV3Servidor } from './gate-v3.mjs';
 import { gateDaV4Servidor } from './gate-v4.mjs';
+import { varrerSuspeitas, suspeitasAbertas } from './antifraude.mjs';
 import { diaDe, retencao, instanteDoFato } from './coorte.mjs';
 
 const DIA = 86400e3;
@@ -131,5 +132,8 @@ export function relatorioDoPiloto(db, { agora = Date.now(), dias = 14, referenci
     v3: gateDaV3Servidor(db, { agora }),
     /* ST-10.20: a jornada, o aprendizado e o gate 4→5, pela mesma leitura. */
     v4: gateDaV4Servidor(db, { agora }),
+    /* ST-13.6: a varredura da antifraude roda com o relatório — é ele que o
+       operador lê todo dia, e a suspeita que ninguém vê é silenciosa. */
+    antifraude: { ...varrerSuspeitas(db, { agora }), abertas: suspeitasAbertas(db).map(x => ({ ...x, medida: JSON.parse(x.medida_json) })) },
   };
 }

@@ -67,13 +67,20 @@ export function suite() {
     igual(pouco.criterios.captura.veredito, 'amostra insuficiente', 'captura sem jogador-dia');
     igual(pouco.criterios.antifraude.veredito, 'não passou', 'a antifraude não construída passou');
     igual(pouco.veredito, 'não passou', 'o veredito geral ignorou um "não passou"');
+    const af = { rajada80: 0.9, falsoPositivo: 0 };
     const muito = gateDaV3({ diversidade: { n: 30, antes: 0.3, depois: 0.5, subiram: 20, desceram: 5 },
-                             capturas: { total: 12, jogadorDias: 40 }, antifraudeConstruida: true });
+                             capturas: { total: 240, jogadorDias: 40 }, antifraude: af });
     igual(muito.criterios.dossie.veredito, 'passou', 'o dossiê mudou o comportamento e não passou');
-    igual(muito.criterios.captura.valor, 0.3, 'capturas por jogador-dia');
+    igual(muito.criterios.captura.valor, 6, 'capturas por jogador-dia');
+    igual(muito.criterios.captura.veredito, 'passou', 'seis por dia, dentro da banda (ST-13.6, L-197)');
+    igual(muito.criterios.antifraude.rajada80, 0.9, 'a taxa medida não chegou ao gate');
     igual(muito.veredito, 'passou', 'com tudo medido e o P4 coberto');
+    /* fora da banda, nos dois lados: 0,3 por dia é quase ninguém capturando;
+       40 por dia é o sorteio ou o teto furados */
+    for (const total of [12, 1600]) igual(gateDaV3({ diversidade: { n: 30, antes: 0.3, depois: 0.5, subiram: 20, desceram: 5 },
+      capturas: { total, jogadorDias: 40 }, antifraude: af }).criterios.captura.veredito, 'não passou', `${total / 40} por dia passou na banda`);
     igual(gateDaV3({ diversidade: { n: 30, antes: 0.5, depois: 0.5, subiram: 10, desceram: 10 }, capturas: { total: 1, jogadorDias: 1 },
-                     antifraudeConstruida: true }).criterios.dossie.veredito, 'não passou', 'sem mudança passou');
+                     antifraude: af }).criterios.dossie.veredito, 'não passou', 'sem mudança passou');
   });
 
   s.teste('o servidor: evento fora da lista recusado, reenvio não duplica, nada amostrado, gate com n', () => {
@@ -95,6 +102,10 @@ export function suite() {
       const g = gateDaV3Servidor(srv.db, { agora: T0 + DIA });
       igual(g.gate.criterios.dossie.veredito, 'amostra insuficiente', 'um jogador decidiu o gate');
       igual(g.gate.criterios.dossie.n, 0, 'sem o n');
+      /* ST-13.6: o servidor passa a taxa MEDIDA — a antifraude deixou de ser
+         "não construída" */
+      igual(g.gate.criterios.antifraude.veredito, 'medida', 'o servidor não passou a taxa de detecção ao gate');
+      ok(g.gate.criterios.antifraude.rajada80 >= 0.9, 'a taxa medida não chegou ao gate');
       igual(g.kpis.consultas, 41, 'as consultas');
       ok(Math.abs(g.kpis.consultasAntesDeApostar - 1 / 41) < 1e-9, `antes de apostar: ${g.kpis.consultasAntesDeApostar}`);
       /* O relatório do piloto leva o gate, pela mesma leitura. */

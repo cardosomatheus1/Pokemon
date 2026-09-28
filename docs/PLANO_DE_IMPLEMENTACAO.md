@@ -1389,7 +1389,7 @@ do servidor. Três partes:
   piloto ganha o passo "limpa o navegador, entra, a coleção está lá".
 - **Portões:** Q1 Q2 Q5.
 
-### ST-13.6 · Antifraude mínima da captura (L-050)
+### ST-13.6 · Antifraude mínima da captura (L-050) ✅ 28/09
 - **Porte** M · **Servidor** sim · **Spec** §7.19 · **Depende de** ST-13.2
 - **Escopo:** taxa de captura por conta contra a esperada (a semente é do
   servidor); contas ligadas (`contasLigadas`) com o mesmo padrão; ação

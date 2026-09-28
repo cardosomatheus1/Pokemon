@@ -1425,6 +1425,27 @@ export const MIGRACOES = [
       db.exec(`ALTER TABLE criaturas DROP COLUMN golpes_json`);
     },
   },
+  {
+    nome: 'antifraude-st13.6',
+    /* AS SUSPEITAS DA ANTIFRAUDE (ST-13.6, §7.19, L-050). Uma linha por par e
+     * por sinal, com a MEDIDA que a sustenta — a suspeita sem número é
+     * acusação. `revisada_em` é do operador; nada aqui pune sozinho. O sinal é
+     * a CLASSE (horário, captura), como na `identidade_ligada`: o §28 é
+     * proteção, não vigilância. ADITIVA. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE suspeitas_antifraude (
+          conta_a      TEXT NOT NULL,
+          conta_b      TEXT NOT NULL DEFAULT '',
+          sinal        TEXT NOT NULL CHECK (sinal IN ('horario', 'captura')),
+          medida_json  TEXT NOT NULL,
+          criada_em    INTEGER NOT NULL,
+          revisada_em  INTEGER,
+          PRIMARY KEY (conta_a, conta_b, sinal)
+        )`);
+    },
+    desce: db => { db.exec(`DROP TABLE suspeitas_antifraude`); },
+  },
 ];
 
 const TABELA_VERSAO = `

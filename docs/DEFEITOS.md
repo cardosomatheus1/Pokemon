@@ -6939,3 +6939,27 @@ aceite (`run-servidor`): 44 de 44 runs com o tipo do clima recebem o bônus, e
 o aviso e a run concordam de 10 a 30 encontros feitos. E o cartão diz de quem é o bônus: a equipe do motor leva o nome, e a lista de quem aproveita sai da mesma `quemAproveita` do motor (ela lia só `c.t` — o mesmo defeito por outra porta). A fixture
 `emissao-idle.json` foi regravada, com a diferença na mensagem do commit.
 
+## D-129 — o lance do aparelho ignora a semente da colheita
+
+**Achado em:** 28/09/2026, na ST-13.6, ao medir a banda de captura (a medição
+saía diferente a cada execução). **Bloco dono:** ST-13.5 (o cliente com conta
+passa a lançar pelo servidor; o lance local é tocado junto). **Estado:**
+aberto.
+
+**Causa.** `lancarBola` (`idle-lance.mjs`) deriva a raiz do lance de
+`Number(exp.semente)`, e a semente da colheita é TEXTO hexadecimal — `Number`
+dá `NaN`, e `derivar(NaN, …)` vira o mesmo número para toda colheita. A raiz
+do lance passa a depender só da chave do encontro, e a chave carrega o id da
+expedição, que o aparelho sorteia com `Math.random`. O lance continua
+imprevisível e não se repete (a chave é fixa por encontro), mas deixou de ser
+recalculável a partir da semente da colheita (§P3, §25.2).
+
+**Medição.** 40 lances sob duas colheitas diferentes: o mesmo padrão de
+capturas nas duas.
+
+**Por que não conserto aqui.** A antifraude não mexe no lance, e o conserto
+muda o resultado de todo lance local (a raiz nova). Com conta, o lance já é do
+servidor (13.2b), com raiz própria; a ST-13.5 é quem leva o aparelho a usá-lo.
+
+**Teste que trava:** `antifraude` — "D-129 (afirma o defeito)".
+

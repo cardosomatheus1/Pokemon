@@ -19,6 +19,7 @@
  *                 faixas pesada pelo tamanho. A diferença crua vai ao lado, para
  *                 o leitor ver quanto dela era só apetite.
  */
+import { BANDA_DE_CAPTURA } from './antifraude.mjs';
 
 export const META = Object.freeze({
   janelaMin: 5, janelaMax: 10, usuariosDossie: 20, usuariosD7: 30,
@@ -72,21 +73,25 @@ export function d7PorCaptura(usuarios) {
 
 /* O gate. `p4` e `antifraude` vêm de fora porque não são medição de jogador:
    o P4 é o teste `test/p4-v3.mjs` (a suíte verde é condição de todo bloco), e
-   a antifraude de captura é a ST-13.6 (L-050), ainda não construída. */
-export function gateDaV3({ diversidade, capturas, antifraudeConstruida = false }) {
+   a antifraude de captura é a ST-13.6 — a taxa de detecção MEDIDA com fraude
+   plantada (`DETECCAO_MEDIDA`), que o servidor passa aqui. */
+export function gateDaV3({ diversidade, capturas, antifraude = null }) {
   const dossie = diversidade.n < META.usuariosDossie
     ? { veredito: INSUF, n: diversidade.n, precisa: META.usuariosDossie }
     : { veredito: diversidade.depois > diversidade.antes && diversidade.subiram > diversidade.desceram ? 'passou' : 'não passou',
         n: diversidade.n, valor: [diversidade.antes, diversidade.depois] };
-  /* "Nas bandas projetadas": a Spec não declara a banda de captura por
-     jogador-dia (L-197). Sem meta, o critério é medido — e não aprovado. */
+  /* "Nas bandas projetadas": a banda saiu da simulação do idle na ST-13.6
+     (L-197, `BANDA_DE_CAPTURA`) — de meio abaixo do casual mais lento a um
+     quarto acima do maratona mais rápido. */
+  const valor = capturas.jogadorDias ? capturas.total / capturas.jogadorDias : null;
   const captura = capturas.jogadorDias
-    ? { veredito: 'medida', n: capturas.jogadorDias, valor: capturas.total / capturas.jogadorDias }
+    ? { veredito: valor >= BANDA_DE_CAPTURA.min && valor <= BANDA_DE_CAPTURA.max ? 'passou' : 'não passou',
+        n: capturas.jogadorDias, valor, banda: [BANDA_DE_CAPTURA.min, BANDA_DE_CAPTURA.max] }
     : { veredito: INSUF, n: 0 };
   const p4 = { veredito: 'coberto pela suíte', teste: 'test/p4-v3.mjs' };
-  const antifraude = antifraudeConstruida ? { veredito: 'medida' }
-    : { veredito: 'não passou', motivo: 'antifraude de captura não construída — ST-13.6 (L-050)' };
-  const criterios = { dossie, captura, p4, antifraude };
+  const af = antifraude ? { veredito: 'medida', ...antifraude }
+    : { veredito: 'não passou', motivo: 'sem a taxa de detecção medida — ST-13.6' };
+  const criterios = { dossie, captura, p4, antifraude: af };
   const vs = Object.values(criterios).map(c => c.veredito);
   const veredito = vs.includes('não passou') ? 'não passou' : vs.includes(INSUF) ? INSUF : 'passou';
   return { veredito, criterios };

@@ -29,6 +29,7 @@ import { fatorDoRendimento, runsNoDia, diaDoMundo, comRendimento, falaDoRendimen
          FUSO_DO_RENDIMENTO_MIN, RUNS_CHEIAS, PISO_DO_RENDIMENTO } from '../engine/avanco.mjs';
 import { FUSO_DO_MUNDO_MIN } from '../app/modules/hora-do-dia.mjs';
 import { recompensaPve, PVE, tipoDoNo } from '../engine/recompensa-pve.mjs';
+import { chanceDe } from '../engine/captura.mjs';
 
 const ARQ = new URL('./fixtures/emissao-idle.json', import.meta.url);
 const H = 3600e3, DIA = 24 * H, T0 = Date.UTC(2026, 8, 1, 3);   /* 00h de Brasília */
@@ -57,7 +58,28 @@ export const TETOS = {
 
 const chaveDoRecurso = k => (k.startsWith('est:') ? 'estilhaco' : (TETOS[k] ? k : 'item'));
 
-function umPerfil(nome, p, estagio) {
+/* `lancar` (ST-13.6): o mesmo dia, com a bola jogada em cada encontro — a
+   melhor que a bolsa tiver com chance. É a medição da BANDA de captura (L-197),
+   e fica fora da fixture de emissão, que mede o que ENTRA, e não o que sobra. */
+const BOLAS_DA_MELHOR = ['ultra', 'great', 'poke'];
+/* A CAPTURA ESPERADA, e não a sorteada: a soma das chances de cada lance, com
+   a bola gasta como no jogo. O lance do aparelho deriva a raiz da chave do
+   encontro, e a chave carrega o id da expedição — que o aparelho sorteia com
+   `Math.random`. Medir pelo sorteio deu 5,86, 5,43 e 5,00 em três execuções;
+   a esperança é o número, sem o ruído. */
+function lancarTudo(e) {
+  let n = 0;
+  for (const en of e.encontros) {
+    const bola = BOLAS_DA_MELHOR.find(b => (e.bolsa[b] ?? 0) > 0 && chanceDe(kanto, { raridade: en.raridade, bola: b }));
+    if (!bola) continue;
+    n += chanceDe(kanto, { raridade: en.raridade, bola });
+    e.bolsa[bola] -= 1;
+  }
+  e.encontros = [];
+  return n;
+}
+
+export function umPerfil(nome, p, estagio, { lancar = false } = {}) {
   const e = D.VAZIO();
   /* SEMENTES FIXAS nas criaturas: a inicial "escolhida" sorteia potencial, e um
      sorteio aqui tornaria a fixture impossível de comparar. */
@@ -71,10 +93,13 @@ function umPerfil(nome, p, estagio) {
   }
   const antes = { ...e.bolsa };
   const xp0 = e.criaturas.reduce((a, c) => a + (c.xp || 0), 0);
-  let runs = 0, vigilias = 0, recusadas = 0, encontros = 0;
+  let runs = 0, vigilias = 0, recusadas = 0, encontros = 0, capturas = 0;
+  /* Os que JOGAM são os do começo: a captura aumenta a caixa, e quem chegou
+     não entra na rotina — senão o maratona com lances rodaria mais runs. */
+  const iniciais = [...e.criaturas];
   for (let d = 0; d < DIAS; d++) {
     let agora = T0 + d * DIA;
-    const [primeira, ...resto] = e.criaturas;
+    const [primeira, ...resto] = iniciais;
     /* A VIGÍLIA PODE SER RECUSADA PELO TETO — e isso é dado, não erro: os
        Avanços da véspera ainda pesam na janela móvel (ST-1.1). O mapa conta. */
     if (p.vigilia) {
@@ -83,11 +108,12 @@ function umPerfil(nome, p, estagio) {
                                           equipe: [primeira.id], agora, estagio });
         D.colher(e, { pack: kanto, id: x.id, agora: x.terminaEm, raiz: `${nome}:${estagio}:v${d}` });
         encontros += x.encontros ?? 0;
+        if (lancar) capturas += lancarTudo(e);
         vigilias++;
       } else recusadas++;
     }
     agora += 9 * H;
-    const quem = p.vigilia && resto.length ? resto : e.criaturas;
+    const quem = p.vigilia && resto.length ? resto : iniciais;
     for (let r = 0; r < p.avancos; r++) for (const c of quem) {
       const raiz = `${nome}:${estagio}:${d}:${r}:${c.dex}`;
       if (A.porQueNaoAvancar(e, { pack: kanto, bioma: 'floresta', estagio, equipe: [c.id], agora })) continue;
@@ -96,6 +122,7 @@ function umPerfil(nome, p, estagio) {
       A.sincronizar(e, { pack: kanto, agora });
       const run = A.colherAvancoDaRun(e, { pack: kanto, agora, raiz: raiz + ':c' });
       encontros += run.encontros ?? 0;
+      if (lancar) capturas += lancarTudo(e);
       e.encontros = [];          /* o quadro da run some ao começar outra (L-166) */
       runs++;
     }
@@ -113,6 +140,7 @@ function umPerfil(nome, p, estagio) {
      10 apostas × 3 doces × XP_POR_DOCE. Igual em todo perfil: o doce vem da
      aposta, e não do idle. */
   porDia.xpDoce = TETO_APOSTAS_COM_DOCE * DOCE_VITORIA * XP_POR_DOCE;
+  if (lancar) return { capturasPorDia: +(capturas / DIAS).toFixed(2), encontrosPorDia: porDia.encontros };
   return { runsPorDia: +(runs / DIAS).toFixed(2), vigiliasPorDia: +(vigilias / DIAS).toFixed(2),
            vigiliasRecusadasPeloTeto: recusadas, porDia };
 }

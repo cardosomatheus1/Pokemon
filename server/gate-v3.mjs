@@ -6,6 +6,7 @@
  * o dossiê, a captura, o doce, a evolução e a soltura vêm da telemetria do
  * cliente, cada evento no instante do FATO (`instanteDoFato`).
  */
+import { DETECCAO_MEDIDA } from '../engine/antifraude.mjs';
 import { diversidadeAntesDepois, d7PorCaptura, gateDaV3 } from '../engine/gate-v3.mjs';
 import { diaDe, instanteDoFato } from './coorte.mjs';
 
@@ -62,5 +63,5 @@ export function gateDaV3Servidor(db, { agora = Date.now() } = {}) {
     soltas: de('criatura_solta').length,
   };
   return { kpis, diversidade, d7,
-           gate: gateDaV3({ diversidade, capturas: { total: kpis.capturas, jogadorDias } }) };
+           gate: gateDaV3({ diversidade, capturas: { total: kpis.capturas, jogadorDias }, antifraude: DETECCAO_MEDIDA }) };
 }
