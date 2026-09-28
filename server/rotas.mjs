@@ -33,6 +33,7 @@ import { ERRO_MERCADO } from './mercado.mjs';
 import { rotasDoMercado } from './mercado-rotas.mjs';
 import { rotasDoDoce } from './doce-rotas.mjs';
 import { rotasDaColecao } from './colecao-rotas.mjs';
+import { rotasDaEquipe, ERRO_EQUIPE } from './equipe.mjs';
 import { ERRO_IDLE } from './idle.mjs';
 import { ERRO_RUN } from './run.mjs';
 import { ERRO_COLECAO } from './colecao.mjs';
@@ -163,6 +164,9 @@ const STATUS_DE = {
   [ERRO_JORNADA.CHAVE]: 400,
   [ERRO_JORNADA.PRESET]: 400,
   [ERRO_JORNADA.CONFLITO]: 409,
+  /* O time da Liga (ST-11.1): o de outro jogador não existe para quem pede. */
+  [ERRO_EQUIPE.SEM_SNAPSHOT]: 404,
+  [ERRO_EQUIPE.TIME]: 400,
 };
 
 /* Converte a exceção do domínio em resposta. O `limite` e a `pausa` viajam
@@ -191,6 +195,8 @@ export const ROTAS = {
   /* A coleção do idle com conta (ST-13.1): só leitura; a escrita é por
      operação nomeada, na lista de `colecao-rotas.mjs`. */
   ...rotasDaColecao(daExcecao),
+  /* O time da Liga (ST-11.1): o snapshot de defesa. */
+  ...rotasDaEquipe(daExcecao),
 
 
   /* --- autenticação ----------------------------------------------------- */

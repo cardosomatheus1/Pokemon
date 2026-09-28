@@ -50,6 +50,14 @@ export function jornadaDaConta(db, userId) {
   return l ? { jornada: JSON.parse(l.progresso_json), revisao: l.revisao } : { jornada: null, revisao: -1 };
 }
 
+/* As criaturas da conta como LUTAM: o IV e a natureza entram (`paraTreino`),
+   lidos como o save os guarda — o IV em lista e a natureza pelo nome. A luta
+   da jornada e o snapshot da Liga (ST-11.1) leem daqui. */
+export function criaturasParaLuta(db, userId, pack) {
+  const ocultos = new Map(doJogador(db, userId, pack).map(c => [c.id, { iv: c.iv, natureza: c.natureza?.nome }]));
+  return criaturasDaConta(db, userId).map(c => ({ ...c, ...ocultos.get(c.id) }));
+}
+
 export function lutarNaConta(db, { userId, pack, id, preset = 'balanced', chaveIdem, agora, semente = randomInt(0, 2 ** 32) }) {
   if (typeof chaveIdem !== 'string' || !CHAVE_OK.test(chaveIdem)) throw falha(ERRO_JORNADA.CHAVE, 'chave do pedido inválida');
   if (!PRESETS.includes(preset)) throw falha(ERRO_JORNADA.PRESET, `preset desconhecido: ${preset}`);
@@ -57,10 +65,7 @@ export function lutarNaConta(db, { userId, pack, id, preset = 'balanced', chaveI
   const ja = db.prepare(`SELECT resposta_json FROM lutas_jornada WHERE idem_key = ?`).get(idem);
   if (ja) return { ...JSON.parse(ja.resposta_json), repetido: true };
 
-  /* O IV e a natureza lutam (`paraTreino`): a conta os lê como o save os
-     guarda — o IV em lista e a natureza pelo nome. */
-  const ocultos = new Map(doJogador(db, userId, pack).map(c => [c.id, { iv: c.iv, natureza: c.natureza?.nome }]));
-  const criaturas = criaturasDaConta(db, userId).map(c => ({ ...c, ...ocultos.get(c.id) }));
+  const criaturas = criaturasParaLuta(db, userId, pack);
   const { jornada, revisao } = jornadaDaConta(db, userId);
   const c = contaDaLuta({ pack, criaturas, jornada, id, preset, semente, dia: diaDoMundo(agora) });
   if (!c.ok) throw new Error(c.motivo);

@@ -1509,6 +1509,41 @@ export const MIGRACOES = [
       db.exec(`DROP TABLE jornadas`);
     },
   },
+  {
+    nome: 'equipe-st11.1',
+    /* O SNAPSHOT DE DEFESA (ST-11.1, §9.4). O time da Liga congelado: as
+     * entradas que o motor luta, o preset, o power e as duas versões (a das
+     * regras e a impressão do conteúdo). IMUTÁVEL DE VERDADE, como o livro da
+     * carteira: sem os gatilhos, "imutável" é convenção que a primeira
+     * correção manual quebra — e a partida criada sobre ele deixaria de ser
+     * a que foi jogada. ADITIVA. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE team_snapshots (
+          id               TEXT PRIMARY KEY,
+          user_id          TEXT NOT NULL REFERENCES users(id),
+          pack_id          TEXT NOT NULL,
+          versao_motor     TEXT NOT NULL,
+          versao_conteudo  TEXT NOT NULL,
+          preset           TEXT NOT NULL,
+          time_json        TEXT NOT NULL,
+          power            INTEGER NOT NULL CHECK (power >= 0),
+          criado_em        INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE INDEX team_snapshots_user ON team_snapshots(user_id, criado_em)`);
+      db.exec(`
+        CREATE TRIGGER snapshot_sem_update BEFORE UPDATE ON team_snapshots
+        BEGIN SELECT RAISE(ABORT, 'team_snapshots é imutável (§9.4)'); END`);
+      db.exec(`
+        CREATE TRIGGER snapshot_sem_delete BEFORE DELETE ON team_snapshots
+        BEGIN SELECT RAISE(ABORT, 'team_snapshots é imutável (§9.4)'); END`);
+    },
+    desce: db => {
+      db.exec(`DROP TRIGGER snapshot_sem_delete`);
+      db.exec(`DROP TRIGGER snapshot_sem_update`);
+      db.exec(`DROP TABLE team_snapshots`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

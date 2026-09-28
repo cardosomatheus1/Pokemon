@@ -60,6 +60,11 @@ export const REGRAS = Object.freeze({
   GOLPES_MAX: 4,
 });
 export const PRESETS = Object.freeze(['balanced', 'aggressive', 'defensive', 'focus']);
+
+/* A VERSÃO DAS REGRAS (ST-11.1 · §9.4). O snapshot da Liga e a partida
+   (ST-11.2) a gravam: uma luta de temporada tem de ser refeita pelas regras
+   do dia em que foi criada. Muda a regra, muda a versão — no mesmo commit. */
+export const VERSAO_TBE = 'tbe-1';
 /* A chave da natureza no pack → o índice do stat. */
 const INDICE = { atq: 1, def: 2, spa: 3, spd: 4, vel: 5 };
 

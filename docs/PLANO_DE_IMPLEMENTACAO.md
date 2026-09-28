@@ -1197,11 +1197,21 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 
 > **Pré-condição dura: o E13 (idle no servidor).** Um time forjado no `localStorage` tornaria o Liga MMR (e qualquer stake) sem sentido — é o C2 abaixo.
 
-### ST-11.1 · O snapshot de defesa
+### ST-11.1 · O snapshot de defesa ✅ 28/09
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.1 · **Spec** §9.4
 - **Escopo:** tabela imutável `team_snapshots` (versões de motor e de conteúdo, níveis, golpes, preset), com gatilho igual ao do ledger. O servidor valida contra a posse.
 - **Aceite:** mudar a criatura depois não altera o snapshot; UPDATE e DELETE são recusados.
 - **Portões:** Q1 Q2 Q3 Q6.
+- **Feito:** `app/modules/snapshot-dados.mjs` (camada 0): `snapshotDoTime` monta
+  o time pela MESMA montagem da luta da jornada (`paraTreino` com os golpes
+  escolhidos, o IV e a natureza), com o power e as duas versões —
+  `VERSAO_TBE` (as regras, nova em `engine/treino-batalha.mjs`) e
+  `conteudoDaLuta` (FNV-1a do que a luta lê: tipos, espécies, lendários e
+  golpes). Migração `equipe-st11.1`: `team_snapshots` com os dois gatilhos do
+  livro da carteira. `server/equipe.mjs`: a posse vem da conta de quem pede
+  (`criaturasParaLuta`, extraída da jornada); `POST /api/equipe/snapshot` e
+  `GET /api/equipe/snapshots`. O time da Liga é ESCOLHIDO — a caixa pode
+  entrar. `test/equipe-snapshot.mjs` · S1708–S1716; S1666 realvado.
 
 ### ST-11.2 · O confronto assíncrono e o replay
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.1, F5.9 · **Spec** §9.2, §9.13
