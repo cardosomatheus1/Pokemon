@@ -1318,13 +1318,32 @@ escolhidos, que o servidor só terá com a ST-13.3 — virou a **ST-13.7**.
   que ela decide já estava decidido; o saque sai da raiz da colheita);
   `test/run-rotas.mjs` · S1628–S1632.
 
-#### ST-13.7 · A luta da jornada no servidor (L-208)
+#### ST-13.7 · A luta da jornada no servidor (L-208) ✅ 28/09
 - **Porte** M · **Servidor** sim · **Depende de** ST-13.3 (o time e os golpes)
 - **Escopo:** a luta de nó é refeita no servidor pela semente dele, com o time
   que o servidor conhece; o progresso da jornada e a recompensa PvE passam a
   ser do servidor; `ginasio_vencido` e `pve_iniciado` deixam de vir do
   cliente e passam a nascer da luta (fecha a **L-208**).
 - **Portões:** Q1 Q2 Q3 Q6 Q9.
+- **Feito:** `app/modules/jornada-conta.mjs` (camada 0): `contaDaLuta` (a luta,
+  o progresso e o que ela credita, sem gravar) e `chanceDaLuta` (a chance da
+  tela, pela mesma raiz — `RAIZ_DA_CHANCE`, que a tela passou a importar). O
+  aparelho (`jornada-local`) e o servidor (`server/jornada.mjs`) chamam as
+  mesmas. Migração `jornada-st13.7`: `jornadas` (o progresso, com a revisão),
+  `lutas_jornada` (cada luta pela chave do pedido, com a semente do servidor)
+  e o livro do doce com o motivo `pve`. `POST /api/idle/jornada/lutar` (o nó,
+  o preset e a chave; a semente do corpo é ignorada); `GET /api/idle` traz a
+  jornada. Os fatos `pve_iniciado` e `ginasio_vencido` nascem da luta com
+  `origem: 'servidor'` e chave própria (`srv:`), e a chance vai junto,
+  refeita pelo servidor — a calibração do §8.15 deixa de depender do número
+  que o cliente declara. O gate da V4 prefere o fato ao relato, por jogador e
+  por nome (`fatosDaJornada`), e diz quantas lutas são de cada lado.
+  `test/jornada-servidor.mjs` (12 lutas iguais nos dois lados, com repetição,
+  fora de ordem e virada do dia; o reenvio; a revisão; os fatos; o chefe) ·
+  S1662–S1679; S1472, S1478, S1515, S1523 e S1546 realvados para a conta.
+- **O que fica para a ST-13.5:** o aparelho de quem tem conta passar a lutar
+  pela rota (hoje ele ainda luta no save e RELATA); aí `pve_iniciado` e
+  `ginasio_vencido` saem da lista `DO_CLIENTE` e a L-208 fecha inteira.
 
 ### ST-13.3 · XP, evolução, golpes e doce como operações — dividida (27/09)
 O levantamento achou seis operações (caixa, soltar, foco, golpes, evolução,

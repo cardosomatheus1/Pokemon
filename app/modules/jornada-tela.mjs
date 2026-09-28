@@ -23,11 +23,11 @@ import { trocarLocal } from './time-local.mjs';
 import { relatarLuta, relatarChance } from './telemetria-v4-tela.mjs';
 import { lote, resumo, porcentagemExibida, textoDaMargem, SIMS_TREINO } from '../../engine/treino-preco.mjs';
 import { lutarNaJornadaLocal } from './jornada-local.mjs';
+import { RAIZ_DA_CHANCE as RAIZ } from './jornada-conta.mjs';
 import { encenar } from './pve-tela.mjs';
 import { renderTreino } from './treino-tela.mjs';
 import { folhaVestida, carregar as carregarGuardaRoupa } from './outfit-acervo.mjs';
 
-const RAIZ = 1;
 const presetDoJogador = () => { try { return presetValido(localStorage.getItem('ar_treino_preset')); } catch { return 'balanced'; } };
 let escolhido = null, geracao = 0, chanceNaTela = null, correcaoNaTela = null, aplicada = null;
 

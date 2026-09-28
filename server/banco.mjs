@@ -1446,6 +1446,69 @@ export const MIGRACOES = [
     },
     desce: db => { db.exec(`DROP TABLE suspeitas_antifraude`); },
   },
+  {
+    nome: 'jornada-st13.7',
+    /* A JORNADA NO SERVIDOR (ST-13.7, L-208).
+     *
+     *   jornadas        o progresso da conta (vencidos, insígnias, o dia do
+     *                   PvE), com a REVISÃO sobre a qual a próxima luta grava
+     *   lutas_jornada   cada luta, pela chave do pedido (a chave PRIMÁRIA: o
+     *                   reenvio devolve a gravada), com a semente do servidor
+     *                   — a luta se refaz inteira dela, para auditoria
+     *   candy_ledger    o motivo ganha `pve` (a primeira vitória paga doce da
+     *                   linha). O SQLite não afrouxa CHECK: a tabela é copiada */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE jornadas (
+          user_id         TEXT PRIMARY KEY REFERENCES users(id),
+          progresso_json  TEXT NOT NULL,
+          revisao         INTEGER NOT NULL DEFAULT 0,
+          atualizada_em   INTEGER NOT NULL
+        )`);
+      db.exec(`
+        CREATE TABLE lutas_jornada (
+          idem_key       TEXT PRIMARY KEY,
+          user_id        TEXT NOT NULL REFERENCES users(id),
+          no             TEXT NOT NULL,
+          preset         TEXT NOT NULL,
+          semente        INTEGER NOT NULL,
+          venceu         INTEGER NOT NULL CHECK (venceu IN (0, 1)),
+          p              REAL,
+          resposta_json  TEXT NOT NULL,
+          criada_em      INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE INDEX lutas_jornada_user ON lutas_jornada(user_id, criada_em)`);
+      db.exec(`
+        CREATE TABLE candy_ledger_novo (
+          id          INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id     TEXT NOT NULL REFERENCES users(id),
+          species_id  INTEGER NOT NULL,
+          delta       INTEGER NOT NULL CHECK (delta != 0),
+          motivo      TEXT NOT NULL CHECK (motivo IN ('aposta', 'resgate', 'soltar', 'uso', 'pve')),
+          idem_key    TEXT NOT NULL UNIQUE,
+          created_at  INTEGER NOT NULL
+        )`);
+      db.exec(`INSERT INTO candy_ledger_novo SELECT id, user_id, species_id, delta, motivo, idem_key, created_at FROM candy_ledger`);
+      db.exec(`DROP TABLE candy_ledger`);
+      db.exec(`ALTER TABLE candy_ledger_novo RENAME TO candy_ledger`);
+      db.exec(`CREATE INDEX candy_ledger_user ON candy_ledger(user_id, motivo, created_at)`);
+    },
+    desce: db => {
+      db.exec(`DELETE FROM candy_ledger WHERE motivo = 'pve'`);
+      db.exec(`
+        CREATE TABLE candy_ledger_velho (
+          id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL REFERENCES users(id),
+          species_id INTEGER NOT NULL, delta INTEGER NOT NULL CHECK (delta != 0),
+          motivo TEXT NOT NULL CHECK (motivo IN ('aposta', 'resgate', 'soltar', 'uso')),
+          idem_key TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL)`);
+      db.exec(`INSERT INTO candy_ledger_velho SELECT * FROM candy_ledger`);
+      db.exec(`DROP TABLE candy_ledger`);
+      db.exec(`ALTER TABLE candy_ledger_velho RENAME TO candy_ledger`);
+      db.exec(`CREATE INDEX candy_ledger_user ON candy_ledger(user_id, motivo, created_at)`);
+      db.exec(`DROP TABLE lutas_jornada`);
+      db.exec(`DROP TABLE jornadas`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

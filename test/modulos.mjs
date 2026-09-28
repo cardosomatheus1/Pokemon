@@ -364,6 +364,8 @@ const CAMADA = {
   'jornada-tela.mjs': 4,
   /* ST-10.11 · a jornada: a luta gravada (1). */
   'jornada-local.mjs': 1,
+  /* ST-13.7 · a luta como conta: o aparelho e o servidor chamam a mesma (0). */
+  'jornada-conta.mjs': 0,
   /* ST-10.9 · a batalha PvE: a linha do tempo (0) e a encenação (4). */
   'pve-dados.mjs': 0,
   'pve-tela.mjs': 4,

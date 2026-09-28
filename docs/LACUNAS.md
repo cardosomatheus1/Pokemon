@@ -8765,7 +8765,8 @@ a luta começa.
 
 **Registrada em:** 27/09/2026, na ST-10.20 (Q6). **Bloco dono:** ST-13.7 (a
 luta da jornada no servidor — saiu da 13.2c em 27/09, porque depende do time e
-dos golpes no servidor, que são da ST-13.3). **Estado:** aberto.
+dos golpes no servidor, que são da ST-13.3). **Estado:** parcial (28/09, ST-13.7)
+— o resto é da **ST-13.5**.
 
 `pve_iniciado`, `ginasio_vencido` e `p_exibida` vêm do cliente, porque a
 jornada ainda mora no save local. O servidor filtra os campos (número,
@@ -8777,6 +8778,15 @@ Para o piloto entre amigos, é o bastante; para decidir a V5 com dinheiro, não.
 
 **O que a destrava:** a ST-13.2/13.3 levar a luta da jornada para o servidor —
 aí `ginasio_vencido` passa a ser anotado por quem decide a luta.
+
+**28/09, ST-13.7:** o servidor luta (`POST /api/idle/jornada/lutar`, a
+semente dele, o time dele) e ANOTA `pve_iniciado` e `ginasio_vencido` com
+`origem: 'servidor'` — e a chance exibida vai junto, refeita por ele pela
+mesma raiz da tela. O gate da V4 prefere o fato ao relato do mesmo jogador
+(`fatosDaJornada`) e diz quantas lutas são de cada lado (`origemDasLutas`). O
+que falta: o aparelho de quem tem conta ainda luta no save e relata — quando
+a ST-13.5 o puser na rota, os dois nomes saem de `DO_CLIENTE` e esta ficha
+fecha.
 
 ### L-209 — o mundo do mapa não tem regiões, e o fundo da tela comprida acaba
 

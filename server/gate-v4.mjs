@@ -2,20 +2,23 @@
  * (ST-10.20 · F4.9 · Spec §8.15, §8.16).
  *
  * A conta e as metas são de `engine/gate-v4.mjs`; aqui só se lê. As lutas e o
- * ginásio vencido vêm da telemetria do cliente (a jornada ainda mora no save
- * local — a coleção no servidor é o E13), cada evento no instante do FATO; as
+ * ginásio vencido vêm da telemetria, cada evento no instante do FATO: os da
+ * luta que o SERVIDOR decidiu (ST-13.7, `origem: 'servidor'`) e, de quem ainda
+ * luta no save local, o relato do aparelho — o fato vence o relato, e
+ * `origemDasLutas` diz quanto de cada; as
  * PREVISÕES vêm de `predictions`, pontuadas pelo servidor — o cliente nunca
  * diz o quanto previu bem.
  */
-import { aprendizadoDaJornada, kpisDaV4, gateDaV4 } from '../engine/gate-v4.mjs';
+import { aprendizadoDaJornada, kpisDaV4, gateDaV4, fatosDaJornada } from '../engine/gate-v4.mjs';
 import { diaDe, instanteDoFato } from './coorte.mjs';
 import { VERSAO_PONTUACAO } from '../engine/calibracao.mjs';
 
 const campos = l => { try { return JSON.parse(l.campos ?? '{}') ?? {}; } catch { return {}; } };
 
 export function gateDaV4Servidor(db, { agora = Date.now(), primeiroGinasio = 'pewter' } = {}) {
-  const eventos = db.prepare(`SELECT nome, user_id, criado_em, campos FROM telemetry_events WHERE user_id IS NOT NULL`).all()
-    .map(l => ({ nome: l.nome, user: l.user_id, em: instanteDoFato(l), c: campos(l) }));
+  /* ST-13.7: o fato do servidor vence o relato do aparelho (`fatosDaJornada`). */
+  const { eventos, origem } = fatosDaJornada(db.prepare(`SELECT nome, user_id, criado_em, campos FROM telemetry_events WHERE user_id IS NOT NULL`).all()
+    .map(l => ({ nome: l.nome, user: l.user_id, em: instanteDoFato(l), c: campos(l) })));
 
   const lutas = eventos.filter(e => e.nome === 'pve_iniciado').map(e => ({
     user: e.user, em: e.em, no: String(e.c.no ?? ''), venceu: e.c.venceu === true, p: Number(e.c.p),
@@ -46,6 +49,7 @@ export function gateDaV4Servidor(db, { agora = Date.now(), primeiroGinasio = 'pe
   const elegiveis = db.prepare(`SELECT id, created_at FROM users`).all().filter(u => hoje >= diaDe(u.created_at) + 30);
   kpis.d30 = { n: elegiveis.length, valor: elegiveis.length ? elegiveis.filter(u => ativoNoDia.has(`${u.id}|${diaDe(u.created_at) + 30}`)).length / elegiveis.length : null };
   kpis.chancesVistas = eventos.filter(e => e.nome === 'p_exibida').length;
+  kpis.origemDasLutas = origem;
 
   return { kpis, aprendizado, gate: gateDaV4({ kpis, aprendizado }) };
 }

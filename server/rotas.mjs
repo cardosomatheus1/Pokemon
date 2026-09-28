@@ -36,6 +36,7 @@ import { rotasDaColecao } from './colecao-rotas.mjs';
 import { ERRO_IDLE } from './idle.mjs';
 import { ERRO_RUN } from './run.mjs';
 import { ERRO_COLECAO } from './colecao.mjs';
+import { ERRO_JORNADA } from './jornada.mjs';
 import { ERRO_DOCE } from './doce.mjs';
 import { definirLimite, confirmarAumento, limitesDe, pedidosDe, TIPOS_LIMITE,
          ERRO_LIMITE } from './limites.mjs';
@@ -158,6 +159,10 @@ const STATUS_DE = {
   [ERRO_RUN.ABERTA]: 409,
   [ERRO_COLECAO.SEM_CRIATURA]: 404,
   [ERRO_COLECAO.CHAVE]: 400,
+  /* A jornada (ST-13.7): a revisão que mudou no meio é o estado. */
+  [ERRO_JORNADA.CHAVE]: 400,
+  [ERRO_JORNADA.PRESET]: 400,
+  [ERRO_JORNADA.CONFLITO]: 409,
 };
 
 /* Converte a exceção do domínio em resposta. O `limite` e a `pausa` viajam

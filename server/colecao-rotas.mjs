@@ -38,6 +38,7 @@ import { staminaAgora, restamEncontros, vagasPor, EQUIPE_MAX } from '../engine/e
 import { sincronizarRun, comecarRun, pocaoNaRun, recuarNaRun, colherRun } from './run.mjs';
 import { moverNaConta, trocarNaConta, soltarNaConta, escolherFocoNaConta, trocarGolpeNaConta, evoluirNaConta, darDoceNaConta } from './colecao.mjs';
 import { estagioMaximo, proximoEstagio } from '../engine/estagios.mjs';
+import { lutarNaConta, jornadaDaConta } from './jornada.mjs';
 
 /* As ESCRITAS permitidas sob `/api/idle`, por nome. */
 export const OPERACOES_DO_IDLE = Object.freeze([
@@ -50,6 +51,8 @@ export const OPERACOES_DO_IDLE = Object.freeze([
   'POST /api/idle/golpe', 'POST /api/idle/evoluir',
   /* Dar doce (ST-13.3c). */
   'POST /api/idle/doce',
+  /* A luta da jornada (ST-13.7): a semente, o time e o fato são do servidor. */
+  'POST /api/idle/jornada/lutar',
 ]);
 
 /* A criatura como o cliente a lê: sem a semente dos ocultos e sem o dono. */
@@ -88,6 +91,8 @@ export function colecaoDe(db, { userId, agora, pack = PACK }) {
     encontros: pendentesDe(db, userId),
     teto: { restam: restamEncontros(estadoDoTeto(db, userId, agora, pack)) },
     estagio: { aberto: estagioMaximo(criaturas), proximo: proximoEstagio(criaturas) },
+    /* A jornada (ST-13.7): o que o servidor venceu por ela. */
+    jornada: jornadaDaConta(db, userId).jornada,
   };
 }
 
@@ -207,6 +212,14 @@ export function rotasDaColecao(daExcecao) {
       const id = texto(corpo?.id), quantos = corpo?.quantos ?? 1;
       if (!id || !Number.isInteger(quantos) || quantos < 1 || quantos > 999) return recusa('doce inválido');
       return tentar(() => darDoceNaConta(db, { userId, pack: PACK, id, quantos, chaveIdem: corpo?.chaveIdem, agora }));
+    },
+
+    /* A LUTA DA JORNADA (ST-13.7): o corpo traz o nó, o preset e a chave do
+       pedido; a semente é do servidor (uma `semente` no corpo é ignorada). */
+    'POST /api/idle/jornada/lutar': ({ db, corpo, userId, agora }) => {
+      const no = texto(corpo?.no), preset = corpo?.preset ?? 'balanced';
+      if (!no || typeof preset !== 'string') return recusa('luta inválida');
+      return tentar(() => lutarNaConta(db, { userId, pack: PACK, id: no, preset, chaveIdem: corpo?.chaveIdem, agora }));
     },
 
     'POST /api/idle/lancar': ({ db, corpo, userId, agora }) => {

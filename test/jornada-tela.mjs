@@ -133,7 +133,9 @@ export function suite() {
     ok(/lutarNaJornadaLocal\(\{ pack: PACK, id, preset: presetDoJogador\(\) \}\)/.test(tela), 'a luta não é a gravada');
     ok(!/simular\(|lutarNo\(|\.vencidos\.push|insignias\.push|salvar\(/.test(tela), 'a tela decide ou grava progresso por conta própria');
     ok(/encenar\(\{ alvo: \$\('#jnLuta'\), A: r\.timeA, B: r\.timeB, r: r\.resultado/.test(tela), 'a luta não é encenada pelo caminho da 10.9');
-    ok(/lote\(PACK, A, rival, RAIZ, acum\.sims/.test(tela) && /const RAIZ = 1;/.test(tela), 'a chance do mapa não é a do Team Builder');
+    /* ST-13.7: a raiz mora na conta da luta, que o servidor também lê. */
+    ok(/lote\(PACK, A, rival, RAIZ, acum\.sims/.test(tela) && /RAIZ_DA_CHANCE as RAIZ \} from '\.\/jornada-conta\.mjs'/.test(tela)
+       && /export const RAIZ_DA_CHANCE = 1;/.test(fonte('../app/modules/jornada-conta.mjs')), 'a chance do mapa não é a do Team Builder');
     ok(/disabled>\$\{no\.estado === 'trancado' \? 'trancado' : vencido \? 'revanche \(treino\)' : `lutar contra \$\{t\.nome\.replace/.test(tela) && /if \(pronto\) \{ chanceNaTela = r; if \(b && no\.estado !== 'trancado'\) b\.disabled = false; projetar\(r\);/.test(tela),
       'lutar acende antes da chance ou num nó trancado');
     ok(/if \(!lutar \|\| lutar\.disabled \|\| !chanceNaTela\) return;/.test(tela), 'a luta sai sem a chance');

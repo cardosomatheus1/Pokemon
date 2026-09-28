@@ -31,6 +31,24 @@
  * outras espécies) — o cliente não o declara, e não tem como inventá-lo.
  */
 
+/* O FATO VENCE O RELATO (ST-13.7 · L-208). A luta que o servidor decide
+   anota `pve_iniciado` e `ginasio_vencido` com `origem: 'servidor'`; o
+   aparelho que ainda luta no save local os RELATA. Por jogador e por nome:
+   quem tem um fato do servidor daquele tipo, tem SÓ os do servidor — o relato
+   do aparelho não soma com o fato (seria a mesma luta contada duas vezes) e
+   não o contradiz. Quem só tem relato continua medido pelo relato, e a conta
+   de quantos é de cada lado vai junto: o gate diz o quanto do número é
+   declarado. `eventos`: [{ nome, user, c: { origem?, ... } }]. */
+export const FATOS_DA_LUTA = Object.freeze(['pve_iniciado', 'ginasio_vencido']);
+export function fatosDaJornada(eventos) {
+  const temFato = new Set((eventos ?? []).filter(e => FATOS_DA_LUTA.includes(e.nome) && e.c?.origem === 'servidor')
+    .map(e => `${e.user}|${e.nome}`));
+  const ficam = (eventos ?? []).filter(e => !FATOS_DA_LUTA.includes(e.nome) || e.c?.origem === 'servidor' || !temFato.has(`${e.user}|${e.nome}`));
+  const lutas = ficam.filter(e => e.nome === 'pve_iniciado');
+  return { eventos: ficam, origem: { servidor: lutas.filter(e => e.c?.origem === 'servidor').length,
+                                     relato: lutas.filter(e => e.c?.origem !== 'servidor').length } };
+}
+
 export const META_V4 = Object.freeze({
   janelaMin: 5, janelaMax: 10,
   tratadosAprendizado: 20,        // quem venceu o 1º ginásio, com janela dos dois lados
