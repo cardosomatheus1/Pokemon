@@ -1299,10 +1299,25 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **Aceite:** League Points nunca convertem em PokéCash; compra idempotente.
 - **Portões:** Q1 Q2 Q3 Q6 Q8.
 
-### ST-11.8 · Anti-win-trading, antes do dinheiro
+### ST-11.8 · Anti-win-trading, antes do dinheiro ✅ 28/09 (dispositivo e rede esperam a L-050)
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.8 · **Spec** §9.12, L-050
 - **Escopo:** detectar repetição, forfeits e contas ligadas por dispositivo, rede e horário (o gatilho que a L-050 diz faltar). Ações: cooldown entre adversários e partida inelegível, ambas auditadas.
 - **Portões:** Q1 Q2 Q6 Q9 (eventos sem amostragem).
+- **Feito:** `engine/integridade-liga.mjs` (puro): REPETIÇÃO (o par 5 vezes ou
+  mais em 7 dias), ALTERNÂNCIA (4 vitórias trocando de lado, pela CONTA — os
+  lados da gravação não enganam; o empate quebra a corrente) e CONCENTRAÇÃO
+  (60% das partidas de uma conta contra um só, com 8 ou mais); o COOLDOWN de
+  6 h entre o par. No servidor: o desafio direto recusa a revanche em
+  cooldown, e a busca não pareia quem está nele; os sinais contam a partida
+  de agora e saem na MESMA transação — a partida com sinal fica gravada e
+  revista, FORA DO RANKING (não mexe no Liga MMR), com o registro em
+  `liga_sinais` (só de inserção) e o evento `liga_partida_fora_do_ranking`
+  inteiro para o operador. O jogador vê que ficou fora, e não os números.
+  `test/liga-integridade.mjs` · S1753–S1761.
+- **Forfeits:** não existem — a partida é automática, sem desistência. Se a
+  ST-11.6 criar "abandonar", o sinal entra aqui.
+- **O que fica:** os sinais de DISPOSITIVO e REDE esperam a política do dono
+  (L-050); o horário já é o detector da ST-13.6.
 
 ### ST-11.9 · Bandeiras de feature no servidor
 - **Porte** P · **Servidor** sim · **Spec** §15.3

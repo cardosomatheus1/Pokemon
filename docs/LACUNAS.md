@@ -1810,6 +1810,11 @@ antifraude que ignore isso transforma a tabela de proteção num alvo.
 mecânica já está pronta dos dois lados — `ligarContas` para escrever e
 `contasLigadas` para ler.
 
+
+**28/09, ST-11.8:** a Liga ganhou o anti-win-trading pelo que o banco já
+guarda (repetição, alternância, concentração, cooldown entre o par), com a
+partida suspeita fora do ranking e registrada. Dispositivo e rede continuam
+esperando a política do dono — são o que falta desta ficha.
 ### L-051 — os testes de settlement apostam valor fixo no campeão, e a cauda continua aberta
 
 **Registrada em:** H1, ao fechar o D-044. **Bloco dono:** um bloco futuro de

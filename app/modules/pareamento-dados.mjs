@@ -29,8 +29,10 @@ import { VERSAO_TBE } from '../../engine/treino-batalha.mjs';
 
 export const PAREAMENTO = Object.freeze({ difRating: 300, faixaPower: 0.35, janelaRepeticao: 3 });
 
-export function escolherAdversario({ pack, eu, candidatos, recentes = [], ligadas = [], limites = PAREAMENTO }) {
-  const fora = new Set([eu.user, ...ligadas, ...recentes.slice(0, limites.janelaRepeticao)]);
+/* `evitar`: quem está em COOLDOWN comigo (ST-11.8) — o par que se enfrentou
+   há pouco não se enfrenta de novo, nem pela busca. */
+export function escolherAdversario({ pack, eu, candidatos, recentes = [], ligadas = [], evitar = [], limites = PAREAMENTO }) {
+  const fora = new Set([eu.user, ...ligadas, ...evitar, ...recentes.slice(0, limites.janelaRepeticao)]);
   const dentro = (candidatos ?? []).filter(c => !fora.has(c.user)
     && !motivoDaVersao(pack, c.snapshot)
     && Math.abs(c.rating - eu.rating) <= limites.difRating

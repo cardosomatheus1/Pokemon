@@ -1707,6 +1707,28 @@ export const MIGRACOES = [
       db.exec(`DROP TABLE liga_temporadas`);
       db.exec(`DROP TABLE liga_estado`);
     },
+  },  {
+    nome: 'integridade-st11.8',
+    /* OS SINAIS DE INTEGRIDADE DA LIGA (ST-11.8, §9.12). Um por partida de
+     * gente, com a medida que os sustenta e se ela ficou elegível — o que
+     * não é elegível fica fora do ranking. Só de inserção: o operador lê o
+     * registro; nada aqui pune sozinho. ADITIVA. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE liga_sinais (
+          partida_id   TEXT PRIMARY KEY REFERENCES league_matches(id),
+          elegivel     INTEGER NOT NULL CHECK (elegivel IN (0, 1)),
+          sinais_json  TEXT NOT NULL,
+          criado_em    INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE TRIGGER liga_sinais_sem_update BEFORE UPDATE ON liga_sinais BEGIN SELECT RAISE(ABORT, 'liga_sinais é append-only'); END`);
+      db.exec(`CREATE TRIGGER liga_sinais_sem_delete BEFORE DELETE ON liga_sinais BEGIN SELECT RAISE(ABORT, 'liga_sinais é append-only'); END`);
+    },
+    desce: db => {
+      db.exec(`DROP TRIGGER liga_sinais_sem_delete`);
+      db.exec(`DROP TRIGGER liga_sinais_sem_update`);
+      db.exec(`DROP TABLE liga_sinais`);
+    },
   },
 ];
 

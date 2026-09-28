@@ -174,6 +174,7 @@ const STATUS_DE = {
   [ERRO_PARTIDA.CONTRA_SI]: 409,
   [ERRO_PARTIDA.VERSAO]: 409,
   [ERRO_PARTIDA.LIGADA]: 409,
+  [ERRO_PARTIDA.COOLDOWN]: 409,
 };
 
 /* Converte a exceção do domínio em resposta. O `limite` e a `pausa` viajam

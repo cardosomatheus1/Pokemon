@@ -99,7 +99,7 @@ export async function suite() {
     igual(aplicarPartida(c.db, { id: p.id, userA: c.u, userB: c.v, vencedor: 'A', agora: T0 + 1 }), null, 'a mesma partida aplicou de novo');
     igual(ratingDe(c.db, c.u).rating, MMR.inicial + 16, 'a mesma partida mexeu no rating de novo');
     /* A segunda partida parte do rating novo: o livro guarda o antes. */
-    criarPartida(c.db, { userId: c.v, meu: c.fraco.id, adversario: c.forte.id, chaveIdem: 'mmr-00002', agora: T0 + 2 });
+    criarPartida(c.db, { userId: c.v, meu: c.fraco.id, adversario: c.forte.id, chaveIdem: 'mmr-00002', agora: T0 + 7 * 3_600_000 });
     const ev = c.db.prepare(`SELECT antes_a, antes_b, delta FROM liga_mmr_eventos ORDER BY criado_em`).all();
     igual(ev.length, 2, 'um evento por partida');
     igual(`${ev[1].antes_a}|${ev[1].antes_b}`, `${MMR.inicial + 16}|${MMR.inicial - 16}`, 'a segunda partida não partiu do rating novo');
@@ -110,7 +110,7 @@ export async function suite() {
     /* A partida que falha no meio não move o rating. */
     const antes = JSON.stringify([ratingDe(c.db, c.u), ratingDe(c.db, c.v)]);
     c.db.exec(`CREATE TRIGGER quebra BEFORE INSERT ON liga_mmr_eventos BEGIN SELECT RAISE(ABORT, 'falha no meio'); END`);
-    ok(/falha no meio/.test(recusa(() => criarPartida(c.db, { userId: c.v, meu: c.fraco.id, adversario: c.forte.id, chaveIdem: 'mmr-00003', agora: T0 + 3 }))?.message ?? ''), 'a falha não subiu');
+    ok(/falha no meio/.test(recusa(() => criarPartida(c.db, { userId: c.v, meu: c.fraco.id, adversario: c.forte.id, chaveIdem: 'mmr-00003', agora: T0 + 14 * 3_600_000 }))?.message ?? ''), 'a falha não subiu');
     igual(JSON.stringify([ratingDe(c.db, c.u), ratingDe(c.db, c.v)]), antes, 'a partida que falhou mexeu no rating');
     igual(c.db.prepare(`SELECT COUNT(*) AS n FROM league_matches`).get().n, 2, 'a partida que falhou no rating ficou gravada');
   });
