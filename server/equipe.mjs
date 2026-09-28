@@ -32,6 +32,12 @@ export function snapshotDe(db, { userId, id }) {
   if (!l) throw falha(ERRO_EQUIPE.SEM_SNAPSHOT, 'esse time não existe');
   return doBanco(l);
 }
+/* O time de QUALQUER jogador, com o dono — só para o servidor parear e lutar
+   (ST-11.2); nenhuma rota devolve isto como está. */
+export function snapshotPorId(db, id) {
+  const l = db.prepare(`SELECT * FROM team_snapshots WHERE id = ?`).get(id);
+  return l ? { ...doBanco(l), user: l.user_id } : null;
+}
 export const snapshotsDe = (db, userId) =>
   db.prepare(`SELECT * FROM team_snapshots WHERE user_id = ? ORDER BY criado_em DESC, id`).all(userId).map(doBanco);
 

@@ -1213,12 +1213,23 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   `GET /api/equipe/snapshots`. O time da Liga é ESCOLHIDO — a caixa pode
   entrar. `test/equipe-snapshot.mjs` · S1708–S1716; S1666 realvado.
 
-### ST-11.2 · O confronto assíncrono e o replay
+### ST-11.2 · O confronto assíncrono e o replay ✅ 28/09
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.1, F5.9 · **Spec** §9.2, §9.13
 - **Escopo:** o servidor simula A × B com semente de commit-reveal. `league_matches` guarda semente, versão do motor, snapshots, log de eventos e vencedor. O replay sai do **log**, sem depender da engine antiga, e tem link próprio (I.1).
 - **Aceite:** reproduzir pela semente dá o mesmo log; gravar duas vezes grava uma.
 - **Sabotagem:** vencedor informado pelo cliente; replay divergente da partida.
 - **Portões:** Q1 Q2 Q3 Q6 Q8.
+- **Feito:** `app/modules/partida-dados.mjs` (camada 0): `confrontoDaLiga` luta o
+  DEFENSOR (o time publicado, A) contra o DESAFIANTE (B), cada um com o preset
+  que congelou, pela semente do ramo `liga` da raiz; recusa o time congelado
+  com outras regras ou outro conteúdo; o LOG leva o começo de cada lutador
+  (espécie, nível, vida) e os eventos. `replayDoLog` refaz a partida SÓ do log,
+  sem motor nem pack. Migração `liga-st11.2`: `league_matches` com a raiz, o
+  sal e o compromisso (o esquema da Arena, `mensagemCommit`), a chave do pedido
+  única e os gatilhos do livro. `server/partida.mjs`: `POST /api/equipe/partida`
+  (a raiz, a semente e o vencedor do corpo são ignorados; o próprio time é
+  recusado) e `GET /api/equipe/partida?id=` (o link próprio, com o reveal).
+  `test/liga-partida.mjs` · S1717–S1726.
 
 ### ST-11.3 · Matchmaking
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.1 · **Spec** §9.5

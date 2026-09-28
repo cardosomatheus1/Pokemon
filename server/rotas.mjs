@@ -34,6 +34,7 @@ import { rotasDoMercado } from './mercado-rotas.mjs';
 import { rotasDoDoce } from './doce-rotas.mjs';
 import { rotasDaColecao } from './colecao-rotas.mjs';
 import { rotasDaEquipe, ERRO_EQUIPE } from './equipe.mjs';
+import { rotasDaPartida, ERRO_PARTIDA } from './partida.mjs';
 import { ERRO_IDLE } from './idle.mjs';
 import { ERRO_RUN } from './run.mjs';
 import { ERRO_COLECAO } from './colecao.mjs';
@@ -167,6 +168,11 @@ const STATUS_DE = {
   /* O time da Liga (ST-11.1): o de outro jogador não existe para quem pede. */
   [ERRO_EQUIPE.SEM_SNAPSHOT]: 404,
   [ERRO_EQUIPE.TIME]: 400,
+  /* A partida (ST-11.2): o próprio time e o time de regras velhas são conflito com o estado. */
+  [ERRO_PARTIDA.CHAVE]: 400,
+  [ERRO_PARTIDA.SEM_PARTIDA]: 404,
+  [ERRO_PARTIDA.CONTRA_SI]: 409,
+  [ERRO_PARTIDA.VERSAO]: 409,
 };
 
 /* Converte a exceção do domínio em resposta. O `limite` e a `pausa` viajam
@@ -197,6 +203,8 @@ export const ROTAS = {
   ...rotasDaColecao(daExcecao),
   /* O time da Liga (ST-11.1): o snapshot de defesa. */
   ...rotasDaEquipe(daExcecao),
+  /* A partida da Liga e o replay (ST-11.2). */
+  ...rotasDaPartida(daExcecao),
 
 
   /* --- autenticação ----------------------------------------------------- */

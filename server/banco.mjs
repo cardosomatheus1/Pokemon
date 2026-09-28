@@ -1543,6 +1543,50 @@ export const MIGRACOES = [
       db.exec(`DROP TRIGGER snapshot_sem_update`);
       db.exec(`DROP TABLE team_snapshots`);
     },
+  },  {
+    nome: 'liga-st11.2',
+    /* A PARTIDA DA LIGA (ST-11.2, §9.2, §9.13). Uma linha por confronto: os
+     * dois snapshots e os dois donos, a RAIZ com o sal e o compromisso (o
+     * reveal da Arena: qualquer um confere que a semente estava decidida
+     * antes do resultado), a semente derivada, as duas versões, o vencedor e
+     * o LOG — o começo de cada lutador e os eventos, que o replay lê sem o
+     * motor. A chave do pedido é única (gravar duas vezes grava uma), e os
+     * gatilhos do livro não deixam a partida jogada ser reescrita. ADITIVA. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE league_matches (
+          id               TEXT PRIMARY KEY,
+          idem_key         TEXT NOT NULL UNIQUE,
+          snap_a           TEXT NOT NULL REFERENCES team_snapshots(id),
+          snap_b           TEXT NOT NULL REFERENCES team_snapshots(id),
+          user_a           TEXT NOT NULL REFERENCES users(id),
+          user_b           TEXT NOT NULL REFERENCES users(id),
+          raiz             TEXT NOT NULL,
+          sal              TEXT NOT NULL,
+          commit_hash      TEXT NOT NULL,
+          semente          INTEGER NOT NULL,
+          versao_motor     TEXT NOT NULL,
+          versao_conteudo  TEXT NOT NULL,
+          vencedor         TEXT NOT NULL CHECK (vencedor IN ('A', 'B', 'empate')),
+          turnos           INTEGER NOT NULL,
+          log_json         TEXT NOT NULL,
+          criada_em        INTEGER NOT NULL,
+          CHECK (user_a != user_b)
+        )`);
+      db.exec(`CREATE INDEX league_matches_a ON league_matches(user_a, criada_em)`);
+      db.exec(`CREATE INDEX league_matches_b ON league_matches(user_b, criada_em)`);
+      db.exec(`
+        CREATE TRIGGER partida_sem_update BEFORE UPDATE ON league_matches
+        BEGIN SELECT RAISE(ABORT, 'league_matches é imutável (§9.13)'); END`);
+      db.exec(`
+        CREATE TRIGGER partida_sem_delete BEFORE DELETE ON league_matches
+        BEGIN SELECT RAISE(ABORT, 'league_matches é imutável (§9.13)'); END`);
+    },
+    desce: db => {
+      db.exec(`DROP TRIGGER partida_sem_delete`);
+      db.exec(`DROP TRIGGER partida_sem_update`);
+      db.exec(`DROP TABLE league_matches`);
+    },
   },
 ];
 
