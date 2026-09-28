@@ -1730,6 +1730,23 @@ export const MIGRACOES = [
       db.exec(`DROP TABLE liga_sinais`);
     },
   },
+  {
+    nome: 'bandeiras-st11.9',
+    /* AS BANDEIRAS DE FEATURE (ST-11.9, §15.3). Uma linha por bandeira que
+     * o operador já mudou; a que não tem linha vale o padrão do catálogo
+     * (`engine/feature-flags.mjs`). O histórico mora na `admin_auditoria`,
+     * com `de` e `para` — um só registro de quem mudou o quê. ADITIVA. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE feature_flags (
+          nome            TEXT PRIMARY KEY,
+          ligada          INTEGER NOT NULL CHECK (ligada IN (0, 1)),
+          atualizada_em   INTEGER NOT NULL,
+          atualizada_por  TEXT NOT NULL REFERENCES admin_operadores(id)
+        )`);
+    },
+    desce: db => { db.exec(`DROP TABLE feature_flags`); },
+  },
 ];
 
 const TABELA_VERSAO = `

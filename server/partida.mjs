@@ -28,6 +28,7 @@ import { sincronizarTemporada } from './temporada.mjs';
 import { temporadaDe } from '../engine/temporada.mjs';
 import { INTEGRIDADE, emCooldown, sinaisDaPartida, elegivel } from '../engine/integridade-liga.mjs';
 import { emitir } from './telemetria.mjs';
+import { exigirBandeira } from './feature-flags.mjs';
 import { snapshotDe, snapshotPorId, ERRO_EQUIPE } from './equipe.mjs';
 import { aplicarPartida, tierDaConta, ratingDe } from './liga-mmr.mjs';
 import PACK from '../content/escolhido.mjs';
@@ -187,13 +188,13 @@ export function rotasDaPartida(daExcecao) {
     'POST /api/equipe/partida': ({ db, corpo, userId, agora }) => {
       const meu = texto(corpo?.meu), adversario = texto(corpo?.adversario);
       if (!meu || !adversario) return { status: 400, corpo: { codigo: 'ENTRADA_INVALIDA', erro: 'partida inválida' } };
-      return tentar(() => ({ partida: criarPartida(db, { userId, meu, adversario, chaveIdem: corpo?.chaveIdem, agora }) }));
+      return tentar(() => { exigirBandeira(db, 'league_enabled'); return { partida: criarPartida(db, { userId, meu, adversario, chaveIdem: corpo?.chaveIdem, agora }) }; });
     },
     /* Buscar partida: o servidor escolhe o adversário (ST-11.3). */
     'POST /api/equipe/buscar': ({ db, corpo, userId, agora }) => {
       const meu = texto(corpo?.meu);
       if (!meu) return { status: 400, corpo: { codigo: 'ENTRADA_INVALIDA', erro: 'busca inválida' } };
-      return tentar(() => ({ partida: buscarPartida(db, { userId, meu, chaveIdem: corpo?.chaveIdem, agora }) }));
+      return tentar(() => { exigirBandeira(db, 'league_enabled'); return { partida: buscarPartida(db, { userId, meu, chaveIdem: corpo?.chaveIdem, agora }) }; });
     },
     /* O tier e as partidas de quem pede — o rating exato fica no servidor (§9.7). */
     'GET /api/equipe/tier': ({ db, userId, agora }) => { sincronizarTemporada(db, { agora }); return { corpo: tierDaConta(db, userId) }; },

@@ -46,11 +46,14 @@ export const EXIGE = {
   'margem.definir':      'economia',
   'operador.criar':      'dono',
   'operador.desativar':  'dono',
+  /* ST-11.9: ligar ou desligar uma feature é do dono — é por aqui que o
+     dinheiro seria ligado, e o `feature-flags` ainda cobra o §25.1. */
+  'bandeira.definir':    'dono',
 };
 
 /* Ações que mexem no jogador ou no dinheiro. Exigem `confirmado: true` — e o
    valor tem que vir do chamador, nunca de um padrão. */
-export const DESTRUTIVAS = new Set(['jogador.pausar', 'margem.definir', 'operador.desativar']);
+export const DESTRUTIVAS = new Set(['jogador.pausar', 'margem.definir', 'operador.desativar', 'bandeira.definir']);
 
 export const ERRO_ADMIN = {
   SEM_OPERADOR:  'operador_desconhecido',

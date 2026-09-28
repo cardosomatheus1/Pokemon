@@ -1319,10 +1319,27 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **O que fica:** os sinais de DISPOSITIVO e REDE esperam a política do dono
   (L-050); o horário já é o detector da ST-13.6.
 
-### ST-11.9 · Bandeiras de feature no servidor
+### ST-11.9 · Bandeiras de feature no servidor ✅ 28/09
 - **Porte** P · **Servidor** sim · **Spec** §15.3
 - **Escopo:** tudo que move valor nasce **desligado**, com auditoria. Ligar exige o marcador do §25.1, no padrão do `ARTE_EMPRESTADA_DE`.
 - **Portões:** Q1 Q2 Q6.
+- **Feito:** `engine/feature-flags.mjs` (puro): o catálogo do §15.3 — quatro
+  de produto (ligadas) e seis de VALOR (desligadas) —, `CHECKPOINT_25_1 =
+  null` e a regra: ligar valor exige o marcador nomeando um `DEC-##`, desligar
+  nunca exige; a linha gravada ligada sem o marcador lê desligada. O teste
+  recusa um marcador que não esteja no ROADMAP com o §25.1.
+  `server/feature-flags.mjs`: o estado em `feature_flags` (migração
+  `bandeiras-st11.9`), a mudança pelo `agir` (papel `dono`, motivo,
+  confirmação, registro de/para antes — a recusa fica registrada), e
+  `exigirBandeira`. Rotas `GET /api/admin/bandeiras` e `POST
+  /api/admin/bandeira` (409 sem o §25.1). `league_enabled` desligada recusa a
+  partida e a busca com 503. `test/feature-flags.mjs` · S1762–S1773.
+- **Q6:** superfície nova = duas rotas admin, atrás da sessão de operador
+  com segundo fator; mudar exige o papel mais alto e confirmação. Sem rota
+  de jogador nova.
+- **O que fica:** o cliente não lê as bandeiras ainda — a tela que esconde a
+  feature desligada é da ST-11.6 (a Liga) e de cada feature de valor quando
+  nascer (a ST-11.10 consulta `league_stake_enabled`).
 
 ### ST-11.10 · Stake de tier na fila de bônus: o dinheiro
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.3, F5.4 · **Spec** §9.6, §9.9, §28.3 · **Depende de** D2 para LIGAR (construir não)

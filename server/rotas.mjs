@@ -50,6 +50,7 @@ import { perfilDe, desafiosDe, registrarLogin, sequenciaDeLogin, emitidoNaSemana
 import { BUCKETS } from '../engine/carteira.mjs';
 import { agir, definirMargem, margemDaCasa, ERRO_ADMIN } from './admin.mjs';
 import { politicaMonetaria } from './politica.mjs';
+import { bandeiras, mudarBandeira, ERRO_BANDEIRA } from './feature-flags.mjs';
 import { entrarOperador, lerSessaoAdmin, sairOperador } from './admin-auth.mjs';
 import { ERRO_LIGA, minhasPrevisoes, rankingDaTemporada, registrarPrevisao } from './liga.mjs';
 import { posseDe, equipadosDe, comprar as comprarCosmetico, equipar as equiparCosmetico,
@@ -86,6 +87,9 @@ export const ROTAS_ADMIN = [
      é a que a cria; a defesa dela mora inteira no `entrarOperador`. */
   'POST /api/admin/entrar',
   'POST /api/admin/sair',
+  /* ST-11.9: as bandeiras de feature. */
+  'GET /api/admin/bandeiras',
+  'POST /api/admin/bandeira',
 ];
 
 export const ROTAS_PUBLICAS = [
@@ -175,6 +179,8 @@ const STATUS_DE = {
   [ERRO_PARTIDA.VERSAO]: 409,
   [ERRO_PARTIDA.LIGADA]: 409,
   [ERRO_PARTIDA.COOLDOWN]: 409,
+  /* A feature desligada (ST-11.9): indisponível AGORA, não pedido errado. */
+  [ERRO_BANDEIRA.DESLIGADA]: 503,
 };
 
 /* Converte a exceção do domínio em resposta. O `limite` e a `pausa` viajam
@@ -462,6 +468,34 @@ export const ROTAS = {
          o quê. */
       if (e.codigo === ERRO_ADMIN.SEM_OPERADOR || e.codigo === ERRO_ADMIN.SEM_PAPEL)
         return { ...erro(403, ERROS.NAO_AUTORIZADO, 'sem permissão'), cabecalhos: cabecalhosResposta };
+      if (e.codigo) return { ...erro(400, e.codigo, e.message), cabecalhos: cabecalhosResposta };
+      throw e;
+    }
+  },
+
+  /* AS BANDEIRAS (ST-11.9). Ler é do painel; mudar é do dono, pelo `agir`
+     dentro do `mudarBandeira` — como a margem, e pelo mesmo motivo: a ação
+     carrega `de`, `para` e `confirmado`. A recusa do §25.1 é 409: o pedido
+     está certo, o checkpoint é que ainda não aconteceu. */
+  'GET /api/admin/bandeiras': ({ db, cabecalhos, agora }) =>
+    comOperador(db, cabecalhos, 'painel.ver', 'consulta das bandeiras',
+      () => ({ corpo: { bandeiras: bandeiras(db) } }), agora),
+
+  'POST /api/admin/bandeira': ({ db, cabecalhos, corpo, agora }) => {
+    const cru = String(cabecalhos?.authorization ?? '');
+    const token = cru.startsWith('Bearer ') ? cru.slice(7) : null;
+    if (!token) return erro(401, ERROS.NAO_AUTORIZADO, 'rota administrativa exige sessão de operador');
+    const sessao = lerSessaoAdmin(db, { token, agora, girar: true });
+    if (!sessao) return erro(401, ERROS.NAO_AUTORIZADO, 'sessão de operador ausente, expirada ou inválida');
+    const cabecalhosResposta = sessao.tokenNovo ? { 'x-admin-token': sessao.tokenNovo } : undefined;
+    try {
+      const r = mudarBandeira(db, { operadorId: sessao.operadorId, nome: String(corpo?.nome ?? ''), ligada: corpo?.ligada,
+                                   motivo: corpo?.motivo, confirmado: corpo?.confirmado === true, agora });
+      return { corpo: r, cabecalhos: cabecalhosResposta };
+    } catch (e) {
+      if (e.codigo === ERRO_ADMIN.SEM_OPERADOR || e.codigo === ERRO_ADMIN.SEM_PAPEL)
+        return { ...erro(403, ERROS.NAO_AUTORIZADO, 'sem permissão'), cabecalhos: cabecalhosResposta };
+      if (e.codigo === ERRO_BANDEIRA.RECUSADA) return { ...erro(409, e.codigo, e.message), cabecalhos: cabecalhosResposta };
       if (e.codigo) return { ...erro(400, e.codigo, e.message), cabecalhos: cabecalhosResposta };
       throw e;
     }
