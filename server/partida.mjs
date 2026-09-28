@@ -24,6 +24,8 @@ import { novoSal, mensagemCommit } from '../engine/commit.mjs';
 import { confrontoDaLiga } from '../app/modules/partida-dados.mjs';
 import { escolherAdversario, botPara, PAREAMENTO } from '../app/modules/pareamento-dados.mjs';
 import { contasLigadas } from './protecao.mjs';
+import { sincronizarTemporada } from './temporada.mjs';
+import { temporadaDe } from '../engine/temporada.mjs';
 import { snapshotDe, snapshotPorId, ERRO_EQUIPE } from './equipe.mjs';
 import { aplicarPartida, tierDaConta, ratingDe } from './liga-mmr.mjs';
 import PACK from '../content/escolhido.mjs';
@@ -75,6 +77,8 @@ export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveId
   const idem = `liga:${userId}:${chaveIdem}`;
   const ja = jaJogada(db, idem, pack);
   if (ja) return ja;
+  /* A temporada vira ANTES da partida: a partida de hoje conta no rating de hoje (ST-11.5). */
+  sincronizarTemporada(db, { agora });
   const b = snapshotDe(db, { userId, id: meu });
   const a = snapshotPorId(db, adversario);
   if (!a) throw falha(ERRO_EQUIPE.SEM_SNAPSHOT, 'esse time não existe');
@@ -132,6 +136,7 @@ export function buscarPartida(db, { userId, pack = PACK, meu, chaveIdem, agora, 
   const idem = `liga:${userId}:${chaveIdem}`;
   const ja = jaJogada(db, idem, pack);
   if (ja) return ja;
+  sincronizarTemporada(db, { agora });
   const b = snapshotDe(db, { userId, id: meu });
   const eu = { user: userId, rating: ratingDe(db, userId).rating, power: b.power };
   const candidatos = ultimosSnapshots(db, userId).map(s => ({ user: s.user, rating: ratingDe(db, s.user).rating, snapshot: s }));
@@ -167,7 +172,13 @@ export function rotasDaPartida(daExcecao) {
       return tentar(() => ({ partida: buscarPartida(db, { userId, meu, chaveIdem: corpo?.chaveIdem, agora }) }));
     },
     /* O tier e as partidas de quem pede — o rating exato fica no servidor (§9.7). */
-    'GET /api/equipe/tier': ({ db, userId }) => ({ corpo: tierDaConta(db, userId) }),
+    'GET /api/equipe/tier': ({ db, userId, agora }) => { sincronizarTemporada(db, { agora }); return { corpo: tierDaConta(db, userId) }; },
+    /* A temporada de agora (ST-11.5): o número, a fase, o dia e o fim — e o meu tier nela. */
+    'GET /api/equipe/temporada': ({ db, userId, agora }) => {
+      sincronizarTemporada(db, { agora });
+      const t = temporadaDe(agora);
+      return { corpo: { numero: t.numero, fase: t.fase, dia: t.dia, fim: t.fim, ...tierDaConta(db, userId) } };
+    },
     'GET /api/equipe/partida': ({ db, query }) => {
       const id = texto(query?.get?.('id'));
       if (!id) return { status: 400, corpo: { codigo: 'ENTRADA_INVALIDA', erro: 'partida inválida' } };

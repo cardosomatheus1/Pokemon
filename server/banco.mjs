@@ -1665,6 +1665,48 @@ export const MIGRACOES = [
       db.exec(`DROP TRIGGER bot_sem_update`);
       db.exec(`DROP TABLE league_bot_matches`);
     },
+  },  {
+    nome: 'temporada-st11.5',
+    /* A TEMPORADA DA LIGA (ST-11.5, §9.8).
+     *
+     *   liga_estado       UMA linha: a temporada corrente. A virada grava sobre
+     *                     o valor que leu — duas viradas ao mesmo tempo fecham uma
+     *   liga_temporadas   uma por temporada FECHADA, com o ranking final (tier e
+     *                     posição); só de inserção
+     *   liga_mmr_resets   o soft reset de cada conta em cada virada, com o antes e
+     *                     o depois; só de inserção — o rating de hoje é a soma
+     *                     das partidas e dos resets
+     * ADITIVA. */
+    sobe: db => {
+      db.exec(`CREATE TABLE liga_estado (id INTEGER PRIMARY KEY CHECK (id = 1), temporada INTEGER, atualizado_em INTEGER)`);
+      db.exec(`INSERT INTO liga_estado (id, temporada, atualizado_em) VALUES (1, NULL, NULL)`);
+      db.exec(`
+        CREATE TABLE liga_temporadas (
+          numero        INTEGER PRIMARY KEY,
+          fechada_em    INTEGER NOT NULL,
+          ranking_json  TEXT NOT NULL
+        )`);
+      db.exec(`
+        CREATE TABLE liga_mmr_resets (
+          temporada  INTEGER NOT NULL,
+          user_id    TEXT NOT NULL REFERENCES users(id),
+          antes      INTEGER NOT NULL,
+          depois     INTEGER NOT NULL,
+          criado_em  INTEGER NOT NULL,
+          PRIMARY KEY (temporada, user_id)
+        )`);
+      db.exec(`CREATE TRIGGER liga_temporadas_sem_update BEFORE UPDATE ON liga_temporadas BEGIN SELECT RAISE(ABORT, 'liga_temporadas é append-only'); END`);
+      db.exec(`CREATE TRIGGER liga_temporadas_sem_delete BEFORE DELETE ON liga_temporadas BEGIN SELECT RAISE(ABORT, 'liga_temporadas é append-only'); END`);
+      db.exec(`CREATE TRIGGER liga_mmr_resets_sem_update BEFORE UPDATE ON liga_mmr_resets BEGIN SELECT RAISE(ABORT, 'liga_mmr_resets é append-only'); END`);
+      db.exec(`CREATE TRIGGER liga_mmr_resets_sem_delete BEFORE DELETE ON liga_mmr_resets BEGIN SELECT RAISE(ABORT, 'liga_mmr_resets é append-only'); END`);
+    },
+    desce: db => {
+      db.exec(`DROP TRIGGER liga_temporadas_sem_update`); db.exec(`DROP TRIGGER liga_temporadas_sem_delete`);
+      db.exec(`DROP TRIGGER liga_mmr_resets_sem_update`); db.exec(`DROP TRIGGER liga_mmr_resets_sem_delete`);
+      db.exec(`DROP TABLE liga_mmr_resets`);
+      db.exec(`DROP TABLE liga_temporadas`);
+      db.exec(`DROP TABLE liga_estado`);
+    },
   },
 ];
 

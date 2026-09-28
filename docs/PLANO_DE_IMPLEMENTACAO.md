@@ -1267,11 +1267,26 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   calibração ou previsões toca o Liga MMR, e vice-versa.
   `test/liga-mmr.mjs` · S1727–S1734.
 
-### ST-11.5 · A temporada de 28 dias
+### ST-11.5 · A temporada de 28 dias ✅ 28/09
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.2 · **Spec** §9.8
 - **Escopo:** colocação, competição e fechamento, com soft reset que só toca o Liga MMR.
 - **Aceite:** a virada de temporada é idempotente.
 - **Portões:** Q1 Q2 Q3 Q8.
+- **Feito:** `engine/temporada.mjs`: a temporada é do RELÓGIO — número, dia, fase
+  (1–7 colocação, 8–21 competição, 22–28 fechamento), início e fim —, virando
+  no dia do mundo (3 h), com a temporada 1 na segunda 28/09/2026; o soft reset
+  puxa o rating ao inicial pela metade da distância. Migração `temporada-st11.5`:
+  `liga_estado` (a temporada corrente), `liga_temporadas` (o ranking FINAL de
+  cada uma — tier e posição, nunca o número) e `liga_mmr_resets` (o reset de
+  cada conta, o antes e o depois), os dois só de inserção. `server/temporada.mjs`:
+  a virada é PREGUIÇOSA (quem lê ou joga a Liga sincroniza; sem agendador que
+  possa não rodar) e IDEMPOTENTE pela guarda na cláusula (o valor lido velho
+  não fecha de novo); fecha em ordem as temporadas que o relógio deixou para
+  trás. A partida sincroniza ANTES — conta no rating resetado. O rating de hoje
+  é a soma dos dois livros. `GET /api/equipe/temporada`.
+  `test/liga-temporada.mjs` · S1746–S1752.
+- **O que fica:** a colocação é só a FASE (rótulo para a ST-11.6); K maior nas
+  partidas de colocação, se o piloto pedir, é balanceamento da ST-11.7.
 
 ### ST-11.6 · As telas da Liga
 - **Porte** M–G, fatiada em Home e Matchmaking / Replay / Placares · **Servidor** sim · **Bloco dono** F5.9 · **Spec** §12 telas 25–28, §9.15
