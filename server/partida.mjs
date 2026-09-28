@@ -23,12 +23,19 @@ import { novaRaiz } from '../engine/seed.mjs';
 import { novoSal, mensagemCommit } from '../engine/commit.mjs';
 import { confrontoDaLiga } from '../app/modules/partida-dados.mjs';
 import { snapshotDe, snapshotPorId, ERRO_EQUIPE } from './equipe.mjs';
+import { aplicarPartida, tierDaConta } from './liga-mmr.mjs';
 import PACK from '../content/escolhido.mjs';
 
 export const ERRO_PARTIDA = Object.freeze({
   CHAVE: 'PARTIDA_CHAVE_INVALIDA', SEM_PARTIDA: 'PARTIDA_SEM_PARTIDA', CONTRA_SI: 'PARTIDA_CONTRA_SI', VERSAO: 'PARTIDA_VERSAO' });
 const falha = (codigo, msg) => Object.assign(new Error(msg), { codigo });
 const CHAVE_OK = /^[\w-]{8,64}$/;
+
+function emTransacao(db, fn) {
+  db.exec('BEGIN');
+  try { const r = fn(); db.exec('COMMIT'); return r; }
+  catch (e) { try { db.exec('ROLLBACK'); } catch {} throw e; }
+}
 
 /* O que a partida mostra: o log, os dois times e o REVEAL — o compromisso, a
    raiz e o sal — para qualquer um conferir. Os donos não viajam. */
@@ -51,11 +58,16 @@ export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveId
   if (!c.ok) throw falha(ERRO_PARTIDA.VERSAO, c.motivo);
   const commit = createHash('sha256').update(mensagemCommit(raiz, sal), 'utf8').digest('hex');
   const id = randomUUID();
-  db.prepare(`INSERT INTO league_matches (id, idem_key, snap_a, snap_b, user_a, user_b, raiz, sal, commit_hash, semente,
-                versao_motor, versao_conteudo, vencedor, turnos, log_json, criada_em)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-    .run(id, idem, a.id, b.id, a.user, userId, raiz, sal, commit, c.semente, c.versaoMotor, c.versaoConteudo, c.vencedor, c.turnos,
-         JSON.stringify(c.log), agora);
+  /* A partida e o Liga MMR na MESMA transação (ST-11.4): a partida gravada sem
+     o rating aplicado — ou o contrário — é rating criado ou sumido. */
+  emTransacao(db, () => {
+    db.prepare(`INSERT INTO league_matches (id, idem_key, snap_a, snap_b, user_a, user_b, raiz, sal, commit_hash, semente,
+                  versao_motor, versao_conteudo, vencedor, turnos, log_json, criada_em)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(id, idem, a.id, b.id, a.user, userId, raiz, sal, commit, c.semente, c.versaoMotor, c.versaoConteudo, c.vencedor, c.turnos,
+           JSON.stringify(c.log), agora);
+    aplicarPartida(db, { id, userA: a.user, userB: userId, vencedor: c.vencedor, agora });
+  });
   return publica(db.prepare(`SELECT * FROM league_matches WHERE id = ?`).get(id));
 }
 
@@ -78,6 +90,8 @@ export function rotasDaPartida(daExcecao) {
       if (!meu || !adversario) return { status: 400, corpo: { codigo: 'ENTRADA_INVALIDA', erro: 'partida inválida' } };
       return tentar(() => ({ partida: criarPartida(db, { userId, meu, adversario, chaveIdem: corpo?.chaveIdem, agora }) }));
     },
+    /* O tier e as partidas de quem pede — o rating exato fica no servidor (§9.7). */
+    'GET /api/equipe/tier': ({ db, userId }) => ({ corpo: tierDaConta(db, userId) }),
     'GET /api/equipe/partida': ({ db, query }) => {
       const id = texto(query?.get?.('id'));
       if (!id) return { status: 400, corpo: { codigo: 'ENTRADA_INVALIDA', erro: 'partida inválida' } };

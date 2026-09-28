@@ -1237,11 +1237,22 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **Aceite:** nunca pareia contas ligadas; o bot aparece rotulado no payload e na tela; 100 pedidos concorrentes criam uma partida.
 - **Portões:** Q1 Q2 Q3 Q6 Q8.
 
-### ST-11.4 · O Liga MMR, separado dos outros dois
+### ST-11.4 · O Liga MMR, separado dos outros dois ✅ 28/09
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.2 · **Spec** §9.7, §22
 - **Escopo:** Elo simples, com rating oculto e tier visível.
 - **Aceite:** teste de grafo: o Liga MMR e a calibração não se leem; Elo de soma zero por partida.
 - **Portões:** Q1 Q2 Q3.
+- **Feita ANTES da 11.3**, de propósito: o matchmaking pareia pelo MMR.
+- **Feito:** `engine/liga-mmr.mjs` (Elo, K 32, inicial 1000, sem piso — um piso
+  criaria rating do nada; o delta arredondado UMA vez, e o que um ganha o
+  outro perde exatamente) e os tiers do §9.6 por faixa. Migração
+  `liga-mmr-st11.4`: `liga_mmr` (o de hoje) e `liga_mmr_eventos` (o livro,
+  um evento por PARTIDA — aplicar duas vezes aplica uma — só de inserção).
+  O rating muda na MESMA transação que grava a partida (a partida que falha
+  no rating não fica gravada). A tela recebe o TIER, nunca o número
+  (`GET /api/equipe/tier`). O teste de grafo lê as fontes: nada que fala de
+  calibração ou previsões toca o Liga MMR, e vice-versa.
+  `test/liga-mmr.mjs` · S1727–S1734.
 
 ### ST-11.5 · A temporada de 28 dias
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.2 · **Spec** §9.8

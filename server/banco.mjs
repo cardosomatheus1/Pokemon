@@ -1587,6 +1587,44 @@ export const MIGRACOES = [
       db.exec(`DROP TRIGGER partida_sem_update`);
       db.exec(`DROP TABLE league_matches`);
     },
+  },  {
+    nome: 'liga-mmr-st11.4',
+    /* O LIGA MMR (ST-11.4, §9.7). `liga_mmr` é o rating de hoje, um por conta
+     * (quem nunca jogou está no inicial, sem linha); `liga_mmr_eventos` é o
+     * livro: um evento por PARTIDA (a chave é o id dela — aplicar duas vezes
+     * aplica uma), com o antes dos dois e o delta, só de inserção. Nenhuma
+     * coluna aqui fala de previsão: os três ratings não se leem. ADITIVA. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE liga_mmr (
+          user_id        TEXT PRIMARY KEY REFERENCES users(id),
+          rating         INTEGER NOT NULL,
+          partidas       INTEGER NOT NULL DEFAULT 0 CHECK (partidas >= 0),
+          atualizado_em  INTEGER NOT NULL
+        )`);
+      db.exec(`
+        CREATE TABLE liga_mmr_eventos (
+          partida_id  TEXT PRIMARY KEY REFERENCES league_matches(id),
+          user_a      TEXT NOT NULL REFERENCES users(id),
+          user_b      TEXT NOT NULL REFERENCES users(id),
+          antes_a     INTEGER NOT NULL,
+          antes_b     INTEGER NOT NULL,
+          delta       INTEGER NOT NULL,
+          criado_em   INTEGER NOT NULL
+        )`);
+      db.exec(`
+        CREATE TRIGGER mmr_eventos_sem_update BEFORE UPDATE ON liga_mmr_eventos
+        BEGIN SELECT RAISE(ABORT, 'liga_mmr_eventos é append-only'); END`);
+      db.exec(`
+        CREATE TRIGGER mmr_eventos_sem_delete BEFORE DELETE ON liga_mmr_eventos
+        BEGIN SELECT RAISE(ABORT, 'liga_mmr_eventos é append-only'); END`);
+    },
+    desce: db => {
+      db.exec(`DROP TRIGGER mmr_eventos_sem_delete`);
+      db.exec(`DROP TRIGGER mmr_eventos_sem_update`);
+      db.exec(`DROP TABLE liga_mmr_eventos`);
+      db.exec(`DROP TABLE liga_mmr`);
+    },
   },
 ];
 
