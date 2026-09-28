@@ -68,7 +68,7 @@ export function mapaDaJornada(pack, prog) {
   const vencidos = new Set(prog?.vencidos ?? []);
   const lista = nos.map((no, i) => ({
     id: no.id, nome: no.nome ?? no.id, rival: no.rival, insignia: no.insignia ?? null,
-    tipo: no.chefe ? 'chefe' : no.insignia ? 'ginasio' : no.liga ? 'liga' : 'rota', cena: no.cena ?? null, licao: no.licao ?? null,
+    tipo: no.chefe ? 'chefe' : no.insignia ? 'ginasio' : no.liga ? 'liga' : 'rota', cena: no.cena ?? null, regiao: no.regiao ?? null, marco: no.marco ?? null, licao: no.licao ?? null,
     /* ST-10.19c: a Liga não ensina — REVISA um ginásio, e o mapa desenha a
        insígnia dele ao lado da lição. `selo` é o nome do degrau, do pack. */
     selo: no.selo ?? null, final: !!no.final,
@@ -188,7 +188,17 @@ export function bordaDoMapa(passo = 4.2) {
   const lista = [];
   for (let i = 0, x = 1; x <= 99; i++, x = 1 + i * passo) {
     const d = ((i * 37) % 11) / 10;
-    lista.push({ x: Math.round((x + d) * 10) / 10, y: 3 + (i % 2) * 1.5 }, { x: Math.round((x + passo / 2 - d) * 10) / 10, y: 97 - (i % 2) * 1.5 });
+    /* ST-10.22b: a parede MISTURA a árvore do `pret` com a redonda e o
+       pinheiro nossos, e varia o tamanho — a mesma árvore em fileira era o
+       "carimbo" que o crítico cego apontou nas bordas. Fixo pelo índice. */
+    const tipo = k => [null, 'pinheiro', null, 'arvore', 'pinheiro', null, 'arvore'][(i * 3 + k) % 7];
+    const escala = k => [0, 2, 0, 3, 0][(i + k * 2) % 5];
+    const peca = (px, py, k) => ({ x: px, y: py, ...(tipo(k) ? { arte: tipo(k) } : {}), ...(escala(k) ? { escala: escala(k) } : {}) });
+    lista.push(peca(Math.round((x + d) * 10) / 10, 3 + (i % 2) * 1.5, 0), peca(Math.round((x + passo / 2 - d) * 10) / 10, 97 - (i % 2) * 1.5, 1));
+    /* A fileira de TRÁS, meio cortada pela borda: a parede vira mata, e não uma
+       fileira contada (Q7, 2ª rodada: "uma fila só, espaçada por igual"). */
+    lista.push({ x: Math.min(99.5, Math.round((x + passo / 2 + d) * 10) / 10), y: 0.4, fundo: true, ...(tipo(2) ? { arte: tipo(2) } : {}) },
+               { x: Math.round((x + d / 2) * 10) / 10, y: 99.6, fundo: true, ...(tipo(3) ? { arte: tipo(3) } : {}) });
   }
   return lista;
 }
@@ -203,9 +213,73 @@ const CENAS = {
      em CSS (`forma`), nas mesmas diagonais de cima (ST-10.14). */
   agua:    { forma: 'lago', pos: [[-54, -36], [56, -42]] },
 };
+/* ST-10.22b · L-209: a arte NOSSA (`arte/mapa/`, de `tools/pixel-arte.mjs`) e
+   as três poças desenhadas em CSS — água, lava e brejo, cada uma com a borda
+   do seu chão. */
+Object.assign(CENAS, {
+  flores:  { arte: 'flores',        pos: [[-46, -30], [48, -34], [-38, -62], [40, -66]] },
+  casas:   { arte: 'casa_vermelha', alterna: 'casa_azul', pos: [[-44, -30], [44, -34], [-70, -52], [72, -56]] },
+  braseiros: { arte: 'braseiro',    pos: [[-44, -30], [44, -34]], um: true },
+  junco:   { arte: 'junco',         pos: [[-44, -30], [44, -34]] },
+  torres:  { arte: 'torre',         pos: [[-48, -34], [50, -38]] },
+  pilares: { arte: 'pilar',         pos: [[-44, -30], [44, -34]] },
+  lava:    { forma: 'lava',         pos: [[-54, -36], [56, -42]] },
+  brejo:   { forma: 'brejo',        pos: [[-54, -36], [56, -42]] },
+});
+export const ARTE_NOSSA_DO_MAPA = '../arte/mapa';
+/* Numa LISTA, cada tipo ganha um ANEL próprio — o de dentro, o de cima e o de
+   fora —, para a casa não cair em cima do lago. Todos nas diagonais de CIMA,
+   como sempre (longe do nome, do caminho e do treinador). */
+const ANEIS = [[[-50, -34], [52, -38]], [[-40, -72], [42, -76]], [[-78, -50], [80, -54]]];
+/* As casas mudam de cor de CIDADE para cidade (Q7: "o mesmo par em todos os
+   ginásios"), pelo nome do nó — fixo, sem sortear a cada repintura. */
+const CORES_DA_CASA = ['casa_vermelha', 'casa_azul', 'casa_verde', 'casa_roxa'];
+const semente = id => [...String(id ?? '')].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7);
+const peca = (c, dx, dy, i = 0, id = null) => (c.forma ? { forma: c.forma, dx, dy }
+  : c.arte === 'casa_vermelha' ? { arte: CORES_DA_CASA[(semente(id) + i) % 4], dx, dy }
+  : c.arte ? { arte: c.arte, dx, dy } : { folha: c.folha, dx, dy });
+/* Um tipo `um` põe UMA peça, do lado que o nome do nó sorteia — o par
+   espelhado em todo nó era o "carimbo" (Q7). E o MARCO da cidade entra no
+   lugar de uma das casas, do lado oposto ao da que fica. */
 export function cenaDoNo(no) {
+  const lado = semente(no?.id) % 2;
+  const poe = (c, pos, k) => pos.map(([dx, dy], i) => (c.um && i !== lado ? null
+    : no?.marco && c.arte === 'casa_vermelha' && i === 1 - lado && !poe.marcou ? (poe.marcou = true, { marco: no.marco, dx, dy })
+    : peca(c, dx, dy, i + k * 2, no?.id))).filter(Boolean);
+  if (Array.isArray(no?.cena))
+    return no.cena.flatMap((tipo, k) => (CENAS[tipo] && ANEIS[k] ? poe(CENAS[tipo], ANEIS[k], k) : []));
   const c = CENAS[no?.cena];
-  return c ? c.pos.map(([dx, dy]) => (c.forma ? { forma: c.forma, dx, dy } : { folha: c.folha, dx, dy })) : [];
+  return c ? poe(c, c.pos, 0) : [];
+}
+
+/* O CHÃO DE CADA REGIÃO (ST-10.22b · L-209), em porcentagem do caminho
+   DEITADO, como os nós: a tela transpõe no celular do mesmo jeito. Uma mancha
+   por nó, maior que o passo entre eles — as vizinhas da mesma região se
+   fundem, e a borda em degraus da tela as mistura com a grama. */
+export const REGIOES = Object.freeze(['campo', 'floresta', 'bosque', 'pedra', 'praia', 'jardim', 'pantano', 'cidade', 'vulcao', 'usina', 'planalto']);
+/* Os nós SEGUIDOS da mesma região viram UMA mancha, do tamanho do trecho —
+   cinco manchas redondas lado a lado liam como bolhas, e não como o planalto
+   da Liga (medido na primeira captura). */
+export function regioesDoMapa(mapa) {
+  const grupos = [];
+  for (const n of mapa?.nos ?? []) {
+    if (!REGIOES.includes(n.regiao)) continue;
+    const g = grupos.at(-1);
+    if (g && g.regiao === n.regiao && g.ultimo === n.id) g.nos.push(n); else grupos.push({ regiao: n.regiao, nos: [n] });
+    const i = (mapa.nos ?? []).findIndex(x => x.id === n.id);
+    grupos.at(-1).ultimo = mapa.nos[i + 1]?.id;
+  }
+  const r1 = v => Math.round(v * 10) / 10;
+  return grupos.flatMap((g, i) => {
+    const xs = g.nos.map(n => n.x), ys = g.nos.map(n => n.y);
+    const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+    const base = { id: g.nos[0].id, nos: g.nos.map(n => n.id), regiao: g.regiao, x: r1((x0 + x1) / 2), y: r1((y0 + y1) / 2),
+                   w: r1(x1 - x0 + 13), h: r1(y1 - y0 + 31), v: i % 3 };
+    /* A região GRANDE (três nós ou mais: o planalto da Liga) ganha um SEGUNDO
+       degrau no meio — a mesa em patamares. Uma mesa só, do tamanho de meio
+       mapa, lia como "piso de reserva" (Q7, 3ª rodada). */
+    return g.nos.length >= 3 ? [base, { ...base, id: `${base.id}:topo`, topo: true, w: r1(base.w * 0.62), h: r1(base.h * 0.5), v: (i + 1) % 3 }] : [base];
+  });
 }
 
 /* A LIÇÃO DA VELOCIDADE NA TELA (ST-10.14): o seu mais rápido contra cada

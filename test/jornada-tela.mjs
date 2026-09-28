@@ -14,7 +14,7 @@ import { montarLutador, simular } from '../engine/treino-batalha.mjs';
 import { movesetDoRival, padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { treinador } from '../app/modules/treino-dados.mjs';
 import { correcaoDaLicao, aplicarCorrecao } from '../app/modules/jornada-correcao.mjs';
-import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, golpesLevados, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, rivaisDerrubados, setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, pagamentoDoNo, fraseDoPagamento, DUAS_VOLTAS_A_PARTIR_DE, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
+import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, golpesLevados, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, rivaisDerrubados, setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, regioesDoMapa, REGIOES, pagamentoDoNo, fraseDoPagamento, DUAS_VOLTAS_A_PARTIR_DE, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 const semComentario = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
@@ -150,7 +150,8 @@ export function suite() {
   s.teste('o mundo em volta: o treinador do nó, a parede de árvores, a cena longe do caminho e do nome', () => {
     const m = mapaDaJornada(pack, progressoVazio());
     igual(m.nos.map(n => n.ow).join(), 'youngster,lass,camper,hiker,expert_m,swimmer_f,sailor,picnicker,black_belt,beauty,psychic_m,gentleman,,may_walking,swimmer_m,psychic_m,brendan_walking,camper', 'a folha de cada treinador');
-    igual(m.nos.map(n => n.cena ?? '-').join(), '-,arvores,-,rochas,rochas,agua,agua,arvores,-,-,agua,arvores,-,-,-,-,-,-', 'a cena de cada nó');
+    /* ST-10.22b: a cidade do ginásio é casas mais o que a cerca — a cena vira lista. */
+    igual(m.nos.map(n => [n.cena ?? '-'].flat().join('+')).join(), 'flores,arvores,flores,rochas,rochas+casas,agua+casas,agua+casas,flores+casas+arvores,brejo+casas+junco,casas+casas,casas+lava,arvores+casas,torres,braseiros,braseiros,braseiros,braseiros,braseiros+casas', 'a cena de cada nó');
     const b = bordaDoMapa();
     ok(b.length >= 40 && b.every(p => p.x >= 0 && p.x <= 100 && (p.y <= 6 || p.y >= 94)), 'a parede não é borda');
     igual(JSON.stringify(b), JSON.stringify(bordaDoMapa()), 'a parede dança a cada repintura');
@@ -158,7 +159,7 @@ export function suite() {
     /* As diagonais de CIMA: longe do nome (embaixo), do caminho deitado (dos
        lados) e do em pé (em cima e embaixo), e fora do treinador (±16 px). */
     ok(cenaDoNo({ cena: 'agua' }).every(c => c.forma === 'lago' && !c.folha), 'o lago virou folha que não existe');
-    for (const c of [...cenaDoNo({ cena: 'arvores' }), ...cenaDoNo({ cena: 'rochas' }), ...cenaDoNo({ cena: 'agua' })]) {
+    for (const c of [...cenaDoNo({ cena: 'arvores' }), ...cenaDoNo({ cena: 'rochas' }), ...cenaDoNo({ cena: 'agua' }), ...m.nos.flatMap(n => cenaDoNo(n))]) {
       ok(c.dy <= -24, `a cena (${c.dx}, ${c.dy}) desce até o nome`);
       ok(Math.abs(c.dx) >= 36, `a cena (${c.dx}, ${c.dy}) cai no caminho em pé ou no treinador`);
       ok(Math.abs(c.dy) >= 24, `a cena (${c.dx}, ${c.dy}) cai no caminho deitado`);
@@ -535,6 +536,80 @@ export function suite() {
     ok(/<i class="jnFaixaMarco"\$\{n\.tipo === 'ginasio' && n\.estado !== 'trancado' \? ` style="background-image:url\(\$\{arteDaInsignia\(n\.insignia\)\}\)"` : ''\}><\/i>/.test(tela), 'a faixa sem o marco do nó');
     ok(/\.jnFaixa::before\{[^}]*dashed/.test(html) && /\.jnFaixaNo\.jn-atual \.jnFaixaMarco\{[^}]*var\(--neon\)/.test(html), 'a faixa sem a trilha ou sem a cor do atual');
     ok(/#viewTreino > \.card > h3\{justify-content:flex-start/.test(html), 'o lema volta ao canto oposto do título');
+  });
+
+  s.teste('ST-10.22b (L-209): o mundo — regiões que se fundem, a cena em anéis, a nossa arte e as poças', () => {
+    const m = mapaDaJornada(pack, progressoVazio()), rg = regioesDoMapa(m);
+    /* Toda região nomeada do pack está no mapa, e nenhuma região inventada. */
+    igual([...new Set(rg.map(r => r.regiao))].sort().join(), [...REGIOES].sort().join(), 'as regiões do mapa');
+    /* Os nós SEGUIDOS da mesma região viram uma mancha só — a Liga é um planalto, e não cinco bolhas. */
+    igual(rg.find(r => r.regiao === 'planalto').nos.join(), 'lorelei,bruno,agatha,lance,campeao', 'a Liga não é um planalto só');
+    igual(rg.find(r => r.regiao === 'pedra').nos.join(), 'pedra,pewter', 'a pedra e Pewter não se fundem');
+    /* A Floresta é de copa redonda; Viridian, de pinheiro (Q7, 2ª rodada: "o mesmo material"). */
+    igual(rg.filter(r => /^(floresta|bosque)$/.test(r.regiao)).map(r => `${r.regiao}:${r.nos.join('+')}`).join(' '), 'floresta:floresta bosque:viridian', 'a Floresta e Viridian no mesmo material');
+    /* A mancha cobre os nós dela, com folga. */
+    /* O planalto é MESA EM PATAMARES: um degrau de cima, menor, no meio — e só nas regiões grandes. */
+    const topos = rg.filter(r => r.topo), plan = rg.find(r => r.regiao === 'planalto' && !r.topo);
+    igual(topos.map(r => r.regiao).join(), 'planalto', 'o degrau de cima fora do planalto');
+    ok(topos[0].w < plan.w && topos[0].h < plan.h && topos[0].x === plan.x && topos[0].y === plan.y, 'o degrau de cima não está dentro da mesa');
+    for (const r of rg.filter(x => !x.topo)) for (const id of r.nos) {
+      const n = m.nos.find(x => x.id === id);
+      ok(Math.abs(n.x - r.x) <= r.w / 2 - 5 && Math.abs(n.y - r.y) <= r.h / 2 - 12, `o nó ${id} fica na borda da mancha ${r.regiao}`);
+    }
+    /* A cena em lista: um ANEL por tipo — a casa não cai no lago. */
+    const cer = cenaDoNo({ cena: ['agua', 'casas'] });
+    igual(cer.map(c => c.forma ?? c.arte).join(), 'lago,lago,casa_azul,casa_verde', 'a cena de Cerulean');
+    /* As casas mudam de cor de cidade para cidade (Q7: "o mesmo par em todo ginásio"), e não a cada repintura. */
+    const par = id => cenaDoNo(m.nos.find(n => n.id === id)).filter(c => /^casa_/.test(c.arte ?? '')).map(c => c.arte).join('+');
+    const pares = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'cinnabar', 'viridian'].map(par);
+    ok(new Set(pares).size >= 4, `as cidades repetem o mesmo par de casas: ${pares.join(' ')}`);
+    igual(par('pewter'), par('pewter'), 'a cor da casa dança a cada repintura');
+    /* A parede mistura a árvore do pret com as nossas, e varia o tamanho. */
+    const parede = bordaDoMapa();
+    ok(parede.filter(p => p.arte === 'pinheiro').length >= 8 && parede.filter(p => p.arte === 'arvore').length >= 8 && parede.filter(p => !p.arte).length >= 12, 'a parede é uma árvore só');
+    ok(parede.some(p => p.escala === 2) && parede.some(p => p.escala === 3), 'a parede sem variação de tamanho');
+    const lagos = cer.filter(c => c.forma), casas = cer.filter(c => c.arte);
+    ok(casas.every(c => lagos.every(l => Math.abs(c.dy - l.dy) >= 34 || Math.abs(c.dx - l.dx) >= 48)), 'a casa cai em cima do lago');
+    igual(cenaDoNo({ cena: ['casas', 'lava'] }).filter(c => c.forma === 'lava').length, 2, 'Cinnabar sem lava');
+    igual(cenaDoNo({ cena: ['nada'] }).length, 0, 'tipo desconhecido virou enfeite');
+    /* O MARCO: cada cidade com o seu, no lugar de UMA casa — e nunca o par espelhado. */
+    const marcos = m.nos.filter(n => n.marco).map(n => n.marco);
+    igual(new Set(marcos).size, marcos.length, 'duas cidades com o mesmo marco');
+    ok(marcos.length >= 6, `cidades sem marco: só ${marcos.length}`);
+    for (const n of m.nos.filter(x => x.marco)) {
+      const c = cenaDoNo(n), mc = c.filter(x => x.marco);
+      igual(mc.length, 1, `o marco de ${n.id} aparece ${mc.length} vezes`);
+      ok(/^<svg [^>]*shape-rendering="crispEdges"/.test(fonte(`../arte/mapa/${n.marco}.svg`)), `o marco ${n.marco} não existe`);
+    }
+    /* O braseiro da Liga é UM por nó, do lado que o nome sorteia — doze em pares era carimbo. */
+    igual(m.nos.filter(n => n.tipo === 'liga').map(n => cenaDoNo(n).filter(c => c.arte === 'braseiro').length).join(), '1,1,1,1,1', 'os braseiros da Liga em par');
+    ok(new Set(m.nos.filter(n => n.tipo === 'liga').map(n => Math.sign(cenaDoNo(n).find(c => c.arte === 'braseiro').dx))).size === 2, 'todo braseiro do mesmo lado');
+    /* A nossa arte: cada peça pedida existe em `arte/mapa/`, e o gerador a refaz igual. */
+    for (const a of new Set(m.nos.flatMap(n => cenaDoNo(n)).map(c => c.arte).filter(Boolean)))
+      ok(/^<svg [^>]*shape-rendering="crispEdges"/.test(fonte(`../arte/mapa/${a}.svg`)), `a arte ${a} não existe ou não é pixel`);
+    const tela = semComentario(fonte('../app/modules/jornada-tela.mjs')), html = fonte('../app/index.html');
+    ok(/regioesDoMapa\(mapa\)\.map\(r => `<div class="jnRegiao jnR-\$\{r\.regiao\}/.test(tela), 'a tela não pinta as regiões da camada 0');
+    /* O rótulo do trancado é SÓ o nome (Q7, 3ª rodada: "sopa de rótulos" em 1100): o líder e o tipo ficam no aberto, no vencido e no escolhido. */
+    ok(/<span>\$\{n\.nome\}\$\{n\.estado === 'trancado' && n\.id !== escolhido \? '' :/.test(tela), 'o trancado ainda leva o rótulo de duas linhas');
+    ok(tela.indexOf('jnRegiao') < tela.indexOf('<svg class="jnCaminho jnDeitado"'), 'a região é pintada por cima do caminho');
+    ok(/background-image:url\(\$\{ARTE_NOSSA_DO_MAPA\}\/\$\{c\.arte\}\.svg\)/.test(tela), 'a nossa arte não vem de arte/mapa');
+    /* A arte de 16 × 16 não herda a folha de quatro quadros (o bug da primeira captura: esticada ×4, só a borda vazia aparecia). */
+    ok(/\.jnProp\.jnArte\{background-size:32px 32px\}/.test(html), 'a nossa arte esticada na folha de 128 px');
+    for (const r of REGIOES) ok(new RegExp(`\\.jnR-${r} i\\{background:`).test(html), `a região ${r} sem chão`);
+    /* TERRENO, e não mancha (Q7 da 10.22b, 1ª rodada: "cor borrifada, nenhuma borda, nenhuma altura"):
+       a borda em degraus e a face do penhasco onde o lugar é alto. */
+    ok(/\.jnRegiao b\{[^}]*top:var\(--alto\);[^}]*clip-path:var\(--forma\);[^}]*repeating-linear-gradient\(90deg/.test(html) && /<b><\/b><i><\/i><\/div>`/.test(tela), 'a região sem a face do penhasco em estratos');
+    ok(/\.jnRegiao i\{[^}]*clip-path:var\(--forma\)/.test(html) && [0, 1, 2].every(v => new RegExp(`\\.jnRv${v}\\{--forma:polygon\\(`).test(html)), 'a região sem a borda em degraus');
+    for (const r of ['floresta', 'bosque', 'pedra', 'vulcao', 'planalto']) ok(new RegExp(`\\.jnR-${r}\\{--alto:\\d+px;--penhasco:#`).test(html), `a região ${r} é rente ao chão`);
+    ok(/@media \(max-width:520px\)[\s\S]*\.jnRegiao\{left:calc\(\(var\(--y\) - \(var\(--h\) \+ 16\) \/ 2\) \* 1%\)/.test(html), 'em pé a região volta à largura do deitado — o planalto com 120 px');
+    ok(/\.jnLago\.jn-lava::after\{/.test(html) && /\.jnLago\.jn-brejo::after\{/.test(html), 'a lava ou o brejo sem poça própria');
+    ok(/@media \(prefers-reduced-motion:reduce\)\{ \.jnLago::after,\.jnLago i\{animation:none\} \}/.test(html), 'a água anda para quem pediu menos movimento');
+    ok(/\.jnMapa\.jnVoltas2\{height:calc\(var\(--n\) \* 165px \+ 60px\)\}/.test(html), 'o passo em pé voltou a 150 px — o rótulo com "próximo" encosta no treinador de baixo');
+    const afastar = tela.slice(tela.indexOf('function afastarCena'), tela.indexOf('let reafastar'));
+    ok(/querySelectorAll\('\.jnB \.jnProp'\)/.test(afastar), 'a árvore da parede fica sob a casa');
+    /* O marco é <img>: o afastamento roda de novo quando ele carrega — com 0 × 0 ele ficava em cima de um nome (medido). */
+    ok(/querySelectorAll\('\.jnMarco'\)\.forEach\(im => \{ if \(!im\.complete\) im\.addEventListener\('load', \(\) => afastarCena\(alvo\), \{ once: true \}\); \}\)/.test(tela)
+       && /\.jnPos:not\(\.jnB\) \.jnMarco'\)\) \{/.test(afastar), 'o marco fica fora do afastamento');
   });
 
   /* D-125 — o inicial sozinho perdia o primeiro nó — foi consertado na ST-10.13;

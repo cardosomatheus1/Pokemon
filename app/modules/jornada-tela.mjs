@@ -14,7 +14,7 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
-import { setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe } from './jornada-dados.mjs';
+import { setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, regioesDoMapa, ARTE_NOSSA_DO_MAPA } from './jornada-dados.mjs';
 import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, turnosDaAmeaca, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { diaDoMundo } from '../../engine/avanco.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido, candidatosDaCaixa, membrosParaTrocas } from './treino-dados.mjs';
@@ -314,13 +314,18 @@ function afastarCena(alvo) {
   const caixa = alvo.querySelector('.jnMapa')?.getBoundingClientRect();
   const fora = r => caixa && (r.left < caixa.left || r.right > caixa.right || r.top < caixa.top || r.bottom > caixa.bottom);
   const ruim = r => tocaEm(obstaculos, r) || fora(r);
-  for (const el of alvo.querySelectorAll('.jnPos:not(.jnB) .jnLago, .jnPos:not(.jnB) .jnProp')) {
+  for (const el of alvo.querySelectorAll('.jnPos:not(.jnB) .jnLago, .jnPos:not(.jnB) .jnProp, .jnPos:not(.jnB) .jnMarco')) {
     el.dataset.dx0 ??= el.style.getPropertyValue('--dx');
     el.style.setProperty('--dx', el.dataset.dx0); el.style.display = '';
     if (!ruim(el.getBoundingClientRect())) continue;
     el.style.setProperty('--dx', `${-parseFloat(el.dataset.dx0)}px`);
     if (ruim(el.getBoundingClientRect())) el.style.display = 'none';
   }
+  /* ST-10.22b: a árvore da parede que cai sob uma peça da cena (a casa de
+     Pewter, a de Vermilion, lá em cima) sai — casa na frente de árvore
+     amontoada lia como colagem. */
+  const pecas = [...alvo.querySelectorAll('.jnPos:not(.jnB) .jnLago, .jnPos:not(.jnB) .jnProp, .jnPos:not(.jnB) .jnMarco')].filter(el => el.style.display !== 'none').map(el => el.getBoundingClientRect());
+  for (const el of alvo.querySelectorAll('.jnB .jnProp')) { el.style.display = ''; if (tocaEm(pecas, el.getBoundingClientRect())) el.style.display = 'none'; }
 }
 let reafastar = 0;
 addEventListener('resize', () => { clearTimeout(reafastar); reafastar = setTimeout(() => { const a = $('#jnMapaArea'); if (a) afastarCena(a); }, 150); });
@@ -346,14 +351,18 @@ export function renderJornada({ nova = null } = {}) {
       <div class="jnEstojo"><span class="jnEstojoRot">insígnias</span>${mapa.insignias.map(x => `<i class="jnInsignia${x.arte ? ' conhecida' : ''}${x.ganha ? ' ganha' : ''}${x.id && x.id === nova ? ' nova' : ''}"
           title="${x.nome ? `${x.nome} (${x.onde})${x.ganha ? '' : ' — ainda não é sua'}` : 'ainda não há ginásio aqui'}">${x.arte ? `<img src="${x.arte}" alt="">` : ''}</i>`).join('')}</div></div>
     <div class="jnMapa${mapa.voltas === 2 ? ' jnVoltas2' : ''}" style="--n:${mapa.voltas === 2 ? Math.ceil(mapa.nos.length / 2) : mapa.nos.length}">
+      ${regioesDoMapa(mapa).map(r => `<div class="jnRegiao jnR-${r.regiao} jnRv${r.v}${r.topo ? ' jnTopo' : ''}" style="--x:${r.x};--y:${r.y};--w:${r.w};--h:${r.h}"><b></b><i></i></div>`).join('')}
       <svg class="jnCaminho jnDeitado" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${trilha(false)}</svg>
       <svg class="jnCaminho jnEmPe" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${trilha(true)}</svg>
       ${setasDoCaminho(mapa).map(sx => `<div class="jnPos jnSetaPos" style="--x:${sx.x};--y:${sx.y}" data-outros='${JSON.stringify(sx.outros)}'><i class="jnSeta jn-${sx.dir}${sx.andado ? ' andado' : ''}"></i></div>`).join('')}
-      ${bordaDoMapa().map(p => `<div class="jnPos jnB" style="--x:${p.x};--y:${p.y}">${quadro('cuttable_tree', 'jnProp')}</div>`).join('')}
-      ${mapa.nos.map(n => `<div class="jnPos jn-${n.estado}" style="--x:${n.x};--y:${n.y}">
-          ${cenaDoNo(n).map(c => (c.forma ? `<b class="jnLago" style="--dx:${c.dx}px;--dy:${c.dy}px"></b>` : quadro(c.folha, 'jnProp', `;--dx:${c.dx}px;--dy:${c.dy}px`))).join('')}
+      ${[...bordaDoMapa()].sort((a, b) => !!b.fundo - !!a.fundo).map(p => `<div class="jnPos jnB${p.escala ? ` jnB${p.escala}` : ''}${p.fundo ? ' jnBf' : ''}" style="--x:${p.x};--y:${p.y}">${p.arte ? `<b class="jnProp jnArte" style="background-image:url(${ARTE_NOSSA_DO_MAPA}/${p.arte}.svg)"></b>` : quadro('cuttable_tree', 'jnProp')}</div>`).join('')}
+      ${mapa.nos.map(n => `<div class="jnPos jn-${n.estado} jnT-${n.tipo}" style="--x:${n.x};--y:${n.y}">
+          ${cenaDoNo(n).map(c => (c.forma ? `<b class="jnLago${c.forma === 'lago' ? '' : ` jn-${c.forma}`}" style="--dx:${c.dx}px;--dy:${c.dy}px"><i></i></b>`
+            : c.marco ? `<img class="jnMarco" src="${ARTE_NOSSA_DO_MAPA}/${c.marco}.svg" alt="" style="--dx:${c.dx}px;--dy:${c.dy}px">`
+            : c.arte ? `<b class="jnProp jnArte" style="background-image:url(${ARTE_NOSSA_DO_MAPA}/${c.arte}.svg);--dx:${c.dx}px;--dy:${c.dy}px"></b>`
+            : quadro(c.folha, 'jnProp', `;--dx:${c.dx}px;--dy:${c.dy}px`))).join('')}
           ${n.ow ? quadro(n.ow, 'jnOw') : ''}${n.lendario ? `<b class="jnLend">${dexImg(n.lendario, '', 'class="jnLendImg"')}</b>` : ''}
-          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}" data-jn-no="${n.id}" title="${n.nome}">${n.estado === 'atual' ? '<b class="jnAnel"></b>' : ''}<i${n.tipo === 'ginasio' && n.estado !== 'trancado' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.tipo === 'liga' ? `<em>${n.selo ?? ''} · ${n.licao?.tipo ?? ''}</em>` : n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : n.tipo === 'chefe' ? '<em>chefe · lendário</em>' : ''}${n.estado === 'atual' ? '<strong class="jnProx">próximo</strong>' : ''}</span></button></div>`).join('')}
+          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}" data-jn-no="${n.id}" title="${n.nome}">${n.estado === 'atual' ? '<b class="jnAnel"></b>' : ''}<i${n.tipo === 'ginasio' && n.estado !== 'trancado' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.estado === 'trancado' && n.id !== escolhido ? '' : n.tipo === 'liga' ? `<em>${n.selo ?? ''} · ${n.licao?.tipo ?? ''}</em>` : n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : n.tipo === 'chefe' ? '<em>chefe · lendário</em>' : ''}${n.estado === 'atual' ? '<strong class="jnProx">próximo</strong>' : ''}</span></button></div>`).join('')}
       ${onde && eu ? `<div class="jnPos jnVoce${onde.fim ? ' jnFim' : ''}${onde.lado === 'direita' ? ' jnDireita' : ''}" style="--x:${onde.x};--y:${onde.y};--ax:${onde.ao.x};--ay:${onde.ao.y}"><b class="jnEu"><img src="${eu}" alt="você"></b></div>` : ''}
     </div>
     ${(f => `<div class="jnFaixa">${[f.antes, f.este, f.depois].map((n, k) => (n ? `<button class="jnFaixaNo jn-${n.estado} jn-${n.tipo}${k === 1 ? ' este' : ''}" data-jn-no="${n.id}"><i class="jnFaixaMarco"${n.tipo === 'ginasio' && n.estado !== 'trancado' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i>${n.curto}</button>` : '<span></span>')).join('')}</div>`)(faixaDoCaminho(mapa, escolhido))}
@@ -362,6 +371,9 @@ export function renderJornada({ nova = null } = {}) {
   if (im) { const medir = () => { im.parentNode.style.width = `${im.naturalWidth / 9}px`; }; if (im.complete && im.naturalWidth) medir(); else im.onload = medir; }
   pintarPainel(mapa);
   requestAnimationFrame(() => afastarCena(alvo));
+  /* O marco é <img>: sem tamanho até carregar, o afastamento o via com 0 × 0 e
+     o deixava em cima de um nome (medido na captura da ST-10.22b). */
+  alvo.querySelectorAll('.jnMarco').forEach(im => { if (!im.complete) im.addEventListener('load', () => afastarCena(alvo), { once: true }); });
   document.fonts?.ready?.then(() => afastarCena(alvo));
 }
 

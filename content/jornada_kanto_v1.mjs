@@ -12,64 +12,71 @@
  * (`tools/medir-ginasios.mjs` → `test/fixtures/ginasios.json`): o time que
  * ignora a lição perde a maior parte das vezes, e o que a aplica vence.
  *
- * `cena` é o que enfeita o nó no mapa (ST-10.12): árvores, rochas, ou nada. */
+ * `cena` é o que enfeita o nó no mapa (ST-10.12): árvores, rochas, ou nada.
+ * ST-10.22b: pode ser uma LISTA — a cidade do ginásio é casas mais o que a
+ * cerca (a pedra de Pewter, a água de Cerulean, a lava de Cinnabar). E
+ * `regiao` é o chão em volta do nó: campo, floresta, pedra, praia, jardim,
+ * pântano, cidade, vulcão, usina, planalto — o mapa deixa de ser um campo só.
+ * `marco` é o prédio que só aquela cidade tem (o farol do porto, a torre de
+ * Saffron, o salão da Liga): a 2ª rodada do Q7 leu as cidades como "o mesmo
+ * molde de duas casas espelhadas". O marco entra no lugar de uma das casas. */
 export const JORNADA = [
-  { id: 'rota1',    nome: 'Rota 1',            rival: 'rota1' },
-  { id: 'floresta', nome: 'Floresta',          rival: 'insetos', cena: 'arvores' },
-  { id: 'rota22',   nome: 'Rota 22',           rival: 'rival1' },
-  { id: 'pedra',    nome: 'Caminho da Pedra',  rival: 'pedra', cena: 'rochas' },
-  { id: 'pewter',   nome: 'Ginásio de Pewter', curto: 'Pewter', rival: 'brock', insignia: 'rocha', insigniaNome: 'Insígnia Rocha', cena: 'rochas',
+  { id: 'rota1',    nome: 'Rota 1',            rival: 'rota1', regiao: 'campo', cena: 'flores' },
+  { id: 'floresta', nome: 'Floresta',          rival: 'insetos', regiao: 'floresta', cena: 'arvores' },
+  { id: 'rota22',   nome: 'Rota 22',           rival: 'rival1', regiao: 'campo', cena: 'flores' },
+  { id: 'pedra',    nome: 'Caminho da Pedra',  rival: 'pedra', regiao: 'pedra', cena: 'rochas' },
+  { id: 'pewter',   nome: 'Ginásio de Pewter', curto: 'Pewter', rival: 'brock', insignia: 'rocha', insigniaNome: 'Insígnia Rocha', regiao: 'pedra', cena: ['rochas', 'casas'], marco: 'museu',
     licao: { ensina: 'fraqueza de tipo', tipo: 'Pedra', dica: 'Pedra apanha em dobro de Água e de Planta — e aguenta Fogo, Voador e Normal.' } },
   /* `mostra: 'vel'`: o painel põe a velocidade do seu mais rápido ao lado da
      de cada rival — a lição tem de estar na tela, e não só no texto. */
-  { id: 'cerulean', nome: 'Ginásio de Cerulean', curto: 'Cerulean', rival: 'misty', insignia: 'cascata', insigniaNome: 'Insígnia Cascata', cena: 'agua',
+  { id: 'cerulean', nome: 'Ginásio de Cerulean', curto: 'Cerulean', rival: 'misty', insignia: 'cascata', insigniaNome: 'Insígnia Cascata', regiao: 'praia', cena: ['agua', 'casas'],
     licao: { ensina: 'a velocidade decide trocas apertadas', tipo: 'Água', mostra: 'vel',
              dica: 'Quando os dois caem em poucos golpes, quem age antes vence. Passe a velocidade do Starmie.' } },
   /* `mostra: 'imune'` com `tipoGolpe`: o painel diz quem do seu time o tipo
      não toca. O porto de Vermilion tem água (a mesma cena de Cerulean). */
-  { id: 'vermilion', nome: 'Ginásio de Vermilion', curto: 'Vermilion', rival: 'surge', insignia: 'trovao', insigniaNome: 'Insígnia Trovão', cena: 'agua',
+  { id: 'vermilion', nome: 'Ginásio de Vermilion', curto: 'Vermilion', rival: 'surge', insignia: 'trovao', insigniaNome: 'Insígnia Trovão', regiao: 'praia', cena: ['agua', 'casas'], marco: 'farol',
     licao: { ensina: 'imunidade', tipo: 'Elétrico', tipoGolpe: 'electric', mostra: 'imune',
              dica: 'Terrestre não é tocado por Elétrico: dano zero, o golpe todo perdido. Um imune no time vale mais que força.' } },
   /* ST-10.19a: na ordem do material de origem — Erika e Koga ANTES da
      Sabrina (29 → 42 → 43). Save que já venceu a Sabrina não perde nada: o
      que foi vencido segue vencido, e o próximo nó passa a ser a Erika. */
-  { id: 'celadon',  nome: 'Ginásio de Celadon', curto: 'Celadon', rival: 'erika', insignia: 'arcoiris', insigniaNome: 'Insígnia Arco-Íris', cena: 'arvores',
+  { id: 'celadon',  nome: 'Ginásio de Celadon', curto: 'Celadon', rival: 'erika', insignia: 'arcoiris', insigniaNome: 'Insígnia Arco-Íris', regiao: 'jardim', cena: ['flores', 'casas', 'arvores'], marco: 'loja',
     licao: { ensina: 'resistência — quem apanha pouco', tipo: 'Planta', mostra: 'resiste', tiposGolpe: ['grass', 'poison'],
              dica: 'Os golpes dela são de Planta e Venenoso. Quem resiste aos dois apanha metade — e dura o dobro.' } },
-  { id: 'fuchsia',  nome: 'Ginásio de Fuchsia', curto: 'Fuchsia', rival: 'koga', insignia: 'alma', insigniaNome: 'Insígnia Alma',
+  { id: 'fuchsia',  nome: 'Ginásio de Fuchsia', curto: 'Fuchsia', rival: 'koga', insignia: 'alma', insigniaNome: 'Insígnia Alma', regiao: 'pantano', cena: ['brejo', 'casas', 'junco'], marco: 'portao_safari',
     licao: { ensina: 'o preset certo — derrube a ameaça primeiro', tipo: 'Venenoso', mostra: 'preset', presetCerto: 'defensive',
              dica: 'Dois tanques e uma ameaça. Espalhar dano deixa a ameaça bater o tempo todo; o preset Defensivo derruba ela primeiro.' } },
-  { id: 'saffron',  nome: 'Ginásio de Saffron', curto: 'Saffron', rival: 'sabrina', insignia: 'pantano', insigniaNome: 'Insígnia Pântano',
+  { id: 'saffron',  nome: 'Ginásio de Saffron', curto: 'Saffron', rival: 'sabrina', insignia: 'pantano', insigniaNome: 'Insígnia Pântano', regiao: 'cidade', cena: ['casas', 'casas'], marco: 'torre_silph',
     licao: { ensina: 'físico contra especial', tipo: 'Psíquico', mostra: 'categoria',
              dica: 'As criaturas dela aguentam golpe especial e quebram com golpe físico: bata pelo lado fraco.' } },
   /* ST-10.19b · os dois últimos ginásios antes do chefe. */
-  { id: 'cinnabar', nome: 'Ginásio de Cinnabar', curto: 'Cinnabar', rival: 'blaine', insignia: 'vulcao', insigniaNome: 'Insígnia Vulcão', cena: 'agua',
+  { id: 'cinnabar', nome: 'Ginásio de Cinnabar', curto: 'Cinnabar', rival: 'blaine', insignia: 'vulcao', insigniaNome: 'Insígnia Vulcão', regiao: 'vulcao', cena: ['casas', 'lava'], marco: 'vulcao',
     licao: { ensina: 'termine o ferido primeiro — cada um que cai é um golpe a menos', tipo: 'Fogo', mostra: 'preset', presetCerto: 'aggressive',
              porque: 'termina o ferido: cada um que cai é um golpe a menos',
              dica: 'Os quatro dele batem forte até cair. Espalhar dano deixa os quatro batendo; terminar o ferido tira um da luta mais cedo.' } },
-  { id: 'viridian', nome: 'Ginásio de Viridian', curto: 'Viridian', rival: 'giovanni', insignia: 'terra', insigniaNome: 'Insígnia Terra', cena: 'arvores',
+  { id: 'viridian', nome: 'Ginásio de Viridian', curto: 'Viridian', rival: 'giovanni', insignia: 'terra', insigniaNome: 'Insígnia Terra', regiao: 'bosque', cena: ['arvores', 'casas'],
     licao: { ensina: 'o tipo duplo — os dois tipos contam', tipo: 'Terrestre', mostra: 'duplo',
              dica: 'Quatro dos cinco dele têm dois tipos, e o golpe conta com os dois: Lutador bate Pedra, mas o Venenoso do Nidoking corta pela metade — e corta a Planta também. Água e Gelo batem nos dois lados.' } },
   /* ST-10.18 · o CHEFE: um lendário (§8.12, L-057). Não dá insígnia; paga a
      essência da espécie, uma por dia, e nunca a criatura. */
-  { id: 'usina',    nome: 'Usina Abandonada', curto: 'Usina', rival: 'zapdos', chefe: true },
+  { id: 'usina',    nome: 'Usina Abandonada', curto: 'Usina', rival: 'zapdos', chefe: true, regiao: 'usina', cena: 'torres' },
   /* ST-10.19c · A LIGA: a Elite Four e o Campeão. A Liga não ensina lição
      nova — REVISA uma de ginásio (`revisa`), num nível de fim de jogo, e o
      Campeão dá a última: o preset não é receita. Sem insígnia; `selo` é o
      nome do degrau no mapa. */
-  { id: 'lorelei',  nome: 'Lorelei', rival: 'lorelei', liga: true, selo: 'Elite Four',
+  { id: 'lorelei',  nome: 'Lorelei', rival: 'lorelei', liga: true, selo: 'Elite Four', regiao: 'planalto', cena: 'braseiros',
     licao: { ensina: 'o preset certo — derrube a ameaça primeiro', revisa: 'fuchsia', tipo: 'Gelo', mostra: 'preset', presetCerto: 'defensive',
              dica: 'A Jynx bate forte e cai fácil. Espalhar dano a deixa batendo a luta inteira; derrubá-la primeiro vira a luta — o que o Koga ensinou.' } },
-  { id: 'bruno',    nome: 'Bruno', rival: 'bruno', liga: true, selo: 'Elite Four',
+  { id: 'bruno',    nome: 'Bruno', rival: 'bruno', liga: true, selo: 'Elite Four', regiao: 'planalto', cena: 'braseiros',
     licao: { ensina: 'imunidade', revisa: 'vermilion', tipo: 'Lutador', tipoGolpe: 'fighting', mostra: 'imune',
              dica: 'Fantasma não é tocado por Lutador nem por Normal: três dos cinco dele batem no vazio. Um imune no time vale mais que força — o que o Surge ensinou.' } },
-  { id: 'agatha',   nome: 'Agatha', rival: 'agatha', liga: true, selo: 'Elite Four',
+  { id: 'agatha',   nome: 'Agatha', rival: 'agatha', liga: true, selo: 'Elite Four', regiao: 'planalto', cena: 'braseiros',
     licao: { ensina: 'físico contra especial', revisa: 'saffron', tipo: 'Fantasma', mostra: 'categoria',
              dica: 'As criaturas dela aguentam golpe especial e quebram com físico — e golpe Normal não toca Fantasma. O que a Sabrina ensinou.' } },
-  { id: 'lance',    nome: 'Lance', rival: 'lance', liga: true, selo: 'Elite Four',
+  { id: 'lance',    nome: 'Lance', rival: 'lance', liga: true, selo: 'Elite Four', regiao: 'planalto', cena: 'braseiros',
     licao: { ensina: 'resistência — quem apanha pouco', revisa: 'celadon', tipo: 'Dragão', mostra: 'resiste', tiposGolpe: ['dragon', 'flying'],
              dica: 'Os golpes dele são de Dragão e de Voador. Aço resiste aos dois, e o Elétrico ainda resiste ao Voador — o que a Erika ensinou.' } },
-  { id: 'campeao',  nome: 'Campeão', rival: 'campeao', liga: true, final: true, selo: 'a final',
+  { id: 'campeao',  nome: 'Campeão', rival: 'campeao', liga: true, final: true, selo: 'a final', regiao: 'planalto', cena: ['braseiros', 'casas'], marco: 'palacio',
     licao: { ensina: 'não persiga o ferido — o preset certo depende de quem está do outro lado', tipo: 'de tudo', mostra: 'preset', presetCerto: 'balanced', presetErrado: 'aggressive', prova: 'derrubados',
              porque: 'o maior dano a cada golpe — contra seis fortes, atalho perde',
              dica: 'O Agressivo venceu o Blaine. Aqui, contra seis, ele gasta golpe terminando quem já ia cair e deixa o resto batendo. Nenhum preset vence sempre: o número muda com quem está do outro lado.' } },

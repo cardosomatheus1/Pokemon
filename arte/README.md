@@ -46,3 +46,26 @@ nossa é pedra LAPIDADA em facetas com o fio neon da interface na borda.
 | `insignias/pantano.svg` | pantano | Ginásio de Saffron (ST-10.16) — dois círculos lapidados (ouro e violeta), as duas defesas da lição |
 | `insignias/vulcao.svg` | vulcao | Ginásio de Cinnabar (ST-10.19b) — chama lapidada em três camadas |
 | `insignias/terra.svg` | terra | Ginásio de Viridian (ST-10.19b) — dois picos colados, pedra e terra: os dois tipos que contam juntos |
+
+## O mundo do mapa (ST-10.22b)
+
+`mapa/<peça>.svg` — pixel art NOSSA do mapa da jornada, gerada por
+`tools/pixel-arte.mjs` a partir de uma grade de caracteres (um por pixel) e
+uma paleta. **A fonte é a grade**: edite lá e rode `node tools/pixel-arte.mjs`.
+O SVG sai com `crispEdges`, em 2× (16 × 16 → 32 × 32), sem binário no repositório.
+
+A folha de terceiros (`pret`) só trazia a árvore e a rocha; o que faltava para o
+mapa ter REGIÕES foi desenhado aqui, na paleta da era (contorno escuro, três
+tons por material, luz de cima). A regra de cópia do `CLAUDE.md`: a referência
+é o tile de Kanto; a nossa diferença é o que acende no neon da interface — a
+janela, o fio da torre, a chama do braseiro, a cúpula da Liga.
+
+| Peça | Onde | Medidas |
+|---|---|---|
+| `casa_vermelha`, `casa_azul`, `casa_verde`, `casa_roxa` | as cidades dos ginásios — a cor muda de cidade para cidade | 16 × 16 |
+| `flores`, `junco` | as rotas; o brejo de Fuchsia | 16 × 16 |
+| `arvore`, `pinheiro` | a parede de árvores, misturada à árvore do `pret` | 16 × 16 |
+| `torre` | a Usina (o chefe) | 16 × 16 |
+| `braseiro` | o planalto da Liga, um por nó (os pilares lisos liam como lápides) | 16 × 16 |
+| `pilar` | desenhado e não usado — substituído pelo braseiro na 2ª rodada do Q7 | 16 × 16 |
+| `museu`, `farol`, `loja`, `portao_safari`, `torre_silph`, `vulcao`, `palacio` | o MARCO de cada cidade (Pewter, Vermilion, Celadon, Fuchsia, Saffron, Cinnabar, a Liga) | 16–24 de largura |

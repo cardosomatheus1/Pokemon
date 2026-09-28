@@ -1122,11 +1122,59 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   janela do tamanho do cartão.
 - `test/jornada-tela.mjs` · S1680–S1686 (todos pegos em Node).
 
-#### ST-10.22b · O mundo do mapa
+#### ST-10.22b · O mundo do mapa — feito, ACEITE NÃO ATINGIDO (28/09)
 - **Escopo:** o que sobra da L-209 — regiões (a água de Cerulean e do porto,
   a lava de Cinnabar, a floresta, a pedra, a cidade), props variados no lugar
   da mesma árvore em fileira, água que parece água.
 - **Aceite e portões:** os da ST-10.22.
+- **Feito:** o chão das REGIÕES (`regiao` no pack, `regioesDoMapa` na camada
+  0: os nós seguidos da mesma região viram uma mancha só, e a grande ganha um
+  segundo degrau) como TERRENO — borda em degraus de pixel e face de penhasco
+  em estratos onde o lugar é alto; onze materiais (campo, floresta de copa,
+  bosque de pinheiro, pedra, praia, jardim, brejo de água parada, paralelepípedo,
+  vulcão, usina, planalto); a cena em lista, um anel por tipo; arte NOSSA em
+  `arte/mapa/` (`tools/pixel-arte.mjs`): casas em quatro cores que mudam por
+  cidade, flores, junco, árvore, pinheiro, torre, braseiro, e um MARCO por
+  cidade (museu, farol, loja, portão do safári, torre de Saffron, vulcão,
+  palácio da Liga); as poças em pixel (água que anda, lava que respira e solta
+  fumaça, brejo com vitória-régia); a parede em duas fileiras e três árvores;
+  o trancado esmaece em vez de sumir em cinza; o rótulo do trancado é só o
+  nome.
+- **O Q7, rodada a rodada** (crítico cego, barra do Super Mario World, notas
+  1920 / 1440 / 1100 / 420 / começo):
+  ```text
+  1ª  mancha de cor esmaecida              5 / 5 / 4,5 / 4 / 5
+  2ª  terreno em degraus, arte nossa       5 / 5,5 / 5,5 / 4,5 / 4,5
+  3ª  marcos, estratos, materiais          7 / 6,5 / 5,5 / 5 / 6
+  4ª  patamar, rótulo curto, poça maior    6 / 6 / 5 / 4 / 6
+  ```
+  A 3ª e a 4ª ficaram dentro do ruído de um crítico para outro: **o que falta
+  deixou de ser acabamento e passou a ser estrutura** — virou a ST-10.22c.
+  "A identidade das regiões está no nível do SMW" (3ª rodada) é o que esta
+  story entregou.
+- **Achados no caminho:** o `<img>` do marco passava pelo afastamento com 0 × 0
+  e ficava em cima de um nome (o afastamento roda de novo no `load`); a nossa
+  arte herdava a folha de 128 px do `.jnProp` e aparecia esticada ×4.
+- `test/jornada-tela.mjs` · S1687–S1707; S1480 e S1691 realvados.
+
+#### ST-10.22c · O mapa como mapa de jogo (L-209, o que a ST-10.22b não fechou)
+- **Porte** M · **Bloco dono** F4.5 · **Portões:** Q1 Q2 Q5 Q7.
+- **Por quê:** quatro rodadas do Q7 pararam em 6 nas larguras largas e 4–5 no
+  celular, e as quatro apontaram as mesmas coisas — que não se resolvem com
+  mais uma camada de CSS:
+  ```text
+  o celular     o mapa abaixo do painel (decisão da ST-10.15, para a lição
+                ficar na dobra) e o caminho em duas colunas que não se segue
+                com o olho — pedir: o mapa primeiro, recortado no próximo nó,
+                e UMA estrada de cima a baixo
+  os rótulos    18 fichas fixas cobrem a arte; o SMW tem uma faixa de nome no
+                HUD — o nome no mapa só no atual, no escolhido e no vencido
+  a água        poças; pedir uma costa ou um rio que ligue Cerulean a Vermilion
+  o trancado    o mesmo disco cinza em todo nó: o ponto do nível na cor da região
+  o terreno     manchas sobre um gramado; o SMW emenda terreno com terreno
+                (autotile) — a borda de cada material casando com a vizinha
+  ```
+- **Aceite:** o da ST-10.22 (≥ 8 nas quatro larguras).
 
 ### ST-10.20 · A jornada ensina a apostar? ✅ 27/09
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16

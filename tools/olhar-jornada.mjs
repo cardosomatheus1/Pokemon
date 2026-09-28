@@ -123,7 +123,7 @@ for (const ponto of Object.keys(PONTOS).filter(quer)) for (const w of [1920, 144
     const cobre = cobertos.length, quem = cobertos.slice(0, 4).map(a => `${a.t}←${bonecos.filter(c => toca(a.r, c.r)).map(c => `${c.c}:${[c.r.left, c.r.top, c.r.right, c.r.bottom].map(v => v | 0)}`).join('+')}@${[a.r.left, a.r.top, a.r.right, a.r.bottom].map(v => v | 0)}`);
     /* ST-10.19d: CENA × RÓTULO — lago ou pedra da cena por baixo de um nome
        (o Q7 da Liga viu em Pewter, Vermilion, Viridian e Saffron, em 1100). */
-    const cenas = [...document.querySelectorAll('.jnPos:not(.jnB) .jnLago, .jnPos:not(.jnB) .jnProp')].filter(n => getComputedStyle(n).display !== 'none').map(n => n.getBoundingClientRect()).filter(r => r.width && r.height);
+    const cenas = [...document.querySelectorAll('.jnPos:not(.jnB) .jnLago, .jnPos:not(.jnB) .jnProp, .jnPos:not(.jnB) .jnMarco')].filter(n => getComputedStyle(n).display !== 'none').map(n => n.getBoundingClientRect()).filter(r => r.width && r.height);
     const sobCena = rotulos.filter(a => cenas.some(c => toca(a.r, c))).map(a => a.t);
     /* ST-10.21: e peça da cena cortada pela borda do mapa. */
     const mapaR = document.querySelector('.jnMapa').getBoundingClientRect();

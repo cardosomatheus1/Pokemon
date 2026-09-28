@@ -8824,6 +8824,13 @@ acaba" foi medido e não é da tela: é a captura além da janela repetindo o
 fundo `fixed` (consertado na ferramenta). O que resta é o MUNDO (bioma,
 props, água), dono a **ST-10.22b**.
 
+**28/09, ST-10.22b:** o mundo foi construído (regiões como terreno, arte
+nossa, um marco por cidade) e o Q7 subiu de 4,5–5 para 6–7 nas larguras
+largas — **sem chegar ao 8 do aceite**. O que falta é estrutura, e está
+nomeado na **ST-10.22c** (o mapa primeiro no celular numa estrada só, o nome
+no HUD e não em fichas, costa ou rio, o nó trancado na cor da região, terreno
+que emenda).
+
 ### L-210 — o servidor não sabe o que é equipe ativa e o que é caixa ✅ FECHADA na ST-13.3a (27/09)
 
 **Registrada em:** 27/09/2026, na ST-13.2a. **Bloco dono:** ST-13.3 (as
