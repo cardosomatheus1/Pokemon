@@ -11,12 +11,17 @@ import { readFileSync } from 'node:fs';
 import { criarServidor } from '../server/servidor.mjs';
 import { creditarBolsa, estadoDoTeto } from '../server/idle.mjs';
 import { criarApi } from '../app/modules/api.mjs';
+import { sincronizarIdleDaConta } from '../app/modules/idle-servidor.mjs';
 import * as D from '../app/modules/idle-dados.mjs';
 import { lanceDaConta, camposDaConta } from '../app/modules/idle-conta.mjs';
 import { inicialNa, expedicaoNa, colherNa, lancarNa, comecarNa, recuarNa, pocaoNa, colherRunNa } from '../app/modules/idle-acoes.mjs';
 import { curaDe, runsNoDia } from '../engine/avanco.mjs';
 import { moverNaTela, evoluirNa, focoNa } from '../app/modules/idle-acoes.mjs';
-import { moverNa, trocarNa, soltarNa, darDoceNa, naContaOu, chaveDoPedido } from '../app/modules/colecao-acoes.mjs';
+import { moverNa, trocarNa, soltarNa, darDoceNa, naContaOu, chaveDoPedido, lutarNaJornadaNa, encenarDaConta } from '../app/modules/colecao-acoes.mjs';
+import { textoDoModoDaConta, avisoDaPerda, temColecaoNoAparelho } from '../app/modules/conta-real.mjs';
+import { sair, CHAVE_DO_IDLE } from '../app/modules/sair.mjs';
+import { jornadaDaConta } from '../server/jornada.mjs';
+import { simular } from '../engine/treino-batalha.mjs';
 import { gerar } from '../server/criaturas.mjs';
 import { xpParaNivel } from '../engine/nivel-criatura.mjs';
 
@@ -221,6 +226,73 @@ export async function suite() {
       const nova = await focoNa(E, E.criaturas.find(c => c.id === ini.id), 'vigia', t, o);
       igual(`${nova?.foco}|${E.criaturas.find(c => c.id === ini.id).foco}`, 'vigia|vigia', 'o foco da conta não voltou, ou não chegou à aba');
       ok(D.salvar(E, deposito), 'o save da aba depois do foco da conta conflita');
+    } finally { await srv.fechar(); }
+  });
+
+  s.teste('13.5e · o cadastro avisa que a coleção do navegador não vai junto (DEC-17), e o Sair limpa o cache da conta', () => {
+    const cheio = JSON.stringify({ criaturas: [{ id: 'a', dex: 1 }] });
+    igual(`${temColecaoNoAparelho(cheio)}|${temColecaoNoAparelho(JSON.stringify({ criaturas: [] }))}|${temColecaoNoAparelho('{quebrado')}|${temColecaoNoAparelho(null)}`,
+      'true|false|false|false', 'a pergunta "tem coleção no aparelho?"');
+    const aviso = t => /NÃO passa para a conta nova/.test(t ?? '');
+    ok(aviso(avisoDaPerda({ real: true, cadastro: true, colecaoNoAparelho: true })), 'o cadastro com coleção no navegador não avisa que ela fica');
+    igual(avisoDaPerda({ real: true, cadastro: false, colecaoNoAparelho: true }), null, 'o ENTRAR avisa de perda — quem entra não perde nada');
+    igual(avisoDaPerda({ real: true, cadastro: true, colecaoNoAparelho: false }), null, 'avisa de perda a quem não tem o que perder');
+    igual(avisoDaPerda({ real: false, cadastro: true, colecaoNoAparelho: true }), null, 'sem servidor não há conta nova — nada a perder');
+    ok(/Sem servidor/.test(textoDoModoDaConta({ real: false })) && /coleção valem em qualquer aparelho/.test(textoDoModoDaConta({ real: true })), 'o texto do modo mudou');
+    const nav = fonte('app/modules/navegacao.mjs');
+    ok(/avisoDaPerda\(\{ real, cadastro, colecaoNoAparelho: temColecaoNoAparelho\(cru\) \}\)/.test(nav) && /\$\('#authPerda'\)\.hidden = !perda;/.test(nav), 'o modal não mostra a perda em linha própria');
+    ok(/<div class="tiny authPerda" id="authPerda" role="alert" hidden><\/div>/.test(fonte('app/index.html')), 'o modal sem a linha da perda (ou ela nasce à vista)');
+    /* O Sair: com conta, o cache da coleção dela sai; o save de quem nunca entrou fica. */
+    igual(CHAVE_DO_IDLE, 'ar_idle', 'a chave do save do idle no Sair se separou da do idle-dados');
+    ok(/const CHAVE = 'ar_idle';/.test(fonte('app/modules/idle-dados.mjs')), 'a chave do idle-dados mudou e a do Sair não');
+    const arm = armazemFalso(), api = { temSessao: () => true, post: async () => ({ ok: true }), esquecerSessao() {} };
+    arm.setItem('ar_idle', JSON.stringify({ criaturas: [{ id: 'a' }], conta: { agora: 1 } }));
+    sair({ api, armazem: arm });
+    igual(arm.getItem('ar_idle'), null, 'o Sair deixou a coleção da conta no navegador');
+    arm.setItem('ar_idle', JSON.stringify({ criaturas: [{ id: 'a' }] }));
+    sair({ api, armazem: arm });
+    ok(arm.getItem('ar_idle'), 'o Sair apagou o save do aparelho, que não é da conta');
+    arm.setItem('ar_idle', JSON.stringify({ criaturas: [{ id: 'a' }], conta: { agora: 1 } }));
+    sair({ api: { temSessao: () => false, esquecerSessao() {} }, armazem: arm });
+    ok(arm.getItem('ar_idle'), 'sem conta aberta, o Sair apagou o save');
+  });
+
+  s.teste('13.5e · contra o servidor: a luta da jornada pela conta, e o ENSAIO "limpa o navegador, entra, a coleção está lá"', async () => {
+    let t = T0;
+    const srv = criarServidor({ config: { ambiente: 'teste', silencioso: true }, banco: ':memory:', sims: 40, laco: false, relogio: () => t });
+    const porta = await srv.ouvir(0);
+    try {
+      const base = `http://127.0.0.1:${porta}`, conta = { email: 'iac4@x.test', senha: 'senha-longa-o-bastante-1' };
+      const deposito = armazemFalso(), api = criarApi({ base, armazem: deposito });
+      const o = { api, deposito, conta: true };
+      await api.post('/api/auth/cadastrar', { username: 'Iac4', ...conta, nascimento: '1990-01-01' });
+      const uid = srv.db.prepare(`SELECT id FROM users WHERE username = 'Iac4'`).get().id;
+      const E = D.carregar(deposito);
+      const ini = await inicialNa(E, PACK, PACK.iniciais[0], t, o);
+      for (const dex of [16, 19, 25]) gerar(srv.db, { userId: uid, pack: PACK, dex });
+      await sincronizar(api, deposito);
+
+      /* A luta: o servidor decide, o aparelho refaz para encenar — a mesma luta. */
+      const no = PACK.jornada[0].id;
+      const r = await lutarNaJornadaNa({ pack: PACK, id: no, preset: 'balanced' }, o);
+      ok(r.ok && r.resultado?.eventos?.length > 0, `a luta da conta sem eventos para encenar: ${JSON.stringify(r).slice(0, 200)}`);
+      igual(`${r.resultado.vencedor}|${r.encenada}`, `${r.vencedor}|true`, 'a luta encenada no aparelho não é a que o servidor decidiu');
+      igual(JSON.stringify(D.carregar(deposito).jornada.vencidos), JSON.stringify(jornadaDaConta(srv.db, uid).jornada.vencidos), 'o progresso da jornada no aparelho não é o da conta');
+      /* E é a luta DO SERVIDOR: a do motor, com a semente e os times que ele mandou. */
+      igual(JSON.stringify(r.resultado.eventos), JSON.stringify(simular(PACK, r.timeA, r.timeB, r.semente >>> 0, { preset: 'balanced' }).eventos), 'a encenação não usa a semente do servidor');
+      /* A encenação é pura: a mesma resposta, a mesma luta. */
+      igual(JSON.stringify(encenarDaConta(PACK, r, 'balanced').resultado.eventos), JSON.stringify(r.resultado.eventos), 'refazer a luta da conta deu outra luta');
+
+      /* O ENSAIO: outro navegador, vazio. Entra, e a coleção está lá. */
+      const limpo = armazemFalso(), api2 = criarApi({ base, armazem: limpo });
+      const entrou = await api2.post('/api/auth/entrar', conta);
+      ok(entrou.ok && api2.temSessao(), 'o login no navegador limpo falhou');
+      igual(D.carregar(limpo).criaturas.length, 0, 'o navegador limpo não estava limpo');
+      ok((await sincronizarIdleDaConta({ api: api2, deposito: limpo })).ok, 'a leitura da conta no navegador limpo falhou');
+      const antes = D.carregar(deposito), depois = D.carregar(limpo);
+      igual(depois.criaturas.map(c => c.id).sort().join(), antes.criaturas.map(c => c.id).sort().join(), 'limpar o navegador perdeu a coleção da conta');
+      ok(depois.criaturas.some(c => c.id === ini.id), 'a inicial da conta não voltou');
+      igual(JSON.stringify(depois.jornada.vencidos), JSON.stringify(antes.jornada.vencidos), 'limpar o navegador perdeu a jornada da conta');
     } finally { await srv.fechar(); }
   });
 

@@ -21,6 +21,9 @@
  * Sem rede, o aparelho esquece do mesmo jeito: o Sair local não pode depender
  * do servidor responder. Só ESTE token — "sair de todos" é pedido explícito. */
 export const CHAVE_PIN = 'ar_session';
+/* A chave do save do idle — a mesma de `idle-dados.mjs`, repetida aqui porque
+   esta é camada 0 e aquele não; o teste confere que as duas não se separam. */
+export const CHAVE_DO_IDLE = 'ar_idle';
 
 /* Devolve se havia CONTA REAL: quem chama precisa saber, porque as projeções
    que vieram do servidor (carteira, perfil) estão em memória e não podem
@@ -35,5 +38,12 @@ export function sair({ api, armazem = globalThis.localStorage } = {}) {
     : Promise.resolve(null);
   api?.esquecerSessao?.();
   try { armazem?.removeItem(CHAVE_PIN); } catch { /* modo privativo */ }
+  /* O CACHE DA COLEÇÃO DA CONTA sai junto (ST-13.5e · DEC-17): com conta, o
+     save do idle no aparelho é cópia da coleção dela, e deixá-lo depois do
+     Sair entregaria a coleção de uma conta a quem usar o navegador em
+     seguida — e o jogo sem conta continuaria em cima dela. O save de quem
+     nunca entrou (sem `conta`) fica: ele é do aparelho. */
+  try { if (tinhaConta && JSON.parse(armazem?.getItem(CHAVE_DO_IDLE) ?? 'null')?.conta) armazem.removeItem(CHAVE_DO_IDLE); }
+  catch { /* save ilegível ou modo privativo: nada a limpar */ }
   return { tinhaConta, revogacao };
 }

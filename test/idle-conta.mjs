@@ -48,8 +48,9 @@ const DO_SERVIDOR = {
 export async function suite() {
   const s = criarSuite('idle-conta');
 
-  s.teste('a chave nasce desligada: até a 13.5e, com ou sem conta, o jogo joga no aparelho', () => {
-    igual(IDLE_NA_CONTA, false, 'a chave ligou antes de todas as escritas passarem pelo servidor');
+  s.teste('a chave está LIGADA (13.5e): com conta, o idle é da conta; sem conta, do aparelho', () => {
+    igual(IDLE_NA_CONTA, true, 'a chave desligou: com conta, o jogo voltou a jogar no aparelho (DEC-17)');
+    igual(`${idleNoServidor(true)}|${idleNoServidor(false)}`, 'true|false', 'a chave não segue a sessão');
   });
 
   s.teste('idleDaConta: o formato do servidor vira o do aparelho, e o que é só do aparelho fica', () => {
@@ -95,7 +96,11 @@ export async function suite() {
     /* A tela pinta o aviso a cada leitura do save — e ele nasce escondido nas duas abas. */
     ok(/E = carregar\(\);\s*avisarConta\(E\);/.test(fonte('app/modules/idle-tela.mjs')), 'a tela do idle não pinta o aviso da conta');
     ok(/<p id="idleConta" class="idleConta" role="status" hidden><\/p>/.test(html) && /<p id="offConta" class="idleConta" role="status" hidden><\/p>/.test(html), 'o aviso da conta falta numa das abas, ou nasce à vista');
-    igual(idleNoServidor(true), false, 'com a chave desligada, a sessão já leria a conta');
+    /* ST-13.5e: e é a PRIMEIRA coisa de cada aba — ele põe em dúvida tudo abaixo. */
+    for (const [vista, id] of [['viewIdle', 'idleConta'], ['viewRotaOff', 'offConta']]) {
+      const i = html.indexOf(`<div id="${vista}" class="view">`), resto = html.slice(i, i + 1400);
+      ok(i > 0 && resto.indexOf(`id="${id}"`) > 0 && resto.indexOf(`id="${id}"`) < resto.indexOf('class="card'), `o aviso da conta não abre a aba ${vista}`);
+    }
   });
 
   s.teste('o aviso pintado: mostra enquanto é verdade, e esconde quando deixa de ser', () => {

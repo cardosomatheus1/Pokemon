@@ -12,7 +12,7 @@ import { emitir } from './telemetria.mjs';
 import { modoServidor, saldo } from './banco.mjs';
 import { api } from './api.mjs';
 import { sair } from './sair.mjs';
-import { servidorNoAr, enviarConta } from './conta-real.mjs';
+import { servidorNoAr, enviarConta, textoDoModoDaConta, avisoDaPerda, temColecaoNoAparelho } from './conta-real.mjs';
 import { renderProfile } from './customizacao.mjs';
 import { avatarURL, trainerURL } from './perfil.mjs';
 import { progressoNivel, saveProfile, tituloDe } from './perfil.mjs';
@@ -128,9 +128,12 @@ let authMode = 'signup';
 let contaReal = false;
 function pintarModoDaConta(){
   const real = contaReal, cadastro = authMode === 'signup';
-  $('#authInfo').textContent = real
-    ? 'ℹ️ Conta no servidor: seu treinador, saldo e compras valem em qualquer aparelho. PokéCash é moeda simulada, sem valor real.'
-    : 'ℹ️ Sem servidor: o treinador é salvo só neste navegador. Sem e-mail, sem senha real, sem coleta de dados.';
+  /* O texto é da camada 0 (ST-13.5e): com conta nova e coleção no aparelho,
+     ele avisa que ela não vai junto (DEC-17). */
+  let cru = null; try { cru = localStorage.getItem('ar_idle'); } catch { /* privativo */ }
+  $('#authInfo').textContent = textoDoModoDaConta({ real });
+  const perda = avisoDaPerda({ real, cadastro, colecaoNoAparelho: temColecaoNoAparelho(cru) });
+  $('#authPerda').textContent = perda ?? ''; $('#authPerda').hidden = !perda;
   $('#authContaRow').style.display = real ? 'block' : 'none';
   $('#authNascRow').style.display = real && cadastro ? 'block' : 'none';
   $('#authPinRow').style.display = real ? 'none' : 'block';

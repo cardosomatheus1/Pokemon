@@ -2181,7 +2181,7 @@ do servidor. Três partes:
   entradas (teste de identidade de referência).
 - **Portões:** Q1 Q2 Q3 Q6.
 
-### ST-13.4 · A conta começa do zero no banco (DEC-17)
+### ST-13.4 · A conta começa do zero no banco (DEC-17) ✅ 30/09 (na ST-13.5e)
 - **Porte** S · **Servidor** sim · **Depende de** ST-13.3
 - **Decisão do dono, 30/09 (DEC-17):** *"Esqueça os saves locais, tem que ter o
   banco com informações de quem cadastrar, quem já tinha perde."* Não há
@@ -2191,6 +2191,10 @@ do servidor. Três partes:
 - **Escopo:** nenhuma rota recebe o save local; o cadastro diz, uma vez, que o
   progresso de antes do cadastro fica no aparelho e não vai para a conta.
 - **Portões:** Q1 Q2 Q6.
+- **Feito na 13.5e:** nenhuma rota recebe o save (a leitura da conta substitui a
+  coleção do aparelho, `idleDaConta`); o cadastro mostra o aviso da perda em
+  linha própria, só a quem tem coleção no navegador (`avisoDaPerda`); o Sair
+  apaga o cache da coleção da conta. Q6: sem superfície nova.
 
 ### ST-13.8 · Os sinais de aparelho e rede (L-050 · DEC-19) ✅ 30/09
 - **Porte** M · **Servidor** sim · **Spec** §7.19, §28 · **Depende de** ST-13.6
@@ -2213,7 +2217,7 @@ do servidor. Três partes:
   o cliente manda `x-aparelho` (um `randomUUID` guardado no navegador) e o
   CORS aceita · `test/sinais-conta.mjs` (5) · S1994–S2003.
 
-### ST-13.5 · Com conta, o cliente lê o idle do servidor
+### ST-13.5 · Com conta, o cliente lê o idle do servidor ✅ 30/09
 - **Porte** L (era M: o levantamento de 30/09 achou que o cliente não chama
   NENHUMA das 17 rotas do idle — todas as telas escrevem o save do aparelho)
   · **Servidor** pouco · **Depende de** ST-13.4 (DEC-17: sem migração)
@@ -2240,10 +2244,13 @@ do servidor. Três partes:
     gravam direto no disco em `colecao-acoes.mjs` (resposta `{ ok, motivo }`
     nos dois modos), as que mexem no estado da aba em `idle-acoes.mjs`; o
     doce leva uma chave de pedido (idempotente no servidor) · S2033–S2044;
-  - **13.5e** · a luta da jornada (o cliente refaz a luta da semente do servidor
-    para encenar — a mesma conta dos dois lados), o aviso da DEC-17 no
-    cadastro, e a chave LIGADA, com o ensaio "limpa o navegador, entra, a
-    coleção está lá".
+  - **13.5e** ✅ 30/09 · a luta da jornada (o servidor luta com a semente e o
+    time DELE; o aparelho refaz a mesma luta com os times e a semente da
+    resposta só para encenar — `encenarDaConta`), o aviso da DEC-17 no
+    cadastro (linha própria, em âmbar), o Sair que apaga o cache da conta, e a
+    chave `IDLE_NA_CONTA` LIGADA, com o ensaio "limpa o navegador, entra, a
+    coleção está lá" num navegador de verdade (`tools/olhar-conta.mjs`, 20/20
+    passos nas quatro larguras) · S2045–S2054.
 - **Escopo:** hidratar o idle do servidor no boot com conta; o local vira
   cache; sem rede, a tela diz que está desatualizada em vez de inventar.
 - **Aceite:** limpar o navegador e entrar devolve a mesma coleção; o ensaio do

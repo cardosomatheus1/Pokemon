@@ -79,6 +79,21 @@ aposta foi **liquidada** (o XP sobe), sai e entra de novo. Termina com
 o D-112 (nenhuma aposta era liquidada, com a suíte inteira verde). Depois,
 abra o endereço público num celular fora do Wi-Fi de casa e repita à mão.
 
+**E a coleção é da conta (ST-13.5e · DEC-17)** — o passo "limpa o navegador,
+entra, a coleção está lá":
+
+```powershell
+node tools/olhar-conta.mjs
+```
+
+Ele sobe o servidor num processo e faz, num navegador de verdade e pelo
+modal: o cadastro num navegador que já jogava (o aviso de que a coleção dele
+NÃO vai junto tem de estar lá), a inicial escolhida na conta nova, outro
+navegador LIMPO que entra e acha a mesma coleção, e o aviso de "sem conexão"
+quando o servidor não responde. Termina com `ENSAIO VERDE` ou `ENSAIO
+VERMELHO`, e as capturas ficam em `tools/previas/_conta`. À mão: entre com a
+sua conta num segundo aparelho e confira que os Pokémon são os mesmos.
+
 ## 3. A rotina de todo dia (5 minutos)
 
 ```powershell

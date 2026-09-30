@@ -30,36 +30,31 @@ o LINK     http://localhost:8099/app/index.html
            (a Liga de times com contas e partidas: node tools/olhar-liga.mjs
            sobe o servidor completo num processo e captura as telas)
 a PASTA    C:\Users\gdult\pa4
-o ESTADO   ST-10.23 FECHADA (o mapa DESENHADO À MÃO: o desenho no pack,
-           autotile de cantos, o rio da nascente ao mar, os penhascos; o
-           Tiled como editor — node tools/mapa-tiled.mjs exportar|importar,
-           os .tmj em mapa-tiled/). Q7: mundo 3–5, publicado 4–6 — o crítico
-           agora fala da estrada por cima do chão: ST-10.24 (L-218)
-           · nesta leva: ST-5.9 a 5.16, ST-10.22d, a ST-1.4 (o 401 da CI) e
-           a ST-6.5 (25 fichas velhas fechadas)
-           · o E11 construído — o stake espera a D2 do dono
-           · suíte 2862/2862, repetir 2/2 (medido 30/09, na 13.5d)
-           Q2 completo em fatias: 1/10 e 2/10 VERDES (a 2/10 achou o S1504
-           decorativo — corrigido com o caso misto à mão); seguir com
+o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
+           com conta, o idle é DA CONTA. A chave `IDLE_NA_CONTA` está LIGADA:
+           a leitura no boot, toda escrita pela rota nomeada do servidor
+           (`idle-acoes.mjs`, `colecao-acoes.mjs`), a luta da jornada
+           decidida no servidor e encenada no aparelho, o aviso da DEC-17 no
+           cadastro, o Sair que apaga o cache da conta, e o aviso "sem
+           conexão" no topo das abas do farm.
+           ENSAIO no navegador: node tools/olhar-conta.mjs — cadastro com o
+           aviso → conta nova vazia → inicial no banco → navegador LIMPO
+           entra e a coleção está lá → sem servidor, o aviso (20/20 passos
+           nas quatro larguras). Está no roteiro do piloto (docs/PILOTO.md)
+           · antes: ST-10.23 (o mapa desenhado à mão; o Tiled como editor —
+           node tools/mapa-tiled.mjs exportar|importar), DEC-16, ST-13.8
+           · suíte 2864/2864, repetir 2/2 (medido 30/09, na 13.5e)
+           Q2 completo em fatias: 1/10 e 2/10 VERDES; seguir com
            node test/sabotagem.mjs --fatia=3/10, até 10/10
-o PRÓXIMO  o Q2 completo em fatias (2/10 a 10/10) — o que sobra de produto
-           construível sem o dono é pequeno; as fatias travam o código por
-           horas, e é hora delas
+o PRÓXIMO  a ST-10.24 (a estrada no chão do mapa, L-218 — o que o Q7 da
+           10.23 cobrou) e o Q2 completo em fatias (3/10 a 10/10). O piloto
+           (ST-7.2) espera o jogo 100% (DEC-18); os ícones (1.30), a arte
+           do dono
 com o DONO decididas em 30/09: DEC-16 (o stake da Liga LIGADO, moeda
            simulada), DEC-17 (sem migração do save: a conta começa do zero
            no banco — ST-13.4/13.5 destravadas), DEC-18 (o piloto só com o
            jogo 100%), DEC-19 (os sinais de aparelho e rede — feita, ST-13.8).
            Nada pendente com o dono agora
-o PRÓXIMO  a ST-13.5 em partes: com conta, o jogo lê e escreve o idle pelo
-           servidor. 13.5a FEITA (a leitura: `idleDaConta`, o boot, o aviso
-           "desatualizado", a origem dos encontros). 13.5b FEITA (a inicial,
-           a expedição, a colheita e o lance pelo servidor, em
-           `idle-acoes.mjs`; o teto soma `teto.hoje`). 13.5c FEITA (a run
-           do Avanço pelo servidor; as runs colhidas descem em `avancos`).
-           13.5d FEITA (a coleção: time, soltar, doce, golpe, evolução,
-           foco — `colecao-acoes.mjs` e `idle-acoes.mjs`).
-           Seguir com a 13.5e (jornada + a chave
-           `IDLE_NA_CONTA` LIGADA + o ensaio "limpa o navegador, entra")
 ```
 
 ### O RESTO DA SPEC VIROU STORIES — E12, E9, E10, E13, E11 (26/09)

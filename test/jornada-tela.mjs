@@ -130,7 +130,9 @@ export function suite() {
   s.teste('a tela: pinta o mapa, luta pela gravação e encena pelo caminho da 10.9', () => {
     const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
     ok(/mapaDaJornada\(PACK, estado\.jornada, \{ emPe: pintadoEmPe \}\)/.test(tela), 'o mapa não é o da camada 0');
-    ok(/lutarNaJornadaLocal\(\{ pack: PACK, id, preset: presetDoJogador\(\) \}\)/.test(tela), 'a luta não é a gravada');
+    /* ST-13.5e: a luta vai por `lutarNaJornadaNa` — a gravada no aparelho sem
+       conta, a do servidor com conta. */
+    ok(/await lutarNaJornadaNa\(\{ pack: PACK, id, preset: presetDoJogador\(\) \}\)/.test(tela), 'a luta não é a gravada');
     ok(!/simular\(|lutarNo\(|\.vencidos\.push|insignias\.push|salvar\(/.test(tela), 'a tela decide ou grava progresso por conta própria');
     ok(/encenar\(\{ alvo: \$\('#jnLuta'\), A: r\.timeA, B: r\.timeB, r: r\.resultado/.test(tela), 'a luta não é encenada pelo caminho da 10.9');
     /* ST-13.7: a raiz mora na conta da luta, que o servidor também lê. */

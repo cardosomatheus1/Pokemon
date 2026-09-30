@@ -11,13 +11,14 @@
  * aparelho fica só o que é do aparelho (as missões da semana, o contador de
  * estilhaços, a revisão do save).
  *
- * `IDLE_NA_CONTA` fica DESLIGADA até a última parte da ST-13.5 (a 13.5e): as
- * escritas passam ao servidor uma parte por vez, e o jogo com conta só muda
- * quando todas estiverem prontas.
+ * `IDLE_NA_CONTA` ficou DESLIGADA até a última parte da ST-13.5: as escritas
+ * passaram ao servidor uma parte por vez (13.5a–d), e a chave LIGOU na 13.5e,
+ * com todas prontas. Ela continua existindo como a porta de volta: desligada,
+ * o jogo com conta volta a jogar no aparelho.
  */
 import { camposDaJornada } from '../../engine/jornada.mjs';
 
-export const IDLE_NA_CONTA = false;
+export const IDLE_NA_CONTA = true;
 export const idleNoServidor = temSessao => IDLE_NA_CONTA && !!temSessao;
 
 /* O que o `carregar` do aparelho guarda da conta: o relógio, o teto e o

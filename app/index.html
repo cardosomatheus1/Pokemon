@@ -7599,8 +7599,19 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 #idleAviso.on,#offAviso.on{display:block}
 /* ST-13.5a · a conta sem rede: o aviso FICA enquanto for verdade — não é a
    faixa que some em 4 s, porque ele é a única cópia desta informação. */
-.idleConta{margin:0 0 10px;padding:7px 12px;border-radius:8px;font-size:.7rem;
-  background:rgba(255,196,77,.1);border:1px solid rgba(255,196,77,.45);color:#ffe3a8}
+.idleConta{margin:0;padding:9px 14px;border-radius:8px;font-size:.78rem;font-weight:600;
+  background:rgba(255,196,77,.12);border:1px solid rgba(255,196,77,.55);color:#ffe3a8;
+  box-shadow:0 0 12px rgba(255,196,77,.12)}
+.idleConta::before{content:'⚠ ';color:#ffc44d}
+/* Na aba ROTAS o aviso tem a largura do cartão da rota logo abaixo (96vw, ver
+   `.cardRota`): mais estreito, ele lia como um enfeite solto no topo. */
+#viewIdle #idleConta{box-sizing:border-box;width:96vw;max-width:2100px;margin-inline:calc(50% - 48vw)}
+@media (max-width:1000px){ #viewIdle #idleConta{width:auto;margin-inline:0} }
+/* ST-13.5e · a perda da DEC-17, em linha própria no cadastro: dentro do texto
+   azul informativo ela era lida como informação, e ela é um aviso. */
+.authPerda{margin:-4px 0 12px;padding:8px;border-radius:8px;
+  background:rgba(255,196,77,.1);border:1px solid rgba(255,196,77,.5);color:#ffe3a8}
+.authPerda[hidden]{display:none}
 .idleConta[hidden]{display:none}
 
 /* ── O GUARDA-ROUPA DE FARM ──────────────────────────────────────────────
@@ -7838,6 +7849,9 @@ body.tremeTela{animation:tremeTela .7s ease-out}
        e "lista" — lado a lado, transbordando a tela. A aba da Liga faz o mesmo
        override e nunca expôs isto porque ela tem um cartão só. -->
   <div class="app" style="grid-template-columns:min(1180px,100%);grid-template-areas:none;justify-content:center">
+    <!-- ST-13.5e: o aviso da conta é a PRIMEIRA coisa da aba — ele põe em dúvida
+         todo número abaixo dele, e no meio da coluna ele era lido por último. -->
+    <p id="idleConta" class="idleConta" role="status" hidden></p>
 
     <!-- A PRIMEIRA VEZ. Sem criatura não há expedição, e sem expedição não há
          primeira criatura — o laço fecha em si mesmo. Esta tela o abre, e a
@@ -7922,7 +7936,6 @@ body.tremeTela{animation:tremeTela .7s ease-out}
              novo. A frase vem do motor (`falaDoCusto`). -->
         <p id="idleCustoRun" class="tiny avCustoRun"></p>
         <div id="idleAviso"></div>
-        <p id="idleConta" class="idleConta" role="status" hidden></p>
         <p class="tiny" style="margin-top:10px">Para farmar com o jogo fechado —
            Batida, Trilha ou Vigília — use a aba <b>Rota OFF</b>. Os dois modos
            dividem o mesmo teto de encontros do dia.</p>
@@ -8154,6 +8167,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
      numa tela que o jogador está fechando é enfeite caro. -->
 <div id="viewRotaOff" class="view">
   <div class="app" style="grid-template-columns:min(1180px,100%);grid-template-areas:none;justify-content:center">
+    <p id="offConta" class="idleConta" role="status" hidden></p>
 
     <div class="card">
       <h3>Rota OFF <span class="tiny">o farm de quando você não está aqui</span></h3>
@@ -8198,7 +8212,6 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <div id="offEquipe"></div>
       <button id="idleMandar" class="btn pri" style="width:100%;margin-top:12px">Mandar a expedição</button>
       <div id="offAviso"></div>
-      <p id="offConta" class="idleConta" role="status" hidden></p>
 
       <h3 style="margin-top:18px">Em campo</h3>
       <div id="offCampo"></div>
@@ -8666,6 +8679,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       ℹ️ Sem servidor: o treinador é salvo só neste navegador.
       Sem e-mail, sem senha real, sem coleta de dados.
     </div>
+    <div class="tiny authPerda" id="authPerda" role="alert" hidden></div>
     <div id="authNomeRow">
       <label class="tiny" style="display:block;margin-bottom:4px">Nome do treinador</label>
       <input type="text" id="authName" maxlength="18" placeholder="Ex.: Ash" autocomplete="nickname">

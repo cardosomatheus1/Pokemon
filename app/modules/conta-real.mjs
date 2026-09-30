@@ -96,3 +96,21 @@ export async function enviarConta(api, modo, campos, agora = Date.now()) {
   } catch { r = { ok: false, indisponivel: true }; }
   return r?.ok && r.corpo?.sessao ? { ok: true } : { ok: false, msg: mensagemDaResposta(r, modo) };
 }
+
+/* ── O QUE O MODAL DIZ ANTES DE CRIAR A CONTA (ST-13.5e · DEC-17) ─────────
+ * A decisão do dono: *"quem já tinha perde"* — a coleção salva só no
+ * navegador NÃO sobe para a conta nova. Perder sem ser avisado seria a pior
+ * forma de perder, então o cadastro diz isso ANTES do clique, e só a quem
+ * tem o que perder. `cru` é o texto do save do idle no aparelho. */
+export function temColecaoNoAparelho(cru) {
+  try { return (JSON.parse(cru ?? 'null')?.criaturas ?? []).length > 0; } catch { return false; }
+}
+export const textoDoModoDaConta = ({ real }) => (real
+  ? 'ℹ️ Conta no servidor: seu treinador, saldo, compras e coleção valem em qualquer aparelho. PokéCash é moeda simulada, sem valor real.'
+  : 'ℹ️ Sem servidor: o treinador é salvo só neste navegador. Sem e-mail, sem senha real, sem coleta de dados.');
+/* A perda vai em LINHA PRÓPRIA (Q5 da 13.5e): dentro do texto informativo
+   ela era lida como informação. `null` quando não há o que perder. */
+export const avisoDaPerda = ({ real, cadastro, colecaoNoAparelho = false }) =>
+  (real && cadastro && colecaoNoAparelho
+    ? '⚠️ A coleção salva só neste navegador NÃO passa para a conta nova: ela começa do zero. As criaturas daqui ficam só aqui.'
+    : null);

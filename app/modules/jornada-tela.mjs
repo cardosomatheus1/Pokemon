@@ -21,10 +21,9 @@ import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEst
 import { diaDoMundo } from '../../engine/avanco.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido, candidatosDaCaixa, membrosParaTrocas } from './treino-dados.mjs';
 import { correcaoDaLicao, aplicarCorrecao } from './jornada-correcao.mjs';
-import { trocarNa } from './colecao-acoes.mjs';   // ST-13.5d: com conta, pelo servidor
+import { trocarNa, lutarNaJornadaNa } from './colecao-acoes.mjs';   // ST-13.5d/e: com conta, pelo servidor
 import { relatarLuta, relatarChance } from './telemetria-v4-tela.mjs';
 import { lote, resumo, porcentagemExibida, textoDaMargem, SIMS_TREINO } from '../../engine/treino-preco.mjs';
-import { lutarNaJornadaLocal } from './jornada-local.mjs';
 import { RAIZ_DA_CHANCE as RAIZ } from './jornada-conta.mjs';
 import { encenar } from './pve-tela.mjs';
 import { renderTreino } from './treino-tela.mjs';
@@ -449,7 +448,7 @@ export function mostrarAbaTreino(aba) {
 }
 const abaLembrada = () => { try { const a = localStorage.getItem('ar_treino_aba'); return ABAS_TREINO[a] ? a : 'time'; } catch { return 'time'; } };
 
-document.addEventListener('click', ev => {
+document.addEventListener('click', async ev => {
   if (ev.target.closest('.nav[data-view="viewTreino"], [data-goto="viewTreino"]')) { setTimeout(() => mostrarAbaTreino(abaLembrada()), 0); return; }
   /* A correção: a camada 0 decidiu o quê; aqui só se aplica e repinta. */
   if (ev.target.closest('[data-jn-corrige]') && correcaoNaTela) {
@@ -468,7 +467,7 @@ document.addEventListener('click', ev => {
   const lutar = ev.target.closest('[data-jn-lutar]');
   if (!lutar || lutar.disabled || !chanceNaTela) return;
   const id = lutar.dataset.jnLutar, antes = chanceNaTela;
-  const r = lutarNaJornadaLocal({ pack: PACK, id, preset: presetDoJogador() });
+  const r = await lutarNaJornadaNa({ pack: PACK, id, preset: presetDoJogador() });
   if (!r.ok) { $('#jnErro').textContent = r.motivo ?? 'não deu para lutar agora'; return; }
   /* ST-10.20: a luta e a chance que a tela mostrou antes dela (§8.15). */
   relatarLuta(r, { no: id, p: antes.p, preset: presetDoJogador() });
