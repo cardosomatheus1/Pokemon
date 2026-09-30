@@ -8,7 +8,7 @@
 import { $ } from './dom.mjs';
 import { PACK, elenco, nomeExibido } from './motor.mjs';
 import { carregarMarcas, dossieDoPack } from './pokedex-estado.mjs';
-import { medalhasDeColecao } from './colecao-dados.mjs';
+import { medalhasDeColecao, vitrineDeMedalhas, TETO_DE_MEDALHAS } from './colecao-dados.mjs';
 import { quadroDaSemana, resgatarMissaoLocal } from './colecao-local.mjs';
 import { nomesDe } from './itens-nome.mjs';
 import { S } from './estado.mjs';
@@ -20,22 +20,30 @@ const NIVEIS = ['', 'bronze', 'prata', 'ouro', 'diamante'];
 const moeda = PACK.moedaPve ?? { id: 'moeda', nome: 'moeda' };
 const nomeDoPremio = k => (k === 'pokecoin' ? moeda.nome : (PACK.bolas ?? []).find(b => b.id === k)?.rotulo ?? nomesDe(PACK)(k));
 
+/* ST-5.13: "ver todas" abre o resto das ganhas até a próxima visita. */
+let verTodas = false;
+document.addEventListener('click', ev => {
+  if (!ev.target.closest?.('[data-col-todas]')) return;
+  verTodas = !verTodas;
+  pintarColecao();
+});
+
 export function pintarColecao() {
   const alvo = $('#pdxColecao');
   if (!alvo) return;
   const marcas = carregarMarcas();
   const { e, quadro } = quadroDaSemana({ marcas, agora: Date.now() });
   const medalhas = medalhasDeColecao(PACK, e, { marcas, naArena: elenco });
-  const ganhas = medalhas.filter(m => m.tier > 0);
-  const perto = medalhas.filter(m => m.tier === 0 && m.prox).sort((a, b) => b.val / b.prox - a.val / a.prox).slice(0, 3);
+  const vitrine = vitrineDeMedalhas(medalhas, { todas: verTodas });
   const medalha = m => `<span class="colMed n${Math.min(4, m.tier)}${m.tier ? '' : ' perto'}" title="${m.nome}">
       <b>${m.nome}</b><i>${m.tier ? NIVEIS[Math.min(4, m.tier)] + ' · ' : ''}${m.val}${m.unidade ?? ''}${
         m.prox && m.passos > 1 ? ` · próxima em ${m.prox}${m.unidade ?? ''}` : m.de ? ` de ${m.de}${m.unidade ?? ''}` : ''}</i></span>`;
   /* "7% de 25%" foi lido como conta errada (Q5): o segundo número é o degrau
      seguinte, e agora diz isso. */
   alvo.innerHTML = `
-    <h3>Coleção <span class="tiny">${ganhas.length} medalha(s) · missões da semana pagam ${moeda.nome} e bolas</span></h3>
-    <div class="colMedalhas">${ganhas.map(medalha).join('')}${perto.map(medalha).join('')}</div>
+    <h3>Coleção <span class="tiny">${vitrine.ganhas} medalha(s) · missões da semana pagam ${moeda.nome} e bolas</span></h3>
+    <div class="colMedalhas">${vitrine.mostradas.map(medalha).join('')}${vitrine.escondidas || verTodas && vitrine.ganhas > TETO_DE_MEDALHAS
+      ? `<button class="btn colTodas" data-col-todas>${verTodas ? 'mostrar menos' : `ver todas (+${vitrine.escondidas})`}</button>` : ''}</div>
     <div class="colMissoes">${quadro.map(m => `
       <div class="colMissao${m.resgatada ? ' feita' : ''}">
         <span class="colTxt">${m.texto}</span>

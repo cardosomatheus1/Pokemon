@@ -6,7 +6,8 @@
  * para ONDE. E o soltar armado (irreversível) sem "cancelar": desarmava só
  * quando a tela repintava. */
 import { readFileSync } from 'node:fs';
-import { criarSuite, ok } from './harness.mjs';
+import { criarSuite, ok, igual } from './harness.mjs';
+import { vitrineDeMedalhas, TETO_DE_MEDALHAS } from '../app/modules/colecao-dados.mjs';
 
 const fonte = rel => readFileSync(new URL(rel, import.meta.url), 'utf8');
 const semComentario = t => t.replace(/\/\*[\s\S]*?\*\//g, '');
@@ -31,6 +32,27 @@ export function suite() {
     ok(/b\.insertAdjacentHTML\('afterend', `<button class="idleSoltarCancelar" data-soltar-cancelar="\$\{b\.dataset\.soltar\}">cancelar<\/button>`\)/.test(t), 'armar não põe o cancelar');
     ok(/closest\('\[data-soltar-cancelar\]'\)[\s\S]*?armado = '0'[\s\S]*?\.remove\(\)/.test(t), 'o cancelar não desarma o soltar');
     ok(/\.idleSoltarCancelar\{/.test(fonte('../app/index.html')), 'o cancelar sem estilo');
+  });
+
+  /* ST-5.13 (L-196): o cartão de medalhas crescia sem teto — 33 ganhas eram
+     ~2.000 px a 420 e diluíam a aba. */
+  s.teste('ST-5.13: as medalhas têm teto, as melhores primeiro, e "ver todas" abre o resto', () => {
+    const m = [...Array(33)].map((_, i) => ({ id: `g${i}`, tier: 1 + (i % 4), val: i, prox: i % 4 === 3 ? null : 10 }))
+      .concat([...Array(6)].map((_, i) => ({ id: `p${i}`, tier: 0, val: i + 1, prox: 10 })));
+    const v = vitrineDeMedalhas(m);
+    igual(v.mostradas.length, TETO_DE_MEDALHAS + 3, 'o teto não segura as ganhas');
+    igual(v.escondidas, 33 - TETO_DE_MEDALHAS, 'a conta das escondidas');
+    ok(v.mostradas.slice(0, TETO_DE_MEDALHAS).every(x => x.tier === 4), 'as ganhas mostradas não são as de degrau mais alto');
+    igual(v.mostradas.slice(-3).map(x => x.id).join(), 'p5,p4,p3', 'as três mais perto não são as mais adiantadas');
+    const t = vitrineDeMedalhas(m, { todas: true });
+    igual(`${t.mostradas.length}|${t.escondidas}`, '36|0', '"ver todas" não mostra todas');
+    igual(vitrineDeMedalhas(m.slice(0, 4)).escondidas, 0, 'com poucas, "ver todas" aparece à toa');
+    const tela = semComentario(fonte('../app/modules/colecao-tela.mjs'));
+    ok(/vitrineDeMedalhas\(medalhas, \{ todas: verTodas \}\)/.test(tela) && /data-col-todas/.test(tela), 'a tela não usa o teto');
+    const css = fonte('../app/index.html');
+    ok(/#pdxColecao h3 \.tiny\{[^}]*font-family:'Segoe UI'/.test(css), 'o subtítulo continua na fonte pixel');
+    ok(/\.colMissoes\{[^}]*max-width:/.test(css), 'em 1920 a missão continua a 1.600 px do botão');
+    ok(/\.colMedalhas \.colTodas\{flex:none/.test(css), 'o "ver todas" estica pela faixa inteira — o `.btn{flex:1}` vem depois e ganha de um seletor só');
   });
 
   return s;

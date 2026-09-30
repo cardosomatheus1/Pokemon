@@ -1837,6 +1837,14 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 @media (max-width:520px){ .mcLista{grid-template-columns:1fr;padding-right:8px} .mcLinha{grid-template-columns:30px 1fr auto} .mcLinha .btn{grid-row:2;grid-column:3;justify-self:end} }
 /* ── ST-9.15 · a coleção: medalhas e missões da semana ─────────────────── */
 .colMedalhas{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+/* ST-5.13 (L-196): o subtítulo em fonte pixel era quase ilegível a 1920/1440;
+   texto corrido. E as missões numa coluna de leitura: a 1920 a barra, o
+   "0/3" e o Resgatar ficavam a ~1.600 px do texto da missão. O "ver todas"
+   com dois seletores: o `.btn{flex:1}` vem depois na folha e o esticava
+   pela faixa inteira (medido na captura). */
+#pdxColecao h3 .tiny{font-family:'Segoe UI',system-ui,sans-serif;text-transform:none;letter-spacing:0;font-size:.74rem;font-weight:400}
+.colMissoes{max-width:760px}
+.colMedalhas .colTodas{flex:none;width:auto;align-self:center;font-size:.7rem;padding:4px 10px}
 .colMed{display:flex;flex-direction:column;padding:4px 8px;border:1px solid var(--line);border-radius:8px;font-size:.7rem;min-width:120px}
 .colMed b{font-weight:600;color:var(--txt)}
 .colMed i{font-style:normal;color:var(--dim);font-size:.64rem}

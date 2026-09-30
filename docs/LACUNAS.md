@@ -8425,10 +8425,12 @@ Sobras que o bloco não construiu, e por quê:
 
 **O que a destrava:** a UX-01 revisando o cartão da criatura inteiro.
 
-### L-196 — o cartão de medalhas cresce sem teto, e fala baixo nas pontas
+### L-196 — o cartão de medalhas cresce sem teto, e fala baixo nas pontas ✅ FECHADA na ST-5.13 (30/09)
 
 **Registrada em:** 26/09/2026, no Q7 da ST-9.16b (crítico cego, barra "dá para
-decidir em quem apostar sem sair dela"). **Bloco dono:** UX-01. **Estado:** aberto.
+decidir em quem apostar sem sair dela"). **Bloco dono:** UX-01. **Estado:** fechada
+— teto de 8 com "ver todas", subtítulo em texto corrido, missões numa coluna
+de 760 px (ST-5.13); o cartão do veterano em 420 caiu de ~2.000 px para 584.
 
 Sobras do cartão "Coleção" (ST-9.15), que a aba nova pôs à vista e o bloco não
 construiu porque não são da aba:

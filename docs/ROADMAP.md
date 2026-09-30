@@ -261,6 +261,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **ST-5.13** · o cartão de medalhas com teto (L-196) | 30/09 | `vitrineDeMedalhas` (camada 0): as 8 melhores ganhas e as 3 mais perto, "ver todas (+N)" · subtítulo em texto corrido · missões numa coluna de 760 px · o cartão do veterano em 420: **~2.000 → 584 px** · S1930–S1934 |
 | **ST-5.12** · o Centro fala alto (L-195, parcial) | 30/09 | a ação da ficha diz o destino ("→ caixa" / "→ equipe") numa pílula — e a causa de ela sumir era `color:var(--ac)`, variável inexistente · o soltar armado ganha "cancelar" · S1926–S1929 |
 | **ST-5.11** · os campos numéricos no tema (L-192) | 30/09 | uma regra global para `input[type=number]` — fundo do painel, borda do tema, `color-scheme:dark` (as setas nativas escurecem junto), foco dourado · o `#betCustom` da aposta saía branco por morar fora da `.customBet` · S1924–S1925 |
 | **ST-5.10** · a tabela e os avisos da aposta legíveis (D-131, L-215) | 30/09 | em 1001–1300 px a linha vira grade de duas faixas e o teto (§4.4.6) desce para baixo dos números: o nome mais estreito passou de **1 letra para 95 px** em 1100 · o aviso da arena diz "Confirme X" com o lutador escolhido (`textoDoAviso`, camada 0) · o banner diz "na lista" · as fichas somem na contagem · `tools/olhar-aposta.mjs` reprova nome abaixo de 60 px · S1918–S1923 |

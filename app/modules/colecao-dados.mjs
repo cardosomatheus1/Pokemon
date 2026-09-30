@@ -63,6 +63,18 @@ export function medalhasDeColecao(pack, e, { marcas = { vistas: [] }, naArena = 
   return out;
 }
 
+/* A VITRINE DE MEDALHAS (ST-5.13 · L-196): as ganhas e as três mais perto
+   de sair — mas com TETO. Sem ele, o veterano de 33 medalhas tinha ~2.000 px
+   de cartão a 420 e a aba se diluía. As de degrau mais alto primeiro (é o
+   que vale mostrar); "ver todas" abre o resto. */
+export const TETO_DE_MEDALHAS = 8;
+export function vitrineDeMedalhas(medalhas, { todas = false, teto = TETO_DE_MEDALHAS } = {}) {
+  const ganhas = medalhas.filter(m => m.tier > 0).sort((a, b) => b.tier - a.tier);
+  const perto = medalhas.filter(m => m.tier === 0 && m.prox).sort((a, b) => b.val / b.prox - a.val / a.prox).slice(0, 3);
+  const vistas = todas ? ganhas : ganhas.slice(0, teto);
+  return { mostradas: [...vistas, ...perto], escondidas: ganhas.length - vistas.length, ganhas: ganhas.length };
+}
+
 /* ── AS MISSÕES DA SEMANA ─────────────────────────────────────────────── */
 /* O campo do save, aditivo; lixo vira "semana ainda não vista". */
 /* ST-10.11: o campo da jornada chega ao carregador do save por aqui, junto do
