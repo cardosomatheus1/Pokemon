@@ -373,6 +373,9 @@ const CAMADA = {
   /* ST-11.6a · a League Home: o que a tela diz (0) e a tela que fala com o servidor (4). */
   'liga-equipe-dados.mjs': 0,
   'liga-equipe-tela.mjs': 4,
+  /* ST-11.6d · a partida da Liga no palco da Arena: a coreografia (0) e o palco (4). */
+  'liga-palco-dados.mjs': 0,
+  'liga-palco.mjs': 4,
   /* ST-11.3 · o pareamento da Liga (0). */
   'pareamento-dados.mjs': 0,
   /* ST-10.9 · a batalha PvE: a linha do tempo (0) e a encenação (4). */

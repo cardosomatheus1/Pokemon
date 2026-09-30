@@ -29,7 +29,7 @@ export const TIME_MAX = 6;
 export const GOLPES_MAX = 4;
 export const PESOS = Object.freeze({ porNivel: 10, especieDivisor: 6, golpesDivisor: 2, potencialMax: 10 });
 
-const golpePorNome = (pack, n) => Object.values(pack.golpes ?? {}).flat().find(g => g.n === n) ?? null;
+export const golpePorNome = (pack, n) => Object.values(pack.golpes ?? {}).flat().find(g => g.n === n) ?? null;
 
 /* `criaturas`: as do jogador; `ids`: o time; `golpesDe(c)`: o moveset em vigor. */
 export function validarTime(pack, { criaturas, ids, golpesDe }) {

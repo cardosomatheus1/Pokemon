@@ -1317,7 +1317,7 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   em 1180 px (de propósito: a linha longa separava o resultado do efeito), e
   sem conta a temporada não aparece (a leitura é da conta).
 
-### ST-11.6d · A partida da Liga NA ARENA — 6 contra 6 no palco da aposta ⏳ próxima
+### ST-11.6d · A partida da Liga NA ARENA — 6 contra 6 no palco da aposta ✅ 30/09
 - **Origem:** o dono, 30/09/2026: *"a liga de times deveria ter a imagem e
   estilo de jogo da arena dos 6 vs 6 lutando na arena, estilo o da aposta"*.
   Muda a forma da 11.6b (o replay saiu no painel de cartões da jornada), e por
@@ -1363,6 +1363,49 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **Sabotagem:** o palco tira o dano de outra conta que não o log; o lado do
   jogador trocado; o golpe desenhado em outro alvo.
 - **Portões:** Q1 Q2 Q5 Q7.
+- **Feito (30/09):**
+  - `liga-palco-dados.mjs` (camada 0): a formação (o jogador embaixo), os
+    golpes sobrepostos na ordem do log (um começa a cada 620 ms e dura
+    1.100), e a POSE de cada lutador como função do tempo (avanço de
+    contato, passo de longe, ataque no impacto, o tremor de quem leva, a
+    queda, o balanço de quem espera). Também o balão, o mini log, o placar
+    de quem está de pé e os impactos entre dois instantes;
+  - `liga-palco.mjs` (camada 4): a ilha pela pintura da Arena
+    (`pinturaDa`; o `fundo` do mar passou a receber o contexto, e a linha de
+    base visual da Arena não mudou), as folhas PMD pré-carregadas, os anéis
+    do lado no chão, as placas da Arena em cima, o selo da arena (sorteada
+    pela semente da partida), o `MOVE_FX` com o carregador da Arena (carga,
+    projétil e jato; estouro procedural na cor do tipo para o golpe sem
+    folha), os números `.dmg`, o banner do fim sobre a ilha, e "pular" que
+    fica no fim;
+  - a partida que a busca acabou de jogar ABRE no palco;
+  - `test/liga-palco.mjs` · S1806–S1819.
+- **Q7 (barra do dono, com a Arena da aposta ao lado):** 1ª rodada 4–5 (o
+  esqueleto da Arena sem o espetáculo). O que entrou por causa dela:
+  - golpes sobrepostos;
+  - o estouro procedural;
+  - o placar vivo;
+  - o banner do fim;
+  - os anéis soltos do quadro;
+  - as folhas pré-carregadas.
+
+  2ª rodada: 6–6,5 ("a mesma família da Arena, mas a versão calma"). O que
+  entrou por causa dela:
+  - as folhas dos EFEITOS pedidas na abertura (o jato acabava antes de a
+    imagem chegar);
+  - o número de dano do tamanho da Arena, com contorno;
+  - o caído sai da ilha;
+  - o nome da placa em branco com contorno;
+  - a linha do nocaute que não corta mais.
+- **O que fica (registrado, não construído):**
+  - nas larguras de 1440 para cima, as laterais do bloco ficam vazias. A
+    Arena usa esse espaço com a colocação; na Liga seriam os dois times e o
+    log. É acabamento de arranjo, e fica para a 11.6c, que já mexe nessa
+    tela;
+  - o balão não desvia de outro balão nem de outro lutador. A Arena também
+    não desvia;
+  - nove balões contra dois: o 6×6 tem metade dos lutadores e a luta é por
+    turnos, e isso não se força.
 
 ### ST-11.7 · Recompensas, League Points e loja
 - **Porte** M · **Servidor** sim · **Spec** §9.10, §9.11, §10.1

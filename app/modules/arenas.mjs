@@ -78,19 +78,19 @@ function ilhaTropical(c){
     c.fillRect(p.x|0, p.y|0, 2, 1);
   }
 }
-function marTropical(t){
-  map.fillStyle = '#2f74d6'; map.fillRect(0,0,W,H);
-  map.fillStyle = '#2963bd';
-  for (let y=0; y<H; y+=8) map.fillRect(0, y + ((t*6)%8|0), W, 3);
+function marTropical(t, m = map){
+  m.fillStyle = '#2f74d6'; m.fillRect(0,0,W,H);
+  m.fillStyle = '#2963bd';
+  for (let y=0; y<H; y+=8) m.fillRect(0, y + ((t*6)%8|0), W, 3);
   const phase = (t * 7) % 13;
-  map.lineWidth = 2;
+  m.lineWidth = 2;
   for (let k=0;k<7;k++){
     const g = 5 + k*13 + phase;
-    map.strokeStyle = `rgba(255,255,255,${0.30 - k*0.035})`;
-    isle(map, CX, CY, SAND_RX+g, SAND_RY+g); map.stroke();
+    m.strokeStyle = `rgba(255,255,255,${0.30 - k*0.035})`;
+    isle(m, CX, CY, SAND_RX+g, SAND_RY+g); m.stroke();
   }
-  map.strokeStyle = 'rgba(255,255,255,.75)'; map.lineWidth = 3;
-  isle(map, CX, CY, SAND_RX+2, SAND_RY+2); map.stroke();
+  m.strokeStyle = 'rgba(255,255,255,.75)'; m.lineWidth = 3;
+  isle(m, CX, CY, SAND_RX+2, SAND_RY+2); m.stroke();
 }
 
 /* ---------------------------------------------------------------- 2
@@ -170,22 +170,22 @@ function campoNeve(c){
     c.fillRect(x|0,(y|0)-1,1,3); c.fillRect((x|0)-1,y|0,3,1);
   });
 }
-function marGelado(t){
-  map.fillStyle = '#274b74'; map.fillRect(0,0,W,H);
-  map.fillStyle = '#1f3d63';
-  for (let y=0; y<H; y+=10) map.fillRect(0, y + ((t*3)%10|0), W, 4);
+function marGelado(t, m = map){
+  m.fillStyle = '#274b74'; m.fillRect(0,0,W,H);
+  m.fillStyle = '#1f3d63';
+  for (let y=0; y<H; y+=10) m.fillRect(0, y + ((t*3)%10|0), W, 4);
   // placas de gelo boiando ao redor
-  map.fillStyle = 'rgba(214,236,247,.5)';
+  m.fillStyle = 'rgba(214,236,247,.5)';
   for (let k=0;k<7;k++){
     const a = k*0.9 + t*0.06, rr = 1.10 + (k%3)*0.05;
     const e2 = 2/NSHAPE, ct = Math.cos(a), st = Math.sin(a);
-    ell(map, CX + SAND_RX*rr*Math.sign(ct)*Math.pow(Math.abs(ct),e2),
-             CY + SAND_RY*rr*Math.sign(st)*Math.pow(Math.abs(st),e2), 13, 7); map.fill();
+    ell(m, CX + SAND_RX*rr*Math.sign(ct)*Math.pow(Math.abs(ct),e2),
+             CY + SAND_RY*rr*Math.sign(st)*Math.pow(Math.abs(st),e2), 13, 7); m.fill();
   }
-  map.strokeStyle = 'rgba(226,244,253,.8)'; map.lineWidth = 3;
-  isle(map, CX, CY, SAND_RX+2, SAND_RY+2); map.stroke();
-  map.strokeStyle = 'rgba(255,255,255,.25)'; map.lineWidth = 2;
-  isle(map, CX, CY, SAND_RX+8+Math.sin(t*0.8)*2, SAND_RY+8+Math.sin(t*0.8)*2); map.stroke();
+  m.strokeStyle = 'rgba(226,244,253,.8)'; m.lineWidth = 3;
+  isle(m, CX, CY, SAND_RX+2, SAND_RY+2); m.stroke();
+  m.strokeStyle = 'rgba(255,255,255,.25)'; m.lineWidth = 2;
+  isle(m, CX, CY, SAND_RX+8+Math.sin(t*0.8)*2, SAND_RY+8+Math.sin(t*0.8)*2); m.stroke();
 }
 
 /* ---------------------------------------------------------------- 3
@@ -285,16 +285,16 @@ function coliseu(c){
     c.fillRect(x|0,y|0, 2+(R()*3|0), 1);
   });
 }
-function pedraColiseu(t){
-  map.fillStyle = '#3a3226'; map.fillRect(0,0,W,H);
-  map.fillStyle = '#332b21';
-  for (let y=0; y<H; y+=14) map.fillRect(0, y, W, 6);
+function pedraColiseu(t, m = map){
+  m.fillStyle = '#3a3226'; m.fillRect(0,0,W,H);
+  m.fillStyle = '#332b21';
+  for (let y=0; y<H; y+=14) m.fillRect(0, y, W, 6);
   // arquibancada sugerida
   for (let k=0;k<5;k++){
-    isle(map, CX, CY, SAND_RX+8+k*11, SAND_RY+8+k*11);
-    map.lineWidth = 6;
-    map.strokeStyle = k%2 ? 'rgba(104,90,66,.55)' : 'rgba(78,66,48,.55)';
-    map.stroke();
+    isle(m, CX, CY, SAND_RX+8+k*11, SAND_RY+8+k*11);
+    m.lineWidth = 6;
+    m.strokeStyle = k%2 ? 'rgba(104,90,66,.55)' : 'rgba(78,66,48,.55)';
+    m.stroke();
   }
   // tochas piscando ao redor
   for (let k=0;k<8;k++){
@@ -303,11 +303,11 @@ function pedraColiseu(t){
     const x = CX + (SAND_RX+6)*Math.sign(ct)*Math.pow(Math.abs(ct),e2);
     const y = CY + (SAND_RY+6)*Math.sign(st)*Math.pow(Math.abs(st),e2);
     const f = 0.6 + Math.sin(t*6 + k*1.7)*0.25;
-    map.fillStyle = `rgba(255,170,60,${0.30*f})`; ell(map,x,y,13,13); map.fill();
-    map.fillStyle = `rgba(255,226,140,${0.85*f})`; ell(map,x,y,3.4,4.6); map.fill();
+    m.fillStyle = `rgba(255,170,60,${0.30*f})`; ell(m,x,y,13,13); m.fill();
+    m.fillStyle = `rgba(255,226,140,${0.85*f})`; ell(m,x,y,3.4,4.6); m.fill();
   }
-  map.strokeStyle = 'rgba(232,218,187,.85)'; map.lineWidth = 3;
-  isle(map, CX, CY, SAND_RX+2, SAND_RY+2); map.stroke();
+  m.strokeStyle = 'rgba(232,218,187,.85)'; m.lineWidth = 3;
+  isle(m, CX, CY, SAND_RX+2, SAND_RY+2); m.stroke();
 }
 
 /* ---------------------------------------------------------------- 4
@@ -391,24 +391,24 @@ function praiaAreia(c){
   };
   coqueiro(CX+104, CY-108); coqueiro(CX-108, CY-40);
 }
-function marPraia(t){
-  map.fillStyle = '#1f5fbe'; map.fillRect(0,0,W,H);
-  map.fillStyle = '#1a51a3';
-  for (let y=0; y<H; y+=7) map.fillRect(0, y + ((t*9)%7|0), W, 3);
-  map.fillStyle = 'rgba(120,220,235,.35)';
-  for (let y=0; y<H; y+=11) map.fillRect(0, y + ((t*5)%11|0), W, 2);
+function marPraia(t, m = map){
+  m.fillStyle = '#1f5fbe'; m.fillRect(0,0,W,H);
+  m.fillStyle = '#1a51a3';
+  for (let y=0; y<H; y+=7) m.fillRect(0, y + ((t*9)%7|0), W, 3);
+  m.fillStyle = 'rgba(120,220,235,.35)';
+  for (let y=0; y<H; y+=11) m.fillRect(0, y + ((t*5)%11|0), W, 2);
   // espuma batendo na costa — frentes em ritmos diferentes
   for (let k=0;k<9;k++){
     const g = 3 + k*9 + (t*9 + k*2) % 15;
-    map.strokeStyle = `rgba(255,255,255,${0.34 - k*0.032})`;
-    map.lineWidth = k < 3 ? 3 : 2;
-    isle(map, CX, CY, SAND_RX+g, SAND_RY+g); map.stroke();
+    m.strokeStyle = `rgba(255,255,255,${0.34 - k*0.032})`;
+    m.lineWidth = k < 3 ? 3 : 2;
+    isle(m, CX, CY, SAND_RX+g, SAND_RY+g); m.stroke();
   }
   const pulso = 2 + Math.sin(t*1.6)*1.6;
-  map.strokeStyle = 'rgba(255,255,255,.9)'; map.lineWidth = 4;
-  isle(map, CX, CY, SAND_RX+pulso, SAND_RY+pulso); map.stroke();
-  map.strokeStyle = 'rgba(214,246,255,.5)'; map.lineWidth = 2;
-  isle(map, CX, CY, SAND_RX+pulso+5, SAND_RY+pulso+5); map.stroke();
+  m.strokeStyle = 'rgba(255,255,255,.9)'; m.lineWidth = 4;
+  isle(m, CX, CY, SAND_RX+pulso, SAND_RY+pulso); m.stroke();
+  m.strokeStyle = 'rgba(214,246,255,.5)'; m.lineWidth = 2;
+  isle(m, CX, CY, SAND_RX+pulso+5, SAND_RY+pulso+5); m.stroke();
 }
 
 /* ---------------------------------------------------------------- 5
@@ -495,20 +495,20 @@ function crateraVulcao(c){
     c.fillStyle = 'rgba(226,82,26,.55)'; ell(c,x,y-s*0.2,s*0.55,s*0.3); c.fill();
   });
 }
-function bordaVulcao(t){
-  map.fillStyle = '#150e0d'; map.fillRect(0,0,W,H);
+function bordaVulcao(t, m = map){
+  m.fillStyle = '#150e0d'; m.fillRect(0,0,W,H);
   const pulso = 0.5 + Math.sin(t*1.3)*0.5;
-  map.fillStyle = `rgba(120,32,12,${0.55 + pulso*0.2})`; map.fillRect(0,0,W,H);
-  map.fillStyle = '#0d0807';
-  for (let y=0; y<H; y+=12) map.fillRect(0, y + ((t*4)%12|0), W, 7);
+  m.fillStyle = `rgba(120,32,12,${0.55 + pulso*0.2})`; m.fillRect(0,0,W,H);
+  m.fillStyle = '#0d0807';
+  for (let y=0; y<H; y+=12) m.fillRect(0, y + ((t*4)%12|0), W, 7);
   for (let k=6;k>=0;k--){
     const g = 4 + k*10;
-    map.strokeStyle = `rgba(255,${110+k*12},${30+k*8},${0.28 - k*0.03})`;
-    map.lineWidth = 4;
-    isle(map, CX, CY, SAND_RX+g, SAND_RY+g); map.stroke();
+    m.strokeStyle = `rgba(255,${110+k*12},${30+k*8},${0.28 - k*0.03})`;
+    m.lineWidth = 4;
+    isle(m, CX, CY, SAND_RX+g, SAND_RY+g); m.stroke();
   }
-  map.strokeStyle = `rgba(255,190,80,${0.55+pulso*0.35})`; map.lineWidth = 3;
-  isle(map, CX, CY, SAND_RX+2, SAND_RY+2); map.stroke();
+  m.strokeStyle = `rgba(255,190,80,${0.55+pulso*0.35})`; m.lineWidth = 3;
+  isle(m, CX, CY, SAND_RX+2, SAND_RY+2); m.stroke();
   // brasas subindo
   for (let k=0;k<14;k++){
     const a = (k*2.4 + t*0.4) % (Math.PI*2), e2 = 2/NSHAPE;
@@ -516,8 +516,8 @@ function bordaVulcao(t){
     const sobe = ((t*22 + k*17) % 60);
     const x = CX + (SAND_RX+7)*Math.sign(ct)*Math.pow(Math.abs(ct),e2);
     const y = CY + (SAND_RY+7)*Math.sign(st)*Math.pow(Math.abs(st),e2) - sobe*0.5;
-    map.fillStyle = `rgba(255,${150+((k*23)%80)},60,${0.7*(1-sobe/60)})`;
-    map.fillRect(x|0, y|0, 2, 2);
+    m.fillStyle = `rgba(255,${150+((k*23)%80)},60,${0.7*(1-sobe/60)})`;
+    m.fillRect(x|0, y|0, 2, 2);
   }
 }
 
@@ -571,9 +571,16 @@ function arenaDaRodada(sementeVisual){
 
 const arenaAtual = () => atual;
 
+/* A PINTURA de uma arena, para quem desenha FORA da Arena (ST-11.6d: a
+   partida da Liga no palco da aposta). O `estatico` recebe o contexto desde
+   sempre; o `fundo` passou a receber também, com o da Arena como padrão —
+   quem o chama sem contexto continua pintando o mesmo mapa de antes. */
+const pinturaDa = chave => PINTURA[chave] ?? null;
+
 export {
   ARENAS,
   aplicarArena,
   arenaAtual,
   arenaDaRodada,
+  pinturaDa,
 };

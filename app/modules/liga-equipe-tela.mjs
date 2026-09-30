@@ -15,7 +15,8 @@ import { dexImg } from './sprites.mjs';
 import { api } from './api.mjs';
 import { homeDaLiga, replayNaTela } from './liga-equipe-dados.mjs';
 import { linhaDoLog, provaDaPartida } from './partida-dados.mjs';
-import { encenar } from './pve-tela.mjs';
+import { montarPalco } from './liga-palco.mjs';
+import { sortearArena } from './arenas-dados.mjs';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const nomeDo = dex => nomeExibido((PACK.especies ?? []).find(e => e.dex === dex)?.n ?? '');
@@ -23,7 +24,7 @@ const novaChave = () => `le-${Date.now().toString(36)}-${Math.random().toString(
 const lerPreset = () => { try { return localStorage.getItem('ar_treino_preset'); } catch { return null; } };
 const gravarPreset = p => { try { localStorage.setItem('ar_treino_preset', p); } catch { /* privativo: vale só nesta visita */ } };
 
-let dados = null, acabou = null, ocupado = false, chaveDaBusca = null, erro = null, ultimo = null;
+let dados = null, acabou = null, ocupado = false, chaveDaBusca = null, erro = null, ultimo = null, assistir = null;
 
 export async function renderLigaEquipe() {
   const alvo = $('#ligaEqCorpo');
@@ -75,7 +76,7 @@ async function buscar() {
   const r = await api.post('/api/equipe/buscar', { meu: dados.meuTime.id, chaveIdem: chaveDaBusca });
   if (r.indisponivel) { erro = 'a resposta não chegou — buscar de novo reenvia o MESMO pedido, sem jogar outra partida'; return; }
   chaveDaBusca = null;
-  if (r.ok) { acabou = r.corpo.partida.id; erro = null; } else erro = r.corpo?.erro ?? 'a busca foi recusada';
+  if (r.ok) { acabou = r.corpo.partida.id; erro = null; assistir = acabou; } else erro = r.corpo?.erro ?? 'a busca foi recusada';
 }
 
 /* O REPLAY (ST-11.6b): a partida pelo link dela, encenada SÓ do log, com o
@@ -86,8 +87,9 @@ async function verReplay(id) {
   const r = await api.get(`/api/equipe/partida?id=${encodeURIComponent(id)}`);
   if (!r.ok || !linha) { erro = 'o replay não abriu — o servidor não respondeu'; renderLigaEquipe(); return; }
   const p = r.corpo.partida, alvo = $('#leReplay'), t = replayNaTela(linha, null);
-  encenar({ alvo, linha: linhaDoLog(p.log, nomeDo, linha.lado), final: t.fim, topo: esc(t.prova), titulo: esc(t.topo), voltar: 'fechar o replay',
-    rotulos: { A: esc(t.rotulos.A), B: esc(t.rotulos.B) } });
+  /* O PALCO DA ARENA (ST-11.6d): a ilha sai da semente da partida, como a da aposta sai da raiz da rodada. */
+  montarPalco(alvo, { linha: linhaDoLog(p.log, nomeDo, linha.lado), arena: sortearArena(p.semente), final: t.fim, topo: esc(t.prova),
+    titulo: esc(t.topo), voltar: 'fechar', rotulos: { A: esc(t.rotulos.A), B: esc(t.rotulos.B) } });
   const prova = replayNaTela(linha, await provaDaPartida(p));
   const topo = alvo?.querySelector('.pveTopo span');
   if (topo) { topo.textContent = prova.prova; topo.title = prova.provaDetalhe; topo.classList.toggle('leProva', true); topo.classList.toggle('leProvaMal', prova.provaOk === false); }
@@ -106,5 +108,9 @@ document.addEventListener('click', async ev => {
   if (tipo === 'entrar') { $('#btnLogin')?.click(); return; }
   ocupado = true; renderLigaEquipe();
   try { if (tipo === 'publicar') await publicar(); else if (tipo === 'buscar') await buscar(); }
-  finally { ocupado = false; await renderLigaEquipe(); }
+  finally {
+    ocupado = false; await renderLigaEquipe();
+    /* A partida que a busca acabou de jogar ABRE no palco, como a luta da aposta abre depois do sino. */
+    if (assistir) { const id = assistir; assistir = null; verReplay(id); }
+  }
 });

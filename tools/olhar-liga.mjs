@@ -71,8 +71,8 @@ async function capturar(nome, sessao, { clicar, larguras = LARGURAS, replay = nu
     if (replay) {
       await pg.click('[data-le-replay]');
       await pg.waitForFunction(() => document.querySelector('#leReplay .pveTopo span.leProva'), null, { timeout: 20000 });
-      await pg.waitForTimeout(replay === 'meio' ? 2600 : 200);
-      if (replay === 'fim') { await pg.click('#leReplay [data-pve-pular]'); await pg.waitForFunction(() => document.querySelector('#leReplay')?.dataset.estado === 'fim', null, { timeout: 20000 }); }
+      await pg.waitForTimeout(replay === 'meio' ? 6200 : 200);
+      if (replay === 'fim') { await pg.click('#leReplay [data-lp-pular]'); await pg.waitForFunction(() => document.querySelector('#leReplay')?.dataset.estado === 'fim', null, { timeout: 20000 }); }
     }
     await pg.waitForTimeout(400);
     await (await pg.$('#viewTreino .card')).screenshot({ path: `${PASTA}/${nome}-${w}.png` });

@@ -1370,6 +1370,66 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .leVer{font:inherit;font-size:.7rem;color:var(--neon);background:none;border:1px solid rgba(var(--goldRGB),.45);border-radius:999px;padding:2px 10px;cursor:pointer;white-space:nowrap}
 .leVer:hover,.leVer:focus-visible{background:rgba(var(--goldRGB),.12)}
 #leReplay{margin:0}#leReplay .pveLuta{max-width:none}
+/* ST-11.6d · A PARTIDA DA LIGA NO PALCO DA ARENA. A mesma ilha, as mesmas
+   folhas animadas e as mesmas placas da luta da aposta; o que é da Liga é o
+   anel no chão de cada um (ciano o seu time, vermelho o rival), os rótulos dos
+   lados nos cantos da ilha e as placas em dois grupos ao lado. */
+.lpLuta{border:1px solid rgba(var(--goldRGB),.5);border-radius:14px;overflow:hidden;background:var(--bg2)}
+.lpCena{display:flex;flex-direction:column;align-items:center;gap:0;padding:12px}
+/* O PLACAR VIVO: quantos de pé de cada lado — a pergunta da luta, respondida em número grande. */
+.lpPlacar{display:flex;align-items:center;justify-content:center;gap:14px;width:100%;max-width:540px;margin-bottom:8px}
+.lpPlacar>span{display:flex;align-items:baseline;gap:6px;font-size:.72rem;color:var(--dim)}
+.lpPlacar b{font-family:var(--px);font-size:1.5rem;line-height:1}.lpPlacar i{font-style:normal;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase}
+.lpPlacarA b,.lpPlacarA i{color:var(--neon)}.lpPlacarB b,.lpPlacarB i{color:rgb(var(--perigoRGB))}
+.lpPlacar em{font-style:normal;color:var(--dim)}
+.lpPlacar>span.baixa b{animation:lpBaixa .5s}
+@keyframes lpBaixa{0%{transform:scale(1.6);filter:brightness(2)}100%{transform:scale(1)}}
+/* O FIM sobre a ilha, como o banner do vencedor da Arena. */
+.lpBanner{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);z-index:6;display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:14px 26px;border-radius:14px;background:rgba(6,10,18,.84);border:2px solid var(--line);box-shadow:0 12px 40px rgba(0,0,0,.6);animation:lpBannerEntra .45s ease-out}
+.lpBanner{max-width:88%}.lpBanner .leSelo{white-space:nowrap;font-size:clamp(.5rem,2.4cqw,.66rem)}
+.lpBanner b{font-family:var(--px);font-size:clamp(1.2rem,6cqw,2rem);letter-spacing:.04em}
+.lpBanner.venceu{border-color:rgba(var(--okRGB),.8)}.lpBanner.venceu b{color:rgb(var(--okRGB));text-shadow:0 0 14px rgba(var(--okRGB),.6)}
+.lpBanner.perdeu{border-color:rgba(var(--perigoRGB),.7)}.lpBanner.perdeu b{color:rgb(var(--perigoRGB))}
+@keyframes lpBannerEntra{from{opacity:0;transform:translate(-50%,-40%) scale(.8)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.lpArena{position:relative;aspect-ratio:3/4;width:100%;max-width:540px;border-radius:0 0 10px 10px;overflow:hidden;background:#0b1320;border:2px solid #16202f;
+  container-type:inline-size;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.lpMapa,.lpFx{position:absolute;inset:0;width:100%;height:100%}
+.lpMapa{z-index:1}.lpMons{position:absolute;inset:0;z-index:2}.lpFx{z-index:3;pointer-events:none}
+.lpUi{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+.lpMon{transition:opacity .15s,filter .15s}
+.lpAnelChao{position:absolute;width:9%;aspect-ratio:2.4/1;transform:translate(-50%,-50%);border-radius:50%;border:3px solid;opacity:.95;pointer-events:none;transition:opacity .15s}
+.lpAnelChao.lpA{border-color:var(--neon);box-shadow:0 0 8px var(--neon)}
+.lpAnelChao.lpB{border-color:rgb(var(--perigoRGB));box-shadow:0 0 8px rgba(var(--perigoRGB),.9)}
+.lpAnelChao.lpCaido{opacity:0}
+.lpMon.lpCaido{opacity:0;filter:grayscale(1);transition:opacity .6s .35s,filter .2s}
+/* O número de dano no tamanho da Arena, com contorno para ler sobre qualquer chão. */
+.lpUi .dmg{font-size:clamp(11px,3.4cqw,17px);-webkit-text-stroke:1px #10131c;paint-order:stroke fill;text-shadow:0 2px 0 rgba(0,0,0,.6)}
+.lpUi .dmg.super{font-size:clamp(13px,4cqw,20px)}.lpUi .dmg.crit{font-size:clamp(15px,4.6cqw,23px)}
+.lpPlaca .nm{color:#fff;text-shadow:0 1px 0 #000,1px 0 0 #000,-1px 0 0 #000,0 -1px 0 #000}
+.lpMiniLog div:last-child{white-space:normal}
+.lpMon.lpEntra{opacity:0}
+.lpEstatico{width:100%;height:auto;image-rendering:pixelated;filter:drop-shadow(0 0 1px rgba(0,0,0,.9))}
+.lpSelo{position:absolute;top:8px;right:8px;z-index:5}
+/* A GRADE DE VIDA DA ARENA, em cima do mapa: três colunas, como a da aposta — o seu time
+   nas duas primeiras linhas e o rival nas duas de baixo, cada grupo com o anel da cor dele. */
+.lpHud{display:grid;grid-template-columns:1fr;gap:4px;width:100%;max-width:540px;background:#2b3a52;border:2px solid #16202f;border-bottom:none;border-radius:10px 10px 0 0;padding:5px}
+.lpHudLado{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lpGrade{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.lpHudRot{display:flex;align-items:center;gap:5px;font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.lpAnel{flex:none;width:12px;height:6px;border-radius:50%;border:2px solid}
+.lpHudA .lpHudRot{color:var(--neon)}.lpHudA .lpAnel{border-color:var(--neon)}
+.lpHudB .lpHudRot{color:rgb(var(--perigoRGB))}.lpHudB .lpAnel{border-color:rgb(var(--perigoRGB))}
+.lpHudA .lpPlaca{box-shadow:inset 3px 0 0 var(--neon)}.lpHudB .lpPlaca{box-shadow:inset 3px 0 0 rgb(var(--perigoRGB))}
+/* O MINI LOG da Arena, no pé da ilha. */
+.lpMiniLog{position:absolute;left:0;right:0;bottom:0;z-index:5;pointer-events:none;display:flex;flex-direction:column;justify-content:flex-end;gap:1px;
+  padding:20px 9px 6px;font-family:var(--dsp);font-weight:500;letter-spacing:.01em;font-size:clamp(9.5px,2.1cqw,13px);line-height:1.4;
+  background:linear-gradient(180deg,transparent,rgba(4,7,16,.55) 45%,rgba(4,7,16,.82));opacity:0;transition:opacity .3s}
+.lpMiniLog.tem{opacity:1}
+.lpMiniLog div{color:#c9d6ee;text-shadow:0 1px 2px rgba(0,0,0,.9);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lpMiniLog div:last-child{color:#fff}.lpMiniLog div:first-child:not(:last-child){opacity:.55}
+.lpMiniLog .l-crit{color:var(--gold)}.lpMiniLog .l-ko{color:#ff9a9a}
+
 .pveRotulo{display:block;font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--neon);margin:0 0 6px;text-shadow:0 1px 0 rgba(0,0,0,.6)}
 .pveB .pveRotulo{text-align:right;color:rgb(var(--perigoRGB))}
 .pveTopo span.leProva{color:rgb(var(--okRGB))}.pveTopo span.leProva::before{content:'✓ '}
