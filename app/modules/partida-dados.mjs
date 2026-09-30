@@ -16,6 +16,8 @@
 import { simular, montarLutador, VERSAO_TBE } from '../../engine/treino-batalha.mjs';
 import { derivarIndice } from '../../engine/seed.mjs';
 import { conteudoDaLuta, timeDoSnapshot } from './snapshot-dados.mjs';
+import { fraseDoEvento, PASSO_MS } from './pve-dados.mjs';
+import { conferir } from '../../engine/commit.mjs';
 
 /* A semente da luta sai do ramo `liga` da raiz — a mesma raiz de outra
    rodada não dá a mesma luta. */
@@ -54,4 +56,34 @@ export function replayDoLog(log) {
   const vivos = l => hp[l].filter(h => h > 0).length;
   return { quadros, final: { A: [...hp.A], B: [...hp.B] },
            vencedor: vivos('A') && !vivos('B') ? 'A' : vivos('B') && !vivos('A') ? 'B' : 'empate' };
+}
+
+/* A LINHA DO TEMPO DO REPLAY (ST-11.6b · tela 27), no formato que a
+   encenação da jornada já pinta (`linhaDoTempo`) — mas SÓ do log: a vida
+   depois de cada golpe é a do `replayDoLog`, e o nome vem de quem chama
+   (`nomeDoDex`), sem pack. `eu` diz de que lado o jogador estava: o lado dele
+   vai para a esquerda (A na tela), e os slots continuam os da partida. */
+export function linhaDoLog(log, nomeDoDex = d => `#${d}`, eu = 'A') {
+  const r = replayDoLog(log), outro = eu === 'A' ? 'B' : 'A';
+  const lado = l => (log?.lados?.[l] ?? []).map((f, i) => ({ slot: `${l}${i}`, dex: f.dex, nivel: f.nivel, maxHp: f.hp, nome: nomeDoDex(f.dex) }));
+  const lados = { A: lado(eu), B: lado(outro) };
+  /* No espelho (Snorlax contra Snorlax) o nome não diz de quem é: a frase diz
+     "seu" e "rival", e a placa continua só com o nome. */
+  const todos = [...lados.A, ...lados.B];
+  const nome = slot => { const n = todos.find(x => x.slot === slot)?.nome ?? slot; return slot[0] === eu ? `seu ${n}` : `${n} rival`; };
+  const max = slot => todos.find(x => x.slot === slot)?.maxHp || 1;
+  const passos = r.quadros.map((e, n) => ({ n, t: n * PASSO_MS, turno: e.turno, de: e.de, para: e.para, golpe: e.golpe, dano: e.dano ?? 0,
+    eff: e.eff, crit: e.crit, errou: e.errou, caiu: e.caiu, vidaDoAlvo: e.hpDepois, fracaoDoAlvo: e.hpDepois / max(e.para), texto: fraseDoEvento(e, nome) }));
+  /* O vencedor do REPLAY, do ponto de vista de quem assiste: 'A' é ele. */
+  const vencedor = r.vencedor === 'empate' ? 'empate' : r.vencedor === eu ? 'A' : 'B';
+  return { lados, passos, vencedor, duracaoMs: passos.length * PASSO_MS };
+}
+
+/* A PROVA do replay: o compromisso gravado confere com a raiz revelada, e a
+   semente da luta é a que essa raiz dá. As duas juntas dizem que o resultado
+   não foi escolhido depois (§9.13). */
+export async function provaDaPartida(p) {
+  const commit = await conferir(p?.commit, p?.raiz, p?.sal);
+  const semente = commit && sementeDaPartida(p.raiz) === p.semente;
+  return { ok: !!(commit && semente), commit, semente: !!semente };
 }

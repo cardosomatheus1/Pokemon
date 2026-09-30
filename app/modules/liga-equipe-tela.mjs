@@ -13,7 +13,9 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { dexImg } from './sprites.mjs';
 import { api } from './api.mjs';
-import { homeDaLiga } from './liga-equipe-dados.mjs';
+import { homeDaLiga, replayNaTela } from './liga-equipe-dados.mjs';
+import { linhaDoLog, provaDaPartida } from './partida-dados.mjs';
+import { encenar } from './pve-tela.mjs';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const nomeDo = dex => nomeExibido((PACK.especies ?? []).find(e => e.dex === dex)?.n ?? '');
@@ -21,7 +23,7 @@ const novaChave = () => `le-${Date.now().toString(36)}-${Math.random().toString(
 const lerPreset = () => { try { return localStorage.getItem('ar_treino_preset'); } catch { return null; } };
 const gravarPreset = p => { try { localStorage.setItem('ar_treino_preset', p); } catch { /* privativo: vale só nesta visita */ } };
 
-let dados = null, acabou = null, ocupado = false, chaveDaBusca = null, erro = null;
+let dados = null, acabou = null, ocupado = false, chaveDaBusca = null, erro = null, ultimo = null;
 
 export async function renderLigaEquipe() {
   const alvo = $('#ligaEqCorpo');
@@ -31,7 +33,8 @@ export async function renderLigaEquipe() {
     const r = await api.get('/api/equipe/liga');
     dados = r.ok ? r.corpo : null;
   }
-  pintar(alvo, homeDaLiga({ conta, dados, pack: PACK, agora: Date.now(), preset: lerPreset(), acabou }));
+  ultimo = homeDaLiga({ conta, dados, pack: PACK, agora: Date.now(), preset: lerPreset(), acabou });
+  pintar(alvo, ultimo);
 }
 
 function pintar(alvo, h) {
@@ -49,7 +52,8 @@ function pintar(alvo, h) {
       ${h.secundaria ? `<button class="btn leSec" data-le-acao="${h.secundaria.tipo}"${ocupado ? ' disabled' : ''}>${esc(h.secundaria.rotulo)}</button>` : ''}</div>`;
   const linha = (r, grande = false) => `<li class="leLinha le${r.classe}${grande ? ' leGrande' : ''}${r.selo.tipo === 'fora' ? ' leNeutro' : ''}">
       <span class="leResCel"><b class="leRes">${esc(r.titulo)}</b><em class="leSelo leSelo${r.selo.tipo}">${esc(r.selo.texto)}</em></span><span class="leContra">${esc(r.contra)}${r.bot ? ` <em class="leBot">${esc(r.bot)}</em>` : ''}</span>
-      ${r.explica ? `<span class="leRank">${esc(r.explica)}</span>` : '<span></span>'}<span class="leTurnos">${esc([r.turnos, r.quando].filter(Boolean).join(' · '))}</span></li>`;
+      ${r.explica ? `<span class="leRank">${esc(r.explica)}</span>` : '<span></span>'}<span class="leTurnos">${esc([r.turnos, r.quando].filter(Boolean).join(' · '))}</span>
+      <button class="leVer" data-le-replay="${esc(r.id)}" title="rever a partida, golpe a golpe">▶ replay</button></li>`;
   const resultado = h.resultado ? `<ul class="leResultado">${linha(h.resultado, true)}</ul>` : '';
   const recentes = h.recentes?.length ? `<div class="leRecentes"><span class="leRot">últimas partidas</span><ul>${h.recentes.map(r => linha(r)).join('')}</ul></div>`
     : h.semHistorico ? '<div class="leRecentes"><span class="leRot">últimas partidas</span><p class="leVazio">Nenhuma partida ainda — a primeira busca acha um adversário da sua faixa, ou um bot identificado.</p></div>' : '';
@@ -57,7 +61,7 @@ function pintar(alvo, h) {
   alvo.innerHTML = `<div class="leHome le-${h.estado}">
     ${barra}${tier ? '' : passos}
     <div class="lePainel${tier ? '' : ' leSoCentro'}">${tier}<div class="leCentro">${time}${presets}${h.aviso ? `<p class="leAviso">${h.titulo ? `<strong>${esc(h.titulo)}</strong>` : ''}${esc(h.aviso)}</p>` : ''}${erro ? `<p class="leErro">${esc(erro)}</p>` : ''}${botoes}</div></div>
-    ${tier ? passos : ''}${resultado}${recentes}</div>`;
+    ${tier ? passos : ''}<div id="leReplay" class="pveArea" hidden></div>${resultado}${recentes}</div>`;
 }
 
 async function publicar() {
@@ -74,9 +78,26 @@ async function buscar() {
   if (r.ok) { acabou = r.corpo.partida.id; erro = null; } else erro = r.corpo?.erro ?? 'a busca foi recusada';
 }
 
+/* O REPLAY (ST-11.6b): a partida pelo link dela, encenada SÓ do log, com o
+   lado do jogador à esquerda; a prova da semente chega depois e troca a linha
+   do topo. */
+async function verReplay(id) {
+  const linha = [ultimo?.resultado, ...(ultimo?.recentes ?? [])].find(x => x?.id === id);
+  const r = await api.get(`/api/equipe/partida?id=${encodeURIComponent(id)}`);
+  if (!r.ok || !linha) { erro = 'o replay não abriu — o servidor não respondeu'; renderLigaEquipe(); return; }
+  const p = r.corpo.partida, alvo = $('#leReplay'), t = replayNaTela(linha, null);
+  encenar({ alvo, linha: linhaDoLog(p.log, nomeDo, linha.lado), final: t.fim, topo: esc(t.prova), titulo: esc(t.topo), voltar: 'fechar o replay',
+    rotulos: { A: esc(t.rotulos.A), B: esc(t.rotulos.B) } });
+  const prova = replayNaTela(linha, await provaDaPartida(p));
+  const topo = alvo?.querySelector('.pveTopo span');
+  if (topo) { topo.textContent = prova.prova; topo.title = prova.provaDetalhe; topo.classList.toggle('leProva', true); topo.classList.toggle('leProvaMal', prova.provaOk === false); }
+}
+
 document.addEventListener('liga-equipe:abrir', () => { acabou = null; renderLigaEquipe(); });
 
 document.addEventListener('click', async ev => {
+  const rp = ev.target.closest('[data-le-replay]');
+  if (rp) { verReplay(rp.dataset.leReplay); return; }
   const p = ev.target.closest('[data-le-preset]');
   if (p) { gravarPreset(p.dataset.lePreset); renderLigaEquipe(); return; }
   const a = ev.target.closest('[data-le-acao]');

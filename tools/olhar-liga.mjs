@@ -54,7 +54,7 @@ criarPartida(srv.db, { userId: eu.id, meu: meu.id, adversario: dele.id, chaveIde
 
 const b = await chromium.launch({ executablePath: CHROME });
 const erros = [];
-async function capturar(nome, sessao, { clicar, larguras = LARGURAS } = {}) {
+async function capturar(nome, sessao, { clicar, larguras = LARGURAS, replay = null } = {}) {
   for (const w of larguras) {
     const ctx = await b.newContext({ viewport: { width: w, height: w > 500 ? 1100 : 1000 } });
     await ctx.addInitScript(([s]) => { if (s) localStorage.setItem('ar_sessao', s); localStorage.setItem('ar_session', '1'); localStorage.setItem('ar_treino_aba', 'liga'); }, [sessao]);
@@ -66,6 +66,14 @@ async function capturar(nome, sessao, { clicar, larguras = LARGURAS } = {}) {
     await pg.$eval('.nav[data-view="viewTreino"]', el => el.click());
     await pg.waitForFunction(() => document.querySelector('#ligaEqCorpo .leHome'), null, { timeout: 20000 });
     if (clicar) { await pg.click(clicar); await pg.waitForFunction(() => document.querySelector('#ligaEqCorpo .leResultado, #ligaEqCorpo .leErro'), null, { timeout: 30000 }); }
+    /* O replay: abre a primeira partida, espera a prova da semente e captura no meio
+       (o palco) e no fim (o resultado, depois de "pular"). */
+    if (replay) {
+      await pg.click('[data-le-replay]');
+      await pg.waitForFunction(() => document.querySelector('#leReplay .pveTopo span.leProva'), null, { timeout: 20000 });
+      await pg.waitForTimeout(replay === 'meio' ? 2600 : 200);
+      if (replay === 'fim') { await pg.click('#leReplay [data-pve-pular]'); await pg.waitForFunction(() => document.querySelector('#leReplay')?.dataset.estado === 'fim', null, { timeout: 20000 }); }
+    }
     await pg.waitForTimeout(400);
     await (await pg.$('#viewTreino .card')).screenshot({ path: `${PASTA}/${nome}-${w}.png` });
     await ctx.close();
@@ -94,6 +102,8 @@ for (const w of LARGURAS) {
                   ON CONFLICT (user_id) DO UPDATE SET rating = 3000`).run(nova.id, agora);
 }
 await capturar('semtime', vazio.sessao);
+await capturar('replaymeio', eu.sessao, { replay: 'meio' });
+await capturar('replayfim', eu.sessao, { replay: 'fim' });
 await capturar('semconta', null);
 await b.close();
 await srv.fechar();

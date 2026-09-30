@@ -1306,9 +1306,63 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   decisões moram na camada 0 e no servidor; a tela tem uma asserção estática).
 - **O que fica:** com conta real, o time do aparelho não chega à conta — a
   aba para em "sem time na conta" até a ST-13.4 (L-211, com o dono). O botão
-  "ver replay" nas linhas é da 11.6b. Notas do Q7 que ficaram: o conteúdo trava
+  "ver replay" nas linhas é da 11.6b.
+- **11.6b feita (30/09):** `linhaDoLog` e `provaDaPartida` em
+  `partida-dados.mjs` (camada 0, sem motor no caminho), `replayNaTela` em
+  `liga-equipe-dados.mjs`; a encenação da jornada (`encenar`) aceita a linha
+  pronta, o fim escrito e os rótulos dos lados. `test/liga-replay.mjs` ·
+  S1798–S1804 · mutantes de navegador: 0 (a correção do `aplicar` que acha a
+  vida máxima pelo slot nos dois lados só aparece no navegador, e não tem
+  mutante próprio — registrado aqui). Notas do Q7 que ficaram: o conteúdo trava
   em 1180 px (de propósito: a linha longa separava o resultado do efeito), e
   sem conta a temporada não aparece (a leitura é da conta).
+
+### ST-11.6d · A partida da Liga NA ARENA — 6 contra 6 no palco da aposta ⏳ próxima
+- **Origem:** o dono, 30/09/2026: *"a liga de times deveria ter a imagem e
+  estilo de jogo da arena dos 6 vs 6 lutando na arena, estilo o da aposta"*.
+  Muda a forma da 11.6b (o replay saiu no painel de cartões da jornada), e por
+  isso entra antes da 11.6c.
+- **Porte** M–G · **Bloco dono** F5.9 · **Spec** §12 tela 27, §9.13 · **Método** GL
+  (barra nomeada: *"parece a luta da Arena que o apostador assiste?"*), com
+  as capturas da Arena lado a lado com as da Liga.
+- **Escopo:**
+  - a partida (a que acabou de ser buscada e o replay pelo link) encenada no
+    MESMO palco da Arena: o mapa, os sprites, o movimento, o projétil ou o
+    jato de cada golpe (ST-5.5), os números de dano (ST-5.4), a queda, o clima
+    se houver. Os dois times de seis em lados opostos do mapa, com as cores
+    dos lados;
+  - a fonte continua o LOG do servidor (`linhaDoLog`). O que se acrescenta é
+    uma coreografia na camada 0 que transforma cada evento (quem, em quem,
+    golpe, dano, caiu) em quadros do palco da Arena (posição, alvo, efeito).
+    A tela só pinta o que ela devolver. Um caminho só: o dano, a vida e quem
+    cai são os do log, nunca os do palco;
+  - o que já existe fica: a prova ("resultado travado antes da luta —
+    conferido"), o selo do fim (contou · subiu/desceu/tier mantido), o
+    rótulo do bot, "pular" e "fechar";
+  - o painel de cartões deixa de ser o palco da Liga. A jornada continua com
+    o dela.
+- **Aceite:**
+  - identidade: a vida de cada lutador no fim do palco é a do `replayDoLog`,
+    golpe a golpe;
+  - Q5 nas quatro larguras, com a Arena da aposta ao lado;
+  - Q7 cego com a barra acima e as capturas das duas lado a lado.
+- **Como (levantamento de 30/09, decisão minha):** o palco da Arena NÃO pode
+  ser emprestado como está. Ele lê o `S` global e os ids `#mapCanvas`,
+  `#fxCanvas`, `#monLayer`, `#hud` e `#arena`, e a rodada da aposta continua
+  rodando por baixo. Pegar o `S` para a Liga quebraria a rodada viva. O
+  caminho é o do Avanço, que já reusa os efeitos da Arena fora dela:
+  - um palco próprio da Liga, desacoplado, que recebe um alvo e desenha;
+  - a PINTURA do mapa da Arena (`arenas.mjs`: a ilha, o anel e o cenário);
+  - os sprites PMD e as animações (`sprites.mjs`: parado, andando, atacando
+    e levando);
+  - o `MOVE_FX` com o carregador `fxSheet` e a cadência do `avanco-efeito`
+    (carga, projétil a 420 px/s e jato), e as placas de vida da Arena;
+  - a coreografia do evento, na camada 0: quem avança, o tempo do golpe e
+    quando o dano cai. É a mesma ordem do `applyEvent` da Arena, só que lida
+    do log da Liga.
+- **Sabotagem:** o palco tira o dano de outra conta que não o log; o lado do
+  jogador trocado; o golpe desenhado em outro alvo.
+- **Portões:** Q1 Q2 Q5 Q7.
 
 ### ST-11.7 · Recompensas, League Points e loja
 - **Porte** M · **Servidor** sim · **Spec** §9.10, §9.11, §10.1

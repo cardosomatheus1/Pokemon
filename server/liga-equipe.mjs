@@ -32,13 +32,13 @@ export function minhasPartidas(db, userId, limite = RECENTES, pack = PACK) {
       /* O EFEITO no tier, pelos NOMES: o antes e o depois do livro viram
          tier aqui dentro, e o número não sai do servidor (§9.7). */
       const antes = eu === 'A' ? l.antes_a : l.antes_b, depois = antes + (eu === 'A' ? l.delta : -l.delta);
-      return { id: l.id, quando: l.criada_em, turnos: l.turnos, resultado: lado(l.vencedor, eu), rated: l.elegivel !== 0,
+      return { id: l.id, lado: eu, quando: l.criada_em, turnos: l.turnos, resultado: lado(l.vencedor, eu), rated: l.elegivel !== 0,
                ...(l.delta != null ? { tier: { antes: tierDe(antes), depois: tierDe(depois) } } : {}),
                contra: { tipo: 'jogador', nome: nomeDe(db, eu === 'B' ? l.user_a : l.user_b) } };
     });
   const bots = db.prepare(`SELECT id, bot_id, vencedor, turnos, criada_em FROM league_bot_matches WHERE user_b = ?
                            ORDER BY criada_em DESC, id LIMIT ?`).all(userId, limite)
-    .map(l => ({ id: l.id, quando: l.criada_em, turnos: l.turnos, resultado: lado(l.vencedor, 'B'), rated: false,
+    .map(l => ({ id: l.id, lado: 'B', quando: l.criada_em, turnos: l.turnos, resultado: lado(l.vencedor, 'B'), rated: false,
                  contra: { tipo: 'bot', nome: (pack.treinadores ?? []).find(t => `bot:${t.id}` === l.bot_id)?.nome ?? l.bot_id } }));
   return [...gente, ...bots].sort((a, b) => b.quando - a.quando || (a.id < b.id ? -1 : 1)).slice(0, limite);
 }

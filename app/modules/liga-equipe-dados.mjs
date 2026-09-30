@@ -65,7 +65,7 @@ export const escadaDoTier = tier => {
 export function linhaDaPartida(p, agora = null) {
   const bot = p.contra?.tipo === 'bot';
   return {
-    id: p.id, classe: p.resultado,
+    id: p.id, lado: p.lado ?? 'B', classe: p.resultado,
     titulo: p.resultado === 'venceu' ? 'Vitória' : p.resultado === 'perdeu' ? 'Derrota' : 'Empate',
     contra: bot ? `contra ${p.contra.nome}` : `contra ${p.contra?.nome ?? 'jogador'}`,
     bot: bot ? ROTULO_BOT : null,
@@ -130,4 +130,24 @@ export function homeDaLiga({ conta, dados, pack, agora, preset, acabou = null })
   return comPresets({ ...base, estado: 'pronto', acao: { rotulo: 'Buscar partida', habilitada: true, tipo: 'buscar' },
     secundaria: { rotulo: 'Publicar de novo', tipo: 'publicar' },
     aviso: mudou ? 'O seu time mudou desde a publicação. A Liga luta com o publicado até você publicar de novo.' : null });
+}
+
+/* O REPLAY na tela (ST-11.6b · tela 27): o topo diz o que se está vendo e o
+   fim diz o que aconteceu — com a mesma linha da lista (o selo e o porquê),
+   e a prova de que a semente estava decidida antes. */
+export function replayNaTela(linha, prova) {
+  const r = linha ? { venceu: 'Você venceu', perdeu: 'Você perdeu', empate: 'Empate' }[linha.classe] : null;
+  return {
+    topo: linha ? `replay · ${linha.contra}` : 'replay',
+    /* O rótulo de cada lado: o jogador à esquerda; o outro pelo nome — e o bot com o rótulo dele. */
+    rotulos: { A: 'seu time', B: linha ? `${linha.contra.replace(/^contra /, '')}${linha.bot ? ' · bot' : ''}` : 'rival' },
+    fim: { titulo: r ?? 'Fim', classe: linha?.classe === 'venceu' ? 'venceu' : linha?.classe === 'perdeu' ? 'perdeu' : 'empate',
+           selo: linha?.selo ?? null, texto: linha?.explica ?? '' },
+    /* A frase curta para quem joga; o detalhe técnico fica no título (o "como sabemos?"). */
+    prova: prova == null ? 'conferindo…'
+      : prova.ok ? 'resultado travado antes da luta — conferido'
+      : 'o resultado NÃO confere com o travado antes da luta — avise o suporte',
+    provaDetalhe: 'o servidor gravou o compromisso (SHA-256) da semente antes de jogar; a raiz revelada agora reproduz esse compromisso e esta semente',
+    provaOk: prova?.ok ?? null,
+  };
 }

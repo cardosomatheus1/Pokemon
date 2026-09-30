@@ -57,12 +57,21 @@ function estourar(golpe, alvoEl) {
   if (estouros.length === 1) requestAnimationFrame(desenharEstouros);
 }
 
-function aplicar(passo, L, animar = true) {
+function aplicar(passo, L, animar = true, g = geracao) {
   const de = document.querySelector(`.pveLutador[data-slot="${passo.de}"]`);
   const para = document.querySelector(`.pveLutador[data-slot="${passo.para}"]`);
-  const max = L.lados[passo.para[0]].find(x => x.slot === passo.para).maxHp;
+  /* Pelo SLOT, nos dois lados: o replay da Liga põe o jogador à esquerda, e o slot dele pode ser B. */
+  const max = [...L.lados.A, ...L.lados.B].find(x => x.slot === passo.para).maxHp;
   if (animar && de) { de.classList.remove('ataca'); void de.offsetWidth; de.classList.add('ataca'); }
+  /* Quem ATACA e quem LEVA ficam marcados até o próximo golpe: o olho acha a
+     ação no palco sem ler o texto (Q7 da ST-11.6b). */
+  const log = $('#pveLog');
   const acerta = () => {
+    /* O texto e as marcas entram QUANDO o golpe acerta, junto com a barra e o
+       número — antes, dizia "−27" com a barra ainda cheia. */
+    if (log) log.textContent = passo.texto;
+    document.querySelectorAll('.pveLutador.vez, .pveLutador.alvo').forEach(x => x.classList.remove('vez', 'alvo'));
+    de?.classList.add('vez'); para?.classList.add('alvo');
     if (!para) return;
     para.querySelector('.pveVida i').style.width = `${Math.round(passo.fracaoDoAlvo * 100)}%`;
     para.querySelector('.pveVida i').classList.toggle('baixa', passo.fracaoDoAlvo < 0.3);
@@ -79,18 +88,21 @@ function aplicar(passo, L, animar = true) {
     para.querySelector('.pveSprite').appendChild(n);
     setTimeout(() => n.remove(), 900);
   };
-  if (animar) setTimeout(acerta, 260); else acerta();
-  const log = $('#pveLog');
-  if (log) log.textContent = passo.texto;
+  /* O acerto adiado respeita a geração: sem isto, o golpe que estava no ar
+     quando o jogador apertou "pular" caía DEPOIS do estado final e reescrevia
+     a frase e a barra do alvo (D-130, achado pelo Q7 da ST-11.6b). */
+  if (animar) setTimeout(() => { if (g === geracao) acerta(); }, 260); else acerta();
 }
 
-function fim(L, antes, r, extra, voltar) {
+function fim(L, antes, r, extra, voltar, final = null) {
   const el = $('#pveFim');
   if (!el) return;
-  const f = fraseDoResultado(r, antes);
+  const f = final ? { titulo: final.titulo, texto: final.texto } : fraseDoResultado(r, antes);
+  /* O selo do replay da Liga é o MESMO da lista: "contou · subiu para Silver". */
+  if (final?.selo) f.titulo += ` <em class="leSelo leSelo${final.selo.tipo}">${final.selo.texto}</em>`;
   if (extra) f.texto += ` ${extra}`;
   el.hidden = false;
-  el.className = `pveFim ${r.vencedor === 'A' ? 'venceu' : r.vencedor === 'B' ? 'perdeu' : 'empate'}`;
+  el.className = `pveFim ${final?.classe ?? (r.vencedor === 'A' ? 'venceu' : r.vencedor === 'B' ? 'perdeu' : 'empate')}`;
   el.innerHTML = `<h4>${f.titulo}</h4><p>${f.texto}</p>
     <div class="pveBotoes">${deNovo ? '<button class="btn gold" data-pve-de-novo>lutar de novo</button>' : ''}<button class="btn" data-pve-fechar>${voltar}</button></div>`;
 }
@@ -100,17 +112,21 @@ function fim(L, antes, r, extra, voltar) {
    duas: a tela nunca tem uma segunda versão da luta.
    Sem `deNovo`, o fim não oferece "lutar de novo": um botão que não faz nada
    é pior que nenhum (a jornada pede o próximo nó pelo mapa). */
-export function encenar({ alvo, A, B, r, antes, titulo, extraNoFim = '', aoFim = null, deNovo: repetir = null, voltar = 'voltar ao time' }) {
+/* `linha` e `final`: o REPLAY da Liga (ST-11.6b) chega com a linha do tempo
+   pronta (do log, sem motor) e com o fim já escrito pela camada 0; `topo`
+   troca a chance de antes, que no replay não existe. */
+export function encenar({ alvo, A, B, r, antes, titulo, extraNoFim = '', aoFim = null, deNovo: repetir = null, voltar = 'voltar ao time', linha = null, final = null, topo = null, rotulos = null }) {
   deNovo = repetir;
   const g = ++geracao;
-  const L = linhaDoTempo(PACK, A, B, r, nomeExibido);
+  const L = linha ?? linhaDoTempo(PACK, A, B, r, nomeExibido);
+  r ??= { vencedor: L.vencedor };
   if (!alvo) return;
   alvo.innerHTML = `<div class="pveLuta">
-    <div class="pveTopo"><b>${titulo}</b><span>antes da luta: ${porcentagemExibida(antes.p)} · ${textoDaMargem(antes)}</span>
+    <div class="pveTopo"><b>${titulo}</b><span>${topo ?? `antes da luta: ${porcentagemExibida(antes.p)} · ${textoDaMargem(antes)}`}</span>
       <button class="btn" data-pve-pular>pular</button></div>
     <div class="pvePalco" id="pvePalco">
-      <div class="pveLado pveA">${L.lados.A.map(lutador).join('')}</div>
-      <div class="pveLado pveB">${L.lados.B.map(lutador).join('')}</div>
+      <div class="pveLado pveA">${rotulos ? `<span class="pveRotulo">${rotulos.A}</span>` : ''}${L.lados.A.map(lutador).join('')}</div>
+      <div class="pveLado pveB">${rotulos ? `<span class="pveRotulo">${rotulos.B}</span>` : ''}${L.lados.B.map(lutador).join('')}</div>
       <canvas class="pveFx" id="pveFx"></canvas>
     </div>
     <p class="pveLog" id="pveLog">a luta vai começar…</p>
@@ -119,7 +135,7 @@ export function encenar({ alvo, A, B, r, antes, titulo, extraNoFim = '', aoFim =
   alvo.hidden = false;
   alvo.scrollIntoView({ block: 'start', behavior: 'smooth' });
   alvo.dataset.estado = 'lutando';
-  const acabar = () => { fim(L, antes, r, extraNoFim, voltar); alvo.dataset.estado = 'fim'; aoFim?.(); };
+  const acabar = () => { fim(L, antes, r, extraNoFim, voltar, final); alvo.dataset.estado = 'fim'; aoFim?.(); };
   L.passos.forEach(p => setTimeout(() => { if (g === geracao) aplicar(p, L); }, p.t + 400));
   setTimeout(() => { if (g === geracao) acabar(); }, L.duracaoMs + 900);
   alvo._pular = () => { if (g !== geracao) return; geracao++; L.passos.forEach(p => aplicar(p, L, false)); acabar(); };

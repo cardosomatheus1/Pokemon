@@ -6963,3 +6963,28 @@ servidor (13.2b), com raiz própria; a ST-13.5 é quem leva o aparelho a usá-lo
 
 **Teste que trava:** `antifraude` — "D-129 (afirma o defeito)".
 
+
+## D-130 — "pular" a luta deixa o último golpe reescrever o estado final ✅ CORRIGIDO na ST-11.6b (30/09)
+
+**Achado em:** 30/09/2026, pelo crítico cego (Q7) do replay da Liga. O fim do
+replay dizia "Você perdeu" e, logo acima, a frase de um golpe velho, com a
+barra de um alvo errada. **Bloco dono:** ST-11.6b. A encenação é a mesma da
+jornada, que tem o defeito desde a ST-10.9. **Estado:** corrigido.
+
+**Causa.** `aplicar` (`pve-tela.mjs`) adia o acerto de cada golpe em 260 ms.
+"Pular" aplica todos os golpes na hora e termina, mas o acerto adiado do golpe
+que estava no ar ainda dispara depois disso. Ele reescreve a frase do rodapé e
+a barra do alvo com o estado de um golpe anterior ao fim. A checagem de
+geração guardava o agendamento dos golpes, e não o acerto adiado de cada um.
+
+**Medição.** O motor não tem o defeito: em 5.780 lutas (os treinadores da
+jornada, todos contra todos, 20 sementes cada), nenhum lutador caído atacou.
+O que o crítico viu era só a tela.
+
+**Conserto.** O acerto adiado leva a geração em que foi agendado e não faz
+nada se ela mudou. É uma linha, e vale para a jornada e para a Liga.
+
+**Teste que trava:** `liga-replay`, "a tela encena SÓ o log" (asserção
+estática sobre o agendamento). O comportamento em si é tempo de navegador, e
+quem o mostra é a captura `replayfim` do `tools/olhar-liga.mjs`. Plantado:
+S1805.
