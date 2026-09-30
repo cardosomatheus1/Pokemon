@@ -17,6 +17,7 @@
  * o jogo com conta volta a jogar no aparelho.
  */
 import { camposDaJornada } from '../../engine/jornada.mjs';
+import { historicoDoDisco } from './historico-dados.mjs';
 
 export const IDLE_NA_CONTA = true;
 export const idleNoServidor = temSessao => IDLE_NA_CONTA && !!temSessao;
@@ -52,6 +53,8 @@ export function idleDaConta(local, srv, { doces = null } = {}) {
        teto (`lancarRunNoTeto`) — o rendimento do dia e o teto leem delas. */
     avancos: (srv.avancos ?? []).map(a => ({ colhidaEm: a.colhidaEm, encontros: a.encontros ?? 0, bioma: a.bioma, estagio: a.estagio, moedas: a.moedas ?? 0, xp: a.xp ?? 0 })),
     run: srv.run ?? null,
+    /* O histórico (1.28): as linhas que o servidor montou das colheitas gravadas. */
+    historico: historicoDoDisco(srv.historico),
     ...camposDaJornada({ jornada: srv.jornada }),
     doces: doces ?? local.doces ?? {},
     conta: { agora, teto: srv.teto ?? null, estagio: srv.estagio ?? null, desatualizado: false },

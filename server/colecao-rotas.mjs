@@ -39,6 +39,7 @@ import { sincronizarRun, comecarRun, pocaoNaRun, recuarNaRun, colherRun } from '
 import { moverNaConta, trocarNaConta, soltarNaConta, escolherFocoNaConta, trocarGolpeNaConta, evoluirNaConta, darDoceNaConta } from './colecao.mjs';
 import { estagioMaximo, proximoEstagio } from '../engine/estagios.mjs';
 import { lutarNaConta, jornadaDaConta } from './jornada.mjs';
+import { linhaDaExpedicao, linhaDaRun, historicoDoDisco, HISTORICO_MAX } from '../app/modules/historico-dados.mjs';
 
 /* As ESCRITAS permitidas sob `/api/idle`, por nome. */
 export const OPERACOES_DO_IDLE = Object.freeze([
@@ -109,7 +110,29 @@ export function colecaoDe(db, { userId, agora, pack = PACK }) {
     estagio: { aberto: estagioMaximo(criaturas), proximo: proximoEstagio(criaturas) },
     /* A jornada (ST-13.7): o que o servidor venceu por ela. */
     jornada: jornadaDaConta(db, userId).jornada,
+    /* O HISTÓRICO (1.28 · L-141): as últimas colheitas dos dois modos, montadas
+       da resposta que cada uma GRAVOU — nada se sorteia de novo na leitura. */
+    historico: historicoDe(db, userId, pack, criaturas),
   };
+}
+
+/* As linhas pelas mesmas funções do aparelho. A espécie de quem foi sai da
+   coleção de agora; quem foi solta depois some da equipe da linha, e a linha
+   continua. Uma linha que não se monta (resposta antiga, torta) fica de fora:
+   o histórico é leitura, e não pode derrubar o `GET /api/idle`. */
+function historicoDe(db, userId, pack, criaturas) {
+  const dexDe = id => criaturas.find(c => c.id === id)?.dex;
+  const linhas = [];
+  const tentar = f => { try { linhas.push(f()); } catch { /* fica de fora */ } };
+  for (const x of db.prepare(`SELECT id, bioma, perfil, estagio, equipe_json, iniciada_em, termina_em, colhida_em, resultado_json
+                                FROM expedicoes WHERE user_id = ? AND colhida_em IS NOT NULL AND resultado_json IS NOT NULL
+                               ORDER BY colhida_em DESC LIMIT ?`).all(userId, HISTORICO_MAX))
+    tentar(() => linhaDaExpedicao({ id: x.id, bioma: x.bioma, perfil: x.perfil, estagio: x.estagio, equipe: JSON.parse(x.equipe_json),
+      iniciadaEm: x.iniciada_em, terminaEm: x.termina_em, colhidaEm: x.colhida_em }, JSON.parse(x.resultado_json), { pack, dexDe }));
+  for (const r of db.prepare(`SELECT resultado_json FROM runs WHERE user_id = ? AND colhida_em IS NOT NULL AND resultado_json IS NOT NULL
+                               ORDER BY colhida_em DESC LIMIT ?`).all(userId, HISTORICO_MAX))
+    tentar(() => linhaDaRun(JSON.parse(r.resultado_json), { pack, dexDe }));
+  return historicoDoDisco(linhas);
 }
 
 const DIA_MS = 24 * 3600_000;

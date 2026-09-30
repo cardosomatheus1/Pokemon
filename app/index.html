@@ -6955,6 +6955,25 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 .idleItem{display:inline-block;background:#141d2b;border:1px solid var(--line);
   border-radius:999px;padding:5px 11px;font:600 .64rem/1 var(--dsp);color:var(--txt)}
 
+/* O HISTÓRICO (1.28 · L-141): uma linha por volta, fechada; aberta, o
+   detalhe — quem apareceu e o VS dos treinadores (L-109). */
+.histLista{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.histLinha{background:#141d2b;border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.histLinha.hist-run{border-left:3px solid rgba(var(--goldRGB),.6)}
+.histLinha.hist-expedicao{border-left:3px solid rgba(80,190,255,.6)}
+.histLinha > summary{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px}
+.histModo{font:600 .6rem/1 var(--dsp);text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+.histNums{font-size:.8rem}
+.histItens{display:flex;flex-wrap:wrap;gap:4px}
+.histItem{display:inline-flex;align-items:center;gap:2px;font:600 .7rem/1 var(--dsp)}
+.histItemIcone{display:inline-block;width:22px;height:22px;image-rendering:pixelated}
+.histCabeca{display:inline-block;width:28px;height:28px;image-rendering:pixelated}
+.histDetalhe{margin-top:6px;display:grid;gap:4px}
+.histEspecies,.histLado{display:flex;flex-wrap:wrap;gap:2px}
+.histVs{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.histVs ul{margin:0;padding-left:16px;font-size:.8rem}
+.histVenceu{color:#7be495}.histPerdeu{color:#ff8a8a}
+
 /* A PRIMEIRA VEZ. Grande de propósito: é a única tela do jogo em que não há
    nada a perder e há uma decisão a tomar. */
 #viewIdle.primeiraVez .idleDepois{display:none}
@@ -8149,6 +8168,10 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       </div>
     </div>
 
+    <!-- O HISTÓRICO (1.28 · L-141): o que cada volta colhida rendeu, nos dois
+         modos. Fica visível também durante a run: é a prova de que as horas
+         anteriores renderam, e quem assiste a run é quem mais volta a ele. -->
+    <div class="card idleDepois" id="idleHistorico"></div>
 
   </div>
 </div>
@@ -8236,6 +8259,9 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <h3 style="margin-top:18px">Em campo</h3>
       <div id="offCampo"></div>
     </div>
+
+    <!-- O MESMO histórico de Rotas (1.28): quem volta de oito horas chega aqui. -->
+    <div class="card idleDepois" id="offHistorico"></div>
 
     <!-- ── A CAIXA, E ELA PRECISA ESTAR AQUI TAMBÉM (L-149) ──────────────
          Pedido do dono, parafraseado porque o §0.3 não deixa a citação

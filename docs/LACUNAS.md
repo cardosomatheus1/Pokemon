@@ -4564,7 +4564,7 @@ coisa que o jogador decide.
 ### L-109 — o HISTÓRICO DA EXPEDIÇÃO, e o VS que a batalha de NPC merece
 
 **Registrada em:** 02/09/2026, do checklist do dono.
-**Bloco dono:** 1.19. **Estado:** aberta, com o desenho fechado por ele.
+**Bloco dono:** 1.19 → 1.28. **Estado:** ✅ fechada no 1.28 (30/09) — o VS de cada treinador no histórico, com nome provisório declarado, nível e resultado (`app/modules/historico-dados.mjs`).
 
 #### O problema, e ele é de INVISIBILIDADE e não de mecânica
 
@@ -6167,7 +6167,7 @@ a STAMINA já escala; o item é que não. Escalar os dois mantém a decisão
 ### L-141 — o QUADRO DE LOG da expedição, e ele já foi pedido duas vezes
 
 **Registrada em:** 03/09/2026. **Bloco dono:** 1.28 → **absorvido pelo A4**.
-**Estado:** aberta na tela, **e a base dela já está construída**.
+**Estado:** ✅ fechada no 1.28 (30/09) — o quadro Histórico nas duas abas do farm, uma linha por colheita, guardada (servidor e aparelho).
 
 > **08/09/2026, bloco A4a — a metade difícil desta ficha foi resolvida sem que
 > ela fosse o escopo.** `avancarRun` devolve, junto com a run avançada, a lista

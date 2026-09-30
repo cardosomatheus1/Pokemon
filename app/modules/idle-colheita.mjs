@@ -31,6 +31,7 @@ import { novaRaiz } from '../../engine/seed.mjs';
 import { contaDaColheita } from '../../engine/colheita.mjs';
 import { pronta } from './idle-dados.mjs';
 import { carregarBonus } from './bonus-arena.mjs';
+import { linhaDaExpedicao, noHistorico } from './historico-dados.mjs';
 
 /* ── A COLHEITA ────────────────────────────────────────────────────────────
  *
@@ -77,7 +78,11 @@ export function colher(e, { pack, id, agora, raiz = novaRaiz(), bonus = carregar
   /* O TOTAL sorteado, e não os selvagens: o NPC ocupa o encontro (1.7b, S679). */
   x.encontros = r.total;
 
-  return { expedicao: x.id, semente: String(raiz), encontros: r.pendentes, itens: r.itens,
-           moedas: r.moedas, xp: r.xp, vinculo: r.vinculo, subiram: r.subiram, npc: r.npc,
-           treino: x.treino };
+  const resposta = { expedicao: x.id, semente: String(raiz), encontros: r.pendentes, itens: r.itens,
+                     moedas: r.moedas, xp: r.xp, vinculo: r.vinculo, subiram: r.subiram, npc: r.npc,
+                     treino: x.treino };
+  /* A LINHA DO HISTÓRICO (1.28): a mesma resposta que a tela pinta, guardada
+     para quem voltar depois — o servidor monta a dele da resposta gravada. */
+  e.historico = noHistorico(e.historico, linhaDaExpedicao(x, resposta, { pack, dexDe: id => e.criaturas.find(c => c.id === id)?.dex }));
+  return resposta;
 }

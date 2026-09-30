@@ -49,7 +49,7 @@ import { ENCONTROS_POR_AVANCO } from '../../engine/avanco.mjs';
 import { runDoDisco } from '../../engine/run-avanco.mjs';
 import { nivelDoTopo } from '../../engine/estagios.mjs';
 import { vistosDe } from './pokedex-dados.mjs';
-import { camposDaConta } from './idle-conta.mjs';
+import { camposDaConta } from './idle-conta.mjs'; import { camposDoHistorico } from './historico-dados.mjs';
 import { xpDaExpedicao, vinculoDaExpedicao, creditar, nivelDe, progresso as progressoNivel } from '../../engine/nivel-criatura.mjs';
 import { FRAGMENTOS_POR_ENCONTRO, chanceDe, tentar } from '../../engine/captura.mjs';
 
@@ -82,7 +82,7 @@ export const VAZIO = () => ({
      defeito apareceu na primeira medição: oito trocas seguidas devolveram o
      mesmo item, porque o contador nascia em 1 a cada leitura. */
   estilhacos: 0,
-  jaPossuiu: [], doces: {}, docesRodadas: [], docesEm: [], missoes: null,   // ST-9.2, 9.8, 9.15 (aditivos)
+  jaPossuiu: [], doces: {}, docesRodadas: [], docesEm: [], missoes: null, historico: [],   // ST-9.2, 9.8, 9.15, 1.28 (aditivos)
 });
 
 /* Diagnóstico do último carregamento, para a interface poder DIZER algo em vez
@@ -116,7 +116,7 @@ export function carregar(deposito = globalThis.localStorage) {
   e.encontros  = arrayOu(cru.encontros,  'encontros',  problemas);
   e.bolsa      = objetoOu(cru.bolsa,     'bolsa',      problemas);
   e.registro     = objetoOu(cru.registro,    'registro',     problemas);
-  Object.assign(e, camposDaEscada(cru, e.criaturas), camposDoDoce(cru), camposDaColecao(cru), camposDaJornada(cru), camposDaConta(cru));   // ST-9.2, 9.8, 9.15, 10.11, 13.5a
+  Object.assign(e, camposDaEscada(cru, e.criaturas), camposDoDoce(cru), camposDaColecao(cru), camposDaJornada(cru), camposDaConta(cru), camposDoHistorico(cru));   // ST-9.2, 9.8, 9.15, 10.11, 13.5a, 1.28
   /* ── `simultaneas` NAO E LIDO DO DISCO, E ISSO E A CORRECAO (D-072) ────
      A versao anterior aceitava o numero salvo e o apertava no maximo. Parecia
      defensivo — o clamp esta la — e nao era: `localStorage` esta a um F12 de

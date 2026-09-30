@@ -371,6 +371,8 @@ const CAMADA = {
   'jornada-desenho-tela.mjs': 4,
   'jornada-estrada.mjs': 0,
   'idle-conta.mjs': 0,
+  'historico-dados.mjs': 0,
+  'historico-tela.mjs': 4,
   'idle-servidor.mjs': 4,
   'idle-acoes.mjs': 4,
   'colecao-acoes.mjs': 4,

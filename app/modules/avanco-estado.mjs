@@ -31,6 +31,7 @@ import { repertorio } from '../../engine/repertorio.mjs';
 import { restamEncontros } from '../../engine/expedicao.mjs';
 import { cenaDaRun, recuarRun, emCurso } from '../../engine/run-avanco.mjs';
 import { novaRaiz } from '../../engine/seed.mjs';
+import { linhaDaRun, noHistorico } from './historico-dados.mjs';
 /* A CONTA DA RUN MORA EM `avanco-conta.mjs` (ST-13.2c1): camada 0, a MESMA
    que o servidor chama. Reexportadas aqui porque é por este endereço que o
    resto do jogo as conhece. */
@@ -268,6 +269,7 @@ export function colherAvancoDaRun(e, { pack, agora, raiz = novaRaiz() }) {
 
   /* ── A RUN COLHIDA SAI DE `e.run` E ENTRA NO TETO (D-107) ──────────── */
   lancarRunNoTeto(e, run);
+  e.historico = noHistorico(e.historico, linhaDaRun(run, { pack, dexDe: id => acharCriatura(e, id)?.dex }));   // 1.28
   e.run = null;
   salvar(e);
   return run;

@@ -72,7 +72,7 @@ import { NIVEL_PARA_ESCOLHER as NIVEL_DO_FOCO, descansando as descansandoFoco }
 import { chanceDe } from '../../engine/captura.mjs';
 import { mostrarBioma, acompanhar, trocarZoom } from './idle-mundo.mjs';
 import { quemMostrar, expedicaoEm, biomaDeAbertura, podemIr } from './idle-quem.mjs';
-import { pintarSaque, pintarEncontros, pintarCentro, pintarBolsa } from './idle-paineis.mjs';
+import { pintarSaque, pintarEncontros, pintarCentro, pintarBolsa } from './idle-paineis.mjs'; import { pintarHistorico } from './historico-tela.mjs';
 import { pintarEstagios, pintarPrevia } from './idle-estagios.mjs';
 import { pintarCampo } from './idle-campo.mjs';
 import { pintarTreino } from './idle-treino.mjs';
@@ -295,6 +295,7 @@ export function renderIdle() {
   pintarCampo(E);
   pintarTreino(E);
   pintarSaque(E, ultimaColheita);
+  pintarHistorico(E, agora());   // 1.28
   pintarBolsa(E);
   desenharHud(E, biomaEscolhido, agora());
   atualizarBotao();

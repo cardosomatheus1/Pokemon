@@ -55,6 +55,9 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            duas oitavas, peça de 4 px, nó trancado só o ponto, clareira,
            pedras, lava em pixel, escala. Q7: mundo/publicado 4–5, estrada 6,
            altura 5–6; aceite ≥7 não atingido — o resto é o desenho (L-220)
+           · 1.28 FECHADO (30/09): o HISTÓRICO das expedições e das runs
+           (L-141, L-109) — o quadro nas duas abas do farm; com conta o
+           servidor o monta das colheitas gravadas. Suíte 2876/2876, 2/2
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho
            do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta
