@@ -7007,3 +7007,19 @@ ST-5.9: a captura é anterior à mudança. Em 1440 e 420 o nome aparece inteiro.
 **Teste que trava:** a ST-5.10 escreve o que mede a largura do nome no
 navegador (`tools/olhar-aposta.mjs` já abre as três larguras); o defeito é
 corrigido no bloco seguinte a este registro, e o teste nasce com o conserto.
+
+## D-132 — depois do Sair, o bolo pede ao servidor sem credencial (401) ✅ CORRIGIDO na ST-1.4 (30/09)
+
+**Achado em:** 30/09/2026, pela CI — o ensaio do piloto da run 122 reprovou
+com `401 GET /api/mercado/resultado?kind=abates`; as três execuções seguintes
+passaram. **Bloco dono:** ST-1.4. **Estado:** corrigido — as buscas do bolo
+não saem sem sessão (`app/modules/bolo-tela.mjs`).
+
+**Causa.** O `sair()` (`app/modules/sair.mjs`) esquece o token na hora e a
+tela espera a revogação no servidor antes de recarregar. Nesse intervalo, a
+nova tentativa do resultado do bolo — agendada a cada 1,5 s, até cinco vezes,
+enquanto o modo é "resultado" — e a busca periódica da lista disparavam sem
+credencial, e o servidor respondia 401. Só acontecia se o Sair caísse dentro
+da janela, e por isso aparecia numa execução e não nas seguintes.
+
+**Teste que trava:** `test/bolo-sessao.mjs` (S1937–S1939).

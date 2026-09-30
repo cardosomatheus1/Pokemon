@@ -256,6 +256,10 @@ trava o job; S1216.
   manter `S.profile` com os dados da conta.
 - **Portões:** Q1 Q2 Q5 (captura do cabeçalho deslogado) Q6 (sessão).
 
+### ST-1.4 · o bolo não busca sem sessão (D-132) — ✅ fechada em 30/09
+- **Achado:** a CI (ensaio do piloto, run 122) reprovou com `401 GET /api/mercado/resultado` depois de sair da conta; as três execuções seguintes passaram. "Instável" não era a causa: o `sair()` esquece o token na hora, mas a página só recarrega depois de a revogação responder, e nesse intervalo a nova tentativa do resultado do bolo (1,5 s, até 5) e a busca periódica da lista saíam sem credencial.
+- **Feito:** as duas buscas do bolo (e a nova tentativa agendada) não saem sem sessão; a periódica para. `test/bolo-sessao.mjs` · S1937–S1939. O ensaio local depois do conserto: 0 recusas.
+
 ### ST-1.3 · com conta real, a boutique não entrega peça sem cobrar (D-108) — ✅ fechada em 25/09 (mitigação; o conserto é o E4)
 
 - **Porte** P · **Bloco dono** INT-02 (mitigação antecipada)

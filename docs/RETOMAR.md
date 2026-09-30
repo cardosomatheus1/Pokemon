@@ -30,13 +30,14 @@ o LINK     http://localhost:8099/app/index.html
            (a Liga de times com contas e partidas: node tools/olhar-liga.mjs
            sobe o servidor completo num processo e captura as telas)
 a PASTA    C:\Users\gdult\pa4
-o ESTADO   ST-5.14 FECHADA (o selo do degrau ao lado do título da ficha)
+o ESTADO   ST-1.4 FECHADA (o bolo não busca sem sessão — o 401 da CI) ·
+           antes, a ST-5.14 (o selo do degrau ao lado do título da ficha)
            · nesta leva: ST-5.9 a 5.14 (a aposta com a arena à vista, a
            tabela legível em 1100, os campos no tema, o Centro, as medalhas
            com teto) e a ST-6.5 (25 fichas velhas fechadas, conferidas no
            código) · antes, o mapa até a ST-10.22c4
            · o E11 construído — o stake espera a D2 do dono
-           · suíte 2823/2823, repetir 2/2
+           · suíte 2824/2824, repetir 2/2
            Q2 completo em fatias: 1/10 VERDE; a 2/10 interrompida
            (node test/sabotagem.mjs --fatia=2/10, e seguir até 10/10)
 o PRÓXIMO  o resto do UX-01 (a L-195: 2 colunas no largo, pilhas de

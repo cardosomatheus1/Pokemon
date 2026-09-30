@@ -36,7 +36,12 @@ const nomeDe = i => { const r = rotulo(); return typeof r === 'function' ? r(i) 
 
 function parar() { if (E.timer) { clearInterval(E.timer); E.timer = null; } }
 
+/* D-132 (ST-1.4): sem sessão, nada sai. O Sair esquece o token antes de a
+   página recarregar (ela espera a revogação), e nesse intervalo a busca
+   periódica e a nova tentativa do resultado saíam sem credencial — 401 no
+   ensaio do piloto da CI. */
 async function buscar() {
+  if (!api.temSessao()) { parar(); return; }
   const kind = E.kind;
   const r = await api.get(`/api/mercado?kind=${kind}`);
   if (r.ok && Array.isArray(r.corpo?.abertos)) { E.abertos = r.corpo.abertos; pintarAbas(); }
@@ -50,11 +55,12 @@ async function buscar() {
 }
 
 async function buscarResultado() {
+  if (!api.temSessao()) return;
   const r = await api.get(`/api/mercado/resultado?kind=${E.kind}`);
   /* O resultado é do bolo PAGO. Se a tela chegou ao fim antes do servidor
      pagar, tenta de novo algumas vezes — e nunca mostra o de outra rodada. */
   if (r.ok && r.corpo?.rodada && r.corpo.rodada === S.rodadaId) { E.resultado = r.corpo; pintarResultado(); return; }
-  if (E.tentativas++ < 5) setTimeout(() => { if (E.modo === 'resultado') buscarResultado(); }, 1500);
+  if (E.tentativas++ < 5) setTimeout(() => { if (E.modo === 'resultado' && api.temSessao()) buscarResultado(); }, 1500);
 }
 
 function esqueleto(modo) {

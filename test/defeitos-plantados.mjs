@@ -8506,6 +8506,16 @@ export const DEFEITOS = [
   { id:'S1936', arquivo:'app/index.html', nome:'o selo do degrau perde a forma de selo',
     real:'a palavra solta ao lado do título lê como parte dele',
     de:'.pdxArena .pdxSoma{padding:2px 7px;border:1px solid var(--line);', para:'.pdxArena .pdxSoma{padding:2px 7px;' },
+  /* ── ST-1.4 · o bolo não busca sem sessão (D-132) ────────────────── */
+  { id:'S1937', arquivo:'app/modules/bolo-tela.mjs', nome:'a busca periódica do bolo sai sem sessão',
+    real:'depois do Sair, a lista do bolo pede ao servidor sem credencial — 401',
+    de:'  if (!api.temSessao()) { parar(); return; }\n  const kind = E.kind;', para:'  const kind = E.kind;' },
+  { id:'S1938', arquivo:'app/modules/bolo-tela.mjs', nome:'a busca do resultado sai sem sessão',
+    real:'o resultado do bolo pedido depois do Sair — 401 no ensaio do piloto',
+    de:'  if (!api.temSessao()) return;\n  const r = await api.get(`/api/mercado/resultado', para:'  const r = await api.get(`/api/mercado/resultado' },
+  { id:'S1939', arquivo:'app/modules/bolo-tela.mjs', nome:'a nova tentativa agendada antes do Sair dispara depois dele',
+    real:'a corrida da CI: sair dentro da janela de 1,5 s dá 401',
+    de:"if (E.modo === 'resultado' && api.temSessao()) buscarResultado();", para:"if (E.modo === 'resultado') buscarResultado();" },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',
