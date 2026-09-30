@@ -95,7 +95,7 @@ function atualizaVariedade(){
     c.prog = Math.min(c.meta, n);
     if (c.prog >= c.meta && !c.pago){
       c.feito = true; c.pago = true;
-      S.profile.xp += c.xp; creditarRecompensa('CHALLENGE_REWARD', c.dia, 'desafio:' + c.id); atualizarSaldo();
+      S.profile.xp += c.xp; if (!modoServidor()) creditarRecompensa('CHALLENGE_REWARD', c.dia, 'desafio:' + c.id); atualizarSaldo();   // ST-13.9c: com conta, paga o servidor
       emitir('challenge_completed', { desafio: c.id });
       S.profile.dailyDone = (S.profile.dailyDone || 0) + 1;
     }

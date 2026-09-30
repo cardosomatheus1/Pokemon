@@ -1903,8 +1903,12 @@ que só ela faz.
 ### L-054 — três dos cinco tipos de desafio ainda não têm quem os alimente
 
 **Registrada em:** bloco 0.1, ao ligar `registrarFeito` à liquidação.
-**Bloco dono:** sem dono; candidato natural é o bloco que ligar a sala ao perfil.
-**Estado:** aberta.
+**Bloco dono:** ST-13.9c. **Estado:** ✅ fechada na ST-13.9c (30/09) — o
+"assistir" anda pela rodada assistida (`/api/idle/vistas`, uma vez por
+rodada), a "variedade" pela espécie nova do dia na liquidação (espécie, e não
+lutador), e o "aposta_alta" SAIU do sorteio: a regra que ele pedia ("alta
+contra o quê") premiaria apostar mais do que o jogador aposta, e o §28 não
+quer isso.
 
 A liquidação passou a alimentar dois tipos do `POOL_PADRAO`:
 

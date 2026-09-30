@@ -26,6 +26,7 @@
  */
 import { randomUUID } from 'node:crypto';
 import { anotar } from './telemetria.mjs';
+import { creditar, saldos, emTransacao } from './carteira.mjs';
 import {
   recompensaDeDesafio, avaliarResgate, semanaDe,
   ORCAMENTO_LOGIN_SEMANAL, RESGATE_VALOR,
@@ -90,7 +91,10 @@ export const POOL_PADRAO = [
   { tipo: 'vencer',       alvo: 1 },
   { tipo: 'assistir',     alvo: 5 },
   { tipo: 'variedade',    alvo: 3 },
-  { tipo: 'aposta_alta',  alvo: 1 },
+  /* `aposta_alta` SAIU (ST-13.9c · L-054). Ele esperava a regra "alta contra o
+     quê" e nunca andou — o dia que o sorteava tinha um desafio impossível, e o
+     marco semanal ficava mais longe. E a regra que ele pedia é a que o §28 não
+     quer: premiar apostar mais do que o jogador aposta. */
 ];
 
 /* Três por dia, sorteados de forma DETERMINÍSTICA por (conta, dia). Sortear com
@@ -140,8 +144,35 @@ export function registrarFeito(db, { userId, tipo, agora = Date.now() }) {
     db.prepare(`UPDATE challenges SET progresso = ?, concluido_em = ?
                  WHERE user_id = ? AND dia = ? AND slot = ?`)
       .run(novo, fechou, userId, dia, d.slot);
+    if (fechou) pagarDesafio(db, { userId, dia, slot: d.slot, agora });
   }
   return desafiosDe(db, { userId, agora });
+}
+
+/* ── O DESAFIO FECHADO PAGA (ST-13.9c · D-137) ─────────────────────────────
+ *
+ * O servidor fechava o desafio e não pagava nada: o `recompensaDeDesafio` do
+ * motor estava importado aqui e ninguém o chamava, e o aparelho creditava o
+ * marco na carteira LOCAL — que a projeção da conta sobrescreve. Com conta, o
+ * marco semanal nunca chegava.
+ *
+ * A regra é a do aparelho, do mesmo arquivo (`engine/emissao.mjs`): o marco
+ * fecha em `MARCO_SEMANAL` desafios na semana, o teto de saldo vem antes do
+ * orçamento, e o que já saiu na semana é o que o LEDGER diz — é essa soma, lida
+ * dentro da mesma transação (BEGIN IMMEDIATE), que faz dois desafios fechando
+ * juntos pagarem o marco uma vez. `pago_em` marca que ESTE desafio foi contado. */
+function pagarDesafio(db, { userId, dia, slot, agora }) {
+  emTransacao(db, () => {
+    db.prepare(`UPDATE challenges SET pago_em = ? WHERE user_id = ? AND dia = ? AND slot = ? AND pago_em IS NULL`)
+      .run(agora, userId, dia, slot);
+    const desde = Date.parse(primeiroDiaDaSemana(agora) + 'T00:00:00Z');
+    const jaEmitido = db.prepare(`SELECT COALESCE(SUM(amount), 0) AS s FROM wallet_ledger
+                                   WHERE user_id = ? AND type = 'CHALLENGE_REWARD' AND created_at >= ?`).get(userId, desde).s;
+    const r = recompensaDeDesafio({ concluidosNaSemana: concluidosNaSemana(db, userId, agora),
+                                    jaEmitidoNaSemana: jaEmitido, saldoPcB: saldos(db, userId).bonus ?? 0 });
+    if (r.pcB > 0)
+      creditar(db, { userId, tipo: 'CHALLENGE_REWARD', bucket: 'bonus', valor: r.pcB, ref: `${dia}:${slot}`, agora });
+  });
 }
 
 const concluidosNaSemana = (db, userId, agora) => db.prepare(
@@ -212,8 +243,14 @@ export function registrarLogin(db, { userId, agora = Date.now() }) {
   const cabe = Math.max(0, ORCAMENTO_LOGIN_SEMANAL - login);
   const pcb = Math.min(LOGIN_POR_DIA, cabe);
 
-  db.prepare(`INSERT INTO login_streak (user_id, dia, pcb, criado_em) VALUES (?, ?, ?, ?)`)
-    .run(userId, dia, pcb, agora);
+  /* A LINHA E O CRÉDITO JUNTOS (ST-13.9c · D-137): a linha dizia `creditou`
+     e a carteira não recebia. A chave é o dia — entrar duas vezes paga uma. */
+  emTransacao(db, () => {
+    db.prepare(`INSERT INTO login_streak (user_id, dia, pcb, criado_em) VALUES (?, ?, ?, ?)`)
+      .run(userId, dia, pcb, agora);
+    if (pcb > 0) creditar(db, { userId, tipo: 'LOGIN_STREAK_REWARD', bucket: 'bonus', valor: pcb,
+                                idem: `login-${userId}-${dia}`, agora });
+  });
   return { creditou: pcb, sequencia: sequenciaDeLogin(db, { userId, agora }), repetido: false };
 }
 

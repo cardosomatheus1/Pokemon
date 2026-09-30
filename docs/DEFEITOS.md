@@ -7140,3 +7140,31 @@ que grava a resgatada. A conta desce o "já possuiu", a semana e as marcas
 **Teste que trava:** `loja-idle` — "com conta, a compra, a venda, o estilhaço
 e a montagem SOBREVIVEM à releitura (D-136)"; `escada-conta` — "a missão da
 semana: [...] o prêmio vai para a bolsa da conta, e uma vez só (D-136)".
+
+## D-137 — com conta, a trilha de login e os desafios não pagavam o PC-B ✅ CORRIGIDO na ST-13.9c (30/09)
+
+**Achado em:** 30/09/2026, pela matriz de fontes da ST-14.0A
+(`docs/e14/MATRIZ_FONTES_ECONOMIA.md`). **Bloco dono:** ST-13.9c. **Estado:**
+corrigido.
+
+**Causa.** Duas metades. O servidor gravava o dia em `login_streak` e
+respondia `creditou: 7`, mas nunca chamava `creditar` — e o tipo
+`LOGIN_STREAK_REWARD` da Spec nem estava na lista de tipos do motor. Os
+desafios fechavam (`concluido_em`) e ninguém pagava: `recompensaDeDesafio`
+estava importado em `progressao.mjs` sem chamador, e `pago_em` nunca era
+escrito. Do outro lado, o aparelho creditava o marco semanal na carteira
+LOCAL, que a projeção da conta sobrescreve.
+
+**Medição.** Conta nova, `POST /api/perfil/entrar`: resposta `creditou: 7`,
+carteira `bonus: 0` antes e depois. `challenges` com `pago_em`: 0.
+
+**Conserto.** O login credita `LOGIN_STREAK_REWARD` em `bonus` na mesma
+transação da linha do dia; o desafio fechado marca `pago_em` e aplica o marco
+semanal do motor, com o que já saiu na semana lido do ledger dentro da
+transação; o aparelho com conta não credita mais. Junto, a **L-054**: o
+"assistir" anda pela rodada assistida (uma vez por rodada), a "variedade"
+pela espécie nova do dia na liquidação, e o "aposta_alta" saiu do sorteio.
+
+**Teste que trava:** `desafios-conta` — "a trilha de login credita o PC-B na
+carteira, uma vez por dia (D-137)" e "o marco semanal dos desafios paga uma
+vez, no servidor, e respeita o teto de saldo (D-137)".

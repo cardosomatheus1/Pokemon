@@ -17,6 +17,7 @@
 import { missoesDaSemana, resgatarMissao } from '../app/modules/colecao-dados.mjs';
 import { criaturasDaConta, registroDe, creditarBolsa } from './idle.mjs';
 import { emTransacao } from './carteira.mjs';
+import { registrarFeito } from './progressao.mjs';
 
 /* A rodada assistida marca só enquanto é recente: um id velho guardado não
    vira "vi hoje" uma semana depois — é o que a missão "veja 20" mede. */
@@ -38,6 +39,11 @@ export function marcarVistasDaRodada(db, { userId, rodada, agora }) {
   if (agora - r.abre > VISTA_VALE_MS) throw new Error('esta rodada já passou');
   const n = db.prepare(`INSERT OR IGNORE INTO escada_marcas SELECT ?, species_id, 'vista'
                           FROM round_fighters WHERE round_id = ?`).run(userId, rodada).changes;
+  /* O DESAFIO "ASSISTIR" (ST-13.9c · L-054) anda uma vez por RODADA: o mesmo
+     id mandado de novo não conta de novo. */
+  const primeira = db.prepare(`INSERT OR IGNORE INTO rodadas_assistidas (user_id, round_id, em) VALUES (?, ?, ?)`)
+    .run(userId, rodada, agora).changes > 0;
+  if (primeira) registrarFeito(db, { userId, tipo: 'assistir', agora });
   return { rodada, novas: n };
 }
 

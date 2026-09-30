@@ -315,6 +315,14 @@ export function liquidarRodada(db, { sched, roundId, agora = Date.now() }) {
            como L-054 em vez de adivinhado aqui. */
         registrarFeito(db, { userId: t.user_id, tipo: 'apostar', agora });
         if (ganhou) registrarFeito(db, { userId: t.user_id, tipo: 'vencer', agora });
+        /* VARIEDADE (ST-13.9c · L-054): espécie que o jogador ainda não tinha
+           apostado HOJE — conta espécie, e não lutador, que é o que o nome
+           promete e o que o aparelho já contava. */
+        const dia0 = Date.parse(new Date(t.created_at).toISOString().slice(0, 10) + 'T00:00:00Z');
+        const antes = db.prepare(`SELECT COUNT(*) AS n FROM bets WHERE user_id = ? AND species_id = ? AND id <> ?
+                                   AND status <> 'cancelada' AND created_at >= ? AND created_at <= ?`)
+          .get(t.user_id, t.species_id, t.id, dia0, t.created_at).n;
+        if (antes === 0) registrarFeito(db, { userId: t.user_id, tipo: 'variedade', agora });
       }
     }
 

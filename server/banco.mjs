@@ -2028,6 +2028,22 @@ export const MIGRACOES = [
       db.exec(`DROP TABLE ja_possuiu`);
     },
   },
+  {
+    /* ST-13.9c · L-054: a rodada ASSISTIDA, uma linha por (conta, rodada) —
+       é ela que faz o desafio "assistir" andar uma vez por rodada, e não uma
+       vez por pedido repetido. */
+    nome: 'rodadas-assistidas-st13.9c',
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE rodadas_assistidas (
+          user_id  TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          round_id TEXT NOT NULL,
+          em       INTEGER NOT NULL,
+          PRIMARY KEY (user_id, round_id)
+        )`);
+    },
+    desce: db => { db.exec(`DROP TABLE rodadas_assistidas`); },
+  },
 
 ];
 

@@ -106,6 +106,10 @@ export const TIPOS = [
      estava certa para o que existia antes, e ninguém liga uma na outra. É
      "testar a peça não testa o encaixe" pela sétima vez. */
   'RESCUE_GRANT',
+  /* ST-13.9c · D-137: a trilha de login PAGA. O servidor gravava o PC-B do dia
+     em `login_streak` e dizia `creditou`, e a carteira não via nada — o tipo
+     da Spec (§5.5) não estava nesta lista, e ninguém o lançava. */
+  'LOGIN_STREAK_REWARD',
   'BET_RESERVE', 'BET_RELEASE', 'BET_LOSS',
   'BET_PAYOUT_TRANSFERABLE', 'BET_PAYOUT_BONUS', 'BET_PAYOUT_COMPETITIVE',
   /* O pagamento de uma aposta feita com saldo COMPRADO: a aposta volta

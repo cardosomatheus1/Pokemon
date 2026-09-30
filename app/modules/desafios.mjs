@@ -5,7 +5,7 @@
 import { S } from './estado.mjs';
 import { tipoNomes, rng, ROTULOS } from './motor.mjs';
 import { atualizarSaldo } from './controles.mjs';
-import { creditarRecompensa, saldoBonus } from './banco.mjs';
+import { creditarRecompensa, saldoBonus, modoServidor } from './banco.mjs';
 import { recompensaDeDesafio, semanaDe } from '../../engine/emissao.mjs';
 import { saveProfile } from './perfil.mjs';
 
@@ -138,7 +138,9 @@ function pagarMarcoSemanal(){
     jaEmitidoNaSemana:  w.emitido,
     saldoPcB:           saldoBonus(),
   });
-  if (r.pcB > 0){
+  /* COM CONTA, QUEM PAGA É O SERVIDOR (ST-13.9c · D-137): o crédito daqui
+     caía na projeção local, que a conta sobrescreve — o marco sumia. */
+  if (r.pcB > 0 && !modoServidor()){
     creditarRecompensa('CHALLENGE_REWARD', r.pcB, 'marco-semanal:' + w.id);
     w.emitido += r.pcB;
     atualizarSaldo();

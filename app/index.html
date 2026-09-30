@@ -9214,9 +9214,9 @@ preencherSims();
  * leria zero num instante em que ele tem dinheiro. */
 async function ligarModoServidor(){
   if (!modoServidor()) return;
-  await hidratar();
-  atualizarSaldo();
   /* A PROGRESSÃO VEM JUNTO COM A CARTEIRA (bloco 0.1, D-045), e no mesmo lugar.
+     E vem ANTES dela desde a ST-13.9c: entrar paga o PC-B do dia na trilha de
+     login (D-137), e a carteira lida antes mostraria 1000 com 1007 na conta.
      Antes disto o servidor guardava XP, desafios e trilha, e o app nunca
      perguntava: limpar o navegador apagava o nível do jogador. `hidratarPerfil`
      também registra o dia na trilha — ela é um FATO da sessão aparecer, não um
@@ -9224,6 +9224,8 @@ async function ligarModoServidor(){
      AQUI E NÃO NUM MÓDULO QUE SE LEMBRE DE CHAMAR: o defeito que este bloco
      fecha era exatamente uma máquina pronta sem chamador. */
   await hidratarPerfil();
+  await hidratar();
+  atualizarSaldo();
   /* O IDLE DA CONTA (ST-13.5a · DEC-17): com conta, a coleção vem do servidor
      e o save do aparelho vira cache dela. Atrás de `IDLE_NA_CONTA` até todas
      as escritas passarem pelo servidor (13.5e) — antes disso, ler da conta e

@@ -2318,6 +2318,12 @@ do servidor. Três partes:
   assistida por `POST /api/idle/vistas` (o id, nunca a lista de espécies), a
   semana e o resgate por `POST /api/idle/missao` com o prêmio na bolsa da
   conta · `test/escada-conta.mjs` · S2102–S2114.
+- **13.9c ✅ 30/09 · a trilha de login e os desafios pagam na conta (D-137 ·
+  L-054):** achado pela matriz da ST-14.0A — o servidor dizia `creditou` e a
+  carteira não recebia; o desafio fechava e ninguém pagava. O login credita
+  `LOGIN_STREAK_REWARD` em `bonus`; o desafio fechado aplica o marco semanal
+  do motor; "assistir" e "variedade" andam; "aposta_alta" saiu (§28) ·
+  `test/desafios-conta.mjs` · S2115–S2124.
 - **Aceite:** com conta, nenhuma escrita de valor de jogo fica só no aparelho;
   releitura da conta não desfaz nada; sem conta, nada muda.
 - **Portões:** Q1 Q2 Q3 Q6.
@@ -2455,7 +2461,7 @@ desta tabela.
 
 | story | porte | onda | depende de | ressalva do encaixe (30/09) |
 |---|---|---|---|---|
-| **ST-14.0A** · contrato econômico, fontes e integração documental | M | 0 | — | **parcial neste commit:** docs no repositório, Spec §21, ROADMAP, RETOMAR, índice, D-135, L-221. Falta a MATRIZ de produtores/consumidores de dinheiro, itens e criaturas (o item 2 da ficha), que abre a onda 0 |
+| **ST-14.0A** · contrato econômico, fontes e integração documental | M | 0 | — | ✅ 30/09: docs no repositório, Spec §21/§31, ROADMAP, RETOMAR, índice, D-135 · a MATRIZ em `docs/e14/MATRIZ_FONTES_ECONOMIA.md` — e ela achou o **D-137** (login e desafios não pagavam com conta), fechado na ST-13.9c |
 | **ST-14.0B** · a carteira para P2P e o bônus em PC-B | G | 0 | 0A | fecha o **D-135**; a sabotagem "restaurar `WELCOME_GRANT` em `transferivel`" é obrigatória. O aparelho (`app/modules/banco.mjs`) é sandbox, mas a ficha pede que nenhum caminho local promova bônus a saldo conectado |
 | **ST-14.0C** · inventário por lote e proveniência | G | 0 | 0A, 0B | — |
 | **ST-14.2** · a instância existente evolui | M | 0 | 0A, 0B | a baixa lógica da soltura muda `soltarNaConta` (ST-13.3a): regressão de doce e caixa obrigatória |
