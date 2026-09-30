@@ -1329,7 +1329,18 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnSeta.jn-dir{transform:rotate(45deg)}.jnSeta.jn-esq{transform:rotate(-135deg)}.jnSeta.jn-baixo{transform:rotate(135deg)}
 /* A FAIXA do caminho, só no celular: o anterior, o escolhido e o próximo. */
 .jnFaixa{display:none}
+/* O RIO (ST-10.22c4): nasce na borda, passa por baixo da estrada — a estrada
+   por cima, com a beira escura, lê como ponte — e deságua num lago entre as
+   duas voltas. É o que liga as manchas do mapa num lugar só (Q7 da c3). */
+.jnCaminho polyline.jnRioBeira{stroke:#2a5f8f;stroke-width:19;filter:none}
+.jnCaminho polyline.jnRio{stroke:#5db4ea;stroke-width:12}
+.jnFoz{z-index:0}.jnFoz .jnLago{--dx:0px;--dy:6px;transform:scale(1.4)}
+/* O MINIMAPA é do celular (ST-10.22c4): no largo o mapa inteiro já cabe. */
+.jnMini{display:none}
 .jnMapa.jnVoltas2{height:470px}
+/* Em 1920 o mapa de duas voltas era uma faixa de 4:1 com nós de 30 px (Q7 da
+   c3): mais alto, as manchas respiram e o platô deixa de ser uma laje fina. */
+@media (min-width:1500px){ .jnMapa.jnVoltas2{height:clamp(470px,31vw,620px)} }
 .jnNo.escolhido span{color:var(--neon);box-shadow:0 0 0 1px var(--neon)}
 @keyframes jnPulsa{0%,100%{box-shadow:0 0 0 0 rgba(var(--goldRGB),.7),0 3px 0 rgba(0,0,0,.3)}60%{box-shadow:0 0 0 10px rgba(var(--goldRGB),0),0 3px 0 rgba(0,0,0,.3)}}
 @media (prefers-reduced-motion:reduce){ .jnNo.jn-atual i{animation:none;box-shadow:0 0 0 4px rgba(var(--goldRGB),.6)} }
@@ -1660,6 +1671,25 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
    a lição caber na dobra; com a janela, o mapa já não empurra a lição para
    o fim da página.) */
 @media (max-width:520px){ #jnMapaArea{display:flex;flex-direction:column} .jnTopo{order:0} .jnPainel{order:3}
+  /* O MINIMAPA (ST-10.22c4): a janela mostra 5 de 18 nós — o Q7 a chamou de
+     fechadura. Aqui o caminho inteiro numa linha: o começo, os vencidos em
+     ouro, você pulsando, o troféu na ponta, e um anel branco nos nós que a
+     janela mostra agora. Tocar um ponto leva a janela até ele. */
+  .jnMini{display:flex;order:1;position:relative;height:44px;margin-top:10px;border-radius:10px;background:rgba(10,14,24,.88);border:1px solid rgba(var(--goldRGB),.3)}
+  .jnMiniTrilha{position:absolute;left:18px;right:26px;top:17px;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--neon) calc(var(--andado) * 1%),rgba(255,255,255,.18) 0)}
+  .jnMiniNo{position:absolute;top:18px;left:calc(18px + (100% - 44px) * var(--t) / 100);width:9px;height:9px;margin:-4.5px 0 0 -4.5px;padding:0;border:0;border-radius:50%;background:#5d6675;cursor:pointer}
+  .jnMiniNo::before{content:'';position:absolute;inset:-8px -3px}
+  .jnMiniNo.jn-ginasio{border-radius:2px;clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);width:11px;height:11px;margin:-5.5px 0 0 -5.5px}
+  .jnMiniNo.jn-liga{border-radius:1px;transform:rotate(45deg)}
+  .jnMiniNo.jn-chefe{background:#b8423a}
+  .jnMiniNo.jn-vencido{background:#e8b83a}
+  .jnMiniNo.jn-atual{background:var(--neon);width:13px;height:13px;margin:-6.5px 0 0 -6.5px;box-shadow:0 0 8px var(--neon);animation:jnPulsa 1.6s infinite;clip-path:none;border-radius:50%}
+  .jnMiniNo.jn-atual::after{content:'você';position:absolute;top:15px;left:50%;transform:translateX(-50%);font-size:.58rem;font-weight:700;color:var(--neon);white-space:nowrap}
+  .jnMiniNo.naJanela{box-shadow:0 0 0 2px rgba(255,255,255,.85)}
+  .jnMiniNo.jn-atual.naJanela{box-shadow:0 0 0 2px rgba(255,255,255,.85),0 0 8px var(--neon)}
+  .jnMiniFim{background:#ffd24a !important;width:12px;height:12px;margin:-6px 0 0 -6px}
+  .jnMiniFim::after{content:'🏆';position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:.8rem;transform:translateX(-50%) rotate(-45deg)}
+  .jnMiniIni::after{content:'início';position:absolute;top:13px;left:0;font-size:.55rem;color:#9fb3c8;white-space:nowrap}
   .jnJanela{order:2;margin-top:10px;max-height:58vh;max-height:min(58vh,560px);overflow-y:auto;border-radius:14px;overscroll-behavior:contain;border:1px solid rgba(var(--goldRGB),.35)}
   .jnJanela .jnMapa{border:0;border-radius:0}
   /* A trilha andada com a BEIRA escura e larga: bege sobre areia sumia (Q7 da c1). */

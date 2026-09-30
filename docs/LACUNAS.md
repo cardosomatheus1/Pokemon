@@ -8903,3 +8903,29 @@ real, nomear a diferença). O que destrava: a arte das peças (molduras em CSS,
 como `aurora`/`pulso`, dão para começar sem arquivo). A trava é o teste do
 catálogo da loja, que hoje afirma três itens. **Fechada:** a Órbita da Liga e o
 Estandarte da Temporada, procedência `liga`, travadas por S1883–S1887.
+
+### L-214 — o chão do mapa da jornada é colcha de ilhas, e não um mundo só
+
+**Registrada em:** 30/09/2026, na ST-10.22c4. **Bloco dono:** ST-10.22d
+(proposta aqui: o chão do mapa em TILES contínuos, com transição entre
+regiões, gerado por `tools/pixel-arte.mjs` como o resto da arte nossa do
+mapa). **Estado:** aberto.
+
+Quatro rodadas de Q7 cego (c1 a c4, barra: o mapa do Super Mario World)
+deixaram a nota de "mundo conectado" em 3–4 e a de "parece publicado" em 4–6,
+com o arranjo mudando a cada uma: estrada única no celular, nomes, cor do
+trancado, o fim, a pedra da Liga, o mar, a silhueta, o rio, o minimapa. O
+que o crítico descreve nas quatro é a mesma coisa: cada região é uma ILHA de
+borda em degrau (`.jnRegiao`, um recorte em `clip-path`) sobre um tapete
+uniforme de grama e árvores. É a arte do chão, e não o arranjo.
+
+Não cabe na c4 porque é arte nova, e não acabamento: um conjunto de tiles de
+chão com as bordas de transição (grama→areia, areia→pedra, pedra→lava), e o
+mapa pintado numa grade em vez de manchas soltas. A regra de toda peça visual
+pede o passo inteiro (olhar na proporção real, nomear a diferença). O que a
+destrava: o conjunto de tiles. O que fica de pé até lá: o mapa funciona,
+lê-se o caminho e onde se está (7–8), e o futuro provoca (5–6).
+
+A trava: o `test/jornada-mundo.mjs` cobra o rio e o minimapa, e o
+`test/jornada-tela.mjs` cobra as regiões. O bloco dono troca o que elas
+desenham, e não o que elas decidem.

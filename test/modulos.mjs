@@ -362,6 +362,8 @@ const CAMADA = {
   'jornada-dados.mjs': 0,
   'jornada-correcao.mjs': 0,
   'jornada-tela.mjs': 4,
+  /* ST-10.22c4 · a estrutura do mapa: o minimapa e o rio (0). */
+  'jornada-mundo.mjs': 0,
   /* ST-10.11 · a jornada: a luta gravada (1). */
   'jornada-local.mjs': 1,
   /* ST-13.7 · a luta como conta: o aparelho e o servidor chamam a mesma (0). */

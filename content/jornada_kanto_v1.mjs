@@ -29,7 +29,9 @@ export const JORNADA = [
     licao: { ensina: 'fraqueza de tipo', tipo: 'Pedra', dica: 'Pedra apanha em dobro de Água e de Planta — e aguenta Fogo, Voador e Normal.' } },
   /* `mostra: 'vel'`: o painel põe a velocidade do seu mais rápido ao lado da
      de cada rival — a lição tem de estar na tela, e não só no texto. */
-  { id: 'cerulean', nome: 'Ginásio de Cerulean', curto: 'Cerulean', rival: 'misty', insignia: 'cascata', insigniaNome: 'Insígnia Cascata', regiao: 'praia', cena: ['agua', 'casas'],
+  /* `rio` (ST-10.22c4): o rio corta a estrada DEPOIS deste nó — o de Cerulean
+     desce para o porto de Vermilion, e é o que liga as manchas do mapa. */
+  { id: 'cerulean', nome: 'Ginásio de Cerulean', curto: 'Cerulean', rival: 'misty', insignia: 'cascata', insigniaNome: 'Insígnia Cascata', regiao: 'praia', cena: ['agua', 'casas'], rio: true,
     licao: { ensina: 'a velocidade decide trocas apertadas', tipo: 'Água', mostra: 'vel',
              dica: 'Quando os dois caem em poucos golpes, quem age antes vence. Passe a velocidade do Starmie.' } },
   /* `mostra: 'imune'` com `tipoGolpe`: o painel diz quem do seu time o tipo

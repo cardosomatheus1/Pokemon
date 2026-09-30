@@ -1285,7 +1285,7 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **O rio de Cerulean a Vermilion** passa para a c4, junto com o terreno que
   emenda: é a mesma pergunta, "um lugar só".
 
-#### ST-10.22c4 · A estrutura do mapa (proposta, 30/09 — dos achados do Q7 da c3)
+#### ST-10.22c4 · A estrutura do mapa ✅ 30/09 (dos achados do Q7 da c3)
 - **Porte** L · **Método** GL (barra: o mapa do SMW) · **Portões:** Q1 Q2 Q5 Q7.
 - **Por que é outra story:** as c1–c3 foram acabamento, e as notas de mundo e
   de "publicado" pararam em 5–6. O que falta muda o arranjo:
@@ -1299,6 +1299,44 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   ```
 - **Aceite:** ≥ 8 nas quatro larguras (o da ST-10.22).
 - **Sabotagem:** o minimapa sem o nó atual; o rio que não liga as duas cidades.
+- **10.22c4 ✅ 30/09 — feita, com o aceite ≥8 NÃO atingido. E o mapa SAI da
+  fila de acabamento aqui.** Construído:
+  - O MINIMAPA do celular (`miniMapa`, camada 0, em `jornada-mundo.mjs`): o
+    caminho inteiro numa linha, com o início, os vencidos em ouro, você
+    pulsando e o troféu na ponta. Um anel branco marca os nós que a janela
+    mostra agora (`marcarJanela`). Tocar um ponto leva a janela até ele.
+  - O RIO (`rioDoMapa`, declarado no pack com `rio` no nó de Cerulean): nasce
+    na borda, passa por BAIXO da estrada (que lê como ponte) e deságua num
+    lago entre as duas voltas. A cena fica longe dele, como da estrada.
+  - Em 1920, o mapa de duas voltas ficou mais alto (`clamp(470px,31vw,620px)`).
+    A primeira captura não mudou nada: a regra vinha ANTES da altura fixa e
+    perdia para ela. O teste passou a cobrar a ordem.
+  - `test/jornada-mundo.mjs` (3) · S1903–S1909 · S1899 realinhado. O S1906
+    passava no primeiro teste (a regex aceitava duas formas); foi apertado.
+- **Q7 da 10.22c4** (caminho/onde/futuro/mundo/publicado):
+  ```text
+  1920 7/7/6/4/5 · 1440 7/7/6/4/5 · 1100 6/6/5/3/4 · 420 5/8/5/4/5
+  chefe 1920 7/8/6/4/5 · chefe 420 5/8/5/4/5
+  ```
+  O celular subiu no caminho (3 → 5) com o minimapa. O "mundo" não passou de
+  3–4 em QUATRO rodadas (c1 a c4), com o chão re-arrumado a cada uma. O que o
+  crítico descreve em todas é a mesma coisa: cada região é uma ilha de borda
+  em degrau sobre um tapete de árvores. Isso é a ARTE do chão, e não o
+  arranjo, e mais acabamento sobre ela não muda a nota. O mapa sai da fila
+  de acabamento e vira a **L-214** (o chão em tiles contínuos, com transição
+  entre regiões), que pede arte e tem bloco dono próprio.
+
+#### ST-10.22d · O chão do mapa em tiles (proposta, 30/09 — L-214)
+- **Porte** L · **Método** GL (barra: o mapa do SMW) · **Portões:** Q1 Q2 Q5 Q7.
+- **Escopo:** um conjunto de tiles de chão NOSSO (`tools/pixel-arte.mjs`), com
+  as bordas de transição entre regiões (grama→areia, areia→pedra, pedra→lava,
+  terra→água), e o mapa pintado numa grade em vez de manchas soltas em
+  `clip-path`. As decisões de hoje (onde fica cada região, o rio, o minimapa)
+  não mudam: muda o que as desenha.
+- **Fora:** o arranjo do caminho, os nós, o painel.
+- **Aceite:** ≥ 8 em "mundo conectado" e em "publicado" nas quatro larguras.
+- **Sabotagem:** a transição que some (duas regiões vizinhas com borda dura);
+  o tile que não casa com o vizinho.
 
 ### ST-10.20 · A jornada ensina a apostar? ✅ 27/09
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16

@@ -14,6 +14,7 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
+import { miniMapa, rioDoMapa } from './jornada-mundo.mjs';
 import { setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, regioesDoMapa, ARTE_NOSSA_DO_MAPA, mostraNome, corDoNo, cruzaOCaminho } from './jornada-dados.mjs';
 import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, turnosDaAmeaca, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { diaDoMundo } from '../../engine/avanco.mjs';
@@ -316,8 +317,15 @@ function afastarCena(alvo) {
   /* ST-10.22c3: e longe da ESTRADA — o lago e a casa em cima dela liam como
      estrada que afunda (Q7 da c2). O marco fica: o palácio mora no nó. */
   const estrada = [...alvo.querySelectorAll('.jnPos')].filter(p => p.querySelector(':scope > .jnNo')).map(p => { const r = p.getBoundingClientRect(); return { x: r.left, y: r.top }; });
-  const ruim = (r, naEstrada) => tocaEm(obstaculos, r) || fora(r) || (naEstrada && cruzaOCaminho(r, estrada));
+  /* E longe do RIO (ST-10.22c4): os pontos dele em pixels, pelo SVG que está
+     à vista — em pé, x e y trocados, como a estrada. */
+  const sv = [...alvo.querySelectorAll('.jnCaminho')].find(el => el.getBoundingClientRect().width), sr = sv?.getBoundingClientRect();
+  const empe = sv?.classList.contains('jnEmPe');
+  const rios = sr ? JSON.parse(alvo.querySelector('.jnMapa')?.dataset.rio ?? '[]').map(pts => pts.map(p => ({ x: sr.left + ((empe ? p.y : p.x) * sr.width) / 100, y: sr.top + ((empe ? p.x : p.y) * sr.height) / 100 }))) : [];
+  const noRio = r => rios.some(rio => cruzaOCaminho(r, rio));
+  const ruim = (r, naEstrada) => tocaEm(obstaculos, r) || fora(r) || (naEstrada && (cruzaOCaminho(r, estrada) || noRio(r)));
   for (const el of alvo.querySelectorAll('.jnPos:not(.jnB) .jnLago, .jnPos:not(.jnB) .jnProp, .jnPos:not(.jnB) .jnMarco')) {
+    if (el.closest('.jnFoz')) continue;
     el.dataset.dx0 ??= el.style.getPropertyValue('--dx');
     el.style.setProperty('--dx', el.dataset.dx0); el.style.display = '';
     const naEstrada = !el.classList.contains('jnMarco');
@@ -329,13 +337,25 @@ function afastarCena(alvo) {
      Pewter, a de Vermilion, lá em cima) sai — casa na frente de árvore
      amontoada lia como colagem. */
   const pecas = [...alvo.querySelectorAll('.jnPos:not(.jnB) .jnLago, .jnPos:not(.jnB) .jnProp, .jnPos:not(.jnB) .jnMarco')].filter(el => el.style.display !== 'none').map(el => el.getBoundingClientRect());
-  for (const el of alvo.querySelectorAll('.jnB .jnProp')) { el.style.display = ''; if (tocaEm(pecas, el.getBoundingClientRect())) el.style.display = 'none'; }
+  for (const el of alvo.querySelectorAll('.jnB .jnProp')) { el.style.display = ''; if (tocaEm(pecas, el.getBoundingClientRect()) || noRio(el.getBoundingClientRect())) el.style.display = 'none'; }
 }
 let reafastar = 0;
 /* O celular tem o caminho EM PÉ, com uma volta só (ST-10.22c): cruzar a largura repinta, e não só reafasta. */
 const emPe = () => !!globalThis.matchMedia?.('(max-width:520px)').matches;
 let pintadoEmPe = null;
 addEventListener('resize', () => { clearTimeout(reafastar); reafastar = setTimeout(() => { const a = $('#jnMapaArea'); if (!a) return; if (pintadoEmPe !== null && pintadoEmPe !== emPe() && a.offsetParent) renderJornada(); else { afastarCena(a); if (pintadoEmPe) centrarJanela(a, escolhido ?? a.querySelector('.jnNo.jn-atual')?.dataset.jnNo); } }, 150); });
+
+/* O MINIMAPA acende os nós que a JANELA mostra agora (ST-10.22c4): o
+   jogador vê em que trecho do caminho inteiro está olhando. Medir é do
+   navegador; a ordem e o andado vêm da camada 0. */
+function marcarJanela(alvo) {
+  const jan = alvo.querySelector('.jnJanela'), j = jan?.getBoundingClientRect();
+  if (!j) return;
+  for (const b of alvo.querySelectorAll('.jnMiniNo')) {
+    const n = alvo.querySelector(`.jnNo[data-jn-no="${b.dataset.jnNo}"]`)?.getBoundingClientRect(), y = n && n.top + n.height / 2;
+    b.classList.toggle('naJanela', !!n && n.height > 0 && y >= j.top && y <= j.bottom);
+  }
+}
 
 /* A JANELA do celular (ST-10.22c): o mapa em pé tem mais de dois mil pixels; a
    janela mostra o trecho do nó escolhido — ou do próximo — no meio, e o resto
@@ -364,14 +384,20 @@ export function renderJornada({ nova = null } = {}) {
   const linha = (nos, empe) => nos.map(n => (empe ? `${n.y},${n.x}` : `${n.x},${n.y}`)).join(' ');
   const trilha = empe => `<polyline class="jnBeira" points="${linha(andado, empe)}"/><polyline points="${linha(andado, empe)}"/>`
     + (resto.length > 1 ? `<polyline class="jnPorAndar" points="${linha(resto, empe)}"/>` : '');
+  /* O RIO (ST-10.22c4) vem ANTES da estrada no SVG: ela passa por cima, e o
+     cruzamento lê como ponte. */
+  const rios = rioDoMapa(mapa), mini = miniMapa(mapa);
+  const rioSvg = empe => rios.map(r => `<polyline class="jnRioBeira" points="${linha(r.pontos, empe)}"/><polyline class="jnRio" points="${linha(r.pontos, empe)}"/>`).join('');
   alvo.innerHTML = `
     <div class="jnTopo"><span><b>${mapa.feitos}</b> de ${mapa.total} passos · <b>${ganhas}</b> de ${mapa.insignias.length} insígnias${mapa.atual ? '' : ' · <b class="jnFeito">caminho vencido de ponta a ponta</b>'}</span>
       <div class="jnEstojo"><span class="jnEstojoRot">insígnias</span>${mapa.insignias.map(x => `<i class="jnInsignia${x.arte ? ' conhecida' : ''}${x.ganha ? ' ganha' : ''}${x.id && x.id === nova ? ' nova' : ''}"
           title="${x.nome ? `${x.nome} (${x.onde})${x.ganha ? '' : ' — ainda não é sua'}` : 'ainda não há ginásio aqui'}">${x.arte ? `<img src="${x.arte}" alt="">` : ''}</i>`).join('')}</div></div>
-    <div class="jnJanela"><div class="jnMapa${mapa.voltas === 2 ? ' jnVoltas2' : ''}" style="--n:${mapa.voltas === 2 ? Math.ceil(mapa.nos.length / 2) : mapa.nos.length}">
+    <div class="jnMini" style="--andado:${mini.andado}" aria-label="o caminho inteiro"><b class="jnMiniTrilha"></b>${mini.pontos.map((p, k) => `<button class="jnMiniNo jn-${p.estado} jn-${p.tipo}${p.final ? ' jnMiniFim' : ''}${k === 0 ? ' jnMiniIni' : ''}" data-jn-no="${p.id}" style="--t:${p.t}" title="${p.curto}" aria-label="${p.curto}"></button>`).join('')}</div>
+    <div class="jnJanela"><div class="jnMapa${mapa.voltas === 2 ? ' jnVoltas2' : ''}" style="--n:${mapa.voltas === 2 ? Math.ceil(mapa.nos.length / 2) : mapa.nos.length}" data-rio='${JSON.stringify(rios.map(r => r.pontos))}'>
       ${regioesDoMapa(mapa).map(r => `<div class="jnRegiao jnR-${r.regiao} jnRv${r.v}${r.topo ? ' jnTopo' : ''}" style="--x:${r.x};--y:${r.y};--w:${r.w};--h:${r.h}"><b></b><i></i></div>`).join('')}
-      <svg class="jnCaminho jnDeitado" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${trilha(false)}</svg>
-      <svg class="jnCaminho jnEmPe" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${trilha(true)}</svg>
+      <svg class="jnCaminho jnDeitado" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${rioSvg(false)}${trilha(false)}</svg>
+      <svg class="jnCaminho jnEmPe" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${rioSvg(true)}${trilha(true)}</svg>
+      ${rios.map(r => `<div class="jnPos jnFoz" style="--x:${r.foz.x};--y:${r.foz.y}"><b class="jnLago"><i></i></b></div>`).join('')}
       ${setasDoCaminho(mapa).map(sx => `<div class="jnPos jnSetaPos" style="--x:${sx.x};--y:${sx.y}" data-outros='${JSON.stringify(sx.outros)}'><i class="jnSeta jn-${sx.dir}${sx.andado ? ' andado' : ''}"></i></div>`).join('')}
       ${[...bordaDoMapa()].sort((a, b) => !!b.fundo - !!a.fundo).map(p => `<div class="jnPos jnB${p.escala ? ` jnB${p.escala}` : ''}${p.fundo ? ' jnBf' : ''}" style="--x:${p.x};--y:${p.y}">${p.arte ? `<b class="jnProp jnArte" style="background-image:url(${ARTE_NOSSA_DO_MAPA}/${p.arte}.svg)"></b>` : quadro('cuttable_tree', 'jnProp')}</div>`).join('')}
       ${mapa.nos.map(n => `<div class="jnPos jn-${n.estado} jnT-${n.tipo}${n.final ? ' jnFinal' : ''}" style="--x:${n.x};--y:${n.y};--rg:${corDoNo(n)}">
@@ -388,7 +414,8 @@ export function renderJornada({ nova = null } = {}) {
   const im = alvo.querySelector('.jnEu img');
   if (im) { const medir = () => { im.parentNode.style.width = `${im.naturalWidth / 9}px`; }; if (im.complete && im.naturalWidth) medir(); else im.onload = medir; }
   pintarPainel(mapa);
-  requestAnimationFrame(() => { afastarCena(alvo); if (pintadoEmPe) centrarJanela(alvo, escolhido ?? mapa.atual); });
+  requestAnimationFrame(() => { afastarCena(alvo); if (pintadoEmPe) centrarJanela(alvo, escolhido ?? mapa.atual); marcarJanela(alvo); });
+  alvo.querySelector('.jnJanela')?.addEventListener('scroll', () => marcarJanela(alvo), { passive: true });
   /* O marco é <img>: sem tamanho até carregar, o afastamento o via com 0 × 0 e
      o deixava em cima de um nome (medido na captura da ST-10.22b). */
   alvo.querySelectorAll('.jnMarco').forEach(im => { if (!im.complete) im.addEventListener('load', () => afastarCena(alvo), { once: true }); });
@@ -429,7 +456,8 @@ document.addEventListener('click', ev => {
   const no = ev.target.closest('[data-jn-no]');
   /* No estreito o painel vem ANTES do mapa (Q7 da ST-10.15): escolher um nó
      leva o olho de volta a ele. */
-  if (no) { escolhido = no.dataset.jnNo; renderJornada(); if (matchMedia('(max-width:520px)').matches) $('#jnPainel')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
+  /* Do MINIMAPA, a janela vai até o nó e o olho fica no mapa (ST-10.22c4). */
+  if (no) { escolhido = no.dataset.jnNo; renderJornada(); if (!no.closest('.jnMini') && matchMedia('(max-width:520px)').matches) $('#jnPainel')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
   const lutar = ev.target.closest('[data-jn-lutar]');
   if (!lutar || lutar.disabled || !chanceNaTela) return;
   const id = lutar.dataset.jnLutar, antes = chanceNaTela;

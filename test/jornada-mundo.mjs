@@ -1,0 +1,77 @@
+/* ST-10.22c4 · A ESTRUTURA DO MAPA — o minimapa do celular e o rio.
+ *
+ * O Q7 da c3 disse que o que segura a nota é estrutura, e não acabamento: no
+ * celular a janela mostra 5 de 18 nós, sem começo nem fim; o mundo é colcha
+ * de manchas sem nada que as ligue. As duas decisões moram em camada 0
+ * (`app/modules/jornada-mundo.mjs`) e são cobradas aqui, em Node. */
+import { readFileSync } from 'node:fs';
+import { criarSuite, ok, igual } from './harness.mjs';
+import pack from '../content/pokemon_kanto_v1.mjs';
+import { mapaDaJornada, cruzaOCaminho } from '../app/modules/jornada-dados.mjs';
+import { miniMapa, rioDoMapa } from '../app/modules/jornada-mundo.mjs';
+
+const fonte = rel => readFileSync(new URL(rel, import.meta.url), 'utf8');
+const semComentario = t => t.replace(/\/\*[\s\S]*?\*\//g, '');
+
+export function suite() {
+  const s = criarSuite('jornada-mundo');
+
+  s.teste('o minimapa: o caminho INTEIRO, do começo ao fim, com você nele', () => {
+    const m = mapaDaJornada(pack, { vencidos: ['rota1', 'floresta', 'rota22'] }, { emPe: true });
+    const mini = miniMapa(m);
+    igual(mini.pontos.length, m.nos.length, 'o minimapa perde nó');
+    igual(`${mini.pontos[0].t}|${mini.pontos.at(-1).t}`, '0|100', 'o minimapa não vai de ponta a ponta');
+    ok(mini.pontos.every((p, i) => i === 0 || p.t > mini.pontos[i - 1].t), 'o minimapa fora de ordem');
+    const atual = mini.pontos.find(p => p.estado === 'atual');
+    igual(atual?.id, m.atual, 'o minimapa não sabe onde você está');
+    igual(mini.andado, atual.t, 'o trecho andado do minimapa não chega em você');
+    ok(mini.pontos.at(-1).final && !mini.pontos[0].final, 'o fim do minimapa não é o Campeão');
+    igual(mini.pontos.filter(p => p.estado === 'vencido').length, 3, 'o minimapa conta os vencidos errado');
+    /* Caminho vencido de ponta a ponta: não há atual, e o andado é tudo. */
+    const tudo = mapaDaJornada(pack, { vencidos: m.nos.map(n => n.id) }, { emPe: true });
+    igual(miniMapa(tudo).andado, 100, 'o caminho inteiro vencido não enche o minimapa');
+  });
+
+  s.teste('o rio: nasce na borda, cruza a estrada UMA vez entre as duas cidades, e deságua antes da volta de baixo', () => {
+    const m = mapaDaJornada(pack, { vencidos: [] });
+    const rios = rioDoMapa(m);
+    igual(rios.length, 1, 'o pack declara um rio');
+    const r = rios[0], [a, b] = r.entre.map(id => m.nos.find(n => n.id === id));
+    ok(a && b && m.nos.indexOf(b) === m.nos.indexOf(a) + 1, 'o rio não fica entre dois nós seguidos');
+    igual(r.pontos[0].y, 0, 'o rio não nasce na borda de cima');
+    /* Cruza o trecho a→b, e nenhum outro trecho da estrada. Em unidades do
+       mapa: a caixa é o ponto do rio, e a estrada é cada trecho. */
+    const trechos = m.nos.slice(1).map((n, i) => [m.nos[i], n]);
+    const cruza = ([p, q]) => r.pontos.some((pt, k) => k > 0 && seCruzam(r.pontos[k - 1], pt, p, q));
+    igual(trechos.filter(cruza).map(([p]) => p.id).join(), a.id, 'o rio cruza a estrada no lugar errado, ou mais de uma vez');
+    const baixo = Math.min(...m.nos.filter(n => n.y > 50).map(n => n.y));
+    ok(r.foz.y < baixo - 8, 'o rio desce até a volta de baixo');
+    ok(r.foz.y > (a.y + b.y) / 2 + 8, 'o rio acaba em cima da estrada — não deságua em lugar nenhum');
+    /* Pack sem rio, mapa sem rio. */
+    igual(rioDoMapa({ nos: m.nos.map(n => ({ ...n, rio: false })) }).length, 0, 'um rio que o pack não declarou');
+    /* A cruzaOCaminho serve ao rio como serve à estrada — a tela a usa para as duas. */
+    ok(cruzaOCaminho({ left: r.foz.x - 1, right: r.foz.x + 1, top: r.foz.y - 1, bottom: r.foz.y + 1 }, r.pontos, 0), 'a foz fora do próprio rio');
+  });
+
+  s.teste('a tela: o minimapa só no celular, o rio sob a estrada, a cena longe dele, e 1920 menos esticado', () => {
+    const tela = semComentario(fonte('../app/modules/jornada-tela.mjs')), css = fonte('../app/index.html');
+    ok(/miniMapa\(mapa\)/.test(tela) && /class="jnMini"/.test(tela), 'a tela não pinta o minimapa');
+    ok(/\.jnMini\{display:none\}/.test(css) && /@media \(max-width:520px\)[\s\S]*?\.jnMini\{display:flex/.test(css), 'o minimapa não é só do celular');
+    ok(/marcarJanela\(alvo\)/.test(tela) && /naJanela/.test(tela), 'o minimapa não mostra o trecho que a janela vê');
+    /* O rio vem ANTES da estrada no SVG: a estrada passa por cima, como ponte. */
+    ok(/rioSvg\(false\)\}\$\{trilha\(false\)\}/.test(tela) && /rioSvg\(true\)\}\$\{trilha\(true\)\}/.test(tela), 'o rio por cima da estrada');
+    ok(/cruzaOCaminho\(r, rio\)/.test(tela) && /\|\| noRio\(r\)\)\)/.test(tela), 'a cena cai dentro do rio');
+    ok(/@media \(min-width:1500px\)[\s\S]*?\.jnMapa\.jnVoltas2\{height:clamp\(/.test(css), 'em 1920 o mapa continua uma faixa de 4:1');
+    /* A regra do largo vem DEPOIS da altura fixa: antes dela, a fixa ganhava e
+       1920 não mudava nada (medido na primeira captura desta story). */
+    ok(css.indexOf('@media (min-width:1500px){ .jnMapa.jnVoltas2{height:clamp(') > css.indexOf('.jnMapa.jnVoltas2{height:470px}'), 'a altura do largo vem antes da fixa — e perde para ela');
+  });
+
+  return s;
+}
+
+/* Dois segmentos se cruzam (orientação). */
+function seCruzam(p1, p2, p3, p4) {
+  const o = (a, b, c) => Math.sign((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x));
+  return o(p1, p2, p3) !== o(p1, p2, p4) && o(p3, p4, p1) !== o(p3, p4, p2);
+}

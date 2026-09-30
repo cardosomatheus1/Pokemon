@@ -75,7 +75,7 @@ export function mapaDaJornada(pack, prog, { emPe = false } = {}) {
     tipo: no.chefe ? 'chefe' : no.insignia ? 'ginasio' : no.liga ? 'liga' : 'rota', cena: no.cena ?? null, regiao: no.regiao ?? null, marco: no.marco ?? null, licao: no.licao ?? null,
     /* ST-10.19c: a Liga não ensina — REVISA um ginásio, e o mapa desenha a
        insígnia dele ao lado da lição. `selo` é o nome do degrau, do pack. */
-    selo: no.selo ?? null, final: !!no.final,
+    selo: no.selo ?? null, final: !!no.final, rio: !!no.rio,
     /* ST-10.19d: o nome CURTO, para a faixa do celular — "Ginásio de …" cortado
        perdia justamente a palavra que distingue um ginásio do outro. */
     curto: no.curto ?? no.nome ?? no.id,
