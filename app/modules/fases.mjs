@@ -42,9 +42,11 @@ import { renderBattleBanner } from './banner.mjs';
 import { atualizarEu, atualizarFase, relogio } from './faixa.mjs';
 import { renderZonaAcao } from './zona-acao.mjs';
 import { colocacaoDe, ordemDeQuedas } from './colocacao.mjs';
+import { deveVoltarArena } from './arena-vista.mjs';
 
 /* ------------------------- FASES ------------------------- */
 function setPhase(s){
+  const de = S.state;
   S.state = s; S.clock = 0;
   /* A fase é declarada num lugar só, na faixa fixa. Antes o jogador tinha de
      sintetizá-la de quatro pistas espalhadas e contraditórias — ver L-029. */
@@ -72,6 +74,15 @@ function setPhase(s){
      que fazia a fase ter quatro pistas discordantes (L-029). */
   const iniciar = $('#btnStart');
   if (iniciar) iniciar.disabled = (s === 'countdown' || s === 'fighting');
+  /* ST-5.9 (L-207): a aposta fechou e a luta vai começar — quem apostou tem a
+     arena de volta, se ela saiu da tela. Depois do `luta` acima: em coluna
+     única é ele que põe a arena em cima, e a caixa medida tem de ser a nova. */
+  const arena = $('#arena');
+  requestAnimationFrame(() => {
+    const r = arena?.getBoundingClientRect();
+    if (r && deveVoltarArena({ de, para: s, apostou: !!S.myBet, arena: { top: r.top, bottom: r.bottom }, altura: innerHeight }))
+      arena.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  });
 }
 
 /* newRound() é assíncrona (espera o Monte Carlo). Sem essa trava, o

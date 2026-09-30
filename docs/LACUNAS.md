@@ -8750,11 +8750,12 @@ contra o Rival" em minúscula. Duas rodadas de Q7 cego: o PAINEL ficou em 7–8
 (a correção com número: 8); o MUNDO e a leitura no celular ficaram abaixo de 8
 — o que falta foi para a **L-209**, nomeado.
 
-### L-207 — apostar tira a arena de vista
+### L-207 — apostar tira a arena de vista ✅ FECHADA na ST-5.9 (30/09)
 
 **Registrada em:** 27/09/2026, no vídeo de uma rodada completa pedido pelo
 dono. **Bloco dono:** ST-5.9 (proposta no PLANO no mesmo commit). **Estado:**
-aberto.
+fechada — a causa medida era o cartão da aposta abaixo da dobra, e não uma
+rolagem do app; ver a linha da ST-5.9 no PLANO.
 
 Em 1440×900, clicar no lutador e confirmar a aposta rola a página até o
 painel "Sua aposta" — e o campo da arena sai de vista, cortado no alto, até a
@@ -8929,3 +8930,18 @@ lê-se o caminho e onde se está (7–8), e o futuro provoca (5–6).
 A trava: o `test/jornada-mundo.mjs` cobra o rio e o minimapa, e o
 `test/jornada-tela.mjs` cobra as regiões. O bloco dono troca o que elas
 desenham, e não o que elas decidem.
+
+### L-215 — a tela da aposta manda fazer o que já foi feito
+
+**Registrada em:** 30/09/2026, pelo crítico cego (Q7, teste dos 3 segundos)
+da ST-5.9. **Bloco dono:** ST-5.10 (proposta no PLANO no mesmo commit).
+**Estado:** aberto.
+
+Com o lutador já escolhido, três textos contradizem a tela: o aviso no meio da
+arena ("Escolha seu lutador na lista de odds"), o cartão do treinador à
+esquerda ("escolha um lutador na arena", com o lutador errado desenhado) e as
+fichas de valor, que seguem ligadas na contagem depois de a aposta fechar.
+Nenhum quebra a aposta; todos custam leitura justo na fase em que o jogador
+decide. Não cabe na ST-5.9 porque são outros componentes (o aviso da arena, o
+banner, a zona de ação), e a 5.9 cuidou só de onde a arena e o cartão ficam.
+O que a destrava: nada — é construir.

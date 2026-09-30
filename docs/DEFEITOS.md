@@ -6988,3 +6988,20 @@ nada se ela mudou. É uma linha, e vale para a jornada e para a Liga.
 estática sobre o agendamento). O comportamento em si é tempo de navegador, e
 quem o mostra é a captura `replayfim` do `tools/olhar-liga.mjs`. Plantado:
 S1805.
+
+## D-131 — em 1100 o nome do lutador sai cortado numa letra na tabela de odds
+
+**Achado em:** 30/09/2026, pelo crítico cego (Q7) da ST-5.9. **Bloco dono:**
+ST-5.10. **Estado:** aberto.
+
+**Causa.** Em 1100 a coluna da lista fica estreita (≈340 px), e a linha do
+lutador dá a largura às colunas de números (chance, odd, aposta máxima); o
+nome, que encolhe primeiro, sobra com uma letra e reticências.
+
+**Medição.** Captura de 1100×800 antes da ST-5.9 (sonda de 30/09): "( B E.. G
+V" onde deviam estar Gengar, Electrode, Electabuzz, Golbat, Venonat. Não é da
+ST-5.9: a captura é anterior à mudança. Em 1440 e 420 o nome aparece inteiro.
+
+**Teste que trava:** a ST-5.10 escreve o que mede a largura do nome no
+navegador (`tools/olhar-aposta.mjs` já abre as três larguras); o defeito é
+corrigido no bloco seguinte a este registro, e o teste nasce com o conserto.

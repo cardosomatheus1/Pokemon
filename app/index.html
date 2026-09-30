@@ -2286,10 +2286,20 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
    Verde e vermelho, e o dono foi explícito. Duas ações OPOSTAS com a mesma cor
    é a forma mais barata de o clique errado acontecer — e este é o clique que
    move o saldo. */
+/* ST-5.9 (L-207): no largo o cartão da aposta nascia ABAIXO da dobra (y 913
+   numa tela de 900, sob a lista de doze), e confirmar pedia rolar — a arena
+   saía de cima. Com lutador escolhido, o cartão fica PRESO ao pé da tela, na
+   mesma coluna e na mesma ordem (quem → quanto → quando, R33/R39): a lista
+   rola por baixo dele, e a arena não se move. Em coluna única também: em 420
+   o confirmar nascia em y 1355 numa tela de 860 (medido no Q5 da ST-5.9). */
+.zona.lista:has(#confirmaAposta:not([hidden])) #cardAposta{position:sticky;bottom:10px;z-index:4;box-shadow:0 -10px 24px rgba(0,0,0,.55),0 0 0 1px rgba(var(--okRGB),.45)}
+/* E com a confirmação aberta, o "escolha um lutador na lista" contradizia a
+   barra logo abaixo, que já diz quem e quanto (visto na captura da ST-5.9). */
+.zona.lista:has(#confirmaAposta:not([hidden])) #betInfo{display:none}
 .confAposta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;
   padding-top:9px;border-top:1px solid var(--line)}
 .caQuem{flex:1;min-width:0;font-size:.8rem;color:var(--txt)}
-.caQuem b{color:var(--gold)}
+.caQuem b{color:var(--gold);white-space:nowrap}
 /* NOWRAP nos dois: com a coluna estreita o "✓ Confirmar" quebrava em duas
    linhas, e um botão de duas linhas parece dois botões. */
 .caBotoes{display:flex;gap:6px;flex:none}

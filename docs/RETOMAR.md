@@ -30,16 +30,19 @@ o LINK     http://localhost:8099/app/index.html
            (a Liga de times com contas e partidas: node tools/olhar-liga.mjs
            sobe o servidor completo num processo e captura as telas)
 a PASTA    C:\Users\gdult\pa4
-o ESTADO   ST-10.22c4 FECHADA (o mapa: minimapa no celular, o rio, 1920
-           mais alto — caminho 5–7, onde 6–8, mundo 3–4 em quatro rodadas:
+o ESTADO   ST-5.9 FECHADA (apostar não tira a arena de vista: o cartão da
+           aposta preso ao pé da tela, a arena volta quando a luta começa,
+           a confirmação diz quanto recebe) · antes, a ST-10.22c4 (o mapa;
            o que falta é ARTE do chão, a L-214, dona a ST-10.22d)
            · o E11 construído — o stake espera a D2 do dono
-           · suíte 2812/2812, repetir 2/2
+           · suíte 2814/2814, repetir 2/2
            Q2 completo em fatias: 1/10 VERDE; a 2/10 por rodar
            (node test/sabotagem.mjs --fatia=2/10, e seguir até 10/10)
-o PRÓXIMO  o Q2 completo em fatias (2/10 a 10/10) — 1722 adiados · a
-           ST-10.22d (o chão em tiles, L-214) quando houver o conjunto de
-           tiles
+o PRÓXIMO  a ST-5.10 (D-131: nomes cortados em 1100; L-215: avisos que
+           mandam fazer o já feito) · depois a ST-10.22d (o chão em tiles) ·
+           o Q2 completo em fatias fica para quando não houver produto a
+           construir — a fatia 2/10 foi interrompida: avaliava 5 de 191 em
+           15 min e travava o código por horas
 com o DONO ST-13.4/13.5 (o save local para a conta) — agora também trava a
            Liga para quem joga com conta real (L-211). Recomendação na ficha:
            importar uma vez, com teto de plausibilidade

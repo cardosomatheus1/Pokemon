@@ -10,6 +10,7 @@
  * mexe no passivo da rodada. Não sabe o que é uma fase, não inicia batalha, não
  * paga resultado — o pagamento continua em `fases.mjs`, junto do fim da rodada.
  */
+import { linhaDaConfirmacao } from './confirmacao-aposta.mjs';
 import { registrarEncontrada } from './pokedex-estado.mjs';
 import { registrarBonus } from './bonus-arena.mjs';
 import { PACK } from './motor.mjs';
@@ -174,9 +175,7 @@ function pintarConfirmacao() {
   const o = S.odds?.lutadores?.find(l => l.idx === escolhido);
   const valor = valorAposta();
   caixa.hidden = false;
-  $('#caQuem').innerHTML =
-    `<b>${CUR} ${valor.toLocaleString('pt-BR')}</b> em <b>${f?.n ?? ''}</b>` +
-    (o ? ` · x${o.odd.toFixed(2)}` : '');
+  $('#caQuem').innerHTML = linhaDaConfirmacao({ cur: CUR, valor, nome: f?.n, odd: o?.odd });
 }
 
 /* Os dois botões são ligados uma vez, como o resto desta tela. */
