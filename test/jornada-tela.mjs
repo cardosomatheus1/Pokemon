@@ -633,13 +633,19 @@ export function suite() {
   s.teste('10.22c · o nome só no atual, no escolhido e no vencido; o trancado na cor da região', () => {
     const m = mapaDaJornada(pack, { vencidos: ['rota1'] });
     const [venc, atual, tranc] = [m.nos.find(n => n.estado === 'vencido'), m.nos.find(n => n.estado === 'atual'), m.nos.find(n => n.estado === 'trancado')];
-    igual([mostraNome(venc), mostraNome(atual), mostraNome(tranc), mostraNome(tranc, tranc.id)].join(), 'true,true,false,true', 'o nome no mapa');
-    igual(m.nos.filter(n => mostraNome(n)).length, 2, 'com um vencido, nomes demais no mapa');
+    igual([mostraNome(venc), mostraNome(atual), mostraNome(tranc), mostraNome(tranc, tranc.id), mostraNome(venc, venc.id)].join(), 'false,true,false,true,true', 'o nome no mapa');
+    /* O atual e o FIM (ST-10.22c2) — e mais nenhum: o vencido fica com a faixa. */
+    igual(m.nos.filter(n => mostraNome(n)).map(n => n.id).join(), `${atual.id},${m.nos.find(n => n.final).id}`, 'com um vencido, nomes demais no mapa');
     ok(m.nos.every(n => !n.regiao || COR_DA_REGIAO[n.regiao]), 'uma região do pack sem cor');
     igual(`${corDoNo({ regiao: 'vulcao' })}|${corDoNo({ regiao: 'nada' })}`, '200,80,50|140,140,140', 'a cor do nó');
     ok(new Set(m.nos.map(corDoNo)).size >= 5, 'o trancado continua de uma cor só');
     ok(/jnSemNome/.test(semComentario(fonte('../app/modules/jornada-tela.mjs'))) && /\.jnNo\.jnSemNome span\{display:none\}/.test(fonte('../app/index.html')), 'a tela não esconde o nome');
-    ok(/rgb\(var\(--rg/.test(fonte('../app/index.html')), 'o trancado não usa a cor da região');
+    ok(/rgb\(var\(--rg/.test(fonte('../app/index.html')), 'o trancado não usa a cor da região');    /* ST-10.22c2: o ginásio futuro leva a silhueta da insígnia, e o fim tem o
+       rótulo dourado — o crítico cego leu os dois como os piores do mapa. */
+    const css = fonte('../app/index.html'), tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
+    ok(/class="jnSilhueta" style="--ins:url\(/.test(tela) && /i\.jnSilhueta::after\{[^}]*var\(--ins\)[^}]*grayscale\(1\)/.test(css), 'o ginásio futuro sem a silhueta da insígnia');
+    ok(/\.jnFinal \.jnNo\.jn-trancado span\{opacity:1;color:#ffe9a8/.test(css), 'o rótulo do fim herdou o apagado do trancado');
+    ok(/n\.final \? ' jnFinal'/.test(tela) && /\.jnFinal \.jnMarco\{[^}]*scale\(2\.1\)/.test(css), 'o castelo do fim não está no nó do Campeão');
   });
 
   return s;

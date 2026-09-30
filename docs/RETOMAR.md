@@ -30,13 +30,16 @@ o LINK     http://localhost:8099/app/index.html
            (a Liga de times com contas e partidas: node tools/olhar-liga.mjs
            sobe o servidor completo num processo e captura as telas)
 a PASTA    C:\Users\gdult\pa4
-o ESTADO   ST-10.22c1 FECHADA (o mapa: celular, nomes, trancado — aceite ≥8
-           NÃO atingido) · o E11 construído — o stake espera a D2 do dono
+o ESTADO   ST-10.22c2 FECHADA (o mapa: o palácio no Campeão, a Liga de
+           pedra, o mar de Cinnabar, o vencido sem nome, o ginásio futuro com
+           a insígnia apagada — Q7 subiu para 6–7, aceite ≥8 NÃO atingido)
+           · o E11 construído — o stake espera a D2 do dono
            · suíte 2808/2808, repetir 2/2
            Q2 completo em fatias: 1/10 VERDE; a 2/10 por rodar
            (node test/sabotagem.mjs --fatia=2/10, e seguir até 10/10)
-o PRÓXIMO  a ST-10.22c2 (a geografia do mapa: o fim, a Liga, a água, o
-           terreno) · o Q2 completo em fatias (2/10 a 10/10)
+o PRÓXIMO  a ST-10.22c3 (o mundo do mapa: o fim longe do começo, o platô
+           com marcos, pontes, o rio, o vencido batido) · o Q2 completo em
+           fatias (2/10 a 10/10)
 com o DONO ST-13.4/13.5 (o save local para a conta) — agora também trava a
            Liga para quem joga com conta real (L-211). Recomendação na ficha:
            importar uma vez, com teto de plausibilidade

@@ -499,10 +499,13 @@ export function leituraDoDuplo(mm) {
 }
 
 /* O NOME NO MAPA (ST-10.22c): só onde ele responde alguma coisa — o nó atual
-   (para onde eu vou), o escolhido (o que estou lendo) e os vencidos (por onde
-   passei). Os dezoito nomes fixos cobriam a arte; o trancado mostra o nome ao
-   passar o dedo, e a faixa do caminho diz o próximo. */
-export const mostraNome = (no, escolhido = null) => no.estado !== 'trancado' || no.id === escolhido;
+   (para onde eu vou) e o escolhido (o que estou lendo). Os dezoito nomes fixos cobriam a arte; o trancado mostra o nome ao
+   passar o dedo, e a faixa do caminho diz o próximo. E o FIM (ST-10.22c2):
+   o nome dele fica sempre — o SMW nunca esconde onde fica o castelo. E o
+   VENCIDO sai (ST-10.22c2, crítico cego): cinco nomes de por onde passei
+   enterravam o trecho andado; quem nomeia o passado é a faixa do caminho,
+   e o disco vencido já leva a insígnia ganha. */
+export const mostraNome = (no, escolhido = null) => no.estado === 'atual' || no.id === escolhido || !!no.final;
 
 /* A COR DO NÓ TRANCADO (ST-10.22c): o ponto do nível na cor da região em que
    ele fica, e não o mesmo disco cinza em todo lugar — como o mapa do SMW, onde

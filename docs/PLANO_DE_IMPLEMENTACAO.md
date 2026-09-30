@@ -1194,7 +1194,7 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   resolveu foi medido na captura (os nomes, a cor, a estrada, a janela, a
   trilha pontilhada); a nota de mundo e de "publicado" é da c2.
 
-#### ST-10.22c2 · A geografia do mapa (proposta, 30/09 — dos achados do Q7 da c1)
+#### ST-10.22c2 · A geografia do mapa ✅ 30/09 (dos achados do Q7 da c1)
 - **Porte** M · **Método** GL (barra: o mapa do SMW) · **Portões:** Q1 Q2 Q5 Q7.
 - **Escopo, na ordem do crítico:**
   ```text
@@ -1211,6 +1211,49 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   ```
 - **Aceite:** ≥ 8 nas quatro larguras (o da ST-10.22).
 - **Sabotagem:** a Liga sem marco de fim; o rio que não liga as duas cidades.
+- **10.22c2 ✅ 30/09 — feita, com o aceite ≥8 NÃO atingido** (Q7 abaixo). O
+  FIM tem marco: o palácio da Liga grande e centrado sobre o nó do Campeão
+  (`jnFinal`), e o nome dele fica sempre, num rótulo dourado com 🏆 que não
+  herda o apagado do trancado — o crítico da c1 leu a Usina como mais
+  importante que o Campeão. O platô da Liga virou pedra GBA, Cinnabar ganhou
+  o fosso de mar, a trilha andada no celular ganhou borda escura, e os lagos
+  encolhem entre 521 e 1200 px. E dois achados do crítico da própria c2,
+  construídos na hora por serem baratos: o VENCIDO perde o nome no mapa
+  (`mostraNome` = atual, escolhido, fim — cinco nomes de por onde passei
+  enterravam o trecho andado; quem nomeia o passado é a faixa do caminho), e
+  o GINÁSIO FUTURO mostra a insígnia que dá, APAGADA em cinza — silhueta preta
+  não serve, a arte de toda insígnia tem placa redonda e as oito sombras saíam
+  o mesmo disco escuro (medido na captura). `test/jornada-tela.mjs` (23) ·
+  S1892–S1896 · S1889 realinhado.
+- **Q7 da 10.22c2 (barra: o mapa do SMW)**, caminho/onde/futuro/mundo/publicado:
+  ```text
+  1920   antes 6/8/4/3/5   depois 7/8/6/5/6
+  1440   antes 6/8/4/4/6   depois 7/8/6/5/6
+  1100   antes 5/7/4/5/6   depois 6/8/6/5/6
+  420    antes 4/8/3/5/5   depois 3/8/4/4/5
+  chefe  antes 4/7/5/5/5   depois 7/8/5/5/6   (1100)
+  ```
+  Subiu em tudo menos o 420, e nenhuma nota chegou a 8 fora do "onde estou".
+  O que ficou vai para a **10.22c3**, na ordem do crítico.
+
+#### ST-10.22c3 · O mundo do mapa (proposta, 30/09 — dos achados do Q7 da c2)
+- **Porte** M · **Método** GL (barra: o mapa do SMW) · **Portões:** Q1 Q2 Q5 Q7.
+- **Escopo, na ordem do crítico:**
+  ```text
+  o fim         em 1920 o palácio fica logo abaixo da Rota 1 — a jornada acaba
+                onde começou; no 420 ele nunca entra na janela
+  o platô       a pedra da Liga ainda é uma laje cinza com cinco losangos e
+                fontes iguais — cada membro da Elite com um marco próprio
+  as pontes     a estrada entra nos lagos sem ponte (1920, 1440, 1100)
+  o rio         o que ligaria Cerulean a Vermilion — escopo da c2, NÃO
+                construído (o mar de Cinnabar foi; o rio ficou)
+  a trilha      os pontos brancos somem sobre pedra clara e grama florida
+  o terreno     manchas em degrau sobre grama genérica; casas sem papel
+  o vencido     o líder vencido continua de pé no ginásio — nada diz "batido"
+  a 1920        o painel para em ~1250 e deixa um bloco morto à direita
+  ```
+- **Aceite:** ≥ 8 nas quatro larguras (o da ST-10.22).
+- **Sabotagem:** a ponte que some; o palácio fora da janela do celular.
 
 ### ST-10.20 · A jornada ensina a apostar? ✅ 27/09
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16
