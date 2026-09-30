@@ -1839,11 +1839,11 @@ legítimo vira ruído indistinguível.
 
 ---
 
-## D-034 — o §4.7 inteiro está construído e nunca é chamado
+## D-034 — o §4.7 inteiro está construído e nunca é chamado ✅ CORRIGIDO na R21
 
 **Achado em:** R21, ao levantar o terreno para fechar o F1.10.
 **Bloco dono:** R21, que o corrige no mesmo commit.
-**Estado:** ABERTO ao ser achado.
+**Estado:** corrigido — os eventos de proteção têm chamador em `server/` (ex.: `server/partida.mjs:134`), travado por `test/telemetria-ligada.mjs`.
 **Gravidade:** alta. Atinge o portão Q9 de **quatro** blocos — F1.8, F1.9,
 F1.10 e F1.11.
 
@@ -2229,12 +2229,12 @@ que este apareceu.
 
 ---
 
-## D-039 — a caixa de areia do Q2 julgava contra uma linha de base velha
+## D-039 — a caixa de areia do Q2 julgava contra uma linha de base velha ✅ CORRIGIDO na R26
 
 **Achado em:** R26, perseguindo o `arena@largo` região 1,5 que voltava a abortar
 o portão mesmo depois de o `D-033` ter sido corrigido.
 **Bloco dono:** R26, que o corrige.
-**Estado:** ABERTO ao ser achado.
+**Estado:** corrigido — a caixa copia a `visual-base-local.json` (`test/sabotagem.mjs:367`).
 **Gravidade:** alta, e ele explica um histórico inteiro de abortos.
 
 ### O desenho, que está certo
@@ -2293,10 +2293,10 @@ ninguém notar a diferença — até um arquivo não versionado passar a importa
 
 ---
 
-## D-040 — o portão Q2 aborta por variação na região do banner
+## D-040 — o portão Q2 aborta por variação na região do banner ✅ CORRIGIDO na R30
 
 **Achado em:** R27. **Investigado a fundo em:** R29. **FECHADO em:** R30.
-**Estado:** RESOLVIDO. Eram **três causas em camadas**, e cada uma escondia a
+**Estado:** corrigido — o reset de movimento reduzido (`app/index.html:4708`) e o relógio fixado em `test/visual.mjs`. Eram **três causas em camadas**, e cada uma escondia a
 seguinte — por isso treze hipóteses e três blocos até o fim.
 **Impacto (enquanto durou):** o portão Q2 abortava na pré-checagem (`D-015`) e
 não avaliava defeito nenhum. Era bloqueio de instrumentação, não de produto.
@@ -3292,10 +3292,11 @@ Sabotado de volta, ele reprova com o número na cara:
 
 ---
 
-## D-053 — o conferidor de módulos lê `let a = 1, b = 2` como símbolo global
+## D-053 — o conferidor de módulos lê `let a = 1, b = 2` como símbolo global ✅ CORRIGIDO em 15/09/2026 (arnês, commit `3b376e5`)
 
 **Achado em:** 31/08/2026, ao registrar o `outfit.mjs` na tabela de camadas.
 **Bloco dono:** T4 (ferramental de portão). **Medição:** abaixo.
+**Estado:** corrigido — `declaradosNoTopo` lê a cauda inteira e cada declarador contribui o nome (`test/modulos.mjs:724`).
 
 ### O que acontece
 
@@ -3430,7 +3431,7 @@ depois   fisherman  vistas 21/22/23 px
 
 ---
 
-## D-056 — a base visual local ficou anterior ao botão ROTAS no menu
+## D-056 — a base visual local ficou anterior ao botão ROTAS no menu ✅ CORRIGIDO na 1.5f (a causa real, no D-057)
 
 > **CORRIGIDO PARCIALMENTE POR D-057.** A causa nomeada aqui era plausível e
 > NÃO era a causa da tela de início — aquela era uma colisão de classe CSS, um
@@ -3438,8 +3439,8 @@ depois   fisherman  vistas 21/22/23 px
 > valendo como medição; a conclusão, não. Leia o D-057 junto.
 
 **Achado em:** 31/08/2026, no primeiro `npm test` com navegador da sessão.
-**Bloco dono:** 1.5f — resolvido no mesmo dia. **Estado:** RESOLVIDO, com causa
-nomeada.
+**Bloco dono:** 1.5f — resolvido no mesmo dia. **Estado:** corrigido — base regravada na 1.5f;
+a causa real era a colisão do D-057, também corrigida.
 
 ### O que acontecia
 
@@ -5606,11 +5607,11 @@ local nasce com **16 entradas** e o portão anda.
 
 ---
 
-## D-097 — o portão reprova a si mesmo: quatro navegadores em quatro núcleos
+## D-097 — o portão reprova a si mesmo: quatro navegadores em quatro núcleos ✅ CORRIGIDO na T9
 
 **Achado em:** 14/09/2026, na primeira execução QUENTE do Q2 depois do D-096.
-**Bloco dono:** T9 (o portão em 30 minutos). **Estado:** ABERTO — o conserto é a
-mesma peça que o T9 precisa reescrever.
+**Bloco dono:** T9 (o portão em 30 minutos). **Estado:** corrigido — a espera passou a ser
+pelo relógio do jogo, não de parede (`test/visual.mjs:2290`); T9 fechado em 16/09.
 **Gravidade:** alta. Instável reprovando é o que o `CLAUDE.md` chama de pior que
 vermelho constante — *"vermelho constante é defeito com endereço, instável
 escolhe quando aparecer."*

@@ -4618,10 +4618,10 @@ significa alguma coisa, em vez de um painel onde não significa.
 
 ---
 
-### L-110 — o quadro de colocação da Arena é pequeno demais para decidir
+### L-110 — o quadro de colocação da Arena é pequeno demais para decidir ✅ FECHADA no 1.27
 
 **Registrada em:** 02/09/2026, do checklist do dono.
-**Bloco dono:** 1.23. **Estado:** aberta.
+**Bloco dono:** 1.23. **Estado:** ✅ fechada — a ficha da Arena foi de 37 para 52 px no 1.27 (`app/index.html:1948`).
 
 > "aumentar o quadro de colocação DA ARENA com odds, abates e etc. precisa ficar
 >  maior a visualização de escolha atualmente está muito reduzido para os padrão
@@ -4661,10 +4661,10 @@ os PERFIS               Batida/Trilha/Vigília precisam de destaque na escolha
 
 ---
 
-### L-112 — a aposta precisa ser CONFIRMADA, e a janela vai para 40 s
+### L-112 — a aposta precisa ser CONFIRMADA, e a janela vai para 40 s ✅ FECHADA no 1.27
 
 **Registrada em:** 02/09/2026, do checklist do dono.
-**Bloco dono:** 1.27. *(bloco realinhado ao ROADMAP em 08/09/2026 — ver T8)* **Estado:** aberta. **MEXE NA SPEC.**
+**Bloco dono:** 1.27. *(bloco realinhado ao ROADMAP em 08/09/2026 — ver T8)* **Estado:** ✅ fechada — ✓ Confirmar / ✗ Cancelar e `BET_WINDOW: 40` no 1.27 (`engine/engine.mjs:151`). **MEXE NA SPEC.**
 
 > "adicione um botão de CONFIRMAR (verde) e ao lado um CANCELAR (vermelho) [...]
 >  ao selecionar agora é preciso confirmar logo, se você não confirmar outro
@@ -6099,10 +6099,10 @@ a L-138, dez dos dezesseis deixam de ser promessa vazia.
 
 ---
 
-### L-140 — mandar DOIS no mesmo bioma custa o dobro e rende igual
+### L-140 — mandar DOIS no mesmo bioma custa o dobro e rende igual ✅ FECHADA no 1.27
 
 **Registrada em:** 03/09/2026, **cobrada pelo dono**, e medida no motor.
-**Bloco dono:** 1.27. **Estado:** aberta.
+**Bloco dono:** 1.27. **Estado:** ✅ fechada — concentrar ×1,55/×2,00 no 1.27 (`FATOR_DA_EQUIPE`, `engine/expedicao.mjs:404`).
 
 > "SE POR ACASO o jogador querer mandar 2 pokémon pro mesmo bioma, teoricamente
 >  é para ele farmar mais ali, essa distribuição de farm a + precisa ser feito e
@@ -6802,11 +6802,11 @@ mostrado.
 
 ---
 
-### L-150 — a run acontece na tela e ainda não PAGA nada
+### L-150 — a run acontece na tela e ainda não PAGA nada ✅ FECHADA no A4c
 
 **Registrada em:** 08/09/2026, por mim, ao fechar o A4b.
-**Bloco dono:** A4c. **Estado:** aberta, e é uma lacuna DECLARADA — não um
-esquecimento.
+**Bloco dono:** A4c. **Estado:** ✅ fechada — a run cobra stamina e paga XP, moeda e baú no A4c
+(`contaDaRun`, `app/modules/avanco-conta.mjs:129`). Era uma lacuna DECLARADA — não um esquecimento.
 
 Ao fim do A4b a run inteira acontece: as dez waves, a queda, o recuo, o log, a
 cena. O que ela ainda não faz é **cobrar e pagar**:
@@ -6956,10 +6956,10 @@ menos e não avisa é pior que uma run recusada.
 
 ---
 
-### L-152 — a DURAÇÃO da run não responde à força, e o dono pegou isso na conta
+### L-152 — a DURAÇÃO da run não responde à força, e o dono pegou isso na conta ✅ FECHADA no A4d
 
 **Registrada em:** 08/09/2026, **por pergunta do dono**, ao ler a medição do
-fecho da trilha A. **Bloco dono:** A4d. **Estado:** aberta, **medida**.
+fecho da trilha A. **Bloco dono:** A4d. **Estado:** ✅ fechada — a duração multiplica pelo ritmo da força no A4d (`engine/roteiro-wave.mjs:194`; nível 50: 31,9 → 11,5 min).
 
 > "essa média de tempo é o cálculo INICIAL correto? Porque a depender da força
 >  e da run, por exemplo o cara tá com os pokémon level 30 tudo evoluído, ele
@@ -7354,10 +7354,10 @@ ainda não estava boa, em vez de deixar a cena boa primeiro.
 
 ---
 
-### L-162 — a MESMA criatura podia avançar e ir à expedição
+### L-162 — a MESMA criatura podia avançar e ir à expedição ✅ FECHADA no 1.27
 
 **Registrada em:** 09/09/2026, por pergunta do dono. **Bloco dono:** 1.27.
-**Estado:** aberta. **É um furo, e não uma escolha.**
+**Estado:** ✅ fechada — a recusa nos dois sentidos no 1.27 (`app/modules/idle-dados.mjs:269`). **É um furo, e não uma escolha.**
 
 > "Como eu consigo mandar 1 pokémon avançar e o mesmo pokémon na expedição?"
 
@@ -7561,10 +7561,10 @@ faltando é balão vazio, e balão vazio é pior que golpe simples.
 
 ---
 
-### L-169 — quatro por wave, e não seis
+### L-169 — quatro por wave, e não seis ✅ FECHADA no 1.27c
 
 **Registrada em:** 09/09/2026, decisão do dono. **Bloco dono:** 1.27c.
-**Estado:** aberta.
+**Estado:** ✅ fechada — `MOBS_POR_WAVE = 4` no 1.27c (`engine/wave.mjs:75`).
 
 > "To achando também que 6 Pokémon por wave está muito, vamos reduzir para 4
 >  por wave."
@@ -7580,10 +7580,10 @@ commit ao lado do antigo.
 
 ---
 
-### L-170 — o chefe do estágio vira UM boss, em 1x1, com anúncio
+### L-170 — o chefe do estágio vira UM boss, em 1x1, com anúncio ✅ FECHADA no 1.27c
 
 **Registrada em:** 09/09/2026, decisão do dono. **Bloco dono:** 1.27c.
-**Estado:** aberta. **É a maior das cinco.**
+**Estado:** ✅ fechada — um chefe sorteado, 1x1, com anúncio, no 1.27c (`engine/wave.mjs:138`, `test/avanco-boss.mjs`). **É a maior das cinco.**
 
 > "no final podem vir os boss em forma de luta 1x1, porém coloca exemplo
 >  primeiro mapa beedrill e butterfree, como um boss só, ele é mais difícil,
@@ -8345,10 +8345,10 @@ primeira tela do idle. **O que a destrava:** o respiro interno do painel na
 coluna estreita, conferido nas quatro larguras com a esteira `olhar-telas`.
 
 
-### L-191 — a aposta não muda quem aparece nas rotas: `pesoComBonus` sem chamador
+### L-191 — a aposta não muda quem aparece nas rotas: `pesoComBonus` sem chamador ✅ FECHADA na ST-9.6 (26/09)
 
 **Registrada em:** 26/09/2026, no levantamento da Parte 2 do PLANO (achado A).
-**Bloco dono:** ST-9.6 (F3.8 antecipado). **Estado:** aberto.
+**Bloco dono:** ST-9.6 (F3.8 antecipado). **Estado:** ✅ fechada — `pesoComBonus` religado por `pesosDoSorteio` na ST-9.6 (`engine/expedicao.mjs:594`).
 
 `pesoComBonus` e `bonusVivo` (`engine/captura.mjs`) são a ponte Arena → rotas
 do §7.3: apostar numa espécie torna a linha dela mais comum no idle por algumas
@@ -8451,7 +8451,7 @@ todas", subtítulo em texto corrido, missão em grade estreita).
 ### L-197 — a banda de captura do gate 3→4 não está declarada ✅ FECHADA na ST-13.6 (28/09: medida pela simulação do idle, 1,8–21,3 capturas por jogador-dia)
 
 **Registrada em:** 26/09/2026, na ST-9.18 (o gate da V3). **Bloco dono:**
-ST-13.6 (antifraude mínima da captura). **Estado:** aberto.
+ST-13.6 (antifraude mínima da captura). **Estado:** ✅ fechada — a banda 1,8–21,3 medida na ST-13.6 e lida pelo gate (`engine/gate-v3.mjs:83`).
 
 O §7.21 pede "taxa de captura e progressão **nas bandas projetadas**", e nenhum
 documento declara a banda: nem a Spec, nem o Estudo Econômico (procurado por
@@ -8575,11 +8575,11 @@ dela (em `arte/`, regra do `CLAUDE.md`), a silhueta apagada no lugar vazio, e a
 entrada animada no fim da luta que a dá — o texto "A insígnia é sua." já existe
 (`jornada-tela.mjs`).
 
-### L-203 — o mapa deitado aperta com mais de oito nós
+### L-203 — o mapa deitado aperta com mais de oito nós ✅ FECHADA na ST-10.19c (27/09)
 
 **Registrada em:** 27/09/2026, na ST-10.12. **Estado:** ✅ **fechada na ST-10.19c
 (27/09)** — ver o fim da ficha. **Bloco dono:** ST-10.19c (o resto
-da jornada — é ela que passa de oito nós). **Estado:** aberto.
+da jornada — é ela que passa de oito nós).
 
 O caminho deitado divide 84% da largura entre os nós. Com 4 (hoje), o passo é
 ~460 px em 1440; com os ~16 da jornada inteira, ~77 px — menos que o nome

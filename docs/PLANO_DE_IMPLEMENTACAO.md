@@ -925,7 +925,7 @@ tesouraria, lançado; um mercado aberto por vez (§6.5), começando por abates.
 - **Sabotagem:** missão pagando PokéCash; medalha guardada como estado; resgate duplo.
 - **Portões:** Q1 Q2 Q3 Q5.
 
-### ST-9.16 · Minha Coleção
+### ST-9.16 · Minha Coleção ✅ 26/09
 Fatiada em duas (a original seria G).
 
 - **Bloco dono** F3.12 · **Spec** §7.15, §12 tela 10 · **Servidor** não · **Depende de** ST-9.4, 9.10, 9.14
@@ -1066,7 +1066,7 @@ Fatiada em duas (a original seria G).
 - **Porte** M · **Servidor** não · **Bloco dono** F4.5 · **Spec** §12 tela 22
 - **Portões:** Q1 Q2 Q5 Q7 (barra de F4.5).
 
-### ST-10.13 a 10.16 · Os ginásios como aulas
+### ST-10.13 a 10.16 · Os ginásios como aulas ✅ 27/09
 Bloco dono F4.6 · §8.1.2, §8.8 · M cada, com conteúdo · portões Q1 Q2 Q3 Q4 Q5 Q7.
 
 | story | ensina | aceite medido pelo simulador (ST-10.10) |
@@ -1090,7 +1090,7 @@ Os percentuais são recomendação. Os valores finais ficam na fixture, e "dific
 - **Escopo:** lendário como chefe de campanha ou evento, com recompensa controlada. A regra do idle (uma vaga no mapa, 1,5%) fica escrita no teste como "não é captura comum". Lendário nunca entra no elenco da Arena.
 - **Portões:** Q1 Q2 Q3.
 
-### ST-10.19 · O resto da jornada
+### ST-10.19 · O resto da jornada ✅ 27/09
 Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **Porte** G por corte: dois ginásios por story (10.19a a c), com o mesmo aceite dos ginásios acima.
 - **IP:** os nomes moram no pack.
@@ -1454,7 +1454,7 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **O que fica:** a colocação é só a FASE (rótulo para a ST-11.6); K maior nas
   partidas de colocação, se o piloto pedir, é balanceamento da ST-11.7.
 
-### ST-11.6 · As telas da Liga
+### ST-11.6 · As telas da Liga ✅ 30/09
 - **Porte** M–G, fatiada em Home e Matchmaking / Replay / Placares · **Servidor** sim · **Bloco dono** F5.9 · **Spec** §12 telas 25–28, §9.15
 - **Escopo:** nos placares, previsão e Liga MMR nunca ficam na mesma tabela.
 - **Portões:** Q1 Q2 Q5 Q7.
@@ -1604,7 +1604,7 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   1600 px a Liga passa a 1520 px de largura (sobravam 700 px em 1920).
   `test/liga-replay.mjs` · S1862. Q5 em 1920 e 420.
 
-### ST-11.7 · Recompensas, League Points e loja
+### ST-11.7 · Recompensas, League Points e loja ✅ 30/09
 - **Porte** M · **Servidor** sim · **Spec** §9.10, §9.11, §10.1
 - **Escopo:** recompensas cosméticas e de prestígio pela `cosmetic_ownership`. League Points é a terceira e **última** moeda (§10.1), com tabela e ledger próprios. A loja nunca vende rating ou pontos.
 - **Aceite:** League Points nunca convertem em PokéCash; compra idempotente.
@@ -1867,7 +1867,7 @@ local vira cache; sem conta, nada muda.
   local guarda `xp` e golpes escolhidos e o servidor não — as colunas entram
   com as operações da ST-13.3, que é quem as escreve.
 
-### ST-13.2 · A colheita é do servidor
+### ST-13.2 · A colheita é do servidor ✅ 27/09
 - **Porte** M–G · **Servidor** sim · **Spec** §7.14 · **Depende de** ST-13.1
 - **Escopo:** expedição e run começam por `POST` (o servidor grava início,
   semente e custo) e se colhem por `POST` idempotente; o servidor recalcula o
@@ -1915,7 +1915,7 @@ local vira cache; sem conta, nada muda.
   ST-3.3 é medida pelas funções do aparelho, bater com o aparelho é bater com
   ela. `test/colheita-rotas.mjs` · S1601–S1612.
 
-#### ST-13.2c · A run do Avanço no servidor — dividida (27/09)
+#### ST-13.2c · A run do Avanço no servidor — dividida (27/09) ✅
 A luta da jornada saiu daqui: ela precisa do time de seis e dos golpes
 escolhidos, que o servidor só terá com a ST-13.3 — virou a **ST-13.7**.
 
@@ -1973,7 +1973,7 @@ escolhidos, que o servidor só terá com a ST-13.3 — virou a **ST-13.7**.
   pela rota (hoje ele ainda luta no save e RELATA); aí `pve_iniciado` e
   `ginasio_vencido` saem da lista `DO_CLIENTE` e a L-208 fecha inteira.
 
-### ST-13.3 · XP, evolução, golpes e doce como operações — dividida (27/09)
+### ST-13.3 · XP, evolução, golpes e doce como operações — dividida (27/09) ✅
 O levantamento achou seis operações (caixa, soltar, foco, golpes, evolução,
 doce), cada uma com a identidade contra o aparelho; e o doce mexe no livro
 do servidor. Três partes:
@@ -2011,7 +2011,7 @@ do servidor. Três partes:
   S1649–S1653. O resgate que desce o doce ao aparelho fica como está até a
   ST-13.5, que decide quem é a fonte com conta.
 
-### ST-13.3 · (a ficha original)
+### ST-13.3 · (a ficha original) ✅ 27/09, pelas 13.3a–c
 - **Porte** M · **Servidor** sim · **Depende de** ST-13.2, ST-9.9, ST-9.10, ST-9.12
 - **Escopo:** dar doce, evoluir, trocar golpes e soltar viram rotas; a regra é
   a mesma função da camada 0 que o cliente usa (um caminho só).
