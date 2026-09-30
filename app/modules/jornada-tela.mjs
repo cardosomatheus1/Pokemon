@@ -398,9 +398,10 @@ export function renderJornada({ nova = null } = {}) {
       <svg class="jnCaminho jnDeitado" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${rioSvg(false)}${trilha(false)}</svg>
       <svg class="jnCaminho jnEmPe" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${rioSvg(true)}${trilha(true)}</svg>
       ${rios.map(r => `<div class="jnPos jnFoz" style="--x:${r.foz.x};--y:${r.foz.y}"><b class="jnLago"><i></i></b></div>`).join('')}
+      ${rios.map(r => `<div class="jnPos jnPonte" style="--x:${r.ponte.x};--y:${r.ponte.y}"><b></b></div>`).join('')}
       ${setasDoCaminho(mapa).map(sx => `<div class="jnPos jnSetaPos" style="--x:${sx.x};--y:${sx.y}" data-outros='${JSON.stringify(sx.outros)}'><i class="jnSeta jn-${sx.dir}${sx.andado ? ' andado' : ''}"></i></div>`).join('')}
       ${[...bordaDoMapa()].sort((a, b) => !!b.fundo - !!a.fundo).map(p => `<div class="jnPos jnB${p.escala ? ` jnB${p.escala}` : ''}${p.fundo ? ' jnBf' : ''}" style="--x:${p.x};--y:${p.y}">${p.arte ? `<b class="jnProp jnArte" style="background-image:url(${ARTE_NOSSA_DO_MAPA}/${p.arte}.svg)"></b>` : quadro('cuttable_tree', 'jnProp')}</div>`).join('')}
-      ${mapa.nos.map(n => `<div class="jnPos jn-${n.estado} jnT-${n.tipo}${n.final ? ' jnFinal' : ''}" style="--x:${n.x};--y:${n.y};--rg:${corDoNo(n)}">
+      ${mapa.nos.map((n, i) => `<div class="jnPos jn-${n.estado} jnT-${n.tipo}${n.final ? ' jnFinal' : ''}${i === 0 ? ' jnInicio' : ''}" style="--x:${n.x};--y:${n.y};--rg:${corDoNo(n)}">
           ${cenaDoNo(n).map(c => (c.forma ? `<b class="jnLago${c.forma === 'lago' ? '' : ` jn-${c.forma}`}" style="--dx:${c.dx}px;--dy:${c.dy}px"><i></i></b>`
             : c.marco ? `<img class="jnMarco" src="${ARTE_NOSSA_DO_MAPA}/${c.marco}.svg" alt="" style="--dx:${c.dx}px;--dy:${c.dy}px">`
             : c.arte ? `<b class="jnProp jnArte" style="background-image:url(${ARTE_NOSSA_DO_MAPA}/${c.arte}.svg);--dx:${c.dx}px;--dy:${c.dy}px"></b>`

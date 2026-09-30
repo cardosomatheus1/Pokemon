@@ -30,20 +30,19 @@ o LINK     http://localhost:8099/app/index.html
            (a Liga de times com contas e partidas: node tools/olhar-liga.mjs
            sobe o servidor completo num processo e captura as telas)
 a PASTA    C:\Users\gdult\pa4
-o ESTADO   ST-5.16 FECHADA (o clima com ícone nosso, arte/clima/)
+o ESTADO   ST-10.22d FECHADA (o chão do mapa em tiles nossos, a franja
+           de transição, a ponte, a bandeira do início, o Campeão dourado)
            · nesta leva: ST-5.9 a 5.16 (a aposta com a arena à vista, a
            tabela legível em 1100, os campos no tema, o Centro, as medalhas
-           com teto, o selo do degrau, o clima), a ST-1.4 (o 401 da CI:
-           o bolo não busca sem sessão) e a ST-6.5 (25 fichas velhas
-           fechadas, conferidas no código) · antes, o mapa até a 10.22c4
+           com teto, o selo do degrau, os ícones do clima), a ST-1.4 (o 401
+           da CI) e a ST-6.5 (25 fichas velhas fechadas)
            · o E11 construído — o stake espera a D2 do dono
-           · suíte 2826/2826, repetir 2/2
+           · suíte 2828/2828, repetir 2/2
            Q2 completo em fatias: 1/10 VERDE; a 2/10 interrompida
            (node test/sabotagem.mjs --fatia=2/10, e seguir até 10/10)
-o PRÓXIMO  a ST-10.22d (o chão do mapa em tiles, arte NOSSA pela
-           tools/pixel-arte.mjs, como os ícones do clima) · o Q2 completo
-           em fatias fica para quando não houver produto a construir — a
-           fatia 2/10 avaliava 5 de 191 em 15 min e travava o código
+o PRÓXIMO  o Q2 completo em fatias (2/10 a 10/10) — o que sobra de produto
+           construível sem o dono é pequeno; as fatias travam o código por
+           horas, e é hora delas
 com o DONO ST-13.4/13.5 (o save local para a conta) — agora também trava a
            Liga para quem joga com conta real (L-211). Recomendação na ficha:
            importar uma vez, com teto de plausibilidade

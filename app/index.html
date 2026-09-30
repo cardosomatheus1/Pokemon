@@ -1139,7 +1139,12 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
    parada; o campo e o jardim ficam rentes ao chão. */
 .jnRegiao{position:absolute;pointer-events:none;image-rendering:pixelated;
   left:calc((var(--x) - var(--w) / 2) * 1%);top:calc((var(--y) - var(--h) / 2) * 1%);width:calc(var(--w) * 1%);height:calc(var(--h) * 1%);
-  --alto:0px;filter:drop-shadow(0 3px 0 rgba(0,0,0,.25))}
+  /* ST-10.22d: a sombra da região é a própria face (3 px) e não mais um
+     drop-shadow — o filtro sombreava cada casa da FRANJA em xadrez, e a
+     transição saía um pontilhado escuro em vez de areia misturada à grama.
+     `isolation` mantém o contexto que o filtro dava: sem ele, a franja
+     (z-index -1) ia para trás do fundo do mapa e sumia. */
+  --alto:3px;--penhasco:rgba(0,0,0,.28);isolation:isolate}
 /* A FACE DO PENHASCO: o mesmo contorno, descido a altura do lugar, com a
    rocha em estratos — a 2ª rodada do Q7 não viu altura numa sombra lisa. */
 .jnRegiao b{position:absolute;left:0;right:0;top:var(--alto);height:100%;clip-path:var(--forma);
@@ -1223,10 +1228,50 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnB3 .jnProp{transform:scale(.86);filter:hue-rotate(-20deg) saturate(1.25) drop-shadow(0 3px 0 rgba(0,0,0,.28))}
 .jnLicao{display:flex;align-items:center;gap:8px;margin:8px 0 0;font-size:.74rem;color:var(--txt)}
 .jnLicao img{width:28px;height:28px;image-rendering:pixelated;flex:none}.jnLicao b{color:var(--neon)}
+/* ── ST-10.22d (L-214) · O CHÃO EM TILES ─────────────────────────────────
+   Cada região pinta o tile NOSSO do material (arte/chao, gerado pela
+   tools/pixel-arte.mjs) em 2×, no lugar dos pontinhos em gradiente — e ganha
+   uma FRANJA: o mesmo contorno em degrau, 6 px maior, num xadrez de 2 px na
+   cor do chão dela, atrás do chão. É a transição de tile do GBA: a borda
+   mistura a região com a grama, e a ilha deixa de estar pousada no tapete.
+   A usina fica com as faixas de perigo — o chão dela diz outra coisa. */
+/* ST-10.22d: a PONTE onde o rio cruza a estrada (a camada 0 diz onde), em
+   tábuas com os dois corrimões — a estrada passava por cima da água sem
+   nada. A BANDEIRA marca o início, e o fim é o losango DOURADO e maior:
+   o crítico cego não achava onde a jornada começa nem distinguia o Campeão
+   da Elite. */
+.jnPonte{z-index:1}
+.jnPonte b{position:absolute;left:-15px;top:-10px;width:30px;height:20px;box-sizing:border-box;
+  background:repeating-linear-gradient(90deg,#b07a3e 0 4px,#7a5028 4px 5px);border-top:3px solid #4a3018;border-bottom:3px solid #4a3018;box-shadow:0 3px 0 rgba(0,0,0,.35)}
+.jnInicio .jnNo::before{content:'';position:absolute;left:12px;top:-30px;width:24px;height:32px;background:url(../arte/mapa/bandeira.svg) 0 0/24px 32px no-repeat;image-rendering:pixelated;pointer-events:none}
+.jnFinal .jnNo.jn-liga.jn-trancado i{background:linear-gradient(135deg,#ffe27a,#c98a1b);border-color:#fff3c0;filter:none;width:36px;height:36px;box-shadow:0 0 10px rgba(255,210,74,.6)}
+.jnRegiao::after{content:'';position:absolute;inset:-6px;clip-path:var(--forma);z-index:-1;pointer-events:none;
+  background:conic-gradient(var(--franja,transparent) 25%,transparent 0 50%,var(--franja,transparent) 0 75%,transparent 0) 0 0/4px 4px}
+.jnR-campo{--franja:#7cbd57}
+.jnR-campo i{background:url(../arte/chao/campo.svg) 0 0/32px 32px}
+.jnR-floresta{--franja:#2f6a28}
+.jnR-floresta i{background:url(../arte/chao/floresta.svg) 0 0/32px 32px}
+.jnR-bosque{--franja:#1f5444}
+.jnR-bosque i{background:url(../arte/chao/bosque.svg) 0 0/32px 32px}
+.jnR-pedra{--franja:#bf9a62}
+.jnR-pedra i{background:url(../arte/chao/pedra.svg) 0 0/32px 32px}
+.jnR-praia{--franja:#e3d294}
+.jnR-praia i{background:url(../arte/chao/praia.svg) 0 0/32px 32px}
+.jnR-jardim{--franja:#86c65c}
+.jnR-jardim i{background:url(../arte/chao/jardim.svg) 0 0/32px 32px}
+.jnR-pantano{--franja:#4b6b45}
+.jnR-pantano i{background:url(../arte/chao/pantano.svg) 0 0/32px 32px}
+.jnR-cidade{--franja:#9aa0ac}
+.jnR-cidade i{background:url(../arte/chao/cidade.svg) 0 0/32px 32px}
+.jnR-vulcao{--franja:#5a382e}
+.jnR-vulcao i{background:url(../arte/chao/vulcao.svg) 0 0/32px 32px}
+.jnR-planalto{--franja:#8d8475}
+.jnR-planalto i{background:url(../arte/chao/planalto.svg) 0 0/32px 32px}
 .jnMapa{position:relative;height:340px;border-radius:14px;overflow:hidden;border:1px solid rgba(var(--goldRGB),.35);image-rendering:pixelated;
-  background:radial-gradient(circle at 4px 4px,rgba(22,58,18,.4) 1.3px,transparent 1.7px) 0 0/16px 16px,radial-gradient(circle at 12px 11px,rgba(170,228,128,.28) 1.2px,transparent 1.6px) 0 0/16px 16px,
-    radial-gradient(70% 60% at 30% 40%,#6aa84f 0%,transparent 70%),radial-gradient(60% 60% at 80% 70%,#5b9446 0%,transparent 70%),
-    linear-gradient(180deg,#4f8a3c,#3e7331)}
+  /* ST-10.22d: a grama em TILE nosso (arte/chao), e duas manchas suaves de
+     luz e sombra por cima para a repetição não virar papel de parede. */
+  background:radial-gradient(70% 60% at 30% 40%,rgba(150,210,110,.22) 0%,transparent 70%),radial-gradient(60% 60% at 80% 70%,rgba(20,60,20,.28) 0%,transparent 70%),
+    url(../arte/chao/grama.svg) 0 0/32px 32px,#5e9e43}
 .jnCaminho{position:absolute;inset:0;width:100%;height:100%}
 .jnCaminho polyline{fill:none;stroke:#dcbc80;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
 .jnCaminho polyline.jnBeira{stroke:#8a6636;stroke-width:13;filter:drop-shadow(0 2px 0 rgba(0,0,0,.22))}
@@ -1675,6 +1720,7 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
      fechadura. Aqui o caminho inteiro numa linha: o começo, os vencidos em
      ouro, você pulsando, o troféu na ponta, e um anel branco nos nós que a
      janela mostra agora. Tocar um ponto leva a janela até ele. */
+  .jnPonte b{transform:rotate(90deg)}
   .jnMini{display:flex;order:1;position:relative;height:44px;margin-top:10px;border-radius:10px;background:rgba(10,14,24,.88);border:1px solid rgba(var(--goldRGB),.3)}
   .jnMiniTrilha{position:absolute;left:18px;right:26px;top:17px;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--neon) calc(var(--andado) * 1%),rgba(255,255,255,.18) 0)}
   .jnMiniNo{position:absolute;top:18px;left:calc(18px + (100% - 44px) * var(--t) / 100);width:9px;height:9px;margin:-4.5px 0 0 -4.5px;padding:0;border:0;border-radius:50%;background:#5d6675;cursor:pointer}

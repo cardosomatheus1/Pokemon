@@ -4,7 +4,8 @@
  * celular a janela mostra 5 de 18 nós, sem começo nem fim; o mundo é colcha
  * de manchas sem nada que as ligue. As duas decisões moram em camada 0
  * (`app/modules/jornada-mundo.mjs`) e são cobradas aqui, em Node. */
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
+import { REGIOES } from '../app/modules/jornada-dados.mjs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import pack from '../content/pokemon_kanto_v1.mjs';
 import { mapaDaJornada, cruzaOCaminho } from '../app/modules/jornada-dados.mjs';
@@ -65,6 +66,40 @@ export function suite() {
     /* A regra do largo vem DEPOIS da altura fixa: antes dela, a fixa ganhava e
        1920 não mudava nada (medido na primeira captura desta story). */
     ok(css.indexOf('@media (min-width:1500px){ .jnMapa.jnVoltas2{height:clamp(') > css.indexOf('.jnMapa.jnVoltas2{height:470px}'), 'a altura do largo vem antes da fixa — e perde para ela');
+  });
+
+  /* ST-10.22d (L-214): o chão em TILES, arte nossa — em quatro rodadas o
+     crítico descreveu o mesmo defeito: cada região uma ilha de pontinhos em
+     gradiente sobre um tapete liso. Tile 16 × 16 por material (em 2×) e a
+     FRANJA pontilhada que mistura a borda de cada região com a grama, como a
+     transição de tile do GBA. A usina fica com as faixas de perigo. */
+  s.teste('ST-10.22d: o chão em tiles nossos, e a borda de cada região mistura com a grama', () => {
+    const css = fonte('../app/index.html');
+    const materiais = REGIOES.filter(r => r !== 'usina');
+    for (const m of ['grama', ...materiais]) ok(existsSync(new URL(`../arte/chao/${m}.svg`, import.meta.url)), `o tile ${m} não existe`);
+    ok(/\.jnMapa\{[^}]*url\(\.\.\/arte\/chao\/grama\.svg\)/.test(css), 'o mapa sem a grama em tile');
+    for (const m of materiais) {
+      ok(new RegExp(`\\.jnR-${m} i\\{background:url\\(\\.\\./arte/chao/${m}\\.svg\\) 0 0/32px 32px`).test(css), `a região ${m} sem o tile`);
+      ok(new RegExp(`\\.jnR-${m}\\{--franja:#`).test(css), `a região ${m} sem a cor da franja`);
+    }
+    ok(/\.jnRegiao::after\{[^}]*clip-path:var\(--forma\)[^}]*var\(--franja/.test(css), 'a borda da região sem a franja de transição');
+    /* O filtro da região sombreava cada casa da franja: a transição saía um
+       pontilhado escuro (visto na primeira captura). A sombra é a face. */
+    const reg = css.match(/\n\.jnRegiao\{([^}]*)\}/)?.[1] ?? '';
+    ok(!/filter:\s*drop-shadow/.test(reg) && /--alto:3px;--penhasco:rgba\(0,0,0,/.test(reg), 'a região volta ao drop-shadow que suja a franja');
+    ok(/isolation:isolate/.test(reg), 'sem contexto próprio, a franja vai para trás do fundo do mapa');
+  });
+
+  s.teste('ST-10.22d: a ponte onde o rio cruza a estrada, a bandeira do início e o fim em ouro', () => {
+    const m = mapaDaJornada(pack, { vencidos: [] });
+    const r = rioDoMapa(m)[0], [a, b] = r.entre.map(id => m.nos.find(n => n.id === id));
+    /* A ponte fica NA estrada: no segmento a→b, a meio caminho. */
+    ok(Math.abs(r.ponte.x - (a.x + b.x) / 2) < 0.2 && Math.abs(r.ponte.y - (a.y + b.y) / 2) < 0.2, `a ponte fora da estrada: ${JSON.stringify(r.ponte)}`);
+    const tela = semComentario(fonte('../app/modules/jornada-tela.mjs')), css = fonte('../app/index.html');
+    ok(/class="jnPos jnPonte" style="--x:\$\{r\.ponte\.x\};--y:\$\{r\.ponte\.y\}"/.test(tela) && /\.jnPonte b\{/.test(css), 'a estrada cruza o rio sem ponte');
+    ok(/i === 0 \? ' jnInicio' : ''/.test(tela) && /\.jnInicio \.jnNo::before\{[^}]*bandeira\.svg/.test(css), 'o início sem marco');
+    ok(existsSync(new URL('../arte/mapa/bandeira.svg', import.meta.url)), 'a bandeira sem arte');
+    ok(/\.jnFinal \.jnNo\.jn-liga\.jn-trancado i\{[^}]*#ffe27a/.test(css), 'o losango do Campeão igual ao da Elite');
   });
 
   return s;

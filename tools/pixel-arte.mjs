@@ -1,6 +1,6 @@
 /* A ARTE DO MUNDO DO MAPA, EM PIXEL (ST-10.22b · L-209) — arte NOSSA.
  *
- *   node tools/pixel-arte.mjs        regrava arte/mapa/*.svg e arte/clima/*.svg
+ *   node tools/pixel-arte.mjs        regrava arte/mapa, arte/clima e arte/chao
  *
  * A fonte de cada peça é a grade abaixo, um caractere por pixel, e a paleta
  * dela: é o que se edita. O SVG sai com `crispEdges`, um <rect> por corrida
@@ -409,6 +409,29 @@ const PECAS = {
       '........................',
     ],
   },
+  /* ST-10.22d: a BANDEIRA do início — o primeiro nó era um ponto dourado
+     igual aos outros, e o crítico cego não achava onde a jornada começa. */
+  bandeira: {
+    paleta: { k: K, p: '#8a5a2a', R: '#ff7a8a', r: '#e0405a', w: '#ffffff', s: '#9aa0ac' },
+    grade: [
+      '..k.........',
+      '..kkkkkkkk..',
+      '..kpRRRRRRk.',
+      '..kprrwwrrrk',
+      '..kprwrrwrrk',
+      '..kprrwwrrk.',
+      '..kprrrrrk..',
+      '..kpkkkkk...',
+      '..kp........',
+      '..kp........',
+      '..kp........',
+      '..kp........',
+      '..kp........',
+      '.kkpkk......',
+      'kssssssk....',
+      '.kkkkkk.....',
+    ],
+  },
 };
 
 /* ST-5.16 (L-194): os ÍCONES DE CLIMA, arte NOSSA — os emojis de sistema
@@ -554,6 +577,247 @@ const CLIMAS = {
   },
 };
 
+/* ST-10.22d (L-214): o CHÃO do mapa em tiles 16 × 16, arte NOSSA. Em quatro
+ * rodadas (c1 a c4) o crítico cego descreveu o mesmo defeito: cada região uma
+ * ilha de pontinhos em gradiente CSS sobre um tapete liso. Um tile por
+ * material, usado em 2× com pixel nítido; a grama é o chão entre as regiões.
+ * A usina não tem tile: o chão dela são as faixas de perigo, que dizem algo.
+ * As grades vieram de um gerador por ruído determinístico (sem sorteio) e são
+ * a fonte daqui em diante — edite-as. */
+const CHAO = {
+  grama: {
+    paleta: { g: '#5e9e43', G: '#55923c', l: '#72b455', d: '#3f7a2e' },
+    grade: [
+      'GgggggGggggggggg',
+      'gglllggggdgdgGgg',
+      'ggggllggGgdggggg',
+      'ggdgdgggggglgggg',
+      'ggGdgggGggGggggg',
+      'gggggggggggggggg',
+      'glgggGgggggggggg',
+      'lggggggggggggggg',
+      'GgGgglggGggggggg',
+      'ggggGgglgGGlgdgd',
+      'gGGgglgglglglgdg',
+      'gGGgGdgdggggGGgG',
+      'gggGGGdggggggGgg',
+      'lgggggggggdgdggg',
+      'ggGgggglggldgggg',
+      'ggGgggggGglggglG',
+    ],
+  },
+  campo: {
+    paleta: { g: '#7cbd57', G: '#6fae4c', l: '#94d06c', r: '#ff8aa6', y: '#fff08a', w: '#ffffff' },
+    grade: [
+      'gggggggggggggGgg',
+      'ggglgggggggggggg',
+      'gglrlggGgggggggg',
+      'ggglgggGggGGgGgg',
+      'ggggggggGgGlgggg',
+      'gggggggggglylggg',
+      'gggGggggggglgggg',
+      'gggggggggggggggg',
+      'gggggglggGgggggg',
+      'ggGgglrlgggggggg',
+      'gggGgglGgggggggg',
+      'gGgggggggggggglg',
+      'Glggggggggggglyl',
+      'lwlgggGgglgggglg',
+      'glgGgggglrlggggg',
+      'ggggGgggglgggggg',
+    ],
+  },
+  floresta: {
+    paleta: { D: '#1c4418', m: '#3f8a34', l: '#57a444', L: '#7cc460' },
+    grade: [
+      'DDDmmmDDDDDmmmDD',
+      'DmlllmmmDmlllmmm',
+      'DlLlllmmDlLlllmm',
+      'mlllllmmmlllllmm',
+      'mlllllmmmlllllmm',
+      'mmlllmmmmmlllmmm',
+      'DmmmmmmmDmmmmmmm',
+      'mmmmmmmmmmmmmmmm',
+      'lmmmmmlllmmmmmll',
+      'llmmDlLlllmmDlLl',
+      'llmmmlllllmmmlll',
+      'llmmmlllllmmmlll',
+      'lmmmmmlllmmmmmll',
+      'mmmmDmmmmmmmDmmm',
+      'mmmmDmmmmmmmDmmm',
+      'mmDDDDDmmmDDDDDm',
+    ],
+  },
+  bosque: {
+    paleta: { D: '#13352c', m: '#2f6e56', d: '#1f5444', l: '#4f9a78' },
+    grade: [
+      'DDDDDDDDDDmmmmdD',
+      'DDDDDDDDDmmmmmmd',
+      'dDDDlDDDmmmmmmmm',
+      'DDDmmdDDDDDDDDDD',
+      'DDmmmmdDDDDDDDDD',
+      'DmmmmmmdDDDDDDDD',
+      'mmmmmmmmdDDDlDDD',
+      'DDDDDDDDDDDmmdDD',
+      'DDDDDDDDDDmmmmdD',
+      'DDDDDDDDDmmmmmmd',
+      'dDDDlDDDmmmmmmmm',
+      'DDDmmdDDDDDDDDDD',
+      'DDmmmmdDDDDDDDDD',
+      'DmmmmmmdDDDDDDDD',
+      'mmmmmmmmdDDDlDDD',
+      'DDDDDDDDDDDmmdDD',
+    ],
+  },
+  pedra: {
+    paleta: { b: '#bf9a62', B: '#b08a54', L: '#e2c690', d: '#7a5a32' },
+    grade: [
+      'bbbBbbbLbbbbbbLb',
+      'bLbbbbbbbbbLbbbb',
+      'bbbbbbbbbBbddLbb',
+      'LbbLbbBBbbbbbbbb',
+      'bbbddbbBbbbbBbLL',
+      'bbbBLbbbbbbbbbbb',
+      'bBbbbLbbbbbbbbbb',
+      'BbbbbBbbbbbbbbbB',
+      'bbLbbbbbbbbBbbBb',
+      'bbbbbbbLbbbbbBbb',
+      'bbbbBbbddbbBbLbb',
+      'bLbbbbBbLbbbbbBb',
+      'bddbbBBbBbbbBLbb',
+      'BbbBbbLbbbbbbddB',
+      'BbbLbbLbbbbbbbbb',
+      'bbbbbBbbbbbbbbbL',
+    ],
+  },
+  praia: {
+    paleta: { s: '#e3d294', S: '#d6c282', w: '#fbf1c8', d: '#b8a262' },
+    grade: [
+      'sSssSsssswssssds',
+      'wSsssssssssssSss',
+      'sssssssssdsssdss',
+      'sssdssssssssssss',
+      'dssssssssssssSss',
+      'sssssSssssssSsss',
+      'sssssssssssssSss',
+      'ssssssssSssssssw',
+      'ssSsssssssssssss',
+      'sSssswdssSsswsss',
+      'sssssssdsSsssssS',
+      'sssssssSssssssss',
+      'SssSwwssssdssssS',
+      'wwwsssssssssssww',
+      'ssssssSsssssSsss',
+      'wssSssssssSsssSS',
+    ],
+  },
+  jardim: {
+    paleta: { g: '#86c65c', G: '#78b650', r: '#ff7a9a', y: '#ffe066', w: '#ffffff', l: '#ffd0dc' },
+    grade: [
+      'gggggggGgggggggg',
+      'gggggggggggggggg',
+      'gglrgggggggggggg',
+      'ggrrgggggglygggG',
+      'gggggggGggyygggg',
+      'gggggggggggggGgg',
+      'gggggggGgggggggg',
+      'ggGggggggggggggg',
+      'gggggywggGgggGgG',
+      'gggggwwggGgggggg',
+      'ggggGgggggggglrG',
+      'gywgggggggggGrrg',
+      'GwwggggggggggggG',
+      'gggggggggggggggg',
+      'gggggggglygggggg',
+      'ggggggggyygggggg',
+    ],
+  },
+  pantano: {
+    paleta: { m: '#4b6b45', M: '#40603b', w: '#7fa6a0', v: '#6cbf52' },
+    grade: [
+      'mmmMmmMmmmmmmmMm',
+      'MmwmmmMmMmMMmwmm',
+      'mmMvvvmmmmmMmmmm',
+      'MmvvvvvmmmmmmmmM',
+      'mmvvvmvmmmmmmmmw',
+      'mmvvvvvMmMmmmMmm',
+      'mMmvvvMmmmmmmmmm',
+      'mmmmmmmmmmmmmmmM',
+      'mMmmMmmmmmmmmmmm',
+      'mmmmmMMwmmmvvvmm',
+      'mmmmmmmmMMvvvvvm',
+      'mmmmmMmmmmvvvmvm',
+      'mmmmmwmmmmvvvvvm',
+      'MMmmMmmMmmmvvvmM',
+      'mmmmmmmmmMmmmmmm',
+      'mmmmMmmmmmmmmMMm',
+    ],
+  },
+  cidade: {
+    paleta: { c: '#9aa0ac', j: '#6f7580', l: '#c0c5cf' },
+    grade: [
+      'llllllcjllllllcj',
+      'cccccccjcccccccj',
+      'cccccccjcccccccj',
+      'jjjjjjjjjjjjjjjj',
+      'llcjllllllcjllll',
+      'cccjcccccccjcccc',
+      'cccjcccccccjcccc',
+      'jjjjjjjjjjjjjjjj',
+      'llllllcjllllllcj',
+      'cccccccjcccccccj',
+      'cccccccjcccccccj',
+      'jjjjjjjjjjjjjjjj',
+      'llcjllllllcjllll',
+      'cccjcccccccjcccc',
+      'cccjcccccccjcccc',
+      'jjjjjjjjjjjjjjjj',
+    ],
+  },
+  vulcao: {
+    paleta: { r: '#5a382e', R: '#4a2c24', o: '#ff6a1a', y: '#ffd23f' },
+    grade: [
+      'rrrrrrrrRrrrrrrr',
+      'rRrrrrrrrrrrrrrr',
+      'rrRrrrrrrrrrrrrR',
+      'rrorRrrrrRrrrrrr',
+      'rrroorrrrRrrrrrr',
+      'rrrryorrrrrrrrRr',
+      'rrrrrrrrrrrrrrrr',
+      'RRrrrrrrrrrRRrrR',
+      'rrrrrrrrrRrrrRrr',
+      'rrRrrRrrrrorrrrr',
+      'rrrrrrrrrrRooRrr',
+      'rrrrrrrrRRryorrr',
+      'rRrrrrrrrrrrrrrr',
+      'rRrrRrrorrrrrRRr',
+      'rrrrrrRroRrrrrrr',
+      'RrRrrrrrrrrrrrRR',
+    ],
+  },
+  planalto: {
+    paleta: { s: '#8d8475', S: '#7d7466', j: '#5f584c', l: '#a89f8e' },
+    grade: [
+      'lSsssssssjlsssss',
+      'lssssssssjSsssss',
+      'lssssssssSlSssss',
+      'lssssssssjlsssss',
+      'jjjjjjjjjjjjjjjj',
+      'ssssjlsSssssssjl',
+      'ssssjlssssssssjl',
+      'ssssjlssssSsssjl',
+      'ssssjlssssssssjl',
+      'jjjjjjjjjjjjjjjj',
+      'lssssssssjlsssss',
+      'lssssssssjlsssss',
+      'lssssssssjlsssss',
+      'lssssssssjlsssss',
+      'SjjjjjjjjjjjSjjj',
+      'sssSjlssssssssjl',
+    ],
+  },
+};
+
 function gravar(pecas, pasta, { apara = true, bloco = 'ST-10.22b' } = {}) {
   const PASTA = new URL(`../arte/${pasta}/`, import.meta.url);
   mkdirSync(PASTA, { recursive: true });
@@ -588,3 +852,4 @@ function gravar(pecas, pasta, { apara = true, bloco = 'ST-10.22b' } = {}) {
 }
 gravar(PECAS, 'mapa');
 gravar(CLIMAS, 'clima', { apara: false, bloco: 'ST-5.16' });
+gravar(CHAO, 'chao', { apara: false, bloco: 'ST-10.22d' });

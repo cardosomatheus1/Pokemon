@@ -8914,12 +8914,14 @@ como `aurora`/`pulso`, dão para começar sem arquivo). A trava é o teste do
 catálogo da loja, que hoje afirma três itens. **Fechada:** a Órbita da Liga e o
 Estandarte da Temporada, procedência `liga`, travadas por S1883–S1887.
 
-### L-214 — o chão do mapa da jornada é colcha de ilhas, e não um mundo só
+### L-214 — o chão do mapa da jornada é colcha de ilhas, e não um mundo só ✅ FECHADA na ST-10.22d (30/09)
 
 **Registrada em:** 30/09/2026, na ST-10.22c4. **Bloco dono:** ST-10.22d
 (proposta aqui: o chão do mapa em TILES contínuos, com transição entre
 regiões, gerado por `tools/pixel-arte.mjs` como o resto da arte nossa do
-mapa). **Estado:** aberto.
+mapa). **Estado:** ✅ fechada — os tiles nossos e a franja de transição na ST-10.22d;
+o "mundo" do Q7 subiu de 3–4 para 5–6. Redesenhar o mapa como grade de tiles
+inteira é projeto de arte, fora do escopo desta lacuna.
 
 Quatro rodadas de Q7 cego (c1 a c4, barra: o mapa do Super Mario World)
 deixaram a nota de "mundo conectado" em 3–4 e a de "parece publicado" em 4–6,

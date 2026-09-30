@@ -1337,7 +1337,7 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   de acabamento e vira a **L-214** (o chão em tiles contínuos, com transição
   entre regiões), que pede arte e tem bloco dono próprio.
 
-#### ST-10.22d · O chão do mapa em tiles (proposta, 30/09 — L-214)
+#### ST-10.22d · O chão do mapa em tiles ✅ 30/09 (L-214)
 - **Porte** L · **Método** GL (barra: o mapa do SMW) · **Portões:** Q1 Q2 Q5 Q7.
 - **Escopo:** um conjunto de tiles de chão NOSSO (`tools/pixel-arte.mjs`), com
   as bordas de transição entre regiões (grama→areia, areia→pedra, pedra→lava,
@@ -1348,6 +1348,27 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **Aceite:** ≥ 8 em "mundo conectado" e em "publicado" nas quatro larguras.
 - **Sabotagem:** a transição que some (duas regiões vizinhas com borda dura);
   o tile que não casa com o vizinho.
+- **Feito, com o aceite ≥8 NÃO atingido:**
+  - onze tiles 16 × 16 NOSSOS em `arte/chao/` (grama, campo, floresta,
+    bosque, pedra, praia, jardim, pântano, cidade, vulcão, planalto), gerados
+    pela `tools/pixel-arte.mjs` a partir de grades que um gerador de ruído
+    determinístico montou; usados em 2× no lugar dos pontinhos em gradiente.
+    A usina fica com as faixas de perigo;
+  - a FRANJA: o contorno de cada região 6 px maior, num xadrez de 2 px na
+    cor do chão dela, atrás do chão — a transição de tile do GBA. A primeira
+    versão saiu um pontilhado escuro: o `drop-shadow` da região sombreava
+    cada casa do xadrez. A sombra passou a ser a face de 3 px, e
+    `isolation:isolate` mantém a franja acima do fundo do mapa;
+  - a PONTE onde o rio cruza a estrada (`rioDoMapa` diz onde), a BANDEIRA do
+    início (arte nossa) e o losango do Campeão dourado e maior.
+  - `test/jornada-mundo.mjs` (5) · S1948–S1954 · S1904 realinhado.
+- **Q7 (barra SMW), antes da ponte, da bandeira e do fim em ouro:** caminho
+  7–9, onde estou 7–8, futuro 5–7, mundo 5–6, publicado 5–6 (era 3–4 no
+  mundo e 4–5 no publicado na c4). O que o crítico ainda descreve: regiões
+  como manchas separadas sobre a grama, o celular com a rota numa faixa
+  estreita. O mapa fica aqui: a próxima melhora de "mundo" pede redesenhar o
+  mapa como grade de tiles inteira, e não regiões sobre um fundo — é um
+  projeto de arte, e não acabamento.
 
 ### ST-10.20 · A jornada ensina a apostar? ✅ 27/09
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16
