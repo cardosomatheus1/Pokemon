@@ -2301,6 +2301,25 @@ do servidor. Três partes:
 
 ---
 
+### ST-13.9 · O que ficou no aparelho: a loja do idle, as missões e a escada (D-136)
+- **Porte** M · **Servidor** sim · **Spec** §P2, §7.14 · **Depende de** ST-13.5
+- **Por quê:** a pergunta do dono (*"Já conectou tudo ao banco?"*, 30/09)
+  achou quatro escritas que a 13.5 não levou: a loja do idle (comprar e
+  vender), o estilhaço e a montagem, o resgate da missão da semana, e as
+  marcas da escada da Pokédex. Com conta, as três primeiras SOMEM na leitura
+  seguinte da conta.
+- **13.9a ✅ 30/09 · a loja:** `POST /api/idle/loja` (`server/loja-idle.mjs`)
+  — comprar, vender, estilhaçar (raiz do servidor) e montar, com as contas do
+  motor e a bolsa pela diferença numa transação; `lojaNa` no cliente; a troca
+  e a montagem viraram funções do motor · `test/loja-idle.mjs` · S2091–S2101.
+- **13.9b · as missões e a escada:** o resgate da missão pela conta (o prêmio
+  na bolsa do servidor, a missão resgatada guardada no servidor) e as marcas
+  da escada da Pokédex (hoje `ar_escada_arena`, por aparelho) derivadas das
+  apostas que o servidor já guarda.
+- **Aceite:** com conta, nenhuma escrita de valor de jogo fica só no aparelho;
+  releitura da conta não desfaz nada; sem conta, nada muda.
+- **Portões:** Q1 Q2 Q3 Q6.
+
 ## Achados do levantamento de 26/09 (registrados neste commit)
 
 - **A.** `pesoComBonus` / `bonusVivo` (`engine/captura.mjs`) — a ponte Arena →

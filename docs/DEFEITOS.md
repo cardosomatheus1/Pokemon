@@ -7102,3 +7102,33 @@ metade.
 **Teste que trava:** `rotas` — "D-135 · (afirma o defeito) a conta nova nasce
 com o bônus de cadastro em transferível". Vira vermelho quando a ST-14.0B
 corrigir, e aí a afirmação se inverte.
+
+## D-136 — com conta, a loja do idle, o estilhaço, a montagem e o resgate da missão gravavam só no aparelho 🟡 PARCIAL — a loja CORRIGIDA na ST-13.9a (30/09)
+
+**Achado em:** 30/09/2026, pela pergunta do dono *"Já conectou tudo ao
+banco?"* — conferido no código, arquivo por arquivo. **Bloco dono:** ST-13.9
+(13.9a a loja ✅; 13.9b as missões e as marcas da escada). **Estado:**
+parcial.
+
+**Causa.** A ST-13.5 levou ao servidor toda escrita que passava por
+`idle-acoes`/`colecao-acoes`, e a loja do idle não passava: `loja-tela.mjs`
+chamava `comprar`/`vender` do motor e o próprio sorteio do estilhaço direto
+no save. Com conta o save é CACHE (`idleDaConta` traz a bolsa do servidor
+inteira), então a leitura seguinte da conta desfazia a compra, a parte e o
+item montado. O resgate da missão (`colecao-local.mjs`) faz o mesmo, e é o
+pior: a missão fica marcada como resgatada no aparelho (o campo `missoes` é
+do aparelho) e o prêmio some na bolsa.
+
+**Conserto da loja (ST-13.9a).** `POST /api/idle/loja` (`server/loja-idle.mjs`)
+com as contas do motor refeitas no servidor e a bolsa escrita pela DIFERENÇA
+numa transação só; o estilhaço sorteia com a raiz do servidor; a tela escreve
+por `lojaNa` (`idle-acoes.mjs`). A troca e a montagem saíram da tela para o
+motor (`estilhacarNaBolsa`, `montarNaBolsa`), e a recusa da rota sem bolso
+passou a vir ANTES do débito (a versão da tela cobrava a Essência e depois
+descobria que a rota não estilhaçava).
+
+**O que falta (ST-13.9b).** O resgate da missão e as marcas da escada da
+Pokédex (`ar_escada_arena`, por aparelho — as missões medem a partir delas).
+
+**Teste que trava:** `loja-idle` — "com conta, a compra, a venda, o estilhaço
+e a montagem SOBREVIVEM à releitura (D-136)".

@@ -63,6 +63,10 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            Parte 3 do PLANO e na linha 12 da fila. A Spec §21 ("não fazer
            trading/marketplace") foi relida: construir sim, ligar é a DEC-21.
            Achado: o bônus de cadastro nasce em transferível (D-135)
+           · ST-13.9a FECHADA (30/09): com conta, a loja do idle, o estilhaço
+           e a montagem pelo servidor (D-136) — a pergunta do dono "Já
+           conectou tudo ao banco?" achou que não. Falta a 13.9b (missões e
+           escada da Pokédex), que vem ANTES da E14
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho
            do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta

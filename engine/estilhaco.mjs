@@ -186,6 +186,38 @@ export function montar(lista = []) {
   return { montou: true, id, consumiu: PARTES, sobra: n - PARTES };
 }
 
+/* ── A TROCA E A MONTAGEM NA BOLSA (ST-13.9a · D-136) ──────────────────
+ *
+ * Moravam na tela (`loja-tela.mjs`), escrevendo direto no save — e com conta
+ * o save é CACHE: a leitura seguinte da conta trazia a bolsa do servidor, e a
+ * parte sorteada sumia. Aqui, puras, as duas contas que o aparelho e o
+ * servidor fazem igual; quem chama decide onde gravar.
+ *
+ * A ordem da troca: a recusa (Essência que falta, rota sem bolso) vem ANTES
+ * de mexer em qualquer coisa. A versão da tela debitava a Essência e só
+ * depois descobria que a rota não estilhaçava nada. */
+export function estilhacarNaBolsa(bolsa, { catalogo = [], material, id, bioma, sorte }) {
+  const item = (catalogo ?? []).find(i => i.id === id);
+  if (!item) throw new Error('este item não existe');
+  const essencia = Math.max(0, Math.floor(Number(bolsa?.[material]) || 0));
+  const r = podeTrocar({ faixa: item.faixa, essencia });
+  if (!r.pode) throw new Error(r.motivo);
+  const sorteado = sortearEstilhaco(sorte, { itens: catalogo, bioma });
+  if (!sorteado) throw new Error('esta rota não estilhaça nada');
+  const chave = 'est:' + sorteado.id;
+  const nova = { ...(bolsa ?? {}), [material]: essencia - r.custo };
+  nova[chave] = (Number(nova[chave]) || 0) + 1;
+  return { bolsa: nova, sorteado, custo: r.custo, partes: nova[chave] };
+}
+
+/* CONSOME EXATAMENTE `PARTES` e deixa a sobra: levar a sobra junto seria
+   cobrar do jogador partes que ele não usou. */
+export function montarNaBolsa(bolsa, id) {
+  const chave = 'est:' + id, tem = Math.floor(Number(bolsa?.[chave]) || 0);
+  if (tem < PARTES) throw new Error('ainda faltam partes');
+  return { bolsa: { ...(bolsa ?? {}), [chave]: tem - PARTES, [id]: (Number(bolsa?.[id]) || 0) + 1 }, id };
+}
+
 /* ── O BAÚ DO AVANÇO CAI EM ESTILHAÇO ANTES DO ESTÁGIO 4 (ST-3.1, L-159) ──
  *
  * A run pagava o baú com o item INTEIRO. A expedição paga Essência, que vira

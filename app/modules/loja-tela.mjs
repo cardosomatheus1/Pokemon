@@ -39,17 +39,15 @@ import { $ } from './dom.mjs';
 import { PACK } from './motor.mjs';
 import { estiloItem } from './itens-icone.mjs';
 import { nomeDoItem } from './itens-nome.mjs';
-import { aVenda, aceita, precoDeVenda, comprar, vender, cabemQuantos }
+import { aVenda, aceita, precoDeVenda, cabemQuantos }
   from '../../engine/loja.mjs';
+import { lojaNa } from './idle-acoes.mjs';
 /* ── A TERCEIRA ABA: O ESTILHAÇO (1.29) ─────────────────────────────────
    A Essência era 52,85% de tudo que caía e não servia para nada — a maior
    torneira do jogo despejando em terra. A regra de quanto custa e do que sai
    mora no motor; aqui só se mostra e se clica. */
-import { PARTES, custoDoEstilhaco, custoDoItem, bolsoDoBioma, sortearEstilhaco,
-         podeTrocar, montaveis } from '../../engine/estilhaco.mjs';
+import { PARTES, custoDoEstilhaco, custoDoItem, bolsoDoBioma } from '../../engine/estilhaco.mjs';
 import { idDoMaterial } from '../../engine/economia-idle.mjs';
-import { derivar } from '../../engine/seed.mjs';
-import { semente } from '../../engine/instancia.mjs';
 
 const MOEDA = () => PACK.moedaPve?.id ?? 'pokecoin';
 const NOME_MOEDA = () => PACK.moedaPve?.nome ?? 'moeda';
@@ -208,42 +206,34 @@ function painelDoEstilhaco(E) {
 function estilhacar(id) {
   const E = lerEstado();
   if (!E) return;
-  const item = (PACK.catalogo ?? []).find(i => i.id === id);
-  if (!item) return;
-  const r = podeTrocar({ faixa: item.faixa, essencia: essenciaDe(E) });
-  if (!r.pode) { recado = r.motivo; pintarLoja(); return; }
-
-  const km = idDoMaterial(PACK);
-  E.bolsa[km] = essenciaDe(E) - r.custo;
-  E.estilhacos = (E.estilhacos ?? 0) + 1;
-  const sorteado = sortearEstilhaco(
-    semente(derivar(E.estilhacos, 'estilhaco:' + biomaAtual())),
-    { itens: PACK.catalogo ?? [], bioma: biomaAtual() });
-  if (!sorteado) { recado = 'esta rota não estilhaça nada'; pintarLoja(); return; }
-
-  const chave = 'est:' + sorteado.id;
-  E.bolsa[chave] = (E.bolsa[chave] ?? 0) + 1;
-  gravar(E);
-  const tem = partesDe(E, sorteado.id);
-  recado = tem >= PARTES
-    ? `Saiu um estilhaço de ${sorteado.nome} — e com ele já dá para montar.`
-    : `Saiu um estilhaço de ${sorteado.nome}. ${tem} de ${PARTES}.`;
-  aoMudar();
-  pintarLoja();
+  /* A conta é do motor (`estilhacarNaBolsa`) e o lugar é de `lojaNa`: com
+     conta, o servidor sorteia com a raiz dele (ST-13.9a · D-136). */
+  return fazerNaLoja(E, { acao: 'estilhacar', id, bioma: biomaAtual() }, r => {
+    const tem = partesDe(lerEstado(), r.sorteado.id);
+    return tem >= PARTES
+      ? `Saiu um estilhaço de ${r.sorteado.nome} — e com ele já dá para montar.`
+      : `Saiu um estilhaço de ${r.sorteado.nome}. ${tem} de ${PARTES}.`;
+  });
 }
 
 function montarItem(id) {
   const E = lerEstado();
   if (!E) return;
-  const chave = 'est:' + id;
-  if (partesDe(E, id) < PARTES) { recado = 'ainda faltam partes'; pintarLoja(); return; }
-  /* CONSOME EXATAMENTE SETE e deixa a sobra. Levar a sobra junto seria cobrar
-     do jogador partes que ele não usou. */
-  E.bolsa[chave] = partesDe(E, id) - PARTES;
-  E.bolsa[id] = (E.bolsa[id] ?? 0) + 1;
-  gravar(E);
-  recado = `Montou ${nomeDoItem(PACK, id)}.`;
-  aoMudar();
+  return fazerNaLoja(E, { acao: 'montar', id }, () => `Montou ${nomeDoItem(PACK, id)}.`);
+}
+
+/* A ÚNICA PORTA DE ESCRITA DA LOJA (ST-13.9a): `lojaNa` decide onde a troca
+   acontece; aqui só se grava o que voltou, e se escreve o recado. A recusa —
+   do motor ou do servidor — chega como Error, com a frase dele. */
+async function fazerNaLoja(E, pedido, frase) {
+  try {
+    const r = await lojaNa(E, { pack: PACK, ...pedido });
+    gravar(E);
+    recado = frase(r);
+    aoMudar();
+  } catch (e) {
+    recado = e.message;
+  }
   pintarLoja();
 }
 
@@ -349,19 +339,9 @@ export function ligarLoja() {
 function trocar(qual, id, n) {
   const E = lerEstado();
   if (!E) return;
-  try {
-    const r = qual === 'comprar'
-      ? comprar(E, { pack: PACK, id, quantos: n })
-      : vender(E, { pack: PACK, id, quantos: n });
-    gravar(r.estado);
-    recado = qual === 'comprar'
-      ? `Levou ${r.levou} × ${nomeDoItem(PACK, id)} por ${r.gasto}.`
-      : `Vendeu ${r.deu} × ${nomeDoItem(PACK, id)} por ${r.recebeu}.`;
-    aoMudar();
-  } catch (e) {
-    recado = e.message;
-  }
-  pintarLoja();
+  return fazerNaLoja(E, { acao: qual, id, quantos: n }, r => (qual === 'comprar'
+    ? `Levou ${r.levou} × ${nomeDoItem(PACK, id)} por ${r.gasto}.`
+    : `Vendeu ${r.deu} × ${nomeDoItem(PACK, id)} por ${r.recebeu}.`));
 }
 
 /* O que a loja paga por um item — exportado para a mochila poder mostrar o

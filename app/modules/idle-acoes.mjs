@@ -25,6 +25,11 @@ import { escolher as escolherFoco } from '../../engine/foco.mjs';
 import { comecarAvanco, recuar, usarPocao, colherAvancoDaRun } from './avanco-estado.mjs';
 import { idleNoServidor, lanceDaConta } from './idle-conta.mjs';
 import { sincronizarIdleDaConta } from './idle-servidor.mjs';
+import { comprar as comprarNaLoja, vender as venderNaLoja } from '../../engine/loja.mjs';
+import { estilhacarNaBolsa, montarNaBolsa } from '../../engine/estilhaco.mjs';
+import { idDoMaterial } from '../../engine/economia-idle.mjs';
+import { derivar } from '../../engine/seed.mjs';
+import { semente } from '../../engine/instancia.mjs';
 
 function ondeFaz({ api = apiPadrao, deposito = globalThis.localStorage, conta } = {}) {
   return { api, deposito, conta: conta ?? idleNoServidor(api.temSessao()) };
@@ -124,4 +129,36 @@ export async function focoNa(e, c, foco, agora, opcoes) {
   if (!o.conta) return escolherFoco(c, foco, agora);
   await naConta(e, '/api/idle/foco', { id: c.id, foco }, o);
   return e.criaturas.find(x => x.id === c.id) ?? null;
+}
+
+/* ── A LOJA DO IDLE (ST-13.9a · D-136) ────────────────────────────────────
+ * Comprar, vender, estilhaçar e montar. Morava na tela, escrevendo só no
+ * save — e com conta a leitura seguinte trazia a bolsa do servidor, e a
+ * compra sumia. As contas são as do motor nos dois casos; com conta, o
+ * servidor as refaz e sorteia o estilhaço com a raiz DELE. A resposta tem a
+ * mesma forma nos dois, e é ela que a faixa de recado lê. */
+export async function lojaNa(e, { pack, acao, id, quantos = 1, bioma = null }, opcoes) {
+  const o = ondeFaz(opcoes);
+  if (o.conta) return naConta(e, '/api/idle/loja', { acao, id, quantos, bioma }, o);
+  if (acao === 'comprar') {
+    const r = comprarNaLoja(e, { pack, id, quantos });
+    e.bolsa = r.estado.bolsa;
+    return { acao, id, levou: r.levou, gasto: r.gasto };
+  }
+  if (acao === 'vender') {
+    const r = venderNaLoja(e, { pack, id, quantos });
+    e.bolsa = r.estado.bolsa;
+    return { acao, id, deu: r.deu, recebeu: r.recebeu };
+  }
+  if (acao === 'estilhacar') {
+    /* A semente do aparelho sai do CONTADOR gravado (1.29): recarregar a
+       página não sorteia de novo. Ele só anda quando a troca acontece. */
+    const r = estilhacarNaBolsa(e.bolsa, { catalogo: pack.catalogo ?? [], material: idDoMaterial(pack), id, bioma,
+                                           sorte: semente(derivar((e.estilhacos ?? 0) + 1, 'estilhaco:' + bioma)) });
+    e.bolsa = r.bolsa;
+    e.estilhacos = (e.estilhacos ?? 0) + 1;
+    return { acao, id, sorteado: { id: r.sorteado.id, nome: r.sorteado.nome }, custo: r.custo, partes: r.partes };
+  }
+  if (acao === 'montar') { e.bolsa = montarNaBolsa(e.bolsa, id).bolsa; return { acao, id }; }
+  throw new Error('ação de loja desconhecida');
 }

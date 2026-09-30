@@ -39,6 +39,7 @@ import { sincronizarRun, comecarRun, pocaoNaRun, recuarNaRun, colherRun } from '
 import { moverNaConta, trocarNaConta, soltarNaConta, escolherFocoNaConta, trocarGolpeNaConta, evoluirNaConta, darDoceNaConta } from './colecao.mjs';
 import { estagioMaximo, proximoEstagio } from '../engine/estagios.mjs';
 import { lutarNaConta, jornadaDaConta } from './jornada.mjs';
+import { lojaDoIdleNaConta, ACOES_DA_LOJA } from './loja-idle.mjs';
 import { linhaDaExpedicao, linhaDaRun, historicoDoDisco, HISTORICO_MAX } from '../app/modules/historico-dados.mjs';
 
 /* As ESCRITAS permitidas sob `/api/idle`, por nome. */
@@ -54,6 +55,8 @@ export const OPERACOES_DO_IDLE = Object.freeze([
   'POST /api/idle/doce',
   /* A luta da jornada (ST-13.7): a semente, o time e o fato são do servidor. */
   'POST /api/idle/jornada/lutar',
+  /* A loja do idle (ST-13.9a · D-136): comprar, vender, estilhaçar, montar. */
+  'POST /api/idle/loja',
 ]);
 
 /* A criatura como o cliente a lê: sem a semente dos ocultos e sem o dono. */
@@ -260,6 +263,16 @@ export function rotasDaColecao(daExcecao) {
       const no = texto(corpo?.no), preset = corpo?.preset ?? 'balanced';
       if (!no || typeof preset !== 'string') return recusa('luta inválida');
       return tentar(() => lutarNaConta(db, { userId, pack: PACK, id: no, preset, chaveIdem: corpo?.chaveIdem, agora }));
+    },
+
+    /* A LOJA DO IDLE (ST-13.9a · D-136): o corpo traz a INTENÇÃO — a ação, o
+       item, quantos e a rota do estilhaço; preço, saldo e sorteio são daqui. */
+    'POST /api/idle/loja': ({ db, corpo, userId }) => {
+      const acao = corpo?.acao, id = texto(corpo?.id), quantos = corpo?.quantos ?? 1;
+      const bioma = corpo?.bioma == null ? null : texto(corpo.bioma);
+      if (!ACOES_DA_LOJA.includes(acao) || !id || !Number.isInteger(quantos) || quantos < 1 || quantos > 999) return recusa('pedido de loja inválido');
+      if (acao === 'estilhacar' && !(PACK.biomas ?? []).some(b => b.id === bioma)) return recusa('rota desconhecida');
+      return tentar(() => lojaDoIdleNaConta(db, { userId, pack: PACK, acao, id, quantos, bioma }));
     },
 
     'POST /api/idle/lancar': ({ db, corpo, userId, agora }) => {
