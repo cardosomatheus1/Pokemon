@@ -40,8 +40,9 @@ o ESTADO   ST-10.22e FECHADA (o mapa como grade de tiles nossos num canvas:
            a ST-6.5 (25 fichas velhas fechadas)
            · o E11 construído — o stake espera a D2 do dono
            · suíte 2833/2833, repetir 2/2
-           Q2 completo em fatias: 1/10 VERDE; a 2/10 interrompida
-           (node test/sabotagem.mjs --fatia=2/10, e seguir até 10/10)
+           Q2 completo em fatias: 1/10 e 2/10 VERDES (a 2/10 achou o S1504
+           decorativo — corrigido com o caso misto à mão); seguir com
+           node test/sabotagem.mjs --fatia=3/10, até 10/10
 o PRÓXIMO  o Q2 completo em fatias (2/10 a 10/10) — o que sobra de produto
            construível sem o dono é pequeno; as fatias travam o código por
            horas, e é hora delas

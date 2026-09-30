@@ -253,6 +253,12 @@ export function suite() {
     ok(pf[0].golpes > 0, 'o rival só de Elétrico não usou Elétrico — a prova não foi exercida');
     igual(pf[0].dano, 0, 'o imune levou dano do tipo que não o toca');
     igual(pf[0].outros.length, 0, 'golpe de outro tipo inventado');
+    /* O caso MISTO, em eventos escritos à mão: o imune leva um Elétrico e um
+       Normal. As lutas semeadas acima deixaram de acertar o imune com outro
+       tipo quando o motor mudou, e a prova passava contando TODO golpe como
+       do tipo (S1504 escapou no Q2 completo, fatia 2/10 de 30/09). */
+    const misto = provaDaImunidade(pack, Af, [{ para: 'A0', golpe: 'Thunderbolt', dano: 0 }, { para: 'A0', golpe: 'Hyper Beam', dano: 12 }, { para: 'B0', golpe: 'Hyper Beam', dano: 30 }], 'electric')[0];
+    igual(`${misto.golpes}/${misto.dano}/${misto.outros.join()}/${misto.danoOutros}`, '1/0/Hyper Beam/12', 'a prova mistura o golpe do tipo com os outros');
     const semTentar = provaDaImunidade(pack, As, simular(pack, As, Bs, 1).eventos, 'electric')[0];
     ok(semTentar.golpes === 0 ? semTentar.outros.length > 0 && semTentar.danoOutros >= 0 : true, 'sem tentar o tipo, a prova não diz o que o rival usou');
     const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
