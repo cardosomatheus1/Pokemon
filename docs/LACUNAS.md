@@ -8868,3 +8868,18 @@ A tela, as rotas (`GET /api/equipe/liga`, `POST /api/equipe/publicar`) e o
 pareamento estão prontos e testados com contas semeadas no servidor (os
 testes e o `tools/olhar-liga.mjs`). O que destrava é só o caminho do time até
 a conta.
+
+### L-212 — o resultado da busca fica abaixo da dobra, embaixo do palco
+
+**Registrada em:** 30/09/2026, no Q7 da ST-11.7b. **Bloco dono:** ST-11.6e
+(proposta aqui: o acabamento do palco da Liga — as laterais vazias acima de
+1440 e esta). **Estado:** aberto.
+
+A busca joga a partida e abre o palco da Arena (ST-11.6d), e o palco ocupa a
+dobra inteira. A linha do resultado — "Vitória · contou · +30 LP" — fica
+embaixo dele; no celular, a mais de 1.500 px. O crítico cego deu 2 à pergunta
+"o que a última partida me rendeu" nesse estado, e 5 no estado sem palco.
+Não cabe na 11.7b porque é arranjo do palco, e não dos pontos. O que destrava:
+o banner do fim do palco carregar o selo E os pontos da partida (hoje só o
+selo), ou o palco abrir DEPOIS da linha do resultado. A trava é o teste que o
+bloco dono escrever sobre o banner; hoje nenhum teste afirma o arranjo.

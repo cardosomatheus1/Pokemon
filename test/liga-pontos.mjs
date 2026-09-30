@@ -19,8 +19,9 @@ import { gerar } from '../server/criaturas.mjs';
 import { criarSnapshot } from '../server/equipe.mjs';
 import { criarPartida } from '../server/partida.mjs';
 import { sincronizarTemporada } from '../server/temporada.mjs';
-import { saldoDePontos, extratoDePontos, creditarPartida } from '../server/pontos-liga.mjs';
-import { ligaDaConta } from '../server/liga-equipe.mjs';
+import { saldoDePontos, extratoDePontos, creditarPartida, insigniasDe } from '../server/pontos-liga.mjs';
+import { ligaDaConta, pontosDaConta, minhasPartidas } from '../server/liga-equipe.mjs';
+import { pontosNaTela, linhaDaPartida } from '../app/modules/liga-equipe-dados.mjs';
 import { PONTOS, PREMIO_DO_TIER, ganhoDaPartida, carryoverDe, premioDaTemporada, viradaDaConta } from '../engine/pontos-liga.mjs';
 import { TIPOS, BUCKETS } from '../engine/carteira.mjs';
 import { temporadaDe } from '../engine/temporada.mjs';
@@ -115,6 +116,52 @@ export async function suite() {
     sincronizarTemporada(c.db, { agora: t2 + H });
     igual(saldoDePontos(c.db, c.u), 180, 'a virada pagou duas vezes');
     igual(carteiraMexeu(c.db), cart, 'a virada lançou na carteira');
+  });
+
+  s.teste('11.7b · a insígnia da temporada: o tier e a posição de quem jogou o mínimo, uma vez', () => {
+    const c = cena();
+    sincronizarTemporada(c.db, { agora: T0 });
+    for (let k = 0; k < 4; k++) criarPartida(c.db, { userId: c.v, meu: c.fracoV.id, adversario: c.forte.id, chaveIdem: `lpi-${String(k).padStart(6, '0')}`, agora: T0 + k * 7 * H });
+    criarPartida(c.db, { userId: c.w, meu: c.fracoW.id, adversario: c.forte.id, chaveIdem: 'lpiw-00001', agora: T0 + 30 * H });
+    c.db.prepare(`UPDATE liga_mmr SET rating = 1300 WHERE user_id = ?`).run(c.u);
+    const t2 = temporadaDe(T0).fim + H;
+    sincronizarTemporada(c.db, { agora: t2 });
+    sincronizarTemporada(c.db, { agora: t2 + H });
+    igual(JSON.stringify(insigniasDe(c.db, c.u)), '[{"temporada":1,"tier":"Gold","posicao":1,"partidas":5}]', 'a insígnia de quem jogou 5');
+    igual(insigniasDe(c.db, c.v).length, 0, 'quem jogou 4 levou insígnia');
+    igual(pontosDaConta(c.db, { userId: c.u, agora: t2 }).insignias.length, 1, 'a rota não traz as insígnias');
+    ok(/append-only/.test(recusa(() => c.db.prepare(`UPDATE liga_insignias SET tier = 'Champion'`).run())?.message ?? ''), 'a insígnia aceitou UPDATE');
+    const db = abrirBanco(':memory:'); migrar(db);
+    const m = MIGRACOES.find(x => x.nome === 'insignias-st11.7b');
+    const n = () => db.prepare(`SELECT COUNT(*) AS n FROM sqlite_master WHERE name LIKE 'liga_insignias%'`).get().n;
+    m.desce(db); igual(n(), 0, 'a descida deixou restos');
+    m.sobe(db); igual(n(), 3, 'a subida não refez tudo');
+  });
+
+  s.teste('11.7b · cada partida diz o que rendeu, do lado de quem olha', () => {
+    const c = cena();
+    criarPartida(c.db, { userId: c.v, meu: c.fracoV.id, adversario: c.forte.id, chaveIdem: 'lpr-000001', agora: T0 });
+    igual(`${minhasPartidas(c.db, c.v)[0].pontos}|${minhasPartidas(c.db, c.u)[0].pontos}`, '10|10', 'o que a partida rendeu a cada lado');
+    const l = (o) => linhaDaPartida({ id: 'x', lado: 'B', resultado: 'venceu', rated: true, turnos: 3, contra: { tipo: 'jogador', nome: 'Ana' }, ...o }).pontos;
+    igual([l({ pontos: 30 }), l({ lado: 'A', pontos: 10 }), l({ lado: 'A', pontos: 0, resultado: 'perdeu' }), l({ pontos: 0 })].join('|'),
+      '+30 LP|+10 LP · defesa|0 LP · a defesa não segurou|0 LP · teto do dia', 'o texto do que rendeu');
+    igual([l({ rated: false, pontos: 0 }), l({ contra: { tipo: 'bot', nome: 'Brock' }, rated: false })].join('|'), '|', 'a partida que não conta fala de pontos');
+  });
+
+  s.teste('11.7b · o cartão: quanto tenho, como ganho, o que a virada faz — com os números do servidor', () => {
+    const resp = { saldo: 1234, regras: PONTOS, premios: PREMIO_DO_TIER, extrato: [{ tipo: 'premio', delta: 175 }, { tipo: 'reset', delta: -450 }, { tipo: 'defesa', delta: 10 }, { tipo: 'partida', delta: 30 }],
+                   insignias: [{ temporada: 2, tier: 'Gold', posicao: 4, partidas: 12 }] };
+    const k = pontosNaTela(resp, 'Gold');
+    igual(`${k.saldo}|${k.unidade}|${k.ganhos.map(g => g.valor + ' ' + g.rotulo).join(',')}`, '1.234|LP|+30 vitória,+15 empate,+10 derrota,+10 defendeu', 'o saldo e os ganhos');
+    ok(/até 200 LP por dia/.test(k.teto), 'o teto não aparece');
+    igual(k.virada, 'Quando a temporada fechar, o saldo zera — só 10% passa para a próxima. E o seu tier (Gold) rende +175 LP, se você jogou 5 partidas ou mais.', 'a virada');
+    igual(k.extrato.map(x => `${x.texto}:${x.valor}:${x.classe}`).join('|'), 'prêmio da temporada:+175:mais|virada da temporada:−450:menos|seu time segurou um ataque:+10:mais', 'o extrato, três e com sinal');
+    igual(`${k.insignias[0].rotulo}|${k.insignias[0].tier}|${k.insignias[0].posicao}|${k.semInsignias}|${k.semExtrato}`, 'T2|Gold|4º|null|null', 'a insígnia');
+    const vazio = pontosNaTela({ saldo: 0, regras: { ...PONTOS, vitoria: 99 }, premios: PREMIO_DO_TIER, extrato: [], insignias: [] }, null);
+    igual(`${vazio.ganhos[0].valor}|${vazio.virada}`, '+99|Quando a temporada fechar, o saldo zera — só 10% passa para a próxima.', 'as regras não vêm do servidor');
+    ok(vazio.semExtrato && /5 partidas/.test(vazio.semInsignias), 'o vazio não explica');
+    igual(pontosNaTela(null), null, 'sem resposta, cartão');
+    ok(/api\/equipe\/pontos/.test(fonte('../app/modules/liga-equipe-tela.mjs')), 'a tela não busca os pontos');
   });
 
   s.teste('o livro é próprio, só de inserção, e a migração sobe e desce', () => {

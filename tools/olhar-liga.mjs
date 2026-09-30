@@ -51,6 +51,10 @@ const dele = publicarTime(srv.db, { userId: rui.id, preset: 'focus', agora: agor
 criarPartida(srv.db, { userId: eu.id, meu: meu.id, adversario: dela.id, chaveIdem: 'olhar-000001', agora: agora - 26 * H });
 criarPartida(srv.db, { userId: rui.id, meu: dele.id, adversario: meu.id, chaveIdem: 'olhar-000002', agora: agora - 20 * H });
 criarPartida(srv.db, { userId: eu.id, meu: meu.id, adversario: dele.id, chaveIdem: 'olhar-000003', agora: agora - 12 * H });
+/* A INSÍGNIA (ST-11.7b): ela só nasce quando uma temporada fecha, e a de
+   agora é a primeira — então a captura grava uma à mão, para LER o cartão
+   com ela. É o único dado fabricado aqui. */
+srv.db.prepare(`INSERT INTO liga_insignias (temporada, user_id, tier, posicao, partidas, criado_em) VALUES (1, ?, 'Gold', 4, 12, ?)`).run(eu.id, agora);
 
 const b = await chromium.launch({ executablePath: CHROME });
 const erros = [];

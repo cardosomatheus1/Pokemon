@@ -1366,7 +1366,10 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .lePassos li.leBloq{opacity:.55}.lePassos li.leBloq b{background:var(--line);color:var(--txt);box-shadow:none}
 .leGrande .leRes{font-size:1.1rem}
 .leVazio{margin:0;font-size:.78rem;color:var(--dim)}
-.leLinha{grid-template-columns:minmax(86px,auto) 1fr auto auto auto}
+/* O adversário tem piso próprio: com o "+10 LP" (ST-11.7b) o resultado cresceu, e numa
+   largura média a coluna do nome encolhia até o nome passar por cima dos turnos. */
+.leLinha{grid-template-columns:minmax(86px,max-content) minmax(120px,1fr) auto auto auto}
+.leContra{overflow-wrap:anywhere}
 /* ST-11.6c · o ranking ao lado das partidas (embaixo no celular). A posição e o
    tier — o número fica no servidor. O pódio com medalha, a minha linha acesa. */
 .leBaixo{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,400px);gap:14px;align-items:start}
@@ -1455,6 +1458,49 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .pveB .pveRotulo{text-align:right;color:rgb(var(--perigoRGB))}
 .pveTopo span.leProva{color:rgb(var(--okRGB))}.pveTopo span.leProva::before{content:'✓ '}
 .pveTopo span.leProvaMal{color:rgb(var(--perigoRGB))}.pveTopo span.leProvaMal::before{content:'✕ '}
+/* ST-11.7b · OS LEAGUE POINTS. A moeda da Liga tem cor PRÓPRIA (violeta),
+   longe do dourado da moeda da Arena: são duas moedas que nunca se trocam, e a
+   tela não pode sugerir que são a mesma. A ficha é um hexágono, não uma moeda
+   redonda, pelo mesmo motivo. */
+.lePainel.leComPontos{--lp:168,132,255;grid-template-columns:minmax(150px,210px) minmax(0,1fr) minmax(230px,290px)}
+.lePontos{--lp:168,132,255;display:flex;flex-direction:column;gap:7px;padding:12px 13px;border-radius:16px;border:1px solid rgba(var(--lp),.55);
+  background:radial-gradient(circle at 85% 0%,rgba(var(--lp),.2),transparent 60%),var(--bg2);box-shadow:0 0 16px rgba(var(--lp),.14) inset}
+.lePontos p{margin:0}
+.lePtTopo{display:flex;align-items:center;justify-content:space-between;gap:8px}.lePtTopo .leRot{margin:0;color:rgb(var(--lp))}
+.lePtSaldo{display:flex;align-items:center;gap:6px}
+.lePtSaldo b{font-family:var(--px);font-size:1.45rem;line-height:1;color:#fff;text-shadow:0 0 12px rgba(var(--lp),.75)}
+.lePtSaldo em{font-style:normal;font-size:.66rem;font-weight:700;color:rgb(var(--lp));letter-spacing:.08em}
+.lePtMoeda{flex:none;width:18px;height:20px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  background:linear-gradient(160deg,#e6dcff,rgb(var(--lp)) 45%,#5a3fc0);box-shadow:0 0 10px rgba(var(--lp),.8)}
+.lePtGanhos{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 8px}
+.lePtGanhos li{display:flex;align-items:baseline;gap:6px;font-size:.7rem;color:var(--dim)}
+.lePtGanhos b{min-width:28px;font-family:var(--px);font-size:.72rem;color:rgb(var(--lp))}
+.lePtNota{font-size:.68rem;color:#b3bdd3;line-height:1.35}
+.lePtExtrato{list-style:none;margin:0;padding:6px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.lePtExtrato li{display:flex;justify-content:space-between;gap:8px;font-size:.7rem;color:var(--txt)}
+.lePtExtrato li.mais b{color:rgb(var(--okRGB))}.lePtExtrato li.menos b{color:rgb(var(--perigoRGB))}
+.lePtVirada{font-size:.7rem;color:var(--txt);line-height:1.4;padding:6px 8px;border-radius:8px;background:rgba(var(--lp),.1)}
+.lePtRotIns{margin:2px 0 0}
+.lePtInsignias{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+/* A cor vem da classe do tier (leTierGold…); o Bronze, que não tem classe, é o valor de reserva — um padrão aqui cobria os outros. */
+.lePtInsignia{display:flex;flex-direction:column;align-items:center;justify-content:center;width:52px;height:58px;
+  clip-path:polygon(50% 0,100% 22%,100% 78%,50% 100%,0 78%,0 22%);background:linear-gradient(180deg,rgba(var(--tc,205,127,50),.9),rgba(var(--tc,205,127,50),.35));color:#0b0f18;line-height:1.05}
+.lePtInsignia b{font-family:var(--px);font-size:.7rem}.lePtInsignia span{font-size:.54rem;font-weight:700}.lePtInsignia i{font-style:normal;font-size:.58rem}
+.lePtUso{display:block;margin-top:4px;font-size:.66rem;color:rgb(var(--lp))}
+.lePts{display:inline-block;margin-left:6px;font-style:normal;font-size:.7rem;font-weight:700;color:#fff;letter-spacing:.03em;white-space:nowrap;
+  padding:1px 8px;border-radius:999px;background:rgba(168,132,255,.32);border:1px solid rgba(168,132,255,.8)}
+.lePts.zero{color:var(--dim);background:none;border-style:dashed;border-color:var(--line);font-weight:500}
+@media (max-width:1100px){
+  .lePainel.leComPontos{grid-template-columns:minmax(150px,210px) minmax(0,1fr)}
+  .leComPontos .lePontos{grid-column:1/-1;display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);gap:6px 16px;align-items:start}
+  .leComPontos .lePtTopo{grid-row:span 2;flex-direction:column;align-items:flex-start}
+  .leComPontos .lePtRotIns,.leComPontos .lePtInsignias{grid-column:3}
+}
+@media (max-width:620px){
+  .lePainel.leComPontos{grid-template-columns:1fr}
+  .leComPontos .lePontos{display:flex;align-items:stretch}
+  .leComPontos .lePtTopo{flex-direction:row;align-items:center}
+}
 /* A escada: sete degraus, o meu aceso na cor do tier, os de baixo já vencidos. */
 .leEscada{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:2px;width:100%;max-width:150px}
 .leEscada li{height:14px;border-radius:3px;background:rgba(255,255,255,.06);position:relative}

@@ -80,6 +80,47 @@ export function linhaDaPartida(p, agora = null) {
     explica: bot ? 'ninguém da sua faixa na fila — por isso um bot' : !p.rated ? 'padrão de partidas entre as mesmas contas' : null,
     turnos: `${p.turnos} turnos`,
     quando: agora != null && p.quando != null ? haQuanto(agora - p.quando) : null,
+    /* O QUE A PARTIDA RENDEU (ST-11.7b): só aparece quando rendeu — a do bot e
+       a fora do ranking não pagam, e um "+0" em cada linha seria ruído. */
+    /* Q7 da 11.7b: uma "Vitória +10 LP" ao lado de "vitória +30" parecia
+       erro — era a DEFESA. A linha diz de onde veio, e a que contou sem
+       render diz por quê (em vez de sumir). */
+    pontos: bot || !p.rated ? null
+      : p.pontos > 0 ? `+${p.pontos} LP${p.lado === 'A' ? ' · defesa' : ''}`
+      : p.lado === 'A' ? '0 LP · a defesa não segurou' : '0 LP · teto do dia',
+  };
+}
+
+/* ── OS LEAGUE POINTS NA TELA (ST-11.7b · §9.10, §10.1) ──────────────────
+ *
+ * Uma moeda que o jogador não sabe de onde vem é um número que muda sozinho.
+ * O cartão responde três perguntas, nesta ordem: quanto eu tenho, como ganho
+ * mais, e o que acontece no fim da temporada. As regras saem da RESPOSTA do
+ * servidor (que as lê do motor), e não de uma cópia aqui: mudar o balanço não
+ * pode deixar a tela prometendo o número velho. */
+const milhar = n => String(Math.max(0, Math.trunc(Number(n) || 0))).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const ROTULO_LANCAMENTO = Object.freeze({ partida: 'partida que contou', defesa: 'seu time segurou um ataque', premio: 'prêmio da temporada', reset: 'virada da temporada', compra: 'compra na loja da Liga' });
+export function pontosNaTela(p, tier = null) {
+  if (!p) return null;
+  const r = p.regras ?? {}, premio = tier ? p.premios?.[tier] : null;
+  return {
+    titulo: 'League Points',
+    saldo: milhar(p.saldo), unidade: 'LP',
+    ganhos: [
+      { rotulo: 'vitória', valor: `+${r.vitoria}` }, { rotulo: 'empate', valor: `+${r.empate}` },
+      { rotulo: 'derrota', valor: `+${r.derrota}` }, { rotulo: 'defendeu', valor: `+${r.defesa}` },
+    ],
+    teto: `só partidas que contam no ranking · até ${r.tetoDiario} LP por dia`,
+    /* O que a virada FAZ, dito sem conta implícita (Q7: "10% passa" deixava o
+       jogador descobrir sozinho que 90% some). */
+    virada: `Quando a temporada fechar, o saldo zera — só ${Math.round((r.carryover ?? 0) * 100)}% passa para a próxima.`
+      + (premio ? ` E o seu tier (${tier}) rende +${premio} LP, se você jogou ${r.minimoParaPremio} partidas ou mais.` : ''),
+    extrato: (p.extrato ?? []).slice(0, 3).map(l => ({ texto: ROTULO_LANCAMENTO[l.tipo] ?? l.tipo, valor: `${l.delta > 0 ? '+' : '−'}${milhar(Math.abs(l.delta))}`, classe: l.delta > 0 ? 'mais' : 'menos' })),
+    semExtrato: (p.extrato ?? []).length ? null : 'Nenhum ponto ainda — cada partida que conta rende.',
+    insignias: (p.insignias ?? []).map(i => ({ rotulo: `T${i.temporada}`, tier: i.tier, posicao: `${i.posicao}º`, titulo: `Temporada ${i.temporada}: ${i.tier}, ${i.posicao}º lugar, ${i.partidas} partidas` })),
+    semInsignias: (p.insignias ?? []).length ? null : `A primeira insígnia sai quando a temporada fechar — para quem jogou ${r.minimoParaPremio} partidas ou mais nela.`,
+    /* A loja é a ST-11.7c: até lá, a frase diz que o gasto vem — e não finge um botão. */
+    uso: 'Os pontos são para a loja da Liga, que abre na próxima atualização.',
   };
 }
 

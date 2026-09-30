@@ -1783,6 +1783,34 @@ export const MIGRACOES = [
       db.exec(`DROP TABLE liga_pontos`);
     },
   },
+  {
+    nome: 'insignias-st11.7b',
+    /* A INSÍGNIA DA TEMPORADA (ST-11.7b, §9.10). Uma por conta e por
+     * temporada fechada, para quem jogou o mínimo nela: o tier em que ela
+     * fechou e a posição. É PRESTÍGIO — não se equipa, não se vende, não
+     * muda nada na luta —, e por isso não é peça do catálogo da vitrine: a
+     * `cosmetic_ownership` guarda o que se compra ou se ganha para USAR; isto
+     * é um registro do que aconteceu. Só de inserção. ADITIVA. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE liga_insignias (
+          temporada  INTEGER NOT NULL,
+          user_id    TEXT NOT NULL REFERENCES users(id),
+          tier       TEXT NOT NULL,
+          posicao    INTEGER NOT NULL CHECK (posicao >= 1),
+          partidas   INTEGER NOT NULL,
+          criado_em  INTEGER NOT NULL,
+          PRIMARY KEY (temporada, user_id)
+        )`);
+      db.exec(`CREATE TRIGGER liga_insignias_sem_update BEFORE UPDATE ON liga_insignias BEGIN SELECT RAISE(ABORT, 'liga_insignias é append-only'); END`);
+      db.exec(`CREATE TRIGGER liga_insignias_sem_delete BEFORE DELETE ON liga_insignias BEGIN SELECT RAISE(ABORT, 'liga_insignias é append-only'); END`);
+    },
+    desce: db => {
+      db.exec(`DROP TRIGGER liga_insignias_sem_delete`);
+      db.exec(`DROP TRIGGER liga_insignias_sem_update`);
+      db.exec(`DROP TABLE liga_insignias`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

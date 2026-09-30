@@ -12,7 +12,7 @@ import { criaturasDaConta } from './idle.mjs';
 import { criarSnapshot, snapshotsDe } from './equipe.mjs';
 import { tierDaConta } from './liga-mmr.mjs';
 import { sincronizarTemporada, rankingDaTemporada } from './temporada.mjs';
-import { saldoDePontos, extratoDePontos } from './pontos-liga.mjs';
+import { saldoDePontos, extratoDePontos, insigniasDe, pontosDaPartida } from './pontos-liga.mjs';
 import { PONTOS, PREMIO_DO_TIER } from '../engine/pontos-liga.mjs';
 import { temporadaDe } from '../engine/temporada.mjs';
 import { tierDe } from '../engine/liga-mmr.mjs';
@@ -35,6 +35,7 @@ export function minhasPartidas(db, userId, limite = RECENTES, pack = PACK) {
          tier aqui dentro, e o número não sai do servidor (§9.7). */
       const antes = eu === 'A' ? l.antes_a : l.antes_b, depois = antes + (eu === 'A' ? l.delta : -l.delta);
       return { id: l.id, lado: eu, quando: l.criada_em, turnos: l.turnos, resultado: lado(l.vencedor, eu), rated: l.elegivel !== 0,
+               pontos: pontosDaPartida(db, l.id, userId),
                ...(l.delta != null ? { tier: { antes: tierDe(antes), depois: tierDe(depois) } } : {}),
                contra: { tipo: 'jogador', nome: nomeDe(db, eu === 'B' ? l.user_a : l.user_b) } };
     });
@@ -65,7 +66,8 @@ export function ligaDaConta(db, { userId, agora, pack = PACK }) {
    não com uma cópia deles. Sincroniza antes: a virada pode ter mexido. */
 export function pontosDaConta(db, { userId, agora }) {
   sincronizarTemporada(db, { agora });
-  return { saldo: saldoDePontos(db, userId), extrato: extratoDePontos(db, userId), regras: PONTOS, premios: PREMIO_DO_TIER };
+  return { saldo: saldoDePontos(db, userId), extrato: extratoDePontos(db, userId), regras: PONTOS, premios: PREMIO_DO_TIER,
+           insignias: insigniasDe(db, userId) };
 }
 
 /* O RANKING DA LIGA (ST-11.6c · tela 28, §9.15). A temporada de agora é VIVA:

@@ -12,7 +12,7 @@
  *   "nunca converte em PokéCash" (§10.12) ser uma propriedade do código, e
  *   não uma promessa.
  */
-import { ganhoDaPartida, viradaDaConta, TIPOS_DO_TETO } from '../engine/pontos-liga.mjs';
+import { ganhoDaPartida, viradaDaConta, temPremio, TIPOS_DO_TETO } from '../engine/pontos-liga.mjs';
 import { temporadaDe, janelaDaTemporada } from '../engine/temporada.mjs';
 import { diaDoMundo } from '../engine/avanco.mjs';
 import { tierDe } from '../engine/liga-mmr.mjs';
@@ -62,11 +62,27 @@ export function virarPontos(db, { temporada: n, agora }) {
       SELECT user_a AS u FROM liga_mmr_eventos WHERE criado_em >= ? AND criado_em < ?
       UNION ALL SELECT user_b FROM liga_mmr_eventos WHERE criado_em >= ? AND criado_em < ?)
     GROUP BY u`).all(inicio, fim, inicio, fim).map(r => [r.u, r.n]));
-  const rating = new Map(db.prepare(`SELECT user_id, rating FROM liga_mmr`).all().map(r => [r.user_id, r.rating]));
+  /* A ORDEM do ranking que a virada grava (rating, depois a conta): a posição da insígnia é a mesma dele. */
+  const ordem = db.prepare(`SELECT user_id, rating FROM liga_mmr ORDER BY rating DESC, user_id`).all();
+  const rating = new Map(ordem.map(r => [r.user_id, r.rating]));
+  const posicao = new Map(ordem.map((r, i) => [r.user_id, i + 1]));
+  const insignia = db.prepare(`INSERT INTO liga_insignias (temporada, user_id, tier, posicao, partidas, criado_em)
+                               VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (temporada, user_id) DO NOTHING`);
   const contas = [...new Set([...saldos.keys(), ...jogou.keys()])].sort();
   for (const userId of contas) {
-    const v = viradaDaConta({ saldo: saldos.get(userId) ?? 0, tier: tierDe(rating.get(userId) ?? -Infinity), partidas: jogou.get(userId) ?? 0 });
+    const tier = tierDe(rating.get(userId) ?? -Infinity), partidas = jogou.get(userId) ?? 0;
+    const v = viradaDaConta({ saldo: saldos.get(userId) ?? 0, tier, partidas });
     lancar(db, { userId, temporada: n, dia, tipo: 'reset', delta: v.reset, ref: `temporada:${n}`, idem: `reset:${n}:${userId}`, agora });
     lancar(db, { userId, temporada: n + 1, dia, tipo: 'premio', delta: v.premio, ref: `temporada:${n}`, idem: `premio:${n}:${userId}`, agora });
+    /* A INSÍGNIA (ST-11.7b): a mesma régua do prêmio — jogou o mínimo na temporada. */
+    if (temPremio({ partidas }) && posicao.has(userId)) insignia.run(n, userId, tier, posicao.get(userId), partidas, agora);
   }
 }
+
+/* As insígnias da conta, da temporada mais nova para a mais velha. */
+export const insigniasDe = (db, userId) =>
+  db.prepare(`SELECT temporada, tier, posicao, partidas FROM liga_insignias WHERE user_id = ? ORDER BY temporada DESC`).all(userId);
+
+/* Quanto cada partida rendeu à conta: o lançamento dela, pela chave. */
+export const pontosDaPartida = (db, partidaId, userId) =>
+  db.prepare(`SELECT delta FROM liga_pontos WHERE idem = 'partida:' || ? || ':' || ?`).get(partidaId, userId)?.delta ?? 0;

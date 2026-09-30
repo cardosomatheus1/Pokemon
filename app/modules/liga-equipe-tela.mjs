@@ -13,7 +13,7 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { dexImg } from './sprites.mjs';
 import { api } from './api.mjs';
-import { homeDaLiga, replayNaTela, rankingNaTela } from './liga-equipe-dados.mjs';
+import { homeDaLiga, replayNaTela, rankingNaTela, pontosNaTela } from './liga-equipe-dados.mjs';
 import { linhaDoLog, provaDaPartida } from './partida-dados.mjs';
 import { montarPalco } from './liga-palco.mjs';
 import { sortearArena } from './arenas-dados.mjs';
@@ -24,16 +24,18 @@ const novaChave = () => `le-${Date.now().toString(36)}-${Math.random().toString(
 const lerPreset = () => { try { return localStorage.getItem('ar_treino_preset'); } catch { return null; } };
 const gravarPreset = p => { try { localStorage.setItem('ar_treino_preset', p); } catch { /* privativo: vale só nesta visita */ } };
 
-let dados = null, acabou = null, ocupado = false, chaveDaBusca = null, erro = null, ultimo = null, assistir = null, ranking = null, temporadaVista = null;
+let dados = null, acabou = null, ocupado = false, chaveDaBusca = null, erro = null, ultimo = null, assistir = null, ranking = null, temporadaVista = null, pontos = null;
 
 export async function renderLigaEquipe() {
   const alvo = $('#ligaEqCorpo');
   if (!alvo) return;
   const conta = api.temSessao();
   if (conta) {
-    const [r, rk] = await Promise.all([api.get('/api/equipe/liga'), api.get(`/api/equipe/ranking${temporadaVista ? `?temporada=${temporadaVista}` : ''}`)]);
+    const [r, rk, pt] = await Promise.all([api.get('/api/equipe/liga'), api.get(`/api/equipe/ranking${temporadaVista ? `?temporada=${temporadaVista}` : ''}`),
+                                           api.get('/api/equipe/pontos')]);
     dados = r.ok ? r.corpo : null;
     ranking = rk.ok ? rk.corpo : null;
+    pontos = pt.ok ? pt.corpo : null;
   }
   ultimo = homeDaLiga({ conta, dados, pack: PACK, agora: Date.now(), preset: lerPreset(), acabou });
   pintar(alvo, ultimo);
@@ -53,7 +55,7 @@ function pintar(alvo, h) {
   const botoes = !h.acao ? '' : `<div class="leAcoes"><button class="btn primary leAcao" data-le-acao="${h.acao.tipo}"${h.acao.habilitada && !ocupado ? '' : ' disabled'}>${esc(ocupado ? 'Lutando…' : h.acao.rotulo)}</button>
       ${h.secundaria ? `<button class="btn leSec" data-le-acao="${h.secundaria.tipo}"${ocupado ? ' disabled' : ''}>${esc(h.secundaria.rotulo)}</button>` : ''}</div>`;
   const linha = (r, grande = false) => `<li class="leLinha le${r.classe}${grande ? ' leGrande' : ''}${r.selo.tipo === 'fora' ? ' leNeutro' : ''}">
-      <span class="leResCel"><b class="leRes">${esc(r.titulo)}</b><em class="leSelo leSelo${r.selo.tipo}">${esc(r.selo.texto)}</em></span><span class="leContra">${esc(r.contra)}${r.bot ? ` <em class="leBot">${esc(r.bot)}</em>` : ''}</span>
+      <span class="leResCel"><b class="leRes">${esc(r.titulo)}</b><em class="leSelo leSelo${r.selo.tipo}">${esc(r.selo.texto)}</em>${r.pontos ? `<em class="lePts${r.pontos.startsWith('0') ? ' zero' : ''}">${esc(r.pontos)}</em>` : ''}</span><span class="leContra">${esc(r.contra)}${r.bot ? ` <em class="leBot">${esc(r.bot)}</em>` : ''}</span>
       ${r.explica ? `<span class="leRank">${esc(r.explica)}</span>` : '<span></span>'}<span class="leTurnos">${esc([r.turnos, r.quando].filter(Boolean).join(' · '))}</span>
       <button class="leVer" data-le-replay="${esc(r.id)}" title="rever a partida, golpe a golpe">▶ replay</button></li>`;
   const resultado = h.resultado ? `<ul class="leResultado">${linha(h.resultado, true)}</ul>` : '';
@@ -62,8 +64,23 @@ function pintar(alvo, h) {
   const passos = h.passos ? `<ol class="lePassos">${h.passos.map(p => `<li class="${p.bloqueado ? 'leBloq' : ''}"><b>${p.bloqueado ? '✕' : p.n}</b><span><strong>${esc(p.titulo)}</strong>${esc(p.texto)}</span></li>`).join('')}</ol>` : '';
   alvo.innerHTML = `<div class="leHome le-${h.estado}">
     ${barra}${tier ? '' : passos}
-    <div class="lePainel${tier ? '' : ' leSoCentro'}">${tier}<div class="leCentro">${time}${presets}${h.aviso ? `<p class="leAviso">${h.titulo ? `<strong>${esc(h.titulo)}</strong>` : ''}${esc(h.aviso)}</p>` : ''}${erro ? `<p class="leErro">${esc(erro)}</p>` : ''}${botoes}</div></div>
+    <div class="lePainel${tier ? '' : ' leSoCentro'}${tier && pontos ? ' leComPontos' : ''}">${tier}<div class="leCentro">${time}${presets}${h.aviso ? `<p class="leAviso">${h.titulo ? `<strong>${esc(h.titulo)}</strong>` : ''}${esc(h.aviso)}</p>` : ''}${erro ? `<p class="leErro">${esc(erro)}</p>` : ''}${botoes}</div>${tier ? pintarPontos(pontosNaTela(pontos, h.tier.nome)) : ''}</div>
     ${tier ? passos : ''}<div id="leReplay" class="pveArea" hidden></div>${resultado}<div class="leBaixo">${recentes}${h.tier ? pintarRanking(rankingNaTela(ranking)) : ''}</div></div>`;
+}
+
+/* OS LEAGUE POINTS (ST-11.7b): quanto tenho, como ganho, o que a virada faz — e as insígnias. */
+function pintarPontos(k) {
+  if (!k) return '';
+  const insignias = k.insignias.length
+    ? `<ul class="lePtInsignias">${k.insignias.map(i => `<li class="lePtInsignia leTier${esc(i.tier)}" title="${esc(i.titulo)}"><b>${esc(i.rotulo)}</b><span>${esc(i.tier)}</span><i>${esc(i.posicao)}</i></li>`).join('')}</ul>`
+    : `<p class="lePtNota">${esc(k.semInsignias)}</p>`;
+  return `<section class="lePontos" aria-label="${esc(k.titulo)}">
+    <div class="lePtTopo"><span class="leRot">${esc(k.titulo)}</span><span class="lePtSaldo"><i class="lePtMoeda" aria-hidden="true"></i><b>${esc(k.saldo)}</b><em>${esc(k.unidade)}</em></span></div>
+    <ul class="lePtGanhos">${k.ganhos.map(g => `<li><b>${esc(g.valor)}</b>${esc(g.rotulo)}</li>`).join('')}</ul>
+    <p class="lePtNota">${esc(k.teto)}</p>
+    ${k.extrato.length ? `<ul class="lePtExtrato">${k.extrato.map(l => `<li class="${l.classe}"><span>${esc(l.texto)}</span><b>${esc(l.valor)}</b></li>`).join('')}</ul>` : `<p class="lePtNota">${esc(k.semExtrato)}</p>`}
+    <p class="lePtVirada">${esc(k.virada)}<span class="lePtUso">${esc(k.uso)}</span></p>
+    <span class="leRot lePtRotIns">insígnias de temporada</span>${insignias}</section>`;
 }
 
 /* O RANKING (ST-11.6c): a tabela da Liga de times, e só dela. */

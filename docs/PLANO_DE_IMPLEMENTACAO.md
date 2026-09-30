@@ -1421,6 +1421,16 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   - nove balões contra dois: o 6×6 tem metade dos lutadores e a luta é por
     turnos, e isso não se força.
 
+### ST-11.6e · O acabamento do palco da Liga (proposta, 30/09)
+- **Porte** P · **Servidor** não · **Método** GL (a barra: a luta da aposta ao lado) · **Nasce de** L-212 e do Q7 da 11.6d
+- **Escopo:** o banner do fim do palco carrega o selo E os pontos da partida
+  ("+30 LP"), para a resposta a "o que rendeu" não ficar abaixo da dobra; as
+  laterais vazias acima de 1440.
+- **Portões:** Q1 Q2 Q5 Q7. **Sabotagem:** o banner sem os pontos, o banner
+  com os pontos da partida errada.
+- **Posição na fila:** depois da 11.7c — ela é acabamento, e a loja é o gasto
+  que a moeda ainda não tem.
+
 ### ST-11.7 · Recompensas, League Points e loja
 - **Porte** M · **Servidor** sim · **Spec** §9.10, §9.11, §10.1
 - **Escopo:** recompensas cosméticas e de prestígio pela `cosmetic_ownership`. League Points é a terceira e **última** moeda (§10.1), com tabela e ledger próprios. A loja nunca vende rating ou pontos.
@@ -1448,6 +1458,32 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   continuam ancorados: o crédito entrou numa linha própria.
 - **Q6 da 11.7a:** uma rota de leitura, atrás da sessão; nenhuma escrita nova
   vinda do cliente — a moeda só entra pelo servidor.
+- **11.7b ✅ 30/09 — os pontos e as insígnias na tela.** A INSÍGNIA da
+  temporada (`liga_insignias`, migração `insignias-st11.7b`, só de inserção):
+  na virada, quem jogou o mínimo recebe o tier em que a temporada fechou e a
+  posição, na mesma régua do prêmio (`temPremio`). **Decisão escrita:** ela
+  NÃO é peça da `cosmetic_ownership` — a posse guarda o que se compra ou se
+  ganha para USAR; a insígnia não se equipa nem se vende, é o registro do que
+  aconteceu. As peças equipáveis da Liga entram pela loja (11.7c). Na tela, o
+  cartão "League Points" (camada 0 `pontosNaTela`, as regras vindas do
+  servidor): o saldo, os quatro ganhos, o teto, os três últimos lançamentos,
+  a virada dita sem conta implícita ("o saldo zera — só 10% passa") e as
+  insígnias em hexágono na cor do tier. A cor da moeda é violeta, longe do
+  dourado da Arena: duas moedas que nunca se trocam. Cada partida diz o que
+  rendeu: "+30 LP", "+10 LP · defesa", "0 LP · a defesa não segurou".
+  `test/liga-pontos.mjs` (12) · S1839–S1847.
+- **Q5/Q7 da 11.7b:** capturas 1920/1440/1100/420. A 1ª leitura achou a
+  insígnia Gold pintada de Bronze (o padrão cobria a classe do tier) e, na
+  1100, o nome do adversário por cima dos turnos (o "+LP" alargou a 1ª
+  coluna) — os dois corrigidos. O crítico cego (Q1 saldo 8–9, Q2 ganho 6, Q3
+  virada 5, Q4 última partida 5, Q5 moeda distinta 6) achou a "Vitória +10
+  LP" contra a tabela de +30 (era a DEFESA, e a linha não dizia) e a virada
+  que só implicava a perda — corrigidos. Ficou, fora do escopo: a partida que
+  a busca acabou de jogar abre o palco e empurra o resultado para baixo da
+  dobra e as laterais vazias acima de 1440 — as duas na ST-11.6e (L-212).
+- **Mutantes de navegador da 11.7b:** a pintura do cartão
+  (`pintarPontos`) é de navegador e não foi plantada; toda decisão está em
+  `pontosNaTela`/`linhaDaPartida`, pegas em Node.
 
 ### ST-11.8 · Anti-win-trading, antes do dinheiro ✅ 28/09 (dispositivo e rede esperam a L-050)
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.8 · **Spec** §9.12, L-050

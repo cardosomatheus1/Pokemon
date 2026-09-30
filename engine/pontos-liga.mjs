@@ -60,8 +60,9 @@ export function ganhoDaPartida({ papel, vencedor, jaHoje = 0 }) {
 /* O que atravessa a virada: 10% do saldo, arredondado para baixo. */
 export const carryoverDe = saldo => Math.floor(Math.max(0, Number(saldo) || 0) * PONTOS.carryover);
 
-export const premioDaTemporada = ({ tier, partidas }) =>
-  (Number(partidas) || 0) >= PONTOS.minimoParaPremio ? (PREMIO_DO_TIER[tier] ?? 0) : 0;
+/* Jogou o mínimo na temporada: a régua do prêmio e da insígnia (ST-11.7b). */
+export const temPremio = ({ partidas }) => (Number(partidas) || 0) >= PONTOS.minimoParaPremio;
+export const premioDaTemporada = ({ tier, partidas }) => (temPremio({ partidas }) ? (PREMIO_DO_TIER[tier] ?? 0) : 0);
 
 /* A virada de UMA conta: o lançamento do reset (≤ 0) e o do prêmio (≥ 0). O
    reset vem antes: o prêmio é da temporada que COMEÇA, e não é cortado pelo
