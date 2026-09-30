@@ -1370,6 +1370,73 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   mapa como grade de tiles inteira, e não regiões sobre um fundo — é um
   projeto de arte, e não acabamento.
 
+#### ST-10.22e · O mapa como grade de tiles ✅ 30/09
+- **Porte** L · **Método** GL (barra: o mapa do SMW) · **Portões:** Q1 Q2 Q5 Q7.
+- **Pedido do dono:** *"Pode criar, ou buscar plugins externos, faça o mais
+  bonito possível"*. A arte é NOSSA (`tools/pixel-arte.mjs`): arte de
+  terceiros não entra num produto com stake (§0.3.1).
+- **Escopo:** o chão inteiro deixa de ser manchas em `clip-path` e vira uma
+  grade num `<canvas>`, por baixo do caminho e dos nós. As decisões ficam em
+  camada 0 (`jornada-chao.mjs`); a tela (`jornada-chao-tela.mjs`, camada 4)
+  mede os nós, pede a grade e pinta.
+- **Fora:** o arranjo do caminho, os nós, os props, o painel (→ L-216, ST-10.22f).
+- **Feito:**
+  - a GRADE: célula de 16 px, um quarto do tile de 32 (o 16 × 16 em 2×), e
+    cada célula pinta o quarto do tile que lhe cabe — a textura corre
+    contínua. O chão de cada célula é o do nó mais perto dentro de um raio
+    (0,7 da distância típica entre nós seguidos); a distância leva ruído de
+    valor interpolado numa rede de 64 px, e a fronteira sai em curva;
+  - a TRANSIÇÃO em quatro peças: a franja em xadrez onde o chão de mais
+    precedência invade o vizinho; o CANTO em rampa de 2 px onde os dois
+    vizinhos são o mesmo chão (o degrau vira diagonal); a ESPUMA onde a água
+    encosta na terra (a água não pontilha a grama); a FACE de penhasco onde o
+    chão mais alto está sobre o mais baixo;
+  - a grama fora de todo raio liga as regiões; o mar em volta do vulcão; a
+    poça de lava que a cena põe no mapa reclama o chão de vulcão em volta;
+  - arte nossa: o planalto redesenhado (rocha solta e capim seco — as lajes
+    liam como muro de tijolo sobre meio mapa), e dois tiles novos (usina,
+    água). `regioesDoMapa` e as ~90 linhas de CSS das manchas saíram — morto
+    não fica; a grama do fundo do `.jnMapa` fica de reserva;
+  - o que a 10.22b pedia das manchas passa a valer sobre a grade: a Liga é
+    um planalto de uma peça só, Pewter e a pedra são um chão, todo nó pisa
+    no próprio chão (componente conexa no teste);
+  - `test/jornada-chao.mjs` (5) · S1955–S1966 novos · S1687, S1691, S1696,
+    S1697, S1700, S1707, S1948, S1950, S1951 realvados na grade — os 21
+    mordem à mão.
+- **Mutantes de navegador:** nenhum. S1700 e S1959 (a medida e o
+  redimensionamento) são pegos pela fonte do pintor, em Node.
+- **Q7 (barra SMW), três rodadas:**
+  - 1ª, célula de 32 px e o planalto em lajes: mundo 3–4, publicado 3–5 —
+    PIOR que a 10.22d. "Muro de tijolo sobre meio mapa", "retângulos em
+    escada", "lava boiando";
+  - 2ª, célula de 16 px, o planalto de rocha, a espuma e a lava no chão:
+    mundo 4–5, publicado 4–6; caminho 6–7, onde estou 5–9, futuro 6–8;
+  - 3ª, com o canto em rampa: caminho 6–8, onde estou 6–9, futuro 6–7,
+    mundo 3–4, publicado 4–5.
+  - **Aceite ≥8 NÃO atingido, e o "mundo" não subiu** sobre a 10.22d (5–6
+    naquela rodada; 3–5 nas três desta). Dito sem atenuar: o crítico parou de
+    falar de "ilhas sobre um tapete" e passou a falar das TEXTURAS e dos
+    NÓS — a usina lê como grade de interface, a cidade como muro de tijolo,
+    a floresta como domo de escamas, a silhueta do trancado como mancha de
+    tinta, o rio que acaba num lago. É a L-216 (ST-10.22f). A grade fica
+    porque é a base em que essas correções se fazem — cada uma é um tile ou
+    uma peça, e não mais um recorte em `clip-path`. O veredito do dono sobre
+    a troca vai no relatório, com as capturas de antes e depois.
+
+#### ST-10.22f · Os nós e a água no mapa em grade (L-216)
+- **Porte** M · **Método** GL (barra: o mapa do SMW) · **Portões:** Q1 Q2 Q5 Q7.
+- **Escopo:** o nó trancado sem a silhueta preta e com o ícone apagado (a cor
+  fica para o feito e o próximo); o nó assentado no chão, sem o pedestal
+  oval igual em todos; o rio ligado ao mar de Cinnabar, com a ponte onde a
+  estrada cruza; o rótulo do PRÓXIMO do lado que o caminho não passa; o
+  Campeão longe da bandeira do início; o painel ocupando a largura em 1920;
+  os tiles da usina, da cidade e da floresta redesenhados, com props.
+- **Fora:** o chão (ST-10.22e), o arranjo do caminho.
+- **Aceite:** "futuro" ≥ 7 nas quatro larguras, e nenhuma das seis queixas
+  da L-216 de volta no Q7 cego.
+- **Sabotagem:** a silhueta de volta; o rio que termina no lago; o rótulo
+  sobre a ponte.
+
 ### ST-10.20 · A jornada ensina a apostar? ✅ 27/09
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16
 - **Escopo:** eventos `pve_iniciado`, `ginasio_vencido`, `time_refeito`, `p_exibida`; coortes controlando o tempo de jogo; calibração na Liga de Previsão antes e depois de Brock.

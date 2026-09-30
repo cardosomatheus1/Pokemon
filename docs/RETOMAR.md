@@ -30,14 +30,16 @@ o LINK     http://localhost:8099/app/index.html
            (a Liga de times com contas e partidas: node tools/olhar-liga.mjs
            sobe o servidor completo num processo e captura as telas)
 a PASTA    C:\Users\gdult\pa4
-o ESTADO   ST-10.22d FECHADA (o chão do mapa em tiles nossos, a franja
-           de transição, a ponte, a bandeira do início, o Campeão dourado)
-           · nesta leva: ST-5.9 a 5.16 (a aposta com a arena à vista, a
-           tabela legível em 1100, os campos no tema, o Centro, as medalhas
-           com teto, o selo do degrau, os ícones do clima), a ST-1.4 (o 401
-           da CI) e a ST-6.5 (25 fichas velhas fechadas)
+o ESTADO   ST-10.22e FECHADA (o mapa como grade de tiles nossos num canvas:
+           célula de 16 px, franja, canto em rampa, espuma da costa, face de
+           penhasco, o planalto em rocha solta, a lava no chão de vulcão).
+           Q7: o "mundo" NÃO subiu (3–5; a 10.22d teve 5–6) — as queixas
+           passaram às texturas e aos nós, L-216 → ST-10.22f. VEREDITO DO
+           DONO pedido: a grade fica, ou volta às regiões da 10.22d?
+           · nesta leva: ST-5.9 a 5.16, ST-10.22d, a ST-1.4 (o 401 da CI) e
+           a ST-6.5 (25 fichas velhas fechadas)
            · o E11 construído — o stake espera a D2 do dono
-           · suíte 2828/2828, repetir 2/2
+           · suíte 2833/2833, repetir 2/2
            Q2 completo em fatias: 1/10 VERDE; a 2/10 interrompida
            (node test/sabotagem.mjs --fatia=2/10, e seguir até 10/10)
 o PRÓXIMO  o Q2 completo em fatias (2/10 a 10/10) — o que sobra de produto

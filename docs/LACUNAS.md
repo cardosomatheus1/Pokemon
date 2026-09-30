@@ -8957,3 +8957,33 @@ Nenhum quebra a aposta; todos custam leitura justo na fase em que o jogador
 decide. Não cabe na ST-5.9 porque são outros componentes (o aviso da arena, o
 banner, a zona de ação), e a 5.9 cuidou só de onde a arena e o cartão ficam.
 O que a destrava: nada — é construir.
+
+### L-216 — no mapa, o trancado lê como defeito de tela, e o rio não chega a lugar nenhum
+
+**Registrada em:** 30/09/2026, pelo crítico cego (Q7, barra: o mapa do Super
+Mario World) nas duas rodadas da ST-10.22e. **Bloco dono:** ST-10.22f
+(proposta no PLANO no mesmo commit). **Estado:** aberta.
+
+O chão virou grade na ST-10.22e, e o crítico parou de falar das ilhas: o que
+ele passou a apontar nas duas rodadas mora nos NÓS e na água, e não no chão:
+
+- o nó trancado leva a silhueta preta do líder por cima do pedestal, e o
+  ícone do tipo continua saturado — "parece defeito de renderização", "a
+  cor mente sobre o que está aberto";
+- todo nó senta no mesmo pedestal oval creme, "carimbado" sobre o terreno,
+  em vez de o nó ser parte do chão como o ponto de fase do SMW;
+- o rio desce do alto e acaba no lago da Cerulean; o mar de Cinnabar são
+  poças soltas na borda de baixo — "a água não se liga";
+- em 1100 e 1440 o rótulo do PRÓXIMO cai em cima da estrada e da ponte;
+- o Campeão fica logo abaixo da bandeira do início — o fim lê como um
+  segundo começo;
+- em 1920 o painel do nó para em ~1250 px e sobram ~600 px vazios ao lado;
+- três TEXTURAS do chão leem como outra coisa (3ª rodada): a usina como
+  grade de interface, a cidade de Saffron como muro de tijolo, a floresta
+  como domo de escamas — o tile dela, e não o lugar, precisa de props
+  (a fábrica em ruína, telhados, a copa com tronco).
+
+Não cabe na ST-10.22e porque é o desenho dos nós e o traçado da água, e a
+10.22e troca só o que pinta o chão. O que a destrava: nada — é construir. A
+trava: `test/jornada-tela.mjs` cobra o trancado e os rótulos; o
+`test/jornada-mundo.mjs`, o rio.

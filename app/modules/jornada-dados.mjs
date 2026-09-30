@@ -256,35 +256,10 @@ export function cenaDoNo(no) {
   return c ? poe(c, c.pos, 0) : [];
 }
 
-/* O CHÃO DE CADA REGIÃO (ST-10.22b · L-209), em porcentagem do caminho
-   DEITADO, como os nós: a tela transpõe no celular do mesmo jeito. Uma mancha
-   por nó, maior que o passo entre eles — as vizinhas da mesma região se
-   fundem, e a borda em degraus da tela as mistura com a grama. */
+/* As regiões que o pack pode nomear num nó (ST-10.22b · L-209). O chão de
+   cada uma deixou de ser mancha: é a grade de tiles de `jornada-chao.mjs`
+   (ST-10.22e), que decide célula por célula. */
 export const REGIOES = Object.freeze(['campo', 'floresta', 'bosque', 'pedra', 'praia', 'jardim', 'pantano', 'cidade', 'vulcao', 'usina', 'planalto']);
-/* Os nós SEGUIDOS da mesma região viram UMA mancha, do tamanho do trecho —
-   cinco manchas redondas lado a lado liam como bolhas, e não como o planalto
-   da Liga (medido na primeira captura). */
-export function regioesDoMapa(mapa) {
-  const grupos = [];
-  for (const n of mapa?.nos ?? []) {
-    if (!REGIOES.includes(n.regiao)) continue;
-    const g = grupos.at(-1);
-    if (g && g.regiao === n.regiao && g.ultimo === n.id) g.nos.push(n); else grupos.push({ regiao: n.regiao, nos: [n] });
-    const i = (mapa.nos ?? []).findIndex(x => x.id === n.id);
-    grupos.at(-1).ultimo = mapa.nos[i + 1]?.id;
-  }
-  const r1 = v => Math.round(v * 10) / 10;
-  return grupos.flatMap((g, i) => {
-    const xs = g.nos.map(n => n.x), ys = g.nos.map(n => n.y);
-    const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
-    const base = { id: g.nos[0].id, nos: g.nos.map(n => n.id), regiao: g.regiao, x: r1((x0 + x1) / 2), y: r1((y0 + y1) / 2),
-                   w: r1(x1 - x0 + 13), h: r1(y1 - y0 + 31), v: i % 3 };
-    /* A região GRANDE (três nós ou mais: o planalto da Liga) ganha um SEGUNDO
-       degrau no meio — a mesa em patamares. Uma mesa só, do tamanho de meio
-       mapa, lia como "piso de reserva" (Q7, 3ª rodada). */
-    return g.nos.length >= 3 ? [base, { ...base, id: `${base.id}:topo`, topo: true, w: r1(base.w * 0.62), h: r1(base.h * 0.5), v: (i + 1) % 3 }] : [base];
-  });
-}
 
 /* A LIÇÃO DA VELOCIDADE NA TELA (ST-10.14): o seu mais rápido contra cada
    rival, com a velocidade que o MOTOR monta (`montarLutador` — nível, oculto

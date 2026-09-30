@@ -1129,67 +1129,6 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
   linear-gradient(180deg,#27473b 0 22%,#3a6556 22%);animation:none}
 .jnLago.jn-brejo i{left:29%;top:49%;width:3px;height:3px;background:#ff9ad0;animation:none}
 @media (prefers-reduced-motion:reduce){ .jnLago::after,.jnLago i{animation:none} }
-/* O CHÃO DAS REGIÕES (ST-10.22b · L-209). A primeira versão era mancha de cor
-   esmaecida sobre a grama — o crítico cego (barra: o mapa do Super Mario
-   World) deu 4–5: "manchas de cor borrifadas num gramado; nenhuma borda,
-   nenhuma altura". Agora a região é TERRENO: borda em degraus de pixel (três
-   contornos orgânicos, um por variação) e, onde o lugar é alto, a FACE do
-   penhasco — a sombra do próprio contorno, deslocada para baixo, na cor da
-   rocha daquela região. A floresta é copa, o planalto é mesa, o brejo é água
-   parada; o campo e o jardim ficam rentes ao chão. */
-.jnRegiao{position:absolute;pointer-events:none;image-rendering:pixelated;
-  left:calc((var(--x) - var(--w) / 2) * 1%);top:calc((var(--y) - var(--h) / 2) * 1%);width:calc(var(--w) * 1%);height:calc(var(--h) * 1%);
-  /* ST-10.22d: a sombra da região é a própria face (3 px) e não mais um
-     drop-shadow — o filtro sombreava cada casa da FRANJA em xadrez, e a
-     transição saía um pontilhado escuro em vez de areia misturada à grama.
-     `isolation` mantém o contexto que o filtro dava: sem ele, a franja
-     (z-index -1) ia para trás do fundo do mapa e sumia. */
-  --alto:3px;--penhasco:rgba(0,0,0,.28);isolation:isolate}
-/* A FACE DO PENHASCO: o mesmo contorno, descido a altura do lugar, com a
-   rocha em estratos — a 2ª rodada do Q7 não viu altura numa sombra lisa. */
-.jnRegiao b{position:absolute;left:0;right:0;top:var(--alto);height:100%;clip-path:var(--forma);
-  background:repeating-linear-gradient(90deg,rgba(0,0,0,.32) 0 2px,transparent 2px 9px),linear-gradient(180deg,rgba(255,255,255,.16) 0 2px,transparent 2px 55%,rgba(0,0,0,.3)),var(--penhasco,transparent)}
-.jnRegiao i{position:absolute;inset:0;clip-path:var(--forma);box-shadow:inset 0 3px 0 rgba(255,255,255,.16)}
-.jnRv0{--forma:polygon(98% 50%,96% 50%,96% 60%,92% 60%,92% 68%,88% 68%,88% 78%,80% 78%,80% 84%,72% 84%,72% 90%,64% 90%,64% 92%,54% 92%,46% 92%,46% 90%,36% 90%,26% 90%,16% 90%,16% 86%,10% 86%,10% 80%,6% 80%,6% 70%,6% 60%,8% 60%,8% 50%,8% 42%,10% 42%,10% 32%,14% 32%,14% 24%,20% 24%,20% 18%,28% 18%,28% 12%,36% 12%,36% 6%,44% 6%,44% 2%,56% 2%,56% 0%,64% 0%,64% 4%,72% 4%,72% 12%,76% 12%,76% 20%,82% 20%,82% 26%,88% 26%,88% 32%,94% 32%,94% 40%,98% 40%)}
-.jnRv1{--forma:polygon(96% 50%,96% 60%,94% 60%,94% 70%,86% 70%,86% 76%,78% 76%,78% 80%,70% 80%,70% 84%,62% 84%,62% 88%,54% 88%,54% 96%,44% 96%,44% 100%,34% 100%,34% 98%,26% 98%,26% 92%,20% 92%,20% 84%,16% 84%,16% 76%,10% 76%,10% 68%,8% 68%,8% 60%,6% 60%,6% 50%,8% 50%,8% 42%,10% 42%,10% 32%,14% 32%,14% 24%,18% 24%,18% 14%,24% 14%,24% 6%,34% 6%,34% 4%,46% 4%,46% 6%,54% 6%,54% 10%,62% 10%,62% 12%,70% 12%,70% 14%,80% 14%,80% 16%,88% 16%,88% 22%,94% 22%,94% 30%,96% 30%,96% 40%)}
-.jnRv2{--forma:polygon(92% 50%,90% 50%,90% 58%,88% 58%,88% 66%,86% 66%,86% 76%,82% 76%,82% 86%,74% 86%,74% 92%,64% 92%,64% 96%,54% 96%,46% 96%,46% 94%,36% 94%,36% 92%,28% 92%,28% 88%,22% 88%,22% 82%,16% 82%,16% 74%,12% 74%,12% 68%,6% 68%,6% 60%,2% 60%,2% 50%,2% 40%,6% 40%,6% 30%,14% 30%,14% 24%,22% 24%,22% 18%,30% 18%,30% 14%,36% 14%,36% 10%,46% 10%,46% 6%,54% 6%,54% 4%,64% 4%,64% 6%,72% 6%,72% 10%,82% 10%,82% 16%,88% 16%,88% 22%,94% 22%,94% 30%,94% 40%,92% 40%)}
-.jnR-campo i{background:radial-gradient(circle at 3px 3px,#ff8aa6 1.1px,transparent 1.5px) 0 0/17px 17px,radial-gradient(circle at 11px 10px,#fff4a0 1.1px,transparent 1.5px) 0 0/17px 17px,radial-gradient(circle at 7px 6px,#4f8f36 1.3px,transparent 1.7px) 0 0/9px 9px,#7cbd57}
-.jnR-floresta{--alto:6px;--penhasco:#173816}
-.jnR-floresta i{background:radial-gradient(circle at 7px 7px,#5aa844 0 3px,#3f8a34 3px 6px,transparent 6.5px) 0 0/14px 13px,radial-gradient(circle at 7px 7px,#4a9a3c 0 3px,#2f6e2a 3px 6px,transparent 6.5px) 7px 6px/14px 13px,#24521f}
-.jnR-bosque{--alto:6px;--penhasco:#0f2c26}
-.jnR-bosque i{background:conic-gradient(from 150deg at 50% 10%,#2f6e56 0 60deg,transparent 60deg) 0 0/12px 14px,conic-gradient(from 150deg at 50% 10%,#1f5444 0 60deg,transparent 60deg) 6px 7px/12px 14px,#163d33}
-.jnR-pedra{--alto:9px;--penhasco:#76552d}
-.jnR-pedra i{background:radial-gradient(circle at 3px 4px,#8a6a3e 1.6px,transparent 2px) 0 0/12px 12px,radial-gradient(circle at 9px 9px,#e2c690 1px,transparent 1.4px) 0 0/12px 12px,#bf9a62}
-.jnR-praia i{background:radial-gradient(circle at 4px 4px,#f7ebbd 1.2px,transparent 1.6px) 0 0/9px 9px,radial-gradient(circle at 7px 8px,#c2ad6c 1px,transparent 1.4px) 0 0/9px 9px,#e0cf90;box-shadow:inset 0 0 0 3px #cbb574}
-.jnR-jardim{--alto:4px;--penhasco:#2b6326}
-.jnR-jardim i{background:radial-gradient(circle at 3px 3px,#ff7a9a 1.4px,transparent 1.8px) 0 0/15px 15px,radial-gradient(circle at 10px 9px,#ffe066 1.4px,transparent 1.8px) 0 0/15px 15px,radial-gradient(circle at 7px 13px,#fff 1.2px,transparent 1.6px) 0 0/15px 15px,#86c65c;box-shadow:inset 0 0 0 4px #3f8a34}
-/* O brejo é ÁGUA parada com borda de lama e vitória-régia — em 420 a
-   versão pontilhada lia como ruído (Q7). */
-.jnR-pantano i{background:radial-gradient(circle at 9px 8px,#5fae4a 0 3.5px,transparent 4px) 0 0/31px 23px,radial-gradient(circle at 22px 17px,#6cbf52 0 2.5px,transparent 3px) 0 0/31px 23px,
-  repeating-linear-gradient(0deg,transparent 0 9px,rgba(170,220,190,.18) 9px 10px),#355f50;box-shadow:inset 0 0 0 4px #6b7038,inset 0 7px 0 rgba(0,0,0,.22)}
-/* Saffron é PARALELEPÍPEDO frio: lavanda lia igual ao planalto (1ª rodada do Q7) e o creme igual à praia de Vermilion (2ª). */
-.jnR-cidade{--alto:5px;--penhasco:#50555f}
-.jnR-cidade i{background:radial-gradient(circle at 4px 4px,#c9ced8 2.4px,transparent 2.8px) 0 0/9px 8px,radial-gradient(circle at 8px 8px,#c0c5cf 2.4px,transparent 2.8px) 0 0/9px 8px,#8a909c}
-.jnR-vulcao{--alto:10px;--penhasco:#241210}
-.jnR-vulcao i{background:radial-gradient(circle at 5px 5px,#ff6a1a 1.3px,transparent 1.8px) 0 0/14px 14px,radial-gradient(circle at 11px 11px,#241412 2px,transparent 2.5px) 0 0/14px 14px,linear-gradient(135deg,transparent 46%,rgba(255,90,26,.45) 46% 50%,transparent 50%) 0 0/34px 26px,#5a382e}
-/* A usina é concreto escuro com a faixa de perigo — o cinza liso lia igual ao planalto (Q7). */
-.jnR-usina{--alto:5px;--penhasco:#2e3138}
-.jnR-usina i{background:repeating-linear-gradient(45deg,#ffd23f 0 6px,#26262c 6px 12px) 0 0/100% 8px no-repeat,repeating-linear-gradient(45deg,#ffd23f 0 6px,#26262c 6px 12px) 0 100%/100% 8px no-repeat,
-  repeating-linear-gradient(0deg,rgba(40,44,52,.55) 0 1px,transparent 1px 14px),radial-gradient(circle at 4px 4px,#8a909c 1px,transparent 1.5px) 0 0/9px 9px,#666c78}
-/* O planalto da Liga é MESA: pedra alta, a face do penhasco violeta. */
-.jnR-planalto{--alto:12px;--penhasco:#43386a}
-/* O degrau de cima da mesa: mais claro, com a própria face — a Liga fica no alto de verdade. */
-.jnRegiao.jnTopo{--alto:9px}.jnR-planalto.jnTopo{--penhasco:#5a4d88}
-.jnRegiao.jnTopo i{filter:brightness(1.1) saturate(1.1)}
-/* ST-10.22c2: o planalto é PEDRA da Estrada da Vitória — cinza quente da paleta
-   GBA, com pedras em dois tamanhos e o brilho de cima. A mesa lilás de grade lia
-   como piso de azulejo, "fora da paleta, sem textura" (Q7 da c1). O lilás da Liga
-   fica só nos pilares e no palácio. */
-.jnR-planalto{--penhasco:#4e463c}.jnR-planalto.jnTopo{--penhasco:#62594c}
-.jnR-planalto i{background:radial-gradient(ellipse 5px 3px at 6px 7px,#6f675b 60%,transparent 64%) 0 0/19px 15px,
-  radial-gradient(ellipse 3px 2px at 14px 4px,#d8d0bf 55%,transparent 62%) 0 0/19px 15px,
-  radial-gradient(ellipse 7px 4px at 11px 11px,#857c6e 55%,transparent 60%) 5px 3px/31px 23px,
-  radial-gradient(circle at 3px 3px,#b8af9e 1px,transparent 1.4px) 0 0/9px 9px,#a39a89}
 /* Na largura média as cidades ficam mais perto umas das outras, e o lago e a
    lava de uma invadiam o platô vizinho (Q7 da c1, 1100): eles encolhem. */
 @media (min-width:521px) and (max-width:1200px){ .jnLago{transform:scale(.72)} }
@@ -1204,11 +1143,6 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
    de menor contraste do mapa, e o crítico cego leu a Usina como mais
    importante que o Campeão. Dourado, cheio, maior que os outros. */
 .jnFinal .jnNo.jn-trancado span{opacity:1;color:#ffe9a8;background:rgba(46,30,4,.94);border:1px solid #ffd24a;font-size:.74rem}
-/* CINNABAR É ILHA (ST-10.22c2): o vulcão ganha o MAR em volta — a mesma forma
-   da região, maior, em água com a espuma na borda. Sem ele a lava era um
-   borrão no meio da grama ("Cinnabar é ilha e não há mar"). */
-.jnR-vulcao::before{content:'';position:absolute;inset:-9% -12%;clip-path:var(--forma);z-index:-1;
-  background:repeating-linear-gradient(170deg,rgba(255,255,255,.18) 0 2px,transparent 2px 11px),radial-gradient(ellipse at 50% 50%,#3c8fd0 55%,#2d6fb0 80%,#e8f6ff 81% 84%,#2d6fb0 85%)}
 /* A PRAÇA DA CIDADE: todo ginásio mora numa cidade, e a cidade é calçada sob
    o nó — a estrada ENTRA nela. Antes do nó no DOM, e por isso embaixo dele. */
 .jnT-ginasio::before{content:'';position:absolute;left:-44px;top:-24px;width:88px;height:48px;clip-path:polygon(22% 0,78% 0,78% 8%,89% 8%,89% 20%,96% 20%,96% 36%,100% 36%,100% 64%,96% 64%,96% 80%,89% 80%,89% 92%,78% 92%,78% 100%,22% 100%,22% 92%,11% 92%,11% 80%,4% 80%,4% 64%,0 64%,0 36%,4% 36%,4% 20%,11% 20%,11% 8%,22% 8%);pointer-events:none;
@@ -1228,13 +1162,12 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnB3 .jnProp{transform:scale(.86);filter:hue-rotate(-20deg) saturate(1.25) drop-shadow(0 3px 0 rgba(0,0,0,.28))}
 .jnLicao{display:flex;align-items:center;gap:8px;margin:8px 0 0;font-size:.74rem;color:var(--txt)}
 .jnLicao img{width:28px;height:28px;image-rendering:pixelated;flex:none}.jnLicao b{color:var(--neon)}
-/* ── ST-10.22d (L-214) · O CHÃO EM TILES ─────────────────────────────────
-   Cada região pinta o tile NOSSO do material (arte/chao, gerado pela
-   tools/pixel-arte.mjs) em 2×, no lugar dos pontinhos em gradiente — e ganha
-   uma FRANJA: o mesmo contorno em degrau, 6 px maior, num xadrez de 2 px na
-   cor do chão dela, atrás do chão. É a transição de tile do GBA: a borda
-   mistura a região com a grama, e a ilha deixa de estar pousada no tapete.
-   A usina fica com as faixas de perigo — o chão dela diz outra coisa. */
+/* ── ST-10.22e · O MUNDO EM GRADE ──────────────────────────────────────
+   O chão deixou de ser ilha pousada no tapete: é um canvas (`.jnChao`) com a
+   grade de tiles NOSSOS (arte/chao), uma casa de 32 px por vez — a camada 0
+   (`jornada-chao.mjs`) decide o material de cada casa pelo lugar mais perto,
+   a franja em xadrez onde dois materiais se encontram e a face do penhasco
+   onde o chão desce. Aqui só moram as peças que ficam por cima dele. */
 /* ST-10.22d: a PONTE onde o rio cruza a estrada (a camada 0 diz onde), em
    tábuas com os dois corrimões — a estrada passava por cima da água sem
    nada. A BANDEIRA marca o início, e o fim é o losango DOURADO e maior:
@@ -1245,33 +1178,13 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
   background:repeating-linear-gradient(90deg,#b07a3e 0 4px,#7a5028 4px 5px);border-top:3px solid #4a3018;border-bottom:3px solid #4a3018;box-shadow:0 3px 0 rgba(0,0,0,.35)}
 .jnInicio .jnNo::before{content:'';position:absolute;left:12px;top:-30px;width:24px;height:32px;background:url(../arte/mapa/bandeira.svg) 0 0/24px 32px no-repeat;image-rendering:pixelated;pointer-events:none}
 .jnFinal .jnNo.jn-liga.jn-trancado i{background:linear-gradient(135deg,#ffe27a,#c98a1b);border-color:#fff3c0;filter:none;width:36px;height:36px;box-shadow:0 0 10px rgba(255,210,74,.6)}
-.jnRegiao::after{content:'';position:absolute;inset:-6px;clip-path:var(--forma);z-index:-1;pointer-events:none;
-  background:conic-gradient(var(--franja,transparent) 25%,transparent 0 50%,var(--franja,transparent) 0 75%,transparent 0) 0 0/4px 4px}
-.jnR-campo{--franja:#7cbd57}
-.jnR-campo i{background:url(../arte/chao/campo.svg) 0 0/32px 32px}
-.jnR-floresta{--franja:#2f6a28}
-.jnR-floresta i{background:url(../arte/chao/floresta.svg) 0 0/32px 32px}
-.jnR-bosque{--franja:#1f5444}
-.jnR-bosque i{background:url(../arte/chao/bosque.svg) 0 0/32px 32px}
-.jnR-pedra{--franja:#bf9a62}
-.jnR-pedra i{background:url(../arte/chao/pedra.svg) 0 0/32px 32px}
-.jnR-praia{--franja:#e3d294}
-.jnR-praia i{background:url(../arte/chao/praia.svg) 0 0/32px 32px}
-.jnR-jardim{--franja:#86c65c}
-.jnR-jardim i{background:url(../arte/chao/jardim.svg) 0 0/32px 32px}
-.jnR-pantano{--franja:#4b6b45}
-.jnR-pantano i{background:url(../arte/chao/pantano.svg) 0 0/32px 32px}
-.jnR-cidade{--franja:#9aa0ac}
-.jnR-cidade i{background:url(../arte/chao/cidade.svg) 0 0/32px 32px}
-.jnR-vulcao{--franja:#5a382e}
-.jnR-vulcao i{background:url(../arte/chao/vulcao.svg) 0 0/32px 32px}
-.jnR-planalto{--franja:#8d8475}
-.jnR-planalto i{background:url(../arte/chao/planalto.svg) 0 0/32px 32px}
 .jnMapa{position:relative;height:340px;border-radius:14px;overflow:hidden;border:1px solid rgba(var(--goldRGB),.35);image-rendering:pixelated;
   /* ST-10.22d: a grama em TILE nosso (arte/chao), e duas manchas suaves de
      luz e sombra por cima para a repetição não virar papel de parede. */
   background:radial-gradient(70% 60% at 30% 40%,rgba(150,210,110,.22) 0%,transparent 70%),radial-gradient(60% 60% at 80% 70%,rgba(20,60,20,.28) 0%,transparent 70%),
     url(../arte/chao/grama.svg) 0 0/32px 32px,#5e9e43}
+/* ST-10.22e: o chão inteiro é uma grade de tiles num canvas, por baixo de tudo. */
+.jnChao{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;pointer-events:none}
 .jnCaminho{position:absolute;inset:0;width:100%;height:100%}
 .jnCaminho polyline{fill:none;stroke:#dcbc80;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
 .jnCaminho polyline.jnBeira{stroke:#8a6636;stroke-width:13;filter:drop-shadow(0 2px 0 rgba(0,0,0,.22))}
@@ -1764,9 +1677,6 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
   .jnSeta.jn-dir{transform:rotate(135deg)}.jnSeta.jn-esq{transform:rotate(-45deg)}.jnSeta.jn-baixo{transform:rotate(45deg)}
   .jnMapa{height:calc(var(--n) * 130px + 60px)} .jnMapa.jnVoltas2{height:calc(var(--n) * 165px + 60px)} .jnDeitado{display:none} .jnEmPe{display:block}
   .jnPos{left:calc(var(--y) * 1%);top:calc(70px + (100% - 110px) * var(--x) / 100)} .jnPos.jnB{top:calc(var(--x) * 1%)}
-  /* Em pé, a região ganha 16 pontos de largura: o mapa tem 392 px, e com a
-     largura do deitado o planalto ficava com 120 px — os braseiros caíam na grama. */
-  .jnRegiao{left:calc((var(--y) - (var(--h) + 16) / 2) * 1%);top:calc(70px + (100% - 110px) * (var(--x) - var(--w) / 2) / 100);width:calc((var(--h) + 16) * 1%);height:calc((100% - 110px) * var(--w) / 100)}
   .jnEmPe{top:70px;bottom:auto;height:calc(100% - 110px)}
   .jnPos.jnVoce{left:calc(var(--ay) * 1%);top:calc(70px + (100% - 110px) * var(--ax) / 100)} .jnPainel{grid-template-columns:1fr;grid-template-rows:none;grid-template-areas:'titulo' 'chance' 'info';gap:10px} .jnChance{align-items:flex-start} .jnCausa,.jnPaga{text-align:left} }
 /* ST-10.9 · a batalha PvE. O palco é o mundo GBA — o rival no alto à direita,

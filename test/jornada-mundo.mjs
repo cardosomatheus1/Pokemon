@@ -70,24 +70,14 @@ export function suite() {
 
   /* ST-10.22d (L-214): o chão em TILES, arte nossa — em quatro rodadas o
      crítico descreveu o mesmo defeito: cada região uma ilha de pontinhos em
-     gradiente sobre um tapete liso. Tile 16 × 16 por material (em 2×) e a
-     FRANJA pontilhada que mistura a borda de cada região com a grama, como a
-     transição de tile do GBA. A usina fica com as faixas de perigo. */
-  s.teste('ST-10.22d: o chão em tiles nossos, e a borda de cada região mistura com a grama', () => {
+     gradiente sobre um tapete liso. Tile 16 × 16 por material (em 2×). Na
+     ST-10.22e o tile deixou a região e foi para a grade (`jornada-chao`); a
+     grama do fundo do mapa fica como reserva, se o canvas não pintar. */
+  s.teste('ST-10.22d: o chão em tiles nossos, e a grama por baixo de reserva', () => {
     const css = fonte('../app/index.html');
-    const materiais = REGIOES.filter(r => r !== 'usina');
-    for (const m of ['grama', ...materiais]) ok(existsSync(new URL(`../arte/chao/${m}.svg`, import.meta.url)), `o tile ${m} não existe`);
+    for (const m of ['grama', 'agua', ...REGIOES]) ok(existsSync(new URL(`../arte/chao/${m}.svg`, import.meta.url)), `o tile ${m} não existe`);
     ok(/\.jnMapa\{[^}]*url\(\.\.\/arte\/chao\/grama\.svg\)/.test(css), 'o mapa sem a grama em tile');
-    for (const m of materiais) {
-      ok(new RegExp(`\\.jnR-${m} i\\{background:url\\(\\.\\./arte/chao/${m}\\.svg\\) 0 0/32px 32px`).test(css), `a região ${m} sem o tile`);
-      ok(new RegExp(`\\.jnR-${m}\\{--franja:#`).test(css), `a região ${m} sem a cor da franja`);
-    }
-    ok(/\.jnRegiao::after\{[^}]*clip-path:var\(--forma\)[^}]*var\(--franja/.test(css), 'a borda da região sem a franja de transição');
-    /* O filtro da região sombreava cada casa da franja: a transição saía um
-       pontilhado escuro (visto na primeira captura). A sombra é a face. */
-    const reg = css.match(/\n\.jnRegiao\{([^}]*)\}/)?.[1] ?? '';
-    ok(!/filter:\s*drop-shadow/.test(reg) && /--alto:3px;--penhasco:rgba\(0,0,0,/.test(reg), 'a região volta ao drop-shadow que suja a franja');
-    ok(/isolation:isolate/.test(reg), 'sem contexto próprio, a franja vai para trás do fundo do mapa');
+    ok(!/\.jnRegiao|\.jnR-[a-z]+[ {:]/.test(css), 'o CSS das manchas de região continua no arquivo');
   });
 
   s.teste('ST-10.22d: a ponte onde o rio cruza a estrada, a bandeira do início e o fim em ouro', () => {

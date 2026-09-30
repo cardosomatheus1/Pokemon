@@ -15,7 +15,8 @@ import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
 import { miniMapa, rioDoMapa } from './jornada-mundo.mjs';
-import { setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, regioesDoMapa, ARTE_NOSSA_DO_MAPA, mostraNome, corDoNo, cruzaOCaminho } from './jornada-dados.mjs';
+import { pintarChao } from './jornada-chao-tela.mjs';
+import { setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, ARTE_NOSSA_DO_MAPA, mostraNome, corDoNo, cruzaOCaminho } from './jornada-dados.mjs';
 import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, turnosDaAmeaca, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { diaDoMundo } from '../../engine/avanco.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido, candidatosDaCaixa, membrosParaTrocas } from './treino-dados.mjs';
@@ -343,7 +344,7 @@ let reafastar = 0;
 /* O celular tem o caminho EM PÉ, com uma volta só (ST-10.22c): cruzar a largura repinta, e não só reafasta. */
 const emPe = () => !!globalThis.matchMedia?.('(max-width:520px)').matches;
 let pintadoEmPe = null;
-addEventListener('resize', () => { clearTimeout(reafastar); reafastar = setTimeout(() => { const a = $('#jnMapaArea'); if (!a) return; if (pintadoEmPe !== null && pintadoEmPe !== emPe() && a.offsetParent) renderJornada(); else { afastarCena(a); if (pintadoEmPe) centrarJanela(a, escolhido ?? a.querySelector('.jnNo.jn-atual')?.dataset.jnNo); } }, 150); });
+addEventListener('resize', () => { clearTimeout(reafastar); reafastar = setTimeout(() => { const a = $('#jnMapaArea'); if (!a) return; if (pintadoEmPe !== null && pintadoEmPe !== emPe() && a.offsetParent) renderJornada(); else { afastarCena(a); pintarChao(a, mapaDaJornada(PACK, carregar().jornada, { emPe: pintadoEmPe })); if (pintadoEmPe) centrarJanela(a, escolhido ?? a.querySelector('.jnNo.jn-atual')?.dataset.jnNo); } }, 150); });
 
 /* O MINIMAPA acende os nós que a JANELA mostra agora (ST-10.22c4): o
    jogador vê em que trecho do caminho inteiro está olhando. Medir é do
@@ -394,7 +395,7 @@ export function renderJornada({ nova = null } = {}) {
           title="${x.nome ? `${x.nome} (${x.onde})${x.ganha ? '' : ' — ainda não é sua'}` : 'ainda não há ginásio aqui'}">${x.arte ? `<img src="${x.arte}" alt="">` : ''}</i>`).join('')}</div></div>
     <div class="jnMini" style="--andado:${mini.andado}" aria-label="o caminho inteiro"><b class="jnMiniTrilha"></b>${mini.pontos.map((p, k) => `<button class="jnMiniNo jn-${p.estado} jn-${p.tipo}${p.final ? ' jnMiniFim' : ''}${k === 0 ? ' jnMiniIni' : ''}" data-jn-no="${p.id}" style="--t:${p.t}" title="${p.curto}" aria-label="${p.curto}"></button>`).join('')}</div>
     <div class="jnJanela"><div class="jnMapa${mapa.voltas === 2 ? ' jnVoltas2' : ''}" style="--n:${mapa.voltas === 2 ? Math.ceil(mapa.nos.length / 2) : mapa.nos.length}" data-rio='${JSON.stringify(rios.map(r => r.pontos))}'>
-      ${regioesDoMapa(mapa).map(r => `<div class="jnRegiao jnR-${r.regiao} jnRv${r.v}${r.topo ? ' jnTopo' : ''}" style="--x:${r.x};--y:${r.y};--w:${r.w};--h:${r.h}"><b></b><i></i></div>`).join('')}
+      <canvas class="jnChao" aria-hidden="true"></canvas>
       <svg class="jnCaminho jnDeitado" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${rioSvg(false)}${trilha(false)}</svg>
       <svg class="jnCaminho jnEmPe" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${rioSvg(true)}${trilha(true)}</svg>
       ${rios.map(r => `<div class="jnPos jnFoz" style="--x:${r.foz.x};--y:${r.foz.y}"><b class="jnLago"><i></i></b></div>`).join('')}
@@ -415,7 +416,8 @@ export function renderJornada({ nova = null } = {}) {
   const im = alvo.querySelector('.jnEu img');
   if (im) { const medir = () => { im.parentNode.style.width = `${im.naturalWidth / 9}px`; }; if (im.complete && im.naturalWidth) medir(); else im.onload = medir; }
   pintarPainel(mapa);
-  requestAnimationFrame(() => { afastarCena(alvo); if (pintadoEmPe) centrarJanela(alvo, escolhido ?? mapa.atual); marcarJanela(alvo); });
+  /* ST-10.22e: o chão é uma grade de tiles, pintada depois de os nós terem lugar. */
+  requestAnimationFrame(() => { afastarCena(alvo); pintarChao(alvo, mapa); if (pintadoEmPe) centrarJanela(alvo, escolhido ?? mapa.atual); marcarJanela(alvo); });
   alvo.querySelector('.jnJanela')?.addEventListener('scroll', () => marcarJanela(alvo), { passive: true });
   /* O marco é <img>: sem tamanho até carregar, o afastamento o via com 0 × 0 e
      o deixava em cima de um nome (medido na captura da ST-10.22b). */
