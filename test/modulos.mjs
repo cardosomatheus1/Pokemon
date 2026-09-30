@@ -371,6 +371,7 @@ const CAMADA = {
   'jornada-desenho-tela.mjs': 4,
   'idle-conta.mjs': 0,
   'idle-servidor.mjs': 4,
+  'idle-acoes.mjs': 4,
   /* ST-5.9 · a arena volta à tela quando a luta começa (0). */
   'arena-vista.mjs': 0,
   'confirmacao-aposta.mjs': 0,

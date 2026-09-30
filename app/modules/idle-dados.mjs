@@ -356,7 +356,7 @@ export const concluidasHoje = (e, agora) =>
 export const encontrosHoje = (e, agora) =>
   [...e.expedicoes, ...(e.avancos ?? [])]
     .filter(x => x.colhidaEm && x.colhidaEm > agora - DIA_MS)
-    .reduce((a, x) => a + (x.encontros ?? 0), 0);
+    .reduce((a, x) => a + (x.encontros ?? 0), e.conta?.teto?.hoje ?? 0);   // ST-13.5b: com conta, o dia colhido vem do servidor
 
 /* ── O LANÇAMENTO DA RUN COLHIDA NO TETO (D-107) ──────────────────────────
  *

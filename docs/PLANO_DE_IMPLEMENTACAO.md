@@ -2228,8 +2228,10 @@ do servidor. Três partes:
   - **13.5a** ✅ 30/09 · a leitura: `idleDaConta`, `sincronizarIdleDaConta` no boot, o
     servidor passa `origem` e `expedicao` nos encontros, e o aviso "desatualizado"
     sem rede (fixo nas duas abas do farm, não a faixa que some) · S2005–S2014;
-  - **13.5b** · expedição, colheita, bola e a inicial pelo servidor (o teto da
-    conta vem do servidor: as expedições colhidas não descem);
+  - **13.5b** ✅ 30/09 · expedição, colheita, bola e a inicial pelo servidor (o teto da
+    conta vem do servidor: as expedições colhidas não descem — a leitura manda
+    `teto.hoje`, e o `encontrosHoje` do aparelho soma a partir dele) ·
+    `app/modules/idle-acoes.mjs` decide onde cada ação acontece · S2015–S2023;
   - **13.5c** · a run do Avanço (começar, poção, recuar, colher — a colheita é
     automática no quadro);
   - **13.5d** · caixa, troca, soltar, foco, golpe, evoluir e doce;

@@ -39,13 +39,14 @@ import { $, nosDois, nasAbasDoFarm } from './dom.mjs';
    linhas. A divisao e por assunto: la vive tudo que a tela DIZ fora dos
    paineis — o banner, quem acompanha, e a faixa de recado. */
 import { avisarBanner, avisarCompanheiro, avisar, avisarConta } from './idle-avisos.mjs';
+import { inicialNa, expedicaoNa, colherNa, lancarNa } from './idle-acoes.mjs';   // ST-13.5b: com conta, pelo servidor
 import { vigiarOutraAba, AVISO_OUTRA_ABA } from './idle-abas.mjs';
 import {
-  VAZIO, carregar, salvar, iniciaisDo, escolherInicial, criaturasDe,
-  staminaDe, iniciarExpedicao, emCampo, concluidasHoje, pronta, colher,
+  VAZIO, carregar, salvar, iniciaisDo, criaturasDe,
+  staminaDe, emCampo, concluidasHoje, pronta,
   TETO_DIARIO, TETO_ENCONTROS, EQUIPE_MAX,
   STAMINA_MAX, PERFIS, encontrosHoje, estadoDoTeto, cabeExpedicao,
-  lancarBola, naEquipe, naCaixa, mover, PARTY_MAX, restamEncontros, comprometido,
+  naEquipe, naCaixa, mover, PARTY_MAX, restamEncontros, comprometido,
   vagasDe, proximaVagaDe, estagioMaximoDe, CHAVE_DO_IDLE,
 } from './idle-dados.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
@@ -414,7 +415,7 @@ document.addEventListener('click', async ev => {
   const ini = ev.target.closest('#idleIniciais [data-dex]');
   if (ini) {
     try {
-      escolherInicial(E, PACK, Number(ini.dataset.dex), agora());
+      await inicialNa(E, PACK, Number(ini.dataset.dex), agora());
       salvarE(); renderIdle(); avisarPokedex();
     } catch (e) { avisar(e.message); }
     return;
@@ -433,7 +434,7 @@ document.addEventListener('click', async ev => {
         ? chanceDe(PACK, { raridade: antes.raridade, bola: lance.dataset.bola })
         : null;
 
-      const r = lancarBola(E, { pack: PACK, chave: lance.dataset.lance,
+      const r = await lancarNa(E, { pack: PACK, chave: lance.dataset.lance,
                                 bola: lance.dataset.bola, agora: agora() });
       /* GRAVA ANTES DE ANIMAR, como a evolução do 1.21: o que aconteceu no jogo
          aconteceu, e a tela é o relato. Quem fechar a aba no meio da animação
@@ -557,7 +558,7 @@ document.addEventListener('click', async ev => {
   const col = ev.target.closest(nasDuas('[data-colher]'));
   if (col) {
     try {
-      ultimaColheita = colher(E, { pack: PACK, id: col.dataset.colher, agora: agora() });
+      ultimaColheita = await colherNa(E, { pack: PACK, id: col.dataset.colher, agora: agora() });
       salvarE(); renderIdle();
     } catch (e) { avisar(e.message); }
     return;
@@ -574,12 +575,12 @@ document.addEventListener('click', async ev => {
        vai e quanta stamina sobra, que é a decisão de verdade. Ver a barra cair
        é o que a transforma numa escolha.
 
-       Ela vem ANTES de `iniciarExpedicao`: cancelar não pode deixar rastro. */
+       Ela vem ANTES de `expedicaoNa`: cancelar não pode deixar rastro. */
     const escolha = { bioma: biomaEscolhido, perfil: perfilEscolhido,
                       equipe: equipeEscolhida, agora: agora() };
     if (!await confirmarExpedicao(E, escolha)) return;
     try {
-      iniciarExpedicao(E, { pack: PACK, bioma: biomaEscolhido,
+      await expedicaoNa(E, { pack: PACK, bioma: biomaEscolhido,
         perfil: perfilEscolhido, equipe: equipeEscolhida, estagio: estagioEscolhido, agora: agora() });
       ultimaColheita = null;
       salvarE(); renderIdle();

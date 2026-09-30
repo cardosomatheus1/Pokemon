@@ -89,7 +89,9 @@ export function colecaoDe(db, { userId, agora, pack = PACK }) {
     run: aberta.run ? { id: aberta.id, ...aberta.run } : null,
     /* Os encontros que esperam bola — a chave é o que o lance manda. */
     encontros: pendentesDe(db, userId),
-    teto: { restam: restamEncontros(estadoDoTeto(db, userId, agora, pack)) },
+    /* O que JÁ SAIU hoje vai junto (ST-13.5b): as expedições colhidas não
+       descem ao aparelho, e sem este número o teto dele contaria o dia cheio. */
+    teto: (t => ({ restam: restamEncontros(t), hoje: t.encontrosHoje }))(estadoDoTeto(db, userId, agora, pack)),
     estagio: { aberto: estagioMaximo(criaturas), proximo: proximoEstagio(criaturas) },
     /* A jornada (ST-13.7): o que o servidor venceu por ela. */
     jornada: jornadaDaConta(db, userId).jornada,

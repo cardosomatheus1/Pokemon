@@ -25,7 +25,11 @@ export const idleNoServidor = temSessao => IDLE_NA_CONTA && !!temSessao;
 export function camposDaConta(cru) {
   const c = cru?.conta;
   if (!c || typeof c !== 'object') return { conta: null };
-  return { conta: { agora: Number.isFinite(c.agora) ? c.agora : null, teto: c.teto ?? null, estagio: c.estagio ?? null, desatualizado: c.desatualizado === true } };
+  /* O teto volta do disco como NÚMEROS inteiros não negativos: `hoje` entra
+     na soma do teto do aparelho, e é campo lido de onde o jogador escreve. */
+  const n = v => (Number.isInteger(v) && v >= 0 ? v : 0);
+  const teto = c.teto && typeof c.teto === 'object' ? { restam: n(c.teto.restam), hoje: n(c.teto.hoje) } : null;
+  return { conta: { agora: Number.isFinite(c.agora) ? c.agora : null, teto, estagio: c.estagio ?? null, desatualizado: c.desatualizado === true } };
 }
 
 export function idleDaConta(local, srv, { doces = null } = {}) {
@@ -50,6 +54,10 @@ export function idleDaConta(local, srv, { doces = null } = {}) {
     conta: { agora, teto: srv.teto ?? null, estagio: srv.estagio ?? null, desatualizado: false },
   };
 }
+
+/* O LANCE DA CONTA no formato do lance do aparelho: o servidor não diz se a
+   criatura foi para a caixa — a criatura diz. */
+export const lanceDaConta = r => ({ ...r, foiParaCaixa: !!r?.criatura?.naCaixa });
 
 /* O aviso da tela: só quando a última leitura da conta falhou. */
 export const avisoDaConta = e => (e?.conta?.desatualizado ? 'Sem conexão com o servidor: a sua coleção pode estar desatualizada.' : null);
