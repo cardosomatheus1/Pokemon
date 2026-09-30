@@ -1532,6 +1532,10 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .leLjLinha select{font:inherit;font-size:.72rem;color:var(--txt);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:2px 6px;max-width:130px}
 .leLoja .leLjComprar{flex:none;justify-self:start;padding:6px 14px;font-family:var(--px);font-size:.72rem;color:#fff;border-color:rgba(var(--lp),.9);background:linear-gradient(180deg,rgba(var(--lp),.75),rgba(var(--lp),.45));box-shadow:0 0 12px rgba(var(--lp),.35)}
 .leLoja .leLjComprar:disabled{color:var(--dim);background:none;border-color:var(--line);box-shadow:none}
+/* A moldura da Liga na prateleira (ST-11.7d): a peça viva, animada, no tamanho em que ela aparece no banner. */
+.leLjMold{display:grid;place-items:center;overflow:visible}
+/* Pelo atributo, e não `.bnMold{`: o teste do banner lê a PRIMEIRA regra `.bnMold{` como a âncora do retrato. */
+.leLjMold [class~="bnMold"]{position:relative;left:auto;bottom:auto;width:48px;height:48px}
 .leLjMotivo{grid-column:1/-1;font-style:normal;font-size:.64rem;color:#ffb547}
 .leLjAviso{margin:10px 0 0;font-size:.78rem;padding:6px 10px;border-radius:8px}
 .leLjItem .leLjAviso{grid-column:1/-1;margin:2px 0 0;font-size:.72rem}
@@ -3975,6 +3979,37 @@ td.od{text-shadow:0 0 8px rgba(var(--goldRGB),.6)}
 .md-bola::before{inset:2px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.45)}
 .md-bola::after{inset:auto auto 50% -4px;width:9px;height:9px;margin-bottom:-4.5px;
   border-radius:50%;background:#eef2f8;border:2px solid #20263a;z-index:3}
+
+/* 19 · ÓRBITA DA LIGA (ST-11.7d) — só se ganha na Liga, com League Points.
+   O violeta É a moeda da Liga (o hexágono dos pontos), e as SEIS marcas que
+   giram são o hexágono aberto: quem vê a moldura num banner sabe de onde ela
+   veio sem ler nada. O aro de dentro fica parado; só a órbita anda, devagar —
+   no banner ela fica na tela por horas, e rápida ela cansaria. */
+.md-liga-orbita::before{border:2px solid #a884ff;
+  box-shadow:inset 0 0 8px rgba(168,132,255,.55),0 0 6px rgba(168,132,255,.35)}
+.md-liga-orbita::after{inset:-6px;border-radius:16px;padding:3px;
+  /* Cada marca é uma LUZ, e não um traço: o miolo quase branco com a cauda violeta que se apaga.
+     A 1ª versão (7° de branco + 7° de violeta, 2 px) lia como borda tracejada quebrada a 66 px. */
+  background:repeating-conic-gradient(from var(--mdAng2),#f3eeff 0deg,#c7b0ff 5deg,rgba(168,132,255,.75) 12deg,rgba(168,132,255,0) 26deg 60deg);
+  filter:drop-shadow(0 0 3px rgba(168,132,255,.9));
+  animation:mdAng2 9s linear infinite;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+
+/* 20 · ESTANDARTE DA TEMPORADA (ST-11.7d) — a faixa de campeonato: listras
+   violeta e ouro correndo na diagonal, como o tecido de um estandarte. O
+   FILETE claro por dentro (a lição do Ouro) separa a faixa do retrato; sem
+   ele as listras invadiam a foto a 38 px. */
+.md-liga-estandarte{padding:4px;
+  background:repeating-linear-gradient(135deg,#7a55e8 0 5px,#a884ff 5px 8px,#ffd76e 8px 11px,#c9962b 11px 13px);
+  background-size:36px 36px;animation:mdEstandarte 2.8s linear infinite}
+/* O retrato é PNG transparente: sem fundo próprio, as listras apareciam ATRÁS do
+   treinador e a faixa virava estampa. A faixa é moldura, e o miolo é liso. */
+.md-liga-estandarte>.bnTreinador{border-radius:6px;background:radial-gradient(circle at 50% 35%,#2a2350,var(--panel2) 75%)}
+.md-liga-estandarte::before{inset:4px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(255,246,220,.6)}
+.md-liga-estandarte::after{display:none}
+@keyframes mdEstandarte{to{background-position:36px 0}}
 
 /* O TAMANHO REAL VEM DO `banner.mjs`, que conhece a dimensão natural do GIF.
  *

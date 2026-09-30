@@ -29,21 +29,32 @@ const PRATELEIRA_DE_BOLAS = Object.freeze([
 ]);
 export const DOCE_DA_LIGA = Object.freeze({ preco: 60, quantidade: 3, limite: 5 });
 
+/* O COSMÉTICO DA LIGA (ST-11.7d): a peça é uma só e é para sempre — o
+   "limite" é 1, e quem já tem não compra de novo. O preço é o de um prêmio de
+   tier alto: quem fecha a temporada no Platinum (275) compra uma; o Bronze
+   precisa de mais que uma temporada de partidas. É o gasto de PRESTÍGIO da
+   moeda, e ele tem de custar como prestígio. */
+export const PRECO_COSMETICO_DA_LIGA = 400;
+
 /* O catálogo do pack. A garantida (mult ≥ 100) fica fora; a comum é a de
    menor força. */
-export function catalogoDaLoja(pack) {
+export function catalogoDaLoja(pack, cosmeticos = []) {
   const bolas = [...(pack?.bolas ?? [])].filter(b => Number(b.mult) < 100).sort((a, b) => a.mult - b.mult).slice(1, 1 + PRATELEIRA_DE_BOLAS.length);
   return [
     ...bolas.map((b, i) => ({ id: `bola:${b.id}`, tipo: 'bola', alvo: b.id, nome: b.rotulo ?? b.id, mult: b.mult, ...PRATELEIRA_DE_BOLAS[i] })),
     { id: 'doce', tipo: 'doce', alvo: null, nome: 'Doce da Liga', ...DOCE_DA_LIGA },
+    /* As peças que o TEMA marcou como da Liga — o motor não sabe o que é uma moldura. */
+    ...(cosmeticos ?? []).map(c => ({ id: `cosmetico:${c.familia}:${c.id}`, tipo: 'cosmetico', alvo: { familia: c.familia, id: c.id },
+                                      nome: c.nome, arte: c.arte ?? null, preco: PRECO_COSMETICO_DA_LIGA, quantidade: 1, limite: 1 })),
   ];
 }
 
-export const itemDaLoja = (pack, id) => catalogoDaLoja(pack).find(i => i.id === id) ?? null;
+export const itemDaLoja = (pack, id, cosmeticos = []) => catalogoDaLoja(pack, cosmeticos).find(i => i.id === id) ?? null;
 
 /* Pode comprar? O motivo da recusa é para o jogador: diz o que falta. */
-export function podeComprar(item, { saldo, comprados }) {
+export function podeComprar(item, { saldo, comprados, jaTem = false }) {
   if (!item) return { ok: false, motivo: 'esse item não está na loja' };
+  if (jaTem) return { ok: false, motivo: 'já é seu' };
   if ((Number(comprados) || 0) >= item.limite) return { ok: false, motivo: `limite desta temporada atingido (${item.limite})` };
   if ((Number(saldo) || 0) < item.preco) return { ok: false, motivo: `faltam ${item.preco - (Number(saldo) || 0)} LP` };
   return { ok: true };

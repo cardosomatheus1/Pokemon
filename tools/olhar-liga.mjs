@@ -117,7 +117,7 @@ for (const w of LARGURAS) {
   time(x.id, [[6, 32], [9, 30], [3, 31], [25, 28], [143, 30], [94, 29]]);
   const seu = publicarTime(srv.db, { userId: x.id, preset: 'aggressive', agora: agora - 30 * H });
   criarPartida(srv.db, { userId: x.id, meu: seu.id, adversario: dela.id, chaveIdem: `olhar-loja-${w}`, agora: agora - 26 * H });
-  srv.db.prepare(`INSERT INTO liga_pontos (user_id, temporada, dia, tipo, delta, ref, idem, criado_em) VALUES (?, 1, 0, 'premio', 175, 'olhar', ?, ?)`).run(x.id, `olhar-premio-${w}`, agora);
+  srv.db.prepare(`INSERT INTO liga_pontos (user_id, temporada, dia, tipo, delta, ref, idem, criado_em) VALUES (?, 1, 0, 'premio', 600, 'olhar', ?, ?)`).run(x.id, `olhar-premio-${w}`, agora);
   await capturar('loja', x.sessao, { clicar: '[data-le-comprar="bola:great"]', larguras: [w] });
 }
 const ESTADO_DO_STAKE = { ligado: true, inscrito: true, tier: 'Bronze', stake: 50, pot: 100, rake: 10, payout: 90, elegivel: 340, bonus: 40, competitivo: 300, pausa: false };

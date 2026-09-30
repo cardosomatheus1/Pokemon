@@ -1521,7 +1521,7 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   (`pintarPontos`) é de navegador e não foi plantada; toda decisão está em
   `pontosNaTela`/`linhaDaPartida`, pegas em Node.
 
-### ST-11.7d · A prateleira de cosmético da Liga (proposta, 30/09)
+### ST-11.7d · A prateleira de cosmético da Liga ✅ 30/09
 - **Porte** M · **Servidor** sim · **Método** GL para a arte, INV para a compra · **Nasce de** L-213
 - **Escopo:** peças de cosmético EXCLUSIVAS da Liga (molduras e banners de
   temporada, arte nossa) à venda por League Points, gravadas na
@@ -1530,6 +1530,23 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **Portões:** Q1 Q2 Q5 Q7. **Sabotagem:** a peça da Liga à venda na
   boutique; a peça da boutique à venda na Liga; a compra sem posse.
 - **Posição na fila:** depois da 11.6e.
+- **Feito:** duas molduras NOSSAS, só da Liga — a **Órbita da Liga** (seis
+  luzes violeta girando em volta do retrato, o hexágono dos League Points
+  aberto; devagar, porque no banner ela fica horas na tela) e o **Estandarte
+  da Temporada** (listras violeta e ouro correndo na diagonal, miolo liso). A
+  vitrine ganhou a procedência `liga`: a boutique não as vende (seria câmbio
+  implícito entre as moedas), e a loja da Liga as vende por 400 LP, uma vez,
+  gravando a posse com `origem = 'liga'` (migração `cosmetico-liga-st11.7d`,
+  a tabela copiada com todas as origens — o teste cobra o superconjunto). Na
+  prateleira, a peça VIVA com o retrato do jogador dentro. Equipa-se no
+  Perfil, como as outras. `test/liga-loja.mjs` (11) · S1883–S1887.
+- **Q5:** olhado no CSS real, a 66 px e 38 px, ao lado de Ouro, Aurora,
+  Trovão e Campeão. A 1ª Órbita lia como borda tracejada quebrada — virou
+  luzes com cauda e brilho. O 1º Estandarte punha as listras ATRÁS do retrato
+  transparente (virava estampa) — o miolo ficou liso e a faixa passou a 4 px.
+  Na loja, o fundo da prévia apagava as listras — a prévia passou a levar o
+  retrato. A diferença nomeada: são as únicas molduras que dizem DE ONDE
+  vieram — quem vê uma no banner sabe que ela foi ganha na Liga.
 
 ### ST-11.8 · Anti-win-trading, antes do dinheiro ✅ 28/09 (dispositivo e rede esperam a L-050)
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.8 · **Spec** §9.12, L-050

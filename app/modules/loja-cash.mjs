@@ -144,6 +144,7 @@ const VIA = {
   missao: 'por missão',
   fragmento: 'por fragmento',
   npc: 'de um personagem',
+  liga: 'na loja da Liga',
 };
 
 export function pintarCash() {

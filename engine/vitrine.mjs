@@ -31,7 +31,10 @@
  *   > Uma segunda forma de dizer "isto se compra" seria a sexta ocorrência do
  *   > padrão que este projeto mais paga: duas verdades sobre a mesma coisa.
  */
-export const PROCEDENCIAS = ['padrao', 'loja', 'fragmento', 'missao', 'npc'];
+export const PROCEDENCIAS = ['padrao', 'loja', 'fragmento', 'missao', 'npc',
+  /* ST-11.7d · a peça que só a loja da Liga vende, por League Points. Não é
+     `loja`: a boutique mostraria à venda na outra moeda. */
+  'liga'];
 
 /* O que uma conta pode receber sem passar pela loja. `npc` fica de fora
    porque é peça de personagem, e não recompensa. */

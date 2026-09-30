@@ -54,6 +54,14 @@ import { ACERVO } from './outfit-acervo.mjs';
  * no dia em que alguém inserir uma moldura no meio. */
 const AUTORAIS_DE_BANNER = ['aurora', 'pulso', 'ouro', 'abismo'];
 
+/* ── AS PEÇAS DA LIGA (ST-11.7d) ─────────────────────────────────────────
+ *
+ * Nossas, e EXCLUSIVAS: só a loja da Liga as vende, e só por League Points.
+ * A boutique não as mostra à venda — vender a mesma peça nas duas moedas
+ * seria um câmbio implícito entre League Points e PokéCash, e o §10.12 proíbe
+ * a conversão. */
+export const PECAS_DA_LIGA = Object.freeze(['liga-orbita', 'liga-estandarte']);
+
 /* A arena que fica de graça. Uma, e é a primeira: sem nenhuma, a batalha do
    primeiro dia não teria onde acontecer. */
 const ARENA_PADRAO = ARENAS[0]?.key ?? null;
@@ -141,7 +149,8 @@ export function familias() {
                     }),
                     c => idsNossosDeBanner.has(c.id)),
     moldura: marcar(BN_MOLDURAS.map(m => ({ ...m, arte: arteIco(m.ico) })),
-                    m => AUTORAIS_DE_BANNER.includes(m.id)),
+                    m => AUTORAIS_DE_BANNER.includes(m.id))
+               .map(m => (PECAS_DA_LIGA.includes(m.id) ? { ...m, procedencia: 'liga' } : m)),
     efeito:  marcar(BN_EFEITOS.map(e => ({ ...e, arte: arteIco(e.ico) })),
                     e => AUTORAIS_DE_BANNER.includes(e.id)),
     arena:   marcar(ARENAS.map(a => ({ id: a.key, nm: a.nome, arte: arteIco(a.emoji) })),

@@ -105,6 +105,9 @@ export const BN_MOLDURAS = [
   { id:'circuito', nm:'Circuito',   ico:'🔌' },
   { id:'vivo',     nm:'Circuito Vivo', ico:'⚡' },
   { id:'bola',     nm:'Pokébola',   ico:'⚪' },
+  /* ST-11.7d · as duas da LIGA: só se ganham lá, com League Points. */
+  { id:'liga-orbita',     nm:'Órbita da Liga',        ico:'⬡' },
+  { id:'liga-estandarte', nm:'Estandarte da Temporada', ico:'🎌' },
 ];
 
 /* Mesma guarda do tema (defeito S70): valor guardado que não existe mais cai no

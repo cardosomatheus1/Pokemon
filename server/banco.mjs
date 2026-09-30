@@ -1890,6 +1890,45 @@ export const MIGRACOES = [
       db.exec(`DROP TABLE liga_stake_inscricoes`);
     },
   },
+  {
+    nome: 'cosmetico-liga-st11.7d',
+    /* A PEÇA DA LIGA NA POSSE (ST-11.7d). A `origem` ganha `liga` — a peça
+     * comprada com League Points diz de onde veio, e não finge ser
+     * `concessao`. O SQLite não afrouxa CHECK: a tabela é copiada, e a cópia
+     * leva as famílias e TODAS as origens que já existiam (a lição do S1861;
+     * o teste cobra que a lista nova contenha a anterior). */
+    sobe: db => {
+      const familias = `'outfit','avatar','cena','moldura','efeito','arena'`;
+      db.exec(`
+        CREATE TABLE cosmetic_ownership_novo (
+          user_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          familia      TEXT NOT NULL CHECK (familia IN (${familias})),
+          item_id      TEXT NOT NULL,
+          origem       TEXT NOT NULL CHECK (origem IN ('loja','fragmento','missao','concessao','liga')),
+          adquirido_em INTEGER NOT NULL,
+          PRIMARY KEY (user_id, familia, item_id)
+        )`);
+      db.exec(`INSERT INTO cosmetic_ownership_novo SELECT user_id, familia, item_id, origem, adquirido_em FROM cosmetic_ownership`);
+      db.exec(`DROP TABLE cosmetic_ownership`);
+      db.exec(`ALTER TABLE cosmetic_ownership_novo RENAME TO cosmetic_ownership`);
+    },
+    desce: db => {
+      const familias = `'outfit','avatar','cena','moldura','efeito','arena'`;
+      db.exec(`DELETE FROM cosmetic_ownership WHERE origem = 'liga'`);
+      db.exec(`
+        CREATE TABLE cosmetic_ownership_velho (
+          user_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          familia      TEXT NOT NULL CHECK (familia IN (${familias})),
+          item_id      TEXT NOT NULL,
+          origem       TEXT NOT NULL CHECK (origem IN ('loja','fragmento','missao','concessao')),
+          adquirido_em INTEGER NOT NULL,
+          PRIMARY KEY (user_id, familia, item_id)
+        )`);
+      db.exec(`INSERT INTO cosmetic_ownership_velho SELECT * FROM cosmetic_ownership`);
+      db.exec(`DROP TABLE cosmetic_ownership`);
+      db.exec(`ALTER TABLE cosmetic_ownership_velho RENAME TO cosmetic_ownership`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

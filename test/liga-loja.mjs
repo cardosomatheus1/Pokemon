@@ -22,6 +22,8 @@ import { catalogoDaLoja, podeComprar, DOCE_DA_LIGA } from '../engine/loja-liga.m
 import { chaveDoDoce } from '../engine/doce.mjs';
 import { temporadaDe } from '../engine/temporada.mjs';
 import { lojaNaTela } from '../app/modules/liga-equipe-dados.mjs';
+import { catalogo, aVenda, PECAS_DA_LIGA } from '../app/modules/cosmeticos.mjs';
+import { posseDe, comprar as comprarNaBoutique, ERRO_COSMETICO } from '../server/cosmeticos.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import { API_VERSAO, CABECALHO_VERSAO } from '../server/contrato.mjs';
 
@@ -37,6 +39,7 @@ function cena(pontos = 500) {
   if (pontos) db.prepare(`INSERT INTO liga_pontos (user_id, temporada, dia, tipo, delta, ref, idem, criado_em) VALUES (?, 1, 0, 'premio', ?, 't', 'semente', ?)`).run(u, pontos, T0);
   return { db, u, linha: chaveDoDoce(PACK, 2) };
 }
+const creditarPremio = (c, n) => c.db.prepare(`INSERT INTO liga_pontos (user_id, temporada, dia, tipo, delta, ref, idem, criado_em) VALUES (?, 1, 0, 'premio', ?, 't', ?, ?)`).run(c.u, n, `mais-${n}`, T0);
 const compra = (c, item, k, extra = {}) => comprarNaLoja(c.db, { userId: c.u, item, chaveIdem: `chave-${String(k).padStart(6, '0')}`, agora: T0, ...extra });
 
 export async function suite() {
@@ -129,14 +132,49 @@ export async function suite() {
     compra(c, 'bola:great', 1);
     const k = lojaNaTela(lojaDaConta(c.db, { userId: c.u, agora: T0 }));
     igual(k.itens.map(i => `${i.nome}|${i.preco}|${i.limite}|${i.habilitado}|${i.motivo}`).join(' / '),
-      `3× Great Ball|40 LP|1 de 5 compras nesta temporada|false|faltam 30 LP / 2× Ultra Ball|90 LP|0 de 3 compras nesta temporada|false|faltam 80 LP / 3 doces de ${PACK.especies.find(e => e.dex === c.linha).n}|60 LP|0 de 5 compras nesta temporada|false|faltam 50 LP`, 'os itens');
-    igual(k.itens.map(i => `${i.botao}|${i.efeito}|${i.feito}`).join(' / '),
+      `3× Great Ball|40 LP|1 de 5 compras nesta temporada|false|faltam 30 LP / 2× Ultra Ball|90 LP|0 de 3 compras nesta temporada|false|faltam 80 LP / 3 doces de ${PACK.especies.find(e => e.dex === c.linha).n}|60 LP|0 de 5 compras nesta temporada|false|faltam 50 LP / Órbita da Liga|400 LP|uma vez, para sempre|false|faltam 390 LP / Estandarte da Temporada|400 LP|uma vez, para sempre|false|faltam 390 LP`, 'os itens');
+    igual(k.itens.slice(0, 3).map(i => `${i.botao}|${i.efeito}|${i.feito}`).join(' / '),
       'Comprar · 40 LP|1,5× a chance de captura da bola comum|Comprado! As bolas já estão na sua Bolsa, na aba Rotas. / Comprar · 90 LP|2,2× a chance de captura da bola comum|Comprado! As bolas já estão na sua Bolsa, na aba Rotas. / Comprar · 60 LP|dar doce sobe o nível das criaturas desta linha|Comprado! Os doces já estão na Minha Coleção.', 'o botão, o efeito e onde o item vai');
     igual(`${k.saldo}|${k.nota}`, '10 LP|Cada item tem limite por temporada — ele volta quando a temporada 2 abrir.', 'o topo');
     const semLinha = lojaNaTela({ temporada: 1, saldo: 999, linhas: [], itens: [{ id: 'doce', tipo: 'doce', nome: 'Doce', preco: 60, quantidade: 3, limite: 5, comprados: 5, pode: false, motivo: 'x' }] });
     igual(`${semLinha.itens[0].nome}|${semLinha.itens[0].motivo}|${semLinha.itens[0].esgotado}`, '3 doces|você precisa ter uma criatura na conta|true', 'o doce sem linha');
     igual(lojaNaTela(null), null, 'sem resposta, loja');
     ok(/api\/equipe\/loja\/comprar/.test(fonte('../app/modules/liga-equipe-tela.mjs')), 'a tela não compra');
+  });
+
+  s.teste('11.7d · a moldura da Liga: só aqui, por League Points, uma vez — e a boutique não a vende', () => {
+    const liga = catalogo().filter(p => p.procedencia === 'liga');
+    igual(liga.map(p => `${p.familia}:${p.id}`).join(), 'moldura:liga-orbita,moldura:liga-estandarte', 'as peças da Liga no catálogo');
+    igual(PECAS_DA_LIGA.join(), 'liga-orbita,liga-estandarte', 'a lista');
+    ok(!aVenda().some(p => p.procedencia === 'liga'), 'a boutique vende a peça da Liga');
+    const c = cena(500);
+    const r = compra(c, 'cosmetico:moldura:liga-orbita', 1);
+    igual(`${r.ok}|${r.saldo}`, 'true|100', 'a compra da moldura');
+    igual(c.db.prepare(`SELECT origem FROM cosmetic_ownership WHERE user_id = ? AND item_id = 'liga-orbita'`).get(c.u)?.origem, 'liga', 'a posse com a origem da Liga');
+    ok(posseDe(c.db, c.u).includes('moldura:liga-orbita'), 'a posse não inclui a peça');
+    igual(compra(c, 'cosmetico:moldura:liga-orbita', 1).repetida, true, 'a mesma chave comprou de novo');
+    creditarPremio(c, 900);
+    const de = recusa(() => compra(c, 'cosmetico:moldura:liga-orbita', 2));
+    igual(`${de?.codigo}|${de?.message}`, `${ERRO_LOJA_LIGA.RECUSADA}|já é seu`, 'comprou a mesma peça duas vezes');
+    const loja = lojaNaTela(lojaDaConta(c.db, { userId: c.u, agora: T0 }));
+    const orbita = loja.itens.find(i => i.id === 'cosmetico:moldura:liga-orbita');
+    igual(`${orbita.botao}|${orbita.limite}|${orbita.esgotado}|${orbita.motivo}`, 'Já é sua|já é sua — equipe no Perfil|true|null', 'a peça que já é sua na tela');
+    const b = comprarNaBoutique(c.db, { userId: c.u, familia: 'moldura', id: 'liga-estandarte', chaveIdem: 'boutique-1', agora: T0 });
+    igual(`${b.ok}|${b.codigo}`, `false|${ERRO_COSMETICO.NAO_A_VENDA}`, 'a boutique vendeu a peça da Liga por PokéCash');
+  });
+
+  s.teste('11.7d · a migração da posse leva todas as origens que já existiam', () => {
+    const origens = db => (db.prepare(`SELECT sql FROM sqlite_master WHERE name = 'cosmetic_ownership'`).get().sql.match(/origem IN \(([^)]*)\)/)?.[1] ?? '').split(',').map(x => x.trim());
+    const idx = MIGRACOES.findIndex(x => x.nome === 'cosmetico-liga-st11.7d');
+    const antes = abrirBanco(':memory:'); migrar(antes, idx);
+    const depois = abrirBanco(':memory:'); migrar(depois, idx + 1);
+    igual(origens(antes).filter(o => !origens(depois).includes(o)).join(), '', 'a cópia da posse perdeu origens');
+    ok(origens(depois).includes("'liga'"), 'a origem da Liga');
+    const c = cena(500);
+    compra(c, 'cosmetico:moldura:liga-orbita', 1);
+    MIGRACOES[idx].desce(c.db);
+    igual(c.db.prepare(`SELECT COUNT(*) AS n FROM cosmetic_ownership WHERE origem = 'liga'`).get().n, 0, 'a descida deixou a origem nova');
+    MIGRACOES[idx].sobe(c.db);
   });
 
   s.teste('pela porta: ler a loja, comprar, repetir, e as recusas com o código certo', async () => {
@@ -151,7 +189,7 @@ export async function suite() {
       srv.db.prepare(`INSERT INTO liga_pontos (user_id, temporada, dia, tipo, delta, ref, idem, criado_em) VALUES (?, 1, 0, 'premio', 100, 't', 'semente', ?)`).run(uid, T0);
       const post = corpo => fetch(url('/api/equipe/loja/comprar'), { method: 'POST', headers: H2, body: JSON.stringify(corpo) });
       igual((await fetch(url('/api/equipe/loja'), { headers: { [CABECALHO_VERSAO]: API_VERSAO } })).status, 401, 'a loja sem sessão');
-      igual((await fetch(url('/api/equipe/loja'), { headers: H2 }).then(r => r.json())).itens.length, 3, 'a leitura');
+      igual((await fetch(url('/api/equipe/loja'), { headers: H2 }).then(r => r.json())).itens.length, 5, 'a leitura');
       igual((await post({ item: 'bola:great' })).status, 400, 'sem chave');
       igual((await post({ item: 7, chaveIdem: 'porta-000001' })).status, 400, 'item que não é texto');
       igual((await post({ item: 'nada', chaveIdem: 'porta-000001' })).status, 404, 'item que não existe');

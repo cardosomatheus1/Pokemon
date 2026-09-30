@@ -8886,7 +8886,7 @@ o banner do fim do palco carregar o selo E os pontos da partida (hoje só o
 selo), ou o palco abrir DEPOIS da linha do resultado. A trava é o teste que o
 bloco dono escrever sobre o banner; hoje nenhum teste afirma o arranjo.
 
-### L-213 — a loja da Liga ainda não vende cosmético
+### L-213 — a loja da Liga ainda não vende cosmético ✅ FECHADA na ST-11.7d (30/09)
 
 **Registrada em:** 30/09/2026, na ST-11.7c. **Bloco dono:** ST-11.7d
 (proposta aqui: a prateleira de cosmético da Liga — molduras e banners de
@@ -8901,4 +8901,5 @@ PokéCash, que o §10.12 proíbe na forma direta. Não cabe na 11.7c porque é a
 nova, e a regra de toda peça visual pede o passo inteiro (olhar na proporção
 real, nomear a diferença). O que destrava: a arte das peças (molduras em CSS,
 como `aurora`/`pulso`, dão para começar sem arquivo). A trava é o teste do
-catálogo da loja, que hoje afirma três itens.
+catálogo da loja, que hoje afirma três itens. **Fechada:** a Órbita da Liga e o
+Estandarte da Temporada, procedência `liga`, travadas por S1883–S1887.

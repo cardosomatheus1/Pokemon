@@ -246,6 +246,13 @@ export function lojaNaTela(l, linhaEscolhida = null) {
     saldo: `${milhar(l.saldo)} LP`,
     nota: `Cada item tem limite por temporada — ele volta quando a temporada ${l.temporada + 1} abrir.`,
     itens: (l.itens ?? []).map(i => {
+      /* A PEÇA DA LIGA (ST-11.7d): uma só, para sempre; quem já tem vê "já é sua". */
+      if (i.tipo === 'cosmetico') return {
+        id: i.id, tipo: i.tipo, alvo: i.alvo, nome: i.nome, preco: `${i.preco} LP`, botao: i.jaTem ? 'Já é sua' : `Comprar · ${i.preco} LP`,
+        efeito: 'moldura do avatar no banner — só existe aqui', limite: i.jaTem ? 'já é sua — equipe no Perfil' : 'uma vez, para sempre',
+        feito: 'Comprada! A moldura já está no seu Perfil, em "moldura do avatar".',
+        esgotado: !!i.jaTem, habilitado: !!i.pode, motivo: i.jaTem || i.pode ? null : i.motivo,
+      };
       const doce = i.tipo === 'doce', semLinha = doce && !linha;
       return {
         id: i.id, tipo: i.tipo, alvo: doce ? linha?.linha ?? null : i.alvo,

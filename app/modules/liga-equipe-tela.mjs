@@ -16,6 +16,7 @@ import { api } from './api.mjs';
 import { homeDaLiga, replayNaTela, rankingNaTela, pontosNaTela, lojaNaTela } from './liga-equipe-dados.mjs';
 import { estiloItem } from './itens-icone.mjs';
 import { stakeNaTela } from './liga-stake-dados.mjs';
+import { avatarURL } from './perfil.mjs';
 import { linhaDoLog, provaDaPartida } from './partida-dados.mjs';
 import { montarPalco } from './liga-palco.mjs';
 import { sortearArena } from './arenas-dados.mjs';
@@ -114,6 +115,8 @@ const lojaVista = () => lojaNaTela(loja && { ...loja, linhas: (loja.linhas ?? []
 function pintarLoja(k) {
   if (!k) return '';
   const icone = i => i.tipo === 'bola' ? `<i class="leLjIcone" style="${estiloItem(i.alvo, 64) ?? ''}"></i>`
+    /* A peça VIVA com o SEU retrato dentro, como na escolha do Perfil: ninguém compra moldura olhando uma caixa vazia. */
+    : i.tipo === 'cosmetico' ? `<span class="leLjIcone leLjMold"><span class="bnMold md-${esc(i.alvo.id)}"><img class="bnTreinador" src="${esc(avatarURL())}" alt=""></span></span>`
     : i.alvo != null ? `<span class="leLjIcone leLjDoce">${dexImg(i.alvo, nomeDo(i.alvo), 'class="leLjSprite"')}<i></i></span>` : '<span class="leLjIcone leLjDoce"><i></i></span>';
   const escolha = k.linhas.length ? `<label class="leLjLinha">doce de <select data-le-linha>${k.linhas.map(x => `<option value="${x.valor}"${x.on ? ' selected' : ''}>${esc(x.nome)}</option>`).join('')}</select></label>` : '';
   return `<section class="leLoja"><div class="leLjTopo"><span class="leRot">${esc(k.titulo)}</span><span class="leLjSaldo"><i class="lePtMoeda" aria-hidden="true"></i>${esc(k.saldo)}</span><span class="leLjNota">${esc(k.nota)}</span></div>
