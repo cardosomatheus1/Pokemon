@@ -7067,11 +7067,11 @@ não devolve a criatura) — a espera tem prazo, e o bicho que nunca volta estou
 o prazo e reprova. É mutante de navegador: a decisão mora num `animation` do
 CSS da cena.
 
-## D-135 — o bônus de cadastro nasce em `transferivel`, e a Spec diz PC-B
+## D-135 — o bônus de cadastro nasce em `transferivel`, e a Spec diz PC-B ✅ CORRIGIDO na ST-14.0B1 (30/09)
 
 **Achado em:** 30/09/2026, ao incorporar a E14 (DEC-E14-001, revisão 3.0 da
 spec do dono). **Bloco dono:** ST-14.0B (a carteira para P2P). **Estado:**
-aberto.
+corrigido na ST-14.0B1 (30/09).
 
 **Causa.** O cadastro credita `WELCOME_GRANT` no bolso `transferivel`
 (`server/rotas.mjs:249`), e o aparelho faz o mesmo (`app/modules/banco.mjs`,
@@ -7102,6 +7102,14 @@ metade.
 **Teste que trava:** `rotas` — "D-135 · (afirma o defeito) a conta nova nasce
 com o bônus de cadastro em transferível". Vira vermelho quando a ST-14.0B
 corrigir, e aí a afirmação se inverte.
+
+**Conserto (ST-14.0B1, 30/09).** O cadastro credita em `bonus` no servidor
+(`rotas.mjs`) e nos três caminhos do aparelho (novo, ilegível, reset); o saldo
+antigo migrado continua sendo o que era. O teste de `rotas` inverteu a
+afirmação; `e14-carteira` cobre a tabela de regressão da ST-14.0B (cadastro,
+aposta 100% PC-B vencida, perdida e cancelada). **O que fica para a 14.0B2:**
+contas antigas com o grant em `transferivel` — a regra da spec é torná-las
+inelegíveis ao P2P até a reconciliação, e o P2P ainda não existe.
 
 ## D-136 — com conta, a loja do idle, o estilhaço, a montagem e o resgate da missão gravavam só no aparelho ✅ CORRIGIDO na ST-13.9 (a 30/09, b 30/09)
 

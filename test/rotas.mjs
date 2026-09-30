@@ -170,27 +170,22 @@ export async function suite() {
      O "quanto" vem de `engine/carteira.mjs`, e não de um número escrito aqui:
      copiar o valor para dentro do teste deixaria os dois concordando entre si e
      discordando da fonte, que é como o D-007 nasceu. */
-  /* D-135 · AFIRMA O DEFEITO, de propósito (30/09). A Spec §0 e a DEC-E14-001
-     dizem que o bônus de cadastro é PC-B; o código o credita em `transferivel`.
-     O bloco dono é a ST-14.0B: quando ela corrigir, este teste fica vermelho e
-     a afirmação do bolso se inverte (`bonus` = SALDO_INICIAL, `transferivel` = 0).
-     O "quanto" continua valendo depois do conserto. */
-  s.teste('D-135 · (afirma o defeito) a conta nova nasce com o bônus de cadastro em transferível', async () => {
+  /* D-135 · CORRIGIDO na ST-14.0B (30/09) — e a afirmação virou o contrário.
+     Este teste afirmava o bolso `transferivel`, de propósito: a razão escrita
+     era "nascer em `bonus` faria todo ganho da conta nova voltar como bônus,
+     uma economia diferente da que o Estudo mediu, sem ninguém ter decidido
+     isso". A Spec §0 já listava o welcome grant entre as origens de PC-B, e a
+     DEC-E14-001 decidiu: o bônus de entrada é PC-B desde a concessão. O
+     "quanto" continua vindo do motor. */
+  s.teste('D-135 · a conta nova nasce com o saldo inicial do motor, em BÔNUS (PC-B)', async () => {
     const { SALDO_INICIAL } = await import('../engine/carteira.mjs');
     await comServico(async ({ porta }) => {
       const u = await conta(porta);
       const c = await pedir(porta, '/api/carteira', { sessao: u.sessao });
-      igual(c.corpo.saldos.transferivel, SALDO_INICIAL,
-        `conta nova nasceu com ${c.corpo.saldos.transferivel} e o motor diz ` +
-        `${SALDO_INICIAL}. Número copiado no servidor faz o cliente e o servidor ` +
-        `discordarem de quanto vale começar — e o Estudo Econômico mede a ruína ` +
-        `a partir desse número.`);
-      /* O BOLSO IMPORTA TANTO QUANTO O VALOR (§5.5): o payout herda a origem da
-         stake. Nascer em `bonus` faria todo ganho da conta nova voltar como
-         bônus, e o jogador nunca teria saldo transferível — uma economia
-         diferente da que o Estudo mediu, sem ninguém ter decidido isso. */
-      igual(c.corpo.saldos.bonus, 0,
-        `o grant de boas-vindas caiu em \`bonus\`: ${JSON.stringify(c.corpo.saldos)}`);
+      igual(c.corpo.saldos.bonus, SALDO_INICIAL,
+        `conta nova nasceu com ${c.corpo.saldos.bonus} de bônus e o motor diz ${SALDO_INICIAL}.`);
+      igual(c.corpo.saldos.transferivel, 0,
+        `o bônus de cadastro caiu em \`transferivel\` (D-135): ${JSON.stringify(c.corpo.saldos)}`);
     });
   });
 

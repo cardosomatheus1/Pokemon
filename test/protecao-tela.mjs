@@ -59,7 +59,7 @@ export async function suite() {
         senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01' });
       const c = await api.get('/api/carteira');
       ok(c.ok, `a carteira falhou depois do cadastro: ${JSON.stringify(c.corpo)}`);
-      ok(c.corpo.saldos.transferivel > 0, 'a conta nova veio sem saldo');
+      ok(c.corpo.saldos.bonus > 0, 'a conta nova veio sem saldo');   // o bônus de cadastro é PC-B (ST-14.0B1)
     });
   });
 

@@ -74,8 +74,10 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            · ST-13.9c + ST-14.0A FECHADAS (30/09): a matriz de fontes da
            economia (docs/e14/MATRIZ_FONTES_ECONOMIA.md) achou o D-137 — com
            conta, login e desafios não pagavam o PC-B — e ele foi corrigido.
-           PRÓXIMO: ST-14.0B (a carteira para P2P + o bônus de cadastro em
-           PC-B, D-135)
+           · ST-14.0B1 FECHADA (30/09): o bônus de cadastro é PC-B (D-135);
+           a L-221 registra que 1.000 de PC-B passa do teto de saldo.
+           PRÓXIMO: ST-14.0B2 (a reserva P2P só de PC-T elegível, as
+           operações econômicas idempotentes, as contas antigas inelegíveis)
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho
            do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta

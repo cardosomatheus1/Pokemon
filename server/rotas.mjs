@@ -245,8 +245,13 @@ export const ROTAS = {
          zero e não havia como apostar.
 
          A chave de idempotência é o próprio id da conta: reenviar o cadastro
-         não credita duas vezes, e o id é único por construção. */
-      creditar(db, { userId: u.id, tipo: 'WELCOME_GRANT', bucket: 'transferivel',
+         não credita duas vezes, e o id é único por construção.
+
+         EM `bonus` (ST-14.0B1 · D-135 · DEC-E14-001): o bônus de entrada é
+         PC-B desde a concessão — a Spec §0 já o listava entre as origens de
+         PC-B. Em `transferivel`, ele era o primeiro saldo que a troca entre
+         jogadores (E14) aceitaria. */
+      creditar(db, { userId: u.id, tipo: 'WELCOME_GRANT', bucket: 'bonus',
                      valor: SALDO_INICIAL, idem: `welcome-${u.id}`, agora });
       return { status: 201,
                corpo: { id: u.id, sessao: sessaoDe(config, u.id, agora),

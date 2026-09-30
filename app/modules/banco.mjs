@@ -106,8 +106,10 @@ export function carregar() {
     const antigo = Number(localStorage.getItem(CHAVE_ANTIGA));
     const w = carteiraVazia();
     const valor = Number.isInteger(antigo) && antigo > 0 ? antigo : SALDO_INICIAL;
-    creditar(w, antigo > 0 ? 'PC_T_PURCHASE_CLEARED' : 'WELCOME_GRANT',
-             'transferivel', valor, 'migracao');
+    /* O bônus de cadastro é PC-B (ST-14.0B1 · D-135), como no servidor. O
+       saldo antigo migrado continua sendo o que era. */
+    if (antigo > 0) creditar(w, 'PC_T_PURCHASE_CLEARED', 'transferivel', valor, 'migracao');
+    else creditar(w, 'WELCOME_GRANT', 'bonus', valor, 'migracao');
     S.carteira = w;
     ultimoDiagnostico = { origem: antigo > 0 ? 'migrado' : 'novo', problemas: [] };
     salvar();
@@ -118,7 +120,7 @@ export function carregar() {
   try { w = JSON.parse(bruto); } catch { w = null; }
   if (!w || !Array.isArray(w.ledger)) {
     S.carteira = carteiraVazia();
-    creditar(S.carteira, 'WELCOME_GRANT', 'transferivel', SALDO_INICIAL, 'reinicio');
+    creditar(S.carteira, 'WELCOME_GRANT', 'bonus', SALDO_INICIAL, 'reinicio');
     ultimoDiagnostico = { origem: 'corrompido', problemas: ['carteira ilegível'] };
     salvar();
     return S.carteira;
@@ -210,6 +212,6 @@ export const pagarAposta = (comp, odd, ref) => aplicar(() => liquidarGanho(S.car
 /* Só o painel Dev usa. Zera de verdade: carteira nova, ledger novo. */
 export function reiniciarCarteira() {
   S.carteira = carteiraVazia();
-  creditar(S.carteira, 'WELCOME_GRANT', 'transferivel', SALDO_INICIAL, 'reset');
+  creditar(S.carteira, 'WELCOME_GRANT', 'bonus', SALDO_INICIAL, 'reset');
   salvar();
 }

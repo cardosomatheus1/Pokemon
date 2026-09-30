@@ -124,14 +124,17 @@ export function suite() {
          cadeado do dono é essa linha: *"o cara doar não sei quanto e no primeiro
          dia ter dinheiro pra deixar Pokémon boostado fortão"*.
 
-         O saldo inicial (1000) fica onde estava; só o que se COMPRA muda de
-         balde. Conferir os dois é o que prova que a compra não vazou. */
+         O saldo inicial (1000) fica onde estava — em `bonus` desde a ST-14.0B1
+         (D-135: o bônus de cadastro é PC-B); só o que se COMPRA muda de balde.
+         Conferir os três é o que prova que a compra não vazou. */
       igual(gravado.disponivel.comprado, 300,
         'a compra não chegou ao balde `comprado` — sem ela ali, o cadeado não ' +
         'existe e dinheiro real compra poder no primeiro dia');
-      igual(gravado.disponivel.transferivel, 1000,
+      igual(`${gravado.disponivel.transferivel}|${gravado.disponivel.bonus}`, '0|1000',
         'a compra vazou para o balde livre — é exatamente o que o cadeado impede');
-      const r = banco.reservarAposta(200, 'x');
+      /* A ordem é bônus, comprado, competitivo, transferível: 1.100 esgota o
+         bônus e morde 100 do comprado — nunca o livre. */
+      const r = banco.reservarAposta(1100, 'x');
       ok(r.ok, 'a reserva falhou');
       const gravado2 = JSON.parse(dados.get('ar_carteira'));
       /* ── O RESTRITO É GASTO ANTES DO LIVRE (1.26) ────────────────────────
@@ -139,12 +142,12 @@ export function suite() {
          PokéCash comprado — e a sensação seria de estar sendo PUNIDO por ter
          comprado, que é o oposto do que se quer. Gastando o restrito antes, o
          cadeado se dissolve com o uso. */
-      igual(gravado2.reservado.comprado, 200,
+      igual(`${gravado2.reservado.bonus}|${gravado2.reservado.comprado}`, '1000|100',
         'a aposta não gastou o PokéCash comprado primeiro — o cadeado ficaria ' +
         'preso na carteira e o jogador se sentiria punido por ter comprado');
       igual(gravado2.reservado.transferivel, 0,
         'a aposta gastou o saldo LIVRE tendo restrito disponível');
-      igual(gravado2.disponivel.comprado, 100, 'sobrou o valor errado no restrito');
+      igual(gravado2.disponivel.comprado, 200, 'sobrou o valor errado no restrito');
     });
   });
 

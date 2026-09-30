@@ -9111,4 +9111,22 @@ Não cabe na ST-10.25 porque é redesenhar a geografia (conteúdo) e a regra de
 revelação dos nós, e não a pintura. O que a destrava: nada — é construir; o
 editor já existe (`node tools/mapa-tiled.mjs exportar|importar`).
 
+### L-221 — o bônus de cadastro em PC-B passa do teto de saldo, e o marco semanal paga o substituto
 
+**Registrada em:** 30/09/2026, na ST-14.0B1. **Bloco dono:** ST-14.15 (a
+calibração da E14), com a decisão "PC-T elegível inicial" da spec E14 §16.
+**Estado:** aberta.
+
+Com o bônus de cadastro em `bonus` (D-135), a conta nova começa com 1.000 de
+PC-B — acima do `TETO_SALDO_PC_B` (500) do `engine/emissao.mjs`. O marco
+semanal dos desafios olha o teto ANTES do orçamento, então o jogador novo
+recebe o substituto em vez de PC-B até gastar metade do bônus. E, sem fonte de
+PC-T, todo ganho de aposta do jogador novo volta como PC-B (§5.5).
+
+**Por que não cabe agora:** mexer no teto ou no valor inicial é calibração de
+economia, e o dono tem a decisão aberta da fonte de PC-T (DEC-21 e spec E14
+§16). O comportamento de hoje é o que a Spec escreve; ele só não foi medido
+com o grant no bolso certo.
+
+**O que a destrava:** a ST-14.15 simular os cenários com o grant em PC-B e o
+dono decidir a fonte de PC-T.

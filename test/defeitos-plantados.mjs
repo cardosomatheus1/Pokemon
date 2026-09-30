@@ -1528,10 +1528,12 @@ export const DEFEITOS = [
      O defeito real é o BOLSO. O payout herda a origem da stake (§5.5): nascer
      em `bonus` faria todo ganho da conta nova voltar como bônus, e o jogador
      nunca teria saldo transferível — outra economia, sem ninguém ter decidido. */
+  /* S215 realvado na ST-14.0B1 (D-135): o bolso certo passou a ser `bonus`, e
+     o defeito passou a ser o contrário — o bônus de cadastro virando PC-T. */
   { id:'S215', arquivo:SRVROT, nome:'o grant de boas-vindas cai no bolso errado',
-    real:'"bônus é mais seguro" — e o §5.5 faz todo ganho da conta voltar como bônus, para sempre',
-    de:"      creditar(db, { userId: u.id, tipo: 'WELCOME_GRANT', bucket: 'transferivel',",
-    para:"      creditar(db, { userId: u.id, tipo: 'WELCOME_GRANT', bucket: 'bonus'," },
+    real:'o bônus de cadastro vira saldo transferível — o primeiro que a troca entre jogadores aceitaria (D-135)',
+    de:"      creditar(db, { userId: u.id, tipo: 'WELCOME_GRANT', bucket: 'bonus',",
+    para:"      creditar(db, { userId: u.id, tipo: 'WELCOME_GRANT', bucket: 'transferivel'," },
 
   { id:'S216', arquivo:SRVROT, nome:'nasce uma rota que encerra a pausa',
     real:'"o suporte precisa poder liberar" — é a irreversibilidade do §28.4 desfeita por um caminho novo',
@@ -9088,6 +9090,16 @@ export const DEFEITOS = [
   { id:'S2125', arquivo:'app/index.html', nome:"a carteira é lida antes de o login pagar",
     real:"a tela mostra 1000 e a conta tem 1007 até a próxima leitura",
     de:"  await hidratarPerfil();\n  await hidratar();\n  atualizarSaldo();", para:"  await hidratar();\n  atualizarSaldo();\n  await hidratarPerfil();" },
+  /* ── ST-14.0B1 · o bônus de cadastro é PC-B (D-135) ──────────────── */
+  { id:'S2126', arquivo:'app/modules/banco.mjs', nome:"o aparelho novo nasce com o bônus em transferível",
+    real:"sem conta, o bônus de cadastro vira PC-T (D-135)",
+    de:"    else creditar(w, 'WELCOME_GRANT', 'bonus', valor, 'migracao');", para:"    else creditar(w, 'WELCOME_GRANT', 'transferivel', valor, 'migracao');" },
+  { id:'S2127', arquivo:'app/modules/banco.mjs', nome:"a carteira ilegível renasce em transferível",
+    real:"o reinício devolve o bônus como PC-T",
+    de:"    creditar(S.carteira, 'WELCOME_GRANT', 'bonus', SALDO_INICIAL, 'reinicio');", para:"    creditar(S.carteira, 'WELCOME_GRANT', 'transferivel', SALDO_INICIAL, 'reinicio');" },
+  { id:'S2128', arquivo:'server/carteira.mjs', nome:"o ganho de uma aposta em PC-B vira PC-T",
+    real:"apostar o bônus lava o bônus em saldo transferível (§5.5, DEC-E14-001)",
+    de:"  bonus:        'BET_PAYOUT_BONUS',\n  competitivo:  'BET_PAYOUT_COMPETITIVE',\n};", para:"  bonus:        'BET_PAYOUT_TRANSFERABLE',\n  competitivo:  'BET_PAYOUT_COMPETITIVE',\n};" },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',
