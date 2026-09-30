@@ -423,7 +423,7 @@ export function lancarPendente(db, { userId, pack, chave, bola, agora, raiz = no
 }
 
 export const pendentesDe = (db, userId) =>
-  db.prepare(`SELECT chave, dex, raridade, bioma, em FROM encontros_pendentes
+  db.prepare(`SELECT chave, origem, expedicao_id AS expedicao, dex, raridade, bioma, em FROM encontros_pendentes
                WHERE user_id = ? AND resolvido_em IS NULL ORDER BY em, chave`).all(userId);
 
 /* A INICIAL, uma vez por conta (ST-13.2b) — sem ela, a conta nova não tem

@@ -19,6 +19,7 @@ import { situacaoIdle, renderBattleBanner } from './banner.mjs';
 import { emCampo, criaturasDe } from './idle-dados.mjs';
 import { quemMostrar, expedicaoEm } from './idle-quem.mjs';
 import { acompanhar } from './idle-mundo.mjs';
+import { pintarAvisoDaConta } from './idle-conta.mjs';
 
 /* Quanto tempo a faixa de recado fica no ar. Quatro segundos é o que se lê sem
    pressa e some antes de virar poluição — e ela nunca carrega informação que só
@@ -72,3 +73,9 @@ export function avisar(texto) {
   }
   return true;
 }
+
+/* O AVISO DA CONTA (ST-13.5a · DEC-17). Com conta, a coleção é a do servidor;
+   quando ele não respondeu, a tela mostra o cache e DIZ que ele pode estar
+   velho, em vez de fingir que está em dia. Fica enquanto for verdade — a faixa
+   de recado some, e esta informação não existe em outro lugar. */
+export const avisarConta = E => pintarAvisoDaConta(nosDois('Conta'), E);

@@ -49,6 +49,7 @@ import { ENCONTROS_POR_AVANCO } from '../../engine/avanco.mjs';
 import { runDoDisco } from '../../engine/run-avanco.mjs';
 import { nivelDoTopo } from '../../engine/estagios.mjs';
 import { vistosDe } from './pokedex-dados.mjs';
+import { camposDaConta } from './idle-conta.mjs';
 import { xpDaExpedicao, vinculoDaExpedicao, creditar, nivelDe, progresso as progressoNivel } from '../../engine/nivel-criatura.mjs';
 import { FRAGMENTOS_POR_ENCONTRO, chanceDe, tentar } from '../../engine/captura.mjs';
 
@@ -115,7 +116,7 @@ export function carregar(deposito = globalThis.localStorage) {
   e.encontros  = arrayOu(cru.encontros,  'encontros',  problemas);
   e.bolsa      = objetoOu(cru.bolsa,     'bolsa',      problemas);
   e.registro     = objetoOu(cru.registro,    'registro',     problemas);
-  Object.assign(e, camposDaEscada(cru, e.criaturas), camposDoDoce(cru), camposDaColecao(cru), camposDaJornada(cru));   // ST-9.2, 9.8, 9.15, 10.11
+  Object.assign(e, camposDaEscada(cru, e.criaturas), camposDoDoce(cru), camposDaColecao(cru), camposDaJornada(cru), camposDaConta(cru));   // ST-9.2, 9.8, 9.15, 10.11, 13.5a
   /* ── `simultaneas` NAO E LIDO DO DISCO, E ISSO E A CORRECAO (D-072) ────
      A versao anterior aceitava o numero salvo e o apertava no maximo. Parecia
      defensivo — o clamp esta la — e nao era: `localStorage` esta a um F12 de

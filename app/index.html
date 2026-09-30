@@ -7597,6 +7597,11 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   background:rgba(255,77,109,.12);border:1px solid rgba(255,77,109,.4);
   color:#ffc9d3;font-size:.7rem}
 #idleAviso.on,#offAviso.on{display:block}
+/* ST-13.5a · a conta sem rede: o aviso FICA enquanto for verdade — não é a
+   faixa que some em 4 s, porque ele é a única cópia desta informação. */
+.idleConta{margin:0 0 10px;padding:7px 12px;border-radius:8px;font-size:.7rem;
+  background:rgba(255,196,77,.1);border:1px solid rgba(255,196,77,.45);color:#ffe3a8}
+.idleConta[hidden]{display:none}
 
 /* ── O GUARDA-ROUPA DE FARM ──────────────────────────────────────────────
    A prévia é o herói do cartão, e não o texto: o traje ocupa a maior parte da
@@ -7917,6 +7922,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
              novo. A frase vem do motor (`falaDoCusto`). -->
         <p id="idleCustoRun" class="tiny avCustoRun"></p>
         <div id="idleAviso"></div>
+        <p id="idleConta" class="idleConta" role="status" hidden></p>
         <p class="tiny" style="margin-top:10px">Para farmar com o jogo fechado —
            Batida, Trilha ou Vigília — use a aba <b>Rota OFF</b>. Os dois modos
            dividem o mesmo teto de encontros do dia.</p>
@@ -8192,6 +8198,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <div id="offEquipe"></div>
       <button id="idleMandar" class="btn pri" style="width:100%;margin-top:12px">Mandar a expedição</button>
       <div id="offAviso"></div>
+      <p id="offConta" class="idleConta" role="status" hidden></p>
 
       <h3 style="margin-top:18px">Em campo</h3>
       <div id="offCampo"></div>
@@ -8938,6 +8945,8 @@ import { renderLiga } from './modules/liga-tela.mjs';
 /* Mesma razão do import da Liga: o módulo se liga sozinho ao clique do menu,
    e sem o import ele nunca é CARREGADO — a aba abriria vazia. */
 import { renderIdle } from './modules/idle-tela.mjs';
+import { idleNoServidor } from './modules/idle-conta.mjs';
+import { sincronizarIdleDaConta } from './modules/idle-servidor.mjs';
 /* Mesma razao do import da Liga e do idle: sem ele o modulo nunca e CARREGADO,
    e a aba abre vazia. */
 import { ligarWiki } from './modules/wiki-itens.mjs';
@@ -9155,6 +9164,11 @@ async function ligarModoServidor(){
      AQUI E NÃO NUM MÓDULO QUE SE LEMBRE DE CHAMAR: o defeito que este bloco
      fecha era exatamente uma máquina pronta sem chamador. */
   await hidratarPerfil();
+  /* O IDLE DA CONTA (ST-13.5a · DEC-17): com conta, a coleção vem do servidor
+     e o save do aparelho vira cache dela. Atrás de `IDLE_NA_CONTA` até todas
+     as escritas passarem pelo servidor (13.5e) — antes disso, ler da conta e
+     escrever no aparelho faria a próxima leitura apagar o que o jogador fez. */
+  if (idleNoServidor(api.temSessao())) await sincronizarIdleDaConta({ api });
   ligarSala({
     /* A SALA NÃO PASSA PELA `api` — ela precisa de streaming, que a fachada
        não faz —, então a sessão vai explícita. Lida da `api`, e não de uma

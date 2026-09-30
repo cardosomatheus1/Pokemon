@@ -38,7 +38,7 @@ o ESTADO   ST-10.23 FECHADA (o mapa DESENHADO À MÃO: o desenho no pack,
            · nesta leva: ST-5.9 a 5.16, ST-10.22d, a ST-1.4 (o 401 da CI) e
            a ST-6.5 (25 fichas velhas fechadas)
            · o E11 construído — o stake espera a D2 do dono
-           · suíte 2835/2835, repetir 2/2
+           · suíte 2853/2853, repetir 2/2 (medido 30/09, na 13.5a)
            Q2 completo em fatias: 1/10 e 2/10 VERDES (a 2/10 achou o S1504
            decorativo — corrigido com o caso misto à mão); seguir com
            node test/sabotagem.mjs --fatia=3/10, até 10/10
@@ -51,7 +51,11 @@ com o DONO decididas em 30/09: DEC-16 (o stake da Liga LIGADO, moeda
            jogo 100%), DEC-19 (os sinais de aparelho e rede — feita, ST-13.8).
            Nada pendente com o dono agora
 o PRÓXIMO  a ST-13.5 em partes: com conta, o jogo lê e escreve o idle pelo
-           servidor (hoje o cliente não chama nenhuma das 17 rotas do idle)
+           servidor. 13.5a FEITA (a leitura: `idleDaConta`, o boot, o aviso
+           "desatualizado", a origem dos encontros). Seguir com a 13.5b
+           (expedição, colheita, bola e inicial pelo servidor), depois 13.5c
+           (run), 13.5d (caixa/golpe/doce) e 13.5e (jornada + a chave
+           `IDLE_NA_CONTA` LIGADA + o ensaio "limpa o navegador, entra")
 ```
 
 ### O RESTO DA SPEC VIROU STORIES — E12, E9, E10, E13, E11 (26/09)

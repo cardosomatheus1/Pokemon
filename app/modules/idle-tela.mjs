@@ -38,7 +38,7 @@ import { $, nosDois, nasAbasDoFarm } from './dom.mjs';
 /* Os avisos sairam para `idle-avisos.mjs` quando este arquivo passou de 600
    linhas. A divisao e por assunto: la vive tudo que a tela DIZ fora dos
    paineis — o banner, quem acompanha, e a faixa de recado. */
-import { avisarBanner, avisarCompanheiro, avisar } from './idle-avisos.mjs';
+import { avisarBanner, avisarCompanheiro, avisar, avisarConta } from './idle-avisos.mjs';
 import { vigiarOutraAba, AVISO_OUTRA_ABA } from './idle-abas.mjs';
 import {
   VAZIO, carregar, salvar, iniciaisDo, escolherInicial, criaturasDe,
@@ -248,6 +248,7 @@ export function renderIdle() {
   const vista = $('#viewIdle');
   if (!vista) return;
   E = carregar();
+  avisarConta(E);
 
   const temCriatura = E.criaturas.length > 0;
   vista.classList.toggle('primeiraVez', !temCriatura);

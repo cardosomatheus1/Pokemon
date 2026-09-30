@@ -2214,7 +2214,29 @@ do servidor. Três partes:
   CORS aceita · `test/sinais-conta.mjs` (5) · S1994–S2003.
 
 ### ST-13.5 · Com conta, o cliente lê o idle do servidor
-- **Porte** M · **Servidor** não (consome 13.1–13.3) · **Depende de** ST-13.4 (DEC-17: sem migração)
+- **Porte** L (era M: o levantamento de 30/09 achou que o cliente não chama
+  NENHUMA das 17 rotas do idle — todas as telas escrevem o save do aparelho)
+  · **Servidor** pouco · **Depende de** ST-13.4 (DEC-17: sem migração)
+- **O desenho (decidido 30/09, por delegação):** o save do aparelho continua
+  sendo o que as telas leem — vira CACHE da conta. Com conta, a leitura é
+  `GET /api/idle` passada por uma função pura de camada 0 (`idleDaConta`) que
+  põe o formato do servidor no do aparelho; cada escrita chama a rota e relê
+  tudo. Uma chave, `IDLE_NA_CONTA`, fica DESLIGADA até a última parte — cada
+  parte fecha com o jogo jogável, e o jogo com conta só muda quando todas
+  estiverem prontas.
+- **As partes:**
+  - **13.5a** ✅ 30/09 · a leitura: `idleDaConta`, `sincronizarIdleDaConta` no boot, o
+    servidor passa `origem` e `expedicao` nos encontros, e o aviso "desatualizado"
+    sem rede (fixo nas duas abas do farm, não a faixa que some) · S2005–S2014;
+  - **13.5b** · expedição, colheita, bola e a inicial pelo servidor (o teto da
+    conta vem do servidor: as expedições colhidas não descem);
+  - **13.5c** · a run do Avanço (começar, poção, recuar, colher — a colheita é
+    automática no quadro);
+  - **13.5d** · caixa, troca, soltar, foco, golpe, evoluir e doce;
+  - **13.5e** · a luta da jornada (o cliente refaz a luta da semente do servidor
+    para encenar — a mesma conta dos dois lados), o aviso da DEC-17 no
+    cadastro, e a chave LIGADA, com o ensaio "limpa o navegador, entra, a
+    coleção está lá".
 - **Escopo:** hidratar o idle do servidor no boot com conta; o local vira
   cache; sem rede, a tela diz que está desatualizada em vez de inventar.
 - **Aceite:** limpar o navegador e entrar devolve a mesma coleção; o ensaio do
