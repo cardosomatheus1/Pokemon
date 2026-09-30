@@ -8349,6 +8349,10 @@ export const DEFEITOS = [
   { id:'S1837', arquivo:'server/banco.mjs', nome:'o livro dos pontos aceita UPDATE',
     real:'um lançamento pode ser reescrito, e o saldo deixa de ser a soma do que aconteceu',
     de:"db.exec(`CREATE TRIGGER liga_pontos_sem_update BEFORE UPDATE ON liga_pontos BEGIN SELECT RAISE(ABORT, 'liga_pontos é append-only'); END`);", para:"" },
+  /* ── ST-11.6e · o acabamento do palco ──────────────────────────────── */
+  { id:'S1862', arquivo:'app/modules/liga-equipe-dados.mjs', nome:'o fim do palco sem os pontos',
+    real:'a luta acaba e o banner não diz o que ela rendeu — a resposta fica embaixo do palco, fora da dobra',
+    de:'           pontos: linha?.pontos ?? null },', para:'           pontos: null },' },
   /* ── ST-11.7c · a loja da Liga ─────────────────────────────────────── */
   { id:'S1848', arquivo:'engine/loja-liga.mjs', nome:'a loja vende a bola garantida',
     real:'a captura garantida vira compra com a moeda da temporada — o §P5 no caso mais puro',

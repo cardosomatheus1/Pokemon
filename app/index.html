@@ -1302,6 +1302,8 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
    emblema na cor dele, o time publicado em retratos GBA, e a partida que
    acabou de acontecer no alto, maior que as outras. */
 .leHome{display:flex;flex-direction:column;gap:14px;max-width:1180px}
+/* ST-11.6e: acima de 1600 a Liga ocupa a tela — em 1920 sobravam 700 px vazios à direita. */
+@media (min-width:1600px){ .leHome{max-width:1520px} }
 .leTemporada{padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--bg2)}
 .leTempTopo{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;font-size:.8rem;color:var(--dim)}
 .leTempTopo b{font-family:var(--px);font-size:.95rem;color:var(--txt)}
@@ -1412,6 +1414,7 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .lpBanner{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);z-index:6;display:flex;flex-direction:column;align-items:center;gap:8px;
   padding:14px 26px;border-radius:14px;background:rgba(6,10,18,.84);border:2px solid var(--line);box-shadow:0 12px 40px rgba(0,0,0,.6);animation:lpBannerEntra .45s ease-out}
 .lpBanner{max-width:88%}.lpBanner .leSelo{white-space:nowrap;font-size:clamp(.5rem,2.4cqw,.66rem)}
+.lpBanner .lePts{margin:0;font-size:clamp(.6rem,2.8cqw,.8rem)}
 .lpBanner b{font-family:var(--px);font-size:clamp(1.2rem,6cqw,2rem);letter-spacing:.04em}
 .lpBanner.venceu{border-color:rgba(var(--okRGB),.8)}.lpBanner.venceu b{color:rgb(var(--okRGB));text-shadow:0 0 14px rgba(var(--okRGB),.6)}
 .lpBanner.perdeu{border-color:rgba(var(--perigoRGB),.7)}.lpBanner.perdeu b{color:rgb(var(--perigoRGB))}

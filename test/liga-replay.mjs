@@ -91,6 +91,9 @@ export async function suite() {
     const t = replayNaTela(linha, null);
     igual(`${t.topo}|${t.fim.titulo}|${t.fim.classe}|${t.fim.selo.texto}|${t.fim.texto}|${t.rotulos.A}|${t.rotulos.B}`, 'replay · contra Ana|Você perdeu|perdeu|contou · desceu para Bronze||seu time|Ana', 'a tela do replay');
     igual(`${t.prova}|${t.provaOk}`, 'conferindo…|null', 'antes da prova');
+    /* ST-11.6e: o banner do fim diz o que a partida rendeu. */
+    igual(replayNaTela(linhaDaPartida({ id: 'p', lado: 'B', resultado: 'venceu', rated: true, pontos: 30, turnos: 4, contra: { tipo: 'jogador', nome: 'Ana' } }), null).fim.pontos, '+30 LP', 'o fim sem os pontos');
+    igual(t.fim.pontos, '0 LP · teto do dia', 'o fim da partida sem pontos não diz por quê');
     igual(replayNaTela(linha, { ok: true }).prova, 'resultado travado antes da luta — conferido', 'a prova para quem joga');
     igual(replayNaTela(linha, { ok: false }).provaOk, false, 'a prova que falhou passou');
     ok(/NÃO confere/.test(replayNaTela(linha, { ok: false }).prova), 'a prova que falhou não diz');

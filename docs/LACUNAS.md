@@ -8869,11 +8869,13 @@ pareamento estão prontos e testados com contas semeadas no servidor (os
 testes e o `tools/olhar-liga.mjs`). O que destrava é só o caminho do time até
 a conta.
 
-### L-212 — o resultado da busca fica abaixo da dobra, embaixo do palco
+### L-212 — o resultado da busca fica abaixo da dobra, embaixo do palco ✅ FECHADA na ST-11.6e (30/09)
 
 **Registrada em:** 30/09/2026, no Q7 da ST-11.7b. **Bloco dono:** ST-11.6e
 (proposta aqui: o acabamento do palco da Liga — as laterais vazias acima de
-1440 e esta). **Estado:** aberto.
+1440 e esta). **Estado:** fechada — o banner do fim carrega os pontos
+(`replayNaTela().fim.pontos`, travado pelo S1862), e a Liga ocupa a tela acima
+de 1600 px.
 
 A busca joga a partida e abre o palco da Arena (ST-11.6d), e o palco ocupa a
 dobra inteira. A linha do resultado — "Vitória · contou · +30 LP" — fica

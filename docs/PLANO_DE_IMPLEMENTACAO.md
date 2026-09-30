@@ -1421,7 +1421,7 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   - nove balões contra dois: o 6×6 tem metade dos lutadores e a luta é por
     turnos, e isso não se força.
 
-### ST-11.6e · O acabamento do palco da Liga (proposta, 30/09)
+### ST-11.6e · O acabamento do palco da Liga ✅ 30/09
 - **Porte** P · **Servidor** não · **Método** GL (a barra: a luta da aposta ao lado) · **Nasce de** L-212 e do Q7 da 11.6d
 - **Escopo:** o banner do fim do palco carrega o selo E os pontos da partida
   ("+30 LP"), para a resposta a "o que rendeu" não ficar abaixo da dobra; as
@@ -1430,6 +1430,13 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   com os pontos da partida errada.
 - **Posição na fila:** depois da 11.7c — ela é acabamento, e a loja é o gasto
   que a moeda ainda não tem.
+- **✅ 30/09.** O fim do replay (`replayNaTela`) carrega os pontos da linha
+  ("+30 LP", "0 LP · a defesa não segurou"), e o banner do palco os pinta
+  junto do selo — a pergunta "o que eu ganhei" responde no fim da luta, sem
+  rolar. A ordem ficou (o palco antes da linha): pôr o resultado ACIMA do palco
+  entregaria o desfecho antes da luta, e o pedido do dono é assistir. Acima de
+  1600 px a Liga passa a 1520 px de largura (sobravam 700 px em 1920).
+  `test/liga-replay.mjs` · S1862. Q5 em 1920 e 420.
 
 ### ST-11.7 · Recompensas, League Points e loja
 - **Porte** M · **Servidor** sim · **Spec** §9.10, §9.11, §10.1

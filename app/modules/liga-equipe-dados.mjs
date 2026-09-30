@@ -182,7 +182,10 @@ export function replayNaTela(linha, prova) {
     /* O rótulo de cada lado: o jogador à esquerda; o outro pelo nome — e o bot com o rótulo dele. */
     rotulos: { A: 'seu time', B: linha ? `${linha.contra.replace(/^contra /, '')}${linha.bot ? ' · bot' : ''}` : 'rival' },
     fim: { titulo: r ?? 'Fim', classe: linha?.classe === 'venceu' ? 'venceu' : linha?.classe === 'perdeu' ? 'perdeu' : 'empate',
-           selo: linha?.selo ?? null, texto: linha?.explica ?? '' },
+           selo: linha?.selo ?? null, texto: linha?.explica ?? '',
+           /* O que a partida RENDEU, no banner do fim (ST-11.6e, L-212): a linha da lista fica
+              embaixo do palco, e a pergunta "o que eu ganhei" não pode esperar a rolagem. */
+           pontos: linha?.pontos ?? null },
     /* A frase curta para quem joga; o detalhe técnico fica no título (o "como sabemos?"). */
     prova: prova == null ? 'conferindo…'
       : prova.ok ? 'resultado travado antes da luta — conferido'

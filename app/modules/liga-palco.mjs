@@ -202,7 +202,8 @@ export function montarPalco(alvo, { linha, arena = { key: 'coliseu', nome: 'Coli
     if (banner) {
       banner.hidden = false;
       banner.className = `lpBanner ${final?.classe ?? 'empate'}`;
-      banner.innerHTML = `<b>${final?.titulo ?? 'Fim'}</b>${final?.selo ? `<em class="leSelo leSelo${final.selo.tipo}">${final.selo.texto}</em>` : ''}`;
+      banner.innerHTML = `<b>${final?.titulo ?? 'Fim'}</b>${final?.selo ? `<em class="leSelo leSelo${final.selo.tipo}">${final.selo.texto}</em>` : ''}`
+        + (final?.pontos ? `<em class="lePts${final.pontos.startsWith('0') ? ' zero' : ''}">${final.pontos}</em>` : '');
     }
     alvo.querySelector('[data-lp-pular]')?.remove();
   };
