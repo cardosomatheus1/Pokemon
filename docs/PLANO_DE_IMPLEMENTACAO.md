@@ -2312,10 +2312,12 @@ do servidor. Três partes:
   — comprar, vender, estilhaçar (raiz do servidor) e montar, com as contas do
   motor e a bolsa pela diferença numa transação; `lojaNa` no cliente; a troca
   e a montagem viraram funções do motor · `test/loja-idle.mjs` · S2091–S2101.
-- **13.9b · as missões e a escada:** o resgate da missão pela conta (o prêmio
-  na bolsa do servidor, a missão resgatada guardada no servidor) e as marcas
-  da escada da Pokédex (hoje `ar_escada_arena`, por aparelho) derivadas das
-  apostas que o servidor já guarda.
+- **13.9b ✅ 30/09 · as missões e a escada:** `server/escada.mjs` + migração
+  `escada-missoes-st13.9b` — "já possuiu" e as marcas por GATILHO (criatura
+  que nasce/evolui; a aposta marca encontrada e a rodada vista), a rodada
+  assistida por `POST /api/idle/vistas` (o id, nunca a lista de espécies), a
+  semana e o resgate por `POST /api/idle/missao` com o prêmio na bolsa da
+  conta · `test/escada-conta.mjs` · S2102–S2114.
 - **Aceite:** com conta, nenhuma escrita de valor de jogo fica só no aparelho;
   releitura da conta não desfaz nada; sem conta, nada muda.
 - **Portões:** Q1 Q2 Q3 Q6.

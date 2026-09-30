@@ -67,6 +67,10 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            e a montagem pelo servidor (D-136) — a pergunta do dono "Já
            conectou tudo ao banco?" achou que não. Falta a 13.9b (missões e
            escada da Pokédex), que vem ANTES da E14
+           · ST-13.9b FECHADA (30/09): a escada e as missões na conta —
+           D-136 fechado. Com conta, nada de valor de jogo fica só no
+           aparelho (o que resta no navegador é preferência: tema, zoom,
+           aba, preset). PRÓXIMO: a onda 0 da E14 (ST-14.0A → 0B)
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho
            do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta

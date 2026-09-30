@@ -10,6 +10,7 @@ import { PACK, elenco, nomeExibido } from './motor.mjs';
 import { carregarMarcas, dossieDoPack } from './pokedex-estado.mjs';
 import { medalhasDeColecao, vitrineDeMedalhas, TETO_DE_MEDALHAS } from './colecao-dados.mjs';
 import { quadroDaSemana, resgatarMissaoLocal } from './colecao-local.mjs';
+import { naContaOu } from './colecao-acoes.mjs';
 import { nomesDe } from './itens-nome.mjs';
 import { S } from './estado.mjs';
 import { carregar } from './idle-dados.mjs';
@@ -136,7 +137,8 @@ document.addEventListener('click', ev => {
   }
   const b = ev.target.closest('[data-missao]');
   if (!b) return;
-  const r = resgatarMissaoLocal(PACK, { id: b.dataset.missao, marcas: carregarMarcas(), agora: Date.now() });
-  if (!r.ok) { b.title = r.motivo; return; }
-  pintarColecao();
+  /* Com conta, o prêmio vai para a bolsa do servidor (ST-13.9b · D-136). */
+  naContaOu('/api/idle/missao', { id: b.dataset.missao },
+    d => resgatarMissaoLocal(PACK, { id: b.dataset.missao, marcas: carregarMarcas(d), agora: Date.now() }, d))
+    .then(r => { if (!r.ok) { b.title = r.motivo; return; } pintarColecao(); });
 });

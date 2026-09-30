@@ -7,6 +7,7 @@
 import { api as apiPadrao } from './api.mjs';
 import { carregar, salvar } from './idle-dados.mjs';
 import { idleDaConta } from './idle-conta.mjs';
+import { carregarMarcas, gravarMarcas, marcarVistas, marcarEncontrada } from './pokedex-estado.mjs';
 
 export async function sincronizarIdleDaConta({ api = apiPadrao, deposito = globalThis.localStorage } = {}) {
   const [r, d] = await Promise.all([api.get('/api/idle'), api.get('/api/doces')]);
@@ -17,5 +18,14 @@ export async function sincronizarIdleDaConta({ api = apiPadrao, deposito = globa
     return { ok: false, status: r.status };
   }
   salvar(idleDaConta(local, r.corpo, { doces: d.ok ? d.corpo?.doces ?? null : null }), deposito);
+  /* AS MARCAS DA ESCADA (ST-13.9b): as da conta SOMAM às do aparelho — as
+     telas leem daqui, e a marca é só acréscimo. O que a missão mede é o que
+     o servidor tem; a soma daqui só pinta. */
+  if (r.corpo.marcas) {
+    const m = carregarMarcas(deposito);
+    marcarVistas(m, r.corpo.marcas.vistas ?? []);
+    for (const dex of r.corpo.marcas.encontradas ?? []) marcarEncontrada(m, dex);
+    gravarMarcas(m, deposito);
+  }
   return { ok: true };
 }

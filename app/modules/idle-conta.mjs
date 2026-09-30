@@ -18,6 +18,7 @@
  */
 import { camposDaJornada } from '../../engine/jornada.mjs';
 import { historicoDoDisco } from './historico-dados.mjs';
+import { camposDaColecao } from './colecao-dados.mjs';
 
 export const IDLE_NA_CONTA = true;
 export const idleNoServidor = temSessao => IDLE_NA_CONTA && !!temSessao;
@@ -55,6 +56,10 @@ export function idleDaConta(local, srv, { doces = null } = {}) {
     run: srv.run ?? null,
     /* O histórico (1.28): as linhas que o servidor montou das colheitas gravadas. */
     historico: historicoDoDisco(srv.historico),
+    /* A escada e a semana (ST-13.9b): o "já possuiu" e as missões da CONTA —
+       a missão resgatada e a base da semana deixam de ser do aparelho. */
+    jaPossuiu: Array.isArray(srv.jaPossuiu) ? [...srv.jaPossuiu] : (local.jaPossuiu ?? []),
+    missoes: srv.missoes !== undefined ? camposDaColecao({ missoes: srv.missoes }).missoes : (local.missoes ?? null),
     ...camposDaJornada({ jornada: srv.jornada }),
     doces: doces ?? local.doces ?? {},
     conta: { agora, teto: srv.teto ?? null, estagio: srv.estagio ?? null, desatualizado: false },

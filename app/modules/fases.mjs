@@ -4,6 +4,7 @@
  * S.state. Chama todo o resto; por isso é a camada mais alta antes do laço. */
 
 import { registrarVistas } from './pokedex-estado.mjs';
+import { api } from './api.mjs';
 import { lutaDaRodada } from '../../engine/luta-rodada.mjs';
 import { $, limparMini, log } from './dom.mjs';
 import { registrarAposta } from './carteira.mjs';
@@ -176,6 +177,9 @@ async function newRound(){
     S.seeds = { elenco: r.sementeElenco, visual: r.sementeVisual };
     S.fighters = sortearPool(S.seeds.elenco);
     registrarVistas(S.fighters.map(f => f.dex));   // ST-9.3: a escada — vista na Arena
+    /* Com conta, a CONTA viu: manda a rodada, e o servidor marca os lutadores
+       dela (ST-13.9b · D-136). Falhar aqui não trava a rodada. */
+    if (api.temSessao()) api.post('/api/idle/vistas', { rodada: r.id }).catch(() => {});
     S.weather = null;
     S.odds = oddsDoServidor(r);
     S.travaEm = r.travaEm;

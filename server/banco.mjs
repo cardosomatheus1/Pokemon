@@ -1968,6 +1968,66 @@ export const MIGRACOES = [
       refazerSuspeitas(db, ['horario', 'captura']);
     },
   },
+  {
+    /* ST-13.9b · D-136: a escada da Pokédex e as missões da semana na conta.
+     *
+     * "JÁ POSSUIU" E "APOSTOU" POR GATILHO, e não em cada rota: a criatura
+     * nasce em três lugares (inicial, lance, admin) e muda de espécie em
+     * três (evolução do idle, da conta e da criação); esquecer um deles é o
+     * defeito que o gatilho não deixa existir. Soltar não apaga nada: "já
+     * possuiu" é exatamente o que sobra depois de soltar.
+     *
+     * "VIU" entra pela rota (`/api/idle/vistas`), com a RODADA, e não com a
+     * lista de espécies: o servidor marca os lutadores daquela rodada real.
+     *
+     * O `backfill` põe o que já existe: as criaturas de hoje e as apostas
+     * feitas. */
+    nome: 'escada-missoes-st13.9b',
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE ja_possuiu (
+          user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          pack_id TEXT NOT NULL,
+          dex     INTEGER NOT NULL,
+          PRIMARY KEY (user_id, pack_id, dex)
+        )`);
+      db.exec(`INSERT OR IGNORE INTO ja_possuiu SELECT user_id, pack_id, dex FROM criaturas`);
+      db.exec(`CREATE TRIGGER ja_possuiu_nasce AFTER INSERT ON criaturas BEGIN
+                 INSERT OR IGNORE INTO ja_possuiu VALUES (NEW.user_id, NEW.pack_id, NEW.dex); END`);
+      db.exec(`CREATE TRIGGER ja_possuiu_evolui AFTER UPDATE OF dex ON criaturas BEGIN
+                 INSERT OR IGNORE INTO ja_possuiu VALUES (NEW.user_id, NEW.pack_id, NEW.dex); END`);
+      db.exec(`
+        CREATE TABLE escada_marcas (
+          user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          dex     INTEGER NOT NULL,
+          tipo    TEXT NOT NULL CHECK (tipo IN ('vista', 'encontrada')),
+          PRIMARY KEY (user_id, dex, tipo)
+        )`);
+      db.exec(`INSERT OR IGNORE INTO escada_marcas SELECT DISTINCT user_id, species_id, 'encontrada' FROM bets`);
+      db.exec(`INSERT OR IGNORE INTO escada_marcas SELECT DISTINCT b.user_id, f.species_id, 'vista'
+                 FROM bets b JOIN round_fighters f ON f.round_id = b.round_id`);
+      /* Quem aposta ENCONTROU a espécie e VIU a rodada inteira. */
+      db.exec(`CREATE TRIGGER escada_aposta AFTER INSERT ON bets BEGIN
+                 INSERT OR IGNORE INTO escada_marcas VALUES (NEW.user_id, NEW.species_id, 'encontrada');
+                 INSERT OR IGNORE INTO escada_marcas SELECT NEW.user_id, species_id, 'vista'
+                   FROM round_fighters WHERE round_id = NEW.round_id; END`);
+      db.exec(`
+        CREATE TABLE missoes_semana (
+          user_id         TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          semana          INTEGER NOT NULL,
+          base_json       TEXT NOT NULL,
+          resgatadas_json TEXT NOT NULL DEFAULT '[]'
+        )`);
+    },
+    desce: db => {
+      db.exec(`DROP TABLE missoes_semana`);
+      db.exec(`DROP TRIGGER escada_aposta`);
+      db.exec(`DROP TABLE escada_marcas`);
+      db.exec(`DROP TRIGGER ja_possuiu_evolui`);
+      db.exec(`DROP TRIGGER ja_possuiu_nasce`);
+      db.exec(`DROP TABLE ja_possuiu`);
+    },
+  },
 
 ];
 

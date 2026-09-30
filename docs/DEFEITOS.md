@@ -7103,12 +7103,12 @@ metade.
 com o bônus de cadastro em transferível". Vira vermelho quando a ST-14.0B
 corrigir, e aí a afirmação se inverte.
 
-## D-136 — com conta, a loja do idle, o estilhaço, a montagem e o resgate da missão gravavam só no aparelho 🟡 PARCIAL — a loja CORRIGIDA na ST-13.9a (30/09)
+## D-136 — com conta, a loja do idle, o estilhaço, a montagem e o resgate da missão gravavam só no aparelho ✅ CORRIGIDO na ST-13.9 (a 30/09, b 30/09)
 
 **Achado em:** 30/09/2026, pela pergunta do dono *"Já conectou tudo ao
 banco?"* — conferido no código, arquivo por arquivo. **Bloco dono:** ST-13.9
-(13.9a a loja ✅; 13.9b as missões e as marcas da escada). **Estado:**
-parcial.
+(13.9a a loja ✅; 13.9b as missões e as marcas da escada ✅). **Estado:**
+corrigido.
 
 **Causa.** A ST-13.5 levou ao servidor toda escrita que passava por
 `idle-acoes`/`colecao-acoes`, e a loja do idle não passava: `loja-tela.mjs`
@@ -7127,8 +7127,16 @@ motor (`estilhacarNaBolsa`, `montarNaBolsa`), e a recusa da rota sem bolso
 passou a vir ANTES do débito (a versão da tela cobrava a Essência e depois
 descobria que a rota não estilhaçava).
 
-**O que falta (ST-13.9b).** O resgate da missão e as marcas da escada da
-Pokédex (`ar_escada_arena`, por aparelho — as missões medem a partir delas).
+**Conserto da escada e das missões (ST-13.9b).** Migração `escada-missoes-st13.9b`:
+`ja_possuiu` e `escada_marcas` alimentadas por GATILHO (a criatura que nasce
+ou evolui; a aposta marca a espécie como encontrada e a rodada como vista) —
+todo caminho de escrita, sem depender de cada rota lembrar; `missoes_semana`
+com a base e as resgatadas. `POST /api/idle/vistas` manda a RODADA assistida
+(o servidor marca os lutadores dela, e só se ela abriu há menos de 6 h);
+`POST /api/idle/missao` credita o prêmio na bolsa da conta na mesma transação
+que grava a resgatada. A conta desce o "já possuiu", a semana e as marcas
+(que SOMAM às do aparelho).
 
 **Teste que trava:** `loja-idle` — "com conta, a compra, a venda, o estilhaço
-e a montagem SOBREVIVEM à releitura (D-136)".
+e a montagem SOBREVIVEM à releitura (D-136)"; `escada-conta` — "a missão da
+semana: [...] o prêmio vai para a bolsa da conta, e uma vez só (D-136)".

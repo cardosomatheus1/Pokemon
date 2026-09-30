@@ -40,6 +40,7 @@ import { moverNaConta, trocarNaConta, soltarNaConta, escolherFocoNaConta, trocar
 import { estagioMaximo, proximoEstagio } from '../engine/estagios.mjs';
 import { lutarNaConta, jornadaDaConta } from './jornada.mjs';
 import { lojaDoIdleNaConta, ACOES_DA_LOJA } from './loja-idle.mjs';
+import { marcasDe, jaPossuiuDe, marcarVistasDaRodada, missoesDaConta, resgatarMissaoNaConta } from './escada.mjs';
 import { linhaDaExpedicao, linhaDaRun, historicoDoDisco, HISTORICO_MAX } from '../app/modules/historico-dados.mjs';
 
 /* As ESCRITAS permitidas sob `/api/idle`, por nome. */
@@ -57,6 +58,8 @@ export const OPERACOES_DO_IDLE = Object.freeze([
   'POST /api/idle/jornada/lutar',
   /* A loja do idle (ST-13.9a · D-136): comprar, vender, estilhaçar, montar. */
   'POST /api/idle/loja',
+  /* A escada e a semana (ST-13.9b): a rodada assistida e o resgate da missão. */
+  'POST /api/idle/vistas', 'POST /api/idle/missao',
 ]);
 
 /* A criatura como o cliente a lê: sem a semente dos ocultos e sem o dono. */
@@ -116,6 +119,11 @@ export function colecaoDe(db, { userId, agora, pack = PACK }) {
     /* O HISTÓRICO (1.28 · L-141): as últimas colheitas dos dois modos, montadas
        da resposta que cada uma GRAVOU — nada se sorteia de novo na leitura. */
     historico: historicoDe(db, userId, pack, criaturas),
+    /* A ESCADA E A SEMANA (ST-13.9b · D-136): as marcas da Arena, o "já
+       possuiu" e as missões — antes, só no aparelho. */
+    marcas: marcasDe(db, userId),
+    jaPossuiu: jaPossuiuDe(db, userId, pack.id),
+    missoes: missoesDaConta(db, { userId, pack, agora }).missoes,
   };
 }
 
@@ -273,6 +281,21 @@ export function rotasDaColecao(daExcecao) {
       if (!ACOES_DA_LOJA.includes(acao) || !id || !Number.isInteger(quantos) || quantos < 1 || quantos > 999) return recusa('pedido de loja inválido');
       if (acao === 'estilhacar' && !(PACK.biomas ?? []).some(b => b.id === bioma)) return recusa('rota desconhecida');
       return tentar(() => lojaDoIdleNaConta(db, { userId, pack: PACK, acao, id, quantos, bioma }));
+    },
+
+    /* A RODADA ASSISTIDA (ST-13.9b): o corpo traz a rodada, e o servidor
+       marca os lutadores DELA — a lista de espécies nunca vem do navegador. */
+    'POST /api/idle/vistas': ({ db, corpo, userId, agora }) => {
+      const rodada = texto(corpo?.rodada);
+      if (!rodada) return recusa('rodada inválida');
+      return tentar(() => marcarVistasDaRodada(db, { userId, rodada, agora }));
+    },
+
+    /* O RESGATE DA MISSÃO (ST-13.9b): o prêmio vai para a bolsa da conta. */
+    'POST /api/idle/missao': ({ db, corpo, userId, agora }) => {
+      const id = texto(corpo?.id);
+      if (!id) return recusa('missão inválida');
+      return tentar(() => resgatarMissaoNaConta(db, { userId, pack: PACK, id, agora }));
     },
 
     'POST /api/idle/lancar': ({ db, corpo, userId, agora }) => {
