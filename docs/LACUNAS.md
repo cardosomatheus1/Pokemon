@@ -8958,11 +8958,14 @@ decide. Não cabe na ST-5.9 porque são outros componentes (o aviso da arena, o
 banner, a zona de ação), e a 5.9 cuidou só de onde a arena e o cartão ficam.
 O que a destrava: nada — é construir.
 
-### L-216 — no mapa, o trancado lê como defeito de tela, e o rio não chega a lugar nenhum
+### L-216 — no mapa, o trancado lê como defeito de tela, e o rio não chega a lugar nenhum ✅ FECHADA na ST-10.22f (30/09), o resto na L-217
 
 **Registrada em:** 30/09/2026, pelo crítico cego (Q7, barra: o mapa do Super
 Mario World) nas duas rodadas da ST-10.22e. **Bloco dono:** ST-10.22f
-(proposta no PLANO no mesmo commit). **Estado:** aberta.
+(proposta no PLANO no mesmo commit). **Estado:** ✅ fechada — o holograma,
+a praça no chão, as quatro texturas, o mar até a borda e o painel na ST-10.22f.
+O rótulo fora do caminho, o rio de ponta a ponta e o Campeão longe da bandeira
+foram para a L-217.
 
 O chão virou grade na ST-10.22e, e o crítico parou de falar das ilhas: o que
 ele passou a apontar nas duas rodadas mora nos NÓS e na água, e não no chão:
@@ -8987,3 +8990,29 @@ Não cabe na ST-10.22e porque é o desenho dos nós e o traçado da água, e a
 10.22e troca só o que pinta o chão. O que a destrava: nada — é construir. A
 trava: `test/jornada-tela.mjs` cobra o trancado e os rótulos; o
 `test/jornada-mundo.mjs`, o rio.
+
+### L-217 — o mapa da jornada lê como gerado: falta COMPOR o mundo
+
+**Registrada em:** 30/09/2026, na ST-10.22f. **Bloco dono:** ST-10.23
+(proposta no PLANO no mesmo commit). **Estado:** aberta, sem data — espera o
+dono pedir ou a fila de produto acabar.
+
+Cinco rodadas de Q7 cego (barra: o mapa do SMW), na 10.22e e na 10.22f,
+deixaram o "mundo" em 3–5 enquanto o crítico trocava de queixa: primeiro
+ilhas, depois texturas, depois silhuetas — e, com tudo isso resolvido,
+"retalhos de Voronoi", "gerado". O chão hoje é decidido por proximidade ao nó
+mais perto; o do SMW é desenhado à mão. Nenhum ajuste de tile ou de borda
+atravessa essa diferença.
+
+Ficam aqui, porque pedem a composição e não mais um tile:
+- o rótulo do nó atual cobre a estrada ou a ponte em 1100 e 1440; subir o
+  rótulo foi tentado na 10.22f e desfeito — no nó com rótulo mora a pessoa
+  em pé (o rival, você), e a captura mediu rótulos cobertos de 0 para 1–2;
+- o rio desce e acaba num lago; o crítico pede um rio só, da nascente ao mar;
+- o Campeão fica logo abaixo da bandeira do início, e o ouro dele é o mesmo
+  ouro do "feito";
+- o planalto da Liga é um campo liso, sem degrau nem rampa onde a estrada sobe.
+
+Não cabe na 10.22f porque é redesenhar o mapa, e não acabar o atual. O que a
+destrava: a decisão de gastar um bloco L em arte de mapa — o mapa já cumpre a
+função (caminho e onde estou em 6–8).

@@ -1423,19 +1423,46 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
     uma peça, e não mais um recorte em `clip-path`. O veredito do dono sobre
     a troca vai no relatório, com as capturas de antes e depois.
 
-#### ST-10.22f · Os nós e a água no mapa em grade (L-216)
+#### ST-10.22f · Os nós e a água no mapa em grade ✅ 30/09 (L-216)
 - **Porte** M · **Método** GL (barra: o mapa do SMW) · **Portões:** Q1 Q2 Q5 Q7.
-- **Escopo:** o nó trancado sem a silhueta preta e com o ícone apagado (a cor
-  fica para o feito e o próximo); o nó assentado no chão, sem o pedestal
-  oval igual em todos; o rio ligado ao mar de Cinnabar, com a ponte onde a
-  estrada cruza; o rótulo do PRÓXIMO do lado que o caminho não passa; o
-  Campeão longe da bandeira do início; o painel ocupando a largura em 1920;
-  os tiles da usina, da cidade e da floresta redesenhados, com props.
-- **Fora:** o chão (ST-10.22e), o arranjo do caminho.
-- **Aceite:** "futuro" ≥ 7 nas quatro larguras, e nenhuma das seis queixas
-  da L-216 de volta no Q7 cego.
-- **Sabotagem:** a silhueta de volta; o rio que termina no lago; o rótulo
-  sobre a ponte.
+- **Escopo:** o que o Q7 da 10.22e apontou nos nós e na água, e três texturas.
+- **Fora:** o chão da grade (10.22e), o arranjo do caminho.
+- **Feito:**
+  - o rival do nó futuro vira HOLOGRAMA (sem cor, pálido, translúcido, contorno
+    no neon); o lendário, no ouro do chefe. A silhueta preta lia como mancha;
+  - a PRAÇA do ginásio é chão da grade (`praca`, calçamento quente com borda e
+    canto), medida pela tela como a lava — o pedestal oval em CSS saiu;
+  - quatro tiles nossos: a cidade em lajes frias irregulares (era tijolo em
+    fileira), a praça, a usina em concreto rachado com óleo e ferrugem (era
+    chapa em grade), a floresta em copas de tamanhos diferentes com vão e
+    tronco (era domo de escamas);
+  - o mar do vulcão desce até a borda de baixo, e a água sem vizinha d'água
+    vira grama (os "tiles órfãos" medidos no celular);
+  - o painel acompanha o mapa em 1920 (tirado o teto de 1240 px; a leitura
+    segue com 820);
+  - `test/jornada-chao.mjs` (6), `jornada-mundo` e `jornada-tela` · S1971 a
+    S1977 · S1902 e S1956 realvados.
+- **Tentado e desfeito:** o rótulo subir quando o caminho desce do nó. Nos nós
+  com rótulo — o atual, o escolhido, o fim — mora a pessoa em pé em cima (o
+  rival, você), e a captura mediu rótulos cobertos de 0 para 1–2 por largura.
+  Saiu inteiro (função, classe, CSS, testes, defeitos) — vai para a L-217.
+- **Q7 (barra SMW):** caminho 5–7, onde estou 6–8, futuro 5–7, mundo 3,
+  publicado 4. **O "mundo" está em 3–5 há cinco rodadas.** O crítico não
+  fala mais de textura nem de silhueta: fala de COMPOSIÇÃO — "retalhos de
+  Voronoi", "gerado". É o teto de um chão decidido por proximidade; subir dele
+  é desenhar o mapa à mão (L-217, ST-10.23), e a recomendação é não furar a
+  fila com isso.
+
+#### ST-10.23 · O mapa desenhado à mão (L-217) — proposta, sem data
+- **Porte** L · **Método** GL (barra: o mapa do SMW).
+- **Escopo:** trocar o chão decidido por proximidade por um mapa COMPOSTO:
+  uma grade de materiais escrita à mão no ContentPack (como o SMW), com
+  cumes, rampas onde a estrada sobe, um rio só da nascente ao mar, e as
+  cidades assentadas em ruas. A grade da 10.22e vira o pintor dela.
+- **Aceite:** ≥ 8 em "mundo" e "publicado" nas quatro larguras.
+- **Por que espera:** é projeto de arte, e o mapa já cumpre a função (caminho
+  e onde estou em 6–8). Entra quando o dono pedir, ou quando a fila de
+  produto acabar.
 
 ### ST-10.20 · A jornada ensina a apostar? ✅ 27/09
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16

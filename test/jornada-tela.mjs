@@ -522,7 +522,6 @@ export function suite() {
     const s1 = setasDoCaminho(mapaDaJornada(pack, progressoVazio()))[3], a1 = mapaDaJornada(pack, progressoVazio()).nos[3], b1 = mapaDaJornada(pack, progressoVazio()).nos[4];
     ok(s1.outros.length >= 4 && s1.outros.every(p => p.x >= Math.min(a1.x, b1.x) && p.x <= Math.max(a1.x, b1.x)), 'os outros pontos saem do trecho');
     ok(/lutar contra \$\{t\.nome\.replace\(\/\^\(O\|A\) \//.test(tela), '"lutar contra O Rival" com maiúscula no meio da frase');
-    ok(/\.jnPainel\{[^}]*max-width:1240px/.test(html), 'o painel sem largura máxima em 1920');
     ok(/cz\.innerHTML = cz\.innerHTML\.replace\(\/\\s\*—\\s\*\$\/, ''\)/.test(tela), 'o travessão fica pendurado quando o link sai');
   });
 
@@ -651,7 +650,12 @@ export function suite() {
     ok(m.nos.filter(n => n.tipo === 'liga' && !n.final).every(n => n.revisa?.insignia), 'um membro da Elite sem a insígnia que revisa');
     ok(/n\.tipo === 'liga' && n\.revisa\?\.insignia/.test(tela) && /\.jnNo\.jn-liga i\.jnSilhueta::after\{[^}]*rotate\(-45deg\)/.test(css), 'a Elite trancada sem a insígnia que revisa');
     ok(/\.jnPos\.jn-vencido \.jnOw\{display:none\}/.test(css), 'o líder vencido continua de pé como antes');
-    ok(/\.jnPos\.jn-trancado \.jnOw\{filter:brightness\(0\)/.test(css), 'o rival do nó futuro aparece colorido — entrega quem espera ali');
+    /* ST-10.22f: a silhueta PRETA lia como mancha de tinta (três rodadas do Q7 da
+       10.22e). O rival do futuro é um HOLOGRAMA: sem cor própria, pálido e
+       translúcido, com o contorno no neon da interface — continua sem entregar
+       quem espera ali, e passa a dizer "ainda não" em vez de "defeito". */
+    const holo = css.match(/\.jnPos\.jn-trancado \.jnOw\{([^}]*)\}/)?.[1] ?? '';
+    ok(/grayscale\(1\)/.test(holo) && !/brightness\(0\)/.test(holo) && /var\(--neonRGB\)/.test(holo) && Number(holo.match(/opacity:([.\d]+)/)?.[1] ?? 1) <= 0.6, 'o rival do nó futuro volta a ser mancha preta — ou aparece colorido');
   });
 
   return s;

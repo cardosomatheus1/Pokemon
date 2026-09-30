@@ -78,11 +78,13 @@ export async function pintarChao(alvo, mapa) {
   const r0 = caixa.getBoundingClientRect();
   const nos = [...caixa.querySelectorAll('.jnPos')].filter(p => p.querySelector(':scope > .jnNo'))
     .map((p, i) => { const r = p.getBoundingClientRect(); return { x: r.left - r0.left, y: r.top - r0.top, regiao: mapa.nos[i]?.regiao }; });
-  /* A poça de lava que a cena pôs no mapa reclama o chão de vulcão em volta. */
-  const manchas = [...caixa.querySelectorAll('.jnLago.jn-lava')].map(el => {
-    const r = el.getBoundingClientRect();
-    return { x: r.left - r0.left + r.width / 2, y: r.top - r0.top + r.height / 2, regiao: 'vulcao', raio: Math.max(r.width, r.height) * 0.8 };
-  });
+  /* A poça de lava que a cena pôs no mapa reclama o chão de vulcão em volta;
+     o ginásio, a PRAÇA — o calçamento é chão da grade, com borda e canto. */
+  const centro = el => { const r = el.getBoundingClientRect(); return { x: r.left - r0.left + r.width / 2, y: r.top - r0.top + r.height / 2, r }; };
+  const manchas = [
+    ...[...caixa.querySelectorAll('.jnLago.jn-lava')].map(el => { const c = centro(el); return { x: c.x, y: c.y, regiao: 'vulcao', raio: Math.max(c.r.width, c.r.height) * 0.8 }; }),
+    ...[...caixa.querySelectorAll('.jnPos.jnT-ginasio')].map(el => { const c = centro(el); return { x: c.x, y: c.y, regiao: 'praca', raio: 34 }; }),
+  ];
   const grade = gradeDoChao(nos, { largura: w, altura: h, manchas });
   const img = await carregar();
   tela.width = w; tela.height = h;

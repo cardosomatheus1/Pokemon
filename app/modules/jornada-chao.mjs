@@ -12,9 +12,11 @@
  *                (valor interpolado numa rede de 64 px), para a fronteira
  *                sair em curva, e não em círculo de compasso nem em serrote
  *   as manchas   o que a tela pôs no chão reclama o chão dele: a poça de
- *                lava é vulcão em volta, e não lava boiando na grama
+ *                lava é vulcão em volta, e não lava boiando na grama; o
+ *                ginásio é PRAÇA em volta (ST-10.22f), e não um pedestal
  *   a grama      fora de todo raio — é o que liga as regiões
- *   o mar        a grama perto do vulcão vira água: Cinnabar é ilha
+ *   o mar        a grama perto do vulcão vira água, e o mar desce até a
+ *                borda de baixo: Cinnabar é ilha num mar que sai do mapa
  *   a transição  o chão de mais precedência invade a borda do vizinho
  *                (`transicoes`), como a borda de tile do GBA
  *   o canto      onde os dois vizinhos de um canto são o mesmo chão de mais
@@ -29,15 +31,15 @@
  * deitado e o em pé. */
 export const CELULA = 16;
 export const TILE = 32;
-export const MATERIAIS = Object.freeze(['grama', 'agua', 'campo', 'jardim', 'praia', 'pantano', 'floresta', 'bosque', 'pedra', 'cidade', 'usina', 'vulcao', 'planalto']);
+export const MATERIAIS = Object.freeze(['grama', 'agua', 'campo', 'jardim', 'praia', 'pantano', 'floresta', 'bosque', 'pedra', 'praca', 'cidade', 'usina', 'vulcao', 'planalto']);
 /* Quem invade a borda de quem: o mais "construído" sobre o mais natural. */
-export const PRECEDENCIA = Object.freeze({ grama: 0, agua: 1, campo: 2, jardim: 2, praia: 3, pantano: 3, floresta: 4, bosque: 4, pedra: 5, cidade: 6, usina: 6, vulcao: 6, planalto: 7 });
+export const PRECEDENCIA = Object.freeze({ grama: 0, agua: 1, campo: 2, jardim: 2, praia: 3, pantano: 3, floresta: 4, bosque: 4, pedra: 5, praca: 5, cidade: 6, usina: 6, vulcao: 6, planalto: 7 });
 /* A altura do chão: onde um mais alto encontra um mais baixo embaixo dele, há face. */
 export const ALTURA = Object.freeze({ agua: -1, planalto: 3, pedra: 2, vulcao: 2, floresta: 1, bosque: 1, cidade: 1, usina: 1 });
 /* A cor de cada chão para a borda em xadrez e a face do penhasco. */
 export const COR_DO_CHAO = Object.freeze({
   grama: '#5e9e43', agua: '#3a86c8', campo: '#7cbd57', jardim: '#86c65c', praia: '#e3d294', pantano: '#4b6b45', floresta: '#2f6a28',
-  bosque: '#1f5444', pedra: '#bf9a62', cidade: '#9aa0ac', usina: '#4c5059', vulcao: '#5a382e', planalto: '#9a917f',
+  bosque: '#1f5444', pedra: '#bf9a62', praca: '#d9cfae', cidade: '#a4aab5', usina: '#6b6f76', vulcao: '#5a382e', planalto: '#9a917f',
 });
 export const COR_DA_FACE = Object.freeze({ planalto: '#4e463c', pedra: '#76552d', vulcao: '#241210', floresta: '#173816', bosque: '#0f2c26', cidade: '#50555f', usina: '#2e3138' });
 
@@ -76,11 +78,18 @@ export function gradeDoChao(nos, { largura, altura, celula = CELULA, raio = raio
       let mat = melhor && dm < raio && MATERIAIS.includes(melhor.regiao) ? melhor.regiao : 'grama';
       const m = manchas.find(k => MATERIAIS.includes(k.regiao) && Math.hypot(x - k.x, y - k.y) * ruido < k.raio);
       if (m) mat = m.regiao;
-      if (mat === 'grama' && vulcoes.some(v => Math.hypot(x - v.x, y - v.y) * ruido < raio * 1.4)) mat = 'agua';
+      /* O mar: o anel em volta do vulcão, e um braço dele que desce até a
+         borda de baixo — poças soltas na borda não liam como mar (L-216). */
+      if (mat === 'grama' && vulcoes.some(v => Math.hypot(x - v.x, y - v.y) * ruido < raio * 1.4 || (y > v.y && Math.abs(x - v.x) * ruido < raio))) mat = 'agua';
       linha.push(mat);
     }
     grade.push(linha);
   }
+  /* A água sem vizinha d'água vira grama: o braço do mar, cortado pelo ruído,
+     deixava casas soltas de água no meio da terra ("tile órfão", Q7 da 10.22f). */
+  const orfa = (l, c) => grade[l][c] === 'agua' && [[1, 0], [-1, 0], [0, 1], [0, -1]].every(([dl, dc]) => grade[l + dl]?.[c + dc] !== 'agua');
+  const orfas = grade.flatMap((linha, l) => linha.map((_, c) => [l, c])).filter(([l, c]) => orfa(l, c));
+  for (const [l, c] of orfas) grade[l][c] = 'grama';
   return grade;
 }
 

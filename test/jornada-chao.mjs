@@ -105,6 +105,33 @@ export function suite() {
     ok(mancha(pedra).has(celula(pewter).join()), 'a pedra e Pewter em dois chãos');
   });
 
+  /* ST-10.22f (L-216): a praça do ginásio é CHÃO da grade (calçamento, com
+     transição e canto), e não o pedestal oval em CSS carimbado sobre o
+     terreno; e o mar de Cinnabar desce até a borda do mapa — as poças soltas
+     na borda de baixo liam como água que não se liga a nada. */
+  s.teste('ST-10.22f: a praça é chão da grade, e o mar do vulcão chega à borda', () => {
+    ok(MATERIAIS.includes('praca') && existsSync(new URL('../arte/chao/praca.svg', import.meta.url)), 'a praça sem material ou sem tile');
+    const nos = [{ x: 100, y: 100, regiao: 'campo' }, { x: 420, y: 130, regiao: 'vulcao' }];
+    const g = gradeDoChao(nos, { largura: 640, altura: 320, raio: 90, manchas: [{ x: 100, y: 100, regiao: 'praca', raio: 30 }] });
+    igual(g[Math.floor(100 / CELULA)][Math.floor(100 / CELULA)], 'praca', 'o ginásio sem praça no chão');
+    igual(g[Math.floor(100 / CELULA)][Math.floor(170 / CELULA)], 'campo', 'a praça engoliu a região');
+    const col = Math.floor(420 / CELULA), fundo = g.length - 1;
+    igual(g[fundo][col], 'agua', 'o mar do vulcão não chega à borda de baixo');
+    let l = fundo; while (l > 0 && g[l][col] === 'agua') l--;
+    ok(g.slice(l + 1).every(linha => linha[col] === 'agua') && ['vulcao', 'agua'].includes(g[l][col]), 'o mar da borda não encosta na ilha');
+    igual(g[fundo][Math.floor(100 / CELULA)], 'grama', 'o mar desceu longe do vulcão');
+    /* Nenhuma casa de água sozinha: o mar é um corpo só, e não pingos. */
+    /* Os casos são os que MEDIDOS davam pingos antes da limpeza (a largura do celular, com o vulcão perto da borda). */
+    for (const [larg, alt, raio, fx] of [[392, 320, 90, 0.3], [420, 320, 90, 0.3], [420, 420, 60, 0.5], [640, 320, 90, 0.66]]) {
+      const gg = gradeDoChao([{ x: 100, y: 100, regiao: 'campo' }, { x: larg * fx, y: alt * 0.4, regiao: 'vulcao' }], { largura: larg, altura: alt, raio });
+      const soltas = gg.flatMap((linha, l) => linha.map((m, c) => m === 'agua' && [[1, 0], [-1, 0], [0, 1], [0, -1]].every(([dl, dc]) => gg[l + dl]?.[c + dc] !== 'agua'))).filter(Boolean).length;
+      igual(soltas, 0, `${larg} × ${alt}: casa de água solta na terra`);
+    }
+    const pinta = semComentario(fonte('../app/modules/jornada-chao-tela.mjs')), html = fonte('../app/index.html');
+    ok(/querySelectorAll\('\.jnPos\.jnT-ginasio'\)/.test(pinta) && /regiao: 'praca'/.test(pinta), 'a tela não põe a praça sob o ginásio');
+    ok(!/\.jnT-ginasio::before\{/.test(html), 'o pedestal oval em CSS continua por cima do chão');
+  });
+
   s.teste('a tela pinta a grade num canvas, e as manchas de região saíram', () => {
     const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
     ok(/<canvas class="jnChao"/.test(tela) && /pintarChao\(alvo, mapa\)/.test(tela), 'a tela não pinta o chão em grade');
