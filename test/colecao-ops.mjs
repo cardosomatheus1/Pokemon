@@ -222,10 +222,13 @@ export async function suite() {
     const { MIGRACOES } = await import('../server/banco.mjs');
     const db = abrirBanco(':memory:'); migrar(db, MIGRACOES.findIndex(m => m.nome === 'colecao-st13.3a'));
     const u = cadastrar(db, { username: 'mig', email: 'mig@x.test', senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01', agora: T0 }).id;
+    /* As criaturas como o banco daquela época as gravava: o `gerar` de hoje
+       escreve colunas que nascem em migrações posteriores (ST-14.2). */
     const ids = [1, 4, 7, 10, 13, 16, 19, 25].map((dex, i) => {
-      const c = gerar(db, { userId: u, pack: PACK, dex });
-      db.prepare(`UPDATE criaturas SET criada_em = ? WHERE id = ?`).run(T0 + (7 - i), c.id);   // a última gerada é a mais antiga
-      return c.id;
+      const id = `mig-${i}`;
+      db.prepare(`INSERT INTO criaturas (id, user_id, pack_id, dex, o_hp, o_atq, o_def, o_spa, o_spd, o_vel, natureza, semente, origem, criada_em)
+                  VALUES (?, ?, ?, ?, 1, 2, 3, 4, 5, 6, 'Firme', 'abc', 'captura', ?)`).run(id, u, PACK.id, dex, T0 + (7 - i));   // a última é a mais antiga
+      return id;
     });
     migrar(db);
     const naCaixa = db.prepare(`SELECT id FROM criaturas WHERE user_id = ? AND na_caixa = 1 ORDER BY criada_em`).all(u).map(x => x.id);

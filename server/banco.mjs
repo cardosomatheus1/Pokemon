@@ -2064,6 +2064,83 @@ export const MIGRACOES = [
     },
     desce: db => { db.exec(`DROP TABLE economic_operations`); },
   },
+  {
+    /* ST-14.2 · E14: A INSTÂNCIA JÁ EXISTENTE EVOLUI. Sem coleção paralela —
+     * `criaturas.id` continua sendo o id da instância. Ganha o que a troca e o
+     * Market vão precisar provar: o shiny (da instância, e nunca do perfil), o
+     * treinador ORIGINAL, a espécie de origem, o encontro que a gerou (um
+     * encontro, uma criatura) e a versão.
+     *
+     * O HISTÓRICO É POR GATILHO, e append-only: nasceu, evoluiu, baixa — todo
+     * caminho de escrita, sem cada rota lembrar (a mesma razão do `ja_possuiu`).
+     * SOLTAR deixa de apagar a identidade: o gatilho copia a linha para
+     * `criaturas_baixadas` antes de ela sair, e o resto do jogo continua lendo
+     * `criaturas` sem filtro novo nenhum.
+     *
+     * A migração NÃO INVENTA HISTÓRIA (spec E14 §4.1): a criatura de antes
+     * fica sem treinador original e sem espécie de origem, com o evento
+     * `migracao` — e shiny falso, sem sorteio retroativo. */
+    nome: 'instancia-st14.2',
+    sobe: db => {
+      db.exec(`ALTER TABLE criaturas ADD COLUMN is_shiny INTEGER NOT NULL DEFAULT 0 CHECK (is_shiny IN (0, 1))`);
+      db.exec(`ALTER TABLE criaturas ADD COLUMN ot_user_id TEXT`);
+      db.exec(`ALTER TABLE criaturas ADD COLUMN especie_original INTEGER`);
+      db.exec(`ALTER TABLE criaturas ADD COLUMN encontro_chave TEXT`);
+      db.exec(`ALTER TABLE criaturas ADD COLUMN versao INTEGER NOT NULL DEFAULT 1`);
+      db.exec(`CREATE UNIQUE INDEX criaturas_encontro ON criaturas(encontro_chave) WHERE encontro_chave IS NOT NULL`);
+      db.exec(`
+        CREATE TABLE criaturas_historico (
+          id          INTEGER PRIMARY KEY AUTOINCREMENT,
+          criatura_id TEXT NOT NULL,
+          evento      TEXT NOT NULL CHECK (evento IN ('nasceu', 'migracao', 'evolucao', 'baixa')),
+          user_id     TEXT,
+          dex         INTEGER NOT NULL,
+          detalhe     TEXT,
+          em          INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE INDEX criaturas_historico_criatura ON criaturas_historico(criatura_id, id)`);
+      db.exec(`CREATE TRIGGER criaturas_historico_sem_update BEFORE UPDATE ON criaturas_historico BEGIN SELECT RAISE(ABORT, 'criaturas_historico é append-only'); END`);
+      db.exec(`CREATE TRIGGER criaturas_historico_sem_delete BEFORE DELETE ON criaturas_historico BEGIN SELECT RAISE(ABORT, 'criaturas_historico é append-only'); END`);
+      db.exec(`INSERT INTO criaturas_historico (criatura_id, evento, user_id, dex, detalhe, em)
+                 SELECT id, 'migracao', user_id, dex, origem, criada_em FROM criaturas`);
+      const agoraMs = `CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)`;
+      db.exec(`CREATE TRIGGER criaturas_nasce_historico AFTER INSERT ON criaturas BEGIN
+                 INSERT INTO criaturas_historico (criatura_id, evento, user_id, dex, detalhe, em)
+                 VALUES (NEW.id, 'nasceu', NEW.user_id, NEW.dex, NEW.origem, NEW.criada_em); END`);
+      db.exec(`CREATE TRIGGER criaturas_evolui_historico AFTER UPDATE OF dex ON criaturas WHEN OLD.dex <> NEW.dex BEGIN
+                 INSERT INTO criaturas_historico (criatura_id, evento, user_id, dex, detalhe, em)
+                 VALUES (NEW.id, 'evolucao', NEW.user_id, NEW.dex, CAST(OLD.dex AS TEXT), ${agoraMs}); END`);
+      db.exec(`
+        CREATE TABLE criaturas_baixadas (
+          id               TEXT PRIMARY KEY,
+          user_id          TEXT NOT NULL,
+          pack_id          TEXT NOT NULL,
+          dex              INTEGER NOT NULL,
+          especie_original INTEGER,
+          ot_user_id       TEXT,
+          is_shiny         INTEGER NOT NULL,
+          encontro_chave   TEXT,
+          semente          TEXT NOT NULL,
+          origem           TEXT NOT NULL,
+          criada_em        INTEGER NOT NULL,
+          baixada_em       INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE TRIGGER criaturas_baixa AFTER DELETE ON criaturas BEGIN
+                 INSERT OR IGNORE INTO criaturas_baixadas VALUES (OLD.id, OLD.user_id, OLD.pack_id, OLD.dex, OLD.especie_original,
+                   OLD.ot_user_id, OLD.is_shiny, OLD.encontro_chave, OLD.semente, OLD.origem, OLD.criada_em, ${agoraMs});
+                 INSERT INTO criaturas_historico (criatura_id, evento, user_id, dex, detalhe, em)
+                   VALUES (OLD.id, 'baixa', OLD.user_id, OLD.dex, NULL, ${agoraMs}); END`);
+    },
+    desce: db => {
+      for (const t of ['criaturas_baixa', 'criaturas_evolui_historico', 'criaturas_nasce_historico', 'criaturas_historico_sem_delete', 'criaturas_historico_sem_update'])
+        db.exec(`DROP TRIGGER ${t}`);
+      db.exec(`DROP TABLE criaturas_baixadas`);
+      db.exec(`DROP TABLE criaturas_historico`);
+      db.exec(`DROP INDEX criaturas_encontro`);
+      for (const c of ['versao', 'encontro_chave', 'especie_original', 'ot_user_id', 'is_shiny'])
+        db.exec(`ALTER TABLE criaturas DROP COLUMN ${c}`);
+    },
+  },
 
 ];
 

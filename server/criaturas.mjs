@@ -56,7 +56,7 @@ const COLUNAS_OCULTAS = ['o_hp', 'o_atq', 'o_def', 'o_spa', 'o_spd', 'o_vel'];
 /* Nasce uma criatura. A raiz vem do CSPRNG — imprevisível de propósito: uma
    raiz derivada do relógio ou de um contador deixaria o jogador escolher a hora
    de capturar para pegar o potencial que ele quer. */
-export function gerar(db, { userId, pack, dex, origem = 'captura', raiz = novaRaiz() }) {
+export function gerar(db, { userId, pack, dex, origem = 'captura', raiz = novaRaiz(), encontroChave = null }) {
   if (!ORIGENS.includes(origem)) throw new Error(`origem inválida: ${origem}`);
   const existe = (pack.especies ?? []).some(e => e.dex === dex);
   if (!existe) throw new Error(`dex ${dex} não existe no pack ${pack.id}`);
@@ -67,12 +67,16 @@ export function gerar(db, { userId, pack, dex, origem = 'captura', raiz = novaRa
     INSERT INTO criaturas (id, user_id, pack_id, dex,
                            o_hp, o_atq, o_def, o_spa, o_spd, o_vel,
                            natureza, exemplar, nivel, vinculo, foco,
-                           semente, origem, criada_em)
-    VALUES (?,?,?,?, ?,?,?,?,?,?, ?,?,?,?,?, ?,?,?)`)
+                           semente, origem, criada_em,
+                           ot_user_id, especie_original, encontro_chave)
+    VALUES (?,?,?,?, ?,?,?,?,?,?, ?,?,?,?,?, ?,?,?, ?,?,?)`)
     .run(id, userId, pack.id, dex,
          ...inst.iv,
          inst.natureza.nome, inst.exemplar ? 1 : 0, inst.nivel, inst.vinculo, inst.foco,
-         String(raiz), origem, Date.now());
+         String(raiz), origem, Date.now(),
+         /* ST-14.2: quem a pegou, como ela nasceu, e o encontro que a gerou —
+            a identidade que a troca e o Market vão precisar provar. */
+         userId, dex, encontroChave);
   return ler(db, id, pack);
 }
 
@@ -91,6 +95,9 @@ function hidratar(linha, pack) {
                   : { nome: linha.natureza, sobe: null, desce: null },
     nivel: linha.nivel, vinculo: linha.vinculo, foco: linha.foco,
     origem: linha.origem, semente: linha.semente, criadaEm: linha.criada_em,
+    /* ST-14.2: a identidade da instância (shiny da instância, treinador
+       original, espécie de origem). `null` quando a migração não sabe. */
+    shiny: linha.is_shiny === 1, ot: linha.ot_user_id ?? null, especieOriginal: linha.especie_original ?? null,
     /* ST-13.3a: a caixa e o descanso do foco (as colunas nascem na migração
        colecao-st13.3a; num banco anterior, ausentes, valem o padrão). */
     xp: linha.xp ?? 0, naCaixa: linha.na_caixa === 1,

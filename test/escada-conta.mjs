@@ -44,9 +44,11 @@ export async function suite() {
   });
 
   s.teste('a migração traz o que já existia: criaturas de hoje e apostas feitas', () => {
-    const db = abrirBanco(':memory:'); migrar(db, MIGRACOES.length - 1);
+    const db = abrirBanco(':memory:'); migrar(db, MIGRACOES.findIndex(m => m.nome === 'escada-missoes-st13.9b'));
     const uid = conta(db);
-    gerar(db, { userId: uid, pack: PACK, dex: 4 });
+    /* A criatura como o banco daquela época a gravava (o `gerar` de hoje escreve colunas da ST-14.2). */
+    db.prepare(`INSERT INTO criaturas (id, user_id, pack_id, dex, o_hp, o_atq, o_def, o_spa, o_spd, o_vel, natureza, semente, origem, criada_em)
+                VALUES ('antiga', ?, ?, 4, 1, 2, 3, 4, 5, 6, 'Firme', 'abc', 'captura', ?)`).run(uid, PACK.id, AGORA);
     migrar(db);
     igual(jaPossuiuDe(db, uid, PACK.id).join(','), '4', 'a criatura de antes da migração ficou fora do "já possuiu"');
   });

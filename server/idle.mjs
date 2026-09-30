@@ -409,7 +409,7 @@ export function lancarPendente(db, { userId, pack, chave, bola, agora, raiz = no
     const t = tentar(semente(derivar(raiz, 'lance')), pack, { raridade: en.raridade, bola });
     /* A CAPTURA NUNCA É RECUSADA por equipe cheia: vai para a caixa. */
     const paraCaixa = equipeCheiaEm(criaturasDaConta(db, userId));
-    const criatura = t.capturou ? gerarCriatura(db, { userId, pack, dex: en.dex, origem: 'captura' }) : null;
+    const criatura = t.capturou ? gerarCriatura(db, { userId, pack, dex: en.dex, origem: 'captura', encontroChave: chave }) : null;
     if (criatura && paraCaixa) {
       db.prepare(`UPDATE criaturas SET na_caixa = 1 WHERE id = ?`).run(criatura.id);
       criatura.naCaixa = true;
