@@ -8991,11 +8991,14 @@ Não cabe na ST-10.22e porque é o desenho dos nós e o traçado da água, e a
 trava: `test/jornada-tela.mjs` cobra o trancado e os rótulos; o
 `test/jornada-mundo.mjs`, o rio.
 
-### L-217 — o mapa da jornada lê como gerado: falta COMPOR o mundo
+### L-217 — o mapa da jornada lê como gerado: falta COMPOR o mundo ✅ FECHADA na ST-10.23 (30/09), o resto na L-218
 
 **Registrada em:** 30/09/2026, na ST-10.22f. **Bloco dono:** ST-10.23
-(proposta no PLANO no mesmo commit). **Estado:** aberta, sem data — espera o
-dono pedir ou a fila de produto acabar.
+(proposta no PLANO no mesmo commit). **Estado:** ✅ fechada — o dono pediu
+("utilize ferramentas... pesquise melhor"), e o mapa passou a ser um desenho no
+pack, pintado por autotile de cantos, editável no Tiled. O rio de ponta a
+ponta e o planalto com degrau entraram; o rótulo, o Campeão e a estrada no
+chão foram para a L-218.
 
 Cinco rodadas de Q7 cego (barra: o mapa do SMW), na 10.22e e na 10.22f,
 deixaram o "mundo" em 3–5 enquanto o crítico trocava de queixa: primeiro
@@ -9016,3 +9019,23 @@ Ficam aqui, porque pedem a composição e não mais um tile:
 Não cabe na 10.22f porque é redesenhar o mapa, e não acabar o atual. O que a
 destrava: a decisão de gastar um bloco L em arte de mapa — o mapa já cumpre a
 função (caminho e onde estou em 6–8).
+
+### L-218 — a estrada do mapa é traço por cima do chão, e o penhasco é fino
+
+**Registrada em:** 30/09/2026, na ST-10.23. **Bloco dono:** ST-10.24 (proposta
+no PLANO no mesmo commit). **Estado:** aberta.
+
+Com o mapa desenhado, as três rodadas do Q7 da ST-10.23 deixaram de falar do
+chão como "retalhos" e passaram a falar do que está POR CIMA dele:
+- a estrada é uma linha reta sobre a mata e o planalto, e o futuro são contas
+  brancas mais vivas que a estrada feita — o SMW desenha a estrada no chão,
+  com ponte, escada e o trecho escondido apagado;
+- o penhasco de 9 px não se lê como altura em 1440 e 1920: o crítico disse
+  "nenhuma face" com as faces na tela;
+- o arranjo dos nós deixa a metade esquerda larga e vazia e aperta a direita
+  (rio, cidades, lava, pântano e o rótulo) em 1100;
+- as setas do trecho trancado usam o ciano do PRÓXIMO; e continuam as queixas
+  da L-217 sobre o rótulo sobre a ponte e o Campeão sob a bandeira.
+
+Não cabe na ST-10.23 porque é a estrada e o arranjo, e não o chão. O que a
+destrava: nada — é construir; o pintor e o desenho da 10.23 são a base.

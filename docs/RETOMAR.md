@@ -30,11 +30,11 @@ o LINK     http://localhost:8099/app/index.html
            (a Liga de times com contas e partidas: node tools/olhar-liga.mjs
            sobe o servidor completo num processo e captura as telas)
 a PASTA    C:\Users\gdult\pa4
-o ESTADO   ST-10.22f FECHADA (o mapa: o rival do futuro em holograma, a praça
-           no chão, quatro tiles nossos, o mar até a borda, o painel largo).
-           A grade da 10.22e FICA (o dono: "pode ir seguindo"). O "mundo" do
-           Q7 está em 3–5 há cinco rodadas — compor o mapa à mão é a ST-10.23
-           (L-217), sem data: não fura a fila
+o ESTADO   ST-10.23 FECHADA (o mapa DESENHADO À MÃO: o desenho no pack,
+           autotile de cantos, o rio da nascente ao mar, os penhascos; o
+           Tiled como editor — node tools/mapa-tiled.mjs exportar|importar,
+           os .tmj em mapa-tiled/). Q7: mundo 3–5, publicado 4–6 — o crítico
+           agora fala da estrada por cima do chão: ST-10.24 (L-218)
            · nesta leva: ST-5.9 a 5.16, ST-10.22d, a ST-1.4 (o 401 da CI) e
            a ST-6.5 (25 fichas velhas fechadas)
            · o E11 construído — o stake espera a D2 do dono

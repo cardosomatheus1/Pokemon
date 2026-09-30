@@ -134,7 +134,7 @@ export function suite() {
 
   s.teste('a tela pinta a grade num canvas, e as manchas de região saíram', () => {
     const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
-    ok(/<canvas class="jnChao"/.test(tela) && /pintarChao\(alvo, mapa\)/.test(tela), 'a tela não pinta o chão em grade');
+    ok(/<canvas class="jnChao"/.test(tela) && /pintarChao\(alvo, mapa, desenho, pintadoEmPe\)/.test(tela), 'a tela não pinta o chão em grade');
     ok(!/jnRegiao/.test(tela), 'as manchas de região continuam na tela');
     const pinta = semComentario(fonte('../app/modules/jornada-chao-tela.mjs'));
     ok(/gradeDoChao\(/.test(pinta) && /transicoes\(/.test(pinta) && /cantos\(/.test(pinta) && /margens\(/.test(pinta) && /temFace\(/.test(pinta) && /drawImage\(/.test(pinta), 'o canvas não usa as decisões da camada 0');

@@ -44,3 +44,19 @@ avisa e segue.
 `battle-theme.mp3` ficou de fora. O script baixa; o repositório não guarda. E o
 resgate busca a MESMA coisa em outro endereço, nunca outra coisa: é a lição da
 v0.6.1, e há teste que a afirma.
+
+## `mapa-tiled.mjs` (ST-10.23)
+
+O mapa da jornada é um DESENHO em texto (`content/mapa_kanto_v1.mjs`). Para
+repintar com o mouse no [Tiled](https://www.mapeditor.org/) (livre):
+
+```bash
+node tools/mapa-tiled.mjs exportar   # → mapa-tiled/kanto-deitado.tmj, kanto-emPe.tmj, kanto-tiles.png
+# abra o .tmj no Tiled, pinte as camadas chao / altura / obra, mova o rio, salve
+node tools/mapa-tiled.mjs importar   # reescreve content/mapa_kanto_v1.mjs
+npm test                             # o desenho novo passa pelas mesmas regras
+```
+
+O tileset é de cores (uma casa por chão, altura e obra) — serve para o arranjo;
+a arte que o jogo pinta é a de `arte/chao/`. A ida e a volta são sem perda, e o
+teste recusa `.tmj` velho: depois de mexer no texto, rode `exportar`.

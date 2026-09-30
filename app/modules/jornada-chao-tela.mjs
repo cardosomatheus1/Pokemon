@@ -7,6 +7,8 @@
  * penhasco onde o chão desce. Os tiles são os nossos, de `arte/chao/`
  * (tools/pixel-arte.mjs); a célula é um quarto do tile, e cada uma pinta o
  * quarto dele que lhe cabe — a textura corre contínua de célula a célula. */
+import { lerDesenho } from './jornada-desenho.mjs';
+import { pintarDesenho } from './jornada-desenho-tela.mjs';
 import { gradeDoChao, transicoes, cantos, margens, temFace, COR_DO_CHAO, COR_DA_FACE, CELULA, TILE, MATERIAIS } from './jornada-chao.mjs';
 
 const ARTE_DO_CHAO = '../arte/chao';
@@ -70,11 +72,14 @@ function face(ctx, x, y, cor) {
   ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.fillRect(x, y + C, C, 3);
 }
 
-export async function pintarChao(alvo, mapa) {
+/* ST-10.23: o pack que traz o DESENHO do mapa é pintado por ele; o chão por
+   proximidade abaixo fica para o pack que não traz. */
+export async function pintarChao(alvo, mapa, desenho = null, emPe = false) {
   const tela = alvo.querySelector('.jnChao'), caixa = alvo.querySelector('.jnMapa');
   if (!tela || !caixa) return;
   const w = caixa.clientWidth, h = caixa.clientHeight;
   if (!w || !h) return;
+  if (desenho) { pintarDesenho(tela, caixa, lerDesenho(desenho), emPe, await carregar()); return; }
   const r0 = caixa.getBoundingClientRect();
   const nos = [...caixa.querySelectorAll('.jnPos')].filter(p => p.querySelector(':scope > .jnNo'))
     .map((p, i) => { const r = p.getBoundingClientRect(); return { x: r.left - r0.left, y: r.top - r0.top, regiao: mapa.nos[i]?.regiao }; });

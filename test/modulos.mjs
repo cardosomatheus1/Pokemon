@@ -367,6 +367,8 @@ const CAMADA = {
   /* ST-10.22e · o mapa como grade de tiles: a decisão (0) e o canvas (4). */
   'jornada-chao.mjs': 0,
   'jornada-chao-tela.mjs': 4,
+  'jornada-desenho.mjs': 0,
+  'jornada-desenho-tela.mjs': 4,
   /* ST-5.9 · a arena volta à tela quando a luta começa (0). */
   'arena-vista.mjs': 0,
   'confirmacao-aposta.mjs': 0,

@@ -344,7 +344,7 @@ let reafastar = 0;
 /* O celular tem o caminho EM PÉ, com uma volta só (ST-10.22c): cruzar a largura repinta, e não só reafasta. */
 const emPe = () => !!globalThis.matchMedia?.('(max-width:520px)').matches;
 let pintadoEmPe = null;
-addEventListener('resize', () => { clearTimeout(reafastar); reafastar = setTimeout(() => { const a = $('#jnMapaArea'); if (!a) return; if (pintadoEmPe !== null && pintadoEmPe !== emPe() && a.offsetParent) renderJornada(); else { afastarCena(a); pintarChao(a, mapaDaJornada(PACK, carregar().jornada, { emPe: pintadoEmPe })); if (pintadoEmPe) centrarJanela(a, escolhido ?? a.querySelector('.jnNo.jn-atual')?.dataset.jnNo); } }, 150); });
+addEventListener('resize', () => { clearTimeout(reafastar); reafastar = setTimeout(() => { const a = $('#jnMapaArea'); if (!a) return; if (pintadoEmPe !== null && pintadoEmPe !== emPe() && a.offsetParent) renderJornada(); else { afastarCena(a); pintarChao(a, mapaDaJornada(PACK, carregar().jornada, { emPe: pintadoEmPe }), PACK.mapaJornada?.[pintadoEmPe ? 'emPe' : 'deitado'], pintadoEmPe); if (pintadoEmPe) centrarJanela(a, escolhido ?? a.querySelector('.jnNo.jn-atual')?.dataset.jnNo); } }, 150); });
 
 /* O MINIMAPA acende os nós que a JANELA mostra agora (ST-10.22c4): o
    jogador vê em que trecho do caminho inteiro está olhando. Medir é do
@@ -387,14 +387,17 @@ export function renderJornada({ nova = null } = {}) {
     + (resto.length > 1 ? `<polyline class="jnPorAndar" points="${linha(resto, empe)}"/>` : '');
   /* O RIO (ST-10.22c4) vem ANTES da estrada no SVG: ela passa por cima, e o
      cruzamento lê como ponte. */
-  const rios = rioDoMapa(mapa), mini = miniMapa(mapa);
+  /* ST-10.23: o pack com o mapa DESENHADO traz o próprio rio (na grade, com
+     margem e ponte) — o rio antigo em SVG, a foz e a ponte só sem desenho. */
+  const desenho = PACK.mapaJornada?.[pintadoEmPe ? 'emPe' : 'deitado'];
+  const rios = desenho ? [] : rioDoMapa(mapa), mini = miniMapa(mapa);
   const rioSvg = empe => rios.map(r => `<polyline class="jnRioBeira" points="${linha(r.pontos, empe)}"/><polyline class="jnRio" points="${linha(r.pontos, empe)}"/>`).join('');
   alvo.innerHTML = `
     <div class="jnTopo"><span><b>${mapa.feitos}</b> de ${mapa.total} passos · <b>${ganhas}</b> de ${mapa.insignias.length} insígnias${mapa.atual ? '' : ' · <b class="jnFeito">caminho vencido de ponta a ponta</b>'}</span>
       <div class="jnEstojo"><span class="jnEstojoRot">insígnias</span>${mapa.insignias.map(x => `<i class="jnInsignia${x.arte ? ' conhecida' : ''}${x.ganha ? ' ganha' : ''}${x.id && x.id === nova ? ' nova' : ''}"
           title="${x.nome ? `${x.nome} (${x.onde})${x.ganha ? '' : ' — ainda não é sua'}` : 'ainda não há ginásio aqui'}">${x.arte ? `<img src="${x.arte}" alt="">` : ''}</i>`).join('')}</div></div>
     <div class="jnMini" style="--andado:${mini.andado}" aria-label="o caminho inteiro"><b class="jnMiniTrilha"></b>${mini.pontos.map((p, k) => `<button class="jnMiniNo jn-${p.estado} jn-${p.tipo}${p.final ? ' jnMiniFim' : ''}${k === 0 ? ' jnMiniIni' : ''}" data-jn-no="${p.id}" style="--t:${p.t}" title="${p.curto}" aria-label="${p.curto}"></button>`).join('')}</div>
-    <div class="jnJanela"><div class="jnMapa${mapa.voltas === 2 ? ' jnVoltas2' : ''}" style="--n:${mapa.voltas === 2 ? Math.ceil(mapa.nos.length / 2) : mapa.nos.length}" data-rio='${JSON.stringify(rios.map(r => r.pontos))}'>
+    <div class="jnJanela"><div class="jnMapa${mapa.voltas === 2 ? ' jnVoltas2' : ''}" style="--n:${mapa.voltas === 2 ? Math.ceil(mapa.nos.length / 2) : mapa.nos.length}" data-rio='${JSON.stringify(desenho ? [desenho.rio] : rios.map(r => r.pontos))}'>
       <canvas class="jnChao" aria-hidden="true"></canvas>
       <svg class="jnCaminho jnDeitado" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${rioSvg(false)}${trilha(false)}</svg>
       <svg class="jnCaminho jnEmPe" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${rioSvg(true)}${trilha(true)}</svg>
@@ -417,7 +420,7 @@ export function renderJornada({ nova = null } = {}) {
   if (im) { const medir = () => { im.parentNode.style.width = `${im.naturalWidth / 9}px`; }; if (im.complete && im.naturalWidth) medir(); else im.onload = medir; }
   pintarPainel(mapa);
   /* ST-10.22e: o chão é uma grade de tiles, pintada depois de os nós terem lugar. */
-  requestAnimationFrame(() => { afastarCena(alvo); pintarChao(alvo, mapa); if (pintadoEmPe) centrarJanela(alvo, escolhido ?? mapa.atual); marcarJanela(alvo); });
+  requestAnimationFrame(() => { afastarCena(alvo); pintarChao(alvo, mapa, desenho, pintadoEmPe); if (pintadoEmPe) centrarJanela(alvo, escolhido ?? mapa.atual); marcarJanela(alvo); });
   alvo.querySelector('.jnJanela')?.addEventListener('scroll', () => marcarJanela(alvo), { passive: true });
   /* O marco é <img>: sem tamanho até carregar, o afastamento o via com 0 × 0 e
      o deixava em cima de um nome (medido na captura da ST-10.22b). */

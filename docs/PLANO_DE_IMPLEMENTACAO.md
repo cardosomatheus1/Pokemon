@@ -1453,16 +1453,56 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   é desenhar o mapa à mão (L-217, ST-10.23), e a recomendação é não furar a
   fila com isso.
 
-#### ST-10.23 · O mapa desenhado à mão (L-217) — proposta, sem data
-- **Porte** L · **Método** GL (barra: o mapa do SMW).
-- **Escopo:** trocar o chão decidido por proximidade por um mapa COMPOSTO:
-  uma grade de materiais escrita à mão no ContentPack (como o SMW), com
-  cumes, rampas onde a estrada sobe, um rio só da nascente ao mar, e as
-  cidades assentadas em ruas. A grade da 10.22e vira o pintor dela.
-- **Aceite:** ≥ 8 em "mundo" e "publicado" nas quatro larguras.
-- **Por que espera:** é projeto de arte, e o mapa já cumpre a função (caminho
-  e onde estou em 6–8). Entra quando o dono pedir, ou quando a fila de
-  produto acabar.
+#### ST-10.23 · O mapa desenhado à mão ✅ 30/09 (L-217)
+- **Porte** L · **Método** GL (barra: o mapa do SMW) · **Portões:** Q1 Q2 Q5 Q7.
+- **Pedido do dono:** *"Utilize ferramentas necessárias pra isso, ctza tem
+  varias de programação, pesquise melhor"*. Pesquisado: o autotile por cantos
+  (grade dupla / marching squares — Red Blob Games, Boris the Brave,
+  Excalibur.js), o formato JSON do Tiled (.tmj) e as regras de auto-camada do
+  LDtk. Escolhido: autotile por cantos na tela, desenho em texto no pack, e o
+  Tiled como editor.
+- **Feito:**
+  - o DESENHO no ContentPack (`content/mapa_kanto_v1.mjs`): deitado 96×24 e
+    em pé 24×120, em três camadas de texto (chão, altura 0–3, obra: ponte e
+    escada), mais o traço do rio. A serra ao norte, a floresta no morro, a mesa
+    de terra do Caminho da Pedra, o rio que nasce na serra, cruza a estrada por
+    ponte, corre pelo vale e chega ao mar de Cinnabar; o vulcão em cone na
+    beira do mar, com praia; Celadon e Saffron no alto; a mata do vale ligando
+    o norte ao planalto; a Liga em dois degraus;
+  - a camada 0 (`jornada-desenho.mjs`): a legenda, a ordem estrita dos chãos
+    (a água por baixo de tudo), a AMOSTRA SUAVE (bilinear, a borda segue a
+    curva de 0,5 entre as casas) com a OSCILAÇÃO do traço (ruído de valor de
+    2,5 casas), a máscara arredondada por cantos com contorno, as camadas de
+    cada peça, a altura por cantos;
+  - a tela (`jornada-desenho-tela.mjs`): a grade dupla de peças de 8 px com o
+    tile nosso em padrão ancorado no mundo; o contorno escuro, e ESPUMA onde a
+    terra encosta na água; o penhasco (a máscara de cada altura deslocada
+    menos ela mesma) em estratos, com quina e sombra; ponte e escada. O rio
+    antigo (SVG, foz, ponte) só existe sem desenho; a cena desvia do rio
+    desenhado pelo traço dele. O chão por proximidade fica para o pack sem
+    desenho;
+  - `tools/mapa-tiled.mjs`: exporta o desenho para o Tiled (.tmj com três
+    camadas de tile e o rio como polilinha, tileset de cores em PNG feito com o
+    zlib do Node) e importa de volta — a volta é byte a byte. Os .tmj ficam em
+    `mapa-tiled/`, e o teste recusa .tmj velho;
+  - `test/jornada-desenho.mjs` (6) · S1978–S1990 · S1691 e S1959 realvados ·
+    nenhum mutante de navegador.
+- **Q7 (barra SMW), três rodadas:** mundo 3–4 → 3–4 → 3–5 (em pé, 5),
+  publicado 4–5 → 4–5 → 4–6; caminho 5–8, onde estou 7–9, futuro 5–7.
+  **Aceite ≥8 não atingido.** O que o crítico diz agora mudou de natureza: não
+  fala mais de ilhas nem de degrau em serrote; fala da ESTRADA desenhada por
+  cima do chão (linha reta sobre a mata, contas brancas no futuro), do
+  penhasco fino demais para ler (9 px), e do arranjo dos nós (a metade da
+  esquerda vazia, a direita apertada em 1100). É a L-218.
+
+#### ST-10.24 · A estrada no chão (L-218) — proposta
+- **Porte** M · **Método** GL (barra: o mapa do SMW).
+- **Escopo:** a estrada pintada no canvas como chão (terra batida que dobra
+  com o terreno, escada onde sobe, ponte onde cruza), o trecho futuro apagado
+  e não em contas; o penhasco mais alto onde a escala pede; as setas do futuro
+  em cinza; o rótulo do nó atual fora da estrada.
+- **Aceite:** ≥ 7 em "mundo" e "publicado" no Q7 cego nas quatro larguras.
+- **Sabotagem:** a estrada volta a ser traço; o penhasco volta a 9 px.
 
 ### ST-10.20 · A jornada ensina a apostar? ✅ 27/09
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16
