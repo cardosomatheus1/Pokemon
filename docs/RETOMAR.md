@@ -38,7 +38,7 @@ o ESTADO   ST-10.23 FECHADA (o mapa DESENHADO À MÃO: o desenho no pack,
            · nesta leva: ST-5.9 a 5.16, ST-10.22d, a ST-1.4 (o 401 da CI) e
            a ST-6.5 (25 fichas velhas fechadas)
            · o E11 construído — o stake espera a D2 do dono
-           · suíte 2860/2860, repetir 2/2 (medido 30/09, na 13.5c)
+           · suíte 2862/2862, repetir 2/2 (medido 30/09, na 13.5d)
            Q2 completo em fatias: 1/10 e 2/10 VERDES (a 2/10 achou o S1504
            decorativo — corrigido com o caso misto à mão); seguir com
            node test/sabotagem.mjs --fatia=3/10, até 10/10
@@ -56,7 +56,9 @@ o PRÓXIMO  a ST-13.5 em partes: com conta, o jogo lê e escreve o idle pelo
            a expedição, a colheita e o lance pelo servidor, em
            `idle-acoes.mjs`; o teto soma `teto.hoje`). 13.5c FEITA (a run
            do Avanço pelo servidor; as runs colhidas descem em `avancos`).
-           Seguir com a 13.5d (caixa/golpe/doce) e 13.5e (jornada + a chave
+           13.5d FEITA (a coleção: time, soltar, doce, golpe, evolução,
+           foco — `colecao-acoes.mjs` e `idle-acoes.mjs`).
+           Seguir com a 13.5e (jornada + a chave
            `IDLE_NA_CONTA` LIGADA + o ensaio "limpa o navegador, entra")
 ```
 

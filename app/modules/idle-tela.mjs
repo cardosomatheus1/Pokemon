@@ -39,14 +39,14 @@ import { $, nosDois, nasAbasDoFarm } from './dom.mjs';
    linhas. A divisao e por assunto: la vive tudo que a tela DIZ fora dos
    paineis — o banner, quem acompanha, e a faixa de recado. */
 import { avisarBanner, avisarCompanheiro, avisar, avisarConta } from './idle-avisos.mjs';
-import { inicialNa, expedicaoNa, colherNa, lancarNa } from './idle-acoes.mjs';   // ST-13.5b: com conta, pelo servidor
+import { inicialNa, expedicaoNa, colherNa, lancarNa, moverNaTela, evoluirNa } from './idle-acoes.mjs';   // ST-13.5b: com conta, pelo servidor
 import { vigiarOutraAba, AVISO_OUTRA_ABA } from './idle-abas.mjs';
 import {
   VAZIO, carregar, salvar, iniciaisDo, criaturasDe,
   staminaDe, emCampo, concluidasHoje, pronta,
   TETO_DIARIO, TETO_ENCONTROS, EQUIPE_MAX,
   STAMINA_MAX, PERFIS, encontrosHoje, estadoDoTeto, cabeExpedicao,
-  naEquipe, naCaixa, mover, PARTY_MAX, restamEncontros, comprometido,
+  naEquipe, naCaixa, PARTY_MAX, restamEncontros, comprometido,
   vagasDe, proximaVagaDe, estagioMaximoDe, CHAVE_DO_IDLE,
 } from './idle-dados.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
@@ -54,7 +54,6 @@ import { dexImg, retratoAnimado } from './sprites.mjs';
 import { estiloIcone } from './icones.mjs';
 import { seloDoFoco, seloDaEvolucao, desenharHud, pintarCartoes } from './idle-equipe.mjs';
 import { modoGuardado, guardarModo, proximoModo, MODO_PADRAO } from './idle-escolha.mjs';
-import { aplicar as aplicarEvolucao } from './evolucao-idle.mjs';
 import { nomesDe } from './itens-nome.mjs';
 import { confirmarExpedicao } from './idle-confirma.mjs';
 import { ligarLoja, usarEstado as lojaUsaEstado } from './loja-tela.mjs';
@@ -475,7 +474,7 @@ document.addEventListener('click', async ev => {
 
   const mv = ev.target.closest(nasDuas('[data-mover]'));
   if (mv) {
-    try { mover(E, mv.dataset.mover, mv.dataset.para === '1'); salvarE(); renderIdle(); }
+    try { await moverNaTela(E, mv.dataset.mover, mv.dataset.para === '1'); salvarE(); renderIdle(); }
     catch (e) { avisar(e.message); }
     return;
   }
@@ -521,12 +520,9 @@ document.addEventListener('click', async ev => {
     const i = E.criaturas.findIndex(x => x.id === id);
     if (i < 0) return;
     let r;
-    try { r = aplicarEvolucao(PACK, E.criaturas[i], E.bolsa); }
+    /* A PEDRA É CONSUMIDA dentro de `evoluirNa` — no aparelho ou na conta. */
+    try { r = await evoluirNa(E, PACK, i); }
     catch { return; }
-    /* A PEDRA É CONSUMIDA — quem decide é `aplicar` (ST-13.3b); aqui só se
-       escreve no save. */
-    if (r.consome && (E.bolsa[r.consome] ?? 0) > 0) E.bolsa[r.consome] -= 1;
-    E.criaturas[i] = r.criatura;
     salvarE();
     ligarEvolucao();
     tocarEvolucao(r.de, r.para, () => { renderIdle(); avisarPokedex(); });
@@ -541,7 +537,7 @@ document.addEventListener('click', async ev => {
       if (i < 0) return;
       E.criaturas[i] = nova;
       salvarE(); renderIdle();
-    });
+    }, () => E);   // ST-13.5d: o estado da aba, para o foco da conta relê-lo
     return;
   }
 

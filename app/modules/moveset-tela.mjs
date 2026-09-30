@@ -8,6 +8,7 @@ import { PACK } from './motor.mjs';
 import { carregar, salvar } from './idle-dados.mjs';
 import { alternarGolpe } from './moveset-dados.mjs';
 import { renderIdle } from './idle-tela.mjs';
+import { naContaOu } from './colecao-acoes.mjs';   // ST-13.5d: com conta, pelo servidor
 
 export function trocarGolpe(id, nome, deposito = globalThis.localStorage) {
   for (let tentativa = 0; tentativa < 2; tentativa++) {
@@ -22,10 +23,10 @@ export function trocarGolpe(id, nome, deposito = globalThis.localStorage) {
   return { ok: false, motivo: 'outra aba gravou ao mesmo tempo — tente de novo' };
 }
 
-if (typeof document !== 'undefined') document.addEventListener('click', ev => {
+if (typeof document !== 'undefined') document.addEventListener('click', async ev => {
   const b = ev.target.closest('[data-golpe][data-cria]');
   if (!b) return;
-  const r = trocarGolpe(b.dataset.cria, b.dataset.golpe);
+  const r = await naContaOu('/api/idle/golpe', { id: b.dataset.cria, nome: b.dataset.golpe }, d => trocarGolpe(b.dataset.cria, b.dataset.golpe, d));
   if (!r.ok) { b.title = r.motivo; b.classList.add('recusado'); return; }
   renderIdle();
   for (const d of document.querySelectorAll(`[data-golpes-de="${b.dataset.cria}"]`)) d.open = true;

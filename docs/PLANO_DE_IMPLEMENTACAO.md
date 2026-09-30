@@ -2236,7 +2236,10 @@ do servidor. Três partes:
     automática no quadro; com conta ela é uma promessa com trava, e sem conta
     continua síncrona) · a leitura manda as runs colhidas (`avancos`, dois
     dias) e o `teto.hoje` passa a ser só o das expedições · S2024–S2032;
-  - **13.5d** · caixa, troca, soltar, foco, golpe, evoluir e doce;
+  - **13.5d** ✅ 30/09 · caixa, troca, soltar, foco, golpe, evoluir e doce — as que
+    gravam direto no disco em `colecao-acoes.mjs` (resposta `{ ok, motivo }`
+    nos dois modos), as que mexem no estado da aba em `idle-acoes.mjs`; o
+    doce leva uma chave de pedido (idempotente no servidor) · S2033–S2044;
   - **13.5e** · a luta da jornada (o cliente refaz a luta da semente do servidor
     para encenar — a mesma conta dos dois lados), o aviso da DEC-17 no
     cadastro, e a chave LIGADA, com o ensaio "limpa o navegador, entra, a

@@ -9,15 +9,15 @@
  * botão ficaria na tela sem fazer nada.
  */
 import { PACK } from './motor.mjs';
-import { soltarLocal, darDoceLocal } from './doce-local.mjs';
+import { soltarNa, darDoceNa } from './colecao-acoes.mjs';   // ST-13.5d: com conta, pelo servidor
 import { renderIdle } from './idle-tela.mjs';
 
-document.addEventListener('click', ev => {
+document.addEventListener('click', async ev => {
   /* ST-9.10: dar doce não pede confirmação — ele não tira nada que não volte
      (é o doce da própria linha virando nível). */
   const d = ev.target.closest('[data-dar-doce]');
   if (d) {
-    const r = darDoceLocal({ pack: PACK, id: d.dataset.darDoce });
+    const r = await darDoceNa({ pack: PACK, id: d.dataset.darDoce });
     if (r?.ok === false) { d.textContent = r.motivo; return; }
     renderIdle();
     return;
@@ -42,7 +42,7 @@ document.addEventListener('click', ev => {
     b.insertAdjacentHTML('afterend', `<button class="idleSoltarCancelar" data-soltar-cancelar="${b.dataset.soltar}">cancelar</button>`);
     return;
   }
-  const r = soltarLocal({ pack: PACK, id: b.dataset.soltar });
+  const r = await soltarNa({ pack: PACK, id: b.dataset.soltar });
   if (r?.ok === false) { b.textContent = r.motivo; b.dataset.armado = '0'; b.classList.remove('armado'); return; }
   renderIdle();
 });

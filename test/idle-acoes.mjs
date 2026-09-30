@@ -15,6 +15,10 @@ import * as D from '../app/modules/idle-dados.mjs';
 import { lanceDaConta, camposDaConta } from '../app/modules/idle-conta.mjs';
 import { inicialNa, expedicaoNa, colherNa, lancarNa, comecarNa, recuarNa, pocaoNa, colherRunNa } from '../app/modules/idle-acoes.mjs';
 import { curaDe, runsNoDia } from '../engine/avanco.mjs';
+import { moverNaTela, evoluirNa, focoNa } from '../app/modules/idle-acoes.mjs';
+import { moverNa, trocarNa, soltarNa, darDoceNa, naContaOu, chaveDoPedido } from '../app/modules/colecao-acoes.mjs';
+import { gerar } from '../server/criaturas.mjs';
+import { xpParaNivel } from '../engine/nivel-criatura.mjs';
 
 const T0 = Date.UTC(2026, 9, 1, 12), H = 3600e3;
 const fonte = f => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
@@ -22,6 +26,8 @@ const armazemFalso = () => {
   const dados = new Map();
   return { getItem: k => (dados.has(k) ? dados.get(k) : null), setItem: (k, v) => dados.set(k, String(v)), removeItem: k => dados.delete(k), clear: () => dados.clear() };
 };
+
+const sincronizar = (api, deposito) => import('../app/modules/idle-servidor.mjs').then(m => m.sincronizarIdleDaConta({ api, deposito }));
 
 export async function suite() {
   const s = criarSuite('idle-acoes');
@@ -152,12 +158,82 @@ export async function suite() {
     ok(typeof r?.then !== 'function' && r?.colhidaEm === T0 + 61e3 && E.run === null, 'sem conta, a colheita da run virou promessa — o saque sairia um quadro depois');
   });
 
+  s.teste('a coleção: as telas chamam as ações, e a chave do doce é aceita pelo servidor', () => {
+    const chamadas = {
+      'app/modules/treino-tela.mjs': ['depois(await moverNa({ id: tirar', 'depois(await moverNa({ id: por', 'await trocarNa({ sai:'],
+      'app/modules/doce-tela.mjs': ['await darDoceNa({ pack: PACK', 'await soltarNa({ pack: PACK'],
+      'app/modules/moveset-tela.mjs': ["await naContaOu('/api/idle/golpe', { id: b.dataset.cria, nome: b.dataset.golpe }"],
+      'app/modules/jornada-tela.mjs': ['trocar: t => trocarNa(t)', '.then(renderJornada)'],
+      'app/modules/idle-tela.mjs': ['await moverNaTela(E, mv.dataset.mover', '= await evoluirNa(E, PACK, i)', '}, () => E);'],
+      'app/modules/idle-foco.mjs': ['novo = await focoNa(estadoDaAba?.() ?? { criaturas: [] }, c, id, Date.now())'],
+    };
+    for (const [f, lista] of Object.entries(chamadas)) for (const c of lista) ok(fonte(f).includes(c), `${f} não chama ${c}`);
+    const a = chaveDoPedido('u-1', 1e12, 0.5), b = chaveDoPedido('u-1', 1e12, 0.51);
+    ok(/^[\w-]{8,64}$/.test(a) && a !== b, `a chave do doce não passa no servidor, ou se repete: ${a} ${b}`);
+    ok(/^[\w-]{8,64}$/.test(chaveDoPedido('!@#' + 'x'.repeat(80))), 'um id comprido ou estranho faz a chave ser recusada');
+  });
+
+  s.teste('contra o servidor de verdade: caixa, troca, soltar, doce, golpe, evolução e foco pela conta', async () => {
+    let t = T0;
+    const srv = criarServidor({ config: { ambiente: 'teste', silencioso: true }, banco: ':memory:', sims: 40, laco: false, relogio: () => t });
+    const porta = await srv.ouvir(0);
+    try {
+      const deposito = armazemFalso(), api = criarApi({ base: `http://127.0.0.1:${porta}`, armazem: deposito });
+      const o = { api, deposito, conta: true };
+      await api.post('/api/auth/cadastrar', { username: 'Iac3', email: 'iac3@x.test', senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01' });
+      const uid = srv.db.prepare(`SELECT id FROM users WHERE username = 'Iac3'`).get().id;
+      const E = D.carregar(deposito);
+      const ini = await inicialNa(E, PACK, 4, t, o);                       // o Charmander: evolui no 16
+      const [b1, b2, b3] = [16, 16, 19].map(dex => gerar(srv.db, { userId: uid, pack: PACK, dex }));
+      const disco = () => D.carregar(deposito), achar = id => disco().criaturas.find(c => c.id === id);
+      await sincronizar(api, deposito);
+
+      /* O time: tirar, pôr, trocar — e a recusa do servidor na forma de sempre. */
+      igual((await moverNa({ id: b1.id, paraCaixa: true }, o)).ok, true, 'tirar do time pela conta');
+      igual(`${achar(b1.id).naCaixa}|${srv.db.prepare(`SELECT na_caixa n FROM criaturas WHERE id = ?`).get(b1.id).n}`, 'true|1', 'a caixa da conta não chegou ao disco');
+      igual((await trocarNa({ sai: b2.id, entra: b1.id }, o)).ok, true, 'a troca pela conta');
+      igual(`${achar(b1.id).naCaixa}|${achar(b2.id).naCaixa}`, 'false|true', 'a troca da conta não chegou ao disco');
+      const r0 = await moverNa({ id: 'nao-existe', paraCaixa: true }, o);
+      ok(r0.ok === false && r0.motivo && !/não respondeu/.test(r0.motivo), `a recusa do servidor não veio com a frase dele: ${JSON.stringify(r0)}`);
+
+      /* Soltar o 16 da caixa dá o doce da linha; o doce vai para o outro 16. */
+      const sol = await soltarNa({ pack: PACK, id: b2.id }, o);
+      ok(sol.ok && sol.doce > 0 && !achar(b2.id), `soltar pela conta: ${JSON.stringify(sol)}`);
+      const xpAntes = achar(b1.id).xp ?? 0;
+      const doce = await darDoceNa({ pack: PACK, id: b1.id }, o);
+      ok(doce.ok && (achar(b1.id).xp ?? 0) > xpAntes, `o doce da conta não virou XP no disco: ${JSON.stringify(doce)}`);
+
+      /* O golpe: a recusa do servidor chega; sem conta, a função da tela roda. */
+      const g = await naContaOu('/api/idle/golpe', { id: b3.id, nome: 'Golpe Inventado' }, () => ({ ok: true, local: true }), o);
+      ok(g.ok === false && !g.local, 'o golpe com conta rodou a função do aparelho');
+      const gl = await naContaOu('/api/idle/golpe', {}, () => ({ ok: true, local: true }), { ...o, conta: false });
+      ok(gl.local, 'sem conta, o golpe não rodou a função do aparelho');
+
+      /* Na aba: a caixa pelo cartão, a evolução (de e para) e o foco. */
+      Object.assign(E, disco());
+      await moverNaTela(E, b3.id, true, o);
+      ok(E.criaturas.find(c => c.id === b3.id).naCaixa && D.salvar(E, deposito), 'a caixa pelo cartão não relê a conta no estado da aba (ou o save seguinte conflita)');
+      srv.db.prepare(`UPDATE criaturas SET nivel = 16, xp = ? WHERE id = ?`).run(xpParaNivel(16), ini.id);
+      await sincronizar(api, deposito); Object.assign(E, disco());
+      const i = E.criaturas.findIndex(c => c.id === ini.id);
+      const ev = await evoluirNa(E, PACK, i, o);
+      igual(`${ev.de}|${ev.para}|${E.criaturas.find(c => c.id === ini.id).dex}`, '4|5|5', 'a evolução da conta sem o antes e o depois, ou sem chegar à aba');
+      const nova = await focoNa(E, E.criaturas.find(c => c.id === ini.id), 'vigia', t, o);
+      igual(`${nova?.foco}|${E.criaturas.find(c => c.id === ini.id).foco}`, 'vigia|vigia', 'o foco da conta não voltou, ou não chegou à aba');
+      ok(D.salvar(E, deposito), 'o save da aba depois do foco da conta conflita');
+    } finally { await srv.fechar(); }
+  });
+
   s.teste('sem conta, a ação é a do aparelho, e o servidor nem é chamado', async () => {
     const pedidos = [];
     const api = { temSessao: () => false, post: async r => { pedidos.push(r); return { ok: false }; }, get: async r => { pedidos.push(r); return { ok: false }; } };
     const deposito = armazemFalso(), E = D.carregar(deposito);
     await inicialNa(E, PACK, PACK.iniciais[0], T0, { api, deposito });
     igual(`${E.criaturas.length}|${pedidos.length}`, '1|0', 'sem conta, a inicial foi ao servidor');
+    /* A coleção também: sem conta, a gravação do aparelho (a recusa dele, com a frase dele). */
+    D.salvar(E, deposito);   // como a tela faz depois da inicial
+    const r = await moverNa({ id: E.criaturas[0].id, paraCaixa: true }, { api, deposito });
+    ok(r.ok === false && /time|vazi|equipe/i.test(r.motivo ?? '') && pedidos.length === 0, `sem conta, a caixa foi ao servidor: ${JSON.stringify(r)}`);
   });
 
   return s;

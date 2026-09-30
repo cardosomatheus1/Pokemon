@@ -31,13 +31,14 @@ import { estiloIcone } from './icones.mjs';
 import { dexImg } from './sprites.mjs';
 import {
   FOCOS, EFEITO, NIVEL_PARA_ESCOLHER, HORAS_DE_TROCA,
-  podeEscolher, descansando, faltaDoDescanso, escolher,
+  podeEscolher, descansando, faltaDoDescanso,
 } from '../../engine/foco.mjs';
 
 /* A FALA mora em `foco-fala.mjs` desde o item 1 da ordem do dono — ela é DADO,
    e este arquivo é janela. Reexportada porque o nome pelo qual cinco arquivos a
    conhecem é este. Ver o cabeçalho de lá. */
 export { FALA } from './foco-fala.mjs';
+import { focoNa } from './idle-acoes.mjs';
 import { FALA } from './foco-fala.mjs';
 
 
@@ -59,12 +60,14 @@ export function linhasDe(id) {
 
 let aberta = null;          // id da criatura em escolha, ou null
 let aoAplicar = null;       // callback dado por quem abriu
+let estadoDaAba = null;     // o estado que a aba segura (ST-13.5d: o foco da conta relê para dentro dele)
 
 export const estaAberta = () => aberta;
 
-export function abrir(idCriatura, aplicar) {
+export function abrir(idCriatura, aplicar, estado = null) {
   aberta = idCriatura;
   aoAplicar = aplicar;
+  estadoDaAba = estado;
   pintar();
 }
 
@@ -169,7 +172,7 @@ let ligado = false;
 export function ligar() {
   if (ligado) return;
   ligado = true;
-  document.addEventListener('click', ev => {
+  document.addEventListener('click', async ev => {
     if (!aberta) return;
     if (ev.target.closest('[data-foco-fechar]')) { fechar(); return; }
 
@@ -182,7 +185,7 @@ export function ligar() {
     if (c.foco === id) { fechar(); return; }   // reconfirmar não cobra nada
 
     let novo;
-    try { novo = escolher(c, id, Date.now()); }
+    try { novo = await focoNa(estadoDaAba?.() ?? { criaturas: [] }, c, id, Date.now()); }   // ST-13.5d
     catch { return; }                          // a recusa já está escrita na tela
     if (typeof aoAplicar === 'function') aoAplicar(novo);
     fechar();

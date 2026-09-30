@@ -21,7 +21,7 @@ import { painelDoTime, treinadoresDo, treinador, rivalDe, entradasDoTime, candid
          PARTES_DO_POWER } from './treino-dados.mjs';
 import { lote, resumo, textoDaMargem, maiorFraqueza, porcentagemExibida, SIMS_TREINO } from '../../engine/treino-preco.mjs';
 import { variantes, lotePareado, trocasDoAcumulado, textoDaTrocaFeita, SIMS_TROCAS } from '../../engine/treino-trocas.mjs';
-import { moverLocal, trocarLocal } from './time-local.mjs';
+import { moverNa, trocarNa } from './colecao-acoes.mjs';   // ST-13.5d: com conta, pelo servidor
 import { PRESETS_NA_TELA, presetValido } from './treino-dados.mjs';
 import { renderIdle } from './idle-tela.mjs';
 
@@ -164,19 +164,19 @@ function calcularTrocas(g, estado, rival) {
 
 const depois = r => { if (r?.ok === false) return; renderTreino(); try { renderIdle(); } catch { /* aba fechada */ } };
 
-document.addEventListener('click', ev => {
+document.addEventListener('click', async ev => {
   const adv = ev.target.closest('[data-treino-adv]');
   if (adv) { try { localStorage.setItem(CHAVE_ADV, adv.dataset.treinoAdv); } catch { /* privativo */ } ultimaTroca = null; renderTreino(); return; }
   const pr = ev.target.closest('[data-treino-preset]');
   if (pr) { try { localStorage.setItem(CHAVE_PRESET, pr.dataset.treinoPreset); } catch { /* privativo */ } ultimaTroca = null; renderTreino(); return; }
   const tirar = ev.target.closest('[data-time-tirar]');
-  if (tirar) { depois(moverLocal({ id: tirar.dataset.timeTirar, paraCaixa: true })); return; }
+  if (tirar) { depois(await moverNa({ id: tirar.dataset.timeTirar, paraCaixa: true })); return; }
   const por = ev.target.closest('[data-time-por]');
-  if (por) { depois(moverLocal({ id: por.dataset.timePor, paraCaixa: false })); return; }
+  if (por) { depois(await moverNa({ id: por.dataset.timePor, paraCaixa: false })); return; }
   const tr = ev.target.closest('[data-trocar-sai]');
   if (tr) {
     const escolhida = trocasNaTela.find(x => x.sai === tr.dataset.trocarSai && x.entra === tr.dataset.trocarEntra);
-    const r = trocarLocal({ sai: tr.dataset.trocarSai, entra: tr.dataset.trocarEntra });
+    const r = await trocarNa({ sai: tr.dataset.trocarSai, entra: tr.dataset.trocarEntra });
     if (r?.ok !== false && escolhida) ultimaTroca = textoDaTrocaFeita(escolhida, nomeNaTela);
     depois(r);
   }

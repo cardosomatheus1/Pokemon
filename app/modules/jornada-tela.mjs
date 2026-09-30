@@ -21,7 +21,7 @@ import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEst
 import { diaDoMundo } from '../../engine/avanco.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido, candidatosDaCaixa, membrosParaTrocas } from './treino-dados.mjs';
 import { correcaoDaLicao, aplicarCorrecao } from './jornada-correcao.mjs';
-import { trocarLocal } from './time-local.mjs';
+import { trocarNa } from './colecao-acoes.mjs';   // ST-13.5d: com conta, pelo servidor
 import { relatarLuta, relatarChance } from './telemetria-v4-tela.mjs';
 import { lote, resumo, porcentagemExibida, textoDaMargem, SIMS_TREINO } from '../../engine/treino-preco.mjs';
 import { lutarNaJornadaLocal } from './jornada-local.mjs';
@@ -454,8 +454,9 @@ document.addEventListener('click', ev => {
   /* A correção: a camada 0 decidiu o quê; aqui só se aplica e repinta. */
   if (ev.target.closest('[data-jn-corrige]') && correcaoNaTela) {
     aplicada = { no: correcaoNaTela.no, antes: correcaoNaTela.antes, feito: correcaoNaTela.feito };
-    aplicarCorrecao(correcaoNaTela, { preset: p => { try { localStorage.setItem('ar_treino_preset', p); } catch { /* sem armazenamento: nada muda */ } }, trocar: t => trocarLocal(t) });
-    renderJornada(); return;
+    /* A troca pode ir ao servidor (ST-13.5d): repinta quando ela termina. */
+    Promise.resolve(aplicarCorrecao(correcaoNaTela, { preset: p => { try { localStorage.setItem('ar_treino_preset', p); } catch { /* sem armazenamento: nada muda */ } }, trocar: t => trocarNa(t) }))
+      .then(renderJornada); return;
   }
   const aba = ev.target.closest('[data-treino-aba]');
   if (aba) { mostrarAbaTreino(aba.dataset.treinoAba); return; }

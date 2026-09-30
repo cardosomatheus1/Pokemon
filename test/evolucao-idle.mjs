@@ -207,8 +207,10 @@ export function suite() {
        900 caracteres do bloco de imports e concluiu que a ordem estava errada.
        Falso positivo meu, e a lição é a de sempre: procurar um NOME acha a
        declaração; para achar o uso, procure a CHAMADA. */
-    const i = t.indexOf('aplicarEvolucao(', t.indexOf('from') + 1);
-    const iChamada = t.indexOf('= aplicarEvolucao(');
+    /* ST-13.5d: a chamada saiu para `evoluirNa` (idle-acoes), que decide se a
+       evolução vai ao servidor; a tela chama ela, e a ordem gravar → tocar
+       continua sendo da tela. */
+    const iChamada = t.indexOf('= await evoluirNa(');
     ok(iChamada > 0, 'a tela não chama a evolução — o motor voltou a não ter chamador');
     const depois = t.slice(iChamada, iChamada + 900);
     const iSalvar = depois.indexOf('salvarE()');
@@ -216,9 +218,11 @@ export function suite() {
     ok(iSalvar > 0 && iTocar > 0 && iSalvar < iTocar,
       'a animação toca ANTES de gravar — quem fechar a aba no meio perde a evolução');
     /* QUEM DECIDE a pedra consumida é `aplicar` (ST-13.3b, a mesma regra do
-       servidor); a tela só escreve o que ele disse. */
-    ok(/E\.bolsa\[r\.consome\] -= 1/.test(depois),
-      'a tela não consome a pedra que a evolução diz: uma só evoluiria a caixa inteira');
+       servidor); o aparelho só escreve o que ele disse. */
+    const acoes = ler('app/modules/idle-acoes.mjs').replace(/\/\*[\s\S]*?\*\//g, '');
+    const local = acoes.slice(acoes.indexOf('= aplicarEvolucao('), acoes.indexOf('= aplicarEvolucao(') + 300);
+    ok(acoes.indexOf('= aplicarEvolucao(') > 0 && /e\.bolsa\[r\.consome\] -= 1/.test(local),
+      'o aparelho não consome a pedra que a evolução diz: uma só evoluiria a caixa inteira');
     igual(aplicar(kanto, cria(25, 5), { trovao: 1 }).consome, 'trovao', 'a evolução por pedra não diz qual pedra consome');
     igual(aplicar(kanto, cria(4, 16), {}).consome, null, 'a evolução por nível diz que consome alguma coisa');
     igual(aplicar(kanto, cria(133, 5), { agua: 1, trovao: 1 }, 135).consome, 'trovao', 'o ramo escolhido consome a pedra de outro ramo');
