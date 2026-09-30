@@ -1274,7 +1274,9 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
    (é leitura, não enfeite), abaixo dos nós. No celular o mapa é transposto, e
    a divisa gira junto. */
 /* ST-10.21: acima das pedras e das árvores da cena — elas escondiam a seta do próximo passo (Q7). */
-.jnSetaPos{z-index:2}.jnSeta{position:absolute;left:-6px;top:-6px;width:11px;height:11px;border-top:4px solid var(--neon);border-right:4px solid var(--neon);filter:drop-shadow(0 0 3px rgba(0,0,0,.8)) drop-shadow(0 0 4px var(--neon))}
+/* ST-10.24: a seta do trecho ainda fechado é CINZA — o ciano é do PRÓXIMO, e
+   seis setas ciano no futuro liam como seis próximos (Q7 da 10.23). */
+.jnSetaPos{z-index:2}.jnSeta{position:absolute;left:-6px;top:-6px;width:11px;height:11px;border-top:4px solid #a4a9b0;border-right:4px solid #a4a9b0;opacity:.85;filter:drop-shadow(0 0 1px #000) drop-shadow(0 0 2px rgba(0,0,0,.7))}
 .jnSeta.andado{border-color:#fff4d6;filter:drop-shadow(0 0 1px #000) drop-shadow(0 0 2px rgba(0,0,0,.8))}
 /* ST-10.21: o nome TRANCADO apagado — tão vivo quanto o aberto, ele disputava o olho (Q7). */
 .jnNo.jn-trancado span{opacity:.62}

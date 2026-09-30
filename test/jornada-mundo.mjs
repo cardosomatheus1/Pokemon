@@ -59,8 +59,11 @@ export function suite() {
     ok(/miniMapa\(mapa\)/.test(tela) && /class="jnMini"/.test(tela), 'a tela não pinta o minimapa');
     ok(/\.jnMini\{display:none\}/.test(css) && /@media \(max-width:520px\)[\s\S]*?\.jnMini\{display:flex/.test(css), 'o minimapa não é só do celular');
     ok(/marcarJanela\(alvo\)/.test(tela) && /naJanela/.test(tela), 'o minimapa não mostra o trecho que a janela vê');
-    /* O rio vem ANTES da estrada no SVG: a estrada passa por cima, como ponte. */
-    ok(/rioSvg\(false\)\}\$\{trilha\(false\)\}/.test(tela) && /rioSvg\(true\)\}\$\{trilha\(true\)\}/.test(tela), 'o rio por cima da estrada');
+    /* O rio vem ANTES da estrada no SVG: a estrada passa por cima, como ponte.
+       ST-10.24: com o desenho a estrada é chão (canvas), e o SVG só a traz no
+       pack sem desenho — a ordem continua a mesma. */
+    ok(/rioSvg\(false\)\}\$\{estradaSvg\(false\)\}/.test(tela) && /rioSvg\(true\)\}\$\{estradaSvg\(true\)\}/.test(tela), 'o rio por cima da estrada');
+    ok(/const estradaSvg = empe => \(desenho \? '' : trilha\(empe\)\);/.test(tela), 'com o desenho, a estrada voltou a ser traço SVG por cima do chão');
     ok(/cruzaOCaminho\(r, rio\)/.test(tela) && /\|\| noRio\(r\)\)\)/.test(tela), 'a cena cai dentro do rio');
     ok(/@media \(min-width:1500px\)[\s\S]*?\.jnMapa\.jnVoltas2\{height:clamp\(/.test(css), 'em 1920 o mapa continua uma faixa de 4:1');
     /* A regra do largo vem DEPOIS da altura fixa: antes dela, a fixa ganhava e

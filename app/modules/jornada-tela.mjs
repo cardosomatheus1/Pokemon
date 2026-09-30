@@ -16,6 +16,7 @@ import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
 import { miniMapa, rioDoMapa } from './jornada-mundo.mjs';
 import { pintarChao } from './jornada-chao-tela.mjs';
+import { setasNaEstrada } from './jornada-estrada.mjs';
 import { setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, ARTE_NOSSA_DO_MAPA, mostraNome, corDoNo, cruzaOCaminho } from './jornada-dados.mjs';
 import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, turnosDaAmeaca, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { diaDoMundo } from '../../engine/avanco.mjs';
@@ -331,7 +332,13 @@ function afastarCena(alvo) {
     const naEstrada = !el.classList.contains('jnMarco');
     if (!ruim(el.getBoundingClientRect(), naEstrada)) continue;
     el.style.setProperty('--dx', `${-parseFloat(el.dataset.dx0)}px`);
-    if (ruim(el.getBoundingClientRect(), naEstrada)) el.style.display = 'none';
+    /* ST-10.24: o MARCO não some — o palácio do Campeão desaparecia no fim,
+       quando você e o nome de duas linhas ficavam ao lado dele (Q7). Marco é
+       lugar, como no SMW: volta ao lado dele e fica. */
+    if (ruim(el.getBoundingClientRect(), naEstrada)) {
+      if (el.classList.contains('jnMarco')) el.style.setProperty('--dx', el.dataset.dx0);
+      else el.style.display = 'none';
+    }
   }
   /* ST-10.22b: a árvore da parede que cai sob uma peça da cena (a casa de
      Pewter, a de Vermilion, lá em cima) sai — casa na frente de árvore
@@ -390,6 +397,9 @@ export function renderJornada({ nova = null } = {}) {
      margem e ponte) — o rio antigo em SVG, a foz e a ponte só sem desenho. */
   const desenho = PACK.mapaJornada?.[pintadoEmPe ? 'emPe' : 'deitado'];
   const rios = desenho ? [] : rioDoMapa(mapa), mini = miniMapa(mapa);
+  /* ST-10.24: com o desenho, a estrada é CHÃO (pintada no canvas por
+     `pintarChao`); o traço SVG fica só para o pack sem desenho. */
+  const estradaSvg = empe => (desenho ? '' : trilha(empe));
   const rioSvg = empe => rios.map(r => `<polyline class="jnRioBeira" points="${linha(r.pontos, empe)}"/><polyline class="jnRio" points="${linha(r.pontos, empe)}"/>`).join('');
   alvo.innerHTML = `
     <div class="jnTopo"><span><b>${mapa.feitos}</b> de ${mapa.total} passos · <b>${ganhas}</b> de ${mapa.insignias.length} insígnias${mapa.atual ? '' : ' · <b class="jnFeito">caminho vencido de ponta a ponta</b>'}</span>
@@ -398,11 +408,11 @@ export function renderJornada({ nova = null } = {}) {
     <div class="jnMini" style="--andado:${mini.andado}" aria-label="o caminho inteiro"><b class="jnMiniTrilha"></b>${mini.pontos.map((p, k) => `<button class="jnMiniNo jn-${p.estado} jn-${p.tipo}${p.final ? ' jnMiniFim' : ''}${k === 0 ? ' jnMiniIni' : ''}" data-jn-no="${p.id}" style="--t:${p.t}" title="${p.curto}" aria-label="${p.curto}"></button>`).join('')}</div>
     <div class="jnJanela"><div class="jnMapa${mapa.voltas === 2 ? ' jnVoltas2' : ''}" style="--n:${mapa.voltas === 2 ? Math.ceil(mapa.nos.length / 2) : mapa.nos.length}" data-rio='${JSON.stringify(desenho ? [desenho.rio] : rios.map(r => r.pontos))}'>
       <canvas class="jnChao" aria-hidden="true"></canvas>
-      <svg class="jnCaminho jnDeitado" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${rioSvg(false)}${trilha(false)}</svg>
-      <svg class="jnCaminho jnEmPe" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${rioSvg(true)}${trilha(true)}</svg>
+      <svg class="jnCaminho jnDeitado" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${rioSvg(false)}${estradaSvg(false)}</svg>
+      <svg class="jnCaminho jnEmPe" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${rioSvg(true)}${estradaSvg(true)}</svg>
       ${rios.map(r => `<div class="jnPos jnFoz" style="--x:${r.foz.x};--y:${r.foz.y}"><b class="jnLago"><i></i></b></div>`).join('')}
       ${rios.map(r => `<div class="jnPos jnPonte" style="--x:${r.ponte.x};--y:${r.ponte.y}"><b></b></div>`).join('')}
-      ${setasDoCaminho(mapa).map(sx => `<div class="jnPos jnSetaPos" style="--x:${sx.x};--y:${sx.y}" data-outros='${JSON.stringify(sx.outros)}'><i class="jnSeta jn-${sx.dir}${sx.andado ? ' andado' : ''}"></i></div>`).join('')}
+      ${(desenho ? setasNaEstrada(setasDoCaminho(mapa), mapa.atual ? mapa.nos.findIndex(n => n.id === mapa.atual) : -1) : setasDoCaminho(mapa)).map(sx => `<div class="jnPos jnSetaPos" style="--x:${sx.x};--y:${sx.y}" data-outros='${JSON.stringify(sx.outros)}'><i class="jnSeta jn-${sx.dir}${sx.andado ? ' andado' : ''}"></i></div>`).join('')}
       ${[...bordaDoMapa()].sort((a, b) => !!b.fundo - !!a.fundo).map(p => `<div class="jnPos jnB${p.escala ? ` jnB${p.escala}` : ''}${p.fundo ? ' jnBf' : ''}" style="--x:${p.x};--y:${p.y}">${p.arte ? `<b class="jnProp jnArte" style="background-image:url(${ARTE_NOSSA_DO_MAPA}/${p.arte}.svg)"></b>` : quadro('cuttable_tree', 'jnProp')}</div>`).join('')}
       ${mapa.nos.map((n, i) => `<div class="jnPos jn-${n.estado} jnT-${n.tipo}${n.final ? ' jnFinal' : ''}${i === 0 ? ' jnInicio' : ''}" style="--x:${n.x};--y:${n.y};--rg:${corDoNo(n)}">
           ${cenaDoNo(n).map(c => (c.forma ? `<b class="jnLago${c.forma === 'lago' ? '' : ` jn-${c.forma}`}" style="--dx:${c.dx}px;--dy:${c.dy}px"><i></i></b>`

@@ -1495,14 +1495,35 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   penhasco fino demais para ler (9 px), e do arranjo dos nós (a metade da
   esquerda vazia, a direita apertada em 1100). É a L-218.
 
-#### ST-10.24 · A estrada no chão (L-218) — proposta
+#### ST-10.24 · A estrada no chão (L-218) ✅ 30/09 — aceite ≥7 NÃO atingido
 - **Porte** M · **Método** GL (barra: o mapa do SMW).
-- **Escopo:** a estrada pintada no canvas como chão (terra batida que dobra
-  com o terreno, escada onde sobe, ponte onde cruza), o trecho futuro apagado
-  e não em contas; o penhasco mais alto onde a escala pede; as setas do futuro
-  em cinza; o rótulo do nó atual fora da estrada.
+- **Feito:** `jornada-estrada.mjs` (camada 0) — o andado e SÓ o trecho próximo
+  (o resto do futuro não é desenhado), a curva que passa pelos nós e ondula
+  entre eles, as casas da grade que ela cobre, a ponte e a escada perguntadas
+  ao chão pela curva, a largura e o penhasco pela escala, a seta só do trecho
+  próximo. A tela pinta a estrada pelo MESMO autotile do chão (borda em dois
+  tons), as obras por cima, o penhasco com face (colunas, quina, base,
+  sombra); a seta do futuro é cinza; o marco não some mais (o palácio do
+  Campeão sumia no fim). Com o desenho, o traço SVG sai.
+- **Q7 cego, quatro rodadas** (mundo / publicado / estrada / altura, a pior e a
+  melhor largura): 1ª 5·4·3–5·4–5 → 2ª 5·4–5·4–5·4–5 → 3ª 5–6·5·5–6·5–7 →
+  4ª 4–5·4–5·4–5·5–6. **O aceite ≥7 não foi atingido**: o que segura mundo e
+  publicado passou a ser o chão e a composição — **L-219**, dono **ST-10.25**.
+- **Tentado e desfeito:** o rótulo em cima do nó quando a estrada desce (caía
+  sobre o treinador — a sonda do Q5 acusou em 1100).
+- **Sabotagem:** S2055–S2066.
+
+#### ST-10.25 · A composição do mundo (L-219) — proposta
+- **Porte** M–G · **Método** GL (barra: o mapa do SMW).
+- **Escopo:** o contorno das regiões orgânico, sem a borda hexagonal da amostra
+  (a borda por casa do desenho, suavizada em escala maior, ou uma máscara de
+  contorno por região); o nó trancado como ponto de terreno OPACO no lugar do
+  treinador translúcido; a mata abre clareira onde a estrada passa; a lava em
+  pixel art; a escala do treinador-jogador contra as casas; relevo dentro do
+  planalto grande.
 - **Aceite:** ≥ 7 em "mundo" e "publicado" no Q7 cego nas quatro larguras.
-- **Sabotagem:** a estrada volta a ser traço; o penhasco volta a 9 px.
+- **Sabotagem:** a borda volta a ser hexagonal; o trancado volta a ser
+  translúcido; a estrada volta a passar sobre a copa.
 
 ### ST-10.20 · A jornada ensina a apostar? ✅ 27/09
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16

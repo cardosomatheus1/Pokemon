@@ -13,6 +13,7 @@ import pack from '../content/pokemon_kanto_v1.mjs';
 import { mapaDaJornada } from '../app/modules/jornada-dados.mjs';
 import { MATERIAIS, CELULA } from '../app/modules/jornada-chao.mjs';
 import { paraTiled, deTiled, tilesetPng, arquivoDoMapa, CASAS } from '../tools/mapa-tiled.mjs';
+import { larguraDaEstrada, faceDoPenhasco, CORES_DA_ESTRADA, trechosDaEstrada, setasNaEstrada, curvaDaEstrada, obrasNaEstrada, casasDaEstrada } from '../app/modules/jornada-estrada.mjs';
 import { LEGENDA, ORDEM, lerDesenho, celulaEm, noDesenho, gradeDoDesenho, mascara, camadas, bitsDeAltura } from '../app/modules/jornada-desenho.mjs';
 
 const fonte = rel => readFileSync(new URL(rel, import.meta.url), 'utf8');
@@ -163,6 +164,64 @@ export function suite() {
     /* E a reescrita do conteúdo guarda o cabeçalho e devolve o mesmo mapa. */
     const texto = fonte('../content/mapa_kanto_v1.mjs');
     igual(arquivoDoMapa(texto, desenhos), texto, 'reescrever o arquivo com o mesmo mapa muda o arquivo');
+  });
+
+  s.teste('ST-10.24 · a estrada é chão: o andado e o próximo, a curva, as obras, a escala', () => {
+    const P = [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 200, y: 50 }, { x: 300, y: 50 }];
+    const t = trechosDaEstrada(P, 1);
+    igual(`${t.andado.length}|${t.proximo.length}|${t.andado.at(-1) === t.proximo[0]}|${t.proximo[1] === P[2]}`, '2|2|true|true', 'o próximo não é só o trecho do atual ao nó seguinte');
+    igual(`${trechosDaEstrada(P, -1).andado.length}|${trechosDaEstrada(P, -1).proximo.length}`, '4|0', 'com tudo vencido, sobra estrada por andar');
+    igual(`${trechosDaEstrada(P, 0).andado.length}|${trechosDaEstrada(P, 0).proximo.length}`, '0|2', 'antes do primeiro, um trecho de um ponto só virou estrada');
+    igual(trechosDaEstrada(P, 3).proximo.length, 0, 'no último nó há próximo');
+    igual(trechosDaEstrada([P[0]], 0).andado.length, 0, 'um nó só virou estrada');
+    /* A seta: só a do trecho próximo. */
+    igual(JSON.stringify(setasNaEstrada(['a', 'b', 'c'], 1)), '["b"]', 'fica seta fora do trecho próximo');
+    igual(setasNaEstrada(['a', 'b'], -1).length, 0, 'com tudo vencido, sobra seta');
+    /* A curva: passa pelos nós, ondula entre eles, e é a mesma sempre. */
+    const c = curvaDaEstrada(P);
+    const passa = q => c.some(p => Math.hypot(p.x - q.x, p.y - q.y) < 0.01);
+    ok(P.every(passa), 'a curva não passa pelos nós');
+    const meio = c.filter(p => p.x > 40 && p.x < 60);
+    ok(meio.some(p => Math.abs(p.y) > 2) && meio.every(p => Math.abs(p.y) <= 12.5), 'a estrada é reta entre os nós (ou ondula demais)');
+    igual(JSON.stringify(curvaDaEstrada(P)), JSON.stringify(c), 'a curva muda de uma pintura para outra');
+    ok(c.every((p, k) => !k || Math.hypot(p.x - c[k - 1].x, p.y - c[k - 1].y) <= 6), 'a curva tem buraco entre amostras');
+    /* As obras: ponte sobre a água, uma escada por troca de altura, no sentido da estrada. */
+    const reta = [0, 4, 8, 12, 16, 20].map(x => ({ x, y: 10 }));
+    const o = obrasNaEstrada(reta, { matEm: p => (p.x >= 8 && p.x <= 12 ? 'agua' : 'grama'), altEm: p => (p.x >= 16 ? 1 : 0) });
+    igual(o.map(x => `${x.tipo}@${x.x}`).join(), 'ponte@8,ponte@12,escada@16', 'as obras não saem de onde a estrada cruza a água e a altura');
+    ok(o.filter(x => x.tipo === 'ponte').every(x => x.dx === 1 && x.dy === 0 && x.y === 10), 'a ponte perdeu o lugar ou o sentido da estrada');
+    /* Duas subidas de verdade, sem ponte entre elas, são duas escadas; a borda que treme (a menos de 12 px) é uma só. */
+    const longa = Array.from({ length: 21 }, (_, k) => ({ x: k * 4, y: 10 }));
+    const duas = obrasNaEstrada(longa, { matEm: () => 'grama', altEm: p => (p.x >= 60 ? 2 : p.x >= 20 ? 1 : 0) });
+    igual(duas.map(x => `${x.tipo}@${x.x}`).join(), 'escada@20,escada@60', 'a segunda subida ficou sem escada (a regra engolia a escada depois de outra)');
+    const treme = obrasNaEstrada(longa, { matEm: () => 'grama', altEm: p => (p.x === 20 || p.x >= 28 ? 1 : 0) });
+    igual(treme.filter(x => x.tipo === 'escada').length, 1, 'a borda que treme virou várias escadas');
+    /* A estrada na grade: as casas a até `raio` da curva, dentro da grade. */
+    /* O ponto (20, 20) é o centro da casa 2,2; as quatro vizinhas de lado ficam a 8 px, as de quina a 11,3. */
+    const casas = casasDaEstrada([{ x: 20, y: 20 }], { celula: 8, raio: 9, col: 10, lin: 10 });
+    igual([...casas].sort().join(' '), '1,2 2,1 2,2 2,3 3,2', 'as casas da estrada não são as a até o raio da curva');
+    igual(casasDaEstrada([{ x: 2, y: 2 }], { celula: 8, raio: 20, col: 2, lin: 2 }).size, 4, 'a estrada saiu da grade');
+    /* A escala: 10 px de penhasco no celular, 22 em 1920. */
+    igual(`${faceDoPenhasco(400)}|${faceDoPenhasco(1000)}|${faceDoPenhasco(1400)}|${faceDoPenhasco(1860)}`, '10|14|18|22', 'o penhasco não cresce com a escala');
+    ok(larguraDaEstrada(400) < larguraDaEstrada(1860) && larguraDaEstrada(400) >= 8, 'a estrada não cresce com a escala');
+    ok(CORES_DA_ESTRADA.alfaDoProximo > 0.3 && CORES_DA_ESTRADA.alfaDoProximo < 0.8, 'o próximo não está apagado (ou sumiu)');
+    /* A tela. */
+    const pintor = semComentario(fonte('../app/modules/jornada-desenho-tela.mjs'));
+    ok(/FACE = faceDoPenhasco\(w\)/.test(pintor), 'o penhasco voltou a ter altura fixa');
+    ok(/if \(estrada\) \{\s*const curvas = pintarEstrada/.test(pintor), 'o chão com a estrada medida não pinta a estrada');
+    const iFace = pintor.indexOf('faixa(FACE, ROCHA[nivel])'), iEstrada = pintor.indexOf('pintarEstrada(ctx, estrada, { w, h, C, lin, col })'), iObra = pintor.indexOf('pintarObras(ctx, obrasNaEstrada(curvas.andado, chao)');
+    ok(iFace > 0 && iEstrada > iFace && iObra > iEstrada, 'a estrada não fica entre os penhascos e as obras');
+    ok(/const pts = curvaDaEstrada\(nos\);/.test(pintor), 'a estrada voltou a ser reta');
+    ok(/andado: trecho\(andado, false\), proximo: trecho\(proximo, true\)/.test(pintor) && /globalAlpha = apagado \? cor\.alfaDoProximo : 1/.test(pintor), 'o próximo não é a mesma estrada, apagada');
+    ok(/const casas = casasDaEstrada\(pts, \{ celula: C, raio, col, lin \}\);/.test(pintor) && /const m = mascara\(bits, C\), px = c2\.getImageData\(0, 0, C, C\);[\s\S]{0,260}m\[k\] === 2\) \{ px\.data\[k \* 4\] = br/.test(pintor) && /px\.data\[k \* 4 \+ q\] \* 0\.72/.test(pintor), 'a estrada não é pintada na grade pelo autotile do chão (voltou a ser fita)');
+    const chao = semComentario(fonte('../app/modules/jornada-chao-tela.mjs'));
+    ok(/pintarDesenho\(tela, caixa, lerDesenho\(desenho\), emPe, await carregar\(\), trechosDaEstrada\(nos, iAtual\)\)/.test(chao), 'o chão desenhado não recebe a estrada');
+    const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
+    ok(/const estradaSvg = empe => \(desenho \? '' : trilha\(empe\)\);/.test(tela), 'com o desenho, a estrada ainda é traço SVG por cima');
+    ok(/desenho \? setasNaEstrada\(setasDoCaminho\(mapa\)/.test(tela), 'com o desenho, as setas do futuro fechado voltaram');
+    ok(/if \(el\.classList\.contains\('jnMarco'\)\) el\.style\.setProperty\('--dx', el\.dataset\.dx0\);/.test(tela), 'o marco volta a sumir quando esbarra');
+    const seta = (fonte('../app/index.html').match(/\.jnSeta\{[^}]*\}/) ?? [''])[0];
+    ok(seta && !/var\(--neon\)/.test(seta), 'a seta do trecho fechado usa o ciano do PRÓXIMO');
   });
 
   return s;

@@ -9024,7 +9024,7 @@ Não cabe na 10.22f porque é redesenhar o mapa, e não acabar o atual. O que a
 destrava: a decisão de gastar um bloco L em arte de mapa — o mapa já cumpre a
 função (caminho e onde estou em 6–8).
 
-### L-218 — a estrada do mapa é traço por cima do chão, e o penhasco é fino
+### L-218 — a estrada do mapa é traço por cima do chão, e o penhasco é fino ✅ FECHADA na ST-10.24 (30/09), o resto na L-219
 
 **Registrada em:** 30/09/2026, na ST-10.23. **Bloco dono:** ST-10.24 (proposta
 no PLANO no mesmo commit). **Estado:** aberta.
@@ -9043,3 +9043,37 @@ chão como "retalhos" e passaram a falar do que está POR CIMA dele:
 
 Não cabe na ST-10.23 porque é a estrada e o arranjo, e não o chão. O que a
 destrava: nada — é construir; o pintor e o desenho da 10.23 são a base.
+
+**Fechada na ST-10.24 (30/09):** a estrada é CHÃO — as casas que a curva
+cobre, pintadas pelo autotile do chão, com borda em dois tons; a ponte e a
+escada saem de onde ela cruza a água e a altura; só o trecho próximo aparece,
+apagado; a seta do futuro é cinza; o penhasco cresce com a escala (22 px em
+1920) e ganhou face. O rótulo continua embaixo do nó (em cima, ele caía sobre
+o treinador). Quatro rodadas de Q7 cego, barra SMW: estrada 3 → 4–6, altura
+4 → 5–7; **mundo e publicado ficaram em 4–6** — o que os segura não é mais a
+estrada, e foi para a L-219.
+
+### L-219 — o mapa ainda lê como gerado: biomas em hexágono, fantasmas, clareira, escala
+
+**Registrada em:** 30/09/2026, na ST-10.24. **Bloco dono:** ST-10.25 (proposta
+no PLANO no mesmo commit). **Estado:** aberta.
+
+Com a estrada no chão, as quatro rodadas do Q7 da ST-10.24 passaram a falar só
+do que está em volta dela:
+- as regiões são manchas com borda HEXAGONAL serrilhada — "cara de gerador"
+  (a amostra suave do desenho em peças de 8 px); no SMW cada ilha tem uma
+  silhueta orgânica;
+- o treinador TRANSLÚCIDO sobre o nó trancado (o holograma da ST-10.22f) lê
+  como sprite que não carregou;
+- a estrada passa por cima da copa da floresta — no SMW a mata abre CLAREIRA
+  para o caminho;
+- a lava em elipse com gradiente destoa do pixel art; o jogador é maior que
+  as casas; o planalto cinza grande é chapado;
+- o início: com o futuro escondido, 17 nós soltos sem estrada — uma rodada
+  pediu para esconder o caminho fechado, a seguinte cobrou o começo sem
+  estrada. A resposta do SMW é o nó trancado como ponto de terreno opaco, e
+  não um holograma.
+
+Não cabe na ST-10.24 porque é o chão e a composição, e não a estrada. O que a
+destrava: nada — é construir.
+

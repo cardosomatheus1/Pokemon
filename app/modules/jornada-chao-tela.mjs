@@ -8,6 +8,7 @@
  * (tools/pixel-arte.mjs); a célula é um quarto do tile, e cada uma pinta o
  * quarto dele que lhe cabe — a textura corre contínua de célula a célula. */
 import { lerDesenho } from './jornada-desenho.mjs';
+import { trechosDaEstrada } from './jornada-estrada.mjs';
 import { pintarDesenho } from './jornada-desenho-tela.mjs';
 import { gradeDoChao, transicoes, cantos, margens, temFace, COR_DO_CHAO, COR_DA_FACE, CELULA, TILE, MATERIAIS } from './jornada-chao.mjs';
 
@@ -79,10 +80,16 @@ export async function pintarChao(alvo, mapa, desenho = null, emPe = false) {
   if (!tela || !caixa) return;
   const w = caixa.clientWidth, h = caixa.clientHeight;
   if (!w || !h) return;
-  if (desenho) { pintarDesenho(tela, caixa, lerDesenho(desenho), emPe, await carregar()); return; }
   const r0 = caixa.getBoundingClientRect();
   const nos = [...caixa.querySelectorAll('.jnPos')].filter(p => p.querySelector(':scope > .jnNo'))
     .map((p, i) => { const r = p.getBoundingClientRect(); return { x: r.left - r0.left, y: r.top - r0.top, regiao: mapa.nos[i]?.regiao }; });
+  /* ST-10.24: com o desenho, a estrada é pintada no chão, pelos pontos medidos
+     dos nós. */
+  if (desenho) {
+    const iAtual = mapa.atual ? mapa.nos.findIndex(n => n.id === mapa.atual) : -1;
+    pintarDesenho(tela, caixa, lerDesenho(desenho), emPe, await carregar(), trechosDaEstrada(nos, iAtual));
+    return;
+  }
   /* A poça de lava que a cena pôs no mapa reclama o chão de vulcão em volta;
      o ginásio, a PRAÇA — o calçamento é chão da grade, com borda e canto. */
   const centro = el => { const r = el.getBoundingClientRect(); return { x: r.left - r0.left + r.width / 2, y: r.top - r0.top + r.height / 2, r }; };
