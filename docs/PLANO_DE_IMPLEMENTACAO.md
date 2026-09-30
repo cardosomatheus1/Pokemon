@@ -1481,9 +1481,48 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   que só implicava a perda — corrigidos. Ficou, fora do escopo: a partida que
   a busca acabou de jogar abre o palco e empurra o resultado para baixo da
   dobra e as laterais vazias acima de 1440 — as duas na ST-11.6e (L-212).
+- **11.7c ✅ 30/09 — a League Shop.** `engine/loja-liga.mjs` (puro): as duas
+  bolas logo acima da comum, escolhidas pela FORÇA (`mult`) e não pelo nome
+  (3× por 40 LP, limite 5; 2× por 90 LP, limite 3), nunca a comum e nunca a
+  garantida (§P5); e o Doce da Liga (3 por 60 LP, limite 5) de uma linha que a
+  conta TEM. **Todo item tem limite por temporada** — sem ele, a Liga viraria a
+  torneira de bolas do jogo. `server/loja-liga.mjs`: a compra numa transação
+  (débito em `liga_pontos` tipo `compra` + crédito na bolsa, ou no doce com
+  motivo próprio `liga` — migração `loja-liga-st11.7c`, a tabela do doce
+  copiada como na colecao-st13.3a), a chave do cliente (a mesma chave devolve
+  a mesma resposta), o preço só do servidor, a bandeira `league_enabled`, o
+  evento `liga_loja_compra`. Rotas `GET /api/equipe/loja` e `POST
+  /api/equipe/loja/comprar` (400/404/409). Não importa a carteira. Na tela, a
+  faixa "Loja da Liga" embaixo do painel: o ícone do item, o que se leva, o
+  que ele FAZ, o limite em compras, "Comprar · 40 LP" no botão e a confirmação
+  DENTRO do cartão comprado, dizendo onde o item foi parar.
+  `test/liga-loja.mjs` (9) · S1848–S1861. A 1ª versão da migração copiou a lista de motivos da 13.3a e perdeu o `pve` da 13.7 — a suíte pegou (a jornada parou de pagar doce); o teste agora cobra que a lista nova contenha a anterior (S1861).
+- **Q5/Q7 da 11.7c:** 1440/1100/420. A 1ª leitura achou o botão escuro (o
+  `.btn` vencia por ordem) e o retrato do doce minúsculo (o `dexImg` sem o
+  nome caía no ícone reserva; e o sprite estático tem muita borda — entra
+  ampliado). O crítico cego (o que compro 5, preço 5–6, limite 4, deu certo
+  5–7, doce de quem 4–5) pediu: o verbo no botão, a unidade do limite
+  ("compras"), o que o item faz, a confirmação perto do botão e onde o item
+  foi — todos feitos. O cartão de pontos em 1100 passou a colunas corridas (a
+  grade por posição se desarranjava sem insígnia).
+- **Q6 da 11.7c:** duas rotas atrás da sessão; o corpo só escolhe o item, a
+  linha e a chave — preço e quantidade são do servidor; a linha é validada
+  contra as criaturas da conta.
+- **O que fica:** a prateleira de COSMÉTICO da Liga (§9.11), que precisa de
+  arte própria — L-213.
 - **Mutantes de navegador da 11.7b:** a pintura do cartão
   (`pintarPontos`) é de navegador e não foi plantada; toda decisão está em
   `pontosNaTela`/`linhaDaPartida`, pegas em Node.
+
+### ST-11.7d · A prateleira de cosmético da Liga (proposta, 30/09)
+- **Porte** M · **Servidor** sim · **Método** GL para a arte, INV para a compra · **Nasce de** L-213
+- **Escopo:** peças de cosmético EXCLUSIVAS da Liga (molduras e banners de
+  temporada, arte nossa) à venda por League Points, gravadas na
+  `cosmetic_ownership` com procedência própria; nunca a mesma peça da
+  boutique (seria câmbio implícito com a moeda da Arena).
+- **Portões:** Q1 Q2 Q5 Q7. **Sabotagem:** a peça da Liga à venda na
+  boutique; a peça da boutique à venda na Liga; a compra sem posse.
+- **Posição na fila:** depois da 11.6e.
 
 ### ST-11.8 · Anti-win-trading, antes do dinheiro ✅ 28/09 (dispositivo e rede esperam a L-050)
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.8 · **Spec** §9.12, L-050

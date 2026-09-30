@@ -119,8 +119,7 @@ export function pontosNaTela(p, tier = null) {
     semExtrato: (p.extrato ?? []).length ? null : 'Nenhum ponto ainda — cada partida que conta rende.',
     insignias: (p.insignias ?? []).map(i => ({ rotulo: `T${i.temporada}`, tier: i.tier, posicao: `${i.posicao}º`, titulo: `Temporada ${i.temporada}: ${i.tier}, ${i.posicao}º lugar, ${i.partidas} partidas` })),
     semInsignias: (p.insignias ?? []).length ? null : `A primeira insígnia sai quando a temporada fechar — para quem jogou ${r.minimoParaPremio} partidas ou mais nela.`,
-    /* A loja é a ST-11.7c: até lá, a frase diz que o gasto vem — e não finge um botão. */
-    uso: 'Os pontos são para a loja da Liga, que abre na próxima atualização.',
+    uso: 'Gaste na loja da Liga, logo abaixo — antes que a temporada feche.',
   };
 }
 
@@ -217,5 +216,43 @@ export function rankingNaTela(r) {
     /* Sem temporada fechada não há o que escolher: diz isso, em vez de uma pílula solta que parece etiqueta. */
     abas: r.fechadas.length ? [{ temporada: null, rotulo: 'agora', on: r.atual }, ...r.fechadas.map(n => ({ temporada: n, rotulo: `T${n}`, on: !r.atual && r.temporada === n }))] : [],
     semAnteriores: r.fechadas.length ? null : 'primeira temporada — ainda sem anteriores',
+  };
+}
+
+/* ── A LOJA DA LIGA NA TELA (ST-11.7c · §9.11) ───────────────────────────
+ *
+ * Cada item diz o que se leva ("3× Great Ball"), por quanto, e quanto do
+ * limite da temporada já foi — e, quando não dá, POR QUÊ, com a falta em
+ * número ("faltam 12 LP"). O doce é de uma linha que o jogador escolhe entre
+ * as que ele tem; sem nenhuma, o item diz isso em vez de ficar só apagado. */
+export function lojaNaTela(l, linhaEscolhida = null) {
+  if (!l) return null;
+  const linha = (l.linhas ?? []).find(x => x.linha === Number(linhaEscolhida)) ?? l.linhas?.[0] ?? null;
+  return {
+    titulo: 'Loja da Liga',
+    saldo: `${milhar(l.saldo)} LP`,
+    nota: `Cada item tem limite por temporada — ele volta quando a temporada ${l.temporada + 1} abrir.`,
+    itens: (l.itens ?? []).map(i => {
+      const doce = i.tipo === 'doce', semLinha = doce && !linha;
+      return {
+        id: i.id, tipo: i.tipo, alvo: doce ? linha?.linha ?? null : i.alvo,
+        nome: doce ? `${i.quantidade} doces${linha ? ` de ${linha.nome}` : ''}` : `${i.quantidade}× ${i.nome}`,
+        preco: `${i.preco} LP`,
+        /* O verbo NO botão (Q7 da 11.7c: "40 LP" sozinho lia como etiqueta de preço). */
+        botao: `Comprar · ${i.preco} LP`,
+        /* O que o item FAZ: um nome de bola não diz nada a quem não conhece a franquia. */
+        efeito: doce ? 'dar doce sobe o nível das criaturas desta linha'
+          : `${String(i.mult ?? '').replace('.', ',')}× a chance de captura da bola comum`,
+        /* A unidade do limite é a COMPRA: "1 de 5" depois de "3× Great Ball" era ambíguo. */
+        limite: `${i.comprados} de ${i.limite} compras nesta temporada`,
+        /* Onde o item foi parar — a confirmação aparece no cartão comprado. */
+        feito: doce ? 'Comprado! Os doces já estão na Minha Coleção.' : 'Comprado! As bolas já estão na sua Bolsa, na aba Rotas.',
+        esgotado: i.comprados >= i.limite,
+        habilitado: !!i.pode && !semLinha,
+        motivo: semLinha ? 'você precisa ter uma criatura na conta' : i.pode ? null : i.motivo,
+      };
+    }),
+    linhas: (l.linhas ?? []).map(x => ({ valor: x.linha, nome: x.nome, on: x.linha === linha?.linha })),
+    regra: 'A loja nunca vende rating nem pontos.',
   };
 }

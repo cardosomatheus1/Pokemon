@@ -86,3 +86,14 @@ export const insigniasDe = (db, userId) =>
 /* Quanto cada partida rendeu à conta: o lançamento dela, pela chave. */
 export const pontosDaPartida = (db, partidaId, userId) =>
   db.prepare(`SELECT delta FROM liga_pontos WHERE idem = 'partida:' || ? || ':' || ?`).get(partidaId, userId)?.delta ?? 0;
+
+/* ── A LOJA (ST-11.7c) ─────────────────────────────────────────────────────
+ * O débito de uma compra, chamado DENTRO da transação dela (a loja abre a
+ * transação, e não este arquivo). Devolve se lançou: a mesma chave duas vezes
+ * lança uma. */
+export const debitarPontos = (db, { userId, valor, ref, idem, agora }) =>
+  lancar(db, { userId, temporada: temporadaDe(agora).numero, dia: diaDoMundo(agora), tipo: 'compra', delta: -Math.abs(valor), ref, idem, agora });
+
+/* Quantas vezes a conta comprou este item NESTA temporada: o limite lê daqui. */
+export const compradosNaTemporada = (db, userId, ref, temporada) =>
+  db.prepare(`SELECT COUNT(*) AS n FROM liga_pontos WHERE user_id = ? AND tipo = 'compra' AND ref = ? AND temporada = ?`).get(userId, ref, temporada).n;

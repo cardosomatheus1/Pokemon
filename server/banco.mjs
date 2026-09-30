@@ -1811,6 +1811,42 @@ export const MIGRACOES = [
       db.exec(`DROP TABLE liga_insignias`);
     },
   },
+  {
+    nome: 'loja-liga-st11.7c',
+    /* A LOJA DA LIGA (ST-11.7c, §9.11). O doce comprado com League Points
+     * entra no livro do doce com motivo PRÓPRIO (`liga`), para o operador
+     * saber de onde veio cada doce. O SQLite não afrouxa CHECK: a tabela é
+     * copiada, como na colecao-st13.3a. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE candy_ledger_novo (
+          id          INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id     TEXT NOT NULL REFERENCES users(id),
+          species_id  INTEGER NOT NULL,
+          delta       INTEGER NOT NULL CHECK (delta != 0),
+          motivo      TEXT NOT NULL CHECK (motivo IN ('aposta', 'resgate', 'soltar', 'uso', 'pve', 'liga')),
+          idem_key    TEXT NOT NULL UNIQUE,
+          created_at  INTEGER NOT NULL
+        )`);
+      db.exec(`INSERT INTO candy_ledger_novo SELECT id, user_id, species_id, delta, motivo, idem_key, created_at FROM candy_ledger`);
+      db.exec(`DROP TABLE candy_ledger`);
+      db.exec(`ALTER TABLE candy_ledger_novo RENAME TO candy_ledger`);
+      db.exec(`CREATE INDEX candy_ledger_user ON candy_ledger(user_id, motivo, created_at)`);
+    },
+    desce: db => {
+      db.exec(`DELETE FROM candy_ledger WHERE motivo = 'liga'`);
+      db.exec(`
+        CREATE TABLE candy_ledger_velho (
+          id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL REFERENCES users(id),
+          species_id INTEGER NOT NULL, delta INTEGER NOT NULL CHECK (delta != 0),
+          motivo TEXT NOT NULL CHECK (motivo IN ('aposta', 'resgate', 'soltar', 'uso', 'pve')),
+          idem_key TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL)`);
+      db.exec(`INSERT INTO candy_ledger_velho SELECT * FROM candy_ledger`);
+      db.exec(`DROP TABLE candy_ledger`);
+      db.exec(`ALTER TABLE candy_ledger_velho RENAME TO candy_ledger`);
+      db.exec(`CREATE INDEX candy_ledger_user ON candy_ledger(user_id, motivo, created_at)`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

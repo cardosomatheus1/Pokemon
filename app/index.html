@@ -1492,15 +1492,50 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .lePts.zero{color:var(--dim);background:none;border-style:dashed;border-color:var(--line);font-weight:500}
 @media (max-width:1100px){
   .lePainel.leComPontos{grid-template-columns:minmax(150px,210px) minmax(0,1fr)}
-  .leComPontos .lePontos{grid-column:1/-1;display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);gap:6px 16px;align-items:start}
-  .leComPontos .lePtTopo{grid-row:span 2;flex-direction:column;align-items:flex-start}
-  .leComPontos .lePtRotIns,.leComPontos .lePtInsignias{grid-column:3}
+  /* Duas colunas CORRIDAS, e não uma grade: o cartão muda de filhos (com e
+     sem insígnia, com e sem extrato), e a grade por posição se desarranjava. */
+  .leComPontos .lePontos{grid-column:1/-1;display:block;column-count:2;column-gap:22px}
+  .leComPontos .lePontos>*{break-inside:avoid;margin-bottom:7px}
+  .leComPontos .lePontos>.lePtRotIns{break-after:avoid}
 }
 @media (max-width:620px){
   .lePainel.leComPontos{grid-template-columns:1fr}
-  .leComPontos .lePontos{display:flex;align-items:stretch}
-  .leComPontos .lePtTopo{flex-direction:row;align-items:center}
+  .leComPontos .lePontos{display:flex;align-items:stretch;column-count:auto}
+  .leComPontos .lePontos>*{margin-bottom:0}
 }
+/* ST-11.7c · A LOJA DA LIGA. Na cor da moeda (violeta), uma faixa de três
+   prateleiras: o ícone do item grande, o que se leva, o limite da temporada,
+   e o preço NO botão — o número que se paga é o que se aperta. */
+.leLoja{--lp:168,132,255;padding:12px 14px;border-radius:16px;border:1px solid rgba(var(--lp),.45);background:linear-gradient(180deg,rgba(var(--lp),.08),transparent 70%),var(--bg2)}
+.leLjTopo{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-bottom:10px}.leLjTopo .leRot{margin:0;color:rgb(var(--lp))}
+.leLjSaldo{display:flex;align-items:center;gap:6px;font-family:var(--px);font-size:.95rem;color:#fff}
+.leLjNota{font-size:.68rem;color:#b3bdd3}
+.leLjItens{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:start}
+.leLjItem{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;gap:6px 10px;align-items:center;padding:10px;border-radius:12px;
+  border:1px solid var(--line);background:rgba(255,255,255,.03)}
+.leLjItem.esgotado{opacity:.6}
+.leLjIcone{grid-row:span 2;display:block;width:64px;height:64px;border-radius:12px;background-color:rgba(var(--lp),.12);box-shadow:0 0 0 1px rgba(var(--lp),.3) inset;filter:drop-shadow(0 3px 0 rgba(0,0,0,.35))}
+/* O retrato estático tem muita borda vazia (a espécie pequena some no quadro):
+   ele entra ampliado e a caixa corta a sobra. */
+.leLjDoce{position:relative;display:grid;place-items:center;overflow:hidden}
+.leLjSprite{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:104px;height:104px;max-width:none;image-rendering:pixelated}
+.leLjDoce i{z-index:1}
+/* O doce: um losango rosa no canto do retrato da linha — é doce DELA. */
+.leLjDoce i{position:absolute;right:3px;bottom:3px;width:16px;height:16px;transform:rotate(45deg);border-radius:4px;background:linear-gradient(135deg,#ffd1ec,#ff6fb5);box-shadow:0 0 6px rgba(255,111,181,.8)}
+.leLjTexto{display:flex;flex-direction:column;gap:2px;min-width:0}
+.leLjTexto b{font-size:.84rem;color:var(--txt)}.leLjTexto>span{font-size:.68rem;color:#b3bdd3}
+.leLjTexto>.leLjEfeito{color:rgb(var(--lp));font-size:.68rem}
+.leLjLinha{display:flex;align-items:center;gap:6px;font-size:.68rem;color:#b3bdd3;margin-top:2px}
+.leLjLinha select{font:inherit;font-size:.72rem;color:var(--txt);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:2px 6px;max-width:130px}
+.leLoja .leLjComprar{flex:none;justify-self:start;padding:6px 14px;font-family:var(--px);font-size:.72rem;color:#fff;border-color:rgba(var(--lp),.9);background:linear-gradient(180deg,rgba(var(--lp),.75),rgba(var(--lp),.45));box-shadow:0 0 12px rgba(var(--lp),.35)}
+.leLoja .leLjComprar:disabled{color:var(--dim);background:none;border-color:var(--line);box-shadow:none}
+.leLjMotivo{grid-column:1/-1;font-style:normal;font-size:.64rem;color:#ffb547}
+.leLjAviso{margin:10px 0 0;font-size:.78rem;padding:6px 10px;border-radius:8px}
+.leLjItem .leLjAviso{grid-column:1/-1;margin:2px 0 0;font-size:.72rem}
+.leLjAviso.ok{color:rgb(var(--okRGB));background:rgba(var(--okRGB),.1)}.leLjAviso.mal{color:rgb(var(--perigoRGB));background:rgba(var(--perigoRGB),.1)}
+.leLjRegra{margin:8px 0 0;font-size:.66rem;color:#b3bdd3}
+@media (max-width:1100px){ .leLjItens{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:620px){ .leLjItens{grid-template-columns:1fr} }
 /* A escada: sete degraus, o meu aceso na cor do tier, os de baixo já vencidos. */
 .leEscada{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:2px;width:100%;max-width:150px}
 .leEscada li{height:14px;border-radius:3px;background:rgba(255,255,255,.06);position:relative}

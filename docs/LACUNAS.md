@@ -8883,3 +8883,20 @@ Não cabe na 11.7b porque é arranjo do palco, e não dos pontos. O que destrava
 o banner do fim do palco carregar o selo E os pontos da partida (hoje só o
 selo), ou o palco abrir DEPOIS da linha do resultado. A trava é o teste que o
 bloco dono escrever sobre o banner; hoje nenhum teste afirma o arranjo.
+
+### L-213 — a loja da Liga ainda não vende cosmético
+
+**Registrada em:** 30/09/2026, na ST-11.7c. **Bloco dono:** ST-11.7d
+(proposta aqui: a prateleira de cosmético da Liga — molduras e banners de
+temporada por League Points, com a arte NOSSA, pela `cosmetic_ownership`).
+**Estado:** aberto.
+
+O §9.11 põe cosmético em primeiro lugar na loja, e a primeira prateleira
+(11.7c) tem só bolas e doce, porque eles já tinham onde cair no servidor. A
+peça de cosmético da Liga precisa de arte própria — vender uma peça da
+boutique também por pontos criaria um câmbio implícito entre League Points e
+PokéCash, que o §10.12 proíbe na forma direta. Não cabe na 11.7c porque é arte
+nova, e a regra de toda peça visual pede o passo inteiro (olhar na proporção
+real, nomear a diferença). O que destrava: a arte das peças (molduras em CSS,
+como `aurora`/`pulso`, dão para começar sem arquivo). A trava é o teste do
+catálogo da loja, que hoje afirma três itens.

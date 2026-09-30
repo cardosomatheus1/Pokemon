@@ -69,7 +69,7 @@ async function capturar(nome, sessao, { clicar, larguras = LARGURAS, replay = nu
     await pg.waitForFunction(() => !document.querySelector('#boot') && document.querySelector('.nav[data-view="viewTreino"]'), null, { timeout: 90000 });
     await pg.$eval('.nav[data-view="viewTreino"]', el => el.click());
     await pg.waitForFunction(() => document.querySelector('#ligaEqCorpo .leHome'), null, { timeout: 20000 });
-    if (clicar) { await pg.click(clicar); await pg.waitForFunction(() => document.querySelector('#ligaEqCorpo .leResultado, #ligaEqCorpo .leErro'), null, { timeout: 30000 }); }
+    if (clicar) { await pg.click(clicar); await pg.waitForFunction(() => document.querySelector('#ligaEqCorpo .leResultado, #ligaEqCorpo .leErro, #ligaEqCorpo .leLjAviso'), null, { timeout: 30000 }); }
     /* O replay: abre a primeira partida, espera a prova da semente e captura no meio
        (o palco) e no fim (o resultado, depois de "pular"). */
     if (replay) {
@@ -104,6 +104,18 @@ for (const w of LARGURAS) {
   /* Fora da faixa de rating depois de capturada: a próxima Novata não a pareia, e cai no bot. */
   srv.db.prepare(`INSERT INTO liga_mmr (user_id, rating, partidas, atualizado_em) VALUES (?, 3000, 1, ?)
                   ON CONFLICT (user_id) DO UPDATE SET rating = 3000`).run(nova.id, agora);
+}
+/* A LOJA (ST-11.7c) com saldo para comprar: um prêmio de temporada gravado à
+   mão (como a insígnia — a primeira virada de verdade ainda não aconteceu), e
+   a captura depois de comprar a primeira bola. Uma conta por largura, para o
+   limite não somar as compras das larguras anteriores. */
+for (const w of LARGURAS) {
+  const x = await conta(`Loja${w}`);
+  time(x.id, [[6, 32], [9, 30], [3, 31], [25, 28], [143, 30], [94, 29]]);
+  const seu = publicarTime(srv.db, { userId: x.id, preset: 'aggressive', agora: agora - 30 * H });
+  criarPartida(srv.db, { userId: x.id, meu: seu.id, adversario: dela.id, chaveIdem: `olhar-loja-${w}`, agora: agora - 26 * H });
+  srv.db.prepare(`INSERT INTO liga_pontos (user_id, temporada, dia, tipo, delta, ref, idem, criado_em) VALUES (?, 1, 0, 'premio', 175, 'olhar', ?, ?)`).run(x.id, `olhar-premio-${w}`, agora);
+  await capturar('loja', x.sessao, { clicar: '[data-le-comprar="bola:great"]', larguras: [w] });
 }
 await capturar('semtime', vazio.sessao);
 await capturar('replaymeio', eu.sessao, { replay: 'meio' });

@@ -13,7 +13,8 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { dexImg } from './sprites.mjs';
 import { api } from './api.mjs';
-import { homeDaLiga, replayNaTela, rankingNaTela, pontosNaTela } from './liga-equipe-dados.mjs';
+import { homeDaLiga, replayNaTela, rankingNaTela, pontosNaTela, lojaNaTela } from './liga-equipe-dados.mjs';
+import { estiloItem } from './itens-icone.mjs';
 import { linhaDoLog, provaDaPartida } from './partida-dados.mjs';
 import { montarPalco } from './liga-palco.mjs';
 import { sortearArena } from './arenas-dados.mjs';
@@ -24,18 +25,19 @@ const novaChave = () => `le-${Date.now().toString(36)}-${Math.random().toString(
 const lerPreset = () => { try { return localStorage.getItem('ar_treino_preset'); } catch { return null; } };
 const gravarPreset = p => { try { localStorage.setItem('ar_treino_preset', p); } catch { /* privativo: vale só nesta visita */ } };
 
-let dados = null, acabou = null, ocupado = false, chaveDaBusca = null, erro = null, ultimo = null, assistir = null, ranking = null, temporadaVista = null, pontos = null;
+let dados = null, acabou = null, ocupado = false, chaveDaBusca = null, erro = null, ultimo = null, assistir = null, ranking = null, temporadaVista = null, pontos = null, loja = null, linhaDoce = null, chaveDaCompra = null, avisoLoja = null;
 
 export async function renderLigaEquipe() {
   const alvo = $('#ligaEqCorpo');
   if (!alvo) return;
   const conta = api.temSessao();
   if (conta) {
-    const [r, rk, pt] = await Promise.all([api.get('/api/equipe/liga'), api.get(`/api/equipe/ranking${temporadaVista ? `?temporada=${temporadaVista}` : ''}`),
-                                           api.get('/api/equipe/pontos')]);
+    const [r, rk, pt, lj] = await Promise.all([api.get('/api/equipe/liga'), api.get(`/api/equipe/ranking${temporadaVista ? `?temporada=${temporadaVista}` : ''}`),
+                                               api.get('/api/equipe/pontos'), api.get('/api/equipe/loja')]);
     dados = r.ok ? r.corpo : null;
     ranking = rk.ok ? rk.corpo : null;
     pontos = pt.ok ? pt.corpo : null;
+    loja = lj.ok ? lj.corpo : null;
   }
   ultimo = homeDaLiga({ conta, dados, pack: PACK, agora: Date.now(), preset: lerPreset(), acabou });
   pintar(alvo, ultimo);
@@ -65,7 +67,7 @@ function pintar(alvo, h) {
   alvo.innerHTML = `<div class="leHome le-${h.estado}">
     ${barra}${tier ? '' : passos}
     <div class="lePainel${tier ? '' : ' leSoCentro'}${tier && pontos ? ' leComPontos' : ''}">${tier}<div class="leCentro">${time}${presets}${h.aviso ? `<p class="leAviso">${h.titulo ? `<strong>${esc(h.titulo)}</strong>` : ''}${esc(h.aviso)}</p>` : ''}${erro ? `<p class="leErro">${esc(erro)}</p>` : ''}${botoes}</div>${tier ? pintarPontos(pontosNaTela(pontos, h.tier.nome)) : ''}</div>
-    ${tier ? passos : ''}<div id="leReplay" class="pveArea" hidden></div>${resultado}<div class="leBaixo">${recentes}${h.tier ? pintarRanking(rankingNaTela(ranking)) : ''}</div></div>`;
+    ${tier ? passos : ''}${tier ? pintarLoja(lojaVista()) : ''}<div id="leReplay" class="pveArea" hidden></div>${resultado}<div class="leBaixo">${recentes}${h.tier ? pintarRanking(rankingNaTela(ranking)) : ''}</div></div>`;
 }
 
 /* OS LEAGUE POINTS (ST-11.7b): quanto tenho, como ganho, o que a virada faz — e as insígnias. */
@@ -81,6 +83,34 @@ function pintarPontos(k) {
     ${k.extrato.length ? `<ul class="lePtExtrato">${k.extrato.map(l => `<li class="${l.classe}"><span>${esc(l.texto)}</span><b>${esc(l.valor)}</b></li>`).join('')}</ul>` : `<p class="lePtNota">${esc(k.semExtrato)}</p>`}
     <p class="lePtVirada">${esc(k.virada)}<span class="lePtUso">${esc(k.uso)}</span></p>
     <span class="leRot lePtRotIns">insígnias de temporada</span>${insignias}</section>`;
+}
+
+/* O nome da linha como o jogo o exibe: o servidor manda o do pack. */
+const lojaVista = () => lojaNaTela(loja && { ...loja, linhas: (loja.linhas ?? []).map(x => ({ ...x, nome: nomeExibido(x.nome) })) }, linhaDoce);
+
+/* A LOJA DA LIGA (ST-11.7c): três itens, o que se leva, o preço e o limite da temporada. */
+function pintarLoja(k) {
+  if (!k) return '';
+  const icone = i => i.tipo === 'bola' ? `<i class="leLjIcone" style="${estiloItem(i.alvo, 64) ?? ''}"></i>`
+    : i.alvo != null ? `<span class="leLjIcone leLjDoce">${dexImg(i.alvo, nomeDo(i.alvo), 'class="leLjSprite"')}<i></i></span>` : '<span class="leLjIcone leLjDoce"><i></i></span>';
+  const escolha = k.linhas.length ? `<label class="leLjLinha">doce de <select data-le-linha>${k.linhas.map(x => `<option value="${x.valor}"${x.on ? ' selected' : ''}>${esc(x.nome)}</option>`).join('')}</select></label>` : '';
+  return `<section class="leLoja"><div class="leLjTopo"><span class="leRot">${esc(k.titulo)}</span><span class="leLjSaldo"><i class="lePtMoeda" aria-hidden="true"></i>${esc(k.saldo)}</span><span class="leLjNota">${esc(k.nota)}</span></div>
+    <ul class="leLjItens">${k.itens.map(i => `<li class="leLjItem${i.esgotado ? ' esgotado' : ''}">${icone(i)}
+      <div class="leLjTexto"><b>${esc(i.nome)}</b><span class="leLjEfeito">${esc(i.efeito)}</span><span>${esc(i.limite)}</span>${i.tipo === 'doce' ? escolha : ''}</div>
+      <button class="btn leLjComprar" data-le-comprar="${esc(i.id)}"${i.habilitado && !ocupado ? '' : ' disabled'}>${esc(i.botao)}</button>
+      ${i.motivo ? `<em class="leLjMotivo">${esc(i.motivo)}</em>` : ''}
+      ${avisoLoja?.item === i.id ? `<p class="leLjAviso ${avisoLoja.ok ? 'ok' : 'mal'}">${esc(avisoLoja.ok ? i.feito : avisoLoja.texto)}</p>` : ''}</li>`).join('')}</ul>
+    ${avisoLoja && !k.itens.some(i => i.id === avisoLoja.item) ? `<p class="leLjAviso ${avisoLoja.ok ? 'ok' : 'mal'}">${esc(avisoLoja.texto)}</p>` : ''}<p class="leLjRegra">${esc(k.regra)}</p></section>`;
+}
+
+async function comprar(id) {
+  const item = lojaVista()?.itens.find(i => i.id === id);
+  if (!item) return;
+  chaveDaCompra ??= novaChave();
+  const r = await api.post('/api/equipe/loja/comprar', { item: id, linha: item.tipo === 'doce' ? item.alvo : null, chaveIdem: chaveDaCompra });
+  if (r.indisponivel) { avisoLoja = { item: id, ok: false, texto: 'a resposta não chegou — comprar de novo reenvia o MESMO pedido, sem cobrar duas vezes' }; return; }
+  chaveDaCompra = null;
+  avisoLoja = r.ok ? { item: id, ok: true, texto: item.feito } : { item: id, ok: false, texto: r.corpo?.erro ?? 'a compra foi recusada — nada foi cobrado' };
 }
 
 /* O RANKING (ST-11.6c): a tabela da Liga de times, e só dela. */
@@ -129,6 +159,8 @@ document.addEventListener('liga-equipe:abrir', () => { acabou = null; renderLiga
 document.addEventListener('click', async ev => {
   const aba = ev.target.closest('[data-le-temporada]');
   if (aba) { temporadaVista = aba.dataset.leTemporada ? Number(aba.dataset.leTemporada) : null; renderLigaEquipe(); return; }
+  const cp = ev.target.closest('[data-le-comprar]');
+  if (cp) { if (cp.disabled || ocupado) return; ocupado = true; try { await comprar(cp.dataset.leComprar); } finally { ocupado = false; renderLigaEquipe(); } return; }
   const rp = ev.target.closest('[data-le-replay]');
   if (rp) { verReplay(rp.dataset.leReplay); return; }
   const p = ev.target.closest('[data-le-preset]');
@@ -144,4 +176,9 @@ document.addEventListener('click', async ev => {
     /* A partida que a busca acabou de jogar ABRE no palco, como a luta da aposta abre depois do sino. */
     if (assistir) { const id = assistir; assistir = null; verReplay(id); }
   }
+});
+
+document.addEventListener('change', ev => {
+  const sel = ev.target.closest?.('[data-le-linha]');
+  if (sel) { linhaDoce = Number(sel.value); avisoLoja = null; renderLigaEquipe(); }
 });
