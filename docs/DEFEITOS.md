@@ -6943,8 +6943,9 @@ o aviso e a run concordam de 10 a 30 encontros feitos. E o cartão diz de quem �
 ## D-129 — o lance do aparelho ignora a semente da colheita
 
 **Achado em:** 28/09/2026, na ST-13.6, ao medir a banda de captura (a medição
-saía diferente a cada execução). **Bloco dono:** ST-13.5 (o cliente com conta
-passa a lançar pelo servidor; o lance local é tocado junto). **Estado:**
+saía diferente a cada execução). **Bloco dono:** ~~ST-13.5~~ → **ST-14.1**
+(30/09: a 13.5 fechou levando o lance COM CONTA ao servidor; o lance local
+ficou, e a ST-14.1 — o recibo do lance — mexe exatamente nele). **Estado:**
 aberto.
 
 **Causa.** `lancarBola` (`idle-lance.mjs`) deriva a raiz do lance de
@@ -7065,3 +7066,39 @@ defeito plantado guardava a volta do bicho, e ele nasce aqui: S2004 (a fuga
 não devolve a criatura) — a espera tem prazo, e o bicho que nunca volta estoura
 o prazo e reprova. É mutante de navegador: a decisão mora num `animation` do
 CSS da cena.
+
+## D-135 — o bônus de cadastro nasce em `transferivel`, e a Spec diz PC-B
+
+**Achado em:** 30/09/2026, ao incorporar a E14 (DEC-E14-001, revisão 3.0 da
+spec do dono). **Bloco dono:** ST-14.0B (a carteira para P2P). **Estado:**
+aberto.
+
+**Causa.** O cadastro credita `WELCOME_GRANT` no bolso `transferivel`
+(`server/rotas.mjs:249`), e o aparelho faz o mesmo (`app/modules/banco.mjs`,
+no reinício e no reset). A Spec §0 lista o *welcome grant* entre as ORIGENS de
+PC-B ("PokéCash Bônus / intransferível"), e a DEC-E14-001 reafirma: o bônus
+de entrada é PC-B desde a concessão. O teste de `test/rotas.mjs` afirmava o
+bolso transferível **de propósito** — a razão escrita era "nascer em `bonus`
+faria todo ganho da conta nova voltar como bônus, uma economia diferente da
+que o Estudo mediu, sem ninguém ter decidido isso". Agora alguém decidiu.
+
+**Medição.** Conta nova pelo `POST /api/auth/cadastrar`:
+`saldos.transferivel = SALDO_INICIAL`, `saldos.bonus = 0`.
+
+**Por que importa já, e não só na E14.** O stake da Liga está LIGADO (DEC-16):
+o payout herda o bolso da stake, então o bônus de boas-vindas entra e sai da
+Liga como se fosse PC-T. Enquanto não houver P2P, o efeito é de
+classificação, não de dinheiro — mas é a classificação que a E14 inteira usa
+para decidir o que pode ser trocado.
+
+**Por que não conserto aqui.** O conserto é a ST-14.0B inteira: mover o grant
+para `bonus` sem mexer no ledger histórico (reclassificação auditada ou
+inelegibilidade das contas antigas), preservar a composição nas apostas
+mistas, e a pergunta de produto que ele abre — sem fonte de PC-T, o jogador
+novo não tem saldo transferível nenhum (a decisão "PC-T elegível inicial" da
+spec E14 §16). Consertar o bolso sem essa decisão seria o conserto pela
+metade.
+
+**Teste que trava:** `rotas` — "D-135 · (afirma o defeito) a conta nova nasce
+com o bônus de cadastro em transferível". Vira vermelho quando a ST-14.0B
+corrigir, e aí a afirmação se inverte.

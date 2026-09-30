@@ -58,6 +58,11 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            · 1.28 FECHADO (30/09): o HISTÓRICO das expedições e das runs
            (L-141, L-109) — o quadro nas duas abas do farm; com conta o
            servidor o monta das colheitas gravadas. Suíte 2876/2876, 2/2
+           · E14 NO PLANO (30/09): o dono mandou a spec e as stories de
+           Shiny, Trading & Player Market — em docs/e14/, encaixadas na
+           Parte 3 do PLANO e na linha 12 da fila. A Spec §21 ("não fazer
+           trading/marketplace") foi relida: construir sim, ligar é a DEC-21.
+           Achado: o bônus de cadastro nasce em transferível (D-135)
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho
            do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta
@@ -68,7 +73,10 @@ com o DONO decididas em 30/09: DEC-16 (o stake da Liga LIGADO, moeda
            simulada), DEC-17 (sem migração do save: a conta começa do zero
            no banco — ST-13.4/13.5 destravadas), DEC-18 (o piloto só com o
            jogo 100%), DEC-19 (os sinais de aparelho e rede — feita, ST-13.8).
-           Nada pendente com o dono agora
+           PENDENTE com o dono: DEC-21 (ligar troca/Market da E14 em moeda
+           simulada, depois do gate C) e as decisões da spec E14 §16 (taxa
+           shiny, fonte de PC-T, orçamento da Master Ball). Nenhuma trava a
+           onda 0 nem a A
 ```
 
 ### O RESTO DA SPEC VIROU STORIES — E12, E9, E10, E13, E11 (26/09)

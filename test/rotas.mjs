@@ -170,7 +170,12 @@ export async function suite() {
      O "quanto" vem de `engine/carteira.mjs`, e não de um número escrito aqui:
      copiar o valor para dentro do teste deixaria os dois concordando entre si e
      discordando da fonte, que é como o D-007 nasceu. */
-  s.teste('conta nova nasce com o saldo inicial do motor, em transferível', async () => {
+  /* D-135 · AFIRMA O DEFEITO, de propósito (30/09). A Spec §0 e a DEC-E14-001
+     dizem que o bônus de cadastro é PC-B; o código o credita em `transferivel`.
+     O bloco dono é a ST-14.0B: quando ela corrigir, este teste fica vermelho e
+     a afirmação do bolso se inverte (`bonus` = SALDO_INICIAL, `transferivel` = 0).
+     O "quanto" continua valendo depois do conserto. */
+  s.teste('D-135 · (afirma o defeito) a conta nova nasce com o bônus de cadastro em transferível', async () => {
     const { SALDO_INICIAL } = await import('../engine/carteira.mjs');
     await comServico(async ({ porta }) => {
       const u = await conta(porta);

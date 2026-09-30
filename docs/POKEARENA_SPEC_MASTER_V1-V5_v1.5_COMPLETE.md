@@ -3875,8 +3875,8 @@ Arena anterior intacta.
 Para controlar escopo:
 
 - multiplayer PvP real-time;
-- trading de Pokémon;
-- marketplace/RMT oficial antes de gate jurídico;
+- trading de Pokémon; *(30/09 — E14: a troca direta e o Market de jogadores entram como CONSTRUÇÃO, com `p2p_transfer_enabled` e as bandeiras da E14 DESLIGADAS; ligar é decisão do dono (DEC-21), e o que envolver PC-T de verdade segue na DEC-02, no §0.5.1 e no §25.1. Contrato: `docs/e14/SPEC_E14_PLAYER_ECONOMY_MARKET.md` e §31.)*
+- marketplace/RMT oficial antes de gate jurídico; *(30/09: continua valendo para LIGAR — o Market da E14 é construído, não publicado)*
 - breeding complexo;
 - IV/EV/Natures completos; *(ST-10.2, 26/09 — C4: os seis ocultos e a natureza entram SÓ na Trainer Battle Engine, com peso limitado e declarado: ±5% cada no stat, contra os ±10% do gênero; EV não existe. A Arena continua normalizada e não os lê — P4. Ver `engine/treino-batalha.mjs`, `REGRAS`.)*
 - centenas de equipamentos;
@@ -4473,3 +4473,30 @@ Fecha a lacuna L-013. Alinha a Spec às decisões de profundidade aceitas e ao c
 2. **Limiares numéricos de risco** (§28.6, lacuna L-011).
 3. **Política de publicidade e afiliados** (lacuna L-010).
 4. **Execução da troca de tema** (§0.3.1, lacuna L-008).
+
+
+---
+
+# 31. E14 — Shiny, Trading & Player Market (30/09/2026)
+
+Contrato normativo: `docs/e14/SPEC_E14_PLAYER_ECONOMY_MARKET.md` (SPEC-E14-001,
+revisão 3.0, 28/09/2026, do dono). Execução: `docs/e14/E14_IMPLEMENTATION_STORIES.md`;
+encaixe e ordem no `PLANO_DE_IMPLEMENTACAO.md` (Parte 3) e no `ROADMAP.md`.
+
+Este capítulo registra só o que a E14 muda NESTA Spec, para a regra "a Spec
+vence" continuar valendo:
+
+1. **§21 relido** (acima): trading e Market são construídos atrás de bandeiras
+   desligadas; ligar é decisão do dono; dinheiro real continua fora (DEC-02).
+2. **O bônus de cadastro é PC-B** — já estava no §0 ("Origem: welcome grant");
+   a DEC-E14-001 reafirma. O código que o credita em `transferivel` é o
+   defeito **D-135**, dono ST-14.0B.
+3. **Os princípios da spec E14 §3 valem como princípios desta Spec:** shiny é
+   da instância e não muda força, odds nem chance de captura; um encontro, uma
+   tentativa; todo ativo transferível tem origem verificável e revenda,
+   evolução, captura e crafting não lavam restrição; só PC-T elegível liquida
+   P2P; cosmético de progressão não pinta shiny falso; nenhuma bandeira E14
+   habilita pagamento real, saque ou conversão; posse de shiny não altera a
+   Arena de apostas (P4).
+4. **Fora do escopo, e continua fora:** saque, moeda fiduciária, NFT, breeding,
+   aluguel, empréstimo, venda de conta, leilão, preço oficial de criatura.

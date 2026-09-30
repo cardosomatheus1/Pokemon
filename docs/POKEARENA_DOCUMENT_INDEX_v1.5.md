@@ -16,6 +16,7 @@
 > | `docs/DEFEITOS.md` · `docs/LACUNAS.md` | o que está quebrado · o que falta, com bloco dono | toda ficha nomeia dono |
 > | `docs/revisao-2026-09-24/` | a Revisão 2.0 externa e a CONFERÊNCIA dela | referência; não substitui a Spec |
 > | `docs/historico/` | as filas e estados que já governaram | arquivo morto (ST-6.1), com LEIA-ME |
+> | `docs/e14/` | o contrato da E14 (Shiny, Trading & Player Market) e as stories dela, como o dono mandou em 30/09 | não guardam andamento; encaixe na Parte 3 do PLANO, conflito com a Spec resolvido no §21/§31 |
 >
 > **Economia:** `POKEARENA_ECONOMY_STUDY_v1.2`, `POKEARENA_UNIT_ECONOMICS_STUDY_v1.2`,
 > e desde a ST-3.3 o **mapa de emissão medido** em `test/fixtures/emissao-idle.json`.

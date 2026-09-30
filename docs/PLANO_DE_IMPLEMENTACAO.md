@@ -2365,3 +2365,113 @@ do servidor. Três partes:
   configurável depois, primeiro vamos fechar o jogo"*. Volta com o jogo fechado.
 - **Lembrete:** nomes de líderes de ginásio são IP; a DEC-01 cobre a fase
   privada, não a publicação (§0.3.1).
+
+---
+
+# PARTE 3 — E14: Shiny, Trading & Player Market (30/09/2026)
+
+> **Pedido do dono, 30/09:** mandou `SPEC_E14_PLAYER_ECONOMY_MARKET.md` e
+> `E14_IMPLEMENTATION_STORIES.md` (revisão 3.0, 28/09) com *"Acrescentar ao seu
+> plano de implementação"*. Os dois entraram no repositório **sem edição**, em
+> `docs/e14/` — são o contrato (o QUÊ e o COMO de cada story). Esta parte é o
+> ENCAIXE deles no plano: o que mudou desde 28/09, a ordem, e o que continua
+> com o dono. A fila continua sendo SÓ a do `ROADMAP.md` (GOV-01), e o estado
+> SÓ o do `RETOMAR.md`; os dois documentos da E14 não guardam andamento.
+>
+> **O que a E14 é, em uma frase:** a criatura passa a ser uma INSTÂNCIA com
+> origem verificável — shiny verdadeiro nasce do encontro do servidor, a
+> Master Ball garante a captura com emissão controlada, e depois ela pode ser
+> trocada entre jogadores e anunciada num Market de preço fixo, com taxas que
+> são queimadas e nenhum caminho que transforme bônus em saldo transferível.
+
+## O que mudou desde a revisão 3.0 (28/09), e o que isso muda nas stories
+
+A revisão auditou o commit `01071f4` (28/09). Desde então fecharam blocos que
+ela tratava como pendentes — a reconciliação vai aqui, e não nos documentos
+dela (que ficam como o dono os mandou):
+
+| a revisão diz (28/09) | hoje (30/09) | consequência |
+|---|---|---|
+| ST-13.4/13.5 são dependências PENDENTES da entrega A | ✅ **fechadas em 30/09** (13.5e: `IDLE_NA_CONTA` ligada) | a dependência externa da A está satisfeita |
+| a importação do save local "continua no bloco ST-13.4" (§4.1, ST-14.0D) | **DEC-17: não há importação** — a conta começa do zero, o save antigo não sobe | a parte de importação/`legacy_unverified` da ST-14.0D **sai de escopo**; o que sobra dela é o incremento E14 no cliente (shiny, origem, locks, recibos) |
+| "D-129 do lance local pertence à ST-13.5" | D-129 continua **aberto** em `DEFEITOS.md` | fica com dono **ST-14.1** (o recibo do lance), que já mexe exatamente ali |
+| o bônus de cadastro em `transferivel` (DEC-E14-001) | confirmado no código: `server/rotas.mjs:249` e o aparelho em `app/modules/banco.mjs:109,121,213` | registrado como **D-135**, com teste que AFIRMA o defeito (vira vermelho quando a ST-14.0B corrigir) |
+| a Spec §21 lista "trading de Pokémon" e "marketplace/RMT oficial antes de gate jurídico" em **NÃO FAZER AGORA** | conflito real — a Spec vence, e o dono mandou construir | a Spec §21 foi **corrigida neste commit** (ver abaixo), no mesmo critério do E12: **construir não é ligar** |
+| o `WELCOME_GRANT` como PC-B | a Spec §0 já dizia PC-B ("Origem: welcome grant") | nada a corrigir na Spec: o defeito é só do código |
+
+**A Spec §21, e por que a correção é esta.** O precedente é o do E12 (26/09):
+*"a consulta do §0.5.1 continua obrigatória ANTES DE PUBLICAR, e não antes de
+CONSTRUIR"*. A E14 cabe nele sem esticar: a própria spec E14 (§2, §3.7) exige
+que o P2P fique atrás de `p2p_transfer_enabled` **e** do `CHECKPOINT_25_1`, e
+proíbe saque, moeda fiduciária e conversão implícita. Então:
+
+```text
+CONSTRUIR    entrega 0, A, B, C e D — com as bandeiras de troca e Market DESLIGADAS
+LIGAR        troca/Market para jogadores = decisão do dono (DEC-21, abaixo), e o
+             que envolver PC-T de verdade continua na DEC-02 + §0.5.1 + §25.1
+NUNCA AQUI   saque, cash-out, Exchange, moeda real, venda de conta
+```
+
+## A ordem, e por que é esta
+
+A ordem da revisão 3.0 (§2 das stories) fica, com um ajuste de prioridade:
+
+| onda | stories | o que entrega | por que nesta posição |
+|---|---|---|---|
+| **0** | 0A → **0B** → 0C e 2 → 5 | o contrato econômico escrito; a carteira que recusa bônus no P2P e **o bônus de cadastro em PC-B (D-135)**; lotes com proveniência; a instância estendida (shiny, OT, histórico, baixa lógica no lugar do DELETE da soltura) | **integridade de economia vem antes de superfície nova** (critério 2 do ROADMAP). E o D-135 importa JÁ: o stake da Liga está LIGADO (DEC-16) — hoje o bônus de boas-vindas entra na Liga como se fosse PC-T |
+| **A** | 1 → 4 → 0D → 3; gate A (15) | **shiny verdadeiro** no encontro (mesma chance de captura, não rerrola), recibo recuperável do lance, **Master Ball** com orçamento de emissão, o cliente conectado mostrando shiny/origem, o prestígio legado como aura | é jogo que o jogador VÊ, e a base de tudo o que vem depois (o que se troca é a instância com origem). Entra no "100%" da DEC-18 (recomendação R16) |
+| **B** | 6 → 8, 14 e 16 → 7; gate B | reservas e escrow, taxas queimadas, antifraude de troca, expiração/restart/conciliação, e a **troca direta** com revisão e confirmação dupla | construída com `p2p_transfer_enabled` desligada; ligar é a DEC-21 |
+| **C** | 9 → 10 e 12 → 13; gate C | o **Market de preço fixo** (uma criatura ou um lote fechado), busca, histórico de preço sem inventar referência, a tela | idem |
+| **D** | 11A → 11B | buy orders e preenchimento parcial | só com o C estável e necessidade demonstrada por dados (a própria spec diz isso); **fica fora do "100%"** (R16) |
+
+## As fichas
+
+O conteúdo integral de cada story (Alterar/Criar, Fazer, Aceite, Testar,
+Sabotar, Portões) está em `docs/e14/E14_IMPLEMENTATION_STORIES.md`; o contrato
+normativo, em `docs/e14/SPEC_E14_PLAYER_ECONOMY_MARKET.md`. Abaixo, o índice
+com o que muda no encaixe — **a ficha que vale é a de lá**, com as ressalvas
+desta tabela.
+
+| story | porte | onda | depende de | ressalva do encaixe (30/09) |
+|---|---|---|---|---|
+| **ST-14.0A** · contrato econômico, fontes e integração documental | M | 0 | — | **parcial neste commit:** docs no repositório, Spec §21, ROADMAP, RETOMAR, índice, D-135, L-221. Falta a MATRIZ de produtores/consumidores de dinheiro, itens e criaturas (o item 2 da ficha), que abre a onda 0 |
+| **ST-14.0B** · a carteira para P2P e o bônus em PC-B | G | 0 | 0A | fecha o **D-135**; a sabotagem "restaurar `WELCOME_GRANT` em `transferivel`" é obrigatória. O aparelho (`app/modules/banco.mjs`) é sandbox, mas a ficha pede que nenhum caminho local promova bônus a saldo conectado |
+| **ST-14.0C** · inventário por lote e proveniência | G | 0 | 0A, 0B | — |
+| **ST-14.2** · a instância existente evolui | M | 0 | 0A, 0B | a baixa lógica da soltura muda `soltarNaConta` (ST-13.3a): regressão de doce e caixa obrigatória |
+| **ST-14.5** · política única de negociabilidade | M | 0 | 0C, 2 | — |
+| **ST-14.1** · shiny e recibo recuperável | G | A | 0B, 0C, 2, 5 | dona também do **D-129** (o lance do aparelho ignora a semente da colheita) |
+| **ST-14.4** · Master Ball e emissão controlada | M | A | 0C, 1, 5 | nome e arte por pack (`content/`), regra por capacidade `guaranteed_capture` |
+| **ST-14.0D** · E14 no cliente conectado | G→M | A | 1, 4, 5 | **sem importação** (DEC-17): a porte cai; sobra o incremento no `idle-conta`/`idle-acoes` e o provider sem escrita local na conta |
+| **ST-14.3** · prestígio legado e shiny real | M | A | 2, 1, 0D | Q5 nas quatro larguras + Q7 (é tela); DEC-20 não se aplica — não é o mapa |
+| **ST-14.6** · reservas e escrow | G | B | 0B, 0C, 0D, 5 | — |
+| **ST-14.8** · taxas, burn e recibos | M | B | 0B, 6 | as taxas da spec §11 são baseline de piloto, em configuração versionada |
+| **ST-14.14** · proteção e antifraude antes de negociar | M | B | 0A, 0B, 5, 6 | corrige o `varrerSuspeitas` para contar pelo capturador original (hoje conta por `criaturas.user_id`) |
+| **ST-14.16** · expiração, restart e conciliação | M | B | 0B, 0C, 6, 14 | — |
+| **ST-14.7** · a troca com revisão e confirmação dupla | G | B | 6, 8, 14, 16 | `/api/idle/trocar` (troca de posição no time) **não muda de significado** |
+| **ST-14.9** · anúncios de lote fechado | G | C | 6, 8, 14, 16, 7 | namespace `player_market_*` e `/api/player-market/*`; o `server/mercado.mjs` é do bolo (E12) e não se toca |
+| **ST-14.10** · busca com dados reais | M | C | 9 | — |
+| **ST-14.12** · histórico de preços sem inventar referência | M | C | 9, 14, 16 | — |
+| **ST-14.13** · a tela do Market | M | C | 9, 10, 12 | Q5 + Q7 com a barra dos 3 segundos da ficha |
+| **ST-14.11A** · buy orders de itens e fills parciais | G | D | gate C | fora do "100%" (R16) |
+| **ST-14.11B** · buy orders de criaturas por critério | M | D | 11A + dados | idem |
+| **ST-14.15** · telemetria, simulador e gates | M | por onda | — | roda ao fim de CADA onda, não no fim de tudo |
+
+## Recomendações que valem como padrão até o dono dizer o contrário
+
+| id | recomendação |
+|---|---|
+| R16 | **o "100%" da DEC-18 inclui as ondas 0, A, B e C** (construídas, com as bandeiras de troca/Market desligadas até a DEC-21); a **D fica fora** — a própria spec a condiciona a dados de liquidez, que só o piloto produz |
+| R17 | a **onda 0 entra na frente** do resto da fila de desenvolvimento: o D-135 põe bônus de cadastro na Liga ligada como PC-T |
+| R18 | a **taxa shiny** do piloto é a da tabela da spec §16 quando o dono não fixar outra; enquanto isso, a ST-14.1 lê a taxa de configuração por pack, testada nos limiares 0/1 |
+
+## Decisões que ficam com o dono (entram na lista do relatório até ele decidir)
+
+- **DEC-21 · ligar a troca e o Market entre os amigos do piloto, em moeda
+  simulada** — como a DEC-16 fez com o stake da Liga. Sem ela, B e C são
+  construídas e testadas, e ficam desligadas. *Recomendação:* ligar só depois
+  do gate C, com o saldo transferível vindo de fonte finita e auditada (a
+  decisão "PC-T elegível inicial" da spec §16). Não toca dinheiro real.
+- **As decisões da spec §16** que não são minhas: taxa shiny, a fonte inicial
+  de PC-T elegível, o orçamento da Master Ball, limites/cooldown/taxas finais.
+  A exclusão do bônus de cadastro **já está decidida** (DEC-E14-001).
+- **DEC-02 continua** para qualquer dinheiro real — nada da E14 a antecipa.
