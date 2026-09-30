@@ -14,7 +14,7 @@ import { montarLutador, simular } from '../engine/treino-batalha.mjs';
 import { movesetDoRival, padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { treinador } from '../app/modules/treino-dados.mjs';
 import { correcaoDaLicao, aplicarCorrecao } from '../app/modules/jornada-correcao.mjs';
-import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, golpesLevados, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, rivaisDerrubados, setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, regioesDoMapa, REGIOES, pagamentoDoNo, fraseDoPagamento, DUAS_VOLTAS_A_PARTIR_DE, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO } from '../app/modules/jornada-dados.mjs';
+import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, golpesLevados, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, rivaisDerrubados, setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, regioesDoMapa, REGIOES, pagamentoDoNo, fraseDoPagamento, DUAS_VOLTAS_A_PARTIR_DE, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO, mostraNome, corDoNo, COR_DA_REGIAO } from '../app/modules/jornada-dados.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 const semComentario = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
@@ -129,7 +129,7 @@ export function suite() {
 
   s.teste('a tela: pinta o mapa, luta pela gravação e encena pelo caminho da 10.9', () => {
     const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
-    ok(/mapaDaJornada\(PACK, estado\.jornada\)/.test(tela), 'o mapa não é o da camada 0');
+    ok(/mapaDaJornada\(PACK, estado\.jornada, \{ emPe: pintadoEmPe \}\)/.test(tela), 'o mapa não é o da camada 0');
     ok(/lutarNaJornadaLocal\(\{ pack: PACK, id, preset: presetDoJogador\(\) \}\)/.test(tela), 'a luta não é a gravada');
     ok(!/simular\(|lutarNo\(|\.vencidos\.push|insignias\.push|salvar\(/.test(tela), 'a tela decide ou grava progresso por conta própria');
     ok(/encenar\(\{ alvo: \$\('#jnLuta'\), A: r\.timeA, B: r\.timeB, r: r\.resultado/.test(tela), 'a luta não é encenada pelo caminho da 10.9');
@@ -257,8 +257,12 @@ export function suite() {
     ok(semTentar.golpes === 0 ? semTentar.outros.length > 0 && semTentar.danoOutros >= 0 : true, 'sem tentar o tipo, a prova não diz o que o rival usou');
     const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
     ok(/provaDaImunidade\(PACK, r\.timeA, r\.resultado\.eventos, lic\.tipoGolpe\)/.test(tela), 'o fim da luta afirma a imunidade sem a prova');
-    ok(/@media \(max-width:520px\)\{[^}]*#jnMapaArea\{display:flex;flex-direction:column\}/.test(fonte('../app/index.html')) && /\.jnFaixa\{order:1;/.test(fonte('../app/index.html')) && /\.jnPainel\{order:2\} \.jnMapa\{order:3/.test(fonte('../app/index.html')),
-      'no estreito o painel do nó continua abaixo de um mapa de 1.000 px');
+    /* ST-10.22c: o mapa vem primeiro, mas numa JANELA de altura limitada que abre no nó —
+       a lição continua perto da dobra, que era o motivo da ordem antiga (ST-10.15). */
+    ok(/@media \(max-width:520px\)\{[^}]*#jnMapaArea\{display:flex;flex-direction:column\}/.test(fonte('../app/index.html')) && /\.jnFaixa\{order:1;/.test(fonte('../app/index.html'))
+       && /\.jnPainel\{order:3\}/.test(fonte('../app/index.html')) && /\.jnJanela\{order:2;[^}]*max-height:min\(58vh,560px\);overflow-y:auto/.test(fonte('../app/index.html')),
+      'no estreito o mapa não está numa janela limitada antes do painel');
+    ok(/centrarJanela\(alvo, escolhido \?\? mapa\.atual\)/.test(tela), 'a janela não abre no nó');
     ok(/no\.licao\?\.mostra === 'imune'/.test(tela) && /imunesNoTime\(PACK, A, no\.licao\.tipoGolpe\)/.test(tela), 'o painel da imunidade não mostra quem é imune');
     ok(/if \(lic\?\.mostra === 'imune'\) \{/.test(tela), 'o fim da luta não fecha a lição da imunidade');
   });
@@ -615,6 +619,28 @@ export function suite() {
 
   /* D-125 — o inicial sozinho perdia o primeiro nó — foi consertado na ST-10.13;
      o aceite mora em `ginasios` ("D-125 consertado"). */
+
+  s.teste('10.22c · em pé, UMA estrada: o caminho de 18 nós não dobra em duas voltas no celular', () => {
+    const deitado = mapaDaJornada(pack, { vencidos: [] });
+    const emPe = mapaDaJornada(pack, { vencidos: [] }, { emPe: true });
+    igual(`${deitado.voltas}|${emPe.voltas}|${emPe.emPe}`, `${deitado.nos.length >= DUAS_VOLTAS_A_PARTIR_DE ? 2 : 1}|1|true`, 'as voltas');
+    const xs = emPe.nos.map(n => n.x);
+    ok(xs.every((x, i) => i === 0 || x > xs[i - 1]), 'a estrada em pé volta para trás — não é uma estrada só');
+    igual(`${posicaoNoCaminho(0, 18, 1).x}|${posicaoNoCaminho(17, 18, 1).x}`, '8|92', 'a estrada em pé vai de ponta a ponta');
+    ok(posicaoNoCaminho(12, 18, 2).y !== posicaoNoCaminho(12, 18, 1).y || posicaoNoCaminho(12, 18, 2).x !== posicaoNoCaminho(12, 18, 1).x, 'uma volta e duas voltas dão a mesma posição');
+  });
+
+  s.teste('10.22c · o nome só no atual, no escolhido e no vencido; o trancado na cor da região', () => {
+    const m = mapaDaJornada(pack, { vencidos: ['rota1'] });
+    const [venc, atual, tranc] = [m.nos.find(n => n.estado === 'vencido'), m.nos.find(n => n.estado === 'atual'), m.nos.find(n => n.estado === 'trancado')];
+    igual([mostraNome(venc), mostraNome(atual), mostraNome(tranc), mostraNome(tranc, tranc.id)].join(), 'true,true,false,true', 'o nome no mapa');
+    igual(m.nos.filter(n => mostraNome(n)).length, 2, 'com um vencido, nomes demais no mapa');
+    ok(m.nos.every(n => !n.regiao || COR_DA_REGIAO[n.regiao]), 'uma região do pack sem cor');
+    igual(`${corDoNo({ regiao: 'vulcao' })}|${corDoNo({ regiao: 'nada' })}`, '200,80,50|140,140,140', 'a cor do nó');
+    ok(new Set(m.nos.map(corDoNo)).size >= 5, 'o trancado continua de uma cor só');
+    ok(/jnSemNome/.test(semComentario(fonte('../app/modules/jornada-tela.mjs'))) && /\.jnNo\.jnSemNome span\{display:none\}/.test(fonte('../app/index.html')), 'a tela não esconde o nome');
+    ok(/rgb\(var\(--rg/.test(fonte('../app/index.html')), 'o trancado não usa a cor da região');
+  });
 
   return s;
 }

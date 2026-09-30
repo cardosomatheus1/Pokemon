@@ -8349,6 +8349,19 @@ export const DEFEITOS = [
   { id:'S1837', arquivo:'server/banco.mjs', nome:'o livro dos pontos aceita UPDATE',
     real:'um lançamento pode ser reescrito, e o saldo deixa de ser a soma do que aconteceu',
     de:"db.exec(`CREATE TRIGGER liga_pontos_sem_update BEFORE UPDATE ON liga_pontos BEGIN SELECT RAISE(ABORT, 'liga_pontos é append-only'); END`);", para:"" },
+  /* ── ST-10.22c1 · o mapa: uma estrada no celular, nomes e cores ───── */
+  { id:'S1888', arquivo:'app/modules/jornada-dados.mjs', nome:'o celular dobra a estrada em duas colunas',
+    real:'em pé, o caminho de 18 nós volta a ter duas voltas — duas colunas que o olho não segue',
+    de:'const voltas = emPe ? 1 : voltasDoCaminho(nos.length);', para:'const voltas = voltasDoCaminho(nos.length);' },
+  { id:'S1889', arquivo:'app/modules/jornada-dados.mjs', nome:'o nome de todo nó no mapa',
+    real:'as dezoito fichas de nome voltam a cobrir a arte',
+    de:"export const mostraNome = (no, escolhido = null) => no.estado !== 'trancado' || no.id === escolhido;", para:'export const mostraNome = () => true;' },
+  { id:'S1890', arquivo:'app/modules/jornada-dados.mjs', nome:'o trancado de uma cor só',
+    real:'todo nó trancado volta a ser o mesmo disco — ele não diz o que há adiante',
+    de:"export const corDoNo = no => COR_DA_REGIAO[no?.regiao] ?? '140,140,140';", para:"export const corDoNo = () => '140,140,140';" },
+  { id:'S1891', arquivo:'app/modules/jornada-tela.mjs', nome:'a janela do celular abre no começo',
+    real:'o jogador abre a jornada e vê a Rota 1, e não o próximo nó',
+    de:'if (pintadoEmPe) centrarJanela(alvo, escolhido ?? mapa.atual);', para:'' },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',
@@ -9501,9 +9514,11 @@ export const DEFEITOS = [
   { id:'S1504', arquivo:'app/modules/jornada-dados.mjs', nome:'a prova conta todo golpe como do tipo',
     real:'o fim da luta diz "levou 5 golpes de Eletrico, dano 40" num imune — a prova desmente a licao',
     de:'const doTipo = nele.filter(e => tipoDe(e.golpe) === tipo),', para:'const doTipo = nele,' },
-  { id:'S1505', arquivo:'app/index.html', nome:'no estreito o painel volta para baixo do mapa',
-    real:'no celular a licao, a chance e o lutar ficam a 1.000 px do topo',
-    de:'.jnTopo{order:0} .jnPainel{order:2} .jnMapa{order:3;margin-top:12px}', para:'.jnTopo{order:0} .jnPainel{order:4} .jnMapa{order:3;margin-top:12px}' },
+  /* Realinhado na ST-10.22c: o mapa passou a vir antes, numa JANELA limitada — o defeito
+     que empurra a lição para longe do topo agora é a janela sem teto. */
+  { id:'S1505', arquivo:'app/index.html', nome:'no estreito o painel volta para baixo do mapa inteiro',
+    real:'no celular a licao, a chance e o lutar ficam a 2.400 px do topo',
+    de:'max-height:58vh;max-height:min(58vh,560px);overflow-y:auto;', para:'overflow-y:auto;' },
   /* ── ST-10.14 · Misty: a velocidade decide ─────────────────────────── */
   { id:'S1494', arquivo:'app/modules/jornada-dados.mjs', nome:'o painel mostra o seu MAIS LENTO como o mais rapido',
     real:'a licao da velocidade aponta o numero errado — o jogador acha que passa o Starmie e nao passa',

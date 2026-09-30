@@ -14,7 +14,7 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
-import { setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, regioesDoMapa, ARTE_NOSSA_DO_MAPA } from './jornada-dados.mjs';
+import { setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, regioesDoMapa, ARTE_NOSSA_DO_MAPA, mostraNome, corDoNo } from './jornada-dados.mjs';
 import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, turnosDaAmeaca, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { diaDoMundo } from '../../engine/avanco.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido, candidatosDaCaixa, membrosParaTrocas } from './treino-dados.mjs';
@@ -328,7 +328,20 @@ function afastarCena(alvo) {
   for (const el of alvo.querySelectorAll('.jnB .jnProp')) { el.style.display = ''; if (tocaEm(pecas, el.getBoundingClientRect())) el.style.display = 'none'; }
 }
 let reafastar = 0;
-addEventListener('resize', () => { clearTimeout(reafastar); reafastar = setTimeout(() => { const a = $('#jnMapaArea'); if (a) afastarCena(a); }, 150); });
+/* O celular tem o caminho EM PÉ, com uma volta só (ST-10.22c): cruzar a largura repinta, e não só reafasta. */
+const emPe = () => !!globalThis.matchMedia?.('(max-width:520px)').matches;
+let pintadoEmPe = null;
+addEventListener('resize', () => { clearTimeout(reafastar); reafastar = setTimeout(() => { const a = $('#jnMapaArea'); if (!a) return; if (pintadoEmPe !== null && pintadoEmPe !== emPe() && a.offsetParent) renderJornada(); else { afastarCena(a); if (pintadoEmPe) centrarJanela(a, escolhido ?? a.querySelector('.jnNo.jn-atual')?.dataset.jnNo); } }, 150); });
+
+/* A JANELA do celular (ST-10.22c): o mapa em pé tem mais de dois mil pixels; a
+   janela mostra o trecho do nó escolhido — ou do próximo — no meio, e o resto
+   rola. O jogador abre a jornada e vê para onde vai, e não o começo. */
+function centrarJanela(alvo, id) {
+  const jan = alvo.querySelector('.jnJanela'), no = id && alvo.querySelector(`.jnNo[data-jn-no="${id}"]`);
+  if (!jan || !no) return;
+  const j = jan.getBoundingClientRect(), n = no.getBoundingClientRect();
+  jan.scrollTop += (n.top + n.height / 2) - (j.top + j.height / 2);
+}
 
 const quadro = (folha, cls, extra = '') => `<b class="${cls}" style="background-image:url(${ARTE_DO_MAPA}/${folha}.png)${extra}"></b>`;
 
@@ -336,7 +349,8 @@ export function renderJornada({ nova = null } = {}) {
   const alvo = $('#jnMapaArea');
   if (!alvo) return;
   const estado = carregar();
-  const mapa = mapaDaJornada(PACK, estado.jornada);
+  pintadoEmPe = emPe();
+  const mapa = mapaDaJornada(PACK, estado.jornada, { emPe: pintadoEmPe });
   const ganhas = mapa.insignias.filter(x => x.ganha).length;
   /* VOCÊ no mapa: o traje vestido, de frente, NA TRILHA, a caminho do nó que
      falta vencer. A folha é a do idle — nove quadros. */
@@ -350,27 +364,27 @@ export function renderJornada({ nova = null } = {}) {
     <div class="jnTopo"><span><b>${mapa.feitos}</b> de ${mapa.total} passos · <b>${ganhas}</b> de ${mapa.insignias.length} insígnias${mapa.atual ? '' : ' · <b class="jnFeito">caminho vencido de ponta a ponta</b>'}</span>
       <div class="jnEstojo"><span class="jnEstojoRot">insígnias</span>${mapa.insignias.map(x => `<i class="jnInsignia${x.arte ? ' conhecida' : ''}${x.ganha ? ' ganha' : ''}${x.id && x.id === nova ? ' nova' : ''}"
           title="${x.nome ? `${x.nome} (${x.onde})${x.ganha ? '' : ' — ainda não é sua'}` : 'ainda não há ginásio aqui'}">${x.arte ? `<img src="${x.arte}" alt="">` : ''}</i>`).join('')}</div></div>
-    <div class="jnMapa${mapa.voltas === 2 ? ' jnVoltas2' : ''}" style="--n:${mapa.voltas === 2 ? Math.ceil(mapa.nos.length / 2) : mapa.nos.length}">
+    <div class="jnJanela"><div class="jnMapa${mapa.voltas === 2 ? ' jnVoltas2' : ''}" style="--n:${mapa.voltas === 2 ? Math.ceil(mapa.nos.length / 2) : mapa.nos.length}">
       ${regioesDoMapa(mapa).map(r => `<div class="jnRegiao jnR-${r.regiao} jnRv${r.v}${r.topo ? ' jnTopo' : ''}" style="--x:${r.x};--y:${r.y};--w:${r.w};--h:${r.h}"><b></b><i></i></div>`).join('')}
       <svg class="jnCaminho jnDeitado" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${trilha(false)}</svg>
       <svg class="jnCaminho jnEmPe" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${trilha(true)}</svg>
       ${setasDoCaminho(mapa).map(sx => `<div class="jnPos jnSetaPos" style="--x:${sx.x};--y:${sx.y}" data-outros='${JSON.stringify(sx.outros)}'><i class="jnSeta jn-${sx.dir}${sx.andado ? ' andado' : ''}"></i></div>`).join('')}
       ${[...bordaDoMapa()].sort((a, b) => !!b.fundo - !!a.fundo).map(p => `<div class="jnPos jnB${p.escala ? ` jnB${p.escala}` : ''}${p.fundo ? ' jnBf' : ''}" style="--x:${p.x};--y:${p.y}">${p.arte ? `<b class="jnProp jnArte" style="background-image:url(${ARTE_NOSSA_DO_MAPA}/${p.arte}.svg)"></b>` : quadro('cuttable_tree', 'jnProp')}</div>`).join('')}
-      ${mapa.nos.map(n => `<div class="jnPos jn-${n.estado} jnT-${n.tipo}" style="--x:${n.x};--y:${n.y}">
+      ${mapa.nos.map(n => `<div class="jnPos jn-${n.estado} jnT-${n.tipo}" style="--x:${n.x};--y:${n.y};--rg:${corDoNo(n)}">
           ${cenaDoNo(n).map(c => (c.forma ? `<b class="jnLago${c.forma === 'lago' ? '' : ` jn-${c.forma}`}" style="--dx:${c.dx}px;--dy:${c.dy}px"><i></i></b>`
             : c.marco ? `<img class="jnMarco" src="${ARTE_NOSSA_DO_MAPA}/${c.marco}.svg" alt="" style="--dx:${c.dx}px;--dy:${c.dy}px">`
             : c.arte ? `<b class="jnProp jnArte" style="background-image:url(${ARTE_NOSSA_DO_MAPA}/${c.arte}.svg);--dx:${c.dx}px;--dy:${c.dy}px"></b>`
             : quadro(c.folha, 'jnProp', `;--dx:${c.dx}px;--dy:${c.dy}px`))).join('')}
           ${n.ow ? quadro(n.ow, 'jnOw') : ''}${n.lendario ? `<b class="jnLend">${dexImg(n.lendario, '', 'class="jnLendImg"')}</b>` : ''}
-          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}" data-jn-no="${n.id}" title="${n.nome}">${n.estado === 'atual' ? '<b class="jnAnel"></b>' : ''}<i${n.tipo === 'ginasio' && n.estado !== 'trancado' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.estado === 'trancado' && n.id !== escolhido ? '' : n.tipo === 'liga' ? `<em>${n.selo ?? ''} · ${n.licao?.tipo ?? ''}</em>` : n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : n.tipo === 'chefe' ? '<em>chefe · lendário</em>' : ''}${n.estado === 'atual' ? '<strong class="jnProx">próximo</strong>' : ''}</span></button></div>`).join('')}
+          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}${mostraNome(n, escolhido) ? '' : ' jnSemNome'}" data-jn-no="${n.id}" title="${n.nome}" aria-label="${n.nome}">${n.estado === 'atual' ? '<b class="jnAnel"></b>' : ''}<i${n.tipo === 'ginasio' && n.estado !== 'trancado' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.estado === 'trancado' && n.id !== escolhido ? '' : n.tipo === 'liga' ? `<em>${n.selo ?? ''} · ${n.licao?.tipo ?? ''}</em>` : n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : n.tipo === 'chefe' ? '<em>chefe · lendário</em>' : ''}${n.estado === 'atual' ? '<strong class="jnProx">próximo</strong>' : ''}</span></button></div>`).join('')}
       ${onde && eu ? `<div class="jnPos jnVoce${onde.fim ? ' jnFim' : ''}${onde.lado === 'direita' ? ' jnDireita' : ''}" style="--x:${onde.x};--y:${onde.y};--ax:${onde.ao.x};--ay:${onde.ao.y}"><b class="jnEu"><img src="${eu}" alt="você"></b></div>` : ''}
-    </div>
+    </div></div>
     ${(f => `<div class="jnFaixa">${[f.antes, f.este, f.depois].map((n, k) => (n ? `<button class="jnFaixaNo jn-${n.estado} jn-${n.tipo}${k === 1 ? ' este' : ''}" data-jn-no="${n.id}"><i class="jnFaixaMarco"${n.tipo === 'ginasio' && n.estado !== 'trancado' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i>${n.curto}</button>` : '<span></span>')).join('')}</div>`)(faixaDoCaminho(mapa, escolhido))}
     <div class="jnPainel" id="jnPainel"></div>`;
   const im = alvo.querySelector('.jnEu img');
   if (im) { const medir = () => { im.parentNode.style.width = `${im.naturalWidth / 9}px`; }; if (im.complete && im.naturalWidth) medir(); else im.onload = medir; }
   pintarPainel(mapa);
-  requestAnimationFrame(() => afastarCena(alvo));
+  requestAnimationFrame(() => { afastarCena(alvo); if (pintadoEmPe) centrarJanela(alvo, escolhido ?? mapa.atual); });
   /* O marco é <img>: sem tamanho até carregar, o afastamento o via com 0 × 0 e
      o deixava em cima de um nome (medido na captura da ST-10.22b). */
   alvo.querySelectorAll('.jnMarco').forEach(im => { if (!im.complete) im.addEventListener('load', () => afastarCena(alvo), { once: true }); });

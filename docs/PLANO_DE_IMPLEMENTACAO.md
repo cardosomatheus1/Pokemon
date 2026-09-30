@@ -1175,6 +1175,42 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
                 (autotile) — a borda de cada material casando com a vizinha
   ```
 - **Aceite:** o da ST-10.22 (≥ 8 nas quatro larguras).
+- **Fatiada em 30/09:** c1 (a leitura: celular, nomes, trancado, trilha) e c2
+  (a geografia: terreno, água, a Liga, o fim).
+- **10.22c1 ✅ 30/09 — feita, com o aceite NÃO atingido.** No celular, UMA
+  estrada de cima a baixo (`mapaDaJornada(…, { emPe: true })` força uma volta
+  — com duas, em pé, eram duas colunas), numa JANELA de altura limitada que
+  abre no nó escolhido ou no próximo, e o mapa vem antes do painel (a ordem da
+  ST-10.15 existia para a lição caber na dobra; a janela resolve o mesmo sem
+  esconder o mapa). O nome só no atual, no escolhido e nos vencidos
+  (`mostraNome`; o trancado mostra ao passar o dedo). O trancado é o PONTO DO
+  NÍVEL na cor da região (`corDoNo`), e não o mesmo disco cinza. A trilha por
+  andar virou a fileira de pontos do SMW, com contorno para ler sobre qualquer
+  chão. Em pé, a cena do nó vai para os lados (os lagos caíam na estrada).
+  `test/jornada-tela.mjs` (23) · S1888–S1891 · S1505 realinhado.
+- **Q7 da 10.22c1 (barra: o mapa do SMW):** caminho 6/6/5/2 → a estrada única
+  e a janela; onde estou 8/8/7/6; o trancado 4/4/3/3 → a cor da região; mundo
+  conectado 4/4/3/3; publicado 5/5/4/3 (1920/1440/1100/420). O que a c1
+  resolveu foi medido na captura (os nomes, a cor, a estrada, a janela, a
+  trilha pontilhada); a nota de mundo e de "publicado" é da c2.
+
+#### ST-10.22c2 · A geografia do mapa (proposta, 30/09 — dos achados do Q7 da c1)
+- **Porte** M · **Método** GL (barra: o mapa do SMW) · **Portões:** Q1 Q2 Q5 Q7.
+- **Escopo, na ordem do crítico:**
+  ```text
+  o fim         a Liga termina num losango igual aos outros — um MARCO de
+                fim (o palácio da Liga), como o castelo do SMW
+  a Liga        a mesa lilás lisa ocupa 40% do mapa para 5 de 18 passos, fora
+                da paleta GBA — textura de pedra, penhasco, e menor
+  a água        Vermilion é porto e Cinnabar é ilha, e não há mar — uma costa
+                embaixo, e um rio que ligue Cerulean a Vermilion
+  o terreno     manchas sobre grama; a borda de cada chão casando com a vizinha
+  o contraste   no celular a trilha bege some sobre a areia — a borda da trilha
+                por chão
+  a 1100        a lava invade o platô vizinho; nomes sobre o caminho no chefe
+  ```
+- **Aceite:** ≥ 8 nas quatro larguras (o da ST-10.22).
+- **Sabotagem:** a Liga sem marco de fim; o rio que não liga as duas cidades.
 
 ### ST-10.20 · A jornada ensina a apostar? ✅ 27/09
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16

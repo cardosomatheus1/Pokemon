@@ -51,8 +51,11 @@ export const ZIGUE_A_PARTIR_DE = 7;
    zigue-zague de ±7,5 põe os vizinhos em alturas diferentes. */
 export const DUAS_VOLTAS_A_PARTIR_DE = 15;
 export const voltasDoCaminho = n => (n >= DUAS_VOLTAS_A_PARTIR_DE ? 2 : 1);
-export function posicaoNoCaminho(i, n) {
-  if (voltasDoCaminho(n) === 2) {
+/* `voltas` explícito (ST-10.22c): no celular o caminho é UMA estrada de cima a
+   baixo — com duas voltas, em pé, ele virava duas colunas que o olho não segue
+   (Q7 da ST-10.22b). O deitado continua escolhendo pelo tamanho. */
+export function posicaoNoCaminho(i, n, voltas = voltasDoCaminho(n)) {
+  if (voltas === 2) {
     const h = Math.ceil(n / 2), volta = i < h ? 0 : 1, k = volta ? h - 1 - (i - h) : i;
     const x = 8 + (84 * k) / (h - 1), y = (volta ? 72 : 30) + (k % 2 ? 7.5 : -7.5);
     return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
@@ -63,8 +66,9 @@ export function posicaoNoCaminho(i, n) {
   return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
 }
 
-export function mapaDaJornada(pack, prog) {
+export function mapaDaJornada(pack, prog, { emPe = false } = {}) {
   const nos = nosDa(pack), atual = noAtual(pack, prog);
+  const voltas = emPe ? 1 : voltasDoCaminho(nos.length);
   const vencidos = new Set(prog?.vencidos ?? []);
   const lista = nos.map((no, i) => ({
     id: no.id, nome: no.nome ?? no.id, rival: no.rival, insignia: no.insignia ?? null,
@@ -83,7 +87,7 @@ export function mapaDaJornada(pack, prog) {
     ow: (pack.treinadores ?? []).find(t => t.id === no.rival)?.ow ?? null,
     lider: no.insignia || no.liga ? (pack.treinadores ?? []).find(t => t.id === no.rival)?.nome ?? null : null,
     estado: vencidos.has(no.id) ? 'vencido' : atual?.id === no.id ? 'atual' : 'trancado',
-    ...posicaoNoCaminho(i, nos.length),
+    ...posicaoNoCaminho(i, nos.length, voltas),
   }));
   const ginasios = nos.filter(n => n.insignia);
   return {
@@ -91,7 +95,7 @@ export function mapaDaJornada(pack, prog) {
     atual: atual?.id ?? null,
     feitos: lista.filter(n => n.estado === 'vencido').length,
     total: lista.length,
-    voltas: voltasDoCaminho(lista.length),
+    voltas, emPe,
     insignias: Array.from({ length: Math.max(INSIGNIAS_DO_CAMINHO, ginasios.length) }, (_, i) => {
       const g = ginasios[i];
       return g ? { id: g.insignia, nome: g.insigniaNome ?? `insígnia de ${g.nome ?? g.id}`, onde: g.nome ?? g.id, arte: arteDaInsignia(g.insignia),
@@ -493,3 +497,18 @@ export function leituraDoDuplo(mm) {
            corte: corte ? { dex: corte.dex, alto: corte.contra.find(c => c.mult >= 2), baixo: corte.contra.find(c => c.mult < 1) } : null,
            pior: [...(mm ?? [])].sort((a, b) => menor(a) - menor(b))[0] ?? null };
 }
+
+/* O NOME NO MAPA (ST-10.22c): só onde ele responde alguma coisa — o nó atual
+   (para onde eu vou), o escolhido (o que estou lendo) e os vencidos (por onde
+   passei). Os dezoito nomes fixos cobriam a arte; o trancado mostra o nome ao
+   passar o dedo, e a faixa do caminho diz o próximo. */
+export const mostraNome = (no, escolhido = null) => no.estado !== 'trancado' || no.id === escolhido;
+
+/* A COR DO NÓ TRANCADO (ST-10.22c): o ponto do nível na cor da região em que
+   ele fica, e não o mesmo disco cinza em todo lugar — como o mapa do SMW, onde
+   o ponto amarelo e o vermelho dizem o que há ali antes de se chegar. */
+export const COR_DA_REGIAO = Object.freeze({
+  campo: '120,170,70', floresta: '46,120,60', bosque: '70,140,90', pedra: '150,110,70', praia: '220,190,120', jardim: '200,120,170',
+  pantano: '80,110,90', cidade: '150,150,170', vulcao: '200,80,50', usina: '120,120,140', planalto: '150,120,210',
+});
+export const corDoNo = no => COR_DA_REGIAO[no?.regiao] ?? '140,140,140';
