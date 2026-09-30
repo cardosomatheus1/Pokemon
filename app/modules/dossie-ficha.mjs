@@ -12,6 +12,7 @@
  */
 import { DEGRAUS, LIBERA } from './pokedex-estado.mjs';
 import { CAI_CEDO } from '../../engine/dossie.mjs';
+import { iconeDoClima } from './clima-icone.mjs';
 
 const pct = x => `${Math.round(x * 100)}%`;
 /* Quantos lugares a arena tem — o maior colocado que o dossiê registrou. */
@@ -82,7 +83,7 @@ function texto(secao, e, climas, medias) {
         .map(([k, c]) => {
           const cl = climas?.find(x => x.key === k);
           const seta = { 'acima da média': ' ▲', 'abaixo da média': ' ▼' }[veredito(c.taxa, base)] ?? '';
-          return `${cl?.emoji ?? ''} ${cl?.name ?? k}: vence ${pct(c.taxa)}${seta} (${ctx(c.n)})`.trim();
+          return `${iconeDoClima(k, cl?.emoji)} ${cl?.name ?? k}: vence ${pct(c.taxa)}${seta} (${ctx(c.n)})`.trim();
         });
       return linhas.length ? [`▲ ▼ contra a taxa dela em todos os climas: ${pct(base)} (${ctx(e.vitoria.n)}).`, ...linhas]
                            : [`Ainda sem ${N_MINIMO_CLIMA} rodadas em nenhum clima.`];

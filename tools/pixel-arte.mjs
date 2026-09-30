@@ -1,6 +1,6 @@
 /* A ARTE DO MUNDO DO MAPA, EM PIXEL (ST-10.22b · L-209) — arte NOSSA.
  *
- *   node tools/pixel-arte.mjs        regrava arte/mapa/*.svg
+ *   node tools/pixel-arte.mjs        regrava arte/mapa/*.svg e arte/clima/*.svg
  *
  * A fonte de cada peça é a grade abaixo, um caractere por pixel, e a paleta
  * dela: é o que se edita. O SVG sai com `crispEdges`, um <rect> por corrida
@@ -411,32 +411,180 @@ const PECAS = {
   },
 };
 
-const PASTA = new URL('../arte/mapa/', import.meta.url);
-mkdirSync(PASTA, { recursive: true });
-for (const [nome, peca] of Object.entries(PECAS)) {
-  const cheia = typeof peca.grade === 'string' ? PECAS[peca.grade].grade : peca.grade;
-  /* Linhas vazias no pé saem: o marco se apoia no ponto dele pela base. */
-  const grade = cheia.slice(0, cheia.length - [...cheia].reverse().findIndex(l => /[^.]/.test(l)));
-  /* ST-10.22b: o marco de cada cidade é maior que uma casa — a grade pode ter
-     outro tamanho, desde que retangular. */
-  const L = grade[0].length, A = grade.length;
-  if (grade.some(l => l.length !== L)) throw new Error(`${nome}: a grade não é retangular (${grade.map(l => l.length).join(',')})`);
-  const rects = [];
-  grade.forEach((linha, y) => {
-    for (let x = 0; x < L;) {
-      const ch = linha[x];
-      let fim = x + 1;
-      while (fim < L && linha[fim] === ch) fim++;
-      if (ch !== '.') {
-        const cor = peca.paleta[ch];
-        if (!cor) throw new Error(`${nome}: cor '${ch}' fora da paleta (linha ${y})`);
-        rects.push(`<rect x="${x}" y="${y}" width="${fim - x}" height="1" fill="${cor}"/>`);
+/* ST-5.16 (L-194): os ÍCONES DE CLIMA, arte NOSSA — os emojis de sistema
+ * (☀️ 🌬️ ⛅ ❄️ 🌧️) destoavam do tema pixel/neon, e cada sistema os desenha de um
+ * jeito. 12 × 12, contorno escuro onde a peça fica sobre painel escuro; o vento
+ * e a névoa sem contorno (são ar). Saem em arte/clima/, quadrados (sem aparar). */
+const CLIMAS = {
+  neutro: {
+    paleta: { k: '#1f2a3a', o: '#f0901a', Y: '#ffe45a', w: '#e8eef6', c: '#aebccc' },
+    grade: [
+      '.......kk...',
+      '......kook..',
+      '.....koYYok.',
+      '....koYYYYok',
+      '...kwwwwYYok',
+      '..kkwwwwwok.',
+      '.kwwwwwwwwwk',
+      'kwwwwwwwwwwk',
+      'kwwwwwwwwwwk',
+      'kcccccccccck',
+      '.kkkkkkkkkk.',
+      '............',
+    ],
+  },
+  sol: {
+    paleta: { k: '#6a3a00', o: '#f0901a', Y: '#ffe45a', y: '#ffc42a' },
+    grade: [
+      '.....y......',
+      '.....y......',
+      '..y.kkkk.y..',
+      '...kooook...',
+      '..kooYYook..',
+      '..koYYYYok..',
+      'yykoYYYYokyy',
+      '..kooYYook..',
+      '...kooook...',
+      '..y.kkkk.y..',
+      '......y.....',
+      '......y.....',
+    ],
+  },
+  chuva: {
+    paleta: { k: '#1f2a3a', g: '#9aa8ba', G: '#6f7d90', b: '#6fd0ff', B: '#2f86b8' },
+    grade: [
+      '....kggkk...',
+      '..kkgggggk..',
+      '.kggggggggk.',
+      'kggggggggggk',
+      'kggggggggggk',
+      'kGGGGGGGGGGk',
+      '.kkkkkkkkkk.',
+      '............',
+      '...b..b..b..',
+      '...B..B..B..',
+      '..b..b..b...',
+      '..B..B..B...',
+    ],
+  },
+  vento: {
+    paleta: { w: '#eaf8ff', c: '#8fe3ff' },
+    grade: [
+      '............',
+      '.......ww...',
+      'wwwwwww..w..',
+      '.........w..',
+      '.......ww...',
+      '............',
+      'cccccccccc..',
+      '..........c.',
+      '.........c..',
+      '............',
+      '.wwwwww.....',
+      '............',
+    ],
+  },
+  neve: {
+    paleta: { c: '#8fe3ff', w: '#eaf8ff', W: '#ffffff' },
+    grade: [
+      '.....c......',
+      '..c..w..c...',
+      '...w.w.w....',
+      '....www.....',
+      '.c..www..c..',
+      'cwwwwWwwwwc.',
+      '.c..www..c..',
+      '....www.....',
+      '...w.w.w....',
+      '..c..w..c...',
+      '.....c......',
+      '............',
+    ],
+  },
+  tempestade: {
+    paleta: { k: '#12161f', d: '#8a93a6', D: '#5f6878', y: '#ffe45a' },
+    grade: [
+      '....kddkk...',
+      '..kkdddddk..',
+      '.kddddddddk.',
+      'kddddddddddk',
+      'kddddddddddk',
+      'kDDDDDDDDDDk',
+      '.kkkkkkkkkk.',
+      '.......y....',
+      '......y.....',
+      '.....yyy....',
+      '......y.....',
+      '.....y......',
+    ],
+  },
+  nevoa: {
+    paleta: { p: '#b07ae0', P: '#8a52c8' },
+    grade: [
+      '............',
+      '............',
+      '............',
+      '..pPppPppPp.',
+      '............',
+      'pPppPppPp...',
+      '............',
+      '...ppPppPppP',
+      '............',
+      '.ppPppPppP..',
+      '............',
+      '............',
+    ],
+  },
+  polen: {
+    paleta: { k: '#5a2a48', y: '#f5b8d8', o: '#ffd84a' },
+    grade: [
+      '............',
+      '.y..kkkk....',
+      '...kyyyyk.y.',
+      '..kkyyyykk..',
+      '.kyykyykyyk.',
+      '.kyyyooyyyk.',
+      '.kyyyooyyyk.',
+      '.kyykyykyyk.',
+      '..kkyyyykk..',
+      '...kyyyyk...',
+      '.y..kkkk..y.',
+      '............',
+    ],
+  },
+};
+
+function gravar(pecas, pasta, { apara = true, bloco = 'ST-10.22b' } = {}) {
+  const PASTA = new URL(`../arte/${pasta}/`, import.meta.url);
+  mkdirSync(PASTA, { recursive: true });
+  for (const [nome, peca] of Object.entries(pecas)) {
+    const cheia = typeof peca.grade === 'string' ? pecas[peca.grade].grade : peca.grade;
+    /* Linhas vazias no pé saem: o marco se apoia no ponto dele pela base. O
+       ícone de clima não apara — é quadrado, e fica numa linha de texto. */
+    const grade = apara ? cheia.slice(0, cheia.length - [...cheia].reverse().findIndex(l => /[^.]/.test(l))) : cheia;
+    /* ST-10.22b: o marco de cada cidade é maior que uma casa — a grade pode ter
+       outro tamanho, desde que retangular. */
+    const L = grade[0].length, A = grade.length;
+    if (grade.some(l => l.length !== L)) throw new Error(`${nome}: a grade não é retangular (${grade.map(l => l.length).join(',')})`);
+    const rects = [];
+    grade.forEach((linha, y) => {
+      for (let x = 0; x < L;) {
+        const ch = linha[x];
+        let fim = x + 1;
+        while (fim < L && linha[fim] === ch) fim++;
+        if (ch !== '.') {
+          const cor = peca.paleta[ch];
+          if (!cor) throw new Error(`${nome}: cor '${ch}' fora da paleta (linha ${y})`);
+          rects.push(`<rect x="${x}" y="${y}" width="${fim - x}" height="1" fill="${cor}"/>`);
+        }
+        x = fim;
       }
-      x = fim;
-    }
-  });
-  writeFileSync(new URL(`${nome}.svg`, PASTA),
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${L} ${A}" width="${L * 2}" height="${A * 2}" shape-rendering="crispEdges">\n`
-    + `<!-- ${nome} — arte nossa (ST-10.22b), gerada por tools/pixel-arte.mjs; edite a grade lá. -->\n${rects.join('\n')}\n</svg>\n`);
-  console.log(`arte/mapa/${nome}.svg  ${rects.length} corridas`);
+    });
+    writeFileSync(new URL(`${nome}.svg`, PASTA),
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${L} ${A}" width="${L * 2}" height="${A * 2}" shape-rendering="crispEdges">\n`
+      + `<!-- ${nome} — arte nossa (${bloco}), gerada por tools/pixel-arte.mjs; edite a grade lá. -->\n${rects.join('\n')}\n</svg>\n`);
+    console.log(`arte/${pasta}/${nome}.svg  ${rects.length} corridas`);
+  }
 }
+gravar(PECAS, 'mapa');
+gravar(CLIMAS, 'clima', { apara: false, bloco: 'ST-5.16' });

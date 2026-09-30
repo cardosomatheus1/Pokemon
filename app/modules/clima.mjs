@@ -8,6 +8,7 @@ import { S } from './estado.mjs';
 import { $ } from './dom.mjs';
 import { enfeite } from './sorte.mjs';
 import { H, W, fx, map } from './render.mjs';
+import { iconeDoClima } from './clima-icone.mjs';
 
 /* =====================================================================
    CLIMA DA ARENA
@@ -34,7 +35,7 @@ import { H, W, fx, map } from './render.mjs';
 function showWeatherBadge(weather){
   const el = $('#weatherBadge');
   const afetados = weather.type ? S.fighters.filter(f=>f.types.includes(weather.type)).map(f=>f.n) : [];
-  el.innerHTML = `<b>${weather.emoji} ${weather.name}</b><span>${weather.desc}</span>`;
+  el.innerHTML = `<b>${iconeDoClima(weather.key, weather.emoji)} ${weather.name}</b><span>${weather.desc}</span>`;
   el.title = afetados.length ? 'Favorecidos: ' + afetados.join(', ') : '';
   el.classList.remove('pop'); void el.offsetWidth; el.classList.add('show','pop');
 }

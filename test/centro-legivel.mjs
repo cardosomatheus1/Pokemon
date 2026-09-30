@@ -8,6 +8,8 @@
 import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { vitrineDeMedalhas, TETO_DE_MEDALHAS } from '../app/modules/colecao-dados.mjs';
+import { iconeDoClima, ICONE_DO_CLIMA } from '../app/modules/clima-icone.mjs';
+import { existsSync } from 'node:fs';
 
 const fonte = rel => readFileSync(new URL(rel, import.meta.url), 'utf8');
 const semComentario = t => t.replace(/\/\*[\s\S]*?\*\//g, '');
@@ -75,6 +77,19 @@ export function suite() {
     ok(/<span class="tiny">nv \$\{c\.nivel \?\? 1\} · potencial \$\{c\.potencial\}/.test(paineis), 'o cartão não diz o nível');
     /* Com o nível no cartão, o botão não o repete — repetido, quebrava em duas linhas. */
     ok(/>dar doce · \$\{doces\} da linha<\/button>/.test(paineis), 'o botão do doce repete o nível que o cartão já diz');
+  });
+
+  /* ST-5.16 (resto da L-194): os emojis de sistema do clima destoavam do
+     tema pixel/neon — e cada sistema os desenha de um jeito. Ícones nossos
+     (arte/clima, gerados pela tools/pixel-arte.mjs), com o emoji de reserva. */
+  s.teste('ST-5.16: o clima com ícone nosso, e o emoji só de reserva', () => {
+    ok(/src="\.\.\/arte\/clima\/sol\.svg"/.test(iconeDoClima('sol', '☀️')) && /class="clIco"/.test(iconeDoClima('sol', '☀️')), 'o sol sem o ícone nosso');
+    ok(iconeDoClima('vendaval', '🌬️').includes('vento.svg') && iconeDoClima('nevasca', '❄️').includes('neve.svg'), 'os climas do idle não caem no ícone do mesmo tempo');
+    ok(iconeDoClima('desconhecido', '🌈') === '🌈', 'o clima sem arte perde o emoji de reserva');
+    ok(Object.values(ICONE_DO_CLIMA).every(n => existsSync(new URL(`../arte/clima/${n}.svg`, import.meta.url))), 'um ícone mapeado sem arquivo');
+    for (const [arq, re] of [['dossie-ficha.mjs', /iconeDoClima\(k, cl\?\.emoji\)/], ['idle-biomas.mjs', /iconeDoClima\(c\.key, c\.emoji\)/], ['clima.mjs', /iconeDoClima\(weather\.key, weather\.emoji\)/]])
+      ok(re.test(semComentario(fonte(`../app/modules/${arq}`))), `${arq} continua com o emoji do sistema`);
+    ok(/\.clIco\{width:16px;height:16px;image-rendering:pixelated/.test(fonte('../app/index.html')), 'o ícone do clima sem o tamanho da linha de texto');
   });
 
   return s;

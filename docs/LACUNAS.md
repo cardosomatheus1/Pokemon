@@ -8390,12 +8390,12 @@ Os três já corrigidos no bloco estão no commit (a linha diz "+100 seus",
 resultado, o total na Orbitron). **O que a destrava:** a ST-12.10 medindo
 participação no bolo.
 
-### L-194 — a ficha da Pokédex a 1920, e os emojis de sistema no "Por clima"
+### L-194 — a ficha da Pokédex a 1920, e os emojis de sistema no "Por clima" ✅ FECHADA na ST-5.16 (30/09)
 
 **Registrada em:** 26/09/2026, no Q7 da ST-9.3 (crítico cego, barra "TESTE DA
-FICHA DE 5 SEGUNDOS"). **Bloco dono:** UX-01. **Estado:** parcial — o arranjo da
-ficha a 1920 foi resolvido na ST-5.14 (o selo do degrau ao lado do título);
-ficam os emojis de sistema do clima, que pedem ícone do tema (arte).
+FICHA DE 5 SEGUNDOS"). **Bloco dono:** UX-01. **Estado:** ✅ fechada — o arranjo
+da ficha a 1920 na ST-5.14 (o selo do degrau ao lado do título) e os ícones
+do clima, arte nossa em `arte/clima/`, na ST-5.16.
 
 Duas sobras que o bloco não construiu, e por quê:
 - **a 1920 a ficha usa ~740 px de texto** e deixa o selo do degrau a ~800 px

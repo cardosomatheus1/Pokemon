@@ -33,6 +33,7 @@ import { dexImg, retratoAnimado } from './sprites.mjs';
 import { criaturasDe, emCampo } from './idle-dados.mjs';
 import { estiloIcone } from './icones.mjs';
 import { quemMostrar, expedicaoEm } from './idle-quem.mjs';
+import { iconeDoClima } from './clima-icone.mjs';
 
 const esp = dex => (PACK.especies ?? []).find(e => e.dex === dex) ?? { n: '?', dex };
 
@@ -138,7 +139,7 @@ function pintarNele(alvo) {
   for (const el of nosDois('ClimasLista'))
     el.innerHTML = legenda.map(c => {
       const frase = fraseDoElenco(c);
-      return `<li><span class="clEmoji">${c.emoji ?? ''}</span>` +
+      return `<li><span class="clEmoji">${iconeDoClima(c.key, c.emoji)}</span>` +
         `<span><b>${c.nome}</b><em>${c.frequencia}</em></span>` +
         `<span>${c.desc}</span>` +
         (frase ? `<span class="clElenco${c.rotasQueMudam ? '' : ' nada'}">${frase}</span>` : '') +

@@ -367,6 +367,8 @@ const CAMADA = {
   /* ST-5.9 · a arena volta à tela quando a luta começa (0). */
   'arena-vista.mjs': 0,
   'confirmacao-aposta.mjs': 0,
+  /* ST-5.16 · o ícone do clima, arte nossa (0). */
+  'clima-icone.mjs': 0,
   /* ST-10.11 · a jornada: a luta gravada (1). */
   'jornada-local.mjs': 1,
   /* ST-13.7 · a luta como conta: o aparelho e o servidor chamam a mesma (0). */
