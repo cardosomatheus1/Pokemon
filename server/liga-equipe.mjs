@@ -12,6 +12,8 @@ import { criaturasDaConta } from './idle.mjs';
 import { criarSnapshot, snapshotsDe } from './equipe.mjs';
 import { tierDaConta } from './liga-mmr.mjs';
 import { sincronizarTemporada, rankingDaTemporada } from './temporada.mjs';
+import { saldoDePontos, extratoDePontos } from './pontos-liga.mjs';
+import { PONTOS, PREMIO_DO_TIER } from '../engine/pontos-liga.mjs';
 import { temporadaDe } from '../engine/temporada.mjs';
 import { tierDe } from '../engine/liga-mmr.mjs';
 import { exigirBandeira, bandeiraLigada } from './feature-flags.mjs';
@@ -54,7 +56,16 @@ export function ligaDaConta(db, { userId, agora, pack = PACK }) {
     meuTime: snapshotsDe(db, userId)[0] ?? null,
     equipe,
     recentes: minhasPartidas(db, userId, RECENTES, pack),
+    pontos: saldoDePontos(db, userId),
   };
+}
+
+/* OS LEAGUE POINTS DA CONTA (ST-11.7a): o saldo, o extrato e as regras de
+   ganho — a tela explica de onde vem cada ponto com os números do motor, e
+   não com uma cópia deles. Sincroniza antes: a virada pode ter mexido. */
+export function pontosDaConta(db, { userId, agora }) {
+  sincronizarTemporada(db, { agora });
+  return { saldo: saldoDePontos(db, userId), extrato: extratoDePontos(db, userId), regras: PONTOS, premios: PREMIO_DO_TIER };
 }
 
 /* O RANKING DA LIGA (ST-11.6c · tela 28, §9.15). A temporada de agora é VIVA:
@@ -92,6 +103,7 @@ export function rotasDaLigaEquipe(daExcecao) {
   const tentar = fn => { try { return { corpo: fn() }; } catch (e) { return daExcecao(e); } };
   return {
     'GET /api/equipe/liga': ({ db, userId, agora }) => ({ corpo: ligaDaConta(db, { userId, agora }) }),
+    'GET /api/equipe/pontos': ({ db, userId, agora }) => ({ corpo: pontosDaConta(db, { userId, agora }) }),
     'GET /api/equipe/ranking': ({ db, userId, agora, query }) => {
       const cru = query?.get?.('temporada');
       const temporada = cru == null || cru === '' ? null : Number(cru);

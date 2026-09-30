@@ -1426,6 +1426,28 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **Escopo:** recompensas cosméticas e de prestígio pela `cosmetic_ownership`. League Points é a terceira e **última** moeda (§10.1), com tabela e ledger próprios. A loja nunca vende rating ou pontos.
 - **Aceite:** League Points nunca convertem em PokéCash; compra idempotente.
 - **Portões:** Q1 Q2 Q3 Q6 Q8.
+- **Fatiada em 30/09** em três, cada uma fechando com o jogo jogável:
+  **11.7a** a moeda (livro, fonte, teto, virada) · **11.7b** o prêmio de
+  prestígio da temporada (insígnia por tier, pela `cosmetic_ownership`) ·
+  **11.7c** a League Shop na tela, com o saldo e a compra idempotente.
+- **11.7a ✅ 30/09 — a moeda.** `engine/pontos-liga.mjs` (puro): quem DESAFIA
+  ganha 30/15/10 (vitória/empate/derrota), quem DEFENDE ganha 10 só quando o
+  time segura (a conta parada não rende por ser atacada); teto de 200 por dia
+  do mundo no que vem de partida; na virada só 10% atravessa (§10.12 sugere
+  0–20%) e o prêmio do tier em que a temporada FECHOU entra para quem jogou 5
+  ou mais nela (Bronze 50 … Champion 750). Nenhuma taxa, paridade ou "vale X"
+  no motor — seria a conversão esperando alguém escrevê-la.
+  `server/pontos-liga.mjs`: o livro `liga_pontos` (migração
+  `pontos-liga-st11.7a`, só de inserção, `idem` único, `CHECK` no tipo), o
+  crédito DENTRO da transação da partida contada (a fora do ranking e a do bot
+  não pagam) e a virada DENTRO da virada da temporada, antes do soft reset.
+  O arquivo não importa a carteira e não abre transação — as duas ausências
+  têm teste. Rota `GET /api/equipe/pontos` (saldo, extrato, regras e prêmios do
+  motor); o saldo também sai no `GET /api/equipe/liga`.
+  `test/liga-pontos.mjs` · S1826–S1838 (13, todos pegos). S1733/S1758
+  continuam ancorados: o crédito entrou numa linha própria.
+- **Q6 da 11.7a:** uma rota de leitura, atrás da sessão; nenhuma escrita nova
+  vinda do cliente — a moeda só entra pelo servidor.
 
 ### ST-11.8 · Anti-win-trading, antes do dinheiro ✅ 28/09 (dispositivo e rede esperam a L-050)
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.8 · **Spec** §9.12, L-050

@@ -1747,6 +1747,42 @@ export const MIGRACOES = [
     },
     desce: db => { db.exec(`DROP TABLE feature_flags`); },
   },
+  {
+    nome: 'pontos-liga-st11.7a',
+    /* O LIVRO DOS LEAGUE POINTS (ST-11.7a, §10.1, §10.12). A terceira moeda
+     * tem livro PRÓPRIO, e não um balde da carteira: morar no `wallet_ledger`
+     * seria morar a um `UPDATE` de virar PokéCash, e a Spec proíbe a conversão
+     * para sempre. O saldo é a soma dos lançamentos; só de inserção.
+     *
+     *   temporada  a temporada em que o lançamento CONTA (o prêmio da virada
+     *              é da que começa)
+     *   dia        o dia do mundo — o teto diário de partida lê por ele
+     *   idem       a chave do lançamento: a partida, a virada, a compra.
+     *              Única: aplicar duas vezes lança uma
+     * ADITIVA. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE liga_pontos (
+          id         INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id    TEXT NOT NULL REFERENCES users(id),
+          temporada  INTEGER NOT NULL,
+          dia        INTEGER NOT NULL,
+          tipo       TEXT NOT NULL CHECK (tipo IN ('partida', 'defesa', 'premio', 'reset', 'compra')),
+          delta      INTEGER NOT NULL CHECK (delta <> 0),
+          ref        TEXT,
+          idem       TEXT NOT NULL UNIQUE,
+          criado_em  INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE INDEX liga_pontos_conta ON liga_pontos(user_id, dia)`);
+      db.exec(`CREATE TRIGGER liga_pontos_sem_update BEFORE UPDATE ON liga_pontos BEGIN SELECT RAISE(ABORT, 'liga_pontos é append-only'); END`);
+      db.exec(`CREATE TRIGGER liga_pontos_sem_delete BEFORE DELETE ON liga_pontos BEGIN SELECT RAISE(ABORT, 'liga_pontos é append-only'); END`);
+    },
+    desce: db => {
+      db.exec(`DROP TRIGGER liga_pontos_sem_delete`);
+      db.exec(`DROP TRIGGER liga_pontos_sem_update`);
+      db.exec(`DROP TABLE liga_pontos`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

@@ -31,6 +31,7 @@ import { emitir } from './telemetria.mjs';
 import { exigirBandeira } from './feature-flags.mjs';
 import { snapshotDe, snapshotPorId, ERRO_EQUIPE } from './equipe.mjs';
 import { aplicarPartida, tierDaConta, ratingDe } from './liga-mmr.mjs';
+import { creditarPartida } from './pontos-liga.mjs';
 import PACK from '../content/escolhido.mjs';
 
 export const ERRO_PARTIDA = Object.freeze({
@@ -119,6 +120,9 @@ export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveId
     const sinais = sinaisDaPartida([...recentes, { userA: a.user, userB: userId, vencedor: c.vencedor, criadaEm: agora }], a.user, userId, agora);
     db.prepare(`INSERT INTO liga_sinais (partida_id, elegivel, sinais_json, criado_em) VALUES (?, ?, ?, ?)`)
       .run(id, elegivel(sinais) ? 1 : 0, JSON.stringify(sinais), agora);
+    /* A partida CONTADA mexe no Liga MMR e paga os League Points (ST-11.7a),
+       na mesma transação; a fora do ranking não faz nenhum dos dois. */
+    if (elegivel(sinais)) creditarPartida(db, { id, userA: a.user, userB: userId, vencedor: c.vencedor, agora });
     if (elegivel(sinais)) aplicarPartida(db, { id, userA: a.user, userB: userId, vencedor: c.vencedor, agora });
     else emitir(db, { nome: 'liga_partida_fora_do_ranking', userId, chave: `integridade:${id}`, agora,
                       campos: { partida: id, sinais: sinais.map(x => x.sinal).join(',').slice(0, 40) } });

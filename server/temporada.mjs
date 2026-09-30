@@ -14,6 +14,7 @@
  */
 import { temporadaDe, softReset } from '../engine/temporada.mjs';
 import { tierDe } from '../engine/liga-mmr.mjs';
+import { virarPontos } from './pontos-liga.mjs';
 
 function emTransacao(db, fn) {
   db.exec('BEGIN');
@@ -40,6 +41,9 @@ export function sincronizarTemporada(db, { agora }) {
       const contas = db.prepare(`SELECT user_id, rating, partidas FROM liga_mmr ORDER BY rating DESC, user_id`).all();
       db.prepare(`INSERT INTO liga_temporadas (numero, fechada_em, ranking_json) VALUES (?, ?, ?)`)
         .run(n, agora, JSON.stringify(contas.map((c, i) => ({ posicao: i + 1, user: c.user_id, tier: tierDe(c.rating), partidas: c.partidas }))));
+      /* Os pontos viram ANTES do soft reset: o prêmio é do tier em que a
+         temporada fechou (ST-11.7a). */
+      virarPontos(db, { temporada: n, agora });
       const reset = db.prepare(`INSERT INTO liga_mmr_resets (temporada, user_id, antes, depois, criado_em) VALUES (?, ?, ?, ?, ?)`);
       const grava = db.prepare(`UPDATE liga_mmr SET rating = ?, atualizado_em = ? WHERE user_id = ?`);
       for (const c of contas) {

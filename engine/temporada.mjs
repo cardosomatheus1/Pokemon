@@ -27,8 +27,15 @@ export function temporadaDe(agora) {
   const numero = Math.floor(d / TEMPORADA.dias) + 1;
   const dia = d - (numero - 1) * TEMPORADA.dias + 1;
   const fase = dia <= 7 ? 'colocacao' : dia <= 21 ? 'competicao' : 'fechamento';
+  return { numero, dia, fase, ...janelaDaTemporada(numero) };
+}
+
+/* O começo e o fim de uma temporada pelo NÚMERO — a virada precisa da janela
+   da que fecha (as partidas que contam para o prêmio, ST-11.7a), e o relógio
+   já está na seguinte. */
+export function janelaDaTemporada(numero) {
   const inicio = (TEMPORADA.INICIO + (numero - 1) * TEMPORADA.dias) * DIA_MS + FUSO_MS;
-  return { numero, dia, fase, inicio, fim: inicio + TEMPORADA.dias * DIA_MS };
+  return { inicio, fim: inicio + TEMPORADA.dias * DIA_MS };
 }
 
 export const softReset = rating => MMR.inicial + Math.round((rating - MMR.inicial) * TEMPORADA.fatorReset);
