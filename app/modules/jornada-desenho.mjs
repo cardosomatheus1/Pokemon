@@ -87,8 +87,14 @@ function pesado(d, camada, fx, fy) {
 /* A grade do mundo: uma célula por `celula` px da caixa. O chão e a altura
    pela amostra suave, com a borda oscilando `oscila` casas do desenho para
    cada lado; a obra (ponte, escada) pela casa exata — ela mora onde a
-   estrada passa, e não pode tremer para fora dela. */
-export function gradeDoDesenho(d, { largura, altura, celula = CELULA, emPe = false, suave = true, oscila = 0.45 } = {}) {
+   estrada passa, e não pode tremer para fora dela.
+
+   DUAS OITAVAS (ST-10.25 · L-219): com uma onda só, de 0,45 casa, a borda
+   entre duas casas saía em retas e a 45° — quatro rodadas do Q7 leram
+   "manchas hexagonais, cara de gerador". A onda larga desloca o contorno
+   inteiro (a silhueta de cada região deixa de seguir a grade do desenho), e
+   o grão fino quebra as retas que sobram, como um traço à mão. */
+export function gradeDoDesenho(d, { largura, altura, celula = CELULA, emPe = false, suave = true, oscila = 0.75, grao = 0.3 } = {}) {
   const col = Math.ceil(largura / celula), lin = Math.ceil(altura / celula), g = { mat: [], alt: [], obra: [] };
   for (let l = 0; l < lin; l++) {
     const m = [], a = [], o = [];
@@ -98,7 +104,11 @@ export function gradeDoDesenho(d, { largura, altura, celula = CELULA, emPe = fal
       o.push(exato.obra);
       if (!suave) { m.push(exato.mat); a.push(exato.alt); continue; }
       let fx = u * d.col, fy = v * d.lin;
-      if (oscila) { const x = fx, y = fy; fx += oscila * 2 * (ruido(x, y, 1) - 0.5); fy += oscila * 2 * (ruido(x, y, 2) - 0.5); }
+      if (oscila) {
+        const x = fx, y = fy;
+        fx += oscila * 2 * (ruido(x, y, 1) - 0.5) + grao * 2 * (ruido(x, y, 3, 0.9) - 0.5);
+        fy += oscila * 2 * (ruido(x, y, 2) - 0.5) + grao * 2 * (ruido(x, y, 4, 0.9) - 0.5);
+      }
       m.push(pesado(d, 'mat', fx, fy)); a.push(pesado(d, 'alt', fx, fy));
     }
     g.mat.push(m); g.alt.push(a); g.obra.push(o);

@@ -13,7 +13,7 @@ import pack from '../content/pokemon_kanto_v1.mjs';
 import { mapaDaJornada } from '../app/modules/jornada-dados.mjs';
 import { MATERIAIS, CELULA } from '../app/modules/jornada-chao.mjs';
 import { paraTiled, deTiled, tilesetPng, arquivoDoMapa, CASAS } from '../tools/mapa-tiled.mjs';
-import { larguraDaEstrada, faceDoPenhasco, CORES_DA_ESTRADA, trechosDaEstrada, setasNaEstrada, curvaDaEstrada, obrasNaEstrada, casasDaEstrada } from '../app/modules/jornada-estrada.mjs';
+import { larguraDaEstrada, faceDoPenhasco, CORES_DA_ESTRADA, trechosDaEstrada, setasNaEstrada, curvaDaEstrada, obrasNaEstrada, casasDaEstrada, pedrasNoChao, CHAO_QUE_ABRE, FOLGA_DA_CLAREIRA } from '../app/modules/jornada-estrada.mjs';
 import { LEGENDA, ORDEM, lerDesenho, celulaEm, noDesenho, gradeDoDesenho, mascara, camadas, bitsDeAltura } from '../app/modules/jornada-desenho.mjs';
 
 const fonte = rel => readFileSync(new URL(rel, import.meta.url), 'utf8');
@@ -222,6 +222,37 @@ export function suite() {
     ok(/if \(el\.classList\.contains\('jnMarco'\)\) el\.style\.setProperty\('--dx', el\.dataset\.dx0\);/.test(tela), 'o marco volta a sumir quando esbarra');
     const seta = (fonte('../app/index.html').match(/\.jnSeta\{[^}]*\}/) ?? [''])[0];
     ok(seta && !/var\(--neon\)/.test(seta), 'a seta do trecho fechado usa o ciano do PRÓXIMO');
+  });
+
+  s.teste('ST-10.25 · a composição: o contorno em duas oitavas, a clareira, as pedras, o nó trancado, a lava, a escala', () => {
+    /* O contorno: a onda larga e o grão fino, por padrão. */
+    const fonteDesenho = semComentario(fonte('../app/modules/jornada-desenho.mjs'));
+    ok(/const PECA = 4;/.test(semComentario(fonte('../app/modules/jornada-desenho-tela.mjs'))), 'a peça voltou a 8 px (a curva em degraus regulares — "bordas hexagonais")');
+    ok(/oscila = 0\.75, grao = 0\.3/.test(fonteDesenho) && /grao \* 2 \* \(ruido\(x, y, 3, 0\.9\) - 0\.5\)/.test(fonteDesenho), 'o contorno voltou a uma onda só (as manchas hexagonais)');
+    /* As pedras: só no miolo de rocha, fora do que a estrada abriu, e sempre as mesmas. */
+    const mat = Array.from({ length: 30 }, (_, l) => Array.from({ length: 60 }, (_, c) => (c < 30 ? 'planalto' : 'grama')));
+    const p1 = pedrasNoChao(mat), p2 = pedrasNoChao(mat);
+    ok(p1.length > 3, `o planalto grande ficou sem relevo (${p1.length} pedras)`);
+    igual(JSON.stringify(p1), JSON.stringify(p2), 'as pedras mudam de uma pintura para outra');
+    ok(p1.every(p => p.c >= 1 && p.c <= 28), 'pedra na borda da rocha (cortada) ou fora dela');
+    igual(pedrasNoChao(mat, { longe: () => false }).length, 0, 'pedra em cima da estrada');
+    /* Sem sorte: uma faixa de rocha de três casas, pedra em toda casa possível —
+       só a coluna do meio é miolo. */
+    const faixa = Array.from({ length: 6 }, () => Array.from({ length: 8 }, (_, c) => (c >= 3 && c <= 5 ? 'pedra' : 'grama')));
+    const nela = pedrasNoChao(faixa, { raridade: 1 });
+    ok(nela.length > 0 && nela.every(p => p.c === 4), `pedra fora do miolo da rocha: ${JSON.stringify(nela.map(p => p.c))}`);
+    ok(CHAO_QUE_ABRE.has('floresta') && CHAO_QUE_ABRE.has('bosque') && !CHAO_QUE_ABRE.has('pedra') && FOLGA_DA_CLAREIRA > 0, 'a mata não abre clareira (ou a rocha abre)');
+    /* A tela: a clareira em grama pelo autotile, antes dos penhascos; as pedras longe da estrada. */
+    const pintor = semComentario(fonte('../app/modules/jornada-desenho-tela.mjs'));
+    const iClareira = pintor.indexOf("peca('grama', bits"), iPedra = pintor.indexOf('pedrasNoChao(g.mat'), iFace = pintor.indexOf('faixa(FACE, ROCHA[nivel])');
+    ok(iClareira > 0 && iPedra > iClareira && iFace > iPedra, 'a clareira e as pedras não vêm antes dos penhascos');
+    ok(/CHAO_QUE_ABRE\.has\(g\.mat\[l\]\?\.\[c\]\)/.test(pintor), 'a clareira abre em qualquer chão, e não só na mata');
+    ok(/longe: \(l, c\) => !aberta\.has\(`\$\{l\},\$\{c\}`\)/.test(pintor), 'as pedras caem em cima da estrada');
+    /* O CSS: o trancado sem ninguém, a lava em pixel, a escala. */
+    const css = fonte('../app/index.html');
+    const lava = css.match(/\.jnLago\.jn-lava::after\{[^}]*\}/)?.[0] ?? '';
+    ok(lava && !/radial-gradient/.test(lava) && /steps\(/.test(lava), 'a lava voltou ao gradiente liso (sem pixel)');
+    ok(/\.jnEu\{scale:\.78;transform-origin:50% 100%\}/.test(css) && /\.jnOw\{scale:\.8;transform-origin:50% 100%\}/.test(css), 'o jogador e o treinador voltaram maiores que as casas');
   });
 
   return s;

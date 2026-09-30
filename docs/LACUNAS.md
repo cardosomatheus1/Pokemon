@@ -9053,7 +9053,7 @@ o treinador). Quatro rodadas de Q7 cego, barra SMW: estrada 3 → 4–6, altura
 4 → 5–7; **mundo e publicado ficaram em 4–6** — o que os segura não é mais a
 estrada, e foi para a L-219.
 
-### L-219 — o mapa ainda lê como gerado: biomas em hexágono, fantasmas, clareira, escala
+### L-219 — o mapa ainda lê como gerado: biomas em hexágono, fantasmas, clareira, escala ✅ FECHADA na ST-10.25 (30/09), o resto na L-220
 
 **Registrada em:** 30/09/2026, na ST-10.24. **Bloco dono:** ST-10.25 (proposta
 no PLANO no mesmo commit). **Estado:** aberta.
@@ -9076,4 +9076,35 @@ do que está em volta dela:
 
 Não cabe na ST-10.24 porque é o chão e a composição, e não a estrada. O que a
 destrava: nada — é construir.
+
+**Fechada na ST-10.25 (30/09):** o contorno das regiões em duas oitavas de
+ruído e a peça do chão de 8 para 4 px (a curva deixa de sair em degraus
+regulares); o nó trancado é só o ponto no chão (nem holograma nem mancha); a
+mata abre clareira para a estrada; a lava em pixel art; o jogador, o treinador,
+o palácio e o lendário na escala das casas; pedras no miolo dos planaltos. Q7
+cego, duas rodadas: mundo 3–4 → 4–5, publicado 3–4 → 4–5, estrada 5 → 6,
+altura 4–5 → 5–6. **O aceite ≥7 não foi atingido** — o resto é o DESENHO do
+mapa, e foi para a L-220.
+
+### L-220 — o desenho do mapa: retalhos de bioma, nós sem estrada, platô ruidoso
+
+**Registrada em:** 30/09/2026, na ST-10.25. **Bloco dono:** ST-10.26 (proposta
+no PLANO no mesmo commit). **Estado:** aberta — ADIADA pela DEC-20 (o dono, 30/09:
+as correções visuais do mapa param aqui).
+
+Com o chão e a estrada no lugar, as duas rodadas do Q7 da ST-10.25 passaram a
+falar do DESENHO do mapa (o `content/mapa_kanto_v1.mjs`), e não da pintura:
+- a metade direita é uma colcha de biomas pequenos lado a lado (areia, prado
+  rosa, pântano, cidade, vulcão) — o SMW faz poucas massas grandes com
+  transições pensadas;
+- os nós futuros ficam à vista sem estrada que os ligue ("discos de interface
+  flutuando"); o SMW revela o nível junto com o caminho;
+- o platô cinza é cascalho repetido sem ponto de descanso — o SMW deixa o topo
+  limpo e põe a textura na borda; e toda mancha ganha o mesmo penhasco fino,
+  sem hierarquia de altura.
+
+Não cabe na ST-10.25 porque é redesenhar a geografia (conteúdo) e a regra de
+revelação dos nós, e não a pintura. O que a destrava: nada — é construir; o
+editor já existe (`node tools/mapa-tiled.mjs exportar|importar`).
+
 

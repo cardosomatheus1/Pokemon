@@ -22,7 +22,8 @@
    ~1860 px (1920). A terra e o penhasco crescem com ela em degraus, e não
    contínuos — pixel art em tamanho quebrado borra. A 2ª rodada do Q7 ainda
    leu o penhasco de 15 px em 1920 como "degrau de um tile": ele sobe a 22. */
-export const larguraDaEstrada = largura => (largura >= 1700 ? 14 : largura >= 1300 ? 12 : largura >= 900 ? 10 : 8);
+/* ST-10.25: um degrau a mais — com a peça de 4 px a estrada saía fina sobre a pedra (Q7). */
+export const larguraDaEstrada = largura => (largura >= 1700 ? 16 : largura >= 1300 ? 14 : largura >= 900 ? 12 : 10);
 export const faceDoPenhasco = largura => (largura >= 1700 ? 22 : largura >= 1300 ? 18 : largura >= 900 ? 14 : 10);
 
 /* As cores: a terra do caminho do SMW, a borda escura que a recorta do chão,
@@ -110,4 +111,32 @@ export function casasDaEstrada(amostras, { celula, raio, col, lin }) {
     }
   }
   return casas;
+}
+
+/* A CLAREIRA (ST-10.25 · L-219): "a trilha pintada sobre a copa da floresta"
+   — no SMW a mata ABRE para o caminho. As casas de mata a até `folga` px além
+   da borda da estrada viram grama; os outros chãos não abrem (a estrada na
+   areia, na rocha ou na cidade já é chão ali). */
+export const CHAO_QUE_ABRE = Object.freeze(new Set(['floresta', 'bosque']));
+export const FOLGA_DA_CLAREIRA = 7;
+
+/* O RELEVO DENTRO DO PLANALTO (ST-10.25 · L-219): "o planalto cinza é papel de
+   parede". Pedras espalhadas por um hash da casa — a mesma pedra no mesmo
+   lugar em toda pintura —, só no MIOLO de chão de rocha (a casa e as oito em
+   volta do mesmo chão: nada de pedra cortada pela borda) e fora da estrada.
+   Uma a cada ~`raridade` casas. */
+export const CHAO_COM_PEDRAS = Object.freeze(new Set(['planalto', 'pedra']));
+export function pedrasNoChao(mat, { longe = () => true, raridade = 19, margem = 1 } = {}) {
+  const pedras = [], lin = mat?.length ?? 0, col = mat?.[0]?.length ?? 0;
+  const h = (l, c) => ((Math.imul(l + 11, 73856093) ^ Math.imul(c + 5, 19349663)) >>> 0) % raridade;
+  for (let l = margem; l < lin - margem; l++) {
+    for (let c = margem; c < col - margem; c++) {
+      const m = mat[l][c];
+      if (!CHAO_COM_PEDRAS.has(m) || h(l, c) !== 0 || !longe(l, c)) continue;
+      let miolo = true;
+      for (let dl = -margem; dl <= margem && miolo; dl++) for (let dc = -margem; dc <= margem; dc++) if (mat[l + dl][c + dc] !== m) { miolo = false; break; }
+      if (miolo) pedras.push({ l, c, grande: ((l * 7 + c * 3) % 3) === 0 });
+    }
+  }
+  return pedras;
 }

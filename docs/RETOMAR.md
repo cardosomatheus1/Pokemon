@@ -43,7 +43,7 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            nas quatro larguras). Está no roteiro do piloto (docs/PILOTO.md)
            · antes: ST-10.23 (o mapa desenhado à mão; o Tiled como editor —
            node tools/mapa-tiled.mjs exportar|importar), DEC-16, ST-13.8
-           · suíte 2865/2865, repetir 2/2 (medido 30/09, na 10.24)
+           · suíte 2866/2866, repetir 2/2 (medido 30/09, na 10.25)
            Q2 completo em fatias: 1/10 e 2/10 VERDES; seguir com
            node test/sabotagem.mjs --fatia=3/10, até 10/10
            · ST-10.24 FECHADA (30/09): a estrada é CHÃO no mapa da jornada
@@ -51,9 +51,14 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            trecho próximo à vista, penhasco com face). Q7: estrada 3 → 4–6,
            altura 4 → 5–7; aceite ≥7 não atingido — mundo e publicado
            seguram em 4–6 pelo chão e pela composição (L-219)
-o PRÓXIMO  a ST-10.25 (a composição do mundo, L-219: contorno orgânico sem
-           hexágono, nó trancado opaco, clareira para a estrada, lava em
-           pixel art) e o Q2 completo em fatias (3/10 a 10/10). O piloto
+           · ST-10.25 FECHADA (30/09): a composição do mundo — contorno em
+           duas oitavas, peça de 4 px, nó trancado só o ponto, clareira,
+           pedras, lava em pixel, escala. Q7: mundo/publicado 4–5, estrada 6,
+           altura 5–6; aceite ≥7 não atingido — o resto é o desenho (L-220)
+o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
+           mais tempo com essas correções visuais"): a ST-10.26 (o desenho
+           do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta
+           de jogo, e o Q2 completo em fatias (3/10 a 10/10). O piloto
            (ST-7.2) espera o jogo 100% (DEC-18); os ícones (1.30), a arte
            do dono
 com o DONO decididas em 30/09: DEC-16 (o stake da Liga LIGADO, moeda

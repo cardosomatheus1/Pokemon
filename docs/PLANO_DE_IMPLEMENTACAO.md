@@ -1513,17 +1513,31 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   sobre o treinador — a sonda do Q5 acusou em 1100).
 - **Sabotagem:** S2055–S2066.
 
-#### ST-10.25 · A composição do mundo (L-219) — proposta
-- **Porte** M–G · **Método** GL (barra: o mapa do SMW).
-- **Escopo:** o contorno das regiões orgânico, sem a borda hexagonal da amostra
-  (a borda por casa do desenho, suavizada em escala maior, ou uma máscara de
-  contorno por região); o nó trancado como ponto de terreno OPACO no lugar do
-  treinador translúcido; a mata abre clareira onde a estrada passa; a lava em
-  pixel art; a escala do treinador-jogador contra as casas; relevo dentro do
-  planalto grande.
+#### ST-10.25 · A composição do mundo (L-219) ✅ 30/09 — aceite ≥7 NÃO atingido
+- **Porte** M · **Método** GL (barra: o mapa do SMW).
+- **Feito:** o contorno das regiões em duas oitavas de ruído (`oscila` 0,75 e
+  `grao` 0,3) e a peça do chão de 4 px (era 8 — a curva saía em degraus
+  regulares, lidos como hexágono); o nó trancado é só o ponto no chão (o rival
+  e o lendário aparecem quando o caminho abre); a mata abre clareira em grama
+  onde a estrada passa; pedras em pixel no miolo dos planaltos (densidade e
+  margem em pixels); a lava em faixas chapadas e passos; a escala (jogador
+  0,78, treinador 0,8, palácio 1,6 — era 2,1 —, lendário 0,75); a estrada um
+  degrau mais larga.
+- **Q7 cego, duas rodadas** (mundo / publicado / estrada / altura): 1ª 3–4 ·
+  3–4 · 5 · 4–5 → 2ª 4–5 · 4–5 · 6 · 5–6. **O aceite ≥7 não foi atingido**: o
+  que segura agora é o DESENHO do mapa — **L-220**, dono **ST-10.26**.
+- **Sabotagem:** S2067–S2073; S1902, S1971, S1972 e S1987 realvados.
+
+#### ST-10.26 · O desenho do mapa (L-220) — proposta, ADIADA pela DEC-20 (o dono: "só segue com desenvolvimento")
+- **Porte** G · **Método** GL (barra: o mapa do SMW) · **Ferramenta:** o Tiled.
+- **Escopo:** redesenhar a geografia em poucas massas grandes com transição
+  (a metade direita deixa de ser colcha de biomas); a regra de revelação — o
+  nó futuro aparece junto com o trecho que leva a ele, e não solto; o topo dos
+  planaltos limpo, com a textura na borda; a hierarquia de altura (poucas
+  elevações altas, o resto plano).
 - **Aceite:** ≥ 7 em "mundo" e "publicado" no Q7 cego nas quatro larguras.
-- **Sabotagem:** a borda volta a ser hexagonal; o trancado volta a ser
-  translúcido; a estrada volta a passar sobre a copa.
+- **Sabotagem:** o nó futuro volta a aparecer sem estrada; o desenho volta aos
+  retalhos (o teste de área mínima por região).
 
 ### ST-10.20 · A jornada ensina a apostar? ✅ 27/09
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16

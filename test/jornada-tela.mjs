@@ -631,7 +631,8 @@ export function suite() {
     const css = fonte('../app/index.html'), tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
     ok(/n\.tipo === 'ginasio' && arteDaInsignia\(n\.insignia\) \? ` class="jnSilhueta" style="--ins:url\(\$\{arteDaInsignia\(n\.insignia\)\}/.test(tela) && /i\.jnSilhueta::after\{[^}]*var\(--ins\)[^}]*grayscale\(1\)/.test(css), 'o ginásio futuro sem a silhueta da insígnia');
     ok(/\.jnFinal \.jnNo\.jn-trancado span\{opacity:1;color:#ffe9a8/.test(css), 'o rótulo do fim herdou o apagado do trancado');
-    ok(/n\.final \? ' jnFinal'/.test(tela) && /\.jnFinal \.jnMarco\{[^}]*scale\(2\.1\)/.test(css), 'o castelo do fim não está no nó do Campeão');
+    /* ST-10.25: a 1,6× (era 2,1 — ~3× a casa, Q7): ainda o maior marco do mapa. */
+    ok(/n\.final \? ' jnFinal'/.test(tela) && /\.jnFinal \.jnMarco\{[^}]*scale\(1\.6\)/.test(css), 'o castelo do fim não está no nó do Campeão');
   });
 
   s.teste('10.22c3 · a estrada não atravessa o lago; a Elite mostra o que revisa; o líder vencido sai de cena', () => {
@@ -656,8 +657,11 @@ export function suite() {
        10.22e). O rival do futuro é um HOLOGRAMA: sem cor própria, pálido e
        translúcido, com o contorno no neon da interface — continua sem entregar
        quem espera ali, e passa a dizer "ainda não" em vez de "defeito". */
+    /* ST-10.25 (L-219): o holograma também foi lido como defeito ("sprite que
+       não carregou", Q7 da 10.24). O nó trancado passa a mostrar SÓ o ponto no
+       chão — nem mancha, nem holograma, nem o rival colorido. */
     const holo = css.match(/\.jnPos\.jn-trancado \.jnOw\{([^}]*)\}/)?.[1] ?? '';
-    ok(/grayscale\(1\)/.test(holo) && !/brightness\(0\)/.test(holo) && /var\(--neonRGB\)/.test(holo) && Number(holo.match(/opacity:([.\d]+)/)?.[1] ?? 1) <= 0.6, 'o rival do nó futuro volta a ser mancha preta — ou aparece colorido');
+    ok(holo === 'display:none', 'o rival do nó futuro volta a aparecer (mancha preta, holograma ou colorido)');
   });
 
   return s;

@@ -13,7 +13,7 @@
  * cima dela, como partes da estrada). O que ela é mora em `jornada-estrada.mjs`. */
 import { gradeDoDesenho, camadas, bitsDeAltura, mascara } from './jornada-desenho.mjs';
 import { TILE, COR_DO_CHAO } from './jornada-chao.mjs';
-import { larguraDaEstrada, faceDoPenhasco, CORES_DA_ESTRADA, curvaDaEstrada, obrasNaEstrada, casasDaEstrada } from './jornada-estrada.mjs';
+import { larguraDaEstrada, faceDoPenhasco, CORES_DA_ESTRADA, curvaDaEstrada, obrasNaEstrada, casasDaEstrada, CHAO_QUE_ABRE, FOLGA_DA_CLAREIRA, pedrasNoChao } from './jornada-estrada.mjs';
 
 /* O contorno do chão: a linha escura na borda da máscara — o traço do SMW.
    Sobre a água ele é a espuma: a terra termina numa linha clara. */
@@ -21,9 +21,11 @@ const CONTORNO = Object.freeze({
   grama: '#3f7a2e', campo: '#4f8f36', jardim: '#4f8f36', praia: '#f4ecc8', pantano: '#2e4a2a', floresta: '#17361a',
   bosque: '#0f2c26', pedra: '#76552d', praca: '#8f8568', cidade: '#5f6570', usina: '#3a3d44', vulcao: '#241210', planalto: '#5f584c',
 });
-/* A peça do desenho tem 8 px — meia célula do chão por proximidade: com a
-   amostra suave, a curva da borda sai em degraus de 8, e não de 16. */
-const PECA = 8;
+/* A peça do desenho tem 4 px (ST-10.25; era 8): com a peça de 8, a curva da
+   borda saía em degraus regulares de 8 px, e quatro rodadas do Q7 leram as
+   diagonais como "bordas hexagonais". Com 4, o degrau cai pela metade e a
+   costa, o areal e a mata ganham curva. */
+const PECA = 4;
 /* A rocha da face, mais CLARA que a borda de cima: a 2ª rodada do Q7 leu a
    faixa escura como "degrau de um tile, sem face". Com a face clara em
    colunas, a base escura e a quina acesa, ela lê como parede. */
@@ -157,6 +159,34 @@ export function pintarDesenho(tela, caixa, d, emPe, img, estrada = null) {
       const cam = camadas(g, i, j);
       cam.forEach(({ mat, bits }, k) => ctx.drawImage(peca(mat, bits, x, y, k === 1 && cam[0].mat === 'agua'), x, y));
     }
+  }
+
+  /* 1b. A CLAREIRA (ST-10.25): onde a estrada atravessa a mata, a mata abre —
+     grama pelo mesmo autotile, com a borda da grama, antes dos penhascos. */
+  const todas = estrada ? [...curvaDaEstrada(estrada.andado ?? []), ...curvaDaEstrada(estrada.proximo ?? [])] : [];
+  const aberta = casasDaEstrada(todas, { celula: C, raio: larguraDaEstrada(w) / 2 + FOLGA_DA_CLAREIRA, col, lin });
+  if (estrada) {
+    const abre = (l, c) => aberta.has(`${l},${c}`) && CHAO_QUE_ABRE.has(g.mat[l]?.[c]);
+    for (let i = 0; i <= lin; i++) {
+      for (let j = 0; j <= col; j++) {
+        const bits = (abre(i - 1, j - 1) ? 1 : 0) | (abre(i - 1, j) ? 2 : 0) | (abre(i, j) ? 4 : 0) | (abre(i, j - 1) ? 8 : 0);
+        if (bits) ctx.drawImage(peca('grama', bits, j * C - C / 2, i * C - C / 2, false), j * C - C / 2, i * C - C / 2);
+      }
+    }
+  }
+
+  /* 1c. O RELEVO no miolo da rocha (ST-10.25): pedras em pixel, longe da
+     estrada — o contorno escuro, a face, o brilho e a sombra no chão. */
+  /* A densidade e a margem em PIXELS, e não em casas: a mesma pedra a cada
+     ~19 casas de 8 px, a 16 px de qualquer borda, seja qual for a peça. */
+  const escala = 8 / C;
+  for (const p of pedrasNoChao(g.mat, { longe: (l, c) => !aberta.has(`${l},${c}`), raridade: Math.round(19 * escala * escala), margem: Math.ceil(16 / C) })) {
+    const x = p.c * C + 1, y = p.l * C + 1, W = p.grande ? 16 : 11, A = p.grande ? 12 : 8;
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(x + 1, y + A - 1, W, 2);
+    ctx.fillStyle = '#4a4238'; ctx.fillRect(x + 1, y, W - 2, A); ctx.fillRect(x, y + 1, W, A - 2);
+    ctx.fillStyle = '#958b7b'; ctx.fillRect(x + 1, y + 1, W - 2, A - 2);
+    ctx.fillStyle = '#b9b09e'; ctx.fillRect(x + 2, y + 1, W - 5, 2);
+    ctx.fillStyle = '#6f6657'; ctx.fillRect(x + 1, y + A - 3, W - 2, 2);
   }
 
   /* 2. OS PENHASCOS: para cada altura, a máscara de "tão alto ou mais",

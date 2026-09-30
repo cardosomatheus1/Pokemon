@@ -1120,9 +1120,17 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnLago i{position:absolute;left:66%;top:34%;width:3px;height:3px;background:#fff;z-index:1;animation:jnBrilho 2.8s steps(1) infinite}
 @keyframes jnBrilho{0%,62%{opacity:0}63%,82%{opacity:1}83%,100%{opacity:0}}
 .jnLago.jn-lava::before{background:linear-gradient(180deg,#6a4638 0 55%,#3a2520 55% 100%)}
-.jnLago.jn-lava::after{background:radial-gradient(ellipse at 50% 58%,#fff2a8 0 12%,#ffb02e 13% 36%,#ff5a1a 37% 68%,#b8260f 69%);animation:jnLava 2.2s ease-in-out infinite alternate}
-@keyframes jnLava{to{filter:brightness(1.3) saturate(1.25)}}
-.jnLago.jn-lava i{left:44%;top:-6px;width:9px;height:9px;border-radius:50%;background:rgba(190,180,176,.75);box-shadow:7px -8px 0 1px rgba(190,180,176,.5),1px -17px 0 3px rgba(190,180,176,.3);animation:jnFumo 3.2s linear infinite}
+/* ST-10.25 (L-219): a lava em PIXEL ART, como a água ao lado — faixas chapadas,
+   o brilho em traços e a crosta, andando em passos. O gradiente radial liso
+   era o único enfeite do mapa sem pixel ("destoa do resto", Q7 da 10.24). */
+.jnLago.jn-lava::after{background:
+    linear-gradient(90deg,transparent 22%,#fff2a8 22% 34%,transparent 34%) 0 36%/100% 2px no-repeat,
+    linear-gradient(90deg,transparent 58%,#ffe07a 58% 70%,transparent 70%) 0 64%/100% 2px no-repeat,
+    linear-gradient(90deg,transparent 38%,#7a1a08 38% 46%,transparent 46%) 0 50%/100% 3px no-repeat,
+    linear-gradient(180deg,#ff9a2a 0 24%,#ff5a1a 24% 74%,#c02a0e 74% 100%);
+  animation:jnLava 1.8s steps(3) infinite alternate}
+@keyframes jnLava{to{background-position:6px 36%,-6px 64%,4px 50%,0 0}}
+.jnLago.jn-lava i{left:44%;top:-6px;width:8px;height:8px;border-radius:0;background:rgba(190,180,176,.8);box-shadow:8px -8px 0 0 rgba(190,180,176,.55),0 -16px 0 2px rgba(190,180,176,.32);animation:jnFumo 3.2s steps(4) infinite}
 @keyframes jnFumo{from{transform:translateY(2px);opacity:.9}to{transform:translateY(-8px);opacity:.25}}
 .jnLago.jn-brejo::before{background:linear-gradient(180deg,#7d8a45 0 55%,#566230 55% 100%)}
 .jnLago.jn-brejo::after{background:radial-gradient(circle at 30% 58%,#5fae4a 0 4px,transparent 4.5px),radial-gradient(circle at 70% 38%,#5fae4a 0 3px,transparent 3.5px),
@@ -1134,7 +1142,7 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 @media (min-width:521px) and (max-width:1200px){ .jnLago{transform:scale(.72)} }
 /* O FIM DA JORNADA (ST-10.22c2): o palácio da Liga cresce e brilha atrás do
    último nó — o castelo do SMW. "O fim lia como mais um ponto" (Q7 da c1). */
-.jnFinal .jnMarco{left:0;top:-14px;transform:translate(-50%,-100%) scale(2.1);transform-origin:50% 100%;z-index:0;
+.jnFinal .jnMarco{left:0;top:-14px;transform:translate(-50%,-100%) scale(1.6);transform-origin:50% 100%;z-index:0;
   filter:drop-shadow(0 0 6px rgba(255,210,74,.75)) drop-shadow(0 4px 0 rgba(0,0,0,.35))}
 .jnPos.jnFinal.jn-trancado .jnMarco{filter:saturate(.8) brightness(.95) drop-shadow(0 0 5px rgba(255,210,74,.55)) drop-shadow(0 4px 0 rgba(0,0,0,.35))}
 .jnFinal .jnNo span{border-color:#ffd24a;box-shadow:0 0 8px rgba(255,210,74,.45)}
@@ -1203,6 +1211,13 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnVoce{z-index:3}.jnPos.jnVoce{left:calc(var(--ax) * 1%);top:calc(var(--ay) * 1%)}
 .jnVoce .jnEu,.jnVoce.jnFim .jnEu{transform:translateX(calc(-100% - 22px))}.jnVoce.jnDireita .jnEu{transform:translateX(14px)}.jnEu{position:absolute;left:0;top:-48px;transform:translateX(-50%);height:52px;width:25px;overflow:hidden;pointer-events:none;z-index:2;filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
 .jnEu img{height:52px;width:auto;max-width:none;display:block;image-rendering:pixelated}
+/* ST-10.25 (L-219): a ESCALA do mundo — o jogador (52 px) e o treinador (64 px)
+   eram maiores que as casas, e o mapa lia como peças de tamanhos soltos. Os
+   dois encolhem pelos pés; a folha e a medição dela não mudam. */
+.jnEu{scale:.78;transform-origin:50% 100%}
+.jnOw{scale:.8;transform-origin:50% 100%}
+/* O palácio da final a 1,6× (era 2,1: ~3× a casa, Q7 da 10.25) e o lendário a ¾. */
+.jnLend{scale:.75;transform-origin:50% 100%}
 /* ST-10.22b: o trancado esmaece, e não some em cinza — o mundo inteiro à vista, só o caminho escondido (Q7: "cinza sobre cinza"). */
 /* O rival do nó FUTURO em silhueta (ST-10.22c3): colorido, ele entregava quem
    espera ali — o crítico cego apontou o Zapdos em sombra como a única
@@ -1210,7 +1225,10 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 /* ST-10.22f: a silhueta PRETA lia como mancha de tinta (três rodadas do Q7 da
    10.22e). O rival do futuro vira HOLOGRAMA: sem cor, pálido, translúcido, com
    o contorno no neon da interface — continua sem entregar quem espera ali. */
-.jnPos.jn-trancado .jnOw{filter:grayscale(1) brightness(1.5) contrast(.7) drop-shadow(0 0 2px rgba(var(--neonRGB),.95));opacity:.5}
+/* ST-10.25 (L-219): o nó TRANCADO é só o ponto no chão, como no SMW — quem
+   espera ali aparece quando o caminho abre. A silhueta preta leu "mancha de
+   tinta" (Q7 da 10.22e); o holograma, "sprite que não carregou" (Q7 da 10.24). */
+.jnPos.jn-trancado .jnOw{display:none}
 /* O rival VENCIDO sai de cena (ST-10.22c3): de pé e colorido no ginásio,
    nada dizia "batido" — o SMW derruba o castelo vencido. Apagado pela
    metade, o crítico leu como defeito de pintura; fora, o nó dourado e a
@@ -1258,7 +1276,7 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnLendImg{width:64px;height:64px;image-rendering:pixelated;filter:drop-shadow(0 4px 0 rgba(0,0,0,.35))}
 @keyframes jnAura{50%{box-shadow:0 0 22px 6px rgba(255,210,63,.35)}}
 @media (prefers-reduced-motion:reduce){ .jnLend{animation:none} }
-.jnPos.jn-trancado .jnLendImg{filter:grayscale(1) brightness(1.4) contrast(.75) drop-shadow(0 0 3px rgba(255,210,63,.95));opacity:.6}
+.jnPos.jn-trancado .jnLend{display:none}
 .jnNo.jn-chefe i{width:38px;height:38px;border-color:#ffd23f;background:radial-gradient(circle,#ff5a4d,#7a1b12)}
 .jnNo.jn-chefe{transform:translate(-50%,-19px)}.jnNo.jn-chefe span{border:1px solid #ffd23f}.jnNo.jn-chefe span em{color:#ffd23f}
 .jnSeloChefe{border-color:#ffd23f;color:#ffd23f}

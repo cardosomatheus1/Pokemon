@@ -98,9 +98,10 @@ export function suite() {
   /* ST-10.22f (L-216): o lendário do futuro é holograma, e o painel acompanha o mapa. */
   s.teste('ST-10.22f: o holograma do lendário e o painel na largura do mapa', () => {
     const css = fonte('../app/index.html');
-    /* O lendário do futuro também é holograma, no ouro do chefe. */
-    const lend = css.match(/\.jnPos\.jn-trancado \.jnLendImg\{([^}]*)\}/)?.[1] ?? '';
-    ok(/grayscale\(1\)/.test(lend) && !/brightness\(0\)/.test(lend) && /rgba\(255,210,63/.test(lend), 'o lendário do futuro volta a ser mancha preta');
+    /* ST-10.25: o nó trancado é só o ponto no chão — nem silhueta preta ("mancha
+       de tinta") nem holograma ("sprite que não carregou"): quem espera ali, o
+       rival e o lendário, aparece quando o caminho abre. */
+    ok(/\.jnPos\.jn-trancado \.jnOw\{display:none\}/.test(css) && /\.jnPos\.jn-trancado \.jnLend\{display:none\}/.test(css), 'o nó trancado volta a mostrar quem espera nele (fantasma ou mancha)');
     /* O painel acompanha o mapa em 1920 (sobravam ~600 px vazios ao lado); a leitura segue com teto. */
     ok(!/\.jnPainel\{[^}]*max-width/.test(css) && /\.jnInfo\{[^}]*max-width:820px/.test(css), 'o painel para em 1240 px e deixa o vazio ao lado do mapa');
   });
