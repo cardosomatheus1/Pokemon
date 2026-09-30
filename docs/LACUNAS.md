@@ -8393,7 +8393,9 @@ participação no bolo.
 ### L-194 — a ficha da Pokédex a 1920, e os emojis de sistema no "Por clima"
 
 **Registrada em:** 26/09/2026, no Q7 da ST-9.3 (crítico cego, barra "TESTE DA
-FICHA DE 5 SEGUNDOS"). **Bloco dono:** UX-01. **Estado:** aberto.
+FICHA DE 5 SEGUNDOS"). **Bloco dono:** UX-01. **Estado:** parcial — o arranjo da
+ficha a 1920 foi resolvido na ST-5.14 (o selo do degrau ao lado do título);
+ficam os emojis de sistema do clima, que pedem ícone do tema (arte).
 
 Duas sobras que o bloco não construiu, e por quê:
 - **a 1920 a ficha usa ~740 px de texto** e deixa o selo do degrau a ~800 px

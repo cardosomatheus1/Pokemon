@@ -55,5 +55,14 @@ export function suite() {
     ok(/\.colMedalhas \.colTodas\{flex:none/.test(css), 'o "ver todas" estica pela faixa inteira — o `.btn{flex:1}` vem depois e ganha de um seletor só');
   });
 
+  /* ST-5.14 (L-194): a 1920 o selo do degrau ("CAPTURADA") ficava na outra
+     ponta da ficha, a ~800 px do texto — o título empurrava o selo com
+     space-between pela largura inteira. */
+  s.teste('ST-5.14: o selo do degrau ao lado do título da ficha, e não na outra ponta', () => {
+    const css = fonte('../app/index.html');
+    ok(/\.pdxArena h5\{justify-content:flex-start\}/.test(css), 'o selo do degrau segue na outra ponta da ficha');
+    ok(/\.pdxArena \.pdxSoma\{[^}]*border:1px solid/.test(css), 'o selo do degrau sem forma de selo');
+  });
+
   return s;
 }

@@ -5805,6 +5805,10 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   color:var(--dim);margin:0 0 7px;display:flex;justify-content:space-between;
   align-items:center;gap:8px}
 .pdxSoma{text-decoration:none;color:var(--txt);font-size:.6rem}
+/* ST-5.14 (L-194): na ficha da Arena o selo do degrau ia para a outra ponta
+   (space-between) — a 1920, a ~800 px do texto. Ao lado do título, em selo. */
+.pdxArena h5{justify-content:flex-start}
+.pdxArena .pdxSoma{padding:2px 7px;border:1px solid var(--line);border-radius:999px}
 
 .pdxCasas{display:flex;flex-wrap:wrap;gap:6px}
 .pdxCasa{display:flex;align-items:center;gap:6px;border:1px solid var(--corRar);

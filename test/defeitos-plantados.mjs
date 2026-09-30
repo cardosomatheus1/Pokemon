@@ -8499,6 +8499,13 @@ export const DEFEITOS = [
   { id:'S1934', arquivo:'app/index.html', nome:'a missão volta a ficar longe do botão',
     real:'a 1920 a barra e o Resgatar a ~1.600 px do texto da missão',
     de:'.colMissoes{max-width:760px}', para:'.colMissoes{}' },
+  /* ── ST-5.14 · o selo do degrau ao lado do título (L-194) ────────── */
+  { id:'S1935', arquivo:'app/index.html', nome:'o selo do degrau volta para a outra ponta da ficha',
+    real:'a 1920 o "CAPTURADA" fica a ~800 px do texto que ele qualifica',
+    de:'.pdxArena h5{justify-content:flex-start}', para:'.pdxArena h5{}' },
+  { id:'S1936', arquivo:'app/index.html', nome:'o selo do degrau perde a forma de selo',
+    real:'a palavra solta ao lado do título lê como parte dele',
+    de:'.pdxArena .pdxSoma{padding:2px 7px;border:1px solid var(--line);', para:'.pdxArena .pdxSoma{padding:2px 7px;' },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',

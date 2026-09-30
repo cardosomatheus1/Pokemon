@@ -261,6 +261,8 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **ST-5.14** · o selo do degrau ao lado do título (L-194, parcial) | 30/09 | na ficha da Arena o selo ia para a outra ponta (`space-between`) — a 1920, a ~800 px do texto; agora ao lado do título, em pílula · ficam os emojis do clima (arte) · S1935–S1936 |
+| **ST-6.5** · higiene documental | 30/09 | 25 fichas resolvidas e ainda abertas, cada uma conferida no código de hoje (arquivo:linha na linha de Estado): D-034, 039, 040, 053, 056, 097; L-191, 197, 203, 110, 112, 140, 162, 169, 170, 150, 152; os títulos-pai do PLANO com todas as filhas ✅ · deixadas abertas as que o código não confirma |
 | **ST-5.13** · o cartão de medalhas com teto (L-196) | 30/09 | `vitrineDeMedalhas` (camada 0): as 8 melhores ganhas e as 3 mais perto, "ver todas (+N)" · subtítulo em texto corrido · missões numa coluna de 760 px · o cartão do veterano em 420: **~2.000 → 584 px** · S1930–S1934 |
 | **ST-5.12** · o Centro fala alto (L-195, parcial) | 30/09 | a ação da ficha diz o destino ("→ caixa" / "→ equipe") numa pílula — e a causa de ela sumir era `color:var(--ac)`, variável inexistente · o soltar armado ganha "cancelar" · S1926–S1929 |
 | **ST-5.11** · os campos numéricos no tema (L-192) | 30/09 | uma regra global para `input[type=number]` — fundo do painel, borda do tema, `color-scheme:dark` (as setas nativas escurecem junto), foco dourado · o `#betCustom` da aposta saía branco por morar fora da `.customBet` · S1924–S1925 |

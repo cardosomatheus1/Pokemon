@@ -30,19 +30,21 @@ o LINK     http://localhost:8099/app/index.html
            (a Liga de times com contas e partidas: node tools/olhar-liga.mjs
            sobe o servidor completo num processo e captura as telas)
 a PASTA    C:\Users\gdult\pa4
-o ESTADO   ST-5.10 FECHADA (a tabela da aposta legível em 1100 — o nome
-           de 1 letra para 95 px —, e os avisos dizem o passo que falta) ·
-           antes, a ST-5.9 (o cartão da aposta preso ao pé da tela, a arena
-           volta quando a luta começa, a confirmação diz quanto recebe)
+o ESTADO   ST-5.14 FECHADA (o selo do degrau ao lado do título da ficha)
+           · nesta leva: ST-5.9 a 5.14 (a aposta com a arena à vista, a
+           tabela legível em 1100, os campos no tema, o Centro, as medalhas
+           com teto) e a ST-6.5 (25 fichas velhas fechadas, conferidas no
+           código) · antes, o mapa até a ST-10.22c4
            · o E11 construído — o stake espera a D2 do dono
-           · suíte 2822/2822, repetir 2/2
-           Q2 completo em fatias: 1/10 VERDE; a 2/10 por rodar
+           · suíte 2823/2823, repetir 2/2
+           Q2 completo em fatias: 1/10 VERDE; a 2/10 interrompida
            (node test/sabotagem.mjs --fatia=2/10, e seguir até 10/10)
-o PRÓXIMO  o UX-01 (L-194 e o resto da L-195; fecharam a L-192 na 5.11, a ação do Centro na 5.12, a L-196 na 5.13) e as marcas velhas nos
-           documentos (triagem de 30/09) · a ST-10.22d (o chão em tiles) ·
-           o Q2 completo em fatias fica para quando não houver produto a
-           construir — a fatia 2/10 foi interrompida: avaliava 5 de 191 em
-           15 min e travava o código por horas
+o PRÓXIMO  o resto do UX-01 (a L-195: 2 colunas no largo, pilhas de
+           botões, o nível no cartão; os emojis do clima da L-194 pedem
+           arte) · a ST-10.22d (o chão do mapa em tiles) · o Q2 completo em
+           fatias fica para quando não houver produto a construir — a fatia
+           2/10 foi interrompida: avaliava 5 de 191 em 15 min e travava o
+           código por horas
 com o DONO ST-13.4/13.5 (o save local para a conta) — agora também trava a
            Liga para quem joga com conta real (L-211). Recomendação na ficha:
            importar uma vez, com teto de plausibilidade
