@@ -9114,8 +9114,9 @@ editor já existe (`node tools/mapa-tiled.mjs exportar|importar`).
 ### L-221 — o bônus de cadastro em PC-B passa do teto de saldo, e o marco semanal paga o substituto
 
 **Registrada em:** 30/09/2026, na ST-14.0B1. **Bloco dono:** ST-14.15 (a
-calibração da E14), com a decisão "PC-T elegível inicial" da spec E14 §16.
-**Estado:** aberta.
+calibração da E14). **Estado:** aberta — a metade "sem fonte de PC-T" foi
+decidida na DEC-22 (a jornada, ST-14.0E); resta a calibração do teto de saldo
+contra o bônus de 1.000.
 
 Com o bônus de cadastro em `bonus` (D-135), a conta nova começa com 1.000 de
 PC-B — acima do `TETO_SALDO_PC_B` (500) do `engine/emissao.mjs`. O marco

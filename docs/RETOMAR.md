@@ -91,10 +91,11 @@ com o DONO decididas em 30/09: DEC-16 (o stake da Liga LIGADO, moeda
            simulada), DEC-17 (sem migração do save: a conta começa do zero
            no banco — ST-13.4/13.5 destravadas), DEC-18 (o piloto só com o
            jogo 100%), DEC-19 (os sinais de aparelho e rede — feita, ST-13.8).
-           PENDENTE com o dono: DEC-21 (ligar troca/Market da E14 em moeda
-           simulada, depois do gate C) e as decisões da spec E14 §16 (taxa
-           shiny, fonte de PC-T, orçamento da Master Ball). Nenhuma trava a
-           onda 0 nem a A
+           DEC-21 e DEC-22 DECIDIDAS por delegação do dono (30/09): a troca e
+           o Market ligam em moeda simulada no gate C; o PC-T nasce da
+           primeira vitória em cada nó com insígnia da jornada (850 por
+           conta, 7 dias de maturidade) — é a ST-14.0E. Ainda com
+           recomendação-padrão: taxa shiny, orçamento da Master Ball
 ```
 
 ### O RESTO DA SPEC VIROU STORIES — E12, E9, E10, E13, E11 (26/09)

@@ -2491,14 +2491,31 @@ desta tabela.
 | R17 | a **onda 0 entra na frente** do resto da fila de desenvolvimento: o D-135 põe bônus de cadastro na Liga ligada como PC-T |
 | R18 | a **taxa shiny** do piloto é a da tabela da spec §16 quando o dono não fixar outra; enquanto isso, a ST-14.1 lê a taxa de configuração por pack, testada nos limiares 0/1 |
 
-## Decisões que ficam com o dono (entram na lista do relatório até ele decidir)
+## Decisões (o dono delegou as duas em 30/09: *"Pode tomar essas 2 decisões e segue"*)
 
-- **DEC-21 · ligar a troca e o Market entre os amigos do piloto, em moeda
-  simulada** — como a DEC-16 fez com o stake da Liga. Sem ela, B e C são
-  construídas e testadas, e ficam desligadas. *Recomendação:* ligar só depois
-  do gate C, com o saldo transferível vindo de fonte finita e auditada (a
-  decisão "PC-T elegível inicial" da spec §16). Não toca dinheiro real.
-- **As decisões da spec §16** que não são minhas: taxa shiny, a fonte inicial
-  de PC-T elegível, o orçamento da Master Ball, limites/cooldown/taxas finais.
-  A exclusão do bônus de cadastro **já está decidida** (DEC-E14-001).
+- ✅ **DEC-21 · a troca e o Market LIGADOS entre os amigos, em moeda simulada**
+  — no commit que fechar o gate C, pela bandeira (`liberadaPor: 'DEC-21'`),
+  como a DEC-16. Até lá, B e C são construídas e ficam desligadas. O
+  `CHECKPOINT_25_1` continua `null`.
+- ✅ **DEC-22 · a fonte do PC-T elegível: a primeira vitória em cada nó com
+  insígnia da jornada** — 50 por ginásio, 75 por Elite Four, 150 pelo Campeão:
+  850 por conta, a vida inteira. Elegível para a troca depois de 7 dias de
+  conta. É a **ST-14.0E**, abaixo.
+- **Ainda do dono, e com recomendação escrita como padrão:** a taxa shiny (R18),
+  o orçamento da Master Ball, os limites/cooldown/taxas finais (baselines da
+  spec §11 e §16 até o gate C medir).
 - **DEC-02 continua** para qualquer dinheiro real — nada da E14 a antecipa.
+
+### ST-14.0E · a fonte do PC-T: a jornada verificada (DEC-22) — nova, onda B
+- **Porte** P–M · **Servidor** sim · **Depende de** ST-14.0B · **Antes de** ST-14.7
+- **Escopo:** a primeira vitória num nó com insígnia (`jornada.mjs`, a luta do
+  servidor — ST-13.7) credita PC-T em `transferivel`, tipo próprio
+  (`JOURNEY_PCT_REWARD`), chave do nó (`pct-<conta>-<nó>`), na mesma transação
+  da vitória; valores em configuração versionada (50/75/150). `pcTElegivel`
+  passa a descontar o PC-T da jornada de conta com menos de 7 dias.
+- **Aceite:** repetir a vitória não paga de novo; nó sem insígnia não paga; a
+  soma por conta nunca passa de 850; conta nova não troca antes de 7 dias; o
+  aparelho (sem conta) não credita PC-T nenhum.
+- **Sabotagem:** pagar a cada vitória; pagar em `bonus` (ou o contrário); a
+  maturidade pelo relógio do cliente.
+- **Portões:** Q1 Q2 Q3 Q6.
