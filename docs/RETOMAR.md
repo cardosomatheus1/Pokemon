@@ -35,10 +35,10 @@ o ESTADO   ST-5.10 FECHADA (a tabela da aposta legível em 1100 — o nome
            antes, a ST-5.9 (o cartão da aposta preso ao pé da tela, a arena
            volta quando a luta começa, a confirmação diz quanto recebe)
            · o E11 construído — o stake espera a D2 do dono
-           · suíte 2818/2818, repetir 2/2
+           · suíte 2819/2819, repetir 2/2
            Q2 completo em fatias: 1/10 VERDE; a 2/10 por rodar
            (node test/sabotagem.mjs --fatia=2/10, e seguir até 10/10)
-o PRÓXIMO  o UX-01 (L-192, L-194, L-195, L-196) e as marcas velhas nos
+o PRÓXIMO  o UX-01 (L-194, L-195, L-196; a L-192 fechou na ST-5.11) e as marcas velhas nos
            documentos (triagem de 30/09) · a ST-10.22d (o chão em tiles) ·
            o Q2 completo em fatias fica para quando não houver produto a
            construir — a fatia 2/10 foi interrompida: avaliava 5 de 191 em

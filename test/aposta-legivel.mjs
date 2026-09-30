@@ -50,5 +50,13 @@ export function suite() {
     ok(!/\.pick \.lim\{display:none/.test(m[1]), 'o teto por lutador sumiu da tela — o §4.4.6 exige');
   });
 
+  s.teste('ST-5.11 (L-192): todo campo numérico no tema, e não o branco do navegador', () => {
+    const css = fonte('../app/index.html');
+    const r = css.match(/\ninput\[type=number\]\{([^}]*)\}/);
+    ok(r, 'não há regra para os campos numéricos');
+    ok(/color-scheme:dark/.test(r[1]) && /background:var\(--panel2\)/.test(r[1]) && /color:var\(--txt\)/.test(r[1]), `o campo numérico continua o nativo: ${r?.[1]}`);
+    ok(/\ninput\[type=number\]:focus\{[^}]*border-color:var\(--gold\)/.test(css), 'o campo numérico sem foco no tema');
+  });
+
   return s;
 }

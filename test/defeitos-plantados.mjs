@@ -8463,6 +8463,13 @@ export const DEFEITOS = [
   { id:'S1923', arquivo:'app/index.html', nome:'o cabeçalho "aposta máx" sobra sobre coluna nenhuma',
     real:'o cabeçalho empurra os outros e não aponta para nada',
     de:'  .colunas .c4{display:none}\n}', para:'  .colunas .c4{display:block}\n}' },
+  /* ── ST-5.11 · os campos numéricos no tema (L-192) ───────────────── */
+  { id:'S1924', arquivo:'app/index.html', nome:'o campo numérico volta a ser o branco do navegador',
+    real:'fundo branco e setas do sistema no meio do tema neon — o crítico lê como protótipo',
+    de:'input[type=number]{color-scheme:dark;background:var(--panel2);', para:'input[type=number]{color-scheme:light;background:#fff;' },
+  { id:'S1925', arquivo:'app/index.html', nome:'o campo numérico sem foco no tema',
+    real:'o anel azul do navegador no campo de valor da aposta',
+    de:'input[type=number]:focus{outline:none;border-color:var(--gold);', para:'input[type=number]:focus{' },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',

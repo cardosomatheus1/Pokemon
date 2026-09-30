@@ -2356,6 +2356,14 @@ td.hpc{text-align:right;font-size:.68rem;color:var(--dim);width:42px}
    test/contraste.mjs, que mede no pixel e não no token. */
 .tiny{font-size:.66rem;color:var(--dim);line-height:1.5;margin-top:8px}
 input[type=range]{width:100%;accent-color:var(--gold)}
+/* ST-5.11 (L-192): o campo numérico era o <input> nativo — fundo BRANCO e
+   setas do sistema no meio do tema neon; o crítico cego o leu como sinal de
+   protótipo no bolo, e ele é o mesmo na aposta, nos limites e no admin.
+   `color-scheme:dark` escurece também as setas, que continuam lá (o bolo
+   anda de 10 em 10 por elas). */
+input[type=number]{color-scheme:dark;background:var(--panel2);border:1px solid var(--line);border-radius:7px;color:var(--txt);padding:6px 8px;font:inherit;font-size:.8rem}
+input[type=number]::placeholder{color:var(--dim)}
+input[type=number]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px rgba(var(--goldRGB),.22)}
 
 /* D-114: no modo servidor a rodada é do servidor — iniciar e automático são
    controles do modo local, e à mostra eles levavam a tela à contagem no meio

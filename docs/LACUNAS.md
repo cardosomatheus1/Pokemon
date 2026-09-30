@@ -8358,10 +8358,11 @@ encaixe", de novo. **Por que não cabe agora:** é escopo da ST-9.6, que tem
 aceite próprio (o total de encontros não muda; o bônus não escala com o
 valor). **O que a destrava:** a ST-9.6 na frente da fila.
 
-### L-192 — os campos numéricos são o `<input>` nativo, branco, no tema neon
+### L-192 — os campos numéricos são o `<input>` nativo, branco, no tema neon ✅ FECHADA na ST-5.11 (30/09)
 
 **Registrada em:** 26/09/2026, no Q7 (crítico cego) da ST-12.6. **Bloco dono:**
-UX-01 (a fila de leitura de tela). **Estado:** aberto.
+UX-01 (a fila de leitura de tela). **Estado:** fechada — uma regra global
+para `input[type=number]`, na ST-5.11.
 
 O crítico cego apontou o campo de valor do bolo como sinal de "protótipo":
 fundo branco, setas do navegador, destoando do tema escuro. É o MESMO estilo
