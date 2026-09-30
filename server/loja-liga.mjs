@@ -89,7 +89,7 @@ export function comprarNaLoja(db, { userId, item: id, linha = null, chaveIdem, a
                                      jaTem: jaTemPeca(db, userId, item) });
     if (!pode.ok) throw falha(ERRO_LOJA_LIGA.RECUSADA, pode.motivo);
     debitarPontos(db, { userId, valor: item.preco, ref: refDo(item), idem, agora });
-    if (item.tipo === 'bola') creditarBolsa(db, userId, alvo, item.quantidade);
+    if (item.tipo === 'bola') creditarBolsa(db, userId, alvo, item.quantidade, { fonte: `loja-liga:${refDo(item)}`, agora });
     else if (item.tipo === 'cosmetico')
       /* A POSSE, na mesma transação do débito — e com a origem que diz de onde veio. */
       db.prepare(`INSERT INTO cosmetic_ownership (user_id, familia, item_id, origem, adquirido_em) VALUES (?, ?, ?, 'liga', ?)`)

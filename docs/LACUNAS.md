@@ -9131,3 +9131,21 @@ com o grant no bolso certo.
 
 **O que a destrava:** a ST-14.15 simular os cenários com o grant em PC-B e o
 dono decidir a fonte de PC-T.
+
+### L-222 — o doce ainda não tem lote nem origem
+
+**Registrada em:** 30/09/2026, na ST-14.0C. **Bloco dono:** ST-14.5 (a
+negociabilidade). **Estado:** aberta.
+
+A ST-14.0C deu lote e origem aos ITENS da bolsa. O doce (`species_candy` +
+`candy_ledger`) ficou de fora: ele nasce da aposta (com a composição da stake,
+que pode ser PC-B), de soltar, da jornada e da loja da Liga, e a spec E14 §4.3
+pede que a origem restrita se propague a ele.
+
+**Por que não cabe agora:** o doce não é oferecido na troca nem no Market da
+v1 — a regra da ST-14.5 o declara NÃO NEGOCIÁVEL. Sem sair da conta, a origem
+dele não decide nada ainda.
+
+**O que a destrava:** a decisão de negociar doce (buy orders de itens, ST-14.11A,
+ou um pedido do dono); aí o `candy_ledger` ganha a classe, e a aposta em PC-B
+gera doce `promotional_bound`.

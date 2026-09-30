@@ -4608,17 +4608,18 @@ export const DEFEITOS = [
 
   /* A GUARDA DO DEBITO SAI DA CLAUSULA. A bolsa passa a depender do CHECK
      explodir depois, em vez de a operacao simplesmente nao acontecer. */
-  { id:'S565', arquivo:IDLE, nome:'o debito da bolsa perde a guarda de saldo',
+  /* S565 realvado na ST-14.0C: a guarda do débito passou a ser a soma dos lotes. */
+  { id:'S565', arquivo:'server/inventario.mjs', nome:'o debito da bolsa perde a guarda de saldo',
     real:'"o CHECK pega" — pegar com excecao e diferente de recusar',
-    de:'                         WHERE user_id = ? AND item_id = ? AND quantidade >= ?`)',
-    para:'                         WHERE user_id = ? AND item_id = ?`)' },
+    de:'  if (lotes.reduce((a, l) => a + l.quantidade, 0) < quantidade) return false;',
+    para:'' },
 
   /* A BOLA VOLTA A SER COBRADA SO NA CAPTURA. Falhar deixa de custar, e
      escolher a bola vira reflexo em vez de decisao. */
   { id:'S566', arquivo:IDLE, nome:'a bola so e cobrada quando a captura da certo',
     real:'"nao pegou, nao gastou" — o consumo E o custo do lance',
-    de:"  if (!debitarBolsa(db, userId, bola, 1))\n    throw new Error(`não há ${bola} na bolsa`);",
-    para:"  if (quantosNaBolsa(db, userId, bola) < 1)\n    throw new Error(`não há ${bola} na bolsa`);" },
+    de:"  const gasto = debitarBolsa(db, userId, bola, 1);\n  if (!gasto)\n    throw new Error(`não há ${bola} na bolsa`);",
+    para:"  const gasto = quantosNaBolsa(db, userId, bola) >= 1 ? { classes: [] } : null;\n  if (!gasto)\n    throw new Error(`não há ${bola} na bolsa`);" },
 
   /* A STAMINA DEIXA DE SER DEBITADA. O teto do farm passa a ser so o teto
      diario, e a colecao — que era a razao de colecionar — vira enfeite. */
@@ -4662,8 +4663,8 @@ export const DEFEITOS = [
      bola de graca e criatura de graca. */
   { id:'S571', arquivo:SRVDB, nome:'a bolsa volta a poder ficar negativa',
     real:'"o debito ja confere" — o CHECK e a ULTIMA defesa, nao a primeira',
-    de:'          quantidade INTEGER NOT NULL CHECK (quantidade >= 0),',
-    para:'          quantidade INTEGER NOT NULL,' },
+    de:'          quantidade INTEGER NOT NULL CHECK (quantidade >= 0),\n          PRIMARY KEY (user_id, item_id)',
+    para:'          quantidade INTEGER NOT NULL,\n          PRIMARY KEY (user_id, item_id)' },
 
   /* ── BLOCO 1.3a · O MUNDO DESENHADO ─────────────────────────────────────
      Nenhum destes derruba a tela. Todos deixam o cenario abrindo, e tiram
@@ -8988,10 +8989,10 @@ export const DEFEITOS = [
     de:"  if (o.conta) return naConta(e, '/api/idle/loja', { acao, id, quantos, bioma }, o);", para:"" },
   { id:'S2092', arquivo:'server/loja-idle.mjs', nome:'o servidor não grava o débito da compra',
     real:'o item entra e a moeda não sai — loja de graça',
-    de:"    if (d < 0 && !debitarBolsa(db, userId, k, -d)) throw", para:"    if (d < 0 && false) throw" },
+    de:"    const r = debitarBolsa(db, userId, k, -d(k));\n    if (!r) throw", para:"    const r = { classes: [] };\n    if (!r) throw" },
   { id:'S2093', arquivo:'server/loja-idle.mjs', nome:'o servidor não grava o crédito',
     real:'a moeda sai e o item não entra',
-    de:"    if (d > 0) creditarBolsa(db, userId, k, d);", para:"" },
+    de:"  for (const k of chaves) if (d(k) > 0) creditarBolsa(db, userId, k, d(k), { classe, fonte });", para:"" },
   { id:'S2094', arquivo:'server/loja-idle.mjs', nome:'a loja do servidor sem transação',
     real:'um débito recusado no meio deixa metade da troca gravada',
     de:"  return emTransacao(db, () => {\n    const antes", para:"  return ((f) => f())(() => {\n    const antes" },
@@ -9034,7 +9035,7 @@ export const DEFEITOS = [
     de:"  if (agora - r.abre > VISTA_VALE_MS) throw new Error('esta rodada já passou');", para:"" },
   { id:'S2107', arquivo:'server/escada.mjs', nome:"o prêmio da missão não vai para a bolsa da conta",
     real:"a missão fica resgatada e o prêmio some (D-136)",
-    de:"    for (const [chave, n] of Object.entries(e.bolsa)) if (n > 0) creditarBolsa(db, userId, chave, n);", para:"" },
+    de:"    for (const [chave, n] of Object.entries(e.bolsa)) if (n > 0) creditarBolsa(db, userId, chave, n, { fonte: `missao:${id}:${e.missoes.semana}`, agora });", para:"" },
   { id:'S2108', arquivo:'server/escada.mjs', nome:"a resgatada não é gravada",
     real:"a mesma missão paga toda vez",
     de:"    gravarSemana(db, userId, e.missoes);\n    return { id, premio: r.premio };", para:"    return { id, premio: r.premio };" },
@@ -9140,13 +9141,13 @@ export const DEFEITOS = [
   /* ── ST-14.2 · a instância já existente evolui (E14) ──────────────── */
   { id:'S2141', arquivo:'server/criaturas.mjs', nome:"a criatura nasce sem treinador original",
     real:"a troca não tem como provar quem a pegou",
-    de:"         userId, dex, encontroChave);", para:"         null, dex, encontroChave);" },
+    de:"         userId, dex, encontroChave, proveniencia);", para:"         null, dex, encontroChave, proveniencia);" },
   { id:'S2142', arquivo:'server/criaturas.mjs', nome:"a espécie de origem nasce errada",
     real:"a evolução vira a origem",
-    de:"         userId, dex, encontroChave);", para:"         userId, null, encontroChave);" },
+    de:"         userId, dex, encontroChave, proveniencia);", para:"         userId, null, encontroChave, proveniencia);" },
   { id:'S2143', arquivo:'server/idle.mjs', nome:"a captura não guarda o encontro",
     real:"um encontro pode virar duas criaturas sem ninguém ver",
-    de:"origem: 'captura', encontroChave: chave })", para:"origem: 'captura' })" },
+    de:"origem: 'captura', encontroChave: chave, proveniencia:", para:"origem: 'captura', proveniencia:" },
   { id:'S2144', arquivo:'server/banco.mjs', nome:"a baixa apaga a identidade",
     real:"soltar lava a origem — a criatura some sem rastro (spec E14 §4.3)",
     de:"                 INSERT OR IGNORE INTO criaturas_baixadas VALUES (OLD.id,", para:"                 SELECT 1 WHERE 0 AND (OLD.id," },
@@ -9165,6 +9166,31 @@ export const DEFEITOS = [
   { id:'S2149', arquivo:'server/criaturas.mjs', nome:"a hidratação não traz o shiny",
     real:"a tela não tem como mostrar o shiny da instância",
     de:"    shiny: linha.is_shiny === 1,", para:"    shiny: false," },
+  /* ── ST-14.0C · o inventário por lote e a proveniência (E14) ─────── */
+  { id:'S2150', arquivo:'server/inventario.mjs', nome:"o débito consome o lote mais novo",
+    real:"a origem presa fica na bolsa e a livre é gasta primeiro — o jogador perde o que negocia",
+    de:"const LOTES_DO_ITEM = `SELECT id, quantidade, classe FROM bolsa_lotes WHERE user_id = ? AND item_id = ? AND quantidade > 0 ORDER BY criado_em, id`;", para:"const LOTES_DO_ITEM = `SELECT id, quantidade, classe FROM bolsa_lotes WHERE user_id = ? AND item_id = ? AND quantidade > 0 ORDER BY criado_em DESC, id DESC`;" },
+  { id:'S2151', arquivo:'server/inventario.mjs', nome:"a escolha da classe no débito é ignorada",
+    real:"o jogador escolhe a bola livre e o jogo gasta a presa (spec E14 §4.3)",
+    de:"  const lotes = classe ? db.prepare(LOTES_DA_CLASSE).all(userId, itemId, classe) : db.prepare(LOTES_DO_ITEM).all(userId, itemId);", para:"  const lotes = db.prepare(LOTES_DO_ITEM).all(userId, itemId);" },
+  { id:'S2152', arquivo:'server/inventario.mjs', nome:"o crédito aceita classe inventada",
+    real:"a origem vira texto livre",
+    de:"  if (!classeValida(classe)) throw new Error(`classe de origem desconhecida: ${classe}`);", para:"" },
+  { id:'S2153', arquivo:'server/idle.mjs', nome:"a captura não herda a classe da bola",
+    real:"bola de save antigo gera criatura \"ganha no jogo\" — lavagem pela captura",
+    de:"encontroChave: chave, proveniencia: maisRestrita([...gasto.classes]) })", para:"encontroChave: chave, proveniencia: 'verified_earned' })" },
+  { id:'S2154', arquivo:'server/loja-idle.mjs', nome:"a compra não herda a classe da moeda",
+    real:"moeda promocional compra item livre",
+    de:"  const classe = maisRestrita(consumidas);", para:"  const classe = 'verified_earned';" },
+  { id:'S2155', arquivo:'server/colecao.mjs', nome:"a pedra presa não prende a evolução",
+    real:"a evolução lava a origem da pedra",
+    de:"maisRestrita([antes, ...pedra.classes]), id, userId);", para:"antes ?? 'verified_earned', id, userId);" },
+  { id:'S2156', arquivo:'server/banco.mjs', nome:"o estoque antigo vira \"ganho no jogo\"",
+    real:"a migração dá origem limpa ao que não tem prova",
+    de:"                 SELECT user_id, item_id, quantidade, 'legacy_unverified', 'migracao-st14.0c', 0 FROM bolsa WHERE quantidade > 0`);", para:"                 SELECT user_id, item_id, quantidade, 'verified_earned', 'migracao-st14.0c', 0 FROM bolsa WHERE quantidade > 0`);" },
+  { id:'S2157', arquivo:'server/inventario.mjs', nome:"o crédito não vira lote",
+    real:"a bolsa sobe sem origem — a soma dos lotes deixa de fechar",
+    de:"  db.prepare(`INSERT INTO bolsa_lotes (user_id, item_id, quantidade, classe, fonte, criado_em) VALUES (?, ?, ?, ?, ?, ?)`)\n    .run(userId, itemId, quantidade, classe, fonte, agora);", para:"" },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',
@@ -9869,7 +9895,7 @@ export const DEFEITOS = [
     de:'consome: aresta.exige?.item ?? null };', para:'consome: null };' },
   { id:'S1644', arquivo:'server/colecao.mjs', nome:'o servidor evolui sem debitar a pedra',
     real:'a pedra continua na bolsa da conta depois de usada',
-    de:'    if (r.consome && !debitarBolsa(db, userId, r.consome, 1))', para:'    if (false)' },
+    de:'    const pedra = r.consome ? debitarBolsa(db, userId, r.consome, 1) : { classes: [] };', para:'    const pedra = { classes: [] };' },
   { id:'S1645', arquivo:'server/colecao.mjs', nome:'o moveset escolhido não é gravado',
     real:'o jogador escolhe os golpes na conta e a luta usa os de antes',
     de:'.run(JSON.stringify(r.golpes), id, userId);', para:'.run(null, id, userId);' },
@@ -9990,7 +10016,7 @@ export const DEFEITOS = [
     de:'FROM encontros_pendentes WHERE chave = ? AND user_id = ?`).get(chave, userId);', para:'FROM encontros_pendentes WHERE chave = ?`).get(chave);' },
   { id:'S1605', arquivo:'server/idle.mjs', nome:'o lance sem bola segue em frente',
     real:'a bolsa sem Ultra Ball e o lance acontece — captura de graça',
-    de:"    if (!debitarBolsa(db, userId, bola, 1)) throw falha(ERRO_IDLE.SEM_BOLA,", para:"    if (!debitarBolsa(db, userId, bola, 1) && false) throw falha(ERRO_IDLE.SEM_BOLA," },
+    de:"    if (!gasto) throw falha(ERRO_IDLE.SEM_BOLA,", para:"    if (!gasto && false) throw falha(ERRO_IDLE.SEM_BOLA," },
   { id:'S1606', arquivo:'server/idle.mjs', nome:'a inicial se escolhe de novo',
     real:'toda conta pega as três iniciais — e escolher deixa de ser escolha',
     de:'  if (db.prepare(`SELECT 1 FROM criaturas WHERE user_id = ? LIMIT 1`).get(userId))', para:'  if (false)' },

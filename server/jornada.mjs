@@ -88,7 +88,7 @@ export function lutarNaConta(db, { userId, pack, id, preset = 'balanced', chaveI
     db.prepare(`INSERT INTO lutas_jornada (idem_key, user_id, no, preset, semente, venceu, p, resposta_json, criada_em)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
       .run(idem, userId, id, preset, semente, venceu ? 1 : 0, p, JSON.stringify(resposta), agora);
-    for (const [k, n] of Object.entries(c.credito.bolsa)) creditarBolsa(db, userId, k, n);
+    for (const [k, n] of Object.entries(c.credito.bolsa)) creditarBolsa(db, userId, k, n, { fonte: `jornada:${id}`, agora });
     for (const [linha, n] of Object.entries(c.credito.doces)) {
       db.prepare(`INSERT INTO candy_ledger (user_id, species_id, delta, motivo, idem_key, created_at) VALUES (?, ?, ?, 'pve', ?, ?)`)
         .run(userId, Number(linha), n, `${idem}:${linha}`, agora);

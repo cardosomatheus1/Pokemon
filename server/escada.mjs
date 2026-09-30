@@ -82,7 +82,7 @@ export function resgatarMissaoNaConta(db, { userId, pack, id, agora }) {
     const e = estadoDaConta(db, userId, pack), marcas = marcasDe(db, userId);
     const r = resgatarMissao(pack, e, { id, marcas, agora });
     if (!r.ok) throw new Error(r.motivo);
-    for (const [chave, n] of Object.entries(e.bolsa)) if (n > 0) creditarBolsa(db, userId, chave, n);
+    for (const [chave, n] of Object.entries(e.bolsa)) if (n > 0) creditarBolsa(db, userId, chave, n, { fonte: `missao:${id}:${e.missoes.semana}`, agora });
     gravarSemana(db, userId, e.missoes);
     return { id, premio: r.premio };
   });

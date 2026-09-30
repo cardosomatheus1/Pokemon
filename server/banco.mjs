@@ -2141,6 +2141,36 @@ export const MIGRACOES = [
         db.exec(`ALTER TABLE criaturas DROP COLUMN ${c}`);
     },
   },
+  {
+    /* ST-14.0C · E14: O INVENTÁRIO POR LOTE. A `bolsa` fica como projeção; os
+     * lotes guardam a origem. O que já estava na bolsa não tem prova de onde
+     * veio: vira lote `legacy_unverified` — preso, e nunca apagado. A
+     * criatura ganha a `proveniencia` (a classe herdada da bola, da pedra):
+     * as de antes, sem prova, ficam `legacy_unverified`. */
+    nome: 'inventario-st14.0c',
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE bolsa_lotes (
+          id         INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          item_id    TEXT NOT NULL,
+          quantidade INTEGER NOT NULL CHECK (quantidade >= 0),
+          reservada  INTEGER NOT NULL DEFAULT 0 CHECK (reservada >= 0 AND reservada <= quantidade),
+          classe     TEXT NOT NULL CHECK (classe IN ('verified_earned','p2p_verified','promotional_bound','admin_review','legacy_unverified','test_only')),
+          fonte      TEXT,
+          criado_em  INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE INDEX bolsa_lotes_dono ON bolsa_lotes(user_id, item_id, criado_em)`);
+      db.exec(`INSERT INTO bolsa_lotes (user_id, item_id, quantidade, classe, fonte, criado_em)
+                 SELECT user_id, item_id, quantidade, 'legacy_unverified', 'migracao-st14.0c', 0 FROM bolsa WHERE quantidade > 0`);
+      db.exec(`ALTER TABLE criaturas ADD COLUMN proveniencia TEXT NOT NULL DEFAULT 'verified_earned'`);
+      db.exec(`UPDATE criaturas SET proveniencia = 'legacy_unverified'`);
+    },
+    desce: db => {
+      db.exec(`ALTER TABLE criaturas DROP COLUMN proveniencia`);
+      db.exec(`DROP TABLE bolsa_lotes`);
+    },
+  },
 
 ];
 

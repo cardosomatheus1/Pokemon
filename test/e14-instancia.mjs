@@ -96,7 +96,7 @@ export async function suite() {
   });
 
   s.teste('a migração não inventa história: a criatura de antes vira "migração", sem treinador nem espécie de origem', () => {
-    const db = abrirBanco(':memory:'); migrar(db, MIGRACOES.length - 1);
+    const db = abrirBanco(':memory:'); migrar(db, MIGRACOES.findIndex(m => m.nome === 'instancia-st14.2'));
     const uid = cadastrar(db, { username: 'v', email: 'v@x.test', senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01', agora: AGORA }).id;
     /* A criatura como o banco de antes a gravava (o `gerar` de hoje já escreve as colunas novas). */
     const c = { id: 'velha-1' };

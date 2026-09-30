@@ -163,7 +163,7 @@ export function colherRun(db, { userId, pack, agora, raiz = novaRaiz() }) {
     for (const k of c.stamina) st.run(k.stamina, k.staminaEm, k.id, userId);
     const xp = db.prepare(`UPDATE criaturas SET xp = ?, nivel = ?, vinculo = ? WHERE id = ? AND user_id = ?`);
     for (const k of c.credito) xp.run(k.xp, k.nivel, k.vinculo, k.id, userId);
-    for (const [chave, n] of Object.entries(c.bolsa)) if (n > 0) creditarBolsa(db, userId, chave, n);
+    for (const [chave, n] of Object.entries(c.bolsa)) if (n > 0) creditarBolsa(db, userId, chave, n, { fonte: `run:${id}`, agora });
     const pend = db.prepare(`INSERT INTO encontros_pendentes (chave, user_id, origem, run_id, dex, raridade, bioma, em)
                              VALUES (?,?,'avanco',?,?,?,?,?)`);
     for (const p of c.pendentes) pend.run(p.chave, userId, id, p.dex, p.raridade, p.bioma, p.em);

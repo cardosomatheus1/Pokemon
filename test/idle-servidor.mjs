@@ -252,7 +252,7 @@ export function suite() {
       'UPDATE: devolver zero linhas é diferente de deixar o CHECK explodir depois.');
     igual(quantosNaBolsa(db, u.id, 'poke'), 3, 'o débito recusado mexeu na bolsa');
 
-    igual(debitarBolsa(db, u.id, 'poke', 3), true);
+    ok(debitarBolsa(db, u.id, 'poke', 3), 'o débito com saldo não passou');   // ST-14.0C: devolve { classes }, verdadeiro
     igual(quantosNaBolsa(db, u.id, 'poke'), 0);
     igual(debitarBolsa(db, u.id, 'inexistente', 1), false, 'debitou item que não existe');
 

@@ -276,7 +276,7 @@ export function colher(db, { id, pack, agora, raiz = novaRaiz() }) {
     const c = contaDaColheita({ pack, expedicao: x, criaturas: criaturasDaConta(db, exp.user_id),
       raiz, bonus: bonusDoServidor(db, exp.user_id, pack), agora });
 
-    for (const [chave, n] of Object.entries(c.bolsa)) creditarBolsa(db, exp.user_id, chave, n);
+    for (const [chave, n] of Object.entries(c.bolsa)) creditarBolsa(db, exp.user_id, chave, n, { fonte: `colheita:${id}`, agora });
     /* O nível é escrito junto com o XP, pela mesma conta — duas escritas
        separadas seriam o nível e o XP podendo discordar no banco. */
     const escrever = db.prepare(`UPDATE criaturas SET xp = ?, nivel = ?, vinculo = ?,
@@ -310,24 +310,12 @@ export function colher(db, { id, pack, agora, raiz = novaRaiz() }) {
  *
  * `UPSERT` numa linha só. Ler-somar-escrever seria a mesma janela de corrida da
  * colheita, e aqui ela custaria itens duplicados a cada colheita concorrente. */
-export function creditarBolsa(db, userId, itemId, quantidade) {
-  if (!(quantidade > 0)) throw new Error('crédito tem de ser positivo');
-  db.prepare(`
-    INSERT INTO bolsa (user_id, item_id, quantidade) VALUES (?,?,?)
-    ON CONFLICT (user_id, item_id)
-    DO UPDATE SET quantidade = quantidade + excluded.quantidade`)
-    .run(userId, itemId, quantidade);
-}
-
-/* O débito tem a guarda NA CLÁUSULA, e não no código: `WHERE quantidade >= ?`
-   devolve zero linhas quando não dá, em vez de deixar o CHECK explodir depois.
-   O CHECK continua lá como última defesa — as duas coisas, e não uma. */
-export function debitarBolsa(db, userId, itemId, quantidade) {
-  const r = db.prepare(`UPDATE bolsa SET quantidade = quantidade - ?
-                         WHERE user_id = ? AND item_id = ? AND quantidade >= ?`)
-    .run(quantidade, userId, itemId, quantidade);
-  return r.changes > 0;
-}
+/* A BOLSA É POR LOTE desde a ST-14.0C (`inventario.mjs`): o crédito diz a
+   classe e a fonte, o débito diz de que classes saiu. Reexportadas daqui para
+   quem já importava deste arquivo. */
+export { creditarBolsa, debitarBolsa } from './inventario.mjs';
+import { creditarBolsa, debitarBolsa } from './inventario.mjs';
+import { maisRestrita } from '../engine/proveniencia.mjs';
 
 export const bolsaDe = (db, userId) =>
   db.prepare(`SELECT item_id, quantidade FROM bolsa
@@ -366,12 +354,13 @@ export function lancar(db, { userId, pack, dex, raridade, bola, agora,
                               raiz = novaRaiz() }) {
   if (!chanceDe(pack, { raridade, bola }))
     throw new Error(`não há chance para ${raridade} com a bola ${bola}`);
-  if (!debitarBolsa(db, userId, bola, 1))
+  const gasto = debitarBolsa(db, userId, bola, 1);
+  if (!gasto)
     throw new Error(`não há ${bola} na bolsa`);
 
   const r = tentar(semente(derivar(raiz, 'lance')), pack, { raridade, bola });
   const criatura = r.capturou
-    ? gerarCriatura(db, { userId, pack, dex, origem: 'captura' })
+    ? gerarCriatura(db, { userId, pack, dex, origem: 'captura', proveniencia: maisRestrita([...gasto.classes]) })
     : null;
   return { ...r, dex, criatura, semente: String(raiz) };
 }
@@ -405,11 +394,13 @@ export function lancarPendente(db, { userId, pack, chave, bola, agora, raiz = no
     const r = db.prepare(`UPDATE encontros_pendentes SET resolvido_em = ?
                            WHERE chave = ? AND resolvido_em IS NULL`).run(agora, chave);
     if (!r.changes) throw falha(ERRO_IDLE.SEM_ENCONTRO, 'esse encontro não está mais aqui');
-    if (!debitarBolsa(db, userId, bola, 1)) throw falha(ERRO_IDLE.SEM_BOLA, `não há ${bola} na bolsa`);
+    const gasto = debitarBolsa(db, userId, bola, 1);
+    if (!gasto) throw falha(ERRO_IDLE.SEM_BOLA, `não há ${bola} na bolsa`);
     const t = tentar(semente(derivar(raiz, 'lance')), pack, { raridade: en.raridade, bola });
     /* A CAPTURA NUNCA É RECUSADA por equipe cheia: vai para a caixa. */
     const paraCaixa = equipeCheiaEm(criaturasDaConta(db, userId));
-    const criatura = t.capturou ? gerarCriatura(db, { userId, pack, dex: en.dex, origem: 'captura', encontroChave: chave }) : null;
+    /* A captura herda a origem da bola (ST-14.0C): bola presa, criatura presa. */
+    const criatura = t.capturou ? gerarCriatura(db, { userId, pack, dex: en.dex, origem: 'captura', encontroChave: chave, proveniencia: maisRestrita([...gasto.classes]) }) : null;
     if (criatura && paraCaixa) {
       db.prepare(`UPDATE criaturas SET na_caixa = 1 WHERE id = ?`).run(criatura.id);
       criatura.naCaixa = true;

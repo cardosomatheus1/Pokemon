@@ -18,18 +18,27 @@ import { derivar, novaRaiz } from '../engine/seed.mjs';
 import { semente } from '../engine/instancia.mjs';
 import { bolsaDe, creditarBolsa, debitarBolsa } from './idle.mjs';
 import { emTransacao } from './carteira.mjs';
+import { maisRestrita } from '../engine/proveniencia.mjs';
 
 export const ACOES_DA_LOJA = Object.freeze(['comprar', 'vender', 'estilhacar', 'montar']);
 
 /* A bolsa do motor é um objeto; a do banco, linhas. A escrita é a DIFERENÇA,
    item a item: o débito com a guarda na cláusula (`debitarBolsa`), e um débito
    que não passa desfaz a transação inteira — nunca metade de uma compra. */
-function gravarDiferenca(db, userId, antes, depois) {
-  for (const k of new Set([...Object.keys(antes), ...Object.keys(depois)])) {
-    const d = (Number(depois[k]) || 0) - (Number(antes[k]) || 0);
-    if (d < 0 && !debitarBolsa(db, userId, k, -d)) throw new Error('a bolsa mudou no meio — nada foi feito, tente de novo');
-    if (d > 0) creditarBolsa(db, userId, k, d);
+/* O QUE SAI DETERMINA O QUE ENTRA (ST-14.0C): os débitos vêm primeiro e
+   dizem de que classes saíram; o crédito herda a mais presa delas — moeda de
+   save antigo não compra item "ganho no jogo". */
+function gravarDiferenca(db, userId, antes, depois, fonte) {
+  const chaves = [...new Set([...Object.keys(antes), ...Object.keys(depois)])];
+  const d = k => (Number(depois[k]) || 0) - (Number(antes[k]) || 0);
+  const consumidas = [];
+  for (const k of chaves) if (d(k) < 0) {
+    const r = debitarBolsa(db, userId, k, -d(k));
+    if (!r) throw new Error('a bolsa mudou no meio — nada foi feito, tente de novo');
+    consumidas.push(...r.classes);
   }
+  const classe = maisRestrita(consumidas);
+  for (const k of chaves) if (d(k) > 0) creditarBolsa(db, userId, k, d(k), { classe, fonte });
 }
 
 export function lojaDoIdleNaConta(db, { userId, pack, acao, id, quantos = 1, bioma = null, raiz = novaRaiz() }) {
@@ -51,7 +60,7 @@ export function lojaDoIdleNaConta(db, { userId, pack, acao, id, quantos = 1, bio
       r = montarNaBolsa(antes, id);
       resposta = { acao, id };
     }
-    gravarDiferenca(db, userId, antes, r.estado?.bolsa ?? r.bolsa);
+    gravarDiferenca(db, userId, antes, r.estado?.bolsa ?? r.bolsa, `loja:${acao}:${id}`);
     return resposta;
   });
 }

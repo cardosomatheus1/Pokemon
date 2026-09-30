@@ -14,6 +14,7 @@ import { alternarGolpe } from '../app/modules/moveset-dados.mjs';
 import { aplicar as aplicarEvolucao } from '../app/modules/evolucao-idle.mjs';
 import { criaturasDaConta, emCampo, bolsaDe, debitarBolsa } from './idle.mjs';
 import { naRun } from './run.mjs';
+import { maisRestrita } from '../engine/proveniencia.mjs';
 
 export const ERRO_COLECAO = Object.freeze({ SEM_CRIATURA: 'COLECAO_SEM_CRIATURA', CHAVE: 'COLECAO_CHAVE_INVALIDA' });
 const falha = (codigo, msg) => Object.assign(new Error(msg), { codigo });
@@ -94,9 +95,13 @@ export function evoluirNaConta(db, { userId, pack, id, alvo = null }) {
   const bolsa = Object.fromEntries(bolsaDe(db, userId).map(b => [b.item_id, b.quantidade]));
   const r = aplicarEvolucao(pack, c, bolsa, alvo);
   return emTransacao(db, () => {
-    if (r.consome && !debitarBolsa(db, userId, r.consome, 1)) throw new Error(`não há ${r.consome} na bolsa`);
-    db.prepare(`UPDATE criaturas SET dex = ?, exclusivos_json = ? WHERE id = ? AND user_id = ?`)
-      .run(r.para, r.criatura.exclusivos ? JSON.stringify(r.criatura.exclusivos) : null, id, userId);
+    const pedra = r.consome ? debitarBolsa(db, userId, r.consome, 1) : { classes: [] };
+    if (!pedra) throw new Error(`não há ${r.consome} na bolsa`);
+    /* A pedra presa prende a forma nova (ST-14.0C): a origem mais presa entre
+       a criatura e o insumo. */
+    const antes = db.prepare(`SELECT proveniencia FROM criaturas WHERE id = ? AND user_id = ?`).get(id, userId)?.proveniencia;
+    db.prepare(`UPDATE criaturas SET dex = ?, exclusivos_json = ?, proveniencia = ? WHERE id = ? AND user_id = ?`)
+      .run(r.para, r.criatura.exclusivos ? JSON.stringify(r.criatura.exclusivos) : null, maisRestrita([antes, ...pedra.classes]), id, userId);
     return { id, de: r.de, para: r.para, consome: r.consome, exclusivos: r.criatura.exclusivos ?? null };
   });
 }
