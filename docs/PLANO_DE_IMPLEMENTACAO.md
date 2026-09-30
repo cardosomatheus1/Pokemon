@@ -1292,6 +1292,23 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **Porte** M–G, fatiada em Home e Matchmaking / Replay / Placares · **Servidor** sim · **Bloco dono** F5.9 · **Spec** §12 telas 25–28, §9.15
 - **Escopo:** nos placares, previsão e Liga MMR nunca ficam na mesma tabela.
 - **Portões:** Q1 Q2 Q5 Q7.
+- **Fatiada em 30/09:** **11.6a** a League Home e a busca (telas 25–26) ✅ ·
+  **11.6b** o replay da partida (tela 27) · **11.6c** os placares (tela 28).
+- **11.6a feita:** a aba "Liga de times" no Time (`app/modules/liga-equipe-dados.mjs`,
+  camada 0: tudo o que a tela diz; `liga-equipe-tela.mjs`, camada 4: pinta e
+  fala com o servidor). `server/liga-equipe.mjs`: `GET /api/equipe/liga` (a
+  temporada, o tier, o time publicado, o time da conta e as cinco últimas
+  partidas do MEU lado, com o efeito no tier em NOMES) e `POST
+  /api/equipe/publicar` (congela o time da conta, fora da caixa; recusa com a
+  Liga desligada). `tools/olhar-liga.mjs` sobe o servidor no próprio processo,
+  semeia contas e captura seis estados em quatro larguras.
+  `test/liga-home.mjs` · S1774–S1797 · **mutantes de navegador: 0** (as
+  decisões moram na camada 0 e no servidor; a tela tem uma asserção estática).
+- **O que fica:** com conta real, o time do aparelho não chega à conta — a
+  aba para em "sem time na conta" até a ST-13.4 (L-211, com o dono). O botão
+  "ver replay" nas linhas é da 11.6b. Notas do Q7 que ficaram: o conteúdo trava
+  em 1180 px (de propósito: a linha longa separava o resultado do efeito), e
+  sem conta a temporada não aparece (a leitura é da conta).
 
 ### ST-11.7 · Recompensas, League Points e loja
 - **Porte** M · **Servidor** sim · **Spec** §9.10, §9.11, §10.1

@@ -1297,6 +1297,95 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 #jornadaCorpo.emLuta #jnPainel{display:none}
 #jnLuta .pveLuta{max-width:none}
 #jnLuta{margin-top:12px}
+/* ST-11.6a · a League Home. Interface NEON (é tela de fila, não mundo): a
+   temporada como uma pista de três fases com o hoje marcado, o tier como
+   emblema na cor dele, o time publicado em retratos GBA, e a partida que
+   acabou de acontecer no alto, maior que as outras. */
+.leHome{display:flex;flex-direction:column;gap:14px;max-width:1180px}
+.leTemporada{padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--bg2)}
+.leTempTopo{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;font-size:.8rem;color:var(--dim)}
+.leTempTopo b{font-family:var(--px);font-size:.95rem;color:var(--txt)}
+.leFase{color:var(--neon);font-weight:700}.leResta{color:var(--txt)}
+.leBarra{position:relative;display:flex;height:22px;margin:10px 0 4px;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.leBarra i{display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.03);border-right:1px solid var(--line);font-style:normal}
+.leBarra i:last-of-type{border-right:0}
+.leBarra i.on{background:rgba(var(--goldRGB),.16)}
+.leBarra em{font-style:normal;font-size:.68rem;color:rgba(255,255,255,.62);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px}
+.leBarra i.on em{color:var(--txt)}
+/* O hoje é um marcador ABAIXO da pista: dentro dela ele cobria o nome da fase. */
+.leBarra{overflow:visible;margin-bottom:12px}
+.leBarra i:first-of-type{border-radius:999px 0 0 999px}.leBarra i:last-of-type{border-radius:0 999px 999px 0}
+.leBarra u{position:absolute;bottom:-9px;width:0;height:0;margin-left:-6px;border:6px solid transparent;border-bottom:7px solid var(--neon);border-top:0;filter:drop-shadow(0 0 4px var(--neon))}
+.leDica{margin:4px 0 0;font-size:.72rem;color:var(--dim)}
+.lePainel{display:grid;grid-template-columns:minmax(150px,210px) 1fr;gap:14px;align-items:stretch}
+.leTier{--tc:205,127,50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:16px 10px;border-radius:16px;
+  border:1px solid rgba(var(--tc),.7);background:radial-gradient(circle at 50% 30%,rgba(var(--tc),.28),rgba(var(--tc),.04) 70%);box-shadow:0 0 18px rgba(var(--tc),.22) inset;text-align:center}
+.leTier b{font-family:var(--px);font-size:1.5rem;color:rgb(var(--tc));text-shadow:0 0 12px rgba(var(--tc),.6)}
+.leTier span{font-size:.72rem;color:var(--dim)}.leTier .leTierRot{text-transform:uppercase;letter-spacing:.12em;font-size:.6rem}
+.leTierSilver{--tc:192,200,216}.leTierGold{--tc:255,210,74}.leTierPlatinum{--tc:127,224,208}.leTierDiamond{--tc:110,200,255}
+.leTierMaster{--tc:192,123,255}.leTierChampion{--tc:255,90,138}
+.lePainel.leSoCentro{grid-template-columns:1fr}
+.lePassos{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;counter-reset:p}
+.lePassos li{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg2)}
+.lePassos b{flex:0 0 auto;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;font-family:var(--px);font-size:.8rem;color:#061018;background:var(--neon);box-shadow:0 0 10px rgba(var(--goldRGB),.45)}
+.lePassos span{font-size:.72rem;color:var(--dim);line-height:1.35}.lePassos strong{display:block;font-size:.82rem;color:var(--txt);margin-bottom:2px}
+.leCentro{display:flex;flex-direction:column;gap:10px;min-width:0}
+.leRot{display:block;font-size:.66rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.leMembros{display:flex;flex-wrap:wrap;gap:6px}
+.leMembro{position:relative;display:flex;flex-direction:column;align-items:center;width:64px;padding:4px 2px 2px;border:1px solid var(--line);border-radius:10px;
+  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(0,0,0,.18))}
+.leSprite{width:56px;height:56px;image-rendering:pixelated;filter:drop-shadow(0 3px 0 rgba(0,0,0,.35))}
+.leMembro i{font-style:normal;font-size:.62rem;color:var(--dim)}
+.lePresets{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.lePresets .leRot{flex-basis:100%;margin:0}
+.leAviso{margin:0;font-size:.8rem;color:var(--txt);padding:8px 10px;border-left:3px solid var(--neon);background:rgba(var(--goldRGB),.06);border-radius:0 8px 8px 0}
+.leAviso strong{display:block;font-size:.92rem;margin-bottom:3px}
+.leErro{margin:0;font-size:.8rem;color:rgb(var(--perigoRGB))}
+.leAcoes{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.leAcoes .btn{flex:0 0 auto}
+.leAcoes .btn.leAcao{padding:11px 30px;font-size:.95rem;font-weight:700;color:#061018;border-color:var(--neon);background:linear-gradient(180deg,var(--neon),rgba(var(--goldRGB),.75));box-shadow:0 0 18px rgba(var(--goldRGB),.35)}
+.leAcoes .btn.leAcao:disabled{color:var(--dim);background:var(--bg2);border-color:var(--line);box-shadow:none}
+.leAcoes .btn.leSec{padding:9px 16px;font-size:.8rem;background:none;color:var(--dim)}
+.leRecentes ul,.leResultado{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.leLinha{display:grid;grid-template-columns:minmax(86px,auto) 1fr auto auto;gap:4px 12px;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg2);font-size:.78rem}
+.leRes{font-family:var(--px);font-size:.8rem}
+.levenceu .leRes{color:rgb(var(--okRGB))}.leperdeu .leRes{color:rgb(var(--perigoRGB))}.leempate .leRes{color:var(--dim)}
+.leContra{color:var(--txt);min-width:0}
+.leBot{display:inline-block;font-style:normal;font-size:.66rem;color:var(--dim);border:1px dashed var(--line);border-radius:999px;padding:0 7px;margin-left:4px;white-space:nowrap}
+.leRank{font-size:.68rem;color:var(--dim)}
+.leSelo{display:inline-block;vertical-align:middle;margin-left:8px;font-style:normal;font-size:.62rem;font-weight:700;letter-spacing:.04em;padding:1px 8px;border-radius:999px;text-transform:uppercase}
+.leResCel{display:flex;align-items:center;flex-wrap:wrap;gap:2px}
+.leSelook{color:#061018;background:var(--neon)}
+.leSelofora{color:#1a1204;background:#ffb547}
+
+.leTurnos{font-size:.7rem;color:var(--dim);white-space:nowrap}
+.leGrande{padding:14px 16px;border-width:2px;font-size:.86rem}
+.leGrande.levenceu{border-color:rgba(var(--okRGB),.7);box-shadow:0 0 16px rgba(var(--okRGB),.18)}
+.leGrande.leperdeu{border-color:rgba(var(--perigoRGB),.6)}
+/* A partida que NÃO contou não comemora: moldura neutra, qualquer que seja o resultado. */
+.leGrande.leNeutro{border-color:rgba(255,181,71,.55);box-shadow:none}
+.lePassos li.leBloq{opacity:.55}.lePassos li.leBloq b{background:var(--line);color:var(--txt);box-shadow:none}
+.leGrande .leRes{font-size:1.1rem}
+.leVazio{margin:0;font-size:.78rem;color:var(--dim)}
+/* A escada: sete degraus, o meu aceso na cor do tier, os de baixo já vencidos. */
+.leEscada{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:2px;width:100%;max-width:150px}
+.leEscada li{height:14px;border-radius:3px;background:rgba(255,255,255,.06);position:relative}
+.leEscada li span{display:block;font-size:.62rem;line-height:14px;text-align:center;color:rgba(255,255,255,.62);letter-spacing:.04em}
+.leEscada li.passou{background:rgba(var(--tc),.35)}
+.leEscada li.on{height:16px;background:rgba(var(--tc),.85);box-shadow:0 0 10px rgba(var(--tc),.6)}
+.leEscada li.passou span{color:#fff}
+.leEscada li.on span{font-size:.62rem;font-weight:700;line-height:16px;color:#0b0f18}
+@media (max-width:620px){
+  .lePainel{grid-template-columns:1fr}
+  .leTier{flex-direction:row;justify-content:flex-start;gap:12px;padding:10px 14px}.leTier b{font-size:1.2rem}
+  .leLinha{grid-template-columns:1fr;gap:3px}
+  .leTier{flex-wrap:wrap}.leTier>span:not(.leTierRot){flex-basis:100%;text-align:left}.leTier b{text-shadow:none}
+  .leBot{display:block;width:fit-content;margin:3px 0 0;white-space:normal;border-radius:8px}
+  .leMembros{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+  .leMembro{width:auto;padding:3px 0 2px}.leSprite{width:44px;height:44px}
+  .leEscada{display:none}
+  .lePassos{grid-template-columns:1fr}
+  .leResta{margin-left:0}
+}
 /* Em pé: o MESMO caminho transposto, e a altura cresce com os nós. */
 /* No estreito, o painel do nó escolhido vem ANTES do mapa: com 7 nós o mapa
    em pé tem ~1.000 px, e a lição ficava abaixo da dobra (Q7 da ST-10.15). */
@@ -7775,9 +7864,12 @@ body.tremeTela{animation:tremeTela .7s ease-out}
     <div class="pdxAbas">
       <button class="pdxAba on" data-treino-aba="time">Time</button>
       <button class="pdxAba" data-treino-aba="jornada">Jornada</button>
+      <!-- ST-11.6a: a Liga de TIMES mora aqui, com o time; a aba Liga (previsão) é outra coisa (§9.15) -->
+      <button class="pdxAba" data-treino-aba="liga">Liga de times</button>
     </div>
     <div id="treinoCorpo"></div>
     <div id="jornadaCorpo" hidden><div id="jnMapaArea"></div><div id="jnLuta" class="pveArea" hidden></div></div>
+    <div id="ligaEqCorpo" hidden></div>
   </div>
 </div>
 
@@ -8459,6 +8551,7 @@ import './modules/exclusivos-tela.mjs';
 import './modules/treino-tela.mjs';
 import './modules/pve-tela.mjs';
 import './modules/jornada-tela.mjs';
+import './modules/liga-equipe-tela.mjs';
 import './modules/telemetria-v3-tela.mjs';
 /* ST-9.12: escolher os golpes — o módulo se liga sozinho ao clique. */
 import './modules/moveset-tela.mjs';

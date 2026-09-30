@@ -503,7 +503,8 @@ export function suite() {
     ok(/n\.estado === 'atual' \? '<b class="jnAnel"><\/b>' : ''/.test(tela), 'o nó atual sem o anel');
     ok(/jn-\$\{sx\.dir\}\$\{sx\.andado \? ' andado' : ''\}/.test(tela), 'a seta não sabe se foi andada');
     ok(/avisoDoRisco\(r\.p\)/.test(tela), 'o aviso de risco não é o da camada 0');
-    ok(/titulo\.textContent = jornada \? 'Jornada' : 'Time'/.test(tela) && /id="treinoTitulo"/.test(html), 'o título diz "Time" na aba Jornada');
+    /* ST-11.6a: as abas do Time viraram tabela (a terceira é a Liga de times); cada uma com o seu título. */
+    ok(/jornada: \{ corpo: '#jornadaCorpo', titulo: 'Jornada'/.test(tela) && /titulo\.textContent = a\.titulo/.test(tela) && /id="treinoTitulo"/.test(html), 'o título diz "Time" na aba Jornada');
     ok(/\.jnEu/.test(tela.slice(tela.indexOf('function afastarCena'), tela.indexOf('let reafastar'))), 'a cena não desvia de você');
     const afastar = tela.slice(tela.indexOf('function afastarCena'), tela.indexOf('let reafastar'));
     ok(/querySelectorAll\('\.jnSetaPos'\)/.test(afastar) && /\.jnLend/.test(afastar), 'a seta não procura outro ponto, ou você fica sob o lendário');

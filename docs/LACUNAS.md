@@ -8849,3 +8849,22 @@ decide o destino. Não é furo de economia hoje — nada no servidor tem rota de
 mover —, mas a ST-13.5 (o cliente lê do servidor) precisa dela, e a regra tem
 de morar na camada 0 que os dois chamam, como a colheita.
 
+
+### L-211 — a Liga de times não tem como receber o time de um jogador de verdade
+
+**Registrada em:** 30/09/2026, na ST-11.6a. **Bloco dono:** ST-13.4 (trazer o
+save local para a conta), seguida da ST-13.5 (o cliente lê o idle do
+servidor). **Estado:** aberto. **Espera o dono**: a ST-13.4 é dado com
+acervo, e a decisão é dele. A recomendação continua escrita na ficha: importar
+uma vez, com um teto de plausibilidade.
+
+A Liga luta com o time guardado **na conta**, que é o do servidor. O cliente
+ainda monta o time **no aparelho**, e nada leva as criaturas do aparelho para
+a conta. Com conta real, a aba "Liga de times" abre, mostra a temporada e o
+tier, e para em "Você ainda não tem time na conta". A frase é honesta e sem
+botão, e o passo 1 aparece bloqueado.
+
+A tela, as rotas (`GET /api/equipe/liga`, `POST /api/equipe/publicar`) e o
+pareamento estão prontos e testados com contas semeadas no servidor (os
+testes e o `tools/olhar-liga.mjs`). O que destrava é só o caminho do time até
+a conta.

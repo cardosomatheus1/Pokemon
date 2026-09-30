@@ -35,6 +35,7 @@ import { rotasDoDoce } from './doce-rotas.mjs';
 import { rotasDaColecao } from './colecao-rotas.mjs';
 import { rotasDaEquipe, ERRO_EQUIPE } from './equipe.mjs';
 import { rotasDaPartida, ERRO_PARTIDA } from './partida.mjs';
+import { rotasDaLigaEquipe } from './liga-equipe.mjs';
 import { ERRO_IDLE } from './idle.mjs';
 import { ERRO_RUN } from './run.mjs';
 import { ERRO_COLECAO } from './colecao.mjs';
@@ -213,6 +214,8 @@ export const ROTAS = {
   ...rotasDaEquipe(daExcecao),
   /* A partida da Liga e o replay (ST-11.2). */
   ...rotasDaPartida(daExcecao),
+  /* ST-11.6a: a League Home lê numa chamada só, e publicar congela o time da conta. */
+  ...rotasDaLigaEquipe(daExcecao),
 
 
   /* --- autenticação ----------------------------------------------------- */

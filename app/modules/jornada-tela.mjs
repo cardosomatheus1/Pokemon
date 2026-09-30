@@ -377,18 +377,26 @@ export function renderJornada({ nova = null } = {}) {
   document.fonts?.ready?.then(() => afastarCena(alvo));
 }
 
+/* As três abas do Time. A Liga de times (ST-11.6a) pinta a si mesma: a aba só
+   a mostra e avisa — sem importar a tela dela para cá. */
+const ABAS_TREINO = Object.freeze({
+  time:    { corpo: '#treinoCorpo',  titulo: 'Time',           lema: 'monte o time e veja a chance mexer — treino, sem aposta' },
+  jornada: { corpo: '#jornadaCorpo', titulo: 'Jornada',        lema: 'o caminho da jornada — vença cada nó para abrir o próximo' },
+  liga:    { corpo: '#ligaEqCorpo',  titulo: 'Liga de times',  lema: 'o seu time publicado contra os de outros jogadores — sem aposta' },
+});
 export function mostrarAbaTreino(aba) {
-  const jornada = aba === 'jornada';
-  const t = $('#treinoCorpo'), j = $('#jornadaCorpo'), lema = $('#treinoLema'), titulo = $('#treinoTitulo');
-  if (titulo) titulo.textContent = jornada ? 'Jornada' : 'Time';
-  if (lema) lema.textContent = jornada ? 'o caminho da jornada — vença cada nó para abrir o próximo' : 'monte o time e veja a chance mexer — treino, sem aposta';
-  if (t) t.hidden = jornada;
-  if (j) j.hidden = !jornada;
+  if (!ABAS_TREINO[aba]) aba = 'time';
+  const a = ABAS_TREINO[aba], lema = $('#treinoLema'), titulo = $('#treinoTitulo');
+  if (titulo) titulo.textContent = a.titulo;
+  if (lema) lema.textContent = a.lema;
+  for (const [id, x] of Object.entries(ABAS_TREINO)) { const el = $(x.corpo); if (el) el.hidden = id !== aba; }
   document.querySelectorAll('[data-treino-aba]').forEach(b => b.classList.toggle('on', b.dataset.treinoAba === aba));
   try { localStorage.setItem('ar_treino_aba', aba); } catch { /* privativo */ }
-  if (jornada) renderJornada(); else renderTreino();
+  if (aba === 'jornada') renderJornada();
+  else if (aba === 'liga') document.dispatchEvent(new CustomEvent('liga-equipe:abrir'));
+  else renderTreino();
 }
-const abaLembrada = () => { try { return localStorage.getItem('ar_treino_aba') === 'jornada' ? 'jornada' : 'time'; } catch { return 'time'; } };
+const abaLembrada = () => { try { const a = localStorage.getItem('ar_treino_aba'); return ABAS_TREINO[a] ? a : 'time'; } catch { return 'time'; } };
 
 document.addEventListener('click', ev => {
   if (ev.target.closest('.nav[data-view="viewTreino"], [data-goto="viewTreino"]')) { setTimeout(() => mostrarAbaTreino(abaLembrada()), 0); return; }
