@@ -25,9 +25,11 @@ const lado = (vencedor, eu) => (vencedor === 'empate' ? 'empate' : vencedor === 
 
 /* As minhas partidas, de gente e de bot, do MEU lado e da mais nova para a mais velha. */
 export function minhasPartidas(db, userId, limite = RECENTES, pack = PACK) {
-  const gente = db.prepare(`SELECT m.id, m.user_a, m.user_b, m.vencedor, m.turnos, m.criada_em, s.elegivel, e.antes_a, e.antes_b, e.delta
+  const gente = db.prepare(`SELECT m.id, m.user_a, m.user_b, m.vencedor, m.turnos, m.criada_em, s.elegivel, e.antes_a, e.antes_b, e.delta,
+                                    k.stake AS st_valor, k.rake AS st_rake, k.estado AS st_estado
                              FROM league_matches m LEFT JOIN liga_sinais s ON s.partida_id = m.id
                              LEFT JOIN liga_mmr_eventos e ON e.partida_id = m.id
+                             LEFT JOIN liga_stakes k ON k.partida_id = m.id
                              WHERE m.user_a = ? OR m.user_b = ? ORDER BY m.criada_em DESC, m.id LIMIT ?`).all(userId, userId, limite)
     .map(l => {
       const eu = l.user_b === userId ? 'B' : 'A';
@@ -36,6 +38,7 @@ export function minhasPartidas(db, userId, limite = RECENTES, pack = PACK) {
       const antes = eu === 'A' ? l.antes_a : l.antes_b, depois = antes + (eu === 'A' ? l.delta : -l.delta);
       return { id: l.id, lado: eu, quando: l.criada_em, turnos: l.turnos, resultado: lado(l.vencedor, eu), rated: l.elegivel !== 0,
                pontos: pontosDaPartida(db, l.id, userId),
+               ...(l.st_estado ? { stake: { valor: l.st_valor, rake: l.st_rake, estado: l.st_estado } } : {}),
                ...(l.delta != null ? { tier: { antes: tierDe(antes), depois: tierDe(depois) } } : {}),
                contra: { tipo: 'jogador', nome: nomeDe(db, eu === 'B' ? l.user_a : l.user_b) } };
     });

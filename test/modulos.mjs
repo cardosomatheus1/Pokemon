@@ -375,6 +375,8 @@ const CAMADA = {
   'liga-equipe-tela.mjs': 4,
   /* ST-11.6d · a partida da Liga no palco da Arena: a coreografia (0) e o palco (4). */
   'liga-palco-dados.mjs': 0,
+  /* ST-11.11 · o stake da Liga na tela: a confirmação honesta (0). */
+  'liga-stake-dados.mjs': 0,
   'liga-palco.mjs': 4,
   /* ST-11.3 · o pareamento da Liga (0). */
   'pareamento-dados.mjs': 0,

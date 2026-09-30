@@ -15,6 +15,7 @@ import { dexImg } from './sprites.mjs';
 import { api } from './api.mjs';
 import { homeDaLiga, replayNaTela, rankingNaTela, pontosNaTela, lojaNaTela } from './liga-equipe-dados.mjs';
 import { estiloItem } from './itens-icone.mjs';
+import { stakeNaTela } from './liga-stake-dados.mjs';
 import { linhaDoLog, provaDaPartida } from './partida-dados.mjs';
 import { montarPalco } from './liga-palco.mjs';
 import { sortearArena } from './arenas-dados.mjs';
@@ -25,15 +26,16 @@ const novaChave = () => `le-${Date.now().toString(36)}-${Math.random().toString(
 const lerPreset = () => { try { return localStorage.getItem('ar_treino_preset'); } catch { return null; } };
 const gravarPreset = p => { try { localStorage.setItem('ar_treino_preset', p); } catch { /* privativo: vale só nesta visita */ } };
 
-let dados = null, acabou = null, ocupado = false, chaveDaBusca = null, erro = null, ultimo = null, assistir = null, ranking = null, temporadaVista = null, pontos = null, loja = null, linhaDoce = null, chaveDaCompra = null, avisoLoja = null;
+let dados = null, acabou = null, ocupado = false, chaveDaBusca = null, erro = null, ultimo = null, assistir = null, ranking = null, temporadaVista = null, pontos = null, loja = null, linhaDoce = null, chaveDaCompra = null, avisoLoja = null, stake = null, confirmando = false;
 
 export async function renderLigaEquipe() {
   const alvo = $('#ligaEqCorpo');
   if (!alvo) return;
   const conta = api.temSessao();
   if (conta) {
-    const [r, rk, pt, lj] = await Promise.all([api.get('/api/equipe/liga'), api.get(`/api/equipe/ranking${temporadaVista ? `?temporada=${temporadaVista}` : ''}`),
-                                               api.get('/api/equipe/pontos'), api.get('/api/equipe/loja')]);
+    const [r, rk, pt, lj, sk] = await Promise.all([api.get('/api/equipe/liga'), api.get(`/api/equipe/ranking${temporadaVista ? `?temporada=${temporadaVista}` : ''}`),
+                                               api.get('/api/equipe/pontos'), api.get('/api/equipe/loja'), api.get('/api/equipe/stake')]);
+    stake = sk.ok ? sk.corpo : null;
     dados = r.ok ? r.corpo : null;
     ranking = rk.ok ? rk.corpo : null;
     pontos = pt.ok ? pt.corpo : null;
@@ -41,6 +43,11 @@ export async function renderLigaEquipe() {
   }
   ultimo = homeDaLiga({ conta, dados, pack: PACK, agora: Date.now(), preset: lerPreset(), acabou });
   pintar(alvo, ultimo);
+  /* Com o stake ligado, o lema da aba não pode dizer "sem aposta" (ST-11.11). */
+  const lemaStake = stakeNaTela(stake)?.lema, lema = $('#treinoLema');
+  if (lema && lemaStake) lema.textContent = lemaStake;
+  /* A confirmação aberta no celular fica abaixo da dobra: ela vem até o jogador. */
+  if (confirmando) alvo.querySelector('.leStkConf')?.scrollIntoView?.({ block: 'center' });
 }
 
 function pintar(alvo, h) {
@@ -57,7 +64,7 @@ function pintar(alvo, h) {
   const botoes = !h.acao ? '' : `<div class="leAcoes"><button class="btn primary leAcao" data-le-acao="${h.acao.tipo}"${h.acao.habilitada && !ocupado ? '' : ' disabled'}>${esc(ocupado ? 'Lutando…' : h.acao.rotulo)}</button>
       ${h.secundaria ? `<button class="btn leSec" data-le-acao="${h.secundaria.tipo}"${ocupado ? ' disabled' : ''}>${esc(h.secundaria.rotulo)}</button>` : ''}</div>`;
   const linha = (r, grande = false) => `<li class="leLinha le${r.classe}${grande ? ' leGrande' : ''}${r.selo.tipo === 'fora' ? ' leNeutro' : ''}">
-      <span class="leResCel"><b class="leRes">${esc(r.titulo)}</b><em class="leSelo leSelo${r.selo.tipo}">${esc(r.selo.texto)}</em>${r.pontos ? `<em class="lePts${r.pontos.startsWith('0') ? ' zero' : ''}">${esc(r.pontos)}</em>` : ''}</span><span class="leContra">${esc(r.contra)}${r.bot ? ` <em class="leBot">${esc(r.bot)}</em>` : ''}</span>
+      <span class="leResCel"><b class="leRes">${esc(r.titulo)}</b><em class="leSelo leSelo${r.selo.tipo}">${esc(r.selo.texto)}</em>${r.pontos ? `<em class="lePts${r.pontos.startsWith('0') ? ' zero' : ''}">${esc(r.pontos)}</em>` : ''}${r.stake ? `<em class="leStkLinha">${esc(r.stake)}</em>` : ''}</span><span class="leContra">${esc(r.contra)}${r.bot ? ` <em class="leBot">${esc(r.bot)}</em>` : ''}</span>
       ${r.explica ? `<span class="leRank">${esc(r.explica)}</span>` : '<span></span>'}<span class="leTurnos">${esc([r.turnos, r.quando].filter(Boolean).join(' · '))}</span>
       <button class="leVer" data-le-replay="${esc(r.id)}" title="rever a partida, golpe a golpe">▶ replay</button></li>`;
   const resultado = h.resultado ? `<ul class="leResultado">${linha(h.resultado, true)}</ul>` : '';
@@ -67,7 +74,7 @@ function pintar(alvo, h) {
   alvo.innerHTML = `<div class="leHome le-${h.estado}">
     ${barra}${tier ? '' : passos}
     <div class="lePainel${tier ? '' : ' leSoCentro'}${tier && pontos ? ' leComPontos' : ''}">${tier}<div class="leCentro">${time}${presets}${h.aviso ? `<p class="leAviso">${h.titulo ? `<strong>${esc(h.titulo)}</strong>` : ''}${esc(h.aviso)}</p>` : ''}${erro ? `<p class="leErro">${esc(erro)}</p>` : ''}${botoes}</div>${tier ? pintarPontos(pontosNaTela(pontos, h.tier.nome)) : ''}</div>
-    ${tier ? passos : ''}${tier ? pintarLoja(lojaVista()) : ''}<div id="leReplay" class="pveArea" hidden></div>${resultado}<div class="leBaixo">${recentes}${h.tier ? pintarRanking(rankingNaTela(ranking)) : ''}</div></div>`;
+    ${tier ? passos : ''}${h.time ? pintarStake(stakeNaTela(stake, { confirmando })) : ''}${tier ? pintarLoja(lojaVista()) : ''}<div id="leReplay" class="pveArea" hidden></div>${resultado}<div class="leBaixo">${recentes}${h.tier ? pintarRanking(rankingNaTela(ranking)) : ''}</div></div>`;
 }
 
 /* OS LEAGUE POINTS (ST-11.7b): quanto tenho, como ganho, o que a virada faz — e as insígnias. */
@@ -83,6 +90,21 @@ function pintarPontos(k) {
     ${k.extrato.length ? `<ul class="lePtExtrato">${k.extrato.map(l => `<li class="${l.classe}"><span>${esc(l.texto)}</span><b>${esc(l.valor)}</b></li>`).join('')}</ul>` : `<p class="lePtNota">${esc(k.semExtrato)}</p>`}
     <p class="lePtVirada">${esc(k.virada)}<span class="lePtUso">${esc(k.uso)}</span></p>
     <span class="leRot lePtRotIns">insígnias de temporada</span>${insignias}</section>`;
+}
+
+/* O STAKE (ST-11.11): só existe com a bandeira ligada. Os números antes do
+   clique, e a confirmação com a perda dita — o §9.6 não aceita taxa escondida. */
+function pintarStake(k) {
+  if (!k) return '';
+  const conf = k.confirmacao ? `<div class="leStkConf" role="alertdialog" aria-label="${esc(k.confirmacao.titulo)}"><b>${esc(k.confirmacao.titulo)}</b><p>${esc(k.confirmacao.texto)}</p>
+      <div class="leAcoes"><button class="btn leStkConfirmar" data-le-stake-confirmar${ocupado ? ' disabled' : ''}>${esc(k.confirmacao.confirmar)}</button><button class="btn leSec" data-le-stake-cancelar>${esc(k.confirmacao.cancelar)}</button></div></div>` : '';
+  return `<section class="leStake"><div class="leStkTopo"><span class="leRot">${esc(k.titulo)}</span><span class="leStkSaldo">${esc(k.saldo)}</span></div>
+    <p class="leStkEstado ${k.estado.classe}"><b>${esc(k.estado.texto)}</b><span>${esc(k.estado.explica)}</span></p>
+    <ul class="leStkNumeros">${k.numeros.map(n => `<li class="${n.classe}"><span>${esc(n.rotulo)}</span><b>${esc(n.valor)}</b><i>${esc(n.sub)}</i></li>`).join('')}</ul>
+    <p class="leStkConta">${esc(k.conta)}</p><ul class="leStkRegras">${k.regras.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+    ${conf || `<div class="leAcoes"><button class="btn leStkBuscar" data-le-stake-buscar${k.acao.habilitada && !ocupado ? '' : ' disabled'}>${esc(k.acao.rotulo)}</button>
+      <button class="btn leSec" data-le-stake-inscricao="${k.inscricao.ativo}">${esc(k.inscricao.rotulo)}</button></div>`}
+    ${k.motivo ? `<p class="leStkMotivo">${esc(k.motivo)}</p>` : ''}</section>`;
 }
 
 /* O nome da linha como o jogo o exibe: o servidor manda o do pack. */
@@ -129,10 +151,10 @@ async function publicar() {
   erro = r.ok ? null : (r.corpo?.erro ?? 'o servidor não respondeu — nada foi publicado');
 }
 
-async function buscar() {
+async function buscar(comStake = false) {
   if (!dados?.meuTime) return;
   chaveDaBusca ??= novaChave();
-  const r = await api.post('/api/equipe/buscar', { meu: dados.meuTime.id, chaveIdem: chaveDaBusca });
+  const r = await api.post('/api/equipe/buscar', { meu: dados.meuTime.id, chaveIdem: chaveDaBusca, ...(comStake ? { stake: true } : {}) });
   if (r.indisponivel) { erro = 'a resposta não chegou — buscar de novo reenvia o MESMO pedido, sem jogar outra partida'; return; }
   chaveDaBusca = null;
   if (r.ok) { acabou = r.corpo.partida.id; erro = null; assistir = acabou; } else erro = r.corpo?.erro ?? 'a busca foi recusada';
@@ -159,6 +181,23 @@ document.addEventListener('liga-equipe:abrir', () => { acabou = null; renderLiga
 document.addEventListener('click', async ev => {
   const aba = ev.target.closest('[data-le-temporada]');
   if (aba) { temporadaVista = aba.dataset.leTemporada ? Number(aba.dataset.leTemporada) : null; renderLigaEquipe(); return; }
+  const sk = ev.target.closest('[data-le-stake-buscar], [data-le-stake-cancelar], [data-le-stake-inscricao], [data-le-stake-confirmar]');
+  if (sk) {
+    if (sk.disabled || ocupado) return;
+    if (sk.matches('[data-le-stake-buscar]')) { confirmando = true; renderLigaEquipe(); return; }
+    if (sk.matches('[data-le-stake-cancelar]')) { confirmando = false; renderLigaEquipe(); return; }
+    ocupado = true;
+    try {
+      if (sk.matches('[data-le-stake-inscricao]')) {
+        const r = await api.post('/api/equipe/stake/inscricao', { ativo: sk.dataset.leStakeInscricao === 'true' });
+        erro = r.ok ? null : (r.corpo?.erro ?? 'a inscrição não foi aceita');
+      } else { confirmando = false; await buscar(true); }
+    } finally {
+      ocupado = false; await renderLigaEquipe();
+      if (assistir) { const id = assistir; assistir = null; verReplay(id); }
+    }
+    return;
+  }
   const cp = ev.target.closest('[data-le-comprar]');
   if (cp) { if (cp.disabled || ocupado) return; ocupado = true; try { await comprar(cp.dataset.leComprar); } finally { ocupado = false; renderLigaEquipe(); } return; }
   const rp = ev.target.closest('[data-le-replay]');

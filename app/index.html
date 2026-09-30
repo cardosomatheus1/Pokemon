@@ -1539,6 +1539,37 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .leLjRegra{margin:8px 0 0;font-size:.66rem;color:#b3bdd3}
 @media (max-width:1100px){ .leLjItens{grid-template-columns:repeat(2,minmax(0,1fr))} }
 @media (max-width:620px){ .leLjItens{grid-template-columns:1fr} }
+/* ST-11.11 · O STAKE. É PokéCash: o título na cor da CARTEIRA (`--gold`) —
+   nunca o violeta dos League Points. Os botões que VALEM dinheiro são
+   âmbar, e não o ciano do "Buscar partida" comum: apertar um pelo outro não
+   pode acontecer por semelhança (Q7 da 11.11). Os quatro números em linha, do mesmo tamanho:
+   o que se põe, o que se ganha, o que se perde e o que a casa leva. Nenhum
+   deles é letra miúda (§9.6: sem taxa escondida). */
+.leStake{padding:12px 14px;border-radius:16px;border:1px solid rgba(var(--goldRGB),.55);background:linear-gradient(180deg,rgba(var(--goldRGB),.08),transparent 70%),var(--bg2)}
+.leStkTopo{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 14px;margin-bottom:8px}.leStkTopo .leRot{margin:0;color:var(--gold)}
+.leStkSaldo{font-size:.72rem;color:#b3bdd3}
+.leStkNumeros{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.leStkNumeros li{display:flex;flex-direction:column;gap:3px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.leStkNumeros span{font-size:.72rem;color:#d3d9e6}
+.leStkNumeros i{font-style:normal;font-size:.66rem;color:#b3bdd3}
+/* O estado da fila, grande e no alto: estar dentro quer dizer poder ser desafiado valendo sem apertar nada. */
+.leStkEstado{margin:0 0 10px;padding:8px 10px;border-radius:10px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.leStkEstado b{font-size:.9rem}.leStkEstado span{font-size:.74rem;color:#d3d9e6}
+.leStkEstado.dentro{background:rgba(255,181,71,.12);border:1px solid rgba(255,181,71,.6)}.leStkEstado.dentro b{color:#ffb547}
+.leStkEstado.fora{background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.leStkNumeros b{font-family:var(--px);font-size:1.15rem;color:var(--gold)}
+.leStkNumeros .ganha b{color:rgb(var(--okRGB))}.leStkNumeros .perde b{color:rgb(var(--perigoRGB))}.leStkNumeros .casa b{color:#ffb547}
+.leStkConta{margin:8px 0 4px;font-size:.72rem;color:var(--txt)}
+.leStkRegras{margin:0 0 10px;padding-left:18px;font-size:.74rem;color:#d3d9e6;line-height:1.5}
+.leStake .leStkBuscar{padding:9px 20px;font-weight:700;color:#1a1204;border-color:#ffb547;background:linear-gradient(180deg,#ffc56b,#e8962a)}
+.leStake .leStkBuscar:disabled{color:var(--dim);background:none;border-color:var(--line)}
+.leStkMotivo{margin:6px 0 0;font-size:.7rem;color:#ffb547}
+.leStkExplica{margin:6px 0 0;font-size:.66rem;color:#b3bdd3}
+.leStkConf{padding:10px 12px;border-radius:12px;border:2px solid rgba(var(--perigoRGB),.6);background:rgba(var(--perigoRGB),.07)}
+.leStkConf b{font-size:.9rem}.leStkConf p{margin:6px 0 10px;font-size:.8rem;line-height:1.45;color:var(--txt)}
+.leStake .leStkConfirmar{padding:9px 18px;font-weight:700;color:#1a1204;border-color:#ffb547;background:linear-gradient(180deg,#ffc56b,#e8962a)}
+.leStkLinha{display:inline-block;margin-left:6px;font-style:normal;font-size:.68rem;font-weight:700;color:var(--gold);white-space:nowrap}
+@media (max-width:620px){ .leStkNumeros{grid-template-columns:repeat(2,minmax(0,1fr))} }
 /* A escada: sete degraus, o meu aceso na cor do tier, os de baixo já vencidos. */
 .leEscada{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:2px;width:100%;max-width:150px}
 .leEscada li{height:14px;border-radius:3px;background:rgba(255,255,255,.06);position:relative}

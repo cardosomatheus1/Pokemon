@@ -1612,9 +1612,32 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **O que fica:** a busca com stake (parear só inscritos) entra com a tela,
   na 11.11.
 
-### ST-11.11 · Stake: a confirmação honesta
+### ST-11.11 · Stake: a confirmação honesta ✅ 30/09 (a tela existe; a bandeira continua desligada — D2)
 - **Porte** M · **Bloco dono** F5.3 · **Spec** §9.6 (rake explícito antes de confirmar), §28.5
 - **Portões:** Q1 Q2 Q5 Q7.
+- **Feito:** a BUSCA com stake no servidor — só entre inscritos, e sem
+  ninguém na fila ela recusa (409) em vez de cair no bot, que não põe
+  dinheiro. Na tela, a seção "Partida com stake" (camada 0
+  `liga-stake-dados.mjs`) só existe com a bandeira ligada: o ESTADO da fila
+  no alto e grande ("Você ESTÁ na fila com stake — quem te desafiar com stake
+  joga valendo contra o seu time publicado, mesmo com você fora do jogo"),
+  os quatro números com o líquido ao lado (põe 50 · recebe 90, lucro de 40 ·
+  perde 50 · a casa leva 10, 10% do pot, tirado do prêmio), a conta do pot,
+  as regras, o saldo por balde, e a CONFIRMAÇÃO que repete tudo numa frase
+  antes do clique — com a taxa dentro dela. Os botões que valem dinheiro são
+  âmbar, nunca o ciano do "Buscar partida" comum. O lema da aba deixa de
+  dizer "sem aposta" quando o stake existe. Cada partida diz o que o stake
+  moveu ("+40 de stake", "−50 de stake", "stake devolvido · empate").
+  `test/liga-stake.mjs` (11) · S1875–S1882.
+- **Q5/Q7:** a bandeira está DESLIGADA de verdade; a captura intercepta só a
+  leitura `/api/equipe/stake` no navegador (o servidor não ganha porta). 1ª
+  leitura: o "−50" na fonte pixelada parecia um 50 riscado — a perda foi
+  para o rótulo. O crítico cego (põe 7, ganha 6, perde 9, casa 8, empate 6,
+  risco de apertar sem querer 3–4) achou: a frase de estar na fila como a
+  menor da seção, "sem aposta" no lema em cima do stake, o bruto sem o
+  líquido, o botão de stake igual ao comum, a confirmação sem a origem do
+  dinheiro — todos corrigidos. Ficou: "desconexão/abandono" não existem na
+  Liga (a partida é resolvida na hora, sem sessão).
 
 ### Condicionadas do E11
 Valor real: exigem §25.1, §0.5.1 e DEC-02 (D3).

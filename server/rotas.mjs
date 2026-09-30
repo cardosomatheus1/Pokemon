@@ -190,6 +190,7 @@ const STATUS_DE = {
   [ERRO_STAKE.LIMITE]: 409,
   [ERRO_STAKE.SALDO]: 409,
   [ERRO_STAKE.TIER]: 409,
+  [ERRO_STAKE.SEM_ADVERSARIO]: 409,
   /* A feature desligada (ST-11.9): indisponível AGORA, não pedido errado. */
   [ERRO_BANDEIRA.DESLIGADA]: 503,
 };

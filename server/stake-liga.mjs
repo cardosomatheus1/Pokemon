@@ -38,10 +38,12 @@ export const ERRO_STAKE = Object.freeze({
   LIMITE: 'STAKE_LIMITE',
   SALDO: 'STAKE_SALDO',
   TIER: 'STAKE_TIER',
+  SEM_ADVERSARIO: 'STAKE_SEM_ADVERSARIO',
 });
 const falha = (codigo, mensagem) => Object.assign(new Error(mensagem), { codigo });
 
 export const stakeLigado = (db, checkpoint = CHECKPOINT_25_1) => bandeiraLigada(db, 'league_stake_enabled', checkpoint);
+export const exigirStakeLigado = (db, checkpoint = CHECKPOINT_25_1) => exigirStake(db, checkpoint);
 function exigirStake(db, checkpoint) {
   if (!stakeLigado(db, checkpoint)) throw falha(ERRO_BANDEIRA.DESLIGADA, 'o stake da Liga está desligado');
 }
@@ -70,6 +72,7 @@ export function stakeDaConta(db, { userId, agora, checkpoint = CHECKPOINT_25_1 }
   const stake = stakeDaPartida(tier, tier);
   const s = saldos(db, userId);
   return { ligado, inscrito: inscrito(db, userId), tier, stake, ...potDe(stake), elegivel: (s.bonus || 0) + (s.competitivo || 0),
+           bonus: s.bonus || 0, competitivo: s.competitivo || 0,
            pausa: !podeAgir(db, { userId, acao: 'stake_liga', agora }).ok };
 }
 

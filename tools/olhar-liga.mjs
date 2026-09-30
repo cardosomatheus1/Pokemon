@@ -58,18 +58,21 @@ srv.db.prepare(`INSERT INTO liga_insignias (temporada, user_id, tier, posicao, p
 
 const b = await chromium.launch({ executablePath: CHROME });
 const erros = [];
-async function capturar(nome, sessao, { clicar, larguras = LARGURAS, replay = null } = {}) {
+async function capturar(nome, sessao, { clicar, larguras = LARGURAS, replay = null, stake = null } = {}) {
   for (const w of larguras) {
     const ctx = await b.newContext({ viewport: { width: w, height: w > 500 ? 1100 : 1000 } });
     await ctx.addInitScript(([s]) => { if (s) localStorage.setItem('ar_sessao', s); localStorage.setItem('ar_session', '1'); localStorage.setItem('ar_treino_aba', 'liga'); }, [sessao]);
     const pg = await ctx.newPage();
+    /* O STAKE (ST-11.11) está DESLIGADO no servidor — ligar é a D2, do dono. Para LER a seção,
+       só a leitura dele é interceptada no navegador; o servidor não ganha porta nenhuma. */
+    if (stake) await pg.route('**/api/equipe/stake', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(stake) }));
     pg.on('pageerror', e => erros.push(`${nome} ${w}: ${String(e).slice(0, 160)}`));
     await pg.goto(BASE + '/');
     /* A abertura some quando o boot termina (no modo local, depois das simulações). */
     await pg.waitForFunction(() => !document.querySelector('#boot') && document.querySelector('.nav[data-view="viewTreino"]'), null, { timeout: 90000 });
     await pg.$eval('.nav[data-view="viewTreino"]', el => el.click());
     await pg.waitForFunction(() => document.querySelector('#ligaEqCorpo .leHome'), null, { timeout: 20000 });
-    if (clicar) { await pg.click(clicar); await pg.waitForFunction(() => document.querySelector('#ligaEqCorpo .leResultado, #ligaEqCorpo .leErro, #ligaEqCorpo .leLjAviso'), null, { timeout: 30000 }); }
+    if (clicar) { await pg.click(clicar); await pg.waitForFunction(() => document.querySelector('#ligaEqCorpo .leResultado, #ligaEqCorpo .leErro, #ligaEqCorpo .leLjAviso, #ligaEqCorpo .leStkConf'), null, { timeout: 30000 }); }
     /* O replay: abre a primeira partida, espera a prova da semente e captura no meio
        (o palco) e no fim (o resultado, depois de "pular"). */
     if (replay) {
@@ -117,6 +120,9 @@ for (const w of LARGURAS) {
   srv.db.prepare(`INSERT INTO liga_pontos (user_id, temporada, dia, tipo, delta, ref, idem, criado_em) VALUES (?, 1, 0, 'premio', 175, 'olhar', ?, ?)`).run(x.id, `olhar-premio-${w}`, agora);
   await capturar('loja', x.sessao, { clicar: '[data-le-comprar="bola:great"]', larguras: [w] });
 }
+const ESTADO_DO_STAKE = { ligado: true, inscrito: true, tier: 'Bronze', stake: 50, pot: 100, rake: 10, payout: 90, elegivel: 340, bonus: 40, competitivo: 300, pausa: false };
+await capturar('stake', eu.sessao, { stake: ESTADO_DO_STAKE });
+await capturar('stakeconfirma', eu.sessao, { stake: ESTADO_DO_STAKE, clicar: '[data-le-stake-buscar]' });
 await capturar('semtime', vazio.sessao);
 await capturar('replaymeio', eu.sessao, { replay: 'meio' });
 await capturar('replayfim', eu.sessao, { replay: 'fim' });

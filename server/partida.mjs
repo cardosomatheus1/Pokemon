@@ -33,7 +33,7 @@ import { snapshotDe, snapshotPorId, ERRO_EQUIPE } from './equipe.mjs';
 import { aplicarPartida, tierDaConta, ratingDe } from './liga-mmr.mjs';
 import { creditarPartida } from './pontos-liga.mjs';
 import { emTransacao } from './carteira.mjs';
-import { prepararStake, reservarStakes, liquidarStake, stakeGravado } from './stake-liga.mjs';
+import { prepararStake, reservarStakes, liquidarStake, stakeGravado, inscrito, exigirStakeLigado, ERRO_STAKE } from './stake-liga.mjs';
 import PACK from '../content/escolhido.mjs';
 
 export const ERRO_PARTIDA = Object.freeze({
@@ -168,7 +168,7 @@ function adversariosRecentes(db, userId) {
     .all(userId, userId, userId, PAREAMENTO.janelaRepeticao).map(l => l.outro);
 }
 
-export function buscarPartida(db, { userId, pack = PACK, meu, chaveIdem, agora, raiz = novaRaiz(), sal = novoSal() }) {
+export function buscarPartida(db, { userId, pack = PACK, meu, chaveIdem, agora, raiz = novaRaiz(), sal = novoSal(), stake = false, checkpoint }) {
   if (typeof chaveIdem !== 'string' || !CHAVE_OK.test(chaveIdem)) throw falha(ERRO_PARTIDA.CHAVE, 'chave do pedido inválida');
   const idem = `liga:${userId}:${chaveIdem}`;
   const ja = jaJogada(db, idem, pack);
@@ -176,11 +176,15 @@ export function buscarPartida(db, { userId, pack = PACK, meu, chaveIdem, agora, 
   sincronizarTemporada(db, { agora });
   const b = snapshotDe(db, { userId, id: meu });
   const eu = { user: userId, rating: ratingDe(db, userId).rating, power: b.power };
-  const candidatos = ultimosSnapshots(db, userId).map(s => ({ user: s.user, rating: ratingDe(db, s.user).rating, snapshot: s }));
+  /* A BUSCA COM STAKE (ST-11.11): só quem se inscreveu para defender com stake, e NUNCA o bot — o bot não põe dinheiro. */
+  if (stake) exigirStakeLigado(db, checkpoint);
+  const candidatos = ultimosSnapshots(db, userId).filter(s => !stake || inscrito(db, s.user))
+    .map(s => ({ user: s.user, rating: ratingDe(db, s.user).rating, snapshot: s }));
   const emEspera = db.prepare(`SELECT CASE WHEN user_b = ? THEN user_a ELSE user_b END AS outro FROM league_matches
                                 WHERE (user_a = ? OR user_b = ?) AND criada_em > ?`).all(userId, userId, userId, agora - INTEGRIDADE.cooldownMs).map(l => l.outro);
   const adv = escolherAdversario({ pack, eu, candidatos, recentes: adversariosRecentes(db, userId), ligadas: contasLigadas(db, userId), evitar: emEspera });
-  if (adv) return criarPartida(db, { userId, pack, meu, adversario: adv.snapshot.id, chaveIdem, agora, raiz, sal });
+  if (adv) return criarPartida(db, { userId, pack, meu, adversario: adv.snapshot.id, chaveIdem, agora, raiz, sal, stake, checkpoint });
+  if (stake) throw falha(ERRO_STAKE.SEM_ADVERSARIO, 'ninguém da sua faixa na fila com stake agora — nada foi cobrado');
   const bot = botPara(pack, eu);
   const c = confrontoDaLiga({ pack, a: bot, b, raiz });
   if (!c.ok) throw falha(ERRO_PARTIDA.VERSAO, c.motivo);
@@ -208,7 +212,7 @@ export function rotasDaPartida(daExcecao) {
     'POST /api/equipe/buscar': ({ db, corpo, userId, agora }) => {
       const meu = texto(corpo?.meu);
       if (!meu) return { status: 400, corpo: { codigo: 'ENTRADA_INVALIDA', erro: 'busca inválida' } };
-      return tentar(() => { exigirBandeira(db, 'league_enabled'); return { partida: buscarPartida(db, { userId, meu, chaveIdem: corpo?.chaveIdem, agora }) }; });
+      return tentar(() => { exigirBandeira(db, 'league_enabled'); return { partida: buscarPartida(db, { userId, meu, chaveIdem: corpo?.chaveIdem, agora, stake: corpo?.stake === true }) }; });
     },
     /* O tier e as partidas de quem pede — o rating exato fica no servidor (§9.7). */
     'GET /api/equipe/tier': ({ db, userId, agora }) => { sincronizarTemporada(db, { agora }); return { corpo: tierDaConta(db, userId) }; },

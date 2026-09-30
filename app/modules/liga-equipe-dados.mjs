@@ -88,6 +88,8 @@ export function linhaDaPartida(p, agora = null) {
     pontos: bot || !p.rated ? null
       : p.pontos > 0 ? `+${p.pontos} LP${p.lado === 'A' ? ' · defesa' : ''}`
       : p.lado === 'A' ? '0 LP · a defesa não segurou' : '0 LP · teto do dia',
+    /* O STAKE da partida (ST-11.11): o que ela moveu, dito do lado de quem olha. */
+    stake: textoDoStake(p),
   };
 }
 
@@ -121,6 +123,14 @@ export function pontosNaTela(p, tier = null) {
     semInsignias: (p.insignias ?? []).length ? null : `A primeira insígnia sai quando a temporada fechar — para quem jogou ${r.minimoParaPremio} partidas ou mais nela.`,
     uso: 'Gaste na loja da Liga, logo abaixo — antes que a temporada feche.',
   };
+}
+
+function textoDoStake(p) {
+  const k = p.stake;
+  if (!k) return null;
+  if (k.estado === 'empate') return 'stake devolvido · empate';
+  if (k.estado === 'devolvida') return 'stake devolvido · não contou';
+  return p.resultado === 'venceu' ? `+${k.valor - k.rake} de stake` : `−${k.valor} de stake`;
 }
 
 const idsDo = snap => (snap?.time ?? []).map(x => x.id).join();

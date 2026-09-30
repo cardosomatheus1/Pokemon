@@ -17,7 +17,10 @@ import { abrirBanco, migrar, MIGRACOES } from '../server/banco.mjs';
 import { cadastrar } from '../server/auth.mjs';
 import { gerar } from '../server/criaturas.mjs';
 import { criarSnapshot } from '../server/equipe.mjs';
-import { criarPartida } from '../server/partida.mjs';
+import { criarPartida, buscarPartida } from '../server/partida.mjs';
+import { stakeNaTela } from '../app/modules/liga-stake-dados.mjs';
+import { linhaDaPartida } from '../app/modules/liga-equipe-dados.mjs';
+import { minhasPartidas } from '../server/liga-equipe.mjs';
 import { saldos, creditar, gastar, reconciliarNoBanco } from '../server/carteira.mjs';
 import { pausar, ERRO_PROTECAO } from '../server/protecao.mjs';
 import { definirLimite } from '../server/limites.mjs';
@@ -140,6 +143,59 @@ export async function suite() {
     ok(/falha simulada/.test(recusa(() => joga(c, 1))?.message ?? ''), 'a falha não chegou');
     igual(`${foto(c.db, c.u)}|${foto(c.db, c.v)}`, antes, 'o stake saiu sem a partida');
     igual(c.db.prepare(`SELECT COUNT(*) AS n FROM league_matches`).get().n, 0, 'a partida ficou sem o stake');
+  });
+
+  s.teste('11.11 · a busca com stake: só entre inscritos, e nunca o bot', () => {
+    const c = cena();
+    inscrever(c.db, { userId: c.v, ativo: true, agora: T0, checkpoint: DEC });
+    const busca = k => buscarPartida(c.db, { userId: c.v, meu: c.fraco.id, chaveIdem: `bstk-${String(k).padStart(6, '0')}`, agora: T0, stake: true, checkpoint: DEC });
+    const antes = foto(c.db, c.v);
+    igual(recusa(() => busca(1))?.codigo, ERRO_STAKE.SEM_ADVERSARIO, 'sem inscrito na fila, a busca caiu no bot');
+    igual(`${foto(c.db, c.v)}|${c.db.prepare(`SELECT COUNT(*) AS n FROM league_bot_matches`).get().n}`, `${antes}|0`, 'a busca sem adversário cobrou ou jogou');
+    igual(recusa(() => buscarPartida(c.db, { userId: c.v, meu: c.fraco.id, chaveIdem: 'bstk-desl01', agora: T0, stake: true }))?.codigo, ERRO_BANDEIRA.DESLIGADA, 'a busca com stake desligado');
+    /* Um par da MESMA faixa de força (o pareamento respeita a faixa): o forte não aparece para o fraco. */
+    const w = cadastrar(c.db, { username: 'stk2', email: 'stk2@x.test', senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01', agora: T0 }).id;
+    creditar(c.db, { userId: w, tipo: 'DAILY_REWARD', bucket: 'bonus', valor: 200, idem: 'b-w', agora: T0 });
+    const cw = gerar(c.db, { userId: w, pack: PACK, dex: 13, origem: 'captura' });
+    c.db.prepare(`UPDATE criaturas SET xp = ? WHERE id = ?`).run(xpParaNivel(5), cw.id);
+    criarSnapshot(c.db, { userId: w, pack: PACK, agora: T0, ids: [cw.id] });
+    igual(recusa(() => busca(2))?.codigo, ERRO_STAKE.SEM_ADVERSARIO, 'o da mesma faixa sem inscrição foi pareado');
+    inscrever(c.db, { userId: w, ativo: true, agora: T0, checkpoint: DEC });
+    const p = busca(3);
+    igual(`${p.stake?.valor}|${p.defensor === c.fraco.id ? 'eu' : 'outro'}`, '50|outro', 'a busca com stake');
+    const esperado = p.stake.estado !== 'liquidada' ? /^stake devolvido/ : p.vencedor === 'B' ? /^\+40 de stake$/ : /^−50 de stake$/;
+    ok(esperado.test(linhaDaPartida(minhasPartidas(c.db, c.v)[0]).stake ?? ''), 'a linha da partida não diz o stake');
+    const u2 = linhaDaPartida({ resultado: 'venceu', stake: { valor: 50, rake: 10, estado: 'liquidada' }, contra: {} }).stake;
+    const v2 = linhaDaPartida({ resultado: 'perdeu', stake: { valor: 50, rake: 10, estado: 'liquidada' }, contra: {} }).stake;
+    igual(`${u2}|${v2}`, '+40 de stake|−50 de stake', 'a linha de quem venceu e de quem perdeu');
+    igual([linhaDaPartida({ resultado: 'empate', stake: { valor: 50, rake: 0, estado: 'empate' }, contra: {} }).stake,
+           linhaDaPartida({ resultado: 'venceu', stake: { valor: 50, rake: 0, estado: 'devolvida' }, contra: {} }).stake, String(linhaDaPartida({ resultado: 'venceu', contra: {} }).stake)].join('|'),
+      'stake devolvido · empate|stake devolvido · não contou|null', 'o empate, a devolvida e a sem stake');
+  });
+
+  s.teste('11.11 · a confirmação honesta: o estado da fila, os quatro números com o líquido, e a perda dita', () => {
+    const base = { ligado: true, inscrito: true, tier: 'Gold', stake: 250, pot: 500, rake: 50, payout: 450, elegivel: 1300, bonus: 300, competitivo: 1000, pausa: false };
+    igual(stakeNaTela({ ...base, ligado: false }), null, 'a seção aparece com o stake desligado');
+    igual(stakeNaTela(null), null, 'sem resposta, seção');
+    const k = stakeNaTela(base);
+    igual(k.numeros.map(n => `${n.rotulo}=${n.valor} (${n.sub})`).join(' | '),
+      'você põe=250 PC (do bônus e do competitivo) | se vencer, recebe=450 PC (lucro de 200) | se perder, você perde=250 PC (o stake inteiro) | a casa leva=50 PC (10% do pot, tirado do prêmio)', 'os quatro números');
+    igual(k.conta, 'pot 500 = 250 seu + 250 do adversário · a casa tira 50 · o vencedor leva 450', 'a conta do pot');
+    ok(k.regras.some(r => /nunca do transferível/.test(r)) && k.regras.some(r => /devolve tudo/.test(r)), 'as regras não dizem o transferível e a devolução');
+    igual(`${k.estado.texto}|${k.estado.classe}`, 'Você ESTÁ na fila com stake|dentro', 'o estado da fila');
+    ok(/mesmo com você fora do jogo/.test(k.estado.explica), 'o estado não diz que o time pode ser desafiado valendo sem o jogador');
+    igual(`${stakeNaTela({ ...base, inscrito: false }).estado.classe}|${stakeNaTela({ ...base, inscrito: false }).inscricao.rotulo}`, 'fora|Entrar na fila com stake', 'fora da fila');
+    igual(k.saldo, 'bônus 300 · competitivo 1.000', 'o saldo por balde');
+    ok(!/sem aposta/.test(k.lema), 'o lema da aba diz "sem aposta" com o stake ligado');
+    igual(`${k.acao.habilitada}|${k.motivo}|${k.confirmacao}`, 'true|null|null', 'pronto para buscar, sem confirmação aberta');
+    const c = stakeNaTela(base, { confirmando: true }).confirmacao;
+    igual(c.texto, 'Você põe 250 PC do seu bônus e competitivo. Se vencer, recebe 450 PC — lucro de 200, depois de 50 da casa — e o que ganhar volta como bônus. Se perder, perde os 250 PC. Empate, ou partida anulada pelo sistema, devolve tudo.', 'a confirmação');
+    igual(c.confirmar, 'Confirmar e buscar valendo 250 PC', 'o botão da confirmação diz o valor');
+    igual(stakeNaTela({ ...base, elegivel: 99999, stake: 5000, pot: 10000, rake: 1000, payout: 9000 }).numeros[1].valor, '9.000 PC', 'o milhar');
+    const semSaldo = stakeNaTela({ ...base, elegivel: 100 }, { confirmando: true });
+    igual(`${semSaldo.acao.habilitada}|${semSaldo.confirmacao}|${semSaldo.motivo}`, 'false|null|faltam 150 PC de bônus ou competitivo — o transferível nunca entra no stake', 'sem saldo');
+    ok(/fila com stake primeiro/.test(stakeNaTela({ ...base, inscrito: false }).motivo), 'sem inscrição não diz o que falta');
+    ok(/pausa/.test(stakeNaTela({ ...base, pausa: true }).motivo), 'a pausa não aparece');
   });
 
   s.teste('a migração sobe e desce', () => {
