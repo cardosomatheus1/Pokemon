@@ -14,7 +14,7 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
-import { setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, regioesDoMapa, ARTE_NOSSA_DO_MAPA, mostraNome, corDoNo } from './jornada-dados.mjs';
+import { setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, regioesDoMapa, ARTE_NOSSA_DO_MAPA, mostraNome, corDoNo, cruzaOCaminho } from './jornada-dados.mjs';
 import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, turnosDaAmeaca, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { diaDoMundo } from '../../engine/avanco.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido, candidatosDaCaixa, membrosParaTrocas } from './treino-dados.mjs';
@@ -313,13 +313,17 @@ function afastarCena(alvo) {
   /* E dentro do mapa: lago cortado pela borda, no celular, é peça pela metade. */
   const caixa = alvo.querySelector('.jnMapa')?.getBoundingClientRect();
   const fora = r => caixa && (r.left < caixa.left || r.right > caixa.right || r.top < caixa.top || r.bottom > caixa.bottom);
-  const ruim = r => tocaEm(obstaculos, r) || fora(r);
+  /* ST-10.22c3: e longe da ESTRADA — o lago e a casa em cima dela liam como
+     estrada que afunda (Q7 da c2). O marco fica: o palácio mora no nó. */
+  const estrada = [...alvo.querySelectorAll('.jnPos')].filter(p => p.querySelector(':scope > .jnNo')).map(p => { const r = p.getBoundingClientRect(); return { x: r.left, y: r.top }; });
+  const ruim = (r, naEstrada) => tocaEm(obstaculos, r) || fora(r) || (naEstrada && cruzaOCaminho(r, estrada));
   for (const el of alvo.querySelectorAll('.jnPos:not(.jnB) .jnLago, .jnPos:not(.jnB) .jnProp, .jnPos:not(.jnB) .jnMarco')) {
     el.dataset.dx0 ??= el.style.getPropertyValue('--dx');
     el.style.setProperty('--dx', el.dataset.dx0); el.style.display = '';
-    if (!ruim(el.getBoundingClientRect())) continue;
+    const naEstrada = !el.classList.contains('jnMarco');
+    if (!ruim(el.getBoundingClientRect(), naEstrada)) continue;
     el.style.setProperty('--dx', `${-parseFloat(el.dataset.dx0)}px`);
-    if (ruim(el.getBoundingClientRect())) el.style.display = 'none';
+    if (ruim(el.getBoundingClientRect(), naEstrada)) el.style.display = 'none';
   }
   /* ST-10.22b: a árvore da parede que cai sob uma peça da cena (a casa de
      Pewter, a de Vermilion, lá em cima) sai — casa na frente de árvore
@@ -376,7 +380,7 @@ export function renderJornada({ nova = null } = {}) {
             : c.arte ? `<b class="jnProp jnArte" style="background-image:url(${ARTE_NOSSA_DO_MAPA}/${c.arte}.svg);--dx:${c.dx}px;--dy:${c.dy}px"></b>`
             : quadro(c.folha, 'jnProp', `;--dx:${c.dx}px;--dy:${c.dy}px`))).join('')}
           ${n.ow ? quadro(n.ow, 'jnOw') : ''}${n.lendario ? `<b class="jnLend">${dexImg(n.lendario, '', 'class="jnLendImg"')}</b>` : ''}
-          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}${mostraNome(n, escolhido) ? '' : ' jnSemNome'}" data-jn-no="${n.id}" title="${n.nome}" aria-label="${n.nome}">${n.estado === 'atual' ? '<b class="jnAnel"></b>' : ''}<i${n.tipo === 'ginasio' && n.estado !== 'trancado' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : n.tipo === 'ginasio' && arteDaInsignia(n.insignia) ? ` class="jnSilhueta" style="--ins:url(${arteDaInsignia(n.insignia)})"` : ''}></i><span>${n.nome}${n.estado === 'trancado' && n.id !== escolhido ? '' : n.tipo === 'liga' ? `<em>${n.selo ?? ''} · ${n.licao?.tipo ?? ''}</em>` : n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : n.tipo === 'chefe' ? '<em>chefe · lendário</em>' : ''}${n.estado === 'atual' ? '<strong class="jnProx">próximo</strong>' : ''}</span></button></div>`).join('')}
+          <button class="jnNo jn-${n.estado} jn-${n.tipo}${n.id === escolhido ? ' escolhido' : ''}${mostraNome(n, escolhido) ? '' : ' jnSemNome'}" data-jn-no="${n.id}" title="${n.nome}" aria-label="${n.nome}">${n.estado === 'atual' ? '<b class="jnAnel"></b>' : ''}<i${n.tipo === 'ginasio' && n.estado !== 'trancado' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : n.tipo === 'ginasio' && arteDaInsignia(n.insignia) ? ` class="jnSilhueta" style="--ins:url(${arteDaInsignia(n.insignia)})"` : n.tipo === 'liga' && n.revisa?.insignia && n.estado === 'trancado' ? ` class="jnSilhueta" style="--ins:url(${arteDaInsignia(n.revisa.insignia)})"` : ''}></i><span>${n.nome}${n.estado === 'trancado' && n.id !== escolhido ? '' : n.tipo === 'liga' ? `<em>${n.selo ?? ''} · ${n.licao?.tipo ?? ''}</em>` : n.lider ? `<em>líder ${n.lider} · ${n.licao?.tipo ?? ''}</em>` : n.tipo === 'chefe' ? '<em>chefe · lendário</em>' : ''}${n.estado === 'atual' ? '<strong class="jnProx">próximo</strong>' : ''}</span></button></div>`).join('')}
       ${onde && eu ? `<div class="jnPos jnVoce${onde.fim ? ' jnFim' : ''}${onde.lado === 'direita' ? ' jnDireita' : ''}" style="--x:${onde.x};--y:${onde.y};--ax:${onde.ao.x};--ay:${onde.ao.y}"><b class="jnEu"><img src="${eu}" alt="você"></b></div>` : ''}
     </div></div>
     ${(f => `<div class="jnFaixa">${[f.antes, f.este, f.depois].map((n, k) => (n ? `<button class="jnFaixaNo jn-${n.estado} jn-${n.tipo}${k === 1 ? ' este' : ''}" data-jn-no="${n.id}"><i class="jnFaixaMarco"${n.tipo === 'ginasio' && n.estado !== 'trancado' ? ` style="background-image:url(${arteDaInsignia(n.insignia)})"` : ''}></i>${n.curto}</button>` : '<span></span>')).join('')}</div>`)(faixaDoCaminho(mapa, escolhido))}

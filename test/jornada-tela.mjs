@@ -14,7 +14,7 @@ import { montarLutador, simular } from '../engine/treino-batalha.mjs';
 import { movesetDoRival, padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { treinador } from '../app/modules/treino-dados.mjs';
 import { correcaoDaLicao, aplicarCorrecao } from '../app/modules/jornada-correcao.mjs';
-import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, golpesLevados, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, rivaisDerrubados, setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, regioesDoMapa, REGIOES, pagamentoDoNo, fraseDoPagamento, DUAS_VOLTAS_A_PARTIR_DE, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO, mostraNome, corDoNo, COR_DA_REGIAO } from '../app/modules/jornada-dados.mjs';
+import { mapaDaJornada, posicaoNoCaminho, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, quandoCaiu, turnosDaAmeaca, golpesLevados, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, rivaisDerrubados, setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, regioesDoMapa, REGIOES, pagamentoDoNo, fraseDoPagamento, DUAS_VOLTAS_A_PARTIR_DE, ZIGUE_A_PARTIR_DE, INSIGNIAS_DO_CAMINHO, mostraNome, corDoNo, COR_DA_REGIAO, cruzaOCaminho } from '../app/modules/jornada-dados.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 const semComentario = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
@@ -643,9 +643,30 @@ export function suite() {
     ok(/rgb\(var\(--rg/.test(fonte('../app/index.html')), 'o trancado não usa a cor da região');    /* ST-10.22c2: o ginásio futuro leva a silhueta da insígnia, e o fim tem o
        rótulo dourado — o crítico cego leu os dois como os piores do mapa. */
     const css = fonte('../app/index.html'), tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
-    ok(/class="jnSilhueta" style="--ins:url\(/.test(tela) && /i\.jnSilhueta::after\{[^}]*var\(--ins\)[^}]*grayscale\(1\)/.test(css), 'o ginásio futuro sem a silhueta da insígnia');
+    ok(/n\.tipo === 'ginasio' && arteDaInsignia\(n\.insignia\) \? ` class="jnSilhueta" style="--ins:url\(\$\{arteDaInsignia\(n\.insignia\)\}/.test(tela) && /i\.jnSilhueta::after\{[^}]*var\(--ins\)[^}]*grayscale\(1\)/.test(css), 'o ginásio futuro sem a silhueta da insígnia');
     ok(/\.jnFinal \.jnNo\.jn-trancado span\{opacity:1;color:#ffe9a8/.test(css), 'o rótulo do fim herdou o apagado do trancado');
     ok(/n\.final \? ' jnFinal'/.test(tela) && /\.jnFinal \.jnMarco\{[^}]*scale\(2\.1\)/.test(css), 'o castelo do fim não está no nó do Campeão');
+  });
+
+  s.teste('10.22c3 · a estrada não atravessa o lago; a Elite mostra o que revisa; o líder vencido sai de cena', () => {
+    /* A caixa em pixels contra a estrada em pixels: a mesma conta que a tela faz. */
+    const estrada = [{ x: 0, y: 100 }, { x: 200, y: 100 }, { x: 200, y: 300 }];
+    const caixa = (left, top, w, h) => ({ left, top, right: left + w, bottom: top + h });
+    ok(cruzaOCaminho(caixa(80, 80, 40, 40), estrada), 'o lago em cima da estrada não cruza');
+    ok(cruzaOCaminho(caixa(180, 180, 40, 40), estrada), 'o lago no trecho vertical não cruza');
+    ok(!cruzaOCaminho(caixa(80, 20, 40, 40), estrada), 'o lago longe cruza');
+    /* A meia largura da estrada conta: o lago a 3 px da linha está na beira. */
+    ok(cruzaOCaminho(caixa(80, 103, 40, 40), estrada), 'a beira da estrada não conta');
+    ok(!cruzaOCaminho(caixa(80, 112, 40, 40), estrada), 'folga demais: o lago ao lado vira ponte');
+    ok(!cruzaOCaminho(caixa(80, 80, 40, 40), [{ x: 0, y: 100 }]), 'um ponto só é estrada');
+    const tela = semComentario(fonte('../app/modules/jornada-tela.mjs')), css = fonte('../app/index.html');
+    ok(/cruzaOCaminho\(r, estrada\)/.test(tela), 'a tela não afasta a cena da estrada');
+    /* A Elite trancada com a insígnia do ginásio que ela revisa, apagada. */
+    const m = mapaDaJornada(pack, { vencidos: [] });
+    ok(m.nos.filter(n => n.tipo === 'liga' && !n.final).every(n => n.revisa?.insignia), 'um membro da Elite sem a insígnia que revisa');
+    ok(/n\.tipo === 'liga' && n\.revisa\?\.insignia/.test(tela) && /\.jnNo\.jn-liga i\.jnSilhueta::after\{[^}]*rotate\(-45deg\)/.test(css), 'a Elite trancada sem a insígnia que revisa');
+    ok(/\.jnPos\.jn-vencido \.jnOw\{display:none\}/.test(css), 'o líder vencido continua de pé como antes');
+    ok(/\.jnPos\.jn-trancado \.jnOw\{filter:brightness\(0\)/.test(css), 'o rival do nó futuro aparece colorido — entrega quem espera ali');
   });
 
   return s;

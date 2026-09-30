@@ -1236,7 +1236,7 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   Subiu em tudo menos o 420, e nenhuma nota chegou a 8 fora do "onde estou".
   O que ficou vai para a **10.22c3**, na ordem do crítico.
 
-#### ST-10.22c3 · O mundo do mapa (proposta, 30/09 — dos achados do Q7 da c2)
+#### ST-10.22c3 · O mundo do mapa ✅ 30/09 (dos achados do Q7 da c2)
 - **Porte** M · **Método** GL (barra: o mapa do SMW) · **Portões:** Q1 Q2 Q5 Q7.
 - **Escopo, na ordem do crítico:**
   ```text
@@ -1254,6 +1254,51 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   ```
 - **Aceite:** ≥ 8 nas quatro larguras (o da ST-10.22).
 - **Sabotagem:** a ponte que some; o palácio fora da janela do celular.
+- **10.22c3 ✅ 30/09 — feita em parte, com o aceite ≥8 NÃO atingido.**
+  Construído:
+  - A estrada não atravessa lago nem casa. `cruzaOCaminho` (camada 0) mede a
+    caixa da peça contra a linha entre os nós, contando a meia largura da
+    estrada. A tela troca a peça de lado ou a tira. Construir ponte seria
+    arte nova; tirar o lago da estrada resolve a leitura.
+  - A Elite trancada mostra, apagada, a insígnia do ginásio que ela REVISA.
+    Os cinco losangos iguais passaram a dizer que lição volta ali.
+  - O rival do nó futuro aparece em SILHUETA, na regra do Zapdos. Colorido,
+    ele entregava quem espera em cada nó.
+  - O rival vencido sai de cena. Apagado pela metade, o crítico leu como
+    defeito de pintura.
+  - A trilha por andar ganhou contorno dobrado.
+  - `test/jornada-tela.mjs` (24) · S1897–S1902.
+  - O Q2 do bloco achou um teste decorativo: a regex do ginásio casava com o
+    ramo novo da Elite. O teste foi apertado.
+- **Q7 da 10.22c3** (caminho/onde/futuro/mundo/publicado), medido ANTES da
+  silhueta e do vencido fora de cena. O "futuro" foi exatamente o que essas
+  duas mudanças atacaram, e ainda não tem nota nova:
+  ```text
+  1920 7/7/4/5/5 · 1440 7/7/4/5/5 · 1100 7/8/4/6/6 · 420 3/8/3/3/4
+  chefe 1100 8/8/4/6/6 · chefe 420 4/8/3/4/5
+  ```
+  O caminho chegou a 7–8 nas larguras largas. O que segura o resto é
+  ESTRUTURA, e não acabamento: o celular é uma fechadura (a janela mostra 5
+  de 18 nós, sem começo nem fim), o mundo é colcha de manchas, e 1920 é uma
+  faixa de 4:1. Isso vira a **10.22c4**. Quatro rodadas de acabamento sobre a
+  mesma estrutura mostraram que ele não chega a 8.
+- **O rio de Cerulean a Vermilion** passa para a c4, junto com o terreno que
+  emenda: é a mesma pergunta, "um lugar só".
+
+#### ST-10.22c4 · A estrutura do mapa (proposta, 30/09 — dos achados do Q7 da c3)
+- **Porte** L · **Método** GL (barra: o mapa do SMW) · **Portões:** Q1 Q2 Q5 Q7.
+- **Por que é outra story:** as c1–c3 foram acabamento, e as notas de mundo e
+  de "publicado" pararam em 5–6. O que falta muda o arranjo:
+  ```text
+  o celular     a janela mostra 5 de 18 nós — um MINIMAPA fixo do caminho
+                inteiro (começo, você, fim), como a tela de mundo do SMW
+  o mundo       um chão contínuo por baixo das regiões (as bordas casando),
+                o rio Cerulean–Vermilion e a costa embaixo
+  a 1920        a faixa de 4:1: altura mínima maior, ou três voltas
+  o fim         o palácio maior que o museu, e longe do começo
+  ```
+- **Aceite:** ≥ 8 nas quatro larguras (o da ST-10.22).
+- **Sabotagem:** o minimapa sem o nó atual; o rio que não liga as duas cidades.
 
 ### ST-10.20 · A jornada ensina a apostar? ✅ 27/09
 - **Porte** M · **Servidor** sim (telemetria) · **Bloco dono** F4.9 · **Spec** §8.15, §8.16

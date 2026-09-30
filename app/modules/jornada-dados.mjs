@@ -498,6 +498,21 @@ export function leituraDoDuplo(mm) {
            pior: [...(mm ?? [])].sort((a, b) => menor(a) - menor(b))[0] ?? null };
 }
 
+/* A ESTRADA NÃO ATRAVESSA O LAGO (ST-10.22c3; Q7 da c2: "a estrada entra
+   nos lagos sem ponte", em 1920, 1440 e 1100). A caixa da peça contra a
+   estrada, as duas em pixels: medir é do navegador, e a decisão de "cruza"
+   mora aqui, testável sem ele. `meia` é a meia largura da estrada — o lago
+   que encosta na BEIRA já está em cima dela. */
+export function cruzaOCaminho(caixa, pontos, meia = 5) {
+  const l = caixa.left - meia, r = caixa.right + meia, t = caixa.top - meia, b = caixa.bottom + meia;
+  const dentro = (x, y) => x > l && x < r && y > t && y < b;
+  for (let i = 1; i < (pontos?.length ?? 0); i++) {
+    const a = pontos[i - 1], c = pontos[i], n = Math.max(1, Math.ceil(Math.hypot(c.x - a.x, c.y - a.y) / 3));
+    for (let k = 0; k <= n; k++) if (dentro(a.x + ((c.x - a.x) * k) / n, a.y + ((c.y - a.y) * k) / n)) return true;
+  }
+  return false;
+}
+
 /* O NOME NO MAPA (ST-10.22c): só onde ele responde alguma coisa — o nó atual
    (para onde eu vou) e o escolhido (o que estou lendo). Os dezoito nomes fixos cobriam a arte; o trancado mostra o nome ao
    passar o dedo, e a faixa do caminho diz o próximo. E o FIM (ST-10.22c2):

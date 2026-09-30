@@ -1233,7 +1233,9 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 /* ST-10.22c: a trilha POR ANDAR é a fileira de pontos do SMW — contínua e legível
    sobre qualquer chão (o contorno escuro), e não um traço claro que some na
    areia e no planalto (Q7: "a trilha trancada quase desaparece"). */
-.jnCaminho polyline.jnPorAndar{stroke:#fff3d0;stroke-width:6;stroke-dasharray:.1 12;opacity:.95;filter:drop-shadow(0 0 1.5px rgba(40,25,5,.95))}
+/* ST-10.22c3: o contorno do ponto dobrado — sobre a pedra clara da Liga e a
+   grama florida os pontos brancos sumiam (Q7 da c2). */
+.jnCaminho polyline.jnPorAndar{stroke:#fff3d0;stroke-width:7;stroke-dasharray:.1 12;opacity:1;filter:drop-shadow(0 0 1px rgba(30,18,4,1)) drop-shadow(0 0 2px rgba(30,18,4,.9))}
 .jnEmPe{display:none}
 .jnPos{position:absolute;left:calc(var(--x) * 1%);top:calc(var(--y) * 1%);width:0;height:0}
 .jnProp,.jnOw{position:absolute;display:block;background-repeat:no-repeat;pointer-events:none;filter:drop-shadow(0 3px 0 rgba(0,0,0,.28))}
@@ -1245,8 +1247,15 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .jnVoce .jnEu,.jnVoce.jnFim .jnEu{transform:translateX(calc(-100% - 22px))}.jnVoce.jnDireita .jnEu{transform:translateX(14px)}.jnEu{position:absolute;left:0;top:-48px;transform:translateX(-50%);height:52px;width:25px;overflow:hidden;pointer-events:none;z-index:2;filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
 .jnEu img{height:52px;width:auto;max-width:none;display:block;image-rendering:pixelated}
 /* ST-10.22b: o trancado esmaece, e não some em cinza — o mundo inteiro à vista, só o caminho escondido (Q7: "cinza sobre cinza"). */
-.jnPos.jn-trancado .jnOw{filter:grayscale(.6) brightness(.82) drop-shadow(0 3px 0 rgba(0,0,0,.28));opacity:.9}
-.jnPos.jn-vencido .jnOw{opacity:.7}
+/* O rival do nó FUTURO em silhueta (ST-10.22c3): colorido, ele entregava quem
+   espera ali — o crítico cego apontou o Zapdos em sombra como a única
+   provocação do mapa, e pediu o resto assim. A mesma regra do lendário. */
+.jnPos.jn-trancado .jnOw{filter:brightness(0) drop-shadow(0 0 1.5px rgba(255,236,170,.75));opacity:.72}
+/* O rival VENCIDO sai de cena (ST-10.22c3): de pé e colorido no ginásio,
+   nada dizia "batido" — o SMW derruba o castelo vencido. Apagado pela
+   metade, o crítico leu como defeito de pintura; fora, o nó dourado e a
+   insígnia ganha dizem tudo. */
+.jnPos.jn-vencido .jnOw{display:none}
 .jnNo{position:absolute;left:0;top:0;transform:translate(-50%,-15px);display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;padding:0;cursor:pointer;font:inherit;z-index:1}
 .jnNo i{display:block;width:30px;height:30px;box-sizing:border-box;border-radius:50%;background:#f5ecd4;border:3px solid #7a5a2a;box-shadow:0 3px 0 rgba(0,0,0,.3)}
 .jnNo.jn-ginasio{transform:translate(-50%,-19px)}.jnNo.jn-ginasio i{width:38px;height:38px;border-radius:0;clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);background:#c9d2e0;border:0}
@@ -1266,6 +1275,11 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
    (medido na captura); em cinza, o emblema de cada uma ainda se lê. */
 .jnNo.jn-ginasio i.jnSilhueta{position:relative}
 .jnNo.jn-ginasio i.jnSilhueta::after{content:'';position:absolute;inset:3px;background:var(--ins) center/contain no-repeat;filter:grayscale(1) brightness(.95) contrast(1.1);opacity:.85;image-rendering:pixelated}
+/* E a ELITE trancada, com a insígnia do ginásio que ela REVISA (ST-10.22c3):
+   os cinco losangos iguais não diziam nada; cada um passa a dizer que lição
+   volta ali. O losango é girado, e a insígnia gira de volta. */
+.jnNo.jn-liga i.jnSilhueta{position:relative}
+.jnNo.jn-liga i.jnSilhueta::after{content:'';position:absolute;inset:1px;background:var(--ins) center/contain no-repeat;transform:rotate(-45deg);filter:grayscale(1) brightness(.95) contrast(1.1);opacity:.85;image-rendering:pixelated}
 .jnNo.jnSemNome span{display:none}.jnNo.jnSemNome:hover span,.jnNo.jnSemNome:focus-visible span{display:block}
 .jnNo span em{display:block;font-style:normal;font-size:.6rem;font-weight:600;color:var(--neon);text-align:center}
 .jnNo.jn-ginasio span{border:1px solid rgba(var(--goldRGB),.7)}
