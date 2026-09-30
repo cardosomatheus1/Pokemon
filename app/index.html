@@ -6956,6 +6956,11 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 .idleTeto .tetoLivre::before{content:"·";color:var(--dim);margin-right:.55em}
 
 .idleLinha{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+/* ST-5.15 (L-195): a linha do Centro vira grade que ENCHE a largura — com
+   fichas de 176 px fixos, o painel largo ficava com duas colunas e ~170 px
+   vazios; três cabem. Só onde a linha é de fichas do Centro. */
+.idleLinha:has(> .idleCaixaItem){display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.idleLinha > .idleCaixaItem{width:auto}
 .idleEnc{display:flex;flex-direction:column;align-items:center;width:62px;
   background:#141d2b;border:1px solid var(--line);border-radius:8px;padding:5px 3px}
 .idleEncArte{width:42px;height:42px;object-fit:contain;image-rendering:pixelated}

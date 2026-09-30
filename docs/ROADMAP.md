@@ -261,6 +261,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **ST-5.15** · o Centro enche a largura e diz o nível (L-195 fechada) | 30/09 | grade `auto-fill` em vez de fichas de 176 px fixos · "nv 24 · potencial 65" no cartão · o botão do doce sem repetir o nível · S1940–S1943 |
 | **ST-1.4** · o bolo não busca sem sessão (D-132) | 30/09 | a CI reprovou uma vez com 401 depois do Sair, e passou nas seguintes — lida, e não reexecutada: o Sair esquece o token antes de a página recarregar, e a nova tentativa do resultado do bolo saía sem credencial nessa janela · as buscas do bolo não saem sem sessão · ensaio local: 0 recusas · S1937–S1939 |
 | **ST-5.14** · o selo do degrau ao lado do título (L-194, parcial) | 30/09 | na ficha da Arena o selo ia para a outra ponta (`space-between`) — a 1920, a ~800 px do texto; agora ao lado do título, em pílula · ficam os emojis do clima (arte) · S1935–S1936 |
 | **ST-6.5** · higiene documental | 30/09 | 25 fichas resolvidas e ainda abertas, cada uma conferida no código de hoje (arquivo:linha na linha de Estado): D-034, 039, 040, 053, 056, 097; L-191, 197, 203, 110, 112, 140, 162, 169, 170, 150, 152; os títulos-pai do PLANO com todas as filhas ✅ · deixadas abertas as que o código não confirma |

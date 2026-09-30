@@ -64,5 +64,18 @@ export function suite() {
     ok(/\.pdxArena \.pdxSoma\{[^}]*border:1px solid/.test(css), 'o selo do degrau sem forma de selo');
   });
 
+  /* ST-5.15 (resto da L-195): o Centro em duas colunas de 176 px fixos
+     deixava ~170 px vazios no painel largo; e o cartão dizia "potencial 65"
+     em toda criatura sem dizer o nível — o nível só aparecia no "dar doce". */
+  s.teste('ST-5.15: o Centro enche a largura, e o cartão diz o nível', () => {
+    const css = fonte('../app/index.html');
+    ok(/\.idleLinha:has\(> \.idleCaixaItem\)\{display:grid;grid-template-columns:repeat\(auto-fill,minmax\(150px,1fr\)\)/.test(css), 'o Centro continua em colunas de largura fixa');
+    ok(/\.idleLinha > \.idleCaixaItem\{width:auto\}/.test(css), 'a ficha segue presa em 176 px');
+    const paineis = semComentario(fonte('../app/modules/idle-paineis.mjs'));
+    ok(/<span class="tiny">nv \$\{c\.nivel \?\? 1\} · potencial \$\{c\.potencial\}/.test(paineis), 'o cartão não diz o nível');
+    /* Com o nível no cartão, o botão não o repete — repetido, quebrava em duas linhas. */
+    ok(/>dar doce · \$\{doces\} da linha<\/button>/.test(paineis), 'o botão do doce repete o nível que o cartão já diz');
+  });
+
   return s;
 }

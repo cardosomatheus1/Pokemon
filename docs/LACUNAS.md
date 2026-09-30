@@ -8407,13 +8407,14 @@ Duas sobras que o bloco não construiu, e por quê:
 O que o bloco corrigiu depois do crítico está no commit da ST-9.3. **O que a
 destrava:** a UX-01 revisando a ficha inteira e o ícone de clima do tema.
 
-### L-195 — o Centro ainda fala baixo: GUARDAR/TIRAR, colunas, e o soltar armado sem "cancelar"
+### L-195 — o Centro ainda fala baixo: GUARDAR/TIRAR, colunas, e o soltar armado sem "cancelar" ✅ FECHADA na ST-5.15 (30/09)
 
 **Registrada em:** 26/09/2026, no Q7 da ST-9.13 (crítico cego, barra "TESTE DO
-COMPARADOR DE 5 SEGUNDOS"). **Bloco dono:** UX-01. **Estado:** parcial — a
+COMPARADOR DE 5 SEGUNDOS"). **Bloco dono:** UX-01. **Estado:** ✅ fechada — a
 ST-5.12 (30/09) fez a ação legível (o destino, numa pílula; a cor era
-`var(--ac)`, que não existe) e o "cancelar" do soltar armado. Ficam as 2
-colunas no largo, as pilhas desiguais e o nível no cartão.
+`var(--ac)`, que não existe) e o "cancelar" do soltar armado; a ST-5.15, a
+grade que enche a largura e o nível no cartão. As pilhas de botões seguem
+desiguais de propósito: cada criatura mostra só as ações que tem.
 
 Sobras que o bloco não construiu, e por quê:
 - **"GUARDAR/TIRAR" quase invisível** no rodapé de cada cartão (texto escuro no

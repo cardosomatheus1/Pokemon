@@ -199,7 +199,7 @@ export function pintarCentro(E) {
     <button class="idleGuardado" data-mover="${c.id}" data-para="${guardado ? '0' : '1'}">
       ${dexImg(c.dex, esp(c.dex).n, 'class=\"idleCriaArte\"')}
       <span class="idleCriaNome">${nomeExibido(esp(c.dex).n)}</span>
-      <span class="tiny">potencial ${c.potencial}${c.exemplar ? ' ✦' : ''}</span>
+      <span class="tiny">nv ${c.nivel ?? 1} · potencial ${c.potencial}${c.exemplar ? ' ✦' : ''}</span>
       <span class="idleAcao">${guardado ? '→ equipe' : '→ caixa'}</span>
     </button>`;
 
@@ -225,7 +225,7 @@ export function pintarCentro(E) {
     </details>`;
     return `<div class="idleCaixaItem">${ficha(c, guardado)}
       ${golpes}
-      ${doces > 0 ? `<button class="idleDarDoce" data-dar-doce="${c.id}" title="${XP_POR_DOCE} XP por doce · o doce é da linha inteira">dar doce · nv ${c.nivel} · ${doces} da linha</button>` : ''}
+      ${doces > 0 ? `<button class="idleDarDoce" data-dar-doce="${c.id}" title="${XP_POR_DOCE} XP por doce · o doce é da linha inteira">dar doce · ${doces} da linha</button>` : ''}
       ${guardado ? `<button class="idleSoltar" data-soltar="${c.id}" data-doce="${doceAoSoltar(PACK, c.dex)}"
         title="soltar vira doce da linha — a Pokédex continua lembrando que você a teve">soltar · +${doceAoSoltar(PACK, c.dex)} doce</button>` : ''}
     </div>`;
