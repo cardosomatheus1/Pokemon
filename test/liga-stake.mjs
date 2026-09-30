@@ -1,7 +1,8 @@
 /* Q1/Q3/Q6/Q8 · O STAKE DA LIGA NA FILA DE BÔNUS (ST-11.10 · Spec §9.6, §9.9, §28.3, §28.4)
  *
- *   DESLIGADO       sem o checkpoint do §25.1, nada: nem a inscrição, nem a
- *                   partida com stake (ligar é a D2, do dono)
+ *   DESLIGADO       com a bandeira desligada pelo operador, nada: nem a
+ *                   inscrição, nem a partida com stake. Ligado por padrão
+ *                   desde a DEC-16 (o dono ligou a D2, moeda simulada)
  *   O POT FECHA     o que os dois recebem, mais o rake, é o pot — em todo tier
  *                   e todo resultado
  *   SÓ B E C        o transferível nunca é tocado, e o ganho entra como bônus
@@ -36,10 +37,10 @@ const recusa = fn => { try { fn(); return null; } catch (e) { return e; } };
 
 function cena({ ligar = true } = {}) {
   const db = abrirBanco(':memory:'); migrar(db);
-  if (ligar) {
-    /* A bandeira gravada LIGADA; ela só lê ligada com o checkpoint que o teste passa (DEC-99). */
+  if (!ligar) {
+    /* A bandeira gravada DESLIGADA — o operador puxou a porta de emergência. */
     db.exec('PRAGMA foreign_keys = OFF');
-    db.prepare(`INSERT INTO feature_flags (nome, ligada, atualizada_em, atualizada_por) VALUES ('league_stake_enabled', 1, ?, 'teste')`).run(T0);
+    db.prepare(`INSERT INTO feature_flags (nome, ligada, atualizada_em, atualizada_por) VALUES ('league_stake_enabled', 0, ?, 'teste')`).run(T0);
     db.exec('PRAGMA foreign_keys = ON');
   }
   const conta = n => cadastrar(db, { username: n, email: `${n}@x.test`, senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01', agora: T0 }).id;
@@ -82,13 +83,16 @@ export async function suite() {
     igual(JSON.stringify(planoDoStake({ bonus: 10, competitivo: 5, transferivel: 9999 }, 50)), '{"ok":false,"falta":35}', 'o transferível cobriu a falta');
   });
 
-  s.teste('desligado por padrão: sem o checkpoint, nem inscrição nem partida com stake', () => {
+  s.teste('desligado pelo operador: nem inscrição nem partida com stake; ligado por padrão (DEC-16)', () => {
     const c = cena({ ligar: false });
-    igual(recusa(() => inscrever(c.db, { userId: c.v, ativo: true, agora: T0 }))?.codigo, ERRO_BANDEIRA.DESLIGADA, 'a inscrição com o stake desligado');
-    igual(recusa(() => joga(c, 1, { checkpoint: undefined }))?.codigo, ERRO_BANDEIRA.DESLIGADA, 'a partida com stake desligado');
+    igual(recusa(() => inscrever(c.db, { userId: c.v, ativo: true, agora: T0, checkpoint: DEC }))?.codigo, ERRO_BANDEIRA.DESLIGADA, 'a inscrição com o stake desligado');
+    igual(recusa(() => joga(c, 1))?.codigo, ERRO_BANDEIRA.DESLIGADA, 'a partida com stake desligado');
+    igual(recusa(() => buscarPartida(c.db, { userId: c.v, meu: c.fraco.id, chaveIdem: 'bstk-desl01', agora: T0, stake: true }))?.codigo, ERRO_BANDEIRA.DESLIGADA, 'a busca com stake desligado');
+    igual(stakeDaConta(c.db, { userId: c.v, agora: T0 }).ligado, false, 'a leitura diz ligado com a bandeira desligada');
+    /* Sem linha gravada e sem o checkpoint do dinheiro real: a decisão do dono basta. */
     const c2 = cena();
-    igual(recusa(() => inscrever(c2.db, { userId: c2.v, ativo: true, agora: T0 }))?.codigo, ERRO_BANDEIRA.DESLIGADA, 'a linha gravada ligada sem o checkpoint ligou');
-    igual(stakeDaConta(c2.db, { userId: c2.v, agora: T0 }).ligado, false, 'a leitura diz ligado');
+    inscrever(c2.db, { userId: c2.v, ativo: true, agora: T0 });
+    igual(stakeDaConta(c2.db, { userId: c2.v, agora: T0 }).ligado, true, 'o stake liberado pelo dono lê desligado');
   });
 
   s.teste('a partida com stake: o vencedor leva o pot menos o rake, como bônus; o transferível não se mexe', () => {
@@ -152,7 +156,6 @@ export async function suite() {
     const antes = foto(c.db, c.v);
     igual(recusa(() => busca(1))?.codigo, ERRO_STAKE.SEM_ADVERSARIO, 'sem inscrito na fila, a busca caiu no bot');
     igual(`${foto(c.db, c.v)}|${c.db.prepare(`SELECT COUNT(*) AS n FROM league_bot_matches`).get().n}`, `${antes}|0`, 'a busca sem adversário cobrou ou jogou');
-    igual(recusa(() => buscarPartida(c.db, { userId: c.v, meu: c.fraco.id, chaveIdem: 'bstk-desl01', agora: T0, stake: true }))?.codigo, ERRO_BANDEIRA.DESLIGADA, 'a busca com stake desligado');
     /* Um par da MESMA faixa de força (o pareamento respeita a faixa): o forte não aparece para o fraco. */
     const w = cadastrar(c.db, { username: 'stk2', email: 'stk2@x.test', senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01', agora: T0 }).id;
     creditar(c.db, { userId: w, tipo: 'DAILY_REWARD', bucket: 'bonus', valor: 200, idem: 'b-w', agora: T0 });
@@ -206,7 +209,7 @@ export async function suite() {
     m.sobe(db); igual(n(), 4, 'a subida não refez tudo');
   });
 
-  s.teste('pela porta: desligado responde 503, e a leitura diz os números', async () => {
+  s.teste('pela porta: ligado por padrão (DEC-16) — a leitura diz os números e a inscrição passa', async () => {
     const srv = criarServidor({ config: { ambiente: 'teste', silencioso: true }, banco: ':memory:', sims: 40, laco: false, relogio: () => T0 });
     const porta = await srv.ouvir(0);
     const url = r => `http://127.0.0.1:${porta}${r}`;
@@ -215,9 +218,9 @@ export async function suite() {
         body: JSON.stringify({ username: 'StkPorta', email: 'stkporta@x.test', senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01' }) }).then(r => r.json());
       const H2 = { [CABECALHO_VERSAO]: API_VERSAO, 'content-type': 'application/json', authorization: `Bearer ${cad.sessao}` };
       const l = await fetch(url('/api/equipe/stake'), { headers: H2 }).then(r => r.json());
-      igual(`${l.ligado}|${l.tier}|${l.stake}|${l.pot}|${l.rake}|${l.payout}`, 'false|Bronze|50|100|10|90', 'a leitura');
+      igual(`${l.ligado}|${l.tier}|${l.stake}|${l.pot}|${l.rake}|${l.payout}`, 'true|Bronze|50|100|10|90', 'a leitura');
       igual((await fetch(url('/api/equipe/stake/inscricao'), { method: 'POST', headers: H2, body: JSON.stringify({ ativo: 'sim' }) })).status, 400, 'o corpo inválido');
-      igual((await fetch(url('/api/equipe/stake/inscricao'), { method: 'POST', headers: H2, body: JSON.stringify({ ativo: true }) })).status, 503, 'a inscrição com o stake desligado');
+      igual((await fetch(url('/api/equipe/stake/inscricao'), { method: 'POST', headers: H2, body: JSON.stringify({ ativo: true }) })).status, 200, 'a inscrição com o stake ligado pelo dono');
       igual((await fetch(url('/api/equipe/partida'), { method: 'POST', headers: H2, body: JSON.stringify({ meu: 'x', adversario: 'y', stake: true, chaveIdem: 'porta-00001' }) })).status >= 400, true, 'a partida com stake pela porta');
     } finally { await srv.fechar(); }
   });

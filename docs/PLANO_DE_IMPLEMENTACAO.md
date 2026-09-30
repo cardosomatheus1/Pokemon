@@ -1918,7 +1918,7 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   feature desligada é da ST-11.6 (a Liga) e de cada feature de valor quando
   nascer (a ST-11.10 consulta `league_stake_enabled`).
 
-### ST-11.10 · Stake de tier na fila de bônus: o dinheiro ✅ 30/09 (desligada — ligar é D2)
+### ST-11.10 · Stake de tier na fila de bônus: o dinheiro ✅ 30/09 (LIGADO em 30/09 pela DEC-16 — moeda simulada)
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.3, F5.4 · **Spec** §9.6, §9.9, §28.3 · **Depende de** D2 para LIGAR (construir não)
 - **Escopo:**
   - só PC-B e PC-C; os dois stakes são reservados antes de criar a luta;
@@ -1957,7 +1957,7 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **O que fica:** a busca com stake (parear só inscritos) entra com a tela,
   na 11.11.
 
-### ST-11.11 · Stake: a confirmação honesta ✅ 30/09 (a tela existe; a bandeira continua desligada — D2)
+### ST-11.11 · Stake: a confirmação honesta ✅ 30/09 (no ar desde a DEC-16)
 - **Porte** M · **Bloco dono** F5.3 · **Spec** §9.6 (rake explícito antes de confirmar), §28.5
 - **Portões:** Q1 Q2 Q5 Q7.
 - **Feito:** a BUSCA com stake no servidor — só entre inscritos, e sem
@@ -2181,17 +2181,19 @@ do servidor. Três partes:
   entradas (teste de identidade de referência).
 - **Portões:** Q1 Q2 Q3 Q6.
 
-### ST-13.4 · Trazer o save local para a conta ⏸️ pergunta ao dono antes
-- **Porte** M · **Servidor** sim · **Depende de** ST-13.3
-- **Por que pergunta:** é dado com acervo — o caso "caro de desfazer" do
-  `CLAUDE.md`. **Recomendação escrita:** importação única por conta, com teto de
-  plausibilidade (quantidade por raridade compatível com o tempo de conta e a
-  emissão da ST-3.3); o que passa do teto fica de fora e é **dito** ao jogador;
-  a importação fica registrada e não se repete.
-- **Portões:** Q1 Q2 Q3 Q6.
+### ST-13.4 · A conta começa do zero no banco (DEC-17)
+- **Porte** S · **Servidor** sim · **Depende de** ST-13.3
+- **Decisão do dono, 30/09 (DEC-17):** *"Esqueça os saves locais, tem que ter o
+  banco com informações de quem cadastrar, quem já tinha perde."* Não há
+  importação: ao cadastrar, a conta nasce com o idle novo do servidor, e o save
+  do aparelho de quem já jogava sem conta NÃO sobe. A recomendação antiga
+  (importar uma vez com teto) foi descartada.
+- **Escopo:** nenhuma rota recebe o save local; o cadastro diz, uma vez, que o
+  progresso de antes do cadastro fica no aparelho e não vai para a conta.
+- **Portões:** Q1 Q2 Q6.
 
 ### ST-13.5 · Com conta, o cliente lê o idle do servidor
-- **Porte** M · **Servidor** não (consome 13.1–13.3) · **Depende de** ST-13.4
+- **Porte** M · **Servidor** não (consome 13.1–13.3) · **Depende de** ST-13.4 (DEC-17: sem migração)
 - **Escopo:** hidratar o idle do servidor no boot com conta; o local vira
   cache; sem rede, a tela diz que está desatualizada em vez de inventar.
 - **Aceite:** limpar o navegador e entrar devolve a mesma coleção; o ensaio do
@@ -2255,11 +2257,18 @@ do servidor. Três partes:
 
 ## Decisões que continuam do dono
 
-- **D2 · ligar o stake entre jogadores na Liga (E11), mesmo em PC-B.** É pot
-  com rake entre usuários (§25.1). Construído atrás de bandeira **desligada**.
+- ~~**D2 · ligar o stake entre jogadores na Liga (E11), mesmo em PC-B.**~~
+  **Decidida em 30/09 (DEC-16): LIGADO**, com moeda simulada. A liberação é da
+  bandeira do stake só — o `CHECKPOINT_25_1` continua `null`, e o dinheiro real
+  segue atrás do §25.1.
 - **D3 = DEC-02 · tudo com dinheiro real** (PC-T, PC-C, fila transferível,
   Exchange, P2P). O bolo do E12 roda com a moeda simulada.
-- **ST-13.4 · a migração do save local** (dado com acervo).
+- ~~**ST-13.4 · a migração do save local**~~ — **decidida em 30/09 (DEC-17):
+  não migra.** A conta começa do zero no banco; o save do aparelho não sobe.
+- **Política de sinais de aparelho e rede (L-050)** — explicada ao dono em
+  30/09, com recomendação; esperando o sim. Pesa mais com o stake ligado.
+- **Piloto com amigos (ST-7.2)** — **decidido em 30/09 (DEC-18):** só com o jogo
+  100% completo.
 - ~~**Hospedagem pública**~~ — adiada pelo dono em 26/09: *"vai ser
   configurável depois, primeiro vamos fechar o jogo"*. Volta com o jogo fechado.
 - **Lembrete:** nomes de líderes de ginásio são IP; a DEC-01 cobre a fase

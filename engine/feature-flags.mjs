@@ -7,7 +7,9 @@
  *
  *   de PRODUTO   liga e desliga à vontade do operador — é o "kill switch"
  *   de VALOR     move valor entre jogadores ou para fora do jogo. NASCE
- *                DESLIGADA, e LIGAR exige o marcador do §25.1 preenchido.
+ *                DESLIGADA, e LIGAR exige o marcador do §25.1 preenchido —
+ *                salvo a que move só moeda SIMULADA e o dono liberou por uma
+ *                decisão escrita (`liberadaPor`, a DEC-16 do stake da Liga).
  *                DESLIGAR nunca exige nada: a porta de emergência não pode
  *                depender do mesmo papel que a de entrada.
  *
@@ -29,7 +31,12 @@ export const BANDEIRAS = Object.freeze({
   weather_enabled:              Object.freeze({ padrao: true,  valor: false }),
   season_pass_enabled:          Object.freeze({ padrao: false, valor: true }),
   p2p_transfer_enabled:         Object.freeze({ padrao: false, valor: true }),
-  league_stake_enabled:         Object.freeze({ padrao: false, valor: true }),
+  /* DEC-16 (o dono, 30/09: "Pode ligar"): o stake da Liga move só moeda
+     SIMULADA — entra e sai da fila de bônus, sem saque e sem transferência.
+     Ele é LIBERADO pela decisão do dono e nasce ligado; o operador desliga
+     na hora (a porta de emergência), e o dinheiro real continua atrás do
+     CHECKPOINT_25_1, que esta liberação não toca. */
+  league_stake_enabled:         Object.freeze({ padrao: true,  valor: true, liberadaPor: 'DEC-16' }),
   competitive_exchange_enabled: Object.freeze({ padrao: false, valor: true }),
   /* o `real_value_…` da moeda do §15.3 — o nome da moeda é do tema, não do motor */
   real_value_currency_enabled:  Object.freeze({ padrao: false, valor: true }),
@@ -45,7 +52,7 @@ export function recusaDaMudanca(nome, ligada, checkpoint = CHECKPOINT_25_1) {
   const b = BANDEIRAS[nome];
   if (!b) return 'bandeira desconhecida';
   if (typeof ligada !== 'boolean') return 'o estado precisa ser verdadeiro ou falso';
-  if (ligada && b.valor && !checkpointValido(checkpoint))
+  if (ligada && b.valor && !checkpointValido(checkpoint) && !checkpointValido(b.liberadaPor))
     return 'bandeira de valor: ligar exige o checkpoint do §25.1 registrado (CHECKPOINT_25_1)';
   return null;
 }
@@ -57,5 +64,5 @@ export function estadoDa(nome, gravada, checkpoint = CHECKPOINT_25_1) {
   const b = BANDEIRAS[nome];
   if (!b) return false;
   const ligada = gravada === undefined || gravada === null ? b.padrao : !!gravada;
-  return ligada && b.valor && !checkpointValido(checkpoint) ? false : ligada;
+  return ligada && b.valor && !checkpointValido(checkpoint) && !checkpointValido(b.liberadaPor) ? false : ligada;
 }

@@ -8669,6 +8669,16 @@ export const DEFEITOS = [
   { id:'S1990', arquivo:'tools/mapa-tiled.mjs', nome:'a volta do Tiled desloca o tileset',
     real:'o mapa repintado no Tiled volta com cada chão trocado pelo vizinho da lista',
     de:"CASAS[g - 1]?.camada === nome ? CASAS[g - 1].ch", para:"CASAS[g]?.camada === nome ? CASAS[g].ch" },
+  /* ── DEC-16 · o stake da Liga ligado (moeda simulada) ────────────── */
+  { id:'S1991', arquivo:'engine/feature-flags.mjs', nome:'o stake volta a nascer desligado',
+    real:'o dono ligou a aposta da Liga e ela continua fechada para todo mundo',
+    de:"padrao: true,  valor: true, liberadaPor: 'DEC-16' }", para:'padrao: false, valor: true }' },
+  { id:'S1992', arquivo:'engine/feature-flags.mjs', nome:'a liberação do dono não conta para ligar',
+    real:'o operador religa o stake depois de uma pausa e o servidor recusa pedindo o §25.1',
+    de:'if (ligada && b.valor && !checkpointValido(checkpoint) && !checkpointValido(b.liberadaPor))', para:'if (ligada && b.valor && !checkpointValido(checkpoint))' },
+  { id:'S1993', arquivo:'engine/feature-flags.mjs', nome:'a liberação vale para toda bandeira de valor',
+    real:'o saque e a moeda real passam a ligar sem o §25.1 — a liberação do stake vazou para o dinheiro',
+    de:'return ligada && b.valor && !checkpointValido(checkpoint) && !checkpointValido(b.liberadaPor) ? false : ligada;', para:"return ligada && b.valor && !checkpointValido(checkpoint) && !checkpointValido(b.liberadaPor ?? 'DEC-16') ? false : ligada;" },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',
@@ -8967,21 +8977,25 @@ export const DEFEITOS = [
     real:'quem perdeu desafiando vê o tier de quem ganhou',
     de:'depois = antes + (eu === \'A\' ? l.delta : -l.delta);', para:'depois = antes + l.delta;' },
   /* ── ST-11.9 · as bandeiras de feature ───────────────────────────── */
-  { id:'S1762', arquivo:'engine/feature-flags.mjs', nome:'o stake nasce ligado',
-    real:'o dinheiro da Liga liga no deploy, sem ninguém decidir — o oposto do §25.1',
-    de:'  league_stake_enabled:         Object.freeze({ padrao: false, valor: true }),', para:'  league_stake_enabled:         Object.freeze({ padrao: true,  valor: true }),' },
+  { id:'S1762', arquivo:'engine/feature-flags.mjs', nome:'o saque nasce ligado',
+    real:'o dinheiro real liga no deploy, sem ninguém decidir — o oposto do §25.1',
+    /* realvado na DEC-16: o stake de moeda simulada foi liberado pelo dono; a regra vale para o dinheiro real. */
+    de:'  cashout_enabled:              Object.freeze({ padrao: false, valor: true }),', para:'  cashout_enabled:              Object.freeze({ padrao: true,  valor: true }),' },
   { id:'S1763', arquivo:'engine/feature-flags.mjs', nome:'ligar valor não pede o checkpoint',
     real:'o dono liga o saque num clique — a revisão do §25.1 vira opcional',
-    de:'  if (ligada && b.valor && !checkpointValido(checkpoint))', para:'  if (ligada && b.valor && false)' },
+    /* realvado na DEC-16: o stake de moeda simulada foi liberado pelo dono; a regra vale para o dinheiro real. */
+    de:'  if (ligada && b.valor && !checkpointValido(checkpoint) && !checkpointValido(b.liberadaPor))', para:'  if (ligada && b.valor && false)' },
   { id:'S1764', arquivo:'engine/feature-flags.mjs', nome:'qualquer texto vale como marcador',
     real:'"ok" no lugar da decisão, e o dinheiro liga sem registro de revisão nenhuma',
     de:'export const checkpointValido = c => typeof c === \'string\' && /^DEC-\\d{2,}$/.test(c);', para:'export const checkpointValido = c => typeof c === \'string\' && /./.test(c);' },
   { id:'S1765', arquivo:'engine/feature-flags.mjs', nome:'a linha gravada liga o valor por fora',
     real:'um banco restaurado de outra época liga o saque sem passar pela regra',
-    de:'  return ligada && b.valor && !checkpointValido(checkpoint) ? false : ligada;', para:'  return ligada;' },
+    /* realvado na DEC-16: o stake de moeda simulada foi liberado pelo dono; a regra vale para o dinheiro real. */
+    de:'  return ligada && b.valor && !checkpointValido(checkpoint) && !checkpointValido(b.liberadaPor) ? false : ligada;', para:'  return ligada;' },
   { id:'S1766', arquivo:'engine/feature-flags.mjs', nome:'desligar o dinheiro pede o checkpoint',
     real:'a porta de emergência trancada pela mesma chave da entrada: não se desliga o stake no incidente',
-    de:'  if (ligada && b.valor && !checkpointValido(checkpoint))', para:'  if (b.valor && !checkpointValido(checkpoint))' },
+    /* realvado na DEC-16: o stake de moeda simulada foi liberado pelo dono; a regra vale para o dinheiro real. */
+    de:'  if (ligada && b.valor && !checkpointValido(checkpoint) && !checkpointValido(b.liberadaPor))', para:'  if (b.valor && !checkpointValido(checkpoint) && !checkpointValido(b.liberadaPor))' },
   { id:'S1767', arquivo:'server/feature-flags.mjs', nome:'o servidor não pergunta à regra',
     real:'a camada 0 recusa e o servidor grava assim mesmo',
     de:'    if (recusa) throw falha(ERRO_BANDEIRA.RECUSADA, recusa);\n', para:'' },

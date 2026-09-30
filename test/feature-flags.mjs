@@ -26,19 +26,34 @@ const VALOR = Object.keys(BANDEIRAS).filter(n => BANDEIRAS[n].valor);
 export async function suite() {
   const s = criarSuite('feature-flags');
 
-  s.teste('o catálogo do §15.3: tudo que move valor nasce desligado', () => {
+  s.teste('o catálogo do §15.3: o que move DINHEIRO nasce desligado; o stake de moeda simulada, liberado pelo dono', () => {
     igual(Object.keys(BANDEIRAS).length, 10, 'o catálogo não é o do §15.3');
     igual(VALOR.sort().join(), 'cashout_enabled,competitive_exchange_enabled,league_stake_enabled,p2p_transfer_enabled,real_value_currency_enabled,season_pass_enabled', 'as de valor');
-    for (const n of VALOR) igual(BANDEIRAS[n].padrao, false, `${n} nasce ligada`);
+    /* DEC-16 (o dono, 30/09: "Pode ligar"): o stake da Liga move só moeda
+       SIMULADA — bônus, sem saque, sem transferência. Ele é liberado pela
+       decisão dele; o §25.1 continua cobrando tudo que toca dinheiro real. */
+    const liberadas = VALOR.filter(n => BANDEIRAS[n].liberadaPor);
+    igual(liberadas.join(), 'league_stake_enabled', 'bandeira de valor liberada sem ser o stake de moeda simulada');
+    for (const n of VALOR) igual(BANDEIRAS[n].padrao, !!BANDEIRAS[n].liberadaPor, `${n}: o padrão não segue a liberação`);
+    for (const n of liberadas) {
+      ok(checkpointValido(BANDEIRAS[n].liberadaPor), `${n} liberada por "${BANDEIRAS[n].liberadaPor}", que não nomeia decisão`);
+      const linha = doc('../docs/ROADMAP.md').split('\n').find(l => l.includes(`**${BANDEIRAS[n].liberadaPor}**`));
+      ok(linha && /moeda simulada/.test(linha), `${BANDEIRAS[n].liberadaPor} não está nas decisões do ROADMAP dizendo "moeda simulada"`);
+    }
+    for (const n of ['cashout_enabled', 'real_value_currency_enabled', 'p2p_transfer_enabled', 'competitive_exchange_enabled']) ok(!BANDEIRAS[n].liberadaPor, `${n} liberada sem o §25.1 — é dinheiro real`);
     igual(estadoDa('league_enabled', undefined, null), true, 'a Liga nasce desligada');
     igual(estadoDa('nao_existe', 1, 'DEC-99'), false, 'a bandeira desconhecida lê ligada');
   });
 
   s.teste('ligar valor exige o marcador do §25.1; desligar nunca exige', () => {
-    ok(/§25\.1/.test(recusaDaMudanca('league_stake_enabled', true, null) ?? ''), 'ligou o stake sem o checkpoint');
-    ok(/§25\.1/.test(recusaDaMudanca('league_stake_enabled', true, 'ok') ?? ''), 'um marcador que não nomeia decisão valeu');
-    igual(recusaDaMudanca('league_stake_enabled', true, 'DEC-31'), null, 'o marcador preenchido não liberou');
-    igual(recusaDaMudanca('league_stake_enabled', false, null), null, 'desligar exigiu o checkpoint');
+    ok(/§25\.1/.test(recusaDaMudanca('p2p_transfer_enabled', true, null) ?? ''), 'ligou a transferência sem o checkpoint');
+    ok(/§25\.1/.test(recusaDaMudanca('p2p_transfer_enabled', true, 'ok') ?? ''), 'um marcador que não nomeia decisão valeu');
+    igual(recusaDaMudanca('p2p_transfer_enabled', true, 'DEC-31'), null, 'o marcador preenchido não liberou');
+    igual(recusaDaMudanca('p2p_transfer_enabled', false, null), null, 'desligar exigiu o checkpoint');
+    /* O stake de moeda simulada: a decisão do dono basta para ligar, e desligar continua livre. */
+    igual(recusaDaMudanca('league_stake_enabled', true, null), null, 'o stake liberado pela DEC-16 pediu o checkpoint do dinheiro real');
+    igual(recusaDaMudanca('league_stake_enabled', false, null), null, 'desligar o stake exigiu algo');
+    igual(`${estadoDa('league_stake_enabled', undefined, null)}|${estadoDa('league_stake_enabled', 0, null)}|${estadoDa('league_stake_enabled', 1, null)}`, 'true|false|true', 'o stake: nasce ligado, o operador desliga, e religa');
     igual(recusaDaMudanca('league_enabled', false, null), null, 'a bandeira de produto exigiu o checkpoint');
     ok(recusaDaMudanca('league_enabled', 'sim', null), 'um estado que não é booleano passou');
     ok(!checkpointValido('DEC-') && checkpointValido('DEC-02'), 'a forma do marcador');
@@ -79,15 +94,25 @@ export async function suite() {
 
   s.teste('ligar o dinheiro sem o checkpoint é recusado — e a TENTATIVA fica registrada', () => {
     const c = cena();
-    const tenta = () => mudarBandeira(c.db, { operadorId: c.dono.id, nome: 'league_stake_enabled', ligada: true, motivo: 'testar', confirmado: true, agora: T0 });
-    igual(recusa(tenta)?.codigo, ERRO_BANDEIRA.RECUSADA, 'o dono ligou o stake sem o §25.1');
-    igual(bandeiraLigada(c.db, 'league_stake_enabled'), false, 'o stake ficou ligado');
+    const tenta = () => mudarBandeira(c.db, { operadorId: c.dono.id, nome: 'cashout_enabled', ligada: true, motivo: 'testar', confirmado: true, agora: T0 });
+    igual(recusa(tenta)?.codigo, ERRO_BANDEIRA.RECUSADA, 'o dono ligou o saque sem o §25.1');
+    igual(bandeiraLigada(c.db, 'cashout_enabled'), false, 'o saque ficou ligado');
     igual(c.db.prepare(`SELECT COUNT(*) AS n FROM feature_flags`).get().n, 0, 'a recusa gravou estado');
-    igual(JSON.stringify(auditoria(c.db).map(a => `${a.alvo}:${a.para}`)), '["league_stake_enabled:true"]', 'a tentativa recusada não ficou registrada');
+    igual(JSON.stringify(auditoria(c.db).map(a => `${a.alvo}:${a.para}`)), '["cashout_enabled:true"]', 'a tentativa recusada não ficou registrada');
     /* Com o marcador, liga — e a leitura sem ele (o código de hoje) continua desligada. */
-    mudarBandeira(c.db, { operadorId: c.dono.id, nome: 'league_stake_enabled', ligada: true, motivo: 'checkpoint feito', confirmado: true, agora: T0 + 1, checkpoint: 'DEC-31' });
-    igual(`${bandeiraLigada(c.db, 'league_stake_enabled', 'DEC-31')}|${bandeiraLigada(c.db, 'league_stake_enabled')}`, 'true|false', 'o estado com e sem o marcador');
-    igual(bandeiras(c.db).filter(b => b.ligada && b.valor).length, 0, 'o painel mostra valor ligado sem o marcador');
+    mudarBandeira(c.db, { operadorId: c.dono.id, nome: 'cashout_enabled', ligada: true, motivo: 'checkpoint feito', confirmado: true, agora: T0 + 1, checkpoint: 'DEC-31' });
+    igual(`${bandeiraLigada(c.db, 'cashout_enabled', 'DEC-31')}|${bandeiraLigada(c.db, 'cashout_enabled')}`, 'true|false', 'o estado com e sem o marcador');
+    /* No painel, de valor ligado só o stake de moeda simulada — nunca dinheiro real sem o marcador. */
+    igual(bandeiras(c.db).filter(b => b.ligada && b.valor).map(b => b.nome).join(), 'league_stake_enabled', 'o painel mostra dinheiro real ligado sem o marcador');
+  });
+
+  s.teste('o stake da Liga (DEC-16): nasce ligado, o dono desliga na hora e religa sem checkpoint', () => {
+    const c = cena();
+    igual(bandeiraLigada(c.db, 'league_stake_enabled'), true, 'o stake liberado pelo dono nasce desligado');
+    mudarBandeira(c.db, { operadorId: c.dono.id, nome: 'league_stake_enabled', ligada: false, motivo: 'pausa', confirmado: true, agora: T0 });
+    igual(bandeiraLigada(c.db, 'league_stake_enabled'), false, 'a porta de emergência não fechou o stake');
+    mudarBandeira(c.db, { operadorId: c.dono.id, nome: 'league_stake_enabled', ligada: true, motivo: 'volta', confirmado: true, agora: T0 + 1 });
+    igual(bandeiraLigada(c.db, 'league_stake_enabled'), true, 'religar o stake pediu o checkpoint do dinheiro real');
   });
 
   s.teste('a migração sobe e desce', () => {
@@ -113,8 +138,10 @@ export async function suite() {
       igual((await fetch(url('/api/admin/bandeiras'), { headers: H() })).status, 401, 'as bandeiras sem operador');
       const lista = await fetch(url('/api/admin/bandeiras'), { headers: H(adm) }).then(r => r.json());
       igual(lista.bandeiras.find(b => b.nome === 'league_enabled')?.ligada, true, 'a lista pela porta');
-      const stake = await fetch(url('/api/admin/bandeira'), { method: 'POST', headers: H(adm), body: JSON.stringify({ nome: 'league_stake_enabled', ligada: true, motivo: 'x', confirmado: true }) });
-      igual(stake.status, 409, 'o stake sem o §25.1 pela porta');
+      const saque = await fetch(url('/api/admin/bandeira'), { method: 'POST', headers: H(adm), body: JSON.stringify({ nome: 'cashout_enabled', ligada: true, motivo: 'x', confirmado: true }) });
+      igual(saque.status, 409, 'o saque sem o §25.1 pela porta');
+      const stake = await fetch(url('/api/admin/bandeira'), { method: 'POST', headers: H(adm), body: JSON.stringify({ nome: 'league_stake_enabled', ligada: false, motivo: 'pausa', confirmado: true }) });
+      igual(stake.status, 200, 'o dono não desliga o stake pela porta');
       const off = await fetch(url('/api/admin/bandeira'), { method: 'POST', headers: H(adm), body: JSON.stringify({ nome: 'league_enabled', ligada: false, motivo: 'manutenção', confirmado: true }) });
       igual(off.status, 200, 'o dono não desligou a Liga pela porta');
       const cad = await fetch(url('/api/auth/cadastrar'), { method: 'POST', headers: H(),

@@ -45,9 +45,11 @@ o ESTADO   ST-10.23 FECHADA (o mapa DESENHADO À MÃO: o desenho no pack,
 o PRÓXIMO  o Q2 completo em fatias (2/10 a 10/10) — o que sobra de produto
            construível sem o dono é pequeno; as fatias travam o código por
            horas, e é hora delas
-com o DONO ST-13.4/13.5 (o save local para a conta) — agora também trava a
-           Liga para quem joga com conta real (L-211). Recomendação na ficha:
-           importar uma vez, com teto de plausibilidade
+com o DONO decididas em 30/09: DEC-16 (o stake da Liga LIGADO, moeda
+           simulada), DEC-17 (sem migração do save: a conta começa do zero
+           no banco — ST-13.4/13.5 destravadas), DEC-18 (o piloto só com o
+           jogo 100%). Falta: a política de sinais de aparelho e rede (L-050),
+           explicada com recomendação
 ```
 
 ### O RESTO DA SPEC VIROU STORIES — E12, E9, E10, E13, E11 (26/09)
