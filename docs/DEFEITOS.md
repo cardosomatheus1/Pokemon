@@ -7024,6 +7024,26 @@ da janela, e por isso aparecia numa execução e não nas seguintes.
 
 **Teste que trava:** `test/bolo-sessao.mjs` (S1937–S1939).
 
+## D-134 — o teste da run pela conta apostava na sorte da semente (instável) ✅ CORRIGIDO na ST-10.24 (30/09)
+
+**Achado em:** 30/09/2026, no Q2 do bloco da ST-10.24: a suíte saiu vermelha
+DENTRO da caixa de areia — *"a run colhida da conta sem encontros: 0"*. **Bloco
+dono:** ST-10.24 (o bloco não fecha com a suíte instável; o teste é da
+ST-13.5c). **Estado:** corrigido.
+
+**Causa.** O teste da ST-13.5c usa a run de verdade do servidor, com a semente
+dele, e fixava dois instantes medidos numa amostra pequena: "um minuto de luta
+tira vida" (18 de 18) e "de 3 min em diante toda run rende 2 a 4 encontros"
+(12 amostras). A semente seguinte rendeu 0. O jogo estava certo; o teste
+apostava.
+
+**Conserto.** A poção avança o relógio de 30 em 30 s até curar (recusa por vida
+cheia continua, outra recusa reprova). O teto não depende mais do que a run
+rendeu: os encontros da run colhida são gravados à mão (3) e o aparelho tem de
+somar 3, nem 0 nem 6 — o S2025 (a run contada duas vezes) morde sempre.
+
+**Teste que trava:** o próprio `test/idle-acoes.mjs`, nas mesmas afirmações.
+
 ## D-133 — a sonda da cena da captura media a fuga num instante fixo (instável) ✅ CORRIGIDO na ST-13.8 (30/09)
 
 **Achado em:** 30/09/2026, no `npm run repetir` da ST-13.8 — uma execução

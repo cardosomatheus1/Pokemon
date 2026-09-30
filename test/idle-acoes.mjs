@@ -128,15 +128,17 @@ export async function suite() {
       let recusa = null;
       try { await pocaoNa(E, { pack: PACK, item: pocao, agora: t }, o); } catch (e) { recusa = e.message; }
       ok(/cheia/.test(recusa ?? ''), `a poção com a vida cheia não foi recusada pelo servidor: ${recusa}`);
-      /* Um minuto de luta tira vida em qualquer semente (medido: 18 de 18). */
-      t += 60e3;
-      const cura = await pocaoNa(E, { pack: PACK, item: pocao, agora: t }, o);
-      igual(`${cura.curou > 0}|${cura.item}|${E.bolsa[pocao] ?? 0}`, `true|${pocao}|0`, 'a poção da conta não curou ou não saiu da bolsa da tela');
+      /* A luta tira vida quando tira — a semente é do servidor (D-134: o teste
+         apostava em "um minuto basta", medido em 18 sementes). Avança de 30 em
+         30 s até a poção curar; outra recusa que não "vida cheia" reprova. */
+      let cura = null;
+      for (let k = 0; k < 12 && !cura; k++) {
+        t += 30e3;
+        try { cura = await pocaoNa(E, { pack: PACK, item: pocao, agora: t }, o); } catch (e) { if (!/cheia/.test(e.message)) throw e; }
+      }
+      igual(`${cura?.curou > 0}|${cura?.item}|${E.bolsa[pocao] ?? 0}`, `true|${pocao}|0`, 'a poção da conta não curou ou não saiu da bolsa da tela');
 
-      /* Recua aos cinco minutos: dali em diante toda semente já rendeu encontro
-         (medido: de 3 min em diante, 2 a 4), e o teto abaixo não compara zero
-         com zero. */
-      t += 4 * 60e3;
+      t += 1000;
       await recuarNa(E, t, o);
       ok(E.run?.fim, 'o recuo da conta não chegou à tela');
 
@@ -144,10 +146,15 @@ export async function suite() {
       const p = colherRunNa(E, { pack: PACK, agora: t }, o);
       ok(typeof p?.then === 'function', 'com conta, a colheita da run não é uma promessa');
       const colhida = await p;
-      ok(colhida.encontros > 0 && colhida.rendeu, `a run colhida da conta sem encontros ou sem o que rendeu: ${colhida.encontros}`);
+      ok(Number.isInteger(colhida.encontros) && colhida.rendeu, `a run colhida da conta sem o que rendeu: ${JSON.stringify(colhida).slice(0, 120)}`);
       igual(`${E.run}|${E.avancos.length}|${runsNoDia(E.avancos, t)}`, 'null|1|1', 'a run colhida não virou lançamento do dia no aparelho');
-      /* O teto: a run desce em `avancos`, e o `hoje` da conta não a conta de novo. */
-      igual(D.encontrosHoje(E, t), estadoDoTeto(srv.db, uid, t, PACK).encontrosHoje, 'a run colhida conta duas vezes (ou nenhuma) no teto do aparelho');
+      /* O teto: a run desce em `avancos`, e o `hoje` da conta não a conta de
+         novo. Os encontros da run são gravados à mão (3): com a semente do
+         servidor ela pode render ZERO, e zero contado duas vezes é zero — o
+         teste comparava nada com nada (D-134). */
+      srv.db.prepare(`UPDATE runs SET encontros = 3 WHERE user_id = ? AND colhida_em IS NOT NULL`).run(uid);
+      await sincronizar(api, deposito); Object.assign(E, D.carregar(deposito));
+      igual(`${D.encontrosHoje(E, t)}|${estadoDoTeto(srv.db, uid, t, PACK).encontrosHoje}`, '3|3', 'a run colhida conta duas vezes (ou nenhuma) no teto do aparelho');
       const pendentes = srv.db.prepare(`SELECT COUNT(*) n FROM encontros_pendentes WHERE user_id = ? AND origem = 'avanco' AND resolvido_em IS NULL`).get(uid).n;
       igual(E.encontros.filter(k => k.origem === 'avanco').length, pendentes, 'os encontros da run não chegaram ao quadro');
     } finally { await srv.fechar(); }
