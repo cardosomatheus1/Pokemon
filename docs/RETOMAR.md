@@ -48,8 +48,10 @@ o PRÓXIMO  o Q2 completo em fatias (2/10 a 10/10) — o que sobra de produto
 com o DONO decididas em 30/09: DEC-16 (o stake da Liga LIGADO, moeda
            simulada), DEC-17 (sem migração do save: a conta começa do zero
            no banco — ST-13.4/13.5 destravadas), DEC-18 (o piloto só com o
-           jogo 100%). Falta: a política de sinais de aparelho e rede (L-050),
-           explicada com recomendação
+           jogo 100%), DEC-19 (os sinais de aparelho e rede — feita, ST-13.8).
+           Nada pendente com o dono agora
+o PRÓXIMO  a ST-13.5 em partes: com conta, o jogo lê e escreve o idle pelo
+           servidor (hoje o cliente não chama nenhuma das 17 rotas do idle)
 ```
 
 ### O RESTO DA SPEC VIROU STORIES — E12, E9, E10, E13, E11 (26/09)

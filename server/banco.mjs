@@ -86,6 +86,23 @@ const emAspas = lista => lista.map(x => `'${x}'`).join(',');
  * a versão. Migração nova entra NO FIM — nunca no meio, porque a versão gravada
  * de um banco existente é um índice nesta lista.
  */
+/* Refaz `suspeitas_antifraude` com outra lista de sinais, guardando as linhas. */
+function refazerSuspeitas(db, sinais) {
+  db.exec(`ALTER TABLE suspeitas_antifraude RENAME TO suspeitas_antifraude_velha`);
+  db.exec(`
+    CREATE TABLE suspeitas_antifraude (
+      conta_a      TEXT NOT NULL,
+      conta_b      TEXT NOT NULL DEFAULT '',
+      sinal        TEXT NOT NULL CHECK (sinal IN (${sinais.map(x => `'${x}'`).join(', ')})),
+      medida_json  TEXT NOT NULL,
+      criada_em    INTEGER NOT NULL,
+      revisada_em  INTEGER,
+      PRIMARY KEY (conta_a, conta_b, sinal)
+    )`);
+  db.exec(`INSERT INTO suspeitas_antifraude SELECT * FROM suspeitas_antifraude_velha`);
+  db.exec(`DROP TABLE suspeitas_antifraude_velha`);
+}
+
 export const MIGRACOES = [
   {
     nome: 'esquema-v1',
@@ -1928,7 +1945,30 @@ export const MIGRACOES = [
       db.exec(`DROP TABLE cosmetic_ownership`);
       db.exec(`ALTER TABLE cosmetic_ownership_velho RENAME TO cosmetic_ownership`);
     },
+  },  {
+    /* ST-13.8 · DEC-19: os sinais de aparelho e rede, SÓ como assinatura, por
+       30 dias; e a suspeita ganha as duas classes novas. O SQLite não altera
+       CHECK: a tabela de suspeitas é refeita com as linhas de antes. */
+    nome: 'sinais-st13.8',
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE sinais_conta (
+          user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          classe      TEXT NOT NULL CHECK (classe IN ('aparelho', 'rede')),
+          assinatura  TEXT NOT NULL CHECK (length(assinatura) = 64),
+          visto_em    INTEGER NOT NULL,
+          PRIMARY KEY (user_id, classe, assinatura)
+        )`);
+      db.exec(`CREATE INDEX sinais_conta_assinatura ON sinais_conta (classe, assinatura)`);
+      refazerSuspeitas(db, ['horario', 'captura', 'aparelho', 'rede']);
+    },
+    desce: db => {
+      db.exec(`DROP TABLE sinais_conta`);
+      db.exec(`DELETE FROM suspeitas_antifraude WHERE sinal IN ('aparelho', 'rede')`);
+      refazerSuspeitas(db, ['horario', 'captura']);
+    },
   },
+
 ];
 
 const TABELA_VERSAO = `

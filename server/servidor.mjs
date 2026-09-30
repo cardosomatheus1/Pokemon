@@ -12,6 +12,7 @@
  * derrubar instâncias em porta efêmera, várias em paralelo, sem estado global —
  * e portão que não roda em paralelo desperdiça o que o T3 comprou.
  */
+import { registrarSinais } from './sinais.mjs';
 import { servirJogo } from './estatico.mjs';
 import { createServer } from 'node:http';
 import { API_VERSAO, CABECALHO_VERSAO, ERROS, SEM_VERSAO, versaoAceita } from './contrato.mjs';
@@ -209,6 +210,9 @@ export function criarServidor(opcoes = {}) {
         if (!userId)
           return responder(res, 401, { codigo: ERROS.NAO_AUTORIZADO,
             erro: 'sessão ausente ou inválida' });
+        /* O SINAL DE APARELHO E REDE (ST-13.8 · DEC-19): só a assinatura, e
+           nunca à custa do pedido — sinal é acessório. */
+        try { registrarSinais(db, { userId, req, segredo: config.segredoSessao, agora: relogio() }); } catch { /* acessório */ }
       }
 
       /* O FLUXO SAI AQUI, depois da versão e da sessão e antes do corpo — um
@@ -316,7 +320,7 @@ function aplicarCors(req, res, config) {
   if (!origem || !config.origens.includes(origem)) return;
   res.setHeader('access-control-allow-origin', origem);
   res.setHeader('access-control-allow-credentials', 'true');
-  res.setHeader('access-control-allow-headers', CABECALHO_VERSAO + ', content-type');
+  res.setHeader('access-control-allow-headers', CABECALHO_VERSAO + ', content-type, x-aparelho');
   res.setHeader('vary', 'Origin');
 }
 

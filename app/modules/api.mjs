@@ -19,12 +19,20 @@
 import { API_VERSAO, CABECALHO_VERSAO } from '../../server/contrato.mjs';
 
 const CHAVE_SESSAO = 'ar_sessao';
+/* O NÚMERO DO APARELHO (ST-13.8 · DEC-19): aleatório, deste navegador, e só
+   isto — o servidor guarda a assinatura dele para achar contas no mesmo
+   aparelho, e nunca o número em claro. */
+const CHAVE_APARELHO = 'ar_aparelho';
+const numeroNovo = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}-${Math.random().toString(16).slice(2)}`;
 
 export function criarApi({ base = '', armazem = globalThis.localStorage } = {}) {
   const ler = () => { try { return armazem?.getItem(CHAVE_SESSAO) || null; } catch { return null; } };
   const gravar = t => { try { t ? armazem?.setItem(CHAVE_SESSAO, t) : armazem?.removeItem(CHAVE_SESSAO); } catch { /* modo privativo */ } };
 
   let sessao = ler();
+  const aparelho = (() => {
+    try { const v = armazem?.getItem(CHAVE_APARELHO); if (v) return v; const n = numeroNovo(); armazem?.setItem(CHAVE_APARELHO, n); return n; } catch { return numeroNovo(); }
+  })();
 
   async function chamar(metodo, caminho, corpo) {
     let r;
@@ -33,6 +41,7 @@ export function criarApi({ base = '', armazem = globalThis.localStorage } = {}) 
         method: metodo,
         headers: {
           [CABECALHO_VERSAO]: API_VERSAO,
+          'x-aparelho': aparelho,
           ...(sessao ? { authorization: `Bearer ${sessao}` } : {}),
           ...(corpo === undefined ? {} : { 'content-type': 'application/json' }),
         },

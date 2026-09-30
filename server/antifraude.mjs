@@ -11,6 +11,8 @@
  */
 import { suspeitas, capturaNaBanda, DETECTOR } from '../engine/antifraude.mjs';
 import { contasLigadas } from './protecao.mjs';
+import { paresComMesmoSinal } from '../engine/sinais.mjs';
+import { apagarVencidos, todosOsSinais } from './sinais.mjs';
 
 const DIA = 86400e3;
 
@@ -48,6 +50,13 @@ export function varrerSuspeitas(db, { agora, dias = 7 }) {
     const capturas = db.prepare(`SELECT COUNT(*) AS n FROM criaturas WHERE user_id = ? AND origem = 'captura' AND criada_em > ?`).get(user, de).n;
     const b = capturaNaBanda({ capturas, dias: Math.max(1, diasAtivos) });
     if (b.acima && registrar(db, { a: user, sinal: 'captura', medida: { ...b, capturas, dias: diasAtivos }, agora })) novas++;
+  }
+  /* O APARELHO E A REDE (ST-13.8 · DEC-19): contas com a mesma assinatura nos
+     últimos 30 dias. Antes, o que venceu sai — a retenção é a do dono. */
+  apagarVencidos(db, agora);
+  for (const p of paresComMesmoSinal(todosOsSinais(db), agora)) {
+    if (contasLigadas(db, p.a).includes(p.b)) continue;
+    if (registrar(db, { a: p.a, b: p.b, sinal: p.classe, medida: { classe: p.classe, retencaoDias: 30 }, agora })) novas++;
   }
   return { novas, contas: contas.length };
 }

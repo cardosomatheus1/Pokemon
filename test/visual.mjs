@@ -1656,8 +1656,14 @@ export async function rodar() {
         const c2 = document.querySelector('.capCena');
         fim[nome].casa = c2 ? c2.style.getPropertyValue('--casa').trim() : null;
         const alvo = c2?.querySelector('.capAlvo');
-        fim[nome].criaturaVisivel = alvo
-          ? Number(getComputedStyle(alvo).opacity) > 0.1 : null;
+        const visivel = () => (alvo ? Number(getComputedStyle(alvo).opacity) > 0.1 : null);
+        /* D-133: a volta da criatura na fuga é uma ANIMAÇÃO (0,18 s de atraso e
+           0,46 s de corrida). Com a máquina carregada, a linha do tempo da
+           página atrasa, e uma medida num instante fixo pegava o bicho ainda
+           invisível — a suíte saiu vermelha uma vez em duas. Espera-se a
+           CONDIÇÃO, com prazo; quem pegou não reaparece, e mede-se na hora. */
+        if (!pegou) for (let t = 0; t < 3000 && alvo && !visivel(); t += 50) await esperar(50);
+        fim[nome].criaturaVisivel = visivel();
         /* ── O NOME DA ANIMAÇÃO, e não só o quadro ────────────────────────
            A queixa do dono foi *"ambas parecem a mesma coisa"*. O quadro final
            já difere; o que faltava conferir é o MOVIMENTO — e uma sabotagem que

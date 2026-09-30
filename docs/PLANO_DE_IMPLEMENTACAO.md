@@ -2192,6 +2192,27 @@ do servidor. Três partes:
   progresso de antes do cadastro fica no aparelho e não vai para a conta.
 - **Portões:** Q1 Q2 Q6.
 
+### ST-13.8 · Os sinais de aparelho e rede (L-050 · DEC-19) ✅ 30/09
+- **Porte** M · **Servidor** sim · **Spec** §7.19, §28 · **Depende de** ST-13.6
+- **Escopo:** o cliente manda um número aleatório do navegador (guardado nele);
+  o servidor grava, por conta, só a ASSINATURA do número e do IP (HMAC com o
+  segredo do servidor — o valor nunca vai ao banco), com 30 dias de validade,
+  e apaga o que venceu. Duas contas com a mesma assinatura viram suspeita em
+  `suspeitas_antifraude` (sinais `aparelho` e `rede`), para o operador revisar
+  no painel e, se quiser, ligar as contas com o `ligarContas` que já existe.
+  Nada é punido nem ligado sozinho.
+- **Aceite:** duas contas no mesmo navegador aparecem como suspeita; o banco
+  não guarda nenhum IP nem número em claro; nada com mais de 30 dias.
+- **Portões:** Q1 Q2 Q3 Q6.
+- **Feito:** `engine/sinais.mjs` (a forma do número, o IP normalizado, os pares
+  na janela de 30 dias) · `server/sinais.mjs` (HMAC-SHA256 com o segredo do
+  servidor e um rótulo por classe; escrita no máximo a cada 10 min por sinal;
+  o vencido sai na escrita e na varredura) · a varredura da ST-13.6 ganha os
+  sinais `aparelho` e `rede`, pula o par já ligado e nunca liga sozinha · a
+  migração `sinais-st13.8` refaz o CHECK das suspeitas guardando as linhas ·
+  o cliente manda `x-aparelho` (um `randomUUID` guardado no navegador) e o
+  CORS aceita · `test/sinais-conta.mjs` (5) · S1994–S2003.
+
 ### ST-13.5 · Com conta, o cliente lê o idle do servidor
 - **Porte** M · **Servidor** não (consome 13.1–13.3) · **Depende de** ST-13.4 (DEC-17: sem migração)
 - **Escopo:** hidratar o idle do servidor no boot com conta; o local vira
@@ -2265,8 +2286,8 @@ do servidor. Três partes:
   Exchange, P2P). O bolo do E12 roda com a moeda simulada.
 - ~~**ST-13.4 · a migração do save local**~~ — **decidida em 30/09 (DEC-17):
   não migra.** A conta começa do zero no banco; o save do aparelho não sobe.
-- **Política de sinais de aparelho e rede (L-050)** — explicada ao dono em
-  30/09, com recomendação; esperando o sim. Pesa mais com o stake ligado.
+- ~~**Política de sinais de aparelho e rede (L-050)**~~ — **decidida em 30/09
+  (DEC-19): pode**, como recomendado. É a ST-13.8.
 - **Piloto com amigos (ST-7.2)** — **decidido em 30/09 (DEC-18):** só com o jogo
   100% completo.
 - ~~**Hospedagem pública**~~ — adiada pelo dono em 26/09: *"vai ser

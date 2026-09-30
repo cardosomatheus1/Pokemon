@@ -7023,3 +7023,25 @@ credencial, e o servidor respondia 401. Só acontecia se o Sair caísse dentro
 da janela, e por isso aparecia numa execução e não nas seguintes.
 
 **Teste que trava:** `test/bolo-sessao.mjs` (S1937–S1939).
+
+## D-133 — a sonda da cena da captura media a fuga num instante fixo (instável) ✅ CORRIGIDO na ST-13.8 (30/09)
+
+**Achado em:** 30/09/2026, no `npm run repetir` da ST-13.8 — uma execução
+vermelha e a outra verde: *"quem escapou não reapareceu"*. **Bloco dono:**
+ST-13.8 (o bloco não fecha com a suíte instável, e o conserto é da sonda).
+**Estado:** corrigido.
+
+**Causa.** Na fuga a criatura volta por uma animação (`capVolta`, 0,18 s de
+atraso e 0,46 s de corrida). A sonda do `test/visual.mjs` pulava a cena e
+media a opacidade 1,6 s depois, num instante fixo. Com três trabalhadores e o
+navegador na mesma máquina, a linha do tempo da página atrasa, e a medida pegava
+o bicho ainda invisível. O jogo estava certo; a medida, não.
+
+**Conserto.** A sonda espera a CONDIÇÃO (opacidade acima de 0,1), com prazo de
+3 s, na fuga; na captura mede na hora, porque ali o esperado é invisível.
+
+**Teste que trava:** o próprio `test/visual.mjs`, na mesma afirmação. Nenhum
+defeito plantado guardava a volta do bicho, e ele nasce aqui: S2004 (a fuga
+não devolve a criatura) — a espera tem prazo, e o bicho que nunca volta estoura
+o prazo e reprova. É mutante de navegador: a decisão mora num `animation` do
+CSS da cena.

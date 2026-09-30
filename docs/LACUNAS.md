@@ -1778,10 +1778,14 @@ justamente mexer nele sem medir que criou o D-040.
 estabilidade em quatro execuções antes de entrar na linha de base — o mesmo
 critério que fechou o D-040.
 
-### L-050 — a Liga sabe colapsar contas ligadas, e ninguém as liga sozinho
+### L-050 — a Liga sabe colapsar contas ligadas, e ninguém as liga sozinho ✅ FECHADA na ST-13.8 (30/09)
 
-**Registrada em:** R36. **Bloco dono:** um bloco de antifraude, sem escopo ainda.
-**Estado:** PARCIAL (28/09, ST-13.6) — o sinal de HORÁRIO foi construído só
+**Registrada em:** R36. **Bloco dono:** ST-13.8 (a política de sinais foi
+decidida em 30/09, DEC-19: assinatura do aparelho e da rede por 30 dias, só
+suspeita para o operador). **Estado:** ✅ fechada em 30/09 (ST-13.8) — o
+aparelho e a rede entraram como assinatura, e duas contas com o mesmo sinal
+viram suspeita para o operador, que liga com o `ligarContas` de sempre. Antes:
+PARCIAL (28/09, ST-13.6) — o sinal de HORÁRIO foi construído só
 com o que o banco já guarda (os instantes das ações), e registra suspeita para
 o operador, sem ligar contas sozinho. Dispositivo e rede continuam esperando a
 política de sinais do dono — é sinal novo a coletar.
