@@ -9,6 +9,7 @@
  *   escolha     o botão de CONFIRMAR está dentro da tela? a arena não se mexeu?
  *   confirma    rola até o fim da página, como quem desce para ler, e espera
  *               a aposta fechar: a arena VOLTA à tela sozinha?
+ *   nomes       ST-5.10 (D-131): o nome de cada lutador tem ≥ 60 px na lista?
  *
  * Captura as três telas de cada largura. Sai com erro se alguma medida falha.
  */
@@ -35,6 +36,11 @@ for (const [w, h] of [[1440, 900], [1100, 800], [420, 860]]) {
   /* Tempo para escolher e confirmar antes de a aposta fechar. */
   await pg.waitForFunction(() => /APOSTAS/i.test(document.querySelector('#phase')?.textContent ?? '') && parseInt(document.querySelector('#faSeg')?.textContent ?? '0', 10) >= 12, null, { timeout: 150000 });
   await pg.evaluate(() => scrollTo(0, 0));
+  /* ST-5.10 (D-131): o nome de cada lutador com largura para ser lido. */
+  const nomes = await pg.evaluate(() => [...document.querySelectorAll('.pick .n')].map(e => Math.round(e.getBoundingClientRect().width)));
+  const estreito = Math.min(...nomes);
+  console.log(`${w} nomes: o mais estreito com ${estreito}px`);
+  if (estreito < 60) falhas.push(`${w}: nome de lutador com ${estreito}px (D-131)`);
   const arena0 = await caixa(pg, '#arena');
   await pg.evaluate(() => document.querySelector('.pick[data-i="0"]').click());
   await pg.waitForTimeout(600);

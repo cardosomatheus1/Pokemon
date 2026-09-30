@@ -257,7 +257,7 @@ function renderBattleBanner(){
     ? `${retratoAnimado(meu, 'class="bnMon"', gifShinyAtivo(perfil, meu.dex))}${avatar}<div class="bnRodape">${rodapeDaAposta()}</div>`
     : `${dexImg(vitrineDex, '', 'class="bnMon vitrine"', gifShinyAtivo(perfil, vitrineDex))}${avatar}
        <div class="bnRodape comMon"><span class="bnEstado">${
-         S.state === 'betting' ? 'Escolha um lutador na arena' : 'Assistindo esta rodada'}</span></div>`;
+         S.state === 'betting' ? 'Escolha um lutador na lista' : 'Assistindo esta rodada'}</span></div>`;
 
   /* ── O CORPO DO MODO IDLE ─────────────────────────────────────────────
    *

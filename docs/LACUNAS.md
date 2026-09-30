@@ -8931,11 +8931,12 @@ A trava: o `test/jornada-mundo.mjs` cobra o rio e o minimapa, e o
 `test/jornada-tela.mjs` cobra as regiões. O bloco dono troca o que elas
 desenham, e não o que elas decidem.
 
-### L-215 — a tela da aposta manda fazer o que já foi feito
+### L-215 — a tela da aposta manda fazer o que já foi feito ✅ FECHADA na ST-5.10 (30/09)
 
 **Registrada em:** 30/09/2026, pelo crítico cego (Q7, teste dos 3 segundos)
 da ST-5.9. **Bloco dono:** ST-5.10 (proposta no PLANO no mesmo commit).
-**Estado:** aberto.
+**Estado:** fechada — o aviso diz "confirme", o banner diz "na lista", e as
+fichas somem na contagem.
 
 Com o lutador já escolhido, três textos contradizem a tela: o aviso no meio da
 arena ("Escolha seu lutador na lista de odds"), o cartão do treinador à

@@ -870,8 +870,8 @@ export const DEFEITOS = [
 
   { id:'S99', arquivo:APOSTA, nome:'a chamada central ignora a aposta confirmada',
     real:'"é só um texto fixo" — e a tela manda escolher com a aposta já feita',
-    de:'  if (S.myBet){\n    const f = S.fighters[S.myBet.idx];',
-    para:'  if (false){\n    const f = S.fighters[S.myBet.idx];' },
+    de:'    apostado: S.myBet ? { nome: S.fighters[S.myBet.idx]?.n, odd: S.myBet.odd } : null,',
+    para:'    apostado: null,' },
 
   { id:'S100', arquivo:FASES, nome:'a grade de vida fica acesa na fase de aposta',
     real:'condição invertida — doze barras verdes em 100% roubam a primeira fixação',
@@ -2912,7 +2912,7 @@ export const DEFEITOS = [
 
   { id:'S312', arquivo:ZONA, nome:'as fichas de aposta ficam na tela durante a luta',
     real:'"esconder confunde, melhor deixar" — e o jogador clica no que nao responde',
-    de:"  if (aposta) aposta.hidden = S.state === 'fighting' || S.state === 'result';",
+    de:"  if (aposta) aposta.hidden = ['countdown', 'fighting', 'result'].includes(S.state);",
     para:'  if (aposta) aposta.hidden = false;' },
 
   /* ---------- R20: o painel de politica monetaria (P1.1, §10.9) ----------
@@ -8444,6 +8444,25 @@ export const DEFEITOS = [
   { id:'S1917', arquivo:'app/modules/confirmacao-aposta.mjs', nome:'a confirmação volta a mostrar só o multiplicador',
     real:'quem nunca apostou confirma sem saber quanto recebe',
     de:" · recebe <b>${cur} ${n(retornoSeVencer(valor, odd))}</b>`", para:"`" },
+  /* ── ST-5.10 · a tabela e os avisos da aposta legíveis (D-131, L-215) ── */
+  { id:'S1918', arquivo:'app/modules/confirmacao-aposta.mjs', nome:'o aviso manda escolher quem já foi escolhido',
+    real:'"escolha seu lutador" no meio da arena com o lutador marcado na lista',
+    de:'  if (escolhido) return `Confirme', para:'  if (false) return `Confirme' },
+  { id:'S1919', arquivo:'app/modules/aposta.mjs', nome:'escolher não repinta o aviso',
+    real:'o aviso da arena fica no passo anterior até outra coisa repintar a tela',
+    de:'  /* O aviso da arena acompanha a escolha (ST-5.10): escolher muda o passo que falta. */\n  atualizarCTA();', para:'' },
+  { id:'S1920', arquivo:'app/modules/banner.mjs', nome:'o banner manda escolher na arena',
+    real:'o jogador procura na arena um botão que mora na lista',
+    de:"'Escolha um lutador na lista'", para:"'Escolha um lutador na arena'" },
+  { id:'S1921', arquivo:'app/modules/zona-acao.mjs', nome:'as fichas ficam ligadas na contagem',
+    real:'a aposta já fechou e as fichas de valor convidam a uma segunda',
+    de:"['countdown', 'fighting', 'result'].includes(S.state)", para:"['fighting', 'result'].includes(S.state)" },
+  { id:'S1922', arquivo:'app/index.html', nome:'em 1100 a linha volta a espremer o nome',
+    real:'o nome do lutador sai numa letra na tabela em que se aposta',
+    de:'.pick{display:grid;grid-template-columns:34px minmax(0,1fr) auto auto;', para:'.pick{display:flex;grid-template-columns:34px minmax(0,1fr) auto auto;' },
+  { id:'S1923', arquivo:'app/index.html', nome:'o cabeçalho "aposta máx" sobra sobre coluna nenhuma',
+    real:'o cabeçalho empurra os outros e não aponta para nada',
+    de:'  .colunas .c4{display:none}\n}', para:'  .colunas .c4{display:block}\n}' },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',

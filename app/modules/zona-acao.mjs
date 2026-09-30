@@ -26,7 +26,9 @@ import { renderBolo } from './bolo-tela.mjs';
 
 function renderZonaAcao(){
   const aposta = $('#cardAposta');
-  if (aposta) aposta.hidden = S.state === 'fighting' || S.state === 'result';
+  /* ST-5.10 (L-215): e na CONTAGEM também — a aposta já fechou, e fichas de
+     valor ligadas convidam a uma segunda aposta que não existe. */
+  if (aposta) aposta.hidden = ['countdown', 'fighting', 'result'].includes(S.state);
   renderBattleBanner();
   /* O bolo (ST-12.6) troca de modo junto com a aposta: mesma fase, mesmo lugar. */
   renderBolo();

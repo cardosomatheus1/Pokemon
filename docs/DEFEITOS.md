@@ -6989,10 +6989,11 @@ estática sobre o agendamento). O comportamento em si é tempo de navegador, e
 quem o mostra é a captura `replayfim` do `tools/olhar-liga.mjs`. Plantado:
 S1805.
 
-## D-131 — em 1100 o nome do lutador sai cortado numa letra na tabela de odds
+## D-131 — em 1100 o nome do lutador sai cortado numa letra na tabela de odds ✅ CORRIGIDO na ST-5.10 (30/09)
 
 **Achado em:** 30/09/2026, pelo crítico cego (Q7) da ST-5.9. **Bloco dono:**
-ST-5.10. **Estado:** aberto.
+ST-5.10. **Estado:** corrigido — o nome mais estreito tem 95 px em 1100
+(medido por `tools/olhar-aposta.mjs`, que reprova abaixo de 60).
 
 **Causa.** Em 1100 a coluna da lista fica estreita (≈340 px), e a linha do
 lutador dá a largura às colunas de números (chance, odd, aposta máxima); o

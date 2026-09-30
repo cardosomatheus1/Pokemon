@@ -2042,6 +2042,20 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
   /* `.tiny` traz `margin-top:8px` para parágrafos de rodapé; dentro de uma
      linha de grade isso derruba o valor meia linha abaixo dos irmãos. */
   margin-top:0}
+/* ST-5.10 (D-131): entre 1001 e 1300 px a coluna da lista tem ~340 px, e
+   chance, odd e teto levavam tudo — o nome saía numa letra ("( B E.. G V").
+   A linha vira grade de duas faixas: o teto (§4.4.6, que não pode sair da
+   tela) desce para baixo da chance e da odd, e já se explica sozinho
+   ("máx 4.595"); o nome fica com a largura liberada. DEPOIS das regras-base
+   da linha: antes delas, a `min-width:74px` do teto ganhava, e a primeira
+   `.pick .n{` da folha — a que o teste do D-110 lê — deixava de ser a base. */
+@media (min-width:1001px) and (max-width:1300px){
+  .pick{display:grid;grid-template-columns:34px minmax(0,1fr) auto auto;grid-template-areas:"img n p o" "img n lim lim";column-gap:8px;row-gap:0}
+  .pick > img{grid-area:img}.pick .n{grid-area:n;min-width:0}.pick .p{grid-area:p}.pick .o{grid-area:o}
+  .pick .lim{grid-area:lim;min-width:0;text-align:right}
+  .colunas .c4{display:none}
+}
+
 .pick.fechado{opacity:.55;cursor:not-allowed}
 /* `:not(.viva)` porque `fechado` tem DOIS significados nesta lista, e só um
    deles é vermelho. Na aposta é "mercado fechado por passivo" — a coluna diz

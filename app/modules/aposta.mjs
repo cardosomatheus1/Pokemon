@@ -10,7 +10,7 @@
  * mexe no passivo da rodada. Não sabe o que é uma fase, não inicia batalha, não
  * paga resultado — o pagamento continua em `fases.mjs`, junto do fim da rodada.
  */
-import { linhaDaConfirmacao } from './confirmacao-aposta.mjs';
+import { linhaDaConfirmacao, textoDoAviso } from './confirmacao-aposta.mjs';
 import { registrarEncontrada } from './pokedex-estado.mjs';
 import { registrarBonus } from './bonus-arena.mjs';
 import { PACK } from './motor.mjs';
@@ -56,16 +56,10 @@ function atualizarCTA(){
      Pokémon vencedor. E só para QUEM APOSTOU, que é justamente quem tem
      dinheiro na rodada e mais motivo para querer ler aquilo. */
   if (S.state !== 'betting'){ overlay.classList.remove('on', 'apostado'); return; }
-  if (S.myBet){
-    const f = S.fighters[S.myBet.idx];
-    banner.innerHTML =
-      `<b>${f.n}</b> é a sua aposta · x${S.myBet.odd.toFixed(2)}` +
-      `<i>toque em outro para trocar</i>`;
-    overlay.classList.add('apostado');
-  } else {
-    banner.innerHTML = 'Escolha seu lutador na lista de odds<i>a rodada corre sozinha depois</i>';
-    overlay.classList.remove('apostado');
-  }
+  banner.innerHTML = textoDoAviso({
+    apostado: S.myBet ? { nome: S.fighters[S.myBet.idx]?.n, odd: S.myBet.odd } : null,
+    escolhido: escolhido != null ? { nome: S.fighters[escolhido]?.n } : null });
+  overlay.classList.toggle('apostado', !!S.myBet);
 }
 
 function markMyPlate(){
@@ -165,6 +159,8 @@ function limparEscolha() {
 }
 
 function pintarConfirmacao() {
+  /* O aviso da arena acompanha a escolha (ST-5.10): escolher muda o passo que falta. */
+  atualizarCTA();
   const caixa = $('#confirmaAposta');
   if (!caixa) return;
   /* NASCE E VOLTA A FICAR ESCONDIDO. Um par de botões inertes na tela ensina

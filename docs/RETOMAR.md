@@ -30,16 +30,16 @@ o LINK     http://localhost:8099/app/index.html
            (a Liga de times com contas e partidas: node tools/olhar-liga.mjs
            sobe o servidor completo num processo e captura as telas)
 a PASTA    C:\Users\gdult\pa4
-o ESTADO   ST-5.9 FECHADA (apostar não tira a arena de vista: o cartão da
-           aposta preso ao pé da tela, a arena volta quando a luta começa,
-           a confirmação diz quanto recebe) · antes, a ST-10.22c4 (o mapa;
-           o que falta é ARTE do chão, a L-214, dona a ST-10.22d)
+o ESTADO   ST-5.10 FECHADA (a tabela da aposta legível em 1100 — o nome
+           de 1 letra para 95 px —, e os avisos dizem o passo que falta) ·
+           antes, a ST-5.9 (o cartão da aposta preso ao pé da tela, a arena
+           volta quando a luta começa, a confirmação diz quanto recebe)
            · o E11 construído — o stake espera a D2 do dono
-           · suíte 2814/2814, repetir 2/2
+           · suíte 2818/2818, repetir 2/2
            Q2 completo em fatias: 1/10 VERDE; a 2/10 por rodar
            (node test/sabotagem.mjs --fatia=2/10, e seguir até 10/10)
-o PRÓXIMO  a ST-5.10 (D-131: nomes cortados em 1100; L-215: avisos que
-           mandam fazer o já feito) · depois a ST-10.22d (o chão em tiles) ·
+o PRÓXIMO  o UX-01 (L-192, L-194, L-195, L-196) e as marcas velhas nos
+           documentos (triagem de 30/09) · a ST-10.22d (o chão em tiles) ·
            o Q2 completo em fatias fica para quando não houver produto a
            construir — a fatia 2/10 foi interrompida: avaliava 5 de 191 em
            15 min e travava o código por horas
