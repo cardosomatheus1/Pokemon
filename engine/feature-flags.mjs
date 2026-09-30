@@ -38,6 +38,13 @@ export const BANDEIRAS = Object.freeze({
      CHECKPOINT_25_1, que esta liberação não toca. */
   league_stake_enabled:         Object.freeze({ padrao: true,  valor: true, liberadaPor: 'DEC-16' }),
   competitive_exchange_enabled: Object.freeze({ padrao: false, valor: true }),
+  /* E14 (ST-14.0B2): a troca direta e o Market de jogadores. Nascem
+     DESLIGADAS e são de valor — ligar exige o checkpoint do §25.1, e elas
+     COMPÕEM com `p2p_transfer_enabled` (`p2pLiberado`): nenhuma das duas
+     contorna a outra, nem numa permuta sem PC-T (spec E14 §2). Ligar para o
+     piloto é a DEC-21, do dono. */
+  p2p_trade_enabled:            Object.freeze({ padrao: false, valor: true }),
+  player_market_enabled:        Object.freeze({ padrao: false, valor: true }),
   /* o `real_value_…` da moeda do §15.3 — o nome da moeda é do tema, não do motor */
   real_value_currency_enabled:  Object.freeze({ padrao: false, valor: true }),
   cashout_enabled:              Object.freeze({ padrao: false, valor: true }),
@@ -66,3 +73,7 @@ export function estadoDa(nome, gravada, checkpoint = CHECKPOINT_25_1) {
   const ligada = gravada === undefined || gravada === null ? b.padrao : !!gravada;
   return ligada && b.valor && !checkpointValido(checkpoint) && !checkpointValido(b.liberadaPor) ? false : ligada;
 }
+
+/* A troca e o Market da E14 só andam com a transferência P2P TAMBÉM ligada.
+   `estado(nome)` responde o estado já lido (com o checkpoint aplicado). */
+export const p2pLiberado = (estado, nome) => !!estado('p2p_transfer_enabled') && !!estado(nome);

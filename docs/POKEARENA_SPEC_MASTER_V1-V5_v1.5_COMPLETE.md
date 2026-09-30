@@ -4500,3 +4500,7 @@ vence" continuar valendo:
    Arena de apostas (P4).
 4. **Fora do escopo, e continua fora:** saque, moeda fiduciária, NFT, breeding,
    aluguel, empréstimo, venda de conta, leilão, preço oficial de criatura.
+5. **O catálogo de bandeiras do §15.3 ganha duas** (ST-14.0B2): `p2p_trade_enabled`
+   (a troca direta) e `player_market_enabled` (o Market de jogadores). As duas
+   nascem desligadas, são de valor (ligar exige o checkpoint do §25.1) e só
+   andam com `p2p_transfer_enabled` também ligada.

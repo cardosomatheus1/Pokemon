@@ -76,8 +76,11 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            conta, login e desafios não pagavam o PC-B — e ele foi corrigido.
            · ST-14.0B1 FECHADA (30/09): o bônus de cadastro é PC-B (D-135);
            a L-221 registra que 1.000 de PC-B passa do teto de saldo.
-           PRÓXIMO: ST-14.0B2 (a reserva P2P só de PC-T elegível, as
-           operações econômicas idempotentes, as contas antigas inelegíveis)
+           · ST-14.0B2 FECHADA (30/09): a carteira da troca — reserva só de
+           PC-T elegível, transferência com taxa queimada, operação
+           idempotente num commit só, painel sem contar troca como emissão,
+           bandeiras da E14 desligadas. PRÓXIMO: ST-14.0C (inventário por
+           lote e proveniência de itens e doces) e ST-14.2 (a instância)
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho
            do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta

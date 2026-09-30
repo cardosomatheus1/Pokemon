@@ -150,8 +150,15 @@ export function painelEconomico(db, { desde = 0, ate = Number.MAX_SAFE_INTEGER }
        FROM wallet_ledger WHERE created_at >= ? AND created_at <= ?
       GROUP BY tipo, bucket`).all(desde, ate);
 
-  const faucets = {}, sinks = {};
+  const faucets = {}, sinks = {}, entreJogadores = {};
   for (const r of porTipo) {
+    /* A TROCA ENTRE JOGADORES NÃO EMITE NEM QUEIMA (ST-14.0B2): o que um
+       recebe, outro pagou. Contá-la como faucet inflaria a emissão a cada
+       troca. Só a TAXA sai do jogo — ela fica nos sinks. */
+    if (r.tipo.startsWith('P2P_') && r.tipo !== 'P2P_TRANSFER_FEE') {
+      if (r.entrou > 0) entreJogadores[r.tipo] = (entreJogadores[r.tipo] || 0) + r.entrou;
+      continue;
+    }
     if (r.entrou > 0) faucets[r.tipo] = (faucets[r.tipo] || 0) + r.entrou;
     if (r.saiu > 0) sinks[r.tipo] = (sinks[r.tipo] || 0) + r.saiu;
   }
@@ -178,7 +185,7 @@ export function painelEconomico(db, { desde = 0, ate = Number.MAX_SAFE_INTEGER }
     `SELECT COALESCE(SUM(stake * odd), 0) AS p FROM bets WHERE status = 'aberta'`).get().p;
 
   return {
-    faucets, sinks, emCirculacao, divergencia, passivo,
+    faucets, sinks, entreJogadores, emCirculacao, divergencia, passivo,
     totalEmitido: Object.values(faucets).reduce((a, v) => a + v, 0),
     totalRetirado: Object.values(sinks).reduce((a, v) => a + v, 0),
   };

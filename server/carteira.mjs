@@ -224,6 +224,53 @@ export function liberarNoBanco(db, { userId, composicao, ref, idem, agora = Date
       ({ bucket, tipo, delta: n, reservaDelta: -n })) });
 }
 
+/* ── A CARTEIRA DA TROCA ENTRE JOGADORES (ST-14.0B2 · E14) ────────────────
+ *
+ * SÓ PC-T ELEGÍVEL. `reservarNoBanco` usa a ordem de consumo da aposta (bônus
+ * primeiro) e não pode ser chamado aqui como se já aplicasse a restrição: o
+ * P2P tem a sua reserva, de UM bolso só — `transferivel` —, e recusa `bonus`,
+ * `competitivo`, `pendente` e `comprado` por construção.
+ *
+ * ELEGÍVEL não é "o que está no bolso `transferivel`" (spec E14 §4.2: "o nome
+ * do bucket sozinho não prova origem"). A conta de antes da ST-14.0B1 tem o
+ * bônus de cadastro dentro dele, misturado com o que as apostas fizeram dele;
+ * separar exige reconciliação. Até ela, a conta inteira fica inelegível — sem
+ * apagar saldo e sem editar o ledger (D-135). */
+export function pcTElegivel(db, userId) {
+  const legado = db.prepare(`SELECT 1 FROM wallet_ledger WHERE user_id = ? AND type = 'WELCOME_GRANT' AND bucket = 'transferivel' LIMIT 1`).get(userId);
+  return legado ? 0 : Math.max(0, saldos(db, userId).transferivel ?? 0);
+}
+
+export function reservarP2PNoBanco(db, { userId, valor, ref, agora = Date.now() }) {
+  if (!ehInteiroPositivo(valor)) return { ok: false, motivo: ERRO_CARTEIRA.VALOR };
+  if (pcTElegivel(db, userId) < valor) return { ok: false, motivo: ERRO_CARTEIRA.SALDO };
+  return aplicar(db, { userId, ref, refTipo: 'p2p', agora,
+    linhas: [{ bucket: 'transferivel', tipo: 'P2P_RESERVE', delta: -valor, reservaDelta: valor }] });
+}
+
+export function liberarP2PNoBanco(db, { userId, valor, ref, idem, agora = Date.now() }) {
+  if (!ehInteiroPositivo(valor)) return { ok: false, motivo: ERRO_CARTEIRA.VALOR };
+  return aplicar(db, { userId, ref, refTipo: 'p2p', idem, agora,
+    linhas: [{ bucket: 'transferivel', tipo: 'P2P_RELEASE', delta: valor, reservaDelta: -valor }] });
+}
+
+/* A TRANSFERÊNCIA sai do RESERVADO de quem paga (o valor e a taxa), e entra no
+   DISPONÍVEL de quem recebe. Duas contas, então dois `aplicar` — e é por isso
+   que ela só existe dentro de `executarOperacao`, que desfaz tudo se um dos
+   dois recusar. A taxa não é crédito de ninguém: some (spec E14 §11). */
+export function liquidarP2PNoBanco(db, { de, para, valor, taxa = 0, ref, agora = Date.now() }) {
+  if (!ehInteiroPositivo(valor) || !(taxa === 0 || ehInteiroPositivo(taxa))) return { ok: false, motivo: ERRO_CARTEIRA.VALOR };
+  if (de === para) return { ok: false, motivo: ERRO_CARTEIRA.VALOR };
+  const reservado = saldos(db, de).reservado_transferivel ?? 0;
+  if (reservado < valor + taxa) return { ok: false, motivo: ERRO_CARTEIRA.SALDO };
+  const saida = [{ bucket: 'transferivel', tipo: 'P2P_TRANSFER_OUT', delta: 0, reservaDelta: -valor }];
+  if (taxa > 0) saida.push({ bucket: 'transferivel', tipo: 'P2P_TRANSFER_FEE', delta: 0, reservaDelta: -taxa });
+  const r = aplicar(db, { userId: de, ref, refTipo: 'p2p', agora, linhas: saida });
+  if (!r.ok) return r;
+  return aplicar(db, { userId: para, ref, refTipo: 'p2p', agora,
+    linhas: [{ bucket: 'transferivel', tipo: 'P2P_TRANSFER_IN', delta: valor, reservaDelta: 0 }] });
+}
+
 /* LIQUIDAR — o payout HERDA A ORIGEM (§5.5), e é esta função que impede a Arena
    de virar conversor de bônus gratuito em saldo transferível. Um tipo POR
    BUCKET, não um só: um ledger que diz "BET_PAYOUT" sem dizer em quê não prova
@@ -272,8 +319,8 @@ export function liquidarEntradaNoBanco(db, { userId, composicao, pagamento, ref,
 /* As perdas só mexem no reservado (ver o comentário abaixo); as reservas tiram
    do disponível. O bolo tem as suas (ST-12.3) — esquecê-las aqui faria toda
    conta que entrou num bolo parecer adulterada na cópia diária do piloto. */
-const SO_RESERVA = new Set(['BET_LOSS', 'MARKET_LOSS']);
-const RESERVAS = new Set(['BET_RESERVE', 'MARKET_ENTRY_RESERVE']);
+const SO_RESERVA = new Set(['BET_LOSS', 'MARKET_LOSS', 'P2P_TRANSFER_OUT', 'P2P_TRANSFER_FEE']);
+const RESERVAS = new Set(['BET_RESERVE', 'MARKET_ENTRY_RESERVE', 'P2P_RESERVE']);
 
 export function reconciliarNoBanco(db, userId) {
   const problemas = [];

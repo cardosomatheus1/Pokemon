@@ -27,8 +27,9 @@ export async function suite() {
   const s = criarSuite('feature-flags');
 
   s.teste('o catálogo do §15.3: o que move DINHEIRO nasce desligado; o stake de moeda simulada, liberado pelo dono', () => {
-    igual(Object.keys(BANDEIRAS).length, 10, 'o catálogo não é o do §15.3');
-    igual(VALOR.sort().join(), 'cashout_enabled,competitive_exchange_enabled,league_stake_enabled,p2p_transfer_enabled,real_value_currency_enabled,season_pass_enabled', 'as de valor');
+    /* 10 do §15.3 + 2 da E14 (Spec §31, ST-14.0B2): a troca e o Market de jogadores. */
+    igual(Object.keys(BANDEIRAS).length, 12, 'o catálogo não é o do §15.3 + E14');
+    igual(VALOR.sort().join(), 'cashout_enabled,competitive_exchange_enabled,league_stake_enabled,p2p_trade_enabled,p2p_transfer_enabled,player_market_enabled,real_value_currency_enabled,season_pass_enabled', 'as de valor');
     /* DEC-16 (o dono, 30/09: "Pode ligar"): o stake da Liga move só moeda
        SIMULADA — bônus, sem saque, sem transferência. Ele é liberado pela
        decisão dele; o §25.1 continua cobrando tudo que toca dinheiro real. */
@@ -40,7 +41,7 @@ export async function suite() {
       const linha = doc('../docs/ROADMAP.md').split('\n').find(l => l.includes(`**${BANDEIRAS[n].liberadaPor}**`));
       ok(linha && /moeda simulada/.test(linha), `${BANDEIRAS[n].liberadaPor} não está nas decisões do ROADMAP dizendo "moeda simulada"`);
     }
-    for (const n of ['cashout_enabled', 'real_value_currency_enabled', 'p2p_transfer_enabled', 'competitive_exchange_enabled']) ok(!BANDEIRAS[n].liberadaPor, `${n} liberada sem o §25.1 — é dinheiro real`);
+    for (const n of ['cashout_enabled', 'real_value_currency_enabled', 'p2p_transfer_enabled', 'competitive_exchange_enabled', 'p2p_trade_enabled', 'player_market_enabled']) ok(!BANDEIRAS[n].liberadaPor, `${n} liberada sem o §25.1 — é dinheiro real`);
     igual(estadoDa('league_enabled', undefined, null), true, 'a Liga nasce desligada');
     igual(estadoDa('nao_existe', 1, 'DEC-99'), false, 'a bandeira desconhecida lê ligada');
   });

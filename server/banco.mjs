@@ -2044,6 +2044,26 @@ export const MIGRACOES = [
     },
     desce: db => { db.exec(`DROP TABLE rodadas_assistidas`); },
   },
+  {
+    /* ST-14.0B2 · E14: a operação econômica idempotente. Uma linha por
+       (conta, chave), com o HASH do pedido e o resultado: repetir devolve o
+       mesmo recibo, e a mesma chave com outro pedido é conflito. */
+    nome: 'operacoes-economicas-st14.0b2',
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE economic_operations (
+          id             TEXT PRIMARY KEY,
+          user_id        TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          chave          TEXT NOT NULL,
+          tipo           TEXT NOT NULL,
+          hash           TEXT NOT NULL CHECK (length(hash) = 64),
+          resultado_json TEXT NOT NULL,
+          criado_em      INTEGER NOT NULL,
+          UNIQUE (user_id, chave)
+        )`);
+    },
+    desce: db => { db.exec(`DROP TABLE economic_operations`); },
+  },
 
 ];
 

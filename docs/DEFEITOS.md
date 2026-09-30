@@ -7110,6 +7110,8 @@ afirmação; `e14-carteira` cobre a tabela de regressão da ST-14.0B (cadastro,
 aposta 100% PC-B vencida, perdida e cancelada). **O que fica para a 14.0B2:**
 contas antigas com o grant em `transferivel` — a regra da spec é torná-las
 inelegíveis ao P2P até a reconciliação, e o P2P ainda não existe.
+*(ST-14.0B2, 30/09: feito — `pcTElegivel` devolve 0 para a conta que tem o
+grant em `transferivel` no ledger, e a reserva P2P respeita isso.)*
 
 ## D-136 — com conta, a loja do idle, o estilhaço, a montagem e o resgate da missão gravavam só no aparelho ✅ CORRIGIDO na ST-13.9 (a 30/09, b 30/09)
 

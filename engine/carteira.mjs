@@ -110,6 +110,11 @@ export const TIPOS = [
      em `login_streak` e dizia `creditou`, e a carteira não via nada — o tipo
      da Spec (§5.5) não estava nesta lista, e ninguém o lançava. */
   'LOGIN_STREAK_REWARD',
+  /* ST-14.0B2 · E14: a troca entre jogadores. A reserva e a liberação movem o
+     PC-T elegível entre o disponível e o reservado; a transferência sai do
+     reservado de um e entra no disponível do outro; a taxa sai do reservado e
+     QUEIMA (não é crédito de ninguém). */
+  'P2P_RESERVE', 'P2P_RELEASE', 'P2P_TRANSFER_OUT', 'P2P_TRANSFER_IN', 'P2P_TRANSFER_FEE',
   'BET_RESERVE', 'BET_RELEASE', 'BET_LOSS',
   'BET_PAYOUT_TRANSFERABLE', 'BET_PAYOUT_BONUS', 'BET_PAYOUT_COMPETITIVE',
   /* O pagamento de uma aposta feita com saldo COMPRADO: a aposta volta
