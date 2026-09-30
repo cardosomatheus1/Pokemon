@@ -2232,8 +2232,10 @@ do servidor. Três partes:
     conta vem do servidor: as expedições colhidas não descem — a leitura manda
     `teto.hoje`, e o `encontrosHoje` do aparelho soma a partir dele) ·
     `app/modules/idle-acoes.mjs` decide onde cada ação acontece · S2015–S2023;
-  - **13.5c** · a run do Avanço (começar, poção, recuar, colher — a colheita é
-    automática no quadro);
+  - **13.5c** ✅ 30/09 · a run do Avanço (começar, poção, recuar, colher — a colheita é
+    automática no quadro; com conta ela é uma promessa com trava, e sem conta
+    continua síncrona) · a leitura manda as runs colhidas (`avancos`, dois
+    dias) e o `teto.hoje` passa a ser só o das expedições · S2024–S2032;
   - **13.5d** · caixa, troca, soltar, foco, golpe, evoluir e doce;
   - **13.5e** · a luta da jornada (o cliente refaz a luta da semente do servidor
     para encenar — a mesma conta dos dois lados), o aviso da DEC-17 no

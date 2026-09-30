@@ -81,6 +81,13 @@ export function colecaoDe(db, { userId, agora, pack = PACK }) {
     .filter(c => c.pack === pack.id)
     .map(c => paraCliente(c, Math.round(staminaAgora(stamina.get(c.id), agora))));
   const expedicoes = emCampo(db, userId).map(x => expedicaoParaCliente(x, agora));
+  const avancos = db.prepare(`SELECT colhida_em, encontros, resultado_json FROM runs
+                               WHERE user_id = ? AND colhida_em > ? ORDER BY colhida_em`)
+    .all(userId, agora - 2 * DIA_MS).map(l => {
+      const r = JSON.parse(l.resultado_json ?? '{}');
+      return { colhidaEm: l.colhida_em, encontros: l.encontros ?? 0, bioma: r.bioma, estagio: r.estagio,
+               moedas: r.rendeu?.moedas ?? 0, xp: r.rendeu?.xp ?? 0 };
+    });
   return {
     pack: pack.id, agora, criaturas,
     registro: registroDe(db, userId, pack.id).map(r => ({ dex: r.dex, fragmentos: r.fragmentos, vistoEm: r.visto_em })),
@@ -89,15 +96,23 @@ export function colecaoDe(db, { userId, agora, pack = PACK }) {
     run: aberta.run ? { id: aberta.id, ...aberta.run } : null,
     /* Os encontros que esperam bola — a chave é o que o lance manda. */
     encontros: pendentesDe(db, userId),
-    /* O que JÁ SAIU hoje vai junto (ST-13.5b): as expedições colhidas não
-       descem ao aparelho, e sem este número o teto dele contaria o dia cheio. */
-    teto: (t => ({ restam: restamEncontros(t), hoje: t.encontrosHoje }))(estadoDoTeto(db, userId, agora, pack)),
+    /* As runs colhidas (ST-13.5c), como o aparelho as guarda em `e.avancos`:
+       o teto, o rendimento do dia (DEC-14) e o relato do piloto leem delas.
+       A janela é a da conta da run no servidor (dois dias): o dia do mundo
+       pode começar antes das últimas 24 h. */
+    avancos,
+    /* O que JÁ SAIU hoje POR EXPEDIÇÃO (ST-13.5b/c): as colhidas não descem
+       ao aparelho, e sem este número o teto dele contaria o dia cheio. As
+       runs ficam de fora — elas descem em `avancos`, e contariam duas vezes. */
+    teto: (t => ({ restam: restamEncontros(t),
+      hoje: t.encontrosHoje - avancos.filter(a => a.colhidaEm > agora - DIA_MS).reduce((n, a) => n + a.encontros, 0) }))(estadoDoTeto(db, userId, agora, pack)),
     estagio: { aberto: estagioMaximo(criaturas), proximo: proximoEstagio(criaturas) },
     /* A jornada (ST-13.7): o que o servidor venceu por ela. */
     jornada: jornadaDaConta(db, userId).jornada,
   };
 }
 
+const DIA_MS = 24 * 3600_000;
 const texto = v => (typeof v === 'string' && v.length > 0 && v.length <= 80 ? v : null);
 const recusa = mensagem => ({ status: 400, corpo: { codigo: 'ENTRADA_INVALIDA', erro: mensagem } });
 

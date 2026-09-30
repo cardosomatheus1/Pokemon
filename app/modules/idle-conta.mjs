@@ -47,7 +47,9 @@ export function idleDaConta(local, srv, { doces = null } = {}) {
     /* O registro: lista no servidor, objeto `{ dex: fragmentos }` no aparelho. */
     registro: Object.fromEntries((srv.registro ?? []).map(r => [r.dex, r.fragmentos])),
     encontros: (srv.encontros ?? []).map(k => ({ ...k, origem: k.origem ?? 'expedicao', expedicao: k.expedicao ?? null })),
-    avancos: [],
+    /* As runs colhidas nos últimos dois dias, no formato do lançamento do
+       teto (`lancarRunNoTeto`) — o rendimento do dia e o teto leem delas. */
+    avancos: (srv.avancos ?? []).map(a => ({ colhidaEm: a.colhidaEm, encontros: a.encontros ?? 0, bioma: a.bioma, estagio: a.estagio, moedas: a.moedas ?? 0, xp: a.xp ?? 0 })),
     run: srv.run ?? null,
     ...camposDaJornada({ jornada: srv.jornada }),
     doces: doces ?? local.doces ?? {},

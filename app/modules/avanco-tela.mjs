@@ -30,9 +30,9 @@ import { estiloItem, usarCatalogo } from './itens-icone.mjs';
 import { PERFIL_DO_AVANCO } from './avanco-estado.mjs';
 import { api } from './api.mjs';
 import { relatar, eventosDoEstado } from './telemetria-servidor.mjs';
-import { runDe, avancoEmCurso, sincronizar, cena, comecarAvanco, recuar,
-         porQueNaoAvancar, avisoDoTeto, usarPocao,
-         colherAvancoDaRun, equipeDaRun } from './avanco-estado.mjs';
+import { comecarNa, recuarNa, pocaoNa, colherRunNa } from './idle-acoes.mjs';   // ST-13.5c: com conta, pelo servidor
+import { runDe, avancoEmCurso, sincronizar, cena,
+         porQueNaoAvancar, avisoDoTeto, equipeDaRun } from './avanco-estado.mjs';
 import { usarCena } from './avanco-cena.mjs';
 import { pintarColunaDaRun } from './avanco-painel.mjs';
 import { mostrarBioma, acompanhar } from './idle-mundo.mjs';
@@ -182,6 +182,11 @@ let biomaNaTela = null;
    histórico permanente é a L-141, ainda por construir. */
 let ultimoSaque = null;
 export const saqueDaUltimaRun = () => ultimoSaque;
+/* Com conta a colheita é uma promessa (ST-13.5c): o laço roda a cada segundo,
+   e sem esta trava a mesma run seria pedida de novo a cada quadro até a
+   resposta chegar. `recarregarAba` é o `renderIdle` que a aba deu ao
+   `ligarAvanco` — o quadro "quem apareceu" é dela. */
+let colhendo = false, recarregarAba = null;
 
 export function pararLaco() {
   if (laco) { clearInterval(laco); laco = null; }
@@ -226,27 +231,39 @@ export function pintarRun(E, { agora }) {
 
      O saque aparece no log, que é a mesma peça do relatório de volta. */
   const parada = runDe(E);
-  if (parada && !avancoEmCurso(E) && !parada.colhidaEm) {
+  if (parada && !avancoEmCurso(E) && !parada.colhidaEm && !colhendo) {
     try {
-      const r = colherAvancoDaRun(E, { pack: PACK, agora });
-      ultimoSaque = r;
-      /* O DIA VAI PARA O SERVIDOR (ST-7.1a): o estado, não o clique — a chave
-         de cada run é o próprio `colhidaEm`, e reenviar não duplica. */
-      relatar(api, eventosDoEstado(E, agora));
-      /* ── E O QUADRO CHAMA (L-166) ────────────────────────────────────
-         O jogador acabou de ver a run terminar no meio da tela, e o quadro
-         "quem apareceu" nasce ABAIXO da dobra. Sem isto ele fecharia a aba
-         sem saber que teve uma decisão a tomar — e o dono chamou esse
-         instante de *"AQUELE MOMENTO pra decidir suas capturas"*.
-
-         Rola até ele e pisca duas vezes. Não é enfeite: o quadro tem prazo,
-         e prazo que ninguém vê é prazo que ninguém aproveita. Falha em
-         silêncio de propósito — o `scrollIntoView` não existe em todo
-         navegador antigo, e um erro aqui derrubaria a colheita. */
-      chamarOQuadro();
+      const r = colherRunNa(E, { pack: PACK, agora });
+      if (r?.then) {
+        colhendo = true;
+        r.then(colhida => { depoisDaColheita(E, colhida, agora); recarregarAba?.(); })
+          .catch(() => { /* a leitura seguinte da conta diz o que aconteceu */ })
+          .finally(() => { colhendo = false; });
+      } else depoisDaColheita(E, r, agora);
     } catch { /* já colhida noutra aba: nada a fazer, e nada a dizer */ }
   }
+  return pintarRunEmCurso(E, { vista, painel, agora });
+}
 
+function depoisDaColheita(E, r, agora) {
+  ultimoSaque = r;
+  /* O DIA VAI PARA O SERVIDOR (ST-7.1a): o estado, não o clique — a chave
+     de cada run é o próprio `colhidaEm`, e reenviar não duplica. */
+  relatar(api, eventosDoEstado(E, agora));
+  /* ── E O QUADRO CHAMA (L-166) ────────────────────────────────────
+     O jogador acabou de ver a run terminar no meio da tela, e o quadro
+     "quem apareceu" nasce ABAIXO da dobra. Sem isto ele fecharia a aba
+     sem saber que teve uma decisão a tomar — e o dono chamou esse
+     instante de *"AQUELE MOMENTO pra decidir suas capturas"*.
+
+     Rola até ele e pisca duas vezes. Não é enfeite: o quadro tem prazo,
+     e prazo que ninguém vê é prazo que ninguém aproveita. Falha em
+     silêncio de propósito — o `scrollIntoView` não existe em todo
+     navegador antigo, e um erro aqui derrubaria a colheita. */
+  chamarOQuadro();
+}
+
+function pintarRunEmCurso(E, { vista, painel, agora }) {
   const emRun = avancoEmCurso(E);
   vista.classList.toggle('emRun', emRun);
   painel.hidden = !emRun;
@@ -423,7 +440,8 @@ import { leituraDoClima } from './avanco-clima.mjs';
  * É o mesmo motivo pelo qual `recarregar` também é função: quem redesenha é a
  * aba, e esta tela não pode conhecê-la sem inverter a seta do grafo. */
 export function ligarAvanco({ estado, escolha, recarregar, avisar, agora }) {
-  document.addEventListener('click', ev => {
+  recarregarAba = recarregar;
+  document.addEventListener('click', async ev => {
     /* COMEÇAR. Sem confirmação, ao contrário da expedição: aquela cobra HORAS
        e o jogador some da tela, então o momento do 1.24 existe para ele ver a
        stamina cair antes de decidir. O avanço é o oposto — ele COMEÇA a tela,
@@ -431,13 +449,13 @@ export function ligarAvanco({ estado, escolha, recarregar, avisar, agora }) {
        para entrar no jogo. */
     if (ev.target.closest('#idleAvancar')) {
       try {
-        comecarAvanco(estado(), { pack: PACK, agora: agora(), ...escolha() });
+        await comecarNa(estado(), { pack: PACK, agora: agora(), ...escolha() });
         recarregar();
       } catch (e) { avisar(e.message); }
       return;
     }
     if (ev.target.closest('#avAcoes [data-av="recuar"]')) {
-      recuar(estado(), agora());
+      try { await recuarNa(estado(), agora()); } catch (e) { avisar(e.message); }
       recarregar();
       return;
     }
@@ -452,7 +470,7 @@ export function ligarAvanco({ estado, escolha, recarregar, avisar, agora }) {
         const E = estado();
         const item = bolsaEmLista(E).find(x => x.quantidade > 0 && curaDe(PACK, x.id) > 0);
         if (!item) throw new Error('você não tem poção');
-        const r = usarPocao(E, { pack: PACK, item: item.id, agora: agora() });
+        const r = await pocaoNa(E, { pack: PACK, item: item.id, agora: agora() });
         avisar(`curou ${r.curou} de vida`);
         recarregar();
       } catch (e) { avisar(e.message); }

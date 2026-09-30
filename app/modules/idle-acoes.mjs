@@ -9,11 +9,16 @@
  * Recusa do servidor vira o mesmo `Error` das funções locais, com a frase
  * dele: a tela já sabe mostrar isso na faixa de recado.
  *
- * Nesta parte: a inicial, a expedição, a colheita e o lance. A run, a coleção
- * e a jornada vêm na 13.5c–e.
+ * A inicial, a expedição, a colheita e o lance (13.5b); a run do Avanço
+ * (13.5c). A coleção e a jornada vêm na 13.5d–e.
+ *
+ * A RUN ANDA NO APARELHO NOS DOIS CASOS: a cena é refeita da raiz a cada
+ * quadro (§7.22.16), e a raiz da conta é a do servidor. O que passa por aqui
+ * são só as quatro decisões — começar, a poção, recuar e colher.
  */
 import { api as apiPadrao } from './api.mjs';
 import { carregar, escolherInicial, iniciarExpedicao, colher, lancarBola } from './idle-dados.mjs';
+import { comecarAvanco, recuar, usarPocao, colherAvancoDaRun } from './avanco-estado.mjs';
 import { idleNoServidor, lanceDaConta } from './idle-conta.mjs';
 import { sincronizarIdleDaConta } from './idle-servidor.mjs';
 
@@ -53,4 +58,35 @@ export async function lancarNa(e, { pack, chave, bola, agora }, opcoes) {
   const o = ondeFaz(opcoes);
   if (!o.conta) return lancarBola(e, { pack, chave, bola, agora });
   return lanceDaConta(await naConta(e, '/api/idle/lancar', { chave, bola }, o));
+}
+
+/* ── A RUN DO AVANÇO (ST-13.5c) ── */
+export async function comecarNa(e, { pack, bioma, estagio, equipe, agora }, opcoes) {
+  const o = ondeFaz(opcoes);
+  if (!o.conta) return comecarAvanco(e, { pack, bioma, estagio, equipe, agora });
+  return (await naConta(e, '/api/idle/run', { bioma, estagio, equipe }, o)).run;
+}
+
+export async function recuarNa(e, agora, opcoes) {
+  const o = ondeFaz(opcoes);
+  if (!o.conta) return recuar(e, agora);
+  return (await naConta(e, '/api/idle/run/recuar', {}, o)).run;
+}
+
+export async function pocaoNa(e, { pack, item, agora }, opcoes) {
+  const o = ondeFaz(opcoes);
+  if (!o.conta) return usarPocao(e, { pack, item, agora });
+  const r = await naConta(e, '/api/idle/run/pocao', { item }, o);
+  return { curou: r.curou, item: r.item };
+}
+
+/* A COLHEITA DA RUN acontece no quadro em que ela acaba (`pintarRun`), que é
+   síncrono. Sem conta ela CONTINUA síncrona — o saque e o quadro saem no
+   mesmo quadro, como sempre; com conta, a resposta é uma promessa, e a tela
+   espera por ela. A run colhida volta no formato do aparelho: a do servidor
+   é a mesma `contaDaRun`. */
+export function colherRunNa(e, { pack, agora }, opcoes) {
+  const o = ondeFaz(opcoes);
+  if (!o.conta) return colherAvancoDaRun(e, { pack, agora });
+  return naConta(e, '/api/idle/run/colher', { run: e.run?.id }, o).then(r => r.run);
 }

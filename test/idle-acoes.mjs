@@ -13,7 +13,8 @@ import { creditarBolsa, estadoDoTeto } from '../server/idle.mjs';
 import { criarApi } from '../app/modules/api.mjs';
 import * as D from '../app/modules/idle-dados.mjs';
 import { lanceDaConta, camposDaConta } from '../app/modules/idle-conta.mjs';
-import { inicialNa, expedicaoNa, colherNa, lancarNa } from '../app/modules/idle-acoes.mjs';
+import { inicialNa, expedicaoNa, colherNa, lancarNa, comecarNa, recuarNa, pocaoNa, colherRunNa } from '../app/modules/idle-acoes.mjs';
+import { curaDe, runsNoDia } from '../engine/avanco.mjs';
 
 const T0 = Date.UTC(2026, 9, 1, 12), H = 3600e3;
 const fonte = f => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
@@ -84,6 +85,71 @@ export async function suite() {
       igual(`${E.bolsa.poke ?? 0}|${E.encontros.some(k => k.chave === 'lz:0')}`, `${bolas - 1}|false`, 'o lance não gastou a bola ou não levou o encontro');
       igual(E.criaturas.length, r.capturou ? 2 : 1, 'a captura da conta não chegou à tela');
     } finally { await srv.fechar(); }
+  });
+
+  s.teste('a tela da run chama as ações, e a colheita com conta tem trava', () => {
+    const t = fonte('app/modules/avanco-tela.mjs');
+    for (const chamada of ['await comecarNa(estado(), {', 'await recuarNa(estado(), agora())', 'await pocaoNa(E, {', 'const r = colherRunNa(E, {'])
+      ok(t.includes(chamada), `a tela da run não chama ${chamada}`);
+    ok(/!parada\.colhidaEm && !colhendo\)/.test(t) && /colhendo = true;/.test(t) && /\.finally\(\(\) => \{ colhendo = false; \}\)/.test(t), 'a colheita com conta sem a trava: a mesma run seria pedida a cada quadro');
+    ok(/r\.then\(colhida => \{ depoisDaColheita\(E, colhida, agora\); recarregarAba\?\.\(\); \}\)/.test(t), 'com conta, o quadro "quem apareceu" não repinta depois da colheita');
+    ok(/recarregarAba = recarregar;/.test(t), 'a tela da run não guarda o redesenho da aba');
+  });
+
+  s.teste('contra o servidor de verdade: a run começa, recua e é colhida pela conta', async () => {
+    let t = T0;
+    const srv = criarServidor({ config: { ambiente: 'teste', silencioso: true }, banco: ':memory:', sims: 40, laco: false, relogio: () => t });
+    const porta = await srv.ouvir(0);
+    try {
+      const deposito = armazemFalso(), api = criarApi({ base: `http://127.0.0.1:${porta}`, armazem: deposito });
+      const o = { api, deposito, conta: true };
+      await api.post('/api/auth/cadastrar', { username: 'Iac2', email: 'iac2@x.test', senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01' });
+      const uid = srv.db.prepare(`SELECT id FROM users WHERE username = 'Iac2'`).get().id;
+      const E = D.carregar(deposito);
+      const ini = await inicialNa(E, PACK, PACK.iniciais[0], t, o);
+
+      const run = await comecarNa(E, { pack: PACK, bioma: 'floresta', estagio: 1, equipe: [ini.id], agora: t }, o);
+      ok(run && E.run?.id === run.id && E.run.raiz != null, 'a run da conta não chegou à tela com o id e a raiz do servidor');
+
+      /* A poção com a vida cheia é recusada pelo servidor — e a recusa chega. */
+      const pocao = (PACK.catalogo ?? []).find(i => curaDe(PACK, i.id) > 0)?.id;
+      creditarBolsa(srv.db, uid, pocao, 1);
+      let recusa = null;
+      try { await pocaoNa(E, { pack: PACK, item: pocao, agora: t }, o); } catch (e) { recusa = e.message; }
+      ok(/cheia/.test(recusa ?? ''), `a poção com a vida cheia não foi recusada pelo servidor: ${recusa}`);
+      /* Um minuto de luta tira vida em qualquer semente (medido: 18 de 18). */
+      t += 60e3;
+      const cura = await pocaoNa(E, { pack: PACK, item: pocao, agora: t }, o);
+      igual(`${cura.curou > 0}|${cura.item}|${E.bolsa[pocao] ?? 0}`, `true|${pocao}|0`, 'a poção da conta não curou ou não saiu da bolsa da tela');
+
+      /* Recua aos cinco minutos: dali em diante toda semente já rendeu encontro
+         (medido: de 3 min em diante, 2 a 4), e o teto abaixo não compara zero
+         com zero. */
+      t += 4 * 60e3;
+      await recuarNa(E, t, o);
+      ok(E.run?.fim, 'o recuo da conta não chegou à tela');
+
+      t += 1000;
+      const p = colherRunNa(E, { pack: PACK, agora: t }, o);
+      ok(typeof p?.then === 'function', 'com conta, a colheita da run não é uma promessa');
+      const colhida = await p;
+      ok(colhida.encontros > 0 && colhida.rendeu, `a run colhida da conta sem encontros ou sem o que rendeu: ${colhida.encontros}`);
+      igual(`${E.run}|${E.avancos.length}|${runsNoDia(E.avancos, t)}`, 'null|1|1', 'a run colhida não virou lançamento do dia no aparelho');
+      /* O teto: a run desce em `avancos`, e o `hoje` da conta não a conta de novo. */
+      igual(D.encontrosHoje(E, t), estadoDoTeto(srv.db, uid, t, PACK).encontrosHoje, 'a run colhida conta duas vezes (ou nenhuma) no teto do aparelho');
+      const pendentes = srv.db.prepare(`SELECT COUNT(*) n FROM encontros_pendentes WHERE user_id = ? AND origem = 'avanco' AND resolvido_em IS NULL`).get(uid).n;
+      igual(E.encontros.filter(k => k.origem === 'avanco').length, pendentes, 'os encontros da run não chegaram ao quadro');
+    } finally { await srv.fechar(); }
+  });
+
+  s.teste('sem conta, a colheita da run continua síncrona', async () => {
+    const api = { temSessao: () => false };
+    const deposito = armazemFalso(), E = D.carregar(deposito);
+    const ini = await inicialNa(E, PACK, PACK.iniciais[0], T0, { api, deposito });
+    await comecarNa(E, { pack: PACK, bioma: 'floresta', estagio: 1, equipe: [ini.id], agora: T0 }, { api, deposito });
+    await recuarNa(E, T0 + 60e3, { api, deposito });
+    const r = colherRunNa(E, { pack: PACK, agora: T0 + 61e3 }, { api, deposito });
+    ok(typeof r?.then !== 'function' && r?.colhidaEm === T0 + 61e3 && E.run === null, 'sem conta, a colheita da run virou promessa — o saque sairia um quadro depois');
   });
 
   s.teste('sem conta, a ação é a do aparelho, e o servidor nem é chamado', async () => {
