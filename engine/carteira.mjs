@@ -141,6 +141,15 @@ export const TIPOS = [
      DEC-03 manda o lucro feito com saldo comprado herdar a linhagem. A Spec
      foi corrigida no mesmo commit. */
   'MARKET_PAYOUT_COMPETITIVE', 'MARKET_PAYOUT_PURCHASED',
+  /* ── O STAKE DA LIGA (ST-11.10 · §9.6) ─────────────────────────────────
+   *
+   * Tipos PRÓPRIOS, pela razão de sempre: a partida da Liga é entre dois
+   * jogadores, e lançá-la como aposta contaria que o jogador apostou contra a
+   * casa. O stake sai (`LEAGUE_STAKE`), volta pelos baldes de onde saiu
+   * (`LEAGUE_STAKE_RETURN`) e o ganho entra como bônus (`LEAGUE_PAYOUT_BONUS`)
+   * — nunca em outro balde. O rake não tem linha: ele é a parte do stake do
+   * perdedor que não volta a ninguém, e fica registrado em `liga_stakes`. */
+  'LEAGUE_STAKE', 'LEAGUE_STAKE_RETURN', 'LEAGUE_PAYOUT_BONUS',
 ];
 
 const zerado = () => Object.fromEntries(BUCKETS.map(b => [b, 0]));

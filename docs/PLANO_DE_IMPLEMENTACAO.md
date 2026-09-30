@@ -1573,7 +1573,7 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
   feature desligada é da ST-11.6 (a Liga) e de cada feature de valor quando
   nascer (a ST-11.10 consulta `league_stake_enabled`).
 
-### ST-11.10 · Stake de tier na fila de bônus: o dinheiro
+### ST-11.10 · Stake de tier na fila de bônus: o dinheiro ✅ 30/09 (desligada — ligar é D2)
 - **Porte** M · **Servidor** sim · **Bloco dono** F5.3, F5.4 · **Spec** §9.6, §9.9, §28.3 · **Depende de** D2 para LIGAR (construir não)
 - **Escopo:**
   - só PC-B e PC-C; os dois stakes são reservados antes de criar a luta;
@@ -1584,6 +1584,33 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **Aceite:** pagamentos + rake = pot; `transferivel` nunca é tocado; falha no meio reverte tudo; liquidar duas vezes liquida uma.
 - **Sabotagem:** parear bônus com transferível; rake diferente do exibido; stake de conta em pausa.
 - **Portões:** Q1 Q2 Q3 Q6 Q8.
+- **✅ 30/09 — construída, DESLIGADA.** `engine/stake-liga.mjs` (puro): o
+  stake do tier MAIS BAIXO dos dois (ninguém aposta acima do próprio tier), o
+  pot e o rake de 10% do §9.6, o plano só de bônus e competitivo (bônus
+  primeiro), e a liquidação — o vencedor recebe o próprio stake de volta
+  pelos baldes de onde saiu e o ganho (stake − rake) como BÔNUS; a partida
+  fora do ranking é o cancelamento técnico e devolve 100%; **o empate também
+  devolve, sem rake** (decisão minha, escrita aqui: não houve vencedor de quem
+  cobrar). O teste varre todo tier × resultado: recebido + rake = pot.
+  `server/stake-liga.mjs`: a INSCRIÇÃO (`liga_stake_inscricoes` — o defensor
+  não está lá na hora, e o consentimento dele existe antes), os portões dos
+  DOIS lados antes de qualquer escrita (bandeira com o checkpoint, inscrição,
+  pausa `stake_liga` do §28.4, `avaliarAposta` — os limites somam com a Arena
+  e o bolo porque a perda cai na mesma janela —, saldo), e a reserva e a
+  liquidação DENTRO da transação da partida (a partida passou a usar a
+  `emTransacao` da carteira, que aninha). `liga_stakes` só de inserção guarda
+  o rake queimado. Tipos novos na carteira: `LEAGUE_STAKE`,
+  `LEAGUE_STAKE_RETURN`, `LEAGUE_PAYOUT_BONUS`. Rotas `GET /api/equipe/stake`,
+  `POST /api/equipe/stake/inscricao`; `POST /api/equipe/partida` aceita
+  `stake: true`. `test/liga-stake.mjs` (9) · S1863–S1874.
+- **Q6:** duas rotas novas atrás da sessão e da bandeira (503 desligada); o
+  corpo só diz "com stake" — valor, baldes e rake são do servidor.
+- **Q8:** a transação é `BEGIN IMMEDIATE` (a da carteira): dois desafios ao
+  mesmo defensor ao mesmo tempo serializam, e o segundo lê o saldo que o
+  primeiro deixou. Falha no meio (testada com um gatilho que aborta o
+  registro) desfaz a partida e o dinheiro juntos.
+- **O que fica:** a busca com stake (parear só inscritos) entra com a tela,
+  na 11.11.
 
 ### ST-11.11 · Stake: a confirmação honesta
 - **Porte** M · **Bloco dono** F5.3 · **Spec** §9.6 (rake explícito antes de confirmar), §28.5

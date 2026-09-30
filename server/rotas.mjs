@@ -37,6 +37,7 @@ import { rotasDaEquipe, ERRO_EQUIPE } from './equipe.mjs';
 import { rotasDaPartida, ERRO_PARTIDA } from './partida.mjs';
 import { rotasDaLigaEquipe } from './liga-equipe.mjs';
 import { rotasDaLojaLiga, ERRO_LOJA_LIGA } from './loja-liga.mjs';
+import { rotasDoStake, ERRO_STAKE } from './stake-liga.mjs';
 import { ERRO_IDLE } from './idle.mjs';
 import { ERRO_RUN } from './run.mjs';
 import { ERRO_COLECAO } from './colecao.mjs';
@@ -185,6 +186,10 @@ const STATUS_DE = {
   [ERRO_LOJA_LIGA.ITEM]: 404,
   [ERRO_LOJA_LIGA.LINHA]: 400,
   [ERRO_LOJA_LIGA.RECUSADA]: 409,
+  [ERRO_STAKE.NAO_INSCRITO]: 409,
+  [ERRO_STAKE.LIMITE]: 409,
+  [ERRO_STAKE.SALDO]: 409,
+  [ERRO_STAKE.TIER]: 409,
   /* A feature desligada (ST-11.9): indisponível AGORA, não pedido errado. */
   [ERRO_BANDEIRA.DESLIGADA]: 503,
 };
@@ -222,6 +227,7 @@ export const ROTAS = {
   /* ST-11.6a: a League Home lê numa chamada só, e publicar congela o time da conta. */
   ...rotasDaLigaEquipe(daExcecao),
   ...rotasDaLojaLiga(daExcecao),
+  ...rotasDoStake(daExcecao),
 
 
   /* --- autenticação ----------------------------------------------------- */

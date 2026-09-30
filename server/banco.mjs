@@ -1847,6 +1847,49 @@ export const MIGRACOES = [
       db.exec(`CREATE INDEX candy_ledger_user ON candy_ledger(user_id, motivo, created_at)`);
     },
   },
+  {
+    nome: 'stake-liga-st11.10',
+    /* O STAKE DA LIGA NA FILA DE BÔNUS (ST-11.10, §9.6). Nasce atrás da
+     * bandeira `league_stake_enabled`, DESLIGADA.
+     *
+     *   liga_stake_inscricoes  quem aceita defender com stake: o defensor não
+     *                          está lá na hora da partida, e o consentimento
+     *                          dele tem de existir ANTES
+     *   liga_stakes            um por partida com stake: o valor, o pot, o
+     *                          rake, o que aconteceu (liquidada, empate,
+     *                          devolvida) e de que baldes saiu cada lado. Só
+     *                          de inserção — o rake queimado mora aqui
+     * ADITIVA. */
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE liga_stake_inscricoes (
+          user_id        TEXT PRIMARY KEY REFERENCES users(id),
+          ativo          INTEGER NOT NULL CHECK (ativo IN (0, 1)),
+          atualizado_em  INTEGER NOT NULL
+        )`);
+      db.exec(`
+        CREATE TABLE liga_stakes (
+          partida_id    TEXT PRIMARY KEY REFERENCES league_matches(id),
+          user_a        TEXT NOT NULL REFERENCES users(id),
+          user_b        TEXT NOT NULL REFERENCES users(id),
+          stake         INTEGER NOT NULL CHECK (stake > 0),
+          pot           INTEGER NOT NULL,
+          rake          INTEGER NOT NULL CHECK (rake >= 0),
+          estado        TEXT NOT NULL CHECK (estado IN ('liquidada', 'empate', 'devolvida')),
+          composicao_a  TEXT NOT NULL,
+          composicao_b  TEXT NOT NULL,
+          criado_em     INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE TRIGGER liga_stakes_sem_update BEFORE UPDATE ON liga_stakes BEGIN SELECT RAISE(ABORT, 'liga_stakes é append-only'); END`);
+      db.exec(`CREATE TRIGGER liga_stakes_sem_delete BEFORE DELETE ON liga_stakes BEGIN SELECT RAISE(ABORT, 'liga_stakes é append-only'); END`);
+    },
+    desce: db => {
+      db.exec(`DROP TRIGGER liga_stakes_sem_delete`);
+      db.exec(`DROP TRIGGER liga_stakes_sem_update`);
+      db.exec(`DROP TABLE liga_stakes`);
+      db.exec(`DROP TABLE liga_stake_inscricoes`);
+    },
+  },
 ];
 
 const TABELA_VERSAO = `

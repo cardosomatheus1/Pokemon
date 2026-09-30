@@ -179,7 +179,8 @@ export async function suite() {
 
   s.teste('nunca vira PokéCash: sem balde na carteira, sem tipo no livro dela, sem import', () => {
     ok(!BUCKETS.some(b => /liga|league|pont/i.test(b)), 'os pontos viraram balde da carteira');
-    ok(!TIPOS.some(t => /LEAGUE|LIGA|PONT/i.test(t)), 'a carteira tem tipo de pontos');
+    /* O stake da Liga (ST-11.10) tem tipos na carteira — é PokéCash; os PONTOS nunca. */
+    ok(!TIPOS.some(t => /POINT|PONT/i.test(t)), 'a carteira tem tipo de pontos');
     const srv = semComentario(fonte('../server/pontos-liga.mjs'));
     ok(!/carteira|wallet_ledger|treasury/.test(srv), 'o livro dos pontos toca a carteira');
     ok(!/BEGIN|emTransacao/.test(srv), 'os pontos abrem transação própria');

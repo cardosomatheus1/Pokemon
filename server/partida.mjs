@@ -32,6 +32,8 @@ import { exigirBandeira } from './feature-flags.mjs';
 import { snapshotDe, snapshotPorId, ERRO_EQUIPE } from './equipe.mjs';
 import { aplicarPartida, tierDaConta, ratingDe } from './liga-mmr.mjs';
 import { creditarPartida } from './pontos-liga.mjs';
+import { emTransacao } from './carteira.mjs';
+import { prepararStake, reservarStakes, liquidarStake, stakeGravado } from './stake-liga.mjs';
 import PACK from '../content/escolhido.mjs';
 
 export const ERRO_PARTIDA = Object.freeze({
@@ -40,11 +42,9 @@ export const ERRO_PARTIDA = Object.freeze({
 const falha = (codigo, msg) => Object.assign(new Error(msg), { codigo });
 const CHAVE_OK = /^[\w-]{8,64}$/;
 
-function emTransacao(db, fn) {
-  db.exec('BEGIN');
-  try { const r = fn(); db.exec('COMMIT'); return r; }
-  catch (e) { try { db.exec('ROLLBACK'); } catch {} throw e; }
-}
+/* A transação é a da CARTEIRA (ST-11.10): o stake move dinheiro dentro da
+   transação da partida, e a da carteira sabe aninhar (SAVEPOINT) — um BEGIN
+   próprio aqui recusaria o `gastar` lá dentro. */
 
 /* O que a partida mostra: o log, os dois times e o REVEAL — o compromisso, a
    raiz e o sal — para qualquer um conferir. Os donos não viajam. */
@@ -73,7 +73,7 @@ const nomeDoBot = (pack, botId) => (pack.treinadores ?? []).find(t => `bot:${t.i
    outro lugar. */
 function jaJogada(db, idem, pack) {
   const ja = db.prepare(`SELECT * FROM league_matches WHERE idem_key = ?`).get(idem);
-  if (ja) return { ...publica(ja, sinalDe(db, ja.id)), repetido: true };
+  if (ja) return { ...comStake(db, publica(ja, sinalDe(db, ja.id))), repetido: true };
   const jaBot = db.prepare(`SELECT * FROM league_bot_matches WHERE idem_key = ?`).get(idem);
   if (jaBot) return { ...publicaBot(jaBot, nomeDoBot(pack, jaBot.bot_id)), repetido: true };
   return null;
@@ -84,7 +84,8 @@ const compromisso = (raiz, sal) => createHash('sha256').update(mensagemCommit(ra
 const partidasDoPar = (db, users, agora) => db.prepare(`SELECT user_a AS userA, user_b AS userB, vencedor, criada_em AS criadaEm FROM league_matches
    WHERE criada_em > ? AND (user_a IN (?, ?) OR user_b IN (?, ?))`).all(agora - INTEGRIDADE.janelaMs, users[0], users[1], users[0], users[1]);
 
-export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveIdem, agora, raiz = novaRaiz(), sal = novoSal() }) {
+export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveIdem, agora, raiz = novaRaiz(), sal = novoSal(),
+                                   stake = false, checkpoint }) {
   if (typeof chaveIdem !== 'string' || !CHAVE_OK.test(chaveIdem)) throw falha(ERRO_PARTIDA.CHAVE, 'chave do pedido inválida');
   const idem = `liga:${userId}:${chaveIdem}`;
   const ja = jaJogada(db, idem, pack);
@@ -104,11 +105,15 @@ export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveId
   if (emCooldown(recentes, userId, a.user, agora)) throw falha(ERRO_PARTIDA.COOLDOWN, 'vocês se enfrentaram há pouco — a revanche abre em até 6 h');
   const c = confrontoDaLiga({ pack, a, b, raiz });
   if (!c.ok) throw falha(ERRO_PARTIDA.VERSAO, c.motivo);
+  /* O STAKE (ST-11.10): todos os portões, dos dois lados, ANTES de qualquer escrita. */
+  const prep = stake ? prepararStake(db, { userA: a.user, userB: userId, agora, ...(checkpoint !== undefined ? { checkpoint } : {}) }) : null;
   const commit = compromisso(raiz, sal);
   const id = randomUUID();
   /* A partida e o Liga MMR na MESMA transação (ST-11.4): a partida gravada sem
      o rating aplicado — ou o contrário — é rating criado ou sumido. */
   emTransacao(db, () => {
+    /* Os dois stakes saem ANTES de a partida existir: sem eles, não há partida. */
+    if (prep) reservarStakes(db, { id, userA: a.user, userB: userId, prep, agora });
     db.prepare(`INSERT INTO league_matches (id, idem_key, snap_a, snap_b, user_a, user_b, raiz, sal, commit_hash, semente,
                   versao_motor, versao_conteudo, vencedor, turnos, log_json, criada_em)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
@@ -120,6 +125,8 @@ export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveId
     const sinais = sinaisDaPartida([...recentes, { userA: a.user, userB: userId, vencedor: c.vencedor, criadaEm: agora }], a.user, userId, agora);
     db.prepare(`INSERT INTO liga_sinais (partida_id, elegivel, sinais_json, criado_em) VALUES (?, ?, ?, ?)`)
       .run(id, elegivel(sinais) ? 1 : 0, JSON.stringify(sinais), agora);
+    /* A partida fora do ranking é o cancelamento técnico do stake: devolve 100%. */
+    if (prep) liquidarStake(db, { id, userA: a.user, userB: userId, prep, vencedor: c.vencedor, contado: elegivel(sinais), agora });
     /* A partida CONTADA mexe no Liga MMR e paga os League Points (ST-11.7a),
        na mesma transação; a fora do ranking não faz nenhum dos dois. */
     if (elegivel(sinais)) creditarPartida(db, { id, userA: a.user, userB: userId, vencedor: c.vencedor, agora });
@@ -127,14 +134,17 @@ export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveId
     else emitir(db, { nome: 'liga_partida_fora_do_ranking', userId, chave: `integridade:${id}`, agora,
                       campos: { partida: id, sinais: sinais.map(x => x.sinal).join(',').slice(0, 40) } });
   });
-  return publica(db.prepare(`SELECT * FROM league_matches WHERE id = ?`).get(id), sinalDe(db, id));
+  return comStake(db, publica(db.prepare(`SELECT * FROM league_matches WHERE id = ?`).get(id), sinalDe(db, id)));
 }
+
+/* A partida com stake diz o stake (o valor, o pot, o rake e o que aconteceu). */
+const comStake = (db, p) => { const s = stakeGravado(db, p.id); return s ? { ...p, stake: s } : p; };
 
 /* A partida tem LINK PRÓPRIO (I.1): quem tem o id a revê — o replay é
    público, como o reveal da Arena. A do bot também. */
 export function partidaDe(db, id, pack = PACK) {
   const l = db.prepare(`SELECT * FROM league_matches WHERE id = ?`).get(id);
-  if (l) return publica(l, sinalDe(db, l.id));
+  if (l) return comStake(db, publica(l, sinalDe(db, l.id)));
   const b = db.prepare(`SELECT * FROM league_bot_matches WHERE id = ?`).get(id);
   if (!b) throw falha(ERRO_PARTIDA.SEM_PARTIDA, 'essa partida não existe');
   return publicaBot(b, nomeDoBot(pack, b.bot_id));
@@ -192,7 +202,7 @@ export function rotasDaPartida(daExcecao) {
     'POST /api/equipe/partida': ({ db, corpo, userId, agora }) => {
       const meu = texto(corpo?.meu), adversario = texto(corpo?.adversario);
       if (!meu || !adversario) return { status: 400, corpo: { codigo: 'ENTRADA_INVALIDA', erro: 'partida inválida' } };
-      return tentar(() => { exigirBandeira(db, 'league_enabled'); return { partida: criarPartida(db, { userId, meu, adversario, chaveIdem: corpo?.chaveIdem, agora }) }; });
+      return tentar(() => { exigirBandeira(db, 'league_enabled'); return { partida: criarPartida(db, { userId, meu, adversario, chaveIdem: corpo?.chaveIdem, agora, stake: corpo?.stake === true }) }; });
     },
     /* Buscar partida: o servidor escolhe o adversário (ST-11.3). */
     'POST /api/equipe/buscar': ({ db, corpo, userId, agora }) => {
