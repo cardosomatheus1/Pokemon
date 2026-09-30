@@ -1863,6 +1863,8 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
   border-radius:6px;padding:1px 6px;cursor:pointer}
 .idleSoltar:hover{color:var(--txt);border-color:var(--neon)}
 .idleSoltar.armado{color:var(--red);border-style:solid;border-color:var(--red)}
+.idleSoltarCancelar{font:inherit;font-size:.62rem;color:var(--txt);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:6px;padding:3px 8px;cursor:pointer}
+.idleSoltarCancelar:hover{border-color:var(--neon)}
 /* ST-9.12 · os golpes escolhidos, sob a ficha da criatura */
 .idleGolpes{font-size:.62rem;color:var(--dim)}
 .idleGolpes summary{cursor:pointer}
@@ -6842,8 +6844,13 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   border-radius:10px;padding:8px 10px;cursor:pointer;min-width:96px;
   transition:border-color .12s,transform .1s}
 .idleGuardado:hover{border-color:rgba(120,220,255,.5);transform:translateY(-2px)}
-.idleAcao{font-size:9px;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--ac);opacity:.75;margin-top:2px}
+/* ST-5.12 (L-195): a ação principal da equipe era texto de 9 px a 75% no
+   rodapé do cartão escuro — "quase invisível" para o crítico cego. E a causa
+   era outra além do tamanho: `--ac` não existe nesta folha, e a cor caía na
+   herdada, escura. Pílula com borda, no neon do tema. */
+.idleAcao{font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
+  color:var(--neon);margin-top:4px;padding:2px 9px;border:1px solid rgba(94,231,255,.55);border-radius:999px;background:rgba(94,231,255,.1)}
+.idleGuardado:hover .idleAcao{background:rgba(94,231,255,.22)}
 
 /* `width:100%` e nao `104px`: um `width` fixo dentro de uma grade e o item
    RECUSANDO o espaco que a grade lhe da — numa coluna de 141 px o cartao

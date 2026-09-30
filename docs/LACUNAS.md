@@ -8408,7 +8408,10 @@ destrava:** a UX-01 revisando a ficha inteira e o ícone de clima do tema.
 ### L-195 — o Centro ainda fala baixo: GUARDAR/TIRAR, colunas, e o soltar armado sem "cancelar"
 
 **Registrada em:** 26/09/2026, no Q7 da ST-9.13 (crítico cego, barra "TESTE DO
-COMPARADOR DE 5 SEGUNDOS"). **Bloco dono:** UX-01. **Estado:** aberto.
+COMPARADOR DE 5 SEGUNDOS"). **Bloco dono:** UX-01. **Estado:** parcial — a
+ST-5.12 (30/09) fez a ação legível (o destino, numa pílula; a cor era
+`var(--ac)`, que não existe) e o "cancelar" do soltar armado. Ficam as 2
+colunas no largo, as pilhas desiguais e o nível no cartão.
 
 Sobras que o bloco não construiu, e por quê:
 - **"GUARDAR/TIRAR" quase invisível** no rodapé de cada cartão (texto escuro no

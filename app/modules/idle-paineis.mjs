@@ -193,12 +193,14 @@ export function pintarCentro(E) {
   const escrever = html => { for (const el of alvos) el.innerHTML = html; };
   if (!alvo) return;
   const ativos = naEquipe(E), guardados = naCaixa(E);
+  /* ST-5.12 (L-195): a ação diz o DESTINO — "guardar/tirar" não dizia para
+     onde, e era a ação principal da equipe escrita em 9 px a 75%. */
   const ficha = (c, guardado) => `
     <button class="idleGuardado" data-mover="${c.id}" data-para="${guardado ? '0' : '1'}">
       ${dexImg(c.dex, esp(c.dex).n, 'class=\"idleCriaArte\"')}
       <span class="idleCriaNome">${nomeExibido(esp(c.dex).n)}</span>
       <span class="tiny">potencial ${c.potencial}${c.exemplar ? ' ✦' : ''}</span>
-      <span class="idleAcao">${guardado ? 'tirar' : 'guardar'}</span>
+      <span class="idleAcao">${guardado ? '→ equipe' : '→ caixa'}</span>
     </button>`;
 
   /* ST-9.8/9.10: sob a ficha, as ações do doce — dar (se há doce da linha) e,

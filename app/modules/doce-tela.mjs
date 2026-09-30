@@ -22,12 +22,24 @@ document.addEventListener('click', ev => {
     renderIdle();
     return;
   }
+  /* ST-5.12 (L-195): o soltar armado ganha um CANCELAR à vista — antes ele
+     só desarmava quando a tela repintava, e desistir de um gesto
+     irreversível não pode depender de esperar. */
+  const cancelar = ev.target.closest('[data-soltar-cancelar]');
+  if (cancelar) {
+    const alvo = cancelar.parentElement?.querySelector(`[data-soltar="${cancelar.dataset.soltarCancelar}"]`);
+    if (alvo) { alvo.dataset.armado = '0'; alvo.classList.remove('armado'); alvo.textContent = alvo.dataset.rotulo ?? alvo.textContent; }
+    cancelar.remove();
+    return;
+  }
   const b = ev.target.closest('[data-soltar]');
   if (!b) return;
   if (b.dataset.armado !== '1') {
     b.dataset.armado = '1';
+    b.dataset.rotulo = b.textContent.trim();
     b.classList.add('armado');
     b.textContent = `confirmar: soltar (+${b.dataset.doce} doce)`;
+    b.insertAdjacentHTML('afterend', `<button class="idleSoltarCancelar" data-soltar-cancelar="${b.dataset.soltar}">cancelar</button>`);
     return;
   }
   const r = soltarLocal({ pack: PACK, id: b.dataset.soltar });
