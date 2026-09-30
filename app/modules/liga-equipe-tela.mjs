@@ -13,7 +13,7 @@ import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { dexImg } from './sprites.mjs';
 import { api } from './api.mjs';
-import { homeDaLiga, replayNaTela } from './liga-equipe-dados.mjs';
+import { homeDaLiga, replayNaTela, rankingNaTela } from './liga-equipe-dados.mjs';
 import { linhaDoLog, provaDaPartida } from './partida-dados.mjs';
 import { montarPalco } from './liga-palco.mjs';
 import { sortearArena } from './arenas-dados.mjs';
@@ -24,15 +24,16 @@ const novaChave = () => `le-${Date.now().toString(36)}-${Math.random().toString(
 const lerPreset = () => { try { return localStorage.getItem('ar_treino_preset'); } catch { return null; } };
 const gravarPreset = p => { try { localStorage.setItem('ar_treino_preset', p); } catch { /* privativo: vale só nesta visita */ } };
 
-let dados = null, acabou = null, ocupado = false, chaveDaBusca = null, erro = null, ultimo = null, assistir = null;
+let dados = null, acabou = null, ocupado = false, chaveDaBusca = null, erro = null, ultimo = null, assistir = null, ranking = null, temporadaVista = null;
 
 export async function renderLigaEquipe() {
   const alvo = $('#ligaEqCorpo');
   if (!alvo) return;
   const conta = api.temSessao();
   if (conta) {
-    const r = await api.get('/api/equipe/liga');
+    const [r, rk] = await Promise.all([api.get('/api/equipe/liga'), api.get(`/api/equipe/ranking${temporadaVista ? `?temporada=${temporadaVista}` : ''}`)]);
     dados = r.ok ? r.corpo : null;
+    ranking = rk.ok ? rk.corpo : null;
   }
   ultimo = homeDaLiga({ conta, dados, pack: PACK, agora: Date.now(), preset: lerPreset(), acabou });
   pintar(alvo, ultimo);
@@ -62,7 +63,18 @@ function pintar(alvo, h) {
   alvo.innerHTML = `<div class="leHome le-${h.estado}">
     ${barra}${tier ? '' : passos}
     <div class="lePainel${tier ? '' : ' leSoCentro'}">${tier}<div class="leCentro">${time}${presets}${h.aviso ? `<p class="leAviso">${h.titulo ? `<strong>${esc(h.titulo)}</strong>` : ''}${esc(h.aviso)}</p>` : ''}${erro ? `<p class="leErro">${esc(erro)}</p>` : ''}${botoes}</div></div>
-    ${tier ? passos : ''}<div id="leReplay" class="pveArea" hidden></div>${resultado}${recentes}</div>`;
+    ${tier ? passos : ''}<div id="leReplay" class="pveArea" hidden></div>${resultado}<div class="leBaixo">${recentes}${h.tier ? pintarRanking(rankingNaTela(ranking)) : ''}</div></div>`;
+}
+
+/* O RANKING (ST-11.6c): a tabela da Liga de times, e só dela. */
+function pintarRanking(k) {
+  const linha = x => `<li class="leRkLinha${x.eu ? ' eu' : ''}"><b class="leRkPos${x.medalha ? ` ${x.medalha}` : ''}">${esc(x.posicao)}</b><span class="leRkNome">${esc(x.nome)}${x.eu ? ' <em>você</em>' : ''}</span>
+      <span class="leRkTier leTier${esc(x.tier)}">${esc(x.tier)}</span><span class="leRkPartidas">${esc(x.partidas)}</span></li>`;
+  return `<section class="leRanking"><div class="leRkTopo"><span class="leRot">ranking da liga de times</span>
+      ${k.abas.length ? `<div class="leRkAbas" role="tablist"><span class="leRkVer">ver:</span>${k.abas.map(a => `<button class="leRkAba${a.on ? ' on' : ''}" role="tab" data-le-temporada="${a.temporada ?? ''}">${esc(a.rotulo)}</button>`).join('')}</div>` : `<span class="leRkSem">${esc(k.semAnteriores ?? '')}</span>`}</div>
+    ${k.titulo ? `<p class="leRkTitulo"><b>${esc(k.titulo)}</b> <span>${esc(k.nota)}</span></p>` : ''}
+    ${k.vazio ? `<p class="leVazio">${esc(k.vazio)}</p>` : `<ol class="leRkLista">${k.linhas.map(linha).join('')}${k.foraDoTopo ? `<li class="leRkReticencia">…</li>${linha(k.foraDoTopo)}` : ''}</ol>`}
+    ${k.suaPosicao ? `<p class="leRkSua">${esc(k.suaPosicao)}</p>` : ''}${k.ordem && !k.vazio ? `<p class="leRkOrdem">${esc(k.ordem)}</p>` : ''}</section>`;
 }
 
 async function publicar() {
@@ -98,6 +110,8 @@ async function verReplay(id) {
 document.addEventListener('liga-equipe:abrir', () => { acabou = null; renderLigaEquipe(); });
 
 document.addEventListener('click', async ev => {
+  const aba = ev.target.closest('[data-le-temporada]');
+  if (aba) { temporadaVista = aba.dataset.leTemporada ? Number(aba.dataset.leTemporada) : null; renderLigaEquipe(); return; }
   const rp = ev.target.closest('[data-le-replay]');
   if (rp) { verReplay(rp.dataset.leReplay); return; }
   const p = ev.target.closest('[data-le-preset]');

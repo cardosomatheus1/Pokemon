@@ -1367,6 +1367,27 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
 .leGrande .leRes{font-size:1.1rem}
 .leVazio{margin:0;font-size:.78rem;color:var(--dim)}
 .leLinha{grid-template-columns:minmax(86px,auto) 1fr auto auto auto}
+/* ST-11.6c · o ranking ao lado das partidas (embaixo no celular). A posição e o
+   tier — o número fica no servidor. O pódio com medalha, a minha linha acesa. */
+.leBaixo{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,400px);gap:14px;align-items:start}
+.leRanking{padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--bg2)}
+.leRkTopo{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.leRkTopo .leRot{margin:0}
+.leRkAbas{display:flex;gap:4px;flex-wrap:wrap}
+.leRkAba{font:inherit;font-size:.66rem;padding:2px 9px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--dim);cursor:pointer}
+.leRkAba.on{border-color:var(--neon);color:var(--txt);background:rgba(var(--goldRGB),.1)}
+.leRkTitulo{margin:8px 0 6px;font-size:.78rem}.leRkTitulo span{color:var(--dim);font-size:.7rem}
+.leRkLista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.leRkLinha{display:grid;grid-template-columns:42px 1fr auto auto;gap:8px;align-items:center;padding:5px 8px;border-radius:8px;background:rgba(255,255,255,.03);font-size:.76rem}
+.leRkLinha.eu{background:rgba(var(--goldRGB),.12);box-shadow:inset 3px 0 0 var(--neon)}
+.leRkPos{font-family:var(--px);font-size:.8rem;color:var(--dim)}
+.leRkPos.ouro{color:#ffd24a}.leRkPos.prata{color:#c9d3e4}.leRkPos.bronze{color:#d8894a}
+.leRkNome{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.leRkNome em{font-style:normal;font-size:.62rem;color:var(--neon);margin-left:4px}
+.leRkTier{--tc:205,127,50;font-size:.64rem;font-weight:700;color:rgb(var(--tc));padding:1px 7px;border-radius:999px;border:1px solid rgba(var(--tc),.6)}
+.leRkPartidas{font-size:.66rem;color:var(--dim);white-space:nowrap}
+.leRkReticencia{text-align:center;color:var(--dim);font-size:.8rem;line-height:1}
+.leRkSua{margin:8px 0 0;font-size:.72rem;color:var(--neon)}
+.leRkOrdem{margin:4px 0 0;font-size:.64rem;color:var(--dim)}.leRkSem{font-size:.64rem;color:var(--dim)}.leRkVer{font-size:.64rem;color:var(--dim);align-self:center}
+.leRkNome em{font-size:.66rem;font-weight:700;padding:0 6px;border-radius:999px;background:rgba(var(--goldRGB),.18)}
 .leVer{font:inherit;font-size:.7rem;color:var(--neon);background:none;border:1px solid rgba(var(--goldRGB),.45);border-radius:999px;padding:2px 10px;cursor:pointer;white-space:nowrap}
 .leVer:hover,.leVer:focus-visible{background:rgba(var(--goldRGB),.12)}
 #leReplay{margin:0}#leReplay .pveLuta{max-width:none}
@@ -1449,6 +1470,7 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
   .leVer{justify-self:start;margin-top:2px}
   .leTier{flex-wrap:wrap}.leTier>span:not(.leTierRot){flex-basis:100%;text-align:left}.leTier b{text-shadow:none}
   .leBot{display:block;width:fit-content;margin:3px 0 0;white-space:normal;border-radius:8px}
+  .leBaixo{grid-template-columns:1fr}
   .leMembros{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
   .leMembro{width:auto;padding:3px 0 2px}.leSprite{width:44px;height:44px}
   .leEscada{display:none}

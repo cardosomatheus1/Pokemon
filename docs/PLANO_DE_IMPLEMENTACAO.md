@@ -1293,7 +1293,21 @@ Erika, Koga, Blaine, Giovanni, Elite Four e Campeão.
 - **Escopo:** nos placares, previsão e Liga MMR nunca ficam na mesma tabela.
 - **Portões:** Q1 Q2 Q5 Q7.
 - **Fatiada em 30/09:** **11.6a** a League Home e a busca (telas 25–26) ✅ ·
-  **11.6b** o replay da partida (tela 27) · **11.6c** os placares (tela 28).
+  **11.6b** o replay da partida (tela 27) ✅ · **11.6c** os placares (tela 28) ✅ ·
+  **11.6d** a partida no palco da Arena (pedido do dono) ✅.
+- **11.6c feita (30/09):** `rankingDaLiga` (`server/liga-equipe.mjs`):
+  - a temporada de agora é VIVA, na mesma ordem que a virada grava (rating,
+    depois a conta), só com quem jogou;
+  - a fechada é a gravada na virada, e não se recalcula;
+  - sai a posição, o nome, o tier e as partidas, nunca o número;
+  - `GET /api/equipe/ranking?temporada=`, com 400 para temporada inválida e
+    404 para a que não existe.
+  Na tela (`rankingNaTela`): o pódio com medalha, "você" aceso, o "…" antes
+  da minha linha quando estou fora do topo de 20, "você: 23º de 24", e as
+  abas da temporada de agora e das fechadas. Fica ao lado das últimas
+  partidas nas telas largas (ocupa a lateral que o Q7 da 11.6d apontou) e
+  embaixo no celular. A tabela é SÓ da Liga de times: a previsão tem a
+  dela (§9.15). `test/liga-ranking.mjs` · S1820–S1825.
 - **11.6a feita:** a aba "Liga de times" no Time (`app/modules/liga-equipe-dados.mjs`,
   camada 0: tudo o que a tela diz; `liga-equipe-tela.mjs`, camada 4: pinta e
   fala com o servidor). `server/liga-equipe.mjs`: `GET /api/equipe/liga` (a

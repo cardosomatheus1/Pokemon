@@ -11,7 +11,7 @@
 import { criaturasDaConta } from './idle.mjs';
 import { criarSnapshot, snapshotsDe } from './equipe.mjs';
 import { tierDaConta } from './liga-mmr.mjs';
-import { sincronizarTemporada } from './temporada.mjs';
+import { sincronizarTemporada, rankingDaTemporada } from './temporada.mjs';
 import { temporadaDe } from '../engine/temporada.mjs';
 import { tierDe } from '../engine/liga-mmr.mjs';
 import { exigirBandeira, bandeiraLigada } from './feature-flags.mjs';
@@ -57,6 +57,31 @@ export function ligaDaConta(db, { userId, agora, pack = PACK }) {
   };
 }
 
+/* O RANKING DA LIGA (ST-11.6c · tela 28, §9.15). A temporada de agora é VIVA:
+   a mesma ordem que a virada grava (rating, depois a conta), só com quem já
+   jogou. A temporada fechada é a gravada na virada. Nos dois casos sai a
+   posição, o nome, o tier e as partidas — o número fica no servidor (§9.7).
+   É uma tabela SÓ da Liga de times: a Liga de previsão tem a dela (§9.15). */
+export const RANKING_TOPO = 20;
+export function rankingDaLiga(db, { userId, agora, temporada = null, limite = RANKING_TOPO }) {
+  sincronizarTemporada(db, { agora });
+  const atual = temporadaDe(agora).numero;
+  const n = temporada == null ? atual : temporada;
+  const fechadas = db.prepare(`SELECT numero FROM liga_temporadas ORDER BY numero DESC`).all().map(l => l.numero);
+  let todas;
+  if (n === atual) {
+    todas = db.prepare(`SELECT user_id, rating, partidas FROM liga_mmr WHERE partidas > 0 ORDER BY rating DESC, user_id`).all()
+      .map((c, i) => ({ posicao: i + 1, user: c.user_id, tier: tierDe(c.rating), partidas: c.partidas }));
+  } else {
+    todas = rankingDaTemporada(db, n);
+    if (!todas) return null;
+  }
+  const linha = r => ({ posicao: r.posicao, nome: nomeDe(db, r.user), tier: r.tier, partidas: r.partidas, eu: r.user === userId });
+  const minha = todas.find(r => r.user === userId);
+  return { temporada: n, atual: n === atual, fechadas, total: todas.length,
+           linhas: todas.slice(0, limite).map(linha), eu: minha ? linha(minha) : null };
+}
+
 export function publicarTime(db, { userId, preset, agora, pack = PACK }) {
   exigirBandeira(db, 'league_enabled');
   const ids = criaturasDaConta(db, userId).filter(c => !c.naCaixa).map(c => c.id);
@@ -67,6 +92,13 @@ export function rotasDaLigaEquipe(daExcecao) {
   const tentar = fn => { try { return { corpo: fn() }; } catch (e) { return daExcecao(e); } };
   return {
     'GET /api/equipe/liga': ({ db, userId, agora }) => ({ corpo: ligaDaConta(db, { userId, agora }) }),
+    'GET /api/equipe/ranking': ({ db, userId, agora, query }) => {
+      const cru = query?.get?.('temporada');
+      const temporada = cru == null || cru === '' ? null : Number(cru);
+      if (temporada !== null && (!Number.isInteger(temporada) || temporada < 1)) return { status: 400, corpo: { codigo: 'ENTRADA_INVALIDA', erro: 'temporada inválida' } };
+      const r = rankingDaLiga(db, { userId, agora, temporada });
+      return r ? { corpo: r } : { status: 404, corpo: { codigo: 'LIGA_SEM_TEMPORADA', erro: 'essa temporada não existe' } };
+    },
     'POST /api/equipe/publicar': ({ db, corpo, userId, agora }) => {
       const preset = corpo?.preset ?? 'balanced';
       if (typeof preset !== 'string') return { status: 400, corpo: { codigo: 'ENTRADA_INVALIDA', erro: 'preset inválido' } };

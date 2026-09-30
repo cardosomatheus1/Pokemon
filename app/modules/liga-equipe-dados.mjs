@@ -151,3 +151,30 @@ export function replayNaTela(linha, prova) {
     provaOk: prova?.ok ?? null,
   };
 }
+
+/* O RANKING NA TELA (ST-11.6c · tela 28). A posição, o nome, o tier e as
+   partidas — nunca o número (§9.7). O pódio ganha a medalha; a minha linha
+   aparece destacada, e quando eu estou fora do topo ela vem depois de um
+   "…", com a minha posição de verdade. As abas: a temporada de agora e as
+   fechadas, da mais nova para a mais velha. */
+const MEDALHA = { 1: 'ouro', 2: 'prata', 3: 'bronze' };
+export function rankingNaTela(r) {
+  if (!r) return { vazio: 'O ranking não abriu — o servidor não respondeu.', linhas: [], abas: [] };
+  const linha = x => ({ posicao: `${x.posicao}º`, nome: x.nome, tier: x.tier, partidas: `${x.partidas} partida${x.partidas === 1 ? '' : 's'}`,
+                        medalha: MEDALHA[x.posicao] ?? null, eu: !!x.eu });
+  const linhas = r.linhas.map(linha);
+  const foraDoTopo = r.eu && !r.linhas.some(x => x.eu) ? linha(r.eu) : null;
+  return {
+    titulo: r.atual ? `Temporada ${r.temporada} · ao vivo` : `Temporada ${r.temporada} · final`,
+    nota: r.atual ? 'muda a cada partida e fecha junto com a temporada' : 'o ranking gravado quando a temporada fechou',
+    /* A ORDEM é pelo desempenho: com o número escondido, a coluna de partidas
+       parecia o critério (Q7 da ST-11.6c). */
+    ordem: 'a ordem é pelo desempenho nas partidas — o número fica escondido',
+    linhas, foraDoTopo,
+    suaPosicao: r.eu ? `você: ${r.eu.posicao}º de ${r.total}` : r.atual ? 'você entra no ranking na primeira partida que contar' : 'você não jogou esta temporada',
+    vazio: r.linhas.length ? null : r.atual ? 'Ninguém jogou esta temporada ainda — a primeira partida abre o ranking.' : 'Ninguém jogou nesta temporada.',
+    /* Sem temporada fechada não há o que escolher: diz isso, em vez de uma pílula solta que parece etiqueta. */
+    abas: r.fechadas.length ? [{ temporada: null, rotulo: 'agora', on: r.atual }, ...r.fechadas.map(n => ({ temporada: n, rotulo: `T${n}`, on: !r.atual && r.temporada === n }))] : [],
+    semAnteriores: r.fechadas.length ? null : 'primeira temporada — ainda sem anteriores',
+  };
+}
