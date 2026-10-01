@@ -36,7 +36,7 @@ export function rotasDasTrocas(daExcecao) {
       const conta = elegibilidadeDaConta(db, { userId, acao: 'trade', agora, checkpoint: CHECKPOINT_25_1 });
       return { corpo: { trocas: minhasTrocas(db, { userId }), ligada: conta.allowed,
                         motivo: conta.allowed ? null : { reason_code: conta.reason_code, detalhe: conta.detalhe },
-                        pctElegivel: pcTElegivel(db, userId) } };
+                        pctElegivel: pcTElegivel(db, userId, agora) } };
     },
 
     'GET /api/trocas/detalhe': ({ db, query, userId }) => {

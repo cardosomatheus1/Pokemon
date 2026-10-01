@@ -110,6 +110,10 @@ export const TIPOS = [
      em `login_streak` e dizia `creditou`, e a carteira não via nada — o tipo
      da Spec (§5.5) não estava nesta lista, e ninguém o lançava. */
   'LOGIN_STREAK_REWARD',
+  /* ST-14.0E · DEC-22: a FONTE do PC-T — a primeira vitória num nó com marca
+     da jornada (insígnia, selo, final), decidida no servidor. Uma vez por nó
+     por conta; a soma do pack é o teto. */
+  'JOURNEY_PCT_REWARD',
   /* ST-14.0B2 · E14: a troca entre jogadores. A reserva e a liberação movem o
      PC-T elegível entre o disponível e o reservado; a transferência sai do
      reservado de um e entra no disponível do outro; a taxa sai do reservado e

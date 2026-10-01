@@ -2509,6 +2509,7 @@ desta tabela.
 - **DEC-02 continua** para qualquer dinheiro real — nada da E14 a antecipa.
 
 ### ST-14.0E · a fonte do PC-T: a jornada verificada (DEC-22) — nova, onda B
+- ✅ **01/10** — construída depois do gate C (ficou fora das ondas B e C: sem ela o PC-T de jogador não nascia). `engine/pct-jornada.mjs` (camada 0: `pcTDoNo` — final antes de selo antes de insígnia —, `tetoDaJornada` = 850 no pack, `pcTEmMaturacao`) · `server/jornada.mjs` credita `JOURNEY_PCT_REWARD` em `transferivel` na transação da vitória, chave `pct-<conta>-<nó>` (o progresso perdido não paga de novo) e a resposta diz `recompensa.pct` · `pcTElegivel(db, conta, agora)` desconta o PC-T da jornada nos 7 primeiros dias, com o relógio de quem chama (rotas, reserva, taxa) · a frase do fim da luta diz o PC-T · `test/e14-pct-jornada.mjs` (7) · plantados S2407–S2413, todos pegos; S2129–S2131 e S2246 realvos (o elegível mudou de forma)
 - **Porte** P–M · **Servidor** sim · **Depende de** ST-14.0B · **Antes de** ST-14.7
 - **Escopo:** a primeira vitória num nó com insígnia (`jornada.mjs`, a luta do
   servidor — ST-13.7) credita PC-T em `transferivel`, tipo próprio

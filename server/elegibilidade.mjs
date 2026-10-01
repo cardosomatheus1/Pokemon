@@ -68,5 +68,5 @@ export const elegibilidadeDoPreso = (db, { userId, tipo, acao, agora, checkpoint
   avaliarPreso({ tipo, acao, conta: fatosDaConta(db, { userId, agora, checkpoint }) });
 
 export const elegibilidadeDaMoeda = (db, { userId, bucket, valor, acao, agora, checkpoint }) =>
-  avaliarMoeda({ bucket, valor, acao, elegivel: pcTElegivel(db, userId), saldo: saldos(db, userId).transferivel ?? 0,
+  avaliarMoeda({ bucket, valor, acao, elegivel: pcTElegivel(db, userId, agora), saldo: saldos(db, userId).transferivel ?? 0,
                  conta: fatosDaConta(db, { userId, agora, checkpoint }) });

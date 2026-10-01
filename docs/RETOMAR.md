@@ -144,9 +144,12 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            docs/e14/SIMULACAO_E14.md (node tools/simular-e14.mjs); o D-138
            (o painel do E11 somava a reserva) corrigido junto. A TROCA E O
            MARKET ESTÃO LIGADOS (moeda simulada; o operador desliga).
-           PRÓXIMO: a ST-14.0E — a fonte do PC-T pela jornada (DEC-22) ficou
-           FORA das ondas: sem ela o jogador não ganha PC-T e o Market só
-           anda com criatura por criatura. Depois a ST-14.14b (L-228).
+           · ST-14.0E FECHADA (01/10): a fonte do PC-T — a primeira vitória
+           em ginásio (50), Liga (75) e Campeão (150) paga PC-T na conta,
+           850 a vida inteira, troca só com 7 dias de conta. Ficou fora das
+           ondas; sem ela o Market não tinha moeda de jogador.
+           PRÓXIMO: a ST-14.14b (L-228) — a conta ligada detectada congela,
+           em vez de só ter a tentativa recusada.
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho
            do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta

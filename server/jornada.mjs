@@ -33,6 +33,8 @@ import { doJogador } from './criaturas.mjs';
 import { emitir } from './telemetria.mjs';
 import { emTransacao } from './carteira.mjs';
 import { emitirControlado } from './emissao-controlada.mjs';
+import { creditar } from './carteira.mjs';
+import { pcTDoNo } from '../engine/pct-jornada.mjs';
 
 export const ERRO_JORNADA = Object.freeze({
   CHAVE: 'JORNADA_CHAVE_INVALIDA', PRESET: 'JORNADA_PRESET_INVALIDO', CONFLITO: 'JORNADA_CONFLITO' });
@@ -93,6 +95,16 @@ export function lutarNaConta(db, { userId, pack, id, preset = 'balanced', chaveI
     const ctrl = (pack.jornada ?? []).find(n => n.id === id)?.emissaoControlada;
     if (ctrl && venceu && c.primeiraVez)
       resposta.emissao = emitirControlado(db, { userId, pack, itemId: ctrl.item, fonte: ctrl.fonte, evento: `jornada:${userId}:${id}`, agora });
+    /* O PC-T DA JORNADA (ST-14.0E · DEC-22): a primeira vitória num nó com
+       marca paga em `transferivel`, NA MESMA transação da vitória. A chave é
+       do NÓ (`pct-<conta>-<nó>`), não da luta: mesmo que o progresso se
+       perdesse e a "primeira vez" voltasse, o ledger recusa a segunda. */
+    const pct = venceu && c.primeiraVez ? pcTDoNo((pack.jornada ?? []).find(n => n.id === id)) : 0;
+    if (pct > 0) {
+      const r = creditar(db, { userId, tipo: 'JOURNEY_PCT_REWARD', bucket: 'transferivel', valor: pct, ref: id, refTipo: 'jornada',
+                               idem: `pct-${userId}-${id}`, agora });
+      resposta.recompensa.pct = r.ok && !r.repetida ? pct : 0;
+    }
     db.prepare(`INSERT INTO lutas_jornada (idem_key, user_id, no, preset, semente, venceu, p, resposta_json, criada_em)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
       .run(idem, userId, id, preset, semente, venceu ? 1 : 0, p, JSON.stringify(resposta), agora);

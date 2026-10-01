@@ -31,6 +31,7 @@
 import { randomUUID } from 'node:crypto';
 import { BUCKETS, ORDEM_CONSUMO, TIPOS } from '../engine/carteira.mjs';
 import { repartirPorBalde } from '../engine/mutuo.mjs';
+import { pcTEmMaturacao } from '../engine/pct-jornada.mjs';
 
 export const ERRO_CARTEIRA = {
   VALOR:        'valor_invalido',
@@ -236,14 +237,21 @@ export function liberarNoBanco(db, { userId, composicao, ref, idem, agora = Date
  * bônus de cadastro dentro dele, misturado com o que as apostas fizeram dele;
  * separar exige reconciliação. Até ela, a conta inteira fica inelegível — sem
  * apagar saldo e sem editar o ledger (D-135). */
-export function pcTElegivel(db, userId) {
+/* ST-14.0E: o PC-T que veio da JORNADA fica em maturação nos primeiros 7
+   dias da conta (DEC-22) — ele está no saldo, e não troca. O relógio é o do
+   servidor (`agora` de quem chama) contra a data do cadastro. */
+export function pcTElegivel(db, userId, agora = Date.now()) {
   const legado = db.prepare(`SELECT 1 FROM wallet_ledger WHERE user_id = ? AND type = 'WELCOME_GRANT' AND bucket = 'transferivel' LIMIT 1`).get(userId);
-  return legado ? 0 : Math.max(0, saldos(db, userId).transferivel ?? 0);
+  if (legado) return 0;
+  const saldo = Math.max(0, saldos(db, userId).transferivel ?? 0);
+  const conta = db.prepare(`SELECT created_at FROM users WHERE id = ?`).get(userId);
+  const daJornada = db.prepare(`SELECT COALESCE(SUM(amount), 0) AS s FROM wallet_ledger WHERE user_id = ? AND type = 'JOURNEY_PCT_REWARD'`).get(userId).s;
+  return Math.max(0, saldo - pcTEmMaturacao({ criadaEm: conta?.created_at, agora, daJornada }));
 }
 
 export function reservarP2PNoBanco(db, { userId, valor, ref, agora = Date.now() }) {
   if (!ehInteiroPositivo(valor)) return { ok: false, motivo: ERRO_CARTEIRA.VALOR };
-  if (pcTElegivel(db, userId) < valor) return { ok: false, motivo: ERRO_CARTEIRA.SALDO };
+  if (pcTElegivel(db, userId, agora) < valor) return { ok: false, motivo: ERRO_CARTEIRA.SALDO };
   return aplicar(db, { userId, ref, refTipo: 'p2p', agora,
     linhas: [{ bucket: 'transferivel', tipo: 'P2P_RESERVE', delta: -valor, reservaDelta: valor }] });
 }
@@ -278,7 +286,7 @@ export function liquidarP2PNoBanco(db, { de, para, valor, taxa = 0, ref, agora =
    crédito de ninguém. O `memo` grava a versão da política que a calculou. */
 export function queimarTaxaDeAnuncioNoBanco(db, { userId, valor, ref, idem, memo = null, agora = Date.now() }) {
   if (!ehInteiroPositivo(valor)) return { ok: false, motivo: ERRO_CARTEIRA.VALOR };
-  if (pcTElegivel(db, userId) < valor) return { ok: false, motivo: ERRO_CARTEIRA.SALDO };
+  if (pcTElegivel(db, userId, agora) < valor) return { ok: false, motivo: ERRO_CARTEIRA.SALDO };
   return aplicar(db, { userId, ref, refTipo: 'p2p', idem, memo, agora,
     linhas: [{ bucket: 'transferivel', tipo: 'PLAYER_MARKET_LISTING_FEE', delta: -valor, reservaDelta: 0 }] });
 }

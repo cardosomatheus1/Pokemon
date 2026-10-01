@@ -353,7 +353,9 @@ export function fraseDoPagamento(pack, r, { depois = false } = {}) {
   if (r.motivo === 'teto') return depois ? `O teto de hoje (${r.teto} ${moeda}) já foi: esta valeu como treino.` : `o teto de hoje (${r.teto}) já foi — a revanche vale como treino`;
   if (r.motivo === 'primeira') {
     const doce = Object.keys(r.doces).length || !depois ? [depois ? `${Object.keys(r.doces).length} doce${Object.keys(r.doces).length === 1 ? '' : 's'}` : 'um doce por criatura do time'] : [];
-    const partes = [`${r.pokecoin} ${moeda}`, ...bolas, ...(essencias.length ? essencias : doce)];
+    /* o PC-T da jornada (ST-14.0E) só existe com conta: o servidor diz quanto pagou */
+    const pct = depois && r.pct > 0 ? [`${r.pct} PC-T`] : [];
+    const partes = [`${r.pokecoin} ${moeda}`, ...pct, ...bolas, ...(essencias.length ? essencias : doce)];
     return depois ? `Ganhou: ${partes.join(' · ')}.` : `a primeira vitória paga ${partes.join(' · ')}`;
   }
   const mais = essencias.length ? ` + ${essencias.join(' · ')}` : '';

@@ -31,7 +31,7 @@ export function rotasDoMercadoP2P(daExcecao) {
        elegível. */
     'GET /api/player-market/estado': ({ db, userId, agora }) => {
       const c = elegibilidadeDaConta(db, { userId, acao: 'market', agora, checkpoint: CHECKPOINT_25_1 });
-      return { corpo: { ligada: c.allowed, motivo: c.allowed ? null : { reason_code: c.reason_code, detalhe: c.detalhe }, pctElegivel: pcTElegivel(db, userId) } };
+      return { corpo: { ligada: c.allowed, motivo: c.allowed ? null : { reason_code: c.reason_code, detalhe: c.detalhe }, pctElegivel: pcTElegivel(db, userId, agora) } };
     },
     'GET /api/player-market/anuncios': ({ db, agora }) => ({ corpo: { anuncios: vitrine(db, { pack: PACK, agora }) } }),
     /* ST-14.10: a busca — filtros E, ordem de lista fechada, cursor estável. */
