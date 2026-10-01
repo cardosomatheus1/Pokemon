@@ -22,7 +22,24 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 30/09/2026
+## 0. ONDE PARAMOS — 01/10/2026
+
+```text
+o RESUMO   A E14 (Shiny, Trading & Player Market) ESTÁ COMPLETA ATÉ O GATE C:
+           a troca e o Market estão LIGADOS (DEC-21, moeda simulada), o PC-T
+           de jogador nasce na jornada (ST-14.0E), o operador lê a economia
+           em GET /api/admin/economia-e14, e as lacunas destravadas fecharam
+           (L-223, L-227, L-228, L-208, L-211; L-221 decidida). O que resta
+           da fila ESPERA alguém ou algum dado:
+             · os ícones (1.30) e as lojas com NPC (1.31b, L-176) — a arte e
+               o vídeo que só existem no PC do dono
+             · a onda D da E14 (buy orders) — dados de liquidez do piloto
+             · o visual adiado pela DEC-20 (ST-10.26, ST-14.3c, ST-14.3d)
+             · o piloto com amigos (ST-7.2) — o dono e o roteiro em
+               docs/PILOTO.md
+           E o Q2 completo em fatias, que é o nível da TAG: 3/10 em diante.
+```
+
 
 ```text
 o LINK     http://localhost:8099/app/index.html
