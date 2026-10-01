@@ -426,6 +426,9 @@ const CAMADA = {
   /* ST-14.7b: a troca — a etapa, as linhas e a recusa decididas em Node; a tela só pinta. */
   'trocas-dados.mjs': 0,
   'trocas-tela.mjs': 4,
+  /* ST-14.13: o Market — busca, cartão, prévias e recusa em Node; a tela só pinta. */
+  'mercado-jogadores-dados.mjs': 0,
+  'mercado-jogadores-tela.mjs': 4,
   /* ST-9.12 · os quatro golpes: a regra (camada 0) e o clique. */
   'moveset-dados.mjs': 0,
   'moveset-tela.mjs': 4,

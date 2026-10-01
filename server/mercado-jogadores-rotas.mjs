@@ -9,6 +9,8 @@ import PACK from '../content/escolhido.mjs';
 import { CHECKPOINT_25_1 } from '../engine/feature-flags.mjs';
 import { normalizarBusca, ERRO_BUSCA } from '../engine/busca-mercado.mjs';
 import { buscarAnuncios } from './mercado-jogadores-busca.mjs';
+import { elegibilidadeDaConta } from './elegibilidade.mjs';
+import { pcTElegivel } from './carteira.mjs';
 import { historicoDaSerie, serieDoPedido, ERRO_HISTORICO } from './mercado-jogadores-historico.mjs';
 import { anunciar, comprar, cancelarAnuncio, detalheDoAnuncio, vitrine, meusAnuncios, minhasCompras, ERRO_MERCADO_P2P } from './mercado-jogadores.mjs';
 
@@ -26,6 +28,12 @@ export function rotasDoMercadoP2P(daExcecao) {
   /* A mesma costura de teste das trocas: só em `ambiente: 'teste'`. */
   const cp = config => (config?.ambiente === 'teste' && config.checkpointTeste) ? config.checkpointTeste : CHECKPOINT_25_1;
   return {
+    /* ST-14.13: a tela pergunta uma vez se esta conta pode negociar agora (e
+       o motivo — a bandeira desligada até a DEC-21) e o PC-T elegível. */
+    'GET /api/player-market/estado': ({ db, userId, agora, config }) => {
+      const c = elegibilidadeDaConta(db, { userId, acao: 'market', agora, checkpoint: cp(config) });
+      return { corpo: { ligada: c.allowed, motivo: c.allowed ? null : { reason_code: c.reason_code, detalhe: c.detalhe }, pctElegivel: pcTElegivel(db, userId) } };
+    },
     'GET /api/player-market/anuncios': ({ db, agora }) => ({ corpo: { anuncios: vitrine(db, { pack: PACK, agora }) } }),
     /* ST-14.10: a busca — filtros E, ordem de lista fechada, cursor estável. */
     'GET /api/player-market/busca': ({ db, query, agora }) =>

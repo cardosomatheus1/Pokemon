@@ -133,7 +133,12 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            · ST-14.12 FECHADA (01/10): o histórico de preços — fato
            sempre, agregado só com amostra (10 vendas, 5 e 5 distintos),
            normal e shiny nunca juntos, suspeita e anulada fora.
-           PRÓXIMO: ST-14.13 (a tela do Market) — a última da onda C. Tudo atrás das
+           · ST-14.13 FECHADA (01/10): a aba "Market" na Pokédex — busca,
+           cartão, histórico da série, compra com confirmação, anunciar
+           com prévia, minhas ofertas e compras. A ONDA C DA E14 ESTÁ
+           FECHADA.
+           PRÓXIMO: o gate C da E14 (a verificação das ondas B e C juntas,
+           ST-14.15) e ligar as bandeiras de troca e Market pela DEC-21. Tudo atrás das
            bandeiras desligadas (DEC-21: liga no gate C, moeda simulada)
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho

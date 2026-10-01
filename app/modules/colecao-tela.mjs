@@ -17,6 +17,7 @@ import { carregar } from './idle-dados.mjs';
 import { painelDaColecao, textoDaLinha, dicaDaRodada } from './minha-colecao.mjs';
 import { dexImg } from './sprites.mjs';
 import { abrirTrocas } from './trocas-tela.mjs';
+import { abrirMercado } from './mercado-jogadores-tela.mjs';
 
 const NIVEIS = ['', 'bronze', 'prata', 'ouro', 'diamante'];
 const moeda = PACK.moedaPve ?? { id: 'moeda', nome: 'moeda' };
@@ -102,8 +103,9 @@ export function pintarMinha() {
 
 /* A ABA: lembrada por aparelho (preferência de leitura, e não jogo). */
 const CHAVE_ABA = 'ar_pdx_aba';
-/* ST-14.7b: a terceira aba é a das TROCAS — a troca é sobre a coleção. */
-const ABAS = { pokedex: '#pdxAbaPokedex', colecao: '#pdxAbaColecao', trocas: '#pdxAbaTrocas' };
+/* ST-14.7b: a terceira aba é a das TROCAS — a troca é sobre a coleção; e a
+   quarta (ST-14.13) é o MARKET, pela mesma razão. */
+const ABAS = { pokedex: '#pdxAbaPokedex', colecao: '#pdxAbaColecao', trocas: '#pdxAbaTrocas', mercado: '#pdxAbaMercado' };
 export function mostrarAba(aba) {
   if (!ABAS[aba]) aba = 'pokedex';
   for (const [nome, sel] of Object.entries(ABAS)) { const el = $(sel); if (el) el.hidden = nome !== aba; }
@@ -111,6 +113,7 @@ export function mostrarAba(aba) {
   try { localStorage.setItem(CHAVE_ABA, aba); } catch { /* privativo */ }
   if (aba === 'colecao') { pintarMinha(); pintarColecao(); }
   if (aba === 'trocas') abrirTrocas();
+  if (aba === 'mercado') abrirMercado();
 }
 export const abaLembrada = () => { try { const a = localStorage.getItem(CHAVE_ABA); return ABAS[a] ? a : 'pokedex'; } catch { return 'pokedex'; } };
 

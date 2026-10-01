@@ -1866,6 +1866,62 @@ img[data-prestigio="1"]{filter:drop-shadow(0 0 4px rgba(var(--neonRGB),.75))}
 .trItem small,.trPct small{font-size:.64rem;color:var(--dim)}
 .trPct{flex-wrap:wrap;margin-top:6px}
 @media (max-width:760px){ .trCorpo{grid-template-columns:1fr} }
+/* ── ST-14.13 · o Market ───────────────────────────────────────────────────
+   O teste dos 3 segundos: a busca no alto, o preço TOTAL como o maior número
+   do cartão, o brilhante dito em palavra (o selo) e não só no ouro da
+   silhueta, e um botão principal por vista. */
+.mkAbas{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.mkFiltros{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 12px;margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg2)}
+.mkFiltros label{display:flex;flex-direction:column;gap:3px;font-size:.68rem;color:var(--dim)}
+.mkFiltros input,.mkFiltros select,.mkVenda input,.mkVenda select{font:inherit;font-size:.78rem;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:5px 7px;min-width:0}
+.mkFiltros input[type=number]{width:96px}
+.mkFiltros input[list]{width:150px}
+.mkFiltros .btn{flex:0 0 auto;padding-left:18px;padding-right:18px}
+.mkGrade{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(170px,100%),1fr));gap:8px}
+.mkCartao{font:inherit;text-align:left;display:grid;grid-template-columns:52px 1fr;grid-template-areas:"ic ti" "ic de" "pr pr" "un un" "ve ve";gap:2px 8px;align-items:center;
+  background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:8px 10px;color:var(--txt);cursor:pointer;min-width:0;position:relative}
+.mkCartao:hover,.mkCartao:focus-visible{border-color:var(--neon);box-shadow:0 0 10px rgba(var(--neonRGB),.25)}
+.mkCartao .mkIcone{grid-area:ic}
+.mkTitulo{grid-area:ti;font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mkCartao .mkDetalhe{grid-area:de;font-size:.64rem;color:var(--dim)}
+.mkCartao .mkPreco{grid-area:pr;font-family:var(--px);font-size:.82rem;color:var(--neon);margin-top:6px}
+.mkUnit{grid-area:un;font-size:.64rem;color:var(--dim)}
+.mkVendedor{grid-area:ve;font-size:.62rem;color:var(--dim)}
+.mkSelo{font-size:.58rem;padding:1px 6px;border-radius:999px;border:1px solid rgba(255,214,90,.8);color:rgb(255,226,140);white-space:nowrap}
+.mkBrilha .mkIcone{filter:drop-shadow(0 0 4px rgba(255,214,90,.9))}
+.mkBrilha .mkTitulo,.mkAberto.mkBrilha h4{color:rgb(255,226,140)}
+.mkIcone{flex:none;display:inline-block;image-rendering:pixelated}
+.mkAberto{position:relative;margin:0 0 12px;padding:12px 14px;border:1px solid rgba(var(--neonRGB),.45);border-radius:14px;background:rgba(var(--neonRGB),.04)}
+.mkFechar{position:absolute;top:6px;right:8px;font:inherit;font-size:1.2rem;background:none;border:0;color:var(--dim);cursor:pointer}
+.mkAbertoTopo{display:flex;gap:12px;align-items:center}
+.mkAbertoTopo h4{margin:0 0 2px;font-size:.95rem}
+.mkAbertoTopo p{margin:2px 0}
+.mkAberto .mkPreco{font-family:var(--px);font-size:1rem;color:var(--neon)}
+.mkAberto .mkPreco small{font-family:inherit;font-size:.62rem;color:var(--dim)}
+.mkHist{margin:10px 0;padding:8px 10px;border:1px dashed var(--line);border-radius:10px;font-size:.76rem}
+.mkHist dl,.mkConfirma dl,.mkPrevia{display:grid;grid-template-columns:auto auto;justify-content:start;gap:2px 14px;margin:6px 0 0;font-size:.76rem}
+.mkHist dt,.mkConfirma dt,.mkPrevia dt{color:var(--dim)}
+.mkHist dd,.mkConfirma dd,.mkPrevia dd{margin:0;color:var(--txt)}
+.mkConfirma{margin-top:10px;padding:10px 12px;border:1px solid var(--neon);border-radius:12px;background:rgba(var(--neonRGB),.07)}
+.mkAcoes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.mkAcoes .btn{flex:0 1 auto;padding-left:16px;padding-right:16px}
+.mkAcoes .btn[disabled],.mkVenda .btn[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none}
+.mkAviso{margin:6px 0 0;font-size:.74rem;color:rgb(255,226,140)}
+.mkOk{margin:10px 0 0;padding:6px 10px;border-left:3px solid var(--neon);font-size:.8rem;background:rgba(var(--neonRGB),.08)}
+.mkVazio{font-size:.8rem;color:var(--dim)}
+.mkMais{margin-top:10px}
+.mkVenda{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 12px;margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg2)}
+.mkVenda h4{flex-basis:100%;margin:0;font-size:.82rem}
+.mkVenda label{display:flex;flex-direction:column;gap:3px;font-size:.68rem;color:var(--dim)}
+.mkVenda .mkPrevia{flex-basis:100%}
+.mkVenda .btn{flex:0 0 auto;padding-left:16px;padding-right:16px}
+.mkMinhas{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.mkMinhas li{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:.78rem;padding:6px 8px;border:1px solid var(--line);border-radius:10px;background:var(--bg2)}
+.mkMinhas li .btn{flex:0 0 auto;margin-left:auto}
+.mkEstado{font-size:.64rem;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--dim)}
+.mkE-ACTIVE{border-color:var(--neon);color:var(--neon)}
+@media (max-width:520px){ .mkFiltros input[list]{width:120px} .mkFiltros input[type=number]{width:80px} .mkAbertoTopo{align-items:flex-start} }
+
 @media (max-width:520px){ .trLados{grid-template-columns:1fr} .trSeta{justify-self:center;transform:rotate(90deg)} .trCancelar{margin-left:0} }
 .mcResumo{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.74rem;color:var(--dim);margin-bottom:8px}
 .mcResumo b{color:var(--txt)}
@@ -8406,6 +8462,8 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <button class="pdxAba" data-pdx-aba="colecao">Minha Coleção</button>
       <!-- ST-14.7b: a troca entre treinadores é sobre a coleção -->
       <button class="pdxAba" data-pdx-aba="trocas">Trocas</button>
+      <!-- ST-14.13: comprar e vender também é sobre a coleção -->
+      <button class="pdxAba" data-pdx-aba="mercado">Market</button>
     </div>
     <div id="pdxAbaPokedex">
     <div class="pdxTopo">
@@ -8425,6 +8483,9 @@ body.tremeTela{animation:tremeTela .7s ease-out}
     </div>
     <div id="pdxAbaTrocas" hidden>
       <div id="trocasCorpo"></div>
+    </div>
+    <div id="pdxAbaMercado" hidden>
+      <div id="mercadoCorpo"></div>
     </div>
   </div>
 </div>

@@ -224,6 +224,10 @@ export async function suite() {
         creditar(srv.db, { userId: v.id, tipo: 'ADMIN_ADJUSTMENT', bucket: 'transferivel', valor: 50, idem: 'h-v', agora: AGORA });
         creditar(srv.db, { userId: c.id, tipo: 'ADMIN_ADJUSTMENT', bucket: 'transferivel', valor: 500, idem: 'h-c', agora: AGORA });
         const post = (s, rota, corpo) => fetch(url(rota), { method: 'POST', headers: Hd({ authorization: s.authorization }), body: JSON.stringify(corpo) });
+        /* ST-14.13: a tela abre perguntando o estado — ligado só com o §25.1 */
+        const est = await (await fetch(url('/api/player-market/estado'), { headers: Hd({ authorization: v.authorization }) })).json();
+        const ligado = ambiente === 'teste' && !!checkpointTeste;
+        igual(`${est.ligada}|${est.motivo?.reason_code ?? null}|${est.pctElegivel}`, `${ligado}|${ligado ? null : 'FEATURE_DISABLED'}|50`, `o estado do Market (${ambiente})`);
         const criado = await post(v, '/api/player-market/anunciar', { ativo: { criaturaId: cr }, preco: 300 });
         if (!checkpointTeste || ambiente !== 'teste') {
           const corpo = await criado.json();
