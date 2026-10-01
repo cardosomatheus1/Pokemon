@@ -15,6 +15,7 @@ import { aplicar as aplicarEvolucao } from '../app/modules/evolucao-idle.mjs';
 import { criaturasDaConta, bolsaDe, debitarBolsa } from './idle.mjs';
 import { maisRestrita } from '../engine/proveniencia.mjs';
 import { elegibilidadeDaCriatura } from './elegibilidade.mjs';
+import { exigirSemReserva } from './reservas.mjs';
 
 export const ERRO_COLECAO = Object.freeze({ SEM_CRIATURA: 'COLECAO_SEM_CRIATURA', CHAVE: 'COLECAO_CHAVE_INVALIDA' });
 const falha = (codigo, msg) => Object.assign(new Error(msg), { codigo });
@@ -94,6 +95,7 @@ export function trocarGolpeNaConta(db, { userId, pack, id, nome }) {
 export function evoluirNaConta(db, { userId, pack, id, alvo = null }) {
   const c = criaturasDaConta(db, userId).find(x => x.id === id);
   if (!c) throw falha(ERRO_COLECAO.SEM_CRIATURA, 'esta criatura não existe');
+  exigirSemReserva(db, id);   // ST-14.6: a reservada é oferecida como está
   const bolsa = Object.fromEntries(bolsaDe(db, userId).map(b => [b.item_id, b.quantidade]));
   const r = aplicarEvolucao(pack, c, bolsa, alvo);
   return emTransacao(db, () => {
@@ -125,6 +127,7 @@ export function darDoceNaConta(db, { userId, pack, id, quantos = 1, chaveIdem, a
   const idem = `uso:${userId}:${chaveIdem}`;
   const ja = db.prepare(`SELECT delta FROM candy_ledger WHERE idem_key = ?`).get(idem);
   if (ja) return { ok: true, gastos: -ja.delta, repetido: true };
+  exigirSemReserva(db, id);   // ST-14.6: o doce mudaria o nível do que está oferecido
   const c = criaturasDaConta(db, userId).find(x => x.id === id);
   if (!c) throw falha(ERRO_COLECAO.SEM_CRIATURA, 'esta criatura não existe');
   const linha = chaveDoDoce(pack, c.dex);

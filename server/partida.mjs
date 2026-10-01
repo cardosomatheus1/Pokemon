@@ -23,6 +23,7 @@ import { novaRaiz } from '../engine/seed.mjs';
 import { novoSal, mensagemCommit } from '../engine/commit.mjs';
 import { confrontoDaLiga } from '../app/modules/partida-dados.mjs';
 import { snapshotPodeLutar } from '../app/modules/snapshot-dados.mjs';
+import { criaturaReservada } from './elegibilidade.mjs';
 import { escolherAdversario, botPara, PAREAMENTO } from '../app/modules/pareamento-dados.mjs';
 import { contasLigadas } from './protecao.mjs';
 import { sincronizarTemporada } from './temporada.mjs';
@@ -45,7 +46,9 @@ const falha = (codigo, msg) => Object.assign(new Error(msg), { codigo });
 /* QUEM É DONO DE CADA CRIATURA DO TIME AGORA (ST-14.3a): o snapshot é imutável,
    a posse não. A regra é da camada 0 (`snapshotPodeLutar`); aqui só se lê. */
 const DONO = `SELECT user_id FROM criaturas WHERE id = ?`;
-const donosDe = (db, snap) => new Map((snap?.time ?? []).map(x => [x.id, db.prepare(DONO).get(x.id)?.user_id]));
+/* A criatura RESERVADA conta como fora do time (ST-14.6): ela pode estar
+   saindo da conta, e uma partida nova não pode depender dela. */
+const donosDe = (db, snap) => new Map((snap?.time ?? []).map(x => [x.id, criaturaReservada(db, x.id) ? null : db.prepare(DONO).get(x.id)?.user_id]));
 function exigirQuePossaLutar(db, snap, dono) {
   const r = snapshotPodeLutar(snap, dono, donosDe(db, snap));
   if (!r.ok) throw falha(ERRO_PARTIDA.INELEGIVEL, r.motivo);

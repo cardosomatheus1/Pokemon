@@ -28,12 +28,16 @@ export function creditarBolsa(db, userId, itemId, quantidade, { classe = 'verifi
    antes de mexer em qualquer coisa: sem saldo, nada muda e a resposta é
    `false`. O CHECK da `bolsa` continua como a última defesa (S571). Com saldo,
    `{ classes }` — o que é verdadeiro para quem só pergunta "deu?". */
-const LOTES_DO_ITEM = `SELECT id, quantidade, classe FROM bolsa_lotes WHERE user_id = ? AND item_id = ? AND quantidade > 0 ORDER BY criado_em, id`;
-const LOTES_DA_CLASSE = `SELECT id, quantidade, classe FROM bolsa_lotes WHERE user_id = ? AND item_id = ? AND quantidade > 0 AND classe = ? ORDER BY criado_em, id`;
+/* SÓ O LIVRE (ST-14.6): o que está reservado para uma troca ou um anúncio
+   continua no lote — é da pessoa até a liquidação —, mas não se gasta. Sem
+   isto, a bola oferecida numa troca seria lançada no meio dela, e a troca
+   liquidaria uma bola que já não existe. */
+const LOTES_DO_ITEM = `SELECT id, quantidade - reservada AS livre, classe FROM bolsa_lotes WHERE user_id = ? AND item_id = ? AND quantidade - reservada > 0 ORDER BY criado_em, id`;
+const LOTES_DA_CLASSE = `SELECT id, quantidade - reservada AS livre, classe FROM bolsa_lotes WHERE user_id = ? AND item_id = ? AND quantidade - reservada > 0 AND classe = ? ORDER BY criado_em, id`;
 export function debitarBolsa(db, userId, itemId, quantidade, { classe = null } = {}) {
   if (!inteiroPositivo(quantidade)) return false;
   const lotes = classe ? db.prepare(LOTES_DA_CLASSE).all(userId, itemId, classe) : db.prepare(LOTES_DO_ITEM).all(userId, itemId);
-  if (lotes.reduce((a, l) => a + l.quantidade, 0) < quantidade) return false;
+  if (lotes.reduce((a, l) => a + l.livre, 0) < quantidade) return false;
   /* AS DUAS TÊM DE COBRIR. Lote e projeção andam juntos por este serviço, mas
      quem escreve na `bolsa` por fora (a descida de um save, um teste, um
      operador) os separa — e o débito que só olhasse o lote gastaria uma bola
@@ -46,7 +50,7 @@ export function debitarBolsa(db, userId, itemId, quantidade, { classe = null } =
   let falta = quantidade;
   for (const l of lotes) {
     if (!falta) break;
-    const usa = Math.min(falta, l.quantidade);
+    const usa = Math.min(falta, l.livre);
     db.prepare(`UPDATE bolsa_lotes SET quantidade = quantidade - ? WHERE id = ?`).run(usa, l.id);
     classes.add(l.classe); falta -= usa;
   }

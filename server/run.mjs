@@ -29,6 +29,7 @@ import { podeAvancar, cabeAvanco, STAMINA_DO_AVANCO, curaDe } from '../engine/av
 import { EQUIPE_MAX } from '../engine/expedicao.mjs';
 import { estagioAberto, nivelDoEstagio, estagioMaximo } from '../engine/estagios.mjs';
 import { equipeDoMotor, runComecada, runNoInstante, runCurada, contaDaRun } from '../app/modules/avanco-conta.mjs';
+import { exigirSemReserva } from './reservas.mjs';
 import { criaturasDaConta, estadoDoTeto, emCampo, creditarBolsa, debitarBolsa, creditarRegistro, quantosNaBolsa, shinyDoEncontro } from './idle.mjs';
 
 const DIA_MS = 24 * 3600_000;
@@ -84,6 +85,7 @@ export function comecarRun(db, { userId, pack, bioma, estagio = 1, equipe, agora
     throw new Error(`O estágio ${est} pede uma criatura no nível ${nivelDoEstagio(est)}, e a sua melhor está no ${estagioMaximo(colecao)}º`);
   const membros = equipe.map(id => colecao.find(c => c.id === id)).filter(Boolean);
   if (membros.length !== equipe.length) throw new Error('Criatura que não existe na equipe');
+  for (const id of equipe) exigirSemReserva(db, id);   // ST-14.6: a reservada não entra na run
   const guardadas = membros.filter(c => c.naCaixa).length;
   if (guardadas) throw new Error(`${guardadas} criatura(s) estão na caixa — tire-as antes`);
   const fora = new Set(emCampo(db, userId).flatMap(x => JSON.parse(x.equipe_json)));

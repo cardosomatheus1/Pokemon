@@ -55,6 +55,7 @@ import { naRun, sincronizarRun } from './run.mjs';
 import { equipeCheiaEm } from '../app/modules/colecao-regras.mjs';
 import { ENCONTROS_POR_AVANCO } from '../engine/avanco.mjs';
 import { regraDoShiny, sortearShiny } from '../engine/shiny.mjs';
+import { exigirSemReserva } from './reservas.mjs';
 
 /* O SHINY DO ENCONTRO (ST-14.1): sorteado aqui, no servidor, quando o encontro
    é gravado — com raiz NOVA do CSPRNG, e não da semente da colheita, que vai
@@ -184,6 +185,9 @@ export function iniciar(db, { userId, pack, bioma, perfil, equipe, agora, estagi
   const membros = equipeDe(db, userId, equipe);
   if (membros.length !== equipe.length)
     throw new Error('a equipe tem criatura que não é sua ou não existe');
+  /* ST-14.6: a criatura reservada numa troca ou num anúncio não sai em
+     expedição — voltaria mudada (XP, stamina) para a liquidação. */
+  for (const id of equipe) exigirSemReserva(db, id);
   /* SÓ QUEM ESTÁ NA EQUIPE ATIVA VAI A CAMPO (ST-13.3a): mandar da caixa
      faria dela um segundo bolso sem custo, e os seis deixariam de ser escolha. */
   const guardadas = equipe.filter(id => db.prepare(`SELECT na_caixa FROM criaturas WHERE id = ?`).get(id)?.na_caixa === 1).length;

@@ -105,10 +105,12 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            · ST-14.3b FECHADA (01/10): o cosmético do perfil virou
            prestígio (aura neon ◆, nada perdido); o shiny verdadeiro na
            carta, na ficha e na captura. A ONDA A DA E14 ESTÁ FECHADA.
-           PRÓXIMO: a onda B — ST-14.6 (reservas e escrow), 14.8 (taxas),
-           14.14 (proteção antes de negociar), 14.16 (expiração), 14.7 (a
-           troca). Tudo atrás das bandeiras desligadas (DEC-21: liga no
-           gate C, moeda simulada)
+           · ST-14.6 FECHADA (01/10): as reservas e o escrow — uma
+           criatura numa oferta só, o lote e o PC-T reservados não se
+           gastam, a reservada não evolui/não sai/não luta; tudo ou nada.
+           PRÓXIMO: ST-14.8 (taxas, burn e recibos), 14.14 (proteção antes
+           de negociar), 14.16 (expiração), 14.7 (a troca). Tudo atrás das
+           bandeiras desligadas (DEC-21: liga no gate C, moeda simulada)
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho
            do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta

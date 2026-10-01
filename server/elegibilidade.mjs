@@ -5,10 +5,8 @@
  * conta. O relógio é o do SERVIDOR — `agora` vem de quem chama no servidor, e
  * nenhum caminho daqui aceita horário do cliente.
  *
- * Duas lacunas de propósito, e as duas têm dono:
- *   reservada    as reservas (`asset_holds`, a reserva de lote) nascem na
- *                ST-14.6 — até lá nada está reservado, e a política já
- *                responde ASSET_BUSY para quando estiver;
+ * `reservada` vem das reservas (`asset_holds`, ST-14.6) e a reserva de lote
+ * vem de `bolsa_lotes.reservada`. Uma lacuna de propósito, com dono:
  *   recebidaEm   o recebimento entre jogadores nasce na ST-14.7, que grava o
  *                evento no histórico da criatura — até lá ninguém recebeu.
  */
@@ -31,6 +29,11 @@ export function fatosDaConta(db, { userId, agora, checkpoint = CHECKPOINT_25_1 }
 
 const LENDARIO = (pack, dex) => (pack?.lendarios ?? []).some(e => e.dex === dex);
 
+/* UMA reserva ativa por criatura é regra do banco (o índice único parcial);
+   aqui só se pergunta se ela existe. */
+export const criaturaReservada = (db, id) =>
+  !!db.prepare(`SELECT 1 FROM asset_holds WHERE criatura_id = ? AND estado = 'ativa' AND tipo = 'criatura'`).get(id);
+
 export function fatosDaCriatura(db, { userId, pack, id, agora }) {
   const l = db.prepare(`SELECT user_id, origem, dex, proveniencia FROM criaturas WHERE id = ?`).get(id);
   if (!l) return { existe: false };
@@ -39,7 +42,7 @@ export function fatosDaCriatura(db, { userId, pack, id, agora }) {
   const emAtividade = l.user_id === userId
     && (emCampo(db, userId).some(x => JSON.parse(x.equipe_json).includes(id)) || naRun(db, { userId, pack, agora }).has(id));
   return { existe: true, dono: l.user_id, origem: l.origem, lendario: LENDARIO(pack, l.dex),
-           proveniencia: l.proveniencia, emAtividade, reservada: false, recebidaEm: null };
+           proveniencia: l.proveniencia, emAtividade, reservada: criaturaReservada(db, id), recebidaEm: null };
 }
 
 export const elegibilidadeDaCriatura = (db, { userId, pack, id, acao, agora, checkpoint }) =>

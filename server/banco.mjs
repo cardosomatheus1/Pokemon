@@ -2226,6 +2226,60 @@ export const MIGRACOES = [
     desce: db => { db.exec(`DROP TABLE emissoes_controladas`); },
   },
 
+  {
+    /* ST-14.6 · E14 · AS RESERVAS (o escrow de uma troca ou de um anúncio).
+     *
+     * Uma linha por ativo preso a um DONO (a oferta de troca, o anúncio):
+     * criatura, lote de item ou moeda. O estado anda numa direção só —
+     * `ativa` → `liberada` | `expirada` | `consumida` — e a versão sobe a cada
+     * passo. O índice único parcial é a regra que nenhum caminho esquece: UMA
+     * reserva ativa por criatura. Item e moeda não têm essa exclusividade —
+     * várias reservas de quantidades diferentes coexistem enquanto houver
+     * quantidade (`bolsa_lotes.reservada` e o `reserva_delta` da carteira são
+     * quem segura o total).
+     *
+     * `asset_holds_eventos` é o livro: append-only, uma linha por mudança. */
+    nome: 'reservas-st14.6',
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE asset_holds (
+          id          TEXT PRIMARY KEY,
+          dono_tipo   TEXT NOT NULL CHECK (dono_tipo IN ('trade', 'market')),
+          dono_id     TEXT NOT NULL,
+          user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          tipo        TEXT NOT NULL CHECK (tipo IN ('criatura', 'item', 'moeda')),
+          criatura_id TEXT,
+          lote_id     INTEGER REFERENCES bolsa_lotes(id),
+          item_id     TEXT,
+          quantidade  INTEGER NOT NULL CHECK (quantidade > 0),
+          estado      TEXT NOT NULL DEFAULT 'ativa' CHECK (estado IN ('ativa', 'liberada', 'expirada', 'consumida')),
+          expira_em   INTEGER NOT NULL,
+          versao      INTEGER NOT NULL DEFAULT 1,
+          criado_em   INTEGER NOT NULL,
+          resolvido_em INTEGER,
+          CHECK ((tipo = 'criatura') = (criatura_id IS NOT NULL)),
+          CHECK ((tipo = 'item') = (lote_id IS NOT NULL)),
+          CHECK (tipo != 'criatura' OR quantidade = 1)
+        )`);
+      db.exec(`CREATE UNIQUE INDEX asset_holds_criatura_ativa ON asset_holds(criatura_id) WHERE estado = 'ativa' AND tipo = 'criatura'`);
+      db.exec(`CREATE INDEX asset_holds_dono ON asset_holds(dono_tipo, dono_id, estado)`);
+      db.exec(`CREATE INDEX asset_holds_expira ON asset_holds(estado, expira_em)`);
+      db.exec(`
+        CREATE TABLE asset_holds_eventos (
+          id      INTEGER PRIMARY KEY AUTOINCREMENT,
+          hold_id TEXT NOT NULL REFERENCES asset_holds(id),
+          evento  TEXT NOT NULL CHECK (evento IN ('ativa', 'liberada', 'expirada', 'consumida')),
+          em      INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE TRIGGER asset_holds_eventos_sem_update BEFORE UPDATE ON asset_holds_eventos BEGIN SELECT RAISE(ABORT, 'asset_holds_eventos é append-only'); END`);
+      db.exec(`CREATE TRIGGER asset_holds_eventos_sem_delete BEFORE DELETE ON asset_holds_eventos BEGIN SELECT RAISE(ABORT, 'asset_holds_eventos é append-only'); END`);
+    },
+    desce: db => {
+      db.exec(`DROP TABLE asset_holds_eventos`);
+      db.exec(`DROP TABLE asset_holds`);
+    },
+  },
+
 ];
 
 const TABELA_VERSAO = `
