@@ -1,7 +1,9 @@
 # Pôr o PokéArena no ar (Lightsail, AWS)
 
-O piloto da ST-7.2 num endereço público com HTTPS, PRIVADO por convite (a arte
-é emprestada — CLAUDE.md, §0.3.1). Moeda simulada; o `CHECKPOINT_25_1` segue `null`.
+O piloto da ST-7.2 num endereço público com HTTPS, ABERTO a quem tem o link
+(DEC-23, 01/10 — antes era por convite). O Caddy manda `noindex`: a arte ainda é
+emprestada (CLAUDE.md, §0.3.1), e o jogo não deve aparecer em busca. Moeda
+simulada; o `CHECKPOINT_25_1` segue `null`.
 
 1. **Lightsail → Criar instância** · região `us-east-1` · Linux/Unix · **Ubuntu 24.04**
    · plano de **1 GB** (cerca de US$ 7/mês) · nome `pokearena`.
@@ -16,11 +18,20 @@ O piloto da ST-7.2 num endereço público com HTTPS, PRIVADO por convite (a arte
    Repositório privado: o `curl` acima não baixa — copie o `instalar.sh` à mão
    (o botão de colar do terminal) e use um token do GitHub só de leitura do
    repositório. O script tira o token da configuração depois do clone.
-4. No fim ele imprime o **link de convite** `https://<ip>.sslip.io/?k=…`. É ele
-   que vai para os amigos; quem chegar sem ele lê "acesso por convite".
+4. No fim ele imprime o endereço `https://<ip>.sslip.io/`. É ele que vai para
+   os amigos.
 
-Atualizar o jogo depois: rodar o mesmo comando do passo 3 (o banco, o segredo
-e o convite ficam). Logs: `journalctl -u pokearena -f`. Cópias do banco:
+Atualizar o jogo depois: rodar o mesmo comando do passo 3 (o banco e o segredo
+ficam).
+
+**Atualizar sem SSH (como foi feito em 01/10, de fora da máquina):** snapshot da
+instância → nova instância a partir do snapshot, com um user-data que baixa o
+pacote novo (`git archive` sem `prototype/` e `tools/previas/`, num link
+pré-assinado do S3) e roda `instalar.sh --pacote <url>` — o `dados/` vem no
+disco do snapshot, então banco e contas atravessam → abrir 80 e 443 na nova →
+mover o IP estático para ela → reiniciar (o Caddyfile sai do IP de agora) →
+conferir → apagar a antiga. As escritas entre o snapshot e a troca se perdem:
+faça em hora quieta. Logs: `journalctl -u pokearena -f`. Cópias do banco:
 `/srv/pokearena/app/dados/copias/` (todo dia às 04:00).
 
 **Fora da máquina:** ligue o snapshot automático (instância → Snapshots →

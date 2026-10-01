@@ -18,7 +18,7 @@ import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import { criarApi } from '../app/modules/api.mjs';
-import { servidorNoAr, validarConta, corpoDoCadastro, mensagemDaResposta, enviarConta }
+import { servidorNoAr, validarConta, corpoDoCadastro, mensagemDaResposta, enviarConta, exigeContaReal, modoDaConta }
   from '../app/modules/conta-real.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
@@ -114,6 +114,21 @@ export async function suite() {
     for (const id of ['authEmail', 'authSenha', 'authNasc', 'authInfo'])
       ok(html.includes(`id="${id}"`), `o modal não tem #${id}`);
     ok(/if \(r\.corpo\?\.nome\)/.test(fonte('../app/modules/perfil-dados.mjs')), 'o login não traz o nome do servidor');
+  });
+
+
+  s.teste('no endereço público só conta de verdade: a fachada é do localhost', () => {
+    /* o dono, 01/10: "não pode ser opcional — preciso criar login, nome do
+       treinador, e-mail e senha". O PIN opcional só existe sem servidor. */
+    for (const h of ['localhost', '127.0.0.1', '', 'LOCALHOST', '[::1]']) ok(!exigeContaReal(h), `${h || '(vazio)'} exigiu conta`);
+    for (const h of ['34-224-231-194.sslip.io', 'pokearena.example', '192.168.0.10']) ok(exigeContaReal(h), `${h} aceitou a fachada`);
+    igual(modoDaConta({ servidor: false, hostname: '34-224-231-194.sslip.io' }), true, 'o /saude que falhou virou fachada no site');
+    igual(modoDaConta({ servidor: false, hostname: 'localhost' }), false, 'o localhost sem servidor perdeu a fachada');
+    igual(modoDaConta({ servidor: true, hostname: 'localhost' }), true, 'com servidor, a fachada venceu');
+    const nv = readFileSync(new URL('../app/modules/navegacao.mjs', import.meta.url), 'utf8');
+    ok(/contaReal = modoDaConta\(\{ servidor: v, hostname: location\.hostname \}\)/.test(nv), 'o modal não usa a regra');
+    ok(/if \(exigeContaReal\(location\.hostname\)\) contaReal = true;/.test(nv), 'o modal pisca a fachada antes do /saude');
+    ok(/\(!exigeContaReal\(location\.hostname\) && localStorage\.getItem\('ar_session'\) === '1'\)/.test(nv), 'o PIN velho abre as abas no site');
   });
 
   return s;

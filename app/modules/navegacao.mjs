@@ -12,13 +12,13 @@ import { emitir } from './telemetria.mjs';
 import { modoServidor, saldo } from './banco.mjs';
 import { api } from './api.mjs';
 import { sair } from './sair.mjs';
-import { servidorNoAr, enviarConta, textoDoModoDaConta, avisoDaPerda, temColecaoNoAparelho } from './conta-real.mjs';
+import { servidorNoAr, modoDaConta, exigeContaReal, enviarConta, textoDoModoDaConta, avisoDaPerda, temColecaoNoAparelho } from './conta-real.mjs';
 import { renderProfile } from './customizacao.mjs';
 import { avatarURL, trainerURL } from './perfil.mjs';
 import { progressoNivel, saveProfile, tituloDe } from './perfil.mjs';
 import { renderDeposit } from './carteira.mjs';
 import { music, somLigado, verVista } from './audio.mjs';
-import { estadoDoMais, folhaDepois } from './barra-celular.mjs';
+import { estadoDoMais, folhaDepois, abaLiberada } from './barra-celular.mjs';
 
 /* =====================================================================
    NAVEGAÇÃO E SESSÃO
@@ -30,6 +30,8 @@ import { estadoDoMais, folhaDepois } from './barra-celular.mjs';
    de login existir e poder ser trocado por autenticação real depois.
    ===================================================================== */
 function goView(id){
+  /* Sem conta, a aba do treinador abre o cadastro (ver `barra-celular.mjs`). */
+  if (!abaLiberada(id, sessaoAtiva())) { folha('fora'); abrirAuth('signup'); return; }
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
   document.querySelectorAll('.nav').forEach(b => b.classList.toggle('on', b.dataset.view === id));
   window.scrollTo({top:0, behavior:'smooth'});
@@ -103,10 +105,15 @@ function renderHero(){
  * pergunta só sabia da fachada. O defeito foi achado pelo teste que joga uma
  * rodada inteira no navegador — nenhum teste de módulo o alcançava, porque
  * cada metade estava certa sozinha. */
-const sessaoAtiva = () => modoServidor() || localStorage.getItem('ar_session') === '1';
+/* No endereço público só a conta real conta: um PIN de fachada que ficou no
+   navegador (de antes da exigência) não abre as abas do treinador. */
+const sessaoAtiva = () => modoServidor() ||
+  (!exigeContaReal(location.hostname) && localStorage.getItem('ar_session') === '1');
 
 function renderSession(){
   const box = $('#sessionBox');
+  /* o menu de quem ainda não tem conta é curto — as abas do treinador somem */
+  $('#mainnav')?.classList.toggle('visitante', !sessaoAtiva());
   if (sessaoAtiva()){
     const np = progressoNivel(S.profile.xp || 0);
     box.innerHTML =
@@ -178,12 +185,14 @@ function abrirAuth(modo){
   $('#authName').value = modo === 'login' && existe ? S.profile.name : '';
   $('#authPin').value = '';
   $('#authSenha').value = '';
+  /* no endereço público o formulário já abre como o da conta real */
+  if (exigeContaReal(location.hostname)) contaReal = true;
   pintarModoDaConta();
   openModal('#authModal');
   /* O botão espera a resposta: um clique antes dela iria pelo caminho errado. */
   const go = $('#btnAuthGo');
   go.disabled = true;
-  servidorNoAr(api).then(v => { contaReal = v; pintarModoDaConta(); }).finally(() => { go.disabled = false; });
+  servidorNoAr(api).then(v => { contaReal = modoDaConta({ servidor: v, hostname: location.hostname }); pintarModoDaConta(); }).finally(() => { go.disabled = false; });
 }
 $('#btnAuthSwap').onclick = () => abrirAuth(authMode === 'signup' ? 'login' : 'signup');
 

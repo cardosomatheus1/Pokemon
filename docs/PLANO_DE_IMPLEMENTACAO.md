@@ -2282,6 +2282,26 @@ do servidor. Três partes:
   cada aba e a folha aberta, em `tools/previas/_celular/`; sem vazamento
   lateral e sem erro de página. **Q7:** dispensado (DEC-20).
 
+### ST-2.8b · Sem conta, o menu é a vitrine (pedido do dono) ✅ 01/10
+- **Por quê:** *"o menu você já pode fazer tudo, mesmo sem se cadastrar — muitas
+  dessas coisas só podem aparecer e a pessoa ter acesso após o cadastro."*
+- **Feito:** `ABAS_COM_CONTA` e `abaLiberada` (camada 0, `barra-celular.mjs`):
+  Liga, Rotas, Time, Rota OFF e Pokédex são do treinador. Sem conta elas somem
+  do menu (`.mainnav.visitante`), e qualquer caminho até elas (botão, link
+  `data-goto`) abre o cadastro em vez da tela. No celular as cinco da vitrine
+  ocupam a barra e o "Mais" some. A Arena fica aberta: é o espetáculo, e é ele
+  que faz alguém querer entrar.
+- **E a conta é sempre a de verdade no site** (o dono: *"não pode ser opcional
+  — preciso criar login, nome do treinador, e-mail e senha"*): fora do
+  `localhost`, o cadastro é sempre o do servidor (nome, e-mail, senha,
+  nascimento, a declaração) — um `/saude` que falha já não vira a fachada de
+  PIN opcional, e um PIN de fachada velho no navegador não conta como conta
+  (`exigeContaReal`, `modoDaConta` em `conta-real.mjs`, camada 0). A fachada
+  segue no `localhost` sem servidor, que é onde se desenvolve e testa.
+- **Testes:** `barra-celular` · `conta-real` · S2506–S2512. As sondas visuais que abrem as
+  Rotas entram como quem tem conta (`ar_session`), e a linha de base visual foi
+  regravada: o menu de visitante perdeu cinco botões.
+
 ### ST-2.9 · A floresta na vista do celular (L-231) — proposta
 - Em 1× a cena do início da Floresta mostra trilha, grama e fauna, e nenhuma
   árvore: o bioma que se chama floresta não parece uma. Pôr copa na borda do
@@ -2572,6 +2592,13 @@ desta tabela.
   insígnia da jornada** — 50 por ginásio, 75 por Elite Four, 150 pelo Campeão:
   850 por conta, a vida inteira. Elegível para a troca depois de 7 dias de
   conta. É a **ST-14.0E**, abaixo.
+- ✅ **DEC-23 · o piloto na AWS ABERTO, sem convite** (o dono, 01/10: *"não
+  quero invite, qualquer um pode acessar o link"*). O Caddy deixa de pedir a
+  chave; fica o `X-Robots-Tag: noindex`, porque a arte ainda é emprestada
+  (§0.3.1) e ser achado em busca é diferente de receber o link. Moeda simulada;
+  o `CHECKPOINT_25_1` continua `null`. Junto, a pedido dele: **sem conta, o
+  menu é só a vitrine** (Início, Arenas, Wiki, Como funciona, Regras) e as abas
+  do treinador abrem o cadastro — ver a ST-2.8b.
 - **Ainda do dono, e com recomendação escrita como padrão:** a taxa shiny (R18),
   o orçamento da Master Ball, os limites/cooldown/taxas finais (baselines da
   spec §11 e §16 até o gate C medir).

@@ -40,6 +40,18 @@ export async function servidorNoAr(api) {
   } catch { return false; }
 }
 
+/* ── NO ENDEREÇO PÚBLICO, SÓ CONTA DE VERDADE (pedido do dono, 01/10) ──────
+ * "não pode ser opcional — preciso criar login, nome do treinador, e-mail e
+ *  senha." A fachada local (nome + PIN opcional, salva no navegador) existe
+ * para o jogo abrir SEM servidor — o `localhost` de quem desenvolve e testa.
+ * Num endereço de verdade o servidor existe, e um `/saude` que falhou uma vez
+ * NÃO pode virar "crie seu treinador só neste navegador": seria uma conta que
+ * some ao limpar o navegador, criada sem e-mail nem senha. Lá, o formulário é
+ * sempre o da conta real, e com o servidor fora ele diz "tente de novo". */
+const LOCAIS = new Set(['', 'localhost', '127.0.0.1', '[::1]', '::1']);
+export const exigeContaReal = hostname => !LOCAIS.has(String(hostname ?? '').toLowerCase());
+export const modoDaConta = ({ servidor, hostname }) => !!servidor || exigeContaReal(hostname);
+
 function dataValida(txt, agora) {
   const m = DATA.exec(String(txt ?? ''));
   if (!m) return false;

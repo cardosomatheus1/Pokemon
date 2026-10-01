@@ -32,6 +32,11 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            Rotas abre em 1× e as rotas enchem duas colunas. Olhar no celular:
            node tools/olhar-celular.mjs  (capturas em tools/previas/_celular/).
            Próximo do cenário: ST-2.9 (L-231, a Floresta sem árvore na vista).
+           ST-2.8b (01/10): sem conta, o menu é a vitrine e as abas do treinador
+           abrem o cadastro; no site, só conta real (nome, e-mail, senha); o
+           link abre sem convite (DEC-23), com `noindex`. NO SEU PC: a linha de
+           base visual mudou (o menu do visitante) — `npm run gerar:visual` uma
+           vez antes de `npm test`.
 o RESUMO   A E14 (Shiny, Trading & Player Market) ESTÁ COMPLETA — todas as
            ondas (0 a D) e os quatro gates. Em 01/10, a pedido do dono ("faça
            td da 14"): o shiny no palco da Liga (14.3c), o aviso "isto prende"
@@ -52,10 +57,10 @@ o RESUMO   A E14 (Shiny, Trading & Player Market) ESTÁ COMPLETA — todas as
 
 ```text
 o NO AR    https://34-224-231-194.sslip.io  (01/10 — o piloto na AWS, Lightsail
-           us-east-1, micro_3_0, IP estático `pokearena-ip`). PRIVADO por convite:
-           o link com a chave (`?k=…`) está em /etc/pokearena.link na instância
-           (console do Lightsail → Conectar usando SSH → `sudo cat /etc/pokearena.link`);
-           a chave NÃO vai para o repositório. Atualizar: `deploy/lightsail/LEIAME.md`.
+           us-east-1, micro_3_0, IP estático `pokearena-ip`). ABERTO a quem tem o
+           link, sem convite (DEC-23, 01/10), com `noindex` (não aparece em busca).
+           Sem conta, o menu mostra só a vitrine; o resto pede cadastro.
+           Atualizar: `deploy/lightsail/LEIAME.md` (dá para fazer sem SSH).
            Backup: cópia diária do banco em /srv/pokearena/app/dados/copias/ (04:00 UTC)
            e o SNAPSHOT AUTOMÁTICO do Lightsail da máquina inteira (07:00 UTC, fora
            do disco — é o que salva se a instância for apagada).

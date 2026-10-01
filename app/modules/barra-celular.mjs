@@ -31,3 +31,19 @@ export function folhaDepois({ aberta, evento }) {
   if (evento === 'alternar') return !aberta;
   return false;
 }
+
+/* ── O MENU DE QUEM AINDA NÃO TEM CONTA (pedido do dono, 01/10) ────────────
+ *
+ * "o menu você já pode fazer tudo, mesmo sem se cadastrar — muitas dessas
+ *  coisas só podem aparecer e a pessoa ter acesso após o cadastro."
+ *
+ * O que é do TREINADOR — a Liga (classificação dele), as Rotas e a Rota OFF
+ * (a coleção dele), o Time e a Pokédex (o progresso dele) — só existe com
+ * conta. Fica aberto o que é VITRINE: a capa, a Arena (o espetáculo, que é o
+ * que faz alguém querer entrar), a Wiki e as duas páginas de ajuda.
+ *
+ * Sem conta, as abas do treinador SOMEM do menu, e um link que leve a uma
+ * delas abre o cadastro em vez da tela — a porta trancada diz onde fica a
+ * chave, em vez de mostrar uma sala vazia. */
+export const ABAS_COM_CONTA = Object.freeze(['viewLiga', 'viewIdle', 'viewTreino', 'viewRotaOff', 'viewPokedex']);
+export const abaLiberada = (vista, comConta) => !!comConta || !ABAS_COM_CONTA.includes(vista);

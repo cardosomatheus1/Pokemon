@@ -9,10 +9,11 @@
  *   o "MAIS"   veste o nome da aba aberta quando ela mora na folha
  *   o LARGO    nada muda: folha `display:contents`, Início de volta à frente
  *   a CENA     no celular, sem escolha guardada, o zoom de partida é 1×
+ *   SEM CONTA  o menu é a vitrine; as abas do treinador abrem o cadastro
  */
 import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
-import { ABAS_DA_BARRA, ABAS_DO_MAIS, estadoDoMais, folhaDepois } from '../app/modules/barra-celular.mjs';
+import { ABAS_DA_BARRA, ABAS_DO_MAIS, ABAS_COM_CONTA, abaLiberada, estadoDoMais, folhaDepois } from '../app/modules/barra-celular.mjs';
 import { zoomDePartida, LARGURA_DO_CELULAR } from '../app/modules/viewport.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
@@ -87,6 +88,28 @@ export function suite() {
     ok(PAG.indexOf('A BARRA DE ABAS DO CELULAR') > PAG.indexOf('.conexao-faixa{\n  position:fixed'), 'a faixa do celular perde para a do largo');
     ok(PAG.indexOf('A BARRA DE ABAS DO CELULAR') > PAG.indexOf('#idleBiomas,#offBiomas{display:flex'), 'a grade das rotas no celular perde para a do largo');
     ok(PAG.indexOf('A BARRA DE ABAS DO CELULAR') > PAG.indexOf('.idleChip{display:inline-flex'), 'o cartão de rota no celular perde para o do largo');
+  });
+
+
+  s.teste('motor: sem conta, só a vitrine — as abas do treinador pedem cadastro', () => {
+    igual([...ABAS_COM_CONTA].sort().join(), 'viewIdle,viewLiga,viewPokedex,viewRotaOff,viewTreino', 'as abas do treinador mudaram');
+    for (const v of ['viewHome', 'viewArena', 'viewWiki', 'viewHow', 'viewRules']) {
+      ok(abaLiberada(v, false), `${v} trancada para o visitante`);
+    }
+    for (const v of ABAS_COM_CONTA) {
+      ok(!abaLiberada(v, false), `${v} aberta sem conta`);
+      ok(abaLiberada(v, true), `${v} trancada COM conta`);
+    }
+  });
+
+  s.teste('a tela: a porta trancada abre o cadastro, e o menu do visitante é curto', () => {
+    const nv = fonte('../app/modules/navegacao.mjs');
+    ok(/if \(!abaLiberada\(id, sessaoAtiva\(\)\)\) \{ folha\('fora'\); abrirAuth\('signup'\); return; \}/.test(nv), 'a aba trancada não abre o cadastro');
+    ok(/\$\('#mainnav'\)\?\.classList\.toggle\('visitante', !sessaoAtiva\(\)\);/.test(nv), 'o menu não sabe se há conta');
+    const regra = css.match(/((?:\.mainnav\.visitante \.nav\[data-view="\w+"\],?\s*)+)\{display:none\}/);
+    ok(regra, 'o menu do visitante não esconde nada');
+    igual([...regra[1].matchAll(/data-view="(\w+)"/g)].map(m => m[1]).sort().join(), [...ABAS_COM_CONTA].sort().join(), 'o CSS esconde abas diferentes das do treinador');
+    ok(/\.mainnav\.visitante \.navMais\{display:none\}/.test(celular) && /\.mainnav\.visitante \.navFolha\{display:contents\}/.test(celular), 'no celular o visitante não vê a vitrine na barra');
   });
 
   return s;

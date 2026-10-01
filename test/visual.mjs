@@ -1455,6 +1455,10 @@ export async function rodar() {
      de fábrica, 300x150, dizendo que a cena não lia a caixa quando na verdade
      ela nem existia. Erro de sonda lido como erro de produto. */
   await pg.evaluate(() => {
+    /* AS ROTAS SÃO DO TREINADOR (pedido do dono, 01/10): sem conta, a aba
+       abre o cadastro. A sonda entra como quem já tem conta — o que ela mede
+       é a tela do treinador, não a porta. */
+    localStorage.setItem('ar_session', '1');
     document.querySelector('.nav[data-view="viewIdle"]')?.click();
     document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
     document.querySelector('#viewIdle')?.classList.add('on');
@@ -1583,6 +1587,7 @@ export async function rodar() {
          Não há como "ouvir" num portão, mas há como contar osciladores: todo
          som deste projeto nasce de um `createOscillator`. Contar é o mais
          perto de escutar que um teste chega, e é honesto sobre o que mede. */
+      localStorage.setItem('ar_session', '1');   // a aba é do treinador
       document.querySelector('.nav[data-view="viewIdle"]')?.click();
       await esperar(250);
       /* O SOM É LIGADO AQUI E DEVOLVIDO COMO ESTAVA. Esta sonda roda ANTES da
@@ -1779,6 +1784,7 @@ export async function rodar() {
      *     pokébola virar 2 = 2 sem distinguir coisa nenhuma.
      *
      * Por isso: abre a aba de verdade, e conta DENTRO dela. */
+    localStorage.setItem('ar_session', '1');   // a aba é do treinador
     q('.nav[data-view="viewRotaOff"]')?.click();
     await esperar(500);
     const naAba = sel => document.querySelectorAll('#viewRotaOff ' + sel);
@@ -1910,6 +1916,7 @@ export async function rodar() {
    * `AudioContext`, e o modulo cai no padrao seguro por acidente — um teste
    * puro passaria sem tocar no comportamento que importa. */
   const som = await pg.evaluate(async () => {
+    localStorage.setItem('ar_session', '1');   // as Rotas são do treinador
     const ir = v => document.querySelector('.nav[data-view="' + v + '"]')?.click();
     const m = await import('/app/modules/audio.mjs');
     const inicio = { ligado: m.somLigado(), botao: document.querySelector('#btnSound')?.textContent };
@@ -2156,6 +2163,7 @@ export async function rodar() {
       const pg2 = await pg.context().newPage();
       await pg2.goto(`http://127.0.0.1:${porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
       await pg2.evaluate(() => {
+        localStorage.setItem('ar_session', '1');   // a aba é do treinador
         document.querySelector('.nav[data-view="viewIdle"]')?.click();
         document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
         document.querySelector('#viewIdle')?.classList.add('on');

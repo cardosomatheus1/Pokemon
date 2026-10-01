@@ -4,12 +4,9 @@
 #   sudo bash instalar.sh <url-do-repositorio> [branch]
 #   sudo bash instalar.sh --pacote <url-de-um-.tgz>      (o código num pacote)
 #
-# `CONVITE=<chave>` no ambiente fixa a chave do convite na primeira instalação
-# (o user-data de quem cria a instância de fora, e precisa saber o link).
-#
 # Roda DENTRO da instância (o terminal SSH do navegador, no console do
 # Lightsail, ou o user-data da criação). Idempotente: rodar de novo atualiza o
-# código e reinicia, sem perder o banco, o segredo de sessão nem o convite.
+# código e reinicia, sem perder o banco nem o segredo de sessão.
 #
 # O QUE FICA DE PÉ
 #   node 22        o servidor do jogo (`server/principal.mjs`), em 127.0.0.1:8080,
@@ -17,11 +14,9 @@
 #   caddy          o HTTPS de verdade (Let's Encrypt) em https://<ip>.sslip.io,
 #                  sem precisar de domínio — o endereço sai do IP de AGORA a
 #                  cada boot (anexar um IP estático depois só pede um reboot)
-#   o CONVITE      o build é PRIVADO (CLAUDE.md, §0.3.1: arte emprestada não se
-#                  publica). Só entra quem abriu o link com a chave uma vez — ele
-#                  deixa um cookie; quem chega sem ele lê "acesso por convite".
-#                  Não é senha HTTP de propósito: o jogo usa o cabeçalho
-#                  Authorization para a sessão da conta, e as duas brigariam.
+#   ABERTO         sem convite (DEC-23, 01/10): qualquer um com o link entra. O
+#                  Caddy manda `X-Robots-Tag: noindex` — o link funciona, e o
+#                  jogo não aparece em busca (a arte ainda é emprestada, §0.3.1)
 #   a cópia diária do banco às 04:00 (`tools/banco-copia.mjs`), em dados/copias/
 #
 # Repositório privado: passe a URL com um token de LEITURA do GitHub
@@ -89,7 +84,7 @@ if [ -d "$APP/.git" ]; then git -C "$APP" remote set-url origin "$(echo "$REPO" 
 mkdir -p "$APP/dados/copias"
 chown -R pokearena:pokearena "$BASE"
 
-# o segredo de sessão e o convite: gerados UMA vez e guardados só para root
+# o segredo de sessão: gerado UMA vez e guardado só para root
 if [ ! -f /etc/pokearena.env ]; then
   umask 077
   {
@@ -100,9 +95,8 @@ if [ ! -f /etc/pokearena.env ]; then
   } > /etc/pokearena.env
   umask 022
 fi
-if [ ! -f /etc/pokearena.convite ]; then
-  umask 077; echo "${CONVITE:-$(openssl rand -hex 12)}" > /etc/pokearena.convite; umask 022
-fi
+# o convite saiu (DEC-23); o arquivo de uma instalação antiga não serve mais
+rm -f /etc/pokearena.convite
 
 {
   echo "[Unit]"
@@ -119,7 +113,7 @@ fi
   echo "WantedBy=multi-user.target"
 } > /etc/systemd/system/pokearena.service
 
-# O gerador do Caddyfile: lê o IP de agora e a chave do convite.
+# O gerador do Caddyfile: lê o IP de agora.
 install -m 700 "$APP/deploy/lightsail/caddyfile.sh" /usr/local/bin/pokearena-caddyfile
 {
   echo "[Unit]"
@@ -147,6 +141,6 @@ systemctl restart caddy
 for i in $(seq 1 60); do curl -fsS -o /dev/null http://127.0.0.1:8080/saude && break; sleep 1; done
 etapa "PRONTO"
 echo
-echo "PRONTO. O link de convite (mande só para quem vai jogar):"
+echo "PRONTO. O endereço do jogo:"
 echo "  $(cat /etc/pokearena.link)"
 echo "O certificado HTTPS sai no primeiro acesso (alguns segundos)."
