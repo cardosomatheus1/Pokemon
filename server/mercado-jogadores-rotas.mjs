@@ -13,6 +13,7 @@ import { elegibilidadeDaConta } from './elegibilidade.mjs';
 import { pcTElegivel } from './carteira.mjs';
 import { historicoDaSerie, serieDoPedido, ERRO_HISTORICO } from './mercado-jogadores-historico.mjs';
 import { anunciar, comprar, cancelarAnuncio, detalheDoAnuncio, vitrine, meusAnuncios, minhasCompras, ERRO_MERCADO_P2P } from './mercado-jogadores.mjs';
+import { criarOrdem, venderParaOrdens, cancelarOrdem, livroDoItem, minhasOrdens } from './mercado-jogadores-ordens.mjs';
 
 const texto = v => typeof v === 'string' && v.length > 0 && v.length <= 80;
 const recusa = msg => ({ status: 400, corpo: { codigo: 'ENTRADA_INVALIDA', erro: msg } });
@@ -55,6 +56,27 @@ export function rotasDoMercadoP2P(daExcecao) {
     'POST /api/player-market/cancelar': ({ db, corpo, userId, agora }) => {
       if (!texto(corpo?.id)) return recusa('id inválido');
       return tentar(() => cancelarAnuncio(db, { userId, anuncioId: corpo.id, agora }));
+    },
+    /* ST-14.11A: as ordens de compra de itens. O livro é público e agregado
+       por preço (nunca quem pediu); as minhas vêm com o que já pagaram. */
+    'GET /api/player-market/buy-orders': ({ db, query, userId, agora }) => {
+      const item = query?.get?.('item');
+      if (item != null && !texto(item)) return recusa('item inválido');
+      return { corpo: { livro: item ? livroDoItem(db, { pack: PACK, itemId: item, agora, exceto: userId }) : null, minhas: minhasOrdens(db, { userId }) } };
+    },
+    'POST /api/player-market/buy-orders/create': ({ db, corpo, userId, agora }) => {
+      if (!texto(corpo?.itemId) || !Number.isSafeInteger(corpo?.quantidade) || !Number.isSafeInteger(corpo?.precoUnit)) return recusa('item, quantidade ou preço inválidos');
+      return tentar(() => criarOrdem(db, { userId, pack: PACK, itemId: corpo.itemId, quantidade: corpo.quantidade, precoUnit: corpo.precoUnit,
+                                            chaveIdem: corpo.chave, agora, checkpoint: CHECKPOINT_25_1 }));
+    },
+    'POST /api/player-market/buy-orders/fill': ({ db, corpo, userId, agora }) => {
+      if (!texto(corpo?.itemId) || !Number.isSafeInteger(corpo?.quantidade) || !Number.isSafeInteger(corpo?.precoMinimo)) return recusa('item, quantidade ou preço mínimo inválidos');
+      return tentar(() => venderParaOrdens(db, { userId, pack: PACK, itemId: corpo.itemId, quantidade: corpo.quantidade, precoMinimo: corpo.precoMinimo,
+                                                  chaveIdem: corpo.chave, agora, checkpoint: CHECKPOINT_25_1 }));
+    },
+    'POST /api/player-market/buy-orders/cancel': ({ db, corpo, userId, agora }) => {
+      if (!texto(corpo?.id)) return recusa('id inválido');
+      return tentar(() => cancelarOrdem(db, { userId, ordemId: corpo.id, agora }));
     },
   };
 }

@@ -18,6 +18,7 @@ import { criarServidor } from '../server/servidor.mjs';
 import { gerar } from '../server/criaturas.mjs';
 import { creditar } from '../server/carteira.mjs';
 import { creditarBolsa } from '../server/inventario.mjs';
+import { criarOrdem, venderParaOrdens } from '../server/mercado-jogadores-ordens.mjs';
 import { anunciar, comprar } from '../server/mercado-jogadores.mjs';
 import { xpParaNivel } from '../engine/nivel-criatura.mjs';
 
@@ -80,7 +81,10 @@ for (let i = 0; i < 10; i++) {
 
 const b = await chromium.launch({ executablePath: CHROME });
 const erros = [];
-async function capturar(nome, sessao, w, passos = []) {
+/* `SO=ordens` captura só os estados nomeados — a leitura de um bloco que mexeu num deles. */
+const SO = process.env.SO ? process.env.SO.split(',') : null;
+async function capturar(nome, sessao, w, passos = [], digitar = []) {
+  if (SO && !SO.includes(nome)) return;
   const c = await b.newContext({ viewport: { width: w, height: w > 500 ? 1100 : 1000 } });
   await c.addInitScript(([s]) => { if (s) localStorage.setItem('ar_sessao', s); localStorage.setItem('ar_session', '1'); localStorage.setItem('ar_pdx_aba', 'mercado'); }, [sessao]);
   const pg = await c.newPage();
@@ -91,6 +95,8 @@ async function capturar(nome, sessao, w, passos = []) {
   await pg.waitForFunction(() => document.querySelector('#mercadoCorpo .mkGrade, #mercadoCorpo .mkVazio, #mercadoCorpo .trComo, #mercadoCorpo .mkVenda'), null, { timeout: 20000 });
   for (const [clicar, espera] of passos) { await pg.click(clicar); await pg.waitForFunction(s => document.querySelector(s), espera, { timeout: 20000 }); }
   await pg.waitForTimeout(500);
+  /* `digitar`: os campos de uma ficha, para LER a prévia preenchida. */
+  for (const [campo, valor] of digitar) { await pg.fill(campo, String(valor)); await pg.waitForTimeout(150); }
   await (await pg.$('#viewPokedex .card')).screenshot({ path: `${PASTA}/${nome}-${w}.png` });
   await c.close();
 }
@@ -110,6 +116,18 @@ for (const w of LARGURAS) {
   anuncia(dono.id, { criaturaId: bicho(dono.id, 39, 9) }, 700);
   await capturar('meus', dono.sessao, w, [['[data-mk-aba="meus"]', '#mercadoCorpo .mkVenda select option[value^="c:"]']]);
   n++;
+}
+/* AS ORDENS DE COMPRA (ST-14.11A): um livro com três preços, uma ordem minha
+   meio cheia (vendas de verdade), e as duas fichas preenchidas. */
+const ordena = (u, q, pu, chave) => criarOrdem(db, { userId: u, pack: PACK, itemId: 'poke', quantidade: q, precoUnit: pu, chaveIdem: chave, agora: Date.now(), checkpoint: CP });
+ordena(compradores[0].id, 20, 90, 'olhar-ord-1'); ordena(compradores[1].id, 10, 85, 'olhar-ord-2'); ordena(compradores[2].id, 6, 85, 'olhar-ord-3');
+for (const w of LARGURAS) {
+  const eu = await conta(`Ordenante${w}`);
+  creditarBolsa(db, eu.id, 'poke', 12, { fonte: 'olhar', agora: Date.now() });
+  ordena(eu.id, 10, 95, `olhar-minha-${w}`);
+  venderParaOrdens(db, { userId: vendedoras[3].id, pack: PACK, itemId: 'poke', quantidade: 3, precoMinimo: 95, chaveIdem: `olhar-venda-${w}`, agora: Date.now(), checkpoint: CP });
+  await capturar('ordens', eu.sessao, w, [['[data-mk-aba="ordens"]', '#mercadoCorpo .mkOrdens']],
+                 [['[data-mk-o="q"]', 8], ['[data-mk-o="p"]', 70], ['[data-mk-o="vq"]', 7], ['[data-mk-o="vmin"]', 85]]);
 }
 bandeiras(0);
 for (const w of LARGURAS) await capturar('desligado', (await conta(`Desligado${w}`)).sessao, w);

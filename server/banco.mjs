@@ -2567,6 +2567,98 @@ export const MIGRACOES = [
     },
   },
 
+  {
+    /* ST-14.11A · E14 · AS ORDENS DE COMPRA DE ITENS (spec E14 §§10.3, 11).
+     *
+     * Uma ordem é "N deste item, até P cada", com N × P preso numa reserva
+     * de moeda (`asset_holds`, dono `market:<id>`). `restante` desce a cada
+     * fill e `quantidade = executado + restante` é CHECK — a ordem não enche
+     * além do que pediu, nem por corrida. A `seq` é a ordem de chegada que o
+     * livro usa para desempatar o mesmo preço, e é única.
+     *
+     * Cada fill é uma linha append-only em `player_market_order_fills`, com o
+     * que a ordem tinha preso por aquele pedaço (`reservado`), o que foi pago
+     * (`bruto`) e a diferença devolvida na hora (`melhora`). A venda de quem
+     * aceita as ordens tem recibo (`player_market_vendas_ordem`), e a chave
+     * dela não vende duas vezes. */
+    nome: 'ordens-compra-st14.11a',
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE player_market_buy_orders (
+          id               TEXT PRIMARY KEY,
+          seq              INTEGER NOT NULL UNIQUE,
+          comprador_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          pack_id          TEXT NOT NULL,
+          tipo             TEXT NOT NULL DEFAULT 'item' CHECK (tipo IN ('item', 'criatura')),
+          item_id          TEXT,
+          categoria        TEXT,
+          quantidade       INTEGER NOT NULL CHECK (quantidade > 0),
+          restante         INTEGER NOT NULL CHECK (restante >= 0),
+          executado        INTEGER NOT NULL DEFAULT 0 CHECK (executado >= 0),
+          preco_unit       INTEGER NOT NULL CHECK (preco_unit > 0),
+          pago             INTEGER NOT NULL DEFAULT 0 CHECK (pago >= 0),
+          liberado         INTEGER NOT NULL DEFAULT 0 CHECK (liberado >= 0),
+          estado           TEXT NOT NULL CHECK (estado IN ('ACTIVE', 'FILLED', 'CANCELLED', 'EXPIRED', 'BLOCKED')),
+          taxa_criacao     INTEGER NOT NULL CHECK (taxa_criacao >= 0),
+          politica_versao  TEXT NOT NULL,
+          politica_hash    TEXT NOT NULL,
+          hold_id          TEXT,
+          chave            TEXT NOT NULL,
+          versao           INTEGER NOT NULL DEFAULT 1,
+          criado_em        INTEGER NOT NULL,
+          expira_em        INTEGER NOT NULL,
+          encerrado_em     INTEGER,
+          UNIQUE (comprador_id, chave),
+          CHECK (quantidade = executado + restante),
+          CHECK (estado != 'ACTIVE' OR restante > 0),
+          CHECK (estado != 'FILLED' OR restante = 0),
+          CHECK (tipo != 'item' OR item_id IS NOT NULL)
+        )`);
+      db.exec(`CREATE INDEX player_market_buy_livro ON player_market_buy_orders(estado, pack_id, tipo, item_id, preco_unit DESC, seq)`);
+      db.exec(`CREATE INDEX player_market_buy_comprador ON player_market_buy_orders(comprador_id, estado)`);
+      db.exec(`
+        CREATE TABLE player_market_order_fills (
+          id           INTEGER PRIMARY KEY AUTOINCREMENT,
+          ordem_id     TEXT NOT NULL REFERENCES player_market_buy_orders(id),
+          venda_ref    TEXT NOT NULL,
+          pack_id      TEXT NOT NULL,
+          tipo         TEXT NOT NULL,
+          item_id      TEXT,
+          dex          INTEGER,
+          shiny        INTEGER NOT NULL DEFAULT 0,
+          quantidade   INTEGER NOT NULL CHECK (quantidade > 0),
+          bruto        INTEGER NOT NULL CHECK (bruto > 0),
+          reservado    INTEGER NOT NULL,
+          melhora      INTEGER NOT NULL CHECK (melhora >= 0),
+          taxa_venda   INTEGER NOT NULL CHECK (taxa_venda >= 0),
+          liquido      INTEGER NOT NULL,
+          vendedor_id  TEXT NOT NULL,
+          comprador_id TEXT NOT NULL,
+          em           INTEGER NOT NULL,
+          CHECK (melhora = reservado - bruto),
+          CHECK (liquido = bruto - taxa_venda),
+          CHECK (vendedor_id <> comprador_id)
+        )`);
+      db.exec(`CREATE INDEX player_market_order_fills_serie ON player_market_order_fills(pack_id, tipo, item_id, dex, shiny, em)`);
+      db.exec(`CREATE TRIGGER player_market_order_fills_sem_update BEFORE UPDATE ON player_market_order_fills BEGIN SELECT RAISE(ABORT, 'o fill é append-only'); END`);
+      db.exec(`CREATE TRIGGER player_market_order_fills_sem_delete BEFORE DELETE ON player_market_order_fills BEGIN SELECT RAISE(ABORT, 'o fill é append-only'); END`);
+      db.exec(`
+        CREATE TABLE player_market_vendas_ordem (
+          id           TEXT PRIMARY KEY,
+          vendedor_id  TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          chave        TEXT NOT NULL,
+          recibo_json  TEXT NOT NULL,
+          em           INTEGER NOT NULL,
+          UNIQUE (vendedor_id, chave)
+        )`);
+    },
+    desce: db => {
+      db.exec(`DROP TABLE player_market_vendas_ordem`);
+      db.exec(`DROP TABLE player_market_order_fills`);
+      db.exec(`DROP TABLE player_market_buy_orders`);
+    },
+  },
+
 ];
 
 const TABELA_VERSAO = `

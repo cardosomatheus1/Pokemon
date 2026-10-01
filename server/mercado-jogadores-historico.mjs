@@ -39,6 +39,16 @@ const VENDAS = [
 ];
 const DA_CRIATURA = 'AND f.dex = ? AND f.shiny = ? AND l.potencial BETWEEN ? AND ?';
 const DO_ITEM = 'AND f.item_id = ?';
+/* ST-14.11A: a venda PARA uma ordem de compra também é venda do Market, e
+   entra na série do item. Só a do vendedor que aceitou o livro (`venda:`): a
+   ordem que casou com um lote anunciado já está acima, como venda do anúncio,
+   e contá-la de novo dobraria a amostra. */
+const VENDAS_PARA_ORDEM = [
+  "SELECT 1000000000 + f.id AS id, f.bruto AS preco, f.quantidade, f.vendedor_id AS vendedor, f.comprador_id AS comprador, f.em",
+  "FROM player_market_order_fills f WHERE f.pack_id = ? AND f.tipo = 'item' AND f.item_id = ? AND f.venda_ref LIKE 'venda:%'",
+  'AND f.vendedor_id NOT IN (', SOB_SUSPEITA, ') AND f.comprador_id NOT IN (', SOB_SUSPEITA, ')',
+];
+const MAIOR_ORDEM = "SELECT MAX(preco_unit) AS m FROM player_market_buy_orders WHERE estado = 'ACTIVE' AND pack_id = ? AND tipo = 'item' AND item_id = ? AND expira_em > ?";
 const MENOR = "SELECT MIN(preco * 1.0 / quantidade) AS m FROM player_market_listings WHERE estado = 'ACTIVE' AND pack_id = ? AND expira_em > ? AND tipo = ?";
 const MENOR_DA_CRIATURA = 'AND dex = ? AND shiny = ? AND potencial BETWEEN ? AND ?';
 const MENOR_DO_ITEM = 'AND item_id = ?';
@@ -72,9 +82,13 @@ export function historicoDaSerie(db, { pack, serie, agora }) {
     menor.push(MENOR_DO_ITEM); argsMenor.push(serie.itemId);
   }
   /* A ligação descoberta DEPOIS da venda também tira a venda da referência. */
-  const vendas = db.prepare(sql.join(' ')).all(...args).filter(v => !contasLigadas(db, v.vendedor).includes(v.comprador));
+  const brutas = db.prepare(sql.join(' ')).all(...args);
+  if (serie.tipo === 'item') brutas.push(...db.prepare(VENDAS_PARA_ORDEM.join(' ')).all(pack.id, serie.itemId));
+  const vendas = brutas.filter(v => !contasLigadas(db, v.vendedor).includes(v.comprador));
   const m = db.prepare(menor.join(' ')).get(...argsMenor)?.m;
-  return { serie, ...resumoDaSerie({ vendas, menorAnuncio: m == null ? null : m, agora }) };
+  /* A maior ordem aberta (spec §12: "maior buy order quando disponível"). */
+  const maiorOrdem = serie.tipo === 'item' ? db.prepare(MAIOR_ORDEM).get(pack.id, serie.itemId, agora)?.m ?? null : null;
+  return { serie, ...resumoDaSerie({ vendas, menorAnuncio: m == null ? null : m, agora }), maiorOrdem };
 }
 
 /* ── ANULAR UMA VENDA NA REFERÊNCIA ───────────────────────────────────────

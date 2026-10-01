@@ -9165,7 +9165,7 @@ jogado, e de que o marco semanal virou substituto para quase todo mundo.
 Dono da reabertura: a calibração da economia que vier com os dados do piloto
 (ST-7.2).
 
-### L-222 — o doce ainda não tem lote nem origem
+### L-222 — o doce ainda não tem lote nem origem ✅ DECIDIDA na ST-14.11A (01/10)
 
 **Registrada em:** 30/09/2026, na ST-14.0C. **Bloco dono:** ST-14.11A (as
 buy orders de itens — onde o doce poderia passar a negociar). **Estado:**
@@ -9185,6 +9185,16 @@ dele não decide nada ainda.
 **O que a destrava:** a decisão de negociar doce (buy orders de itens, ST-14.11A,
 ou um pedido do dono); aí o `candy_ledger` ganha a classe, e a aposta em PC-B
 gera doce `promotional_bound`.
+
+**01/10, ST-14.11A — decidida, recomendação minha (o dono avisa se quiser
+outra):** as ordens de compra são dos ITENS DA BOLSA, e o doce continua fora
+delas e de todo o P2P na v1. Ele não é item da bolsa (é da linha da espécie),
+o valor dele já está no progresso da criatura, e abrir um mercado de doce é
+abrir um mercado de NÍVEL — exatamente o pay-to-win que a spec evita. O que a
+lacuna pedia de origem já existe: a linha guarda os PRESOS (ST-14.14c), a
+aposta com bônus gera doce preso e o preso prende quem o come (com o aviso de
+antes da ST-14.3d). Se o piloto pedir doce no Market, é uma story nova, com
+lote por crédito.
 
 ### L-223 — o doce comprado com bônus não prende a criatura que ele fez subir ✅ FECHADA na ST-14.14c (01/10)
 

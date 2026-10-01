@@ -1929,6 +1929,20 @@ img[data-prestigio="1"]{filter:drop-shadow(0 0 4px rgba(var(--neonRGB),.75))}
 .mkMinhas{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
 .mkMinhas li{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:.78rem;padding:6px 8px;border:1px solid var(--line);border-radius:10px;background:var(--bg2)}
 .mkMinhas li .btn{flex:0 0 auto;margin-left:auto}
+/* ── ST-14.11A · as ordens de compra: o livro do item no alto, as duas fichas lado a lado ── */
+.mkOrdens{display:flex;flex-direction:column;gap:12px}
+.mkOrdTopo{display:flex;flex-wrap:wrap;align-items:flex-start;gap:10px 16px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg2)}
+.mkOrdTopo label{display:flex;flex-direction:column;gap:3px;font-size:.68rem;color:var(--dim)}
+.mkOrdTopo select{font:inherit;font-size:.8rem;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:5px 7px}
+.mkOrdLivro{flex:1 1 220px;min-width:0;font-size:.78rem}
+.mkOrdLivro ul{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:2px}
+.mkOrdLivro li{color:var(--dim)}
+.mkOrdLivro li.mkMelhor{color:var(--neon);font-weight:700}
+.mkOrdFichas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px}
+.mkOrdFichas .mkVenda{margin:0;align-content:flex-start}
+.mkOrdPrev{flex-basis:100%}
+.mkNota{margin:4px 0 0;color:var(--dim)}
+.mkOrdMinhasT{margin:4px 0 0;font-size:.82rem}
 .mkEstado{font-size:.64rem;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--dim)}
 .mkE-ACTIVE{border-color:var(--neon);color:var(--neon)}
 @media (max-width:520px){ .mkFiltros input[list]{width:120px} .mkFiltros input[type=number]{width:80px} .mkAbertoTopo{align-items:flex-start} }

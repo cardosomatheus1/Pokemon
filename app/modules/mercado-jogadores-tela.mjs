@@ -22,7 +22,8 @@ import { escapar as esc } from './grafico.mjs';
 import { nivelDe } from '../../engine/nivel-criatura.mjs';
 import { separarOfertaveis, itensNegociaveis } from './trocas-dados.mjs';
 import { abasDoMercado, ORDENS_MERCADO, consultaDaBusca, cartaoDoAnuncio, previaDoAnuncio, previaDaCompra, serieDoAnuncio,
-         linhasDoHistorico, textoDaRecusaDoMercado, novaChaveDeCompra } from './mercado-jogadores-dados.mjs';
+         linhasDoHistorico, textoDaRecusaDoMercado, novaChaveDeCompra,
+         itensDoLivro, previaDaOrdem, previaDaVendaParaOrdens, linhaDaMinhaOrdem, linhasDoLivro, novaChaveDeOrdem } from './mercado-jogadores-dados.mjs';
 
 const nomeDoItem = nomesDe(PACK);
 const nomeDaEspecie = dex => nomeExibido((PACK.especies ?? []).find(e => e.dex === dex)?.n ?? `#${dex}`);
@@ -30,7 +31,9 @@ const NOMES = { nomeDaEspecie, nomeDoItem };
 const NATUREZAS = (PACK.naturezas ?? []).map(n => n[0]);
 
 const M = { aba: 'criaturas', f: { ordem: 'recente' }, lista: [], proximo: null, carregando: false, estado: null,
-            aberto: null, historico: null, compra: null, recibo: null, meus: null, venda: null, colecao: null, msg: null, ocupado: false };
+            aberto: null, historico: null, compra: null, recibo: null, meus: null, venda: null, colecao: null, msg: null, ocupado: false,
+            /* ST-14.11A: a aba das ordens de compra — o item escolhido, o livro dele, as minhas, e as duas fichas */
+            ord: { item: null, livro: null, minhas: [], q: '', p: '', vq: '', vmin: '', chave: null, chaveVenda: null, ok: null } };
 const corpo = () => document.getElementById('mercadoCorpo');
 
 /* ── CARREGAR ─────────────────────────────────────────────────────────── */
@@ -44,6 +47,7 @@ export async function abrirMercado() {
 
 async function mostrarAba(aba) {
   Object.assign(M, { aba, aberto: null, compra: null, recibo: null, msg: null });
+  if (aba === 'ordens') { await carregarOrdens(); await carregarColecao(); return; }
   if (aba === 'meus' || aba === 'compras') {
     const r = await api.get('/api/player-market/meus');
     M.meus = r.ok ? r.corpo : { anuncios: [], compras: [] };
@@ -153,6 +157,68 @@ function listaMeusHtml() {
       ${a.estado === 'ACTIVE' ? `<button class="btn" data-mk-cancelar="${esc(a.id)}">Cancelar</button>` : ''}</li>`).join('')}</ul>` : '<p class="mkVazio">Nenhum anúncio seu.</p>'}`;
 }
 
+/* ── AS ORDENS DE COMPRA (ST-14.11A) ─────────────────────────────────────
+ * O livro do item escolhido (agregado por preço — quem pediu não aparece),
+ * "quero comprar" e "vender para quem compra" lado a lado, e as minhas
+ * ordens embaixo. Toda conta é da camada 0; as prévias se repintam sozinhas,
+ * sem tirar o foco do campo que se está digitando. */
+const itemDaAba = () => M.ord.item ?? itensDoLivro(PACK, nomeDoItem)[0]?.id ?? null;
+const tenhoLivre = id => itensNegociaveis(M.colecao?.lotes ?? {}).find(i => i.itemId === id)?.livre ?? 0;
+const inteiro = v => (v === '' || v == null ? NaN : Math.floor(Number(v)));
+function previasDasOrdens() {
+  const item = itemDaAba();
+  const c = previaDaOrdem({ quantidade: inteiro(M.ord.q), precoUnit: inteiro(M.ord.p), elegivel: M.estado?.pctElegivel });
+  const v = previaDaVendaParaOrdens({ niveis: M.ord.livro?.niveis ?? [], quantidade: inteiro(M.ord.vq), precoMinimo: inteiro(M.ord.vmin), tenho: tenhoLivre(item) });
+  const dl = p => `<dl class="mkPrevia">${p.linhas.map(([k, x]) => `<dt>${esc(k)}</dt><dd>${esc(x)}</dd>`).join('')}</dl>`;
+  return {
+    compra: (M.ord.q || M.ord.p) ? (c.ok ? `${dl(c)}<p class="tiny mkNota">${esc(c.nota)}</p>${c.aviso ? `<p class="mkAviso">${esc(c.aviso)}</p>` : ''}` : `<p class="mkAviso">${esc(c.motivo)}</p>`) : '',
+    podeComprar: c.ok && c.cobre && M.estado?.ligada && !M.ocupado, reserva: c.ok ? c.reserva : null,
+    venda: (M.ord.vq || M.ord.vmin) ? (v.ok ? dl(v) : `<p class="mkAviso">${esc(v.motivo)}</p>`) : '',
+    podeVender: v.ok && M.estado?.ligada && !M.ocupado,
+  };
+}
+function ordensHtml() {
+  const itens = itensDoLivro(PACK, nomeDoItem), item = itemDaAba(), livro = linhasDoLivro(M.ord.livro), tenho = tenhoLivre(item), p = previasDasOrdens();
+  const minhas = (M.ord.minhas ?? []).map(o => linhaDaMinhaOrdem(o, nomeDoItem));
+  return `<section class="mkOrdens">
+    <div class="mkOrdTopo"><label>Item<select data-mk-o="item">${itens.map(i => `<option value="${esc(i.id)}"${i.id === item ? ' selected' : ''}>${esc(i.nome)}</option>`).join('')}</select></label>
+      ${icone({ tipo: 'item', itemId: item }, 44)}
+      <div class="mkOrdLivro"><b>Quem está comprando ${esc(nomeDoItem(item))}</b>
+        ${livro.length ? `<ul>${livro.map((l, i) => `<li${i === 0 ? ' class="mkMelhor"' : ''}>${esc(l)}</li>`).join('')}</ul>` : '<p class="mkVazio">Ninguém está comprando agora — seja o primeiro.</p>'}</div></div>
+    <div class="mkOrdFichas">
+      <form class="mkVenda" id="mkOrdCompra" autocomplete="off"><h4>Quero comprar <span class="tiny">enche aos poucos · 3 dias</span></h4>
+        <label>Quantas<input type="number" min="1" step="1" data-mk-o="q" value="${esc(M.ord.q)}"></label>
+        <label>Pago até (cada)<input type="number" min="1" step="1" data-mk-o="p" value="${esc(M.ord.p)}" placeholder="PC-T"></label>
+        <div class="mkOrdPrev" data-mk-prev="compra">${p.compra}</div>
+        <button class="btn gold" data-mk-ord-criar ${p.podeComprar ? '' : 'disabled'}>Criar ordem${p.reserva ? ` (prende ${p.reserva})` : ''}</button></form>
+      <form class="mkVenda" id="mkOrdVenda" autocomplete="off"><h4>Vender para quem compra <span class="tiny">você tem ${tenho} livre${tenho === 1 ? '' : 's'}</span></h4>
+        <label>Quantas<input type="number" min="1" max="${tenho}" step="1" data-mk-o="vq" value="${esc(M.ord.vq)}"></label>
+        <label>Aceito no mínimo (cada)<input type="number" min="1" step="1" data-mk-o="vmin" value="${esc(M.ord.vmin)}" placeholder="${esc(M.ord.livro?.melhor ?? 'PC-T')}"></label>
+        <div class="mkOrdPrev" data-mk-prev="venda">${p.venda}</div>
+        <button class="btn gold" data-mk-ord-vender ${p.podeVender ? '' : 'disabled'}>Vender agora</button></form>
+    </div>
+    ${M.ord.ok ? `<p class="mkOk" role="status">${esc(M.ord.ok)}</p>` : ''}
+    <h4 class="mkOrdMinhasT">Minhas ordens</h4>
+    ${minhas.length ? `<ul class="mkMinhas">${minhas.map(o => `<li>${icone({ tipo: 'item', itemId: (M.ord.minhas.find(x => x.id === o.id) ?? {}).itemId }, 32)}<b>${esc(o.titulo)}</b>
+        <span>${esc(o.progresso)}</span><span class="tiny">${esc(o.detalhe)}</span><span class="mkEstado mkE-${o.classe}">${esc(o.estado)}</span>
+        ${o.aberta ? `<button class="btn" data-mk-ord-cancelar="${esc(o.id)}">Cancelar</button>` : ''}</li>`).join('')}</ul>` : '<p class="mkVazio">Nenhuma ordem sua.</p>'}
+  </section>`;
+}
+function repintarPrevias() {
+  const p = previasDasOrdens(), q = sel => document.querySelector(sel);
+  if (q('[data-mk-prev="compra"]')) q('[data-mk-prev="compra"]').innerHTML = p.compra;
+  if (q('[data-mk-prev="venda"]')) q('[data-mk-prev="venda"]').innerHTML = p.venda;
+  const bc = q('[data-mk-ord-criar]'), bv = q('[data-mk-ord-vender]');
+  if (bc) { bc.disabled = !p.podeComprar; bc.textContent = `Criar ordem${p.reserva ? ` (prende ${p.reserva})` : ''}`; }
+  if (bv) bv.disabled = !p.podeVender;
+}
+async function carregarOrdens() {
+  const item = itemDaAba();
+  const r = await api.get(`/api/player-market/buy-orders${item ? `?item=${encodeURIComponent(item)}` : ''}`);
+  if (r.ok) { M.ord.livro = r.corpo.livro; M.ord.minhas = r.corpo.minhas ?? []; } else M.msg = textoDaRecusaDoMercado(r);
+  pintar();
+}
+
 function pintar() {
   const alvo = corpo(); if (!alvo) return;
   if (!api.temSessao()) {
@@ -160,14 +226,14 @@ function pintar() {
     return;
   }
   const desligado = M.estado && !M.estado.ligada ? `<p class="trAviso" role="status">${esc(textoDaRecusaDoMercado({ corpo: { reason_code: M.estado.motivo?.reason_code } }))}</p>` : '';
-  const loja = M.aba !== 'meus' && M.aba !== 'compras';
+  const loja = M.aba !== 'meus' && M.aba !== 'compras' && M.aba !== 'ordens';
   alvo.innerHTML = `${desligado}
     <nav class="mkAbas" aria-label="categorias do Market">${abasDoMercado(PACK.rotulos).map(([id, r]) => `<button class="pdxAba${id === M.aba ? ' on' : ''}" data-mk-aba="${id}">${esc(r)}</button>`).join('')}</nav>
     ${loja ? filtrosHtml() : ''}
     ${detalheHtml()}
     ${loja ? (M.carregando && !M.lista.length ? '<p class="mkVazio">Carregando…</p>'
       : M.lista.length ? `<div class="mkGrade">${M.lista.map(cartao).join('')}</div>${M.proximo ? '<button class="btn mkMais" data-mk-mais>Carregar mais</button>' : ''}`
-      : '<p class="mkVazio">Nenhum anúncio nesta busca.</p>') : listaMeusHtml()}
+      : '<p class="mkVazio">Nenhum anúncio nesta busca.</p>') : M.aba === 'ordens' ? ordensHtml() : listaMeusHtml()}
     ${M.msg ? `<p class="trMsg" role="alert">${esc(M.msg)}</p>` : ''}`;
 }
 
@@ -201,6 +267,39 @@ document.addEventListener('click', async ev => {
     else if (!r.indisponivel) M.compra = null;   // sem conversa: a MESMA chave fica para o reenvio
     pintar(); return;
   }
+  /* ST-14.11A: as ordens. A chave é da TENTATIVA, como a da compra. */
+  if (t.closest('[data-mk-ord-criar]') && !M.ocupado) {
+    ev.preventDefault();
+    const q = inteiro(M.ord.q), pu = inteiro(M.ord.p), prev = previaDaOrdem({ quantidade: q, precoUnit: pu, elegivel: M.estado?.pctElegivel });
+    if (!prev.ok || !await perguntar(`Criar a ordem: ${q} × ${nomeDoItem(itemDaAba())} a até ${pu} cada? Ficam presos ${prev.reserva} PC-T, e a taxa de ${prev.taxa} não volta.`, { ok: 'Criar a ordem', cancelar: 'Voltar' })) return;
+    M.ord.chave ??= novaChaveDeOrdem();
+    const r = await postar('/api/player-market/buy-orders/create', { itemId: itemDaAba(), quantidade: q, precoUnit: pu, chave: M.ord.chave });
+    if (r.ok) {
+      Object.assign(M.ord, { q: '', p: '', chave: null, ok: r.corpo.executado ? `Ordem criada — ${r.corpo.executado} já chegaram de um lote anunciado mais barato.` : 'Ordem criada — ela enche conforme alguém vende.' });
+      const e = await api.get('/api/player-market/estado'); if (e.ok) M.estado = e.corpo;
+      await carregarOrdens(); await carregarColecao(); return;
+    }
+    if (!r.indisponivel) M.ord.chave = null;
+    pintar(); return;
+  }
+  if (t.closest('[data-mk-ord-vender]') && !M.ocupado) {
+    ev.preventDefault();
+    M.ord.chaveVenda ??= novaChaveDeOrdem();
+    const r = await postar('/api/player-market/buy-orders/fill', { itemId: itemDaAba(), quantidade: inteiro(M.ord.vq), precoMinimo: inteiro(M.ord.vmin), chave: M.ord.chaveVenda });
+    if (r.ok) {
+      Object.assign(M.ord, { vq: '', vmin: '', chaveVenda: null, ok: `Vendido: ${r.corpo.vendido} por ${r.corpo.liquido} PC-T (taxa ${r.corpo.taxaVenda}).` });
+      const e = await api.get('/api/player-market/estado'); if (e.ok) M.estado = e.corpo;
+      await carregarOrdens(); await carregarColecao(); return;
+    }
+    if (!r.indisponivel) M.ord.chaveVenda = null;
+    pintar(); return;
+  }
+  const ocanc = t.closest('[data-mk-ord-cancelar]');
+  if (ocanc && await perguntar('Cancelar esta ordem? O PC-T que ainda está preso volta para você; o que já foi comprado fica, e a taxa de criação não volta.', { ok: 'Cancelar a ordem', cancelar: 'Voltar' })) {
+    const r = await postar('/api/player-market/buy-orders/cancel', { id: ocanc.dataset.mkOrdCancelar });
+    if (r.ok) { M.ord.ok = 'Ordem cancelada — o restante voltou.'; const e = await api.get('/api/player-market/estado'); if (e.ok) M.estado = e.corpo; await carregarOrdens(); } else pintar();
+    return;
+  }
   const canc = t.closest('[data-mk-cancelar]');
   if (canc && await perguntar('Cancelar este anúncio? O que estava à venda volta para você — a taxa de anúncio não volta.', { ok: 'Cancelar o anúncio', cancelar: 'Voltar' })) {
     const r = await postar('/api/player-market/cancelar', { id: canc.dataset.mkCancelar });
@@ -215,8 +314,15 @@ async function carregarColecao() {
 }
 
 document.addEventListener('input', ev => {
+  const o = ev.target.closest?.('[data-mk-o]');
+  if (o && o.dataset.mkO !== 'item') { M.ord[o.dataset.mkO] = o.value; M.ord.ok = null; repintarPrevias(); return; }
   const v = ev.target.closest?.('[data-mk-v]');
   if (v) { M.venda = { ...(M.venda ?? {}), [v.dataset.mkV]: v.value }; if (v.dataset.mkV !== 'preco') pintar(); else { const el = document.querySelector('#mkVenda'); if (el) el.outerHTML = vendaHtml(); } }
+});
+
+document.addEventListener('change', async ev => {
+  const o = ev.target.closest?.('#mercadoCorpo [data-mk-o="item"]');
+  if (o) { Object.assign(M.ord, { item: o.value, vq: '', vmin: '', ok: null }); await carregarOrdens(); }
 });
 
 document.addEventListener('submit', async ev => {
@@ -230,6 +336,7 @@ document.addEventListener('submit', async ev => {
     if (dex === -1) { M.msg = 'Não conheço essa espécie.'; M.lista = []; pintar(); return; }
     M.aberto = null; await buscar(); return;
   }
+  if (ev.target.id === 'mkOrdCompra' || ev.target.id === 'mkOrdVenda') { ev.preventDefault(); ev.target.querySelector('.btn:not([disabled])')?.click(); return; }
   if (ev.target.id === 'mkVenda') {
     ev.preventDefault();
     const v = M.venda ?? {}, [tipo, id] = String(v.ativo ?? '').split(/:(.*)/s);
