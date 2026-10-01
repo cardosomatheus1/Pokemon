@@ -303,7 +303,7 @@ export const emCampo = e => e.expedicoes.filter(x => !x.colhidaEm);
  * aparecesse. */
 export const AVENTURAS = {
   avanco:    { onde: 'no avanço',      selo: 'NA RUN' },
-  expedicao: { onde: 'numa expedição', selo: 'EM CAMPO' },
+  expedicao: { onde: 'numa expedição da Rota OFF', selo: 'EM CAMPO' },
 };
 
 /* Quantos dos pendentes vieram da RUN, e não da Rota OFF. Função, e não um
@@ -336,7 +336,7 @@ export const motivoDaOcupada = (e, equipe = []) => {
   for (const id of equipe) {
     const k = ondeAventura(e, id);
     if (k) return `${acharCriatura(e, id) ? 'esta criatura' : 'uma das escolhidas'} ` +
-      `já está ${AVENTURAS[k].onde} — recolha-a antes`;
+      `já está ${AVENTURAS[k].onde} — recolha lá, ou tire-a da equipe`;
   }
   return null;
 };

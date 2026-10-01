@@ -2368,6 +2368,49 @@ do servidor. Três partes:
   (5 -> 4, pela regeneração nova). **Q5:** a escolha e a
   run no celular e no largo — lidas.
 
+### ST-2.13 · A forma evoluída só se pega no estágio do nível dela ✅ 01/10
+- **Por quê (o dono):** o time de um amigo que acabou de começar — Machoke NV1,
+  Pidgeotto NV4, Butterfree NV5 — *"pokémons já evoluídos, mesmo com level
+  baixo, avançando rápido dos treinadores, acho que não tá tão equilibrado"*.
+- **Medido:** em toda rota os dois chefes do estágio 1 são segundas formas
+  (Machoke, Graveler, Wartortle, Dragonair...), 25 das 66 espécies do estágio 1,
+  e o encontro que a vitória deixava era o próprio chefe. A expedição do estágio
+  1 também sorteava evoluídas em todas as 11 rotas.
+- **Feito (camada 0, `engine/estagios.mjs`):** cada estágio é uma FAIXA de
+  níveis, da porta dele até a porta do seguinte (1–12, 12–19, 19–31, 31+), e a
+  forma só se pega no estágio cuja faixa alcança o nível em que ela evolui
+  (`nivelParaExistir`; pedra e troca valem 25). No 1, só as larvas de inseto
+  (evoluem no 7–10); no 2, as do meio (16–18); no 3, as tardias e as de pedra;
+  no 4, todas. **Na run** o chefe evoluído continua na LUTA (a dificuldade é
+  dele) e no registro, mas a vitória deixa a forma do estágio
+  (`formaDoEstagio`: Machoke → Machop) — a contagem de encontros fica, que é
+  economia medida. **Na expedição** a forma fora da faixa sai do elenco; a
+  prévia e o sorteio leem a mesma linha.
+- **A primeira versão foi descartada pela medição:** exigir a PORTA do estágio
+  (nível 1 no estágio 1) esvaziava a expedição — a praia do estágio 3 caía de
+  16 espécies para 2 e o oásis de 24 para 4, porque as raras dos estágios fundos
+  SÃO formas evoluídas. Pela faixa: praia 16 → 10, oásis 24 → 17.
+- **O preço, dito:** praia, gelo, oásis e ferro-velho ficam sem incomum no
+  estágio 1 — o Vigia lá garante a faixa mais rara que sobrou. O texto do foco
+  passou de "um raro garantido" para "o mais raro da rota garantido", que é o
+  que o motor sempre fez. A banda da antifraude foi remedida (o casual do
+  estágio 3 3,64 → 3,69 capturas/dia; o maratona 16,99 → 17,1; teto 21,3 →
+  21,4). As evoluídas que já estão em times ficam como estão.
+- **Junto (o dono: "só avança se atualizar a página"):** não reproduziu com o
+  servidor — começar, virar de wave, sair e voltar da aba e recarregar
+  funcionam. O provável é a criatura escolhida estar numa expedição ("EM CAMPO"
+  no print), que desliga o início com um recado vago; o recado agora diz "já
+  está numa expedição da Rota OFF — recolha lá, ou tire-a da equipe".
+- **Testes:** `forma-estagio` (novo, 6) · `captura` §28 passa a exigir TODAS
+  as espécies do estágio (o "mais de 15" deixou de caber: o campo do 1 tem 15) ·
+  `antifraude` remedida · S540 realvo · S2538–S2543, todos PEGOU.
+- **Fica para depois (L-233):** a criatura capturada nasce no nível 1 mesmo
+  sendo uma forma do estágio 3.
+
+### ST-2.14 · Em que nível a captura nasce (L-233) — proposta
+- Medir na jornada as duas leituras (nível em que a forma passa a existir ×
+  porta do estágio) e escolher pelo número.
+
 ### ST-2.9 · A floresta na vista do celular (L-231) — proposta
 - Em 1× a cena do início da Floresta mostra trilha, grama e fauna, e nenhuma
   árvore: o bioma que se chama floresta não parece uma. Pôr copa na borda do

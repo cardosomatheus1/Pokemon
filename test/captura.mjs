@@ -30,7 +30,7 @@ import {
   baseDaRaridade, alvoRegistro, bolaDe,
 } from '../engine/captura.mjs';
 import { semente } from '../engine/instancia.mjs';
-import { sortearEncontros } from '../engine/expedicao.mjs';
+import { sortearEncontros, elencoDoEstagio } from '../engine/expedicao.mjs';
 import kanto from '../content/pokemon_kanto_v1.mjs';
 import original from '../content/original_v1.mjs';
 
@@ -222,8 +222,11 @@ export function suite() {
     for (let i = 0; i < 300; i++)
       for (const e of sortearEncontros(rnd, { pack: kanto, bioma: 'campo', perfil: 'vigilia' }))
         vistos.add(e.dex);
-    ok(vistos.size > 15,
-      `sem nenhuma aposta, só ${vistos.size} espécies apareceram no campo. O idle ` +
+    /* TODAS as do estágio, e não "mais de 15": o número fixo deixou de caber
+       quando a ST-2.13 tirou as evoluídas do estágio 1 (17 → 15 no campo). */
+    const doEstagio = elencoDoEstagio(kanto, 'campo', null, 1).length;
+    igual(vistos.size, doEstagio,
+      `sem nenhuma aposta, só ${vistos.size} de ${doEstagio} espécies apareceram no campo. O idle ` +
       `produz encontro SOZINHO — a arena é modificador e nunca fonte. Se ela virar ` +
       `fonte, colecionar passa a exigir apostar, e o §28 cai.`);
   });

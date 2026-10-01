@@ -44,7 +44,7 @@ export const FALA = {
   },
   vigia: {
     nome: 'Vigia', cor: '#8f7bff',
-    resumo: 'menos encontros, e um raro garantido',
+    resumo: 'menos encontros, e o mais raro da rota garantido',
     onde: 'na Vigília',
     detalhe: 'para quem manda dormir e quer o achado, não a conta',
   },

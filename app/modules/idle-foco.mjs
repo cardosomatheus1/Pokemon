@@ -50,7 +50,7 @@ export function linhasDe(id) {
   const e = EFEITO[id] ?? {};
   const out = [];
   if (e.encontros) out.push({ bom: e.encontros > 0, txt: `${pct(e.encontros)} de encontros` });
-  if (e.garantido)  out.push({ bom: true,  txt: `${e.garantido} raro garantido por expedição` });
+  if (e.garantido)  out.push({ bom: true,  txt: `${e.garantido} da faixa mais rara garantido por expedição` });
   if (e.vies)       out.push({ bom: e.vies > 0, txt: `${e.vies > 0 ? 'mais' : 'menos'} chance de raro` });
   if (e.material)   out.push({ bom: e.material > 0, txt: `${pct(e.material)} de material` });
   if (e.itemRaro)   out.push({ bom: e.itemRaro > 0, txt: `${pct(e.itemRaro)} de item raro` });

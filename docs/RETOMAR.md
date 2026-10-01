@@ -32,6 +32,9 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            Rotas abre em 1× e as rotas enchem duas colunas. Olhar no celular:
            node tools/olhar-celular.mjs  (capturas em tools/previas/_celular/).
            Próximo do cenário: ST-2.9 (L-231, a Floresta sem árvore na vista).
+           ST-2.13 (01/10): equilíbrio — a forma evoluída só se pega no estágio
+           da faixa de nível dela; o chefe evoluído do estágio 1 deixa a forma
+           jovem (Machoke → Machop); a Rota OFF tira as evoluídas fora da faixa.
            ST-2.12 (01/10): kit de 10 Poké Balls + 3 Poções (com conta, presente
            que não troca), a stamina e o XP ao vivo na run, regenera 20/h
            (DEC-24), a linha da bolsa embaixo da cena.

@@ -4411,8 +4411,8 @@ export const DEFEITOS = [
     /* REALVADO no 1.10: a leitura do elenco virou `elencoDoEstagio`, num lugar
        so, quando o portao apontou que a linha antiga passara a aparecer duas
        vezes — no sorteio e na previa. A ancora acompanhou o comportamento. */
-    de:'  (elenco ?? elencoDoBioma(pack, bioma)).filter(e => cabeNoEstagio(e.raridade, estagio));',
-    para:'  (elenco ?? elencoDoBioma(pack, bioma)).filter(e => (pack.elenco ?? []).includes(e.dex));' },
+    de:'  (elenco ?? elencoDoBioma(pack, bioma)).filter(e => cabeNoEstagio(e.raridade, estagio)\n',
+    para:'  (elenco ?? elencoDoBioma(pack, bioma)).filter(e => (pack.elenco ?? []).includes(e.dex)\n' },
 
   /* O TETO DIARIO GANHA UM PARAMETRO. E a porta do pay-to-win: a loja da L-066
      passa a poder vender teto, e num jogo onde o farm e vendavel isso e
@@ -10343,6 +10343,25 @@ export const DEFEITOS = [
   { id:'S2537', arquivo:'server/idle.mjs', nome:"o sorteio do lance no servidor sempre sai zero",
     real:"a chance certa na tela e a captura certa no bolso, com o dado viciado no meio",
     de:"tentar(semente(derivar(raiz, 'lance')), pack, { raridade: en.raridade, bola })", para:"tentar(() => 0, pack, { raridade: en.raridade, bola })" },
+  /* ── ST-2.13 · a forma evoluída só se pega no estágio do nível dela ──── */
+  { id:'S2538', arquivo:'engine/estagios.mjs', nome:'o teto do estágio volta a ser a porta dele',
+    real:'a primeira versão: a praia do estágio 3 com 2 espécies, o oásis com 4',
+    de:'NIVEL_DO_ESTAGIO[dentro(n)];', para:'NIVEL_DO_ESTAGIO[dentro(n) - 1];' },
+  { id:'S2539', arquivo:'engine/estagios.mjs', nome:'a pedra vira nível 1',
+    real:'toda forma de pedra e de troca se pega no primeiro estágio',
+    de:'n = Math.max(n, Number(e.exige?.nivel) || NIVEL_SEM_NIVEL);', para:'n = Math.max(n, Number(e.exige?.nivel) || 1);' },
+  { id:'S2540', arquivo:'engine/estagios.mjs', nome:'a terceira forma pede só o último nível lido',
+    real:'a linha de três lida de trás para frente: vale o nível da primeira evolução',
+    de:'n = Math.max(n, Number(e.exige?.nivel) || NIVEL_SEM_NIVEL);', para:'n = Number(e.exige?.nivel) || NIVEL_SEM_NIVEL;' },
+  { id:'S2541', arquivo:'engine/estagios.mjs', nome:'a forma do estágio não desce',
+    real:'o chefe evoluído continua virando o encontro dele',
+    de:'for (let i = 0; i < 8 && !capturavelNoEstagio(pack, atual, estagio); i++) {', para:'for (let i = 0; i < 0; i++) {' },
+  { id:'S2542', arquivo:'app/modules/avanco-conta.mjs', nome:'a run deixa o chefe evoluído',
+    real:"'pokémons já evoluídos, mesmo com level baixo' — o caso do amigo do dono",
+    de:'    const dex = formaDoEstagio(pack, visto, run.estagio);', para:'    const dex = visto;' },
+  { id:'S2543', arquivo:EXPED, nome:'a expedição sorteia a evoluída fora da faixa',
+    real:'a Rota OFF do estágio 1 trazendo segundas formas',
+    de:'    && capturavelNoEstagio(pack, e.dex, estagio));', para:'    && true);' },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',

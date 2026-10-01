@@ -68,6 +68,7 @@
  *
  * Entra no 1.7b, junto do que a faz acontecer.
  */
+import { entradaDe } from './evolucao.mjs';
 
 export const ESTAGIOS_POR_BIOMA = 4;
 
@@ -125,6 +126,64 @@ const dentro = n => Math.min(ESTAGIOS_POR_BIOMA, Math.max(1, Math.floor(Number(n
 export const nivelDoEstagio = n => NIVEL_DO_ESTAGIO[dentro(n) - 1];
 export const viesDoEstagio  = n => VIES_DO_ESTAGIO[dentro(n) - 1];
 export const saqueDoEstagio = n => SAQUE_DO_ESTAGIO[dentro(n) - 1];
+
+/* ── A FORMA EVOLUÍDA SÓ SE PEGA NO ESTÁGIO DO NÍVEL DELA (ST-2.13) ───────
+ *
+ * O dono, olhando o time de um amigo que acabou de começar: formas já
+ * evoluídas, com nível baixo, atropelando os treinadores — "acho que não tá
+ * tão equilibrado". Medido: em TODA rota os dois chefes do estágio 1 são
+ * formas evoluídas — 25 das 66 espécies do estágio 1 —, e o encontro que a
+ * vitória deixava era o próprio chefe. Uma segunda forma no nível 1 atropela
+ * o começo inteiro; e a expedição do estágio 1 trazia evoluídas em toda rota.
+ *
+ * A regra é a do gênero: a forma evoluída mora em lugar de nível alto. Cada
+ * estágio é uma FAIXA de níveis — da porta dele até a porta do seguinte — e a
+ * forma só se PEGA no estágio cuja faixa alcança o nível em que ela evolui.
+ * Com as portas em 1/12/19/31: no 1, só as que evoluem até o 12 (as larvas de
+ * inseto); no 2, as do meio (16–18); no 3, as tardias e as de pedra (até 31);
+ * no 4, que não tem porta acima, todas.
+ *
+ * MEDIDO ANTES, e foi o que decidiu a faixa: a primeira versão exigia a PORTA
+ * do estágio (nível 1 no estágio 1), e esvaziava a expedição — a praia do
+ * estágio 3 caía de 16 espécies para 2, o oásis de 24 para 4, porque as raras
+ * dos estágios fundos SÃO as formas evoluídas. Pela faixa, a praia do 3 fica
+ * com 10, o oásis com 17, e nenhum chefe evoluído do estágio 1 (as segundas
+ * formas de nível 16 a 30) se pega nele.
+ *
+ * O que ela NÃO tira, de propósito: o chefe evoluído continua na LUTA da run
+ * (a dificuldade do estágio é dele), e o registro continua vendo quem lutou.
+ * Muda o que a vitória deixa: a forma do estágio — a mais evoluída da linha
+ * que ainda cabe nele (`formaDoEstagio`). Trocar em vez de tirar mantém a
+ * contagem de encontros, que é economia medida (teto, fragmentos, D-107).
+ *
+ * A evolução que não é por nível (pedra, troca) vale `NIVEL_SEM_NIVEL`. */
+export const NIVEL_SEM_NIVEL = 25;
+export function nivelParaExistir(pack, dex) {
+  let atual = dex, n = 1;
+  for (let i = 0; i < 8; i++) {
+    const e = entradaDe(pack, atual);
+    if (!e) break;
+    n = Math.max(n, Number(e.exige?.nivel) || NIVEL_SEM_NIVEL);
+    atual = e.de;
+  }
+  return n;
+}
+export const tetoDoEstagio = n =>
+  dentro(n) >= ESTAGIOS_POR_BIOMA ? Infinity : NIVEL_DO_ESTAGIO[dentro(n)];
+export const capturavelNoEstagio = (pack, dex, estagio) =>
+  nivelParaExistir(pack, dex) <= tetoDoEstagio(estagio);
+
+/* A forma que o encontro deixa: desce a linha até caber. A base sempre cabe
+   (`nivelParaExistir` dela é 1), então a descida sempre termina. */
+export function formaDoEstagio(pack, dex, estagio) {
+  let atual = dex;
+  for (let i = 0; i < 8 && !capturavelNoEstagio(pack, atual, estagio); i++) {
+    const e = entradaDe(pack, atual);
+    if (!e) break;
+    atual = e.de;
+  }
+  return atual;
+}
 
 /* ── QUEM ABRE A PORTA É A MELHOR CRIATURA, E NÃO A EQUIPE ────────────────
  *

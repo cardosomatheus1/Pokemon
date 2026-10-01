@@ -66,7 +66,7 @@
 
 import { elencoDoBioma } from './bioma.mjs';
 import { encontrosCom } from './foco.mjs';
-import { viesFinal, cabeNoEstagio, VIES_TETO, faixasDoEstagio } from './estagios.mjs';
+import { viesFinal, cabeNoEstagio, VIES_TETO, faixasDoEstagio, capturavelNoEstagio } from './estagios.mjs';
 import { pesoComBonus, bonusVivo } from './captura.mjs';
 import { baseDe } from './evolucao.mjs';
 
@@ -548,7 +548,10 @@ export const pronta = (exp, agora) => agora >= exp.terminaEm;
  * previa de dois estagios ser duas listas diferentes, e nao a mesma lista com
  * outros numeros. */
 export const elencoDoEstagio = (pack, bioma, elenco = null, estagio = 1) =>
-  (elenco ?? elencoDoBioma(pack, bioma)).filter(e => cabeNoEstagio(e.raridade, estagio));
+  (elenco ?? elencoDoBioma(pack, bioma)).filter(e => cabeNoEstagio(e.raridade, estagio)
+    /* ST-2.13: a forma evoluída só vem no estágio do nível dela — a prévia e
+       o sorteio leem esta linha, então a tela e a colheita mudam juntas. */
+    && capturavelNoEstagio(pack, e.dex, estagio));
 
 /* ── O QUE APARECE AQUI, ANTES DE GASTAR AS HORAS (bloco 1.10) ────────────
  *

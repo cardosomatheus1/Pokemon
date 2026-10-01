@@ -9392,6 +9392,20 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-233 — a criatura capturada nasce no nível 1, qualquer que seja a forma
+
+**Registrada em:** 01/10/2026, na ST-2.13. **Bloco dono:** **ST-2.14**
+(proposta no PLANO). **Estado:** aberta.
+
+A ST-2.13 decidiu ONDE a forma evoluída se pega (o estágio da faixa de nível
+dela). Falta decidir COMO ela chega: hoje toda captura nasce no nível 1, e uma
+segunda forma pega no estágio 3 começa com os atributos dela no nível de uma
+larva. Duas leituras dão trabalhos diferentes — nascer no nível em que ela
+passa a existir (mais forte, coerente com o gênero) ou no nível da porta do
+estágio. **Por que não cabe agora:** a ST-2.13 é sobre o começo do jogo, e
+nenhuma das duas mexe nele. **O que a destrava:** medir na jornada o poder de
+uma equipe de estágio 3 nas duas leituras.
+
 ### L-232 — na run, as placas de dois selvagens próximos se sobrepõem
 
 **Registrada em:** 01/10/2026, no Q5 da ST-2.10. **Bloco dono:** **ST-2.11**

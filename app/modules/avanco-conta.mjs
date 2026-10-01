@@ -22,7 +22,7 @@ import { creditar } from '../../engine/nivel-criatura.mjs';
 import { moedasDa, idDaMoeda, idDoMaterial } from '../../engine/economia-idle.mjs';
 import { sortearItens, agrupar } from '../../engine/drops.mjs';
 import { lancamentoDoBau } from '../../engine/estilhaco.mjs';
-import { viesFinal, cabeNoEstagio } from '../../engine/estagios.mjs';
+import { viesFinal, cabeNoEstagio, formaDoEstagio } from '../../engine/estagios.mjs';
 import { PERFIS, pesoDaRaridade, staminaAgora } from '../../engine/expedicao.mjs';
 import { FRAGMENTOS_POR_ENCONTRO } from '../../engine/captura.mjs';
 import { efeitosDa } from '../../engine/foco.mjs';
@@ -195,11 +195,14 @@ export function contaDaRun(pack, { run, criaturas, motor, avancos, raiz, agora }
 
   /* OS ENCONTROS FICAM PENDENTES, esperando bola, com a ORIGEM marcada (L-166)
      — começar outra run limpa o quadro DESTA sem encostar na Rota OFF. */
-  const pendentes = premio.encontros.map((dex, i) => ({
-    chave: `${run.raiz}:${i}`, expedicao: null, origem: 'avanco', dex,
-    raridade: raridadeDe(pack, (pack.especies ?? []).find(x => x.dex === dex) ?? {}),
-    bioma: run.bioma, em: agora,
-  }));
+  /* A FORMA DO ESTÁGIO (ST-2.13): o chefe evoluído do estágio 1 deixa a
+     forma jovem dele — a mesma contagem, e nenhuma evoluída antes do nível. */
+  const pendentes = premio.encontros.map((visto, i) => {
+    const dex = formaDoEstagio(pack, visto, run.estagio);
+    return { chave: `${run.raiz}:${i}`, expedicao: null, origem: 'avanco', dex,
+             raridade: raridadeDe(pack, (pack.especies ?? []).find(x => x.dex === dex) ?? {}),
+             bioma: run.bioma, em: agora };
+  });
 
   /* O QUE O CLIMA PAGOU, em número ABSOLUTO (1.32): "+52 por clima" é a
      frase do dono, e "x1,15" obrigaria quem lê a fazer a conta. */

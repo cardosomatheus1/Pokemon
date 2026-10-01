@@ -25,11 +25,13 @@
  *
  * Medida na simulação do idle (`test/fixtures/antifraude.json`, o mesmo
  * método da fixture de emissão, pela captura ESPERADA de cada lance): o casual
- * no estágio 3 captura 3,64 por dia e o maratona no estágio 1, 16,99. A banda
- * abre meio abaixo do menor e um quarto acima do maior — o teste confere que
- * ela continua saindo da medição.
+ * no estágio 3 captura 3,69 por dia e o maratona, 17,1. A banda abre meio
+ * abaixo do menor e um quarto acima do maior — o teste confere que ela
+ * continua saindo da medição. (Remedida na ST-2.13: era 3,64 e 16,99, teto
+ * 21,3; sem as evoluídas fora da faixa, sobra mais da faixa comum, que se pega
+ * mais fácil.)
  */
-export const BANDA_DE_CAPTURA = Object.freeze({ min: 1.8, max: 21.3 });
+export const BANDA_DE_CAPTURA = Object.freeze({ min: 1.8, max: 21.4 });
 
 /* O detector de horário. Medido com fraude plantada (`test/antifraude.mjs`):
    a TAXA DE DETECÇÃO e a de FALSO POSITIVO estão na fixture, e o gate 3→4 as
