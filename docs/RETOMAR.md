@@ -25,19 +25,20 @@ defeito meu.
 ## 0. ONDE PARAMOS — 01/10/2026
 
 ```text
-o RESUMO   A E14 (Shiny, Trading & Player Market) ESTÁ COMPLETA ATÉ O GATE C:
-           a troca e o Market estão LIGADOS (DEC-21, moeda simulada), o PC-T
-           de jogador nasce na jornada (ST-14.0E), o operador lê a economia
-           em GET /api/admin/economia-e14, e as lacunas destravadas fecharam
-           (L-223, L-227, L-228, L-208, L-211; L-221 decidida). O que resta
-           da fila ESPERA alguém ou algum dado:
+o RESUMO   A E14 (Shiny, Trading & Player Market) ESTÁ COMPLETA — todas as
+           ondas (0 a D) e os quatro gates. Em 01/10, a pedido do dono ("faça
+           td da 14"): o shiny no palco da Liga (14.3c), o aviso "isto prende"
+           antes de gastar pedra e doce (14.3d, com o D-139), as ordens de
+           compra de itens (14.11A) e de criatura por critérios (14.11B), e o
+           gate D. A troca e o Market estão LIGADOS (DEC-21, moeda simulada).
+           O que resta da fila ESPERA alguém ou algum dado:
              · as lojas com NPC (1.31b, L-176) — o vídeo que só existe no PC
-               do dono. Os ÍCONES (1.30) fecharam em 01/10: a arte de 160 px
-               achada no Serebii, a pedido do dono
-             · a onda D da E14 (buy orders) — dados de liquidez do piloto
-             · o visual adiado pela DEC-20 (ST-10.26, ST-14.3c, ST-14.3d)
+               do dono
+             · o visual adiado pela DEC-20 (ST-10.26)
              · o piloto com amigos (ST-7.2) — o dono e o roteiro em
                docs/PILOTO.md
+             · L-229 / ST-2.7 (o vão sob a bolsa no idle largo) — o olhar
+               do dono
            E o Q2 completo em fatias, que é o nível da TAG: 3/10 em diante.
 ```
 

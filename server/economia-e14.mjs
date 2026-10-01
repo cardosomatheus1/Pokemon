@@ -30,13 +30,18 @@ const SQL_EXISTENTES = [
   'SELECT item_id, SUM(quantidade) AS n FROM bolsa_lotes',
   'WHERE item_id IN (SELECT DISTINCT item_id FROM emissoes_controladas) GROUP BY item_id',
 ].join(' ');
+/* A VENDA é a do anúncio E a para uma ordem de compra (ST-14.11A/B, gate D)
+   — a do vendedor que aceitou o livro; a ordem que casou com um anúncio já
+   está na primeira lista, e contá-la de novo dobraria a liquidez. */
 const SQL_VENDAS = [
-  'SELECT COUNT(*) AS vendas, COALESCE(SUM(preco), 0) AS volume, COALESCE(SUM(taxa_venda), 0) AS taxas,',
+  'SELECT COUNT(*) AS vendas, COALESCE(SUM(preco), 0) AS volume, COALESCE(SUM(taxa), 0) AS taxas,',
   'COALESCE(SUM(shiny), 0) AS vendasShiny,',
-  'COUNT(DISTINCT vendedor_id) AS vendedores, COUNT(DISTINCT comprador_id) AS compradores',
-  'FROM player_market_fills WHERE em >= ?',
+  'COUNT(DISTINCT vendedor) AS vendedores, COUNT(DISTINCT comprador) AS compradores FROM (',
+  'SELECT preco, taxa_venda AS taxa, shiny, vendedor_id AS vendedor, comprador_id AS comprador FROM player_market_fills WHERE em >= ?',
+  "UNION ALL SELECT bruto, taxa_venda, shiny, vendedor_id, comprador_id FROM player_market_order_fills WHERE em >= ? AND venda_ref LIKE 'venda:%')",
 ].join(' ');
 const SQL_ANUNCIOS = "SELECT COUNT(*) AS n FROM player_market_listings WHERE estado = 'ACTIVE'";
+const SQL_ORDENS = "SELECT COUNT(*) AS n, COALESCE(SUM(restante * preco_unit), 0) AS presos FROM player_market_buy_orders WHERE estado = 'ACTIVE'";
 const SQL_TROCAS = "SELECT COUNT(*) AS n FROM trocas WHERE estado = 'SETTLED' AND encerrada_em >= ?";
 const SQL_ORFAS = 'SELECT tipo, COUNT(*) AS n FROM economia_divergencias WHERE resolvida_em IS NULL GROUP BY tipo';
 
@@ -65,10 +70,11 @@ export function fatosDaEconomiaE14(db, { agora = Date.now() } = {}) {
   const emitidas = Object.fromEntries(db.prepare(SQL_EMITIDAS).all().map(r => [r.item_id, r.n]));
   const existentes = Object.fromEntries(db.prepare(SQL_EXISTENTES).all().map(r => [r.item_id, r.n]));
 
-  const v = db.prepare(SQL_VENDAS).get(agora - 7 * DIA_MS);
+  const v = db.prepare(SQL_VENDAS).get(agora - 7 * DIA_MS, agora - 7 * DIA_MS);
+  const ordens = db.prepare(SQL_ORDENS).get();
   const mercado = { vendas7d: v.vendas, vendasShiny7d: v.vendasShiny, volume7d: v.volume, taxasVenda7d: v.taxas,
                     vendedores7d: v.vendedores, compradores7d: v.compradores,
-                    anunciosAtivos: db.prepare(SQL_ANUNCIOS).get().n };
+                    anunciosAtivos: db.prepare(SQL_ANUNCIOS).get().n, ordensAbertas: ordens.n, presoEmOrdens: ordens.presos };
 
   return { ...f, circulante, saldosTransferiveis,
            shiny: { estoque, soltos, porEspecie },
