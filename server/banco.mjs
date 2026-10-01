@@ -2526,6 +2526,35 @@ export const MIGRACOES = [
     desce: db => { db.exec(`DROP TABLE player_market_fills_exclusoes`); },
   },
 
+  {
+    /* ST-14.14c · E14 · A ORIGEM DO DOCE (spec E14 §4.3 · L-223).
+     *
+     * O doce é fungível por linha, então a linha guarda quantos dos seus doces
+     * são PRESOS (vieram de aposta paga com o que não negocia, ou de soltar
+     * uma criatura presa). O LEGADO não fica livre por omissão: o livro do
+     * doce diz quais créditos vieram de aposta, e o bilhete diz de que bolsos
+     * ela foi paga — o que veio de bolso que não negocia conta como preso, até
+     * o tanto que a linha ainda tem. */
+    nome: 'doce-origem-st14.14c',
+    sobe: db => {
+      db.exec(`ALTER TABLE species_candy ADD COLUMN presos INTEGER NOT NULL DEFAULT 0 CHECK (presos >= 0 AND presos <= quantidade)`);
+      const presos = new Map();
+      for (const l of db.prepare(`SELECT l.user_id, l.species_id, l.delta, b.stake_breakdown FROM candy_ledger l
+                                    LEFT JOIN bets b ON 'aposta:' || b.id = l.idem_key
+                                   WHERE l.motivo = 'aposta' AND l.delta > 0`).all()) {
+        let comp = null;
+        try { comp = JSON.parse(l.stake_breakdown ?? 'null'); } catch { comp = null; }
+        const livre = comp && Object.entries(comp).some(([, n]) => n > 0) && Object.entries(comp).every(([b, n]) => !(n > 0) || b === 'transferivel');
+        if (livre) continue;
+        const k = `${l.user_id}\u0000${l.species_id}`;
+        presos.set(k, (presos.get(k) ?? 0) + l.delta);
+      }
+      const gravar = db.prepare(`UPDATE species_candy SET presos = MIN(quantidade, ?) WHERE user_id = ? AND species_id = ?`);
+      for (const [k, n] of presos) { const [u, sp] = k.split('\u0000'); gravar.run(n, u, Number(sp)); }
+    },
+    desce: db => { db.exec(`ALTER TABLE species_candy DROP COLUMN presos`); },
+  },
+
 ];
 
 const TABELA_VERSAO = `

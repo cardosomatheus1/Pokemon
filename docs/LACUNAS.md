@@ -9153,11 +9153,13 @@ dele não decide nada ainda.
 ou um pedido do dono); aí o `candy_ledger` ganha a classe, e a aposta em PC-B
 gera doce `promotional_bound`.
 
-### L-223 — o doce comprado com bônus não prende a criatura que ele fez subir
+### L-223 — o doce comprado com bônus não prende a criatura que ele fez subir ✅ FECHADA na ST-14.14c (01/10)
 
-**Registrada em:** 01/10/2026, na ST-14.5. **Bloco dono:** ST-14.14 (a
-proteção antes de negociar — "origem saneada" é portão do gate B). **Estado:**
-aberta.
+**Registrada em:** 01/10/2026, na ST-14.5. **Bloco dono:** ST-14.14 →
+**ST-14.14c** (a 14.14 fechou sem ela; o Market ligou pela DEC-21 e o desvio
+ficou aberto de verdade). **Estado:** fechada — a linha do doce guarda os
+PRESOS (`species_candy.presos`), o doce da aposta paga com o que não negocia
+nasce preso, dar doce gasta o livre primeiro e o preso prende a criatura.
 
 A spec E14 §4.3 pede que a origem restrita se propague "pedra/doce →
 evolução/progresso". A pedra já propaga (ST-14.0C). O doce não: ele não tem
@@ -9197,6 +9199,11 @@ tem rota que a exponha.
 **O que a destrava:** a ST-14.0D — a rota de evoluir e a de lançar aceitam a
 classe do insumo, e a tela mostra "isto prende a criatura" quando a classe
 escolhida não é negociável e a criatura é.
+
+**01/10, ST-14.14c:** o DOCE também prende agora (L-223), e a resposta de
+dar doce diz `prendeu`. O aviso ANTES — na pedra e no doce — passa a ter
+dono próprio: a **ST-14.3d** (proposta no PLANO), que é tela e espera a
+DEC-20 liberar o visual.
 
 ### L-225 — a tela do lance não oferece a bola garantida, nem mostra o encontro shiny ✅ FECHADA na ST-14.0D (01/10)
 

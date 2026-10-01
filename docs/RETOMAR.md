@@ -150,6 +150,9 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            ondas; sem ela o Market não tinha moeda de jogador.
            · ST-14.14b FECHADA (01/10): a conta que tenta negociar com uma
            conta ligada é CONGELADA para o operador revisar (L-228).
+           · ST-14.14c FECHADA (01/10): o doce de aposta paga com bônus é
+           PRESO e prende a criatura que sobe com ele (L-223) — com o Market
+           ligado, era o desvio do PC-B para nível vendável.
            A E14 ESTÁ COMPLETA ATÉ O GATE C; a onda D (buy orders) espera
            dados de liquidez do piloto.
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca

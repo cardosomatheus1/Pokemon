@@ -22,10 +22,13 @@ import { doceDaAposta, chaveDoDoce, apostasComDoceNoDia } from '../engine/doce.m
 import { pausaAtiva } from './protecao.mjs';
 import { emTransacao } from './carteira.mjs';
 import { anotar } from './telemetria.mjs';
+import { doceLivreDaAposta } from '../engine/doce-origem.mjs';
 
 export const ERRO_DOCE = Object.freeze({ CHAVE: 'DOCE_CHAVE_INVALIDA' });
 
-export function creditarDoceDaAposta(db, { pack, userId, betId, speciesId, venceu, agora = Date.now() }) {
+/* `composicao`: de que bolsos a aposta foi paga (ST-14.14c) — paga com o que
+   não negocia, o doce nasce PRESO. Sem ela (legado), preso também. */
+export function creditarDoceDaAposta(db, { pack, userId, betId, speciesId, venceu, composicao = null, agora = Date.now() }) {
   const hoje = db.prepare(`SELECT created_at FROM candy_ledger WHERE user_id = ? AND motivo = 'aposta'
                             AND created_at > ?`).all(userId, agora - 2 * 86_400_000).map(x => x.created_at);
   const quantidade = doceDaAposta({ venceu: !!venceu, houveAposta: true, protecaoAtiva: !!pausaAtiva(db, userId, agora),
@@ -35,9 +38,10 @@ export function creditarDoceDaAposta(db, { pack, userId, betId, speciesId, vence
   const r = db.prepare(`INSERT OR IGNORE INTO candy_ledger (user_id, species_id, delta, motivo, idem_key, created_at)
                         VALUES (?, ?, ?, 'aposta', ?, ?)`).run(userId, linha, quantidade, `aposta:${betId}`, agora);
   if (r.changes === 0) return { quantidade: 0, repetida: true };
-  db.prepare(`INSERT INTO species_candy (user_id, species_id, quantidade) VALUES (?, ?, ?)
-              ON CONFLICT (user_id, species_id) DO UPDATE SET quantidade = quantidade + excluded.quantidade`)
-    .run(userId, linha, quantidade);
+  const presos = doceLivreDaAposta(composicao) ? 0 : quantidade;
+  db.prepare(`INSERT INTO species_candy (user_id, species_id, quantidade, presos) VALUES (?, ?, ?, ?)
+              ON CONFLICT (user_id, species_id) DO UPDATE SET quantidade = quantidade + excluded.quantidade, presos = presos + excluded.presos`)
+    .run(userId, linha, quantidade, presos);
   anotar(db, { nome: 'candy_credited', userId, chave: String(betId), agora, campos: { quantidade, venceu: !!venceu } });
   return { quantidade, linha };
 }
@@ -62,7 +66,7 @@ export function resgatarDoces(db, { userId, chaveIdem, agora = Date.now() }) {
     for (const [linha, n] of Object.entries(saldo)) {
       db.prepare(`INSERT INTO candy_ledger (user_id, species_id, delta, motivo, idem_key, created_at)
                   VALUES (?, ?, ?, 'resgate', ?, ?)`).run(userId, Number(linha), -n, prefixo + linha, agora);
-      db.prepare(`UPDATE species_candy SET quantidade = quantidade - ? WHERE user_id = ? AND species_id = ?`).run(n, userId, Number(linha));
+      db.prepare(`UPDATE species_candy SET quantidade = quantidade - ?, presos = 0 WHERE user_id = ? AND species_id = ?`).run(n, userId, Number(linha));
     }
     return { doces: saldo, repetido: false };
   });

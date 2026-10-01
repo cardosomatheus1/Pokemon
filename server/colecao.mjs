@@ -14,6 +14,7 @@ import { alternarGolpe } from '../app/modules/moveset-dados.mjs';
 import { aplicar as aplicarEvolucao } from '../app/modules/evolucao-idle.mjs';
 import { criaturasDaConta, bolsaDe, debitarBolsa } from './idle.mjs';
 import { maisRestrita } from '../engine/proveniencia.mjs';
+import { doceLivreAoSoltar, gastoDoDoce, classeAposDoce } from '../engine/doce-origem.mjs';
 import { elegibilidadeDaCriatura } from './elegibilidade.mjs';
 import { exigirSemReserva } from './reservas.mjs';
 
@@ -54,15 +55,19 @@ export function soltarNaConta(db, { userId, pack, id, agora }) {
   const motivo = motivoDeSoltar(c, pode.reason_code === 'ASSET_BUSY');
   if (motivo) throw new Error(motivo);
   const doce = doceAoSoltar(pack, c.dex), linha = chaveDoDoce(pack, c.dex);
+  /* ST-14.14c: soltar uma criatura PRESA dá doce preso — senão soltar seria a
+     porta de lavar a origem. */
+  const classe = db.prepare(`SELECT proveniencia FROM criaturas WHERE id = ? AND user_id = ?`).get(id, userId)?.proveniencia;
+  const presos = doceLivreAoSoltar(classe) ? 0 : doce;
   return emTransacao(db, () => {
     const r = db.prepare(`DELETE FROM criaturas WHERE id = ? AND user_id = ?`).run(id, userId);
     if (!r.changes) throw falha(ERRO_COLECAO.SEM_CRIATURA, 'esta criatura não existe');
     if (doce > 0) {
       db.prepare(`INSERT INTO candy_ledger (user_id, species_id, delta, motivo, idem_key, created_at)
                   VALUES (?, ?, ?, 'soltar', ?, ?)`).run(userId, linha, doce, `soltar:${id}`, agora);
-      db.prepare(`INSERT INTO species_candy (user_id, species_id, quantidade) VALUES (?, ?, ?)
-                  ON CONFLICT (user_id, species_id) DO UPDATE SET quantidade = quantidade + excluded.quantidade`)
-        .run(userId, linha, doce);
+      db.prepare(`INSERT INTO species_candy (user_id, species_id, quantidade, presos) VALUES (?, ?, ?, ?)
+                  ON CONFLICT (user_id, species_id) DO UPDATE SET quantidade = quantidade + excluded.quantidade, presos = presos + excluded.presos`)
+        .run(userId, linha, doce, presos);
     }
     return { ok: true, doce, linha, dex: c.dex };
   });
@@ -131,16 +136,24 @@ export function darDoceNaConta(db, { userId, pack, id, quantos = 1, chaveIdem, a
   const c = criaturasDaConta(db, userId).find(x => x.id === id);
   if (!c) throw falha(ERRO_COLECAO.SEM_CRIATURA, 'esta criatura não existe');
   const linha = chaveDoDoce(pack, c.dex);
-  const tem = db.prepare(`SELECT quantidade FROM species_candy WHERE user_id = ? AND species_id = ?`).get(userId, linha)?.quantidade ?? 0;
+  const saldo = db.prepare(`SELECT quantidade, presos FROM species_candy WHERE user_id = ? AND species_id = ?`).get(userId, linha);
+  const tem = saldo?.quantidade ?? 0;
   const r = usoDoDoce(c, { tem, quantos });
   if (!r.ok) throw new Error(r.motivo);
+  /* ST-14.14c: os livres primeiro; se o doce preso entrou, a criatura que
+     subiu fica presa — e a resposta diz, para a tela não esconder. */
+  const g = gastoDoDoce({ quantidade: tem, presos: saldo?.presos ?? 0, gastos: r.gastos });
   return emTransacao(db, () => {
-    const d = db.prepare(`UPDATE species_candy SET quantidade = quantidade - ? WHERE user_id = ? AND species_id = ? AND quantidade >= ?`)
-      .run(r.gastos, userId, linha, r.gastos);
+    const d = db.prepare(`UPDATE species_candy SET quantidade = quantidade - ?, presos = presos - ? WHERE user_id = ? AND species_id = ? AND quantidade >= ? AND presos >= ?`)
+      .run(r.gastos, g.presosUsados, userId, linha, r.gastos, g.presosUsados);
     if (!d.changes) throw new Error('sem doce da linha dela');
     db.prepare(`INSERT INTO candy_ledger (user_id, species_id, delta, motivo, idem_key, created_at) VALUES (?, ?, ?, 'uso', ?, ?)`)
       .run(userId, linha, -r.gastos, idem, agora);
     db.prepare(`UPDATE criaturas SET xp = ?, nivel = ? WHERE id = ? AND user_id = ?`).run(r.novo.xp, r.novo.nivel, id, userId);
-    return { ok: true, gastos: r.gastos, xp: r.xp, subiu: r.novo.subiu, nivel: r.novo.nivel, linha };
+    if (g.prende) {
+      const antes = db.prepare(`SELECT proveniencia FROM criaturas WHERE id = ?`).get(id).proveniencia;
+      db.prepare(`UPDATE criaturas SET proveniencia = ? WHERE id = ? AND user_id = ?`).run(classeAposDoce(antes, true), id, userId);
+    }
+    return { ok: true, gastos: r.gastos, xp: r.xp, subiu: r.novo.subiu, nivel: r.novo.nivel, linha, prendeu: g.prende };
   });
 }

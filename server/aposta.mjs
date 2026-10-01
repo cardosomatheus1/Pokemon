@@ -257,7 +257,7 @@ export function liquidarRodada(db, { sched, roundId, agora = Date.now() }) {
                           ref: t.id, idem: `settle-${t.id}`, agora });
     /* O DOCE (§7.8): da espécie APOSTADA, pela vitória dela — o valor não
        entra. A proteção é conferida AGORA, no instante da liquidação. */
-    creditarDoceDaAposta(db, { pack: PACK, userId: t.user_id, betId: t.id, speciesId: t.species_id, venceu: ganhou, agora });
+    creditarDoceDaAposta(db, { pack: PACK, userId: t.user_id, betId: t.id, speciesId: t.species_id, venceu: ganhou, composicao, agora });
     const retorno = ganhou ? Math.floor(t.stake * t.odd) : 0;
     db.prepare(`UPDATE bets SET status=?, payout=?, settled_at=? WHERE id=?`)
       .run(ganhou ? 'ganha' : 'perdida', retorno, agora, t.id);
