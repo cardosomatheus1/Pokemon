@@ -2183,6 +2183,50 @@ export async function rodar() {
     } catch (e) { return { erro: String(e).slice(0, 140) }; }
   })();
 
+  /* ── A LUTA DA JORNADA, PELO CLIQUE (D-142) ─────────────────────────────
+   *
+   * O dono: "a jornada tá bugada, já matei [o rival] e ainda assim não
+   * avança". A ST-13.5f tirou `antes = chanceNaTela` do clique de lutar e
+   * deixou o `antes` em uso: TODA luta da jornada lançava ReferenceError
+   * depois de gravada — a vitória ficava no save (ou no servidor), e a tela
+   * não encenava nem redesenhava o mapa. Os testes estáticos não veem
+   * variável não declarada; só o clique vê. Aba nova no mesmo contexto, como
+   * a de cima: o save é o da sonda, com a criatura no nível de vencer a
+   * Rota 1. */
+  const jornadaLuta = await (async () => {
+    const pg3 = await pg.context().newPage();
+    const errosJn = [];
+    pg3.on('pageerror', e => errosJn.push(String(e).split('\n')[0]));
+    try {
+      await pg3.goto(`http://127.0.0.1:${porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
+      await pg3.waitForFunction(() => !document.querySelector('#boot'), { timeout: 60000, polling: 200 });
+      await pg3.evaluate(async () => {
+        localStorage.setItem('ar_session', '1');   // a aba é do treinador
+        const d = await import('/app/modules/idle-dados.mjs');
+        const { xpParaNivel } = await import('/engine/nivel-criatura.mjs');
+        const E = d.carregar();
+        for (const c of E.criaturas ?? []) { c.nivel = 20; c.xp = xpParaNivel(20); }
+        d.salvar(E);
+        document.querySelector('.nav[data-view="viewTreino"]')?.click();
+        document.querySelector('[data-treino-aba="jornada"]')?.click();
+      });
+      await pg3.waitForFunction(() => { const b = document.querySelector('#jnLutar'); return b && !b.disabled; },
+        { timeout: 20000, polling: 150 });
+      const antes = await pg3.evaluate(() => document.querySelector('.jnNo.jn-atual')?.dataset.jnNo ?? null);
+      await pg3.click('#jnLutar');
+      const encenou = await pg3.waitForSelector('#jnLuta [data-pve-fechar]', { timeout: 30000 }).then(() => true).catch(() => false);
+      if (encenou) await pg3.click('#jnLuta [data-pve-fechar]');
+      await pg3.waitForTimeout(400);
+      const depois = await pg3.evaluate(() => ({
+        atual: document.querySelector('.jnNo.jn-atual')?.dataset.jnNo ?? null,
+        vencidos: JSON.parse(localStorage.getItem('ar_idle') || 'null')?.jornada?.vencidos ?? [],
+        painel: !document.querySelector('#jornadaCorpo')?.classList.contains('emLuta'),
+      }));
+      return { antes, encenou, ...depois, erros: errosJn };
+    } catch (e) { return { erro: String(e).slice(0, 160), erros: errosJn }; }
+    finally { await pg3.close().catch(() => {}); }
+  })();
+
   await b.close(); s.close();
 
 
@@ -2192,7 +2236,7 @@ export async function rodar() {
     for (const [r, ms] of TEMPOS.filter(([, ms]) => ms >= 500).sort((a, b) => b[1] - a[1]))
       console.log(`    ${String(ms).padStart(7)} ms  ${r}`);
   }
-  return { erros, conhecidos, apostas, batalhaPronta, hudNaAposta, folhas: cache.size, erroDepois, jogo, corte, cancelamento, comAposta, colunasAposta, painel, arena, idle, idlePronto, som, captura, loja, bnIdle, idleRecarregado, tema, fontes, avisos, ...st };
+  return { erros, conhecidos, apostas, batalhaPronta, hudNaAposta, folhas: cache.size, erroDepois, jogo, corte, cancelamento, comAposta, colunasAposta, painel, arena, idle, idlePronto, som, captura, loja, bnIdle, idleRecarregado, jornadaLuta, tema, fontes, avisos, ...st };
 }
 
 /* Q3 · A RODADA DO APP SAI DA RAIZ.
@@ -3948,6 +3992,16 @@ export function suite(r) {
       `"${rr.ativa}". É o relato do dono: com o bicho farmando num lugar e a ` +
       'aba abrindo noutro, ele conclui que o jogo esqueceu quem ele mandou. ' +
       'A tela mostra primeiro o que ESTÁ acontecendo; o resto é um clique.');
+  });
+
+  s.teste('D-142 · a luta da jornada encena, grava e o mapa anda', () => {
+    const j = r.jornadaLuta ?? {};
+    ok(!j.erro, `a sonda da jornada falhou: ${j.erro}`);
+    igual(j.erros.join(' | '), '', 'o clique de lutar lançou erro na página — "já matei e não avança"');
+    ok(j.encenou, 'a luta não foi encenada: o fim com "voltar ao mapa" não apareceu');
+    ok(j.vencidos.includes(j.antes), `o save não gravou a vitória sobre ${j.antes}`);
+    ok(j.atual && j.atual !== j.antes, `o mapa não andou: o atual continua ${j.atual} (era ${j.antes})`);
+    ok(j.painel, 'o painel do mapa não voltou depois da luta');
   });
 
   s.teste('o banner do idle diz o lugar e o tempo, e nada de arena', () => {

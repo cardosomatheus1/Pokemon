@@ -14,6 +14,7 @@ import { mapaDaJornada } from '../app/modules/jornada-dados.mjs';
 import { MATERIAIS, CELULA } from '../app/modules/jornada-chao.mjs';
 import { paraTiled, deTiled, tilesetPng, arquivoDoMapa, CASAS } from '../tools/mapa-tiled.mjs';
 import { larguraDaEstrada, faceDoPenhasco, CORES_DA_ESTRADA, trechosDaEstrada, setasNaEstrada, curvaDaEstrada, obrasNaEstrada, casasDaEstrada, pedrasNoChao, CHAO_QUE_ABRE, FOLGA_DA_CLAREIRA } from '../app/modules/jornada-estrada.mjs';
+import { pintarDesenho } from '../app/modules/jornada-desenho-tela.mjs';
 import { LEGENDA, ORDEM, lerDesenho, celulaEm, noDesenho, gradeDoDesenho, mascara, camadas, bitsDeAltura } from '../app/modules/jornada-desenho.mjs';
 
 const fonte = rel => readFileSync(new URL(rel, import.meta.url), 'utf8');
@@ -253,6 +254,20 @@ export function suite() {
     const lava = css.match(/\.jnLago\.jn-lava::after\{[^}]*\}/)?.[0] ?? '';
     ok(lava && !/radial-gradient/.test(lava) && /steps\(/.test(lava), 'a lava voltou ao gradiente liso (sem pixel)');
     ok(/\.jnEu\{scale:\.78;transform-origin:50% 100%\}/.test(css) && /\.jnOw\{scale:\.8;transform-origin:50% 100%\}/.test(css), 'o jogador e o treinador voltaram maiores que as casas');
+  });
+
+  s.teste('D-142 · o chão não pinta na caixa que sumiu durante o await da folha', () => {
+    /* Entre a guarda do `pintarChao` e o `pintarDesenho` há o `await` da
+       folha; se a caixa some nesse meio (a luta que acaba e repinta, a aba
+       trocada), a grade nasce vazia. Era um TypeError na página, a cada luta
+       da jornada na suíte com navegador. */
+    let tocou = false;
+    const tela = { getContext() { tocou = true; return {}; } };
+    let erro = null;
+    try { pintarDesenho(tela, { clientWidth: 0, clientHeight: 0 }, lerDesenho(pack.mapaJornada?.deitado ?? pack.mapaJornada?.emPe), false, null); }
+    catch (e) { erro = e; }
+    ok(!erro, `a caixa de 0 px lançou: ${erro?.message}`);
+    ok(!tocou, 'a caixa de 0 px ainda mexeu no canvas');
   });
 
   return s;

@@ -476,7 +476,11 @@ document.addEventListener('click', async ev => {
   if (no) { escolhido = no.dataset.jnNo; renderJornada(); if (!no.closest('.jnMini') && matchMedia('(max-width:520px)').matches) $('#jnPainel')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
   const lutar = ev.target.closest('[data-jn-lutar]');
   if (!lutar || lutar.disabled || !chanceNaTela) return;
-  const id = lutar.dataset.jnLutar;
+  /* `antes` é a chance que a tela mostrou ANTES do clique: o fim da luta a
+     usa ("foi a fatia dos 12%") e a encenação também. A ST-13.5f a tirou junto
+     com o relato da luta e deixou o uso — toda luta lançava ReferenceError
+     depois de gravada, e o mapa não andava (D-142). */
+  const id = lutar.dataset.jnLutar, antes = chanceNaTela;
   const r = await lutarNaJornadaNa({ pack: PACK, id, preset: presetDoJogador() });
   if (!r.ok) { $('#jnErro').textContent = r.motivo ?? 'não deu para lutar agora'; return; }
   /* ST-10.20 · ST-13.5f: a luta é FATO do servidor (L-208) — a tela não a

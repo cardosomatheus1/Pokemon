@@ -10362,6 +10362,16 @@ export const DEFEITOS = [
   { id:'S2543', arquivo:EXPED, nome:'a expedição sorteia a evoluída fora da faixa',
     real:'a Rota OFF do estágio 1 trazendo segundas formas',
     de:'    && capturavelNoEstagio(pack, e.dex, estagio));', para:'    && true);' },
+  /* ── D-142 · a luta da jornada não avançava o mapa ──────────────────── */
+  { id:'S2544', arquivo:'app/modules/jornada-tela.mjs', nome:'o clique de lutar perde a chance de antes',
+    real:"o D-142 — 'já matei e ainda assim não avança': ReferenceError depois de gravada",
+    de:'  const id = lutar.dataset.jnLutar, antes = chanceNaTela;', para:'  const id = lutar.dataset.jnLutar;' },
+  { id:'S2545', arquivo:'server/jornada.mjs', nome:'a resposta da luta perde a recompensa',
+    real:'"Ganhou: undefined PokéCoin" com conta',
+    de:'    recompensa: { ...c.recompensa, ...c.credito },', para:'    recompensa: { motivo: c.recompensa.motivo, ...c.credito },' },
+  { id:'S2546', arquivo:'app/modules/jornada-desenho-tela.mjs', nome:'o chão do mapa pinta na caixa que sumiu',
+    real:'TypeError no pintarDesenho quando a caixa some durante o await da folha',
+    de:'  if (!w || !h) return;\n', para:'\n' },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',

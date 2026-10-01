@@ -27,6 +27,7 @@ import { alternarGolpe, padraoDoMoveset } from '../app/modules/moveset-dados.mjs
 import { idDaMoeda } from '../engine/economia-idle.mjs';
 import { lutarNaJornadaLocal } from '../app/modules/jornada-local.mjs';
 import { chanceDaLuta, contaDaLuta } from '../app/modules/jornada-conta.mjs';
+import { fraseDoPagamento } from '../app/modules/jornada-dados.mjs';
 import { entradasDoTime } from '../app/modules/treino-dados.mjs';
 import { chanceDeVencer } from '../engine/treino-preco.mjs';
 import { fatosDaJornada } from '../engine/gate-v4.mjs';
@@ -114,6 +115,21 @@ export function suite() {
        insígnia, e a repetição que paga menos. */
     ok(n >= 8 && venceu >= 5, `a sequência lutou pouco: ${n} lutas, ${venceu} vitórias`);
     ok(doServidor(c).jornada.pve.dia != null && doServidor(c).jornada.vencidos.includes('floresta'), 'o progresso não andou');
+  });
+
+  s.teste('D-142 · com conta, o fim da luta diz o que o servidor pagou', () => {
+    /* A resposta levava só `motivo` e o crédito: a frase lia `pokecoin` dela
+       e dizia "Ganhou: undefined PokéCoin", e as bolas da primeira vitória
+       sumiam do texto (o crédito estava certo; a frase, não). */
+    const c = cena();
+    const r = lutarNaConta(c.db, { userId: c.u, pack: PACK, id: 'rota1', chaveIdem: 'frase-0001', agora: T0, semente: 5 });
+    ok(r.venceu && r.primeiraVez, 'a cena não venceu a Rota 1 de primeira — o teste não exerce a frase');
+    const f = fraseDoPagamento(PACK, r.recompensa, { depois: true });
+    ok(!/undefined|NaN/.test(f), `a frase do fim: ${f}`);
+    igual(r.recompensa.pokecoin, r.recompensa.bolsa[idDaMoeda(PACK)], 'a frase diz uma moeda e o crédito outra');
+    const bolas = Object.entries(r.recompensa.bolas ?? {});
+    ok(bolas.length > 0, 'a primeira vitória não paga bola — o teste não exerce as bolas da frase');
+    for (const [b, n] of bolas) igual(r.recompensa.bolsa[b], n, `a frase diz ${n} ${b} e o crédito outro`);
   });
 
   s.teste('a caixa não luta, e os golpes guardados lutam', () => {

@@ -121,6 +121,11 @@ function pintarObras(ctx, obras, L, FACE, alfa) {
 }
 export function pintarDesenho(tela, caixa, d, emPe, img, estrada = null) {
   const w = caixa.clientWidth, h = caixa.clientHeight, C = PECA, FACE = faceDoPenhasco(w);
+  /* A mesma guarda do `pintarChao`, de novo AQUI: entre as duas há o `await`
+     da folha, e nesse meio a caixa pode ter sumido (a luta que acaba e
+     repinta o mapa, a aba trocada) — com 0 px a grade nasce vazia e a linha
+     abaixo lia `mat[0].length` de nada (D-142). */
+  if (!w || !h) return;
   const g = gradeDoDesenho(d, { largura: w, altura: h, emPe, celula: C });
   tela.width = w; tela.height = h;
   const ctx = tela.getContext('2d');

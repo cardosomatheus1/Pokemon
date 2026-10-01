@@ -79,7 +79,10 @@ export function lutarNaConta(db, { userId, pack, id, preset = 'balanced', chaveI
     ok: true, no: id, preset, semente, venceu, vencedor: c.resultado.vencedor, primeiraVez: c.primeiraVez,
     ganhouInsignia: c.ganhouInsignia, p, timeA: c.timeA, timeB: c.timeB,
     progresso: { vencidos: c.jornada.vencidos, insignias: c.jornada.insignias },
-    recompensa: { motivo: c.recompensa.motivo, ...c.credito },
+    /* A recompensa INTEIRA (o que a frase do fim lê: moeda, bolas, essência,
+       o dia e o teto) e o crédito. Era só `motivo` + crédito, e a tela dizia
+       "Ganhou: undefined PokéCoin" (D-142). */
+    recompensa: { ...c.recompensa, ...c.credito },
   };
 
   return emTransacao(db, () => {

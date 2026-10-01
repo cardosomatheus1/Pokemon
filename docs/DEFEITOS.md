@@ -7276,3 +7276,39 @@ no próprio teste, sem dependência) e exige o quadro 2 como o mais assimétrico
 o passo 7 mais assimétrico que o 5. Com o PNG antigo de volta ele fica
 vermelho e diz "o boneco anda de lado mostrando as costas".
 
+## D-142 — a luta da jornada gravava a vitória e a tela não avançava o mapa ✅ CORRIGIDO na ST-2.15 (01/10)
+
+**Achado:** o dono — *"a jornada tá bugada também, já matei [o rival] e ainda
+assim não avança"*. **Bloco dono:** ST-2.15.
+
+**Causa.** A ST-13.5f tirou o relato da luta do clique de "lutar" e levou junto
+a linha `antes = chanceNaTela`, mas o `antes` continuou em uso (na encenação e
+no fim da luta do preset). Toda luta da jornada — com conta e sem — lançava
+`ReferenceError: antes is not defined` DEPOIS de gravada: o servidor (ou o
+save) tinha a vitória, e a tela não encenava, não mostrava o fim nem
+redesenhava o mapa. Para o jogador, o nó vencido continuava o atual. Recarregar
+a página mostrava o progresso certo.
+
+**Medido** no navegador com servidor real (conta, Charmander nível 14): o
+servidor com `vencidos: ["rota1"]` e o mapa com a Rota 1 ainda pulsando, e o
+botão "lutar" escondido sob a luta que nunca começou.
+
+**Junto, no mesmo caminho.** (1) Com conta, o fim da luta dizia *"Ganhou:
+undefined PokéCoin · 1 doce"* e omitia as bolas: a resposta do servidor levava
+só o `motivo` e o crédito, e a frase lê `pokecoin`/`bolas` da recompensa (o
+crédito estava certo; o texto, não). (2) O chão do mapa (`pintarDesenho`)
+lançava TypeError quando a caixa sumia durante o `await` da folha — a guarda
+do `pintarChao` vinha antes do `await` e não valia depois dele.
+
+**Conserto.** `antes = chanceNaTela` de volta no clique; a resposta da luta
+leva a recompensa inteira; a guarda de 0 px repetida no `pintarDesenho`.
+
+**Por que a suíte não viu.** Variável não declarada não aparece em teste
+estático (o `modulos` vê símbolo não importado, não `let` perdido), e nenhuma
+sonda de navegador clicava em "lutar". É a classe do Q5: só o clique vê.
+
+**Testes que travam:** `visual` — "D-142 · a luta da jornada encena, grava e o
+mapa anda" (abre a jornada, luta, volta ao mapa: sem `pageerror`, o fim
+encenado, a vitória no save e o atual adiante); `jornada-servidor` — "com
+conta, o fim da luta diz o que o servidor pagou"; `jornada-desenho` — "o chão
+não pinta na caixa que sumiu". Plantados S2544–S2546, todos PEGOU.

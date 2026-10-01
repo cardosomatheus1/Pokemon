@@ -2407,6 +2407,22 @@ do servidor. Três partes:
 - **Fica para depois (L-233):** a criatura capturada nasce no nível 1 mesmo
   sendo uma forma do estágio 3.
 
+### ST-2.15 · A jornada volta a andar (D-142) ✅ 01/10
+- **Por quê (o dono):** *"a jornada tá bugada também, já matei [o rival] e
+  ainda assim não avança"*.
+- **Causa e conserto:** ver D-142 — a ST-13.5f deixou `antes` sem declarar no
+  clique de lutar; toda luta lançava ReferenceError depois de gravada e o mapa
+  não andava. De volta, e com ela: a resposta da luta com conta leva a
+  recompensa inteira (o fim dizia "undefined PokéCoin") e o chão do mapa não
+  pinta na caixa que sumiu.
+- **Testes:** a sonda de navegador agora clica em "lutar" (`visual`, D-142) ·
+  `jornada-servidor` (+1) · `jornada-desenho` (+1) · S2544–S2546 PEGOU.
+  **Q5:** o caminho do jogador com servidor real — Rota 1, Floresta e Rota 22
+  em sequência: a luta encena, o fim diz "Ganhou: 200 PokéCoin · 2 Poké Ball ·
+  1 doce", e o mapa abre o próximo nó.
+- **Mutantes de navegador:** 1 (S2544) — o clique mora na tela; a frase e a
+  guarda são pegas em Node.
+
 ### ST-2.14 · Em que nível a captura nasce (L-233) — proposta
 - Medir na jornada as duas leituras (nível em que a forma passa a existir ×
   porta do estágio) e escolher pelo número.
