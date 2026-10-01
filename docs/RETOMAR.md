@@ -148,8 +148,10 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            em ginásio (50), Liga (75) e Campeão (150) paga PC-T na conta,
            850 a vida inteira, troca só com 7 dias de conta. Ficou fora das
            ondas; sem ela o Market não tinha moeda de jogador.
-           PRÓXIMO: a ST-14.14b (L-228) — a conta ligada detectada congela,
-           em vez de só ter a tentativa recusada.
+           · ST-14.14b FECHADA (01/10): a conta que tenta negociar com uma
+           conta ligada é CONGELADA para o operador revisar (L-228).
+           A E14 ESTÁ COMPLETA ATÉ O GATE C; a onda D (buy orders) espera
+           dados de liquidez do piloto.
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho
            do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta

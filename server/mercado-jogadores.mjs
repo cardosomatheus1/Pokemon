@@ -33,6 +33,7 @@ import { categoriaDoItem } from '../engine/busca-mercado.mjs';
 import { emTransacao, reservarP2PNoBanco, liquidarP2PNoBanco } from './carteira.mjs';
 import { elegibilidadeDaConta } from './elegibilidade.mjs';
 import { contasLigadas } from './protecao.mjs';
+import { comSinalDeLigada, recusaDaLigada } from './risco-mercado-jogadores.mjs';
 import { reservarOferta, liberarOferta, consumirOferta, holdsAtivos, exigirVigente } from './reservas.mjs';
 import { cobrarTaxaDeAnuncio } from './taxas-mercado.mjs';
 import { moverReservados, ERRO_POSSE } from './posse-p2p.mjs';
@@ -91,7 +92,8 @@ export function anunciar(db, { userId, pack, ativo = {}, preco, agora, checkpoin
 }
 
 /* ── COMPRAR ──────────────────────────────────────────────────────────── */
-export function comprar(db, { userId, anuncioId, versao, preco, chaveIdem, agora, checkpoint }) {
+export const comprar = (db, a) => comSinalDeLigada(db, a.agora, () => comprarTx(db, a));
+function comprarTx(db, { userId, anuncioId, versao, preco, chaveIdem, agora, checkpoint }) {
   if (typeof chaveIdem !== 'string' || chaveIdem.length < 8 || chaveIdem.length > 80) throw falha(ERRO_MERCADO_P2P.ENTRADA, 'chave da compra inválida');
   return emTransacao(db, () => {
     const a = lerAnuncio(db, anuncioId);
@@ -102,7 +104,7 @@ export function comprar(db, { userId, anuncioId, versao, preco, chaveIdem, agora
     exigirVigente(db, { dono: dono(a.id), agora });
     if (versao !== a.versao || preco !== a.preco) throw falha(ERRO_MERCADO_P2P.DESATUALIZADO, 'o anúncio não é mais o que você viu — recarregue');
     const c = avaliarContraparte({ userId, outroId: a.vendedor_id, ligadas: contasLigadas(db, userId) });
-    if (!c.allowed) throw falha(ERRO_MERCADO_P2P.RECUSADA, `a compra não pode: ${c.detalhe}`, { reason_code: c.reason_code });
+    if (!c.allowed) throw falha(ERRO_MERCADO_P2P.RECUSADA, `a compra não pode: ${c.detalhe}`, { reason_code: c.reason_code, ...recusaDaLigada(c, userId, a.vendedor_id) });
     /* a política única já lê a pausa, o congelamento e a divergência das duas */
     contaPode(db, userId, 'esta conta', agora, checkpoint);
     contaPode(db, a.vendedor_id, 'quem anunciou', agora, checkpoint);

@@ -20,7 +20,10 @@ import { criarOperador, ERRO_ADMIN } from '../server/admin.mjs';
 import { ligarContas } from '../server/protecao.mjs';
 import { reservarOferta, liberarOferta, expirarVencidas, holdsAtivos } from '../server/reservas.mjs';
 import { elegibilidadeDaCriatura } from '../server/elegibilidade.mjs';
-import { congelar, descongelar, congelada, exigirPodeOfertar, ERRO_RISCO } from '../server/risco-mercado-jogadores.mjs';
+import { congelar, descongelar, congelada, exigirPodeOfertar, ERRO_RISCO, POR_SINAL } from '../server/risco-mercado-jogadores.mjs';
+import { criarTroca } from '../server/trocas.mjs';
+import { anunciar, comprar } from '../server/mercado-jogadores.mjs';
+import { saldos } from '../server/carteira.mjs';
 import { avaliarLimites, avaliarContraparte, LIMITES_P2P } from '../engine/risco-mercado.mjs';
 import { varrerSuspeitas, suspeitasAbertas } from '../server/antifraude.mjs';
 import { criarServidor } from '../server/servidor.mjs';
@@ -132,6 +135,45 @@ export async function suite() {
     igual(c.db.prepare(`SELECT COUNT(*) n FROM asset_holds`).get().n, 0, 'uma recusa deixou reserva');
     descongelar(c.db, { operadorId: c.eco, userId: c.outro, motivo: 'limpa', confirmado: true, agora: AGORA });
     igual(reservar(c, 'of-d', { criaturas: [c.criaturas[0]] }, { contraparte: c.outro }).ids.length, 1, 'a contraparte livre foi recusada');
+  });
+
+  /* ST-14.14b · L-228: a simulação do gate C mediu que recusar só a tentativa
+     quase não reduz o funil de contas ligadas; congelar na primeira derruba. */
+  s.teste('a conta ligada que tenta trocar é CONGELADA pelo sinal, e só o operador descongela', () => {
+    const c = cena();
+    ligarContas(c.db, { userId: c.uid, outroId: c.ligado, sinal: 'dispositivo', agora: AGORA });
+    const troca = (outroId, i, agora = AGORA) => recusa(() => criarTroca(c.db, { userId: c.uid, contraparteId: outroId, pack: PACK, ativos: { criaturas: [c.criaturas[i]] }, agora, checkpoint: CHECKPOINT }));
+    const e = troca(c.ligado, 0);
+    ok(e?.reason_code === 'ACCOUNT_RESTRICTED' && /conta_ligada/.test(e.message), `a troca com a ligada passou: ${e?.message}`);
+    const l = c.db.prepare(`SELECT por, motivo FROM p2p_congelamentos WHERE user_id = ? AND levantado_em IS NULL`).get(c.uid);
+    ok(l?.por === POR_SINAL && /conta_ligada/.test(l.motivo), `a recusa não congelou quem tentou: ${JSON.stringify(l)}`);
+    ok(!congelada(c.db, c.ligado), 'congelou a outra ponta, que não tentou nada');
+    igual(`${c.db.prepare(`SELECT COUNT(*) n FROM trocas`).get().n}|${c.db.prepare(`SELECT COUNT(*) n FROM asset_holds`).get().n}`, '0|0', 'a recusa deixou troca ou reserva');
+    igual(troca(c.outro, 1)?.reason_code, 'ACCOUNT_RESTRICTED', 'a conta congelada trocou com uma terceira');
+    igual(troca(c.ligado, 2, AGORA + 1)?.reason_code, 'ACCOUNT_RESTRICTED', 'a segunda tentativa não foi recusada');
+    igual(c.db.prepare(`SELECT COUNT(*) n FROM p2p_congelamentos WHERE user_id = ?`).get(c.uid).n, 1, 'a segunda tentativa abriu outro congelamento');
+    ok(c.db.prepare(`SELECT 1 FROM telemetry_events WHERE nome = 'p2p_congelada_por_sinal' AND user_id = ?`).get(c.uid), 'o congelamento automático não deixou registro');
+    descongelar(c.db, { operadorId: c.eco, userId: c.uid, motivo: 'revisado: irmãos na mesma casa', confirmado: true, agora: AGORA + 2 });
+    ok(!troca(c.outro, 3, AGORA + 3), 'o operador descongelou e a troca com a terceira seguiu recusada');
+  });
+
+  s.teste('a compra da conta ligada também congela; a própria conta e o anúncio ficam como estavam', () => {
+    const c = cena();
+    const mesma = recusa(() => criarTroca(c.db, { userId: c.uid, contraparteId: c.uid, pack: PACK, ativos: { criaturas: [c.criaturas[0]] }, agora: AGORA, checkpoint: CHECKPOINT }));
+    ok(mesma && !congelada(c.db, c.uid), 'a troca consigo mesmo congelou — mesma_conta não é sinal de ligada');
+    const cr = gerar(c.db, { userId: c.ligado, pack: PACK, dex: 16 }).id;
+    creditar(c.db, { userId: c.ligado, tipo: 'ADMIN_ADJUSTMENT', bucket: 'transferivel', valor: 100, idem: 'pc-lig', agora: AGORA });
+    const a = anunciar(c.db, { userId: c.ligado, pack: PACK, ativo: { criaturaId: cr }, preco: 200, agora: AGORA, checkpoint: CHECKPOINT });
+    ligarContas(c.db, { userId: c.uid, outroId: c.ligado, sinal: 'rede', agora: AGORA });
+    const antes = saldos(c.db, c.uid).transferivel;
+    const e = recusa(() => comprar(c.db, { userId: c.uid, anuncioId: a.id, versao: a.versao, preco: a.preco, chaveIdem: 'compra-ligada-1', agora: AGORA + 1, checkpoint: CHECKPOINT }));
+    ok(e && /conta_ligada/.test(e.message), `a compra da ligada passou: ${e?.message}`);
+    ok(congelada(c.db, c.uid), 'a compra recusada não congelou quem comprou');
+    /* a compra olha a contraparte ANTES do congelamento: a segunda tentativa chega ao sinal de novo */
+    const e2 = recusa(() => comprar(c.db, { userId: c.uid, anuncioId: a.id, versao: a.versao, preco: a.preco, chaveIdem: 'compra-ligada-2', agora: AGORA + 2, checkpoint: CHECKPOINT }));
+    ok(e2 && /conta_ligada/.test(e2.message), `a segunda tentativa virou outro erro: ${e2?.message}`);
+    igual(c.db.prepare(`SELECT COUNT(*) n FROM p2p_congelamentos WHERE user_id = ?`).get(c.uid).n, 1, 'a segunda tentativa abriu outro congelamento');
+    igual(`${saldos(c.db, c.uid).transferivel}|${c.db.prepare(`SELECT estado FROM player_market_listings WHERE id = ?`).get(a.id).estado}`, `${antes}|ACTIVE`, 'a recusa mexeu no PC-T ou no anúncio');
   });
 
   s.teste('uma troca aberta, dez anúncios, vinte ativos por lado — e liberar devolve a vaga', () => {

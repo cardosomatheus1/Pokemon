@@ -32,7 +32,7 @@ import { nivelDe } from '../engine/nivel-criatura.mjs';
 import { emTransacao } from './carteira.mjs';
 import { moverReservados, ERRO_POSSE } from './posse-p2p.mjs';
 import { elegibilidadeDaCriatura, elegibilidadeDoItem, elegibilidadeDaMoeda, elegibilidadeDaConta } from './elegibilidade.mjs';
-import { exigirPodeOfertar } from './risco-mercado-jogadores.mjs';
+import { exigirPodeOfertar, comSinalDeLigada } from './risco-mercado-jogadores.mjs';
 import { reservarOferta, liberarOferta, consumirOferta, holdsAtivos, exigirVigente } from './reservas.mjs';
 import { liquidarPontaDaTroca } from './taxas-mercado.mjs';
 import { emitir } from './telemetria.mjs';
@@ -129,7 +129,13 @@ export function hashDaTroca(db, t) {
  * oferecida ou travada não abre outra, e não recebe outra. */
 const ABERTAS_DE = `SELECT COUNT(*) n FROM trocas WHERE (criador_id = ? OR contraparte_id = ?) AND estado IN ('OFFERED', 'LOCKED')`;
 
-export function criarTroca(db, { userId, contraparteId, pack, ativos, agora, checkpoint }) {
+/* As três portas que podem achar a conta ligada do outro lado: a recusa
+   congela quem tentou (ST-14.14b), fora da transação que ela desfez. */
+export const criarTroca = (db, a) => comSinalDeLigada(db, a.agora, () => criarTrocaTx(db, a));
+export const ofertar = (db, a) => comSinalDeLigada(db, a.agora, () => ofertarTx(db, a));
+export const pronto = (db, a) => comSinalDeLigada(db, a.agora, () => prontoTx(db, a));
+
+function criarTrocaTx(db, { userId, contraparteId, pack, ativos, agora, checkpoint }) {
   const meu = normalizarAtivos(ativos);
   if (!db.prepare(`SELECT 1 FROM users WHERE id = ?`).get(contraparteId)) throw falha(ERRO_TROCA.CONTRAPARTE, 'a outra conta não existe');
   return emTransacao(db, () => {
@@ -164,7 +170,7 @@ function exigirAberta(t, agora, estados = ABERTOS) {
  * Sobe a revisão (as prontidões e confirmações de antes param de valer) e,
  * se estava travada, solta tudo e volta a OFFERED — editar não pode deixar o
  * patrimônio de ninguém preso a uma oferta que já não é a mesma. */
-export function ofertar(db, { trocaId, userId, pack, ativos, agora, checkpoint }) {
+function ofertarTx(db, { trocaId, userId, pack, ativos, agora, checkpoint }) {
   const meu = normalizarAtivos(ativos);
   return emTransacao(db, () => {
     const t = daParte(db, { trocaId, userId });
@@ -183,7 +189,7 @@ export function ofertar(db, { trocaId, userId, pack, ativos, agora, checkpoint }
 /* ── PRONTO ───────────────────────────────────────────────────────────────
  * Da REVISÃO que a pessoa viu. O segundo "pronto" da mesma revisão trava:
  * as reservas dos dois lados nascem juntas, ou nenhuma nasce. */
-export function pronto(db, { trocaId, userId, revisao, pack, agora, checkpoint }) {
+function prontoTx(db, { trocaId, userId, revisao, pack, agora, checkpoint }) {
   return emTransacao(db, () => {
     const t = daParte(db, { trocaId, userId });
     exigirAberta(t, agora, [ESTADO.OFFERED]);

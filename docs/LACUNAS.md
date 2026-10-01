@@ -9260,11 +9260,12 @@ alerta entra no `varrerSuspeitas` como um sinal novo (`preco`/`giro`), no
 mesmo formato dos de horário e captura: registrado com o número, revisado pelo
 operador, nunca punição automática.
 
-### L-228 — a conta ligada detectada é recusada por tentativa, e não congelada
+### L-228 — a conta ligada detectada é recusada por tentativa, e não congelada ✅ FECHADA na ST-14.14b (01/10)
 
 **Registrada em:** 01/10/2026, no gate C da E14 (ST-14.15), pela simulação.
 **Bloco dono:** **ST-14.14b** (proposta no PLANO no mesmo commit). **Estado:**
-aberta.
+fechada — a recusa `conta_ligada` congela quem tentou (`comSinalDeLigada`),
+para o operador revisar.
 
 A varredura de sensibilidade de `docs/e14/SIMULACAO_E14.md` (cenário "abuso de
 contas novas", 80 contas ligadas a uma principal, semente 42): recusar a
