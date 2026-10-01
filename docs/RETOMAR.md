@@ -32,6 +32,8 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            Rotas abre em 1× e as rotas enchem duas colunas. Olhar no celular:
            node tools/olhar-celular.mjs  (capturas em tools/previas/_celular/).
            Próximo do cenário: ST-2.9 (L-231, a Floresta sem árvore na vista).
+           ST-2.17 (01/10): o cenário da luta — onze lugares em camadas
+           (pve-cenario.mjs), chão em perspectiva, plataformas, partículas.
            ST-2.16 (01/10): a jornada pede o nível do nó (DEC-25) — lutam 3,
            os mais fortes; ninguém fica parado (último recurso, regras tbe-2:
            os times congelados da Liga pedem congelar de novo).

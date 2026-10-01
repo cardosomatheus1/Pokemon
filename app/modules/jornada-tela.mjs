@@ -563,7 +563,7 @@ document.addEventListener('click', async ev => {
     licaoNoFim = ` Seus golpes físicos: ${d.fis.golpes}, dano ${d.fis.dano} · especiais: ${d.esp.golpes}, dano ${d.esp.dano} — ${aLicao}.`;
   }
   $('#jornadaCorpo')?.classList.add('emLuta');
-  encenar({ alvo: $('#jnLuta'), A: r.timeA, B: r.timeB, r: r.resultado, antes, titulo: (nomeNo => (t.nome.includes(nomeNo) ? t.nome : `${nomeNo} · ${t.nome}`))(PACK.jornada.find(n => n.id === id)?.nome ?? ''),
+  encenar({ alvo: $('#jnLuta'), A: r.timeA, B: r.timeB, r: r.resultado, antes, cenario: PACK.jornada.find(n => n.id === id)?.regiao, semente: r.semente, titulo: (nomeNo => (t.nome.includes(nomeNo) ? t.nome : `${nomeNo} · ${t.nome}`))(PACK.jornada.find(n => n.id === id)?.nome ?? ''),
             extraNoFim: [licaoNoFim.trim(), fraseDoPagamento(PACK, r.recompensa, { depois: true }), extra].filter(Boolean).join(' '), voltar: 'voltar ao mapa', aoFim: () => { if (r.primeiraVez && proximo) escolhido = proximo.id; renderJornada({ nova: r.ganhouInsignia }); } });
 });
 

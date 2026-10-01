@@ -2407,6 +2407,32 @@ do servidor. Três partes:
 - **Fica para depois (L-233):** a criatura capturada nasce no nível 1 mesmo
   sendo uma forma do estágio 3.
 
+### ST-2.17 · O cenário da luta ✅ 01/10
+- **Por quê (o dono):** *"a tela das batalhas tá só 2 cores, sem detalhe
+  nenhum, tá bem feia"*. Era um degradê azul sobre um verde liso, igual na
+  Rota 1 e no vulcão.
+- **Feito:** `app/modules/pve-cenario.mjs` (camada 0) decide o cenário pela
+  região do nó (as 11 do mapa), e a `pve-tela` só pinta, em camadas: céu de
+  dois tons com a luz do lugar; nuvens em pixel onde o céu é aberto; duas
+  faixas de colinas; DUAS fileiras de peças no horizonte (a de trás menor e
+  com névoa) — as peças do próprio mapa (`arte/mapa`); o chão da região em
+  PERSPECTIVA (os tiles crescem para a frente) com a névoa do céu no
+  horizonte; uma plataforma com a textura do chão sob cada lutador; uma peça
+  grande na frente, cortada pela borda; e o ar do lugar (pólen, folha, pétala,
+  poeira, espuma, névoa, neon, brasa, faísca, brilho), parado com "menos
+  movimento". Os rivais pisam abaixo do horizonte; os sprites cresceram (72 →
+  84 px). A mesma luta tem o mesmo cenário (a semente da luta). Arte nova e
+  nossa: `arte/mapa/rocha.svg` (pelo `tools/pixel-arte.mjs`).
+- **O Q5 mudou o desenho três vezes:** o chão plano repetia o tile como papel
+  de parede (virou perspectiva); a peça da frente no canto direito cobria o
+  rival de baixo (foi para o vão entre as colunas no largo, e para o canto no
+  celular); e na floresta o chão era a COPA vista de cima — os lutadores
+  pisavam nas árvores (floresta e bosque lutam na grama).
+- **Testes:** `pve-cenario` (novo, 5) · S2555–S2561, todos PEGOU. **Q5:** as
+  11 regiões em 1440, e o celular (420) — lidas. **Mutantes de navegador:** 0.
+- **Fica para o cenário (L-234):** o céu pela hora do mundo, o clima do idle
+  na luta, o chão do pântano com água.
+
 ### ST-2.16 · A jornada pede o nível do nó (DEC-25) ✅ 01/10
 - **Por quê (o dono):** *"eu achei fácil demais, ele avançou super rápido"*.
 - **Medido antes:** o time de seis lutava inteiro — e todo lutador bate a cada
@@ -2459,6 +2485,9 @@ do servidor. Três partes:
   1 doce", e o mapa abre o próximo nó.
 - **Mutantes de navegador:** 1 (S2544) — o clique mora na tela; a frase e a
   guarda são pegas em Node.
+
+### ST-2.18 · O cenário da luta pela hora e pelo clima (L-234) — proposta
+- O céu da luta pela hora do mundo, o clima do idle na luta, o pântano com água.
 
 ### ST-2.14 · Em que nível a captura nasce (L-233) — proposta
 - Medir na jornada as duas leituras (nível em que a forma passa a existir ×

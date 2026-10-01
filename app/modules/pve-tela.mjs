@@ -17,6 +17,7 @@ import { folhaDoImpacto } from './avanco-efeito.mjs';
 import { simular } from '../../engine/treino-batalha.mjs';
 import { entradasDoTime, rivalDe, treinador } from './treino-dados.mjs';
 import { linhaDoTempo, fraseDoResultado, PASSO_MS } from './pve-dados.mjs';
+import { cenarioDaLuta } from './pve-cenario.mjs';
 import { porcentagemExibida, textoDaMargem } from '../../engine/treino-preco.mjs';
 
 const QUADROS_POR_S = 18;
@@ -28,6 +29,28 @@ function lutador(f) {
     <div class="pveSprite"><i class="pveSombra"></i>${dexImg(f.dex, f.nome, 'class="pveImg"')}</div>
     <div class="pvePlaca"><div class="pveNome"><b>${f.nome}</b><span class="pveNv">NV ${f.nivel}</span></div>
       <div class="pveVida"><i style="width:100%"></i></div><span class="pveHp">${f.maxHp}/${f.maxHp}</span></div></div>`;
+}
+
+/* O CENÁRIO (ST-2.17): a tela só pinta o que `cenarioDaLuta` decidiu — o
+   céu e a luz no fundo do palco, as colinas e o horizonte na faixa do céu, o
+   chão da região, a peça da frente e o ar do lugar. */
+function pintarCena(c) {
+  const poligono = k => `<polygon points="0,100 ${k.pontos.map(p => p.join(',')).join(' ')} 100,100" fill="${k.cor}"/>`;
+  const img = (p, cls) => `<img class="pvePeca ${cls}" src="${p.arte}" alt="" style="left:${p.x}%;top:${p.y}%;height:${p.h}%">`;
+  const ar = c.particula.lista.map(q => `<i class="pveParticula pp-${c.particula.anim}" style="left:${q.x}%;top:${q.y}%;`
+    + `width:${Math.max(2, Math.round(c.particula.tam * q.escala))}px;height:${Math.max(2, Math.round(c.particula.tam * q.escala))}px;`
+    + `background:${c.particula.cor};animation-delay:-${q.atraso}s;animation-duration:${q.dur}s"></i>`).join('');
+  return {
+    estilo: `--piso:url(${c.piso});background:radial-gradient(40% 55% at 80% 6%,${c.luz},transparent 70%),`
+      + `linear-gradient(180deg,${c.ceu[0]} 0,${c.ceu[1]} var(--hz))`,
+    fundo: `<div class="pveCena pve-${c.regiao}" aria-hidden="true">
+      <div class="pveFaixa"><svg class="pveColinas" viewBox="0 0 100 100" preserveAspectRatio="none">${c.colinas.map(poligono).join('')}</svg>
+        ${c.nuvens.map(n => `<i class="pveNuvem" style="left:${n.x}%;top:${n.y}%;--e:${n.escala};animation-duration:${n.dur}s"></i>`).join('')}
+        ${c.fundo.map(p => img(p, p.longe ? 'pveLonge pveMaisLonge' : 'pveLonge')).join('')}</div>
+      <div class="pveChao" style="--chao:url(${c.chao});--nevoa:${c.ceu[1]}"></div>
+      <div class="pveAr">${ar}</div></div>`,
+    frente: `<div class="pveFrente" aria-hidden="true">${c.frente.map(p => img(p, 'pvePerto')).join('')}</div>`,
+  };
 }
 
 function desenharEstouros() {
@@ -115,19 +138,20 @@ function fim(L, antes, r, extra, voltar, final = null) {
 /* `linha` e `final`: o REPLAY da Liga (ST-11.6b) chega com a linha do tempo
    pronta (do log, sem motor) e com o fim já escrito pela camada 0; `topo`
    troca a chance de antes, que no replay não existe. */
-export function encenar({ alvo, A, B, r, antes, titulo, extraNoFim = '', aoFim = null, deNovo: repetir = null, voltar = 'voltar ao time', linha = null, final = null, topo = null, rotulos = null }) {
+export function encenar({ alvo, A, B, r, antes, titulo, extraNoFim = '', aoFim = null, deNovo: repetir = null, voltar = 'voltar ao time', linha = null, final = null, topo = null, rotulos = null, cenario = 'campo', semente = null }) {
   deNovo = repetir;
   const g = ++geracao;
   const L = linha ?? linhaDoTempo(PACK, A, B, r, nomeExibido);
   r ??= { vencedor: L.vencedor };
   if (!alvo) return;
+  const cena = pintarCena(cenarioDaLuta(cenario, semente ?? titulo));
   alvo.innerHTML = `<div class="pveLuta">
     <div class="pveTopo"><b>${titulo}</b><span>${topo ?? `antes da luta: ${porcentagemExibida(antes.p)} · ${textoDaMargem(antes)}`}</span>
       <button class="btn" data-pve-pular>pular</button></div>
-    <div class="pvePalco" id="pvePalco">
+    <div class="pvePalco" id="pvePalco" style="${cena.estilo}">${cena.fundo}
       <div class="pveLado pveA">${rotulos ? `<span class="pveRotulo">${rotulos.A}</span>` : ''}${L.lados.A.map(lutador).join('')}</div>
       <div class="pveLado pveB">${rotulos ? `<span class="pveRotulo">${rotulos.B}</span>` : ''}${L.lados.B.map(lutador).join('')}</div>
-      <canvas class="pveFx" id="pveFx"></canvas>
+      ${cena.frente}<canvas class="pveFx" id="pveFx"></canvas>
     </div>
     <p class="pveLog" id="pveLog">a luta vai começar…</p>
     <div class="pveFim" id="pveFim" hidden></div>

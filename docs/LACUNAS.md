@@ -9392,6 +9392,18 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-234 — o cenário da luta: a hora, o clima e o pântano
+
+**Registrada em:** 01/10/2026, no Q5 da ST-2.17. **Bloco dono:** **ST-2.18**
+(proposta no PLANO). **Estado:** aberta.
+
+A luta ganhou lugar (ST-2.17), e três coisas ficaram vistas e não feitas: o
+céu é sempre o de dia do lugar, quando o idle já tem a hora do mundo
+(`hora-do-dia.mjs`); o clima do mundo não chega à luta; e o chão do pântano
+repete o tile como papel de parede (pede água, junco no chão, reflexo). **Por
+que não cabe agora:** o pedido era tirar as duas cores — o cenário existe.
+**O que a destrava:** nada; é cenário, e o cenário nunca está pronto.
+
 ### L-233 — a criatura capturada nasce no nível 1, qualquer que seja a forma
 
 **Registrada em:** 01/10/2026, na ST-2.13. **Bloco dono:** **ST-2.14**

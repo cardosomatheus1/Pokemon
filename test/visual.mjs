@@ -2199,7 +2199,10 @@ export async function rodar() {
     pg3.on('pageerror', e => errosJn.push(String(e).split('\n')[0]));
     try {
       await pg3.goto(`http://127.0.0.1:${porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
-      await pg3.waitForFunction(() => !document.querySelector('#boot'), { timeout: 60000, polling: 200 });
+      /* o argumento do meio é o `arg` da função, e as opções vêm DEPOIS: passar
+         as opções no lugar dele deixava o prazo no padrão de 30 s, e a sonda
+         caía com a máquina carregada (instável no repetir da ST-2.17). */
+      await pg3.waitForFunction(() => !document.querySelector('#boot'), null, { timeout: 60000, polling: 200 });
       await pg3.evaluate(async () => {
         localStorage.setItem('ar_session', '1');   // a aba é do treinador
         const d = await import('/app/modules/idle-dados.mjs');
@@ -2211,10 +2214,10 @@ export async function rodar() {
         document.querySelector('[data-treino-aba="jornada"]')?.click();
       });
       await pg3.waitForFunction(() => { const b = document.querySelector('#jnLutar'); return b && !b.disabled; },
-        { timeout: 20000, polling: 150 });
+        null, { timeout: 60000, polling: 150 });
       const antes = await pg3.evaluate(() => document.querySelector('.jnNo.jn-atual')?.dataset.jnNo ?? null);
       await pg3.click('#jnLutar');
-      const encenou = await pg3.waitForSelector('#jnLuta [data-pve-fechar]', { timeout: 30000 }).then(() => true).catch(() => false);
+      const encenou = await pg3.waitForSelector('#jnLuta [data-pve-fechar]', { timeout: 60000 }).then(() => true).catch(() => false);
       if (encenou) await pg3.click('#jnLuta [data-pve-fechar]');
       await pg3.waitForTimeout(400);
       const depois = await pg3.evaluate(() => ({

@@ -106,6 +106,30 @@ const PECAS = {
       '................',
     ],
   },
+  /* A rocha (ST-2.17): o cenário da luta no Caminho da Pedra, em Pewter e no
+     planalto pedia pedra solta, e o mapa só tinha o pilar. Três tons de cinza
+     quente com luz de cima à esquerda, o musgo no pé. */
+  rocha: {
+    paleta: { k: K, g: '#8c8478', G: '#bdb5a6', d: '#5c564d', a: '#3d3a35', m: '#5f8f45' },
+    grade: [
+      '................',
+      '................',
+      '................',
+      '.....kkkkk......',
+      '....kGGGggkk....',
+      '...kGGgggggdk...',
+      '..kGGgggggggdk..',
+      '..kGggggkgggddk.',
+      '.kGggggggggdddk.',
+      '.kGgggggggddddk.',
+      '.kggggggdddddak.',
+      'kmgggddddddaaak.',
+      'kmmdddddaaaaak..',
+      '.kkmmaaaaakkk...',
+      '...kkkkkkk......',
+      '................',
+    ],
+  },
   /* A torre da usina: aço, e o fio aceso no neon da interface — é a peça do
      mapa que diz "aqui mora o Elétrico" antes do nome. */
   torre: {
