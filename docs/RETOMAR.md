@@ -31,8 +31,9 @@ o RESUMO   A E14 (Shiny, Trading & Player Market) ESTÁ COMPLETA ATÉ O GATE C:
            em GET /api/admin/economia-e14, e as lacunas destravadas fecharam
            (L-223, L-227, L-228, L-208, L-211; L-221 decidida). O que resta
            da fila ESPERA alguém ou algum dado:
-             · os ícones (1.30) e as lojas com NPC (1.31b, L-176) — a arte e
-               o vídeo que só existem no PC do dono
+             · as lojas com NPC (1.31b, L-176) — o vídeo que só existe no PC
+               do dono. Os ÍCONES (1.30) fecharam em 01/10: a arte de 160 px
+               achada no Serebii, a pedido do dono
              · a onda D da E14 (buy orders) — dados de liquidez do piloto
              · o visual adiado pela DEC-20 (ST-10.26, ST-14.3c, ST-14.3d)
              · o piloto com amigos (ST-7.2) — o dono e o roteiro em

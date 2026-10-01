@@ -34,6 +34,19 @@ import {
   usarCatalogo, temIcone, casaDe, estiloItem,
 } from '../app/modules/itens-icone.mjs';
 import kanto from '../content/pokemon_kanto_v1.mjs';
+import { readFileSync } from 'node:fs';
+import { RESOLUCAO } from '../app/modules/itens-icone.mjs';
+import { CORES_DA_BOLA } from '../app/modules/bola-cores.mjs';
+
+/* As medidas de um PNG estão no cabeçalho (IHDR), sem decodificar nada. */
+const medidas = arq => { const b = readFileSync(new URL(arq, import.meta.url)); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
+const matiz = hex => {
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  if (!d) return 0;
+  const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return (h * 60 + 360) % 360;
+};
 
 const numeros = (est, prop) => {
   const m = new RegExp(`${prop}:([^;]+)`).exec(est ?? '');
@@ -56,17 +69,36 @@ export function suite() {
         'ficou borrada com a arte certa — o dono viu, eu não.');
   });
 
-  s.teste('o estilo carrega a nitidez junto com o tamanho', () => {
+  /* 1.30: a arte deixou de ser pixel art de 32 px e virou desenho de 160,
+     numa folha 3× mais densa — e a suavização acompanha a natureza da arte:
+     desenho REDUZIDO fica limpo com ela e serrilhado sem. A decisão continua
+     morando no estilo, junto do tamanho. */
+  s.teste('o estilo carrega a suavização junto com o tamanho', () => {
     usarCatalogo(kanto.catalogo);
     const id = (kanto.catalogo ?? []).find(i => i.comoAchei !== 'falta').id;
     const est = estiloItem(id, 34);
-    ok(/image-rendering\s*:\s*pixelated/.test(est),
-      `o estilo saiu sem \`image-rendering: pixelated\`: ${est}. Tamanho e ` +
-      'suavização são a MESMA decisão — separá-los é como um dos dois se perde ' +
-      'na próxima refatoração, e aí a arte volta a borrar sem ninguém ter mexido ' +
-      'no tamanho.');
+    ok(/image-rendering\s*:\s*auto/.test(est) && !/pixelated/.test(est),
+      `o estilo saiu sem \`image-rendering: auto\`: ${est}. A folha é de desenho ` +
+      'em 96 px por casa (1.30): reduzir desenho sem suavização serrilha a borda ' +
+      'que o dono aprovou limpa.');
     ok(/width:32px/.test(est) && /height:32px/.test(est),
       `pedindo 34 o bloco não saiu com 32px: ${est}`);
+  });
+
+  /* --- 1.30 · A FOLHA EM ALTA, NA MESMA GRADE --------------------------- */
+
+  s.teste('a folha tem a grade de sempre, três vezes mais densa (1.30)', () => {
+    const [w, h] = medidas('../assets/icones/itens.png');
+    igual(`${w}×${h}`, `${COLUNAS * LADO * RESOLUCAO}×${LINHAS * LADO * RESOLUCAO}`,
+      'a folha não é a grade de 23×17 casas de 96 px: o recorte por CSS cairia na casa errada, ou a arte voltaria à resolução velha');
+    const [w0, h0] = medidas('../assets/icones/itens-32.png');
+    igual(`${w0}×${h0}`, `${COLUNAS * LADO}×${LINHAS * LADO}`, 'a folha de entrada de 32 px mudou — o `itens-hd.mjs` ampliaria o que já foi ampliado');
+  });
+
+  s.teste('a Poké Ball é vermelha, e não laranja (1.30 · L-137)', () => {
+    const h = matiz(CORES_DA_BOLA.poke);
+    ok(h < 15 || h > 345, `a cor da Poké Ball tem matiz ${Math.round(h)}° (${CORES_DA_BOLA.poke}) — laranja. O dono: "se é vermelho é vermelho e não laranja"`);
+    ok(matiz(CORES_DA_BOLA.great) > 180 && matiz(CORES_DA_BOLA.great) < 240, 'a Great Ball deixou de ser azul');
   });
 
   /* --- 2 · TODO ITEM CONFIRMADO TEM DESENHO ----------------------------- */

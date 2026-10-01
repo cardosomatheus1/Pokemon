@@ -5938,10 +5938,22 @@ sem o checkpoint, e a loja de PokéCash é exatamente isso.
 > cadeado. O motor da loja (`engine/loja.mjs`), a moldura, a fala e o som já
 > existem e são os mesmos.
 
-### L-137 — a qualidade dos ícones de item, e ela é 34 e não 368
+### L-137 — a qualidade dos ícones de item, e ela é 34 e não 368 ✅ FECHADA no 1.30 (01/10)
 
 **Registrada em:** 03/09/2026, **pelo dono**. **Bloco dono:** 1.30.
-**Estado:** aberta, e o dono a RECOBROU em 08/09/2026 — com razão.
+**Estado:** fechada no 1.30 (01/10/2026). O dono liberou a busca ("procurar
+internet como todo ou github"), e a fonte que casa com o padrão dele — PNG de
+160×160, fundo transparente — é o Serebii de Scarlet/Violet
+(`serebii.net/itemdex/sprites/sv/`): 40 dos 41 itens da franquia; a Macho
+Brace não existe no jogo novo e vem do conjunto PGL do mesmo site (80 px). A
+pokesprite do GitHub foi olhada e descartada: ícones de 32 px pequenos no
+quadro, de outra geração — não melhorava a folha de hoje. `tools/itens-hd.mjs`
+baixa as fontes (`assets/icones/itens-sv/`) e monta a folha 3× mais densa na
+MESMA grade (a de 32 px fica em `itens-32.png`, como entrada); os índices do
+catálogo não mudaram. Achados no caminho: os Óculos do Sábio e os Óculos da
+Escolha estavam com o desenho trocado na folha velha; e a cor da Poké Ball
+(brilho da captura, tira da animação) era laranja porque vinha do ícone velho
+— as duas recalculadas da arte nova.
 
 > **Atualizada em 08/09/2026.** Duas coisas mudaram, e nenhuma é o escopo:
 >

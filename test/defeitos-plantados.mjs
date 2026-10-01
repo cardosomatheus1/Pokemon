@@ -10013,6 +10013,13 @@ export const DEFEITOS = [
   { id:'S2431', arquivo:'app/modules/liga-equipe-dados.mjs', nome:"a Liga volta a prometer o time do aparelho",
     real:"o jogador espera uma migração que a DEC-17 decidiu não fazer, e não captura",
     de:"escolha o seu inicial e capture no farm — o time da conta vem delas.", para:"levar para ela as que você tem neste aparelho chega numa próxima versão." },
+  /* ── 1.30 · os ícones de item em alta (L-137) ─────────────────────── */
+  { id:'S2432', arquivo:'app/modules/itens-icone.mjs', nome:"o ícone em alta volta a ser pixelado",
+    real:"o desenho de 96 reduzido para 32 sem suavização serrilha a borda — a arte certa volta a parecer ruim",
+    de:"         `image-rendering:auto`;", para:"         `image-rendering:pixelated`;" },
+  { id:'S2433', arquivo:'app/modules/bola-cores.mjs', nome:"a Poké Ball volta a ser laranja",
+    real:"o brilho da captura sai laranja de novo, e o dono já reprovou essa cor",
+    de:"  poke: '#f06d57',", para:"  poke: '#f48d3a'," },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',

@@ -37,6 +37,21 @@
  */
 export const FOLHA = '../assets/icones/itens.png';
 
+/* ── 1.30 · A FOLHA FICOU TRÊS VEZES MAIS DENSA (L-137) ────────────────────
+ *
+ * Os ícones deixaram de ser a pixel art de 32 px tirada de um JPEG e passaram a
+ * ser as artes de 160×160 que o dono aprovou, montadas por `tools/itens-hd.mjs`
+ * numa folha de casas de 96 px — a MESMA grade, os MESMOS índices. `LADO`
+ * continua sendo o lado em pixel de TELA de uma casa; `RESOLUCAO` diz quantos
+ * pixels da imagem cabem em cada um. O recorte por CSS não muda: ele já falava
+ * em pixel de tela, e a imagem só ficou mais densa.
+ *
+ * E a suavização muda junto, porque a arte mudou de natureza: a regra
+ * "múltiplo inteiro e sem suavização" era de PIXEL ART. Arte desenhada,
+ * reduzida de 96 para 64 ou 32, fica limpa com a suavização do navegador e
+ * serrilhada sem ela. `TAMANHOS` continua fechado — 96 é o 1:1 da folha. */
+export const RESOLUCAO = 3;
+
 /* O lado nativo da folha, e a grade dela. Vêm de `normalizar-itens.mjs`, que
    preserva a grade da folha do dono: 23 colunas por 16 linhas. */
 export const LADO = 32;
@@ -88,5 +103,5 @@ export function estiloItem(id, tam = LADO) {
          `background-size:${COLUNAS * LADO * k}px ${LINHAS * LADO * k}px;` +
          `background-position:${-(i % COLUNAS) * LADO * k}px ${-Math.floor(i / COLUNAS) * LADO * k}px;` +
          `width:${t}px;height:${t}px;background-repeat:no-repeat;` +
-         `image-rendering:pixelated`;
+         `image-rendering:auto`;
 }
