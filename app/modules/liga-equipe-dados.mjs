@@ -167,10 +167,12 @@ export function homeDaLiga({ conta, dados, pack, agora, preset, acabou = null })
   if (!dados.ligada) return comPresets({ ...base, estado: 'desligada', acao: { rotulo: 'Buscar partida', habilitada: false, tipo: 'buscar' },
     aviso: 'A Liga está em manutenção agora. As partidas jogadas continuam aqui.' });
   /* Sem time na conta NÃO há botão: um botão apagado sem saída é um beco.
-     A frase diz o que é e o que vem; o passo 1 aparece bloqueado. */
+     A frase diz o que é e por onde se sai; o passo 1 aparece bloqueado.
+     ST-13.5g · L-211: a DEC-17 decidiu que a conta começa do zero — não há
+     "levar as do aparelho" vindo, e a frase deixou de prometer. */
   if (!(dados.equipe ?? []).length) return comPresets({ ...base, estado: 'sem-equipe', passos: null, acao: null, semHistorico: false,
     titulo: 'Ainda não dá para jogar a Liga',
-    aviso: 'Você não tem time na sua conta. A Liga luta só com criaturas guardadas na conta, e levar para ela as que você tem neste aparelho chega numa próxima versão. Quando chegar, é publicar o time e buscar partida.' });
+    aviso: 'Você não tem time na sua conta. A Liga luta só com as criaturas da conta: escolha o seu inicial e capture no farm — o time da conta vem delas. Depois é publicar o time e buscar partida.' });
   if (!dados.meuTime) return comPresets({ ...base, estado: 'publicar', passos: PASSOS, acao: { rotulo: 'Publicar meu time', habilitada: true, tipo: 'publicar' },
     aviso: 'Publique o time para entrar: ele fica congelado como está, e é ele que os outros enfrentam.' });
   const velho = motivoDaVersao(pack, dados.meuTime);

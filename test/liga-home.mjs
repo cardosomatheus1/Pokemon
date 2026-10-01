@@ -65,7 +65,8 @@ export async function suite() {
     igual(`${off.estado}|${off.acao.habilitada}`, 'desligada|false', 'a Liga em manutenção deixa buscar');
     const vazio = h({ dados: dadosBase({ equipe: [] }) });
     igual(`${vazio.estado}|${vazio.acao}|${vazio.passos}|${vazio.semHistorico}|${vazio.titulo}`, 'sem-equipe|null|null|false|Ainda não dá para jogar a Liga', 'o time vazio promete o que não pode');
-    ok(/aparelho/.test(vazio.aviso) && /não tem time na sua conta/.test(vazio.aviso), 'o time vazio não diz por que está vazio');
+    ok(/não tem time na sua conta/.test(vazio.aviso) && /inicial/.test(vazio.aviso) && /farm/.test(vazio.aviso), 'o time vazio não diz por que está vazio, nem por onde sair');
+    ok(!/próxima versão|aparelho/.test(vazio.aviso), 'o aviso promete trazer as do aparelho — a DEC-17 decidiu que não (L-211)');
     igual(h({ dados: dadosBase() }).acao.tipo, 'publicar', 'sem time publicado não pede para publicar');
     const snap = (x = {}) => ({ id: 's1', preset: 'aggressive', power: 321, time: [{ id: 'c1', dex: 4, nivel: 10 }], versaoMotor: 'x', versaoConteudo: 'y', ...x });
     igual(h({ dados: dadosBase({ meuTime: snap() }) }).estado, 'desatualizado', 'o time de regras velhas foi para a fila');

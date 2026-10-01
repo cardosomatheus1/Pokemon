@@ -8869,12 +8869,14 @@ mover —, mas a ST-13.5 (o cliente lê do servidor) precisa dela, e a regra tem
 de morar na camada 0 que os dois chamam, como a colheita.
 
 
-### L-211 — a Liga de times não tem como receber o time de um jogador de verdade
+### L-211 — a Liga de times não tem como receber o time de um jogador de verdade ✅ FECHADA na ST-13.5g (01/10)
 
 **Registrada em:** 30/09/2026, na ST-11.6a. **Bloco dono:** ST-13.4 (trazer o
 save local para a conta), seguida da ST-13.5 (o cliente lê o idle do
-servidor). **Estado:** aberto. **Espera o dono**: a ST-13.4 é dado com
-acervo, e a decisão é dele. A recomendação continua escrita na ficha: importar
+servidor). **Estado:** fechada — a DEC-17 (30/09) decidiu pela conta do zero, sem
+migração; a ST-13.5 pôs a coleção na conta, e a ST-13.5g tirou do aviso a
+promessa de trazer as do aparelho. (Antes: **espera o dono**: a ST-13.4 é dado com
+acervo, e a decisão é dele.) A recomendação continua escrita na ficha: importar
 uma vez, com um teto de plausibilidade.
 
 A Liga luta com o time guardado **na conta**, que é o do servidor. O cliente

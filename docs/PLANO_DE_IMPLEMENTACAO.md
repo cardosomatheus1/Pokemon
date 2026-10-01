@@ -2244,6 +2244,15 @@ do servidor. Três partes:
   anotou. **Q2:** S2430 (o aparelho volta a declarar) e S1573 realvo; S1576
   removido (mordia a chamada que saiu).
 
+### ST-13.5g · A Liga sem time diz por onde sair (L-211) ✅ 01/10
+- **Escopo:** a Liga já lia o time DA CONTA (`criaturasParaLuta`), e a DEC-17
+  decidiu que a conta começa do zero — não há migração do aparelho vindo. O
+  aviso da Liga sem time ainda prometia "levar as do aparelho numa próxima
+  versão"; passa a dizer por onde se sai: escolher o inicial e capturar no
+  farm. Só texto num aviso que já existia (capturas dispensadas pela DEC-20).
+- **Testes:** `liga-home` — o aviso diz inicial e farm e não promete o
+  aparelho. **Q2:** S2431.
+
 ### ST-13.8 · Os sinais de aparelho e rede (L-050 · DEC-19) ✅ 30/09
 - **Porte** M · **Servidor** sim · **Spec** §7.19, §28 · **Depende de** ST-13.6
 - **Escopo:** o cliente manda um número aleatório do navegador (guardado nele);

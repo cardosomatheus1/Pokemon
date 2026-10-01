@@ -10009,6 +10009,10 @@ export const DEFEITOS = [
   { id:'S2430', arquivo:'server/telemetria.mjs', nome:"o aparelho volta a declarar a vitória",
     real:"a conta relata 'ginasio_vencido' do navegador e o gate da V4 conta o que ela disse",
     de:"  'p_exibida'];", para:"  'pve_iniciado', 'ginasio_vencido', 'p_exibida'];" },
+  /* ── ST-13.5g · a Liga sem time diz por onde sair (L-211) ────────── */
+  { id:'S2431', arquivo:'app/modules/liga-equipe-dados.mjs', nome:"a Liga volta a prometer o time do aparelho",
+    real:"o jogador espera uma migração que a DEC-17 decidiu não fazer, e não captura",
+    de:"escolha o seu inicial e capture no farm — o time da conta vem delas.", para:"levar para ela as que você tem neste aparelho chega numa próxima versão." },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',
