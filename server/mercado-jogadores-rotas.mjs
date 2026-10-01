@@ -9,6 +9,7 @@ import PACK from '../content/escolhido.mjs';
 import { CHECKPOINT_25_1 } from '../engine/feature-flags.mjs';
 import { normalizarBusca, ERRO_BUSCA } from '../engine/busca-mercado.mjs';
 import { buscarAnuncios } from './mercado-jogadores-busca.mjs';
+import { historicoDaSerie, serieDoPedido, ERRO_HISTORICO } from './mercado-jogadores-historico.mjs';
 import { anunciar, comprar, cancelarAnuncio, detalheDoAnuncio, vitrine, meusAnuncios, minhasCompras, ERRO_MERCADO_P2P } from './mercado-jogadores.mjs';
 
 const texto = v => typeof v === 'string' && v.length > 0 && v.length <= 80;
@@ -16,7 +17,7 @@ const recusa = msg => ({ status: 400, corpo: { codigo: 'ENTRADA_INVALIDA', erro:
 
 export const STATUS_DO_MERCADO_P2P = Object.freeze({
   [ERRO_MERCADO_P2P.NAO]: 404, [ERRO_MERCADO_P2P.ENTRADA]: 400,
-  [ERRO_BUSCA]: 400,
+  [ERRO_BUSCA]: 400, [ERRO_HISTORICO.SERIE]: 400, [ERRO_HISTORICO.NAO]: 404, [ERRO_HISTORICO.JA]: 409,
   [ERRO_MERCADO_P2P.ESTADO]: 409, [ERRO_MERCADO_P2P.DESATUALIZADO]: 409, [ERRO_MERCADO_P2P.RECUSADA]: 409,
 });
 
@@ -29,6 +30,9 @@ export function rotasDoMercadoP2P(daExcecao) {
     /* ST-14.10: a busca — filtros E, ordem de lista fechada, cursor estável. */
     'GET /api/player-market/busca': ({ db, query, agora }) =>
       tentar(() => buscarAnuncios(db, { pack: PACK, agora, busca: normalizarBusca(query) })),
+    /* ST-14.12: o histórico de uma série — normal e shiny nunca juntos. */
+    'GET /api/player-market/historico': ({ db, query, agora }) =>
+      tentar(() => historicoDaSerie(db, { pack: PACK, serie: serieDoPedido(query), agora })),
     'GET /api/player-market/anuncio': ({ db, query, userId, agora }) => {
       const id = query?.get?.('id');
       if (!texto(id)) return recusa('id inválido');

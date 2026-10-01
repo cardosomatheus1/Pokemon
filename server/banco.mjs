@@ -2506,6 +2506,26 @@ export const MIGRACOES = [
     },
   },
 
+  {
+    /* ST-14.12 · E14 · O HISTÓRICO DE PREÇOS (spec E14 §12).
+     *
+     * A venda bruta (`player_market_fills`) nunca muda. O que tira uma venda
+     * da REFERÊNCIA é uma linha aqui, com motivo e operador — anular não
+     * apaga, e a série é recalculada a cada pedido. */
+    nome: 'historico-st14.12',
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE player_market_fills_exclusoes (
+          fill_id  INTEGER PRIMARY KEY REFERENCES player_market_fills(id),
+          motivo   TEXT NOT NULL CHECK (length(trim(motivo)) > 0),
+          por      TEXT NOT NULL,
+          em       INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE TRIGGER player_market_fills_exclusoes_sem_delete BEFORE DELETE ON player_market_fills_exclusoes BEGIN SELECT RAISE(ABORT, 'a exclusão da referência é append-only'); END`);
+    },
+    desce: db => { db.exec(`DROP TABLE player_market_fills_exclusoes`); },
+  },
+
 ];
 
 const TABELA_VERSAO = `
