@@ -13,6 +13,9 @@
 import { previewAnuncio } from '../../engine/taxas-mercado.mjs';
 import { previewOrdem, casarVenda, taxasDosFills, MINIMO_FILL } from '../../engine/matching-mercado-jogadores.mjs';
 import { tipoDoItem } from '../../engine/negociabilidade.mjs';
+import { normalizarCriterios, atendeCriterios, textoDosCriterios } from '../../engine/criterios-mercado.mjs';
+import { taxa, POLITICA_PILOTO } from '../../engine/taxas-mercado.mjs';
+import { nivelDe } from '../../engine/nivel-criatura.mjs';
 import { FAIXAS_POTENCIAL, faixaDoPotencial } from '../../engine/historico-precos.mjs';
 
 /* As abas da spec §10.2. O nome das criaturas é o do PACK (`rotulos`): o
@@ -111,6 +114,7 @@ export function textoDaRecusaDoMercado(r = {}) {
     case 'ASSET_COOLDOWN': return 'Chegou numa troca há pouco — espere o fim do intervalo para anunciar.';
     case 'ASSET_BUSY': return 'Está ocupado: em expedição, na run ou preso em outra oferta.';
     case 'ASSET_BOUND': return 'Isto não pode ir ao Market (vínculo de origem).';
+    case 'CRITERIA_MISMATCH': return 'Esta criatura não cumpre o que a ordem pede.';
     case 'NO_MATCH': return 'Ninguém paga isso agora — baixe o preço mínimo, ou espere uma ordem nova.';
     case 'ACCOUNT_RESTRICTED': return /mesma_conta/.test(c.erro ?? '') ? 'Este anúncio é seu.' : /conta_ligada/.test(c.erro ?? '') ? 'Esta conta está ligada à de quem vende — a compra entre elas não existe.' : 'Uma das contas não pode negociar agora.';
   }
@@ -171,7 +175,14 @@ export function previaDaVendaParaOrdens({ niveis = [], quantidade, precoMinimo, 
 }
 
 const ESTADO_DA_ORDEM = { ACTIVE: 'aberta', FILLED: 'cheia', CANCELLED: 'cancelada', EXPIRED: 'vencida', BLOCKED: 'bloqueada' };
-export function linhaDaMinhaOrdem(o, nomeDoItem = id => id) {
+export function linhaDaMinhaOrdem(o, nomeDoItem = id => id, nomeDaEspecie = d => `#${d}`) {
+  /* ST-14.11B: a ordem de criatura se lê pelos critérios, e "cheia" é "atendida". */
+  if (o.tipo === 'criatura') return {
+    id: o.id, aberta: o.estado === 'ACTIVE', estado: o.estado === 'FILLED' ? 'atendida' : (ESTADO_DA_ORDEM[o.estado] ?? o.estado), classe: o.estado,
+    titulo: `${textoDosCriterios(o.criterios, nomeDaEspecie)} · até ${o.precoUnit}`,
+    progresso: o.estado === 'FILLED' ? `chegou: nv ${o.fills?.[0]?.retrato?.nivel ?? '?'}${o.fills?.[0]?.retrato?.natureza ? ` · ${o.fills[0].retrato.natureza}` : ''}` : 'esperando quem tenha',
+    detalhe: o.reservado ? `${o.reservado} PC-T presos` : (o.pago ? `pagou ${o.pago} PC-T` : '—'),
+  };
   return {
     id: o.id, aberta: o.estado === 'ACTIVE', estado: ESTADO_DA_ORDEM[o.estado] ?? o.estado, classe: o.estado,
     titulo: `${nomeDoItem(o.itemId)} · até ${o.precoUnit} cada`,
@@ -183,3 +194,41 @@ export function linhaDaMinhaOrdem(o, nomeDoItem = id => id) {
 
 export const linhasDoLivro = livro => (livro?.niveis ?? []).map(n => `${n.quantidade} un. a ${n.precoUnit} cada${n.ordens > 1 ? ` (${n.ordens} ordens)` : ''}`);
 export const novaChaveDeOrdem = (rand = Math.random) => `ordem-${Date.now().toString(36)}-${Math.floor(rand() * 1e9).toString(36)}`;
+
+/* ── AS ORDENS DE CRIATURA (ST-14.11B) ────────────────────────────────────
+ * Quem pede diz a espécie e, se quiser, o brilho, a faixa de nível, a
+ * natureza e o potencial mínimo — e aceita ANTES qualquer exemplar que
+ * cumpra tudo. A tela diz isso com todas as letras antes de confirmar. Quem
+ * vende vê, em cada ordem, quais das SUAS criaturas servem (a mesma régua do
+ * servidor, `atendeCriterios`), e quanto recebe. */
+const vazio = v => v == null || v === '';
+export function criteriosDoFormulario(f = {}, pack, dexDoNome = () => null) {
+  const n = k => (vazio(f[k]) ? null : Math.floor(Number(f[k])));
+  const dex = dexDoNome(String(f.especie ?? '').trim());
+  if (!dex) return { ok: false, motivo: 'Escolha a espécie.' };
+  const cru = { dex };
+  if (f.shiny === 'sim') cru.shiny = true; else if (f.shiny === 'nao') cru.shiny = false;
+  for (const k of ['nivelMin', 'nivelMax', 'potencialMin']) if (n(k) != null) cru[k] = n(k);
+  if (!vazio(f.natureza)) cru.natureza = f.natureza;
+  const r = normalizarCriterios(pack, cru);
+  return r.ok ? r : { ok: false, motivo: `Critério inválido: ${r.motivo}.` };
+}
+
+export function previaDaOrdemDeCriatura({ criterios, preco, elegivel, nomeDaEspecie = d => `#${d}` }) {
+  if (!criterios) return { ok: false, motivo: 'Escolha a espécie.' };
+  const p = previaDaOrdem({ quantidade: 1, precoUnit: preco, elegivel });
+  if (!p.ok) return { ok: false, motivo: !Number.isSafeInteger(preco) ? 'Diga quanto você paga, em PC-T inteiros.' : p.motivo };
+  return { ...p, texto: textoDosCriterios(criterios, nomeDaEspecie),
+           linhas: [['Você recebe', `uma criatura: ${textoDosCriterios(criterios, nomeDaEspecie)}`], ['Fica preso até alguém vender', `${preco} PC-T`], ...p.linhas.filter(([k]) => k !== 'Fica preso até encher')],
+           nota: 'Você aceita AGORA qualquer exemplar que cumpra tudo isto — quando alguém vender, ele chega na sua coleção, sem outra confirmação.' };
+}
+
+/* O retrato de uma criatura do aparelho, na régua do servidor. */
+const retratoDaMinha = (c, pack) => ({ pack: pack?.id, dex: c.dex, shiny: !!c.shiny, nivel: Math.max(c.nivel ?? 1, nivelDe(c.xp ?? 0)),
+                                        natureza: c.natureza?.nome ?? c.natureza ?? null, potencial: c.potencial });
+export const queServem = (criaturas, criterios, pack) => (criaturas ?? []).filter(c => atendeCriterios(criterios, retratoDaMinha(c, pack)).ok);
+
+export function vendaParaOrdemDeCriatura(o) {
+  const t = taxa(o.preco, POLITICA_PILOTO.vendaBps, POLITICA_PILOTO.minimoTaxa);
+  return { preco: o.preco, taxaVenda: t, liquido: o.preco - t };
+}

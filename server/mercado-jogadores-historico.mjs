@@ -45,9 +45,13 @@ const DO_ITEM = 'AND f.item_id = ?';
    e contá-la de novo dobraria a amostra. */
 const VENDAS_PARA_ORDEM = [
   "SELECT 1000000000 + f.id AS id, f.bruto AS preco, f.quantidade, f.vendedor_id AS vendedor, f.comprador_id AS comprador, f.em",
-  "FROM player_market_order_fills f WHERE f.pack_id = ? AND f.tipo = 'item' AND f.item_id = ? AND f.venda_ref LIKE 'venda:%'",
+  "FROM player_market_order_fills f WHERE f.pack_id = ? AND f.venda_ref LIKE 'venda:%'",
   'AND f.vendedor_id NOT IN (', SOB_SUSPEITA, ') AND f.comprador_id NOT IN (', SOB_SUSPEITA, ')',
 ];
+/* ST-14.11B: a criatura vendida para uma ordem entra na série DELA — a
+   espécie, o brilho e a faixa do potencial da instância entregue. */
+const PARA_ORDEM_DO_ITEM = "AND f.tipo = 'item' AND f.item_id = ?";
+const PARA_ORDEM_DA_CRIATURA = "AND f.tipo = 'criatura' AND f.dex = ? AND f.shiny = ? AND f.potencial BETWEEN ? AND ?";
 const MAIOR_ORDEM = "SELECT MAX(preco_unit) AS m FROM player_market_buy_orders WHERE estado = 'ACTIVE' AND pack_id = ? AND tipo = 'item' AND item_id = ? AND expira_em > ?";
 const MENOR = "SELECT MIN(preco * 1.0 / quantidade) AS m FROM player_market_listings WHERE estado = 'ACTIVE' AND pack_id = ? AND expira_em > ? AND tipo = ?";
 const MENOR_DA_CRIATURA = 'AND dex = ? AND shiny = ? AND potencial BETWEEN ? AND ?';
@@ -83,7 +87,8 @@ export function historicoDaSerie(db, { pack, serie, agora }) {
   }
   /* A ligação descoberta DEPOIS da venda também tira a venda da referência. */
   const brutas = db.prepare(sql.join(' ')).all(...args);
-  if (serie.tipo === 'item') brutas.push(...db.prepare(VENDAS_PARA_ORDEM.join(' ')).all(pack.id, serie.itemId));
+  if (serie.tipo === 'item') brutas.push(...db.prepare([...VENDAS_PARA_ORDEM, PARA_ORDEM_DO_ITEM].join(' ')).all(pack.id, serie.itemId));
+  else { const [a, b] = FAIXAS_POTENCIAL[serie.faixa]; brutas.push(...db.prepare([...VENDAS_PARA_ORDEM, PARA_ORDEM_DA_CRIATURA].join(' ')).all(pack.id, serie.dex, serie.shiny ? 1 : 0, a, b)); }
   const vendas = brutas.filter(v => !contasLigadas(db, v.vendedor).includes(v.comprador));
   const m = db.prepare(menor.join(' ')).get(...argsMenor)?.m;
   /* A maior ordem aberta (spec §12: "maior buy order quando disponível"). */

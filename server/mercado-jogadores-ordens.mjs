@@ -43,7 +43,9 @@ import { reservarOferta, liberarOferta, consumirOferta, holdsAtivos } from './re
 import { cobrarTaxaDeAnuncio } from './taxas-mercado.mjs';
 import { moverReservados } from './posse-p2p.mjs';
 import { emitir } from './telemetria.mjs';
-import { ERRO_MERCADO_P2P } from './mercado-jogadores.mjs';
+import { ERRO_MERCADO_P2P, retrato } from './mercado-jogadores.mjs';
+import { normalizarCriterios, hashDosCriterios, atendeCriterios, versaoDoCatalogo } from '../engine/criterios-mercado.mjs';
+import { taxa } from '../engine/taxas-mercado.mjs';
 
 export const ESTADO_ORDEM = Object.freeze({ ACTIVE: 'ACTIVE', FILLED: 'FILLED', CANCELLED: 'CANCELLED', EXPIRED: 'EXPIRED', BLOCKED: 'BLOCKED' });
 const falha = (codigo, msg, extra = {}) => Object.assign(new Error(msg), { codigo, ...extra });
@@ -104,10 +106,13 @@ export function avancarOrdem(db, o, { quantidade, bruto, melhora, agora }) {
 }
 
 const contarFills = (db, ordemId) => db.prepare(`SELECT COUNT(*) n FROM player_market_order_fills WHERE ordem_id = ?`).get(ordemId).n;
-function registrarFill(db, { o, vendaRef, vendedorId, quantidade, bruto, reservado, taxaVenda, agora }) {
+function registrarFill(db, { o, vendaRef, vendedorId, quantidade, bruto, reservado, taxaVenda, agora, criatura = null }) {
   db.prepare(`INSERT INTO player_market_order_fills (ordem_id, venda_ref, pack_id, tipo, item_id, dex, shiny, quantidade, bruto, reservado, melhora,
-                taxa_venda, liquido, vendedor_id, comprador_id, em) VALUES (?, ?, ?, ?, ?, NULL, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-    .run(o.id, vendaRef, o.pack_id, o.tipo, o.item_id, quantidade, bruto, reservado, reservado - bruto, taxaVenda, bruto - taxaVenda, vendedorId, o.comprador_id, agora);
+                taxa_venda, liquido, vendedor_id, comprador_id, em, criatura_id, retrato_json, potencial, criterios_hash)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .run(o.id, vendaRef, o.pack_id, o.tipo, o.item_id, criatura?.retrato.dex ?? null, criatura?.retrato.shiny ? 1 : 0, quantidade, bruto, reservado, reservado - bruto,
+         taxaVenda, bruto - taxaVenda, vendedorId, o.comprador_id, agora, criatura?.id ?? null, criatura ? JSON.stringify(criatura.retrato) : null,
+         criatura?.retrato.potencial ?? null, o.criterios_hash ?? null);
 }
 
 /* ── A ORDEM NOVA CONTRA OS LOTES ANUNCIADOS ────────────────────────────── */
@@ -237,10 +242,11 @@ export function expirarOrdemDaOferta(db, { dono: d, agora }) {
  * nunca quem pediu. Quem pediu vê as próprias, com o que já pagou e o que
  * voltou de melhora. */
 export const paraComprador = (db, o) => ({
-  id: o.id, itemId: o.item_id, quantidade: o.quantidade, restante: o.restante, executado: o.executado, precoUnit: o.preco_unit,
+  id: o.id, tipo: o.tipo, itemId: o.item_id, ...(o.tipo === 'criatura' ? { criterios: JSON.parse(o.criterios_json), criteriosHash: o.criterios_hash } : {}), quantidade: o.quantidade, restante: o.restante, executado: o.executado, precoUnit: o.preco_unit,
   reservado: o.estado === ESTADO_ORDEM.ACTIVE ? o.restante * o.preco_unit : 0, pago: o.pago, liberado: o.liberado, taxaCriacao: o.taxa_criacao,
   estado: o.estado, versao: o.versao, criadoEm: o.criado_em, expiraEm: o.expira_em,
-  fills: db.prepare(`SELECT quantidade, bruto, melhora, em FROM player_market_order_fills WHERE ordem_id = ? ORDER BY id`).all(o.id),
+  fills: db.prepare(`SELECT quantidade, bruto, melhora, em, criatura_id AS criaturaId, retrato_json FROM player_market_order_fills WHERE ordem_id = ? ORDER BY id`).all(o.id)
+    .map(({ retrato_json, criaturaId, ...f }) => ({ ...f, ...(criaturaId ? { criaturaId, retrato: JSON.parse(retrato_json) } : {}) })),
 });
 
 /* `exceto`: quem PERGUNTA não vê as próprias no livro — ele não vende para
@@ -255,3 +261,89 @@ export function livroDoItem(db, { pack, itemId, agora, limite = 10, exceto = '' 
 
 export const minhasOrdens = (db, { userId, limite = 50 }) =>
   db.prepare(`SELECT * FROM player_market_buy_orders WHERE comprador_id = ? ORDER BY criado_em DESC, seq DESC LIMIT ?`).all(userId, limite).map(o => paraComprador(db, o));
+
+/* ── AS ORDENS DE CRIATURA (ST-14.11B · spec E14 §10.3) ───────────────────
+ *
+ * UMA criatura por ordem, por critérios objetivos (`engine/criterios-mercado`
+ * decide quais existem e se uma instância os cumpre — TODOS, nunca algum).
+ * Quem compra aceita ANTES qualquer exemplar que cumpra tudo: a venda não
+ * pede aceite depois. Quem vende escolhe a ordem e a instância; o servidor
+ * mede a instância de novo (o retrato do servidor, nunca o do pedido) e só
+ * então move.
+ *
+ * Sem casamento com anúncios: comprar um anúncio de criatura continua sendo
+ * escolher UMA instância específica (spec §10.3). A ordem de um catálogo
+ * velho não casa — o comprador cancela e cria de novo. */
+export function criarOrdemDeCriatura(db, { userId, pack, criterios, preco, chaveIdem, agora, checkpoint }) {
+  if (!CHAVE_OK(chaveIdem)) throw falha(ERRO_MERCADO_P2P.ENTRADA, 'chave da ordem inválida');
+  const ja = db.prepare(`SELECT id FROM player_market_buy_orders WHERE comprador_id = ? AND chave = ?`).get(userId, chaveIdem);
+  if (ja) return { ...paraComprador(db, lerOrdem(db, ja.id)), repetido: true };
+  const n = normalizarCriterios(pack, criterios);
+  if (!n.ok) throw falha(ERRO_MERCADO_P2P.ENTRADA, n.motivo);
+  const p = previewOrdem({ quantidade: 1, precoUnit: preco });
+  if (!p.ok) throw falha(ERRO_MERCADO_P2P.ENTRADA, p.motivo);
+  return emTransacao(db, () => {
+    exigirConta(db, userId, 'esta conta', agora, checkpoint);
+    const id = randomUUID(), expiraEm = agora + DURACAO_ORDEM_MS;
+    const seq = db.prepare(`SELECT COALESCE(MAX(seq), 0) + 1 AS s FROM player_market_buy_orders`).get().s;
+    const { ids } = reservarOferta(db, { userId, pack, dono: donoDa(id), ativos: { moeda: p.reserva }, expiraEm, agora, checkpoint });
+    const t = cobrarTaxaDeAnuncio(db, { userId, preco: p.reserva, ref: id, idem: `ordem:${id}`, agora });
+    if (!t.ok) throw falha(ERRO_MERCADO_P2P.RECUSADA, `a taxa da ordem não passou: ${t.motivo}`, { reason_code: 'INSUFFICIENT_FUNDS' });
+    db.prepare(`INSERT INTO player_market_buy_orders (id, seq, comprador_id, pack_id, tipo, categoria, quantidade, restante, preco_unit, estado,
+                  taxa_criacao, politica_versao, politica_hash, hold_id, chave, criado_em, expira_em, dex, criterios_json, criterios_hash, catalogo_versao)
+                VALUES (?, ?, ?, ?, 'criatura', 'criaturas', 1, 1, ?, 'ACTIVE', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(id, seq, userId, pack.id, preco, p.taxaCriacao, p.versao, p.hash, ids[0], chaveIdem, agora, expiraEm,
+           n.criterios.dex, JSON.stringify(n.criterios), hashDosCriterios(n.criterios), versaoDoCatalogo(pack));
+    emitir(db, { nome: 'market_order_created', userId, campos: { quantidade: 1, precoUnit: preco, taxa: p.taxaCriacao }, chave: `ordem:${id}`, agora });
+    return paraComprador(db, lerOrdem(db, id));
+  });
+}
+
+export function venderCriaturaParaOrdem(db, { userId, pack, ordemId, criaturaId, chaveIdem, agora, checkpoint }) {
+  if (!CHAVE_OK(chaveIdem)) throw falha(ERRO_MERCADO_P2P.ENTRADA, 'chave da venda inválida');
+  const ja = db.prepare(`SELECT recibo_json FROM player_market_vendas_ordem WHERE vendedor_id = ? AND chave = ?`).get(userId, chaveIdem);
+  if (ja) return { ...JSON.parse(ja.recibo_json), repetido: true };
+  if (typeof criaturaId !== 'string' || !criaturaId) throw falha(ERRO_MERCADO_P2P.ENTRADA, 'criatura inválida');
+  return emTransacao(db, () => {
+    const o = lerOrdem(db, ordemId);
+    if (!o || o.tipo !== 'criatura') throw falha(ERRO_MERCADO_P2P.NAO, 'ordem não encontrada');
+    if (o.estado !== ESTADO_ORDEM.ACTIVE || o.expira_em <= agora) throw falha(ERRO_MERCADO_P2P.ESTADO, o.estado === 'FILLED' ? 'esta ordem já foi atendida' : `a ordem está ${o.estado === 'ACTIVE' ? 'vencida' : o.estado}`);
+    if (o.catalogo_versao !== versaoDoCatalogo(pack)) throw falha(ERRO_MERCADO_P2P.ESTADO, 'a ordem é de um catálogo anterior — quem a criou precisa criar de novo');
+    if (o.politica_hash !== hashDaPolitica(POLITICA_PILOTO)) throw falha(ERRO_MERCADO_P2P.ESTADO, 'a política de taxas desta ordem não é mais a vigente');
+    if (o.comprador_id === userId) throw falha(ERRO_MERCADO_P2P.RECUSADA, 'esta ordem é sua', { reason_code: 'ACCOUNT_RESTRICTED' });
+    const c = avaliarContraparte({ userId, outroId: o.comprador_id, ligadas: contasLigadas(db, userId) });
+    if (!c.allowed) throw falha(ERRO_MERCADO_P2P.RECUSADA, `a venda não pode: ${c.detalhe}`, { reason_code: c.reason_code });
+    exigirConta(db, userId, 'esta conta', agora, checkpoint);
+    exigirConta(db, o.comprador_id, 'quem pediu', agora, checkpoint);
+    const linha = db.prepare(`SELECT user_id, pack_id FROM criaturas WHERE id = ?`).get(criaturaId);
+    if (!linha || linha.user_id !== userId) throw falha(ERRO_MERCADO_P2P.ENTRADA, 'esta criatura não é sua');
+    /* O retrato do SERVIDOR — nunca o que veio no pedido — contra TODOS os critérios. */
+    const r = { ...retrato(db, pack, criaturaId), pack: linha.pack_id };
+    const crit = JSON.parse(o.criterios_json), a = atendeCriterios(crit, r);
+    if (!a.ok) throw falha(ERRO_MERCADO_P2P.RECUSADA, `esta criatura não cumpre a ordem (${a.motivo})`, { reason_code: 'CRITERIA_MISMATCH' });
+    const dono = donoDa(`venda-criatura:${o.id}`);
+    reservarOferta(db, { userId, pack, dono, ativos: { criaturas: [criaturaId] }, expiraEm: agora + 60_000, agora, checkpoint });
+    moverReservados(db, { holds: holdsAtivos(db, dono), de: userId, para: o.comprador_id, refTipo: 'mercado', refId: o.id, criaturas: [criaturaId], agora });
+    consumirOferta(db, { dono, agora });
+    const taxaVenda = taxa(o.preco_unit, POLITICA_PILOTO.vendaBps, POLITICA_PILOTO.minimoTaxa);
+    pagarFill(db, { o, vendedorId: userId, bruto: o.preco_unit, reservado: o.preco_unit, taxaVenda, n: contarFills(db, o.id), agora });
+    const vendaId = randomUUID();
+    registrarFill(db, { o, vendaRef: `venda:${vendaId}`, vendedorId: userId, quantidade: 1, bruto: o.preco_unit, reservado: o.preco_unit, taxaVenda, agora,
+                        criatura: { id: criaturaId, retrato: r } });
+    avancarOrdem(db, o, { quantidade: 1, bruto: o.preco_unit, melhora: 0, agora });
+    const recibo = { id: vendaId, ordem: o.id, criaturaId, retrato: r, criteriosHash: o.criterios_hash, vendido: 1, bruto: o.preco_unit, taxaVenda,
+                     liquido: o.preco_unit - taxaVenda, politica: POLITICA_PILOTO.versao, em: agora };
+    db.prepare(`INSERT INTO player_market_vendas_ordem (id, vendedor_id, chave, recibo_json, em) VALUES (?, ?, ?, ?, ?)`).run(vendaId, userId, chaveIdem, JSON.stringify(recibo), agora);
+    emitir(db, { nome: 'market_order_fill', userId, campos: { lado: 'venda', quantidade: 1, bruto: o.preco_unit, queima: taxaVenda }, chave: `venda-ordem:${vendaId}`, agora });
+    return recibo;
+  });
+}
+
+/* As ordens de criatura abertas, para quem quer vender: os critérios e o
+   preço — nunca quem pediu, e sem as de quem pergunta. */
+export const ordensDeCriatura = (db, { pack, agora, exceto = '', limite = 50 }) =>
+  db.prepare(`SELECT id, preco_unit, criterios_json, criterios_hash, expira_em, versao FROM player_market_buy_orders
+              WHERE estado = 'ACTIVE' AND pack_id = ? AND tipo = 'criatura' AND expira_em > ? AND comprador_id <> ? AND catalogo_versao = ?
+              ORDER BY preco_unit DESC, seq LIMIT ?`)
+    .all(pack.id, agora, exceto ?? '', versaoDoCatalogo(pack), Math.min(limite, 100))
+    .map(o => ({ id: o.id, preco: o.preco_unit, criterios: JSON.parse(o.criterios_json), criteriosHash: o.criterios_hash, expiraEm: o.expira_em }));

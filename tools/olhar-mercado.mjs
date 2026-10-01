@@ -18,7 +18,7 @@ import { criarServidor } from '../server/servidor.mjs';
 import { gerar } from '../server/criaturas.mjs';
 import { creditar } from '../server/carteira.mjs';
 import { creditarBolsa } from '../server/inventario.mjs';
-import { criarOrdem, venderParaOrdens } from '../server/mercado-jogadores-ordens.mjs';
+import { criarOrdem, venderParaOrdens, criarOrdemDeCriatura } from '../server/mercado-jogadores-ordens.mjs';
 import { anunciar, comprar } from '../server/mercado-jogadores.mjs';
 import { xpParaNivel } from '../engine/nivel-criatura.mjs';
 
@@ -128,6 +128,20 @@ for (const w of LARGURAS) {
   venderParaOrdens(db, { userId: vendedoras[3].id, pack: PACK, itemId: 'poke', quantidade: 3, precoMinimo: 95, chaveIdem: `olhar-venda-${w}`, agora: Date.now(), checkpoint: CP });
   await capturar('ordens', eu.sessao, w, [['[data-mk-aba="ordens"]', '#mercadoCorpo .mkOrdens']],
                  [['[data-mk-o="q"]', 8], ['[data-mk-o="p"]', 70], ['[data-mk-o="vq"]', 7], ['[data-mk-o="vmin"]', 85]]);
+}
+/* AS ORDENS DE CRIATURA (ST-14.11B): três pedidos de outras contas, duas
+   criaturas minhas que servem a um deles, e a ficha de pedir preenchida. */
+const pedeCria = (u, criterios, preco, chave) => criarOrdemDeCriatura(db, { userId: u, pack: PACK, criterios, preco, chaveIdem: chave, agora: Date.now(), checkpoint: CP });
+const procuram = [];
+for (let i = 0; i < 3; i++) procuram.push(await conta(`Procura${i}`, 10000));
+pedeCria(procuram[0].id, { dex: 25, shiny: false, nivelMin: 15 }, 900, 'olhar-cria-1');
+pedeCria(procuram[1].id, { dex: 6, nivelMin: 30, potencialMin: 40 }, 3000, 'olhar-cria-2');
+pedeCria(procuram[2].id, { dex: 133, shiny: true }, 5000, 'olhar-cria-3');
+for (const w of LARGURAS) {
+  const eu = await conta(`Criadora${w}`);
+  bicho(eu.id, 25, 22); bicho(eu.id, 25, 18); bicho(eu.id, 7, 12);
+  await capturar('ordens-criatura', eu.sessao, w, [['[data-mk-aba="ordens"]', '#mercadoCorpo .mkOrdens'], ['[data-mk-ord-tipo="criatura"]', '#mercadoCorpo #mkOrdCriatura']],
+                 [['[data-mk-c="especie"]', 'Eevee'], ['[data-mk-c="nivelMin"]', 10], ['[data-mk-c="potencialMin"]', 50], ['[data-mk-c="preco"]', 1200]]);
 }
 bandeiras(0);
 for (const w of LARGURAS) await capturar('desligado', (await conta(`Desligado${w}`)).sessao, w);

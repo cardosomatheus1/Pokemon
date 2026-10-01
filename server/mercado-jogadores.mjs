@@ -53,10 +53,11 @@ const contaPode = (db, userId, quem, agora, checkpoint) => {
   if (!c.allowed) throw falha(ERRO_MERCADO_P2P.RECUSADA, `${quem} não pode negociar: ${c.reason_code}${c.detalhe ? ` (${c.detalhe})` : ''}`, { reason_code: c.reason_code });
 };
 
-/* O que o comprador vê da criatura — e é isto que o anúncio GUARDA. O nível
+/* O que o comprador vê da criatura — e é isto que o anúncio GUARDA (e o fill
+   da ordem de criatura, ST-14.11B, que confere os critérios nele). O nível
    é o do XP, como em todo o jogo; o potencial sai da mesma função dos IVs
    (`hidratar`), e os IVs crus não saem. */
-function retrato(db, pack, id) {
+export function retrato(db, pack, id) {
   const c = ler(db, id, pack);
   return { dex: c.especie, nivel: Math.max(c.nivel ?? 1, nivelDe(c.xp ?? 0)), natureza: c.natureza?.nome ?? null,
            shiny: !!c.shiny, potencial: c.potencial, exemplar: !!c.exemplar, origem: c.origem,

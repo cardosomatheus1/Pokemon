@@ -1943,6 +1943,16 @@ img[data-prestigio="1"]{filter:drop-shadow(0 0 4px rgba(var(--neonRGB),.75))}
 .mkOrdPrev{flex-basis:100%}
 .mkNota{margin:4px 0 0;color:var(--dim)}
 .mkOrdMinhasT{margin:4px 0 0;font-size:.82rem}
+/* ST-14.11B · as ordens de criatura: a lista de quem procura e a ficha de pedir */
+.mkOrdTipos{display:flex;gap:6px}
+.mkVenda input[list]{min-width:0;width:9rem}
+.mkOrdAbertas{display:block}.mkOrdAbertas h4{margin:0 0 8px}   /* Q5: em flex-coluna o h4 de base 100% virava ALTURA e empurrava a lista para fora do cartão */
+.mkOrdLista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;width:100%}
+.mkOrdLista li{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:6px 8px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:.78rem}
+.mkOrdLista li b{flex:1 1 12rem;min-width:0}
+.mkOrdLista .mkPreco{font-family:var(--px);font-size:.8rem;color:var(--neon)}
+.mkOrdServe{display:flex;align-items:center;gap:6px;font-size:.68rem;color:var(--dim)}
+.mkAceite{color:rgb(255,226,140)}
 .mkEstado{font-size:.64rem;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--dim)}
 .mkE-ACTIVE{border-color:var(--neon);color:var(--neon)}
 @media (max-width:520px){ .mkFiltros input[list]{width:120px} .mkFiltros input[type=number]{width:80px} .mkAbertoTopo{align-items:flex-start} }

@@ -23,7 +23,9 @@ import { nivelDe } from '../../engine/nivel-criatura.mjs';
 import { separarOfertaveis, itensNegociaveis } from './trocas-dados.mjs';
 import { abasDoMercado, ORDENS_MERCADO, consultaDaBusca, cartaoDoAnuncio, previaDoAnuncio, previaDaCompra, serieDoAnuncio,
          linhasDoHistorico, textoDaRecusaDoMercado, novaChaveDeCompra,
-         itensDoLivro, previaDaOrdem, previaDaVendaParaOrdens, linhaDaMinhaOrdem, linhasDoLivro, novaChaveDeOrdem } from './mercado-jogadores-dados.mjs';
+         itensDoLivro, previaDaOrdem, previaDaVendaParaOrdens, linhaDaMinhaOrdem, linhasDoLivro, novaChaveDeOrdem,
+         criteriosDoFormulario, previaDaOrdemDeCriatura, queServem, vendaParaOrdemDeCriatura } from './mercado-jogadores-dados.mjs';
+import { textoDosCriterios } from '../../engine/criterios-mercado.mjs';
 
 const nomeDoItem = nomesDe(PACK);
 const nomeDaEspecie = dex => nomeExibido((PACK.especies ?? []).find(e => e.dex === dex)?.n ?? `#${dex}`);
@@ -33,7 +35,9 @@ const NATUREZAS = (PACK.naturezas ?? []).map(n => n[0]);
 const M = { aba: 'criaturas', f: { ordem: 'recente' }, lista: [], proximo: null, carregando: false, estado: null,
             aberto: null, historico: null, compra: null, recibo: null, meus: null, venda: null, colecao: null, msg: null, ocupado: false,
             /* ST-14.11A: a aba das ordens de compra — o item escolhido, o livro dele, as minhas, e as duas fichas */
-            ord: { item: null, livro: null, minhas: [], q: '', p: '', vq: '', vmin: '', chave: null, chaveVenda: null, ok: null } };
+            ord: { item: null, livro: null, minhas: [], q: '', p: '', vq: '', vmin: '', chave: null, chaveVenda: null, ok: null,
+                   /* ST-14.11B: as ordens de criatura — a lista aberta, a ficha de pedir, e a escolha de quem vender a cada ordem */
+                   tipo: 'item', criaturas: [], cf: {}, escolha: {} } };
 const corpo = () => document.getElementById('mercadoCorpo');
 
 /* ── CARREGAR ─────────────────────────────────────────────────────────── */
@@ -177,10 +181,56 @@ function previasDasOrdens() {
     podeVender: v.ok && M.estado?.ligada && !M.ocupado,
   };
 }
+const dexDoNome = nome => (PACK.especies ?? []).find(e => nomeExibido(e.n).toLowerCase() === nome.toLowerCase())?.dex ?? null;
+function previaDaCriatura() {
+  const cf = M.ord.cf ?? {}, c = criteriosDoFormulario(cf, PACK, dexDoNome);
+  const p = c.ok ? previaDaOrdemDeCriatura({ criterios: c.criterios, preco: inteiro(cf.preco), elegivel: M.estado?.pctElegivel, nomeDaEspecie }) : c;
+  const tocou = Object.values(cf).some(v => v !== '' && v != null);
+  return { c, p, html: !tocou ? '' : p.ok ? `<dl class="mkPrevia">${p.linhas.map(([k, x]) => `<dt>${esc(k)}</dt><dd>${esc(x)}</dd>`).join('')}</dl><p class="tiny mkNota mkAceite">${esc(p.nota)}</p>${p.aviso ? `<p class="mkAviso">${esc(p.aviso)}</p>` : ''}`
+    : `<p class="mkAviso">${esc(p.motivo)}</p>`, pode: p.ok && p.cobre && M.estado?.ligada && !M.ocupado };
+}
+function ordensDeCriaturaHtml(minhasHtml) {
+  const cf = M.ord.cf ?? {}, pv = previaDaCriatura(), minhasCriaturas = M.colecao?.criaturas ?? [];
+  const { ofertaveis } = separarOfertaveis(minhasCriaturas);
+  const abertas = M.ord.criaturas ?? [];
+  const sel = (k, opcoes) => `<select data-mk-c="${k}">${opcoes.map(([v, r]) => `<option value="${esc(v)}"${String(cf[k] ?? '') === String(v) ? ' selected' : ''}>${esc(r)}</option>`).join('')}</select>`;
+  return `<div class="mkOrdFichas">
+      <div class="mkVenda mkOrdAbertas"><h4>Quem procura uma criatura <span class="tiny">venda uma sua que cumpra tudo</span></h4>
+        ${abertas.length ? `<ul class="mkOrdLista">${abertas.map(o => {
+          const servem = queServem(ofertaveis, o.criterios, PACK), v = vendaParaOrdemDeCriatura(o), escolhida = M.ord.escolha[o.id] ?? servem[0]?.id ?? '';
+          return `<li><b>${esc(textoDosCriterios(o.criterios, nomeDaEspecie))}</b><span class="mkPreco">${o.preco} PC-T</span>
+            ${servem.length ? `<label class="mkOrdServe">Sua<select data-mk-escolha="${esc(o.id)}">${servem.map(c => `<option value="${esc(c.id)}"${c.id === escolhida ? ' selected' : ''}>${c.shiny ? '✦ ' : ''}${esc(nomeDaEspecie(c.dex))} · nv ${Math.max(c.nivel ?? 1, nivelDe(c.xp ?? 0))} · pot ${c.potencial ?? '?'}</option>`).join('')}</select></label>
+              <button class="btn gold" data-mk-ord-vcria="${esc(o.id)}" ${M.estado?.ligada && !M.ocupado ? '' : 'disabled'}>Vender · recebe ${v.liquido}</button>`
+              : '<span class="tiny">nenhuma sua serve</span>'}</li>`; }).join('')}</ul>` : '<p class="mkVazio">Ninguém está procurando criatura agora.</p>'}
+      </div>
+      <form class="mkVenda" id="mkOrdCriatura" autocomplete="off"><h4>Quero uma criatura <span class="tiny">uma só · 3 dias</span></h4>
+        <label>Espécie<input data-mk-c="especie" list="mkEspeciesOrd" value="${esc(cf.especie ?? '')}" placeholder="qual?"></label>
+        <datalist id="mkEspeciesOrd">${(PACK.especies ?? []).map(e => `<option value="${esc(nomeExibido(e.n))}">`).join('')}</datalist>
+        <label>Brilhante${sel('shiny', [['', 'tanto faz'], ['nao', 'normal'], ['sim', 'brilhante']])}</label>
+        <label>Nível mín.<input type="number" min="1" max="100" data-mk-c="nivelMin" value="${esc(cf.nivelMin ?? '')}"></label>
+        <label>Nível máx.<input type="number" min="1" max="100" data-mk-c="nivelMax" value="${esc(cf.nivelMax ?? '')}"></label>
+        <label>Natureza${sel('natureza', [['', 'qualquer'], ...NATUREZAS.map(n => [n, n])])}</label>
+        <label>Potencial mín.<input type="number" min="0" max="100" data-mk-c="potencialMin" value="${esc(cf.potencialMin ?? '')}"></label>
+        <label>Pago até<input type="number" min="100" step="1" data-mk-c="preco" value="${esc(cf.preco ?? '')}" placeholder="PC-T"></label>
+        <div class="mkOrdPrev" data-mk-prev="criatura">${pv.html}</div>
+        <button class="btn gold" data-mk-ord-ccria ${pv.pode ? '' : 'disabled'}>Criar ordem</button></form>
+    </div>
+    ${M.ord.ok ? `<p class="mkOk" role="status">${esc(M.ord.ok)}</p>` : ''}
+    ${minhasHtml}`;
+}
+function minhasOrdensHtml() {
+  const minhas = (M.ord.minhas ?? []).map(o => ({ o, l: linhaDaMinhaOrdem(o, nomeDoItem, nomeDaEspecie) }));
+  return `<h4 class="mkOrdMinhasT">Minhas ordens</h4>
+    ${minhas.length ? `<ul class="mkMinhas">${minhas.map(({ o, l }) => `<li>${icone(o.tipo === 'criatura' ? { tipo: 'criatura', dex: o.criterios?.dex } : { tipo: 'item', itemId: o.itemId }, 32)}<b>${esc(l.titulo)}</b>
+        <span>${esc(l.progresso)}</span><span class="tiny">${esc(l.detalhe)}</span><span class="mkEstado mkE-${l.classe}">${esc(l.estado)}</span>
+        ${l.aberta ? `<button class="btn" data-mk-ord-cancelar="${esc(l.id)}">Cancelar</button>` : ''}</li>`).join('')}</ul>` : '<p class="mkVazio">Nenhuma ordem sua.</p>'}`;
+}
 function ordensHtml() {
+  const tipos = `<nav class="mkOrdTipos" aria-label="o que comprar">${[['item', 'Itens'], ['criatura', PACK.rotulos?.criaturas ?? 'Criaturas']].map(([id, r]) =>
+    `<button class="pdxAba${M.ord.tipo === id ? ' on' : ''}" data-mk-ord-tipo="${id}">${esc(r)}</button>`).join('')}</nav>`;
+  if (M.ord.tipo === 'criatura') return `<section class="mkOrdens">${tipos}${ordensDeCriaturaHtml(minhasOrdensHtml())}</section>`;
   const itens = itensDoLivro(PACK, nomeDoItem), item = itemDaAba(), livro = linhasDoLivro(M.ord.livro), tenho = tenhoLivre(item), p = previasDasOrdens();
-  const minhas = (M.ord.minhas ?? []).map(o => linhaDaMinhaOrdem(o, nomeDoItem));
-  return `<section class="mkOrdens">
+  return `<section class="mkOrdens">${tipos}
     <div class="mkOrdTopo"><label>Item<select data-mk-o="item">${itens.map(i => `<option value="${esc(i.id)}"${i.id === item ? ' selected' : ''}>${esc(i.nome)}</option>`).join('')}</select></label>
       ${icone({ tipo: 'item', itemId: item }, 44)}
       <div class="mkOrdLivro"><b>Quem está comprando ${esc(nomeDoItem(item))}</b>
@@ -198,14 +248,12 @@ function ordensHtml() {
         <button class="btn gold" data-mk-ord-vender ${p.podeVender ? '' : 'disabled'}>Vender agora</button></form>
     </div>
     ${M.ord.ok ? `<p class="mkOk" role="status">${esc(M.ord.ok)}</p>` : ''}
-    <h4 class="mkOrdMinhasT">Minhas ordens</h4>
-    ${minhas.length ? `<ul class="mkMinhas">${minhas.map(o => `<li>${icone({ tipo: 'item', itemId: (M.ord.minhas.find(x => x.id === o.id) ?? {}).itemId }, 32)}<b>${esc(o.titulo)}</b>
-        <span>${esc(o.progresso)}</span><span class="tiny">${esc(o.detalhe)}</span><span class="mkEstado mkE-${o.classe}">${esc(o.estado)}</span>
-        ${o.aberta ? `<button class="btn" data-mk-ord-cancelar="${esc(o.id)}">Cancelar</button>` : ''}</li>`).join('')}</ul>` : '<p class="mkVazio">Nenhuma ordem sua.</p>'}
+    ${minhasOrdensHtml()}
   </section>`;
 }
 function repintarPrevias() {
   const p = previasDasOrdens(), q = sel => document.querySelector(sel);
+  if (q('[data-mk-prev="criatura"]')) { const pv = previaDaCriatura(); q('[data-mk-prev="criatura"]').innerHTML = pv.html; const b = q('[data-mk-ord-ccria]'); if (b) b.disabled = !pv.pode; }
   if (q('[data-mk-prev="compra"]')) q('[data-mk-prev="compra"]').innerHTML = p.compra;
   if (q('[data-mk-prev="venda"]')) q('[data-mk-prev="venda"]').innerHTML = p.venda;
   const bc = q('[data-mk-ord-criar]'), bv = q('[data-mk-ord-vender]');
@@ -215,7 +263,7 @@ function repintarPrevias() {
 async function carregarOrdens() {
   const item = itemDaAba();
   const r = await api.get(`/api/player-market/buy-orders${item ? `?item=${encodeURIComponent(item)}` : ''}`);
-  if (r.ok) { M.ord.livro = r.corpo.livro; M.ord.minhas = r.corpo.minhas ?? []; } else M.msg = textoDaRecusaDoMercado(r);
+  if (r.ok) { M.ord.livro = r.corpo.livro; M.ord.minhas = r.corpo.minhas ?? []; M.ord.criaturas = r.corpo.criaturas ?? []; } else M.msg = textoDaRecusaDoMercado(r);
   pintar();
 }
 
@@ -294,6 +342,38 @@ document.addEventListener('click', async ev => {
     if (!r.indisponivel) M.ord.chaveVenda = null;
     pintar(); return;
   }
+  const tipo = t.closest('[data-mk-ord-tipo]');
+  if (tipo) { Object.assign(M.ord, { tipo: tipo.dataset.mkOrdTipo, ok: null }); pintar(); return; }
+  if (t.closest('[data-mk-ord-ccria]') && !M.ocupado) {
+    ev.preventDefault();
+    const pv = previaDaCriatura();
+    if (!pv.p.ok || !await perguntar(`Criar a ordem: ${pv.p.texto}, até ${inteiro(M.ord.cf.preco)} PC-T? Você aceita QUALQUER exemplar que cumpra tudo isto — ele chega sem outra confirmação. A taxa de ${pv.p.taxa} não volta.`, { ok: 'Criar a ordem', cancelar: 'Voltar' })) return;
+    M.ord.chave ??= novaChaveDeOrdem();
+    const r = await postar('/api/player-market/buy-orders/create-creature', { criterios: pv.c.criterios, preco: inteiro(M.ord.cf.preco), chave: M.ord.chave });
+    if (r.ok) {
+      Object.assign(M.ord, { cf: {}, chave: null, ok: 'Ordem criada — ela é atendida quando alguém vender uma que cumpra tudo.' });
+      const e = await api.get('/api/player-market/estado'); if (e.ok) M.estado = e.corpo;
+      await carregarOrdens(); return;
+    }
+    if (!r.indisponivel) M.ord.chave = null;
+    pintar(); return;
+  }
+  const vcria = t.closest('[data-mk-ord-vcria]');
+  if (vcria && !M.ocupado) {
+    const o = (M.ord.criaturas ?? []).find(x => x.id === vcria.dataset.mkOrdVcria);
+    const id = M.ord.escolha[o?.id] ?? queServem(separarOfertaveis(M.colecao?.criaturas ?? []).ofertaveis, o?.criterios, PACK)[0]?.id;
+    const c = (M.colecao?.criaturas ?? []).find(x => x.id === id), v = o ? vendaParaOrdemDeCriatura(o) : null;
+    if (!o || !c || !await perguntar(`Vender ${c.shiny ? '✦ ' : ''}${nomeDaEspecie(c.dex)} (nv ${Math.max(c.nivel ?? 1, nivelDe(c.xp ?? 0))}) para esta ordem por ${v.preco} PC-T? Você recebe ${v.liquido} (taxa ${v.taxaVenda}) e ela sai da sua coleção.`, { ok: 'Vender', cancelar: 'Voltar' })) return;
+    M.ord.chaveVenda ??= novaChaveDeOrdem();
+    const r = await postar('/api/player-market/buy-orders/fill-creature', { id: o.id, criaturaId: c.id, chave: M.ord.chaveVenda });
+    if (r.ok) {
+      Object.assign(M.ord, { chaveVenda: null, ok: `Vendido: ${nomeDaEspecie(c.dex)} por ${r.corpo.liquido} PC-T.` });
+      const e = await api.get('/api/player-market/estado'); if (e.ok) M.estado = e.corpo;
+      await carregarOrdens(); await carregarColecao(); return;
+    }
+    if (!r.indisponivel) M.ord.chaveVenda = null;
+    pintar(); return;
+  }
   const ocanc = t.closest('[data-mk-ord-cancelar]');
   if (ocanc && await perguntar('Cancelar esta ordem? O PC-T que ainda está preso volta para você; o que já foi comprado fica, e a taxa de criação não volta.', { ok: 'Cancelar a ordem', cancelar: 'Voltar' })) {
     const r = await postar('/api/player-market/buy-orders/cancel', { id: ocanc.dataset.mkOrdCancelar });
@@ -316,6 +396,8 @@ async function carregarColecao() {
 document.addEventListener('input', ev => {
   const o = ev.target.closest?.('[data-mk-o]');
   if (o && o.dataset.mkO !== 'item') { M.ord[o.dataset.mkO] = o.value; M.ord.ok = null; repintarPrevias(); return; }
+  const cfc = ev.target.closest?.('[data-mk-c]');
+  if (cfc) { M.ord.cf = { ...(M.ord.cf ?? {}), [cfc.dataset.mkC]: cfc.value }; M.ord.ok = null; repintarPrevias(); return; }
   const v = ev.target.closest?.('[data-mk-v]');
   if (v) { M.venda = { ...(M.venda ?? {}), [v.dataset.mkV]: v.value }; if (v.dataset.mkV !== 'preco') pintar(); else { const el = document.querySelector('#mkVenda'); if (el) el.outerHTML = vendaHtml(); } }
 });
@@ -323,6 +405,8 @@ document.addEventListener('input', ev => {
 document.addEventListener('change', async ev => {
   const o = ev.target.closest?.('#mercadoCorpo [data-mk-o="item"]');
   if (o) { Object.assign(M.ord, { item: o.value, vq: '', vmin: '', ok: null }); await carregarOrdens(); }
+  const esc0 = ev.target.closest?.('#mercadoCorpo [data-mk-escolha]');
+  if (esc0) M.ord.escolha[esc0.dataset.mkEscolha] = esc0.value;
 });
 
 document.addEventListener('submit', async ev => {
@@ -336,7 +420,7 @@ document.addEventListener('submit', async ev => {
     if (dex === -1) { M.msg = 'Não conheço essa espécie.'; M.lista = []; pintar(); return; }
     M.aberto = null; await buscar(); return;
   }
-  if (ev.target.id === 'mkOrdCompra' || ev.target.id === 'mkOrdVenda') { ev.preventDefault(); ev.target.querySelector('.btn:not([disabled])')?.click(); return; }
+  if (ev.target.id === 'mkOrdCompra' || ev.target.id === 'mkOrdVenda' || ev.target.id === 'mkOrdCriatura') { ev.preventDefault(); ev.target.querySelector('.btn:not([disabled])')?.click(); return; }
   if (ev.target.id === 'mkVenda') {
     ev.preventDefault();
     const v = M.venda ?? {}, [tipo, id] = String(v.ativo ?? '').split(/:(.*)/s);

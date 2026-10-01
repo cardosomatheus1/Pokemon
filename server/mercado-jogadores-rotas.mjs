@@ -13,7 +13,7 @@ import { elegibilidadeDaConta } from './elegibilidade.mjs';
 import { pcTElegivel } from './carteira.mjs';
 import { historicoDaSerie, serieDoPedido, ERRO_HISTORICO } from './mercado-jogadores-historico.mjs';
 import { anunciar, comprar, cancelarAnuncio, detalheDoAnuncio, vitrine, meusAnuncios, minhasCompras, ERRO_MERCADO_P2P } from './mercado-jogadores.mjs';
-import { criarOrdem, venderParaOrdens, cancelarOrdem, livroDoItem, minhasOrdens } from './mercado-jogadores-ordens.mjs';
+import { criarOrdem, venderParaOrdens, cancelarOrdem, livroDoItem, minhasOrdens, criarOrdemDeCriatura, venderCriaturaParaOrdem, ordensDeCriatura } from './mercado-jogadores-ordens.mjs';
 
 const texto = v => typeof v === 'string' && v.length > 0 && v.length <= 80;
 const recusa = msg => ({ status: 400, corpo: { codigo: 'ENTRADA_INVALIDA', erro: msg } });
@@ -62,7 +62,9 @@ export function rotasDoMercadoP2P(daExcecao) {
     'GET /api/player-market/buy-orders': ({ db, query, userId, agora }) => {
       const item = query?.get?.('item');
       if (item != null && !texto(item)) return recusa('item inválido');
-      return { corpo: { livro: item ? livroDoItem(db, { pack: PACK, itemId: item, agora, exceto: userId }) : null, minhas: minhasOrdens(db, { userId }) } };
+      return { corpo: { livro: item ? livroDoItem(db, { pack: PACK, itemId: item, agora, exceto: userId }) : null, minhas: minhasOrdens(db, { userId }),
+                        /* ST-14.11B: as ordens de criatura abertas de OUTRAS contas — critérios e preço */
+                        criaturas: ordensDeCriatura(db, { pack: PACK, agora, exceto: userId }) } };
     },
     'POST /api/player-market/buy-orders/create': ({ db, corpo, userId, agora }) => {
       if (!texto(corpo?.itemId) || !Number.isSafeInteger(corpo?.quantidade) || !Number.isSafeInteger(corpo?.precoUnit)) return recusa('item, quantidade ou preço inválidos');
@@ -73,6 +75,15 @@ export function rotasDoMercadoP2P(daExcecao) {
       if (!texto(corpo?.itemId) || !Number.isSafeInteger(corpo?.quantidade) || !Number.isSafeInteger(corpo?.precoMinimo)) return recusa('item, quantidade ou preço mínimo inválidos');
       return tentar(() => venderParaOrdens(db, { userId, pack: PACK, itemId: corpo.itemId, quantidade: corpo.quantidade, precoMinimo: corpo.precoMinimo,
                                                   chaveIdem: corpo.chave, agora, checkpoint: CHECKPOINT_25_1 }));
+    },
+    /* ST-14.11B: a ordem de UMA criatura por critérios, e a venda de uma instância para ela. */
+    'POST /api/player-market/buy-orders/create-creature': ({ db, corpo, userId, agora }) => {
+      if (!corpo?.criterios || typeof corpo.criterios !== 'object' || !Number.isSafeInteger(corpo?.preco)) return recusa('critérios ou preço inválidos');
+      return tentar(() => criarOrdemDeCriatura(db, { userId, pack: PACK, criterios: corpo.criterios, preco: corpo.preco, chaveIdem: corpo.chave, agora, checkpoint: CHECKPOINT_25_1 }));
+    },
+    'POST /api/player-market/buy-orders/fill-creature': ({ db, corpo, userId, agora }) => {
+      if (!texto(corpo?.id) || !texto(corpo?.criaturaId)) return recusa('ordem ou criatura inválidas');
+      return tentar(() => venderCriaturaParaOrdem(db, { userId, pack: PACK, ordemId: corpo.id, criaturaId: corpo.criaturaId, chaveIdem: corpo.chave, agora, checkpoint: CHECKPOINT_25_1 }));
     },
     'POST /api/player-market/buy-orders/cancel': ({ db, corpo, userId, agora }) => {
       if (!texto(corpo?.id)) return recusa('id inválido');

@@ -2659,6 +2659,29 @@ export const MIGRACOES = [
     },
   },
 
+  {
+    /* ST-14.11B · E14 · AS ORDENS DE COMPRA DE CRIATURA POR CRITÉRIOS (spec E14 §10.3).
+     *
+     * A mesma ordem, de UMA criatura: os critérios normalizados (allowlist da
+     * camada 0) e a impressão digital deles, e a versão do catálogo em que
+     * foram escritos — a ordem de um catálogo velho não casa. O fill guarda a
+     * INSTÂNCIA entregue (o id e o retrato dela no momento da venda) e o
+     * potencial, para a série de preços da espécie. */
+    nome: 'ordens-criatura-st14.11b',
+    sobe: db => {
+      for (const col of ['dex INTEGER', 'criterios_json TEXT', 'criterios_hash TEXT', 'catalogo_versao TEXT'])
+        db.exec(`ALTER TABLE player_market_buy_orders ADD COLUMN ${col}`);
+      for (const col of ['criatura_id TEXT', 'retrato_json TEXT', 'potencial INTEGER', 'criterios_hash TEXT'])
+        db.exec(`ALTER TABLE player_market_order_fills ADD COLUMN ${col}`);
+      db.exec(`CREATE INDEX player_market_buy_criatura ON player_market_buy_orders(estado, pack_id, tipo, dex, preco_unit DESC, seq)`);
+    },
+    desce: db => {
+      db.exec(`DROP INDEX player_market_buy_criatura`);
+      for (const col of ['criterios_hash', 'potencial', 'retrato_json', 'criatura_id']) db.exec(`ALTER TABLE player_market_order_fills DROP COLUMN ${col}`);
+      for (const col of ['catalogo_versao', 'criterios_hash', 'criterios_json', 'dex']) db.exec(`ALTER TABLE player_market_buy_orders DROP COLUMN ${col}`);
+    },
+  },
+
 ];
 
 const TABELA_VERSAO = `
