@@ -44,6 +44,10 @@ import { renderBattleBanner } from './banner.mjs';
  * Instrução que não sai depois de cumprida ensina que a tela não está prestando
  * atenção. Aqui ela passa a ser derivada do estado, num lugar só, e quem muda o
  * estado chama isto. */
+/* Quem só assiste (o visitante, no site — `soAssiste` em `conta-real.mjs`, e a
+   navegação marca o `body`) não escolhe: o toque no lutador abre o cadastro. */
+const soAssistindo = () => document.body.classList.contains('soAssiste');
+
 function atualizarCTA(){
   const overlay = $('#overlay'); if (!overlay) return;
   const banner = overlay.querySelector('.banner') || overlay;
@@ -57,6 +61,7 @@ function atualizarCTA(){
      dinheiro na rodada e mais motivo para querer ler aquilo. */
   if (S.state !== 'betting'){ overlay.classList.remove('on', 'apostado'); return; }
   banner.innerHTML = textoDoAviso({
+    assistindo: soAssistindo(),
     apostado: S.myBet ? { nome: S.fighters[S.myBet.idx]?.n, odd: S.myBet.odd } : null,
     escolhido: escolhido != null ? { nome: S.fighters[escolhido]?.n } : null });
   overlay.classList.toggle('apostado', !!S.myBet);
@@ -145,6 +150,7 @@ async function apostarNoServidor(idx, pedido) {
 let escolhido = null;
 
 function selecionarLutador(idx, row) {
+  if (soAssistindo()) { document.dispatchEvent(new CustomEvent('pa:pedirConta')); return; }
   if (S.state !== 'betting') return;
   escolhido = idx;
   document.querySelectorAll('.pick').forEach(p =>
@@ -195,6 +201,7 @@ document.addEventListener('click', ev => {
 });
 
 async function placeBet(idx, row){
+  if (soAssistindo()) return;
   if (S.state !== 'betting') return;
   const pedido = valorAposta();
   if (pedido < APOSTA_MIN){

@@ -24,12 +24,13 @@ export function suite() {
 
   s.teste('o aviso da arena diz o passo que falta, e não um que já foi dado', () => {
     igual(textoDoAviso({}), 'Escolha seu lutador na lista de odds<i>a rodada corre sozinha depois</i>', 'o aviso sem escolha mudou');
+    igual(textoDoAviso({ assistindo: true, apostado: { nome: 'Tauros', odd: 2 } }), 'A próxima luta começa sozinha<i>crie o seu treinador para apostar</i>', 'quem só assiste recebe a instrução de apostador');
     const esc = textoDoAviso({ escolhido: { nome: 'Tauros' } });
     ok(/Confirme <b>Tauros<\/b>/.test(esc) && !/Escolha seu lutador/.test(esc), `com o lutador escolhido, o aviso manda escolher: ${esc}`);
     const ap = textoDoAviso({ apostado: { nome: 'Tauros', odd: 10.82 }, escolhido: { nome: 'Pinsir' } });
     ok(/<b>Tauros<\/b> é a sua aposta · x10\.82/.test(ap), `a aposta feita some do aviso quando se escolhe outro: ${ap}`);
     const tela = semComentario(fonte('../app/modules/aposta.mjs'));
-    ok(/banner\.innerHTML = textoDoAviso\(\{\s*apostado: S\.myBet \? \{ nome: S\.fighters\[S\.myBet\.idx\]\?\.n, odd: S\.myBet\.odd \} : null,\s*escolhido: escolhido != null \? \{ nome: S\.fighters\[escolhido\]\?\.n \} : null \}\)/.test(tela), 'a arena não passa a aposta feita e a escolha ao aviso');
+    ok(/banner\.innerHTML = textoDoAviso\(\{\s*(?:assistindo: soAssistindo\(\),\s*)?apostado: S\.myBet \? \{ nome: S\.fighters\[S\.myBet\.idx\]\?\.n, odd: S\.myBet\.odd \} : null,\s*escolhido: escolhido != null \? \{ nome: S\.fighters\[escolhido\]\?\.n \} : null \}\)/.test(tela), 'a arena não passa a aposta feita e a escolha ao aviso');
     ok(/function pintarConfirmacao\(\) \{\s*atualizarCTA\(\);/.test(tela), 'escolher um lutador não repinta o aviso');
   });
 

@@ -199,7 +199,13 @@ export function suite() {
     const c = cenario();
     definirLimite(c.db, { userId: c.u.id, tipo: 'max_stake_per_round', valor: 200, agora: c.agoraDe() });
     c.sched.abrirRodada();
-    ok(apostar(c.db, { sched: c.sched, userId: c.u.id, slot: 0, valor: 200, agora: c.agoraDe() }),
+    /* D-140: o slot 0 era um lutador qualquer, e com odd acima de x250 os 200
+       passavam do teto de 50.000 por bilhete — a aposta era recusada por OUTRA
+       regra, e o teste ficava vermelho ao acaso (1 em ~10 execuções). O
+       favorito da rodada isola a regra que este teste mede. */
+    const favorito = c.db.prepare(`SELECT slot FROM round_fighters
+      WHERE round_id = (SELECT MAX(round_id) FROM round_fighters) ORDER BY offered_odd LIMIT 1`).get().slot;
+    ok(apostar(c.db, { sched: c.sched, userId: c.u.id, slot: favorito, valor: 200, agora: c.agoraDe() }),
       'a fronteira exata foi recusada — limite que erra o próprio limite');
   });
 

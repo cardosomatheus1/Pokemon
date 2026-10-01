@@ -2302,6 +2302,22 @@ do servidor. Três partes:
   Rotas entram como quem tem conta (`ar_session`), e a linha de base visual foi
   regravada: o menu de visitante perdeu cinco botões.
 
+### ST-2.8c · No site, o visitante só assiste (pedido do dono) ✅ 01/10
+- **Por quê:** *"convidado não tem que testar nada, no máximo ver a batalha lá
+  rolando, sem poder apostar"* — e a Wiki sai da vitrine também.
+- **Feito:** `soAssiste` (camada 0, `conta-real.mjs`): no site, sem conta, o
+  `body` ganha `soAssiste` — some o cartão da aposta, o bolo, os controles da
+  rodada, o saldo e o banner do jogador; entra o cartão "Assistindo" com o
+  botão de criar o treinador; tocar num lutador abre o cadastro e `placeBet`
+  recusa por baixo; o aviso no palco diz "a próxima luta começa sozinha · crie
+  o seu treinador para apostar" (`textoDoAviso({ assistindo })`); em coluna
+  única a arena vem primeiro em toda fase. As rodadas seguem sozinhas (o Auto
+  nasce ligado). Menu do visitante: Início, Arenas, Como funciona, Regras. No
+  `localhost` sem servidor segue apostável sem conta — é onde se testa.
+- **Testes:** `conta-real` · `barra-celular` · `aposta-legivel` · S2513–S2518.
+  **Q5:** o site num nome não-local (`--host-resolver-rules`), celular e
+  largo — lido. E o D-140 (o `limites` instável) corrigido no caminho.
+
 ### ST-2.9 · A floresta na vista do celular (L-231) — proposta
 - Em 1× a cena do início da Floresta mostra trilha, grama e fauna, e nenhuma
   árvore: o bioma que se chama floresta não parece uma. Pôr copa na borda do

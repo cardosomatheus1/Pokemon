@@ -12,7 +12,7 @@ import { emitir } from './telemetria.mjs';
 import { modoServidor, saldo } from './banco.mjs';
 import { api } from './api.mjs';
 import { sair } from './sair.mjs';
-import { servidorNoAr, modoDaConta, exigeContaReal, enviarConta, textoDoModoDaConta, avisoDaPerda, temColecaoNoAparelho } from './conta-real.mjs';
+import { servidorNoAr, modoDaConta, exigeContaReal, soAssiste, TEXTO_DE_QUEM_ASSISTE, enviarConta, textoDoModoDaConta, avisoDaPerda, temColecaoNoAparelho } from './conta-real.mjs';
 import { renderProfile } from './customizacao.mjs';
 import { avatarURL, trainerURL } from './perfil.mjs';
 import { progressoNivel, saveProfile, tituloDe } from './perfil.mjs';
@@ -114,6 +114,8 @@ function renderSession(){
   const box = $('#sessionBox');
   /* o menu de quem ainda não tem conta é curto — as abas do treinador somem */
   $('#mainnav')?.classList.toggle('visitante', !sessaoAtiva());
+  /* e na Arena do site, sem conta, só se assiste (o painel de aposta some) */
+  document.body.classList.toggle('soAssiste', soAssiste({ comConta: sessaoAtiva(), hostname: location.hostname }));
   if (sessaoAtiva()){
     const np = progressoNivel(S.profile.xp || 0);
     box.innerHTML =
@@ -194,6 +196,11 @@ function abrirAuth(modo){
   go.disabled = true;
   servidorNoAr(api).then(v => { contaReal = modoDaConta({ servidor: v, hostname: location.hostname }); pintarModoDaConta(); }).finally(() => { go.disabled = false; });
 }
+/* Quem só assiste e toca num lutador (ou no botão do cartão) cai no cadastro.
+   O pedido chega por evento: a aposta não conhece o modal. */
+document.addEventListener('pa:pedirConta', () => abrirAuth('signup'));
+$('#btnAssistirConta')?.addEventListener('click', () => abrirAuth('signup'));
+{ const t = $('#assistirTexto'); if (t) t.textContent = TEXTO_DE_QUEM_ASSISTE; }
 $('#btnAuthSwap').onclick = () => abrirAuth(authMode === 'signup' ? 'login' : 'signup');
 
 $('#btnAuthGo').onclick = async () => {

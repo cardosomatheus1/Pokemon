@@ -32,6 +32,8 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            Rotas abre em 1× e as rotas enchem duas colunas. Olhar no celular:
            node tools/olhar-celular.mjs  (capturas em tools/previas/_celular/).
            Próximo do cenário: ST-2.9 (L-231, a Floresta sem árvore na vista).
+           ST-2.8c (01/10): no site, o visitante SÓ ASSISTE a Arena (sem
+           aposta, sem painel); menu dele: Início, Arenas, Como funciona, Regras.
            ST-2.8b (01/10): sem conta, o menu é a vitrine e as abas do treinador
            abrem o cadastro; no site, só conta real (nome, e-mail, senha); o
            link abre sem convite (DEC-23), com `noindex`. NO SEU PC: a linha de

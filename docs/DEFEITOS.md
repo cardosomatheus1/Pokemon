@@ -7232,3 +7232,21 @@ exportadas de `server/carteira.mjs`, e a cópia da camada 0
 **Teste que trava:** `e14-economia` — "o reservado reconcilia: conciliação
 limpa, painel do E11 sem divergência, nenhuma reserva presa" · plantado
 **S2401** (o painel volta a somar a reserva).
+
+## D-140 — o teste do limite por rodada apostava num lutador qualquer, e ficava vermelho ao acaso ✅ CORRIGIDO na ST-2.8c (01/10)
+
+**Achado:** `npm run repetir` da ST-2.8c, execução 1 vermelha e 2 verde —
+`[limites] a aposta DENTRO do limite passa`: "o retorno passaria do teto por
+bilhete (50000)". **Bloco dono:** ST-2.8c (é teste, trilha `T`; nenhuma linha
+do servidor muda).
+
+**Causa.** O teste apostava 200 no slot 0 da rodada, um lutador qualquer. Com
+odd acima de x250 o retorno passa do `MAX_PAYOUT_POR_TICKET` e a aposta é
+recusada por OUTRA regra — certa, mas não a que o teste mede. Medido: 1 em ~10
+execuções. Instável é pior que vermelho: escolhe quando aparecer.
+
+**Conserto.** O teste aposta no favorito da rodada (menor odd), o que isola a
+regra do limite. 6/6 verdes isolados depois, e o `repetir` 2/2.
+
+**Teste que trava:** o próprio `limites`, agora determinístico.
+

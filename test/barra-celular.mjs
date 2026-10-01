@@ -92,8 +92,8 @@ export function suite() {
 
 
   s.teste('motor: sem conta, só a vitrine — as abas do treinador pedem cadastro', () => {
-    igual([...ABAS_COM_CONTA].sort().join(), 'viewIdle,viewLiga,viewPokedex,viewRotaOff,viewTreino', 'as abas do treinador mudaram');
-    for (const v of ['viewHome', 'viewArena', 'viewWiki', 'viewHow', 'viewRules']) {
+    igual([...ABAS_COM_CONTA].sort().join(), 'viewIdle,viewLiga,viewPokedex,viewRotaOff,viewTreino,viewWiki', 'as abas do treinador mudaram');
+    for (const v of ['viewHome', 'viewArena', 'viewHow', 'viewRules']) {
       ok(abaLiberada(v, false), `${v} trancada para o visitante`);
     }
     for (const v of ABAS_COM_CONTA) {
@@ -109,6 +109,7 @@ export function suite() {
     const regra = css.match(/((?:\.mainnav\.visitante \.nav\[data-view="\w+"\],?\s*)+)\{display:none\}/);
     ok(regra, 'o menu do visitante não esconde nada');
     igual([...regra[1].matchAll(/data-view="(\w+)"/g)].map(m => m[1]).sort().join(), [...ABAS_COM_CONTA].sort().join(), 'o CSS esconde abas diferentes das do treinador');
+    ok(/\.mainnav\.visitante\{grid-template-columns:repeat\(4,minmax\(0,1fr\)\)\}/.test(celular), 'a barra do visitante não tem as quatro');
     ok(/\.mainnav\.visitante \.navMais\{display:none\}/.test(celular) && /\.mainnav\.visitante \.navFolha\{display:contents\}/.test(celular), 'no celular o visitante não vê a vitrine na barra');
   });
 

@@ -7929,12 +7929,24 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 .mainnav .nav[data-view="viewHome"]{order:-1}
 .navFolha .nav:not([data-view="viewHome"]){order:1}
 .brand[data-goto]{cursor:pointer}
+/* NA ARENA DO SITE, SEM CONTA, SÓ SE ASSISTE: some tudo que é do apostador —
+   o cartão da aposta, o bolo, os controles da rodada e o saldo da faixa — e o
+   cartão "Assistindo" ocupa o lugar. Para quem tem conta, ele não existe. */
+.cardAssistir{display:none}
+body.soAssiste .cardAssistir{display:block}
+body.soAssiste #cardAposta,body.soAssiste #cardBolo,body.soAssiste #cardControles,
+body.soAssiste .fa-saldo,body.soAssiste .fa-eu,body.soAssiste #battleBanner{display:none}
+body.soAssiste .pick{cursor:pointer}
+/* em coluna única, quem só assiste vê a ARENA primeiro em toda fase: a lista
+   é o que o apostador escolhe, e ele não escolhe — o que ele veio ver é a luta */
+@media (max-width:1000px){ body.soAssiste .app,body.soAssiste .app.luta{grid-template-areas:"arena" "lista" "acao"} }
+.cardAssistir p{font-size:.78rem;color:var(--dim);line-height:1.6;margin:6px 0 12px}
 /* SEM CONTA, O MENU É CURTO (pedido do dono, 01/10): as abas do treinador
    somem, e quem chega vê só a vitrine — capa, Arena, Wiki e a ajuda. A regra
    de quem é de quem mora em `barra-celular.mjs` (ABAS_COM_CONTA). */
 .mainnav.visitante .nav[data-view="viewLiga"],.mainnav.visitante .nav[data-view="viewIdle"],
 .mainnav.visitante .nav[data-view="viewTreino"],.mainnav.visitante .nav[data-view="viewRotaOff"],
-.mainnav.visitante .nav[data-view="viewPokedex"]{display:none}
+.mainnav.visitante .nav[data-view="viewPokedex"],.mainnav.visitante .nav[data-view="viewWiki"]{display:none}
 .nav[data-view="viewArena"],.navMais[data-vista="viewArena"]{--ic:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M14.5%2017.5%203%206V3h3l11.5%2011.5%22/%3E%3Cpath%20d=%22M13%2019l6-6%22/%3E%3Cpath%20d=%22M16%2016l4%204%22/%3E%3Cpath%20d=%22M19%2021l2-2%22/%3E%3Cpath%20d=%22M14.5%206.5%2018%203h3v3l-3.5%203.5%22/%3E%3Cpath%20d=%22M5%2014l4%204%22/%3E%3Cpath%20d=%22M7%2017l-3%203%22/%3E%3Cpath%20d=%22M3%2019l2%202%22/%3E%3C/svg%3E")}
 .nav[data-view="viewLiga"],.navMais[data-vista="viewLiga"]{--ic:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M6%209H4.5a2.5%202.5%200%200%201%200-5H6%22/%3E%3Cpath%20d=%22M18%209h1.5a2.5%202.5%200%200%200%200-5H18%22/%3E%3Cpath%20d=%22M4%2022h16%22/%3E%3Cpath%20d=%22M10%2014.7V17c0%20.6-.5%201-1%201.2C7.9%2018.8%207%2020.2%207%2022%22/%3E%3Cpath%20d=%22M14%2014.7V17c0%20.6.5%201%201%201.2%201.1.6%202%202%202%203.8%22/%3E%3Cpath%20d=%22M18%202H6v7a6%206%200%200%200%2012%200z%22/%3E%3C/svg%3E")}
 .nav[data-view="viewIdle"],.navMais[data-vista="viewIdle"]{--ic:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M3%206l6-3%206%203%206-3v15l-6%203-6-3-6%203z%22/%3E%3Cpath%20d=%22M9%203v15%22/%3E%3Cpath%20d=%22M15%206v15%22/%3E%3C/svg%3E")}
@@ -8013,6 +8025,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
      guardar: a folha volta a ser `contents` e os botões dela sentam na barra,
      com o desenho da barra e não o de ladrilho da folha. */
   .mainnav.visitante .navMais{display:none}
+  .mainnav.visitante{grid-template-columns:repeat(4,minmax(0,1fr))}
   .mainnav.visitante .navFolha{display:contents}
   .mainnav.visitante .navFolha .nav{min-height:54px}
   .mainnav.visitante .navFolha .nav:not(.on){background:none;border-color:transparent}
@@ -8949,6 +8962,13 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 
          `hidden` continua sendo quem a esconde na luta, por `zona-acao.mjs`:
          mudou o lugar, não a regra. -->
+    <!-- QUEM SÓ ASSISTE (o visitante, no site): o lugar da aposta diz por que
+         ela não está ali e onde fica a porta. Escondido para quem tem conta. -->
+    <div class="card cardAssistir" id="cardAssistir">
+      <h3>Assistindo</h3>
+      <p id="assistirTexto">Você está assistindo. A rodada roda sozinha — para apostar no lutador, crie o seu treinador.</p>
+      <button class="btn gold" id="btnAssistirConta" type="button">Criar treinador</button>
+    </div>
     <div class="card" id="cardAposta">
       <h3>Sua aposta</h3>
       <div class="chips" id="chipRow"></div>

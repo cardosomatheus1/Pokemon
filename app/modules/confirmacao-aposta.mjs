@@ -17,7 +17,11 @@ export function linhaDaConfirmacao({ cur, valor, nome, odd }) {
    lutador escolhido e ainda não confirmado, "escolha seu lutador" mandava
    fazer o que já estava feito: o passo que falta é CONFIRMAR. A aposta já
    feita continua ganhando — escolher outro é trocar, e ela vale até lá. */
-export function textoDoAviso({ apostado = null, escolhido = null } = {}) {
+/* E QUEM SÓ ASSISTE (o visitante, no site) não tem passo nenhum a dar na lista:
+   o aviso diz que a luta vem sozinha e onde fica a porta para apostar. */
+export const AVISO_DE_QUEM_ASSISTE = 'A próxima luta começa sozinha<i>crie o seu treinador para apostar</i>';
+export function textoDoAviso({ apostado = null, escolhido = null, assistindo = false } = {}) {
+  if (assistindo) return AVISO_DE_QUEM_ASSISTE;
   if (apostado) return `<b>${apostado.nome}</b> é a sua aposta · x${apostado.odd.toFixed(2)}<i>toque em outro para trocar</i>`;
   if (escolhido) return `Confirme <b>${escolhido.nome}</b> no cartão da aposta<i>ou toque em outro lutador</i>`;
   return 'Escolha seu lutador na lista de odds<i>a rodada corre sozinha depois</i>';

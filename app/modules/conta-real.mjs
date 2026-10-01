@@ -52,6 +52,14 @@ const LOCAIS = new Set(['', 'localhost', '127.0.0.1', '[::1]', '::1']);
 export const exigeContaReal = hostname => !LOCAIS.has(String(hostname ?? '').toLowerCase());
 export const modoDaConta = ({ servidor, hostname }) => !!servidor || exigeContaReal(hostname);
 
+/* NO SITE, QUEM NÃO TEM CONTA SÓ ASSISTE (o dono, 01/10: "convidado não tem que
+ * testar nada, no máximo ver a batalha lá rolando, sem poder apostar"). A
+ * rodada roda sozinha na frente dele; escolher um lutador abre o cadastro. No
+ * `localhost` sem servidor o jogo segue apostável sem conta — é onde se testa,
+ * pela mesma razão da fachada acima. */
+export const soAssiste = ({ comConta, hostname }) => !comConta && exigeContaReal(hostname);
+export const TEXTO_DE_QUEM_ASSISTE = 'Você está assistindo. A rodada roda sozinha — para apostar no lutador, crie o seu treinador.';
+
 function dataValida(txt, agora) {
   const m = DATA.exec(String(txt ?? ''));
   if (!m) return false;

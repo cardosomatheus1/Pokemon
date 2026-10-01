@@ -18,7 +18,7 @@ import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import { criarApi } from '../app/modules/api.mjs';
-import { servidorNoAr, validarConta, corpoDoCadastro, mensagemDaResposta, enviarConta, exigeContaReal, modoDaConta }
+import { servidorNoAr, validarConta, corpoDoCadastro, mensagemDaResposta, enviarConta, exigeContaReal, modoDaConta, soAssiste, TEXTO_DE_QUEM_ASSISTE }
   from '../app/modules/conta-real.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
@@ -129,6 +129,26 @@ export async function suite() {
     ok(/contaReal = modoDaConta\(\{ servidor: v, hostname: location\.hostname \}\)/.test(nv), 'o modal não usa a regra');
     ok(/if \(exigeContaReal\(location\.hostname\)\) contaReal = true;/.test(nv), 'o modal pisca a fachada antes do /saude');
     ok(/\(!exigeContaReal\(location\.hostname\) && localStorage\.getItem\('ar_session'\) === '1'\)/.test(nv), 'o PIN velho abre as abas no site');
+  });
+
+
+  s.teste('no site, o visitante só assiste: a lista abre o cadastro e o painel da aposta some', () => {
+    /* o dono, 01/10: "convidado não tem que testar nada, no máximo ver a
+       batalha lá rolando, sem poder apostar" */
+    igual(soAssiste({ comConta: false, hostname: '34-224-231-194.sslip.io' }), true, 'o visitante do site aposta');
+    igual(soAssiste({ comConta: true, hostname: '34-224-231-194.sslip.io' }), false, 'quem tem conta só assiste');
+    igual(soAssiste({ comConta: false, hostname: '127.0.0.1' }), false, 'o teste local perdeu a aposta sem conta');
+    const nv = readFileSync(new URL('../app/modules/navegacao.mjs', import.meta.url), 'utf8');
+    const ap = readFileSync(new URL('../app/modules/aposta.mjs', import.meta.url), 'utf8');
+    const pag = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
+    ok(/document\.body\.classList\.toggle\('soAssiste', soAssiste\(\{ comConta: sessaoAtiva\(\), hostname: location\.hostname \}\)\)/.test(nv), 'a página não sabe que só se assiste');
+    ok(/document\.addEventListener\('pa:pedirConta', \(\) => abrirAuth\('signup'\)\)/.test(nv), 'o pedido de conta não abre o cadastro');
+    ok(/if \(soAssistindo\(\)\) \{ document\.dispatchEvent\(new CustomEvent\('pa:pedirConta'\)\); return; \}/.test(ap), 'tocar no lutador escolhe sem conta');
+    ok(/async function placeBet\(idx, row\)\{\n  if \(soAssistindo\(\)\) return;/.test(ap), 'a aposta sai sem conta');
+    ok(/assistindo: soAssistindo\(\),/.test(ap), 'o aviso da arena manda o visitante escolher');
+    ok(/body\.soAssiste #cardAposta,body\.soAssiste #cardBolo,body\.soAssiste #cardControles,/.test(pag), 'o painel da aposta aparece para quem só assiste');
+    ok(/\.cardAssistir\{display:none\}\nbody\.soAssiste \.cardAssistir\{display:block\}/.test(pag), 'o cartão "Assistindo" não aparece só para quem assiste');
+    ok(/t\.textContent = TEXTO_DE_QUEM_ASSISTE/.test(nv) && /para apostar/.test(TEXTO_DE_QUEM_ASSISTE), 'o cartão não diz onde fica a porta');
   });
 
   return s;
