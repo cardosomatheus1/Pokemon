@@ -113,6 +113,12 @@ export const holdsAtivos = (db, dono) => db.prepare(ATIVOS_DO_DONO).all(dono.tip
 export const liberarOferta = (db, { dono, agora }) =>
   emTransacao(db, () => ({ liberadas: encerrar(db, { holds: holdsAtivos(db, dono), estado: 'liberada', agora }) }));
 
+/* A LIQUIDAÇÃO consome (ST-14.7): o que estava preso SAI da conta pela
+   liquidação, na mesma transação — por isso consumir não devolve nada (nem
+   o lote nem o PC-T), e só muda o estado da reserva. */
+export const consumirOferta = (db, { dono, agora }) =>
+  emTransacao(db, () => ({ consumidas: encerrar(db, { holds: holdsAtivos(db, dono), estado: 'consumida', agora }) }));
+
 /* ── O PRAZO (ST-14.16) ───────────────────────────────────────────────────
  * A oferta VENCE INTEIRA: a entidade (a troca, o anúncio — `entidade`, que a
  * ST-14.7 e a 14.9 passam) e TODAS as reservas dela, na mesma transação.

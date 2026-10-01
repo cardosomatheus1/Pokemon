@@ -2331,6 +2331,82 @@ export const MIGRACOES = [
     desce: db => { db.exec(`DROP TABLE economia_divergencias`); },
   },
 
+  {
+    /* ST-14.7 · E14 · A TROCA DIRETA (spec E14 §9).
+     *
+     * A troca é a ENTIDADE dona das reservas (`asset_holds.dono_id`). Cada
+     * lado é uma linha, com o que oferece e — por REVISÃO — se está pronto e
+     * se confirmou: mudar qualquer coisa sobe a revisão, e a prontidão e a
+     * confirmação de antes deixam de valer sem ninguém precisar apagá-las.
+     *
+     * `criaturas_transferencias` é o histórico de DONO, append-only: a
+     * criatura que muda de mãos ganha uma linha (de, para, a troca, quando).
+     * O treinador original continua na `criaturas`; o cooldown de quem
+     * recebeu sai daqui. */
+    nome: 'trocas-st14.7',
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE trocas (
+          id                 TEXT PRIMARY KEY,
+          criador_id         TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          contraparte_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          estado             TEXT NOT NULL CHECK (estado IN ('OFFERED', 'LOCKED', 'SETTLED', 'CANCELLED', 'EXPIRED', 'BLOCKED')),
+          revisao            INTEGER NOT NULL DEFAULT 1 CHECK (revisao >= 1),
+          politica_versao    TEXT NOT NULL,
+          politica_hash      TEXT NOT NULL,
+          convite_expira_em  INTEGER NOT NULL,
+          lock_expira_em     INTEGER,
+          criada_em          INTEGER NOT NULL,
+          atualizada_em      INTEGER NOT NULL,
+          encerrada_em       INTEGER,
+          recibo_json        TEXT,
+          CHECK (criador_id <> contraparte_id),
+          CHECK ((estado = 'LOCKED') = (lock_expira_em IS NOT NULL))
+        )`);
+      db.exec(`CREATE INDEX trocas_criador ON trocas(criador_id, estado)`);
+      db.exec(`CREATE INDEX trocas_contraparte ON trocas(contraparte_id, estado)`);
+      db.exec(`CREATE INDEX trocas_convite ON trocas(estado, convite_expira_em)`);
+      db.exec(`
+        CREATE TABLE trocas_lados (
+          troca_id           TEXT NOT NULL REFERENCES trocas(id) ON DELETE CASCADE,
+          user_id            TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          criaturas_json     TEXT NOT NULL DEFAULT '[]',
+          itens_json         TEXT NOT NULL DEFAULT '[]',
+          moeda              INTEGER NOT NULL DEFAULT 0 CHECK (moeda >= 0),
+          pronto_revisao     INTEGER,
+          confirmado_revisao INTEGER,
+          confirmado_hash    TEXT,
+          PRIMARY KEY (troca_id, user_id)
+        )`);
+      db.exec(`
+        CREATE TABLE trocas_eventos (
+          id        INTEGER PRIMARY KEY AUTOINCREMENT,
+          troca_id  TEXT NOT NULL REFERENCES trocas(id) ON DELETE CASCADE,
+          user_id   TEXT,
+          evento    TEXT NOT NULL,
+          revisao   INTEGER NOT NULL,
+          em        INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE TRIGGER trocas_eventos_sem_update BEFORE UPDATE ON trocas_eventos BEGIN SELECT RAISE(ABORT, 'trocas_eventos é append-only'); END`);
+      db.exec(`
+        CREATE TABLE criaturas_transferencias (
+          id          INTEGER PRIMARY KEY AUTOINCREMENT,
+          criatura_id TEXT NOT NULL,
+          de_user     TEXT NOT NULL,
+          para_user   TEXT NOT NULL,
+          ref_tipo    TEXT NOT NULL,
+          ref_id      TEXT NOT NULL,
+          em          INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE INDEX criaturas_transferencias_criatura ON criaturas_transferencias(criatura_id, id)`);
+      db.exec(`CREATE TRIGGER criaturas_transferencias_sem_update BEFORE UPDATE ON criaturas_transferencias BEGIN SELECT RAISE(ABORT, 'criaturas_transferencias é append-only'); END`);
+      db.exec(`CREATE TRIGGER criaturas_transferencias_sem_delete BEFORE DELETE ON criaturas_transferencias BEGIN SELECT RAISE(ABORT, 'criaturas_transferencias é append-only'); END`);
+    },
+    desce: db => {
+      for (const t of ['criaturas_transferencias', 'trocas_eventos', 'trocas_lados', 'trocas']) db.exec(`DROP TABLE ${t}`);
+    },
+  },
+
 ];
 
 const TABELA_VERSAO = `

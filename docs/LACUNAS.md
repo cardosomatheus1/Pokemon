@@ -9221,7 +9221,7 @@ mais rara), e o pendente com `shiny` ganha o selo que a ST-14.3 desenhar.
 
 ### L-226 — o palco e o replay da Liga não mostram o shiny do snapshot
 
-**Registrada em:** 01/10/2026, na ST-14.3b. **Bloco dono:** ST-14.7 (a troca
+**Registrada em:** 01/10/2026, na ST-14.3b. **Bloco dono:** ST-14.7b (a troca
 com revisão — é ela que monta a tela da instância de outro jogador, e o palco
 usa o mesmo caminho de sprite). **Estado:** aberta.
 
@@ -9233,7 +9233,8 @@ não recebe aparência — então o palco pinta todo mundo com a folha normal.
 log com o snapshot pelo índice, para as partidas novas e as antigas; a
 ST-14.3b fechou o que a ficha aceita (encontro, captura, coleção).
 
-**O que a destrava:** a ST-14.7 — o palco recebe o snapshot junto do log e
+**O que a destrava:** a ST-14.7b (a tela; a 14.7 foi dividida em 01/10 e o
+servidor, 14.7a, não toca o palco) — o palco recebe o snapshot junto do log e
 pinta `shiny` pela posição; partida de antes da ST-14.3a não tem o campo e
 fica normal.
 

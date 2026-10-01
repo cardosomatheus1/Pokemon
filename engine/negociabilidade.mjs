@@ -152,6 +152,14 @@ export function avaliarItem({ pack, itemId, quantidade, lotes, conta, acao }) {
   return nao(RAZAO.ITENS);
 }
 
+/* ── A CONTA, sem ativo (ST-14.7) ──
+ * Quem só RECEBE numa troca (a doação) não oferece ativo nenhum — e mesmo
+ * assim a conta dele precisa poder negociar: em pausa, congelada ou com a
+ * bandeira desligada, ela não entra na troca nem do lado que ganha. */
+export function avaliarConta({ conta, acao }) {
+  return daConta(regraDa(acao), conta) ?? sim;
+}
+
 /* ── O QUE NUNCA NEGOCIA, pelo tipo ──
  * Doce (L-222: intransferível na v1 — `candy_ledger` não tem lote ainda) e
  * cosmético de progressão ou legado (spec §7). Perguntar devolve o motivo,

@@ -118,8 +118,11 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            vence inteira, a passada ao ligar devolve o que venceu na
            queda) e a conciliação do escrow (escreve, não conserta; a
            conta em divergência para de ofertar).
-           PRÓXIMO: ST-14.7 (a troca com revisão e confirmação dos dois
-           lados) — a última da onda B. Tudo atrás das
+           · ST-14.7a FECHADA (01/10): a troca direta no servidor e na
+           API — pronto dos dois, lock de 5 min, confirmação pelo hash do
+           que se viu, liquidação dos dois lados numa transação.
+           PRÓXIMO: ST-14.7b (a tela da troca, Q5/Q7, e a L-226) — a
+           última da onda B. Tudo atrás das
            bandeiras desligadas (DEC-21: liga no gate C, moeda simulada)
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho

@@ -42,15 +42,18 @@ function tentar(fn, { tentativas = TENTATIVAS, aoErro }) {
 }
 
 /* Uma passada. Síncrona, e o `agora` é do SERVIDOR. */
-export function passoEconomia(db, { agora, lote = LOTE_ECONOMIA, entidades = {}, aoErro = null, tentativas = TENTATIVAS }) {
+/* `tarefas`: o que vence SEM reserva — o convite de troca que ninguém
+   aceitou (ST-14.7). Cada uma tenta como as outras, e falha sozinha. */
+export function passoEconomia(db, { agora, lote = LOTE_ECONOMIA, entidades = {}, tarefas = [], aoErro = null, tentativas = TENTATIVAS }) {
   const venc = tentar(() => expirarVencidas(db, { agora, limite: lote, entidades, aoFalhar: e => aoErro?.(e) }), { tentativas, aoErro });
+  const extras = tarefas.map(f => tentar(() => f(db, { agora, limite: lote }), { tentativas, aoErro }));
   const conc = tentar(() => conciliarEconomia(db, { agora }), { tentativas, aoErro });
   const m = {
     expiradas: venc.ok ? venc.valor.expiradas : 0,
     ofertas: venc.ok ? venc.valor.ofertas : 0,
     divergenciasNovas: conc.ok ? conc.valor.novas : 0,
     divergenciasAbertas: conc.ok ? conc.valor.abertas : null,
-    falhas: (venc.ok ? venc.valor.falhas : 1) + (conc.ok ? 0 : 1),
+    falhas: (venc.ok ? venc.valor.falhas : 1) + (conc.ok ? 0 : 1) + extras.filter(x => !x.ok).length,
   };
   /* A MÉTRICA SÓ QUANDO HÁ O QUE CONTAR: uma linha por minuto dizendo "nada"
      encheria a telemetria sem responder pergunta nenhuma. */
@@ -60,11 +63,11 @@ export function passoEconomia(db, { agora, lote = LOTE_ECONOMIA, entidades = {},
 }
 
 export function criarWorkerEconomia({ db, relogio = Date.now, intervalo = INTERVALO_ECONOMIA_MS, lote = LOTE_ECONOMIA,
-                                      entidades = {}, aoErro = null }) {
+                                      entidades = {}, tarefas = [], aoErro = null }) {
   let timer = null;
   const estado = { passos: 0, expiradas: 0, falhas: 0, ultimo: null };
   function passo() {
-    const m = passoEconomia(db, { agora: relogio(), lote, entidades, aoErro });
+    const m = passoEconomia(db, { agora: relogio(), lote, entidades, tarefas, aoErro });
     estado.passos++; estado.expiradas += m.expiradas; estado.falhas += m.falhas; estado.ultimo = m;
     return m;
   }

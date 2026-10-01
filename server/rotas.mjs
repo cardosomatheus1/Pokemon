@@ -38,6 +38,9 @@ import { rotasDaPartida, ERRO_PARTIDA } from './partida.mjs';
 import { rotasDaLigaEquipe } from './liga-equipe.mjs';
 import { rotasDaLojaLiga, ERRO_LOJA_LIGA } from './loja-liga.mjs';
 import { rotasDoStake, ERRO_STAKE } from './stake-liga.mjs';
+import { rotasDasTrocas, STATUS_DA_TROCA } from './trocas-rotas.mjs';
+import { ERRO_RESERVA } from './reservas.mjs';
+import { ERRO_RISCO } from './risco-mercado-jogadores.mjs';
 import { ERRO_IDLE } from './idle.mjs';
 import { ERRO_RUN } from './run.mjs';
 import { ERRO_COLECAO } from './colecao.mjs';
@@ -196,6 +199,12 @@ const STATUS_DE = {
   [ERRO_STAKE.SEM_ADVERSARIO]: 409,
   /* A feature desligada (ST-11.9): indisponível AGORA, não pedido errado. */
   [ERRO_BANDEIRA.DESLIGADA]: 503,
+  /* A troca direta (ST-14.7): a revisão velha, o hash que não bate e a
+     reserva recusada são CONFLITO com o estado — a tela recarrega e revisa. */
+  ...STATUS_DA_TROCA,
+  [ERRO_RESERVA.RECUSADA]: 409,
+  [ERRO_RESERVA.VENCIDA]: 409,
+  [ERRO_RISCO.RECUSADA]: 409,
 };
 
 /* Converte a exceção do domínio em resposta. O `limite` e a `pausa` viajam
@@ -205,7 +214,11 @@ const STATUS_DE = {
 function daExcecao(e) {
   const status = STATUS_DE[e?.codigo] ?? 400;
   return erro(status, e?.codigo ?? ERROS.ENTRADA_INVALIDA, e?.message ?? 'pedido inválido',
-    { ...(e?.limite ? { limite: e.limite } : {}), ...(e?.pausa ? { pausa: e.pausa } : {}) });
+    { ...(e?.limite ? { limite: e.limite } : {}), ...(e?.pausa ? { pausa: e.pausa } : {}),
+      /* ST-14.7: o MOTIVO da política única, e a revisão atual da troca —
+         a tela diz "esta criatura está em cooldown até…", e não "erro". */
+      ...(e?.reason_code ? { reason_code: e.reason_code } : {}), ...(e?.available_at ? { available_at: e.available_at } : {}),
+      ...(Number.isInteger(e?.revisao) ? { revisao: e.revisao } : {}) });
 }
 
 const inteiro = v => (typeof v === 'number' && Number.isInteger(v) ? v : null);
@@ -232,6 +245,8 @@ export const ROTAS = {
   ...rotasDaLigaEquipe(daExcecao),
   ...rotasDaLojaLiga(daExcecao),
   ...rotasDoStake(daExcecao),
+  /* A troca direta entre jogadores (ST-14.7). */
+  ...rotasDasTrocas(daExcecao),
 
 
   /* --- autenticação ----------------------------------------------------- */
