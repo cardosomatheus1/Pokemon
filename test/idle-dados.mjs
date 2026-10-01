@@ -561,7 +561,9 @@ export function suite() {
          Comparar execuções mede CONCORDÂNCIA, e dois sorteios independentes
          concordam por acaso — foi assim que o S621 passou. Refazer a conta
          mede a REGRA: a semente é esta, ou não é. */
-      const esperado = tentar(semente(derivar(Number(exp.semente), 'lance:' + en.chave)),
+      /* A semente entra COMO VEIO (texto): o `Number` dela era o D-129, e o
+         teste o repetia — refazia a conta com o mesmo defeito do código. */
+      const esperado = tentar(semente(derivar(exp.semente, 'lance:' + en.chave)),
                               kanto, { raridade: en.raridade, bola: 'ultra' });
       const r = lancarBola(e, { pack: kanto, chave: en.chave, bola: 'ultra', agora: AGORA });
       igual(r.capturou, esperado.capturou,

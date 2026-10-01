@@ -35,7 +35,10 @@ export function lancarBola(e, { pack, chave, bola, agora }) {
   if ((e.bolsa[bola] ?? 0) < 1) throw new Error('você não tem essa bola');
 
   const exp = e.expedicoes.find(x => x.id === en.expedicao);
-  const raiz = semente(derivar(Number(exp?.semente ?? 1), 'lance:' + chave));
+  /* A SEMENTE ENTRA COMO VEIO (D-129, corrigido na ST-14.1): ela é texto
+     hexadecimal, e `Number` dela era NaN — a raiz de todo lance virava a
+     mesma, qualquer que fosse a colheita. `derivar` aceita a raiz larga. */
+  const raiz = semente(derivar(exp?.semente ?? 1, 'lance:' + chave));
   const r = tentar(raiz, pack, { raridade: en.raridade, bola });
 
   e.bolsa[bola] -= 1;

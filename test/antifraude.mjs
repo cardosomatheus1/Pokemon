@@ -168,12 +168,12 @@ export function suite() {
 
   });
 
-  /* ── D-129 (afirma o defeito) ─────────────────────────────────────────
-     Achado ao medir a banda: o lance do aparelho faz `Number(semente)` da
-     colheita, e a semente é texto hexadecimal — sempre NaN, e a raiz de todo
-     lance vira a mesma, qualquer que seja a colheita. Fica vermelho quando a
-     ST-13.5 consertar. */
-  s.teste('D-129 (afirma o defeito): o lance do aparelho ignora a semente da colheita', () => {
+  /* ── D-129 ✅ (corrigido na ST-14.1) ─────────────────────────────────────
+     O lance do aparelho fazia `Number(semente)` da colheita, e a semente é
+     texto hexadecimal — sempre NaN, e a raiz de todo lance era a mesma. Agora
+     duas colheitas diferentes dão lances diferentes, e a mesma colheita dá o
+     mesmo lance (o lance é recalculável pela semente, §25.2). */
+  s.teste('D-129 ✅: o lance do aparelho segue a semente da colheita', () => {
     const padrao = semente => Array.from({ length: 40 }, (_, i) => {
       const e = { encontros: [{ chave: `x:${i}`, expedicao: 'x', dex: 16, raridade: 'comum' }], bolsa: { poke: 1 },
                   expedicoes: [{ id: 'x', semente }], criaturas: [] };
@@ -181,7 +181,8 @@ export function suite() {
     }).join('');
     const [a, b] = [padrao('aa'.repeat(16)), padrao('bb'.repeat(16))];
     ok(a.includes('1') && a.includes('0'), 'o lance não varia nem entre encontros — o teste não mede nada');
-    igual(a, b, 'D-129 consertado? duas colheitas diferentes deram lances diferentes');
+    ok(a !== b, 'D-129 voltou: duas colheitas diferentes deram os mesmos lances');
+    igual(padrao('aa'.repeat(16)), a, 'a mesma colheita deu lances diferentes — o lance não é recalculável');
   });
 
   return s;

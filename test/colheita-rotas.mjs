@@ -138,7 +138,11 @@ export async function suite() {
       igual(r.corpo.dex, p1.dex, 'o dex do lance veio do pedido');
       if (r.corpo.capturou) igual(r.corpo.criatura.dex, p1.dex, 'a criatura capturada não é a do encontro');
       ok(!r.corpo.criatura || !('semente' in r.corpo.criatura), 'a criatura capturada veio com a semente');
-      igual((await a.post('/api/idle/lancar', { chave: p1.chave, bola: 'ultra' })).status, 404, 'o mesmo encontro aceitou dois lances');
+      /* O SEGUNDO PEDIDO É RETRY, não lance (ST-14.1): devolve o MESMO recibo,
+         marcado `repetida`, e não sorteia de novo nem gasta outra bola. Antes
+         ele dava 404 — e quem perdeu a resposta achava que perdeu a bola. */
+      const r2 = await a.post('/api/idle/lancar', { chave: p1.chave, bola: 'ultra' });
+      igual(`${r2.status}|${r2.corpo.repetida}|${r2.corpo.capturou === r.corpo.capturou}|${r2.corpo.criatura?.id === r.corpo.criatura?.id}`, '200|true|true|true', 'o mesmo encontro aceitou dois lances');
       igual(bolsaDe(c.srv.db, a.id).find(x => x.item_id === 'ultra').quantidade, 2, 'a bola do lance recusado foi debitada');
     } finally { await c.srv.fechar(); }
   });

@@ -29,7 +29,7 @@ import { podeAvancar, cabeAvanco, STAMINA_DO_AVANCO, curaDe } from '../engine/av
 import { EQUIPE_MAX } from '../engine/expedicao.mjs';
 import { estagioAberto, nivelDoEstagio, estagioMaximo } from '../engine/estagios.mjs';
 import { equipeDoMotor, runComecada, runNoInstante, runCurada, contaDaRun } from '../app/modules/avanco-conta.mjs';
-import { criaturasDaConta, estadoDoTeto, emCampo, creditarBolsa, debitarBolsa, creditarRegistro, quantosNaBolsa } from './idle.mjs';
+import { criaturasDaConta, estadoDoTeto, emCampo, creditarBolsa, debitarBolsa, creditarRegistro, quantosNaBolsa, shinyDoEncontro } from './idle.mjs';
 
 const DIA_MS = 24 * 3600_000;
 export const ERRO_RUN = Object.freeze({ SEM_RUN: 'RUN_SEM_RUN', EM_CURSO: 'RUN_EM_CURSO', ABERTA: 'RUN_ABERTA' });
@@ -101,7 +101,7 @@ export function comecarRun(db, { userId, pack, bioma, estagio = 1, equipe, agora
   db.exec('BEGIN');
   try {
     /* O QUADRO DA RUN ANTERIOR SAI (L-166): os pendentes dela, e só eles. */
-    db.prepare(`UPDATE encontros_pendentes SET resolvido_em = ? WHERE user_id = ? AND origem = 'avanco' AND resolvido_em IS NULL`)
+    db.prepare(`UPDATE encontros_pendentes SET resolvido_em = ?, resolucao = 'descarte' WHERE user_id = ? AND origem = 'avanco' AND resolvido_em IS NULL`)
       .run(agora, userId);
     db.prepare(`INSERT INTO runs (id, user_id, pack_id, estado_json, iniciada_em) VALUES (?,?,?,?,?)`)
       .run(id, userId, pack.id, JSON.stringify(run), agora);
@@ -164,9 +164,12 @@ export function colherRun(db, { userId, pack, agora, raiz = novaRaiz() }) {
     const xp = db.prepare(`UPDATE criaturas SET xp = ?, nivel = ?, vinculo = ? WHERE id = ? AND user_id = ?`);
     for (const k of c.credito) xp.run(k.xp, k.nivel, k.vinculo, k.id, userId);
     for (const [chave, n] of Object.entries(c.bolsa)) if (n > 0) creditarBolsa(db, userId, chave, n, { fonte: `run:${id}`, agora });
-    const pend = db.prepare(`INSERT INTO encontros_pendentes (chave, user_id, origem, run_id, dex, raridade, bioma, em)
-                             VALUES (?,?,'avanco',?,?,?,?,?)`);
-    for (const p of c.pendentes) pend.run(p.chave, userId, id, p.dex, p.raridade, p.bioma, p.em);
+    const pend = db.prepare(`INSERT INTO encontros_pendentes (chave, user_id, origem, run_id, dex, raridade, bioma, em, is_shiny, shiny_versao)
+                             VALUES (?,?,'avanco',?,?,?,?,?,?,?)`);
+    for (const p of c.pendentes) {
+      const s = shinyDoEncontro(pack);
+      pend.run(p.chave, userId, id, p.dex, p.raridade, p.bioma, p.em, s.shiny ? 1 : 0, s.versao);
+    }
     for (const f of c.fragmentos) creditarRegistro(db, userId, pack.id, f.dex, f.n, agora);
     db.exec('COMMIT');
   } catch (e) { try { db.exec('ROLLBACK'); } catch {} throw e; }

@@ -54,6 +54,13 @@ import { gerar as gerarCriatura } from './criaturas.mjs';
 import { naRun, sincronizarRun } from './run.mjs';
 import { equipeCheiaEm } from '../app/modules/colecao-regras.mjs';
 import { ENCONTROS_POR_AVANCO } from '../engine/avanco.mjs';
+import { regraDoShiny, sortearShiny } from '../engine/shiny.mjs';
+
+/* O SHINY DO ENCONTRO (ST-14.1): sorteado aqui, no servidor, quando o encontro
+   é gravado — com raiz NOVA do CSPRNG, e não da semente da colheita, que vai
+   na resposta ao jogador. Exportado para a run gravar os dela pela mesma
+   regra. */
+export const shinyDoEncontro = pack => sortearShiny(semente(derivar(novaRaiz(), 'shiny')), regraDoShiny(pack));
 
 const DIA_MS = 24 * 3600_000;
 
@@ -286,8 +293,14 @@ export function colher(db, { id, pack, agora, raiz = novaRaiz() }) {
     /* O FRAGMENTO CAI NO ENCONTRO, e não na captura (1.2b). */
     for (const f of c.fragmentos) creditarRegistro(db, exp.user_id, exp.pack_id, f.dex, f.n, agora);
     const pendente = db.prepare(`INSERT INTO encontros_pendentes
-      (chave, user_id, expedicao_id, dex, raridade, bioma, em) VALUES (?,?,?,?,?,?,?)`);
-    for (const p of c.pendentes) pendente.run(p.chave, exp.user_id, id, p.dex, p.raridade, p.bioma, p.em);
+      (chave, user_id, expedicao_id, dex, raridade, bioma, em, is_shiny, shiny_versao) VALUES (?,?,?,?,?,?,?,?,?)`);
+    /* O shiny vai para o BANCO, e não para a resposta: a resposta da colheita
+       é a mesma conta do aparelho (a identidade da ST-13.2a), e o shiny é
+       decisão só do servidor. O jogador o vê na releitura da conta. */
+    for (const p of c.pendentes) {
+      const s = shinyDoEncontro(pack);
+      pendente.run(p.chave, exp.user_id, id, p.dex, p.raridade, p.bioma, p.em, s.shiny ? 1 : 0, s.versao);
+    }
 
     const resposta = { expedicao: id, semente: String(raiz), encontros: c.pendentes, itens: c.itens,
       moedas: c.moedas, xp: c.xp, vinculo: c.vinculo, subiram: c.subiram, npc: c.npc, treino: c.treino };
@@ -386,6 +399,11 @@ export function lancarPendente(db, { userId, pack, chave, bola, agora, raiz = no
      (o S564 da ST-13.2a), e o teste não saberia qual das duas o protege. */
   const en = db.prepare(`SELECT * FROM encontros_pendentes WHERE chave = ? AND user_id = ?`).get(chave, userId);
   if (!en) throw falha(ERRO_IDLE.SEM_ENCONTRO, 'esse encontro não está mais aqui');
+  /* O RETRY DEVOLVE O RECIBO (ST-14.1). Quem lançou e não recebeu a resposta
+     (a rede caiu depois do commit) pede de novo: recebe o MESMO lance — mesma
+     bola, mesmo resultado, a mesma criatura —, e nunca uma segunda tentativa,
+     nem com outra bola. Só o dono chega aqui: o SELECT acima é por usuário. */
+  if (en.recibo_json) return { ...JSON.parse(en.recibo_json), repetida: true };
   if (!chanceDe(pack, { raridade: en.raridade, bola }))
     throw new Error(`a bola ${bola} não tem chance contra um ${en.raridade}`);
 
@@ -400,13 +418,20 @@ export function lancarPendente(db, { userId, pack, chave, bola, agora, raiz = no
     /* A CAPTURA NUNCA É RECUSADA por equipe cheia: vai para a caixa. */
     const paraCaixa = equipeCheiaEm(criaturasDaConta(db, userId));
     /* A captura herda a origem da bola (ST-14.0C): bola presa, criatura presa. */
-    const criatura = t.capturou ? gerarCriatura(db, { userId, pack, dex: en.dex, origem: 'captura', encontroChave: chave, proveniencia: maisRestrita([...gasto.classes]) }) : null;
+    const criatura = t.capturou ? gerarCriatura(db, { userId, pack, dex: en.dex, origem: 'captura', encontroChave: chave,
+                                                      proveniencia: maisRestrita([...gasto.classes]), shiny: en.is_shiny === 1 }) : null;
     if (criatura && paraCaixa) {
       db.prepare(`UPDATE criaturas SET na_caixa = 1 WHERE id = ?`).run(criatura.id);
       criatura.naCaixa = true;
     }
+    /* O RECIBO NA MESMA TRANSAÇÃO que debitou a bola e criou a criatura:
+       gravado depois, uma queda entre os dois deixaria o lance feito e o
+       retry sem resposta. */
+    const recibo = { ...t, chave, dex: en.dex, raridade: en.raridade, shiny: en.is_shiny === 1, criatura };
+    db.prepare(`UPDATE encontros_pendentes SET resolucao = ?, recibo_json = ? WHERE chave = ?`)
+      .run(t.capturou ? 'captura' : 'falha', JSON.stringify(recibo), chave);
     db.exec('COMMIT');
-    return { ...t, chave, dex: en.dex, raridade: en.raridade, criatura };
+    return recibo;
   } catch (e) {
     try { db.exec('ROLLBACK'); } catch {}
     throw e;
@@ -414,8 +439,9 @@ export function lancarPendente(db, { userId, pack, chave, bola, agora, raiz = no
 }
 
 export const pendentesDe = (db, userId) =>
-  db.prepare(`SELECT chave, origem, expedicao_id AS expedicao, dex, raridade, bioma, em FROM encontros_pendentes
-               WHERE user_id = ? AND resolvido_em IS NULL ORDER BY em, chave`).all(userId);
+  db.prepare(`SELECT chave, origem, expedicao_id AS expedicao, dex, raridade, bioma, em, is_shiny FROM encontros_pendentes
+               WHERE user_id = ? AND resolvido_em IS NULL ORDER BY em, chave`).all(userId)
+    .map(({ is_shiny, ...e }) => ({ ...e, shiny: is_shiny === 1 }));
 
 /* A INICIAL, uma vez por conta (ST-13.2b) — sem ela, a conta nova não tem
    quem mandar a campo. A mesma regra do aparelho: só entre as do pack, e só

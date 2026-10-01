@@ -2172,6 +2172,35 @@ export const MIGRACOES = [
     },
   },
 
+  {
+    /* ST-14.1 · E14 · O ENCONTRO GUARDA O SHINY E O RECIBO DO LANCE.
+     *
+     *   is_shiny       sorteado quando o encontro é GRAVADO, com raiz própria —
+     *                  o lance só o carrega (spec E14 §5.2)
+     *   shiny_versao   sob qual regra (taxa) ele foi sorteado
+     *   resolucao      COMO o encontro terminou: captura, falha, descarte
+     *                  (a run nova encerra o quadro da anterior) ou expiração.
+     *                  `resolvido_em` continua sendo a guarda do lance único
+     *   recibo_json    a resposta do lance, gravada NA MESMA transação: o
+     *                  retry de quem não recebeu a resposta devolve ela, e não
+     *                  um segundo lance — nem um "esse encontro não está mais
+     *                  aqui" que faz o jogador achar que perdeu a bola
+     *
+     * O que já foi resolvido antes fica com `resolucao` NULL: a migração não
+     * sabe como terminou, e não inventa. Nenhum shiny retroativo. */
+    nome: 'encontros-st14.1',
+    sobe: db => {
+      db.exec(`ALTER TABLE encontros_pendentes ADD COLUMN is_shiny INTEGER NOT NULL DEFAULT 0 CHECK (is_shiny IN (0, 1))`);
+      db.exec(`ALTER TABLE encontros_pendentes ADD COLUMN shiny_versao TEXT`);
+      db.exec(`ALTER TABLE encontros_pendentes ADD COLUMN resolucao TEXT CHECK (resolucao IN ('captura', 'falha', 'descarte', 'expiracao'))`);
+      db.exec(`ALTER TABLE encontros_pendentes ADD COLUMN recibo_json TEXT`);
+    },
+    desce: db => {
+      for (const c of ['recibo_json', 'resolucao', 'shiny_versao', 'is_shiny'])
+        db.exec(`ALTER TABLE encontros_pendentes DROP COLUMN ${c}`);
+    },
+  },
+
 ];
 
 const TABELA_VERSAO = `

@@ -6940,13 +6940,16 @@ aceite (`run-servidor`): 44 de 44 runs com o tipo do clima recebem o bônus, e
 o aviso e a run concordam de 10 a 30 encontros feitos. E o cartão diz de quem é o bônus: a equipe do motor leva o nome, e a lista de quem aproveita sai da mesma `quemAproveita` do motor (ela lia só `c.t` — o mesmo defeito por outra porta). A fixture
 `emissao-idle.json` foi regravada, com a diferença na mensagem do commit.
 
-## D-129 — o lance do aparelho ignora a semente da colheita
+## D-129 — o lance do aparelho ignora a semente da colheita ✅ CORRIGIDO na ST-14.1 (01/10)
 
 **Achado em:** 28/09/2026, na ST-13.6, ao medir a banda de captura (a medição
 saía diferente a cada execução). **Bloco dono:** ~~ST-13.5~~ → **ST-14.1**
 (30/09: a 13.5 fechou levando o lance COM CONTA ao servidor; o lance local
 ficou, e a ST-14.1 — o recibo do lance — mexe exatamente nele). **Estado:**
-aberto.
+corrigido em 01/10/2026 — `derivar` recebe a semente como veio (texto ou
+número); duas colheitas dão lances diferentes, e a mesma dá o mesmo. O lance
+LOCAL muda de resultado com isso, e é o esperado: era o mesmo para toda
+colheita. O teste do `antifraude` virou "D-129 ✅" e o S2186 planta a volta.
 
 **Causa.** `lancarBola` (`idle-lance.mjs`) deriva a raiz do lance de
 `Number(exp.semente)`, e a semente da colheita é TEXTO hexadecimal — `Number`
