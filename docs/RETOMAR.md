@@ -128,8 +128,10 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            · ST-14.9 FECHADA (01/10): o Market de preço fixo no servidor
            — anunciar (a taxa queima), comprar pelo preço visto (líquido
            ao vendedor), cancelar; a posse muda pelo mesmo caminho da troca.
-           PRÓXIMO: ST-14.10 (a busca) e 14.12 (o histórico de preços),
-           depois 14.13 (a tela do Market). Tudo atrás das
+           · ST-14.10 FECHADA (01/10): a busca do Market — filtros E,
+           ordem de lista fechada, cursor estável, índice.
+           PRÓXIMO: ST-14.12 (o histórico de preços sem inventar
+           referência), depois 14.13 (a tela do Market). Tudo atrás das
            bandeiras desligadas (DEC-21: liga no gate C, moeda simulada)
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho

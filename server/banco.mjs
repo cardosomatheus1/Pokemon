@@ -2480,6 +2480,32 @@ export const MIGRACOES = [
     desce: db => { db.exec(`DROP TABLE player_market_fills`); db.exec(`DROP TABLE player_market_listings`); },
   },
 
+  {
+    /* ST-14.10 · E14 · A BUSCA DO MARKET (spec E14 §10.2).
+     *
+     * O que se filtra vira COLUNA, para o índice: nível, natureza, potencial
+     * e a categoria do item. O anúncio que já existia ganha os três primeiros
+     * do próprio retrato (`snapshot_json`, que é o que o comprador viu); o
+     * que o retrato não tem fica NULL — a migração não inventa dado. A
+     * categoria de um item depende do pack, e por isso só o anúncio novo a
+     * grava; o antigo de item fica sem categoria (e fora desse filtro). */
+    nome: 'busca-st14.10',
+    sobe: db => {
+      db.exec(`ALTER TABLE player_market_listings ADD COLUMN nivel INTEGER`);
+      db.exec(`ALTER TABLE player_market_listings ADD COLUMN natureza TEXT`);
+      db.exec(`ALTER TABLE player_market_listings ADD COLUMN potencial INTEGER`);
+      db.exec(`ALTER TABLE player_market_listings ADD COLUMN categoria TEXT`);
+      db.exec(`UPDATE player_market_listings SET nivel = json_extract(snapshot_json, '$.nivel'), natureza = json_extract(snapshot_json, '$.natureza'),
+                 potencial = json_extract(snapshot_json, '$.potencial'), categoria = 'criaturas' WHERE tipo = 'criatura'`);
+      db.exec(`CREATE INDEX player_market_busca ON player_market_listings(estado, pack_id, categoria, dex, shiny, preco, id)`);
+      db.exec(`CREATE INDEX player_market_recentes ON player_market_listings(estado, pack_id, criado_em, id)`);
+    },
+    desce: db => {
+      db.exec(`DROP INDEX player_market_busca`); db.exec(`DROP INDEX player_market_recentes`);
+      for (const c of ['nivel', 'natureza', 'potencial', 'categoria']) db.exec(`ALTER TABLE player_market_listings DROP COLUMN ${c}`);
+    },
+  },
+
 ];
 
 const TABELA_VERSAO = `

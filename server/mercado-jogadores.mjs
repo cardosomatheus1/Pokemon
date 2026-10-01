@@ -29,6 +29,7 @@ import { randomUUID } from 'node:crypto';
 import { previewAnuncio, POLITICA_PILOTO, hashDaPolitica } from '../engine/taxas-mercado.mjs';
 import { avaliarContraparte } from '../engine/risco-mercado.mjs';
 import { nivelDe } from '../engine/nivel-criatura.mjs';
+import { categoriaDoItem } from '../engine/busca-mercado.mjs';
 import { emTransacao, reservarP2PNoBanco, liquidarP2PNoBanco } from './carteira.mjs';
 import { elegibilidadeDaConta } from './elegibilidade.mjs';
 import { contasLigadas } from './protecao.mjs';
@@ -77,11 +78,13 @@ export function anunciar(db, { userId, pack, ativo = {}, preco, agora, checkpoin
     const taxa = cobrarTaxaDeAnuncio(db, { userId, preco, ref: id, idem: `anuncio:${id}`, agora });
     if (!taxa.ok) throw falha(ERRO_MERCADO_P2P.RECUSADA, `a taxa de anúncio não passou: ${taxa.motivo}`, { reason_code: 'INSUFFICIENT_FUNDS' });
     const snap = criatura ? retrato(db, pack, criatura) : { itemId: item };
+    /* ST-14.10: o que a busca filtra vai em coluna, para o índice. */
     db.prepare(`INSERT INTO player_market_listings (id, vendedor_id, pack_id, tipo, criatura_id, dex, item_id, quantidade, preco, estado, shiny,
-                  snapshot_json, politica_versao, politica_hash, taxa_anuncio, taxa_venda, criado_em, expira_em)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE', ?, ?, ?, ?, ?, ?, ?, ?)`)
+                  snapshot_json, politica_versao, politica_hash, taxa_anuncio, taxa_venda, criado_em, expira_em, nivel, natureza, potencial, categoria)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
       .run(id, userId, pack.id, criatura ? 'criatura' : 'item', criatura, criatura ? snap.dex : null, item, quantidade, preco,
-           snap.shiny ? 1 : 0, JSON.stringify(snap), p.versao, p.hash, p.taxaAnuncio, p.taxaVenda, agora, expiraEm);
+           snap.shiny ? 1 : 0, JSON.stringify(snap), p.versao, p.hash, p.taxaAnuncio, p.taxaVenda, agora, expiraEm,
+           snap.nivel ?? null, snap.natureza ?? null, snap.potencial ?? null, criatura ? 'criaturas' : categoriaDoItem(pack, item));
     emitir(db, { nome: 'market_listed', userId, campos: { tipo: criatura ? 'criatura' : 'item', preco, taxa: p.taxaAnuncio }, chave: `anuncio:${id}`, agora });
     return paraVendedor(db, lerAnuncio(db, id));
   });
@@ -155,7 +158,7 @@ export function expirarAnuncioDaOferta(db, { dono: d, agora }) {
 const lerAnuncio = (db, id) => (typeof id === 'string' ? db.prepare(`SELECT * FROM player_market_listings WHERE id = ?`).get(id) : null);
 const nomeDe = (db, id) => db.prepare(`SELECT username FROM users WHERE id = ?`).get(id)?.username ?? '?';
 
-const publico = (db, a) => ({ id: a.id, tipo: a.tipo, quantidade: a.quantidade, preco: a.preco, versao: a.versao, estado: a.estado,
+export const publico = (db, a) => ({ id: a.id, tipo: a.tipo, quantidade: a.quantidade, preco: a.preco, versao: a.versao, estado: a.estado,
                               itemId: a.item_id, retrato: JSON.parse(a.snapshot_json), vendedor: nomeDe(db, a.vendedor_id),
                               criadoEm: a.criado_em, expiraEm: a.expira_em });
 const paraVendedor = (db, a) => ({ ...publico(db, a), taxaAnuncio: a.taxa_anuncio, taxaVenda: a.taxa_venda, liquido: a.preco - a.taxa_venda });
