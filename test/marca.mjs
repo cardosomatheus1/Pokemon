@@ -84,7 +84,7 @@ export function suite() {
   }
 
   s.teste('a topbar mostra a marca, e não um emoji de espadas', () => {
-    const brand = CORPO.match(/<div class="brand">[\s\S]*?<\/div>/);
+    const brand = CORPO.match(/<div class="brand"[^>]*>[\s\S]*?<\/div>/);
     ok(brand, 'a `.brand` sumiu da topbar');
     ok(!/⚔️/.test(brand[0]), `a marca ainda é um emoji: ${brand[0]}`);
     ok(/class="letrado/.test(brand[0]), 'a topbar não usa o letrado da marca');

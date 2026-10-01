@@ -9365,3 +9365,30 @@ nisso agora seria o bloco crescer além do que o dono apontou.
 
 **O que a destrava:** o dono olhar a tela nova. Se o vão incomodar, a ST-2.7
 leva "Quem apareceu" para a coluna da direita em telas acima de 1200 px.
+
+
+### L-230 — o portão visual não tem largura de telefone
+
+**Registrada em:** 01/10/2026, no Q5 da ST-2.8. **Bloco dono:** **T15** (a
+largura de telefone no portão visual — arnês, proposto em `BUILD_BLOCKS` junto com a
+ST-2.8, e só se constrói quando IMPEDIR). **Estado:** aberta.
+
+A `test/visual.mjs` fotografa 1920, 1440, 1100 e 700. A barra do celular
+existe só abaixo de 640, então nenhuma digital da linha de base a vê: o que a
+segura hoje é o CSS afirmado em Node (`barra-celular`) e a captura manual do
+`tools/olhar-celular.mjs`.
+
+**Por que não cabe agora:** uma quinta largura regrava a linha de base e soma
+~15 s a toda execução com navegador — arnês que hoje não impede nada (regra de
+16/09). **O que a destrava:** um defeito de celular que o CSS em Node não pegue.
+
+### L-231 — a Floresta, vista de longe no celular, não tem árvore
+
+**Registrada em:** 01/10/2026, no Q5 da ST-2.8 (regra do cenário do idle).
+**Bloco dono:** **ST-2.9** (proposta no PLANO). **Estado:** aberta.
+
+Com a cena em 1× (ST-2.8), o trecho onde o treinador começa mostra trilha,
+grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
+lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
+arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
+

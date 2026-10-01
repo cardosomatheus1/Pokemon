@@ -4683,6 +4683,7 @@ td.od{text-shadow:0 0 8px rgba(var(--goldRGB),.6)}
 }
 
 
+
 /* =====================================================================
    COSMÉTICOS NEON — cenários e efeitos de nome do banner de batalha
    ---------------------------------------------------------------------
@@ -7902,6 +7903,111 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 .outfit-cartao.off{cursor:not-allowed;filter:grayscale(1) brightness(.62)}
 .outfit-cartao.off:hover{transform:none;border-color:rgba(120,190,255,.16)}
 
+/* =====================================================================
+   A BARRA DE ABAS DO CELULAR (barra-celular.mjs)
+   ---------------------------------------------------------------------
+   O dono abriu o jogo no telefone e disse "tá feião". A medição dizia o
+   mesmo com número: em 412 × 915 o menu de dez abas quebrava em TRÊS
+   linhas, e topo + menu comiam ~200 px de toda aba antes do primeiro
+   conteúdo. Até 640 px o menu desce para o rodapé — ao alcance do
+   polegar, como em todo jogo de celular — com as quatro abas que se
+   JOGAM, e o resto mora na folha do "Mais".
+
+   NO LARGO NADA MUDA: a folha é `display:contents` (os botões dela voltam
+   a ser itens da barra) e o Início volta para a frente por `order`. A
+   barra do computador continua idêntica, na ordem do 1.18.
+
+   Os ícones são MÁSCARAS, e não imagens: pintam com `currentColor`, então
+   o apagado, o aceso e as duas variantes de tema saem do mesmo token que
+   já pinta o texto — nenhum azul fixo para ficar errado no tema roxo.
+
+   Mora no FIM da folha de estilo de propósito: ela sobrescreve regras de
+   telas inteiras (a faixa de conexão, os cartões de rota), e em empate de
+   especificidade quem vem depois ganha. */
+.navMais{display:none}
+.navFolha{display:contents}
+.mainnav .nav[data-view="viewHome"]{order:-1}
+.navFolha .nav:not([data-view="viewHome"]){order:1}
+.brand[data-goto]{cursor:pointer}
+.nav[data-view="viewArena"],.navMais[data-vista="viewArena"]{--ic:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M14.5%2017.5%203%206V3h3l11.5%2011.5%22/%3E%3Cpath%20d=%22M13%2019l6-6%22/%3E%3Cpath%20d=%22M16%2016l4%204%22/%3E%3Cpath%20d=%22M19%2021l2-2%22/%3E%3Cpath%20d=%22M14.5%206.5%2018%203h3v3l-3.5%203.5%22/%3E%3Cpath%20d=%22M5%2014l4%204%22/%3E%3Cpath%20d=%22M7%2017l-3%203%22/%3E%3Cpath%20d=%22M3%2019l2%202%22/%3E%3C/svg%3E")}
+.nav[data-view="viewLiga"],.navMais[data-vista="viewLiga"]{--ic:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M6%209H4.5a2.5%202.5%200%200%201%200-5H6%22/%3E%3Cpath%20d=%22M18%209h1.5a2.5%202.5%200%200%200%200-5H18%22/%3E%3Cpath%20d=%22M4%2022h16%22/%3E%3Cpath%20d=%22M10%2014.7V17c0%20.6-.5%201-1%201.2C7.9%2018.8%207%2020.2%207%2022%22/%3E%3Cpath%20d=%22M14%2014.7V17c0%20.6.5%201%201%201.2%201.1.6%202%202%202%203.8%22/%3E%3Cpath%20d=%22M18%202H6v7a6%206%200%200%200%2012%200z%22/%3E%3C/svg%3E")}
+.nav[data-view="viewIdle"],.navMais[data-vista="viewIdle"]{--ic:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M3%206l6-3%206%203%206-3v15l-6%203-6-3-6%203z%22/%3E%3Cpath%20d=%22M9%203v15%22/%3E%3Cpath%20d=%22M15%206v15%22/%3E%3C/svg%3E")}
+.nav[data-view="viewTreino"],.navMais[data-vista="viewTreino"]{--ic:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M16%2021v-2a4%204%200%200%200-4-4H6a4%204%200%200%200-4%204v2%22/%3E%3Cpath%20d=%22M22%2021v-2a4%204%200%200%200-3-3.9%22/%3E%3Cpath%20d=%22M16%203.1a4%204%200%200%201%200%207.8%22/%3E%3Ccircle%20cx=%229%22%20cy=%227%22%20r=%224%22/%3E%3C/svg%3E")}
+.nav[data-view="viewHome"],.navMais[data-vista="viewHome"]{--ic:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M3%2010.5%2012%203l9%207.5V21h-6v-6H9v6H3z%22/%3E%3C/svg%3E")}
+.nav[data-view="viewRotaOff"],.navMais[data-vista="viewRotaOff"]{--ic:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M21%2012.8A9%209%200%201%201%2011.2%203a7%207%200%200%200%209.8%209.8z%22/%3E%3C/svg%3E")}
+.nav[data-view="viewPokedex"],.navMais[data-vista="viewPokedex"]{--ic:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M4%2019.5A2.5%202.5%200%200%201%206.5%2017H20V3H6.5A2.5%202.5%200%200%200%204%205.5z%22/%3E%3Cpath%20d=%22M4%2019.5A2.5%202.5%200%200%200%206.5%2022H20v-5%22/%3E%3C/svg%3E")}
+.nav[data-view="viewWiki"],.navMais[data-vista="viewWiki"]{--ic:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Ccircle%20cx=%2211%22%20cy=%2211%22%20r=%227%22/%3E%3Cpath%20d=%22M21%2021l-4.3-4.3%22/%3E%3C/svg%3E")}
+.nav[data-view="viewHow"],.navMais[data-vista="viewHow"]{--ic:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Ccircle%20cx=%2212%22%20cy=%2212%22%20r=%2210%22/%3E%3Cpath%20d=%22M9.1%209a3%203%200%200%201%205.8%201c0%202-3%203-3%203%22/%3E%3Cpath%20d=%22M12%2017h.01%22/%3E%3C/svg%3E")}
+.nav[data-view="viewRules"],.navMais[data-vista="viewRules"]{--ic:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M14%202H6a2%202%200%200%200-2%202v16a2%202%200%200%200%202%202h12a2%202%200%200%200%202-2V8z%22/%3E%3Cpath%20d=%22M14%202v6h6%22/%3E%3Cpath%20d=%22M8%2013h8%22/%3E%3Cpath%20d=%22M8%2017h8%22/%3E%3C/svg%3E")}
+.navMais{--ic:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Crect%20x=%223%22%20y=%223%22%20width=%227%22%20height=%227%22%20rx=%221.5%22/%3E%3Crect%20x=%2214%22%20y=%223%22%20width=%227%22%20height=%227%22%20rx=%221.5%22/%3E%3Crect%20x=%223%22%20y=%2214%22%20width=%227%22%20height=%227%22%20rx=%221.5%22/%3E%3Crect%20x=%2214%22%20y=%2214%22%20width=%227%22%20height=%227%22%20rx=%221.5%22/%3E%3C/svg%3E")}
+
+@media (max-width:640px){
+  /* o rodapé da página abre espaço para a barra, e para a "home bar" do iPhone */
+  body{padding:10px 10px calc(84px + env(safe-area-inset-bottom))}
+  /* O TOPO NUMA LINHA SÓ: marca à esquerda, sessão à direita.
+     O `backdrop-filter` SAI aqui de propósito: ancestral com filtro vira o
+     bloco de contenção de quem é `position:fixed`, e a barra — que mora
+     dentro da topbar — grudaria no rodapé da TOPBAR em vez do da tela. */
+  .topbar{flex-wrap:nowrap;padding:8px 10px;margin-bottom:10px;border-radius:12px;
+    -webkit-backdrop-filter:none;backdrop-filter:none}
+  .brand{gap:7px;min-width:0}
+  .brand small{display:none}
+  /* sem o "elenco de 76" ao lado, a marca tem a linha para si e cresce */
+  .brand .marcaArte{height:36px}
+  #sessionBox{flex-wrap:nowrap;flex:none}
+  #sessionBox .tbtn{padding:7px 10px;font-size:.7rem;white-space:nowrap}
+  .who-chip .i b{max-width:84px}
+
+  .mainnav{position:fixed;left:0;right:0;bottom:0;z-index:46;order:0;width:auto;
+    display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;
+    padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg, rgba(var(--goldRGB),.07), transparent 70%), rgba(6,10,20,.94);
+    border-top:1px solid rgba(var(--goldRGB),.22);
+    box-shadow:0 -12px 30px rgba(0,0,0,.55);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+  /* o mesmo fio de luz da topbar, agora no alto da barra: as duas pontas do
+     chrome falam a mesma língua */
+  .mainnav::before{content:'';position:absolute;left:0;right:0;top:-1px;height:1px;
+    background:linear-gradient(90deg,transparent,var(--gold),var(--neon2),transparent);opacity:.8}
+  .mainnav .nav,.navMais{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:4px;min-height:54px;padding:6px 2px;white-space:normal;text-align:center;line-height:1.1;
+    font-size:.56rem;letter-spacing:.05em}
+  .navMais{background:none;border:1px solid transparent;border-radius:8px;color:var(--dim);cursor:pointer;
+    text-shadow:0 0 7px rgba(var(--neon2RGB),.30);
+    font-family:var(--dsp);font-weight:500;text-transform:uppercase}
+  .navMais.on{color:var(--gold);border-color:rgba(var(--goldRGB),.65);background:rgba(var(--goldRGB),.10);
+    font-weight:700;box-shadow:0 0 12px rgba(var(--goldRGB),.30), inset 0 0 10px rgba(var(--goldRGB),.10);
+    text-shadow:0 0 8px rgba(var(--goldRGB),.7)}
+  .navMais[aria-expanded="true"]{color:var(--txt);border-color:rgba(var(--goldRGB),.35);background:rgba(var(--goldRGB),.06)}
+  .mainnav .nav::before,.navMais::before{content:'';flex:none;width:22px;height:22px;background:currentColor;
+    -webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
+  /* a aba acesa ganha um ponto de luz embaixo do ícone — o "você está aqui"
+     que o polegar não cobre */
+  .mainnav .nav.on,.navMais.on{position:relative}
+  .mainnav .nav.on::after,.navMais.on::after{content:'';position:absolute;top:3px;left:50%;width:18px;height:2px;
+    margin-left:-9px;border-radius:2px;background:var(--gold);box-shadow:0 0 8px var(--gold)}
+
+  /* A FOLHA DO "MAIS": sobe de trás da barra, em três colunas */
+  .navFolha{display:none;position:absolute;left:8px;right:8px;bottom:calc(100% + 8px);
+    grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:10px;border-radius:14px;
+    background:linear-gradient(180deg, rgba(var(--goldRGB),.06), transparent), rgb(9,14,26);
+    border:1px solid rgba(var(--goldRGB),.35);
+    box-shadow:0 -8px 34px rgba(0,0,0,.65), 0 0 22px rgba(var(--goldRGB),.12)}
+  .mainnav.mais .navFolha{display:grid;animation:folhaSobe .18s ease-out}
+  .navFolha .nav{min-height:62px;background:rgba(255,255,255,.025);border-color:var(--line)}
+  .navFolha .nav[data-view="viewHome"]{order:0}
+
+  /* AS ROTAS EM DUAS COLUNAS CHEIAS. Os cartões tinham 132 px fixos e a
+     linha de dois deixava um terço da largura vazio à direita — no telefone
+     do dono, a grade parecia desalinhada. */
+  #idleBiomas,#offBiomas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .idleChip{min-width:0}
+
+  /* a faixa de conexão subia por trás da barra */
+  .conexao-faixa{bottom:calc(84px + env(safe-area-inset-bottom))}
+}
+@keyframes folhaSobe{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){ .mainnav.mais .navFolha{animation:none} }
 </style>
 </head>
 <body>
@@ -7930,13 +8036,14 @@ body.tremeTela{animation:tremeTela .7s ease-out}
        é o boot, a partir de `ROTULOS.arena`. Escrever `Poké`/`Arena` aqui seria
        trazer o identificador da franquia para dentro do app, que é exatamente o
        que o `test/conteudo.mjs` existe para impedir. -->
-  <div class="brand">
+  <!-- A marca leva ao Início: no celular o Início mora na folha do "Mais", e
+       tocar no nome do jogo para voltar à capa é o gesto que todo app ensinou. -->
+  <div class="brand" data-goto="viewHome">
     <span class="pokemark" aria-hidden="true"></span>
     <span class="letrado vivo" id="marcaNome"><i></i><b></b></span>
     <small id="marcaElenco">elenco de 76</small>
   </div>
   <nav class="mainnav" id="mainnav">
-    <button class="nav" data-view="viewHome">Início</button>
     <!-- A ORDEM DA BARRA E O MAPA MENTAL DO JOGO (1.18).
          A Liga foi para o lado da Arena a pedido do dono, e a razao vale ser
          dita: a Liga E arena — e a classificacao de quem aposta bem. Separada
@@ -7948,6 +8055,15 @@ body.tremeTela{animation:tremeTela .7s ease-out}
     <button class="nav" data-view="viewLiga">Liga</button>
     <button class="nav" data-view="viewIdle">Rotas</button>
     <button class="nav" data-view="viewTreino">Time</button>
+    <!-- ── NO CELULAR, A BARRA DE BAIXO (barra-celular.mjs) ──────────────────
+         Em tela de telefone as dez abas quebravam em três linhas e comiam o
+         topo de TODA aba. Lá, as quatro de cima viram a barra do rodapé, e as
+         de baixo moram na folha do "Mais". No largo a folha é `display:contents`
+         e o Início volta para a frente por `order` — a barra do computador
+         continua idêntica, na ordem do 1.18. -->
+    <button class="navMais" id="navMais" type="button" aria-expanded="false" aria-controls="navFolha">Mais</button>
+    <div class="navFolha" id="navFolha">
+    <button class="nav" data-view="viewHome">Início</button>
     <!-- ── A ROTA OFF É UMA ABA, E NÃO UMA ESCOLHA DENTRO DE ROTAS (L-154) ──
          Decisão do dono, e ela corrige a L-146. O problema do seletor só
          aparece quando se olha o que cada modo PEDE:
@@ -7973,6 +8089,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
     <button class="nav" data-view="viewWiki">Wiki</button>
     <button class="nav" data-view="viewHow">Como funciona</button>
     <button class="nav" data-view="viewRules">Regras</button>
+    </div>
   </nav>
   <div class="row" style="gap:6px" id="sessionBox"></div>
 </header>

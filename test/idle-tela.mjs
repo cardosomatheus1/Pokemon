@@ -327,7 +327,7 @@ export function suite() {
        e vai receber mais assuntos. Um rótulo que promete menos do que a tela
        entrega ensina o jogador a não entrar. */
     const h = semComentarioHtml(html());
-    const m = h.match(/data-view="viewWiki"[^>]*>([^<]+)</);
+    const m = h.match(/<button[^>]*data-view="viewWiki"[^>]*>([^<]+)</);
     ok(m, 'a aba da wiki sumiu da barra');
     igual(m[1].trim(), 'Wiki',
       `a aba está rotulada "${m[1].trim()}" — o nome voltou a prometer só itens`);

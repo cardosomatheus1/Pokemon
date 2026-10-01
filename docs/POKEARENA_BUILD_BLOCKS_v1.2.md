@@ -1100,6 +1100,28 @@ ele existir pelo nosso desenho, é mudar uma função — não o sistema.
 
 ---
 
+### T15 — A largura de telefone no portão visual · **proposto em 01/10/2026, espera**
+
+**Tam.** P · **Método** INV · **Portões** Q1 Q2 Q5 · **Trilha `T`** (só
+`test/visual.mjs` e a linha de base) · **Origem:** L-230, no Q5 da ST-2.8 ·
+**Orçamento nomeado antes:** meio dia.
+
+**Por que espera** (a regra de 16/09): hoje ele NÃO impede produto. A barra do
+celular (ST-2.8) é segura pelo CSS afirmado em Node (`test/barra-celular.mjs`)
+e pela captura do `tools/olhar-celular.mjs`. Constrói-se quando um defeito de
+celular escapar dos dois.
+
+**Escopo:** uma quinta entrada em `LARGURAS_TODAS` — 412 × 915, com
+`isMobile` e `hasTouch` —, a linha de base regravada para ela (a diferença
+explicada no commit) e a afirmação de que a `.mainnav` encosta no rodapé da
+janela e a `.topbar` cabe em uma linha.
+
+**Sabotagem:** S2502 (a topbar mantém o filtro e prende a barra dentro dela) e
+S2503 (a barra não desce) têm de ficar vermelhos TAMBÉM na suíte visual — hoje
+só a `barra-celular` os pega.
+
+---
+
 ### T14 — Os testes em minutos · **FECHADO em 25/09/2026**
 
 **Tam.** M · **Método** INV · **Portões** Q1 Q2 · **Trilha `T`** (só `test/` e

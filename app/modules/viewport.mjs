@@ -123,3 +123,23 @@ export const zoomDaRun = (escolhido, largura, altura) =>
   Math.min(escolhido || 1, Math.max(1, Number(largura) || 1) / MUNDO_DA_LUTA,
            Number(altura) > 0 ? Number(altura) / ALTURA_DA_LUTA : Infinity);
 
+
+/* ── O ZOOM DE PARTIDA NO CELULAR ─────────────────────────────────────────
+ *
+ * O 3× é o padrão aprovado pelo dono — no LARGO. Num telefone (412 px) o palco
+ * tem ~350 de largura e 3× mostra ~117 px de mundo: o treinador, com 52 de
+ * altura, saía com a cabeça cortada no alto da cena, e a cena virava um close
+ * de dois sprites gigantes. Foi a primeira coisa que o dono viu ao abrir o jogo
+ * no telefone ("tá feião").
+ *
+ * 1× e não 2×: 2× ainda era um close (o treinador inteiro, mas nenhuma árvore,
+ * nenhum caminho, nenhum bicho ao fundo), e o dono confirmou no telefone — "essa
+ * imagem da floresta tá muito perto". Em 1× a cena mostra a trilha e a fauna
+ * andando longe, que é o que faz o idle parecer um LUGAR.
+ *
+ * Só o PADRÃO muda, e só abaixo de `LARGURA_DO_CELULAR`: quem escolheu um zoom
+ * no controle continua com o dele (é ele que fica no `localStorage`), e no largo
+ * a conta devolve 3 — a linha de base visual não se move. */
+export const LARGURA_DO_CELULAR = 560;
+export const zoomDePartida = largura =>
+  (Number(largura) > 0 && Number(largura) < LARGURA_DO_CELULAR ? 1 : 3);

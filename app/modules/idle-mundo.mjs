@@ -42,7 +42,7 @@ import { vivos } from './vivos.mjs';
 import { desenharCompanheiro, acompanhar as acompanharBicho,
          quemAcompanha } from './idle-companheiro.mjs';
 import { prepararHabitantes, desenharHabitantes, desenharSono } from './idle-habitantes.mjs';
-import { janela, niveis, nivelMaisProximo, rotuloZoom, zoomDaRun } from './viewport.mjs';
+import { janela, niveis, nivelMaisProximo, rotuloZoom, zoomDaRun, zoomDePartida } from './viewport.mjs';
 import { prepararNpcs, desenharNpcs } from './idle-npc.mjs';
 
 /* Quem é o bioma e quem é o companheiro vem de FORA: este módulo desenha, não
@@ -82,9 +82,12 @@ let zoomEfetivo = 1;
 let focoCam = null, tFoco = null;
 const CHAVE_ZOOM = 'pa.idle.zoom';
 let zoom = 3;
+/* Sem escolha guardada, o zoom de partida sai da largura do palco (celular:
+   1×, largo: 3× — ver `zoomDePartida`). Com escolha, vale a do jogador. */
+let zoomEscolhido = false;
 try {
   const z = Number(localStorage.getItem(CHAVE_ZOOM));
-  if (z > 0 && Number.isFinite(z)) zoom = z;
+  if (z > 0 && Number.isFinite(z)) { zoom = z; zoomEscolhido = true; }
 } catch { /* modo privado: fica no padrão */ }
 
 /* O MUNDO INTEIRO, pintado UMA VEZ por bioma, fora da tela. Repintá-lo a cada
@@ -139,6 +142,7 @@ function ajustarViewport() {
   const r = palco.getBoundingClientRect();
   const cx = r.width || 900, cy = r.height || 520;
   const mundoW = plantaAtual.cols * T, mundoH = plantaAtual.rows * T;
+  if (!zoomEscolhido) zoom = zoomDePartida(cx);
 
   /* A CONTA MORA EM `viewport.mjs`, camada 0 — e por que ela saiu daqui esta
      escrito la: cercada de getBoundingClientRect e canvas.width, ela nao tinha
@@ -234,7 +238,7 @@ export function trocarZoom(passo) {
   const i = niveisAtuais.indexOf(nivelMaisProximo(niveisAtuais, zoom));
   const novo = niveisAtuais[Math.min(niveisAtuais.length - 1, Math.max(0, i + passo))];
   if (novo === zoom) return zoom;
-  zoom = novo;
+  zoom = novo; zoomEscolhido = true;
   try { localStorage.setItem(CHAVE_ZOOM, String(zoom)); } catch { /* privado */ }
   ajustarViewport();
   return zoom;

@@ -2261,6 +2261,33 @@ do servidor. Três partes:
 - Se o vão embaixo da bolsa incomodar o dono, "Quem apareceu" vai para a
   coluna da direita acima de 1200 px. Espera o olhar dele na ST-2.6.
 
+### ST-2.8 · O jogo no celular (pedido do dono: "tá feião p celular") ✅ 01/10
+- **Por quê:** o dono abriu o piloto na AWS pelo telefone. Medido em 412 × 915
+  (Android médio): o menu de dez abas quebrava em três linhas e o topo comia
+  ~200 px de TODA aba; nas Rotas, a cena em 3× era um close que cortava a
+  cabeça do treinador — *"essa imagem da floresta tá muito perto, tá ruim"*;
+  e os cartões de rota deixavam um terço da linha vazio.
+- **Feito:** até 640 px o menu desce para uma BARRA NO RODAPÉ (Arenas, Liga,
+  Rotas, Time + "Mais"), com ícones em máscara (pintam com o token do tema); a
+  folha do "Mais" guarda Início, Rota OFF, Pokédex, Wiki, Como funciona e
+  Regras, e o botão VESTE o nome da aba aberta quando ela mora lá
+  (`barra-celular.mjs`, camada 0). O topo cabe numa linha (marca + sessão) e a
+  marca leva ao Início. A cena das Rotas abre em 1× no celular quando o jogador
+  não escolheu zoom (`zoomDePartida`, camada 0); a escolha dele continua
+  valendo. As rotas em duas colunas cheias. No largo nada muda: a folha é
+  `display:contents` e o Início volta à frente por `order`.
+- **Testes:** `barra-celular` (7) · S2495–S2505, todos PEGOU. Mutantes de
+  navegador: 0 — a decisão mora em camada 0 e o CSS é afirmado em Node.
+  **Q5:** `node tools/olhar-celular.mjs` (emulação 412 × 915, toque, 2,6×),
+  cada aba e a folha aberta, em `tools/previas/_celular/`; sem vazamento
+  lateral e sem erro de página. **Q7:** dispensado (DEC-20).
+
+### ST-2.9 · A floresta na vista do celular (L-231) — proposta
+- Em 1× a cena do início da Floresta mostra trilha, grama e fauna, e nenhuma
+  árvore: o bioma que se chama floresta não parece uma. Pôr copa na borda do
+  trecho inicial (ou o ponto de partida perto do bosque) — é cenário, e o
+  cenário do idle nunca está pronto.
+
 ### ST-13.5g · A Liga sem time diz por onde sair (L-211) ✅ 01/10
 - **Escopo:** a Liga já lia o time DA CONTA (`criaturasParaLuta`), e a DEC-17
   decidiu que a conta começa do zero — não há migração do aparelho vindo. O

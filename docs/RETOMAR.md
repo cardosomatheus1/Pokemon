@@ -25,6 +25,13 @@ defeito meu.
 ## 0. ONDE PARAMOS — 01/10/2026
 
 ```text
+o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
+           celular" e "essa imagem da floresta tá muito perto"). Até 640 px o
+           menu é uma barra no rodapé (Arenas, Liga, Rotas, Time + "Mais", que
+           veste o nome da aba aberta), o topo cabe numa linha, a cena das
+           Rotas abre em 1× e as rotas enchem duas colunas. Olhar no celular:
+           node tools/olhar-celular.mjs  (capturas em tools/previas/_celular/).
+           Próximo do cenário: ST-2.9 (L-231, a Floresta sem árvore na vista).
 o RESUMO   A E14 (Shiny, Trading & Player Market) ESTÁ COMPLETA — todas as
            ondas (0 a D) e os quatro gates. Em 01/10, a pedido do dono ("faça
            td da 14"): o shiny no palco da Liga (14.3c), o aviso "isto prende"

@@ -18,6 +18,7 @@ import { avatarURL, trainerURL } from './perfil.mjs';
 import { progressoNivel, saveProfile, tituloDe } from './perfil.mjs';
 import { renderDeposit } from './carteira.mjs';
 import { music, somLigado, verVista } from './audio.mjs';
+import { estadoDoMais, folhaDepois } from './barra-celular.mjs';
 
 /* =====================================================================
    NAVEGAÇÃO E SESSÃO
@@ -43,9 +44,35 @@ function goView(id){
   /* A vista INTEIRA, e não "é a arena?": a captura toca som na aba de
      Rotas, e a trava antiga a emudecia. Ver `audio.mjs`. */
   verVista(id);
+  pintarMais(id);
   if (id === 'viewHome') renderHero();
 }
 document.querySelectorAll('.nav').forEach(b => b.onclick = () => goView(b.dataset.view));
+
+/* ── O "MAIS" DA BARRA DO CELULAR ──────────────────────────────────────────
+ * A decisão (quem está na folha, o que o botão diz) é da camada 0, em
+ * `barra-celular.mjs`; aqui só se pinta. No largo o botão nem aparece, e
+ * nada disto tem efeito visível. */
+const nomesDasAbas = () => Object.fromEntries(
+  [...document.querySelectorAll('.nav[data-view]')].map(b => [b.dataset.view, b.textContent.trim()]));
+function pintarMais(id){
+  const mais = $('#navMais'); if (!mais) return;
+  const e = estadoDoMais(id, nomesDasAbas());
+  mais.classList.toggle('on', e.on);
+  mais.textContent = e.rotulo;
+  if (e.on) mais.dataset.vista = id; else delete mais.dataset.vista;
+  folha('navegou');
+}
+function folha(evento){
+  const nav = $('#mainnav'), mais = $('#navMais'); if (!nav || !mais) return;
+  const aberta = folhaDepois({ aberta: nav.classList.contains('mais'), evento });
+  nav.classList.toggle('mais', aberta);
+  mais.setAttribute('aria-expanded', String(aberta));
+}
+$('#navMais')?.addEventListener('click', ev => { ev.stopPropagation(); folha('alternar'); });
+document.addEventListener('click', ev => { if (!ev.target.closest?.('#navMais')) folha('fora'); });
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') folha('fora'); });
+pintarMais(document.querySelector('.view.on')?.id);
 document.addEventListener('click', e => {
   const g = e.target.closest('[data-goto]');
   if (g) goView(g.dataset.goto);
