@@ -9245,11 +9245,12 @@ ST-14.3b fechou o que a ficha aceita (encontro, captura, coleção).
 pinta `shiny` pela posição; partida de antes da ST-14.3a não tem o campo e
 fica normal.
 
-### L-227 — o alerta de preço fora da curva e de giro anômalo
+### L-227 — o alerta de preço fora da curva e de giro anômalo ✅ FECHADA na ST-14.14d (01/10)
 
 **Registrada em:** 01/10/2026, na ST-14.14. **Bloco dono:** ST-14.12 (o
-histórico de preços — é ele que cria a curva contra a qual "fora" se mede).
-**Estado:** aberta.
+histórico de preços — é ele que cria a curva contra a qual "fora" se mede) →
+**ST-14.14d**, construída depois que a 14.12 fechou. **Estado:** fechada — os
+sinais `preco` (do par) e `giro` (da conta) entram no `varrerSuspeitas`.
 
 A spec E14 §13 pede, além do congelamento, dos limites e da contraparte (todos
 construídos na ST-14.14), um alerta para o operador quando uma venda sai muito

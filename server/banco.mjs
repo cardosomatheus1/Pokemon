@@ -2555,6 +2555,18 @@ export const MIGRACOES = [
     desce: db => { db.exec(`ALTER TABLE species_candy DROP COLUMN presos`); },
   },
 
+  {
+    /* ST-14.14d · E14 · OS ALERTAS DO MERCADO (spec E14 §13 · L-227): a
+       suspeita ganha dois sinais — o preço fora da curva (do par) e o giro
+       anômalo (da conta). Mesmo formato dos outros: o número, e o operador. */
+    nome: 'alertas-mercado-st14.14d',
+    sobe: db => { refazerSuspeitas(db, ['horario', 'captura', 'aparelho', 'rede', 'preco', 'giro']); },
+    desce: db => {
+      db.exec(`DELETE FROM suspeitas_antifraude WHERE sinal IN ('preco', 'giro')`);
+      refazerSuspeitas(db, ['horario', 'captura', 'aparelho', 'rede']);
+    },
+  },
+
 ];
 
 const TABELA_VERSAO = `

@@ -13,6 +13,10 @@ import { suspeitas, capturaNaBanda, DETECTOR } from '../engine/antifraude.mjs';
 import { contasLigadas } from './protecao.mjs';
 import { paresComMesmoSinal } from '../engine/sinais.mjs';
 import { apagarVencidos, todosOsSinais } from './sinais.mjs';
+import { precoForaDaCurva, giroAnomalo, LIMIARES_ALERTA } from '../engine/alerta-mercado.mjs';
+import { faixaDoPotencial, precoUnitario } from '../engine/historico-precos.mjs';
+import { historicoDaSerie } from './mercado-jogadores-historico.mjs';
+import PACK from '../content/escolhido.mjs';
 
 const DIA = 86400e3;
 
@@ -61,7 +65,47 @@ export function varrerSuspeitas(db, { agora, dias = 7 }) {
     if (contasLigadas(db, p.a).includes(p.b)) continue;
     if (registrar(db, { a: p.a, b: p.b, sinal: p.classe, medida: { classe: p.classe, retencaoDias: 30 }, agora })) novas++;
   }
+  novas += varrerMercado(db, { de, agora });
   return { novas, contas: contas.length };
+}
+
+/* ── O MERCADO (ST-14.14d · L-227) ─────────────────────────────────────────
+ * PREÇO: cada venda da janela contra a mediana da SUA série nos 7 dias antes
+ * dela (`historicoDaSerie`, a mesma régua da tela — com as exclusões e sem as
+ * contas sob suspeita). A suspeita é do PAR (quem vendeu, quem comprou).
+ * GIRO: vendas + compras + trocas liquidadas da conta na janela, contra as
+ * criaturas que ela tem. */
+const VENDAS_DA_JANELA = [
+  'SELECT f.id, f.tipo, f.dex, f.item_id, f.shiny, f.preco, f.quantidade, f.vendedor_id, f.comprador_id, f.em, l.potencial',
+  'FROM player_market_fills f JOIN player_market_listings l ON l.id = f.listing_id',
+  'WHERE f.em > ? AND f.id NOT IN (SELECT fill_id FROM player_market_fills_exclusoes)',
+].join(' ');
+const OPERACOES = [
+  'SELECT u, COUNT(*) AS n FROM (',
+  'SELECT vendedor_id AS u FROM player_market_fills WHERE em > ?',
+  'UNION ALL SELECT comprador_id FROM player_market_fills WHERE em > ?',
+  "UNION ALL SELECT criador_id FROM trocas WHERE estado = 'SETTLED' AND encerrada_em > ?",
+  "UNION ALL SELECT contraparte_id FROM trocas WHERE estado = 'SETTLED' AND encerrada_em > ?",
+  ') GROUP BY u',
+].join(' ');
+
+function varrerMercado(db, { de, agora }) {
+  let novas = 0;
+  for (const f of db.prepare(VENDAS_DA_JANELA).all(de)) {
+    const faixa = f.tipo === 'criatura' ? faixaDoPotencial(f.potencial) : null;
+    if (f.tipo === 'criatura' && faixa == null) continue;
+    const serie = f.tipo === 'item' ? { tipo: 'item', itemId: f.item_id } : { tipo: 'criatura', dex: f.dex, shiny: !!f.shiny, faixa };
+    const h = historicoDaSerie(db, { pack: PACK, serie, agora: f.em - 1 });
+    const fora = precoForaDaCurva({ unitario: precoUnitario(f), mediana: h.mediana7d });
+    if (fora && registrar(db, { a: f.vendedor_id, b: f.comprador_id, sinal: 'preco',
+                                medida: { venda: f.id, unitario: precoUnitario(f), mediana: h.mediana7d, razao: fora.razao, serie, fator: LIMIARES_ALERTA.fator }, agora })) novas++;
+  }
+  const tamanho = u => db.prepare(`SELECT COUNT(*) AS n FROM criaturas WHERE user_id = ?`).get(u).n;
+  for (const o of db.prepare(OPERACOES).all(de, de, de, de)) {
+    const g = giroAnomalo({ operacoes: o.n, tamanho: tamanho(o.u) });
+    if (g && registrar(db, { a: o.u, sinal: 'giro', medida: { ...g, dias: Math.round((agora - de) / DIA) }, agora })) novas++;
+  }
+  return novas;
 }
 
 export const suspeitasAbertas = db =>
