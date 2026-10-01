@@ -99,9 +99,12 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            brilhante, oferece a bola garantida (com pergunta) e avisa
            "⚠ prende" quando a bola sai de lote preso; a conta desce shiny,
            origem e lotes. Q5 lido nas 4 larguras.
-           PRÓXIMO: ST-14.3 (o shiny verdadeiro na coleção, evolução, Liga;
-           prestígio no lugar do cosmético shiny; o resto da L-224) — fecha
-           a onda A
+           · ST-14.3a FECHADA (01/10): o snapshot da Liga com o shiny
+           (aparência), e o time com criatura que saiu da conta não luta
+           mais (desafio, fila, bot); o replay fica.
+           PRÓXIMO: ST-14.3b (o cosmético shiny vira prestígio; o sprite
+           shiny verdadeiro na coleção, evolução e palco; o resto da L-224)
+           — fecha a onda A
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho
            do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta

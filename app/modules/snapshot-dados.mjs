@@ -42,11 +42,25 @@ export function snapshotDoTime({ pack, criaturas, ids, preset = 'balanced' }) {
   if (fora !== undefined) return { ok: false, motivo: 'essa criatura não é sua' };
   const time = ids.map(id => {
     const c = hidratar(minhas.get(id)), golpes = golpesDaCriatura(pack, c);
-    return { id, ...paraTreino(c, golpes), power: powerDe(pack, c, golpes).total };
+    /* `shiny` é da INSTÂNCIA e só de aparência (ST-14.3a, spec E14 §4.3): o
+       palco e o replay pintam com ele; stats, power e luta não o veem. */
+    return { id, ...paraTreino(c, golpes), power: powerDe(pack, c, golpes).total, shiny: c.shiny === true };
   });
   return { ok: true, time, preset, power: time.reduce((a, x) => a + x.power, 0),
            versaoMotor: VERSAO_TBE, versaoConteudo: conteudoDaLuta(pack) };
 }
 
 /* O que o motor luta, a partir do snapshot gravado: sem o id e sem o power. */
-export const timeDoSnapshot = snap => (snap?.time ?? []).map(({ id, power, ...entrada }) => entrada);
+export const timeDoSnapshot = snap => (snap?.time ?? []).map(({ id, power, shiny, ...entrada }) => entrada);
+
+/* ── O SNAPSHOT AINDA PODE LUTAR? (ST-14.3a) ──────────────────────────────
+ * O snapshot é imutável e o replay de uma partida feita continua valendo para
+ * sempre. Mas uma partida NOVA só sai de um time cujas criaturas ainda são do
+ * dono: soltar (e, a partir da E14 B, trocar ou vender) tira a criatura da
+ * conta, e o time gravado não pode continuar defendendo com ela. `donos` é
+ * o mapa id → dono atual lido do banco, `dono` quem publicou o time; quem chama decide o que fazer com o
+ * "não". */
+export function snapshotPodeLutar(snap, dono, donos) {
+  const fora = (snap?.time ?? []).find(x => donos.get(x.id) !== dono);
+  return fora ? { ok: false, motivo: 'esse time tem uma criatura que não é mais do dono — monte o time de novo' } : { ok: true };
+}

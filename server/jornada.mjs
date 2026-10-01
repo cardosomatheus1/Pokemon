@@ -54,7 +54,9 @@ export function jornadaDaConta(db, userId) {
    lidos como o save os guarda — o IV em lista e a natureza pelo nome. A luta
    da jornada e o snapshot da Liga (ST-11.1) leem daqui. */
 export function criaturasParaLuta(db, userId, pack) {
-  const ocultos = new Map(doJogador(db, userId, pack).map(c => [c.id, { iv: c.iv, natureza: c.natureza?.nome }]));
+  /* O shiny vai junto (ST-14.3a): é APARÊNCIA — o snapshot da Liga o grava, e o
+     motor de luta nunca o recebe (`timeDoSnapshot` o tira). */
+  const ocultos = new Map(doJogador(db, userId, pack).map(c => [c.id, { iv: c.iv, natureza: c.natureza?.nome, shiny: !!c.shiny }]));
   return criaturasDaConta(db, userId).map(c => ({ ...c, ...ocultos.get(c.id) }));
 }
 

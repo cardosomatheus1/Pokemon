@@ -22,6 +22,7 @@ import { randomUUID, createHash } from 'node:crypto';
 import { novaRaiz } from '../engine/seed.mjs';
 import { novoSal, mensagemCommit } from '../engine/commit.mjs';
 import { confrontoDaLiga } from '../app/modules/partida-dados.mjs';
+import { snapshotPodeLutar } from '../app/modules/snapshot-dados.mjs';
 import { escolherAdversario, botPara, PAREAMENTO } from '../app/modules/pareamento-dados.mjs';
 import { contasLigadas } from './protecao.mjs';
 import { sincronizarTemporada } from './temporada.mjs';
@@ -38,8 +39,17 @@ import PACK from '../content/escolhido.mjs';
 
 export const ERRO_PARTIDA = Object.freeze({
   CHAVE: 'PARTIDA_CHAVE_INVALIDA', SEM_PARTIDA: 'PARTIDA_SEM_PARTIDA', CONTRA_SI: 'PARTIDA_CONTRA_SI', VERSAO: 'PARTIDA_VERSAO',
-  LIGADA: 'PARTIDA_CONTA_LIGADA', COOLDOWN: 'PARTIDA_COOLDOWN' });
+  LIGADA: 'PARTIDA_CONTA_LIGADA', COOLDOWN: 'PARTIDA_COOLDOWN', INELEGIVEL: 'PARTIDA_TIME_INELEGIVEL' });
 const falha = (codigo, msg) => Object.assign(new Error(msg), { codigo });
+
+/* QUEM É DONO DE CADA CRIATURA DO TIME AGORA (ST-14.3a): o snapshot é imutável,
+   a posse não. A regra é da camada 0 (`snapshotPodeLutar`); aqui só se lê. */
+const DONO = `SELECT user_id FROM criaturas WHERE id = ?`;
+const donosDe = (db, snap) => new Map((snap?.time ?? []).map(x => [x.id, db.prepare(DONO).get(x.id)?.user_id]));
+function exigirQuePossaLutar(db, snap, dono) {
+  const r = snapshotPodeLutar(snap, dono, donosDe(db, snap));
+  if (!r.ok) throw falha(ERRO_PARTIDA.INELEGIVEL, r.motivo);
+}
 const CHAVE_OK = /^[\w-]{8,64}$/;
 
 /* A transação é a da CARTEIRA (ST-11.10): o stake move dinheiro dentro da
@@ -96,6 +106,9 @@ export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveId
   const a = snapshotPorId(db, adversario);
   if (!a) throw falha(ERRO_EQUIPE.SEM_SNAPSHOT, 'esse time não existe');
   if (a.user === userId) throw falha(ERRO_PARTIDA.CONTRA_SI, 'não se desafia o próprio time');
+  /* Os DOIS times, e antes de qualquer escrita: o desafio direto também. */
+  exigirQuePossaLutar(db, b, userId);
+  exigirQuePossaLutar(db, a, a.user);
   /* O desafio DIRETO também não pareia contas ligadas (§9.12): sem isto, a
      rota direta seria o atalho do win-trading que o pareamento fecha. */
   if (contasLigadas(db, userId).includes(a.user)) throw falha(ERRO_PARTIDA.LIGADA, 'contas ligadas não se enfrentam');
@@ -160,7 +173,10 @@ export function partidaDe(db, id, pack = PACK) {
 function ultimosSnapshots(db, userId) {
   return db.prepare(`SELECT t.id FROM team_snapshots t
                      WHERE t.user_id != ? AND t.id = (SELECT id FROM team_snapshots u WHERE u.user_id = t.user_id ORDER BY criado_em DESC, id DESC LIMIT 1)`)
-    .all(userId).map(l => snapshotPorId(db, l.id));
+    .all(userId).map(l => snapshotPorId(db, l.id))
+    /* O último time de quem soltou uma criatura dele não entra na fila: sai
+       de pareamento até a conta publicar outro (ST-14.3a). */
+    .filter(s => snapshotPodeLutar(s, s.user, donosDe(db, s)).ok);
 }
 function adversariosRecentes(db, userId) {
   return db.prepare(`SELECT CASE WHEN user_b = ? THEN user_a ELSE user_b END AS outro, criada_em FROM league_matches
@@ -175,6 +191,7 @@ export function buscarPartida(db, { userId, pack = PACK, meu, chaveIdem, agora, 
   if (ja) return ja;
   sincronizarTemporada(db, { agora });
   const b = snapshotDe(db, { userId, id: meu });
+  exigirQuePossaLutar(db, b, userId);   // contra o bot também: o time é o mesmo
   const eu = { user: userId, rating: ratingDe(db, userId).rating, power: b.power };
   /* A BUSCA COM STAKE (ST-11.11): só quem se inscreveu para defender com stake, e NUNCA o bot — o bot não põe dinheiro. */
   if (stake) exigirStakeLigado(db, checkpoint);
