@@ -258,17 +258,29 @@ export function liberarP2PNoBanco(db, { userId, valor, ref, idem, agora = Date.n
    DISPONÍVEL de quem recebe. Duas contas, então dois `aplicar` — e é por isso
    que ela só existe dentro de `executarOperacao`, que desfaz tudo se um dos
    dois recusar. A taxa não é crédito de ninguém: some (spec E14 §11). */
-export function liquidarP2PNoBanco(db, { de, para, valor, taxa = 0, ref, agora = Date.now() }) {
+export const TIPOS_DE_TAXA_P2P = Object.freeze(['P2P_TRANSFER_FEE', 'PLAYER_MARKET_SALE_FEE', 'DIRECT_TRADE_FEE']);
+export function liquidarP2PNoBanco(db, { de, para, valor, taxa = 0, ref, agora = Date.now(), tipoTaxa = 'P2P_TRANSFER_FEE', memo = null }) {
+  if (!TIPOS_DE_TAXA_P2P.includes(tipoTaxa)) return { ok: false, motivo: ERRO_CARTEIRA.TIPO };
   if (!ehInteiroPositivo(valor) || !(taxa === 0 || ehInteiroPositivo(taxa))) return { ok: false, motivo: ERRO_CARTEIRA.VALOR };
   if (de === para) return { ok: false, motivo: ERRO_CARTEIRA.VALOR };
   const reservado = saldos(db, de).reservado_transferivel ?? 0;
   if (reservado < valor + taxa) return { ok: false, motivo: ERRO_CARTEIRA.SALDO };
   const saida = [{ bucket: 'transferivel', tipo: 'P2P_TRANSFER_OUT', delta: 0, reservaDelta: -valor }];
-  if (taxa > 0) saida.push({ bucket: 'transferivel', tipo: 'P2P_TRANSFER_FEE', delta: 0, reservaDelta: -taxa });
-  const r = aplicar(db, { userId: de, ref, refTipo: 'p2p', agora, linhas: saida });
+  if (taxa > 0) saida.push({ bucket: 'transferivel', tipo: tipoTaxa, delta: 0, reservaDelta: -taxa });
+  const r = aplicar(db, { userId: de, ref, refTipo: 'p2p', agora, linhas: saida, memo });
   if (!r.ok) return r;
   return aplicar(db, { userId: para, ref, refTipo: 'p2p', agora,
     linhas: [{ bucket: 'transferivel', tipo: 'P2P_TRANSFER_IN', delta: valor, reservaDelta: 0 }] });
+}
+
+/* A TAXA DO ANÚNCIO (ST-14.8) sai do PC-T ELEGÍVEL e queima na criação: não é
+   reserva (não volta se o anúncio expirar — é o custo de anunciar), não é
+   crédito de ninguém. O `memo` grava a versão da política que a calculou. */
+export function queimarTaxaDeAnuncioNoBanco(db, { userId, valor, ref, idem, memo = null, agora = Date.now() }) {
+  if (!ehInteiroPositivo(valor)) return { ok: false, motivo: ERRO_CARTEIRA.VALOR };
+  if (pcTElegivel(db, userId) < valor) return { ok: false, motivo: ERRO_CARTEIRA.SALDO };
+  return aplicar(db, { userId, ref, refTipo: 'p2p', idem, memo, agora,
+    linhas: [{ bucket: 'transferivel', tipo: 'PLAYER_MARKET_LISTING_FEE', delta: -valor, reservaDelta: 0 }] });
 }
 
 /* LIQUIDAR — o payout HERDA A ORIGEM (§5.5), e é esta função que impede a Arena
@@ -319,7 +331,8 @@ export function liquidarEntradaNoBanco(db, { userId, composicao, pagamento, ref,
 /* As perdas só mexem no reservado (ver o comentário abaixo); as reservas tiram
    do disponível. O bolo tem as suas (ST-12.3) — esquecê-las aqui faria toda
    conta que entrou num bolo parecer adulterada na cópia diária do piloto. */
-const SO_RESERVA = new Set(['BET_LOSS', 'MARKET_LOSS', 'P2P_TRANSFER_OUT', 'P2P_TRANSFER_FEE']);
+/* As taxas da troca e da venda (ST-14.8) saem do RESERVADO, como a do P2P. */
+const SO_RESERVA = new Set(['BET_LOSS', 'MARKET_LOSS', 'P2P_TRANSFER_OUT', 'P2P_TRANSFER_FEE', 'DIRECT_TRADE_FEE', 'PLAYER_MARKET_SALE_FEE']);
 const RESERVAS = new Set(['BET_RESERVE', 'MARKET_ENTRY_RESERVE', 'P2P_RESERVE']);
 
 export function reconciliarNoBanco(db, userId) {

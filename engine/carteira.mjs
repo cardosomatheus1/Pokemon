@@ -115,6 +115,9 @@ export const TIPOS = [
      reservado de um e entra no disponível do outro; a taxa sai do reservado e
      QUEIMA (não é crédito de ninguém). */
   'P2P_RESERVE', 'P2P_RELEASE', 'P2P_TRANSFER_OUT', 'P2P_TRANSFER_IN', 'P2P_TRANSFER_FEE',
+  /* ST-14.8: as taxas com NOME — a do anúncio, a da venda e a da troca
+     direta, distintas da taxa do bolo mútuo (`MARKET_FEE`). Todas queimam. */
+  'PLAYER_MARKET_LISTING_FEE', 'PLAYER_MARKET_SALE_FEE', 'DIRECT_TRADE_FEE',
   'BET_RESERVE', 'BET_RELEASE', 'BET_LOSS',
   'BET_PAYOUT_TRANSFERABLE', 'BET_PAYOUT_BONUS', 'BET_PAYOUT_COMPETITIVE',
   /* O pagamento de uma aposta feita com saldo COMPRADO: a aposta volta
