@@ -21,7 +21,11 @@ const time = lista => lista.map(([dex, nivel]) => ({ dex, nivel, golpes: padraoD
 const CENARIOS = {
   aggressive: { A: time([[135, 28], [127, 32], [106, 36]]), B: time([[122, 29], [105, 37], [83, 27]]) },
   defensive:  { A: time([[135, 28], [127, 32], [106, 36]]), B: time([[122, 29], [105, 37], [83, 27]]) },
-  focus:      { A: time([[94, 28], [65, 33], [76, 36]]),    B: time([[94, 39], [128, 35], [91, 33]]) },
+  /* ST-2.16: o Tauros (128) do lado B ficava PARADO contra o Gengar — normal
+     não toca fantasma —, e era parte do efeito medido. Com o último recurso
+     ele passou a bater; no lugar, um Machamp, que devolve ao Foco a diferença
+     de antes (+0,215 contra +0,14 com o Tauros na regra nova). */
+  focus:      { A: time([[94, 28], [65, 33], [76, 36]]),    B: time([[94, 39], [68, 35], [91, 33]]) },
 };
 
 function pareado(A, B, preset, n = 600) {

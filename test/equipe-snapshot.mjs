@@ -22,6 +22,7 @@ import { criaturasParaLuta } from '../server/jornada.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import { snapshotDoTime, timeDoSnapshot, conteudoDaLuta } from '../app/modules/snapshot-dados.mjs';
 import { contaDaLuta } from '../app/modules/jornada-conta.mjs';
+import { entradasDoTime } from '../app/modules/treino-dados.mjs';
 import { padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { simular, VERSAO_TBE } from '../engine/treino-batalha.mjs';
 import { xpParaNivel } from '../engine/nivel-criatura.mjs';
@@ -50,14 +51,18 @@ export function suite() {
     const c = cena();
     const equipe = c.ids.slice(0, 6);
     const snap = criarSnapshot(c.db, { userId: c.u, pack: PACK, ids: equipe, preset: 'aggressive', agora: T0 });
-    /* A luta da jornada monta o time pela equipe (quem não está na caixa): as mesmas seis. */
+    /* A luta da jornada monta o time pela equipe (quem não está na caixa): as
+       mesmas seis — e, desde a ST-2.16, escolhe dentre elas quem luta no nó.
+       A identidade é a da MONTAGEM: quem luta no nó é um recorte dela. */
+    const montado = entradasDoTime(PACK, { criaturas: criaturasParaLuta(c.db, c.u, PACK) });
+    igual(JSON.stringify(timeDoSnapshot(snap)), JSON.stringify(montado), 'o snapshot não é o time que a luta monta');
     const luta = contaDaLuta({ pack: PACK, criaturas: criaturasParaLuta(c.db, c.u, PACK), jornada: null, id: 'rota1', semente: 5, dia: 1 });
-    igual(JSON.stringify(timeDoSnapshot(snap)), JSON.stringify(luta.timeA), 'o snapshot não é o time que a luta monta');
+    ok(luta.timeA.every(x => montado.some(m => JSON.stringify(m) === JSON.stringify(x))), 'a luta do nó usou alguém fora da montagem');
     ok(timeDoSnapshot(snap).every(x => Array.isArray(x.iv) && x.iv.length === 6 && typeof x.natureza === 'string'), 'o snapshot sem o IV ou a natureza — lutaria outra luta');
     /* E luta igual: a mesma semente, o mesmo resultado, pelo gravado. */
     const gravado = snapshotDe(c.db, { userId: c.u, id: snap.id });
     igual(JSON.stringify(simular(PACK, timeDoSnapshot(gravado), luta.timeB, 9, { preset: gravado.preset })),
-          JSON.stringify(simular(PACK, luta.timeA, luta.timeB, 9, { preset: 'aggressive' })), 'o snapshot gravado luta outra luta');
+          JSON.stringify(simular(PACK, montado, luta.timeB, 9, { preset: 'aggressive' })), 'o snapshot gravado luta outra luta');
     igual(`${gravado.preset}|${gravado.versaoMotor}|${gravado.versaoConteudo}`, `aggressive|${VERSAO_TBE}|${conteudoDaLuta(PACK)}`, 'as versões e o preset');
     igual(gravado.power, gravado.time.reduce((a, x) => a + x.power, 0), 'o power do time não é a soma');
     ok(gravado.power > 0, 'o power zerado');

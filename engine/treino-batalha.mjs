@@ -63,8 +63,22 @@ export const PRESETS = Object.freeze(['balanced', 'aggressive', 'defensive', 'fo
 
 /* A VERSÃO DAS REGRAS (ST-11.1 · §9.4). O snapshot da Liga e a partida
    (ST-11.2) a gravam: uma luta de temporada tem de ser refeita pelas regras
-   do dia em que foi criada. Muda a regra, muda a versão — no mesmo commit. */
-export const VERSAO_TBE = 'tbe-1';
+   do dia em que foi criada. Muda a regra, muda a versão — no mesmo commit.
+   tbe-2 (ST-2.16): o último recurso — os times congelados na tbe-1 pedem
+   congelar de novo. */
+export const VERSAO_TBE = 'tbe-2';
+
+/* ── O ÚLTIMO RECURSO (ST-2.16) ──────────────────────────────────────────
+ *
+ * Quem não tem golpe que pegue em NENHUM inimigo vivo usava o melhor dos
+ * inúteis e ficava parado: um time todo elétrico contra um imune não fazia
+ * dano nenhum, e um imune no nível 3, sozinho, vencia o Lt. Surge (21 a 24)
+ * em 100% — medido. Agora ele usa um golpe SEM TIPO, de poder 50: a
+ * imunidade continua valendo muito (o golpe é fraco e sem bônus de tipo), e
+ * o nível volta a valer também. Só entra quando nada mais pega — numa luta
+ * comum ele não aparece. O nome pode vir do pack (`ultimoRecurso`). */
+export const ULTIMO_RECURSO = Object.freeze({ n: 'último recurso', t: null, p: 10, cat: 'fis', acc: 1 });
+const recursoDo = pack => ({ ...ULTIMO_RECURSO, ...(pack?.ultimoRecurso?.n ? { n: String(pack.ultimoRecurso.n) } : {}) });
 /* A chave da natureza no pack → o índice do stat. */
 const INDICE = { atq: 1, def: 2, spa: 3, spd: 4, vel: 5 };
 
@@ -137,7 +151,7 @@ export function simular(pack, timeA, timeB, semente, { registrar = true, preset 
     if (!Array.isArray(t) || !t.length || t.length > REGRAS.TIME_MAX) throw new Error(`um time tem de 1 a ${REGRAS.TIME_MAX}`);
   const chart = pack.tipos.efetividade;
   const lados = { A: timeA.map((c, i) => montarLutador(pack, c, 'A', i)), B: timeB.map((c, i) => montarLutador(pack, c, 'B', i)) };
-  const R = rng(semente >>> 0);
+  const R = rng(semente >>> 0), recurso = recursoDo(pack);
   const vivos = l => lados[l].filter(f => f.hp > 0);
   const eventos = [];
   let turno = 0;
@@ -151,7 +165,8 @@ export function simular(pack, timeA, timeB, semente, { registrar = true, preset 
       if (A.hp <= 0) continue;
       const inimigos = vivos(A.lado === 'A' ? 'B' : 'A');
       if (!inimigos.length) break;
-      const { g, D } = escolher(chart, A, inimigos, A.lado === 'A' ? preset : presetRival, vivos(A.lado));
+      let { g, D } = escolher(chart, A, inimigos, A.lado === 'A' ? preset : presetRival, vivos(A.lado));
+      if (inimigos.every(I => A.golpes.every(x => danoEsperado(chart, A, I, x) === 0))) g = recurso;
       const errou = R() >= (g.acc ?? REGRAS.ACERTO_PADRAO);
       const r = errou ? { dmg: 0, eff: efeito(chart, g.t, D.types), crit: false }
         : dano(chart, A, D, g, R, 1, 1, A.nivel, REGRAS.CRITICO, REGRAS.MULT_CRITICO);

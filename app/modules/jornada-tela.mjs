@@ -18,11 +18,12 @@ import { miniMapa, rioDoMapa } from './jornada-mundo.mjs';
 import { pintarChao } from './jornada-chao-tela.mjs';
 import { setasNaEstrada } from './jornada-estrada.mjs';
 import { setasDoCaminho, faixaDoCaminho, avisoDoRisco, leituraDoChefe, ARTE_NOSSA_DO_MAPA, mostraNome, corDoNo, cruzaOCaminho } from './jornada-dados.mjs';
-import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, turnosDaAmeaca, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, ARTE_DO_MAPA } from './jornada-dados.mjs';
+import { mapaDaJornada, fraseDoNo, bordaDoMapa, cenaDoNo, caminhoAndado, ondeEstou, faixaDaChance, arteDaInsignia, comparaVelocidade, imunesNoTime, tiposImunes, provaDaImunidade, ladoFraco, danoPorCategoria, pagamentoDoNo, fraseDoPagamento, resistenciaNoTime, tiposQueResistem, provaDaResistencia, ameacaDoRival, turnosDaAmeaca, provaDoPreset, multiplicadoresNoRival, tiposQueBatemEmTodos, provaDoDuplo, leituraDoDuplo, fraseDosLutadores, ARTE_DO_MAPA } from './jornada-dados.mjs';
 import { diaDoMundo } from '../../engine/avanco.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido, candidatosDaCaixa, membrosParaTrocas } from './treino-dados.mjs';
 import { correcaoDaLicao, aplicarCorrecao } from './jornada-correcao.mjs';
-import { trocarNa, lutarNaJornadaNa } from './colecao-acoes.mjs';   // ST-13.5d/e: com conta, pelo servidor
+import { trocarNa, lutarNaJornadaNa } from './colecao-acoes.mjs';
+import { lutadoresDoNo } from './jornada-conta.mjs';   // ST-13.5d/e: com conta, pelo servidor
 import { relatarChance } from './telemetria-v4-tela.mjs';
 import { lote, resumo, porcentagemExibida, textoDaMargem, SIMS_TREINO } from '../../engine/treino-preco.mjs';
 import { RAIZ_DA_CHANCE as RAIZ } from './jornada-conta.mjs';
@@ -60,9 +61,19 @@ function pintarPainel(mapa) {
       ${no.licao ? `<p class="jnLicao">${arteDaInsignia(no.insignia ?? no.revisa?.insignia) ? `<img src="${arteDaInsignia(no.insignia ?? no.revisa?.insignia)}" alt="">` : ''}<span><b>${no.revisa ? `Revisa ${no.revisa.nome}` : no.final ? 'A lição final' : 'Ensina'}: ${no.licao.ensina}.</b> ${no.lider ?? t.nome} usa ${no.licao.tipo}. ${no.licao.dica}</span></p>` : ''}
       ${chefe ? `<p class="jnLicao jnLicaoChefe">${dexImg(chefe.dex, '', 'class="jnSprite"')}<span><b>O chefe aguenta ${chefe.vidaX} vezes a vida de um ${nomeDo(chefe.dex)} NV ${chefe.nivel}.</b> Os golpes dele são de ${chefe.tipos.map(nomeTipo).join(' e ')}: quem apanha pouco deles dura a luta${chefe.resistem.length ? ` — ${chefe.resistem.map(nomeTipo).join(' e ')} resiste${chefe.resistem.length > 1 ? 'm' : ''} a todos` : ''}.</span></p>` : ''}
       <div id="jnVel"></div>
-      <p class="jnRival">${t.nome}: ${rival.map(r => `<span>${dexImg(r.dex, '', 'class="jnSprite"')}${nomeDo(r.dex)} <i>NV ${r.nivel}</i></span>`).join('')}</p></div>`;
-  const g = ++geracao, A = entradasDoTime(PACK, carregar()), preset = presetDoJogador();
+      <p class="jnRival">${t.nome}: ${rival.map(r => `<span>${dexImg(r.dex, '', 'class="jnSprite"')}${nomeDo(r.dex)} <i>NV ${r.nivel}</i></span>`).join('')}</p>
+      <p class="tiny jnLutam" id="jnLutam" hidden></p></div>`;
+  /* ST-2.16: lutam os mais fortes (`lutadoresDoNo`) — a chance, a lição e a
+     luta usam os MESMOS, e a tela diz quem são quando sobra alguém. */
+  const todos = entradasDoTime(PACK, carregar());
+  const g = ++geracao, A = lutadoresDoNo(PACK, todos, no, rival), preset = presetDoJogador();
   if (!A.length) { $('#jnErro').textContent = 'o time está vazio — escolha o inicial nas Rotas'; return; }
+  const lutam = fraseDosLutadores(A.map(e => nomeDo(e.dex)), { sobram: todos.length - A.length, rival: rival.length });
+  if (lutam && $('#jnLutam')) {
+    const p = $('#jnLutam'), troca = document.createElement('button');
+    troca.className = 'lnk'; troca.dataset.treinoAba = 'time'; troca.textContent = 'escolher outros no Time';
+    p.textContent = lutam + ' '; p.append(troca); p.hidden = false;
+  }
   if (chefe) {
     const lc = leituraDoChefe(PACK, A, rival), frac = m => (m === 0 ? 'nada' : m === 0.25 ? '¼' : m === 0.5 ? '½' : m > 1 ? `${m}×` : 'cheio');
     $('#jnVel').innerHTML = `<div class="jnImune"><b>quanto os golpes de ${t.nome} (${lc.tipos.map(nomeTipo).join(' e ')}) machucam</b>${lc.machuca.map(x =>
@@ -250,7 +261,7 @@ function pintarPainel(mapa) {
     const ac = { vitorias: 0, empates: 0, sims: 0 };
     const passo2 = () => {
       if (g !== geracao) return;
-      lote(PACK, corr.timeA, rival, RAIZ, ac.sims, Math.min(100, SIMS_TREINO - ac.sims), ac, corr.preset ?? preset);
+      lote(PACK, lutadoresDoNo(PACK, corr.timeA, no, rival), rival, RAIZ, ac.sims, Math.min(100, SIMS_TREINO - ac.sims), ac, corr.preset ?? preset);
       if (ac.sims < SIMS_TREINO) { setTimeout(passo2, 0); return; }
       const p2 = resumo(ac).p, bc = $('#jnCorrige'), bl = $('#jnLutar');
       if (!bc || p2 <= atual.p) return;

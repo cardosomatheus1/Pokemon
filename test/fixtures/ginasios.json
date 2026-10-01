@@ -98,8 +98,8 @@
    "rival": "bruno",
    "ensina": "imunidade",
    "ignora": 0.002,
-   "aplica": 0.946,
-   "erro": 0.0099
+   "aplica": 0.8325,
+   "erro": 0.0164
   },
   {
    "id": "agatha",

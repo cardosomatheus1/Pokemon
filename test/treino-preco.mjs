@@ -54,9 +54,13 @@ export function suite() {
     /* O erro é o das simulações rodadas. */
     const meio = resumo({ vitorias: 250, empates: 0, sims: 500 });
     ok(Math.abs(meio.erro - 1.96 * Math.sqrt(0.25 / 500)) < 1e-12, `o erro: ${meio.erro}`);
-    /* Empate não é vitória — nem no resumo, nem no lote: imunes dos dois lados empatam sempre. */
+    /* Empate não é vitória — nem no resumo, nem no lote. Imunes dos dois lados
+       empatavam sempre; desde a ST-2.16 eles apelam para o último recurso, e
+       o empate do teste é o do TETO DE TURNOS: dois iguais, com vida de chefe
+       (`vidaX`), que só se arranham com ele. */
     igual(resumo({ vitorias: 1, empates: 3, sims: 4 }).p, 0.25, 'empate contou como vitória');
-    const empata = lote(pack, [cria(143, 40, ['Body Slam'])], [cria(92, 40, ['Lick'])], 1, 0, 20);
+    const tanque = () => ({ ...cria(143, 40, ['Lick']), vidaX: 10 });
+    const empata = lote(pack, [tanque()], [tanque()], 1, 0, 20);
     igual(`${empata.vitorias}/${empata.empates}`, '0/20', 'o lote contou empate como vitória');
   });
 

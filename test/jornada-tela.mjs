@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import pack from '../content/pokemon_kanto_v1.mjs';
 import { aberto, noAtual, progressoVazio } from '../engine/jornada.mjs';
-import { montarLutador, simular } from '../engine/treino-batalha.mjs';
+import { montarLutador, simular, ULTIMO_RECURSO } from '../engine/treino-batalha.mjs';
 import { movesetDoRival, padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { treinador } from '../app/modules/treino-dados.mjs';
 import { correcaoDaLicao, aplicarCorrecao } from '../app/modules/jornada-correcao.mjs';
@@ -249,12 +249,15 @@ export function suite() {
       igual(pv[0].golpes, golpes.length, `semente ${k}: a contagem dos golpes elétricos no imune`);
       igual(pv[0].dano, 0, `semente ${k}: o imune levou dano elétrico`);
     }
-    /* O caso forçado: um rival que SÓ tem Elétrico, contra o imune sozinho. */
+    /* O caso forçado: um rival que SÓ tem Elétrico, contra o imune sozinho.
+       Desde a ST-2.16 ele não fica parado: apela para o último recurso, e a
+       prova diz isso — nenhum Elétrico no imune, e o dano que veio de outro. */
     const Bf = [{ dex: 25, nivel: 30, golpes: ['Discharge'] }], Af = [As[0]];
     const rf = simular(pack, Af, Bf, 3), pf = provaDaImunidade(pack, Af, rf.eventos, 'electric');
-    ok(pf[0].golpes > 0, 'o rival só de Elétrico não usou Elétrico — a prova não foi exercida');
+    igual(pf[0].golpes, 0, 'o rival gastou Elétrico no imune havendo o último recurso');
     igual(pf[0].dano, 0, 'o imune levou dano do tipo que não o toca');
-    igual(pf[0].outros.length, 0, 'golpe de outro tipo inventado');
+    igual(pf[0].outros.join(), ULTIMO_RECURSO.n, 'a prova não mostrou o último recurso');
+    ok(pf[0].danoOutros > 0, 'o último recurso não fez dano');
     /* O caso MISTO, em eventos escritos à mão: o imune leva um Elétrico e um
        Normal. As lutas semeadas acima deixaram de acertar o imune com outro
        tipo quando o motor mudou, e a prova passava contando TODO golpe como
@@ -498,7 +501,7 @@ export function suite() {
     const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
     ok(/setasDoCaminho\(mapa\)/.test(tela) && /faixaDoCaminho\(mapa, escolhido\)/.test(tela), 'a tela não desenha o sentido nem a faixa');
     ok(/correcaoDaLicao\(PACK, \{/.test(tela) && /data-jn-corrige/.test(tela), 'a tela não mostra a correção');
-    ok(/lote\(PACK, corr\.timeA, rival, RAIZ/.test(tela), 'a chance projetada não é a do time corrigido');
+    ok(/lote\(PACK, lutadoresDoNo\(PACK, corr\.timeA, no, rival\), rival, RAIZ/.test(tela), 'a chance projetada não é a do time corrigido (com os lutadores do nó, ST-2.16)');
     ok(/era \$\{porcentagemExibida\(aplicada\.antes\)\}, agora \$\{porcentagemExibida\(r\.p\)\}/.test(tela), 'a correção aplicada não diz de onde veio o número');
     ok(/\$\('#jnCausa \.lnk'\)\?\.remove\(\)/.test(tela), 'duas ações para a mesma correção');
   });

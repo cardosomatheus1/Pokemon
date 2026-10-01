@@ -18,7 +18,7 @@ import { cadastrar } from '../server/auth.mjs';
 import { gerar } from '../server/criaturas.mjs';
 import { bolsaDe } from '../server/idle.mjs';
 import { trocarGolpeNaConta } from '../server/colecao.mjs';
-import { lutarNaConta, jornadaDaConta, ERRO_JORNADA } from '../server/jornada.mjs';
+import { lutarNaConta, jornadaDaConta, ERRO_JORNADA, criaturasParaLuta } from '../server/jornada.mjs';
 import { docesDe } from '../server/doce.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import { OPERACOES_DO_IDLE } from '../server/colecao-rotas.mjs';
@@ -26,12 +26,12 @@ import * as D from '../app/modules/idle-dados.mjs';
 import { alternarGolpe, padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { idDaMoeda } from '../engine/economia-idle.mjs';
 import { lutarNaJornadaLocal } from '../app/modules/jornada-local.mjs';
-import { chanceDaLuta, contaDaLuta } from '../app/modules/jornada-conta.mjs';
+import { chanceDaLuta, contaDaLuta, lutadoresDoNo } from '../app/modules/jornada-conta.mjs';
 import { fraseDoPagamento } from '../app/modules/jornada-dados.mjs';
 import { entradasDoTime } from '../app/modules/treino-dados.mjs';
 import { chanceDeVencer } from '../engine/treino-preco.mjs';
 import { fatosDaJornada } from '../engine/gate-v4.mjs';
-import { nosDa } from '../engine/jornada.mjs';
+import { nosDa, quantosLutam } from '../engine/jornada.mjs';
 import { gateDaV4Servidor } from '../server/gate-v4.mjs';
 import { xpParaNivel } from '../engine/nivel-criatura.mjs';
 import { API_VERSAO, CABECALHO_VERSAO } from '../server/contrato.mjs';
@@ -135,19 +135,25 @@ export function suite() {
   s.teste('a caixa não luta, e os golpes guardados lutam', () => {
     const c = cena();
     const r = lutarNaConta(c.db, { userId: c.u, pack: PACK, id: 'rota1', chaveIdem: 'caixa-0001', agora: T0, semente: 5 });
-    igual(r.timeA.length, 6, 'o time não é a equipe de seis');
-    ok(!r.timeA.some(x => x.dex === 6), 'quem está na caixa lutou');
+    /* ST-2.16: lutam os 3 mais fortes da equipe (a Rota 1 traz um) — de
+       dentro da MONTAGEM, que é a equipe de seis com o moveset guardado. */
+    igual(r.timeA.length, quantosLutam(1), 'não lutaram os três da regra');
+    const montado = entradasDoTime(PACK, { criaturas: criaturasParaLuta(c.db, c.u, PACK) });
+    igual(montado.length, 6, 'a montagem não é a equipe de seis');
+    ok(!montado.some(x => x.dex === 6) && !r.timeA.some(x => x.dex === 6), 'quem está na caixa lutou');
+    ok(r.timeA.every(x => montado.some(m => JSON.stringify(m) === JSON.stringify(x))), 'lutou alguém fora da montagem');
     const golpes = D.carregar(c.d).criaturas[0].golpes;
     ok(Array.isArray(golpes) && golpes.length, 'a cena não guardou golpe');
-    igual(JSON.stringify(r.timeA[0].golpes), JSON.stringify(golpes), 'o moveset guardado no servidor não lutou');
+    igual(JSON.stringify(montado[0].golpes), JSON.stringify(golpes), 'o moveset guardado no servidor não lutou');
   });
 
   s.teste('a chance do fato é a da tela: a mesma raiz, o mesmo time, o mesmo preset', () => {
     const c = cena(), e = D.carregar(c.d);
     for (const preset of ['balanced', 'focus']) {
       const r = lutarNaConta(c.db, { userId: c.u, pack: PACK, id: 'rota1', preset, chaveIdem: `chance-${preset}`, agora: T0, semente: 7 });
-      /* a tela: `lote(PACK, A, rival, RAIZ, ...)` com A = entradasDoTime(save) */
-      const tela = chanceDeVencer(PACK, entradasDoTime(PACK, e), r.timeB, { raiz: 1, preset }).p;
+      /* a tela: `lote(PACK, A, rival, RAIZ, ...)` com A = os lutadores do nó (ST-2.16) */
+      const no = nosDa(PACK).find(n => n.id === 'rota1');
+      const tela = chanceDeVencer(PACK, lutadoresDoNo(PACK, entradasDoTime(PACK, e), no, r.timeB), r.timeB, { raiz: 1, preset }).p;
       igual(r.p, tela, `a chance anotada (${preset}) não é a que a tela mostrou`);
       igual(chanceDaLuta({ pack: PACK, criaturas: e.criaturas, id: 'rota1', preset }).p, tela, 'a conta da chance diverge');
     }
@@ -207,7 +213,7 @@ export function suite() {
       .map(l => ({ ...l, c: JSON.parse(l.campos) }));
     const lutas = ev.filter(e => e.nome === 'pve_iniciado');
     igual(lutas.length, 4 + i, 'uma luta sem fato, ou fato sem luta');
-    ok(lutas.every(e => e.chave.startsWith('srv:pve:') && Number.isFinite(e.c.p) && e.c.tamanho === 6), 'o fato da luta sem chave própria, chance ou time');
+    ok(lutas.every(e => e.chave.startsWith('srv:pve:') && Number.isFinite(e.c.p) && e.c.tamanho === quantosLutam(1)), 'o fato da luta sem chave própria, chance ou time');
     igual(JSON.stringify(lutas.map(e => e.c.venceu).slice(0, 4)), '[true,true,true,true]', 'o fato não diz se venceu');
     const gin = ev.filter(e => e.nome === 'ginasio_vencido');
     igual(gin.length, 1, 'o ginásio vencido não virou fato (ou virou duas vezes)');

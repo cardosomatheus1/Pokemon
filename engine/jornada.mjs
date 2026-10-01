@@ -60,3 +60,12 @@ export function lutarNo(pack, prog, id, timeA, timeB, { semente, preset = 'balan
   }
   return { resultado, progresso: novo, ganhouInsignia, primeiraVez: resultado.vencedor === 'A' && !(antes.vencidos ?? []).includes(id) };
 }
+
+/* ── QUANTOS LUTAM (ST-2.16) ──────────────────────────────────────────────
+ * O time de seis lutava INTEIRO, e todo lutador bate a cada turno: seis
+ * contra os dois do Brock é o triplo do dano por turno, e seis bases no nível
+ * 8 o venciam em 100% (medido). Agora lutam no mínimo 3, ou tantos quantos o
+ * treinador trouxer se forem mais. Três é o tamanho dos times de referência
+ * com que os ginásios foram calibrados — nenhuma medição deles muda. */
+export const LUTAM_NO_MINIMO = 3;
+export const quantosLutam = nRival => Math.max(LUTAM_NO_MINIMO, Math.floor(Number(nRival) || 0));

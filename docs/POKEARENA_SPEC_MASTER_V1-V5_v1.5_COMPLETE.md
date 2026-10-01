@@ -2338,6 +2338,15 @@ Formato recomendado V4:
 
 **3v3 ou 6v6 automático com preparação prévia.**
 
+> **Definido em 01/10/2026 (ST-2.16, DEC-25).** Na jornada lutam **no mínimo 3,
+> ou tantos quantos o treinador trouxer** se forem mais — os mais fortes do
+> time pelo power (§8.13), com quem serve à lição do nó na frente. O time de
+> seis lutando inteiro contra treinadores de 1 a 3 fazia o nível não importar
+> (seis bases no nível 8 venciam o Brock em 100%). E nenhum lutador fica
+> parado: quem não tem golpe que pegue em nenhum inimigo usa um **último
+> recurso** sem tipo, de poder 10 — a imunidade continua decidindo, o nível
+> volta a contar (regras `tbe-2`).
+
 Evitar transformar o produto em Pokémon Showdown completo.
 
 O diferencial do projeto continua sendo auto-battle + preparação.

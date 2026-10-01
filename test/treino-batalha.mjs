@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual, elencoDeterministico } from './harness.mjs';
 import pack from '../content/pokemon_kanto_v1.mjs';
 import * as E from './motor.mjs';
-import { simular, montarLutador, REGRAS } from '../engine/treino-batalha.mjs';
+import { simular, montarLutador, REGRAS, ULTIMO_RECURSO } from '../engine/treino-batalha.mjs';
 import { padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
@@ -53,12 +53,14 @@ export function suite() {
   });
 
   s.teste('efetividade 0 causa 0 de dano — e ninguém escolhe golpe inútil havendo outro', () => {
-    /* Um lutador só com golpe normal contra um fantasma: imune dos dois lados. */
+    /* Um lutador só com golpe normal contra um fantasma: imune dos dois lados.
+       Até a ST-2.16 os dois ficavam parados até o teto de turnos; agora, sem
+       golpe que pegue, cada um usa o ÚLTIMO RECURSO (sem tipo) — e nenhum
+       golpe de verdade, imune, causa dano. */
     const imune = simular(pack, [cria(143, 40, { golpes: ['Body Slam', 'Hyper Voice'] })], [cria(92, 40, { golpes: ['Lick'] })], 5);
     ok(imune.eventos.length > 0, 'não houve evento');
-    ok(imune.eventos.every(e => e.dano === 0 && e.eff === 0), `imune levou dano: ${JSON.stringify(imune.eventos.find(e => e.dano))}`);
-    igual(imune.vencedor, null, 'alguém venceu sem causar dano');
-    igual(imune.turnos, REGRAS.TURNOS_MAX, 'a luta sem dano não parou no teto de turnos');
+    ok(imune.eventos.every(e => e.golpe === ULTIMO_RECURSO.n), `sem golpe que pegue, alguém usou golpe imune: ${JSON.stringify(imune.eventos.find(e => e.golpe !== ULTIMO_RECURSO.n))}`);
+    ok(imune.eventos.some(e => e.dano > 0) && imune.vencedor, 'o último recurso não fez dano, ou a luta parou no teto');
     /* Com um golpe que funciona, é ele que sai. */
     const escolhe = simular(pack, [cria(92, 40, { golpes: ['Lick', 'Sludge Bomb'] })], [cria(143, 40)], 5);
     ok(escolhe.eventos.filter(e => e.de === 'A0').every(e => e.golpe === 'Sludge Bomb'), 'o fantasma usou o golpe que não afeta o normal');

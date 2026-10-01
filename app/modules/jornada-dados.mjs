@@ -507,3 +507,11 @@ export const COR_DA_REGIAO = Object.freeze({
   pantano: '80,110,90', cidade: '150,150,170', vulcao: '200,80,50', usina: '120,120,140', planalto: '150,120,210',
 });
 export const corDoNo = no => COR_DA_REGIAO[no?.regiao] ?? '140,140,140';
+
+/* QUEM LUTA, DITO NA TELA (ST-2.16): só quando sobra alguém — o time inteiro
+   lutando não precisa de frase. */
+export function fraseDosLutadores(nomes, { sobram = 0, rival = 0 } = {}) {
+  if (!sobram || !nomes?.length) return null;
+  const lista = nomes.length > 1 ? `${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length - 1]}` : nomes[0];
+  return `Lutam ${nomes.length} contra ${rival}: ${lista} — os mais fortes do seu time (${sobram} ${sobram === 1 ? 'fica' : 'ficam'} de fora).`;
+}

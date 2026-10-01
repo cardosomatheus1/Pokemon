@@ -15,7 +15,9 @@
  * o cliente a declare.
  */
 import { entradasDoTime, rivalDe, treinador } from './treino-dados.mjs';
-import { lutarNo, nosDa } from '../../engine/jornada.mjs';
+import { lutarNo, nosDa, quantosLutam } from '../../engine/jornada.mjs';
+import { powerDe } from '../../engine/time.mjs';
+import { servir } from './jornada-correcao.mjs';
 import { recompensaPve } from '../../engine/recompensa-pve.mjs';
 import { chaveDoDoce } from '../../engine/doce.mjs';
 import { idDaMoeda } from '../../engine/economia-idle.mjs';
@@ -26,10 +28,24 @@ import { chanceDeVencer } from '../../engine/treino-preco.mjs';
 export const RAIZ_DA_CHANCE = 1;
 
 const noDa = (pack, id) => nosDa(pack).find(n => n.id === id) ?? null;
-const timesDa = (pack, criaturas, no) => ({
-  timeA: entradasDoTime(pack, { criaturas: criaturas ?? [] }),
-  timeB: rivalDe(pack, treinador(pack, no.rival)),
-});
+/* ── QUEM LUTA (ST-2.16) ──────────────────────────────────────────────────
+ * Lutam `quantosLutam` (3, ou tantos quantos o treinador trouxer): os mais
+ * fortes do time pelo power do Team Builder, com quem SERVE à lição do nó na
+ * frente — o imune da aula de imunidade não fica no banco por ter power
+ * baixo. Na ordem do time. A tela, a chance, a luta e a correção leem daqui. */
+export function lutadoresDoNo(pack, timeA, no, timeB) {
+  const n = quantosLutam(timeB?.length);
+  if (timeA.length <= n) return timeA;
+  const serve = e => (no?.licao ? servir(pack, no.licao, timeB, e)?.ok === true : false);
+  const nota = timeA.map((e, i) => ({ i, s: serve(e) ? 1 : 0, p: powerDe(pack, e, e.golpes ?? []).total }));
+  const fica = new Set(nota.sort((a, b) => b.s - a.s || b.p - a.p || a.i - b.i).slice(0, n).map(x => x.i));
+  return timeA.filter((_, i) => fica.has(i));
+}
+
+const timesDa = (pack, criaturas, no) => {
+  const timeB = rivalDe(pack, treinador(pack, no.rival));
+  return { timeA: lutadoresDoNo(pack, entradasDoTime(pack, { criaturas: criaturas ?? [] }), no, timeB), timeB };
+};
 
 export function chanceDaLuta({ pack, criaturas, id, preset = 'balanced' }) {
   const no = noDa(pack, id);

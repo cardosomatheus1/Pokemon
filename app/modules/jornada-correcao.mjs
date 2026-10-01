@@ -25,7 +25,7 @@ const tipoDoGolpe = (pack, n) => Object.values(pack.golpes ?? {}).flat().find(g 
 const tiposDe = (pack, dex) => especieDe(pack, dex)?.t ?? [];
 
 /* Quanto a criatura SERVE à lição: maior é melhor. `ok` é ela aplicar. */
-function servir(pack, licao, rival, c) {
+export function servir(pack, licao, rival, c) {
   const chart = pack.tipos.efetividade;
   if (licao.mostra === 'imune') {
     const m = efeito(chart, licao.tipoGolpe, tiposDe(pack, c.dex));

@@ -2407,6 +2407,43 @@ do servidor. Três partes:
 - **Fica para depois (L-233):** a criatura capturada nasce no nível 1 mesmo
   sendo uma forma do estágio 3.
 
+### ST-2.16 · A jornada pede o nível do nó (DEC-25) ✅ 01/10
+- **Por quê (o dono):** *"eu achei fácil demais, ele avançou super rápido"*.
+- **Medido antes:** o time de seis lutava inteiro — e todo lutador bate a cada
+  turno — contra treinadores de 1 a 3. Seis bases no nível 8 venciam o Brock
+  (12 e 14) em 100%; o time do amigo (níveis 1 a 6) vencia o Rival em 83% e o
+  Lt. Surge (21 a 24) em 100%, porque o Surge só tem golpe elétrico e um
+  Geodude no nível 3, sozinho, era intocável.
+- **Feito:** lutam `quantosLutam` = no mínimo 3, ou tantos quantos o treinador
+  trouxer (`engine/jornada.mjs`); quem luta é `lutadoresDoNo`
+  (`jornada-conta.mjs`): os mais fortes pelo power, com quem serve à lição do
+  nó na frente (o imune da aula de imunidade não fica no banco). A chance da
+  tela, a lição, a correção e a luta (aparelho e servidor) usam os mesmos. O
+  painel diz *"Lutam 3 contra 2: Charmander, Butterfree e Pidgeotto — os mais
+  fortes do seu time (3 ficam de fora). escolher outros no Time"*. No motor,
+  o **último recurso** (`ULTIMO_RECURSO`, sem tipo, poder 10): quem não tem
+  golpe que pegue em ninguém não fica mais parado. Regras `tbe-2`.
+- **Por que 3 e poder 10, medidos:** 3 é o tamanho dos times de referência dos
+  ginásios — nenhuma medição deles muda pela regra de quantos. O poder: com
+  50, o imune NO NÍVEL do ginásio perdia (2%) e a aula acabava; com 10, o
+  Geodude no 3 perde (0%) e o trio com o imune no 22 vence (99%).
+- **Depois:** o time do amigo contra o Rival 83% → 0% e contra o Surge 100% →
+  0%; seis bases no 8 contra o Brock 100% → 4%; o inicial sozinho no 5 vence
+  a Rota 1 (76%); um trio com
+  Squirtle no 12 vence o Brock (99%). Fixture `ginasios.json` remedida: só o
+  Bruno muda (aplicar a lição 94,6% → 83,3% — o Gengar imune a Lutador agora
+  leva o último recurso; o aceite continua valendo).
+- **Testes:** `jornada-equilibrio` (novo, 7) · ajustados os que afirmavam a
+  regra velha: `treino-batalha` (imunes dos dois lados ficavam parados até o
+  teto), `treino-preco` (o empate do lote agora é o do teto de turnos),
+  `presets` (o Tauros do cenário do Foco era imune ao Gengar; Machamp no
+  lugar, +0,215), `jornada-tela` (a prova da imunidade forçada mostra o último
+  recurso), `jornada-servidor` e `equipe-snapshot` (a identidade é da
+  montagem; quem luta é um recorte dela). S1430, S1561, S1662 realvos ·
+  S2547–S2554, todos PEGOU. **Q5:** o painel com seis no time, 1440 e 420 —
+  lido. **Mutantes de navegador:** 0 (S2550 é pego pelo teste estático da
+  tela).
+
 ### ST-2.15 · A jornada volta a andar (D-142) ✅ 01/10
 - **Por quê (o dono):** *"a jornada tá bugada também, já matei [o rival] e
   ainda assim não avança"*.
@@ -2730,6 +2767,12 @@ desta tabela.
   8/h). Em 20/h é um estágio a cada ~70 min e a barra cheia em 5 h. O teto do
   dia segue nos freios que já existiam (rendimento decrescente da 7ª run —
   DEC-14 — e os 30 encontros do §P5). Spec §7.22.7 corrigida no mesmo commit.
+- ✅ **DEC-25 · na jornada lutam 3 (ou tantos quantos o treinador trouxer), e
+  ninguém fica parado** (o dono, 01/10: *"achei fácil demais, ele avançou
+  super rápido"*). Recomendação minha, seguida como padrão — ver a ST-2.16.
+  Custo dito: as regras de luta passam a `tbe-2`, e os times congelados na
+  Liga com a `tbe-1` pedem "congele de novo" (um clique) antes da próxima
+  partida.
 - **Ainda do dono, e com recomendação escrita como padrão:** a taxa shiny (R18),
   o orçamento da Master Ball, os limites/cooldown/taxas finais (baselines da
   spec §11 e §16 até o gate C medir).
