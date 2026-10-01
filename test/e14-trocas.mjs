@@ -31,6 +31,7 @@ import { criarTroca, ofertar, pronto, confirmar, cancelar, detalheDaTroca, minha
          ERRO_TROCA, PRAZOS_TROCA } from '../server/trocas.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import { API_VERSAO, CABECALHO_VERSAO } from '../server/contrato.mjs';
+import { xpParaNivel } from '../engine/nivel-criatura.mjs';
 
 const AGORA = Date.UTC(2026, 0, 15, 12);
 const H = 3_600_000;
@@ -67,7 +68,10 @@ export async function suite() {
 
   s.teste('Pokémon por Pokémon: os dois lados mudam de dono juntos, com histórico e cooldown', () => {
     const k = cena();
+    /* o nível que a mesa mostra é o do XP, como no resto do jogo (Q5 da 14.7b) */
+    k.db.prepare(`UPDATE criaturas SET xp = ? WHERE id = ?`).run(xpParaNivel(18), k.a[0]);
     const t = criarTroca(k.db, { ...ctx(k, k.A), contraparteId: k.B, ativos: { criaturas: [k.a[0]] } });
+    igual(detalheDaTroca(k.db, { trocaId: t.id, userId: k.B }).dele.criaturas[0].nivel, 18, 'a mesa mostra o nível de nascimento');
     const r2 = ofertar(k.db, { trocaId: t.id, ...ctx(k, k.B), ativos: { criaturas: [k.b[0]] } });
     igual(r2.revisao, 2, 'a oferta do outro lado não subiu a revisão');
     const trava = prontos(k, t.id, 2);
@@ -283,6 +287,9 @@ export async function suite() {
         const [a, b, c] = [await sessao('PortaA'), await sessao('PortaB'), await sessao('PortaC')];
         const cr = gerar(srv.db, { userId: a.id, pack: PACK, dex: 16 }).id;
         const post = (s, rota, corpo) => fetch(url(rota), { method: 'POST', headers: Hd({ authorization: s.authorization }), body: JSON.stringify(corpo) });
+        const inicio = await (await fetch(url('/api/trocas'), { headers: Hd({ authorization: a.authorization }) })).json();
+        const ligada = ambiente === 'teste' && !!checkpointTeste;
+        igual(`${inicio.ligada}|${inicio.motivo?.reason_code ?? null}|${inicio.pctElegivel}`, `${ligada}|${ligada ? null : 'FEATURE_DISABLED'}|0`, 'a abertura da tela diz se a troca está ligada');
         const criada = await post(a, '/api/trocas', { contraparte: 'PortaB', ativos: { criaturas: [cr] } });
         if (!checkpointTeste || ambiente !== 'teste') {
           const corpo = await criada.json();

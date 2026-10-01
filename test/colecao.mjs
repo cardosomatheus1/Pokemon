@@ -94,7 +94,7 @@ export function suite() {
   s.teste('a tela: o cartão da coleção vive na Pokédex', () => {
     /* ST-9.16b: a Pokédex abre a aba lembrada, e a aba da Coleção pinta o cartão. */
     ok(/id="pdxColecao"/.test(fonte('../app/index.html')) && /mostrarAba\(abaLembrada\(\)\)/.test(fonte('../app/modules/pokedex.mjs'))
-       && /if \(colecao\) \{ pintarMinha\(\); pintarColecao\(\); \}/.test(fonte('../app/modules/colecao-tela.mjs')), 'a coleção não é pintada');
+       && /if \(aba === 'colecao'\) \{ pintarMinha\(\); pintarColecao\(\); \}/.test(fonte('../app/modules/colecao-tela.mjs')), 'a coleção não é pintada');
   });
 
   return s;

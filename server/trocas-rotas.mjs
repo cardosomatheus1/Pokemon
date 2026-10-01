@@ -9,6 +9,8 @@
  */
 import PACK from '../content/escolhido.mjs';
 import { CHECKPOINT_25_1 } from '../engine/feature-flags.mjs';
+import { elegibilidadeDaConta } from './elegibilidade.mjs';
+import { pcTElegivel } from './carteira.mjs';
 import { criarTroca, ofertar, pronto, confirmar, cancelar, detalheDaTroca, minhasTrocas, ERRO_TROCA } from './trocas.mjs';
 
 const texto = v => typeof v === 'string' && v.length > 0 && v.length <= 80;
@@ -30,7 +32,15 @@ export function rotasDasTrocas(daExcecao) {
      teste é sempre o do §25.1 — não existe configuração que ligue valor. */
   const cp = config => (config?.ambiente === 'teste' && config.checkpointTeste) ? config.checkpointTeste : CHECKPOINT_25_1;
   return {
-    'GET /api/trocas': ({ db, userId }) => ({ corpo: { trocas: minhasTrocas(db, { userId }) } }),
+    /* A tela pergunta UMA vez o que precisa para abrir (ST-14.7b): as trocas,
+       se esta conta pode negociar agora (e o motivo, se não — a bandeira
+       desligada é o caso até a DEC-21) e o PC-T elegível para oferecer. */
+    'GET /api/trocas': ({ db, userId, agora, config }) => {
+      const conta = elegibilidadeDaConta(db, { userId, acao: 'trade', agora, checkpoint: cp(config) });
+      return { corpo: { trocas: minhasTrocas(db, { userId }), ligada: conta.allowed,
+                        motivo: conta.allowed ? null : { reason_code: conta.reason_code, detalhe: conta.detalhe },
+                        pctElegivel: pcTElegivel(db, userId) } };
+    },
 
     'GET /api/trocas/detalhe': ({ db, query, userId }) => {
       const id = query?.get?.('id');

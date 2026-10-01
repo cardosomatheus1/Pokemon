@@ -423,6 +423,9 @@ const CAMADA = {
   'colecao-dados.mjs': 0,
   'colecao-local.mjs': 1,
   'colecao-tela.mjs': 4,
+  /* ST-14.7b: a troca — a etapa, as linhas e a recusa decididas em Node; a tela só pinta. */
+  'trocas-dados.mjs': 0,
+  'trocas-tela.mjs': 4,
   /* ST-9.12 · os quatro golpes: a regra (camada 0) e o clique. */
   'moveset-dados.mjs': 0,
   'moveset-tela.mjs': 4,

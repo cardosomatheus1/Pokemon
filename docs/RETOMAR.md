@@ -121,8 +121,12 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            · ST-14.7a FECHADA (01/10): a troca direta no servidor e na
            API — pronto dos dois, lock de 5 min, confirmação pelo hash do
            que se viu, liquidação dos dois lados numa transação.
-           PRÓXIMO: ST-14.7b (a tela da troca, Q5/Q7, e a L-226) — a
-           última da onda B. Tudo atrás das
+           · ST-14.7b FECHADA (01/10): a aba "Trocas" na Pokédex — a
+           mesa com os dois lados, o editor, o relógio do lock, a recusa
+           em palavras. Mostra "desligadas" até a DEC-21. A ONDA B DA E14
+           ESTÁ FECHADA.
+           PRÓXIMO: a onda C — ST-14.9 (o Market: anúncio de preço fixo),
+           depois 14.10 e 14.12, e 14.13. Tudo atrás das
            bandeiras desligadas (DEC-21: liga no gate C, moeda simulada)
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho

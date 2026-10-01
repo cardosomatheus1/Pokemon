@@ -16,6 +16,7 @@ import { S } from './estado.mjs';
 import { carregar } from './idle-dados.mjs';
 import { painelDaColecao, textoDaLinha, dicaDaRodada } from './minha-colecao.mjs';
 import { dexImg } from './sprites.mjs';
+import { abrirTrocas } from './trocas-tela.mjs';
 
 const NIVEIS = ['', 'bronze', 'prata', 'ouro', 'diamante'];
 const moeda = PACK.moedaPve ?? { id: 'moeda', nome: 'moeda' };
@@ -101,16 +102,17 @@ export function pintarMinha() {
 
 /* A ABA: lembrada por aparelho (preferência de leitura, e não jogo). */
 const CHAVE_ABA = 'ar_pdx_aba';
+/* ST-14.7b: a terceira aba é a das TROCAS — a troca é sobre a coleção. */
+const ABAS = { pokedex: '#pdxAbaPokedex', colecao: '#pdxAbaColecao', trocas: '#pdxAbaTrocas' };
 export function mostrarAba(aba) {
-  const colecao = aba === 'colecao';
-  const a = $('#pdxAbaPokedex'), b = $('#pdxAbaColecao');
-  if (a) a.hidden = colecao;
-  if (b) b.hidden = !colecao;
+  if (!ABAS[aba]) aba = 'pokedex';
+  for (const [nome, sel] of Object.entries(ABAS)) { const el = $(sel); if (el) el.hidden = nome !== aba; }
   document.querySelectorAll('[data-pdx-aba]').forEach(x => x.classList.toggle('on', x.dataset.pdxAba === aba));
   try { localStorage.setItem(CHAVE_ABA, aba); } catch { /* privativo */ }
-  if (colecao) { pintarMinha(); pintarColecao(); }
+  if (aba === 'colecao') { pintarMinha(); pintarColecao(); }
+  if (aba === 'trocas') abrirTrocas();
 }
-export const abaLembrada = () => { try { return localStorage.getItem(CHAVE_ABA) ?? 'pokedex'; } catch { return 'pokedex'; } };
+export const abaLembrada = () => { try { const a = localStorage.getItem(CHAVE_ABA); return ABAS[a] ? a : 'pokedex'; } catch { return 'pokedex'; } };
 
 /* A rodada muda sozinha: com a aba aberta, repinta a cada 3 s. */
 setInterval(() => {

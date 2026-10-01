@@ -1806,6 +1806,67 @@ img[data-prestigio="1"]{filter:drop-shadow(0 0 4px rgba(var(--neonRGB),.75))}
 .pdxAba{font:inherit;font-size:.78rem;font-weight:700;letter-spacing:.03em;color:var(--dim);background:none;
   border:1px solid var(--line);border-radius:8px;padding:5px 12px;cursor:pointer}
 .pdxAba.on{color:var(--txt);border-color:var(--neon);background:rgba(var(--goldRGB),.1)}
+/* ── ST-14.7b · a mesa da troca ───────────────────────────────────────────
+   Dois lados com o mesmo peso e a seta entre eles: o que você manda, o que
+   chega. A interface é neon (a moldura, a etapa, o relógio); os retratos são
+   o mundo GBA. A etapa é a primeira coisa lida — ela diz o que fazer agora. */
+.trAviso{margin:0 0 10px;padding:8px 12px;border:1px dashed rgba(var(--neonRGB),.55);border-radius:10px;font-size:.8rem;color:var(--txt);background:rgba(var(--neonRGB),.06)}
+.trCorpo{display:grid;grid-template-columns:minmax(220px,260px) 1fr;gap:14px;align-items:start}
+.trColuna h4{margin:12px 0 6px;font-size:.8rem}
+.trNova label{display:block;font-size:.72rem;color:var(--dim);margin-bottom:4px}
+.trNova div{display:grid;grid-template-columns:1fr;gap:6px}
+.trNova input{min-width:0;font:inherit;font-size:.8rem;background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.trLista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.trLinha{width:100%;text-align:left;font:inherit;display:flex;justify-content:space-between;gap:8px;align-items:center;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;color:var(--dim);cursor:pointer}
+.trLinha b{color:var(--txt);font-size:.78rem}.trLinha span{font-size:.66rem}
+.trLinha.trAberta span{color:var(--neon)}
+.trLinha.on{border-color:var(--neon);box-shadow:0 0 10px rgba(var(--neonRGB),.22)}
+.trMesa{border:1px solid rgba(var(--neonRGB),.35);border-radius:14px;padding:12px 14px;background:rgba(var(--neonRGB),.03)}
+.trComo ol{margin:6px 0 8px;padding-left:20px;font-size:.8rem;line-height:1.45}
+.trEtapa{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin-bottom:6px}
+.trEtapa b{font-size:.92rem;color:var(--txt)}
+.trEt-confirmar b,.trEt-revisar b{color:var(--neon)}
+.trRelogio{font-family:var(--px);font-size:.9rem;color:var(--neon);text-shadow:0 0 8px rgba(var(--neonRGB),.5)}
+.trAvisoEtapa{margin:0 0 10px;font-size:.74rem;color:var(--dim)}
+.trLados{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch}
+.trSeta{align-self:center;font-size:1.3rem;color:var(--neon)}
+.trLado{border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg2);min-width:0}
+.trLado header{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:6px;font-size:.78rem}
+.trSelo{font-size:.62rem;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--dim)}
+.trSeloOk{border-color:var(--neon);color:var(--neon)}
+.trLado ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.trLado li{display:flex;align-items:center;gap:8px;font-size:.78rem;min-width:0}
+.trLado li span:last-child{min-width:0;overflow-wrap:anywhere}
+.trLado li small{display:block;font-size:.64rem;color:var(--dim)}
+.trAlerta{color:var(--dim);font-style:italic}
+.trIcone{flex:none;display:inline-block;image-rendering:pixelated}
+.trIconeItem{flex:none;display:inline-block;image-rendering:pixelated}
+/* A instância brilhante na mesa: o mesmo ouro quente da captura (ST-14.3b —
+   o dourado é da instância), em sombra de silhueta, nada por cima da arte. */
+.trBrilha .trIcone{filter:drop-shadow(0 0 4px rgba(255,214,90,.9))}
+.trLado li.trBrilha span:last-child,.trEscolha.trBrilha b{color:rgb(255,226,140)}
+.trNova .btn[disabled],.trNova input[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none}
+.trMoeda{flex:none;font-family:var(--px);font-size:.5rem;color:var(--neon);border:1px solid var(--neon);border-radius:6px;padding:4px 3px}
+.trVazio{font-size:.76rem;color:var(--dim);margin:4px 0}
+.trAcoes{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.trAcoes .btn{flex:0 1 auto;padding-left:16px;padding-right:16px}
+.trCancelar{margin-left:auto}
+.trMsg{margin:10px 0 0;padding:6px 10px;border-left:3px solid var(--neon);font-size:.78rem;background:rgba(var(--neonRGB),.06)}
+.trRecibo{margin-top:8px}
+.trEditor{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.trEditor h4{margin:0 0 8px;font-size:.8rem}
+.trGrade{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(116px,100%),1fr));gap:6px}
+.trEscolha{font:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:6px 4px;color:var(--dim);cursor:pointer;min-width:0}
+.trEscolha b{color:var(--txt);font-size:.7rem;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trEscolha span:last-child{font-size:.62rem}
+.trEscolha.on{border-color:var(--neon);background:rgba(var(--neonRGB),.12);box-shadow:0 0 10px rgba(var(--neonRGB),.25)}
+.trItens{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 0}
+.trItem,.trPct{display:flex;align-items:center;gap:6px;font-size:.76rem}
+.trItem input,.trPct input{width:84px;font:inherit;background:var(--bg2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:4px 6px}
+.trItem small,.trPct small{font-size:.64rem;color:var(--dim)}
+.trPct{flex-wrap:wrap;margin-top:6px}
+@media (max-width:760px){ .trCorpo{grid-template-columns:1fr} }
+@media (max-width:520px){ .trLados{grid-template-columns:1fr} .trSeta{justify-self:center;transform:rotate(90deg)} .trCancelar{margin-left:0} }
 .mcResumo{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.74rem;color:var(--dim);margin-bottom:8px}
 .mcResumo b{color:var(--txt)}
 .mcRodada h4{margin:6px 0 4px;font-size:.8rem}
@@ -8343,6 +8404,8 @@ body.tremeTela{animation:tremeTela .7s ease-out}
     <div class="pdxAbas">
       <button class="pdxAba on" data-pdx-aba="pokedex">Pokédex</button>
       <button class="pdxAba" data-pdx-aba="colecao">Minha Coleção</button>
+      <!-- ST-14.7b: a troca entre treinadores é sobre a coleção -->
+      <button class="pdxAba" data-pdx-aba="trocas">Trocas</button>
     </div>
     <div id="pdxAbaPokedex">
     <div class="pdxTopo">
@@ -8359,6 +8422,9 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <div id="pdxMinha"></div>
       <!-- ST-9.15: medalhas e missões de coleção -->
       <div id="pdxColecao"></div>
+    </div>
+    <div id="pdxAbaTrocas" hidden>
+      <div id="trocasCorpo"></div>
     </div>
   </div>
 </div>

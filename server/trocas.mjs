@@ -28,6 +28,7 @@ import { randomUUID } from 'node:crypto';
 import { sha256Hex } from '../engine/hash.mjs';
 import { previewTrade, POLITICA_PILOTO, hashDaPolitica } from '../engine/taxas-mercado.mjs';
 import { LIMITES_P2P } from '../engine/risco-mercado.mjs';
+import { nivelDe } from '../engine/nivel-criatura.mjs';
 import { emTransacao } from './carteira.mjs';
 import { creditarBolsa } from './inventario.mjs';
 import { elegibilidadeDaCriatura, elegibilidadeDoItem, elegibilidadeDaMoeda, elegibilidadeDaConta } from './elegibilidade.mjs';
@@ -99,8 +100,16 @@ const evento = (db, t, userId, ev, agora) =>
 
 /* O que a tela mostra de cada criatura — e é isto que a impressão digital
    amarra: se mudar depois de o outro olhar, a confirmação dele não vale. */
-const VISTA = `SELECT id, dex, nivel, natureza, is_shiny AS shiny, versao FROM criaturas WHERE id = ?`;
-const vistaDe = (db, ids) => ids.map(id => db.prepare(VISTA).get(id) ?? { id, sumiu: true });
+/* O NÍVEL é o do XP (`nivelDe`), como em todo o jogo — a coluna `nivel` é a
+   de nascimento e ficaria em 1 para sempre (achado no Q5 da ST-14.7b: a
+   mesa dizia "nv 1" para um Pikachu de nível 18). */
+const VISTA = `SELECT id, dex, nivel, xp, natureza, is_shiny AS shiny, versao FROM criaturas WHERE id = ?`;
+const vistaDe = (db, ids) => ids.map(id => {
+  const c = db.prepare(VISTA).get(id);
+  if (!c) return { id, sumiu: true };
+  const { xp, ...resto } = c;
+  return { ...resto, nivel: Math.max(c.nivel, nivelDe(xp ?? 0)) };
+});
 
 function ladosEmOrdem(db, t) {
   const lados = lerLados(db, t.id);

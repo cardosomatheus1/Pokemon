@@ -94,7 +94,7 @@ export function suite() {
       'o atalho não leva à Arena com o lutador, ou aparece depois de apostar');
     ok(/document\.querySelector\(`\.pick\[data-i="\$\{i\}"\]`\)\?\.click\(\)/.test(tela), 'o atalho não escolhe o lutador na Arena');
     ok(/if \(caixa && !caixa\.hidden\) caixa\.scrollIntoView\(\{ block: 'center'/.test(tela), 'o atalho não leva o olho até a confirmação');
-    ok(/if \(colecao\) \{ pintarMinha\(\); pintarColecao\(\); \}/.test(tela) && /localStorage\.setItem\(CHAVE_ABA, aba\)/.test(tela),
+    ok(/if \(aba === 'colecao'\) \{ pintarMinha\(\); pintarColecao\(\); \}/.test(tela) && /localStorage\.setItem\(CHAVE_ABA, aba\)/.test(tela),
       'a aba não pinta ao abrir, ou não é lembrada');
     ok(/textoDaLinha\(r\)/.test(tela) && /dicaDaRodada\(rodada\)/.test(tela) && !/toFixed|sem histórico|doce\(s\) da linha|\.falta/.test(tela), 'a tela decide o texto da linha');
     /* O clique do atalho chega à escolha: a linha da Arena é quem escolhe. */
