@@ -244,7 +244,10 @@ export async function suite() {
     creditarBolsa(c.db, c.u, 'ultra', 50);
     let r;
     for (let i = 0; i < 40 && !r?.capturou; i++) {
-      c.db.prepare(`UPDATE encontros_pendentes SET resolvido_em = NULL WHERE chave = 'k1'`).run();
+      /* Reabre o encontro POR INTEIRO: desde a ST-14.1 o lance grava o recibo,
+         e o "novo lance" num encontro com recibo é retry — devolveria a falha
+         gravada para sempre (era 15% de vermelho, pego na caixa do Q2). */
+      c.db.prepare(`UPDATE encontros_pendentes SET resolvido_em = NULL, resolucao = NULL, recibo_json = NULL WHERE chave = 'k1'`).run();
       r = lancarPendente(c.db, { userId: c.u, pack: PACK, chave: 'k1', bola: 'ultra', agora: T0 });
     }
     ok(r.capturou, 'nenhuma captura em 40 lances de Ultra num comum');
