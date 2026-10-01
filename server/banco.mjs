@@ -2407,6 +2407,79 @@ export const MIGRACOES = [
     },
   },
 
+  {
+    /* ST-14.9 · E14 · O MARKET DE PREÇO FIXO (spec E14 §10.1).
+     *
+     * Um anúncio é UMA criatura ou UM lote fechado de um item, com preço
+     * total e quantidade imutáveis — editar é cancelar e anunciar de novo.
+     * O `snapshot_json` é o que o comprador viu (espécie, nível, natureza,
+     * shiny, potencial, golpes), e a `versao` é a guarda da compra: a oferta
+     * que mudou de estado recusa quem comprou olhando a versão de antes.
+     *
+     * `player_market_fills` é a VENDA, uma linha por liquidação — o bruto do
+     * histórico de preços da ST-14.12, que nunca se mistura com o bolo do
+     * E12 (`mercado.mjs`, outro namespace). */
+    nome: 'mercado-jogadores-st14.9',
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE player_market_listings (
+          id               TEXT PRIMARY KEY,
+          vendedor_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          pack_id          TEXT NOT NULL,
+          tipo             TEXT NOT NULL CHECK (tipo IN ('criatura', 'item')),
+          criatura_id      TEXT,
+          dex              INTEGER,
+          item_id          TEXT,
+          quantidade       INTEGER NOT NULL CHECK (quantidade > 0),
+          preco            INTEGER NOT NULL CHECK (preco > 0),
+          estado           TEXT NOT NULL CHECK (estado IN ('ACTIVE', 'SOLD', 'CANCELLED', 'EXPIRED', 'BLOCKED')),
+          versao           INTEGER NOT NULL DEFAULT 1,
+          shiny            INTEGER NOT NULL DEFAULT 0 CHECK (shiny IN (0, 1)),
+          snapshot_json    TEXT NOT NULL,
+          politica_versao  TEXT NOT NULL,
+          politica_hash    TEXT NOT NULL,
+          taxa_anuncio     INTEGER NOT NULL,
+          taxa_venda       INTEGER NOT NULL,
+          criado_em        INTEGER NOT NULL,
+          expira_em        INTEGER NOT NULL,
+          encerrado_em     INTEGER,
+          comprador_id     TEXT REFERENCES users(id),
+          compra_chave     TEXT,
+          recibo_json      TEXT,
+          CHECK ((tipo = 'criatura') = (criatura_id IS NOT NULL AND dex IS NOT NULL)),
+          CHECK ((tipo = 'item') = (item_id IS NOT NULL)),
+          CHECK (tipo != 'criatura' OR quantidade = 1),
+          CHECK ((estado = 'SOLD') = (comprador_id IS NOT NULL))
+        )`);
+      db.exec(`CREATE INDEX player_market_ativos ON player_market_listings(estado, pack_id, tipo, criado_em)`);
+      db.exec(`CREATE INDEX player_market_vendedor ON player_market_listings(vendedor_id, estado)`);
+      db.exec(`CREATE INDEX player_market_comprador ON player_market_listings(comprador_id)`);
+      db.exec(`
+        CREATE TABLE player_market_fills (
+          id           INTEGER PRIMARY KEY AUTOINCREMENT,
+          listing_id   TEXT NOT NULL UNIQUE REFERENCES player_market_listings(id),
+          pack_id      TEXT NOT NULL,
+          tipo         TEXT NOT NULL,
+          dex          INTEGER,
+          item_id      TEXT,
+          shiny        INTEGER NOT NULL,
+          quantidade   INTEGER NOT NULL,
+          preco        INTEGER NOT NULL,
+          taxa_venda   INTEGER NOT NULL,
+          liquido      INTEGER NOT NULL,
+          vendedor_id  TEXT NOT NULL,
+          comprador_id TEXT NOT NULL,
+          em           INTEGER NOT NULL,
+          CHECK (liquido = preco - taxa_venda),
+          CHECK (vendedor_id <> comprador_id)
+        )`);
+      db.exec(`CREATE INDEX player_market_fills_serie ON player_market_fills(pack_id, tipo, dex, item_id, shiny, em)`);
+      db.exec(`CREATE TRIGGER player_market_fills_sem_update BEFORE UPDATE ON player_market_fills BEGIN SELECT RAISE(ABORT, 'player_market_fills é append-only'); END`);
+      db.exec(`CREATE TRIGGER player_market_fills_sem_delete BEFORE DELETE ON player_market_fills BEGIN SELECT RAISE(ABORT, 'player_market_fills é append-only'); END`);
+    },
+    desce: db => { db.exec(`DROP TABLE player_market_fills`); db.exec(`DROP TABLE player_market_listings`); },
+  },
+
 ];
 
 const TABELA_VERSAO = `

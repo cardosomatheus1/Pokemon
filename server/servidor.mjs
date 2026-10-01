@@ -31,6 +31,7 @@ import { gravarResultadosPendentes, dossieRealizado } from './dossie-realizado.m
 import { criarLaco } from './laco.mjs';
 import { criarWorkerEconomia } from './economia-worker.mjs';
 import { expirarTrocaDaOferta, expirarConvites } from './trocas.mjs';
+import { expirarAnuncioDaOferta } from './mercado-jogadores.mjs';
 import { ROTAS, ROTAS_PUBLICAS, ROTAS_ADMIN, usuarioDa } from './rotas.mjs';
 
 /* CABEÇALHOS DE SEGURANÇA, em toda resposta, inclusive nas de erro.
@@ -109,7 +110,7 @@ export function criarServidor(opcoes = {}) {
      num relógio próprio — fora do tick da Arena (ver `economia-worker.mjs`). */
   const economia = criarWorkerEconomia({ db, relogio,
     /* ST-14.7: o lock da troca vence junto com as reservas; o convite, sozinho. */
-    entidades: { trade: expirarTrocaDaOferta }, tarefas: [expirarConvites],
+    entidades: { trade: expirarTrocaDaOferta, market: expirarAnuncioDaOferta }, tarefas: [expirarConvites],
     aoErro: e => { if (!config.silencioso) console.error('[economia]', e); } });
 
   /* --- as rotas do F1.1 --------------------------------------------------- */

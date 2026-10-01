@@ -39,6 +39,7 @@ import { rotasDaLigaEquipe } from './liga-equipe.mjs';
 import { rotasDaLojaLiga, ERRO_LOJA_LIGA } from './loja-liga.mjs';
 import { rotasDoStake, ERRO_STAKE } from './stake-liga.mjs';
 import { rotasDasTrocas, STATUS_DA_TROCA } from './trocas-rotas.mjs';
+import { rotasDoMercadoP2P, STATUS_DO_MERCADO_P2P } from './mercado-jogadores-rotas.mjs';
 import { ERRO_RESERVA } from './reservas.mjs';
 import { ERRO_RISCO } from './risco-mercado-jogadores.mjs';
 import { ERRO_IDLE } from './idle.mjs';
@@ -202,6 +203,8 @@ const STATUS_DE = {
   /* A troca direta (ST-14.7): a revisão velha, o hash que não bate e a
      reserva recusada são CONFLITO com o estado — a tela recarrega e revisa. */
   ...STATUS_DA_TROCA,
+  /* O Market entre jogadores (ST-14.9): já vendido e desatualizado são o estado. */
+  ...STATUS_DO_MERCADO_P2P,
   [ERRO_RESERVA.RECUSADA]: 409,
   [ERRO_RESERVA.VENCIDA]: 409,
   [ERRO_RISCO.RECUSADA]: 409,
@@ -247,6 +250,8 @@ export const ROTAS = {
   ...rotasDoStake(daExcecao),
   /* A troca direta entre jogadores (ST-14.7). */
   ...rotasDasTrocas(daExcecao),
+  /* O Market de preço fixo entre jogadores (ST-14.9). */
+  ...rotasDoMercadoP2P(daExcecao),
 
 
   /* --- autenticação ----------------------------------------------------- */

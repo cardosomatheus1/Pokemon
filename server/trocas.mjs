@@ -30,7 +30,7 @@ import { previewTrade, POLITICA_PILOTO, hashDaPolitica } from '../engine/taxas-m
 import { LIMITES_P2P } from '../engine/risco-mercado.mjs';
 import { nivelDe } from '../engine/nivel-criatura.mjs';
 import { emTransacao } from './carteira.mjs';
-import { creditarBolsa } from './inventario.mjs';
+import { moverReservados, ERRO_POSSE } from './posse-p2p.mjs';
 import { elegibilidadeDaCriatura, elegibilidadeDoItem, elegibilidadeDaMoeda, elegibilidadeDaConta } from './elegibilidade.mjs';
 import { exigirPodeOfertar } from './risco-mercado-jogadores.mjs';
 import { reservarOferta, liberarOferta, consumirOferta, holdsAtivos, exigirVigente } from './reservas.mjs';
@@ -257,21 +257,8 @@ export function confirmar(db, { trocaId, userId, revisao, hash, agora, checkpoin
  * classe que negocia chega a ser oferecida, então nenhuma restrição se apaga
  * aqui — o que a troca não pode é fingir que quem recebeu capturou. */
 function moverLado(db, { t, de, para, ativos, agora }) {
-  const holds = holdsAtivos(db, dono(t.id)).filter(h => h.user_id === de);
-  for (const id of ativos.criaturas) {
-    if (!holds.some(h => h.tipo === 'criatura' && h.criatura_id === id)) throw falha(ERRO_TROCA.ESTADO, `a criatura ${id} não está presa nesta troca`);
-    const r = db.prepare(`UPDATE criaturas SET user_id = ?, na_caixa = 0, proveniencia = 'p2p_verified', versao = versao + 1 WHERE id = ? AND user_id = ?`).run(para, id, de);
-    if (r.changes !== 1) throw falha(ERRO_TROCA.ESTADO, `a criatura ${id} não é mais de quem a ofereceu`);
-    db.prepare(`INSERT INTO criaturas_transferencias (criatura_id, de_user, para_user, ref_tipo, ref_id, em) VALUES (?, ?, ?, 'trade', ?, ?)`).run(id, de, para, t.id, agora);
-  }
-  for (const h of holds.filter(x => x.tipo === 'item')) {
-    const l = db.prepare(`SELECT classe FROM bolsa_lotes WHERE id = ? AND user_id = ?`).get(h.lote_id, de);
-    if (!l) throw falha(ERRO_TROCA.ESTADO, `o lote ${h.lote_id} não é mais de quem o ofereceu`);
-    db.prepare(`UPDATE bolsa_lotes SET quantidade = quantidade - ?, reservada = reservada - ? WHERE id = ?`).run(h.quantidade, h.quantidade, h.lote_id);
-    if (!db.prepare(`UPDATE bolsa SET quantidade = quantidade - ? WHERE user_id = ? AND item_id = ? AND quantidade >= ?`).run(h.quantidade, de, h.item_id, h.quantidade).changes)
-      throw falha(ERRO_TROCA.ESTADO, `a bolsa de quem manda não tem ${h.item_id}`);
-    creditarBolsa(db, para, h.item_id, h.quantidade, { classe: 'p2p_verified', fonte: `troca:${t.id}`, agora });
-  }
+  try { moverReservados(db, { holds: holdsAtivos(db, dono(t.id)), de, para, refTipo: 'troca', refId: t.id, criaturas: ativos.criaturas, agora }); }
+  catch (e) { throw e.codigo === ERRO_POSSE.FORA ? falha(ERRO_TROCA.ESTADO, e.message) : e; }
   if (ativos.moeda) {
     const r = liquidarPontaDaTroca(db, { de, para, valor: ativos.moeda, ref: t.id, agora, politica: POLITICA_PILOTO });
     if (!r?.ok) throw falha(ERRO_TROCA.ESTADO, `o PC-T não passou: ${r?.motivo ?? '?'}`);
