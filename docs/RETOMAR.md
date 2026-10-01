@@ -57,7 +57,8 @@ o RESUMO   A E14 (Shiny, Trading & Player Market) ESTÁ COMPLETA — todas as
 
 ```text
 o NO AR    https://34-224-231-194.sslip.io  (01/10 — o piloto na AWS, Lightsail
-           us-east-1, micro_3_0, IP estático `pokearena-ip`). ABERTO a quem tem o
+           us-east-1, micro_3_0, instância `pokearena-2` desde a ST-2.8b, IP estático
+           `pokearena-ip`; a máquina de antes está no snapshot `pokearena-antes-st28b`). ABERTO a quem tem o
            link, sem convite (DEC-23, 01/10), com `noindex` (não aparece em busca).
            Sem conta, o menu mostra só a vitrine; o resto pede cadastro.
            Atualizar: `deploy/lightsail/LEIAME.md` (dá para fazer sem SSH).
