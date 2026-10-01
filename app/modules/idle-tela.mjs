@@ -55,7 +55,7 @@ import { estiloIcone } from './icones.mjs';
 import { seloDoFoco, seloDaEvolucao, desenharHud, pintarCartoes } from './idle-equipe.mjs';
 import { modoGuardado, guardarModo, proximoModo, MODO_PADRAO } from './idle-escolha.mjs';
 import { nomesDe } from './itens-nome.mjs';
-import { confirmarExpedicao } from './idle-confirma.mjs';
+import { confirmarExpedicao, confirmarLance } from './idle-confirma.mjs';
 import { ligarLoja, usarEstado as lojaUsaEstado } from './loja-tela.mjs';
 /* A BOUTIQUE — a loja de PokéCash (1.31). Ela é irmã da loja PvE: o mesmo
    quadro, o mesmo vídeo, o outro NPC. Ver `loja-cash.mjs`. */
@@ -429,6 +429,7 @@ document.addEventListener('click', async ev => {
          O laudo precisa do número para poder dizer *"faltou pouco"* com
          honestidade — e uma frase dessas apoiada num número recalculado errado
          seria pior que não dizer nada. */
+      if (!await confirmarLance(E, lance.dataset.lance, lance.dataset.bola)) return;
       const antes = (E.encontros ?? []).find(x => x.chave === lance.dataset.lance);
       const chance = antes
         ? chanceDe(PACK, { raridade: antes.raridade, bola: lance.dataset.bola })

@@ -372,6 +372,7 @@ const CAMADA = {
   'jornada-estrada.mjs': 0,
   'idle-conta.mjs': 0,
   'historico-dados.mjs': 0,
+  'encontro-dados.mjs': 0,   // ST-14.0D: o quadro de encontros (shiny, garantida, lote preso)
   'historico-tela.mjs': 4,
   'idle-servidor.mjs': 4,
   'idle-acoes.mjs': 4,

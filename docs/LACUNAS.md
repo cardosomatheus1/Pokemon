@@ -9176,8 +9176,12 @@ quantas contas teriam a criatura presa por isso.
 
 ### L-224 — o aviso antes de gastar um insumo preso numa criatura livre
 
-**Registrada em:** 01/10/2026, na ST-14.5. **Bloco dono:** ST-14.0D (a E14
-no cliente conectado). **Estado:** aberta.
+**Registrada em:** 01/10/2026, na ST-14.5. **Bloco dono:** ~~ST-14.0D~~ →
+**ST-14.3** (o shiny e a origem na coleção e na evolução). **Estado:** aberta
+em parte — em 01/10 a ST-14.0D pôs o aviso no LANCE ("⚠ prende", pelo lote
+que o débito gasta, com a conta descendo os lotes livres). Falta o mesmo na
+EVOLUÇÃO por pedra e a escolha da classe do lote quando há equivalentes
+(`debitarBolsa(..., { classe })` já existe; nenhuma rota a expõe).
 
 A spec E14 §4.3: "mostrar antes a consequência para negociabilidade. Não
 consumir silenciosamente insumo bound e desvalorizar um shiny". O servidor já
@@ -9193,10 +9197,13 @@ tem rota que a exponha.
 classe do insumo, e a tela mostra "isto prende a criatura" quando a classe
 escolhida não é negociável e a criatura é.
 
-### L-225 — a tela do lance não oferece a bola garantida, nem mostra o encontro shiny
+### L-225 — a tela do lance não oferece a bola garantida, nem mostra o encontro shiny ✅ FECHADA na ST-14.0D (01/10)
 
 **Registrada em:** 01/10/2026, na ST-14.4. **Bloco dono:** ST-14.0D (a E14
-no cliente conectado). **Estado:** aberta.
+no cliente conectado). **Estado:** fechada em 01/10/2026 — o quadro lista a
+garantida quando a pessoa tem (com confirmação antes do lance) e o encontro
+brilhante ganha selo e borda dourada (`app/modules/encontro-dados.mjs`). O
+sprite shiny verdadeiro é da ST-14.3.
 
 O servidor aceita `bola: <a garantida>` no `POST /api/idle/lancar` e grava o
 shiny do encontro (ST-14.1), mas a tela do lance lista só as bolas de

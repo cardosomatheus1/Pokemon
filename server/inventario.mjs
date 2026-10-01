@@ -58,6 +58,17 @@ const LOTES_DA_CONTA_ITEM = `SELECT item_id, quantidade, classe, fonte FROM bols
 export const lotesDe = (db, userId, itemId = null) =>
   itemId ? db.prepare(LOTES_DA_CONTA_ITEM).all(userId, itemId) : db.prepare(LOTES_DA_CONTA).all(userId);
 
+/* O que a tela precisa saber dos lotes: por item, na ORDEM DO DÉBITO (o mais
+   antigo primeiro), a classe e o que está livre. Sem fonte nem id — a fonte é
+   do servidor e da auditoria. */
+const LOTES_LIVRES = `SELECT item_id, classe, quantidade - reservada AS livre FROM bolsa_lotes
+                       WHERE user_id = ? AND quantidade - reservada > 0 ORDER BY criado_em, id`;
+export function lotesLivres(db, userId) {
+  const r = {};
+  for (const l of db.prepare(LOTES_LIVRES).all(userId)) (r[l.item_id] ??= []).push({ classe: l.classe, quantidade: l.livre });
+  return r;
+}
+
 /* A conciliação: a bolsa é a soma dos lotes, item a item. Vazio = fecha. */
 export function conferirInventario(db, userId) {
   const soma = new Map(db.prepare(`SELECT item_id, SUM(quantidade) s FROM bolsa_lotes WHERE user_id = ? GROUP BY item_id`).all(userId).map(l => [l.item_id, l.s]));

@@ -47,6 +47,8 @@ export function idleDaConta(local, srv, { doces = null } = {}) {
     expedicoes: (srv.expedicoes ?? []).map(x => ({ id: x.id, pack: srv.pack, bioma: x.bioma, perfil: x.perfil, estagio: x.estagio,
       equipe: [...(x.equipe ?? [])], custo: null, iniciadaEm: x.iniciadaEm, terminaEm: x.terminaEm, colhidaEm: null, semente: null })),
     bolsa: { ...(srv.bolsa ?? {}) },
+    /* Os lotes da bolsa (ST-14.0D): só para o aviso do lance que prende. */
+    lotes: srv.lotes && typeof srv.lotes === 'object' ? srv.lotes : {},
     /* O registro: lista no servidor, objeto `{ dex: fragmentos }` no aparelho. */
     registro: Object.fromEntries((srv.registro ?? []).map(r => [r.dex, r.fragmentos])),
     encontros: (srv.encontros ?? []).map(k => ({ ...k, origem: k.origem ?? 'expedicao', expedicao: k.expedicao ?? null })),

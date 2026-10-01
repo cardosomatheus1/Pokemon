@@ -22,6 +22,7 @@ import { carregarMarcas } from './pokedex-estado.mjs';
 import { dexImg, retratoAnimado } from './sprites.mjs';
 import { estiloIcone } from './icones.mjs';
 import { chanceDe } from '../../engine/captura.mjs';
+import { bolasDoLance, seloDoEncontro, consequenciaDoLance } from './encontro-dados.mjs';
 import { naEquipe, naCaixa, PARTY_MAX, bolsaEmLista, registroEmLista, encontrosDaRun } from './idle-dados.mjs';
 import { doceAoSoltar } from './doce-dados.mjs';
 import { golpesDaCriatura, liberados, GOLPES_MAX, exclusivosDaCriatura } from './moveset-dados.mjs';
@@ -133,12 +134,12 @@ export function pintarEncontros(E) {
     alvo.innerHTML = '';
     return;
   }
-  const bolas = (PACK.bolas ?? []);
+  const bolas = bolasDoLance(PACK, E.bolsa);
   /* QUANTOS VIERAM DA RUN. Muda o TEXTO, e não o desenho: o quadro é um só, e
      dois arranjos para a mesma decisão seriam duas telas de novo. O que muda
      é o que ele avisa — o do Avanço tem prazo, e o da Rota OFF não. */
   const daRun = encontrosDaRun(E);
-  const semBola = !bolas.some(b => (E.bolsa[b.id] ?? 0) > 0);
+  const semBola = !bolas.some(b => b.tem > 0);
   alvo.innerHTML = `
     <h3>Quem apareceu <span class="tiny">${E.encontros.length} esperando</span>
         <button class="btn ljAbrir" data-loja-abrir>🪙 Loja</button></h3>
@@ -152,16 +153,19 @@ export function pintarEncontros(E) {
        de Pokédex já entrou: ele cai no <b>encontro</b>, e não na captura.</p>
     <div class="idleEncs">${E.encontros.map(en => {
       const nome = nomeExibido(esp(en.dex).n);
-      return `<div class="idleEncCard ${classeDa(en.raridade)}" style="${estiloDa(en.raridade)}">
+      const selo = seloDoEncontro(en);
+      return `<div class="idleEncCard ${classeDa(en.raridade)} ${selo?.classe ?? ''}" style="${estiloDa(en.raridade)}">
         ${arteDoEncontro(en.dex)}
         <b>${nome}</b>
         <span class="tiny rarNome">${daFaixa(en.raridade).rotulo}</span>
+        ${selo ? `<span class="tiny encSelo">${selo.texto}</span>` : ''}
         <div class="idleBolas">${bolas.map(b => {
-          const tem = E.bolsa[b.id] ?? 0;
           const ch = Math.round(chanceDe(PACK, { raridade: en.raridade, bola: b.id }) * 100);
-          return `<button class="idleBola" data-lance="${en.chave}" data-bola="${b.id}"
-                          ${tem ? '' : 'disabled'} title="${b.rotulo}">
-                    <i>${ch}%</i><span class="tiny">${b.rotulo} · ${tem}</span>
+          const prende = consequenciaDoLance(E.lotes, b.id);
+          return `<button class="idleBola${b.garantida ? ' idleBolaGarantida' : ''}" data-lance="${en.chave}" data-bola="${b.id}"
+                          ${b.tem ? '' : 'disabled'} title="${b.rotulo}${prende ? ` — ${prende.dica}` : ''}">
+                    <i>${ch}%</i><span class="tiny">${b.rotulo} · ${b.tem}</span>
+                    ${prende ? `<span class="tiny bolaPrende">⚠ ${prende.texto}</span>` : ''}
                   </button>`;
         }).join('')}</div>
       </div>`;

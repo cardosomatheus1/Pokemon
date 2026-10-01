@@ -33,7 +33,8 @@
  *
  * O que este arquivo interpola é PACK e número, e nada digitado por ninguém.
  */
-import { PACK } from './motor.mjs';
+import { PACK, nomeExibido } from './motor.mjs';
+import { confirmacaoDoLance } from './encontro-dados.mjs';
 import { confirmar } from './dialogo.mjs';
 import { estiloIcone } from './icones.mjs';
 import { dexImg } from './sprites.mjs';
@@ -110,4 +111,15 @@ function aviso(r) {
       `${r.travados.length > 1 ? 'ficam' : 'fica'} abaixo de ${r.piso} e ` +
       `não ${r.travados.length > 1 ? 'saem' : 'sai'} de novo até descansar.`;
   return `<p class="confAviso tiny">${corpo}</p>`;
+}
+
+/* ── O LANCE COM A BOLA GARANTIDA (ST-14.0D · L-225) ──────────────────────
+ * A mais rara da bolsa não sai num clique distraído: a pergunta é de
+ * `encontro-dados.mjs` (camada 0), e aqui só se mostra. Bola comum lança
+ * direto — perguntar a cada Poké Ball seria tirar o peso da pergunta que
+ * importa. */
+export async function confirmarLance(E, chave, bola) {
+  const en = (E.encontros ?? []).find(x => x.chave === chave);
+  const pergunta = en && confirmacaoDoLance(PACK, { bola, nome: nomeExibido(PACK.especies.find(s => s.dex === en.dex)?.n ?? ''), shiny: !!en.shiny });
+  return pergunta ? confirmar(pergunta, { ok: 'Usar' }) : true;
 }

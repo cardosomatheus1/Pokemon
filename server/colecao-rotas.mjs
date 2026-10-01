@@ -32,6 +32,7 @@
  */
 import PACK from '../content/escolhido.mjs';
 import { doJogador } from './criaturas.mjs';
+import { lotesLivres } from './inventario.mjs';
 import { bolsaDe, registroDe, emCampo, estadoDoTeto, especiesVistas, pendentesDe,
          iniciar, colher, lancarPendente, escolherInicial } from './idle.mjs';
 import { staminaAgora, restamEncontros, vagasPor, EQUIPE_MAX } from '../engine/expedicao.mjs';
@@ -69,6 +70,9 @@ const paraCliente = (c, stamina) => ({
   naCaixa: !!c.naCaixa, descansaAte: c.descansaAte ?? null,
   ...(c.golpes ? { golpes: c.golpes } : {}), ...(c.exclusivos ? { exclusivos: c.exclusivos } : {}),
   ...(stamina != null ? { stamina } : {}), origem: c.origem, criadaEm: c.criadaEm,
+  /* ST-14.0D: o shiny da instância e a origem dela — a coleção mostra os dois
+     (e a política de troca decide pela origem, no servidor). */
+  shiny: !!c.shiny, proveniencia: c.proveniencia,
 });
 const expedicaoParaCliente = (x, agora) => ({
   id: x.id, bioma: x.bioma, perfil: x.perfil, estagio: x.estagio, equipe: JSON.parse(x.equipe_json),
@@ -99,6 +103,9 @@ export function colecaoDe(db, { userId, agora, pack = PACK }) {
     pack: pack.id, agora, criaturas,
     registro: registroDe(db, userId, pack.id).map(r => ({ dex: r.dex, fragmentos: r.fragmentos, vistoEm: r.visto_em })),
     bolsa: Object.fromEntries(bolsaDe(db, userId).map(b => [b.item_id, b.quantidade])),
+    /* OS LOTES (ST-14.0D · L-224): por item, na ordem em que o débito os gasta,
+       só a classe e o que está livre — a tela avisa antes do lance que prende. */
+    lotes: lotesLivres(db, userId),
     expedicoes,
     run: aberta.run ? { id: aberta.id, ...aberta.run } : null,
     /* Os encontros que esperam bola — a chave é o que o lance manda. */

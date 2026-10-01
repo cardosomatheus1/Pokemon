@@ -67,6 +67,7 @@ tools/previas/saida/
 # fora quando aquela regra foi escrita — a ferramenta do idle nasceu depois.
 tools/previas/_idle/
 tools/previas/_rota-off/
+tools/previas/_lance/
 
 /_pacote/
 pokearena-continuidade-*.zip

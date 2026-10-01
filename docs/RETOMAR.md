@@ -95,8 +95,13 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            · ST-14.4 FECHADA (01/10): a bola garantida por capacidade do
            pack, antes do teto; emissão só por fonte com orçamento (a
            primeira vitória sobre o Campeão: 1 por conta, 500 no piloto).
-           PRÓXIMO: ST-14.0D (a E14 no cliente conectado — o shiny e a bola
-           garantida na tela do lance, L-224, L-225), depois 14.3
+           · ST-14.0D FECHADA (01/10): o quadro do lance mostra o encontro
+           brilhante, oferece a bola garantida (com pergunta) e avisa
+           "⚠ prende" quando a bola sai de lote preso; a conta desce shiny,
+           origem e lotes. Q5 lido nas 4 larguras.
+           PRÓXIMO: ST-14.3 (o shiny verdadeiro na coleção, evolução, Liga;
+           prestígio no lugar do cosmético shiny; o resto da L-224) — fecha
+           a onda A
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho
            do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta

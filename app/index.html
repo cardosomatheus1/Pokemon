@@ -6775,6 +6775,13 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   border-radius:12px;padding:10px 8px;text-align:center;
   display:flex;flex-direction:column;align-items:center;gap:3px}
 .idleEncCard b{font-size:.86rem;letter-spacing:.01em}
+/* ST-14.0D: o encontro BRILHANTE e a bola que PRENDE. Borda e brilho dourados,
+   que nenhuma faixa de raridade usa — o shiny é de qualquer faixa, e não pode
+   ser lido como "mais raro". O desenho do shiny verdadeiro é da ST-14.3. */
+.idleEncCard.encShiny{border-color:rgba(255,215,120,.75);box-shadow:0 0 14px rgba(255,215,120,.35)}
+.encSelo{color:#ffd778;font-weight:700;letter-spacing:.05em}
+.idleBolaGarantida{outline:1px solid rgba(200,140,255,.75);outline-offset:1px}
+.bolaPrende{display:block;color:#ffb36b}
 .idleEncArte{width:52px;height:52px;image-rendering:pixelated;object-fit:contain}
 /* O ICONE de cabeca e um recorte de folha, e nao um <img>: ele e um bloco com
    `background-position`. Sem `display:block` um <span> nao respeita altura. */
