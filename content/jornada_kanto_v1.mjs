@@ -79,6 +79,9 @@ export const JORNADA = [
     licao: { ensina: 'resistência — quem apanha pouco', revisa: 'celadon', tipo: 'Dragão', mostra: 'resiste', tiposGolpe: ['dragon', 'flying'],
              dica: 'Os golpes dele são de Dragão e de Voador. Aço resiste aos dois, e o Elétrico ainda resiste ao Voador — o que a Erika ensinou.' } },
   { id: 'campeao',  nome: 'Campeão', rival: 'campeao', liga: true, final: true, selo: 'a final', regiao: 'planalto', cena: ['braseiros', 'casas'], marco: 'palacio',
+    /* ST-14.4: a primeira vitória aqui paga UMA bola de captura garantida, sob
+       o orçamento que o item declara (fonte `jornada_final`). */
+    emissaoControlada: { item: 'mestra', fonte: 'jornada_final' },
     licao: { ensina: 'não persiga o ferido — o preset certo depende de quem está do outro lado', tipo: 'de tudo', mostra: 'preset', presetCerto: 'balanced', presetErrado: 'aggressive', prova: 'derrubados',
              porque: 'o maior dano a cada golpe — contra seis fortes, atalho perde',
              dica: 'O Agressivo venceu o Blaine. Aqui, contra seis, ele gasta golpe terminando quem já ia cair e deixa o resto batendo. Nenhum preset vence sempre: o número muda com quem está do outro lado.' } },

@@ -2201,6 +2201,31 @@ export const MIGRACOES = [
     },
   },
 
+  {
+    /* ST-14.4 · E14 · A EMISSÃO CONTROLADA.
+     *
+     * Um item de emissão controlada (a bola de captura garantida) só entra na
+     * bolsa por aqui: uma linha por EVENTO (UNIQUE — o mesmo fato não emite
+     * duas vezes), com a fonte e a versão da regra. O orçamento é a contagem
+     * destas linhas: por conta e no total, por (item, fonte, versão). */
+    nome: 'emissao-st14.4',
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE emissoes_controladas (
+          id         INTEGER PRIMARY KEY AUTOINCREMENT,
+          item_id    TEXT NOT NULL,
+          fonte      TEXT NOT NULL,
+          versao     TEXT NOT NULL,
+          user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          evento     TEXT NOT NULL UNIQUE,
+          quantidade INTEGER NOT NULL CHECK (quantidade > 0),
+          em         INTEGER NOT NULL
+        )`);
+      db.exec(`CREATE INDEX emissoes_controladas_regra ON emissoes_controladas(item_id, fonte, versao, user_id)`);
+    },
+    desce: db => { db.exec(`DROP TABLE emissoes_controladas`); },
+  },
+
 ];
 
 const TABELA_VERSAO = `

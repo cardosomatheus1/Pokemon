@@ -88,10 +88,25 @@ export const bolaDe = (pack, id) => (pack?.bolas ?? []).find(b => b.id === id) ?
  * de porta vale mais que promessa de não abrir. */
 export function chanceDe(pack, { raridade, bola }) {
   const base = baseDaRaridade(pack, raridade);
+  if (!base) return 0;
+  /* A GARANTIDA vem ANTES do teto (ST-14.4, spec E14 §5.4): o teto existe
+     para a sorte continuar na conta do farm, e a bola garantida é justamente
+     a exceção rara e paga que o jogador decide onde gastar. Mas só contra
+     encontro capturável — `base` zero continua zero: a bola não legitima um
+     encontro que o pack não deixa capturar. */
+  if (garantida(pack, bola)) return 1;
   const b = bolaDe(pack, bola);
-  if (!base || !b) return 0;
+  if (!b) return 0;
   return Math.min(TETO_CAPTURA, base * b.mult);
 }
+
+/* ── A CAPTURA GARANTIDA É CAPACIDADE, NÃO NOME ───────────────────────────
+ * O motor não sabe qual bola é a "definitiva" — o pack marca o item com
+ * `guaranteed_capture: true`, e é só isso que se lê aqui (§0.3). Procura em
+ * `bolas` e no `catalogo`, porque a bola garantida não é das que a loja vende
+ * nem das que caem: ela mora no catálogo, com orçamento de emissão. */
+export const garantida = (pack, id) =>
+  [...(pack?.bolas ?? []), ...(pack?.catalogo ?? [])].some(b => b.id === id && b.guaranteed_capture === true);
 
 /* ── O REGISTRO ──────────────────────────────────────────────────────────────
  *

@@ -31,17 +31,17 @@ import { diaDoMundo } from '../engine/avanco.mjs';
 import { criaturasDaConta, creditarBolsa } from './idle.mjs';
 import { doJogador } from './criaturas.mjs';
 import { emitir } from './telemetria.mjs';
+import { emTransacao } from './carteira.mjs';
+import { emitirControlado } from './emissao-controlada.mjs';
 
 export const ERRO_JORNADA = Object.freeze({
   CHAVE: 'JORNADA_CHAVE_INVALIDA', PRESET: 'JORNADA_PRESET_INVALIDO', CONFLITO: 'JORNADA_CONFLITO' });
 const falha = (codigo, msg) => Object.assign(new Error(msg), { codigo });
 const CHAVE_OK = /^[\w-]{8,64}$/;
 
-function emTransacao(db, fn) {
-  db.exec('BEGIN');
-  try { const r = fn(); db.exec('COMMIT'); return r; }
-  catch (e) { try { db.exec('ROLLBACK'); } catch {} throw e; }
-}
+/* A transação é a da carteira (BEGIN IMMEDIATE, e aninha): a luta pode emitir
+   um item de orçamento controlado (ST-14.4), e a contagem do orçamento tem de
+   ser lida e escrita sob a mesma trava que grava a luta. */
 
 /* O progresso da conta, e a revisão sobre a qual a próxima luta grava. Sem
    linha, revisão −1: a primeira luta cria. */
@@ -85,6 +85,12 @@ export function lutarNaConta(db, { userId, pack, id, preset = 'balanced', chaveI
       : db.prepare(`UPDATE jornadas SET progresso_json = ?, revisao = revisao + 1, atualizada_em = ?
                     WHERE user_id = ? AND revisao = ?`).run(JSON.stringify(c.jornada), agora, userId, revisao);
     if (!gravar.changes) throw falha(ERRO_JORNADA.CONFLITO, 'a jornada mudou durante a luta — tente de novo');
+    /* O PRÊMIO DE EMISSÃO CONTROLADA (ST-14.4): o nó diz qual item e qual
+       fonte; o orçamento decide se ele sai. A resposta diz o que aconteceu —
+       inclusive a recusa por orçamento —, e é gravada com ele. */
+    const ctrl = (pack.jornada ?? []).find(n => n.id === id)?.emissaoControlada;
+    if (ctrl && venceu && c.primeiraVez)
+      resposta.emissao = emitirControlado(db, { userId, pack, itemId: ctrl.item, fonte: ctrl.fonte, evento: `jornada:${userId}:${id}`, agora });
     db.prepare(`INSERT INTO lutas_jornada (idem_key, user_id, no, preset, semente, venceu, p, resposta_json, criada_em)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
       .run(idem, userId, id, preset, semente, venceu ? 1 : 0, p, JSON.stringify(resposta), agora);

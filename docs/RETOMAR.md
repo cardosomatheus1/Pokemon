@@ -92,8 +92,11 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            · ST-14.1 FECHADA (01/10): o shiny sorteado no encontro pelo
            servidor (raiz própria, versão da taxa), a captura herda; o lance
            grava o recibo e o retry o devolve; D-129 corrigido.
-           PRÓXIMO: ST-14.4 (Master Ball com orçamento de emissão), depois
-           14.0D e 14.3
+           · ST-14.4 FECHADA (01/10): a bola garantida por capacidade do
+           pack, antes do teto; emissão só por fonte com orçamento (a
+           primeira vitória sobre o Campeão: 1 por conta, 500 no piloto).
+           PRÓXIMO: ST-14.0D (a E14 no cliente conectado — o shiny e a bola
+           garantida na tela do lance, L-224, L-225), depois 14.3
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho
            do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta

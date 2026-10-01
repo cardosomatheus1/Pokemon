@@ -103,9 +103,14 @@ export async function suite() {
 
   s.teste('motor · o item por lote e pelo catálogo', () => {
     const lote = (quantidade, classe = 'verified_earned', reservada = 0) => ({ quantidade, classe, reservada });
-    const v = (itemId, q, lotes, acao = 'trade') => r(avaliarItem({ pack: PACK, itemId, quantidade: q, lotes, conta: CONTA, acao }));
     const pedra = PACK.catalogo.find(i => i.porta === 'drop' && i.id !== PACK.material.id && i.id !== PACK.moedaPve.id).id;
-    const preso = PACK.catalogo.find(i => i.negociavel === false)?.id;
+    /* A fonte sem orçamento aprovado: um item de teste marcado pelo pack. A
+       bola garantida tinha essa marca até a ST-14.4 dar orçamento à fonte
+       dela — agora ela negocia pelo lote, como as outras. */
+    const PACK_PRESO = { ...PACK, catalogo: [...PACK.catalogo, { id: 'preso-teste', faixa: 'raro', porta: 'drop', negociavel: false }] };
+    const preso = 'preso-teste';
+    const garantida = PACK.catalogo.find(i => i.guaranteed_capture === true)?.id;
+    const v = (itemId, q, lotes, acao = 'trade') => r(avaliarItem({ pack: PACK_PRESO, itemId, quantidade: q, lotes, conta: CONTA, acao }));
     const casos = [
       ['bola do farm',                       [PACK.bolas[0].id, 3, [lote(5)]],                                  'true|null|null'],
       ['pedra do farm',                      [pedra, 1, [lote(1)]],                                             'true|null|null'],
@@ -117,12 +122,13 @@ export async function suite() {
       ['não tem',                            [PACK.bolas[0].id, 9, [lote(4)]],                                  'false|INSUFFICIENT_ITEMS|null'],
       ['a moeda PvE nunca',                  [PACK.moedaPve.id, 1, [lote(500)]],                               'false|ASSET_BOUND|moeda_pve'],
       ['a fonte sem orçamento aprovado',     [preso, 1, [lote(1)]],                                            'false|ASSET_BOUND|fonte_nao_aprovada'],
+      ['a garantida com fonte aprovada',     [garantida, 1, [lote(1)]],                                        'true|null|null'],
       ['item que o pack não conhece',        ['inventado', 1, [lote(1)]],                                      'false|ASSET_UNKNOWN|null'],
       ['quantidade quebrada',                [PACK.bolas[0].id, 1.5, [lote(4)]],                               'false|INSUFFICIENT_ITEMS|quantidade'],
       ['USAR a bola de bônus pode',          [PACK.bolas[0].id, 1, [lote(1, 'promotional_bound')], 'usar'],   'true|null|null'],
       ['usar o reservado não',               [PACK.bolas[0].id, 2, [lote(2, 'verified_earned', 1)], 'usar'], 'false|ASSET_BUSY|reservada'],
     ];
-    ok(preso, 'o pack não marca nenhuma fonte sem orçamento aprovado');
+    ok(garantida, 'o pack não tem bola garantida');
     const erros = casos.map(([nome, args, esp]) => [nome, v(...args), esp]).filter(([, a, b]) => a !== b).map(([n, a, b]) => `${n}: ${a} ≠ ${b}`);
     igual(erros.join(' | '), '', 'a política do item');
     igual(tipoDoItem(PACK, 'est:inventado'), null, 'estilhaço de item que não existe');

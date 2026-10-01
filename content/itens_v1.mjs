@@ -236,11 +236,16 @@ export const BOLAS_EXTRA = [
     texto: 'Muito eficaz em ambientes noturnos ou cavernas.' },
   { id: 'mestra', nome: 'Master Ball', en: 'Master Ball', icone: 0, comoAchei: 'olhado',
     faixa: 'muitoRaro', porta: 'bau', andarMinimo: 13, mult: 999,
-    /* NÃO NEGOCIA enquanto a fonte não tiver orçamento de emissão aprovado
-       (ST-14.4, spec E14 §6): a bola que captura sem falha é o item que mais
-       vale numa troca, e o baú não tem teto. A política mora no motor
-       (`engine/negociabilidade.mjs`); o pack só diz qual item é. */
-    negociavel: false,
+    /* ST-14.4 (spec E14 §5.4): a captura garantida é CAPACIDADE do item, e o
+       motor só lê a marca. E ela só nasce com ORÇAMENTO: cada fonte declara
+       quantas por conta e quantas no total, sob uma versão — o servidor recusa
+       o pedido que passaria do teto (`server/emissao-controlada.mjs`), e
+       nunca retira o que já foi emitido. A única fonte aprovada no piloto é a
+       primeira vitória sobre o nó FINAL da jornada (o nó diz qual item paga):
+       uma por conta, a vida inteira. Com a fonte aprovada, a bola negocia
+       pelo lote, como as outras (ST-14.5). */
+    guaranteed_capture: true,
+    emissao: { versao: 'garantida-v1-piloto', fontes: { jornada_final: { porConta: 1, global: 500 } } },
     texto: 'A bola definitiva. Captura o alvo sem possibilidade de falha.' },
 ];
 

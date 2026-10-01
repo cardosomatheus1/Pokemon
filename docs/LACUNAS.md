@@ -9192,3 +9192,21 @@ tem rota que a exponha.
 **O que a destrava:** a ST-14.0D — a rota de evoluir e a de lançar aceitam a
 classe do insumo, e a tela mostra "isto prende a criatura" quando a classe
 escolhida não é negociável e a criatura é.
+
+### L-225 — a tela do lance não oferece a bola garantida, nem mostra o encontro shiny
+
+**Registrada em:** 01/10/2026, na ST-14.4. **Bloco dono:** ST-14.0D (a E14
+no cliente conectado). **Estado:** aberta.
+
+O servidor aceita `bola: <a garantida>` no `POST /api/idle/lancar` e grava o
+shiny do encontro (ST-14.1), mas a tela do lance lista só as bolas de
+`pack.bolas` e não lê o `shiny` do pendente. Quem ganhar a bola do Campeão a
+vê na bolsa e não tem onde usá-la; o encontro brilhante aparece igual aos
+outros.
+
+**Por que não cabe agora:** a ST-14.4 é a regra e a emissão; a tela do lance
+é do cliente conectado, e o visual do shiny verdadeiro é da ST-14.3 (Q5 + Q7).
+
+**O que a destrava:** a ST-14.0D — a escolha da bola inclui o que o pack marca
+`guaranteed_capture` e a pessoa tem na bolsa (com a confirmação, porque é a
+mais rara), e o pendente com `shiny` ganha o selo que a ST-14.3 desenhar.
