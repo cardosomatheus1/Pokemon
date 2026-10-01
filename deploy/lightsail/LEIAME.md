@@ -22,3 +22,7 @@ O piloto da ST-7.2 num endereço público com HTTPS, PRIVADO por convite (a arte
 Atualizar o jogo depois: rodar o mesmo comando do passo 3 (o banco, o segredo
 e o convite ficam). Logs: `journalctl -u pokearena -f`. Cópias do banco:
 `/srv/pokearena/app/dados/copias/` (todo dia às 04:00).
+
+**Fora da máquina:** ligue o snapshot automático (instância → Snapshots →
+Automatic snapshots). A cópia diária fica no MESMO disco; o snapshot é o que
+sobrevive se a instância for apagada. No piloto de 01/10 ele está ligado às 07:00 UTC.
