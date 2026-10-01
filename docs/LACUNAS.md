@@ -9323,3 +9323,20 @@ existe — sem ela o funil não tem o que funilar.
 **O que a destrava:** a ST-14.0E. Com PC-T de jogador nascendo, o sinal
 `conta_ligada` confirmado abre o congelamento da ST-14.14 com motivo
 automático, para o operador revisar — nunca punição sem revisão.
+
+### L-229 — em tela larga, a coluna da bolsa termina antes da coluna da equipe
+
+**Registrada em:** 01/10/2026, no Q5 da ST-2.6. **Bloco dono:** **ST-2.7**
+(o idle em tela larga, proposta no PLANO no mesmo commit). **Estado:** aberta.
+
+Depois da ST-2.6 as duas colunas não esticam mais, e a da equipe (equipe, em
+campo, Centro) ficou mais alta que a da direita (o banner e a bolsa em duas
+colunas): em 1440 px sobram ~300 px de fundo embaixo da bolsa. É fundo, e não
+um cartão vazio — o defeito que a ST-2.6 tirou —, mas ainda é desequilíbrio.
+
+**Por que não cabe agora:** o que preencheria a coluna é decisão de arranjo
+("Quem apareceu" ao lado da bolsa, ou o Pokédex da bolsa crescer), e mexer
+nisso agora seria o bloco crescer além do que o dono apontou.
+
+**O que a destrava:** o dono olhar a tela nova. Se o vão incomodar, a ST-2.7
+leva "Quem apareceu" para a coluna da direita em telas acima de 1200 px.

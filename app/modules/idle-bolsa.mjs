@@ -34,8 +34,28 @@ export function creditarBolsa(e, item, quantos) {
   e.bolsa[item] = (e.bolsa[item] ?? 0) + quantos;
 }
 
-/* ORDENADA PELO ID, sempre. Sem ordem estável a lista se remexe a cada
-   repintura e o jogador perde o item que estava olhando. */
-export const bolsaEmLista = e => Object.entries(e.bolsa)
-  .filter(([, q]) => q > 0).map(([id, quantidade]) => ({ id, quantidade }))
-  .sort((a, b) => a.id.localeCompare(b.id));
+/* ORDEM ESTÁVEL, sempre: sem ela a lista se remexe a cada repintura e o
+   jogador perde o item que estava olhando.
+
+   ST-2.6 (o dono: "tá feio, desorganizado"): COM o pack, a ordem é a do
+   CATÁLOGO — as bolas do pack primeiro, depois o catálogo como ele se agrupa
+   (pedras, itens de batalha, bolas especiais, poções), a parte de estilhaço
+   logo atrás do seu item, e o que o pack não conhece no fim. Pelo id, a
+   "Pedra da Água" ficava entre o "Lodo Negro" e o "Elo": a ordem do código,
+   que ninguém lê. Sem o pack, o id continua sendo o desempate. */
+export function posicaoNaBolsa(pack) {
+  const pos = new Map();
+  [...(pack?.bolas ?? []).map(b => b.id), ...(pack?.catalogo ?? []).map(i => i.id)]
+    .forEach((id, k) => { if (!pos.has(id)) pos.set(id, k); });
+  return id => {
+    const base = String(id).startsWith('est:') ? String(id).slice(4) : String(id);
+    const p = pos.get(base);
+    return p == null ? Number.MAX_SAFE_INTEGER : p + (base === id ? 0 : 0.5);
+  };
+}
+export const bolsaEmLista = (e, pack = null) => {
+  const pos = pack ? posicaoNaBolsa(pack) : () => 0;
+  return Object.entries(e.bolsa)
+    .filter(([, q]) => q > 0).map(([id, quantidade]) => ({ id, quantidade }))
+    .sort((a, b) => pos(a.id) - pos(b.id) || a.id.localeCompare(b.id));
+};

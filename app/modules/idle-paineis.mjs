@@ -254,7 +254,7 @@ export function pintarCentro(E) {
 export function pintarBolsa(E) {
   const alvo = $('#idleBolsa');
   if (!alvo) return;
-  const lista = bolsaEmLista(E);
+  const lista = bolsaEmLista(E, PACK);   // ST-2.6: a ordem do catálogo
   /* O NOME VEM DO CATALOGO PRIMEIRO (1.12). Antes a mochila so conhecia
      `pack.bolas` e `pack.itens`, entao todo item novo aparecia com o ID cru —
      "blacksludge" no lugar de "Lodo Negro". Id na tela nao e um nome faltando:

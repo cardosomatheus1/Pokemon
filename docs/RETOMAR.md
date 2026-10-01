@@ -178,6 +178,10 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            servidor; o navegador não os declara mais (L-208).
            · ST-13.5g FECHADA (01/10): a Liga sem time diz "escolha o
            inicial e capture" — não promete mais o time do aparelho (L-211).
+           · 1.30 FECHADO (01/10): os ícones de item em 160 px (Serebii).
+           · ST-2.6 FECHADA (01/10): a tela do idle organizada, a pedido do
+           dono ("tá feio, desorganizado"). Falta o olhar dele; a L-229 (o
+           vão embaixo da bolsa em tela larga) espera esse olhar.
            A E14 ESTÁ COMPLETA ATÉ O GATE C; a onda D (buy orders) espera
            dados de liquidez do piloto.
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca

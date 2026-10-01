@@ -2244,6 +2244,23 @@ do servidor. Três partes:
   anotou. **Q2:** S2430 (o aparelho volta a declarar) e S1573 realvo; S1576
   removido (mordia a chamada que saiu).
 
+### ST-2.6 · A tela do idle organizada (pedido do dono) ✅ 01/10
+- **Por quê:** o dono, olhando a captura: *"esse formato como tá, tá feio,
+  desorganizado"*. Parte do que ele viu é a captura de página inteira, que
+  pinta de branco tudo abaixo da primeira dobra (L-166); o resto era real: a
+  coluna da equipe esticada com ~500 px vazios, o time em 4 + 1, a mochila em
+  fichas serrilhadas na ordem do id e uma faixa de cartão vazia (o saque).
+- **Feito:** a coluna da equipe é uma pilha (equipe, em campo, Centro) e as
+  colunas não esticam; o time da Rota em 3 colunas; a mochila em grade de
+  duas colunas, na ordem do catálogo (`posicaoNaBolsa`, camada 0), com o nome
+  inteiro e a contagem na margem; o saque vazio some (`:empty`).
+- **Testes:** `idle-arranjo` (4) · S2434–S2440. **Q5:** as quatro larguras,
+  em `tools/previas/_idle-arranjo/`. **Q7:** dispensado (DEC-20).
+
+### ST-2.7 · O idle em tela larga (L-229) — proposta
+- Se o vão embaixo da bolsa incomodar o dono, "Quem apareceu" vai para a
+  coluna da direita acima de 1200 px. Espera o olhar dele na ST-2.6.
+
 ### ST-13.5g · A Liga sem time diz por onde sair (L-211) ✅ 01/10
 - **Escopo:** a Liga já lia o time DA CONTA (`criaturasParaLuta`), e a DEC-17
   decidiu que a conta começa do zero — não há migração do aparelho vindo. O

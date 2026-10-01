@@ -261,6 +261,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **ST-2.6** · a tela do idle organizada (pedido do dono: "tá feio, desorganizado") | 01/10 | a coluna da equipe não sobra mais vazia (o Centro desceu para ela, e as colunas não esticam) · o time sai 3 + 2 em vez de 4 + 1 · a mochila virou grade de duas colunas na ordem do catálogo (bolas, pedras, itens de batalha, poções), com o nome inteiro e a contagem alinhada · a faixa de cartão vazia entre "Quem apareceu" e o Histórico sumiu · capturas em `tools/previas/_idle-arranjo/` |
 | **1.30** · os ícones de item em alta (L-137) | 01/10 | os ícones da mochila, da loja, do Market e da run deixam de ser pixel art borrada e passam a ser a arte limpa de 160 px que o dono aprovou — achada no Serebii (Scarlet/Violet) para 40 dos 41 itens; a Macho Brace vem do conjunto PGL do mesmo site · a Poké Ball é vermelha (também no brilho e na tira da captura) · os Óculos do Sábio e os Óculos da Escolha estavam com o desenho trocado, e ficaram certos |
 | **ST-13.5g** · a Liga sem time diz por onde sair (L-211) | 01/10 | a conta sem time abre a Liga e lê "escolha o seu inicial e capture no farm" — antes, ela prometia trazer as criaturas do aparelho numa versão que a DEC-17 decidiu não fazer |
 | **ST-13.5f** · a luta da jornada é fato do servidor (L-208) | 01/10 | o gate da V4 deixa de aceitar do navegador "lutei" e "venci o ginásio": com conta, quem luta é o servidor, e é ele quem anota · a tela continua relatando só a chance que mostrou antes da luta |

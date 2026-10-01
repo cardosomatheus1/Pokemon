@@ -2974,6 +2974,18 @@ input[type=number]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
 .bolsaGasta{display:flex;flex-wrap:wrap;gap:8px;padding-bottom:10px;margin-bottom:10px;
   border-bottom:1px solid var(--line)}
 .bolsaCoisas{display:flex;flex-wrap:wrap;gap:8px}
+/* ST-2.6 · A MOCHILA EM GRADE. Com `flex-wrap` cada ficha tinha a largura do
+   próprio nome, e as linhas saíam serrilhadas — "Óculos do Sábio" ao lado de
+   "Restos", cada uma de um tamanho. Em grade, todas têm a mesma largura: o
+   ícone alinha numa coluna, o nome na outra, a contagem na margem direita. */
+.bolsaCoisas{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+/* A grade ocupa a LINHA inteira: o `#idleBolsa` é flex (`.idleLinha`), e sem
+   isto ela encolhia à largura de uma ficha — uma coluna só, no meio do vazio. */
+#idleBolsa > .bolsaCoisas,#idleBolsa > .bolsaGasta{flex:1 1 100%}
+.bolsaCoisas .idleItem.comIcone,.bolsaCoisas .idleItem{display:flex;align-items:center;min-width:0}
+/* o nome QUEBRA em vez de cortar: "Compartilha…" não é nome de item nenhum */
+.bolsaCoisas .itNome{flex:1;min-width:0;white-space:normal;line-height:1.2}
+.bolsaCoisas .itQtd{margin-left:auto;flex:none}
 .idleItem.gasta{padding:7px 12px 7px 7px;background:linear-gradient(180deg,
   rgba(255,193,7,.10),rgba(255,193,7,.03));border-color:rgba(255,193,7,.32)}
 .idleItem.gasta .itNome{font-size:.66rem;letter-spacing:.02em}
@@ -5582,7 +5594,14 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   font:700 .62rem/1 var(--dsp);letter-spacing:.14em;text-transform:uppercase;
   color:#fff;text-shadow:0 1px 3px #000,0 0 10px #000;pointer-events:none}
 
-.idleGrade{display:grid;gap:14px;grid-template-columns:1fr}
+.idleGrade{display:grid;gap:14px;grid-template-columns:1fr;align-items:start}
+/* ST-2.6: as duas colunas NÃO se esticam. Esticadas, o cartão da equipe ia até
+   o fim da coluna vizinha e ficava ~500 px de cartão vazio embaixo de "Em
+   campo" — o buraco que o dono chamou de desorganizado. */
+.idleColunaA{display:flex;flex-direction:column;gap:14px;min-width:0}
+/* O saque só existe quando há o que mostrar: vazio, era uma faixa de cartão
+   sem nada entre "Quem apareceu" e o Histórico. */
+#idleSaque:empty{display:none}
 @media(min-width:900px){.idleGrade{grid-template-columns:1.05fr .95fr}}
 /* A coluna B empilha os proprios cartoes; sem isto eles viram linhas da grade
    externa e a segunda coluna volta a ficar vazia. */
@@ -6901,6 +6920,10 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 @media (max-width:520px){
   #idleEquipe,#offEquipe{grid-template-columns:repeat(auto-fill,minmax(104px,1fr))}
 }
+/* ST-2.6: o time da Rota em TRÊS colunas, em qualquer largura. Com
+   `auto-fill` cabiam quatro na coluna, e o quinto ficava sozinho numa linha
+   (4 + 1); em três, cinco é 3 + 2 e seis é 3 + 3. */
+#idleEquipe{grid-template-columns:repeat(3,minmax(0,1fr))}
 /* ── OS ENCONTROS E O CENTRO (bloco 1.6) ─────────────────────────────────
    A chance aparece ANTES do clique, e o botão sem bola fica DESLIGADO em vez de
    sumir: sumindo, o jogador nunca descobre que a bola boa existia. */
@@ -8092,6 +8115,10 @@ body.tremeTela{animation:tremeTela .7s ease-out}
     </div>
 
     <div class="idleGrade idleDepois">
+      <!-- ST-2.6: a coluna da equipe é uma PILHA — a equipe e, embaixo, o
+           Centro, que é a mesma pergunta ("quem eu tenho, quem vai"). Antes o
+           Centro morava na coluna da bolsa e a da equipe esticava vazia. -->
+      <div class="idleColunaA">
       <div class="card">
         <!-- UM cabeçalho, e não dois. O segundo entrou na divisão do A4e, quando
              `idlePerfis` e `idleMandar` saíram desta aba e o título deles ficou
@@ -8128,6 +8155,10 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 
         <h3 style="margin-top:18px">Em campo</h3>
         <div id="idleCampo"></div>
+      </div>
+        <!-- O CENTRO, na coluna da equipe (ST-2.6). Ele mostra a equipe ativa
+             e a caixa — e o jogador o consulta ANTES de escolher quem mandar. -->
+        <div class="card idleDepois" id="idleCentro"></div>
       </div>
 
       <!-- A SEGUNDA COLUNA DA GRADE, que existia no CSS e nao no HTML.
@@ -8176,11 +8207,6 @@ body.tremeTela{animation:tremeTela .7s ease-out}
              uma bola que falha ainda deixa alguma coisa.</p>
         </div>
 
-        <!-- O CENTRO SOBE PARA A DOBRA. Ele mostra a equipe ativa, e era a
-             ultima coisa da pagina — o jogador via a caixa depois de rolar
-             tres telas, quando ela e justamente o que ele consulta antes de
-             escolher quem mandar. -->
-        <div class="card idleDepois" id="idleCentro"></div>
       </div>
     </div>
 
