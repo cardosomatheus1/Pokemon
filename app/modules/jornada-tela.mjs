@@ -23,7 +23,7 @@ import { diaDoMundo } from '../../engine/avanco.mjs';
 import { entradasDoTime, rivalDe, treinador, presetValido, candidatosDaCaixa, membrosParaTrocas } from './treino-dados.mjs';
 import { correcaoDaLicao, aplicarCorrecao } from './jornada-correcao.mjs';
 import { trocarNa, lutarNaJornadaNa } from './colecao-acoes.mjs';   // ST-13.5d/e: com conta, pelo servidor
-import { relatarLuta, relatarChance } from './telemetria-v4-tela.mjs';
+import { relatarChance } from './telemetria-v4-tela.mjs';
 import { lote, resumo, porcentagemExibida, textoDaMargem, SIMS_TREINO } from '../../engine/treino-preco.mjs';
 import { RAIZ_DA_CHANCE as RAIZ } from './jornada-conta.mjs';
 import { encenar } from './pve-tela.mjs';
@@ -476,11 +476,11 @@ document.addEventListener('click', async ev => {
   if (no) { escolhido = no.dataset.jnNo; renderJornada(); if (!no.closest('.jnMini') && matchMedia('(max-width:520px)').matches) $('#jnPainel')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
   const lutar = ev.target.closest('[data-jn-lutar]');
   if (!lutar || lutar.disabled || !chanceNaTela) return;
-  const id = lutar.dataset.jnLutar, antes = chanceNaTela;
+  const id = lutar.dataset.jnLutar;
   const r = await lutarNaJornadaNa({ pack: PACK, id, preset: presetDoJogador() });
   if (!r.ok) { $('#jnErro').textContent = r.motivo ?? 'não deu para lutar agora'; return; }
-  /* ST-10.20: a luta e a chance que a tela mostrou antes dela (§8.15). */
-  relatarLuta(r, { no: id, p: antes.p, preset: presetDoJogador() });
+  /* ST-10.20 · ST-13.5f: a luta é FATO do servidor (L-208) — a tela não a
+     relata; a chance que ela mostrou já foi relatada ao ser calculada. */
   const mapa = mapaDaJornada(PACK, r.progresso), proximo = mapa.nos.find(n => n.id === mapa.atual);
   /* A insígnia entra no RESULTADO também: o estojo fica lá em cima, fora da
      vista de quem está lendo o fim da luta. */

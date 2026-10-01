@@ -2231,6 +2231,19 @@ do servidor. Três partes:
   linha própria, só a quem tem coleção no navegador (`avisoDaPerda`); o Sair
   apaga o cache da coleção da conta. Q6: sem superfície nova.
 
+### ST-13.5f · A luta da jornada é fato do servidor (L-208) ✅ 01/10
+- **Escopo:** com a jornada na conta (ST-13.5e), quem luta é o servidor, e ele
+  anota `pve_iniciado` e `ginasio_vencido` com `origem: 'servidor'`. O aparelho
+  seguia relatando os mesmos dois eventos, e o servidor os aceitava — a conta
+  podia declarar a vitória que o servidor já sabia. Os dois saem de
+  `DO_CLIENTE` (fica `p_exibida`: só a tela sabe o que mostrou), e a tela deixa
+  de chamar `relatarLuta`. Os relatos antigos no banco continuam lidos pelo
+  gate, com o fato preferido (`fatosDaJornada`).
+- **Testes:** `gate-v4` — o cliente só declara a chance; o servidor recusa
+  luta, ginásio e time refeito vindos do aparelho (0/4) e o gate lê o que ele
+  anotou. **Q2:** S2430 (o aparelho volta a declarar) e S1573 realvo; S1576
+  removido (mordia a chamada que saiu).
+
 ### ST-13.8 · Os sinais de aparelho e rede (L-050 · DEC-19) ✅ 30/09
 - **Porte** M · **Servidor** sim · **Spec** §7.19, §28 · **Depende de** ST-13.6
 - **Escopo:** o cliente manda um número aleatório do navegador (guardado nele);

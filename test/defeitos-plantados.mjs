@@ -10005,6 +10005,10 @@ export const DEFEITOS = [
   { id:'S2429', arquivo:'server/antifraude.mjs', nome:"a suspeita de preço só do vendedor",
     real:"o comprador que recebeu valor por fora fica fora da revisão — e as compras dele seguem na curva",
     de:"registrar(db, { a: f.vendedor_id, b: f.comprador_id, sinal: 'preco',", para:"registrar(db, { a: f.vendedor_id, sinal: 'preco'," },
+  /* ── ST-13.5f · a luta da jornada é fato do servidor (L-208) ─────── */
+  { id:'S2430', arquivo:'server/telemetria.mjs', nome:"o aparelho volta a declarar a vitória",
+    real:"a conta relata 'ginasio_vencido' do navegador e o gate da V4 conta o que ela disse",
+    de:"  'p_exibida'];", para:"  'pve_iniciado', 'ginasio_vencido', 'p_exibida'];" },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',
@@ -10955,16 +10959,13 @@ export const DEFEITOS = [
     de:"base = { veredito: kpis.baseAtiva >= META_V4.base ? 'passou'", para:"base = { veredito: true ? 'passou'" },
   { id:'S1573', arquivo:'server/telemetria.mjs', nome:'o cliente declara o time refeito',
     real:'o KPI de rebuild vira o que o cliente disser',
-    de:"  'pve_iniciado', 'ginasio_vencido', 'p_exibida'];", para:"  'pve_iniciado', 'ginasio_vencido', 'p_exibida', 'time_refeito'];" },
+    de:"  'p_exibida'];", para:"  'p_exibida', 'time_refeito'];" },   // realvo na ST-13.5f: a lista do cliente encolheu
   { id:'S1574', arquivo:'server/gate-v4.mjs', nome:'o servidor lê toda luta como derrota',
     real:'ninguém vence o Brock, e o aprendizado nunca tem tratado',
     de:"venceu: e.c.venceu === true, p: Number(e.c.p),", para:'venceu: false, p: Number(e.c.p),' },
   { id:'S1575', arquivo:'app/modules/telemetria-v4.mjs', nome:'a chave da luta depende do relógio',
     real:'duas abas relatando a mesma luta viram duas lutas',
     de:"nome: 'pve_iniciado', chave: `pve:${no}:${semente}`,", para:"nome: 'pve_iniciado', chave: `pve:${no}:${semente}:${agora}`," },
-  { id:'S1576', arquivo:'app/modules/jornada-tela.mjs', nome:'a jornada não relata a luta',
-    real:'o gate 4→5 fica sem lutas, e diz "amostra insuficiente" para sempre',
-    de:'  relatarLuta(r, { no: id, p: antes.p, preset: presetDoJogador() });', para:'' },
   /* ── ST-10.19d · a correção da lição (L-205), o sentido e a faixa ────── */
   { id:'S1554', arquivo:'app/modules/jornada-correcao.mjs', nome:'a lição de preset nunca propõe a correção',
     real:'o Blaine a 21% e nenhum botão — o jogador volta a procurar o link no texto vermelho',

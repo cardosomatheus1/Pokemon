@@ -156,6 +156,8 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            · ST-14.14d FECHADA (01/10): os alertas do mercado — venda 3×
            fora da referência e conta que gira demais viram suspeita para o
            operador (L-227).
+           · ST-13.5f FECHADA (01/10): a luta e o ginásio são fato do
+           servidor; o navegador não os declara mais (L-208).
            A E14 ESTÁ COMPLETA ATÉ O GATE C; a onda D (buy orders) espera
            dados de liquidez do piloto.
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca

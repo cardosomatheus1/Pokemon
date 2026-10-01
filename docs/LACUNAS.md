@@ -8784,12 +8784,13 @@ que o jogador deveria estar olhando os lutadores.
 decidir: manter o painel na dobra sem mover a arena, ou voltar à arena quando
 a luta começa.
 
-### L-208 — o gate da V4 confia no que o navegador relata
+### L-208 — o gate da V4 confia no que o navegador relata ✅ FECHADA na ST-13.5f (01/10)
 
 **Registrada em:** 27/09/2026, na ST-10.20 (Q6). **Bloco dono:** ST-13.7 (a
 luta da jornada no servidor — saiu da 13.2c em 27/09, porque depende do time e
 dos golpes no servidor, que são da ST-13.3). **Estado:** parcial (28/09, ST-13.7)
-— o resto é da **ST-13.5**.
+— o resto é da **ST-13.5** → fechada na **ST-13.5f** (01/10): `pve_iniciado` e
+`ginasio_vencido` saíram de `DO_CLIENTE`, e a tela não relata mais a luta.
 
 `pve_iniciado`, `ginasio_vencido` e `p_exibida` vêm do cliente, porque a
 jornada ainda mora no save local. O servidor filtra os campos (número,

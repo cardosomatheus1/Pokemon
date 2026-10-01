@@ -20,7 +20,7 @@ import { aprendizadoDaJornada, kpisDaV4, gateDaV4, rebuilds, META_V4 } from '../
 import { gateDaV4Servidor } from '../server/gate-v4.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import { cadastrar } from '../server/auth.mjs';
-import { receberDoCliente, DO_CLIENTE } from '../server/telemetria.mjs';
+import { receberDoCliente, DO_CLIENTE, emitir } from '../server/telemetria.mjs';
 import { relatorioDoPiloto } from '../server/piloto.mjs';
 import { eventoDaLuta, eventoDoGinasio, eventoDaChance } from '../app/modules/telemetria-v4.mjs';
 
@@ -92,8 +92,11 @@ export function suite() {
     igual(g1.criterios.aprendizado.veredito, 'amostra insuficiente', 'aprendizado sem tratados');
   });
 
-  s.teste('o cliente: três fatos, a chave do fato, e o time refeito NÃO vem do cliente', () => {
-    for (const n of ['pve_iniciado', 'ginasio_vencido', 'p_exibida']) ok(DO_CLIENTE.includes(n), `${n} não está na lista do cliente`);
+  /* ST-13.5f · L-208: a luta e o ginásio são FATOS do servidor; o aparelho
+     só relata a chance que mostrou. */
+  s.teste('o cliente: só a chance; a luta e o ginásio são do servidor, e o time refeito também', () => {
+    ok(DO_CLIENTE.includes('p_exibida'), 'a chance exibida não está na lista do cliente');
+    for (const n of ['pve_iniciado', 'ginasio_vencido']) ok(!DO_CLIENTE.includes(n), `o cliente ainda declara ${n}`);
     ok(!DO_CLIENTE.includes('time_refeito'), 'o cliente pode declarar que refez o time');
     const A = [{ dex: 7, nivel: 14 }, { dex: 16, nivel: 13 }];
     const e1 = eventoDaLuta({ no: 'pewter', semente: 123, p: 0.61234, preset: 'balanced', timeA: A, venceu: true, agora: T0 });
@@ -106,20 +109,22 @@ export function suite() {
     igual(eventoDaChance({ no: 'pewter', p: 0.4, preset: 'balanced', timeA: A, agora: T0 + H }).chave, c1.chave, 'a mesma chance no mesmo dia virou dois eventos');
     ok(eventoDaChance({ no: 'pewter', p: 0.4, preset: 'defensive', timeA: A, agora: T0 }).chave !== c1.chave, 'outro preset é outra chance');
     const tela = semComentario(fonte('../app/modules/jornada-tela.mjs'));
-    ok(/relatarLuta\(r, \{/.test(tela) && /relatarChance\(\{/.test(tela), 'a tela não relata a luta nem a chance');
+    ok(/relatarChance\(\{/.test(tela) && !/relatarLuta/.test(tela), 'a tela não relata a chance, ou ainda relata a luta');
   });
 
-  s.teste('o servidor: lê as lutas do cliente e as previsões do banco, e o piloto leva o gate', () => {
+  s.teste('o servidor: lê as lutas que ELE anotou e as previsões do banco; o relato do aparelho é recusado', () => {
     const srv = criarServidor({ config: { ambiente: 'teste', silencioso: true }, banco: ':memory:', sims: 40, laco: false, relogio: () => T0 });
     try {
       const u = cadastrar(srv.db, { username: 'g41', email: 'g41@x.test', senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01', agora: T0 }).id;
       const A = [{ dex: 4, nivel: 12 }];
-      const r1 = receberDoCliente(srv.db, { userId: u, agora: T0, eventos: [
+      const fatos = [
         eventoDaLuta({ no: 'pewter', semente: 1, p: 0.1, preset: 'balanced', timeA: A, venceu: false, agora: T0 }),
         eventoDaLuta({ no: 'pewter', semente: 2, p: 0.9, preset: 'balanced', timeA: [{ dex: 7, nivel: 12 }], venceu: true, agora: T0 + 1 }),
-        eventoDoGinasio({ no: 'pewter', insignia: 'rocha', agora: T0 + 1 }),
-        { nome: 'time_refeito', chave: 'tr:1', campos: {} }] });
-      igual(`${r1.aceitos}/${r1.recusados}`, '3/1', 'o time refeito veio do cliente, ou a luta foi recusada');
+        eventoDoGinasio({ no: 'pewter', insignia: 'rocha', agora: T0 + 1 })];
+      const r1 = receberDoCliente(srv.db, { userId: u, agora: T0, eventos: [...fatos, { nome: 'time_refeito', chave: 'tr:1', campos: {} }] });
+      igual(`${r1.aceitos}/${r1.recusados}`, '0/4', 'o aparelho declarou a luta, o ginásio ou o time refeito');
+      /* como o servidor anota quando ele luta (`lutarNaConta`): chave `srv:` e origem */
+      for (const e of fatos) emitir(srv.db, { nome: e.nome, userId: u, chave: `srv:${e.chave}`, campos: { ...e.campos, origem: 'servidor' }, agora: T0 });
       const g = gateDaV4Servidor(srv.db, { agora: T0 + DIA, primeiroGinasio: 'pewter' });
       igual(`${g.kpis.conclusao.pewter.venceram}/${g.kpis.conclusao.pewter.tentaram}`, '1/1', 'a conclusão do servidor');
       igual(`${g.kpis.rebuilds.refeitos}/${g.kpis.rebuilds.derrotas}`, '1/1', 'o servidor não derivou o time refeito');
