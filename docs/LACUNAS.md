@@ -9259,12 +9259,12 @@ outros.
 `guaranteed_capture` e a pessoa tem na bolsa (com a confirmação, porque é a
 mais rara), e o pendente com `shiny` ganha o selo que a ST-14.3 desenhar.
 
-### L-226 — o palco e o replay da Liga não mostram o shiny do snapshot
+### L-226 — o palco e o replay da Liga não mostram o shiny do snapshot ✅ FECHADA na ST-14.3c (01/10)
 
 **Registrada em:** 01/10/2026, na ST-14.3b. **Bloco dono:** ST-14.3c (nasceu
 com a ST-14.7, que montaria a tela da instância de outro jogador; a 14.7b
 fechou sem tocar o palco, e o que sobra é visual — adiado pela DEC-20).
-**Estado:** aberta.
+**Estado:** fechada em 01/10 (ST-14.3c).
 
 A ST-14.3a gravou o `shiny` de cada criatura no snapshot da Liga, mas o log
 da partida (de onde o palco e o replay desenham) sai do motor de luta, que
@@ -9277,6 +9277,10 @@ ST-14.3b fechou o que a ficha aceita (encontro, captura, coleção).
 **O que a destrava:** a ST-14.3c, quando o dono liberar o visual (DEC-20) — o palco recebe o snapshot junto do log e
 pinta `shiny` pela posição; partida de antes da ST-14.3a não tem o campo e
 fica normal.
+
+**01/10, ST-14.3c:** fechada como descrito — o replay devolve a `aparencia`
+dos dois snapshots e o palco a pinta pela posição. A partida contra o bot tem
+o lado do bot normal (ele não tem snapshot).
 
 ### L-227 — o alerta de preço fora da curva e de giro anômalo ✅ FECHADA na ST-14.14d (01/10)
 

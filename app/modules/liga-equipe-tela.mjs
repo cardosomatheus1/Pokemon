@@ -172,7 +172,7 @@ async function verReplay(id) {
   if (!r.ok || !linha) { erro = 'o replay não abriu — o servidor não respondeu'; renderLigaEquipe(); return; }
   const p = r.corpo.partida, alvo = $('#leReplay'), t = replayNaTela(linha, null);
   /* O PALCO DA ARENA (ST-11.6d): a ilha sai da semente da partida, como a da aposta sai da raiz da rodada. */
-  montarPalco(alvo, { linha: linhaDoLog(p.log, nomeDo, linha.lado), arena: sortearArena(p.semente), final: t.fim, topo: esc(t.prova),
+  montarPalco(alvo, { linha: linhaDoLog(p.log, nomeDo, linha.lado, p.aparencia), arena: sortearArena(p.semente), final: t.fim, topo: esc(t.prova),
     titulo: esc(t.topo), voltar: 'fechar', rotulos: { A: esc(t.rotulos.A), B: esc(t.rotulos.B) } });
   const prova = replayNaTela(linha, await provaDaPartida(p));
   const topo = alvo?.querySelector('.pveTopo span');

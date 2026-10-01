@@ -64,7 +64,7 @@ export function escalaDe(dex) {
 
 export function coreografiaDoPalco(linha, t = TEMPO) {
   const lutadores = ['A', 'B'].flatMap(lado => (linha?.lados?.[lado] ?? []).map((f, i) => ({
-    slot: f.slot, lado, dex: f.dex, nivel: f.nivel, nome: f.nome, maxHp: f.maxHp, ...formacao(lado, i), animado: !!PMD[f.dex] })));
+    slot: f.slot, lado, dex: f.dex, nivel: f.nivel, nome: f.nome, maxHp: f.maxHp, shiny: f.shiny === true, ...formacao(lado, i), animado: !!PMD[f.dex] })));
   const atos = (linha?.passos ?? []).map((p, n) => {
     const inicio = n * t.intervaloMs;
     return { n, de: p.de, para: p.para, golpe: p.golpe, contato: deContato(p.golpe), inicio, impacto: inicio + t.impactoMs,

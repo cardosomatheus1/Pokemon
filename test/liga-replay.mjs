@@ -106,7 +106,7 @@ export async function suite() {
   s.teste('a tela encena SÓ o log: nenhuma simulação no caminho do replay', () => {
     const tela = fonte('../app/modules/liga-equipe-tela.mjs');
     const f = tela.slice(tela.indexOf('async function verReplay'), tela.indexOf('document.addEventListener'));
-    ok(/linhaDoLog\(p\.log, nomeDo, linha\.lado\)/.test(f) && /provaDaPartida\(p\)/.test(f), 'o replay não vem do log, ou não confere a prova');
+    ok(/linhaDoLog\(p\.log, nomeDo, linha\.lado, p\.aparencia\)/.test(f) && /provaDaPartida\(p\)/.test(f), 'o replay não vem do log, ou não confere a prova');
     ok(!/simular|confrontoDaLiga|treino-batalha/.test(tela), 'a tela da Liga chama o motor');
     ok(/data-le-replay/.test(tela), 'a linha não tem o botão do replay');
     /* D-130: o acerto adiado de cada golpe respeita a geração — senão "pular" termina e o golpe que estava no ar reescreve o fim. */

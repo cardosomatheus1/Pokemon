@@ -44,6 +44,10 @@ const eu = await conta('Treinadora'), ana = await conta('AnaKanto'), rui = await
 time(eu.id, [[6, 32], [9, 30], [3, 31], [25, 28], [143, 30], [94, 29]]);
 time(ana.id, [[65, 31], [68, 30], [59, 32], [130, 29], [112, 30], [131, 31]]);
 time(rui.id, [[34, 30], [45, 30], [62, 31], [76, 29], [97, 30], [121, 30]]);
+/* O SHINY NO PALCO (ST-14.3c): dois meus e um da Ana, gravados no snapshot que
+   a publicação faz logo abaixo — o replay tem de pintá-los com a folha recolorida. */
+srv.db.prepare(`UPDATE criaturas SET is_shiny = 1 WHERE user_id = ? AND dex IN (6, 25)`).run(eu.id);
+srv.db.prepare(`UPDATE criaturas SET is_shiny = 1 WHERE user_id = ? AND dex = 130`).run(ana.id);
 const meu = publicarTime(srv.db, { userId: eu.id, preset: 'aggressive', agora: agora - 30 * H });
 const dela = publicarTime(srv.db, { userId: ana.id, preset: 'balanced', agora: agora - 30 * H });
 const dele = publicarTime(srv.db, { userId: rui.id, preset: 'focus', agora: agora - 30 * H });
@@ -58,7 +62,10 @@ srv.db.prepare(`INSERT INTO liga_insignias (temporada, user_id, tier, posicao, p
 
 const b = await chromium.launch({ executablePath: CHROME });
 const erros = [];
+/* `SO=replaymeio,replayfim` captura só os estados nomeados — a leitura de um bloco que mexeu num deles. */
+const SO = process.env.SO ? process.env.SO.split(',') : null;
 async function capturar(nome, sessao, { clicar, larguras = LARGURAS, replay = null, stake = null } = {}) {
+  if (SO && !SO.includes(nome)) return;
   for (const w of larguras) {
     const ctx = await b.newContext({ viewport: { width: w, height: w > 500 ? 1100 : 1000 } });
     await ctx.addInitScript(([s]) => { if (s) localStorage.setItem('ar_sessao', s); localStorage.setItem('ar_session', '1'); localStorage.setItem('ar_treino_aba', 'liga'); }, [sessao]);
@@ -78,7 +85,7 @@ async function capturar(nome, sessao, { clicar, larguras = LARGURAS, replay = nu
     if (replay) {
       await pg.click('[data-le-replay]');
       await pg.waitForFunction(() => document.querySelector('#leReplay .pveTopo span.leProva'), null, { timeout: 20000 });
-      await pg.waitForTimeout(replay === 'meio' ? 6200 : 200);
+      await pg.waitForTimeout(replay === 'meio' ? Number(process.env.REPLAY_MS || 6200) : 200);
       if (replay === 'fim') { await pg.click('#leReplay [data-lp-pular]'); await pg.waitForFunction(() => document.querySelector('#leReplay')?.dataset.estado === 'fim', null, { timeout: 20000 }); }
     }
     await pg.waitForTimeout(400);

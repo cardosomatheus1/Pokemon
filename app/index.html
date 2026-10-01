@@ -1498,6 +1498,15 @@ img[data-prestigio="1"]{filter:drop-shadow(0 0 4px rgba(var(--neonRGB),.75))}
 .lpUi .dmg{font-size:clamp(11px,3.4cqw,17px);-webkit-text-stroke:1px #10131c;paint-order:stroke fill;text-shadow:0 2px 0 rgba(0,0,0,.6)}
 .lpUi .dmg.super{font-size:clamp(13px,4cqw,20px)}.lpUi .dmg.crit{font-size:clamp(15px,4.6cqw,23px)}
 .lpPlaca .nm{color:#fff;text-shadow:0 1px 0 #000,1px 0 0 #000,-1px 0 0 #000,0 -1px 0 #000}
+/* O shiny do snapshot na placa (ST-14.3c). Q5: o nome em ouro sumia sobre a
+   barra verde, e o ✦ na fonte pixel (que não tem o glifo) saía do tamanho de
+   um ponto. O nome fica no branco legível de todos; o shiny é o FIO de ouro
+   em volta da placa e o ✦ em fonte de sistema, no tamanho de uma letra. */
+.lpHud .lpPlaca.lpBrilha{outline:1px solid rgba(255,214,90,.95);outline-offset:-1px}
+.lpPlaca.lpBrilha .nm i{font-family:system-ui,'Segoe UI Symbol',sans-serif;font-style:normal;font-size:13px;line-height:1;margin-right:2px;color:#ffd65a;
+  text-shadow:0 0 4px rgba(255,214,90,.9),0 1px 0 #000,1px 0 0 #000,-1px 0 0 #000}
+/* O ✦ do lutador: o da Arena (9px) se perde num palco de doze. */
+.lpMon.shiny::after{font-size:13px;right:2px;top:-2px}
 .lpMiniLog div:last-child{white-space:normal}
 .lpMon.lpEntra{opacity:0}
 .lpEstatico{width:100%;height:auto;image-rendering:pixelated;filter:drop-shadow(0 0 1px rgba(0,0,0,.9))}

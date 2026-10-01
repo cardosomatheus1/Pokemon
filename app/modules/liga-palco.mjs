@@ -40,7 +40,7 @@ function vestir(e, anim) {
   Object.assign(e, { anim, fw, fh, cols: dur.length, dur, ticks: dur.reduce((a, b) => a + b, 0) });
   e.el.style.width = `${(fw * e.escala / W) * 100}%`;
   e.el.style.aspectRatio = `${fw} / ${fh}`;
-  e.body.style.backgroundImage = `url(${urlFolha(sheetURL(e.l.dex, anim, false))})`;
+  e.body.style.backgroundImage = `url(${urlFolha(sheetURL(e.l.dex, anim, e.l.shiny))})`;
   e.body.style.backgroundSize = `${e.cols * 100}% 800%`;
 }
 function quadro(e, ms) {
@@ -57,7 +57,8 @@ export function montarPalco(alvo, { linha, arena = { key: 'coliseu', nome: 'Coli
   const g = ++geracao, rodada = ++rodadas;
   const palco = coreografiaDoPalco(linha);
   /* A placa da Arena: o nome e a vida, e mais nada — o nível mora no time publicado. */
-  const placa = l => `<div class="plate lpPlaca lp${l.lado}" data-lp-placa="${l.slot}"><div class="fill"></div><div class="nm">${l.nome}</div></div>`;
+  /* O shiny (ST-14.3c) diz-se também na placa, e não só na cor: o ✦ antes do nome. */
+  const placa = l => `<div class="plate lpPlaca lp${l.lado}${l.shiny ? ' lpBrilha' : ''}" data-lp-placa="${l.slot}"><div class="fill"></div><div class="nm">${l.shiny ? '<i aria-label="shiny">✦</i> ' : ''}${l.nome}</div></div>`;
   alvo.innerHTML = `<div class="lpLuta">
     <div class="pveTopo"><b>${titulo}</b><span>${topo}</span><button class="btn" data-lp-pular>pular</button></div>
     <div class="lpCena">
@@ -90,7 +91,11 @@ export function montarPalco(alvo, { linha, arena = { key: 'coliseu', nome: 'Coli
   const mons = alvo.querySelector('.lpMons'), ui = alvo.querySelector('.lpUi');
   const ents = palco.lutadores.map(l => {
     const el = document.createElement('div');
-    el.className = `mon lpMon lp${l.lado}`;
+    /* O SHINY DO SNAPSHOT (ST-14.3c · L-226): a folha recolorida, o halo e o ✦
+       da Arena (`.mon.shiny`), e o lampejo UMA vez na entrada — o mesmo anúncio
+       da rodada de aposta. */
+    el.className = `mon lpMon lp${l.lado}${l.shiny ? ' shiny opening' : ''}`;
+    if (l.shiny) setTimeout(() => el.classList.remove('opening'), ENTRADA_MS + 900);
     const body = document.createElement('div');
     body.className = 'body';
     el.appendChild(body); mons.appendChild(el);
@@ -104,9 +109,9 @@ export function montarPalco(alvo, { linha, arena = { key: 'coliseu', nome: 'Coli
     mons.insertBefore(anel, mons.firstChild);
     /* As quatro folhas de uma vez: a de ataque carregando no meio do golpe
        deixava o anel sem ninguém em cima. */
-    if (l.animado) for (const k of ['i', 'w', 'a', 'h']) { const im = new Image(); im.src = urlFolha(sheetURL(l.dex, k, false)); }
+    if (l.animado) for (const k of ['i', 'w', 'a', 'h']) { const im = new Image(); im.src = urlFolha(sheetURL(l.dex, k, l.shiny)); }
     const e = { l, el, body, bub, anel, escala: escalaDe(l.dex), anim: null, dir: 0, placa: alvo.querySelector(`[data-lp-placa="${l.slot}"]`) };
-    if (!l.animado) { el.innerHTML = dexImg(l.dex, l.nome, 'class="lpEstatico"'); el.style.width = '17%'; }
+    if (!l.animado) { el.innerHTML = dexImg(l.dex, l.nome, 'class="lpEstatico"', l.shiny); el.style.width = '17%'; }
     return e;
   });
 

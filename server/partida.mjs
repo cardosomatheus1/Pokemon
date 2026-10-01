@@ -21,7 +21,7 @@
 import { randomUUID, createHash } from 'node:crypto';
 import { novaRaiz } from '../engine/seed.mjs';
 import { novoSal, mensagemCommit } from '../engine/commit.mjs';
-import { confrontoDaLiga } from '../app/modules/partida-dados.mjs';
+import { confrontoDaLiga, aparenciaDosTimes } from '../app/modules/partida-dados.mjs';
 import { snapshotPodeLutar } from '../app/modules/snapshot-dados.mjs';
 import { criaturaReservada } from './elegibilidade.mjs';
 import { escolherAdversario, botPara, PAREAMENTO } from '../app/modules/pareamento-dados.mjs';
@@ -158,12 +158,15 @@ const comStake = (db, p) => { const s = stakeGravado(db, p.id); return s ? { ...
 
 /* A partida tem LINK PRÓPRIO (I.1): quem tem o id a revê — o replay é
    público, como o reveal da Arena. A do bot também. */
+/* O REPLAY leva a APARÊNCIA (ST-14.3c · L-226): o shiny gravado no snapshot
+   de cada lado, para o palco pintar a folha certa. É o que o time PUBLICADO
+   já mostrava; o id da criatura e o dono não viajam. */
 export function partidaDe(db, id, pack = PACK) {
   const l = db.prepare(`SELECT * FROM league_matches WHERE id = ?`).get(id);
-  if (l) return comStake(db, publica(l, sinalDe(db, l.id)));
+  if (l) return { ...comStake(db, publica(l, sinalDe(db, l.id))), aparencia: aparenciaDosTimes(snapshotPorId(db, l.snap_a), snapshotPorId(db, l.snap_b)) };
   const b = db.prepare(`SELECT * FROM league_bot_matches WHERE id = ?`).get(id);
   if (!b) throw falha(ERRO_PARTIDA.SEM_PARTIDA, 'essa partida não existe');
-  return publicaBot(b, nomeDoBot(pack, b.bot_id));
+  return { ...publicaBot(b, nomeDoBot(pack, b.bot_id)), aparencia: aparenciaDosTimes(null, snapshotPorId(db, b.snap_b)) };
 }
 
 /* ── BUSCAR PARTIDA (ST-11.3) ───────────────────────────────────────────

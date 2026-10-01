@@ -138,7 +138,7 @@ export async function suite() {
     ok(/pinturaDa\(arena\.key\)/.test(palco) && /pintura\.fundo\(agora \/ 1000, mapa\)/.test(palco), 'o palco não usa a pintura da Arena');
     ok(/const ms = pulou \? palco\.duracao : agora - inicio;/.test(palco), 'pular não fica no fim');
     ok(/poseNoInstante\(palco, e\.l\.slot/.test(palco), 'o palco decide a pose sozinho');
-    ok(/montarPalco\(alvo, \{ linha: linhaDoLog\(p\.log, nomeDo, linha\.lado\)/.test(fonte('../app/modules/liga-equipe-tela.mjs')), 'o replay não vai para o palco da Arena');
+    ok(/montarPalco\(alvo, \{ linha: linhaDoLog\(p\.log, nomeDo, linha\.lado, p\.aparencia\)/.test(fonte('../app/modules/liga-equipe-tela.mjs')), 'o replay não vai para o palco da Arena');
   });
 
   return s;

@@ -63,9 +63,12 @@ export function replayDoLog(log) {
    depois de cada golpe é a do `replayDoLog`, e o nome vem de quem chama
    (`nomeDoDex`), sem pack. `eu` diz de que lado o jogador estava: o lado dele
    vai para a esquerda (A na tela), e os slots continuam os da partida. */
-export function linhaDoLog(log, nomeDoDex = d => `#${d}`, eu = 'A') {
+export function linhaDoLog(log, nomeDoDex = d => `#${d}`, eu = 'A', aparencia = null) {
   const r = replayDoLog(log), outro = eu === 'A' ? 'B' : 'A';
-  const lado = l => (log?.lados?.[l] ?? []).map((f, i) => ({ slot: `${l}${i}`, dex: f.dex, nivel: f.nivel, maxHp: f.hp, nome: nomeDoDex(f.dex) }));
+  /* O shiny entra pela POSIÇÃO no lado (ST-14.3c): o log sai do motor, que
+     não recebe aparência, e o snapshot guarda a lista na mesma ordem. */
+  const lado = l => (log?.lados?.[l] ?? []).map((f, i) => ({ slot: `${l}${i}`, dex: f.dex, nivel: f.nivel, maxHp: f.hp, nome: nomeDoDex(f.dex),
+    shiny: aparencia?.[l]?.[i] === true }));
   const lados = { A: lado(eu), B: lado(outro) };
   /* No espelho (Snorlax contra Snorlax) o nome não diz de quem é: a frase diz
      "seu" e "rival", e a placa continua só com o nome. */
@@ -78,6 +81,16 @@ export function linhaDoLog(log, nomeDoDex = d => `#${d}`, eu = 'A') {
   const vencedor = r.vencedor === 'empate' ? 'empate' : r.vencedor === eu ? 'A' : 'B';
   return { lados, passos, vencedor, duracaoMs: passos.length * PASSO_MS };
 }
+
+/* A APARÊNCIA DOS DOIS TIMES (ST-14.3c · L-226): o shiny de cada criatura,
+   na ordem em que o snapshot a gravou — a mesma ordem em que o motor monta o
+   lado do log (`timeDoSnapshot` só tira campos). O lado A é o defensor; o
+   bot não tem snapshot e luta normal. O snapshot de antes da ST-14.3a não tem
+   o campo, e fica normal: o que não foi gravado não se inventa. */
+export const aparenciaDosTimes = (a, b) => {
+  const lado = s => (s?.time ?? []).map(x => x?.shiny === true);
+  return { A: lado(a), B: lado(b) };
+};
 
 /* A PROVA do replay: o compromisso gravado confere com a raiz revelada, e a
    semente da luta é a que essa raiz dá. As duas juntas dizem que o resultado
