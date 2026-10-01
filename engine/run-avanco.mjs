@@ -32,7 +32,7 @@
  * Por isso a cura é um EVENTO DATADO dentro da wave: ao reabrir a aba, ela é
  * reaplicada no mesmo instante em que aconteceu, e a barra recalculada bate.
  */
-import { WAVES, HP_MAX, resolverWave, ehWaveDeChefe, fatorDoRitmo,
+import { WAVES, HP_MAX, resolverWave, ehWaveDeChefe, fatorDoRitmo, passoDaWave,
          poderDaEquipe, ameacaDa } from './wave.mjs';
 import { roteiroDaWave, estadoEm, APROXIMACAO_MS, HP_MOB } from './roteiro-wave.mjs';
 import { derivar } from './seed.mjs';
@@ -137,7 +137,8 @@ export function waveAtual(run, { elenco, equipe, golpesMeus = 1, golpesDele = 1,
    * a equipe. Este arquivo continua sem saber o que é clima. */
   const ritmo = fatorDoRitmo(poderDaEquipe(equipe),
                              ameacaDa({ elenco, wave: run.wave, estagio: run.estagio }))
-              / Math.max(1e-6, Number(climaRitmo) || 1);
+              / Math.max(1e-6, Number(climaRitmo) || 1)
+              * passoDaWave({ venceu: r.venceu, estagio: run.estagio });
   const roteiro = roteiroDaWave(
     semente(derivar(run.raiz, `${rotuloDaWave(run.wave, run.tentativa)}:cena`)),
     { comp: r.comp, venceu: r.venceu, dano: r.dano, golpesMeus, golpesDele, ritmo });

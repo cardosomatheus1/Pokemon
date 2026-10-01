@@ -211,9 +211,12 @@ export function suite() {
 
   s.teste('recuar guarda o farm e perde o baú', () => {
     let r = comecar('recuo');
-    r = avancarRun(r, { elenco: ELENCO, equipe: EQUIPE(NIVEL), agora: T0 + 10 * 60_000 }).run;
+    /* 4 min, e não 10: desde a ST-2.21 o estágio 1 anda a 70% do tempo, e aos
+       10 min esta run já tinha acabado — não havia o que recuar. */
+    r = avancarRun(r, { elenco: ELENCO, equipe: EQUIPE(NIVEL), agora: T0 + 4 * 60_000 }).run;
+    ok(emCurso(r) && r.abates.length > 0, 'aos 4 min a run não está no meio (acabou, ou não abateu ninguém)');
     const abatesAntes = r.abates.reduce((a, x) => a + x.quantos, 0);
-    const fim = recuarRun(r, T0 + 10 * 60_000);
+    const fim = recuarRun(r, T0 + 4 * 60_000);
     ok(!emCurso(fim), 'recuar não encerrou a run');
     igual(fim.fim.motivo, 'recuou');
     igual(premioDo(resultadoDa(fim)).bau, false, 'recuar pagou o baú');

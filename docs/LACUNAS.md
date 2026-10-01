@@ -9392,6 +9392,52 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-238 — a troca entre jogadores existe, e quem chega não a acha
+
+**Registrada em:** 01/10/2026, no segundo relato do dono como jogador novo.
+**Bloco dono:** **ST-2.20** (a densidade para quem chega). **Estado:** aberta.
+
+*"Não achei como fazer uma troca de verdade com outro jogador."* Ela existe
+desde a ST-14.7b: **Pokédex → Trocas**, pelo nome do outro treinador. O
+defeito é de caminho, não de função — a aba mora dentro de outra aba, e nada
+na Coleção, no Time ou na Início aponta para ela. **Recomendação:** um botão
+"Trocar" na ficha da criatura da Coleção que abre a Trocas com ela já no seu
+lado, e a linha "troque com um amigo pelo nome dele" no caminho de quem chega.
+**Por que não cabe agora:** é navegação, e a ST-2.20 é o bloco que redesenha
+a navegação de quem chega. **O que a destrava:** nada.
+
+### L-237 — não há como mudar a ordem do time
+
+**Registrada em:** 01/10/2026, no segundo relato do dono como jogador novo.
+**Bloco dono:** **ST-10.7b** (proposta no PLANO, filho do Team Builder).
+**Estado:** aberta.
+
+*"Não achei como reordenar o time."* A ordem hoje é a de captura: a equipe é
+a coleção filtrada (`naEquipe`), e o Team Builder só tira, põe e troca. Onde
+ela pesa: no empate de alvo da luta (`treino-batalha`: menor índice primeiro),
+no time publicado da Liga e em quem aparece primeiro em toda tela. Onde ela
+NÃO pesa: na jornada (lutam os mais fortes, ST-2.16). **Recomendação:** subir
+e descer no Team Builder, gravando uma `ordem` na conta (local e servidor) —
+e não reordenando a coleção, que é histórico. **Por que não cabe agora:** mexe
+no formato da conta no servidor (caro de desfazer), e a ST-2.21 era sobre
+ritmo. **O que a destrava:** decidir se a ordem entra no snapshot da Liga.
+
+### L-236 — duas moedas de nome quase igual
+
+**Registrada em:** 01/10/2026, no segundo relato do dono como jogador novo.
+**Bloco dono:** **ST-2.20** (a densidade para quem chega). **Estado:**
+aberta — **pede veredito do dono**.
+
+*"Ter duas moedas com nomes tão parecidos, PokéCash na Arena e PokéCoin nas
+rotas e na Loja, também pode confundir."* Os dois nomes são decisão do dono
+(L-095, 01/09/2026), e por isso não se trocam aqui. **Recomendação:** manter
+os nomes e nunca mostrar um sozinho — sempre com o símbolo (💵 e 🪙) e, até a
+primeira vitória da jornada, com o papel ao lado ("PokéCash · aposta",
+"PokéCoin · aventura"). Se o dono preferir renomear, a troca é de uma linha no
+ContentPack (`MOEDA.nome`, `MOEDA_PVE.nome`) mais os textos do site. **Por
+que não cabe agora:** é decisão de identidade, e ela é do dono. **O que a
+destrava:** o veredito dele — renomear, ou só rotular.
+
 ### L-235 — quem acabou de chegar vê informação demais
 
 **Registrada em:** 01/10/2026, no relato do dono como jogador novo. **Bloco

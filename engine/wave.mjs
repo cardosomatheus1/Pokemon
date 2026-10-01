@@ -389,6 +389,24 @@ export function ameacaDa({ elenco, wave, estagio }) {
  *
  * 0,65 põe a wave mais rápida em ~30 s: continua sendo uma cena que se
  * assiste, e o estágio inteiro da equipe forte cai para ~7 min. */
+/* ── O RELÓGIO DA ENTRADA E DA DERROTA (ST-2.21) ──────────────────────────
+ * O dono, jogando como quem chega: "cada wave levou de 1 a 1,5 minuto, e as
+ * primeiras falharam várias vezes — não consegui chegar ao chefe". Medido: a
+ * run do estágio 1 da Floresta, com o inicial no nível 1, levava ~13,9 min
+ * (dez waves de 45–90 s e as derrotas repetindo a wave INTEIRA).
+ *
+ * A dificuldade NÃO muda — "no nível da porta, o avanço é duro e possível" é
+ * decisão do dono (§Q4, o teste da `wave`). Muda o tempo: no estágio 1 (a
+ * porta do bioma) a wave anda a `RITMO_DA_ENTRADA` do tempo, e a wave perdida
+ * acaba a `RITMO_DA_DERROTA` dele — perder é informação, e esperar por ela
+ * não é. A mesma run: ~8,7 min (no nível 5: 12,6 → 8,1; o Campo no nível 5:
+ * 13,4 → 8,2). Multiplica por fora do grampo do ritmo: o grampo existe para o
+ * par poder-ameaça, e não para isto. */
+export const RITMO_DA_ENTRADA = 0.7;
+export const RITMO_DA_DERROTA = 0.6;
+export const passoDaWave = ({ venceu, estagio }) =>
+  (venceu ? 1 : RITMO_DA_DERROTA) * (Math.floor(Number(estagio) || 1) <= 1 ? RITMO_DA_ENTRADA : 1);
+
 export const RITMO_PISO = 0.65;
 export const RITMO_TETO = 1.30;
 

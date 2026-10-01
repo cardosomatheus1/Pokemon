@@ -1040,6 +1040,11 @@ Fatiada em duas (a original seria G).
 - **Aceite:** Q5 com time vazio, parcial e cheio nas 4 larguras; trocar um membro move o número.
 - **Portões:** Q1 Q2 Q5 Q7.
 
+### ST-10.7b · A ordem do time (L-237) — proposta
+- Subir e descer no Team Builder, gravando uma `ordem` na conta (local e
+  servidor), sem reordenar a coleção. Decidir antes se a ordem entra no
+  snapshot da Liga.
+
 ### ST-10.8 · Tactical Presets ✅ 27/09
 > Feito: quatro presets na Trainer Engine, na chance e nas trocas; seletor no Team Builder; S1458–S1461.
 - **Porte** M · **Servidor** não · **Bloco dono** F4.4 · **Spec** §8.5
@@ -2433,9 +2438,35 @@ do servidor. Três partes:
   abertura segue a de antes.
 - **Fica (L-235):** a densidade para quem chega — dez abas e páginas longas.
 
-### ST-2.20 · A densidade para quem chega (L-235) — proposta
+### ST-2.21 · O relógio da entrada e da derrota ✅ 01/10
+- **Por quê (o relato do dono como jogador):** *"cada wave levou de 1 a 1,5
+  minuto mesmo na velocidade máxima, e as primeiras falharam várias vezes,
+  então não consegui chegar ao chefe da wave 10"*.
+- **Medido antes:** a run do estágio 1 da Floresta, com o inicial no nível 1,
+  levava ~13,9 min; com o inicial no nível 5, 12,6; o Campo no nível 5, 13,4.
+  O inicial sozinho no nível 1 fecha a run em 45%; com uma segunda criatura
+  (um Caterpie), ~96%.
+- **A dificuldade não mudou, de propósito:** "no nível da porta, o avanço é
+  duro e possível" é decisão do dono (§Q4, o teste da `wave`). A primeira
+  versão baixava a ameaça da porta e reprovou nesse teste — foi descartada.
+- **Feito (`engine/wave.mjs`, `passoDaWave`):** no estágio 1 a wave anda a 70%
+  do tempo (`RITMO_DA_ENTRADA`), e a wave perdida acaba em 60% do tempo dela
+  (`RITMO_DA_DERROTA`) — perder é informação, e esperar por ela não é. Fica
+  fora do grampo do ritmo (`fatorDoRitmo`), que é do par poder-ameaça. A
+  `run-avanco` multiplica.
+- **Medido depois:** 13,9 → 8,7 min · 12,6 → 8,1 · 13,4 → 8,2. As fixtures
+  de emissão e antifraude não mudaram (a emissão é por wave, não por minuto).
+- **Testes:** `ritmo-entrada` (novo, 3) · `run-avanco` (o "recuar" anda 4 min
+  em vez de 6) · S2569–S2572, todos PEGOU. **Mutantes de navegador:** 0.
+- **Fica (L-236, L-237, L-238):** as duas moedas de nome parecido (pede o
+  veredito do dono), a ordem do time (ST-10.7b), e o caminho até a Trocas.
+
+### ST-2.20 · A densidade para quem chega (L-235, L-236, L-238) — proposta
 - Um caminho de quem chega: menos abas visíveis até a primeira vitória da
   jornada, e as páginas longas em seções recolhidas.
+- As duas moedas sempre com símbolo e, no começo, com o papel ao lado
+  ("PokéCash · aposta", "PokéCoin · aventura") — salvo veredito do dono.
+- Um botão "Trocar" na ficha da Coleção que abre a Trocas com a criatura.
 
 ### ST-2.17 · O cenário da luta ✅ 01/10
 - **Por quê (o dono):** *"a tela das batalhas tá só 2 cores, sem detalhe
