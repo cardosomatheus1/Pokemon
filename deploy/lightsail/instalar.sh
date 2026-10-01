@@ -36,20 +36,40 @@ BASE=/srv/pokearena
 APP=$BASE/app
 export DEBIAN_FRONTEND=noninteractive
 
-apt-get update -y
-apt-get install -y curl git ca-certificates gnupg openssl debian-keyring debian-archive-keyring apt-transport-https
+# AS ETAPAS, para quem olha de fora: o user-data serve /var/lib/pokearena-diag
+# na porta 80 até o Caddy entrar. Só o nome da etapa e a linha que falhou —
+# nenhum segredo (o BASH_COMMAND sai com as variáveis por expandir).
+DIAG=/var/lib/pokearena-diag
+mkdir -p "$DIAG"
+etapa() { echo "$(date -u +%H:%M:%S) $*" >> "$DIAG/estado.txt"; }
+set -E
+trap 'etapa "FALHOU na linha $LINENO: $BASH_COMMAND"' ERR
+
+# O apt do PRIMEIRO BOOT: o unattended-upgrades segura o lock por minutos, e
+# um apt-get que não espera derruba o script inteiro.
+apt_() { for i in $(seq 1 20); do apt-get -o DPkg::Lock::Timeout=600 "$@" && return 0; sleep 15; done; return 1; }
+
+etapa "apt: pacotes base"
+apt_ update -y
+apt_ install -y curl git ca-certificates gnupg openssl debian-keyring debian-archive-keyring apt-transport-https
 
 # Node 22 (o banco é o node:sqlite, que pede 22.5+)
+etapa "node 22"
 if ! command -v node >/dev/null || ! node -e "process.exit(+process.versions.node.split('.')[0] >= 22 ? 0 : 1)"; then
-  curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
-  apt-get install -y nodejs
+  curl -fsSL https://deb.nodesource.com/setup_22.x -o /tmp/nodesource.sh
+  for i in 1 2 3; do bash /tmp/nodesource.sh && break; sleep 15; done
+  apt_ install -y nodejs
 fi
 # Caddy
+etapa "caddy"
+# o servidor de etapas sai da porta 80 antes: o pacote do Caddy sobe nela
+pkill -f "http.server 80" || true
 if ! command -v caddy >/dev/null; then
   curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --batch --yes --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
   curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' > /etc/apt/sources.list.d/caddy-stable.list
-  apt-get update -y && apt-get install -y caddy
+  apt_ update -y && apt_ install -y caddy
 fi
+etapa "o jogo"
 
 id pokearena >/dev/null 2>&1 || useradd -r -m -d "$BASE" -s /usr/sbin/nologin pokearena
 if [ -n "$PACOTE" ]; then
@@ -125,6 +145,7 @@ systemctl restart pokearena
 systemctl restart caddy
 
 for i in $(seq 1 60); do curl -fsS -o /dev/null http://127.0.0.1:8080/saude && break; sleep 1; done
+etapa "PRONTO"
 echo
 echo "PRONTO. O link de convite (mande só para quem vai jogar):"
 echo "  $(cat /etc/pokearena.link)"

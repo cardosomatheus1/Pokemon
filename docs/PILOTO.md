@@ -26,6 +26,15 @@ gatilho próprio. A **conta** (carteira, XP, cosméticos, apostas) é do servido
 e vale em qualquer aparelho; o **idle** não. Quem limpar o navegador perde o
 idle e mantém a conta. Avise os amigos no convite.
 
+## 2a. No ar na AWS (01/10/2026)
+
+O piloto roda numa instância Lightsail (`pokearena`, us-east-1, 1 GB) com IP
+estático, HTTPS pelo Caddy em `https://34-224-231-194.sslip.io` e acesso só por
+convite — o link com a chave fica em `/etc/pokearena.link` na instância. O
+passo a passo, a atualização e os logs estão em `deploy/lightsail/LEIAME.md`.
+O que vem abaixo (o servidor no PC do dono com túnel) continua valendo como
+alternativa.
+
 ## 2. Subir o servidor (no PC do dono)
 
 Pede **Node 22.5 ou mais novo** (o banco é o `node:sqlite`).
