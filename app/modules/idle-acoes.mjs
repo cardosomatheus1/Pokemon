@@ -23,7 +23,7 @@ import { carregar, escolherInicial, iniciarExpedicao, colher, lancarBola, mover 
 import { aplicar as aplicarEvolucao } from './evolucao-idle.mjs';
 import { escolher as escolherFoco } from '../../engine/foco.mjs';
 import { comecarAvanco, recuar, usarPocao, colherAvancoDaRun } from './avanco-estado.mjs';
-import { idleNoServidor, lanceDaConta } from './idle-conta.mjs';
+import { idleNoServidor, lanceDaConta, mensagemDoConflito } from './idle-conta.mjs';
 import { sincronizarIdleDaConta } from './idle-servidor.mjs';
 import { comprar as comprarNaLoja, vender as venderNaLoja } from '../../engine/loja.mjs';
 import { estilhacarNaBolsa, montarNaBolsa } from '../../engine/estilhaco.mjs';
@@ -37,6 +37,14 @@ function ondeFaz({ api = apiPadrao, deposito = globalThis.localStorage, conta } 
 
 async function naConta(e, rota, corpo, { api, deposito }) {
   const r = await api.post(rota, corpo);
+  /* O 409 é a conta que mudou por outro caminho — a run que o servidor já
+     fechou, por exemplo (D-145). A tela relê antes de dizer, ou continuaria
+     mostrando o que não existe mais. */
+  if (r.status === 409) {
+    await sincronizarIdleDaConta({ api, deposito });
+    Object.assign(e, carregar(deposito));
+    throw new Error(mensagemDoConflito(r.corpo));
+  }
   if (!r.ok) throw new Error(r.corpo?.erro ?? 'o servidor não respondeu — nada mudou, tente de novo');
   await sincronizarIdleDaConta({ api, deposito });
   Object.assign(e, carregar(deposito));   // o `carregar` devolve a forma inteira: nada fica do velho

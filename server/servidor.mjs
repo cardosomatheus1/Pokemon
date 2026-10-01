@@ -14,6 +14,7 @@
  */
 import { registrarSinais } from './sinais.mjs';
 import { servirJogo } from './estatico.mjs';
+import { digitalDoCodigo } from './build.mjs';
 import { createServer } from 'node:http';
 import { API_VERSAO, CABECALHO_VERSAO, ERROS, SEM_VERSAO, versaoAceita } from './contrato.mjs';
 import { lerConfig } from './config.mjs';
@@ -122,7 +123,7 @@ export function criarServidor(opcoes = {}) {
      Declara a versão do MOTOR porque é por ela que se descobre uma instância
      velha no pool antes de ela servir uma odd para alguém. */
   registrar('GET', '/saude', () => ({
-    corpo: { ok: true, versaoMotor: VERSAO_MOTOR, versaoApi: API_VERSAO, ambiente: config.ambiente },
+    corpo: { ok: true, versaoMotor: VERSAO_MOTOR, versaoApi: API_VERSAO, build: BUILD, ambiente: config.ambiente },
   }));
 
   /* A digital da rodada: a prova de paridade, exposta como rota porque é ela
@@ -316,8 +317,12 @@ export function criarServidor(opcoes = {}) {
 
 /* --- auxiliares ----------------------------------------------------------- */
 
+/* A digital do código servido (D-145): lida uma vez, ao subir. */
+const BUILD = digitalDoCodigo(new URL('..', import.meta.url));
+
 function responder(res, status, corpo) {
   for (const [k, v] of Object.entries(SEGURANCA)) res.setHeader(k, v);
+  res.setHeader('x-build', BUILD);
   if (corpo === null) { res.writeHead(status); return res.end(); }
   const texto = JSON.stringify(corpo);
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' });

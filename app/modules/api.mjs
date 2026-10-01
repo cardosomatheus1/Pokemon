@@ -18,6 +18,13 @@
  */
 import { API_VERSAO, CABECALHO_VERSAO } from '../../server/contrato.mjs';
 
+/* ── A VERSÃO DO CÓDIGO (ST-2.22b, D-145) ─────────────────────────────────
+ * O servidor marca cada resposta com a digital do código que serve. A aba
+ * guarda a primeira que viu; outra depois quer dizer que o jogo foi
+ * atualizado com a aba aberta — e a aba roda a regra velha contra o servidor
+ * novo. Resposta sem marca não diz nada. */
+export const versaoMudou = (vista, agora) => !!vista && !!agora && vista !== agora;
+
 const CHAVE_SESSAO = 'ar_sessao';
 /* O NÚMERO DO APARELHO (ST-13.8 · DEC-19): aleatório, deste navegador, e só
    isto — o servidor guarda a assinatura dele para achar contas no mesmo
@@ -33,6 +40,16 @@ export function criarApi({ base = '', armazem = globalThis.localStorage } = {}) 
   const aparelho = (() => {
     try { const v = armazem?.getItem(CHAVE_APARELHO); if (v) return v; const n = numeroNovo(); armazem?.setItem(CHAVE_APARELHO, n); return n; } catch { return numeroNovo(); }
   })();
+
+  /* A VERSÃO DO CÓDIGO (D-145): a primeira marca vista, e quem quer saber
+     quando outra aparece — o jogo foi atualizado com a aba aberta. */
+  let buildVisto = null, novaVersao = false;
+  const aoMudar = new Set();
+  const notarVersao = b => {
+    if (!b) return;
+    if (!buildVisto) { buildVisto = b; return; }
+    if (!novaVersao && versaoMudou(buildVisto, b)) { novaVersao = true; for (const f of aoMudar) try { f(b); } catch { /* um ouvinte não derruba o pedido */ } }
+  };
 
   async function chamar(metodo, caminho, corpo) {
     let r;
@@ -52,6 +69,7 @@ export function criarApi({ base = '', armazem = globalThis.localStorage } = {}) 
          poder dizer isso com essas palavras. */
       return { ok: false, indisponivel: true, status: 0, corpo: null, motivo: String(e?.message || e) };
     }
+    notarVersao(r.headers?.get?.('x-build'));
     let dados = null;
     try { dados = await r.json(); } catch { /* tratado logo abaixo */ }
 
@@ -89,6 +107,8 @@ export function criarApi({ base = '', armazem = globalThis.localStorage } = {}) 
        é a MESMA sessão, lida do mesmo lugar, em vez de uma segunda cópia
        guardada em outro canto. */
     sessaoAtual: () => sessao,
+    /* O jogo foi atualizado com a aba aberta (D-145): a tela avisa. */
+    aoMudarVersao: f => { aoMudar.add(f); if (novaVersao) f(); },
     esquecerSessao: () => { sessao = null; gravar(null); },
     /* ADOTAR UM TOKEN QUE A RESPOSTA NÃO ENTREGOU COMO `sessao`.
      *

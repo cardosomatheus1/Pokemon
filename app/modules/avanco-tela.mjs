@@ -16,6 +16,7 @@
  * mesma divisão que o `idle-paineis.mjs` registra: quem desenha não guarda, e
  * quem desenha não decide.
  */
+import { esperaDaColheita } from './run-fim.mjs';
 import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 
@@ -185,6 +186,11 @@ export const saqueDaUltimaRun = () => ultimoSaque;
    resposta chegar. `recarregarAba` é o `renderIdle` que a aba deu ao
    `ligarAvanco` — o quadro "quem apareceu" é dela. */
 let colhendo = false, recarregarAba = null;
+/* A COLHEITA RECUSADA TENTA DE NOVO (D-146). O aparelho pode ver a queda um
+   fio antes do servidor; o servidor responde "a run ainda está acontecendo",
+   e sem isto a tela parava com o retrato de antes da run — XP 0, nenhum
+   encontro — até alguma outra coisa repintar. */
+let tentativas = 0;
 
 export function pararLaco() {
   if (laco) { clearInterval(laco); laco = null; }
@@ -234,8 +240,8 @@ export function pintarRun(E, { agora }) {
       const r = colherRunNa(E, { pack: PACK, agora });
       if (r?.then) {
         colhendo = true;
-        r.then(colhida => { depoisDaColheita(E, colhida, agora); recarregarAba?.(); })
-          .catch(() => { /* a leitura seguinte da conta diz o que aconteceu */ })
+        r.then(colhida => { tentativas = 0; depoisDaColheita(E, colhida, agora); recarregarAba?.(); })
+          .catch(() => { setTimeout(() => recarregarAba?.(), esperaDaColheita(tentativas++)); })
           .finally(() => { colhendo = false; });
       } else depoisDaColheita(E, r, agora);
     } catch { /* já colhida noutra aba: nada a fazer, e nada a dizer */ }

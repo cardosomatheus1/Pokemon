@@ -7333,3 +7333,114 @@ versionadas.
 cada espécie, normal E brilhante" (com a cópia local presente, exige os 292
 arquivos e que o baixador peça a variante). S2562 PEGOU.
 
+
+## D-144 — com conta, o resultado da Arena levava o doce da conta para o aparelho, e o doce recusava ✅ CORRIGIDO na ST-2.22a (01/10)
+
+**Achado:** o dono, jogando como jogador novo — *"usar um doce no Bulbasaur
+mostrou 'sem doce da linha dela' e deu erro 400, mesmo com doces recebidos na
+Jornada"*. **Bloco dono:** ST-2.22a.
+
+**Causa.** O resgate da ST-9.9 (`trazerDocesDoServidor`) foi desenhado quando
+o idle morava no aparelho: três segundos depois de todo resultado da Arena,
+ele pedia `POST /api/doces/resgatar`, que ZERA o doce da conta, e somava a
+resposta ao save. A ST-13.5e pôs o idle na conta (`IDLE_NA_CONTA`), e o "dar
+doce" passou a perguntar à conta — mas o resgate continuou rodando. Depois de
+qualquer rodada assistida, a conta tinha zero, a tela mostrava o DOBRO (a
+releitura da conta mais o resgate), e o doce recusava. Na releitura seguinte
+o save recebia `{}` da conta, e o doce sumia de vez. Valia para todo doce da
+conta: o da jornada, o da aposta, o de soltar, o da loja da Liga.
+
+**Medido** (reprodução em Node com o banco em memória, a mesma de
+`jornada-servidor`): jornada → doce `{1:1}` na conta → resgate → conta `{}`,
+save `{1:2}` → "dar doce" recusa "sem doce da linha dela".
+
+**Conserto.** Com o idle na conta, o fim da rodada só RELÊ a conta
+(`sincronizarIdleDaConta`); o resgate fica para o idle no aparelho, o caso para
+que foi desenhado. **Fica (pede veredito do dono):** devolver às contas os
+doces que o resgate tirou desde 30/09 — é migração de dado (`candy_ledger`,
+motivo `resgate`), e migração é decisão dele.
+
+**Por que a suíte não viu.** As duas pontas tinham teste, cada uma no seu
+mundo: o resgate contra o idle no aparelho (ST-9.9), o "dar doce" contra a
+conta (ST-13.3c). Nenhum teste passava pelas duas na ordem em que o jogador
+passa — rodada, depois doce.
+
+**Teste que trava:** `doce-na-conta` — "com o idle na conta, o fim da rodada
+relê a conta e não resgata o doce".
+
+## D-145 — a run que só a tela via: o servidor já a tinha fechado, e poção e recuar voltavam 409 ✅ CORRIGIDO na ST-2.22b (01/10)
+
+**Achado:** o dono, jogando como jogador novo — *"Poção e Recuar não
+funcionaram no meio da run do Campo. Os dois voltaram erro 409 e não fizeram
+nada"*; e *"muitas falhas de conexão (SSL)"*. **Bloco dono:** ST-2.22b.
+
+**Causa.** A run é reproduzida dos dois lados, pela semente e pelo relógio —
+cada lado com o SEU relógio e o código que carregou. O cliente só relia a
+conta ao abrir e depois de uma ação que deu certo; o 409 não relia nada. Duas
+derivas abriam a janela da "run fantasma", em que a tela mostra a run e o
+servidor já a fechou:
+
+1. **a aba aberta antes de uma atualização** — a mais provável aqui: a ST-2.21
+   (que encurta as waves do estágio 1) foi ao ar às 21h48 UTC de 01/10, com o
+   dono jogando. A aba seguia com o motor velho, o servidor com o novo. Medido
+   (reprodução com o servidor em processo e o motor de antes por `git archive`):
+   o servidor fechava a run 299–338 s antes da tela, e nesse tempo a tela
+   mostrava as waves 4–8 com 28–52 de vida, e poção e recuar voltavam 409;
+2. **o relógio do aparelho atrasado** — a janela é o tamanho do atraso (3 s:
+   a poção no último fio de vida; 60 s: waves inteiras).
+
+As falhas de SSL batem com a mesma hora: a troca de máquina da ST-2.21 move o
+IP e reinicia a instância. Daqui, 30 de 30 pedidos ao site responderam depois.
+
+**Conserto.** (1) o 409 relê a conta antes de responder, e a run que o
+servidor fechou diz "a run já terminou no servidor — a tela foi atualizada com
+o resultado"; (2) a leitura da conta mede o desvio do relógio (a hora do
+servidor menos a do aparelho) e a tela das Rotas anda nele; (3) o servidor
+marca cada resposta com a digital do código que serve (`x-build`, lida do
+conteúdo ao subir), e a aba que vê a digital mudar mostra "O jogo foi
+atualizado — Recarregar".
+
+**Por que a suíte não viu.** Os testes da run com conta usam o mesmo motor e o
+mesmo relógio nas duas pontas — exatamente o caso em que as duas cópias não
+divergem. A divergência só existe entre versões, ou entre relógios.
+
+**Testes que travam:** `run-fantasma` — o 409 relê a conta e diz por quê; o
+relógio da tela anda com o do servidor; a versão do código marca as respostas
+e a aba vê quando ela muda.
+
+## D-146 — a run que caiu era colhida tarde e calada: a tela dizia "perdi tudo", e o saldo pulava ✅ CORRIGIDO na ST-2.22c (01/10)
+
+**Achado:** o dono, jogando como jogador novo — *"a run falhou e perdi tudo:
+XP, capturas e histórico"* e *"o saldo ficou 550 moedas maior do que deveria
+depois da falha"*. **Bloco dono:** ST-2.22c.
+
+**Medido.** Nada se perdia: o servidor guardava XP, moeda, encontros e a linha
+do histórico ("caiu na wave 8") — reprodução com o banco em memória: 2.000 →
+1.450 depois de 2 Poké Balls e 1 Poção (2 × 200 + 150 = 550), e 1.751, +69 XP,
+4 encontros e 1 linha depois da run que caiu. A loja não desfaz compra por
+caminho nenhum (a bolsa só muda por diferença, nunca por valor absoluto).
+
+**Causa.** Com o relógio do aparelho um fio à frente do servidor (0,8 s
+bastou), a tela via a queda primeiro, pedia a colheita, o servidor respondia
+"a run ainda está acontecendo", e a tela engolia o erro e parava o laço. A
+tela de escolha voltava como tinha sido pintada ANTES da run — XP 0, nenhum
+encontro, nenhuma linha — e nada pedia a colheita de novo. Quando outra coisa
+repintava, o saque entrava sem nenhuma frase: XP e moeda pulavam, e o pulo foi
+lido como erro de saldo. O "exatamente 550" não se reproduziu (a moeda de uma
+run que cai na wave 8 do Campo saiu entre 295 e 411 em 15 amostras); o pulo
+calado do saque é a explicação que sobra, e a conta do dono a confirma ou não
+(a linha do histórico daquela run diz quanto ela pagou).
+
+**Conserto.** A colheita recusada tenta de novo, com espera crescente (1,5 s,
+3 s, 6 s… até 30 s); o 409 relê a conta (D-145); e o fim da run ganhou uma
+frase acima do quadro "quem apareceu" — *"A equipe caiu na wave 8 de 10.
+Ficou com o que farmou: +67 XP, +355 PokéCoin e 4 encontros esperando a bola.
+Só o baú do estágio ficou para trás."*
+
+**Por que a suíte não viu.** Os testes da run com conta cobriam o RECUO, em que
+é o próprio servidor quem fecha a run — as duas pontas concordam por
+construção. A queda, que cada ponta vê no próprio relógio, não tinha teste.
+
+**Testes que travam:** `run-fim` — a colheita recusada tenta de novo; a queda
+diz o que ficou e que só o baú se perdeu; o recuo e a limpeza têm frase
+própria.

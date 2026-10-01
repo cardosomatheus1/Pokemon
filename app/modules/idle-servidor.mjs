@@ -6,7 +6,7 @@
  */
 import { api as apiPadrao } from './api.mjs';
 import { carregar, salvar } from './idle-dados.mjs';
-import { idleDaConta } from './idle-conta.mjs';
+import { idleDaConta, desvioDoRelogio } from './idle-conta.mjs';
 import { carregarMarcas, gravarMarcas, marcarVistas, marcarEncontrada } from './pokedex-estado.mjs';
 
 export async function sincronizarIdleDaConta({ api = apiPadrao, deposito = globalThis.localStorage } = {}) {
@@ -17,7 +17,11 @@ export async function sincronizarIdleDaConta({ api = apiPadrao, deposito = globa
     salvar(local, deposito);
     return { ok: false, status: r.status };
   }
-  salvar(idleDaConta(local, r.corpo, { doces: d.ok ? d.corpo?.doces ?? null : null, docesPresos: d.ok ? d.corpo?.presos ?? null : null }), deposito);
+  const novo = idleDaConta(local, r.corpo, { doces: d.ok ? d.corpo?.doces ?? null : null, docesPresos: d.ok ? d.corpo?.presos ?? null : null });
+  /* O desvio do relógio (D-145): a hora do servidor contra a do aparelho na
+     chegada — a run da tela anda no relógio do servidor. */
+  novo.conta.desvio = desvioDoRelogio({ servidor: r.corpo.agora, local: Date.now() });
+  salvar(novo, deposito);
   /* AS MARCAS DA ESCADA (ST-13.9b): as da conta SOMAM às do aparelho — as
      telas leem daqui, e a marca é só acréscimo. O que a missão mede é o que
      o servidor tem; a soma daqui só pinta. */

@@ -213,9 +213,11 @@ function finish(){
    * parada em cima do momento mais esperado da rodada — e, sem rede,
    * parada para sempre. */
   if (modoServidor()) hidratar().then(atualizarSaldo);
-  /* ST-9.9: o doce da conta nasce na liquidação do servidor e desce ao save —
-     com folga, para a liquidação desta rodada já ter acontecido. */
-  if (modoServidor()) setTimeout(trazerDocesDoServidor, 3000);
+  /* ST-9.9: o doce da conta nasce na liquidação do servidor — com folga, para
+     a liquidação desta rodada já ter acontecido. Com o idle na conta, a tela
+     só relê a conta (ST-2.22a). A seta, e não a função direto: o `setTimeout`
+     passaria argumento nenhum hoje, e um dia passaria o que não devia. */
+  if (modoServidor()) setTimeout(() => trazerDocesDoServidor(), 3000);
   // o loop de balões só roda na fase 'fighting'; sem isso o último
   // ataque fica com o balão travado na tela até a rodada seguinte
   S.ents.forEach(e => { e.bub.classList.remove('on'); e.bubbleUntil = -1; });

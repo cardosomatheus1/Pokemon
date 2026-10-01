@@ -37,8 +37,29 @@ export function camposDaConta(cru) {
      ST-14.0D, e os da pedra e do doce) nunca chegava à tela — o servidor
      mandava, o save gravava, a leitura jogava fora. Só alimentam AVISOS; a
      regra de verdade é a do servidor. */
-  return { conta: { agora: Number.isFinite(c.agora) ? c.agora : null, teto, estagio: c.estagio ?? null, desatualizado: c.desatualizado === true },
+  return { conta: { agora: Number.isFinite(c.agora) ? c.agora : null, teto, estagio: c.estagio ?? null, desatualizado: c.desatualizado === true,
+                    desvio: desvioValido(c.desvio) },
            lotes: lotesDoDisco(cru.lotes), docesPresos: presosDoDisco(cru.docesPresos) };
+}
+
+/* ── O RELÓGIO DA CONTA (ST-2.22b, D-145) ─────────────────────────────────
+ * A run é reproduzida dos dois lados, pelo relógio de cada um. Um aparelho
+ * atrasado em 60 s via a run durar 60 s a mais que o servidor — e a poção,
+ * nesse minuto, voltava 409. A leitura da conta mede o desvio (a hora do
+ * servidor menos a do aparelho na chegada), e a tela soma. Mais de um dia de
+ * diferença não é relógio, é dado ruim: não se aplica. */
+export const DESVIO_MAX_MS = 24 * 3600e3;
+const desvioValido = v => (Number.isFinite(v) && Math.abs(v) <= DESVIO_MAX_MS ? Math.round(v) : 0);
+export const desvioDoRelogio = ({ servidor, local }) =>
+  (Number.isFinite(servidor) && Number.isFinite(local) ? desvioValido(servidor - local) : 0);
+export const agoraDaConta = (e, local) => local + desvioValido(e?.conta?.desvio);
+
+/* ── O 409 (ST-2.22b) ─────────────────────────────────────────────────────
+ * Conflito quer dizer que a conta mudou por outro caminho: a tela relê, e a
+ * mensagem diz isso. A run que o servidor já fechou tem frase própria. */
+export function mensagemDoConflito(corpo) {
+  if (corpo?.codigo === 'RUN_SEM_RUN') return 'a run já terminou no servidor — a tela foi atualizada com o resultado';
+  return `${corpo?.erro ?? 'a conta mudou'} — a tela foi atualizada com o que está na conta`;
 }
 
 /* Por item, a lista de `{ classe, quantidade }` na ordem do débito. */

@@ -32,6 +32,10 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            Rotas abre em 1× e as rotas enchem duas colunas. Olhar no celular:
            node tools/olhar-celular.mjs  (capturas em tools/previas/_celular/).
            Próximo do cenário: ST-2.9 (L-231, a Floresta sem árvore na vista).
+           ST-2.22 (01/10): D-144 (o doce apagado da conta depois da
+           rodada), D-145 (run fantasma: 409; relógio do servidor; aviso de
+           versão nova), D-146 (a run que cai, colhida e dita). PEDE VEREDITO
+           DO DONO: devolver os doces que o resgate tirou desde 30/09.
            ST-2.21 (01/10): o ritmo da porta — no estágio 1 a wave anda a
            70% e a perdida acaba em 60% (passoDaWave); run 13,9 → 8,7 min.
            Dificuldade igual (§Q4). Registradas L-236 (moedas, PEDE VEREDITO

@@ -103,7 +103,7 @@ export async function suite() {
     for (const chamada of ['await comecarNa(estado(), {', 'await recuarNa(estado(), agora())', 'await pocaoNa(E, {', 'const r = colherRunNa(E, {'])
       ok(t.includes(chamada), `a tela da run não chama ${chamada}`);
     ok(/!parada\.colhidaEm && !colhendo\)/.test(t) && /colhendo = true;/.test(t) && /\.finally\(\(\) => \{ colhendo = false; \}\)/.test(t), 'a colheita com conta sem a trava: a mesma run seria pedida a cada quadro');
-    ok(/r\.then\(colhida => \{ depoisDaColheita\(E, colhida, agora\); recarregarAba\?\.\(\); \}\)/.test(t), 'com conta, o quadro "quem apareceu" não repinta depois da colheita');
+    ok(/r\.then\(colhida => \{ (tentativas = 0; )?depoisDaColheita\(E, colhida, agora\); recarregarAba\?\.\(\); \}\)/.test(t), 'com conta, o quadro "quem apareceu" não repinta depois da colheita');
     ok(/recarregarAba = recarregar;/.test(t), 'a tela da run não guarda o redesenho da aba');
   });
 

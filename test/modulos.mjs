@@ -379,6 +379,8 @@ const CAMADA = {
   'jornada-desenho-tela.mjs': 4,
   'jornada-estrada.mjs': 0,
   'idle-conta.mjs': 0,
+  /* ST-2.22c: o fim da run — quando colher de novo e o que dizer. */
+  'run-fim.mjs': 0,
   'historico-dados.mjs': 0,
   'encontro-dados.mjs': 0,   // ST-14.0D: o quadro de encontros (shiny, garantida, lote preso)
   'prende-dados.mjs': 0,     // ST-14.3d: o aviso "prende" da pedra e do doce

@@ -8131,9 +8131,34 @@ body.soAssiste .pick{cursor:pointer}
 }
 @keyframes folhaSobe{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){ .mainnav.mais .navFolha{animation:none} }
+
+/* A VERSÃO NOVA (ST-2.22b, D-145): o jogo foi atualizado com a aba aberta, e
+   a aba roda a regra velha contra o servidor novo. Uma faixa no topo, por cima
+   de tudo, e um botão só — recarregar é a resposta inteira. */
+.novaVersao{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;gap:12px;align-items:center;
+  width:min(640px, calc(100vw - 32px));box-sizing:border-box;padding:10px 14px;border-radius:12px;background:var(--solid);color:var(--txt);
+  border:1px solid rgba(var(--goldRGB),.7);box-shadow:0 0 18px rgba(var(--goldRGB),.35),0 6px 24px rgba(0,0,0,.5);font-size:14px;line-height:1.35}
+.novaVersao[hidden]{display:none}
+.novaVersao b{color:var(--gold)}
+.novaVersao button{flex:none;padding:7px 14px;border-radius:9px;border:0;background:var(--gold);color:var(--onAccent);font-weight:800;cursor:pointer}
+
+/* O FIM DA RUN EM UMA FRASE (ST-2.22c, D-146): onde acabou, o que ficou, o
+   que se perdeu. Neon, porque é interface; a borda à esquerda é a do log da
+   run, de onde a frase vem. */
+.idleFimRun{margin:10px 0;padding:10px 14px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);
+  border-left:3px solid var(--gold);color:var(--txt);font-size:14px;line-height:1.45}
+.idleFimRun[hidden]{display:none}
+#viewIdle.emRun .idleFimRun{display:none}
 </style>
 </head>
 <body>
+
+<!-- ST-2.22b · D-145: o aviso de versão nova. Nasce escondido; o boot o mostra
+     quando uma resposta da API traz outra digital de código. -->
+<div class="novaVersao" id="novaVersao" role="status" hidden>
+  <span><b>O jogo foi atualizado.</b> Recarregue para jogar com a versão nova — o que está na sua conta não se perde.</span>
+  <button type="button" id="btnNovaVersao">Recarregar</button>
+</div>
 
 <!-- A PRIMEIRA COISA QUE ALGUÉM VÊ (R26). O `.b1` vem VAZIO: quem o preenche é o
      boot, com a marca inteira do ContentPack — mesmo caminho da topbar e do Início.
@@ -8503,6 +8528,7 @@ body.soAssiste .pick{cursor:pointer}
          tela do idle em que ele decide alguma coisa depois que a expedição
          voltou. Fica ANTES do saque de propósito: o que exige decisão vem antes
          do que só informa. -->
+    <p class="idleFimRun" id="idleFimRun" role="status" hidden></p>
     <div class="card idleDepois" id="idleEncontros"></div>
 
     <div class="card idleDepois" id="idleSaque"></div>
@@ -9734,6 +9760,9 @@ async function ligarModoServidor(){
 }
 
 (async function boot(){
+  /* D-145: a aba aberta antes de uma atualização roda a regra velha. */
+  api.aoMudarVersao(() => { const b = $('#novaVersao'); if (b) b.hidden = false; });
+  $('#btnNovaVersao')?.addEventListener('click', () => location.reload());
   atualizarSaldo();
   $('#btnAuto').classList.add('on');
   ensureDaily();          // garante os 3 desafios do dia já no carregamento

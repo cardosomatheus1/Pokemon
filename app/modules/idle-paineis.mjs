@@ -38,6 +38,7 @@ import { idDaMoeda, idDoMaterial } from '../../engine/economia-idle.mjs';
 import { nomesDe } from './itens-nome.mjs';
 import { estiloDa, classeDa, daFaixa } from './raridade.mjs';
 import { resumoDaBolsa } from './bolsa-resumo.mjs';
+import { fraseDoFim } from './run-fim.mjs';
 
 /* A espécie pelo dex. Uma função e não uma busca solta: ela é chamada dentro de
    template, e busca solta ali vira `undefined.n` no dia em que o pack mudar. */
@@ -58,6 +59,18 @@ function arteDoEncontro(dex) {
   return est
     ? `<span class="idleEncArte icone" style="${est}" aria-hidden="true"></span>`
     : dexImg(dex, esp(dex).n, 'class="idleEncArte"');
+}
+
+/* O FIM DA ÚLTIMA RUN, em uma frase (ST-2.22c, D-146): onde acabou, o que
+   ficou, o que se perdeu. O painel da run some quando ela acaba, e o saque
+   entrava calado — o dono leu "perdi tudo" e um saldo que pulou. */
+export function pintarFimDaRun(E, run) {
+  const alvo = $('#idleFimRun');
+  if (!alvo) return;
+  const f = fraseDoFim(run, { moeda: PACK.moedaPve?.nome ?? 'moeda',
+    nomeDe: id => { const c = (E.criaturas ?? []).find(x => x.id === id); return c ? nomeExibido(esp(c.dex).n) : null; } });
+  alvo.textContent = f ?? '';
+  alvo.hidden = !f;
 }
 
 export function pintarSaque(E, ultimaColheita) {

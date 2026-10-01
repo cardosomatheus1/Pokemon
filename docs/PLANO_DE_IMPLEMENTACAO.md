@@ -2438,6 +2438,35 @@ do servidor. Três partes:
   abertura segue a de antes.
 - **Fica (L-235):** a densidade para quem chega — dez abas e páginas longas.
 
+### ST-2.22 · Os quatro defeitos do terceiro relato (D-144, D-145, D-146) ✅ 01/10
+- **Por quê (o relato do dono como jogador):** poção e recuar voltando 409 no
+  meio da run; "perdi tudo" numa run que caiu; o saldo 550 maior depois da
+  falha; o doce recusando com "sem doce da linha dela"; falhas de SSL.
+- **a · o doce (D-144):** o resgate da ST-9.9 seguia rodando depois de toda
+  rodada da Arena e ZERAVA o doce da conta (o idle mora na conta desde a
+  ST-13.5e). Agora o fim da rodada só relê a conta. **Pede veredito do dono:**
+  devolver os doces que o resgate tirou desde 30/09 (migração de dado).
+- **b · a run fantasma (D-145):** a aba aberta antes da ST-2.21 rodava a regra
+  velha, e o servidor fechava a run até ~5 min antes da tela — toda ação
+  voltava 409. O 409 relê a conta e diz "a run já terminou no servidor"; a
+  tela anda no relógio do servidor (o desvio medido em cada leitura); e o
+  servidor marca cada resposta com a digital do código (`x-build`), e a aba
+  que a vê mudar mostra "O jogo foi atualizado — Recarregar". As falhas de
+  SSL batem com a hora da troca de máquina da ST-2.21.
+- **c · o fim da run (D-146):** nada se perdia — o servidor guardava tudo. A
+  colheita recusada (o aparelho viu a queda um fio antes) era engolida, e a
+  tela ficava com o retrato de antes da run. Agora ela tenta de novo (1,5 s,
+  3 s… até 30 s), e uma frase acima do quadro "quem apareceu" diz onde a run
+  acabou, o que ficou e o que se perdeu. O "+550" não se reproduziu (a run que
+  cai na wave 8 do Campo paga 295–411); o pulo calado do saque é o que sobra.
+- **Testes:** `doce-na-conta` (3) · `run-fantasma` (4) · `run-fim` (5) ·
+  `idle-acoes` ajustado · S2573–S2583, todos PEGOU; S594 e S2015 realvos.
+  **Q5:** com o servidor 40 min à frente, a tela mediu o desvio, colheu a run
+  e disse "A equipe caiu na wave 7 de 10. Ficou com o que farmou: +67 XP, +355
+  PokéCoin e 4 encontros…" (1440 e 420); o aviso de versão nova em 1440 e 420.
+  **Mutantes de navegador:** 0 (as decisões moram em `run-fim.mjs` e
+  `idle-conta.mjs`, camada 0).
+
 ### ST-2.21 · O relógio da entrada e da derrota ✅ 01/10
 - **Por quê (o relato do dono como jogador):** *"cada wave levou de 1 a 1,5
   minuto mesmo na velocidade máxima, e as primeiras falharam várias vezes,

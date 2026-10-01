@@ -72,7 +72,7 @@ import { NIVEL_PARA_ESCOLHER as NIVEL_DO_FOCO, descansando as descansandoFoco }
 import { chanceDe } from '../../engine/captura.mjs';
 import { mostrarBioma, acompanhar, trocarZoom } from './idle-mundo.mjs';
 import { quemMostrar, expedicaoEm, biomaDeAbertura, podemIr } from './idle-quem.mjs';
-import { pintarSaque, pintarEncontros, pintarCentro, pintarBolsa } from './idle-paineis.mjs'; import { pintarHistorico } from './historico-tela.mjs';
+import { pintarSaque, pintarEncontros, pintarCentro, pintarBolsa, pintarFimDaRun } from './idle-paineis.mjs'; import { pintarHistorico } from './historico-tela.mjs';
 import { pintarEstagios, pintarPrevia } from './idle-estagios.mjs';
 import { pintarCampo } from './idle-campo.mjs';
 import { pintarTreino } from './idle-treino.mjs';
@@ -80,9 +80,10 @@ import { pintarTreino } from './idle-treino.mjs';
    cabeçalho de `idle-biomas.mjs`. Ele responde a primeira pergunta da aba
    (*para onde eu mando?*) e não conhece mais nada. */
 import { pintarBiomas, usarEstado as biomasUsam } from './idle-biomas.mjs';
-import { pintarRun, ligarLaco as ligarLacoRun, pararLaco as pararLacoRun,
+import { pintarRun, saqueDaUltimaRun, ligarLaco as ligarLacoRun, pararLaco as pararLacoRun,
          ligarAvanco, atualizarBotaoAvancar } from './avanco-tela.mjs';
 import { avancoEmCurso } from './avanco-estado.mjs';
+import { agoraDaConta } from './idle-conta.mjs';
 
 let E = VAZIO();
 let biomaEscolhido = null;
@@ -102,7 +103,7 @@ let relogio = null;
    de template, e busca solta ali vira `undefined.n` no dia em que o pack mudar. */
 const esp = dex => (PACK.especies ?? []).find(e => e.dex === dex) ?? { n: '?', dex };
 
-const agora = () => Date.now();
+const agora = () => agoraDaConta(E, Date.now());   // D-145: o relógio do servidor
 
 /* A ROTA ESCOLHIDA, num lugar só. Ela é lida pelo botão, pelo clique e pela
    tela do avanço, e três cópias das mesmas três variáveis são três lugares
@@ -290,6 +291,7 @@ export function renderIdle() {
   pintarFundo();
   desenharPerfis();
   cartoes();
+  pintarFimDaRun(E, saqueDaUltimaRun());   // D-146
   pintarEncontros(E);
   pintarCentro(E);
   pintarCampo(E);
