@@ -9114,7 +9114,7 @@ Não cabe na ST-10.25 porque é redesenhar a geografia (conteúdo) e a regra de
 revelação dos nós, e não a pintura. O que a destrava: nada — é construir; o
 editor já existe (`node tools/mapa-tiled.mjs exportar|importar`).
 
-### L-221 — o bônus de cadastro em PC-B passa do teto de saldo, e o marco semanal paga o substituto
+### L-221 — o bônus de cadastro em PC-B passa do teto de saldo, e o marco semanal paga o substituto ✅ DECIDIDA (01/10): manter
 
 **Registrada em:** 30/09/2026, na ST-14.0B1. **Bloco dono:** ST-14.15 (a
 calibração da E14). **Estado:** aberta — a metade "sem fonte de PC-T" foi
@@ -9134,6 +9134,24 @@ com o grant no bolso certo.
 
 **O que a destrava:** a ST-14.15 simular os cenários com o grant em PC-B e o
 dono decidir a fonte de PC-T.
+
+**01/10 — decidida por recomendação (delegação do dono): MANTER.** As duas
+metades fecharam assim:
+
+- a FONTE de PC-T foi decidida (DEC-22) e construída (ST-14.0E): o ganho de
+  aposta do jogador novo continua voltando como PC-B (§5.5), e é a jornada
+  que lhe dá PC-T;
+- o TETO contra o bônus de 1.000: o comportamento é o que a Spec escreve, e é
+  o que se quer — o bônus é a banca das primeiras sessões na Arena, e
+  enquanto ele estiver acima de 500 o marco semanal paga o substituto não
+  monetário em vez de empilhar PC-B. A simulação do gate C não modela PC-B
+  (ele não negocia), então não há número que peça mudar.
+
+**O que reabre:** o relatório do piloto mostrar mais de metade das contas
+novas ainda acima do teto no D7 — sinal de que o bônus não está sendo
+jogado, e de que o marco semanal virou substituto para quase todo mundo.
+Dono da reabertura: a calibração da economia que vier com os dados do piloto
+(ST-7.2).
 
 ### L-222 — o doce ainda não tem lote nem origem
 
