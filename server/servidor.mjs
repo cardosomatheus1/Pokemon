@@ -29,6 +29,7 @@ import { liquidarPendentes } from './aposta.mjs';
 import { liquidarMercadosPendentes } from './mercado.mjs';
 import { gravarResultadosPendentes, dossieRealizado } from './dossie-realizado.mjs';
 import { criarLaco } from './laco.mjs';
+import { criarWorkerEconomia } from './economia-worker.mjs';
 import { ROTAS, ROTAS_PUBLICAS, ROTAS_ADMIN, usuarioDa } from './rotas.mjs';
 
 /* CABEÇALHOS DE SEGURANÇA, em toda resposta, inclusive nas de erro.
@@ -102,6 +103,11 @@ export function criarServidor(opcoes = {}) {
       }
     },
     aoErro: e => { if (!config.silencioso) console.error('[laço]', e); } });
+
+  /* O VARREDOR DA ECONOMIA (ST-14.16): vence as ofertas e concilia o escrow,
+     num relógio próprio — fora do tick da Arena (ver `economia-worker.mjs`). */
+  const economia = criarWorkerEconomia({ db, relogio,
+    aoErro: e => { if (!config.silencioso) console.error('[economia]', e); } });
 
   /* --- as rotas do F1.1 --------------------------------------------------- */
 
@@ -256,7 +262,7 @@ export function criarServidor(opcoes = {}) {
        rede. Não há rota que faça isso: abrir rodada é do scheduler, e o §5.4 é
        explícito em que o cliente perdeu o direito de pedir a próxima. */
     db, sched, sala,
-    laco,
+    laco, economia,
     /* O LAÇO LIGA COM A PORTA, e não com a fábrica: uma instância criada só
        para inspecionar o banco não deve começar a girar rodadas. Quem abre
        porta está servindo jogo. `laco: false` é para o teste que precisa abrir
@@ -268,7 +274,11 @@ export function criarServidor(opcoes = {}) {
         catch (e) { if (!config.silencioso) console.error('[liquidação ao ligar]', e); }
         try { liquidarMercadosPendentes(db, { sched, agora: relogio() }); }
         catch (e) { if (!config.silencioso) console.error('[bolo ao ligar]', e); }
-        if (opcoes.laco !== false) laco.iniciar();
+        /* E o que venceu durante a queda volta ao dono AGORA, pela mesma
+           passada de sempre — não há caminho de recuperação à parte. */
+        try { economia.passo(); }
+        catch (e) { if (!config.silencioso) console.error('[economia ao ligar]', e); }
+        if (opcoes.laco !== false) { laco.iniciar(); economia.iniciar(); }
         r(servidor.address().port);
       })),
     /* PARAR O LAÇO ANTES DE FECHAR O BANCO. Na ordem inversa ele tickaria um
@@ -286,7 +296,7 @@ export function criarServidor(opcoes = {}) {
      * inteira TRAVOU em vez de ficar vermelha — o primeiro defeito da história
      * do projeto que pendura o portão em vez de reprová-lo. O sintoma era do
      * teste; a causa era esta, e é de produção. */
-    fechar: () => { laco.parar(); sala.fecharTodas();
+    fechar: () => { laco.parar(); economia.parar(); sala.fecharTodas();
       return new Promise(r => {
         servidor.close(() => { try { db.close(); } catch {} r(); });
         /* `res.end()` termina a RESPOSTA e o socket fica vivo pelo keep-alive,

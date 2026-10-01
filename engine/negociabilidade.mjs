@@ -76,6 +76,7 @@ function daConta(regra, conta) {
   if (!p2pLiberado(n => b[n], regra.bandeira)) return nao(RAZAO.FEATURE, regra.bandeira);
   if (conta?.pausada) return nao(RAZAO.CONTA, 'pausa');
   if (conta?.congelada) return nao(RAZAO.CONTA, 'congelada');   // ST-14.14: em revisão
+  if (conta?.emDivergencia) return nao(RAZAO.CONTA, 'conciliacao');   // ST-14.16: o escrow não fecha
   return null;
 }
 

@@ -2304,6 +2304,33 @@ export const MIGRACOES = [
     desce: db => { db.exec(`DROP TABLE p2p_congelamentos`); },
   },
 
+  {
+    /* ST-14.16 · E14 · a CONCILIAÇÃO da economia entre jogadores (spec E14 §15).
+     *
+     * O que a conciliação acha fica escrito, com o número, até um operador
+     * fechar — e fechar não ajusta nada: se a diferença continua lá, a
+     * próxima passada abre de novo. Uma divergência aberta por (tipo, chave),
+     * pelo índice: a passada repetida não empilha a mesma. */
+    nome: 'conciliacao-st14.16',
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE economia_divergencias (
+          id             INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id        TEXT REFERENCES users(id) ON DELETE CASCADE,
+          tipo           TEXT NOT NULL,
+          chave          TEXT NOT NULL,
+          detalhe        TEXT NOT NULL,
+          detectada_em   INTEGER NOT NULL,
+          resolvida_em   INTEGER,
+          resolvida_por  TEXT,
+          motivo         TEXT
+        )`);
+      db.exec(`CREATE UNIQUE INDEX economia_divergencia_aberta ON economia_divergencias(tipo, chave) WHERE resolvida_em IS NULL`);
+      db.exec(`CREATE INDEX economia_divergencia_conta ON economia_divergencias(user_id, resolvida_em)`);
+    },
+    desce: db => { db.exec(`DROP TABLE economia_divergencias`); },
+  },
+
 ];
 
 const TABELA_VERSAO = `

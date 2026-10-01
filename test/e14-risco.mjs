@@ -216,7 +216,7 @@ export async function suite() {
     const db = abrirBanco(':memory:'); migrar(db);
     const m = MIGRACOES.find(x => x.nome === 'risco-st14.14');
     ok(m, 'a migração não existe');
-    igual(MIGRACOES.at(-1).nome, 'risco-st14.14', 'a migração não está no fim — a lista é append-only');
+    /* (a posição na lista não é cobrada: a migração seguinte a tira do fim) */
     const tem = () => db.prepare(`SELECT COUNT(*) AS n FROM sqlite_master WHERE name = 'p2p_congelamentos'`).get().n;
     m.desce(db); igual(tem(), 0, 'a descida deixou restos');
     m.sobe(db); igual(tem(), 1, 'a subida não refez');

@@ -53,11 +53,14 @@ export const EXIGE = {
      descongelar também: quem congela por fraude é quem sabe quando soltar. */
   'p2p.congelar':        'economia',
   'p2p.descongelar':     'economia',
+  /* ST-14.16: fechar uma divergência da conciliação devolve a conta à troca.
+     Fechar não ajusta saldo nenhum — e se a diferença continua, reabre. */
+  'economia.divergencia.fechar': 'economia',
 };
 
 /* Ações que mexem no jogador ou no dinheiro. Exigem `confirmado: true` — e o
    valor tem que vir do chamador, nunca de um padrão. */
-export const DESTRUTIVAS = new Set(['jogador.pausar', 'margem.definir', 'operador.desativar', 'bandeira.definir', 'p2p.congelar', 'p2p.descongelar']);
+export const DESTRUTIVAS = new Set(['jogador.pausar', 'margem.definir', 'operador.desativar', 'bandeira.definir', 'p2p.congelar', 'p2p.descongelar', 'economia.divergencia.fechar']);
 
 export const ERRO_ADMIN = {
   SEM_OPERADOR:  'operador_desconhecido',

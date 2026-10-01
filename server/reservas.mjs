@@ -21,7 +21,7 @@ import { elegibilidadeDaCriatura, elegibilidadeDoItem, elegibilidadeDaMoeda, cri
 import { negociavelPelaOrigem } from '../engine/proveniencia.mjs';
 import { exigirPodeOfertar, congelada } from './risco-mercado-jogadores.mjs';
 
-export const ERRO_RESERVA = Object.freeze({ RECUSADA: 'RESERVA_RECUSADA', DONO: 'RESERVA_DONO_INVALIDO', VAZIA: 'RESERVA_VAZIA' });
+export const ERRO_RESERVA = Object.freeze({ RECUSADA: 'RESERVA_RECUSADA', DONO: 'RESERVA_DONO_INVALIDO', VAZIA: 'RESERVA_VAZIA', VENCIDA: 'RESERVA_VENCIDA' });
 const falha = (codigo, msg, extra = {}) => Object.assign(new Error(msg), { codigo, ...extra });
 const ACAO = { trade: 'trade', market: 'market' };
 
@@ -113,9 +113,57 @@ export const holdsAtivos = (db, dono) => db.prepare(ATIVOS_DO_DONO).all(dono.tip
 export const liberarOferta = (db, { dono, agora }) =>
   emTransacao(db, () => ({ liberadas: encerrar(db, { holds: holdsAtivos(db, dono), estado: 'liberada', agora }) }));
 
-/* O relógio do SERVIDOR decide o vencimento — quem chama passa o `agora` dele. */
-export const expirarVencidas = (db, { agora }) =>
-  emTransacao(db, () => ({ expiradas: encerrar(db, { holds: db.prepare(`SELECT * FROM asset_holds WHERE estado = 'ativa' AND expira_em <= ?`).all(agora), estado: 'expirada', agora }) }));
+/* ── O PRAZO (ST-14.16) ───────────────────────────────────────────────────
+ * A oferta VENCE INTEIRA: a entidade (a troca, o anúncio — `entidade`, que a
+ * ST-14.7 e a 14.9 passam) e TODAS as reservas dela, na mesma transação.
+ * Vencer só a reserva deixaria a oferta "aberta" sem nada preso — e a
+ * aceitação dela moveria o que já voltou ao dono.
+ *
+ * E o prazo vale mesmo com o varredor atrasado: quem vai consumir a oferta
+ * pergunta `ofertaVigente` com o relógio DELE, e não confia em ninguém ter
+ * passado antes. */
+const VENCIDA = `SELECT 1 FROM asset_holds WHERE dono_tipo = ? AND dono_id = ? AND estado = 'ativa' AND expira_em <= ? LIMIT 1`;
+
+export const ofertaVigente = (db, { dono, agora }) =>
+  holdsAtivos(db, dono).length > 0 && !db.prepare(VENCIDA).get(dono.tipo, dono.id, agora);
+
+export function exigirVigente(db, { dono, agora }) {
+  if (!holdsAtivos(db, dono).length) throw falha(ERRO_RESERVA.VENCIDA, 'esta oferta não tem mais nada reservado', { reason_code: 'OFFER_NOT_ACTIVE' });
+  if (db.prepare(VENCIDA).get(dono.tipo, dono.id, agora)) throw falha(ERRO_RESERVA.VENCIDA, 'esta oferta venceu', { reason_code: 'OFFER_EXPIRED' });
+}
+
+export function expirarOferta(db, { dono, agora, entidade = null }) {
+  return emTransacao(db, () => {
+    if (!db.prepare(VENCIDA).get(dono.tipo, dono.id, agora)) return { expiradas: 0 };
+    const holds = holdsAtivos(db, dono);
+    if (holds.some(h => congelada(db, h.user_id))) return { expiradas: 0 };
+    entidade?.(db, { dono, agora });
+    return { expiradas: encerrar(db, { holds, estado: 'expirada', agora }) };
+  });
+}
+
+/* As ofertas vencidas, em LOTE limitado e da mais antiga — o varredor
+   (`economia-worker.mjs`) chama em passadas curtas. A conta congelada fica
+   FORA da busca, e não só fora do encerramento: dentro, um lote cheio de
+   reservas congeladas seria o lote inteiro toda vez, e as outras nunca
+   venceriam. */
+const DONOS_VENCIDOS = `SELECT dono_tipo AS tipo, dono_id AS id, MIN(expira_em) AS venceu FROM asset_holds
+                         WHERE estado = 'ativa' AND expira_em <= ?
+                           AND user_id NOT IN (SELECT user_id FROM p2p_congelamentos WHERE levantado_em IS NULL)
+                         GROUP BY dono_tipo, dono_id ORDER BY venceu, dono_id LIMIT ?`;
+
+export function expirarVencidas(db, { agora, limite = 1_000_000, entidades = {}, aoFalhar = null }) {
+  let expiradas = 0, ofertas = 0, falhas = 0;
+  for (const dono of db.prepare(DONOS_VENCIDOS).all(agora, limite)) {
+    /* Uma oferta quebrada não segura as outras: cada uma é a sua transação,
+       e quem passa `aoFalhar` (o varredor) segue para a próxima. */
+    try {
+      const n = expirarOferta(db, { dono, agora, entidade: entidades[dono.tipo] ?? null }).expiradas;
+      expiradas += n; if (n) ofertas++;
+    } catch (e) { if (!aoFalhar) throw e; aoFalhar(e, dono); falhas++; }
+  }
+  return { expiradas, ofertas, falhas };
+}
 
 /* A pergunta que os caminhos de uso fazem (a consulta mora na elegibilidade,
    que a usa como fato). A liquidação — que consome as reservas e move os

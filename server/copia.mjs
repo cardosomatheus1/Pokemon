@@ -27,6 +27,7 @@ import { existsSync, mkdirSync, statSync, copyFileSync, renameSync, rmSync } fro
 import { dirname } from 'node:path';
 import { migrar, MIGRACOES } from './banco.mjs';
 import { reconciliarNoBanco } from './carteira.mjs';
+import { divergenciasDaEconomia } from './conciliacao-economia.mjs';
 
 export const ERRO_COPIA = {
   EXISTE:      'destino_ja_existe',
@@ -63,6 +64,10 @@ export function conferirCopia(caminho) {
     const usuarios = versao ? db.prepare('SELECT id FROM users').all().map(r => r.id) : [];
     for (const id of usuarios)
       for (const p of reconciliarNoBanco(db, id)) problemas.push(`conta ${id}: ${p} (ledger × saldo)`);
+    /* ST-14.16: a cópia também prova o escrow — reserva × criatura, lote e
+       ledger, e a bolsa × os lotes. O ledger × saldo já foi conferido acima. */
+    if (versao) for (const d of divergenciasDaEconomia(db, { ledger: false }))
+      problemas.push(`conta ${d.userId}: ${d.tipo} ${d.chave} — ${d.detalhe} (escrow)`);
     return { ok: problemas.length === 0, problemas, versao, contas: usuarios.length };
   } catch (e) {
     return { ok: false, problemas: [`não abre como banco: ${e.message}`], versao: null };
