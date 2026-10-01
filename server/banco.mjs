@@ -2280,6 +2280,30 @@ export const MIGRACOES = [
     },
   },
 
+  {
+    /* ST-14.14 · E14 · O CONGELAMENTO DA TROCA. Um operador (papel
+     * `economia`, motivo escrito, auditoria) congela a negociação de uma conta
+     * em revisão: ela não abre oferta nova, e o que já está reservado NÃO
+     * volta a ficar disponível ao cancelar — fica preso até alguém
+     * descongelar. Patrimônio nenhum é apagado; o congelamento só segura.
+     * Um congelamento ativo por conta (índice único parcial). */
+    nome: 'risco-st14.14',
+    sobe: db => {
+      db.exec(`
+        CREATE TABLE p2p_congelamentos (
+          id            INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id       TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          motivo        TEXT NOT NULL CHECK (length(trim(motivo)) > 0),
+          por           TEXT NOT NULL,
+          em            INTEGER NOT NULL,
+          levantado_em  INTEGER,
+          levantado_por TEXT
+        )`);
+      db.exec(`CREATE UNIQUE INDEX p2p_congelamento_ativo ON p2p_congelamentos(user_id) WHERE levantado_em IS NULL`);
+    },
+    desce: db => { db.exec(`DROP TABLE p2p_congelamentos`); },
+  },
+
 ];
 
 const TABELA_VERSAO = `

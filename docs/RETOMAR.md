@@ -110,8 +110,11 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            gastam, a reservada não evolui/não sai/não luta; tudo ou nada.
            · ST-14.8 FECHADA (01/10): as taxas exatas (BigInt), queimadas,
            com a versão da política gravada no lançamento.
-           PRÓXIMO: ST-14.14 (proteção antes de negociar), 14.16
-           (expiração e conciliação), 14.7 (a troca). Tudo atrás das
+           · ST-14.14 FECHADA (01/10): congelar a troca de uma conta
+           (operador economia, auditado; o escrow dela não solta sozinho),
+           a contraparte nunca é a mesma pessoa, os limites da spec §7, e a
+           captura acima da banda conta pelo evento.
+           PRÓXIMO: ST-14.16 (expiração e conciliação), 14.7 (a troca). Tudo atrás das
            bandeiras desligadas (DEC-21: liga no gate C, moeda simulada)
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho

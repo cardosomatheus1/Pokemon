@@ -45,8 +45,10 @@ function cena(arquivo = ':memory:') {
   creditar(db, { userId: uid, tipo: 'ADMIN_ADJUSTMENT', bucket: 'transferivel', valor: 300, idem: 'pc-t', agora: AGORA });
   return { db, uid, farm, outra };
 }
-const reservar = (c, id, ativos, extra = {}) =>
-  reservarOferta(c.db, { userId: c.uid, pack: PACK, dono: { tipo: 'trade', id }, ativos, expiraEm: AGORA + 24 * H, agora: AGORA, checkpoint: CHECKPOINT, ...extra });
+/* `tipo: 'market'` onde o teste precisa de várias ofertas abertas ao mesmo
+   tempo: a ST-14.14 limita a UMA troca aberta por conta (e dez anúncios). */
+const reservar = (c, id, ativos, { tipo = 'trade', ...extra } = {}) =>
+  reservarOferta(c.db, { userId: c.uid, pack: PACK, dono: { tipo, id }, ativos, expiraEm: AGORA + 24 * H, agora: AGORA, checkpoint: CHECKPOINT, ...extra });
 
 export async function suite() {
   const s = criarSuite('e14-reservas');
@@ -61,7 +63,7 @@ export async function suite() {
     const porFora = recusa(() => c.db.prepare(`INSERT INTO asset_holds (id, dono_tipo, dono_id, user_id, tipo, criatura_id, quantidade, expira_em, criado_em)
                                               VALUES ('h-x', 'market', 'm-1', ?, 'criatura', ?, 1, ?, ?)`).run(c.uid, c.farm.id, AGORA + H, AGORA));
     ok(/UNIQUE/.test(porFora?.message ?? ''), `o banco aceitou duas reservas ativas da mesma criatura: ${porFora?.message}`);
-    const dupla = recusa(() => reservar(c, 'of-2', { criaturas: [c.farm.id] }));
+    const dupla = recusa(() => reservar(c, 'of-2', { criaturas: [c.farm.id] }, { tipo: 'market' }));
     ok(dupla && /ASSET_BUSY|UNIQUE/.test(`${dupla.reason_code} ${dupla.message}`), `a mesma criatura em duas ofertas: ${dupla?.message}`);
     igual(elegibilidadeDaCriatura(c.db, { userId: c.uid, pack: PACK, id: c.farm.id, acao: 'evoluir', agora: AGORA, checkpoint: CHECKPOINT }).reason_code, 'ASSET_BUSY', 'a política não sabe da reserva');
   });
@@ -85,16 +87,16 @@ export async function suite() {
 
   s.teste('o item: só os lotes limpos se reservam, reservas coexistem com quantidade, e o débito não gasta o reservado', () => {
     const c = cena();
-    reservar(c, 'of-1', { itens: [{ itemId: 'poke', quantidade: 2 }] });
-    reservar(c, 'of-2', { itens: [{ itemId: 'poke', quantidade: 3 }] });
+    reservar(c, 'of-1', { itens: [{ itemId: 'poke', quantidade: 2 }] }, { tipo: 'market' });
+    reservar(c, 'of-2', { itens: [{ itemId: 'poke', quantidade: 3 }] }, { tipo: 'market' });
     igual(lotesDe(c.db, c.uid, 'poke').map(l => `${l.classe}`).join(','), 'verified_earned,promotional_bound', 'os lotes');
     igual(c.db.prepare(`SELECT reservada FROM bolsa_lotes WHERE user_id = ? AND item_id = 'poke' ORDER BY id`).all(c.uid).map(l => l.reservada).join(','), '5,0', 'reservou o lote preso, ou não reservou o limpo');
-    const terceira = recusa(() => reservar(c, 'of-3', { itens: [{ itemId: 'poke', quantidade: 1 }] }));
+    const terceira = recusa(() => reservar(c, 'of-3', { itens: [{ itemId: 'poke', quantidade: 1 }] }, { tipo: 'market' }));
     igual(terceira?.reason_code, 'ASSET_BUSY', `a terceira reserva passou do limpo livre: ${terceira?.message}`);
     /* O lote PRESO mais antigo não entra no escrow, nem quando vem primeiro. */
     creditarBolsa(c.db, c.uid, 'great', 3, { classe: 'legacy_unverified', fonte: 'migracao', agora: AGORA - H });
     creditarBolsa(c.db, c.uid, 'great', 3, { fonte: 'colheita:y', agora: AGORA });
-    reservar(c, 'of-g', { itens: [{ itemId: 'great', quantidade: 2 }] });
+    reservar(c, 'of-g', { itens: [{ itemId: 'great', quantidade: 2 }] }, { tipo: 'market' });
     igual(c.db.prepare(`SELECT classe || ':' || reservada r FROM bolsa_lotes WHERE user_id = ? AND item_id = 'great' ORDER BY criado_em`).all(c.uid).map(l => l.r).join(','),
       'legacy_unverified:0,verified_earned:2', 'o escrow prendeu o lote de origem presa');
     /* A bolsa tem 9; 5 estão presas em ofertas; o débito só alcança as 4 livres. */

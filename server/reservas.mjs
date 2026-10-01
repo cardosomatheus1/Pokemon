@@ -19,6 +19,7 @@ import { randomUUID } from 'node:crypto';
 import { emTransacao, reservarP2PNoBanco, liberarP2PNoBanco } from './carteira.mjs';
 import { elegibilidadeDaCriatura, elegibilidadeDoItem, elegibilidadeDaMoeda, criaturaReservada } from './elegibilidade.mjs';
 import { negociavelPelaOrigem } from '../engine/proveniencia.mjs';
+import { exigirPodeOfertar, congelada } from './risco-mercado-jogadores.mjs';
 
 export const ERRO_RESERVA = Object.freeze({ RECUSADA: 'RESERVA_RECUSADA', DONO: 'RESERVA_DONO_INVALIDO', VAZIA: 'RESERVA_VAZIA' });
 const falha = (codigo, msg, extra = {}) => Object.assign(new Error(msg), { codigo, ...extra });
@@ -49,6 +50,10 @@ export function reservarOferta(db, { userId, pack, dono, ativos = {}, expiraEm, 
   if (!(expiraEm > agora)) throw falha(ERRO_RESERVA.DONO, 'a reserva precisa de prazo no futuro');
   const acao = ACAO[dono.tipo], base = { donoTipo: dono.tipo, donoId: dono.id, userId, expiraEm };
   return emTransacao(db, () => {
+    /* ST-14.14: a conta, a contraparte e os limites ANTES de prender qualquer
+       coisa — a oferta que estoura o limite não chega a reservar nada. */
+    exigirPodeOfertar(db, { userId, tipo: dono.tipo, outroId: dono.contraparte ?? null,
+                            ativosNaOferta: new Set(criaturas).size + itens.length + (moeda ? 1 : 0) });
     const ids = [];
     for (const id of new Set(criaturas)) {
       const r = elegibilidadeDaCriatura(db, { userId, pack, id, acao, agora, checkpoint });
@@ -87,6 +92,10 @@ export function reservarOferta(db, { userId, pack, dono, ativos = {}, expiraEm, 
 function encerrar(db, { holds, estado, agora }) {
   let n = 0;
   for (const h of holds) {
+    /* ST-14.14: o que está preso por uma conta CONGELADA não volta a ficar
+       disponível — nem ao cancelar, nem ao vencer. Fica reservado até o
+       operador descongelar; nada se apaga. */
+    if (congelada(db, h.user_id)) continue;
     const r = db.prepare(`UPDATE asset_holds SET estado = ?, versao = versao + 1, resolvido_em = ? WHERE id = ? AND estado = 'ativa'`).run(estado, agora, h.id);
     if (!r.changes) continue;
     db.prepare(`INSERT INTO asset_holds_eventos (hold_id, evento, em) VALUES (?, ?, ?)`).run(h.id, estado, agora);

@@ -54,6 +54,7 @@ import { BUCKETS } from '../engine/carteira.mjs';
 import { agir, definirMargem, margemDaCasa, ERRO_ADMIN } from './admin.mjs';
 import { politicaMonetaria } from './politica.mjs';
 import { bandeiras, mudarBandeira, ERRO_BANDEIRA } from './feature-flags.mjs';
+import { congelar, descongelar } from './risco-mercado-jogadores.mjs';
 import { entrarOperador, lerSessaoAdmin, sairOperador } from './admin-auth.mjs';
 import { ERRO_LIGA, minhasPrevisoes, rankingDaTemporada, registrarPrevisao } from './liga.mjs';
 import { posseDe, equipadosDe, comprar as comprarCosmetico, equipar as equiparCosmetico,
@@ -93,6 +94,8 @@ export const ROTAS_ADMIN = [
   /* ST-11.9: as bandeiras de feature. */
   'GET /api/admin/bandeiras',
   'POST /api/admin/bandeira',
+  /* ST-14.14: congelar e descongelar a troca de uma conta em revisão. */
+  'POST /api/admin/p2p/congelamento',
 ];
 
 export const ROTAS_PUBLICAS = [
@@ -517,6 +520,29 @@ export const ROTAS = {
       if (e.codigo === ERRO_ADMIN.SEM_OPERADOR || e.codigo === ERRO_ADMIN.SEM_PAPEL)
         return { ...erro(403, ERROS.NAO_AUTORIZADO, 'sem permissão'), cabecalhos: cabecalhosResposta };
       if (e.codigo === ERRO_BANDEIRA.RECUSADA) return { ...erro(409, e.codigo, e.message), cabecalhos: cabecalhosResposta };
+      if (e.codigo) return { ...erro(400, e.codigo, e.message), cabecalhos: cabecalhosResposta };
+      throw e;
+    }
+  },
+
+  /* ST-14.14: `congelar: true` congela, `false` descongela — papel `economia`,
+     motivo e confirmação, como toda ação que mexe no jogador. A sessão é a de
+     OPERADOR: a de jogador não chega aqui. */
+  'POST /api/admin/p2p/congelamento': ({ db, cabecalhos, corpo, agora }) => {
+    const cru = String(cabecalhos?.authorization ?? '');
+    const token = cru.startsWith('Bearer ') ? cru.slice(7) : null;
+    if (!token) return erro(401, ERROS.NAO_AUTORIZADO, 'rota administrativa exige sessão de operador');
+    const sessao = lerSessaoAdmin(db, { token, agora, girar: true });
+    if (!sessao) return erro(401, ERROS.NAO_AUTORIZADO, 'sessão de operador ausente, expirada ou inválida');
+    const cabecalhosResposta = sessao.tokenNovo ? { 'x-admin-token': sessao.tokenNovo } : undefined;
+    try {
+      const args = { operadorId: sessao.operadorId, userId: String(corpo?.userId ?? ''), motivo: corpo?.motivo,
+                     confirmado: corpo?.confirmado === true, agora };
+      const r = corpo?.congelar === true ? congelar(db, args) : descongelar(db, args);
+      return { corpo: r, cabecalhos: cabecalhosResposta };
+    } catch (e) {
+      if (e.codigo === ERRO_ADMIN.SEM_OPERADOR || e.codigo === ERRO_ADMIN.SEM_PAPEL)
+        return { ...erro(403, ERROS.NAO_AUTORIZADO, 'sem permissão'), cabecalhos: cabecalhosResposta };
       if (e.codigo) return { ...erro(400, e.codigo, e.message), cabecalhos: cabecalhosResposta };
       throw e;
     }

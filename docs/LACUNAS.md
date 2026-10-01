@@ -9236,3 +9236,25 @@ ST-14.3b fechou o que a ficha aceita (encontro, captura, coleção).
 **O que a destrava:** a ST-14.7 — o palco recebe o snapshot junto do log e
 pinta `shiny` pela posição; partida de antes da ST-14.3a não tem o campo e
 fica normal.
+
+### L-227 — o alerta de preço fora da curva e de giro anômalo
+
+**Registrada em:** 01/10/2026, na ST-14.14. **Bloco dono:** ST-14.12 (o
+histórico de preços — é ele que cria a curva contra a qual "fora" se mede).
+**Estado:** aberta.
+
+A spec E14 §13 pede, além do congelamento, dos limites e da contraparte (todos
+construídos na ST-14.14), um alerta para o operador quando uma venda sai muito
+acima ou abaixo do preço de referência da espécie, e quando uma conta gira
+ativos rápido demais para o tamanho dela — os dois sinais clássicos de lavagem
+por Market.
+
+**Por que não cabe agora:** não existe preço de referência nenhum ainda; o
+Market (ST-14.9) e o histórico (ST-14.12) são da onda C. Medir "fora da curva"
+sem curva seria inventar a referência, que é exatamente o que a ST-14.12
+proíbe no próprio nome.
+
+**O que a destrava:** a ST-14.12 — com o histórico de vendas liquidadas, o
+alerta entra no `varrerSuspeitas` como um sinal novo (`preco`/`giro`), no
+mesmo formato dos de horário e captura: registrado com o número, revisado pelo
+operador, nunca punição automática.

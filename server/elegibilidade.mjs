@@ -17,12 +17,14 @@ import { pausaAtiva } from './protecao.mjs';
 import { emCampo } from './idle.mjs';
 import { naRun } from './run.mjs';
 import { pcTElegivel, saldos } from './carteira.mjs';
+import { congelada } from './risco-mercado-jogadores.mjs';
 
 const P2P = ['p2p_transfer_enabled', 'p2p_trade_enabled', 'player_market_enabled'];
 
 export function fatosDaConta(db, { userId, agora, checkpoint = CHECKPOINT_25_1 }) {
   return {
     pausada: !!pausaAtiva(db, userId, agora),
+    congelada: congelada(db, userId),
     bandeiras: Object.fromEntries(P2P.map(n => [n, bandeiraLigada(db, n, checkpoint)])),
   };
 }

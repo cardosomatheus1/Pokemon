@@ -49,11 +49,15 @@ export const EXIGE = {
   /* ST-11.9: ligar ou desligar uma feature é do dono — é por aqui que o
      dinheiro seria ligado, e o `feature-flags` ainda cobra o §25.1. */
   'bandeira.definir':    'dono',
+  /* ST-14.14: congelar a troca de uma conta em revisão é da ECONOMIA — e
+     descongelar também: quem congela por fraude é quem sabe quando soltar. */
+  'p2p.congelar':        'economia',
+  'p2p.descongelar':     'economia',
 };
 
 /* Ações que mexem no jogador ou no dinheiro. Exigem `confirmado: true` — e o
    valor tem que vir do chamador, nunca de um padrão. */
-export const DESTRUTIVAS = new Set(['jogador.pausar', 'margem.definir', 'operador.desativar', 'bandeira.definir']);
+export const DESTRUTIVAS = new Set(['jogador.pausar', 'margem.definir', 'operador.desativar', 'bandeira.definir', 'p2p.congelar', 'p2p.descongelar']);
 
 export const ERRO_ADMIN = {
   SEM_OPERADOR:  'operador_desconhecido',

@@ -47,7 +47,10 @@ export function varrerSuspeitas(db, { agora, dias = 7 }) {
      servidor e o teto de encontros, acima da banda é defeito ou fraude. */
   for (const { user, tempos } of contas) {
     const diasAtivos = new Set(tempos.map(t => Math.floor(t / DIA))).size;
-    const capturas = db.prepare(`SELECT COUNT(*) AS n FROM criaturas WHERE user_id = ? AND origem = 'captura' AND criada_em > ?`).get(user, de).n;
+    /* ST-14.14: pelo EVENTO imutável — quem capturou, quando —, e não por
+       `criaturas.user_id` de hoje: soltar não apaga a captura, e comprar ou
+       receber numa troca não é capturar. */
+    const capturas = db.prepare(`SELECT COUNT(*) AS n FROM criaturas_historico WHERE evento = 'nasceu' AND detalhe = 'captura' AND user_id = ? AND em > ?`).get(user, de).n;
     const b = capturaNaBanda({ capturas, dias: Math.max(1, diasAtivos) });
     if (b.acima && registrar(db, { a: user, sinal: 'captura', medida: { ...b, capturas, dias: diasAtivos }, agora })) novas++;
   }
