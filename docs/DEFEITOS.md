@@ -7250,3 +7250,29 @@ regra do limite. 6/6 verdes isolados depois, e o `repetir` 2/2.
 
 **Teste que trava:** o próprio `limites`, agora determinístico.
 
+## D-141 — a folha do traje padrão tinha as costas e o perfil trocados, e o boneco andava de lado mostrando as costas ✅ CORRIGIDO na ST-2.10 (01/10)
+
+**Achado:** o dono, nas Rotas pelo telefone — *"o boneco não caminha, fica de
+costas se movimentando, não vira de frente"*. **Bloco dono:** ST-2.10.
+
+**Causa.** O motor lê a folha como 0 frente · 1 costas · 2 perfil · 3-4 passo de
+frente · 5-6 de costas · 7-8 de perfil, e a esteira (`converter`) grava nessa
+ordem. Mas o `arte/outfits/boystandard.png` ("Urbano", o traje que TODO jogador
+novo veste) foi gerado com as vistas declaradas numa ordem e entregues noutra:
+saiu frente · perfil · costas. Andando de lado — quase toda a trilha — o boneco
+mostrava as costas e deslizava; andando para cima, mostrava o perfil. Os outros
+sete trajes de três vistas estavam certos (inclusive o `urbano.png`, da mesma
+arte).
+
+**Medição.** Assimetria esquerda-direita de cada quadro (pixels opacos sem par
+no espelho): nos trajes certos o quadro 2 é sempre o maior (0,32 a 1,32); no
+`boystandard` era o quadro 1 (0,43) com o 2 em 0,05.
+
+**Conserto.** Os quadros do PNG reordenados (1↔2, 5↔7, 6↔8) — a mesma arte, no
+lugar certo; nenhum pixel novo.
+
+**Teste que trava:** `outfit-folhas` — lê cada folha de três vistas (PNG lido
+no próprio teste, sem dependência) e exige o quadro 2 como o mais assimétrico e
+o passo 7 mais assimétrico que o 5. Com o PNG antigo de volta ele fica
+vermelho e diz "o boneco anda de lado mostrando as costas".
+

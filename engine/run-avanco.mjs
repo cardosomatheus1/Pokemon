@@ -322,6 +322,16 @@ export function cenaDaRun(run, { elenco, equipe, agora, golpesMeus = 1, golpesDe
         hpMax: HP_MOB,
       })),
     caidos: caidos.size,
+    /* ── QUANDO VEM O PRÓXIMO SELVAGEM (pedido do dono, 01/10) ──────────
+       "não tem o tempo de cada volta, pra saber quando [as criaturas] vão
+       aparecer". O roteiro da wave já marca o instante em que cada um ENTRA;
+       isto é só a distância até a próxima entrada. `null` quando não vem mais
+       ninguém nesta wave — aí o que falta é o fim dela (`restam`). */
+    proximaEntrada: (() => {
+      const prox = roteiro.momentos.filter(m => m.tipo === 'entra' && m.t > t)
+        .reduce((a, m) => (a == null || m.t < a ? m.t : a), null);
+      return prox == null ? null : prox - t;
+    })(),
     /* ── HÁ ALGUÉM DE PÉ, E ELE JÁ CHEGOU ───────────────────────────────
        É o que diz à cena se o treinador para de andar. Enquanto o mob está a
        caminho, os dois ainda se aproximam; a partir do encontro, ninguém sai

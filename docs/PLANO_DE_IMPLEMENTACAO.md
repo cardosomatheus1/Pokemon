@@ -2318,6 +2318,28 @@ do servidor. Três partes:
   **Q5:** o site num nome não-local (`--host-resolver-rules`), celular e
   largo — lido. E o D-140 (o `limites` instável) corrigido no caminho.
 
+### ST-2.10 · Rotas: o boneco vira, o relógio do próximo selvagem, a stamina que não é vida ✅ 01/10
+- **Por quê (o dono, pelo telefone):** *"o boneco não caminha, fica de costas
+  se movimentando, não vira de frente"* · *"não tem o tempo de cada volta, pra
+  saber quando os pokémons vão aparecer"* · *"o life do lado aparece 100, o
+  life no pokémon 92, não conversam"*.
+- **Feito:** a folha do traje padrão reordenada (D-141). `proximaEntrada` no
+  retrato da cena (`engine/run-avanco.mjs`) e a linha do cabeçalho
+  (`avanco-relogio.mjs`, camada 0): "próximo selvagem em 0:07 · a wave termina
+  em 1:12", "⚔ selvagem em campo", "selvagem chegando". No celular a run abre
+  com a cena, o relógio e a tira das waves — antes eram três painéis de número
+  na frente. Fora da run, um botão GRANDE na própria cena — "⚔ Iniciar
+  batalhas" — começa a run pelo mesmo caminho do de baixo, e quando não dá diz
+  o porquê (o dono: "de início fica andando, preciso clicar em avançar... tem
+  que ter um botão grande na tela, iniciar"). A stamina ganhou ⚡, cor âmbar e a frase "a vida na luta é o HP".
+- **Testes:** `outfit-folhas` (novo, 3) · `run-avanco` (+2) · S2519–S2526.
+  **Q5:** o passeio em 16 quadros (o boneco de perfil, a perna andando, virando
+  para os dois lados), a run no celular e no largo — lidos.
+
+### ST-2.11 · As placas da run não se sobrepõem (L-232) — proposta
+- Três atores juntos ainda empilham as placas; o `separarPlacas` precisa
+  cobrir o trio.
+
 ### ST-2.9 · A floresta na vista do celular (L-231) — proposta
 - Em 1× a cena do início da Floresta mostra trilha, grama e fauna, e nenhuma
   árvore: o bioma que se chama floresta não parece uma. Pôr copa na borda do

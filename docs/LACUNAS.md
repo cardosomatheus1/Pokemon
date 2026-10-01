@@ -9392,3 +9392,13 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-232 — na run, as placas de dois selvagens próximos se sobrepõem
+
+**Registrada em:** 01/10/2026, no Q5 da ST-2.10. **Bloco dono:** **ST-2.11**
+(proposta no PLANO). **Estado:** aberta.
+
+No celular, com o Charmander e dois Kakuna perto, as placas ficaram uma sobre a
+outra ("Kakuna na · 78 7100100"). O `separarPlacas` existe, mas não separou
+esse trio. **Por que não cabe agora:** a ST-2.10 é sobre o boneco e o relógio.
+**O que a destrava:** nada — é a próxima da cena da run.
+

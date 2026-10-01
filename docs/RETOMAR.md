@@ -32,6 +32,10 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            Rotas abre em 1× e as rotas enchem duas colunas. Olhar no celular:
            node tools/olhar-celular.mjs  (capturas em tools/previas/_celular/).
            Próximo do cenário: ST-2.9 (L-231, a Floresta sem árvore na vista).
+           ST-2.10 (01/10): o boneco das Rotas vira e anda (D-141, a folha do
+           traje padrão), o relógio diz quando vem o próximo selvagem, a run
+           no celular abre pela cena, a stamina não parece mais vida, e a cena tem
+           o botão grande "⚔ Iniciar batalhas".
            ST-2.8c (01/10): no site, o visitante SÓ ASSISTE a Arena (sem
            aposta, sem painel); menu dele: Início, Arenas, Como funciona, Regras.
            ST-2.8b (01/10): sem conta, o menu é a vitrine e as abas do treinador

@@ -71,14 +71,19 @@ function pintarStamina(E, run, agora) {
     return `<div class="avQuem">` +
       retratoAnimado(esp(c.dex), 'class="avQuemArte"', !!c.shiny) +
       `<div class="avQuemTxt">` +
+      /* ⚡ E A PALAVRA, e uma barra de outra cor: o dono leu "100 / 100" aqui
+         e "92 / 100" na placa do bicho como o MESMO número que não batia. São
+         dois — esta é a ENERGIA entre runs; a vida da luta é o HP. */
       `<div class="avLinha"><span>${nome(c.dex)}</span>` +
-      `<span>${s} / 100</span></div>` +
-      `<div class="avBarra"><i style="width:${s}%"></i></div>` +
+      `<span class="avStNum">⚡ ${s} / 100 <small>stamina</small></span></div>` +
+      `<div class="avBarra avStBarra"><i style="width:${s}%"></i></div>` +
       `</div></div>`;
   }).join('') +
-    `<div class="avLinha"><span>esta run já custou</span><span>${custo}</span></div>` +
+    `<div class="avLinha"><span>esta run já custou</span><span>⚡ ${custo}</span></div>` +
     `<div class="avLinha"><span>o estágio inteiro custa</span>` +
-    `<span>${STAMINA_DO_AVANCO}</span></div>`;
+    `<span>⚡ ${STAMINA_DO_AVANCO}</span></div>` +
+    `<p class="tiny avStNota">stamina é a energia para runs, e volta com o tempo. ` +
+    `A vida na luta é o <b>HP</b>, na barra em cima da cena.</p>`;
 }
 
 /* ── O FOCO — e o que ele vale AQUI (item 1 da ordem do dono) ─────────────

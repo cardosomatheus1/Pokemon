@@ -53,12 +53,8 @@ const esp = dex => (PACK.especies ?? []).find(e => e.dex === dex) ?? { n: '?', d
    e ela me pegou aqui. */
 const nome = dex => nomeExibido(esp(dex).n);
 
-/* mm:ss. A run dura ~40 min e a wave 2 a 4; hora cheia seria ruído, e segundos
-   sem minutos deixariam de responder "quanto falta". */
-const relogio = ms => {
-  const s = Math.max(0, Math.round(ms / 1000));
-  return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
-};
+/* o relógio e a linha do próximo selvagem moram na camada 0 (`avanco-relogio.mjs`) */
+import { relogioDaWave, textoDoProximo } from './avanco-relogio.mjs';
 
 /* ── A TIRA DAS WAVES ─────────────────────────────────────────────────────
  *
@@ -165,7 +161,9 @@ function pintarCabeca(run, cn) {
   const bioma = (PACK.biomas ?? []).find(b => b.id === run.bioma);
   if (onde) onde.innerHTML =
     `${(bioma?.rotulo ?? run.bioma).toUpperCase()} <u>· estágio ${run.estagio}</u>`;
-  if (rel) rel.textContent = cn ? relogio(cn.restam) : '--:--';
+  if (rel) rel.textContent = cn ? relogioDaWave(cn.restam) : '--:--';
+  const prox = $('#avProximo');
+  if (prox) prox.innerHTML = textoDoProximo(cn);
 }
 
 /* ── O LAÇO ───────────────────────────────────────────────────────────────
@@ -447,6 +445,13 @@ export function ligarAvanco({ estado, escolha, recarregar, avisar, agora }) {
        stamina cair antes de decidir. O avanço é o oposto — ele COMEÇA a tela,
        e recuar devolve tudo menos o baú. Um diálogo aqui pediria confirmação
        para entrar no jogo. */
+    /* O BOTÃO GRANDE DA CENA começa a run pelo MESMO caminho do botão de
+       baixo — dois botões, uma regra. Quando não dá, ele já diz o porquê. */
+    if (ev.target.closest('#idleIniciar')) {
+      const av = $('#idleAvancar');
+      if (av && !av.disabled) av.click();
+      return;
+    }
     if (ev.target.closest('#idleAvancar')) {
       try {
         await comecarNa(estado(), { pack: PACK, agora: agora(), ...escolha() });
@@ -495,6 +500,13 @@ export function atualizarBotaoAvancar(E, escolha, agora) {
   av.title = porque ?? 'dez waves, chefe na décima — e você assiste';
   av.textContent = porque ?? '⚔ Avançar (assistido)';
   av.classList.toggle('pri', !porque);
+  const grande = $('#idleIniciar');
+  if (grande) {
+    grande.disabled = !!porque;
+    grande.innerHTML = porque
+      ? `${porque}`
+      : '⚔ Iniciar batalhas<small>os selvagens aparecem na run · o relógio diz quando vem o próximo</small>';
+  }
   const custo = $('#idleCustoRun');
   /* E O QUE ELA PAGA HOJE (ST-3.6): a partir da 7ª run do dia, a frase diz a
      porcentagem ANTES de começar — rendimento que cai sem aviso é o D-067. */

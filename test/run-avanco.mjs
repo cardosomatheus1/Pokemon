@@ -12,6 +12,7 @@
  *                            HP ser o relógio da run.
  *   FALHAR NÃO CONFISCA      o §7.22.8 — fica tudo que caiu; perde-se o baú.
  */
+import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import {
   novaRun, avancarRun, cenaDaRun, curarRun, recuarRun, resultadoDa, waveAtual,
@@ -19,6 +20,7 @@ import {
 } from '../engine/run-avanco.mjs';
 import { elencoDoEstagio } from '../engine/elenco-estagio.mjs';
 import { premioDo } from '../engine/avanco.mjs';
+import { textoDoProximo, relogioDaWave } from '../app/modules/avanco-relogio.mjs';
 import kanto from '../content/pokemon_kanto_v1.mjs';
 
 const ELENCO = elencoDoEstagio(kanto, 'floresta', 1);
@@ -365,6 +367,54 @@ export function suite() {
       }
     }
     ok(vistos > 0, 'seis waves inteiras e nenhum golpe a caminho — a janela não abre nunca');
+  });
+
+
+  /* O dono: "não tem o tempo de cada volta, pra saber quando os pokémons vão
+     aparecer". O roteiro da wave sabe quando cada um ENTRA; a cena passa a
+     dizer quanto falta para o próximo. */
+  s.teste('a cena diz quando entra o próximo selvagem, e é o roteiro que manda', () => {
+    const r = comecar('proximo');
+    const c0 = cenaDaRun(r, { elenco: ELENCO, equipe: EQUIPE(NIVEL), agora: T0 });
+    const entradas = waveAtual(r, { elenco: ELENCO, equipe: EQUIPE(NIVEL) }).roteiro.momentos
+      .filter(m => m.tipo === 'entra').map(m => m.t).sort((a, b) => a - b);
+    ok(entradas.length >= 1, 'a wave não tem entrada nenhuma');
+    for (const t of [0, ...entradas.map(e => e - 1), ...entradas.map(e => e + 1)]) {
+      if (t < 0 || t > c0.duracao) continue;
+      const c = cenaDaRun(r, { elenco: ELENCO, equipe: EQUIPE(NIVEL), agora: T0 + t });
+      const prox = entradas.find(e => e > c.t);
+      igual(c.proximaEntrada, prox == null ? null : prox - c.t, `no instante ${t} a próxima entrada não é a do roteiro`);
+    }
+    const fim = cenaDaRun(r, { elenco: ELENCO, equipe: EQUIPE(NIVEL), agora: T0 + c0.duracao });
+    igual(fim.proximaEntrada, null, 'no fim da wave ainda prometeu alguém');
+  });
+
+  s.teste('a linha do relógio: selvagem em campo, próximo em m:ss, ou o fim da wave', () => {
+    igual(textoDoProximo(null), '', 'sem run, escreveu alguma coisa');
+    igual(textoDoProximo({ restam: 72_000, proximaEntrada: 7_000, emCena: [] }),
+      '<b>próximo selvagem em 0:07</b> · a wave termina em 1:12', 'a espera do próximo');
+    igual(textoDoProximo({ restam: 64_000, proximaEntrada: 9_000, emCena: [{ chegando: false }] }),
+      '<b>⚔ selvagem em campo</b> · a wave termina em 1:04', 'com selvagem de pé, falou do próximo');
+    igual(textoDoProximo({ restam: 64_000, proximaEntrada: null, emCena: [{ chegando: true }] }),
+      '<b>selvagem chegando</b> · a wave termina em 1:04', 'o que vem andando');
+    igual(textoDoProximo({ restam: 12_000, proximaEntrada: null, emCena: [] }),
+      '<b>a wave termina em 0:12</b> · depois começa a próxima', 'sem mais ninguém na wave');
+    igual(relogioDaWave(62_000), '01:02', 'o relógio grande mudou de forma');
+    const tela = readFileSync(new URL('../app/modules/avanco-tela.mjs', import.meta.url), 'utf8');
+    ok(/if \(prox\) prox\.innerHTML = textoDoProximo\(cn\);/.test(tela), 'a cabeça da run não pinta a linha');
+    const pag = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
+    ok(/<div class="avProximo" id="avProximo"><\/div>/.test(pag), 'a linha sumiu do cabeçalho');
+    ok(/@media \(max-width:900px\)\{ \.avPalco>\.avCol:not\(\.avEsq\):not\(\.avDir\)\{order:-1\} \}/.test(pag), 'no celular a cena voltou para o pé da run');
+    /* STAMINA ≠ HP: o dono leu "100 / 100" no painel e "92 / 100" na placa como
+       o mesmo número que não batia. O painel diz que é energia, com outra cor. */
+    const painel = readFileSync(new URL('../app/modules/avanco-painel.mjs', import.meta.url), 'utf8');
+    ok(/<span class="avStNum">⚡ \$\{s\} \/ 100 <small>stamina<\/small><\/span>/.test(painel), 'a stamina volta a ser um "100 / 100" mudo, lido como vida');
+    ok(/avBarra avStBarra/.test(painel) && /\.avStBarra i\{background:linear-gradient\(90deg,#f0a43a,#ffd66b\)!important\}/.test(pag), 'a barra da stamina volta ao verde da vida');
+    /* fora da run ninguém aparece — e a cena diz isso, levando ao botão */
+    ok(/<button type="button" class="idleIniciar" id="idleIniciar">⚔ Iniciar batalhas<small>os selvagens aparecem na run/.test(pag), 'a cena da escolha não tem o botão grande de iniciar');
+    ok(/#viewIdle\.emRun \.idleIniciar\{display:none\}/.test(pag), 'o botão de iniciar fica por cima da run');
+    ok(/if \(ev\.target\.closest\('#idleIniciar'\)\) \{\n      const av = \$\('#idleAvancar'\);\n      if \(av && !av\.disabled\) av\.click\(\);/.test(tela), 'o botão grande não começa a run pelo caminho do de baixo');
+    ok(/grande\.disabled = !!porque;/.test(tela) && /\? `\$\{porque\}`/.test(tela), 'o botão grande não diz por que não dá');
   });
 
   return s;

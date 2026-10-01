@@ -7282,6 +7282,44 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   .avPalco .avEsq>*{flex:1 1 260px}
 }
 .avCol{display:flex; flex-direction:column; gap:10px; min-width:0}
+.avProximo{padding:5px 12px 6px; font-size:.72rem; color:var(--dim); text-align:center;
+  border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums}
+.avProximo:empty{display:none}
+/* STAMINA ≠ HP: âmbar e com ⚡, para não ler como a vida verde da luta */
+.avStBarra i{background:linear-gradient(90deg,#f0a43a,#ffd66b)!important}
+.avStNum{color:#ffd66b}
+.avStNum small{font-size:.62rem;color:var(--dim);margin-left:2px}
+.avStNota{margin-top:6px;color:var(--dim);line-height:1.5}
+.avStNota b{color:#4be38f}
+.idleIniciar{position:absolute; left:50%; bottom:14px; transform:translateX(-50%); z-index:7;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:12px 26px 10px; border-radius:14px; cursor:pointer;
+  font-family:var(--dsp); font-size:1.05rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:#08131f; background:linear-gradient(180deg,#fff3,transparent 60%), var(--gold);
+  border:2px solid #fff; box-shadow:0 0 0 3px rgba(var(--goldRGB),.35), 0 0 26px rgba(var(--goldRGB),.75), 0 8px 18px rgba(0,0,0,.5);
+  animation:iniciarPulsa 2.2s ease-in-out infinite; max-width:calc(100% - 24px)}
+.idleIniciar small{font-family:'Segoe UI',system-ui,sans-serif; font-size:.6rem; font-weight:600;
+  letter-spacing:.01em; text-transform:none; opacity:.8}
+.idleIniciar:hover{filter:brightness(1.08)}
+.idleIniciar:disabled{animation:none; cursor:default; color:var(--txt); background:rgba(10,14,24,.88);
+  border-color:var(--line); box-shadow:none; font-size:.8rem}
+@keyframes iniciarPulsa{0%,100%{box-shadow:0 0 0 3px rgba(var(--goldRGB),.35),0 0 18px rgba(var(--goldRGB),.55),0 8px 18px rgba(0,0,0,.5)}
+  50%{box-shadow:0 0 0 6px rgba(var(--goldRGB),.15),0 0 34px rgba(var(--goldRGB),.95),0 8px 18px rgba(0,0,0,.5)}}
+@media (prefers-reduced-motion:reduce){ .idleIniciar{animation:none} }
+#viewIdle.emRun .idleIniciar{display:none}
+/* no celular o palco é pequeno: o botão vira uma faixa de uma linha no pé da
+   cena, sem a legenda — grande o bastante para o polegar, sem tapar o boneco */
+@media (max-width:640px){
+  .idleIniciar{bottom:8px; padding:8px 18px; font-size:.82rem; border-radius:11px; white-space:nowrap}
+  .idleIniciar small{display:none}
+}
+#idleAvancar.chamado{animation:chamaAvancar 1.2s ease-out}
+@keyframes chamaAvancar{0%,60%{box-shadow:0 0 0 0 rgba(var(--goldRGB),.9)}100%{box-shadow:0 0 0 14px rgba(var(--goldRGB),0)}}
+.avProximo b{color:var(--gold); font-weight:700}
+/* NO CELULAR A CENA VEM PRIMEIRO. Em coluna única a ordem era stamina · foco ·
+   log · cena: o palco, o relógio e a tira das waves caíam no pé da tela, e
+   quem abria a run via três painéis de números antes do mundo. */
+@media (max-width:900px){ .avPalco>.avCol:not(.avEsq):not(.avDir){order:-1} }
 
 /* ── A TIRA DAS WAVES — o mostrador central desta tela ────────────────────
    Na referência ela é um punhado de quadradinhos com o chefe no fim. A nossa
@@ -8265,7 +8303,13 @@ body.soAssiste .pick{cursor:pointer}
 
     <div class="card idleDepois cardRota">
       <h3>A rota <span class="tiny">escolha o lugar antes de gastar as horas</span></h3>
-      <div id="idlePalco"><span id="idleBiomaNome"></span><canvas id="idleMundo"></canvas><canvas id="idleAtor"></canvas><div id="idleLuz" aria-hidden="true"></div><canvas id="idleBrilho" aria-hidden="true"></canvas><div id="idleHud" aria-hidden="true"></div><div id="idleZoom"><button type="button" data-zoom="-1" title="afastar">&minus;</button><span id="idleZoomNivel">3&times;</span><button type="button" data-zoom="1" title="aproximar">+</button></div><canvas id="idleCeu" aria-hidden="true"></canvas></div>
+      <div id="idlePalco"><span id="idleBiomaNome"></span><canvas id="idleMundo"></canvas><canvas id="idleAtor"></canvas><div id="idleLuz" aria-hidden="true"></div><canvas id="idleBrilho" aria-hidden="true"></canvas><div id="idleHud" aria-hidden="true"></div><div id="idleZoom"><button type="button" data-zoom="-1" title="afastar">&minus;</button><span id="idleZoomNivel">3&times;</span><button type="button" data-zoom="1" title="aproximar">+</button></div><canvas id="idleCeu" aria-hidden="true"></canvas><button type="button" class="idleIniciar" id="idleIniciar">⚔ Iniciar batalhas<small>os selvagens aparecem na run · o relógio diz quando vem o próximo</small></button></div>
+      <!-- O BOTÃO GRANDE DE INICIAR mora DENTRO do palco (#idleIniciar, acima).
+           Pedidos do dono, 01/10: "não tem o tempo de cada volta, pra saber
+           quando [as criaturas] vão aparecer" e "de início fica andando, preciso
+           clicar em avançar pra começar as batalhas — tem que ter um botão grande
+           na tela, iniciar". Fora da run o treinador só passeia; o botão diz
+           isso e começa a run. Na run ele some: o relógio do cabeçalho responde. -->
       <!-- O NÍVEL É DA COLEÇÃO, e não do lugar: ele é o mesmo nas onze rotas.
            Repeti-lo em cada cartão foi o primeiro desenho da sala, e onze
            cartões dizendo "pede nv 31" não ajudam a escolher nada. Uma frase
@@ -8456,6 +8500,10 @@ body.soAssiste .pick{cursor:pointer}
             <div class="avWaves" id="avTira"></div>
             <div class="avRelogio" id="avRelogio">--:--</div>
           </div>
+          <!-- QUANDO VEM O PRÓXIMO SELVAGEM, em palavras (o módulo do relógio da run). O
+               relógio grande conta o fim da wave; esta linha diz o que ele é e
+               responde a pergunta que o dono fez: quando as criaturas aparecem. -->
+          <div class="avProximo" id="avProximo"></div>
 
           <!-- O HP É O RELÓGIO DA RUN (§7.22.7). Ele é a informação que decide
                a poção, e por isso tem uma linha só para ele — larga, com o

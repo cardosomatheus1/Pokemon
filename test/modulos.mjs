@@ -196,6 +196,8 @@ const CAMADA = {
   'idle-escolha.mjs': 0,
   /* A barra de abas do celular: quem fica nela e o que o "Mais" diz. */
   'barra-celular.mjs': 0,
+  /* o relógio da run: o fim da wave e quando vem o próximo selvagem */
+  'avanco-relogio.mjs': 0,
   /* A HORA DO DIA (L-124, bloco 1.34). Camada 0, e aqui a razão tem um número:
      tudo que é DECISÃO — que período é, quanto escurece, onde está o astro,
      quantas estrelas acendem — é pego em Node a ~0,1 s por mutante. Colado no
