@@ -34,7 +34,14 @@ export function debitarBolsa(db, userId, itemId, quantidade, { classe = null } =
   if (!inteiroPositivo(quantidade)) return false;
   const lotes = classe ? db.prepare(LOTES_DA_CLASSE).all(userId, itemId, classe) : db.prepare(LOTES_DO_ITEM).all(userId, itemId);
   if (lotes.reduce((a, l) => a + l.quantidade, 0) < quantidade) return false;
-  db.prepare(`UPDATE bolsa SET quantidade = quantidade - ? WHERE user_id = ? AND item_id = ?`).run(quantidade, userId, itemId);
+  /* AS DUAS TÊM DE COBRIR. Lote e projeção andam juntos por este serviço, mas
+     quem escreve na `bolsa` por fora (a descida de um save, um teste, um
+     operador) os separa — e o débito que só olhasse o lote gastaria uma bola
+     que a bolsa diz não existir. Foi o que a sabotagem pegou na ST-14.0C: a
+     bolsa zerada e o lance sem bola capturando. A projeção vai primeiro, para
+     a recusa não deixar lote nenhum mexido. */
+  if (!db.prepare(`UPDATE bolsa SET quantidade = quantidade - ? WHERE user_id = ? AND item_id = ? AND quantidade >= ?`)
+    .run(quantidade, userId, itemId, quantidade).changes) return false;
   const classes = new Set();
   let falta = quantidade;
   for (const l of lotes) {

@@ -9191,6 +9191,10 @@ export const DEFEITOS = [
   { id:'S2157', arquivo:'server/inventario.mjs', nome:"o crédito não vira lote",
     real:"a bolsa sobe sem origem — a soma dos lotes deixa de fechar",
     de:"  db.prepare(`INSERT INTO bolsa_lotes (user_id, item_id, quantidade, classe, fonte, criado_em) VALUES (?, ?, ?, ?, ?, ?)`)\n    .run(userId, itemId, quantidade, classe, fonte, agora);", para:"" },
+  { id:'S2158', arquivo:'server/inventario.mjs', nome:"o débito só olha o lote",
+    real:"a bolsa diz zero e o lance captura mesmo assim — a divergência pegou na sabotagem da ST-14.0C",
+    de:"  if (!db.prepare(`UPDATE bolsa SET quantidade = quantidade - ? WHERE user_id = ? AND item_id = ? AND quantidade >= ?`)\n    .run(quantidade, userId, itemId, quantidade).changes) return false;",
+    para:"  db.prepare(`UPDATE bolsa SET quantidade = quantidade - ? WHERE user_id = ? AND item_id = ?`).run(quantidade, userId, itemId);" },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',

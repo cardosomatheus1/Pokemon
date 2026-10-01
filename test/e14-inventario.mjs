@@ -65,6 +65,18 @@ export async function suite() {
     igual(conferirInventario(db, uid).length, 0, 'a bolsa divergiu dos lotes');
   });
 
+  s.teste('a projeção que diz "não tem" recusa, mesmo com lote — e nenhum lote se mexe', () => {
+    const { db, uid } = novo();
+    creditarBolsa(db, uid, 'ultra', 2, { fonte: 'colheita:x1' });
+    db.prepare(`DELETE FROM bolsa WHERE user_id = ? AND item_id = 'ultra'`).run(uid);
+    igual(`${debitarBolsa(db, uid, 'ultra', 1)}|${lotesDe(db, uid, 'ultra').map(x => x.quantidade).join(',')}`, 'false|2', 'o débito gastou o que a bolsa diz não existir');
+    igual(conferirInventario(db, uid).join(' | '), 'ultra: lotes 2, bolsa sem linha', 'a divergência não aparece na conciliação');
+    /* E o avesso: a projeção inflada por fora não autoriza gastar lote que não há. */
+    creditarBolsa(db, uid, 'great', 2, { fonte: 'colheita:x1' });
+    db.prepare(`UPDATE bolsa SET quantidade = 5 WHERE user_id = ? AND item_id = 'great'`).run(uid);
+    igual(`${debitarBolsa(db, uid, 'great', 3)}|${quantosNaBolsa(db, uid, 'great')}|${lotesDe(db, uid, 'great').map(x => x.quantidade).join(',')}`, 'false|5|2', 'a bolsa inflada gastou lote que não existe');
+  });
+
   s.teste('a captura herda a classe da bola; a compra herda a classe da moeda', () => {
     const { db, uid } = novo();
     creditarBolsa(db, uid, 'poke', 60, { classe: 'legacy_unverified', fonte: 'migracao' });
