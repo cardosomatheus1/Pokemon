@@ -43,7 +43,7 @@ import { conferirAbates, conferirColocacao, mostrarPodio } from './killfeed.mjs'
 import { ordemDeQuedas } from './colocacao.mjs';
 import { posicaoFinalDe } from '../../engine/colocacao.mjs';
 import { imgTag, retratoAnimado } from './sprites.mjs';
-import { gifShinyAtivo, shinyNaArena } from './shiny-dados.mjs';
+import { prestigioNaArena, atributoPrestigio } from './shiny-dados.mjs';
 import { renderBattleBanner } from './banner.mjs';
 import { refreshOddsTable } from './odds.mjs';
 import { registrarAposta } from './carteira.mjs';
@@ -151,7 +151,9 @@ function atualizaVariedade(){
  * que é a única forma de um lutador ser SEU nesta tela. */
 function vencedorImg(f){
   const meuCampeao = !!S.myBet && S.fighters[S.myBet.idx] === f;
-  return retratoAnimado(f, '', shinyNaArena(S.profile, f.dex, meuCampeao));
+  /* ST-14.3b: o cosmético é PRESTÍGIO (aura), nunca a paleta shiny — o campeão
+     da Arena não é instância de ninguém. */
+  return retratoAnimado(f, atributoPrestigio(prestigioNaArena(S.profile, f.dex, meuCampeao)), false);
 }
 
 function blocoXP(info, feitos){

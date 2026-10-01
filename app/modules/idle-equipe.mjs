@@ -224,9 +224,10 @@ export function pintarCartoes(E, { perfil, selecao = [], agora = Date.now(),
               title="${fora ? 'já está ' + AVENTURAS[fora].onde + ' — recolha antes' : ''}"
               ${pode ? '' : 'disabled'}>
         ${fora ? `<span class="criaFora">${AVENTURAS[fora].selo}</span>` : ''}
+        ${c.shiny === true ? '<span class="criaShiny">✦ brilhante</span>' : ''}
         <i class="criaBola${sel ? ' acesa' : ''}" aria-hidden="true"
            title="${sel ? 'vai a campo — clique para tirar' : 'fica — clique para mandar'}"></i>
-        ${retratoAnimado(esp(c.dex), 'class=\"idleCriaArte\"', false)}
+        ${retratoAnimado(esp(c.dex), 'class=\"idleCriaArte\"', c.shiny === true)}
         <span class="idleCriaNome">${nomeExibido(esp(c.dex).n)}${c.exemplar ? ' <i class=\"exFlag\">✦</i>' : ''}</span>
         <!-- O NIVEL APARECE UMA VEZ SO (1.27f).
              A barra de XP ja traz o nivel na frente dela (NV 36 · 58%). Com as

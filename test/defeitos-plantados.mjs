@@ -2592,8 +2592,8 @@ export const DEFEITOS = [
        `dexImg` estatico, virou `retratoAnimado`, e agora pergunta a ESCOLHA
        alem da posse. O comportamento que o defeito ataca e o mesmo nas tres
        versoes; so o trecho mudou de forma. */
-    de:"  return retratoAnimado(f, '', shinyNaArena(S.profile, f.dex, meuCampeao));",
-    para:'  return imgTag(f);' },
+    de:"  return retratoAnimado(f, atributoPrestigio(prestigioNaArena(S.profile, f.dex, meuCampeao)), false);",
+    para:"  return imgTag(f);" },
 
   /* Shiny para todo mundo: entrega de graca a recompensa que o guarda-roupa
      vende por conquista. */
@@ -2603,7 +2603,7 @@ export const DEFEITOS = [
        `dexImg` estatico, virou `retratoAnimado`, e agora pergunta a ESCOLHA
        alem da posse. O comportamento que o defeito ataca e o mesmo nas tres
        versoes; so o trecho mudou de forma. */
-    de:"  return retratoAnimado(f, '', shinyNaArena(S.profile, f.dex, meuCampeao));",
+    de:"  return retratoAnimado(f, atributoPrestigio(prestigioNaArena(S.profile, f.dex, meuCampeao)), false);",
     para:"  return retratoAnimado(f, '', true);" },
 
   /* Sem o canto, a dica da aposta volta a tapar os doze lutadores que o
@@ -2707,8 +2707,8 @@ export const DEFEITOS = [
   /* A promessa escrita e o que faz alguem se arriscar a desequipar. */
   { id:'S338', arquivo:CUSTOM, nome:'a tela deixa de prometer que desequipar e seguro',
     real:'"a nota e longa demais" — e sem ela ninguem testa desequipar',
-    de:'      `equipar cada um é separado, e desequipar não perde a conquista.`',
-    para:'      `equipar cada um é separado.`' },
+    de:"`equipar cada um é separado, e desequipar não perde a conquista. O brilho",
+    para:"`equipar cada um é separado. O brilho" },
 
   /* ---------- R9: um caminho so para o painel de ADM ---------- */
 
@@ -3264,8 +3264,8 @@ export const DEFEITOS = [
      quadro vazio justamente na especie que o jogador colecionou. */
   { id:'S407', arquivo:RODADA, nome:'o preload deixa de pedir a folha normal da especie possuida',
     real:'"ela sempre aparece shiny mesmo" — nao mais: so quando eu escolher',
-    de:'      conferirFolha(sheetURL(f.dex, k, false));\n      if (skinShinyAtiva(S.profile, f.dex)) conferirFolha(sheetURL(f.dex, k, true));',
-    para:'      conferirFolha(sheetURL(f.dex, k, skinShinyAtiva(S.profile, f.dex)));' },
+    de:"      conferirFolha(sheetURL(f.dex, k, false));",
+    para:"      conferirFolha(sheetURL(f.dex, k, skinShinyAtiva(S.profile, f.dex)));" },
 
   /* ---------- R25: o letrado do tema chega a tela (D-037) ------------------
    *
@@ -3647,15 +3647,15 @@ export const DEFEITOS = [
   /* A MARCA VISUAL SOME: volta a ser so a paleta, que e o estado anterior. */
   { id:'S454', arquivo:RODADA, nome:'a arena deixa de marcar quem esta shiny',
     real:'"a folha shiny ja e a diferenca" — a 22 px, no meio de doze, nao e',
-    de:"  e.el.classList.toggle('shiny', ehShiny);",
-    para:'  ;' },
+    de:"  e.el.classList.toggle('prestigio', prestigio);",
+    para:"  ;" },
 
   /* BRILHO E PALETA SE SEPARAM: duas chamadas, e no dia em que alguem mudar
      uma e esquecer a outra, um lutador brilha sem estar shiny — ou o contrario. */
   { id:'S455', arquivo:RODADA, nome:'brilho e paleta passam a sair de decisoes separadas',
     real:'"a funcao e pura, chamar duas vezes da o mesmo" — da, ate uma das duas mudar',
-    de:'  e.folha = sheetURL(e.f.dex, key, ehShiny);',
-    para:'  e.folha = sheetURL(e.f.dex, key, skinShinyAtiva(S.profile, e.f.dex));' },
+    de:"  e.folha = sheetURL(e.f.dex, key, false);",
+    para:"  e.folha = sheetURL(e.f.dex, key, prestigio);" },
 
   /* O BRILHO VIRA TINTA: `hue-rotate` repinta a paleta que o autor da arte
      escolheu. E a mesma classe de erro que trocar a fonte da arte (v0.6.1). */
@@ -3682,7 +3682,7 @@ export const DEFEITOS = [
      um GIF no banner. E o defeito do R13 voltando por outra tela. */
   { id:'S459', arquivo:CUSTOM, nome:'a grade do lutador do banner volta ao PNG parado',
     real:'"a grade e so para escolher" — escolher vendo outra coisa e escolher as cegas',
-    de:"      ${retratoAnimado(m, 'loading=\"lazy\"', sh)}",
+    de:"      ${retratoAnimado(m, `loading=\"lazy\"${atributoPrestigio(sh)}`, false)}",
     para:"      ${dexImg(m.dex, m.n, 'loading=\"lazy\"')}" },
 
   /* ═══ R35 · AS TRES MEDALHAS SAO TRES MATIZES ════════════════════════════ */
@@ -4084,16 +4084,16 @@ export const DEFEITOS = [
      da rodada dizendo "seu bicho ganhou" com nada dele em jogo. */
   { id:'S503', arquivo:RESTELA, nome:'a tela de vencedor volta a pintar shiny por posse solta',
     real:'"eu tenho essa skin" — tem, e o campeao nao era seu',
-    de:'  const meuCampeao = !!S.myBet && S.fighters[S.myBet.idx] === f;\n  return retratoAnimado(f, \x27\x27, shinyNaArena(S.profile, f.dex, meuCampeao));',
-    para:'  return retratoAnimado(f, \x27\x27, gifShinyAtivo(S.profile, f.dex));' },
+    de:"  return retratoAnimado(f, atributoPrestigio(prestigioNaArena(S.profile, f.dex, meuCampeao)), false);",
+    para:"  return retratoAnimado(f, atributoPrestigio(gifShinyAtivo(S.profile, f.dex)), false);" },
 
   /* A GUARDA FICA E DEIXA DE GUARDAR. E a versao que parece corrigida: a
      funcao certa e chamada, com o terceiro argumento fixo em `true`. Passaria
      por qualquer leitura apressada do diff. */
   { id:'S504', arquivo:RESTELA, nome:'a escolha do vencedor vira `true` fixo',
     real:'"esta chamando shinyNaArena" — esta, e respondendo sempre que sim',
-    de:'shinyNaArena(S.profile, f.dex, meuCampeao)',
-    para:'shinyNaArena(S.profile, f.dex, true)' },
+    de:"prestigioNaArena(S.profile, f.dex, meuCampeao)",
+    para:"prestigioNaArena(S.profile, f.dex, true)" },
 
   /* O BANNER DO PERFIL PERDE O SHINY OUTRA VEZ. `dexImg` aceita o quarto
      argumento desde sempre; ele so nunca era dado, e a chamada pedia a folha
@@ -4101,7 +4101,7 @@ export const DEFEITOS = [
      skin esta ativa. */
   { id:'S505', arquivo:CUSTOM, nome:'o banner do perfil volta a ignorar a skin equipada',
     real:'"o banner de batalha mostra" — mostra, e sao dois banners diferentes',
-    de:"${dexImg(b.dex, slugDoDex(b.dex), 'class=\"mon\"', gifShinyAtivo(S.profile, b.dex))}",
+    de:"${dexImg(b.dex, slugDoDex(b.dex), `class=\"mon\"${atributoPrestigio(gifShinyAtivo(S.profile, b.dex))}`, false)}",
     para:"${dexImg(b.dex, slugDoDex(b.dex), 'class=\"mon\"')}" },
 
   /* ═══ R43 · AS VINTE ARTES NOVAS ════════════════════════════════════════
@@ -5265,8 +5265,8 @@ export const DEFEITOS = [
      receber um PNG e a pior ordem possivel. */
   { id:'S640', arquivo:'app/modules/banner.mjs', nome:'a vitrine do banner volta a ser um PNG',
     real:'"parada ela pesa menos" — e mente sobre o que o jogador escolheu',
-    de:"      ? retratoAnimado(esp, 'class=\"bnMon\"', gifShinyAtivo(perfil, vitrineDex))",
-    para:"      ? dexImg(vitrineDex, '', 'class=\"bnMon\"', gifShinyAtivo(perfil, vitrineDex))" },
+    de:"      ? retratoAnimado(esp, `class=\"bnMon\"${atributoPrestigio(prestigioNoRetrato(perfil, vitrineDex))}`, false)",
+    para:"      ? dexImg(vitrineDex, '', `class=\"bnMon\"${atributoPrestigio(prestigioNoRetrato(perfil, vitrineDex))}`, false)" },
 
   /* O ZERO FALSY APAGA A OPCAO NENHUM. Com `||`, a escolha "sem Pokemon" cai no
      padrao e o bicho volta sozinho: a opcao existe na grade e nao tem efeito. */
@@ -9362,6 +9362,31 @@ export const DEFEITOS = [
   { id:'S2214', arquivo:'server/partida.mjs', nome:"a fila oferece o time desfeito",
     real:"a busca pareia com quem não pode lutar, e a partida estoura",
     de:"    .filter(s => snapshotPodeLutar(s, s.user, donosDe(db, s)).ok);", para:"    ;" },
+  /* ── ST-14.3b · o cosmético vira prestígio; o shiny verdadeiro aparece ── */
+  { id:'S2216', arquivo:'app/modules/shiny-dados.mjs', nome:"o prestígio aparece para quem não escolheu",
+    real:"a aura vira decoração da arena",
+    de:"  return !!escolhido && skinShinyAtiva(perfil, dex);", para:"  return skinShinyAtiva(perfil, dex);" },
+  { id:'S2218', arquivo:'app/modules/customizacao.mjs', nome:"a grade do banner volta à paleta shiny",
+    real:"escolher o lutador do banner mostra um shiny que não existe",
+    de:"      ${retratoAnimado(m, `loading=\"lazy\"${atributoPrestigio(sh)}`, false)}", para:"      ${retratoAnimado(m, `loading=\"lazy\"${atributoPrestigio(sh)}`, sh)}" },
+  { id:'S2219', arquivo:'app/modules/resultado-tela.mjs', nome:"o campeão volta a vestir a paleta do perfil",
+    real:"a tela mais vista diz \"brilhante\" de um lutador que não é instância",
+    de:"  return retratoAnimado(f, atributoPrestigio(prestigioNaArena(S.profile, f.dex, meuCampeao)), false);", para:"  return retratoAnimado(f, atributoPrestigio(prestigioNaArena(S.profile, f.dex, meuCampeao)), prestigioNaArena(S.profile, f.dex, meuCampeao));" },
+  { id:'S2220', arquivo:'app/modules/idle-paineis.mjs', nome:"a carta da criatura ignora o shiny",
+    real:"a criatura capturada brilhante aparece comum na coleção",
+    de:"'class=\\\"idleCriaArte\\\"', c.shiny === true)}", para:"'class=\\\"idleCriaArte\\\"')}" },
+  { id:'S2221', arquivo:'app/modules/captura-cena.mjs', nome:"a captura brilhante aparece comum",
+    real:"o recibo diz shiny e a cena não mostra",
+    de:"    const html = retratoAnimado(espDe(dex), 'class=\"capForma\"', res?.shiny === true);", para:"    const html = retratoAnimado(espDe(dex), 'class=\"capForma\"', false);" },
+  { id:'S2222', arquivo:'app/index.html', nome:"o prestígio usa o símbolo do shiny",
+    real:"aura e shiny se confundem na grade do banner",
+    de:".temPrestigio::after{content:'◆';", para:".temPrestigio::after{content:'✦';" },
+  { id:'S2223', arquivo:'app/modules/idle-equipe.mjs', nome:"a carta da equipe pinta a brilhante como comum",
+    real:"o shiny da instância some da coleção",
+    de:"        ${retratoAnimado(esp(c.dex), 'class=\\\"idleCriaArte\\\"', c.shiny === true)}", para:"        ${retratoAnimado(esp(c.dex), 'class=\\\"idleCriaArte\\\"', false)}" },
+  { id:'S2224', arquivo:'app/modules/idle-equipe.mjs', nome:"a carta da equipe perde o selo do shiny",
+    real:"o brilho sem palavra num sprite de 60 px ninguém lê",
+    de:"        ${c.shiny === true ? '<span class=\"criaShiny\">✦ brilhante</span>' : ''}\n", para:"" },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',

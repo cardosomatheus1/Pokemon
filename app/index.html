@@ -870,6 +870,24 @@ img[data-shiny="1"]{filter:drop-shadow(0 0 4px rgba(255,214,90,.75))}
   text-shadow:0 0 8px rgba(255,214,90,.95),0 0 3px rgba(0,0,0,.85);
   animation:shinyPisca 2.6s ease-in-out infinite}
 
+/* ── O PRESTÍGIO (ST-14.3b) ── o cosmético que era "shiny" e virou aura.
+   NEON (o acento do tema, `--neonRGB`) e não ouro, e losango e não estrela: o dourado e o "✦" passaram a ser
+   da criatura que nasceu brilhante (a instância), e o prestígio não pode ser
+   lido como ela. Mesmo mecanismo do shiny — sombra de silhueta, nada pintado
+   por cima da arte. */
+.mon.prestigio .body{
+  --contorno:drop-shadow(0 0 1px rgba(0,0,0,.9))
+             drop-shadow(0 0 5px rgba(var(--neonRGB),.6))
+             drop-shadow(0 3px 4px rgba(0,0,0,.45))}
+img[data-prestigio="1"]{filter:drop-shadow(0 0 4px rgba(var(--neonRGB),.75))}
+.temPrestigio{position:relative}
+.temPrestigio::after{content:'◆';position:absolute;right:3px;top:2px;z-index:3;
+  font-size:10px;line-height:1;color:rgb(var(--neonRGB));pointer-events:none;
+  text-shadow:0 0 6px rgba(var(--neonRGB),.9),0 0 2px rgba(0,0,0,.85)}
+.bnPrestigio{position:absolute;right:14px;bottom:118px;z-index:3;
+  font-size:13px;line-height:1;color:rgb(var(--neonRGB));pointer-events:none;
+  text-shadow:0 0 8px rgba(var(--neonRGB),.9),0 0 3px rgba(0,0,0,.85)}
+
 /* nocaute: tomba de lado */
 .mon.ko .body{animation:koFall .7s ease-in forwards}
 @keyframes koFall{
@@ -5110,7 +5128,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 .opt.shiny img{filter:drop-shadow(0 0 7px rgba(var(--goldRGB),.55))}
 /* Os dois botões de equipar, dentro do cartão. Ficam discretos até estarem
    ligados — o cartão já diz "conquistado"; os botões dizem "no ar". */
-.opt.shiny .sbtns{display:flex;gap:4px;margin-top:5px}
+.opt.shiny .sbtns{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}   /* quebra em vez de vazar do cartão estreito (ST-14.3b) */
 .opt.shiny .sbtn{flex:1;font-family:var(--px);font-size:.42rem;padding:3px 0;
   border-radius:5px;border:1px solid var(--line);background:var(--panel2);
   color:var(--dim);cursor:pointer;letter-spacing:.06em}
@@ -6878,6 +6896,11 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   font:800 .52rem/1 var(--dsp);letter-spacing:.06em;text-transform:uppercase;
   color:#20160a;background:var(--aviso);border-radius:6px;padding:3px 6px;
   box-shadow:0 2px 6px rgba(0,0,0,.45)}
+/* ST-14.3b: a criatura BRILHANTE (a instância, ST-14.1) — selo próprio, no
+   canto oposto à bola, em dourado; o "✦" sozinho já é a marca do exemplar. */
+.criaShiny{position:absolute;top:5px;left:6px;z-index:2;font-size:.5rem;font-weight:700;
+  letter-spacing:.04em;color:#ffd778;background:rgba(40,28,4,.72);border:1px solid rgba(255,215,120,.55);
+  border-radius:6px;padding:1px 4px;pointer-events:none}
 .idleCriaArte{width:52px;height:52px;object-fit:contain;image-rendering:pixelated}
 .idleCriaNome{font:700 .64rem/1.1 var(--dsp);color:var(--txt);text-transform:capitalize}
 
@@ -8869,7 +8892,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
       <div class="sec-t" id="secBanner">Lutador do banner</div>
       <div class="pick-grid" id="pickBannerMon"></div>
 
-      <div class="sec-t">Cosméticos shiny <span id="shinyVagas" style="color:var(--dim)"></span></div>
+      <div class="sec-t">Prestígio por espécie <span id="shinyVagas" style="color:var(--dim)"></span></div>
       <div class="tiny" id="shinyNota" style="margin-bottom:9px"></div>
       <div class="pick-grid" id="pickShiny"></div>
     </div>

@@ -15,7 +15,7 @@ import { BN_CENAS, BN_EFEITOS, BN_MOLDURAS, PADRAO_BANNER, cosmeticoValido } fro
 import { TRAINER_AVATARS } from './avatares-dados.mjs';
 import { AVATARES_ARTE, arquivoAvatar } from './acervo-dados.mjs';
 import { AVATARES as AVATARES_GALERIA, arquivoArte } from './artes-dados.mjs';
-import { NIVEIS_POR_VAGA, alternar, desbloquear, gifShinyAtivo, skinShinyAtiva,
+import { NIVEIS_POR_VAGA, alternar, desbloquear, gifShinyAtivo, skinShinyAtiva, atributoPrestigio,
          vagasLivres, vagasNoNivel, vagasUsadas } from './shiny-dados.mjs';
 import { renderBattleBanner } from './banner.mjs';
 import { ensureDaily } from './desafios.mjs';
@@ -109,7 +109,7 @@ function renderBanner(){
    * pergunta precisa das duas metades. */
   $('#profBanner').innerHTML =
     `<div class="scene cn-${cosmeticoValido('cena', bt.cena)}"></div>
-     ${dexImg(b.dex, slugDoDex(b.dex), 'class="mon"', gifShinyAtivo(S.profile, b.dex))}
+     ${dexImg(b.dex, slugDoDex(b.dex), `class="mon"${atributoPrestigio(gifShinyAtivo(S.profile, b.dex))}`, false)}
      <div class="shade"></div>`;
   const av = $('#profAvatar');
   av.src = avatarURL();
@@ -258,8 +258,8 @@ function renderCustom(){
   $('#pickBannerMon').innerHTML = nenhum + mons.map(m => {
     const sh = gifShinyAtivo(S.profile, m.dex);
     return `
-    <div class="opt ${+b.dex===m.dex?'on':''}${sh ? ' temShiny' : ''}" data-bmon="${m.dex}">
-      ${retratoAnimado(m, 'loading="lazy"', sh)}
+    <div class="opt ${+b.dex===m.dex?'on':''}${sh ? ' temPrestigio' : ''}" data-bmon="${m.dex}">
+      ${retratoAnimado(m, `loading="lazy"${atributoPrestigio(sh)}`, false)}
       <div class="cap">${nomeExibido(m.n)}</div>
     </div>`;
   }).join('');
@@ -289,8 +289,9 @@ function renderShiny(){
     ? `${livres} de ${total} vaga${total > 1 ? 's' : ''} livre${livres === 1 ? '' : 's'}`
     : '—';
   $('#shinyNota').innerHTML = total
-    ? `Uma vaga a cada ${NIVEIS_POR_VAGA} níveis. Desbloquear dá o GIF e a skin de arena juntos; ` +
-      `equipar cada um é separado, e desequipar não perde a conquista.`
+    ? `Uma vaga a cada ${NIVEIS_POR_VAGA} níveis. Desbloquear dá a aura de prestígio no retrato e na arena; ` +
+      `equipar cada um é separado, e desequipar não perde a conquista. O brilho shiny é de outra coisa: ` +
+      `da criatura que você captura brilhante.`
     : `A primeira vaga chega no nível ${NIVEIS_POR_VAGA}. Cada ${NIVEIS_POR_VAGA} níveis dão mais uma.`;
 
   const mons = customMons();
@@ -299,17 +300,17 @@ function renderShiny(){
     const g = gifShinyAtivo(S.profile, m.dex), k = skinShinyAtiva(S.profile, m.dex);
     if (!tem) return `
       <div class="opt shiny ${livres > 0 ? '' : 'bloqueado'}" data-shiny-novo="${m.dex}">
-        ${dexImg(m.dex, m.n, 'loading="lazy"', true)}
+        ${dexImg(m.dex, m.n, 'loading="lazy"', false)}
         <span class="sflag">${livres > 0 ? '+ vaga' : 'sem vaga'}</span>
         <div class="cap">${nomeExibido(m.n)}</div>
       </div>`;
     return `
       <div class="opt shiny on" data-shiny-tem="${m.dex}">
-        ${dexImg(m.dex, m.n, 'loading="lazy"', g)}
+        ${dexImg(m.dex, m.n, `loading="lazy"${atributoPrestigio(g)}`, false)}
         <span class="sflag">✓ seu</span>
         <div class="cap">${nomeExibido(m.n)}</div>
         <div class="sbtns">
-          <button class="sbtn ${g ? 'on' : ''}" data-shiny-gif="${m.dex}">GIF</button>
+          <button class="sbtn ${g ? 'on' : ''}" data-shiny-gif="${m.dex}">Foto</button>
           <button class="sbtn ${k ? 'on' : ''}" data-shiny-skin="${m.dex}">Arena</button>
         </div>
       </div>`;
@@ -469,7 +470,7 @@ $('#pickShiny').addEventListener('click', async ev => {
     return;
   }
   const nome = (especies.find(e => e.dex === dex) || {}).n || dex;
-  if (!await confirmar(`Usar uma vaga de cosmético shiny em ${nomeExibido(nome)}?\n` +
+  if (!await confirmar(`Usar uma vaga de prestígio em ${nomeExibido(nome)}?\n` +
                `Você tem ${vagasLivres(S.profile, nivel)} livre(s). A vaga não volta.`,
                { ok: 'Usar a vaga', perigo: true })) return;
   desbloquear(S.profile, dex, nivel);

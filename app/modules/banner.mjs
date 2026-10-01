@@ -30,7 +30,7 @@ import { PROFILE_DEFAULT, avatarURL, avatarEhArte, avatarEnquadramento, tituloDe
 import { progressoNivel } from './progressao.mjs';
 import { colocacaoDe, ordemDeQuedas, rankingColocacao } from './colocacao.mjs';
 import { dexImg, retratoAnimado } from './sprites.mjs';
-import { gifShinyAtivo } from './shiny-dados.mjs';
+import { prestigioNoRetrato, atributoPrestigio } from './shiny-dados.mjs';
 import { especies } from './motor.mjs';
 
 /* ── O QUE O IDLE PUBLICA PARA O BANNER (1.6c) ────────────────────────────
@@ -243,8 +243,8 @@ function renderBattleBanner(){
    * isso o brilho da imagem vai por `filter` (ver `img[data-shiny]` no CSS) e o
    * símbolo vem separado, posicionado sobre o canto do retrato. */
   const dexNoBanner = meu ? meu.dex : vitrineDex;
-  const marcaShiny = gifShinyAtivo(perfil, dexNoBanner)
-    ? '<span class="bnShiny" aria-hidden="true">✦</span>' : '';
+  const marcaShiny = prestigioNoRetrato(perfil, dexNoBanner)
+    ? '<span class="bnPrestigio" aria-hidden="true">◆</span>' : '';
 
   const corpo = meu
     /* O LUTADOR DA RODADA É ANIMADO (R13). Ele é o Pokémon em que o jogador
@@ -254,8 +254,8 @@ function renderBattleBanner(){
        O da VITRINE, logo abaixo, continua estático de propósito: ele é a foto
        de perfil de quem NÃO está na rodada, e movimento ali competiria com a
        arena pela atenção sem carregar informação nenhuma. */
-    ? `${retratoAnimado(meu, 'class="bnMon"', gifShinyAtivo(perfil, meu.dex))}${avatar}<div class="bnRodape">${rodapeDaAposta()}</div>`
-    : `${dexImg(vitrineDex, '', 'class="bnMon vitrine"', gifShinyAtivo(perfil, vitrineDex))}${avatar}
+    ? `${retratoAnimado(meu, `class="bnMon"${atributoPrestigio(prestigioNoRetrato(perfil, meu.dex))}`, false)}${avatar}<div class="bnRodape">${rodapeDaAposta()}</div>`
+    : `${dexImg(vitrineDex, '', `class="bnMon vitrine"${atributoPrestigio(prestigioNoRetrato(perfil, vitrineDex))}`, false)}${avatar}
        <div class="bnRodape comMon"><span class="bnEstado">${
          S.state === 'betting' ? 'Escolha um lutador na lista' : 'Assistindo esta rodada'}</span></div>`;
 
@@ -277,7 +277,7 @@ function renderBattleBanner(){
   const esp = especiePorDex(vitrineDex);
   const corpoIdle = () =>
     (esp
-      ? retratoAnimado(esp, 'class="bnMon"', gifShinyAtivo(perfil, vitrineDex))
+      ? retratoAnimado(esp, `class="bnMon"${atributoPrestigio(prestigioNoRetrato(perfil, vitrineDex))}`, false)
       /* NENHUM escolhido: o quadro fica com a cena, o nome e o nivel, e sem
          Pokemon — que e exatamente o que o jogador pediu ao escolher nenhum. */
       : '') +

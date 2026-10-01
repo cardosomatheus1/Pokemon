@@ -8,7 +8,7 @@ import { MOVE_FX, fxSheet } from './efeitos.mjs';
 import { PMD, SPRITE_MAX_H, conferirFolha, folhasFalhas, folhasOk, sheetURL, urlFolha } from './sprites.mjs';
 import { S } from './estado.mjs';
 import { sortearBolas } from './bolas-dados.mjs';
-import { shinyNaArena, skinShinyAtiva } from './shiny-dados.mjs';
+import { prestigioNaArena } from './shiny-dados.mjs';
 import { place } from './coreografia.mjs';
 import { rng } from './motor.mjs';
 
@@ -44,7 +44,6 @@ function preloadSheets(){
          normal só chega quando já é tarde: a arena piscaria o quadro vazio
          justamente na espécie que eu colecionei. */
       conferirFolha(sheetURL(f.dex, k, false));
-      if (skinShinyAtiva(S.profile, f.dex)) conferirFolha(sheetURL(f.dex, k, true));
     }
     // e as folhas de efeito dos golpes que este lutador tem
     for (const mv of f.moves){
@@ -185,11 +184,13 @@ function setAnim(e, key, once){
      POSSE e mais nada: pintava de shiny qualquer lutador cujo dex eu possuísse,
      inclusive o que OUTRO jogador escolheu. Eu tenho a skin de Charizard, outro
      escolhe Charizard, e o Charizard dele aparecia shiny na minha tela.
-     `shinyNaArena` exige as duas coisas — ter a skin E ter posto o bicho em
+     `prestigioNaArena` (era `shinyNaArena`) exige as duas coisas — ter a skin E ter posto o bicho em
      campo. `setAnim` roda a cada troca de animação, então a decisão acompanha a
      aposta mesmo tendo a entidade sido construída antes dela. */
   const escolhido = !!S.myBet && S.ents[S.myBet.idx] === e;
-  const ehShiny = shinyNaArena(S.profile, e.f.dex, escolhido);
+  /* ST-14.3b: o cosmético é PRESTÍGIO — aura, e a folha normal. O lutador da
+     Arena não é instância de ninguém, e a paleta shiny só pertence a uma. */
+  const prestigio = prestigioNaArena(S.profile, e.f.dex, escolhido);
   /* ── R34 · A ARENA MARCA QUEM ESTÁ SHINY ───────────────────────────────
    *
    * O desenho do shiny era invisível fora da própria folha: o jogador
@@ -203,10 +204,10 @@ function setAnim(e, key, once){
    *
    * AQUI e não em `buildEntities` porque `setAnim` roda a cada troca de
    * animação: a decisão acompanha a aposta, que pode mudar depois de a
-   * entidade ter sido construída. É o mesmo motivo de `shinyNaArena` estar
+   * entidade ter sido construída. É o mesmo motivo de `prestigioNaArena` estar
    * nesta linha. */
-  e.el.classList.toggle('shiny', ehShiny);
-  e.folha = sheetURL(e.f.dex, key, ehShiny);
+  e.el.classList.toggle('prestigio', prestigio);
+  e.folha = sheetURL(e.f.dex, key, false);
   e.body.style.backgroundImage = `url(${urlFolha(e.folha)})`;
   e.body.style.backgroundSize = (cols * 100) + '% ' + (8 * 100) + '%';
   drawFrame(e);

@@ -105,8 +105,10 @@ export function suite() {
      * `shinyNaArena` é a pergunta completa — ter a skin E o lutador ser o
      * escolhido. O teste passa a exigir ELA, e não a antiga; deixar o antigo
      * de pé travaria a correção, que é o pior serviço que um teste presta. */
-    ok(/shinyNaArena\(/.test(fn[0]),
-      `o retrato do vencedor decide o shiny pela posse solta: ${fn[0]}`);
+    /* ST-14.3b: a pergunta é a mesma (ter E ter escolhido), e a resposta virou
+       PRESTÍGIO — `prestigioNaArena`, que dá a aura e nunca a paleta shiny. */
+    ok(/prestigioNaArena\(/.test(fn[0]),
+      `o retrato do vencedor decide o prestígio pela posse solta: ${fn[0]}`);
     ok(!/,\s*true\s*\)/.test(fn[0]),
       'o shiny do vencedor está fixado em verdadeiro: sai para quem não desbloqueou');
     /* `imgTag` não conhece shiny: ele monta o endereço do sprite normal, e com

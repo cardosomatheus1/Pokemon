@@ -36,7 +36,7 @@ import { creditarCompra, reiniciarCarteira, saldo, ultimoDiagnostico } from './b
 import { atualizarSaldo } from './controles.mjs';
 import { ligarVelocidade } from './carteira.mjs';
 import { PROFILE_DEFAULT, loadProfile, nivelDe, saveProfile } from './perfil.mjs';
-import { alternar, desbloquear, gifShinyAtivo, skinShinyAtiva, vagasNoNivel } from './shiny-dados.mjs';
+import { alternar, desbloquear, gifShinyAtivo, skinShinyAtiva, vagasNoNivel, atributoPrestigio } from './shiny-dados.mjs';
 import { dexImg } from './sprites.mjs';
 import { eventos } from './telemetria.mjs';
 import { barras, medidor, escapar } from './grafico.mjs';
@@ -251,7 +251,7 @@ function admShinyLab(){
       const tem = (p?.shiny?.gifs || []).includes(e.dex);
       const g = gifShinyAtivo(p, e.dex), k = skinShinyAtiva(p, e.dex);
       return `<div class="opt shiny ${tem ? 'on' : ''}" data-adm-shiny="${e.dex}">
-        ${dexImg(e.dex, e.n, 'loading="lazy"', g)}
+        ${dexImg(e.dex, e.n, `loading="lazy"${atributoPrestigio(g)}`, false)}
         <span class="sflag">${tem ? ((g ? 'GIF' : '') + (k ? ' arena' : '')).trim() || 'guardado' : 'conceder'}</span>
         <div class="cap">${nomeExibido(e.n)}</div></div>`;
     }).join('') + '</div>';

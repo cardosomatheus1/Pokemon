@@ -118,11 +118,12 @@ export async function tocar(res, aoFim = null) {
      propósito, e `sprites.mjs` toca `document` na carga. */
   const alvo = cx.querySelector('.capAlvo');
   if (alvo) {
-    const html = retratoAnimado(espDe(dex), 'class="capForma"', false);
+    /* ST-14.3b: o encontro brilhante é capturado brilhante — o recibo diz. */
+    const html = retratoAnimado(espDe(dex), 'class="capForma"', res?.shiny === true);
     const src = /src="([^"]+)"/.exec(html)?.[1];
     if (src) alvo.src = src;
     else alvo.replaceWith(Object.assign(document.createElement('span'), {
-      innerHTML: dexImg(dex, espDe(dex).n, 'class="capForma"'),
+      innerHTML: dexImg(dex, espDe(dex).n, 'class="capForma"', res?.shiny === true),
     }));
   }
 

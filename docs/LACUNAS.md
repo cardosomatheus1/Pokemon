@@ -9177,7 +9177,8 @@ quantas contas teriam a criatura presa por isso.
 ### L-224 — o aviso antes de gastar um insumo preso numa criatura livre
 
 **Registrada em:** 01/10/2026, na ST-14.5. **Bloco dono:** ~~ST-14.0D~~ →
-**ST-14.3** (o shiny e a origem na coleção e na evolução). **Estado:** aberta
+~~ST-14.3~~ → **ST-14.6** (reservas: é ela que passa a escolher LOTE por
+classe, e a evolução por pedra é um consumo como a reserva). **Estado:** aberta
 em parte — em 01/10 a ST-14.0D pôs o aviso no LANCE ("⚠ prende", pelo lote
 que o débito gasta, com a conta descendo os lotes livres). Falta o mesmo na
 EVOLUÇÃO por pedra e a escolha da classe do lote quando há equivalentes
@@ -9217,3 +9218,21 @@ outros.
 **O que a destrava:** a ST-14.0D — a escolha da bola inclui o que o pack marca
 `guaranteed_capture` e a pessoa tem na bolsa (com a confirmação, porque é a
 mais rara), e o pendente com `shiny` ganha o selo que a ST-14.3 desenhar.
+
+### L-226 — o palco e o replay da Liga não mostram o shiny do snapshot
+
+**Registrada em:** 01/10/2026, na ST-14.3b. **Bloco dono:** ST-14.7 (a troca
+com revisão — é ela que monta a tela da instância de outro jogador, e o palco
+usa o mesmo caminho de sprite). **Estado:** aberta.
+
+A ST-14.3a gravou o `shiny` de cada criatura no snapshot da Liga, mas o log
+da partida (de onde o palco e o replay desenham) sai do motor de luta, que
+não recebe aparência — então o palco pinta todo mundo com a folha normal.
+
+**Por que não cabe agora:** desenhar o shiny no palco pede cruzar o lado do
+log com o snapshot pelo índice, para as partidas novas e as antigas; a
+ST-14.3b fechou o que a ficha aceita (encontro, captura, coleção).
+
+**O que a destrava:** a ST-14.7 — o palco recebe o snapshot junto do log e
+pinta `shiny` pela posição; partida de antes da ST-14.3a não tem o campo e
+fica normal.

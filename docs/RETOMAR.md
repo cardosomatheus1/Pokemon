@@ -102,9 +102,13 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            · ST-14.3a FECHADA (01/10): o snapshot da Liga com o shiny
            (aparência), e o time com criatura que saiu da conta não luta
            mais (desafio, fila, bot); o replay fica.
-           PRÓXIMO: ST-14.3b (o cosmético shiny vira prestígio; o sprite
-           shiny verdadeiro na coleção, evolução e palco; o resto da L-224)
-           — fecha a onda A
+           · ST-14.3b FECHADA (01/10): o cosmético do perfil virou
+           prestígio (aura neon ◆, nada perdido); o shiny verdadeiro na
+           carta, na ficha e na captura. A ONDA A DA E14 ESTÁ FECHADA.
+           PRÓXIMO: a onda B — ST-14.6 (reservas e escrow), 14.8 (taxas),
+           14.14 (proteção antes de negociar), 14.16 (expiração), 14.7 (a
+           troca). Tudo atrás das bandeiras desligadas (DEC-21: liga no
+           gate C, moeda simulada)
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho
            do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta

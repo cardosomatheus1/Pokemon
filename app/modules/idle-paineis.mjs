@@ -201,7 +201,7 @@ export function pintarCentro(E) {
      onde, e era a ação principal da equipe escrita em 9 px a 75%. */
   const ficha = (c, guardado) => `
     <button class="idleGuardado" data-mover="${c.id}" data-para="${guardado ? '0' : '1'}">
-      ${dexImg(c.dex, esp(c.dex).n, 'class=\"idleCriaArte\"')}
+      ${dexImg(c.dex, esp(c.dex).n, 'class=\"idleCriaArte\"', c.shiny === true)}
       <span class="idleCriaNome">${nomeExibido(esp(c.dex).n)}</span>
       <span class="tiny">nv ${c.nivel ?? 1} · potencial ${c.potencial}${c.exemplar ? ' ✦' : ''}</span>
       <span class="idleAcao">${guardado ? '→ equipe' : '→ caixa'}</span>

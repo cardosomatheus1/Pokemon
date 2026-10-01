@@ -135,6 +135,20 @@ export function alternar(perfil, campo, dex) {
  * passar a dizer quem apostou em quem — e com qual skin — muda o ARGUMENTO, e
  * não a regra. O caso "outro jogador escolheu e ele tem a skin" entra por aqui
  * sem reescrever nada. */
-export function shinyNaArena(perfil, dex, escolhido) {
+export function prestigioNaArena(perfil, dex, escolhido) {
   return !!escolhido && skinShinyAtiva(perfil, dex);
 }
+
+/* ── O COSMÉTICO VIROU PRESTÍGIO (ST-14.3b, spec E14 §3.6 e §4.3) ─────────
+ *
+ * Com a E14 o shiny passou a EXISTIR: é da instância, nasce do encontro e
+ * vai junto na troca. Um cosmético de perfil que pintava de shiny qualquer
+ * Charizard do jogador deixaria de ser decoração e viraria mentira — a tela
+ * diria "brilhante" para uma criatura que não é.
+ *
+ * Então as vagas e o que foi desbloqueado continuam valendo, com o mesmo
+ * dado gravado (nenhuma conquista se perde, e o perfil antigo lê igual), e o
+ * que elas dão muda de nome e de desenho: uma AURA de prestígio, em neon —
+ * nunca a paleta shiny, nunca o "✦". O retrato e a arena perguntam aqui. */
+export const atributoPrestigio = sim => (sim ? ' data-prestigio="1"' : '');
+export const prestigioNoRetrato = gifShinyAtivo;
