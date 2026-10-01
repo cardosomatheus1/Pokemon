@@ -9134,8 +9134,11 @@ dono decidir a fonte de PC-T.
 
 ### L-222 — o doce ainda não tem lote nem origem
 
-**Registrada em:** 30/09/2026, na ST-14.0C. **Bloco dono:** ST-14.5 (a
-negociabilidade). **Estado:** aberta.
+**Registrada em:** 30/09/2026, na ST-14.0C. **Bloco dono:** ST-14.11A (as
+buy orders de itens — onde o doce poderia passar a negociar). **Estado:**
+aberta — em 01/10 a ST-14.5 declarou o doce NÃO NEGOCIÁVEL na política
+(`avaliarPreso`, `ASSET_BOUND · doce`), e o dono passou para quem o
+destravaria. A propagação doce → progresso da criatura é a L-223.
 
 A ST-14.0C deu lote e origem aos ITENS da bolsa. O doce (`species_candy` +
 `candy_ledger`) ficou de fora: ele nasce da aposta (com a composição da stake,
@@ -9149,3 +9152,43 @@ dele não decide nada ainda.
 **O que a destrava:** a decisão de negociar doce (buy orders de itens, ST-14.11A,
 ou um pedido do dono); aí o `candy_ledger` ganha a classe, e a aposta em PC-B
 gera doce `promotional_bound`.
+
+### L-223 — o doce comprado com bônus não prende a criatura que ele fez subir
+
+**Registrada em:** 01/10/2026, na ST-14.5. **Bloco dono:** ST-14.14 (a
+proteção antes de negociar — "origem saneada" é portão do gate B). **Estado:**
+aberta.
+
+A spec E14 §4.3 pede que a origem restrita se propague "pedra/doce →
+evolução/progresso". A pedra já propaga (ST-14.0C). O doce não: ele não tem
+lote (L-222), então dar doce de uma aposta em PC-B a uma criatura do farm a
+faz subir de nível e ela continua `verified_earned` — o bônus vira, por um
+desvio, nível numa criatura negociável.
+
+**Por que não cabe agora:** a criatura ainda não sai da conta (as bandeiras
+da troca e do Market estão desligadas até o gate C), e prender pelo doce
+exige primeiro saber a origem do doce — que é a L-222 inteira.
+
+**O que a destrava:** a ST-14.14, antes do gate B: ou o doce ganha classe
+(e `darDoceNaConta` aplica a `maisRestrita`), ou a política passa a recusar
+na troca a criatura com progresso de doce de origem presa. Medir antes
+quantas contas teriam a criatura presa por isso.
+
+### L-224 — o aviso antes de gastar um insumo preso numa criatura livre
+
+**Registrada em:** 01/10/2026, na ST-14.5. **Bloco dono:** ST-14.0D (a E14
+no cliente conectado). **Estado:** aberta.
+
+A spec E14 §4.3: "mostrar antes a consequência para negociabilidade. Não
+consumir silenciosamente insumo bound e desvalorizar um shiny". O servidor já
+grava a consequência (a pedra presa prende a forma nova; a bola presa prende
+a captura), e a política já a lê — mas a tela não avisa ANTES: o jogador só
+descobre depois que a criatura ficou presa.
+
+**Por que não cabe agora:** é tela, e a ST-14.5 é a regra; a escolha da
+classe do lote (`debitarBolsa(..., { classe })`) já existe no servidor e não
+tem rota que a exponha.
+
+**O que a destrava:** a ST-14.0D — a rota de evoluir e a de lançar aceitam a
+classe do insumo, e a tela mostra "isto prende a criatura" quando a classe
+escolhida não é negociável e a criatura é.

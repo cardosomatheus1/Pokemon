@@ -236,6 +236,11 @@ export const BOLAS_EXTRA = [
     texto: 'Muito eficaz em ambientes noturnos ou cavernas.' },
   { id: 'mestra', nome: 'Master Ball', en: 'Master Ball', icone: 0, comoAchei: 'olhado',
     faixa: 'muitoRaro', porta: 'bau', andarMinimo: 13, mult: 999,
+    /* NÃO NEGOCIA enquanto a fonte não tiver orçamento de emissão aprovado
+       (ST-14.4, spec E14 §6): a bola que captura sem falha é o item que mais
+       vale numa troca, e o baú não tem teto. A política mora no motor
+       (`engine/negociabilidade.mjs`); o pack só diz qual item é. */
+    negociavel: false,
     texto: 'A bola definitiva. Captura o alvo sem possibilidade de falha.' },
 ];
 

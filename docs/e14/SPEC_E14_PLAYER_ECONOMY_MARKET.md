@@ -216,7 +216,7 @@ Conciliar ledger com carteira, holds com reservado, lotes com bolsa e histórico
 
 Cliente mantém chave até resultado terminal, inclusive após timeout, e consulta operação. Chaves diferentes também não duplicam: encontro terminal, anúncio vendido e trade liquidado têm constraints/guardas de negócio.
 
-Erros: `INSUFFICIENT_FUNDS`, `INSUFFICIENT_ITEMS`, `ASSET_BOUND`, `ASSET_BUSY`, `NOT_OWNER`, `STALE_REVISION`, `ALREADY_RESOLVED`, `EXPIRED`, `FEATURE_DISABLED`, `ACCOUNT_RESTRICTED`, `CAPACITY_EXCEEDED`, `IDEMPOTENCY_CONFLICT`. Recurso privado inacessível pode retornar 404 para evitar enumeração.
+Erros: `INSUFFICIENT_FUNDS`, `INSUFFICIENT_ITEMS`, `ASSET_BOUND`, `ASSET_BUSY`, `NOT_OWNER`, `STALE_REVISION`, `ALREADY_RESOLVED`, `EXPIRED`, `FEATURE_DISABLED`, `ACCOUNT_RESTRICTED`, `CAPACITY_EXCEEDED`, `IDEMPOTENCY_CONFLICT`, `ASSET_COOLDOWN` (com `available_at`) e `ASSET_UNKNOWN` (item que o pack não declara) — os dois últimos acrescentados na ST-14.5, que responde por eles. Recurso privado inacessível pode retornar 404 para evitar enumeração; a política devolve `NOT_OWNER` igual para o inexistente e o de outro.
 
 ## 9. Trade direto
 

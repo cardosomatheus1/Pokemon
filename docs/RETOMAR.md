@@ -85,8 +85,12 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            gatilho; soltar arquiva a identidade
            · ST-14.0C FECHADA (30/09): a bolsa por lote com a origem, e o
            derivado herdando a mais presa (captura, evolução, compra).
-           PRÓXIMO: ST-14.5 (a regra única de negociabilidade) — fecha a
-           onda 0 da E14
+           · ST-14.5 FECHADA (01/10): a política única de negociabilidade
+           — engine/negociabilidade.mjs + server/elegibilidade.mjs; o
+           inicial e o lendário presos, o item só pelo lote limpo, só PC-T
+           elegível; soltar pergunta a ela. A ONDA 0 DA E14 ESTÁ FECHADA.
+           PRÓXIMO: a onda A — ST-14.1 (shiny e recibo recuperável, dona
+           também do D-129), 14.4 (Master Ball com orçamento), 14.0D, 14.3
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho
            do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta

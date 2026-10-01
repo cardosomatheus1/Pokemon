@@ -12,9 +12,9 @@ import { chaveDoDoce } from '../engine/doce.mjs';
 import { escolher } from '../engine/foco.mjs';
 import { alternarGolpe } from '../app/modules/moveset-dados.mjs';
 import { aplicar as aplicarEvolucao } from '../app/modules/evolucao-idle.mjs';
-import { criaturasDaConta, emCampo, bolsaDe, debitarBolsa } from './idle.mjs';
-import { naRun } from './run.mjs';
+import { criaturasDaConta, bolsaDe, debitarBolsa } from './idle.mjs';
 import { maisRestrita } from '../engine/proveniencia.mjs';
+import { elegibilidadeDaCriatura } from './elegibilidade.mjs';
 
 export const ERRO_COLECAO = Object.freeze({ SEM_CRIATURA: 'COLECAO_SEM_CRIATURA', CHAVE: 'COLECAO_CHAVE_INVALIDA' });
 const falha = (codigo, msg) => Object.assign(new Error(msg), { codigo });
@@ -47,8 +47,10 @@ export const trocarNaConta = (db, { userId, sai, entra }) => emTransacao(db, () 
 export function soltarNaConta(db, { userId, pack, id, agora }) {
   const c = criaturasDaConta(db, userId).find(x => x.id === id);
   if (!c) throw falha(ERRO_COLECAO.SEM_CRIATURA, 'esta criatura não existe');
-  const fora = new Set(emCampo(db, userId).flatMap(x => JSON.parse(x.equipe_json)));
-  const motivo = motivoDeSoltar(c, fora.has(id) || naRun(db, { userId, pack, agora }).has(id));
+  /* A POLÍTICA ÚNICA decide se ela está ocupada (expedição, run e, a partir
+     da ST-14.6, reservada); a regra da coleção só escreve o motivo de sempre. */
+  const pode = elegibilidadeDaCriatura(db, { userId, pack, id, acao: 'soltar', agora });
+  const motivo = motivoDeSoltar(c, pode.reason_code === 'ASSET_BUSY');
   if (motivo) throw new Error(motivo);
   const doce = doceAoSoltar(pack, c.dex), linha = chaveDoDoce(pack, c.dex);
   return emTransacao(db, () => {
