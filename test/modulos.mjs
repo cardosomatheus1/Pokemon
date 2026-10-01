@@ -373,6 +373,7 @@ const CAMADA = {
   'idle-conta.mjs': 0,
   'historico-dados.mjs': 0,
   'encontro-dados.mjs': 0,   // ST-14.0D: o quadro de encontros (shiny, garantida, lote preso)
+  'prende-dados.mjs': 0,     // ST-14.3d: o aviso "prende" da pedra e do doce
   'historico-tela.mjs': 4,
   'idle-servidor.mjs': 4,
   'idle-acoes.mjs': 4,

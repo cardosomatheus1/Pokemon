@@ -7182,6 +7182,30 @@ pela espécie nova do dia na liquidação, e o "aposta_alta" saiu do sorteio.
 carteira, uma vez por dia (D-137)" e "o marco semanal dos desafios paga uma
 vez, no servidor, e respeita o teto de saldo (D-137)".
 
+## D-139 — o `carregar` do idle jogava fora os lotes, e o aviso "prende" nunca chegou à tela ✅ CORRIGIDO na ST-14.3d (01/10)
+
+**Achado em:** 01/10/2026, no Q5 da ST-14.3d (`tools/olhar-prende.mjs`).
+**Bloco dono:** ST-14.3d — é o bloco do aviso de ANTES (L-224), e o aviso
+depende dos lotes chegarem à tela. **Estado:** corrigido.
+
+**Causa.** A ST-14.0D passou a mandar os lotes da bolsa em `GET /api/idle` e o
+`idleDaConta` os gravava no save. Mas o `carregar` do aparelho monta o estado
+campo a campo (`camposDa…`), e nenhum deles lia `lotes`: a tela, que lê pelo
+`carregar`, recebia `E.lotes` vazio. O aviso "⚠ prende" do LANCE nunca
+apareceu num navegador desde a ST-14.0D — os testes chamavam
+`consequenciaDoLance` com os lotes na mão, e passavam.
+
+**Medição.** Conta com a primeira Pedra Trovão de bônus e um Pikachu pronto:
+o save tinha `lotes.trovao = [{promotional_bound, 1}, …]`; a tela, zero selos
+`prende`.
+
+**Conserto.** `camposDaConta` devolve também `lotes` e `docesPresos`, limpos
+(`lotesDoDisco`, `presosDoDisco`): classe em texto, quantidade inteira — é só
+aviso, mas é campo lido de onde o jogador escreve.
+
+**Teste que trava:** `e14-prende` — "D-139: o save da conta guarda os lotes e
+os presos" · plantados **S2456** (o carregar volta a descartar) e **S2457**.
+
 ## D-138 — o painel econômico do operador somava a reserva como se fosse saldo ✅ CORRIGIDO no gate C da E14 (01/10)
 
 **Achado em:** 01/10/2026, pelo piloto do gate C (`test/e14-economia.mjs`).

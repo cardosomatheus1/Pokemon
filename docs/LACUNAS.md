@@ -9209,7 +9209,7 @@ exige primeiro saber a origem do doce — que é a L-222 inteira.
 na troca a criatura com progresso de doce de origem presa. Medir antes
 quantas contas teriam a criatura presa por isso.
 
-### L-224 — o aviso antes de gastar um insumo preso numa criatura livre
+### L-224 — o aviso antes de gastar um insumo preso numa criatura livre ✅ FECHADA na ST-14.3d (01/10)
 
 **Registrada em:** 01/10/2026, na ST-14.5. **Bloco dono:** ~~ST-14.0D~~ →
 ~~ST-14.3~~ → **ST-14.6** (reservas: é ela que passa a escolher LOTE por
@@ -9237,6 +9237,17 @@ escolhida não é negociável e a criatura é.
 dar doce diz `prendeu`. O aviso ANTES — na pedra e no doce — passa a ter
 dono próprio: a **ST-14.3d** (proposta no PLANO), que é tela e espera a
 DEC-20 liberar o visual.
+
+**01/10, ST-14.3d:** fechada. A camada 0 (`app/modules/prende-dados.mjs`)
+decide o aviso com a regra do servidor — a pedra pelo lote mais antigo, o
+doce pelos livres que sobram — e só quando a criatura negocia hoje. O selo de
+evoluir diz "⚠ prende" e o primeiro clique arma ("prende a criatura ·
+evoluir?"); o botão de dar doce também, com o segundo clique. `GET /api/doces`
+diz os presos. E o Q5 achou o **D-139**: os lotes nunca chegavam à tela. A
+escolha manual da classe do lote (`debitarBolsa(..., { classe })` numa rota)
+não foi feita: com o aviso de antes, a ordem do débito é previsível, e uma
+escolha a mais na tela de evoluir não paga o espaço — se o piloto pedir, é
+uma story nova.
 
 ### L-225 — a tela do lance não oferece a bola garantida, nem mostra o encontro shiny ✅ FECHADA na ST-14.0D (01/10)
 

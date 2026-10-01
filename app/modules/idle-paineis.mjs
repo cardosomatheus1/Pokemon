@@ -25,6 +25,7 @@ import { chanceDe } from '../../engine/captura.mjs';
 import { bolasDoLance, seloDoEncontro, consequenciaDoLance } from './encontro-dados.mjs';
 import { naEquipe, naCaixa, PARTY_MAX, bolsaEmLista, registroEmLista, encontrosDaRun } from './idle-dados.mjs';
 import { doceAoSoltar } from './doce-dados.mjs';
+import { avisoDoDoce } from './prende-dados.mjs';
 import { golpesDaCriatura, liberados, GOLPES_MAX, exclusivosDaCriatura } from './moveset-dados.mjs';
 import { compararGolpes } from './comparador-golpes.mjs';
 import { chaveDoDoce, XP_POR_DOCE } from '../../engine/doce.mjs';
@@ -212,6 +213,8 @@ export function pintarCentro(E) {
      botão (tirar/guardar). */
   const item = (c, guardado) => {
     const doces = (E.doces ?? {})[chaveDoDoce(PACK, c.dex)] ?? 0;
+    /* ST-14.3d: o doce preso prende quem o come — o botão diz ANTES, e pede confirmação. */
+    const prende = avisoDoDoce(c, { quantidade: doces, presos: (E.docesPresos ?? {})[chaveDoDoce(PACK, c.dex)] ?? 0 });
     /* ST-9.12: os golpes dela, escolhidos entre os que o nível liberou. */
     const emUso = golpesDaCriatura(PACK, c), podem = liberados(PACK, c.dex, c.nivel, c.exclusivos);
     /* ST-10.3: o exclusivo leva a marca — é o que esperar para evoluir rendeu. */
@@ -229,7 +232,8 @@ export function pintarCentro(E) {
     </details>`;
     return `<div class="idleCaixaItem">${ficha(c, guardado)}
       ${golpes}
-      ${doces > 0 ? `<button class="idleDarDoce" data-dar-doce="${c.id}" title="${XP_POR_DOCE} XP por doce · o doce é da linha inteira">dar doce · ${doces} da linha</button>` : ''}
+      ${doces > 0 ? `<button class="idleDarDoce${prende ? ' prende' : ''}" data-dar-doce="${c.id}"${prende ? ' data-prende="1"' : ''}
+        title="${XP_POR_DOCE} XP por doce · o doce é da linha inteira${prende ? ` · ${prende.frase}` : ''}">dar doce · ${doces} da linha${prende ? ' · ⚠ prende' : ''}</button>` : ''}
       ${guardado ? `<button class="idleSoltar" data-soltar="${c.id}" data-doce="${doceAoSoltar(PACK, c.dex)}"
         title="soltar vira doce da linha — a Pokédex continua lembrando que você a teve">soltar · +${doceAoSoltar(PACK, c.dex)} doce</button>` : ''}
     </div>`;

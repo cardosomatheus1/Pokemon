@@ -51,6 +51,13 @@ export function docesDe(db, userId) {
     .all(userId).map(x => [x.species_id, x.quantidade]));
 }
 
+/* QUANTOS de cada linha são PRESOS (ST-14.3d): a tela avisa ANTES de dar o
+   doce que prende — os livres saem primeiro, e o aviso precisa dos dois. */
+export function docesPresosDe(db, userId) {
+  return Object.fromEntries(db.prepare(`SELECT species_id, presos FROM species_candy WHERE user_id = ? AND quantidade > 0 AND presos > 0`)
+    .all(userId).map(x => [x.species_id, x.presos]));
+}
+
 const CHAVE_OK = /^[\w-]{8,64}$/;
 
 export function resgatarDoces(db, { userId, chaveIdem, agora = Date.now() }) {

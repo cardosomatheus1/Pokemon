@@ -76,7 +76,7 @@ export function suite() {
     const paineis = semComentario(fonte('../app/modules/idle-paineis.mjs'));
     ok(/<span class="tiny">nv \$\{c\.nivel \?\? 1\} · potencial \$\{c\.potencial\}/.test(paineis), 'o cartão não diz o nível');
     /* Com o nível no cartão, o botão não o repete — repetido, quebrava em duas linhas. */
-    ok(/>dar doce · \$\{doces\} da linha<\/button>/.test(paineis), 'o botão do doce repete o nível que o cartão já diz');
+    ok(/>dar doce · \$\{doces\} da linha\$\{prende \? ' · ⚠ prende' : ''\}<\/button>/.test(paineis), 'o botão do doce repete o nível que o cartão já diz');
   });
 
   /* ST-5.16 (resto da L-194): os emojis de sistema do clima destoavam do

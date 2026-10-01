@@ -12,6 +12,7 @@
  * relogio, e nenhuma delas decide nada — a decisao mora no `engine/foco.mjs`.
  */
 import { avisoDeEvolucao } from '../../engine/exclusivos.mjs';
+import { avisoDaPedra } from './prende-dados.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { fatorDaEquipe } from '../../engine/expedicao.mjs';
 import { retratoAnimado } from './sprites.mjs';
@@ -54,15 +55,17 @@ const esp = dex => (PACK.especies ?? []).find(e => e.dex === dex) ?? { n: '?', d
  *
  * O do meio e o que faz a mecanica ser jogavel: "falta o nivel 16" transforma
  * a expedicao seguinte numa decisao. */
-export function seloDaEvolucao(c, bolsa, nomeDoItem) {
+export function seloDaEvolucao(c, bolsa, nomeDoItem, lotes = null) {
   const r = oQueFalta(PACK, c, bolsa, nomeDoItem);
   if (!r.evolui) return '';
   if (!r.falta) {
     /* ST-10.3: evoluir agora pode custar um golpe exclusivo — o selo avisa, e
-       o primeiro clique só ARMA (exclusivos-tela.mjs). */
-    const aviso = avisoDeEvolucao(PACK, c);
-    return `<span class="criaEvo pronta${aviso ? ' perde' : ''}" data-evoluir="${c.id}"
-                  title="${aviso ?? 'esta criatura pode evoluir agora'}">evoluir${aviso ? ' ⚠' : ''}</span>`;
+       o primeiro clique só ARMA (exclusivos-tela.mjs). ST-14.3d: e a pedra de
+       lote preso prende a criatura — o mesmo aviso, a mesma confirmação. */
+    const aviso = avisoDeEvolucao(PACK, c), prende = avisoDaPedra(PACK, c, bolsa, lotes);
+    const titulo = [aviso, prende?.frase].filter(Boolean).join(' · ') || 'esta criatura pode evoluir agora';
+    return `<span class="criaEvo pronta${aviso ? ' perde' : ''}${prende ? ' prende' : ''}" data-evoluir="${c.id}"
+                  title="${titulo}">evoluir${aviso || prende ? ' ⚠' : ''}${prende ? ' prende' : ''}</span>`;
   }
   /* O RECORTE NO CORPO, A FRASE INTEIRA NO `title` (1.27f).
 
@@ -260,7 +263,7 @@ export function pintarCartoes(E, { perfil, selecao = [], agora = Date.now(),
         ${ver('potencial') ? `<span class="tiny criaPot">potencial <b>${c.potencial}</b>${
           ver('natureza') && c.natureza ? ` · ${c.natureza}` : ''}</span>` : ''}
         ${seloDoFoco(c, t)}
-        ${ver('evolucao') ? seloDaEvolucao(c, E.bolsa, nomesDe(PACK)) : ''}
+        ${ver('evolucao') ? seloDaEvolucao(c, E.bolsa, nomesDe(PACK), E.lotes) : ''}
       </button>`;
   }).join('') + rodapeDaConcentracao(selecao.length, custo));
 }

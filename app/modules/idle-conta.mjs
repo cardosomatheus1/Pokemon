@@ -32,10 +32,34 @@ export function camposDaConta(cru) {
      na soma do teto do aparelho, e é campo lido de onde o jogador escreve. */
   const n = v => (Number.isInteger(v) && v >= 0 ? v : 0);
   const teto = c.teto && typeof c.teto === 'object' ? { restam: n(c.teto.restam), hoje: n(c.teto.hoje) } : null;
-  return { conta: { agora: Number.isFinite(c.agora) ? c.agora : null, teto, estagio: c.estagio ?? null, desatualizado: c.desatualizado === true } };
+  /* D-139 (ST-14.3d): os LOTES e os doces PRESOS voltam do disco junto. Sem
+     eles, o `carregar` os descartava e o aviso "prende" (o do lance, desde a
+     ST-14.0D, e os da pedra e do doce) nunca chegava à tela — o servidor
+     mandava, o save gravava, a leitura jogava fora. Só alimentam AVISOS; a
+     regra de verdade é a do servidor. */
+  return { conta: { agora: Number.isFinite(c.agora) ? c.agora : null, teto, estagio: c.estagio ?? null, desatualizado: c.desatualizado === true },
+           lotes: lotesDoDisco(cru.lotes), docesPresos: presosDoDisco(cru.docesPresos) };
 }
 
-export function idleDaConta(local, srv, { doces = null } = {}) {
+/* Por item, a lista de `{ classe, quantidade }` na ordem do débito. */
+export function lotesDoDisco(cru) {
+  const out = {};
+  if (!cru || typeof cru !== 'object' || Array.isArray(cru)) return out;
+  for (const [item, lista] of Object.entries(cru)) {
+    if (!Array.isArray(lista)) continue;
+    out[item] = lista.filter(l => l && typeof l.classe === 'string' && Number.isInteger(l.quantidade) && l.quantidade >= 0)
+                     .map(l => ({ classe: l.classe, quantidade: l.quantidade }));
+  }
+  return out;
+}
+export function presosDoDisco(cru) {
+  const out = {};
+  if (!cru || typeof cru !== 'object' || Array.isArray(cru)) return out;
+  for (const [k, v] of Object.entries(cru)) if (Number.isInteger(v) && v > 0) out[k] = v;
+  return out;
+}
+
+export function idleDaConta(local, srv, { doces = null, docesPresos = null } = {}) {
   const agora = srv.agora;
   return {
     ...local,
@@ -64,6 +88,8 @@ export function idleDaConta(local, srv, { doces = null } = {}) {
     missoes: srv.missoes !== undefined ? camposDaColecao({ missoes: srv.missoes }).missoes : (local.missoes ?? null),
     ...camposDaJornada({ jornada: srv.jornada }),
     doces: doces ?? local.doces ?? {},
+    /* Quantos de cada linha são presos (ST-14.3d): só para o aviso de antes de dar. */
+    docesPresos: docesPresos ?? local.docesPresos ?? {},
     conta: { agora, teto: srv.teto ?? null, estagio: srv.estagio ?? null, desatualizado: false },
   };
 }

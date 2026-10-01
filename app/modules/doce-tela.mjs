@@ -11,12 +11,19 @@
 import { PACK } from './motor.mjs';
 import { soltarNa, darDoceNa } from './colecao-acoes.mjs';   // ST-13.5d: com conta, pelo servidor
 import { renderIdle } from './idle-tela.mjs';
+import { TEXTO_DO_ARME_DO_DOCE } from './prende-dados.mjs';
 
 document.addEventListener('click', async ev => {
   /* ST-9.10: dar doce não pede confirmação — ele não tira nada que não volte
-     (é o doce da própria linha virando nível). */
+     (é o doce da própria linha virando nível). A exceção é o que prende. */
   const d = ev.target.closest('[data-dar-doce]');
   if (d) {
+    /* ST-14.3d: o doce que PRENDE pede o segundo clique — tirar a criatura da
+       troca é irreversível, como soltar. O texto é da camada 0. */
+    if (d.dataset.prende === '1' && d.dataset.armado !== '1') {
+      d.dataset.armado = '1'; d.classList.add('armado'); d.textContent = TEXTO_DO_ARME_DO_DOCE;
+      return;
+    }
     const r = await darDoceNa({ pack: PACK, id: d.dataset.darDoce });
     if (r?.ok === false) { d.textContent = r.motivo; return; }
     renderIdle();

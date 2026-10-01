@@ -17,7 +17,7 @@ export async function sincronizarIdleDaConta({ api = apiPadrao, deposito = globa
     salvar(local, deposito);
     return { ok: false, status: r.status };
   }
-  salvar(idleDaConta(local, r.corpo, { doces: d.ok ? d.corpo?.doces ?? null : null }), deposito);
+  salvar(idleDaConta(local, r.corpo, { doces: d.ok ? d.corpo?.doces ?? null : null, docesPresos: d.ok ? d.corpo?.presos ?? null : null }), deposito);
   /* AS MARCAS DA ESCADA (ST-13.9b): as da conta SOMAM às do aparelho — as
      telas leem daqui, e a marca é só acréscimo. O que a missão mede é o que
      o servidor tem; a soma daqui só pinta. */

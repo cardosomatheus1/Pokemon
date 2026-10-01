@@ -4,11 +4,12 @@
  * é impossível por construção, e a QUANTIDADE nunca vem do pedido — o corpo
  * só traz a chave de idempotência.
  */
-import { docesDe, resgatarDoces } from './doce.mjs';
+import { docesDe, docesPresosDe, resgatarDoces } from './doce.mjs';
 
 export function rotasDoDoce(daExcecao) {
   return {
-    'GET /api/doces': ({ db, userId }) => ({ corpo: { doces: docesDe(db, userId) } }),
+    /* ST-14.3d: e quantos de cada linha são presos — para o aviso de antes. */
+    'GET /api/doces': ({ db, userId }) => ({ corpo: { doces: docesDe(db, userId), presos: docesPresosDe(db, userId) } }),
 
     'POST /api/doces/resgatar': ({ db, corpo, userId, agora }) => {
       try { return { corpo: resgatarDoces(db, { userId, chaveIdem: corpo?.chaveIdem, agora }) }; }

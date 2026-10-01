@@ -95,7 +95,7 @@ export function suite() {
 
   s.teste('a tela: o selo avisa, o clique arma antes de evoluir, e o exclusivo leva a marca', () => {
     const selo = semComentario(fonte('../app/modules/idle-equipe.mjs'));
-    ok(/const aviso = avisoDeEvolucao\(PACK, c\);/.test(selo) && /pronta\$\{aviso \? ' perde' : ''\}/.test(selo), 'o selo não avisa');
+    ok(/const aviso = avisoDeEvolucao\(PACK, c\)[,;]/.test(selo) && /pronta\$\{aviso \? ' perde' : ''\}/.test(selo), 'o selo não avisa');
     const tela = semComentario(fonte('../app/modules/exclusivos-tela.mjs'));
     ok(/if \(!b \|\| b\.dataset\.armado === '1'\) return;/.test(tela) && /ev\.stopImmediatePropagation\(\);/.test(tela)
        && /\}, true\);\s*$/.test(tela), 'o primeiro clique não para a evolução');
