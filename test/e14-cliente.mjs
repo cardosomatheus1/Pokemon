@@ -52,20 +52,24 @@ export async function suite() {
   });
 
   s.teste('a leitura da conta traz o shiny, a origem e os lotes na ordem do débito', () => {
+    /* SEM O KIT: este teste é da ORDEM dos lotes; o kit de quem começa (ST-2.12)
+       poria um terceiro lote de bolas aqui, e ele tem teste próprio
+       (`comeco-treinador`) */
+    const SEM_KIT = { ...PACK, kitInicial: {} };
     const { db, uid } = novo();
     const c = gerar(db, { userId: uid, pack: PACK, dex: 16, proveniencia: 'promotional_bound' });
     db.prepare(`UPDATE criaturas SET is_shiny = 1 WHERE id = ?`).run(c.id);
     creditarBolsa(db, uid, 'poke', 2, { classe: 'legacy_unverified', fonte: 'migracao', agora: AGORA });
     creditarBolsa(db, uid, 'poke', 3, { fonte: 'colheita:x', agora: AGORA + 1 });
     db.prepare(`INSERT INTO encontros_pendentes (chave, user_id, origem, dex, raridade, bioma, em, is_shiny, shiny_versao) VALUES ('k1', ?, 'avanco', 19, 'comum', 'floresta', ?, 1, 't')`).run(uid, AGORA);
-    const srv = colecaoDe(db, { userId: uid, agora: AGORA + 10 });
+    const srv = colecaoDe(db, { userId: uid, agora: AGORA + 10, pack: SEM_KIT });
     const cc = srv.criaturas.find(x => x.id === c.id);
     igual(`${cc.shiny}|${cc.proveniencia}|${srv.encontros[0].shiny}`, 'true|promotional_bound|true', 'a leitura não traz o shiny ou a origem');
     igual(JSON.stringify(srv.lotes.poke), JSON.stringify([{ classe: 'legacy_unverified', quantidade: 2 }, { classe: 'verified_earned', quantidade: 3 }]), 'os lotes fora da ordem do débito');
     /* O reservado não conta: metade reservada desce como metade; o lote todo
        reservado sai da lista. */
     const reservar = n => db.prepare(`UPDATE bolsa_lotes SET reservada = ? WHERE user_id = ? AND classe = 'legacy_unverified'`).run(n, uid);
-    const poke = () => JSON.stringify(colecaoDe(db, { userId: uid, agora: AGORA + 10 }).lotes.poke);
+    const poke = () => JSON.stringify(colecaoDe(db, { userId: uid, agora: AGORA + 10, pack: SEM_KIT }).lotes.poke);
     reservar(1);
     igual(poke(), JSON.stringify([{ classe: 'legacy_unverified', quantidade: 1 }, { classe: 'verified_earned', quantidade: 3 }]), 'o reservado contou como livre');
     reservar(2);

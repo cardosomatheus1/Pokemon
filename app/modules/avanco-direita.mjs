@@ -29,6 +29,9 @@ import { FALA as FALA_DO_FOCO } from './foco-fala.mjs';
 import { NIVEL_PARA_ESCOLHER as NIVEL_DO_FOCO,
          descansando as descansandoFoco } from '../../engine/foco.mjs';
 import { staminaAgora } from '../../engine/expedicao.mjs';
+import { ganhoDaRun, staminaAteWave } from '../../engine/avanco.mjs';
+import { PERFIL_DO_AVANCO } from './avanco-conta.mjs';
+import { staminaNaRun, xpNaRun, textoDoXp } from './avanco-barras.mjs';
 /* O anúncio do chefe é LEITURA, e leitura mora deste lado — ver a L-170. */
 import { leituraDoChefe } from './avanco-boss.mjs';
 
@@ -87,10 +90,16 @@ export function pintarEquipe(E, run, agora) {
   const vagas = vagasDe(E);
   if (sub) sub.textContent = `${run.equipe.length} de ${vagas} vaga(s)`;
 
+  /* o XP que a run já rendeu, pela MESMA conta do "XP até aqui" (e da colheita) */
+  const abates = (run.abates ?? []).reduce((a, x) => a + (Number(x?.quantos) || 0), 0);
+  const ganho = ganhoDaRun({ abates, encontros: (run.apareceram ?? []).length, perfil: PERFIL_DO_AVANCO }).xp;
   const linhas = run.equipe.map(id => {
     const c = vivas.find(x => x.id === id);
     if (!c) return '';
-    const s = Math.round(staminaAgora(c, agora));
+    /* Como VAI FICAR na colheita (`avanco-barras.mjs`): a stamina já sem o
+       custo das waves alcançadas, e o XP já com o que a run rendeu. */
+    const s = staminaNaRun(staminaAgora(c, agora), staminaAteWave(run.wave));
+    const px = xpNaRun(c.xp, ganho);
     /* `dexImg` e `retratoAnimado` devolvem a TAG inteira, e não a URL —
        envolvê-la num `<img src="...">` fecha o atributo no meio e derrama o
        resto como texto. Foi o que o passo OLHAR pegou: a vaga aparecia com um
@@ -109,8 +118,12 @@ export function pintarEquipe(E, run, agora) {
     return `<div class="avVaga">` +
       retratoAnimado(esp(c.dex), 'class="avRetrato"', !!c.shiny) +
       `<div class="avQuem"><div class="avNome">${nome(c.dex)} ` +
-      `<span>lv ${c.nivel}</span></div>` +
-      `<div class="avBarra"><i style="width:${s}%"></i></div>` +
+      `<span>lv ${px.nivel}</span></div>` +
+      /* A BARRA DE XP — o dono: "onde tem barra de XP do pokémon?". Ela é a
+         barra desta vaga; a stamina vai em texto com ⚡ logo abaixo. */
+      `<div class="avBarra avXpBarra" title="XP: ${px.atual} de ${px.fim - px.ini} para o nv ${px.nivel + 1}">` +
+      `<i style="width:${px.pct.toFixed(1)}%"></i></div>` +
+      `<div class="avSub avXpTxt">${textoDoXp(px)}</div>` +
       /* ── SEM O VÍNCULO AQUI TAMBÉM ────────────────────────────────
          Ele foi INTEIRO para a Gen 2, e a coluna do meio já parou de mostrá-lo.
          Deixá-lo nesta é o pior dos dois mundos: um número que não decide nada
@@ -119,7 +132,7 @@ export function pintarEquipe(E, run, agora) {
 
          No lugar dele, o FOCO — que é o que decide o baú desta run. A mesma
          resposta da coluna do meio, na forma curta que cabe numa vaga. */
-      `<div class="avSub">stamina ${s} · ${focoCurto(c, agora)}</div></div></div>`;
+      `<div class="avSub">⚡ stamina ${s} · ${focoCurto(c, agora)}</div></div></div>`;
   }).join('');
 
   /* A VAGA QUE FALTA MOSTRA O CAMINHO, e não só o cadeado — mesma correção do

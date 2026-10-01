@@ -37,6 +37,7 @@ usarCatalogo(PACK.catalogo);
 import { idDaMoeda, idDoMaterial } from '../../engine/economia-idle.mjs';
 import { nomesDe } from './itens-nome.mjs';
 import { estiloDa, classeDa, daFaixa } from './raridade.mjs';
+import { resumoDaBolsa } from './bolsa-resumo.mjs';
 
 /* A espécie pelo dex. Uma função e não uma busca solta: ela é chamada dentro de
    template, e busca solta ali vira `undefined.n` no dia em que o pack mudar. */
@@ -311,6 +312,14 @@ export function pintarBolsa(E) {
     ? (gastaveis.length ? `<div class="bolsaGasta">${gastaveis.map(i => ficha(i, 'gasta')).join('')}</div>` : '')
       + (coisas.length ? `<div class="bolsaCoisas">${coisas.map(i => ficha(i, 'coisa')).join('')}</div>` : '')
     : '<p class="tiny">A mochila está vazia. O que a expedição traz cai aqui.</p>';
+
+  /* a linha embaixo da cena (ST-2.12): bolas e curas na frente, que é o que a run usa */
+  const atalho = $('#idleBolsaAtalho');
+  if (atalho) {
+    const r = resumoDaBolsa(lista, { rotulo,
+      primeiro: [...(PACK.bolas ?? []).map(b => b.id), ...(PACK.catalogo ?? []).filter(i => i.cura > 0).map(i => i.id)] });
+    atalho.textContent = r.texto; atalho.classList.toggle('vazia', r.vazia); atalho.hidden = false;
+  }
 
   const d = $('#idlePokedex');
   if (d) {

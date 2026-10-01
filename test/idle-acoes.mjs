@@ -136,7 +136,8 @@ export async function suite() {
         t += 30e3;
         try { cura = await pocaoNa(E, { pack: PACK, item: pocao, agora: t }, o); } catch (e) { if (!/cheia/.test(e.message)) throw e; }
       }
-      igual(`${cura?.curou > 0}|${cura?.item}|${E.bolsa[pocao] ?? 0}`, `true|${pocao}|0`, 'a poção da conta não curou ou não saiu da bolsa da tela');
+      /* sobra o que o kit de quem começa deu (ST-2.12): a creditada aqui foi a usada */
+      igual(`${cura?.curou > 0}|${cura?.item}|${E.bolsa[pocao] ?? 0}`, `true|${pocao}|${PACK.kitInicial?.[pocao] ?? 0}`, 'a poção da conta não curou ou não saiu da bolsa da tela');
 
       t += 1000;
       await recuarNa(E, t, o);

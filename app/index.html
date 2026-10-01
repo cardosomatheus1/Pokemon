@@ -7291,6 +7291,12 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 .avStNum small{font-size:.62rem;color:var(--dim);margin-left:2px}
 .avStNota{margin-top:6px;color:var(--dim);line-height:1.5}
 .avStNota b{color:#4be38f}
+.avXpBarra i{background:linear-gradient(90deg,#4aa8ff,#9fd4ff)!important}
+.avXpTxt{color:#9fd4ff}
+/* na vaga da Equipe o texto é uma COLUNA (nome · XP · linha · stamina); a
+   classe `.avQuem` é a mesma do painel da stamina, onde ela é uma linha */
+.avVaga .avQuem{display:flex; flex-direction:column; align-items:stretch; flex:1; min-width:0; gap:3px}
+.avVaga .avQuem .avBarra{width:100%}
 .idleIniciar{position:absolute; left:50%; bottom:14px; transform:translateX(-50%); z-index:7;
   display:flex; flex-direction:column; align-items:center; gap:3px;
   padding:12px 26px 10px; border-radius:14px; cursor:pointer;
@@ -7307,6 +7313,12 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   50%{box-shadow:0 0 0 6px rgba(var(--goldRGB),.15),0 0 34px rgba(var(--goldRGB),.95),0 8px 18px rgba(0,0,0,.5)}}
 @media (prefers-reduced-motion:reduce){ .idleIniciar{animation:none} }
 #viewIdle.emRun .idleIniciar{display:none}
+.idleBolsaAtalho{display:block; width:100%; margin:8px 0 2px; padding:6px 10px; border-radius:9px;
+  background:rgba(255,255,255,.03); border:1px solid var(--line); color:var(--txt);
+  font:inherit; font-size:.74rem; text-align:left; cursor:pointer}
+.idleBolsaAtalho:hover{border-color:rgba(var(--goldRGB),.5)}
+.idleBolsaAtalho.vazia{color:var(--dim); border-style:dashed}
+#viewIdle.emRun .idleBolsaAtalho{display:none}
 /* no celular o palco é pequeno: o botão vira uma faixa de uma linha no pé da
    cena, sem a legenda — grande o bastante para o polegar, sem tapar o boneco */
 @media (max-width:640px){
@@ -8304,6 +8316,10 @@ body.soAssiste .pick{cursor:pointer}
     <div class="card idleDepois cardRota">
       <h3>A rota <span class="tiny">escolha o lugar antes de gastar as horas</span></h3>
       <div id="idlePalco"><span id="idleBiomaNome"></span><canvas id="idleMundo"></canvas><canvas id="idleAtor"></canvas><div id="idleLuz" aria-hidden="true"></div><canvas id="idleBrilho" aria-hidden="true"></canvas><div id="idleHud" aria-hidden="true"></div><div id="idleZoom"><button type="button" data-zoom="-1" title="afastar">&minus;</button><span id="idleZoomNivel">3&times;</span><button type="button" data-zoom="1" title="aproximar">+</button></div><canvas id="idleCeu" aria-hidden="true"></canvas><button type="button" class="idleIniciar" id="idleIniciar">⚔ Iniciar batalhas<small>os selvagens aparecem na run · o relógio diz quando vem o próximo</small></button></div>
+      <!-- O QUE SE TEM NA BOLSA, embaixo da cena (ST-2.12 — "onde vejo meus
+           itens?"). No celular o cartão da bolsa fica várias telas abaixo; esta
+           linha diz o que importa para a run e leva até ele. -->
+      <button type="button" class="idleBolsaAtalho" id="idleBolsaAtalho" hidden></button>
       <!-- O BOTÃO GRANDE DE INICIAR mora DENTRO do palco (#idleIniciar, acima).
            Pedidos do dono, 01/10: "não tem o tempo de cada volta, pra saber
            quando [as criaturas] vão aparecer" e "de início fica andando, preciso
@@ -8459,7 +8475,7 @@ body.soAssiste .pick{cursor:pointer}
       <!-- ─── COLUNA ESQUERDA — o estado de quem está lutando ──────────── -->
       <div class="avCol avEsq">
         <div class="card">
-          <h3>Stamina da equipe <span class="tiny">regenera 8/h</span></h3>
+          <h3>Stamina da equipe <span class="tiny">regenera 20/h</span></h3>
           <div id="avStamina"></div>
         </div>
 

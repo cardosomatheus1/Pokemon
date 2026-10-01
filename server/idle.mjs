@@ -454,7 +454,26 @@ export function escolherInicial(db, { userId, pack, dex }) {
   if (!(pack?.iniciais ?? []).includes(dex)) throw falha(ERRO_IDLE.INICIAL, `o ${dex} não é uma das iniciais`);
   if (db.prepare(`SELECT 1 FROM criaturas WHERE user_id = ? LIMIT 1`).get(userId))
     throw falha(ERRO_IDLE.INICIAL, 'a criatura inicial só se escolhe uma vez');
-  return gerarCriatura(db, { userId, pack, dex, origem: 'inicial' });
+  const c = gerarCriatura(db, { userId, pack, dex, origem: 'inicial' });
+  garantirKitInicial(db, { userId, pack });
+  return c;
+}
+
+/* ── O KIT DE QUEM COMEÇA (ST-2.12) ─────────────────────────────────────────
+ * Dez bolas e três poções (`pack.kitInicial`), como PRESENTE: a classe é
+ * `promotional_bound` — usa, não troca nem anuncia (E14) — e a fonte marca de
+ * onde veio. UMA VEZ por conta, e a fonte é a trava: chamar de novo não credita
+ * nada. Por isso a mesma função serve a quem escolheu a inicial ANTES do kit
+ * existir — a leitura da coleção a chama, e a conta antiga recebe uma vez. */
+export const FONTE_DO_KIT = 'kit-inicial';
+export function garantirKitInicial(db, { userId, pack, agora = Date.now() }) {
+  const kit = pack?.kitInicial ?? {};
+  if (!Object.keys(kit).length) return false;
+  if (!db.prepare(`SELECT 1 FROM criaturas WHERE user_id = ? LIMIT 1`).get(userId)) return false;
+  if (db.prepare(`SELECT 1 FROM bolsa_lotes WHERE user_id = ? AND fonte = ? LIMIT 1`).get(userId, FONTE_DO_KIT)) return false;
+  for (const [item, n] of Object.entries(kit))
+    creditarBolsa(db, userId, item, n, { classe: 'promotional_bound', fonte: FONTE_DO_KIT, agora });
+  return true;
 }
 
 /* A stamina de uma criatura, agora — para a tela e para a decisão de quem

@@ -35,6 +35,7 @@ import { PERFIL_DO_AVANCO } from './avanco-estado.mjs';
 import { WAVES } from '../../engine/wave.mjs';
 import { STAMINA_DO_AVANCO, staminaAteWave, ganhoDaRun } from '../../engine/avanco.mjs';
 import { staminaAgora } from '../../engine/expedicao.mjs';
+import { staminaNaRun } from './avanco-barras.mjs';
 import { leituraDoFoco } from './avanco-foco.mjs';
 
 const esp = dex => (PACK.especies ?? []).find(e => e.dex === dex) ?? { n: '?', dex };
@@ -60,7 +61,10 @@ function pintarStamina(E, run, agora) {
   alvo.innerHTML = (run.equipe ?? []).map(id => {
     const c = acharCriatura(E, id);
     if (!c) return '';
-    const s = Math.round(staminaAgora(c, agora));
+    /* A stamina COMO VAI FICAR: a run só cobra na colheita, e a barra parada em
+       100 durante a luta parecia quebrada ("ela reduz quando?"). Ver o
+       `avanco-barras.mjs`. */
+    const s = staminaNaRun(staminaAgora(c, agora), custo);
     /* ── A CARA, E NÃO SÓ O NOME ─────────────────────────────────────
        Pedido do dono: *"adiciona um gif animado do pokémon selecionado"*.
 
@@ -82,7 +86,8 @@ function pintarStamina(E, run, agora) {
     `<div class="avLinha"><span>esta run já custou</span><span>⚡ ${custo}</span></div>` +
     `<div class="avLinha"><span>o estágio inteiro custa</span>` +
     `<span>⚡ ${STAMINA_DO_AVANCO}</span></div>` +
-    `<p class="tiny avStNota">stamina é a energia para runs, e volta com o tempo. ` +
+    `<p class="tiny avStNota">stamina é a energia para runs: cada wave gasta 2 (o chefe, 5), ` +
+    `e ela volta sozinha com o tempo. `+
     `A vida na luta é o <b>HP</b>, na barra em cima da cena.</p>`;
 }
 

@@ -2340,6 +2340,34 @@ do servidor. Três partes:
 - Três atores juntos ainda empilham as placas; o `separarPlacas` precisa
   cobrir o trio.
 
+### ST-2.12 · O começo do treinador: o kit, as barras que se mexem, a stamina que volta ✅ 01/10
+- **Por quê (o dono):** *"onde vejo meus itens? devia começar com pokébolas,
+  não?"* · *"onde tem barra de XP do pokémon?"* · *"a stamina reduz quando? isso
+  tá funcionando? cuidado pra não ser muito lenta essa regeneração"*.
+- **Feito:** o kit de quem começa (`pack.kitInicial`: 10 Poké Balls, 3 Poções)
+  — com conta, o servidor credita ao escolher a inicial, como presente
+  (`promotional_bound`, fonte `kit-inicial`, uma vez por conta; quem escolheu
+  antes recebe na próxima leitura); sem conta, direto na bolsa. Na run, a
+  stamina e o XP aparecem como a colheita vai gravar (`avanco-barras.mjs`,
+  camada 0): a stamina menos o custo das waves alcançadas, e uma barra de XP
+  azul com "+14 XP nesta run · faltam 4 para o nv 2" — antes as duas ficavam
+  paradas até o fim. A regeneração foi a 20/h (DEC-24). Embaixo da cena, "🎒 na
+  bolsa: 10 Poké Ball · 3 Poção — ver tudo ↓" leva ao cartão da bolsa
+  (`bolsa-resumo.mjs`, camada 0).
+- **A captura conferida** (o dono: *"todos estão sendo capturados de primeira"*):
+  medida pelo caminho inteiro do servidor, 300 lances por par — comum + Poké
+  Ball 44,7% (chance 45%), incomum 28,6% (28%), raro 13,8% (14%), comum + Ultra
+  85,5% (teto 85%). A tela mostra o resultado do servidor. Não há defeito; com
+  uma Great Ball (67,5%), pegar 4 de 4 acontece ~1 vez em 5. O teste com raízes
+  fixas fica no `comeco-treinador`.
+- **Testes:** `comeco-treinador` (novo, 9) · `expedicao` (o caso de 5 h virou 3
+  h: em 20/h, 5 h bate no teto) · S2527–S2537, todos PEGOU. Quatro testes antigos
+  supunham a bolsa nova vazia: `run-rotas` passou a usar a Super Poção (que o kit
+  não dá), `colecao-servidor` e `idle-acoes` contam o kit, `e14-cliente` lê sem
+  o kit (o teste é da ordem dos lotes); `colheita-rotas` remediu as saídas do dia
+  (5 -> 4, pela regeneração nova). **Q5:** a escolha e a
+  run no celular e no largo — lidas.
+
 ### ST-2.9 · A floresta na vista do celular (L-231) — proposta
 - Em 1× a cena do início da Floresta mostra trilha, grama e fauna, e nenhuma
   árvore: o bioma que se chama floresta não parece uma. Pôr copa na borda do
@@ -2637,6 +2665,12 @@ desta tabela.
   o `CHECKPOINT_25_1` continua `null`. Junto, a pedido dele: **sem conta, o
   menu é só a vitrine** (Início, Arenas, Wiki, Como funciona, Regras) e as abas
   do treinador abrem o cadastro — ver a ST-2.8b.
+- ✅ **DEC-24 · a stamina regenera 20/h** (era 8/h). Recomendação minha, seguida
+  como padrão; o dono pode pedir outro número. O motivo é o jogador novo: ele
+  tem UMA criatura, fazia 4 runs e esperava ~3 h por estágio (23 de stamina a
+  8/h). Em 20/h é um estágio a cada ~70 min e a barra cheia em 5 h. O teto do
+  dia segue nos freios que já existiam (rendimento decrescente da 7ª run —
+  DEC-14 — e os 30 encontros do §P5). Spec §7.22.7 corrigida no mesmo commit.
 - **Ainda do dono, e com recomendação escrita como padrão:** a taxa shiny (R18),
   o orçamento da Master Ball, os limites/cooldown/taxas finais (baselines da
   spec §11 e §16 até o gate C medir).

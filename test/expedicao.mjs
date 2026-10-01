@@ -72,7 +72,7 @@ export function suite() {
     const c = cria('a', 20, T0);
     igual(staminaAgora(c, T0), 20, 'sem tempo passado, a stamina é a gravada');
     igual(staminaAgora(c, T0 + 1 * H), 20 + REGEN_POR_HORA, 'uma hora de regeneração');
-    igual(staminaAgora(c, T0 + 5 * H), 20 + 5 * REGEN_POR_HORA);
+    igual(staminaAgora(c, T0 + 3 * H), 20 + 3 * REGEN_POR_HORA, "três horas sem bater no teto (20 + 3 × 20 = 80, DEC-24)");
     igual(staminaAgora(c, T0 + 500 * H), STAMINA_MAX,
       `a stamina passou de ${STAMINA_MAX}. Guardar folga acima do teto deixaria ` +
       `quem some por uma semana voltar com estoque para farmar um dia inteiro de ` +

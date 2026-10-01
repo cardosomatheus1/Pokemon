@@ -71,7 +71,13 @@ import { pesoComBonus, bonusVivo } from './captura.mjs';
 import { baseDe } from './evolucao.mjs';
 
 export const STAMINA_MAX = 100;
-export const REGEN_POR_HORA = 8;          /* cheia em ~12 h a partir do zero */
+/* 20/h (DEC-24, 01/10): era 8 — cheia em ~12 h, e um estágio (23) a cada
+   ~3 h. O dono: "cuidado pra não ser muito lenta essa regeneração". Com uma
+   criatura só — que é o jogador novo inteiro — eram 4 runs e três horas de
+   espera por run. Em 20: um estágio a cada ~70 min, cheia em 5 h. O teto do
+   dia não depende disto: o rendimento cai da 7ª run em diante (DEC-14) e os
+   encontros param em 30 (§P5). */
+export const REGEN_POR_HORA = 20;
 export const EQUIPE_MAX = 3;
 export const SIMULTANEAS_INICIAIS = 1;
 export const SIMULTANEAS_MAX = 4;

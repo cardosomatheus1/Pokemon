@@ -59,14 +59,16 @@ export async function suite() {
       const l = await a.ler();
       igual(l.run.id, r.corpo.run.id, 'a leitura não trouxe a run aberta');
       ok(l.run.eventos.length > r.corpo.run.eventos.length, 'a run não avançou na leitura');
-      /* a poção: sem o item, 400; com ele e a barra já batida, cura e sai da bolsa */
-      igual((await a.post('/api/idle/run/pocao', { item: 'pocao' })).status, 400, 'poção sem ter o item');
-      creditarBolsa(c.srv.db, a.id, 'pocao', 2);
+      /* a poção: sem o item, 400; com ele e a barra já batida, cura e sai da bolsa.
+         A SUPER, e não a comum: desde a ST-2.12 toda conta começa com 3 poções
+         comuns (o kit), e "sem ter o item" precisa de um item que o kit não dá. */
+      igual((await a.post('/api/idle/run/pocao', { item: 'superpocao' })).status, 400, 'poção sem ter o item');
+      creditarBolsa(c.srv.db, a.id, 'superpocao', 2);
       ok(l.run.hpNaWave < 100 || l.run.wave > 1, 'a barra ainda cheia aos 90 s — a cura não será exercitada');
-      const p = await a.post('/api/idle/run/pocao', { item: 'pocao' });
+      const p = await a.post('/api/idle/run/pocao', { item: 'superpocao' });
       igual(p.status, 200, `a poção: ${JSON.stringify(p.corpo)}`);
       ok(p.corpo.curou > 0, 'a poção não curou');
-      igual((await a.ler()).bolsa.pocao, 1, 'a poção não saiu da bolsa');
+      igual((await a.ler()).bolsa.superpocao, 1, 'a poção não saiu da bolsa');
       const rec = await a.post('/api/idle/run/recuar');
       igual(rec.status, 200, `recuar: ${JSON.stringify(rec.corpo)}`);
       igual(rec.corpo.run.fim?.motivo, 'recuou', 'o recuo não terminou a run');

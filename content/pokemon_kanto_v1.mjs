@@ -929,6 +929,19 @@ const EVOLUCOES = [
 /* força 318 · 309 · 314 — dispersão 9 */
 const INICIAIS = [1, 4, 7];
 
+/* ── O KIT DE QUEM COMEÇA (ST-2.12, pedido do dono, 01/10) ──────────────────
+ *
+ * "Onde vejo meus itens? Devia começar com pokébolas, não?" — ele estava certo:
+ * a bolsa nascia VAZIA, e a bola da run (§7.22.12) é a única decisão do jogo
+ * que pede bola. O primeiro avanço mostrava os selvagens e não deixava jogar
+ * nada neles. Dez bolas cobrem a primeira run inteira (no máximo SEIS espécies
+ * por run levam bola) com folga; três poções, a primeira wave perdida.
+ *
+ * É CONTEÚDO, e por isso mora no pack: os ids das bolas e da poção são deste
+ * tema. Com conta, o servidor credita como presente (`promotional_bound` — usa,
+ * não troca), uma vez por conta. */
+const KIT_INICIAL = Object.freeze({ poke: 10, pocao: 3 });
+
 /* ── AS FAIXAS DE NÍVEL DAS ROTAS ──────────────────────────────────────────
  *
  * O jogador escolhe o BIOMA e a FAIXA. Rota alta traz as formas evoluídas e
@@ -991,6 +1004,7 @@ export const pokemonKantoV1 = {
   bolas:     BOLAS,
   itens:     ITENS,
   iniciais: INICIAIS,
+  kitInicial: KIT_INICIAL,
   elenco:   ARENA_DEX,
   golpes:   MASTER_MOVES,
   clima:    CLIMA,

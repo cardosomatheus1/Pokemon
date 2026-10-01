@@ -32,6 +32,7 @@
  */
 import PACK from '../content/escolhido.mjs';
 import { doJogador } from './criaturas.mjs';
+import { garantirKitInicial } from './idle.mjs';
 import { lotesLivres } from './inventario.mjs';
 import { bolsaDe, registroDe, emCampo, estadoDoTeto, especiesVistas, pendentesDe,
          iniciar, colher, lancarPendente, escolherInicial } from './idle.mjs';
@@ -85,6 +86,8 @@ export function colecaoDe(db, { userId, agora, pack = PACK }) {
      aparelho encena as waves e o clima a partir dela (§7.22.16 — quem fecha a
      aba recebe a mesma run de quem fica olhando). O que ela decide já estava
      decidido no começo; o saque sai da raiz da COLHEITA, que nasce depois. */
+  /* o kit de quem começou antes de ele existir: uma vez, e a fonte trava (ST-2.12) */
+  garantirKitInicial(db, { userId, pack, agora });
   const aberta = sincronizarRun(db, { userId, pack, agora });
   const stamina = new Map(db.prepare(`SELECT id, stamina, stamina_em FROM criaturas WHERE user_id = ?`)
     .all(userId).map(l => [l.id, { stamina: l.stamina, staminaEm: l.stamina_em }]));

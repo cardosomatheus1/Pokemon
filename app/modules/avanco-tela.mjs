@@ -447,6 +447,11 @@ export function ligarAvanco({ estado, escolha, recarregar, avisar, agora }) {
        para entrar no jogo. */
     /* O BOTÃO GRANDE DA CENA começa a run pelo MESMO caminho do botão de
        baixo — dois botões, uma regra. Quando não dá, ele já diz o porquê. */
+    /* a linha da bolsa embaixo da cena leva ao cartão inteiro (ST-2.12) */
+    if (ev.target.closest('#idleBolsaAtalho')) {
+      $('#idleBolsa')?.closest('.card')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      return;
+    }
     if (ev.target.closest('#idleIniciar')) {
       const av = $('#idleAvancar');
       if (av && !av.disabled) av.click();

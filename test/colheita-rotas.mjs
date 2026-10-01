@@ -182,8 +182,12 @@ export async function suite() {
     }
     const saidas = log.servidor.filter(x => x !== '-').length;
     /* Medido com as raízes fixas: 5 saídas (uma vaga no começo, a segunda
-       quando o registro chega a dez) e recusas pelo teto e pela stamina. */
-    igual(saidas, 5, `o dia teve ${saidas} saídas`);
+       quando o registro chega a dez) e recusas pelo teto e pela stamina.
+       REMEDIDO NA ST-2.12 (DEC-24, a stamina a 20/h em vez de 8/h): 5 -> 4.
+       Com a stamina voltando mais rápido, as expedições do começo do dia saem
+       mais cedo e o teto de encontros fecha antes da quinta. O que o teste
+       guarda — servidor e aparelho aceitando e recusando as MESMAS — não muda. */
+    igual(saidas, 4, `o dia teve ${saidas} saídas`);
     ok(log.aparelho.includes('-'), 'nenhuma recusa no dia — o teto não foi exercitado');
     igual(log.servidor.join('|'), log.aparelho.join('|'), 'o servidor e o aparelho discordaram sobre alguma saída');
     const doServidor = Object.fromEntries(bolsaDe(db, u).map(b => [b.item_id, b.quantidade]).sort());

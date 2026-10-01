@@ -69,7 +69,8 @@ export async function suite() {
       const r = await c.pedir(`/api/idle?userId=${b.id}&user=${b.id}`, { sessao: a.sessao });
       igual(r.status, 200, `a coleção com sessão: ${JSON.stringify(r.corpo)}`);
       igual(r.corpo.criaturas.map(x => x.id).sort().join(), ca.map(x => x.id).sort().join(), 'as criaturas de A');
-      igual(JSON.stringify(r.corpo.bolsa), JSON.stringify({ bola: 5, bola_boa: 2 }), 'a bolsa de A');
+      /* + o kit de quem começa (ST-2.12): A tem criatura, então a leitura o garante */
+      igual(JSON.stringify(r.corpo.bolsa), JSON.stringify({ bola: 5, bola_boa: 2, pocao: PACK.kitInicial.pocao, poke: PACK.kitInicial.poke }), 'a bolsa de A');
       igual(JSON.stringify(r.corpo.registro.map(x => [x.dex, x.fragmentos])), '[[16,3]]', 'o registro de A');
       const texto = JSON.stringify(r.corpo);
       ok(!texto.includes(cb.id) && !texto.includes(b.id), 'algo de B vazou na coleção de A');

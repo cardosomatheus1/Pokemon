@@ -224,6 +224,8 @@ export function escolherInicial(e, pack, dex, agora, raiz = novaRaiz()) {
     throw new Error(`o dex ${dex} não é uma das iniciais deste pack`);
   const c = criar(pack, dex, 'inicial', agora, raiz);
   e.criaturas.push(c);
+  /* o kit de quem começa (ST-2.12); com conta, quem credita é o servidor */
+  for (const [item, n] of Object.entries(pack?.kitInicial ?? {})) e.bolsa[item] = (e.bolsa[item] ?? 0) + n;
   return c;
 }
 
