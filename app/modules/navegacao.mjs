@@ -12,7 +12,7 @@ import { emitir } from './telemetria.mjs';
 import { modoServidor, saldo } from './banco.mjs';
 import { api } from './api.mjs';
 import { sair } from './sair.mjs';
-import { servidorNoAr, modoDaConta, exigeContaReal, soAssiste, TEXTO_DE_QUEM_ASSISTE, enviarConta, textoDoModoDaConta, avisoDaPerda, temColecaoNoAparelho } from './conta-real.mjs';
+import { servidorNoAr, modoDaConta, exigeContaReal, soAssiste, TEXTO_DE_QUEM_ASSISTE, enviarConta, textoDoModoDaConta, avisoDaPerda, temColecaoNoAparelho, MARCA_DO_CADASTRO } from './conta-real.mjs';
 import { renderProfile } from './customizacao.mjs';
 import { avatarURL, trainerURL } from './perfil.mjs';
 import { progressoNivel, saveProfile, tituloDe } from './perfil.mjs';
@@ -221,6 +221,8 @@ $('#btnAuthGo').onclick = async () => {
        hidrata carteira, perfil e posse, e entra na sala. Montar isso à mão
        aqui seria uma segunda ordem de hidratação para manter igual à primeira. */
     if (authMode === 'signup' && nome){ S.profile.name = nome; saveProfile(S.profile); }
+    /* ST-2.19b: a página recomeça nas Rotas, na escolha do inicial. */
+    if (authMode === 'signup') try { localStorage.setItem(MARCA_DO_CADASTRO, '1'); } catch { /* privativo */ }
     location.reload();
     return;
   }
@@ -243,7 +245,9 @@ $('#btnAuthGo').onclick = async () => {
   localStorage.setItem('ar_session','1');
   closeModal('#authModal');
   renderSession();
-  goView('viewArena');
+  /* ST-2.19b: quem ainda não tem criatura vai às Rotas, à escolha do inicial. */
+  let cru = null; try { cru = localStorage.getItem('ar_idle'); } catch { /* privativo */ }
+  goView(authMode === 'signup' || !temColecaoNoAparelho(cru) ? 'viewIdle' : 'viewArena');
 };
 $('#btnHeroSignup').onclick = () => abrirAuth(sessaoAtiva() ? 'login' : 'signup');
 

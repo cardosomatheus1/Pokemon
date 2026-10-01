@@ -85,6 +85,11 @@ function alvos() {
     const gba = `versions/generation-iii/firered-leafgreen/${esp.dex}.png`;
     lista.push({ url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${gba}`,
                  espelho: `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${gba}` });
+    /* D-143: a variante brilhante do mesmo sprite — mesma pasta, `shiny/`. Sem
+       ela, o bicho brilhante das Rotas ia buscar fora e a CSP bloqueava. */
+    const gbaShiny = `versions/generation-iii/firered-leafgreen/shiny/${esp.dex}.png`;
+    lista.push({ url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${gbaShiny}`,
+                 espelho: `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${gbaShiny}` });
   }
   /* AVATARES DE TREINADOR (V1.15). Dezesseis arquivos, e eles já eram pedidos
      antes — pela topbar e pela tela de customização. O portão de egresso

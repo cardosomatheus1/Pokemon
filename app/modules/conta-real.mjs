@@ -134,3 +134,16 @@ export const avisoDaPerda = ({ real, cadastro, colecaoNoAparelho = false }) =>
   (real && cadastro && colecaoNoAparelho
     ? '⚠️ A coleção salva só neste navegador NÃO passa para a conta nova: ela começa do zero. As criaturas daqui ficam só aqui.'
     : null);
+
+/* ── A ABA DE ABERTURA (ST-2.19b) ─────────────────────────────────────────
+   Um jogador, no primeiro teste: caiu na Arena, com rodada em andamento e
+   painel de aposta, antes de ter qualquer criatura. Com sessão e sem
+   criatura — ou logo depois do cadastro (a marca que o cadastro deixa antes
+   de recarregar, e que o boot apaga) —, o jogo abre nas Rotas, onde a escolha
+   do inicial é a primeira coisa da tela. */
+export const MARCA_DO_CADASTRO = 'ar_recemCriado';
+export function abaDeAbertura({ sessao, retorno = false, recemCriado = false, temCriatura = false }) {
+  if (!sessao) return 'viewHome';
+  if (recemCriado || !temCriatura) return 'viewIdle';
+  return retorno ? 'viewHome' : 'viewArena';
+}

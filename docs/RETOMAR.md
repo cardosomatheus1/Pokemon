@@ -32,6 +32,9 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            Rotas abre em 1× e as rotas enchem duas colunas. Olhar no celular:
            node tools/olhar-celular.mjs  (capturas em tools/previas/_celular/).
            Próximo do cenário: ST-2.9 (L-231, a Floresta sem árvore na vista).
+           ST-2.19 (01/10): o relato do dono como jogador — sprites brilhantes
+           (D-143), favicon, abre na escolha do inicial, textos da conta.
+           PEDIDO AO DONO: battle-theme.mp3 e lojas.mp4 (L-176).
            ST-2.17 (01/10): o cenário da luta — onze lugares em camadas
            (pve-cenario.mjs), chão em perspectiva, plataformas, partículas.
            ST-2.16 (01/10): a jornada pede o nível do nó (DEC-25) — lutam 3,

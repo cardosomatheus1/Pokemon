@@ -270,13 +270,13 @@ async function carregarOrdens() {
 function pintar() {
   const alvo = corpo(); if (!alvo) return;
   if (!api.temSessao()) {
-    alvo.innerHTML = `<div class="trMesa trComo"><h4>Market entre treinadores</h4><p>Comprar e vender precisa de conta: o Market acontece no servidor, com cada venda conferida. Entre ou crie a sua conta no topo da tela.</p></div>`;
+    alvo.innerHTML = `<div class="trMesa trComo"><h4>Mercado entre treinadores</h4><p>Comprar e vender precisa de conta: o Mercado acontece no servidor, com cada venda conferida. Entre ou crie a sua conta no topo da tela.</p></div>`;
     return;
   }
   const desligado = M.estado && !M.estado.ligada ? `<p class="trAviso" role="status">${esc(textoDaRecusaDoMercado({ corpo: { reason_code: M.estado.motivo?.reason_code } }))}</p>` : '';
   const loja = M.aba !== 'meus' && M.aba !== 'compras' && M.aba !== 'ordens';
   alvo.innerHTML = `${desligado}
-    <nav class="mkAbas" aria-label="categorias do Market">${abasDoMercado(PACK.rotulos).map(([id, r]) => `<button class="pdxAba${id === M.aba ? ' on' : ''}" data-mk-aba="${id}">${esc(r)}</button>`).join('')}</nav>
+    <nav class="mkAbas" aria-label="categorias do Mercado">${abasDoMercado(PACK.rotulos).map(([id, r]) => `<button class="pdxAba${id === M.aba ? ' on' : ''}" data-mk-aba="${id}">${esc(r)}</button>`).join('')}</nav>
     ${loja ? filtrosHtml() : ''}
     ${detalheHtml()}
     ${loja ? (M.carregando && !M.lista.length ? '<p class="mkVazio">Carregando…</p>'

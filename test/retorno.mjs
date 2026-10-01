@@ -148,7 +148,9 @@ export function suite() {
     ok(tela.indexOf('cartaoDeRetorno(') < tela.indexOf('fotoDaVisita('), 'a foto é gravada antes de o cartão ser lido');
     ok(!/toFixed|\.nivel\s*>|\.doces\?\.\[|pronta\(/.test(tela), 'a tela decide o que é novidade');
     ok(/id="retorno"/.test(fonte('../app/index.html')), 'o cartão não tem lugar na Início');
-    ok(/sessaoAtiva\(\) \? \(temRetorno\(\) \? 'viewHome' : 'viewArena'\) : 'viewHome'/.test(fonte('../app/index.html')),
+    /* ST-2.19b: a escolha da aba de abertura saiu para `abaDeAbertura`
+       (conta-real.mjs), e o boot passa o retorno a ela. */
+    ok(/abaDeAbertura\(\{ sessao: sessaoAtiva\(\), retorno: temRetorno\(\)/.test(fonte('../app/index.html')),
       'quem volta com novidade não abre na Início');
     /* §13: in-app, e não a cada rodada. */
     ok(!/Notification|setInterval/.test(tela), 'o retorno virou notificação ou relógio');

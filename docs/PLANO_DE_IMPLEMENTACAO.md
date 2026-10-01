@@ -2407,6 +2407,36 @@ do servidor. Três partes:
 - **Fica para depois (L-233):** a criatura capturada nasce no nível 1 mesmo
   sendo uma forma do estágio 3.
 
+### ST-2.19 · O primeiro teste de um jogador: arte, primeira tela, textos ✅ 01/10
+- **Por quê:** o relato do dono depois de jogar como um jogador novo (conta
+  `Poke`): o visual e a Floresta na chuva aprovados; e cinco coisas a melhorar.
+- **a · a arte que faltava (D-143):** os sprites GBA brilhantes nunca entraram
+  em `assets/` — Vaporeon e Kingler brilhantes iam buscar fora e a CSP
+  bloqueava. O baixador pede a variante (mesmo repositório, `shiny/`); 146
+  baixados e versionados. O ícone da aba: um anel neon embutido (SVG em
+  `data:`), sem tema — o navegador pedia `/favicon.ico` e levava 404.
+  `battle-theme.mp3` e `lojas.mp4` seguem na L-176: são arquivos do dono,
+  e o resgate busca o MESMO arquivo, nunca outro.
+- **b · a primeira tela:** com sessão e sem criatura — ou logo depois do
+  cadastro — o jogo abre nas Rotas, na escolha do inicial
+  (`abaDeAbertura`, `conta-real.mjs`), e não mais na Arena com rodada e aposta.
+- **c · os textos:** a regra 10 dizia "não há servidor, não há e-mail" — agora
+  diz o que o site faz (conta no servidor: nome, e-mail, senha só como hash,
+  nascimento; propaganda só com autorização) e o que vale sem servidor; a
+  Início não promete mais "nada de e-mail"; o aviso do cadastro nasce com o
+  texto do site; "Aposte na arena. Assista à batalha." com espaço; "A rota —
+  onde você vai lutar — escolha antes de gastar as horas"; "Mercado" no lugar
+  de "Market" e "Treino OFF" no lugar de "Trainer OFF".
+- **Testes:** `primeira-aba` (novo, 3) · `textos-site` (novo, 6) · `assets`
+  (+2) · `retorno` e `rota-off` ajustados · S1402 realvo · S2562–S2568 PEGOU.
+  **Q5:** cadastro real → a tela "Escolha a sua primeira"; com inicial, a
+  abertura segue a de antes.
+- **Fica (L-235):** a densidade para quem chega — dez abas e páginas longas.
+
+### ST-2.20 · A densidade para quem chega (L-235) — proposta
+- Um caminho de quem chega: menos abas visíveis até a primeira vitória da
+  jornada, e as páginas longas em seções recolhidas.
+
 ### ST-2.17 · O cenário da luta ✅ 01/10
 - **Por quê (o dono):** *"a tela das batalhas tá só 2 cores, sem detalhe
   nenhum, tá bem feia"*. Era um degradê azul sobre um verde liso, igual na

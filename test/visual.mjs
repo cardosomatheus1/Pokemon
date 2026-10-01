@@ -2807,6 +2807,11 @@ export async function rodarRodadaCompleta() {
 
   const r = { erros };
   await pg.goto(`http://127.0.0.1:${porta}/app/index.html`, { waitUntil: 'load', timeout: 60000 });
+  /* ST-2.19b: a conta desta sonda não tem criatura, e quem não tem criatura
+     abre nas Rotas, na escolha do inicial. A sonda é da APOSTA: vai à Arena
+     pelo botão, como o jogador iria. */
+  await pg.waitForFunction(() => !document.querySelector('#boot'), null, { timeout: 60000, polling: 200 }).catch(() => {});
+  await pg.evaluate(() => document.querySelector('.nav[data-view="viewArena"]')?.click());
 
   /* 1 · a rodada chega do servidor */
   r.abriu = await ate(async () => (await espiar()).picks === 12, 'a rodada do servidor');

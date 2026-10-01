@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<!-- o ícone da aba (sem ele o navegador pede /favicon.ico e leva 404): um anel
+     neon, sem tema — a marca é do ContentPack, e o HTML não fixa o caminho
+     dela (teste `marca-arte`) -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%230a1220' stroke='%2300e5ff' stroke-width='2.5'/%3E%3Ccircle cx='8' cy='8' r='2' fill='%23ff3df0'/%3E%3C/svg%3E">
 <script>
 /* Tema antes de qualquer pintura. Se isto ficasse no fim do <body>, a página
    piscaria no tema errado por um quadro antes de trocar — e um quadro é o
@@ -8228,7 +8232,7 @@ body.soAssiste .pick{cursor:pointer}
            declarado em três larguras e nenhum dono. As peças saem do
            ContentPack, como na topbar. -->
       <div class="hero-mark"><span class="letrado vivo" id="heroMarca"><i></i><b></b></span></div>
-      <h1>Aposte na arena.<br><span>Assista à batalha.</span></h1>
+      <h1>Aposte na arena. <br><span>Assista à batalha.</span></h1>
       <p>Doze lutadores sorteados a cada rodada, odds calculadas por <b class="sims"></b> simulações
          do mesmo motor que roda a luta, e resultado determinístico — qualquer um pode
          conferir. Sem dinheiro real: o PokéCash é moeda simulada.</p>
@@ -8262,7 +8266,7 @@ body.soAssiste .pick{cursor:pointer}
 
   <section class="cta">
     <h3>Pronto para a primeira rodada?</h3>
-    <p>Crie um treinador em dez segundos. Nada de e-mail, nada de cobrança.</p>
+    <p>Crie o seu treinador em um minuto: nome, e-mail e senha. Nada de cobrança — o PokéCash é moeda simulada.</p>
     <button class="btn gold" id="btnHeroSignup">Criar treinador</button>
   </section>
 </div>
@@ -8355,7 +8359,7 @@ body.soAssiste .pick{cursor:pointer}
          aprovou na bancada. -->
 
     <div class="card idleDepois cardRota">
-      <h3>A rota <span class="tiny">escolha o lugar antes de gastar as horas</span></h3>
+      <h3>A rota <span class="tiny">onde você vai lutar — escolha antes de gastar as horas</span></h3>
       <div id="idlePalco"><span id="idleBiomaNome"></span><canvas id="idleMundo"></canvas><canvas id="idleAtor"></canvas><div id="idleLuz" aria-hidden="true"></div><canvas id="idleBrilho" aria-hidden="true"></canvas><div id="idleHud" aria-hidden="true"></div><div id="idleZoom"><button type="button" data-zoom="-1" title="afastar">&minus;</button><span id="idleZoomNivel">3&times;</span><button type="button" data-zoom="1" title="aproximar">+</button></div><canvas id="idleCeu" aria-hidden="true"></canvas><button type="button" class="idleIniciar" id="idleIniciar">⚔ Iniciar batalhas<small>os selvagens aparecem na run · o relógio diz quando vem o próximo</small></button></div>
       <!-- O QUE SE TEM NA BOLSA, embaixo da cena (ST-2.12 — "onde vejo meus
            itens?"). No celular o cartão da bolsa fica várias telas abaixo; esta
@@ -8743,7 +8747,7 @@ body.soAssiste .pick{cursor:pointer}
          metade do nome que o dono deu à aba: quem fica no banco treina
          enquanto o jogo está fechado, e não dá encontro nem item. -->
     <div class="card idleDepois">
-      <h3>Trainer OFF <span class="tiny">quem fica no banco treina</span></h3>
+      <h3>Treino OFF <span class="tiny">quem fica no banco treina</span></h3>
       <div id="offTreino"></div>
     </div>
 
@@ -8778,7 +8782,7 @@ body.soAssiste .pick{cursor:pointer}
       <!-- ST-14.7b: a troca entre treinadores é sobre a coleção -->
       <button class="pdxAba" data-pdx-aba="trocas">Trocas</button>
       <!-- ST-14.13: comprar e vender também é sobre a coleção -->
-      <button class="pdxAba" data-pdx-aba="mercado">Market</button>
+      <button class="pdxAba" data-pdx-aba="mercado">Mercado</button>
     </div>
     <div id="pdxAbaPokedex">
     <div class="pdxTopo">
@@ -8917,9 +8921,12 @@ body.soAssiste .pick{cursor:pointer}
          data. Zeram à meia-noite. A recompensa é creditada no instante da
          conclusão e não é retroativa.</p></div>
     <div class="rule"><h4>10. Conta e dados</h4>
-      <p>O treinador é armazenado apenas no seu navegador (localStorage). Não há
-         servidor, não há e-mail, não há coleta de dados pessoais. Limpar os
-         dados do navegador apaga o perfil de forma irreversível.</p></div>
+      <p>No site, o treinador é uma conta no servidor: nome, e-mail, senha
+         (guardada só como hash, nunca o texto) e data de nascimento, mais o que
+         você joga — coleção, saldo simulado e progresso. O e-mail identifica a
+         conta e só recebe propaganda se você autorizar; não há cobrança. Rodando o jogo no
+         próprio computador, sem servidor, o treinador fica só no navegador, e
+         limpar os dados do navegador o apaga.</p></div>
     <div class="warn">🔞 Jogue com responsabilidade. Este protótipo existe para
       demonstrar mecânicas de produto — não para incentivar apostas com dinheiro real.</div>
   </div>
@@ -9201,8 +9208,7 @@ body.soAssiste .pick{cursor:pointer}
     <h2 id="authTtl">Criar treinador <button class="xbtn" data-fechar="#authModal">✕</button></h2>
     <div class="tiny" id="authInfo" style="background:#12233a;border:1px solid #24466e;border-radius:8px;
       padding:8px;margin-bottom:12px;color:#a9cdf0">
-      ℹ️ Sem servidor: o treinador é salvo só neste navegador.
-      Sem e-mail, sem senha real, sem coleta de dados.
+      ℹ️ Conta no servidor: seu treinador, saldo, compras e coleção valem em qualquer aparelho. PokéCash é moeda simulada, sem valor real.
     </div>
     <div class="tiny authPerda" id="authPerda" role="alert" hidden></div>
     <div id="authNomeRow">
@@ -9460,6 +9466,7 @@ import { notasDaRodada } from './modules/historico-aposta.mjs';
 /* ST-9.8: soltar na caixa vira doce — o módulo se liga sozinho ao clique. */
 import './modules/doce-tela.mjs';
 import { temRetorno } from './modules/retorno-tela.mjs';
+import { abaDeAbertura, MARCA_DO_CADASTRO, temColecaoNoAparelho } from './modules/conta-real.mjs';
 import './modules/exclusivos-tela.mjs';
 import './modules/treino-tela.mjs';
 import './modules/pve-tela.mjs';
@@ -9732,8 +9739,12 @@ async function ligarModoServidor(){
   ensureDaily();          // garante os 3 desafios do dia já no carregamento
   renderSession();
   // quem ainda não entrou cai na home; quem já tem sessão vai direto à arena —
-  // a não ser que haja o que saber desde a última visita (ST-9.17, §7.16)
-  goView(sessaoAtiva() ? (temRetorno() ? 'viewHome' : 'viewArena') : 'viewHome');
+  // a não ser que haja o que saber desde a última visita (ST-9.17, §7.16), ou
+  // que ainda não tenha criatura: aí abre nas Rotas, na escolha do inicial
+  // (ST-2.19b — o jogador caía na Arena antes de ter um Pokémon)
+  { let recemCriado = false, cru = null;
+    try { recemCriado = localStorage.getItem(MARCA_DO_CADASTRO) === '1'; localStorage.removeItem(MARCA_DO_CADASTRO); cru = localStorage.getItem('ar_idle'); } catch { /* privativo */ }
+    goView(abaDeAbertura({ sessao: sessaoAtiva(), retorno: temRetorno(), recemCriado, temCriatura: temColecaoNoAparelho(cru) })); }
   /* Um cenário antes do primeiro quadro. `drawMap` não desenha sem cenário
      aplicado, e o boot pinta o mapa antes de a primeira rodada existir. */
   aplicarArena(ARENAS[0]);

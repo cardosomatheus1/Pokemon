@@ -7312,3 +7312,24 @@ mapa anda" (abre a jornada, luta, volta ao mapa: sem `pageerror`, o fim
 encenado, a vitória no save e o atual adiante); `jornada-servidor` — "com
 conta, o fim da luta diz o que o servidor pagou"; `jornada-desenho` — "o chão
 não pinta na caixa que sumiu". Plantados S2544–S2546, todos PEGOU.
+
+## D-143 — o sprite GBA brilhante não estava na cópia local, e a CSP o bloqueava ✅ CORRIGIDO na ST-2.19a (01/10)
+
+**Achado:** o teste de um jogador no site — *"os sprites do Vaporeon e do
+Kingler estão sendo bloqueados pela política de segurança do site (CSP)"*.
+**Bloco dono:** ST-2.19a.
+
+**Causa.** O mundo das Rotas desenha a arte de GBA (FireRed/LeafGreen), e a
+criatura brilhante pede a subpasta `shiny/` dela. O baixador (`npm run assets`)
+pedia só a normal: as 146 brilhantes nunca entraram em `assets/`, e a cascata
+caía no endereço de fora — que a CSP do site (`img-src 'self'`) recusa. O
+jogador via o erro no console e um bicho que não aparecia.
+
+**Conserto.** O baixador pede a variante brilhante (mesmo repositório, mesma
+pasta, `shiny/` — o mesmo desenho, não outra fonte); as 146 baixadas e
+versionadas.
+
+**Teste que trava:** `assets` — "D-143 · a cópia local cobre o sprite GBA de
+cada espécie, normal E brilhante" (com a cópia local presente, exige os 292
+arquivos e que o baixador peça a variante). S2562 PEGOU.
+

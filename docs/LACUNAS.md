@@ -9392,6 +9392,19 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-235 — quem acabou de chegar vê informação demais
+
+**Registrada em:** 01/10/2026, no relato do dono como jogador novo. **Bloco
+dono:** **ST-2.20** (proposta no PLANO). **Estado:** aberta.
+
+*"O menu tem 10 itens e as páginas são longas e densas. Pra quem acabou de
+chegar, é muita coisa ao mesmo tempo."* A primeira tela já mudou (ST-2.19b: abre
+na escolha do inicial). O resto é desenho de produto: quais abas aparecem antes
+da primeira vitória da jornada, e quais seções das páginas longas nascem
+recolhidas. **Por que não cabe agora:** mexe na navegação inteira, e a
+ST-2.19 era sobre o que estava errado. **O que a destrava:** nada — é a próxima
+de interface.
+
 ### L-234 — o cenário da luta: a hora, o clima e o pântano
 
 **Registrada em:** 01/10/2026, no Q5 da ST-2.17. **Bloco dono:** **ST-2.18**

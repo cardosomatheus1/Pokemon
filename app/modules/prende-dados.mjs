@@ -35,7 +35,7 @@ export function avisoDaPedra(pack, criatura, bolsa, lotes) {
   const primeiro = (lotes?.[pedra] ?? []).find(l => (l.quantidade ?? 0) > 0);
   if (!primeiro || negociavelPelaOrigem(primeiro.classe)) return null;
   return { insumo: pedra, classe: primeiro.classe, curto: 'prende',
-           frase: 'a pedra veio de bônus ou de antes da conta — evoluir com ela tira esta criatura da troca e do Market' };
+           frase: 'a pedra veio de bônus ou de antes da conta — evoluir com ela tira esta criatura da troca e do Mercado' };
 }
 
 /* `saldo` é o da LINHA: { quantidade, presos }. */
@@ -45,7 +45,7 @@ export function avisoDoDoce(criatura, saldo) {
   if (quantidade <= 0) return null;
   if (!gastoDoDoce({ quantidade, presos: saldo?.presos ?? 0, gastos: 1 }).prende) return null;
   return { insumo: 'doce', curto: 'prende',
-           frase: 'os doces desta linha que sobraram vieram de aposta com bônus ou de criatura presa — dar um tira esta criatura da troca e do Market' };
+           frase: 'os doces desta linha que sobraram vieram de aposta com bônus ou de criatura presa — dar um tira esta criatura da troca e do Mercado' };
 }
 
 /* O texto do PRIMEIRO clique, quando evoluir pede confirmação: o que se perde

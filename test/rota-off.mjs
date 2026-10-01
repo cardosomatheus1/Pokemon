@@ -98,7 +98,9 @@ export function suite() {
     const dentro = fim > 0 ? off.slice(0, fim) : off;
     ok(dentro.includes('id="offTreino"'),
       'a aba se chama TRAINER OFF e não tem onde o treino apareça');
-    ok(/Trainer OFF/i.test(dentro),
+    /* ST-2.19c: era "Trainer OFF"; o dono, no teste de 01/10, apontou a mistura
+       de português com inglês — vira "Treino OFF", com o OFF da aba. */
+    ok(/Treino OFF/.test(dentro),
       'o segundo nome que o dono deu à aba não está escrito nela');
   });
 

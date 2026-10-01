@@ -107,13 +107,13 @@ export function textoDaRecusaDoMercado(r = {}) {
     case 'BUSCA_INVALIDA': return 'A busca tem um filtro inválido.';
   }
   switch (c?.reason_code) {
-    case 'FEATURE_DISABLED': return 'O Market ainda está desligado — ele abre no lançamento da economia entre jogadores.';
+    case 'FEATURE_DISABLED': return 'O Mercado ainda está desligado — ele abre no lançamento da economia entre jogadores.';
     case 'INSUFFICIENT_FUNDS': return 'PC-T elegível insuficiente.';
     case 'OFFER_EXPIRED': return 'O prazo deste anúncio acabou.';
     case 'CAPACITY_EXCEEDED': return 'Você já tem 10 anúncios ativos — cancele um antes.';
     case 'ASSET_COOLDOWN': return 'Chegou numa troca há pouco — espere o fim do intervalo para anunciar.';
     case 'ASSET_BUSY': return 'Está ocupado: em expedição, na run ou preso em outra oferta.';
-    case 'ASSET_BOUND': return 'Isto não pode ir ao Market (vínculo de origem).';
+    case 'ASSET_BOUND': return 'Isto não pode ir ao Mercado (vínculo de origem).';
     case 'CRITERIA_MISMATCH': return 'Esta criatura não cumpre o que a ordem pede.';
     case 'NO_MATCH': return 'Ninguém paga isso agora — baixe o preço mínimo, ou espere uma ordem nova.';
     case 'ACCOUNT_RESTRICTED': return /mesma_conta/.test(c.erro ?? '') ? 'Este anúncio é seu.' : /conta_ligada/.test(c.erro ?? '') ? 'Esta conta está ligada à de quem vende — a compra entre elas não existe.' : 'Uma das contas não pode negociar agora.';

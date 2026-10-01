@@ -140,6 +140,32 @@ export function suite() {
       `elenco todo (era o defeito D-090: ela cobria só o elenco da ARENA).`);
   });
 
+  /* D-143: o sprite GBA do mundo do idle tem a variante SHINY, e ela não
+     estava na cópia local. Um Vaporeon ou um Kingler brilhante nas Rotas ia
+     buscar fora — e a CSP do site (img-src 'self') bloqueava: o jogador viu o
+     erro no console e um buraco no lugar do bicho. */
+  s.teste('D-143 · a cópia local cobre o sprite GBA de cada espécie, normal E brilhante', async () => {
+    if (!existsSync(RAIZ + PASTA_LOCAL)) return;   // sem assets, nada a cobrar
+    const pack = (await import('../content/pokemon_kanto_v1.mjs')).default;
+    /* a mesma URL que `dexURLGba` (sprites.mjs) pede — lá ela mora num módulo de tela */
+    const GBA = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/';
+    const fora = [];
+    for (const esp of pack.especies) for (const sh of [false, true])
+      if (!existsSync(RAIZ + caminhoLocal(`${GBA}${sh ? 'shiny/' : ''}${esp.dex}.png`))) fora.push(`${esp.dex}${sh ? ' shiny' : ''}`);
+    const fonte = readFileSync(new URL('../app/modules/sprites.mjs', import.meta.url), 'utf8');
+    ok(fonte.includes("'versions/generation-iii/firered-leafgreen/'") || fonte.includes('versions/generation-iii/firered-leafgreen/${sh'), 'o sprites.mjs mudou o caminho do GBA — atualize este teste');
+    ok(fora.length === 0, `${fora.length} sprite(s) GBA fora da cópia local, a começar por ${fora[0]} — a CSP bloqueia o de fora. Rode npm run assets.`);
+    const t = readFileSync(new URL('../tools/baixar-assets.mjs', import.meta.url), 'utf8');
+    ok(/firered-leafgreen\/shiny\//.test(t), 'o baixador não pede o sprite GBA brilhante');
+  });
+
+  s.teste('a página declara o ícone da aba, sem arquivo e sem tema (o navegador pedia /favicon.ico e levava 404)', () => {
+    const html = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
+    const href = /<link rel="icon"[^>]*href="([^"]+)"/.exec(html)?.[1];
+    ok(href, 'a página não declara o ícone');
+    ok(/^data:image\/svg\+xml,/.test(href), `o ícone não é o SVG embutido: ${href?.slice(0, 40)}`);
+  });
+
   /* E a lista do baixador tem de PEDIR o que o teste acima cobra. Sem isto, o
      teste de disco passaria para sempre depois de um `npm run assets` feito à
      mão — e voltaria a falhar sozinho na máquina de quem clona. */
