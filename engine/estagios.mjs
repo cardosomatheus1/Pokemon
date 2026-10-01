@@ -173,6 +173,24 @@ export const tetoDoEstagio = n =>
 export const capturavelNoEstagio = (pack, dex, estagio) =>
   nivelParaExistir(pack, dex) <= tetoDoEstagio(estagio);
 
+/* ── EM QUE NÍVEL A CAPTURA NASCE (ST-2.23 · L-233) ───────────────────────
+ * Toda captura nascia no nível 1, qualquer que fosse o estágio — e o dono,
+ * jogando como quem chega: "os capturados continuam no nível 1, então eles não
+ * acompanham o inicial e o time não fica forte". Medido: o inicial no nível 6
+ * com dois do nível 1 vence a Floresta em 0%; com dois do nível 3–4, o
+ * degrau passa a existir.
+ *
+ * Nasce dois níveis acima da porta do estágio onde foi pega (no 1: nível 3;
+ * no 2: 14; no 3: 21; no 4: 33) — e nunca abaixo do nível em que a forma
+ * passa a existir (o Metapod do estágio 1 nasce no 7). Das duas leituras da
+ * L-233, a do meio: nascer na porta seria o nível 1 de novo no estágio 1, e
+ * nascer no nível da forma faria a larva nascer no 1. */
+export const NASCE_ACIMA_DA_PORTA = 2;
+export function nivelDeNascer(pack, dex, estagio) {
+  const porta = NIVEL_DO_ESTAGIO[dentro(estagio) - 1] ?? 1;
+  return Math.max(nivelParaExistir(pack, dex), porta + NASCE_ACIMA_DA_PORTA);
+}
+
 /* A forma que o encontro deixa: desce a linha até caber. A base sempre cabe
    (`nivelParaExistir` dela é 1), então a descida sempre termina. */
 export function formaDoEstagio(pack, dex, estagio) {

@@ -14,6 +14,8 @@
 import { derivar, novaRaiz } from '../../engine/seed.mjs';
 import { semente } from '../../engine/instancia.mjs';
 import { chanceDe, tentar } from '../../engine/captura.mjs';
+import { nivelDeNascer } from '../../engine/estagios.mjs';
+import { xpParaNivel } from '../../engine/nivel-criatura.mjs';
 /* Criar a criatura e saber se a equipe está cheia vêm do ESTADO: a captura
    cria e guarda, e quem sabe se a equipe cabe é quem guarda a equipe. */
 import { criarCriatura as criar, equipeCheia } from './idle-dados.mjs';
@@ -47,6 +49,11 @@ export function lancarBola(e, { pack, chave, bola, agora }) {
   let criatura = null;
   if (r.capturou) {
     criatura = criar(pack, en.dex, 'captura', agora, novaRaiz());
+    /* NASCE NO NÍVEL DO ESTÁGIO (ST-2.23 · L-233): o da run vem no próprio
+       encontro; o da expedição, na expedição. */
+    const estagio = en.estagio ?? exp?.estagio ?? 1;
+    const nivel = nivelDeNascer(pack, en.dex, estagio);
+    Object.assign(criatura, { xp: xpParaNivel(nivel), nivel });
     /* A CAIXA RECEBE quando a equipe está cheia — nunca uma recusa. */
     criatura.naCaixa = equipeCheia(e);
     e.criaturas.push(criatura);

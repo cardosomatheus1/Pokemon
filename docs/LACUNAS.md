@@ -9463,10 +9463,12 @@ repete o tile como papel de parede (pede água, junco no chão, reflexo). **Por
 que não cabe agora:** o pedido era tirar as duas cores — o cenário existe.
 **O que a destrava:** nada; é cenário, e o cenário nunca está pronto.
 
-### L-233 — a criatura capturada nasce no nível 1, qualquer que seja a forma
+### L-233 — a criatura capturada nasce no nível 1, qualquer que seja a forma ✅ FECHADA na ST-2.23 (01/10)
 
 **Registrada em:** 01/10/2026, na ST-2.13. **Bloco dono:** **ST-2.14**
-(proposta no PLANO). **Estado:** aberta.
+(feita dentro da ST-2.23). **Estado:** fechada — a captura nasce dois níveis
+acima da porta do estágio, nunca abaixo do nível da forma (`nivelDeNascer`).
+As capturas que já existem ficam como estão até o veredito do dono.
 
 A ST-2.13 decidiu ONDE a forma evoluída se pega (o estágio da faixa de nível
 dela). Falta decidir COMO ela chega: hoje toda captura nasce no nível 1, e uma

@@ -2438,6 +2438,42 @@ do servidor. Três partes:
   abertura segue a de antes.
 - **Fica (L-235):** a densidade para quem chega — dez abas e páginas longas.
 
+### ST-2.23 · A curva do começo (L-233) ✅ 01/10
+- **Por quê (o relato do dono, 26 min focado em progressão):** *"o Bulbasaur
+  está só no nível 4, nada evoluiu e não cheguei a nenhum chefe; o próximo nó
+  da Jornada (Floresta) mostra 0%; não tem nada pra fazer a não ser repetir as
+  mesmas rotas"*. Sugestões dele: guardar XP na falha (já era assim — o D-146
+  era a tela), dividir o XP ou fazer o capturado nascer num nível parecido com
+  o da rota, e um degrau entre o nó 1 e a Floresta.
+- **Medido antes:** o inicial sozinho perde a Floresta até no nível 10 (0,2%);
+  o Bulbasaur 7 com dois do nível 5 vencia em 16%; e as capturas do estágio 1
+  nasciam no nível 1 — com elas, 0% em qualquer nível do inicial.
+- **a · a luta ensina:** a primeira vitória da jornada dá, a cada um que
+  lutou, 6 XP por nível do rival (Rota 1: 30; Floresta: 96; Brock: 156 — uma
+  run inteira rende ~100); a repetição, 10%; a derrota, nada. O fim da luta
+  diz "+96 XP para cada um que lutou". Com e sem conta.
+- **b · a captura nasce no estágio (L-233):** dois níveis acima da porta do
+  estágio onde foi pega (1: nível 3; 2: 14; 3: 21; 4: 33), nunca abaixo do
+  nível em que a forma existe (o Metapod do estágio 1 nasce no 7). O estágio
+  vem do encontro (a run guarda o dela; a expedição, o dela). Das duas leituras
+  da L-233, a do meio: nascer na porta seria o nível 1 de novo no estágio 1.
+- **c · o degrau:** a Floresta passou de 6/6/7 para 5/5/6. **Não** entrou um nó
+  novo entre a Rota 1 e a Floresta: o mapa é desenhado à mão por nó (ST-10.23),
+  e o salto se fechou com a régua acima. "Dividir o XP com o banco" ficou de
+  fora pelo mesmo motivo — a captura nascendo no estágio já resolve o
+  "capturados não acompanham".
+- **Medido depois (a Floresta):** Bulbasaur 7 + Pidgey 5 + Rattata 5: 16% →
+  82%; Bulbasaur 6 + Kakuna 7 + Metapod 7 (como nascem agora): 91%; Squirtle 6
+  + dois do 4: 43%; o inicial sozinho no 6 segue abaixo de 10% (o degrau não
+  virou atropelo, DEC-25). O Rival da Rota 22 segue em 0% para esses times — é
+  o degrau seguinte, que a XP da Floresta (+96 a cada um) começa a pagar.
+- **Testes:** `curva-comeco` (novo, 9) · `e14-pct-jornada` (o crédito leva o
+  XP) · S2584–S2596, todos PEGOU; S1662, S2153, S2178, S2185 realvos.
+  **Mutantes de navegador:** 0.
+- **Pede veredito do dono:** subir as capturas que já existem ao nível em que
+  nasceriam hoje (as do estágio 1 no nível 1 → 3, os casulos → 7) — é
+  migração de dado.
+
 ### ST-2.22 · Os quatro defeitos do terceiro relato (D-144, D-145, D-146) ✅ 01/10
 - **Por quê (o relato do dono como jogador):** poção e recuar voltando 409 no
   meio da run; "perdi tudo" numa run que caiu; o saldo 550 maior depois da
@@ -2579,9 +2615,7 @@ do servidor. Três partes:
 ### ST-2.18 · O cenário da luta pela hora e pelo clima (L-234) — proposta
 - O céu da luta pela hora do mundo, o clima do idle na luta, o pântano com água.
 
-### ST-2.14 · Em que nível a captura nasce (L-233) — proposta
-- Medir na jornada as duas leituras (nível em que a forma passa a existir ×
-  porta do estágio) e escolher pelo número.
+### ST-2.14 · Em que nível a captura nasce (L-233) — ✅ feita dentro da ST-2.23
 
 ### ST-2.9 · A floresta na vista do celular (L-231) — proposta
 - Em 1× a cena do início da Floresta mostra trilha, grama e fauna, e nenhuma

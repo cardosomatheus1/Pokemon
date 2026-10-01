@@ -44,7 +44,25 @@ export const PVE = Object.freeze({
   DIVERSIDADE: 0.25,
   DIVERSIDADE_MAX: 1.5,
   TETO_DIARIO: 200,
+  /* ST-2.23: a luta ensina — XP para quem lutou, pelo nível do rival. */
+  XP_POR_NIVEL_DO_RIVAL: 6,
 });
+
+/* ── A LUTA ENSINA (ST-2.23) ────────────────────────────────────────────────
+ * O dono, jogando como quem chega: "o Bulbasaur está no nível 4, nada evoluiu,
+ * e o próximo nó mostra 0%". A jornada pagava moeda, bola e doce — e nada de
+ * experiência a quem lutou, que é a primeira coisa que uma vitória contra
+ * treinador dá no gênero. Agora a primeira vitória dá, a CADA um que lutou,
+ * 6 de XP por nível do time rival (a Rota 1: 30; a Floresta: 96; o Brock:
+ * 156) — perto do que uma run inteira rende (~100). A repetição dá a mesma
+ * fração da moeda (10%), sem teto: 3 de XP por luta na Rota 1 não é fonte. A
+ * derrota não dá nada, como o resto da recompensa. */
+export function xpDaLuta({ timeB = [], venceu, primeiraVez }) {
+  if (!venceu) return 0;
+  const niveis = timeB.reduce((a, c) => a + (Math.max(0, Math.floor(Number(c?.nivel) || 0))), 0);
+  const cheio = niveis * PVE.XP_POR_NIVEL_DO_RIVAL;
+  return Math.round(primeiraVez ? cheio : cheio * PVE.FRACAO_REPETICAO);
+}
 
 /* O dia do PvE no save: `{ dia, pago, nos }` — o dia do mundo, quanto a
    repetição já pagou nele, e os nós repetidos (para a diversidade). */

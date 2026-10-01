@@ -33,6 +33,7 @@
  * implementação aqui seria a armadilha do §7.11: duas contas que concordam hoje
  * e divergem no dia em que uma delas mudar.
  */
+import { xpParaNivel } from '../engine/nivel-criatura.mjs';
 import { randomUUID } from 'node:crypto';
 import { novaRaiz, derivar } from '../engine/seed.mjs';
 import { semente, gerarInstancia, potencialDe, EXEMPLAR } from '../engine/instancia.mjs';
@@ -56,7 +57,9 @@ const COLUNAS_OCULTAS = ['o_hp', 'o_atq', 'o_def', 'o_spa', 'o_spd', 'o_vel'];
 /* Nasce uma criatura. A raiz vem do CSPRNG — imprevisível de propósito: uma
    raiz derivada do relógio ou de um contador deixaria o jogador escolher a hora
    de capturar para pegar o potencial que ele quer. */
-export function gerar(db, { userId, pack, dex, origem = 'captura', raiz = novaRaiz(), encontroChave = null, proveniencia = 'verified_earned', shiny = false }) {
+const nascido = n => Math.max(1, Math.min(100, Math.floor(Number(n) || 1)));
+
+export function gerar(db, { userId, pack, dex, origem = 'captura', raiz = novaRaiz(), encontroChave = null, proveniencia = 'verified_earned', shiny = false, nivel = 1 }) {
   if (!ORIGENS.includes(origem)) throw new Error(`origem inválida: ${origem}`);
   const existe = (pack.especies ?? []).some(e => e.dex === dex);
   if (!existe) throw new Error(`dex ${dex} não existe no pack ${pack.id}`);
@@ -68,17 +71,19 @@ export function gerar(db, { userId, pack, dex, origem = 'captura', raiz = novaRa
                            o_hp, o_atq, o_def, o_spa, o_spd, o_vel,
                            natureza, exemplar, nivel, vinculo, foco,
                            semente, origem, criada_em,
-                           ot_user_id, especie_original, encontro_chave, proveniencia, is_shiny)
-    VALUES (?,?,?,?, ?,?,?,?,?,?, ?,?,?,?,?, ?,?,?, ?,?,?,?,?)`)
+                           ot_user_id, especie_original, encontro_chave, proveniencia, is_shiny, xp)
+    VALUES (?,?,?,?, ?,?,?,?,?,?, ?,?,?,?,?, ?,?,?, ?,?,?,?,?, ?)`)
     .run(id, userId, pack.id, dex,
          ...inst.iv,
-         inst.natureza.nome, inst.exemplar ? 1 : 0, inst.nivel, inst.vinculo, inst.foco,
+         /* ST-2.23: a captura nasce no nível do estágio (`nivelDeNascer`); o
+            nível é derivado do XP, e os dois nascem juntos. */
+         inst.natureza.nome, inst.exemplar ? 1 : 0, nascido(nivel), inst.vinculo, inst.foco,
          String(raiz), origem, Date.now(),
          /* ST-14.2: quem a pegou, como ela nasceu, e o encontro que a gerou —
             a identidade que a troca e o Market vão precisar provar. */
          userId, dex, encontroChave, proveniencia,
          /* ST-14.1: o shiny vem do ENCONTRO, e só de lá — nunca do pedido. */
-         shiny ? 1 : 0);
+         shiny ? 1 : 0, xpParaNivel(nascido(nivel)));
   return ler(db, id, pack);
 }
 

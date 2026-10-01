@@ -99,7 +99,8 @@ export async function suite() {
     const k = cena();
     const c = contaDaLuta({ pack: k.pack, criaturas: criaturasParaLuta(k.db, k.uid, k.pack), jornada: null, id: k.no, semente: 1, dia: 0 });
     ok(c.ok, `a conta do aparelho não lutou: ${c.motivo}`);
-    igual(Object.keys(c.credito).sort().join(), 'bolsa,doces', 'o aparelho credita algo além de bolsa e doce');
+    /* ST-2.23: a luta ensina — o XP de quem lutou entra no crédito também. */
+    igual(Object.keys(c.credito).sort().join(), 'bolsa,doces,xp', 'o aparelho credita algo além de bolsa, doce e XP');
     ok(!('pct' in c.recompensa) && !Object.keys(c.credito.bolsa).some(x => /pct|transfer/i.test(x)), 'o aparelho creditou PC-T');
     ok(/50 PC-T/.test(fraseDoPagamento(PACK, { motivo: 'primeira', pokecoin: 30, bolas: {}, doces: {}, pct: 50 }, { depois: true })), 'a frase não diz o PC-T');
     ok(!/PC-T/.test(fraseDoPagamento(PACK, { motivo: 'primeira', pokecoin: 30, bolas: {}, doces: {} }, { depois: true })), 'a frase inventou PC-T');

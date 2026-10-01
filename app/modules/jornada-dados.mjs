@@ -355,11 +355,13 @@ export function fraseDoPagamento(pack, r, { depois = false } = {}) {
     const doce = Object.keys(r.doces).length || !depois ? [depois ? `${Object.keys(r.doces).length} doce${Object.keys(r.doces).length === 1 ? '' : 's'}` : 'um doce por criatura do time'] : [];
     /* o PC-T da jornada (ST-14.0E) só existe com conta: o servidor diz quanto pagou */
     const pct = depois && r.pct > 0 ? [`${r.pct} PC-T`] : [];
-    const partes = [`${r.pokecoin} ${moeda}`, ...pct, ...bolas, ...(essencias.length ? essencias : doce)];
+    /* ST-2.23: a luta ensina — o XP de cada um que lutou. */
+    const xp = depois && r.xp > 0 ? [`+${r.xp} XP para cada um que lutou`] : [];
+    const partes = [`${r.pokecoin} ${moeda}`, ...pct, ...bolas, ...(essencias.length ? essencias : doce), ...xp];
     return depois ? `Ganhou: ${partes.join(' · ')}.` : `a primeira vitória paga ${partes.join(' · ')}`;
   }
   const mais = essencias.length ? ` + ${essencias.join(' · ')}` : '';
-  return depois ? `Ganhou ${r.pokecoin} ${moeda}${mais} (hoje: ${r.hoje.pago} de ${r.teto}).`
+  return depois ? `Ganhou ${r.pokecoin} ${moeda}${mais}${r.xp > 0 ? ` · +${r.xp} XP` : ''} (hoje: ${r.hoje.pago} de ${r.teto}).`
                 : `a revanche paga ${r.pokecoin} ${moeda}${mais} (hoje: ${r.hoje.pago - r.pokecoin} de ${r.teto})`;
 }
 

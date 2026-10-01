@@ -17,7 +17,10 @@ export const TREINADORES = [
      5 vencia 0–4%. Um Rattata 5: o inicial vence 89–97% — uma luta, e não um
      muro (medido: tools/medir-ginasios.mjs, fixture ginasios.json). */
   { id: 'rota1',  nome: 'Caçador da Rota 1',        onde: 'Rota 1',            time: [{ dex: 19, nivel: 5 }], ow: 'youngster' },
-  { id: 'insetos', nome: 'Colecionadora de Insetos', onde: 'Floresta',          time: [{ dex: 10, nivel: 6 }, { dex: 13, nivel: 6 }, { dex: 11, nivel: 7 }], ow: 'lass' },
+  /* ST-2.23: era 6/6/7. O degrau da Rota 1 (um Rattata 5) para três insetos
+     6–7 era o maior do começo; medido, o Bulbasaur 7 com dois do nível 5
+     vencia em 16%, e passa a 80%. Um trio do começo no 7–8 segue vencendo. */
+  { id: 'insetos', nome: 'Colecionadora de Insetos', onde: 'Floresta',          time: [{ dex: 10, nivel: 5 }, { dex: 13, nivel: 5 }, { dex: 11, nivel: 6 }], ow: 'lass' },
   { id: 'rival1', nome: 'O Rival',                   onde: 'Rota 22',           time: [{ dex: 16, nivel: 9 }, { dex: 7, nivel: 9 }], ow: 'camper' },
   { id: 'pedra',  nome: 'Montanhista',               onde: 'caminho da Pedra', time: [{ dex: 74, nivel: 10 }, { dex: 27, nivel: 11 }, { dex: 95, nivel: 12 }], ow: 'hiker' },
   /* ST-10.13 · o primeiro ginásio: a aula é FRAQUEZA DE TIPO (Spec §8.1.2). */

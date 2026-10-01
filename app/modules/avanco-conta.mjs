@@ -201,7 +201,7 @@ export function contaDaRun(pack, { run, criaturas, motor, avancos, raiz, agora }
     const dex = formaDoEstagio(pack, visto, run.estagio);
     return { chave: `${run.raiz}:${i}`, expedicao: null, origem: 'avanco', dex,
              raridade: raridadeDe(pack, (pack.especies ?? []).find(x => x.dex === dex) ?? {}),
-             bioma: run.bioma, em: agora };
+             bioma: run.bioma, estagio: run.estagio, em: agora };
   });
 
   /* O QUE O CLIMA PAGOU, em número ABSOLUTO (1.32): "+52 por clima" é a

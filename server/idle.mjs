@@ -37,6 +37,7 @@
  * para desenhar o botão; quem decide é este arquivo. Num jogo onde criatura é
  * vendável, um `fetch` forjado não é trapaça — é dinheiro.
  */
+import { nivelDeNascer } from '../engine/estagios.mjs';
 import { randomUUID } from 'node:crypto';
 import { novaRaiz, derivar } from '../engine/seed.mjs';
 import { semente } from '../engine/instancia.mjs';
@@ -396,6 +397,15 @@ export function lancar(db, { userId, pack, dex, raridade, bola, agora,
  * colheita; aqui essa semente vai na resposta da colheita, e derivar dela
  * deixaria o cliente saber, antes de lançar, qual bola acerta — escolher a
  * bola deixaria de ser decisão. */
+/* O estágio de onde o encontro veio (ST-2.23): o da run fica no estado dela,
+   o da expedição numa coluna. Sem nenhum dos dois, o estágio 1. */
+function estagioDoEncontro(db, en) {
+  const e = en.run_id
+    ? db.prepare(`SELECT json_extract(estado_json, '$.estagio') AS e FROM runs WHERE id = ?`).get(en.run_id)?.e
+    : en.expedicao_id ? db.prepare(`SELECT estagio AS e FROM expedicoes WHERE id = ?`).get(en.expedicao_id)?.e : null;
+  return Number(e) || 1;
+}
+
 export function lancarPendente(db, { userId, pack, chave, bola, agora, raiz = novaRaiz() }) {
   /* O DONO é conferido aqui, e só aqui; QUEM VENCE o lance é decidido na
      cláusula do UPDATE, e só lá. Uma guarda em cada lugar, e não as duas
@@ -423,7 +433,8 @@ export function lancarPendente(db, { userId, pack, chave, bola, agora, raiz = no
     const paraCaixa = equipeCheiaEm(criaturasDaConta(db, userId));
     /* A captura herda a origem da bola (ST-14.0C): bola presa, criatura presa. */
     const criatura = t.capturou ? gerarCriatura(db, { userId, pack, dex: en.dex, origem: 'captura', encontroChave: chave,
-                                                      proveniencia: maisRestrita([...gasto.classes]), shiny: en.is_shiny === 1 }) : null;
+                                                      proveniencia: maisRestrita([...gasto.classes]), shiny: en.is_shiny === 1,
+                                                      nivel: nivelDeNascer(pack, en.dex, estagioDoEncontro(db, en)) }) : null;
     if (criatura && paraCaixa) {
       db.prepare(`UPDATE criaturas SET na_caixa = 1 WHERE id = ?`).run(criatura.id);
       criatura.naCaixa = true;

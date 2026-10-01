@@ -9,6 +9,7 @@
 import { comRevisao } from './doce-local.mjs';
 import { contaDaLuta } from './jornada-conta.mjs';
 import { diaDoMundo } from '../../engine/avanco.mjs';
+import { creditar } from '../../engine/nivel-criatura.mjs';
 
 /* ST-10.17: a luta PAGA na mesma gravação em que conta — a vitória e o
    pagamento não podem se separar (uma aba que grava a vitória e perde o
@@ -27,6 +28,11 @@ export function lutarNaJornadaLocal({ pack, id, preset = 'balanced', semente = c
     for (const [k, n] of Object.entries(credito.bolsa)) e.bolsa[k] = (e.bolsa[k] ?? 0) + n;
     e.doces ??= {};
     for (const [l, n] of Object.entries(credito.doces)) e.doces[l] = (e.doces[l] ?? 0) + n;
+    /* A LUTA ENSINA (ST-2.23): o XP de quem lutou, pela régua de sempre. */
+    for (const [id, n] of Object.entries(credito.xp ?? {})) {
+      const c = e.criaturas.find(x => x.id === id);
+      if (c) Object.assign(c, { xp: creditar(c, { xp: n }).xp });
+    }
     return { ok: true };
   }, deposito);
   return r?.ok === false || r?.conflito ? r : { ok: true, ...saida };

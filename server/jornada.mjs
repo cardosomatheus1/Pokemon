@@ -23,6 +23,7 @@
  *   o progresso só grava sobre a revisão que foi lida (a cláusula `revisao =
  *   ?`): duas lutas simultâneas não pagam a "primeira vez" duas vezes
  */
+import { creditar as creditarXp } from '../engine/nivel-criatura.mjs';
 import { randomInt } from 'node:crypto';
 import { contaDaLuta, chanceDaLuta } from '../app/modules/jornada-conta.mjs';
 import { eventoDaLuta, eventoDoGinasio } from '../app/modules/telemetria-v4.mjs';
@@ -112,6 +113,13 @@ export function lutarNaConta(db, { userId, pack, id, preset = 'balanced', chaveI
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
       .run(idem, userId, id, preset, semente, venceu ? 1 : 0, p, JSON.stringify(resposta), agora);
     for (const [k, n] of Object.entries(c.credito.bolsa)) creditarBolsa(db, userId, k, n, { fonte: `jornada:${id}`, agora });
+    /* A LUTA ENSINA (ST-2.23): o XP de quem lutou, na mesma transação da vitória. */
+    for (const [cid, n] of Object.entries(c.credito.xp ?? {})) {
+      const atual = db.prepare(`SELECT xp, vinculo FROM criaturas WHERE id = ? AND user_id = ?`).get(cid, userId);
+      if (!atual) continue;
+      const novo = creditarXp({ xp: atual.xp }, { xp: n });
+      db.prepare(`UPDATE criaturas SET xp = ?, nivel = ? WHERE id = ? AND user_id = ?`).run(novo.xp, novo.nivel, cid, userId);
+    }
     for (const [linha, n] of Object.entries(c.credito.doces)) {
       db.prepare(`INSERT INTO candy_ledger (user_id, species_id, delta, motivo, idem_key, created_at) VALUES (?, ?, ?, 'pve', ?, ?)`)
         .run(userId, Number(linha), n, `${idem}:${linha}`, agora);

@@ -32,6 +32,9 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            Rotas abre em 1× e as rotas enchem duas colunas. Olhar no celular:
            node tools/olhar-celular.mjs  (capturas em tools/previas/_celular/).
            Próximo do cenário: ST-2.9 (L-231, a Floresta sem árvore na vista).
+           ST-2.23 (01/10): a curva do começo — a jornada dá XP a quem
+           lutou; a captura nasce no nível do estágio (L-233); Floresta 5/5/6.
+           PEDE VEREDITO DO DONO: subir as capturas antigas ao nível de hoje.
            ST-2.22 (01/10): D-144 (o doce apagado da conta depois da
            rodada), D-145 (run fantasma: 409; relógio do servidor; aviso de
            versão nova), D-146 (a run que cai, colhida e dita). PEDE VEREDITO

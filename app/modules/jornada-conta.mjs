@@ -18,7 +18,7 @@ import { entradasDoTime, rivalDe, treinador } from './treino-dados.mjs';
 import { lutarNo, nosDa, quantosLutam } from '../../engine/jornada.mjs';
 import { powerDe } from '../../engine/time.mjs';
 import { servir } from './jornada-correcao.mjs';
-import { recompensaPve } from '../../engine/recompensa-pve.mjs';
+import { recompensaPve, xpDaLuta } from '../../engine/recompensa-pve.mjs';
 import { chaveDoDoce } from '../../engine/doce.mjs';
 import { idDaMoeda } from '../../engine/economia-idle.mjs';
 import { chanceDeVencer } from '../../engine/treino-preco.mjs';
@@ -44,7 +44,12 @@ export function lutadoresDoNo(pack, timeA, no, timeB) {
 
 const timesDa = (pack, criaturas, no) => {
   const timeB = rivalDe(pack, treinador(pack, no.rival));
-  return { timeA: lutadoresDoNo(pack, entradasDoTime(pack, { criaturas: criaturas ?? [] }), no, timeB), timeB };
+  const todos = entradasDoTime(pack, { criaturas: criaturas ?? [] });
+  const timeA = lutadoresDoNo(pack, todos, no, timeB);
+  /* Quem lutou, pelo id (ST-2.23): a entrada da luta não carrega id, e a
+     equipe é a mesma lista, na mesma ordem, que `entradasDoTime` leu. */
+  const equipe = (criaturas ?? []).filter(c => !c.naCaixa);
+  return { timeA, timeB, ids: timeA.map(e => equipe[todos.indexOf(e)]?.id).filter(Boolean) };
 };
 
 export function chanceDaLuta({ pack, criaturas, id, preset = 'balanced' }) {
@@ -57,7 +62,7 @@ export function chanceDaLuta({ pack, criaturas, id, preset = 'balanced' }) {
 export function contaDaLuta({ pack, criaturas, jornada, id, preset = 'balanced', semente, dia }) {
   const no = noDa(pack, id);
   if (!no) return { ok: false, motivo: `nó desconhecido: ${id}` };
-  const { timeA, timeB } = timesDa(pack, criaturas, no);
+  const { timeA, timeB, ids } = timesDa(pack, criaturas, no);
   if (!timeA.length) return { ok: false, motivo: 'o time está vazio' };
   let saida;
   try { saida = lutarNo(pack, jornada, id, timeA, timeB, { semente, preset }); }
@@ -75,7 +80,9 @@ export function contaDaLuta({ pack, criaturas, jornada, id, preset = 'balanced',
   somar(idDaMoeda(pack), recompensa.pokecoin);
   for (const [b, n] of Object.entries(recompensa.bolas)) somar(b, n);
   for (const [d, n] of Object.entries(recompensa.essencias ?? {})) somar(`essencia:${d}`, n);
-  return { ok: true, ...saida, semente, timeA, timeB, recompensa,
+  /* A LUTA ENSINA (ST-2.23): o XP de cada um que lutou. */
+  const xp = xpDaLuta({ timeB, venceu: saida.resultado.vencedor === 'A', primeiraVez: saida.primeiraVez });
+  return { ok: true, ...saida, semente, timeA, timeB, recompensa: { ...recompensa, xp },
            jornada: { ...saida.progresso, pve: recompensa.hoje },
-           credito: { bolsa, doces: { ...recompensa.doces } } };
+           credito: { bolsa, doces: { ...recompensa.doces }, xp: xp ? Object.fromEntries(ids.map(id => [id, xp])) : {} } };
 }
