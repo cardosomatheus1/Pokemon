@@ -3,9 +3,9 @@
  *   node tools/olhar-mercado.mjs [pasta]
  *     padrão: tools/previas/_mercado
  *
- * Sobe o servidor NESTE processo (banco em memória, o jogo servido junto, e
- * o Market ligado só aqui — `checkpointTeste`, que o servidor só aceita em
- * `ambiente: 'teste'`), anuncia de verdade (a taxa queima, a reserva prende),
+ * Sobe o servidor NESTE processo (banco em memória, o jogo servido junto, o
+ * Market ligado — a DEC-21 o liga desde o gate C, e a captura "desligado" o
+ * desliga como o operador), anuncia de verdade (a taxa queima, a reserva prende),
  * compra de verdade, e captura a aba "Market" da Pokédex nas larguras em que
  * o arranjo muda. O HISTÓRICO de uma série precisa de 10 vendas entre 5 e 5
  * contas: elas são feitas pela própria compra, conta a conta — nada gravado
@@ -29,7 +29,7 @@ const CP = 'DEC-99';
 mkdirSync(PASTA, { recursive: true });
 const { chromium } = await import(pathToFileURL(PW).href);
 
-const srv = criarServidor({ config: { ambiente: 'teste', silencioso: true, servirJogo: true, checkpointTeste: CP }, banco: ':memory:', sims: 40, laco: false });
+const srv = criarServidor({ config: { ambiente: 'teste', silencioso: true, servirJogo: true }, banco: ':memory:', sims: 40, laco: false });
 const porta = await srv.ouvir(0);
 const BASE = `http://127.0.0.1:${porta}`;
 const db = srv.db;

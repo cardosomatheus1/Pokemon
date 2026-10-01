@@ -197,11 +197,14 @@ export async function suite() {
     igual(`${p.sinks.P2P_TRANSFER_FEE}|${p.entreJogadores?.P2P_TRANSFER_IN}`, '10|1000', 'a taxa não aparece como queima, ou o movimento entre jogadores sumiu do painel');
   });
 
-  s.teste('as bandeiras da E14 existem, nascem desligadas e são de valor (exigem o checkpoint do §25.1)', () => {
+  /* Nasceram desligadas e de valor; o gate C as ligou pela DEC-21 (moeda
+     simulada). Continuam DE VALOR — o que as liga é a decisão nomeada, e não
+     o fim da regra — e o operador continua podendo desligá-las. */
+  s.teste('as bandeiras da E14 existem, são de valor e nascem ligadas pela DEC-21; o operador desliga', () => {
     for (const nome of ['p2p_trade_enabled', 'player_market_enabled']) {
-      ok(BANDEIRAS[nome] && BANDEIRAS[nome].padrao === false && BANDEIRAS[nome].valor === true && !BANDEIRAS[nome].liberadaPor, `${nome} não nasce desligada e de valor`);
-      igual(estadoDa(nome, true), false, `${nome} gravada ligada leu ligada sem o checkpoint`);
-      ok(recusaDaMudanca(nome, true), `${nome} pôde ser ligada sem o checkpoint`);
+      ok(BANDEIRAS[nome] && BANDEIRAS[nome].padrao === true && BANDEIRAS[nome].valor === true && BANDEIRAS[nome].liberadaPor === 'DEC-21', `${nome} não é de valor liberada pela DEC-21`);
+      igual(`${estadoDa(nome, undefined)}|${estadoDa(nome, true)}|${estadoDa(nome, false)}`, 'true|true|false', `${nome} não lê o que o operador gravou`);
+      igual(recusaDaMudanca(nome, false), null, `${nome} não pôde ser desligada`);
     }
   });
 

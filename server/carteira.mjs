@@ -332,8 +332,8 @@ export function liquidarEntradaNoBanco(db, { userId, composicao, pagamento, ref,
    do disponível. O bolo tem as suas (ST-12.3) — esquecê-las aqui faria toda
    conta que entrou num bolo parecer adulterada na cópia diária do piloto. */
 /* As taxas da troca e da venda (ST-14.8) saem do RESERVADO, como a do P2P. */
-const SO_RESERVA = new Set(['BET_LOSS', 'MARKET_LOSS', 'P2P_TRANSFER_OUT', 'P2P_TRANSFER_FEE', 'DIRECT_TRADE_FEE', 'PLAYER_MARKET_SALE_FEE']);
-const RESERVAS = new Set(['BET_RESERVE', 'MARKET_ENTRY_RESERVE', 'P2P_RESERVE']);
+export const SO_RESERVA = new Set(['BET_LOSS', 'MARKET_LOSS', 'P2P_TRANSFER_OUT', 'P2P_TRANSFER_FEE', 'DIRECT_TRADE_FEE', 'PLAYER_MARKET_SALE_FEE']);
+export const RESERVAS = new Set(['BET_RESERVE', 'MARKET_ENTRY_RESERVE', 'P2P_RESERVE']);
 
 export function reconciliarNoBanco(db, userId) {
   const problemas = [];

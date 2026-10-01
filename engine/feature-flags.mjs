@@ -30,7 +30,12 @@ export const BANDEIRAS = Object.freeze({
   league_enabled:               Object.freeze({ padrao: true,  valor: false }),
   weather_enabled:              Object.freeze({ padrao: true,  valor: false }),
   season_pass_enabled:          Object.freeze({ padrao: false, valor: true }),
-  p2p_transfer_enabled:         Object.freeze({ padrao: false, valor: true }),
+  /* DEC-21 (o dono, 30/09: "Pode tomar essas 2 decisões e segue"), ligada no
+     commit do GATE C da E14: a troca e o Market entre os amigos do piloto,
+     em moeda SIMULADA. Como a DEC-16: liberadas pela decisão, nascem ligadas,
+     o operador desliga na hora — e o CHECKPOINT_25_1 continua null: saque,
+     dinheiro real e Exchange seguem trancados. */
+  p2p_transfer_enabled:         Object.freeze({ padrao: true,  valor: true, liberadaPor: 'DEC-21' }),
   /* DEC-16 (o dono, 30/09: "Pode ligar"): o stake da Liga move só moeda
      SIMULADA — entra e sai da fila de bônus, sem saque e sem transferência.
      Ele é LIBERADO pela decisão do dono e nasce ligado; o operador desliga
@@ -38,13 +43,12 @@ export const BANDEIRAS = Object.freeze({
      CHECKPOINT_25_1, que esta liberação não toca. */
   league_stake_enabled:         Object.freeze({ padrao: true,  valor: true, liberadaPor: 'DEC-16' }),
   competitive_exchange_enabled: Object.freeze({ padrao: false, valor: true }),
-  /* E14 (ST-14.0B2): a troca direta e o Market de jogadores. Nascem
-     DESLIGADAS e são de valor — ligar exige o checkpoint do §25.1, e elas
+  /* E14 (ST-14.0B2): a troca direta e o Market de jogadores. São de valor e
      COMPÕEM com `p2p_transfer_enabled` (`p2pLiberado`): nenhuma das duas
-     contorna a outra, nem numa permuta sem PC-T (spec E14 §2). Ligar para o
-     piloto é a DEC-21, do dono. */
-  p2p_trade_enabled:            Object.freeze({ padrao: false, valor: true }),
-  player_market_enabled:        Object.freeze({ padrao: false, valor: true }),
+     contorna a outra, nem numa permuta sem PC-T (spec E14 §2). Ligadas pela
+     DEC-21 no gate C (ver acima). */
+  p2p_trade_enabled:            Object.freeze({ padrao: true,  valor: true, liberadaPor: 'DEC-21' }),
+  player_market_enabled:        Object.freeze({ padrao: true,  valor: true, liberadaPor: 'DEC-21' }),
   /* o `real_value_…` da moeda do §15.3 — o nome da moeda é do tema, não do motor */
   real_value_currency_enabled:  Object.freeze({ padrao: false, valor: true }),
   cashout_enabled:              Object.freeze({ padrao: false, valor: true }),

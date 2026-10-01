@@ -23,20 +23,17 @@ export const STATUS_DA_TROCA = Object.freeze({
   [ERRO_TROCA.VAZIA]: 400, [ERRO_TROCA.OFERTA]: 400, [ERRO_TROCA.RECUSADA]: 409,
 });
 
-/* O checkpoint é o do §25.1 (null): as bandeiras de valor seguem desligadas
-   até a DEC-21 ligá-las no gate C — e a política responde FEATURE_DISABLED. */
+/* O checkpoint é o do §25.1 (null). As bandeiras da troca nascem ligadas pela
+   DEC-21 (gate C) e o operador as desliga — desligadas, a política responde
+   FEATURE_DISABLED. Não existe configuração que ligue valor por fora. */
 export function rotasDasTrocas(daExcecao) {
   const tentar = fn => { try { return { corpo: fn() }; } catch (e) { return daExcecao(e); } };
-  /* A COSTURA DO TESTE, e só dele: em `ambiente: 'teste'` a suíte pode passar
-     um marcador para exercitar a troca de ponta a ponta pela porta. Fora do
-     teste é sempre o do §25.1 — não existe configuração que ligue valor. */
-  const cp = config => (config?.ambiente === 'teste' && config.checkpointTeste) ? config.checkpointTeste : CHECKPOINT_25_1;
   return {
     /* A tela pergunta UMA vez o que precisa para abrir (ST-14.7b): as trocas,
        se esta conta pode negociar agora (e o motivo, se não — a bandeira
        desligada é o caso até a DEC-21) e o PC-T elegível para oferecer. */
-    'GET /api/trocas': ({ db, userId, agora, config }) => {
-      const conta = elegibilidadeDaConta(db, { userId, acao: 'trade', agora, checkpoint: cp(config) });
+    'GET /api/trocas': ({ db, userId, agora }) => {
+      const conta = elegibilidadeDaConta(db, { userId, acao: 'trade', agora, checkpoint: CHECKPOINT_25_1 });
       return { corpo: { trocas: minhasTrocas(db, { userId }), ligada: conta.allowed,
                         motivo: conta.allowed ? null : { reason_code: conta.reason_code, detalhe: conta.detalhe },
                         pctElegivel: pcTElegivel(db, userId) } };
@@ -48,29 +45,29 @@ export function rotasDasTrocas(daExcecao) {
       return tentar(() => detalheDaTroca(db, { trocaId: id, userId }));
     },
 
-    'POST /api/trocas': ({ db, corpo, userId, agora, config }) => {
+    'POST /api/trocas': ({ db, corpo, userId, agora }) => {
       if (!texto(corpo?.contraparte)) return recusa('contraparte inválida');
       const outro = db.prepare(`SELECT id FROM users WHERE username = ?`).get(corpo.contraparte);
       if (!outro) return daExcecao(Object.assign(new Error('a outra conta não existe'), { codigo: ERRO_TROCA.CONTRAPARTE }));
-      return tentar(() => criarTroca(db, { userId, contraparteId: outro.id, pack: PACK, ativos: corpo.ativos ?? {}, agora, checkpoint: cp(config) }));
+      return tentar(() => criarTroca(db, { userId, contraparteId: outro.id, pack: PACK, ativos: corpo.ativos ?? {}, agora, checkpoint: CHECKPOINT_25_1 }));
     },
 
-    'POST /api/trocas/oferta': ({ db, corpo, userId, agora, config }) => {
+    'POST /api/trocas/oferta': ({ db, corpo, userId, agora }) => {
       if (!texto(corpo?.id)) return recusa('id inválido');
-      return tentar(() => ofertar(db, { trocaId: corpo.id, userId, pack: PACK, ativos: corpo.ativos ?? {}, agora, checkpoint: cp(config) }));
+      return tentar(() => ofertar(db, { trocaId: corpo.id, userId, pack: PACK, ativos: corpo.ativos ?? {}, agora, checkpoint: CHECKPOINT_25_1 }));
     },
 
-    'POST /api/trocas/pronto': ({ db, corpo, userId, agora, config }) => {
+    'POST /api/trocas/pronto': ({ db, corpo, userId, agora }) => {
       if (!texto(corpo?.id) || !inteiro(corpo?.revisao)) return recusa('id ou revisão inválidos');
-      return tentar(() => pronto(db, { trocaId: corpo.id, userId, revisao: corpo.revisao, pack: PACK, agora, checkpoint: cp(config) }));
+      return tentar(() => pronto(db, { trocaId: corpo.id, userId, revisao: corpo.revisao, pack: PACK, agora, checkpoint: CHECKPOINT_25_1 }));
     },
 
-    'POST /api/trocas/confirmar': ({ db, corpo, userId, agora, config }) => {
+    'POST /api/trocas/confirmar': ({ db, corpo, userId, agora }) => {
       if (!texto(corpo?.id) || !inteiro(corpo?.revisao) || !texto(corpo?.hash)) return recusa('id, revisão ou hash inválidos');
-      return tentar(() => confirmar(db, { trocaId: corpo.id, userId, revisao: corpo.revisao, hash: corpo.hash, agora, checkpoint: cp(config) }));
+      return tentar(() => confirmar(db, { trocaId: corpo.id, userId, revisao: corpo.revisao, hash: corpo.hash, agora, checkpoint: CHECKPOINT_25_1 }));
     },
 
-    'POST /api/trocas/cancelar': ({ db, corpo, userId, agora, config }) => {
+    'POST /api/trocas/cancelar': ({ db, corpo, userId, agora }) => {
       if (!texto(corpo?.id)) return recusa('id inválido');
       return tentar(() => cancelar(db, { trocaId: corpo.id, userId, agora }));
     },

@@ -25,13 +25,12 @@ export const STATUS_DO_MERCADO_P2P = Object.freeze({
 
 export function rotasDoMercadoP2P(daExcecao) {
   const tentar = fn => { try { return { corpo: fn() }; } catch (e) { return daExcecao(e); } };
-  /* A mesma costura de teste das trocas: só em `ambiente: 'teste'`. */
-  const cp = config => (config?.ambiente === 'teste' && config.checkpointTeste) ? config.checkpointTeste : CHECKPOINT_25_1;
   return {
     /* ST-14.13: a tela pergunta uma vez se esta conta pode negociar agora (e
-       o motivo — a bandeira desligada até a DEC-21) e o PC-T elegível. */
-    'GET /api/player-market/estado': ({ db, userId, agora, config }) => {
-      const c = elegibilidadeDaConta(db, { userId, acao: 'market', agora, checkpoint: cp(config) });
+       o motivo — a bandeira desligada pelo operador, por exemplo) e o PC-T
+       elegível. */
+    'GET /api/player-market/estado': ({ db, userId, agora }) => {
+      const c = elegibilidadeDaConta(db, { userId, acao: 'market', agora, checkpoint: CHECKPOINT_25_1 });
       return { corpo: { ligada: c.allowed, motivo: c.allowed ? null : { reason_code: c.reason_code, detalhe: c.detalhe }, pctElegivel: pcTElegivel(db, userId) } };
     },
     'GET /api/player-market/anuncios': ({ db, agora }) => ({ corpo: { anuncios: vitrine(db, { pack: PACK, agora }) } }),
@@ -47,11 +46,11 @@ export function rotasDoMercadoP2P(daExcecao) {
       return tentar(() => detalheDoAnuncio(db, { anuncioId: id, userId, agora }));
     },
     'GET /api/player-market/meus': ({ db, userId }) => ({ corpo: { anuncios: meusAnuncios(db, { userId }), compras: minhasCompras(db, { userId }) } }),
-    'POST /api/player-market/anunciar': ({ db, corpo, userId, agora, config }) =>
-      tentar(() => anunciar(db, { userId, pack: PACK, ativo: corpo?.ativo ?? {}, preco: corpo?.preco, agora, checkpoint: cp(config) })),
-    'POST /api/player-market/comprar': ({ db, corpo, userId, agora, config }) => {
+    'POST /api/player-market/anunciar': ({ db, corpo, userId, agora }) =>
+      tentar(() => anunciar(db, { userId, pack: PACK, ativo: corpo?.ativo ?? {}, preco: corpo?.preco, agora, checkpoint: CHECKPOINT_25_1 })),
+    'POST /api/player-market/comprar': ({ db, corpo, userId, agora }) => {
       if (!texto(corpo?.id) || !Number.isSafeInteger(corpo?.versao) || !Number.isSafeInteger(corpo?.preco)) return recusa('id, versão ou preço inválidos');
-      return tentar(() => comprar(db, { userId, anuncioId: corpo.id, versao: corpo.versao, preco: corpo.preco, chaveIdem: corpo.chave, agora, checkpoint: cp(config) }));
+      return tentar(() => comprar(db, { userId, anuncioId: corpo.id, versao: corpo.versao, preco: corpo.preco, chaveIdem: corpo.chave, agora, checkpoint: CHECKPOINT_25_1 }));
     },
     'POST /api/player-market/cancelar': ({ db, corpo, userId, agora }) => {
       if (!texto(corpo?.id)) return recusa('id inválido');

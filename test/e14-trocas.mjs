@@ -269,16 +269,15 @@ export async function suite() {
     igual(cancelar(k.db, { trocaId: v.id, userId: k.A, agora: AGORA }).estado, 'CANCELLED', 'a bandeira desligada prendeu a troca');
   });
 
-  s.teste('pela porta: o nome da outra conta, a sessão de cada um, e sem o §25.1 a troca não existe', async () => {
-    /* a costura do teste só vale em `ambiente: 'teste'`: em desenvolvimento,
-       o mesmo marcador na configuração não liga nada */
-    for (const [ambiente, checkpointTeste] of [['teste', null], ['desenvolvimento', CHECKPOINT], ['teste', CHECKPOINT]]) {
-      const srv = criarServidor({ config: { ambiente, silencioso: true, checkpointTeste }, banco: ':memory:', sims: 40, laco: false, relogio: () => AGORA });
+  s.teste('pela porta: o nome da outra conta, a sessão de cada um, e a bandeira desligada fecha a troca', async () => {
+    /* ligada pela DEC-21 (o padrão) e desligada pelo OPERADOR */
+    for (const ligadaAgora of [false, true]) {
+      const srv = criarServidor({ config: { ambiente: 'teste', silencioso: true }, banco: ':memory:', sims: 40, laco: false, relogio: () => AGORA });
       const porta = await srv.ouvir(0);
       const url = r => `http://127.0.0.1:${porta}${r}`;
       const Hd = extra => ({ [CABECALHO_VERSAO]: API_VERSAO, 'content-type': 'application/json', ...extra });
       try {
-        ligar(srv.db);
+        ligar(srv.db, ligadaAgora ? 1 : 0);
         const sessao = async n => {
           const r = await fetch(url('/api/auth/cadastrar'), { method: 'POST', headers: Hd(),
             body: JSON.stringify({ username: n, email: `${n.toLowerCase()}@x.test`, senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01' }) }).then(x => x.json());
@@ -288,12 +287,12 @@ export async function suite() {
         const cr = gerar(srv.db, { userId: a.id, pack: PACK, dex: 16 }).id;
         const post = (s, rota, corpo) => fetch(url(rota), { method: 'POST', headers: Hd({ authorization: s.authorization }), body: JSON.stringify(corpo) });
         const inicio = await (await fetch(url('/api/trocas'), { headers: Hd({ authorization: a.authorization }) })).json();
-        const ligada = ambiente === 'teste' && !!checkpointTeste;
+        const ligada = ligadaAgora;
         igual(`${inicio.ligada}|${inicio.motivo?.reason_code ?? null}|${inicio.pctElegivel}`, `${ligada}|${ligada ? null : 'FEATURE_DISABLED'}|0`, 'a abertura da tela diz se a troca está ligada');
         const criada = await post(a, '/api/trocas', { contraparte: 'PortaB', ativos: { criaturas: [cr] } });
-        if (!checkpointTeste || ambiente !== 'teste') {
+        if (!ligadaAgora) {
           const corpo = await criada.json();
-          igual(`${criada.status}|${corpo.reason_code}`, '409|FEATURE_DISABLED', `sem o §25.1 a troca nasceu (${ambiente})`);
+          igual(`${criada.status}|${corpo.reason_code}`, '409|FEATURE_DISABLED', 'a troca nasceu com a bandeira desligada pelo operador');
           continue;
         }
         igual(criada.status, 200, 'a troca pela porta');

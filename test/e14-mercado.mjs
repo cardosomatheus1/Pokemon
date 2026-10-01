@@ -206,15 +206,16 @@ export async function suite() {
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 
-  s.teste('pela porta: a vitrine, a compra, e sem o §25.1 o Market não abre', async () => {
-    for (const [ambiente, checkpointTeste] of [['teste', null], ['desenvolvimento', CHECKPOINT], ['teste', CHECKPOINT]]) {
+  s.teste('pela porta: a vitrine, a compra, e a bandeira desligada fecha o Market', async () => {
+    /* ligado pela DEC-21 (o padrão) e desligado pelo OPERADOR */
+    for (const ligadaAgora of [false, true]) {
       let relogio = AGORA;
-      const srv = criarServidor({ config: { ambiente, silencioso: true, checkpointTeste }, banco: ':memory:', sims: 40, laco: false, relogio: () => relogio });
+      const srv = criarServidor({ config: { ambiente: 'teste', silencioso: true }, banco: ':memory:', sims: 40, laco: false, relogio: () => relogio });
       const porta = await srv.ouvir(0);
       const url = r => `http://127.0.0.1:${porta}${r}`;
       const Hd = extra => ({ [CABECALHO_VERSAO]: API_VERSAO, 'content-type': 'application/json', ...extra });
       try {
-        ligar(srv.db);
+        ligar(srv.db, ligadaAgora ? 1 : 0);
         const sessao = async n => {
           const r = await fetch(url('/api/auth/cadastrar'), { method: 'POST', headers: Hd(), body: JSON.stringify({ username: n, email: `${n.toLowerCase()}@x.test`, senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01' }) }).then(x => x.json());
           return { authorization: `Bearer ${r.sessao}`, id: srv.db.prepare(`SELECT id FROM users WHERE username = ?`).get(n).id };
@@ -226,12 +227,12 @@ export async function suite() {
         const post = (s, rota, corpo) => fetch(url(rota), { method: 'POST', headers: Hd({ authorization: s.authorization }), body: JSON.stringify(corpo) });
         /* ST-14.13: a tela abre perguntando o estado — ligado só com o §25.1 */
         const est = await (await fetch(url('/api/player-market/estado'), { headers: Hd({ authorization: v.authorization }) })).json();
-        const ligado = ambiente === 'teste' && !!checkpointTeste;
-        igual(`${est.ligada}|${est.motivo?.reason_code ?? null}|${est.pctElegivel}`, `${ligado}|${ligado ? null : 'FEATURE_DISABLED'}|50`, `o estado do Market (${ambiente})`);
+        const ligado = ligadaAgora;
+        igual(`${est.ligada}|${est.motivo?.reason_code ?? null}|${est.pctElegivel}`, `${ligado}|${ligado ? null : 'FEATURE_DISABLED'}|50`, 'o estado do Market');
         const criado = await post(v, '/api/player-market/anunciar', { ativo: { criaturaId: cr }, preco: 300 });
-        if (!checkpointTeste || ambiente !== 'teste') {
+        if (!ligadaAgora) {
           const corpo = await criado.json();
-          igual(`${criado.status}|${corpo.reason_code}`, '409|FEATURE_DISABLED', `sem o §25.1 o Market anunciou (${ambiente})`);
+          igual(`${criado.status}|${corpo.reason_code}`, '409|FEATURE_DISABLED', 'o Market anunciou com a bandeira desligada pelo operador');
           continue;
         }
         const a = await criado.json();

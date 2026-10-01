@@ -7181,3 +7181,30 @@ pela espécie nova do dia na liquidação, e o "aposta_alta" saiu do sorteio.
 **Teste que trava:** `desafios-conta` — "a trilha de login credita o PC-B na
 carteira, uma vez por dia (D-137)" e "o marco semanal dos desafios paga uma
 vez, no servidor, e respeita o teto de saldo (D-137)".
+
+## D-138 — o painel econômico do operador somava a reserva como se fosse saldo ✅ CORRIGIDO no gate C da E14 (01/10)
+
+**Achado em:** 01/10/2026, pelo piloto do gate C (`test/e14-economia.mjs`).
+**Bloco dono:** ST-14.15 (gate C) — o bloco que liga a troca pela DEC-21 é o
+que faria o alarme falso aparecer para todo operador. **Estado:** corrigido.
+
+**Causa.** O `painelEconomico` (F1.11) somava `amount` de todo o ledger e
+comparava com as carteiras. Mas a linha que só mexe no RESERVADO — a perda da
+aposta, a saída P2P, a taxa da venda e da troca — guarda em `amount` uma cópia
+do `reserva_delta`, porque o esquema recusa `amount` zero. O
+`reconciliarNoBanco` sempre soube disso (pula essas linhas); o painel não.
+
+**Medição.** Piloto de seis contas, três trocas e quatro vendas:
+`divergencia: { transferivel: 7020 }` com as carteiras e o ledger certos
+linha a linha (a conciliação da ST-14.16 limpa). O mesmo acontecia com
+qualquer aposta perdida desde o F1.7 — só nunca tinha havido teste com perda
+que olhasse o painel.
+
+**Conserto.** O painel soma por (bucket, tipo) e aplica a regra do
+`reconciliarNoBanco` — as duas listas (`SO_RESERVA`, `RESERVAS`) agora são
+exportadas de `server/carteira.mjs`, e a cópia da camada 0
+(`engine/kpis-e14.mjs`) tem teste que trava as duas iguais.
+
+**Teste que trava:** `e14-economia` — "o reservado reconcilia: conciliação
+limpa, painel do E11 sem divergência, nenhuma reserva presa" · plantado
+**S2401** (o painel volta a somar a reserva).

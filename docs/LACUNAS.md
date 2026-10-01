@@ -9259,3 +9259,25 @@ proíbe no próprio nome.
 alerta entra no `varrerSuspeitas` como um sinal novo (`preco`/`giro`), no
 mesmo formato dos de horário e captura: registrado com o número, revisado pelo
 operador, nunca punição automática.
+
+### L-228 — a conta ligada detectada é recusada por tentativa, e não congelada
+
+**Registrada em:** 01/10/2026, no gate C da E14 (ST-14.15), pela simulação.
+**Bloco dono:** **ST-14.14b** (proposta no PLANO no mesmo commit). **Estado:**
+aberta.
+
+A varredura de sensibilidade de `docs/e14/SIMULACAO_E14.md` (cenário "abuso de
+contas novas", 80 contas ligadas a uma principal, semente 42): recusar a
+TENTATIVA de quem é ligado — o que a política faz hoje (`ACCOUNT_RESTRICTED`
+`conta_ligada`) — derruba o volume do funil de 167.760 para 156.813 PC-T com
+50% de detecção, porque a conta recusada junta mais um dia e tenta de novo.
+Congelar a conta na primeira detecção derruba para 24.411 (e 2.283 com 90%).
+
+**Por que não cabe agora:** o gate C mede e liga; mudar a política de risco
+é comportamento novo de antifraude, com o operador no meio (congelar é ação
+dele hoje, pelo `agir`). E a fonte de PC-T de jogador (ST-14.0E) ainda não
+existe — sem ela o funil não tem o que funilar.
+
+**O que a destrava:** a ST-14.0E. Com PC-T de jogador nascendo, o sinal
+`conta_ligada` confirmado abre o congelamento da ST-14.14 com motivo
+automático, para o operador revisar — nunca punição sem revisão.

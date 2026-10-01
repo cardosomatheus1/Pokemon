@@ -137,9 +137,16 @@ o ESTADO   E13 FECHADO (30/09): a ST-13.5 inteira (13.5a–e) e a ST-13.4 —
            cartão, histórico da série, compra com confirmação, anunciar
            com prévia, minhas ofertas e compras. A ONDA C DA E14 ESTÁ
            FECHADA.
-           PRÓXIMO: o gate C da E14 (a verificação das ondas B e C juntas,
-           ST-14.15) e ligar as bandeiras de troca e Market pela DEC-21. Tudo atrás das
-           bandeiras desligadas (DEC-21: liga no gate C, moeda simulada)
+           · GATE C + DEC-21 FECHADOS (01/10): o piloto de seis contas
+           reconcilia (mint P2P 0, furo 0, taxas mostradas = cobradas,
+           nada preso, nada duplicado); o operador lê a economia E14 em
+           GET /api/admin/economia-e14; o simulador escreve
+           docs/e14/SIMULACAO_E14.md (node tools/simular-e14.mjs); o D-138
+           (o painel do E11 somava a reserva) corrigido junto. A TROCA E O
+           MARKET ESTÃO LIGADOS (moeda simulada; o operador desliga).
+           PRÓXIMO: a ST-14.0E — a fonte do PC-T pela jornada (DEC-22) ficou
+           FORA das ondas: sem ela o jogador não ganha PC-T e o Market só
+           anda com criatura por criatura. Depois a ST-14.14b (L-228).
 o PRÓXIMO  DESENVOLVIMENTO, não visual (DEC-20, o dono em 30/09: "não perca
            mais tempo com essas correções visuais"): a ST-10.26 (o desenho
            do mapa, L-220) está ADIADA. Seguir a fila do ROADMAP no que falta

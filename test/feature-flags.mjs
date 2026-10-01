@@ -34,23 +34,28 @@ export async function suite() {
        SIMULADA — bônus, sem saque, sem transferência. Ele é liberado pela
        decisão dele; o §25.1 continua cobrando tudo que toca dinheiro real. */
     const liberadas = VALOR.filter(n => BANDEIRAS[n].liberadaPor);
-    igual(liberadas.join(), 'league_stake_enabled', 'bandeira de valor liberada sem ser o stake de moeda simulada');
+    /* DEC-16 (o stake) e DEC-21 (a troca e o Market, no gate C da E14): as
+       quatro de moeda SIMULADA que o dono liberou — e só elas. */
+    igual(liberadas.join(), 'league_stake_enabled,p2p_trade_enabled,p2p_transfer_enabled,player_market_enabled', 'bandeira de valor liberada sem ser de moeda simulada decidida pelo dono');
     for (const n of VALOR) igual(BANDEIRAS[n].padrao, !!BANDEIRAS[n].liberadaPor, `${n}: o padrão não segue a liberação`);
     for (const n of liberadas) {
       ok(checkpointValido(BANDEIRAS[n].liberadaPor), `${n} liberada por "${BANDEIRAS[n].liberadaPor}", que não nomeia decisão`);
       const linha = doc('../docs/ROADMAP.md').split('\n').find(l => l.includes(`**${BANDEIRAS[n].liberadaPor}**`));
       ok(linha && /moeda simulada/.test(linha), `${BANDEIRAS[n].liberadaPor} não está nas decisões do ROADMAP dizendo "moeda simulada"`);
     }
-    for (const n of ['cashout_enabled', 'real_value_currency_enabled', 'p2p_transfer_enabled', 'competitive_exchange_enabled', 'p2p_trade_enabled', 'player_market_enabled']) ok(!BANDEIRAS[n].liberadaPor, `${n} liberada sem o §25.1 — é dinheiro real`);
+    for (const n of ['cashout_enabled', 'real_value_currency_enabled', 'competitive_exchange_enabled', 'season_pass_enabled']) ok(!BANDEIRAS[n].liberadaPor, `${n} liberada sem o §25.1 — é dinheiro real`);
     igual(estadoDa('league_enabled', undefined, null), true, 'a Liga nasce desligada');
     igual(estadoDa('nao_existe', 1, 'DEC-99'), false, 'a bandeira desconhecida lê ligada');
   });
 
   s.teste('ligar valor exige o marcador do §25.1; desligar nunca exige', () => {
-    ok(/§25\.1/.test(recusaDaMudanca('p2p_transfer_enabled', true, null) ?? ''), 'ligou a transferência sem o checkpoint');
-    ok(/§25\.1/.test(recusaDaMudanca('p2p_transfer_enabled', true, 'ok') ?? ''), 'um marcador que não nomeia decisão valeu');
-    igual(recusaDaMudanca('p2p_transfer_enabled', true, 'DEC-31'), null, 'o marcador preenchido não liberou');
-    igual(recusaDaMudanca('p2p_transfer_enabled', false, null), null, 'desligar exigiu o checkpoint');
+    /* o saque é dinheiro real: a DEC-21 não o tocou */
+    ok(/§25\.1/.test(recusaDaMudanca('cashout_enabled', true, null) ?? ''), 'ligou o saque sem o checkpoint');
+    ok(/§25\.1/.test(recusaDaMudanca('cashout_enabled', true, 'ok') ?? ''), 'um marcador que não nomeia decisão valeu');
+    igual(recusaDaMudanca('cashout_enabled', true, 'DEC-31'), null, 'o marcador preenchido não liberou');
+    igual(recusaDaMudanca('cashout_enabled', false, null), null, 'desligar exigiu o checkpoint');
+    /* a transferência P2P, liberada pela DEC-21: ligar e desligar sem o checkpoint */
+    igual(`${recusaDaMudanca('p2p_transfer_enabled', true, null)}|${recusaDaMudanca('p2p_transfer_enabled', false, null)}`, 'null|null', 'a transferência da DEC-21 pediu o checkpoint');
     /* O stake de moeda simulada: a decisão do dono basta para ligar, e desligar continua livre. */
     igual(recusaDaMudanca('league_stake_enabled', true, null), null, 'o stake liberado pela DEC-16 pediu o checkpoint do dinheiro real');
     igual(recusaDaMudanca('league_stake_enabled', false, null), null, 'desligar o stake exigiu algo');
@@ -104,7 +109,7 @@ export async function suite() {
     mudarBandeira(c.db, { operadorId: c.dono.id, nome: 'cashout_enabled', ligada: true, motivo: 'checkpoint feito', confirmado: true, agora: T0 + 1, checkpoint: 'DEC-31' });
     igual(`${bandeiraLigada(c.db, 'cashout_enabled', 'DEC-31')}|${bandeiraLigada(c.db, 'cashout_enabled')}`, 'true|false', 'o estado com e sem o marcador');
     /* No painel, de valor ligado só o stake de moeda simulada — nunca dinheiro real sem o marcador. */
-    igual(bandeiras(c.db).filter(b => b.ligada && b.valor).map(b => b.nome).join(), 'league_stake_enabled', 'o painel mostra dinheiro real ligado sem o marcador');
+    igual(bandeiras(c.db).filter(b => b.ligada && b.valor).map(b => b.nome).sort().join(), 'league_stake_enabled,p2p_trade_enabled,p2p_transfer_enabled,player_market_enabled', 'o painel mostra dinheiro real ligado sem o marcador');
   });
 
   s.teste('o stake da Liga (DEC-16): nasce ligado, o dono desliga na hora e religa sem checkpoint', () => {

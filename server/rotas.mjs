@@ -57,6 +57,7 @@ import { perfilDe, desafiosDe, registrarLogin, sequenciaDeLogin, emitidoNaSemana
 import { BUCKETS } from '../engine/carteira.mjs';
 import { agir, definirMargem, margemDaCasa, ERRO_ADMIN } from './admin.mjs';
 import { politicaMonetaria } from './politica.mjs';
+import { painelE14 } from './economia-e14.mjs';
 import { bandeiras, mudarBandeira, ERRO_BANDEIRA } from './feature-flags.mjs';
 import { congelar, descongelar } from './risco-mercado-jogadores.mjs';
 import { entrarOperador, lerSessaoAdmin, sairOperador } from './admin-auth.mjs';
@@ -100,6 +101,8 @@ export const ROTAS_ADMIN = [
   'POST /api/admin/bandeira',
   /* ST-14.14: congelar e descongelar a troca de uma conta em revisão. */
   'POST /api/admin/p2p/congelamento',
+  /* ST-14.15: os números da economia entre jogadores, do ledger. */
+  'GET /api/admin/economia-e14',
 ];
 
 export const ROTAS_PUBLICAS = [
@@ -521,6 +524,13 @@ export const ROTAS = {
      dentro do `mudarBandeira` — como a margem, e pelo mesmo motivo: a ação
      carrega `de`, `para` e `confirmado`. A recusa do §25.1 é 409: o pedido
      está certo, o checkpoint é que ainda não aconteceu. */
+  /* A ECONOMIA ENTRE JOGADORES (ST-14.15). Leitura do painel: emissão,
+     queima, mint P2P, conservação, concentração, shiny, estoque controlado,
+     liquidez — tudo do ledger e das tabelas, nunca da telemetria. */
+  'GET /api/admin/economia-e14': ({ db, cabecalhos, agora }) =>
+    comOperador(db, cabecalhos, 'painel.ver', 'consulta da economia E14',
+      () => ({ corpo: painelE14(db, { agora }) }), agora),
+
   'GET /api/admin/bandeiras': ({ db, cabecalhos, agora }) =>
     comOperador(db, cabecalhos, 'painel.ver', 'consulta das bandeiras',
       () => ({ corpo: { bandeiras: bandeiras(db) } }), agora),

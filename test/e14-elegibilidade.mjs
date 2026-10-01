@@ -169,12 +169,17 @@ export async function suite() {
     igual(v(bonus.id, 'trade', outro), 'false|ASSET_BOUND|promotional_bound', 'mudar de dono lavou a origem');
   });
 
-  s.teste('servidor · sem bandeira nada negocia; a pausa prende a conta; o relógio é do servidor', () => {
+  s.teste('servidor · a bandeira desligada pelo operador fecha tudo; a pausa prende a conta; o relógio é do servidor', () => {
     const { db, uid } = novo();
     const farm = gerar(db, { userId: uid, pack: PACK, dex: 16 });
-    igual(elegibilidadeDaCriatura(db, { userId: uid, pack: PACK, id: farm.id, acao: 'trade', agora: AGORA }).reason_code, 'FEATURE_DISABLED', 'negociou com as bandeiras de fábrica');
-    ligar(db);
-    igual(elegibilidadeDaCriatura(db, { userId: uid, pack: PACK, id: farm.id, acao: 'trade', agora: AGORA }).reason_code, 'FEATURE_DISABLED', 'a bandeira de valor ligou sem o checkpoint');
+    /* DEC-21 (gate C): as bandeiras da troca nascem LIGADAS, sem o checkpoint
+       — moeda simulada. Até o gate C esta linha cobrava o contrário. */
+    igual(elegibilidadeDaCriatura(db, { userId: uid, pack: PACK, id: farm.id, acao: 'trade', agora: AGORA }).reason_code, null, 'as bandeiras de fábrica não seguem a DEC-21');
+    db.exec('PRAGMA foreign_keys = OFF');
+    db.prepare(`INSERT INTO feature_flags (nome, ligada, atualizada_em, atualizada_por) VALUES ('p2p_trade_enabled', 0, ?, 'teste')`).run(AGORA);
+    db.exec('PRAGMA foreign_keys = ON');
+    igual(elegibilidadeDaCriatura(db, { userId: uid, pack: PACK, id: farm.id, acao: 'trade', agora: AGORA }).reason_code, 'FEATURE_DISABLED', 'negociou com a troca desligada pelo operador');
+    db.prepare(`UPDATE feature_flags SET ligada = 1 WHERE nome = 'p2p_trade_enabled'`).run();
     pausar(db, { userId: uid, tipo: 'cooloff', duracao: '24h', agora: AGORA });
     igual(elegibilidadeDaCriatura(db, { userId: uid, pack: PACK, id: farm.id, acao: 'trade', agora: AGORA + 1, checkpoint: CHECKPOINT }).reason_code, 'ACCOUNT_RESTRICTED', 'a conta em pausa negociou');
     const t = readFileSync(new URL('../server/elegibilidade.mjs', import.meta.url), 'utf8');

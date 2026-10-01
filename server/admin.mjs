@@ -27,6 +27,7 @@
  */
 import { randomUUID } from 'node:crypto';
 import { BUCKETS } from '../engine/carteira.mjs';
+import { SO_RESERVA, RESERVAS } from './carteira.mjs';
 import { MARGEM_MAX, margemValida } from '../engine/preco.mjs';
 
 /* Os papéis, do menos para o mais poderoso. A ordem é significativa: `podeFazer`
@@ -173,13 +174,21 @@ export function painelEconomico(db, { desde = 0, ate = Number.MAX_SAFE_INTEGER }
   }
 
   /* O SALDO EM CIRCULAÇÃO, SOMADO DO LEDGER. É a mesma conta que a `carteiras`
-     guarda pronta, e é justamente por isso que ela é feita de novo aqui. */
+     guarda pronta, e é justamente por isso que ela é feita de novo aqui.
+     Pela MESMA regra do `reconciliarNoBanco` (gate C da E14): a linha que só
+     mexe no reservado — a perda, a saída P2P, a taxa da venda e da troca —
+     espelha o `reserva_delta` em `amount` e não toca o disponível. Somar
+     `amount` cru fazia o painel acusar divergência a cada aposta perdida e a
+     cada troca liquidada, e uma divergência que aparece sempre é a que
+     ninguém mais lê. */
   const emCirculacao = {};
   for (const b of BUCKETS) emCirculacao[b] = 0;
   for (const r of db.prepare(
-    `SELECT bucket, COALESCE(SUM(amount), 0) AS s FROM wallet_ledger
-      WHERE created_at <= ? GROUP BY bucket`).all(ate))
-    emCirculacao[r.bucket] = r.s;
+    `SELECT bucket, type, COALESCE(SUM(amount), 0) AS s, COALESCE(SUM(ABS(amount)), 0) AS aa FROM wallet_ledger
+      WHERE created_at <= ? GROUP BY bucket, type`).all(ate)) {
+    if (SO_RESERVA.has(r.type)) continue;
+    emCirculacao[r.bucket] += RESERVAS.has(r.type) ? -r.aa : r.s;
+  }
 
   /* A DIVERGÊNCIA ENTRE FONTE E CACHE, exposta em vez de escondida. Zero é o
      esperado; qualquer outra coisa é a pergunta mais importante do painel. */

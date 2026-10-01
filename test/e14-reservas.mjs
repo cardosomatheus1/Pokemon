@@ -140,8 +140,12 @@ export async function suite() {
     ok(buscarPartida(c.db, { userId: c.uid, meu: snap.id, chaveIdem: 'livre-0001', agora: AGORA + 3 }).bot, 'liberada a reserva, o time não voltou a lutar');
   });
 
-  s.teste('a reserva não sai sem bandeira, e o livro é append-only', () => {
+  s.teste('a reserva não sai com a bandeira desligada pelo operador, e o livro é append-only', () => {
     const db = abrirBanco(':memory:'); migrar(db);
+    /* DEC-21: a troca nasce ligada; quem a fecha é o operador */
+    db.exec('PRAGMA foreign_keys = OFF');
+    db.prepare(`INSERT INTO feature_flags (nome, ligada, atualizada_em, atualizada_por) VALUES ('p2p_trade_enabled', 0, ?, 'teste')`).run(AGORA);
+    db.exec('PRAGMA foreign_keys = ON');
     const uid = cadastrar(db, { username: 'sem', email: 'sem@x.test', senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01', agora: AGORA }).id;
     const farm = gerar(db, { userId: uid, pack: PACK, dex: 25 });
     const e = recusa(() => reservarOferta(db, { userId: uid, pack: PACK, dono: { tipo: 'trade', id: 'of' }, ativos: { criaturas: [farm.id] }, expiraEm: AGORA + H, agora: AGORA }));

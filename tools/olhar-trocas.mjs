@@ -3,9 +3,9 @@
  *   node tools/olhar-trocas.mjs [pasta]
  *     padrão: tools/previas/_trocas
  *
- * Sobe o servidor NESTE processo (banco em memória, o jogo servido junto, e
- * as bandeiras de troca ligadas só aqui — `checkpointTeste`, que o servidor
- * só aceita em `ambiente: 'teste'`), monta trocas de verdade em cada etapa e
+ * Sobe o servidor NESTE processo (banco em memória, o jogo servido junto, as
+ * bandeiras de troca ligadas — a DEC-21 as liga desde o gate C, e a captura
+ * "desligada" as desliga como o operador), monta trocas de verdade em cada etapa e
  * captura a aba "Trocas" da Pokédex nas larguras em que o arranjo muda.
  * Cada largura tem as SUAS contas e a SUA troca: a troca anda, e a captura
  * de uma largura não pode herdar o que a anterior fez. Imprime os erros de
@@ -29,7 +29,7 @@ const CP = 'DEC-99';
 mkdirSync(PASTA, { recursive: true });
 const { chromium } = await import(pathToFileURL(PW).href);
 
-const srv = criarServidor({ config: { ambiente: 'teste', silencioso: true, servirJogo: true, checkpointTeste: CP }, banco: ':memory:', sims: 40, laco: false });
+const srv = criarServidor({ config: { ambiente: 'teste', silencioso: true, servirJogo: true }, banco: ':memory:', sims: 40, laco: false });
 const porta = await srv.ouvir(0);
 const BASE = `http://127.0.0.1:${porta}`;
 const db = srv.db;
