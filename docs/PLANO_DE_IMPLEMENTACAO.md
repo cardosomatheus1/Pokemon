@@ -392,7 +392,7 @@ isso trouxe. O sigilo do clima sorteado (L-177) não se quebra.
 ### ST-3.6 · DEC-14: o rendimento do Avanço decresce com as runs do dia — ✅ fechada em 25/09 (fecha a L-185)
 
 - **Feito:** `fatorDoRendimento` no motor — 6 runs cheias por dia, depois ×0,75
-  por run, piso de 5% (3% na DEC-29b, de volta a 5% na DEC-29c); moeda e Essência (o XP não); arredondamento semeado que
+  por run, piso de 5% (3% na DEC-29b, de volta a 5% desde a DEC-29c); moeda e Essência (o XP não); arredondamento semeado que
   guarda a média; o dia é o de CALENDÁRIO no relógio do mundo (Brasília,
   DEC-10) — a janela móvel de 24 h foi medida e punia quem joga todo dia no
   mesmo horário. A frase aparece sob o botão Avançar a partir da 7ª run.
@@ -3123,7 +3123,7 @@ desta tabela.
   maratona (perfil literal de 48 runs, D-151) XP 14.759 → 11.168 e 14.801 →
   11.202, moeda 1.549,43 → 1.504,86 e 1.715,29 → 1.663,29, Essência 62,29 →
   59,14 e 49,71 → 47,43. Teste: `stamina-balanco`.
-- ✅ **DEC-29c · o dia do time: a stamina dá tempo de jogo, e não recompensa**
+- ~~**DEC-29c**~~ **substituída pela DEC-29d** (o dono recusou o corte por run). **DEC-29c · o dia do time: a stamina dá tempo de jogo, e não recompensa**
   (o dono, 02/10: *"sobe a stamina; o que isso gerou de XP e moeda, você
   diminui, pra equilibrar, e o jogador ter mais tempo de jogo"*). Medido por
   horas jogadas (sessão contínua, barras cheias, 2 em campo), a DEC-29b deixava
@@ -3136,6 +3136,17 @@ desta tabela.
   diário idênticos; maratona XP 14.759 → 11.069,4 (est. 1) e 14.801 →
   11.098,4 (est. 3), moeda 1.549,43 → 1.506,71 e 1.715,29 → 1.669,71,
   Essência 62,29 → 59,43 e 49,71 → 47,57. Teste: `stamina-balanco`.
+- ✅ **DEC-29d · a stamina a 30/h equilibrada no VALOR de toda run** (o dono,
+  02/10, recusando os cortes por posição da 29b e da 29c: *"não deve limitar,
+  zerar XP de quem tá jogando, deve equilibrar pra no geral não mudar
+  tanto"*). Toda run paga **88% do XP** e **96% da moeda e da Essência**;
+  nenhuma paga menos por ser a 30ª do dia (o rendimento decrescente da moeda,
+  DEC-14, é de antes e fica). Medido contra 20/h — sessões de 30 min a 8 h,
+  times de 1, 2, 3 e 6 —: média de **101% de XP e 100% de moeda**; quem joga
+  até 2 h (as mesmas runs de antes) recebe 88%/96%, quem joga 5 a 8 h (25% a
+  30% mais runs) fica entre 104% e 117%. A medição da emissão, com as runs por
+  dia literais (D-151), só vê o valor da run: XP −11%, moeda −4% em todo
+  perfil. Teste: `stamina-balanco`.
 - **Ainda do dono, e com recomendação escrita como padrão:** a taxa shiny (R18),
   o orçamento da Master Ball, os limites/cooldown/taxas finais (baselines da
   spec §11 e §16 até o gate C medir).

@@ -521,8 +521,7 @@ export function atualizarBotaoAvancar(E, escolha, agora) {
   const custo = $('#idleCustoRun');
   /* E O QUE ELA PAGA HOJE (ST-3.6): a partir da 7ª run do dia, a frase diz a
      porcentagem ANTES de começar — rendimento que cai sem aviso é o D-067. */
-  /* DEC-29c: o dia é o do TIME — quem não está na caixa. */
-  if (custo) custo.textContent = [falaDoCusto(), falaDoRendimento(runsNoDia(E.avancos, agora) + 1, (E.criaturas ?? []).filter(c => !c.naCaixa).length)]
+  if (custo) custo.textContent = [falaDoCusto(), falaDoRendimento(runsNoDia(E.avancos, agora) + 1)]
     .filter(Boolean).join(' ');
 
   /* ── O AVISO DO TETO VEM ANTES, E NÃO DEPOIS (L-151) ──────────────────

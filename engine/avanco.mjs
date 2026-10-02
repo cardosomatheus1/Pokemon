@@ -191,8 +191,6 @@ export const falaDoCusto = () =>
  * calibragem. O XP não: a stamina e a curva de nível já o seguram. */
 export const RUNS_CHEIAS = 6;
 export const QUEDA_POR_RUN = 0.75;
-/* 5%. A DEC-29b o baixou a 3%; a DEC-29c o devolveu — quem segura a run a
-   mais da stamina a 30/h passou a ser o dia do time (`fatorDoDia`). */
 export const PISO_DO_RENDIMENTO = 0.05;
 const DIA_MS = 24 * 3600_000;
 /* O mesmo deslocamento de `FUSO_DO_MUNDO_MIN` (`app/modules/hora-do-dia.mjs`):
@@ -207,27 +205,21 @@ export function fatorDoRendimento(n) {
   return Math.max(PISO_DO_RENDIMENTO, QUEDA_POR_RUN ** alem);
 }
 
-/* ── O DIA DO TIME (DEC-29c) ─────────────────────────────────────────────
- * A stamina a 30/h (DEC-29) dá mais tempo de jogo; o dono pediu que o que ela
- * GEROU de XP e moeda fosse tirado: "o jogador ter mais tempo de jogo", e não
- * mais recompensa.
+/* ── A STAMINA A 30/H, EQUILIBRADA NO VALOR DA RUN (DEC-29d) ─────────────
+ * A DEC-29 subiu a stamina de 20 para 30/h: mais runs para quem joga mais. O
+ * dono pediu que isso não mudasse "no geral" o XP e a moeda — e recusou
+ * qualquer corte por run do dia: "não deve limitar, zerar XP de quem tá
+ * jogando, deve equilibrar pra no geral não mudar tanto".
  *
- * A primeira tentativa (DEC-29b: XP pela metade depois da 24ª run) só pegava o
- * maratona. Medido por horas jogadas, quem jogava de 3 a 8 h saía com +13% a
- * +33% de XP. O que a stamina a 30/h acrescenta são as runs DEPOIS de onde a
- * 20/h parava, e onde ela parava depende do TIME: cada criatura a mais é mais
- * barra. Medido (sessão contínua, barras cheias): até 2 h, 20/h e 30/h fazem
- * as mesmas runs, em qualquer time — e 3 por criatura cobre essas runs.
- *
- * Então: inteira até 3 runs por criatura do time (no mínimo as 6 que já
- * pagavam inteiras) e 60% depois, em XP, moeda e Essência. Medido contra
- * 20/h: até 2 h, 100% em todo time; 5 h, +5% de XP; 8 h ou mais, 96% a 101%.
- * O que sobra: quem joga 3 h seguidas ganha +20% de XP (duas runs a mais a
- * 60%) — nenhuma régua por posição tira isso sem cortar quem joga mais. */
-export const RUNS_POR_CRIATURA = 3;
-export const FATOR_ALEM_DO_DIA = 0.6;
-export const limiarDoDia = time => Math.max(RUNS_CHEIAS, RUNS_POR_CRIATURA * Math.max(1, Math.floor(Number(time)) || 1));
-export const fatorDoDia = (n, time) => ((Math.floor(Number(n)) || 1) > limiarDoDia(time) ? FATOR_ALEM_DO_DIA : 1);
+ * Então TODA run paga um pouco menos, e nenhuma paga menos que a outra por
+ * ser a 30ª. Medido contra 20/h — sessões contínuas de 30 min a 8 h, times de
+ * 1, 2, 3 e 6 (`test/stamina-balanco.mjs`): com XP a 88% e moeda a 96% por
+ * run, a média fica em 101% de XP e 100% de moeda. Quem joga até 2 h (as
+ * mesmas runs de antes) recebe 88% e 96%; quem joga 5 a 8 h, que ganhou 25% a
+ * 30% mais runs, fica de 104% a 117%. A moeda segue o rendimento decrescente
+ * de sempre (DEC-14); o XP não tem corte nenhum. */
+export const XP_DA_RUN = 0.88;
+export const MOEDA_DA_RUN = 0.96;
 
 /* Quantas runs já foram colhidas HOJE — a próxima é esta mais um. A lista de
    `avancos` guarda as últimas 24 h, e o dia de calendário cabe nelas. */
@@ -241,11 +233,10 @@ export const comRendimento = (quantidade, fator, u) =>
   Math.floor((Number(quantidade) || 0) * fator + (Number(u) || 0));
 
 /* A frase da tela, ANTES de começar: o jogador decide com o número na mão. */
-export function falaDoRendimento(n, time = 1) {
-  const dia = fatorDoDia(n, time), f = fatorDoRendimento(n) * dia;
+export function falaDoRendimento(n) {
+  const f = fatorDoRendimento(n);
   if (f >= 1) return null;
-  const xp = dia < 1 ? ` e ${Math.round(dia * 100)}% do XP` : '';
-  return `Esta seria a ${n}ª run de hoje: ela paga ${Math.round(f * 100)}% de moeda e Essência${xp}. ` +
+  return `Esta seria a ${n}ª run de hoje: ela paga ${Math.round(f * 100)}% de moeda e Essência. ` +
          `O rendimento volta inteiro à meia-noite (horário de Brasília).`;
 }
 

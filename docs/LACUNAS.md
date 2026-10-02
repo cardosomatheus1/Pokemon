@@ -9402,9 +9402,9 @@ A luta da Jornada encena a batalha, mas sem o arranjo que a referência ensina
 a ler: as duas placas de HP, o rival de frente em cima e o nosso de costas
 embaixo, a caixa de texto narrando um acontecimento por vez. A análise e a
 diferença nomeada (a caixa narra a LIÇÃO do nó, no neon da interface) estão na
-ficha. **Por que não cabe agora:** chegou no meio da DEC-29b, e é tela nova
-inteira, com arte nova (as costas). **O que a destrava:** nada — entra logo
-depois da ST-2.27.
+ficha. **Por que não coube na hora:** chegou no meio da DEC-29b, e é tela
+nova inteira, com arte nova (as costas). **O que a destrava:** nada — o dono
+perguntou de novo (02/10) e ela passou à frente da ST-2.27: é o próximo bloco.
 
 ### L-244 — o dia das Rotas se esgota em ~35 minutos
 

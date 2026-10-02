@@ -34,14 +34,14 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            Próximo do cenário: ST-2.9 (L-231, a Floresta sem árvore na vista).
            ST-2.26a (02/10): o banco aprende metade do XP; D-148 (o teto
            zerava o XP da run) e DEC-27 (a moeda segue a calibrada).
-           DEC-29 (02/10, o dono): a stamina regenera 30/h (era 20); DEC-29c
-           balanceia (substitui a 29b): o dia do time — inteira até 3 runs por
-           criatura do time, 60% depois em XP, moeda e Essência. Até 2 h tudo
-           igual; mais que isso, mais runs pelo mesmo total. Fila: ST-2.27
-           (a forma do dia) → ST-10.27 (a luta no palco clássico, L-245).
+           DEC-29 (02/10, o dono): a stamina regenera 30/h (era 20); DEC-29d
+           equilibra (substitui 29b e 29c, que cortavam por run e o dono
+           recusou): toda run paga 88% do XP e 96% da moeda — o dia médio fica
+           em 101%/100%. PRÓXIMO: ST-10.27 (a luta no palco clássico, L-245),
+           depois ST-2.27 (a forma do dia).
            D-151: a medição da emissão não vê a regeneração (vai na ST-2.27).
            ST-2.26b (02/10): D-149 (o chefe da wave perdida aguenta com vida,
-           barra = número) e D-150 (o 400 do mover). PRÓXIMO: ST-2.27, a forma
+           barra = número) e D-150 (o 400 do mover). a seguir: ST-2.27, a forma
            do dia (DEC-28: as Rotas se esgotam em ~35 min; medir 1 h × 3
            visitas × maratona antes de mexer — L-242, L-243, L-244).
            DEC-26 (02/10): termos do gênero em inglês ficam (run, wave,

@@ -17,7 +17,7 @@
 import { forcaDe, raridadeDe } from '../../engine/bioma.mjs';
 import { elencoDoEstagio } from '../../engine/elenco-estagio.mjs';
 import { novaRun, avancarRun, curarRun, cenaDaRun, resultadoDa } from '../../engine/run-avanco.mjs';
-import { premioDo, ganhoDaRun, POR_ABATE, fatorDoRendimento, fatorDoDia, runsNoDia, comRendimento, encontrosDe } from '../../engine/avanco.mjs';
+import { premioDo, ganhoDaRun, POR_ABATE, fatorDoRendimento, XP_DA_RUN, MOEDA_DA_RUN, runsNoDia, comRendimento, encontrosDe } from '../../engine/avanco.mjs';
 import { creditar } from '../../engine/nivel-criatura.mjs';
 import { moedasDa, idDaMoeda, idDoMaterial } from '../../engine/economia-idle.mjs';
 import { sortearItens, agrupar } from '../../engine/drops.mjs';
@@ -146,9 +146,8 @@ export function contaDaRun(pack, { run, criaturas, banco = [], motor, avancos, r
   const vistos = encontrosDe(resultadoDa(run)).length;
   /* O RENDIMENTO DO DIA (ST-3.6, DEC-14): a posição desta run no dia do mundo. */
   const naJanela = runsNoDia(avancos, agora) + 1;
-  /* DEC-29c: o dia do time — quem foi à run e o banco, que é o time fora dela. */
-  const dia = fatorDoDia(naJanela, criaturas.length + banco.length);
-  const fator = fatorDoRendimento(naJanela) * dia;
+  /* DEC-29d: a stamina a 30/h equilibrada no valor de TODA run (96%). */
+  const fator = fatorDoRendimento(naJanela) * MOEDA_DA_RUN;
   const sorteioR = semente(derivar(raiz, 'avanco:rendimento'));
 
   /* O CLIMA, LIDO UMA VEZ (1.32) para os quatro canais que se pagam aqui. */
@@ -164,9 +163,10 @@ export function contaDaRun(pack, { run, criaturas, banco = [], motor, avancos, r
   /* O XP pela MESMA função da expedição; o clima entra DEPOIS da conta, e não
      dentro dela — `ganhoDaRun` é a régua partilhada com a expedição. */
   const ganhoCru = ganhoDaRun({ abates: premio.abates, encontros: vistos, perfil: PERFIL_DO_AVANCO });
-  /* DEC-29c: além do dia do time, 60% do XP — a stamina a 30/h dá tempo de
-     jogo, e não XP a mais. Antes do clima, como a moeda. */
-  const ganho = { ...ganhoCru, xp: Math.round(aplicarClima(Math.round(ganhoCru.xp * dia), bonusClima, 'xp')) };
+  /* DEC-29d: toda run paga 88% do XP — a stamina a 30/h dá mais runs, e o
+     XP do dia, na média, fica onde estava. Sem corte por run do dia. Antes
+     do clima, como a moeda. */
+  const ganho = { ...ganhoCru, xp: Math.round(aplicarClima(Math.round(ganhoCru.xp * XP_DA_RUN), bonusClima, 'xp')) };
   const credito = [], subiram = [];
   for (const c of criaturas) {
     const novo = creditar(c, { xp: ganho.xp, vinculo: VINCULO_DA_RUN });
