@@ -9392,6 +9392,32 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-243 — a stamina pesa com dois em campo, e a tela não diz o custo de cada um
+
+**Registrada em:** 02/10/2026, no 5º relato do dono (*"a stamina pesa com dois
+em campo"*). **Bloco dono:** **ST-2.27**. **Estado:** aberta.
+
+A regeneração (20/h, DEC-24) fica como está: é ela que segura a emissão. O que
+falta é LEITURA — a tela da run mostra a stamina, mas não quanto cada criatura
+paga por run nem quando a próxima run cheia cabe. Com o XP do banco (ST-2.26a),
+quem fica fora já aprende metade sem pagar, e isso também não está escrito na
+tela. **Por que não cabe agora:** a ST-2.26b é de defeito; isto é desenho de
+tela. **O que a destrava:** nada — é a ST-2.27.
+
+### L-242 — as waves cansam: 30 a 60 s, e o mesmo chefe a cada tentativa
+
+**Registrada em:** 02/10/2026, no 5º relato do dono (*"waves de 30 a 60
+segundos com o mesmo chefe se repetindo cansam"*). **Bloco dono:**
+**ST-2.27**. **Estado:** aberta.
+
+A wave do chefe repete o MESMO chefe em toda tentativa, e a duração da wave não
+encurta quando ela já foi perdida uma vez. Caminhos a medir: a wave repetida
+mais curta (o jogador já viu a luta), um chefe alternativo do elenco a partir da
+2ª tentativa, e o "o chefe aguentou — tentativa N" que o D-149 deixou possível.
+**Por que não cabe agora:** é variedade de conteúdo e ritmo, mexe na emissão
+por hora (a run mais curta paga mais rápido) e precisa de medição própria.
+**O que a destrava:** nada — é a ST-2.27.
+
 ### L-241 — a sonda manual de sabotagem não confere a linha de base
 
 **Registrada em:** 02/10/2026, na ST-2.25. **Bloco dono:** **T15** (arnês —

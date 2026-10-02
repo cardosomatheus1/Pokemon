@@ -2438,6 +2438,31 @@ do servidor. Três partes:
   abertura segue a de antes.
 - **Fica (L-235):** a densidade para quem chega — dez abas e páginas longas.
 
+### ST-2.26b · O chefe que aguenta, e o mover que não recusa o já feito (D-149, D-150) ✅ 02/10
+- **Por quê (o dono, 5º relato):** *"o chefe Beedrill empaca na wave 10 até eu
+  recuar"* e *"um erro 400 novo em /api/idle/mover"*.
+- **Medido:** a run nunca empacou; numa wave perdida o chefe ia a "0/100" com a
+  barra cheia e voltava a 100/100 (812 de 812 waves de chefe perdidas). O 400
+  era o segundo clique perguntando com a criatura já no lugar.
+- **Feito:** (1) D-149: a perdida tira `HP_MOB − sobra` (15 a 45, sem sorteio
+  novo); a barra do mob sem queda é o número; (2) D-150: `motivoDeMover`
+  aceita o que já é verdade; o Time manda um pedido por vez, avisa a recusa e
+  repinta; a Jornada não dá por aplicada a troca recusada.
+- **Testes:** `roteiro-wave` (+1), `run-avanco` (a afirmação da barra cheia
+  virou "barra = número"), `colecao-ops` (+2), `idle-acoes` (as chamadas novas)
+  · S2615–S2620 PEGOU com a linha de base verde; S2043 realvo.
+- **Registrado:** L-242 (waves e chefe repetidos) e L-243 (o custo de stamina
+  por criatura na tela), as duas para a **ST-2.27**.
+- **Mutantes de navegador:** 0 — a decisão do HP mora no motor; a do mover, na
+  camada 0; S2618–S2620 são pegos por leitura de fonte em Node.
+
+### ST-2.27 · A run que não cansa (L-242, L-243) ⏳
+- **Escopo:** a wave repetida mais curta, variedade do chefe a partir da 2ª
+  tentativa, "o chefe aguentou — tentativa N", e o custo de stamina por
+  criatura escrito na tela da run. **Portões:** Q1, Q2, Q4 (a emissão por hora
+  não pode subir sem decisão), Q5. **Sabotagem:** a wave repetida com a mesma
+  duração; o chefe igual na 2ª tentativa.
+
 ### ST-2.26a · O time aprende junto, e o teto não zera a run (D-148, DEC-27) ✅ 02/10
 - **Por quê (o dono, 30 min de progressão):** *"só quem está em campo sobe de
   nível; o Kakuna e o Bellsprout ficaram parados no 7 e no 5, e nenhum inseto
@@ -2461,7 +2486,7 @@ do servidor. Três partes:
 - **Testes:** `time-aprende` (novo, 3) · `run-fim` (+1) · `run-fantasma` (+1) ·
   S2610–S2614 PEGOU (linha de base verde conferida); S2583 realvo.
 - **Fica para a ST-2.26b:** o chefe que "empaca" na wave 10 e o 400 em
-  `/api/idle/mover` (investigação em curso).
+  `/api/idle/mover` — feitos na ST-2.26b (D-149, D-150).
 
 ### ST-2.25 · O que o olhar do dono achou no guia (D-147) ✅ 02/10
 - **Por quê (o dono, conferindo a ST-2.24):** o aviso de versão nova e o

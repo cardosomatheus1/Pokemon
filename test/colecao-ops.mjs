@@ -130,6 +130,36 @@ export async function suite() {
     ok(Object.keys(estadoServidor(c.db, c.u).doces).length > 0, 'soltar não virou doce');
   });
 
+  /* D-150 (o 400 do 5º relato em /api/idle/mover): o segundo clique de um
+     duplo clique pergunta de novo com a criatura JÁ no lugar — e com dois no
+     time, "tirar" duas vezes o mesmo recusava "a equipe não pode ficar vazia".
+     Pedir o que já é verdade é aceite, nos dois lados. */
+  s.teste('D-150 · mover para onde ela já está é aceite, e não recusa — nos dois lados', () => {
+    const c = cena();
+    const [a, b, cc, d, e5, f, g] = c.ids;
+    for (const id of [cc, d, e5, f]) igual(OPS.mover(c, { id, caixa: true }).join(), 'ok,ok', 'o preparo do time de dois');
+    for (const [arg, quem] of [[{ id: a, caixa: true }, 'tirar'], [{ id: a, caixa: true }, 'tirar de novo'],
+                               [{ id: b, caixa: false }, 'pôr quem já está'], [{ id: g, caixa: true }, 'guardar quem já está guardado']]) {
+      const [sv, ap] = OPS.mover(c, arg);
+      igual(sv, 'ok', `${quem}: o servidor recusou "${sv}"`);
+      igual(ap, 'ok', `${quem}: o aparelho recusou "${ap}"`);
+      igual(JSON.stringify(estadoServidor(c.db, c.u)), JSON.stringify(estadoAparelho(c.e)), `${quem}: o estado divergiu`);
+    }
+    igual(criaturasDaConta(c.db, c.u).filter(x => !x.naCaixa).length, 1, 'o time não ficou com um');
+    ok(/vazia/.test(OPS.mover(c, { id: b, caixa: true })[0]), 'a equipe pôde ficar vazia');
+  });
+
+  s.teste('D-150 · a tela do Time diz a recusa, repinta, e manda um pedido por vez', async () => {
+    const { readFileSync } = await import('node:fs');
+    const t = readFileSync(new URL('../app/modules/treino-tela.mjs', import.meta.url), 'utf8');
+    const depois = (t.split('const depois = r =>')[1] ?? '').split('\n};')[0];
+    ok(/avisar\(r\.motivo/.test(depois), 'a recusa do Time segue calada');
+    ok(!/if \(r\?\.ok === false\) return/.test(depois) && /renderTreino\(\)/.test(depois), 'a recusa não repinta: os mesmos botões recusam de novo');
+    ok(/if \(mexendo\) return/.test(t) && !/depois\(await moverNa/.test(t), 'o duplo clique ainda manda dois pedidos');
+    const j = readFileSync(new URL('../app/modules/jornada-tela.mjs', import.meta.url), 'utf8');
+    ok(/r\?\.ok === false\) \{ aplicada = null; avisar/.test(j), 'a correção da Jornada dá por aplicada a troca recusada');
+  });
+
   s.teste('identidade dos golpes: ligar e desligar dá a mesma resposta e o mesmo moveset nos dois lados (ST-13.3b)', () => {
     const c = cena();
     const id = c.ids[1];   // dex 4, nível 15

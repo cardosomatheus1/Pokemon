@@ -33,8 +33,10 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            node tools/olhar-celular.mjs  (capturas em tools/previas/_celular/).
            Próximo do cenário: ST-2.9 (L-231, a Floresta sem árvore na vista).
            ST-2.26a (02/10): o banco aprende metade do XP; D-148 (o teto
-           zerava o XP da run) e DEC-27 (a moeda segue a calibrada). Em curso:
-           ST-2.26b (o chefe que empaca, o 400 em /api/idle/mover).
+           zerava o XP da run) e DEC-27 (a moeda segue a calibrada).
+           ST-2.26b (02/10): D-149 (o chefe da wave perdida aguenta com vida,
+           barra = número) e D-150 (o 400 do mover). Próximo da run: ST-2.27
+           (L-242 waves/chefe repetidos, L-243 custo de stamina na tela).
            DEC-26 (02/10): termos do gênero em inglês ficam (run, wave,
            odds, buff…); o guia usa os da tela.
            ST-2.25 (02/10): os achados do dono no guia + D-147 (o "?" dentro

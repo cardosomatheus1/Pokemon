@@ -142,6 +142,10 @@ const RESPIRO_MS = 1_200;
  * Duas barras na mesma tela com escalas diferentes seriam duas leituras para o
  * mesmo gesto. */
 export const HP_MOB = 100;
+/* Quanto o mob ainda tem quando a wave é PERDIDA (D-149): longe do zero o
+   bastante para ler "ele aguentou", e longe do cheio para os golpes contarem. */
+export const SOBRA_MIN = 15;
+export const SOBRA_MAX = 45;
 
 const inteiro = n => Math.max(0, Math.round(Number(n) || 0));
 const entre = (r, a, b) => a + r() * (b - a);
@@ -255,7 +259,17 @@ export function roteiroDaWave(sorte, { comp, venceu, dano, golpesMeus = 1,
     const passoDoGolpe = meusGolpes > cabem
       ? Math.max(GOLPE_MIN_MS, (fimDoDuelo - t) / (meusGolpes * 2))
       : GOLPE_MS;
-    const tirados = repartir(r, HP_MOB, meusGolpes);
+    /* ── NA PERDIDA, ELE AGUENTA COM VIDA SOBRANDO (D-149) ─────────────
+       Repartir os 100 pontos numa wave em que ninguém cai deixava o chefe
+       em "0/100" de pé, e de volta a 100/100 na tentativa seguinte: o dono
+       leu isso como a run empacada. A sobra sai dos golpes já sorteados e
+       não de um sorteio novo — a mesma semente segue dando o mesmo roteiro
+       nas waves vencidas, e nenhum momento muda de instante. */
+    const sorteados = repartir(r, HP_MOB, meusGolpes);
+    const sobra = SOBRA_MIN + (sorteados[0] * 7 + a.i * 13) % (SOBRA_MAX - SOBRA_MIN + 1);
+    const tirados = venceu === true ? sorteados
+      : sorteados.map(p => Math.max(1, Math.round(p * (HP_MOB - sobra) / HP_MOB)));
+    const piso = venceu === true ? 0 : 1;
     let hpDele = HP_MOB;
     const golpes = [];
 
@@ -264,7 +278,7 @@ export function roteiroDaWave(sorte, { comp, venceu, dano, golpesMeus = 1,
          barra do inimigo descer antes de ver a dele, senão o primeiro golpe da
          wave parece uma emboscada. */
       const tMeu = Math.round(t + entre(r, -GOLPE_FOLGA, GOLPE_FOLGA) / 2);
-      hpDele = Math.max(0, hpDele - tirados[k]);
+      hpDele = Math.max(piso, hpDele - tirados[k]);
       golpes.push({
         t: tMeu, tipo: 'golpe', de: 'meu', i: a.i, dex: a.dex,
         dano: tirados[k], hpAlvo: hpDele,

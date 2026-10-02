@@ -178,6 +178,28 @@ export function suite() {
       `a amostra não teve os dois casos (${vencidas} vencidas, ${perdidas} perdidas)`);
   });
 
+  /* ── D-149 (o item 2 do D-081): NA PERDIDA, O NÚMERO TAMBÉM NÃO CHEGA A ZERO
+     O relato do dono: "o chefe Beedrill empaca na wave 10 até eu recuar". Ele
+     via o chefe em 0/100, parado de 5 a 8 s sem cair, e na tentativa seguinte
+     de volta a 100/100 — 812 de 812 waves de chefe perdidas faziam isso. O
+     roteiro repartia os 100 pontos entre os MEUS golpes mesmo quando ninguém
+     ia cair. Perder é o mob aguentar: sobra vida, e a sobra se lê. */
+  s.teste('D-149 · a perdida deixa vida no mob; a vencida zera quem cai', () => {
+    let perdidas = 0, vencidas = 0;
+    for (let i = 0; i < 80; i++) for (const wave of [3, 10]) {
+      const { r, roteiro } = roteiroReal(7100 + i, wave);
+      const fim = new Map();
+      for (const g of roteiro.momentos) if (g.tipo === 'golpe' && g.de === 'meu') fim.set(g.i, g.hpAlvo);
+      ok(fim.size > 0, 'a wave não teve golpe meu');
+      for (const [mob, hp] of fim) {
+        if (r.venceu) igual(hp, 0, `wave ${wave} vencida: o mob ${mob} caiu com ${hp} de vida`);
+        else naFaixa(hp, 10, 50, `wave ${wave} PERDIDA: o mob ${mob} terminou sem a vida que o fez aguentar`);
+      }
+      if (r.venceu) vencidas++; else perdidas++;
+    }
+    ok(vencidas > 0 && perdidas > 0, `a amostra não teve os dois casos (${vencidas} vencidas, ${perdidas} perdidas)`);
+  });
+
   s.teste('ninguém cai antes de entrar', () => {
     for (let i = 0; i < 60; i++) {
       const { roteiro } = roteiroReal(5000 + i);

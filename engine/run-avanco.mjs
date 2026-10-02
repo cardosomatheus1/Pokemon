@@ -277,9 +277,10 @@ export function avancarRun(run, { elenco, equipe, agora, climaRitmo = 1 }) {
  * o roteiro JÁ decidiu — quanto falta para aquele cair, entre a entrada dele e
  * a queda dele.
  *
- * Sem queda marcada ele está inteiro, e isso não é um caso de borda: numa wave
- * PERDIDA ninguém cai, e as barras ficam cheias. É a leitura certa, porque a
- * wave foi perdida justamente por os mobs não terem sido derrubados.
+ * Sem queda marcada, quem responde é o número que o roteiro grava em cada
+ * golpe (D-149). A versão antiga deixava a barra CHEIA numa wave perdida
+ * enquanto o número descia a 0 — o chefe em "0/100" de pé. Agora o roteiro da
+ * perdida deixa vida sobrando, e barra e número dizem o mesmo: ele aguentou.
  *
  *   > Encenar é distribuir o que já foi decidido. Uma barra que descesse por
  *   > conta própria seria a tela contando outra história. */
@@ -314,7 +315,8 @@ export function cenaDaRun(run, { elenco, equipe, agora, golpesMeus = 1, golpesDe
            anda ou se ela luta — sem isso o mob pararia no meio do caminho ou
            bateria de longe. */
         chegando: t < m.t + APROXIMACAO_MS,
-        vida: vidaDoMob(quedaDe.get(m.i), m.t, t),
+        /* D-149: sem queda marcada, a barra é o NÚMERO — a mesma leitura. */
+        vida: quedaDe.has(m.i) ? vidaDoMob(quedaDe.get(m.i), m.t, t) : hpDoMob(roteiro, m.i, t) / HP_MOB,
         /* O HP EM NÚMERO, e não só a fração. Pedido do dono: *"a barra de HP
            precisa ter número de HP"*. Ele sai do último golpe que já caiu
            sobre este mob — o roteiro carrega o restante em cada golpe, então

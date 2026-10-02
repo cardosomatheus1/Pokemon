@@ -14,6 +14,7 @@
  * rival mostra sempre o mesmo número; o que muda o número é o jogador.
  */
 import { $ } from './dom.mjs';
+import { avisar } from './dialogo.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
@@ -162,7 +163,16 @@ function calcularTrocas(g, estado, rival) {
   setTimeout(passo, 0);
 }
 
-const depois = r => { if (r?.ok === false) return; renderTreino(); try { renderIdle(); } catch { /* aba fechada */ } };
+/* D-150: a recusa DIZ por quê, e a tela se repinta assim mesmo — a recusa
+   quase sempre quer dizer que a tela estava velha (outra aba, outro clique),
+   e calar deixava os mesmos botões a recusar de novo. */
+const depois = r => {
+  if (r?.ok === false) avisar(r.motivo ?? 'não deu para mudar o time — tente de novo');
+  renderTreino(); try { renderIdle(); } catch { /* aba fechada */ }
+};
+/* Um pedido por vez: o duplo clique não manda o segundo. */
+let mexendo = false;
+const umPorVez = async fn => { if (mexendo) return; mexendo = true; try { depois(await fn()); } finally { mexendo = false; } };
 
 document.addEventListener('click', async ev => {
   const adv = ev.target.closest('[data-treino-adv]');
@@ -170,14 +180,16 @@ document.addEventListener('click', async ev => {
   const pr = ev.target.closest('[data-treino-preset]');
   if (pr) { try { localStorage.setItem(CHAVE_PRESET, pr.dataset.treinoPreset); } catch { /* privativo */ } ultimaTroca = null; renderTreino(); return; }
   const tirar = ev.target.closest('[data-time-tirar]');
-  if (tirar) { depois(await moverNa({ id: tirar.dataset.timeTirar, paraCaixa: true })); return; }
+  if (tirar) { umPorVez(() => moverNa({ id: tirar.dataset.timeTirar, paraCaixa: true })); return; }
   const por = ev.target.closest('[data-time-por]');
-  if (por) { depois(await moverNa({ id: por.dataset.timePor, paraCaixa: false })); return; }
+  if (por) { umPorVez(() => moverNa({ id: por.dataset.timePor, paraCaixa: false })); return; }
   const tr = ev.target.closest('[data-trocar-sai]');
   if (tr) {
     const escolhida = trocasNaTela.find(x => x.sai === tr.dataset.trocarSai && x.entra === tr.dataset.trocarEntra);
-    const r = await trocarNa({ sai: tr.dataset.trocarSai, entra: tr.dataset.trocarEntra });
-    if (r?.ok !== false && escolhida) ultimaTroca = textoDaTrocaFeita(escolhida, nomeNaTela);
-    depois(r);
+    umPorVez(async () => {
+      const r = await trocarNa({ sai: tr.dataset.trocarSai, entra: tr.dataset.trocarEntra });
+      if (r?.ok !== false && escolhida) ultimaTroca = textoDaTrocaFeita(escolhida, nomeNaTela);
+      return r;
+    });
   }
 });

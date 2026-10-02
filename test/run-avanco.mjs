@@ -294,8 +294,12 @@ export function suite() {
       perdidas++;
       const fim = cenaDaRun(r, { elenco: ELENCO, equipe: EQUIPE(NIVEL),
         agora: T0 + w.roteiro.duracao });
-      ok(fim.emCena.every(m => m.vida === 1),
-        'a wave foi PERDIDA e as barras dos mobs desceram assim mesmo');
+      /* D-149: a barra e o número contam a MESMA coisa. A versão antiga
+         afirmava a barra cheia — e o número, que sai do roteiro, descia a 0:
+         o chefe em "0/100" com a barra inteira. Perder é ele aguentar com
+         vida sobrando, e as duas leituras dizem quanto. */
+      ok(fim.emCena.every(m => m.vida > 0 && m.vida < 1 && Math.abs(m.vida - m.hp / m.hpMax) < 1e-9),
+        `a wave foi PERDIDA e a barra não diz o que o número diz: ${fim.emCena.map(m => `${m.vida.toFixed(2)} × ${m.hp}/${m.hpMax}`).join(', ')}`);
       ok(fim.emCena.length > 0,
         'a wave foi perdida e não sobrou mob nenhum em pé');
     }

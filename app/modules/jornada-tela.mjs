@@ -11,6 +11,7 @@
  */
 import { especieDe } from '../../engine/especie.mjs';
 import { $ } from './dom.mjs';
+import { avisar } from './dialogo.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
@@ -476,7 +477,8 @@ document.addEventListener('click', async ev => {
     aplicada = { no: correcaoNaTela.no, antes: correcaoNaTela.antes, feito: correcaoNaTela.feito };
     /* A troca pode ir ao servidor (ST-13.5d): repinta quando ela termina. */
     Promise.resolve(aplicarCorrecao(correcaoNaTela, { preset: p => { try { localStorage.setItem('ar_treino_preset', p); } catch { /* sem armazenamento: nada muda */ } }, trocar: t => trocarNa(t) }))
-      .then(renderJornada); return;
+      /* D-150: a troca recusada não vira "aplicada" — diz por quê. */
+      .then(r => { if (r?.ok === false) { aplicada = null; avisar(r.motivo ?? 'a troca não foi feita — tente de novo'); } renderJornada(); }); return;
   }
   const aba = ev.target.closest('[data-treino-aba]');
   if (aba) { mostrarAbaTreino(aba.dataset.treinoAba); return; }

@@ -173,10 +173,10 @@ export async function suite() {
 
   s.teste('a coleção: as telas chamam as ações, e a chave do doce é aceita pelo servidor', () => {
     const chamadas = {
-      'app/modules/treino-tela.mjs': ['depois(await moverNa({ id: tirar', 'depois(await moverNa({ id: por', 'await trocarNa({ sai:'],
+      'app/modules/treino-tela.mjs': ['umPorVez(() => moverNa({ id: tirar', 'umPorVez(() => moverNa({ id: por', 'await trocarNa({ sai:'],   // D-150: um pedido por vez
       'app/modules/doce-tela.mjs': ['await darDoceNa({ pack: PACK', 'await soltarNa({ pack: PACK'],
       'app/modules/moveset-tela.mjs': ["await naContaOu('/api/idle/golpe', { id: b.dataset.cria, nome: b.dataset.golpe }"],
-      'app/modules/jornada-tela.mjs': ['trocar: t => trocarNa(t)', '.then(renderJornada)'],
+      'app/modules/jornada-tela.mjs': ['trocar: t => trocarNa(t)', '} renderJornada(); }); return;'],
       'app/modules/idle-tela.mjs': ['await moverNaTela(E, mv.dataset.mover', '= await evoluirNa(E, PACK, i)', '}, () => E);'],
       'app/modules/idle-foco.mjs': ['novo = await focoNa(estadoDaAba?.() ?? { criaturas: [] }, c, id, Date.now())'],
     };

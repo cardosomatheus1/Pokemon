@@ -7500,3 +7500,46 @@ devia fazer.
 
 **Teste que trava:** `time-aprende` — "D-148 · DEC-27 · com o teto batido, a
 run paga o mesmo XP". S2610, S2613 PEGOU.
+
+## D-149 — o chefe da wave perdida ficava em "0/100" de pé, e voltava a 100/100 ✅ CORRIGIDO na ST-2.26b (02/10)
+
+**Achado:** o dono — *"o chefe Beedrill empaca na wave 10 da Floresta até eu
+recuar"*. É o item 2 do D-081, que estava aberto. **Bloco dono:** ST-2.26b.
+
+**Causa.** A run nunca empacou: o motor sempre a termina. Mas numa wave PERDIDA
+o roteiro repartia os 100 pontos do mob entre os MEUS golpes
+(`roteiro-wave.mjs`), e o mob não cai porque a wave foi perdida — então o
+número chegava a 0/100 e ele ficava de pé de 5 a 8 s; a barra, que lia a
+QUEDA e não o número, seguia cheia (`vidaDoMob` devolvia 1); e na tentativa
+seguinte ele voltava a 100/100. Medido pela investigação: 812 de 812 waves de
+chefe perdidas faziam isso.
+
+**Conserto.** Na perdida, os golpes tiram `HP_MOB − sobra` (sobra de 15 a 45,
+derivada dos golpes já sorteados — nenhum sorteio novo, as vencidas ficam
+idênticas); a barra do mob sem queda É o número. Medido no caso do dono (wave
+10, tentativa 0, perdida): o chefe desce de 100 a 20 e 35, barra e número
+iguais em todo instante.
+
+**Teste que trava:** `roteiro-wave` — "D-149 · a perdida deixa vida no mob; a
+vencida zera quem cai"; `run-avanco` — "a vida do mob desce até a queda dele"
+(a barra é o número). S2615, S2616 PEGOU.
+
+## D-150 — o duplo clique em "tirar do time" virava 400 em /api/idle/mover ✅ CORRIGIDO na ST-2.26b (02/10)
+
+**Achado:** o console do dono, no 5º relato: *"um erro 400 novo em
+/api/idle/mover"*. **Bloco dono:** ST-2.26b.
+
+**Causa.** Três coisas juntas. (1) A regra (`motivoDeMover`) não era
+idempotente: o segundo pedido chegava com a criatura JÁ no lugar e, com dois no
+time, "tirar" duas vezes recusava "a equipe não pode ficar vazia". (2) O Time
+mandava um pedido por clique, sem trava. (3) A recusa era CALADA
+(`if (r?.ok === false) return`), sem repintar — os mesmos botões recusavam de
+novo. E a correção da Jornada dava por "aplicada" a troca recusada.
+
+**Conserto.** Pedir o que já é verdade é aceite, nos dois lados (a regra é uma
+só); um pedido por vez no Time; a recusa abre um aviso com a frase do servidor
+e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
+
+**Teste que trava:** `colecao-ops` — "D-150 · mover para onde ela já está é
+aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
+realvo.

@@ -22,6 +22,9 @@ export const equipeCheiaEm = criaturas => ativas(criaturas).length >= PARTY_MAX;
 export function motivoDeMover(criaturas, id, paraCaixa) {
   const c = (criaturas ?? []).find(x => x.id === id);
   if (!c) return 'essa criatura não existe';
+  /* D-150: pedir o que já é verdade é aceite. O segundo clique de um duplo
+     clique chega com ela JÁ no lugar, e recusá-lo virava um 400 na cara. */
+  if (!!c.naCaixa === !!paraCaixa) return null;
   if (!paraCaixa && equipeCheiaEm(criaturas) && c.naCaixa)
     return `a equipe já tem ${PARTY_MAX} — guarde uma antes de tirar outra`;
   if (paraCaixa && ativas(criaturas).length <= 1) return 'a equipe não pode ficar vazia';
