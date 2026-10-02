@@ -50,6 +50,11 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            stamina (botão "Sair com…"), a Batida que põe o banco a treinar
            (L-244 fechada; D-152, a frase cortada no celular). PRÓXIMO:
            ST-2.27d (D-151: as runs por dia da emissão saindo do motor).
+           Q2 PENDENTE: o `sabotagem:bloco` morria desde a ST-2.22 (D-153,
+           consertado); a fila acumulada é de ~215 defeitos (~2 h). Parado
+           a pedido do dono em 02/10 depois de 76 — o cache guarda os PEGOU.
+           Roda inteiro antes da próxima tag (ou `npm run sabotagem:bloco`
+           numa janela longa).
            D-151: a medição da emissão não vê a regeneração (vai na ST-2.27).
            ST-2.26b (02/10): D-149 (o chefe da wave perdida aguenta com vida,
            barra = número) e D-150 (o 400 do mover). a seguir: ST-2.27, a forma
