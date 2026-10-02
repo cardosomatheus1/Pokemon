@@ -19,6 +19,7 @@ import { estiloItem } from './itens-icone.mjs';
 import { nomesDe } from './itens-nome.mjs';
 import { confirmar as perguntar } from './dialogo.mjs';
 import { escapar as esc } from './grafico.mjs';
+import { introDoMercado } from './guia-dados.mjs';
 import { nivelDe } from '../../engine/nivel-criatura.mjs';
 import { separarOfertaveis, itensNegociaveis } from './trocas-dados.mjs';
 import { abasDoMercado, ORDENS_MERCADO, consultaDaBusca, cartaoDoAnuncio, previaDoAnuncio, previaDaCompra, serieDoAnuncio,
@@ -276,6 +277,7 @@ function pintar() {
   const desligado = M.estado && !M.estado.ligada ? `<p class="trAviso" role="status">${esc(textoDaRecusaDoMercado({ corpo: { reason_code: M.estado.motivo?.reason_code } }))}</p>` : '';
   const loja = M.aba !== 'meus' && M.aba !== 'compras' && M.aba !== 'ordens';
   alvo.innerHTML = `${desligado}
+    <p class="mkIntro">${esc(introDoMercado(PACK))} <button class="guiaQ" type="button" data-guia-secao="mercado">como funciona →</button></p>
     <nav class="mkAbas" aria-label="categorias do Mercado">${abasDoMercado(PACK.rotulos).map(([id, r]) => `<button class="pdxAba${id === M.aba ? ' on' : ''}" data-mk-aba="${id}">${esc(r)}</button>`).join('')}</nav>
     ${loja ? filtrosHtml() : ''}
     ${detalheHtml()}

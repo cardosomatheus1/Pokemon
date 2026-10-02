@@ -47,7 +47,7 @@ function membro(m, podeTirar) {
       <div><b>${m.nome}</b> <span class="tbNv">NV ${m.nivel}</span><div>${m.tipos.map(chip).join('')}</div></div>
       <span class="tbPower" title="poder: a soma das quatro partes abaixo">${m.power.total}</span></div>
     <div class="tbBarra">${partes.map(p => `<i class="p-${p.k}" style="flex:${p.v}"></i>`).join('')}</div>
-    <div class="tbPartes">${partes.map(p => `<span class="p-${p.k}">${p.rotulo} <b>${p.v}</b></span>`).join('')}</div>
+    <div class="tbPartes"><span class="tbIgual">poder ${m.power.total} =</span>${partes.map(p => `<span class="p-${p.k}">${p.rotulo} <b>${p.k === 'potencial' ? '+' : ''}${p.v}</b>${p.k === 'potencial' && m.potencial != null ? ` <i class="tbPot" title="o potencial dela, de 0 a 100 — a soma dos seis valores escondidos que nasceram com ela">(${m.potencial}/100)</i>` : ''}</span>`).join('')}</div>
     <ul class="tbGolpes">${m.golpes.map(g => `<li><b>${g.n}</b> <span>${g.tipo} · ${g.cat} · ${g.p}</span></li>`).join('')}</ul>
     <details class="tbBuild"><summary>ver build</summary>
       <div class="tbFicha">${Object.entries({ vida: 'Vida', atq: 'Ataque', def: 'Defesa', esp: 'Esp. Atq', espDef: 'Esp. Def', vel: 'Velocidade' })

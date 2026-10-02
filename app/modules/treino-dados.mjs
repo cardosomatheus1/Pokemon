@@ -11,6 +11,7 @@
  * que sai em expedição. Montar um segundo time para o treino criaria duas
  * verdades sobre "quem está comigo".
  */
+import { potencialDe } from '../../engine/instancia.mjs';
 import { especieDe } from '../../engine/especie.mjs';
 import { naEquipe, naCaixa } from './idle-dados.mjs';
 import { golpesDaCriatura, movesetDoRival } from './moveset-dados.mjs';
@@ -50,6 +51,9 @@ function cartao(pack, c, nomeDe) {
     id: c.id, dex: c.dex, nome: nomeDe(esp?.n ?? '?'), nivel: c.nivel,
     tipos: (esp?.t ?? []).map(t => ({ t, nome: pack.tipos?.nomes?.[t] ?? t })),
     power: powerDe(pack, c, golpes),
+    /* O potencial da CRIATURA (0–100), ao lado da parte dele no poder (0–10):
+       "potencial 6" sozinho se lia como o potencial dela (ST-2.24). */
+    potencial: Array.isArray(c.iv) ? potencialDe(c.iv) : null,
     golpes: golpes.map(n => { const g = golpeDoPack(pack, n); return { n, tipo: pack.tipos?.nomes?.[g?.t] ?? g?.t, cat: g?.cat === 'fis' ? 'físico' : 'especial', p: g?.p }; }),
     ficha: { vida: f.maxHp, atq: f.atk, def: f.def, esp: f.spa, espDef: f.spd, vel: f.spe },
   };

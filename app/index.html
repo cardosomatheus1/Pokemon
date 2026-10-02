@@ -1042,6 +1042,9 @@ img[data-prestigio="1"]{filter:drop-shadow(0 0 4px rgba(var(--neonRGB),.75))}
 .tbPartes{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:.64rem;color:var(--dim)}
 .tbPartes span::before{content:'';display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--p);margin-right:4px}
 .tbPartes b{color:var(--txt)}
+.tbPartes .tbIgual::before{display:none}
+.tbPartes .tbIgual{color:var(--txt);font-weight:700}
+.tbPartes .tbPot{font-style:normal;color:var(--dim)}
 .tbGolpes{list-style:none;margin:8px 0;padding:0;font-size:.74rem}
 .tbGolpes li span{color:var(--dim);font-size:.66rem}
 .tbBuild summary{font-size:.7rem;color:var(--dim);cursor:pointer}
@@ -8149,6 +8152,28 @@ body.soAssiste .pick{cursor:pointer}
   border-left:3px solid var(--gold);color:var(--txt);font-size:14px;line-height:1.45}
 .idleFimRun[hidden]{display:none}
 #viewIdle.emRun .idleFimRun{display:none}
+
+/* O GUIA (ST-2.24): o índice em chips, cada seção um cartão com termo e
+   explicação lado a lado no largo, empilhados no estreito, e o "ir para" no pé. */
+.guiaIndice{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 18px}
+.guiaIndice a{padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--txt);text-decoration:none;font-size:13px;background:var(--panel2)}
+.guiaIndice a:hover{border-color:var(--gold);color:var(--gold)}
+.guiaSecao{margin:0 0 16px;padding:16px 18px;border-radius:14px;background:var(--panel);border:1px solid var(--line);scroll-margin-top:90px}
+.guiaSecao h3{margin:0 0 4px;color:var(--gold)}
+.guiaResumo{margin:0 0 12px;color:var(--txt);font-size:15px}
+.guiaItens{margin:0;display:grid;gap:10px}
+.guiaItens div{display:grid;grid-template-columns:minmax(150px,210px) 1fr;gap:12px;padding-top:10px;border-top:1px dashed var(--line)}
+.guiaItens dt{font-weight:700;color:var(--txt)}
+.guiaItens dd{margin:0;color:var(--dim);line-height:1.5}
+.guiaIr{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.guiaArenaTit{margin-top:26px}
+@media (max-width:640px){ .guiaItens div{grid-template-columns:1fr;gap:4px} .guiaSecao{padding:14px} }
+/* o "?" que leva ao guia, de qualquer tela */
+.guiaQ{display:inline-block;padding:0 7px;margin-left:4px;border-radius:999px;border:1px solid rgba(var(--goldRGB),.55);background:transparent;color:var(--gold);font:inherit;font-size:11px;line-height:17px;cursor:pointer}
+.guiaQ:hover{background:rgba(var(--goldRGB),.12)}
+.mkIntro{margin:0 0 10px;color:var(--dim);font-size:13px;line-height:1.5}
+.bolsaPapel{margin:6px 0 0}
+.wPapel{margin:8px 0 0;flex-basis:100%}
 </style>
 </head>
 <body>
@@ -8299,6 +8324,10 @@ body.soAssiste .pick{cursor:pointer}
 <div id="viewHow" class="view">
   <div class="page">
     <h2>Como funciona</h2>
+    <!-- ST-2.24: o guia do jogo inteiro (guia-dados.mjs). A página explicava
+         só a aposta da Arena; o passo a passo dela segue abaixo. -->
+    <div id="guiaCorpo"></div>
+    <h3 class="guiaArenaTit" id="guia-arena-passos">A Arena, passo a passo</h3>
     <div class="steps">
       <div class="step"><b>1</b><div><h4>A pool é sorteada</h4>
         <p>Doze lutadores saem dos 76 do elenco (só as formas plenas).
@@ -9405,6 +9434,7 @@ body.soAssiste .pick{cursor:pointer}
         <b id="wBal">0</b>
         <span class="brl" id="wBalBrl">PokéCash</span>
       </div>
+      <p class="tiny wPapel" id="wPapel"></p>
       <button class="btn gold" id="btnWalletDep">Depositar</button>
     </div>
 
@@ -9473,6 +9503,8 @@ import { PACK, ROTULOS } from './modules/motor.mjs';
 import { startFight } from './modules/fases.mjs';
 import { modoServidor, hidratar } from './modules/banco.mjs';
 import { api } from './modules/api.mjs';
+import { pintarGuia } from './modules/guia-tela.mjs';
+import { papelDaMoeda } from './modules/guia-dados.mjs';
 import { ligar as ligarSala, conexao as conexaoDaSala } from './modules/modo-servidor.mjs';
 import { pintarConexao } from './modules/conexao-tela.mjs';
 import { goView, renderSession, sessaoAtiva } from './modules/navegacao.mjs';
@@ -9762,6 +9794,9 @@ async function ligarModoServidor(){
 (async function boot(){
   /* D-145: a aba aberta antes de uma atualização roda a regra velha. */
   api.aoMudarVersao(() => { const b = $('#novaVersao'); if (b) b.hidden = false; });
+  /* ST-2.24: o guia e o papel de cada moeda. */
+  pintarGuia();
+  { const w = $('#wPapel'); if (w) w.innerHTML = `${papelDaMoeda(PACK, 'arena')}. <button class="guiaQ" type="button" data-guia-secao="moedas" data-fechar="#walletModal">as duas moedas →</button>`; }
   $('#btnNovaVersao')?.addEventListener('click', () => location.reload());
   atualizarSaldo();
   $('#btnAuto').classList.add('on');

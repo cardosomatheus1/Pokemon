@@ -9392,6 +9392,32 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-240 — "Minha Coleção" não lista as criaturas
+
+**Registrada em:** 02/10/2026, no Q5 da ST-2.24. **Bloco dono:** **ST-2.20**
+(a densidade para quem chega). **Estado:** aberta.
+
+A aba "Minha Coleção" da Pokédex mostra contagens, medalhas e missões — e
+nenhuma criatura. Quem quer ver o potencial, a natureza e a forma das suas
+precisa saber que elas moram no Centro das Rotas e no Time. **Recomendação:**
+a lista das criaturas da conta (equipe e caixa) com nível, potencial,
+natureza, forma e ✦, ordenável, cada uma levando à ficha. **Por que não cabe
+agora:** a ST-2.24 explica o que existe; esta é uma tela nova. **O que a
+destrava:** nada.
+
+### L-239 — o ✦ quer dizer duas coisas
+
+**Registrada em:** 02/10/2026, na ST-2.24 (levantamento do guia). **Bloco
+dono:** **ST-2.20**. **Estado:** aberta.
+
+Nas Rotas, o ✦ ao lado do potencial é o EXEMPLAR (os seis valores altos de
+saída); nas listas das Trocas e do Mercado, o ✦ antes do nome é o BRILHANTE. O
+guia diz o primeiro; quem passa ao Mercado lê o segundo com a mesma marca.
+**Recomendação:** um símbolo para cada — o brilhante ganha o seu (✧ ou a
+estrela em cor), o exemplar fica com ✦ — e a legenda nos dois lugares. **Por
+que não cabe agora:** mexe em cinco telas e em defeitos plantados que ancoram
+no símbolo. **O que a destrava:** nada.
+
 ### L-238 — a troca entre jogadores existe, e quem chega não a acha
 
 **Registrada em:** 01/10/2026, no segundo relato do dono como jogador novo.
@@ -9425,8 +9451,11 @@ ritmo. **O que a destrava:** decidir se a ordem entra no snapshot da Liga.
 ### L-236 — duas moedas de nome quase igual
 
 **Registrada em:** 01/10/2026, no segundo relato do dono como jogador novo.
-**Bloco dono:** **ST-2.20** (a densidade para quem chega). **Estado:**
-aberta — **pede veredito do dono**.
+**Bloco dono:** **ST-2.20** → feita na **ST-2.24**. **Estado:** ✅ fechada em
+02/10 — o veredito do dono: *"os nomes foi decisão nossa, talvez só tenha que
+ficar mais claro o que cada uma faz"*. Os nomes ficam; o guia ("Como
+funciona") explica as duas, a bolsa diz o papel do PokéCoin, a carteira o do
+PokéCash, e cada uma leva ao guia.
 
 *"Ter duas moedas com nomes tão parecidos, PokéCash na Arena e PokéCoin nas
 rotas e na Loja, também pode confundir."* Os dois nomes são decisão do dono

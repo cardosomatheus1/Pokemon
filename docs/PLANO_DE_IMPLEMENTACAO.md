@@ -2438,6 +2438,33 @@ do servidor. Três partes:
   abertura segue a de antes.
 - **Fica (L-235):** a densidade para quem chega — dez abas e páginas longas.
 
+### ST-2.24 · O guia: o que cada coisa faz (L-236) ✅ 02/10
+- **Por quê (o dono):** *"os nomes foi decisão nossa, talvez só tenha que ficar
+  mais claro o que cada uma faz; não vi direito a parte dos [bichos], IVs etc.,
+  o mercado entre jogadores etc."*
+- **Olhado antes (Q5):** "Como funciona" explicava só a aposta da Arena; o
+  Mercado abria num formulário de busca sem uma frase; "potencial" era 68/100
+  nas Rotas e 6 no cartão do Time (a parte dele no poder); "Minha Coleção" não
+  lista criatura nenhuma (L-240).
+- **Feito:** `guia-dados.mjs` (camada 0) monta o guia do jogo inteiro — as duas
+  moedas (e o PC-T: de onde vem, para que serve), as Rotas, a criatura
+  (nível, potencial 0–100 como soma dos seis valores escondidos, forma,
+  natureza, ✦ exemplar, brilhante, e a parte do potencial no poder), a Jornada
+  e o Time, as Trocas, o Mercado e a Arena —, cada seção com "ir para" que abre
+  a vista NA aba certa. Os nomes saem do pack e os números das constantes das
+  regras (taxas, PC-T da jornada, portas, exemplar). `guia-tela.mjs` pinta.
+  "?" que levam ao guia: o potencial do Centro, a linha do papel da moeda na
+  bolsa, a carteira e o topo do Mercado (que agora diz o que é, em que se paga
+  e quanto custa). O cartão do Time: "poder 111 = nível 10 · espécie 53 ·
+  golpes 42 · potencial +6 (59/100)". O passo a passo da Arena fica abaixo.
+- **Testes:** `guia` (novo, 4) · S2597–S2602, todos PEGOU. **Q5:** o guia em
+  1440 e 420 (lido); guia → Mercado abre na aba Mercado, guia → Jornada na
+  Jornada, os "?" do Mercado e do Centro caem na seção certa; sem pageerror.
+  **Mutantes de navegador:** 1 não plantado (a chave da aba lembrada em
+  `guia-tela.mjs` — só o clique a vê; coberto pela sonda do Q5).
+- **Fica:** L-239 (o ✦ é exemplar nas Rotas e brilhante no Mercado) e L-240
+  (Minha Coleção sem a lista das criaturas), as duas na ST-2.20.
+
 ### ST-2.23 · A curva do começo (L-233) ✅ 01/10
 - **Por quê (o relato do dono, 26 min focado em progressão):** *"o Bulbasaur
   está só no nível 4, nada evoluiu e não cheguei a nenhum chefe; o próximo nó
@@ -2526,7 +2553,7 @@ do servidor. Três partes:
 - **Fica (L-236, L-237, L-238):** as duas moedas de nome parecido (pede o
   veredito do dono), a ordem do time (ST-10.7b), e o caminho até a Trocas.
 
-### ST-2.20 · A densidade para quem chega (L-235, L-236, L-238) — proposta
+### ST-2.20 · A densidade para quem chega (L-235, L-238, L-239, L-240) — proposta
 - Um caminho de quem chega: menos abas visíveis até a primeira vitória da
   jornada, e as páginas longas em seções recolhidas.
 - As duas moedas sempre com símbolo e, no começo, com o papel ao lado

@@ -39,6 +39,7 @@ import { nomesDe } from './itens-nome.mjs';
 import { estiloDa, classeDa, daFaixa } from './raridade.mjs';
 import { resumoDaBolsa } from './bolsa-resumo.mjs';
 import { fraseDoFim } from './run-fim.mjs';
+import { papelDaMoeda } from './guia-dados.mjs';
 
 /* A espécie pelo dex. Uma função e não uma busca solta: ela é chamada dentro de
    template, e busca solta ali vira `undefined.n` no dia em que o pack mudar. */
@@ -218,7 +219,7 @@ export function pintarCentro(E) {
     <button class="idleGuardado" data-mover="${c.id}" data-para="${guardado ? '0' : '1'}">
       ${dexImg(c.dex, esp(c.dex).n, 'class=\"idleCriaArte\"', c.shiny === true)}
       <span class="idleCriaNome">${nomeExibido(esp(c.dex).n)}</span>
-      <span class="tiny">nv ${c.nivel ?? 1} · potencial ${c.potencial}${c.exemplar ? ' ✦' : ''}</span>
+      <span class="tiny">nv ${c.nivel ?? 1} · potencial ${c.potencial}/100${c.exemplar ? ' ✦' : ''} <button class="guiaQ" type="button" data-guia-secao="criatura" title="o que é o potencial?">?</button></span>
       <span class="idleAcao">${guardado ? '→ equipe' : '→ caixa'}</span>
     </button>`;
 
@@ -322,7 +323,8 @@ export function pintarBolsa(E) {
   const coisas = lista.filter(i => !eGastavel(i));
 
   alvo.innerHTML = lista.length
-    ? (gastaveis.length ? `<div class="bolsaGasta">${gastaveis.map(i => ficha(i, 'gasta')).join('')}</div>` : '')
+    ? (gastaveis.length ? `<div class="bolsaGasta">${gastaveis.map(i => ficha(i, 'gasta')).join('')}</div>
+        <p class="tiny bolsaPapel">${papelDaMoeda(PACK, 'pve')}. <button class="guiaQ" type="button" data-guia-secao="moedas">as duas moedas →</button></p>` : '')
       + (coisas.length ? `<div class="bolsaCoisas">${coisas.map(i => ficha(i, 'coisa')).join('')}</div>` : '')
     : '<p class="tiny">A mochila está vazia. O que a expedição traz cai aqui.</p>';
 
