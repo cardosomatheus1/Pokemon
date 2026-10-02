@@ -35,8 +35,9 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            ST-2.26a (02/10): o banco aprende metade do XP; D-148 (o teto
            zerava o XP da run) e DEC-27 (a moeda segue a calibrada).
            ST-2.26b (02/10): D-149 (o chefe da wave perdida aguenta com vida,
-           barra = número) e D-150 (o 400 do mover). Próximo da run: ST-2.27
-           (L-242 waves/chefe repetidos, L-243 custo de stamina na tela).
+           barra = número) e D-150 (o 400 do mover). PRÓXIMO: ST-2.27, a forma
+           do dia (DEC-28: as Rotas se esgotam em ~35 min; medir 1 h × 3
+           visitas × maratona antes de mexer — L-242, L-243, L-244).
            DEC-26 (02/10): termos do gênero em inglês ficam (run, wave,
            odds, buff…); o guia usa os da tela.
            ST-2.25 (02/10): os achados do dono no guia + D-147 (o "?" dentro

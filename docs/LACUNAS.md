@@ -9392,6 +9392,20 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-244 — o dia das Rotas se esgota em ~35 minutos
+
+**Registrada em:** 02/10/2026 (o dono: *"não quero o cara entrando no jogo por
+1h e deixando 23h parado"*). **Bloco dono:** **ST-2.27** (DEC-28).
+**Estado:** aberta.
+
+Medido: run de ~5,4 min com 5 encontros; o teto de 30 encontros fecha na 6ª
+run, a stamina de um time de três na 6ª–7ª e o rendimento cai da 7ª — os três
+juntos, em ~35 min. Depois, uma run a cada 69 min, sem captura até a janela de
+24 h do teto andar. A stamina já premia voltar (cheia em 5 h); a janela de 24 h
+não. **Por que não cabe agora:** mexe na emissão e precisa da medida dos três
+jogadores antes. **O que a destrava:** nada — é a ST-2.27, primeira da fila
+das Rotas.
+
 ### L-243 — a stamina pesa com dois em campo, e a tela não diz o custo de cada um
 
 **Registrada em:** 02/10/2026, no 5º relato do dono (*"a stamina pesa com dois

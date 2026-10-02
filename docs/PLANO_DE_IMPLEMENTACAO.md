@@ -2456,12 +2456,27 @@ do servidor. Três partes:
 - **Mutantes de navegador:** 0 — a decisão do HP mora no motor; a do mover, na
   camada 0; S2618–S2620 são pegos por leitura de fonte em Node.
 
-### ST-2.27 · A run que não cansa (L-242, L-243) ⏳
-- **Escopo:** a wave repetida mais curta, variedade do chefe a partir da 2ª
-  tentativa, "o chefe aguentou — tentativa N", e o custo de stamina por
-  criatura escrito na tela da run. **Portões:** Q1, Q2, Q4 (a emissão por hora
-  não pode subir sem decisão), Q5. **Sabotagem:** a wave repetida com a mesma
-  duração; o chefe igual na 2ª tentativa.
+### ST-2.27 · A forma do dia: a run que não cansa e o dia que não se esgota em 35 min (DEC-28, L-242, L-243, L-244) ⏳
+- **Por quê:** o 5º relato (*"waves de 30 a 60 s com o mesmo chefe cansam"*,
+  *"a stamina pesa com dois em campo"*) e o dono, 02/10: *"não quero o cara
+  entrando no jogo por 1h e deixando 23h parado"*.
+- **Primeiro, a medida (antes de qualquer alavanca):** `test/forma-do-dia.mjs`
+  simula os três jogadores da DEC-28 e fotografa capturas, XP, moeda e
+  "minutos até ter algo de valor de novo". Hoje: tudo em ~35 min.
+- **Alavancas, nesta ordem, cada uma medida contra a foto:** (1) o teto de
+  encontros vira um BANCO que enche por hora (mesmos 30 por dia, guardando até
+  um teto) em vez da janela de 24 h — quem volta encontra captura de novo;
+  (2) a tela diz QUANDO volta o que vale (a próxima run cheia, o próximo
+  encontro), com o custo de stamina por criatura (L-243); (3) a wave repetida
+  mais curta, o chefe variando da 2ª tentativa e "o chefe aguentou —
+  tentativa N" (L-242); (4) com a stamina vazia, a cena das Rotas mostra o
+  treino por hora que já existe (`XP_POR_HORA_TREINO`) em vez de parar.
+- **Portões:** Q1, Q2, Q4 (a emissão do diário e do maratona; número velho ao
+  lado do novo no commit), Q5 (a tela da run e a das Rotas sem stamina).
+  **Sabotagem:** o banco que não enche; a wave repetida com a mesma duração; o
+  chefe igual na 2ª tentativa; o "volta às HH:MM" errado.
+- **Fora:** mudar a regeneração da stamina (DEC-24 fica) e a moeda depois do
+  teto (DEC-27 fica).
 
 ### ST-2.26a · O time aprende junto, e o teto não zera a run (D-148, DEC-27) ✅ 02/10
 - **Por quê (o dono, 30 min de progressão):** *"só quem está em campo sobe de
@@ -3050,6 +3065,20 @@ desta tabela.
 - ✅ **XP do banco: o time aprende junto** (ST-2.26, recomendação minha): quem
   está no time e não foi à run aprende metade do XP dela, sem stamina e sem
   vínculo; a caixa não aprende.
+- ✅ **DEC-28 · a forma do dia é critério de desenho** (o dono, 02/10: *"não
+  quero o cara entrando no jogo por 1h e deixando 23h parado"*). Medido hoje
+  (Floresta, 2 em campo, 3 no time): a run dura ~5,4 min e dá 5 encontros; os
+  30 encontros do dia acabam na 6ª run, a stamina do time acaba na 6ª–7ª, e o
+  rendimento cai a partir da 7ª — **os três freios fecham juntos, em ~35
+  min**. Depois disso: uma run a cada 69 min de recarga, sem captura até a
+  janela de 24 h do teto andar, e a moeda só dos abates. A stamina já tem o
+  ritmo certo (barra cheia em 5 h: quem volta a cada 5 h usa tudo); quem
+  esvazia o resto do dia é a JANELA DE 24 H do teto de encontros. Regra que
+  fica: toda mudança de ritmo ou emissão mede três jogadores — **uma sessão
+  de 1 h · três visitas de 15 min espalhadas · o maratona** — e o alvo é as
+  três visitas renderem pelo menos o que a sessão única rende, sem o maratona
+  passar do que tira hoje (DEC-14). Recomendação minha, seguida como padrão;
+  é a ST-2.27.
 - **Ainda do dono, e com recomendação escrita como padrão:** a taxa shiny (R18),
   o orçamento da Master Ball, os limites/cooldown/taxas finais (baselines da
   spec §11 e §16 até o gate C medir).
