@@ -36,7 +36,7 @@ import { linhaDaRun, noHistorico } from './historico-dados.mjs';
    que o servidor chama. Reexportadas aqui porque é por este endereço que o
    resto do jogo as conhece. */
 import { PERFIL_DO_AVANCO, paraOMotor, elencoDaRun, equipeDoMotor,
-         runComecada, runNoInstante, runCurada, contaDaRun } from './avanco-conta.mjs';
+         runComecada, runNoInstante, runCurada, contaDaRun, bancoDaRun } from './avanco-conta.mjs';
 export { PERFIL_DO_AVANCO, paraOMotor, elencoDaRun };
 
 export const runDe = e => e?.run ?? null;
@@ -257,6 +257,7 @@ export function colherAvancoDaRun(e, { pack, agora, raiz = novaRaiz() }) {
   const c = contaDaRun(pack, {
     run, motor: equipeDaRun(e, pack, run), avancos: e.avancos, raiz, agora,
     criaturas: (run.equipe ?? []).map(id => acharCriatura(e, id)).filter(Boolean),
+    banco: bancoDaRun(e.criaturas, run),   // ST-2.26: o time aprende junto
   });
   for (const k of c.stamina) Object.assign(acharCriatura(e, k.id), { stamina: k.stamina, staminaEm: k.staminaEm });
   for (const k of c.credito) Object.assign(acharCriatura(e, k.id), { xp: k.xp, nivel: k.nivel, vinculo: k.vinculo });

@@ -2438,6 +2438,31 @@ do servidor. Três partes:
   abertura segue a de antes.
 - **Fica (L-235):** a densidade para quem chega — dez abas e páginas longas.
 
+### ST-2.26a · O time aprende junto, e o teto não zera a run (D-148, DEC-27) ✅ 02/10
+- **Por quê (o dono, 30 min de progressão):** *"só quem está em campo sobe de
+  nível; o Kakuna e o Bellsprout ficaram parados no 7 e no 5, e nenhum inseto
+  chega ao nível 10 pra evoluir"*; *"a Jornada tem outro paredão: o Rival da
+  Rota 22 aparece com menos de 1%"*; *"o limite diário de encontros zera a run
+  sem avisar: +2 XP e nenhuma moeda"*; e o aviso de versão nova não apareceu.
+- **Medido:** o time do dono hoje contra o Rival (9/9): 2%. O MESMO time com o
+  Kakuna evoluído (Bulbasaur 10, Beedrill 10, Bellsprout 7): 99%. O paredão era
+  o banco não aprender — o Rival fica como está (DEC-25).
+- **Feito:** (1) o banco aprende metade do XP da run (`XP_DO_BANCO`, sem
+  stamina, sem vínculo; a caixa não); (2) D-148: o XP da run é dos encontros
+  vistos, valendo para o teto ou não; a moeda segue a calibrada (DEC-27); a
+  tela da run e a frase do fim dizem o que o teto tira; (3) a aba pergunta a
+  versão à `/saude` a cada 3 min e ao voltar para ela.
+- **Fixtures regravadas (medição):** `emissao-idle` — XP/dia do diário 482,9 →
+  1.434,9 (estágio 1) e 727,1 → 1.441,1 (estágio 3); do maratona 1.180,7 →
+  14.759 e 1.460,6 → 14.801; a moeda do maratona 1.535,57 → 1.549,43 e os
+  drops dele um pouco acima (as criaturas sobem e o simulador muda de
+  estágio). `antifraude` — a banda do maratona no estágio 1: 17,1 → 16,44
+  capturas/dia, 26,57 → 25,43 encontros.
+- **Testes:** `time-aprende` (novo, 3) · `run-fim` (+1) · `run-fantasma` (+1) ·
+  S2610–S2614 PEGOU (linha de base verde conferida); S2583 realvo.
+- **Fica para a ST-2.26b:** o chefe que "empaca" na wave 10 e o 400 em
+  `/api/idle/mover` (investigação em curso).
+
 ### ST-2.25 · O que o olhar do dono achou no guia (D-147) ✅ 02/10
 - **Por quê (o dono, conferindo a ST-2.24):** o aviso de versão nova e o
   potencial batendo entre Time e Rotas funcionaram; e seis coisas não.
@@ -2988,6 +3013,18 @@ desta tabela.
   mesmos termos da tela e explica o que eles fazem. Desfaz a troca da ST-2.25
   ("cotação", "corrida", "bônus temporário"), que deixava o guia com um nome e
   a Arena com outro. Relatos futuros de "mistura de idiomas" não viram defeito.
+- ✅ **DEC-27 · depois do teto de encontros, o XP segue inteiro e a moeda
+  segue a calibrada** (recomendação minha, seguida como padrão — ST-2.26). O
+  dono: *"depois que o limite bate, uma run rendeu só +2 XP e nenhuma moeda"*
+  (D-148). O XP é progressão, e o desenho já dizia que a stamina e a curva de
+  nível o seguram: XP/dia do diário 483 → 1.435, do maratona 1.181 → 14.759.
+  A moeda é economia calibrada (DEC-14): paga cheia depois do teto, a do
+  maratona iria de 1.536 a 4.668 por dia — fica como estava, e a tela diz
+  "a moeda, só a dos abates". O dono pode pedir a moeda cheia; o número do
+  custo está aqui.
+- ✅ **XP do banco: o time aprende junto** (ST-2.26, recomendação minha): quem
+  está no time e não foi à run aprende metade do XP dela, sem stamina e sem
+  vínculo; a caixa não aprende.
 - **Ainda do dono, e com recomendação escrita como padrão:** a taxa shiny (R18),
   o orçamento da Master Ball, os limites/cooldown/taxas finais (baselines da
   spec §11 e §16 até o gate C medir).

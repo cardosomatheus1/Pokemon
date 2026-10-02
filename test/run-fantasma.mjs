@@ -90,5 +90,11 @@ export function suite() {
     ok(/headers\?\.get\?\.\('x-build'\)/.test(api) && /versaoMudou\(/.test(api), 'a aba não lê a versão das respostas');
   });
 
+  s.teste('ST-2.26 · a aba parada também pergunta a versão: de tempos em tempos e ao voltar', () => {
+    const html = readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
+    ok(/setInterval\(\(\) => \{ if \(!document\.hidden\) api\.get\('\/saude'\); \}, 3 \* 60_000\)/.test(html), 'a aba parada nunca pergunta a versão');
+    ok(/visibilitychange', \(\) => \{ if \(!document\.hidden\) api\.get\('\/saude'\)/.test(html), 'voltar para a aba não pergunta a versão');
+  });
+
   return s;
 }

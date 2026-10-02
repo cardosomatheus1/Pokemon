@@ -9807,6 +9807,10 @@ async function ligarModoServidor(){
 (async function boot(){
   /* D-145: a aba aberta antes de uma atualização roda a regra velha. */
   api.aoMudarVersao(() => { const b = $('#novaVersao'); if (b) b.hidden = false; });
+  /* ST-2.26: uma aba parada numa vista que não chama a API nunca via a versão
+     nova. Pergunta à /saude de tempos em tempos e ao voltar para a aba. */
+  setInterval(() => { if (!document.hidden) api.get('/saude'); }, 3 * 60_000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) api.get('/saude'); });
   /* ST-2.24: o guia e o papel de cada moeda. */
   pintarGuia();
   for (const [sel, modal] of [['#wPapel', '#walletModal'], ['#depPapel', '#depositModal']]) {

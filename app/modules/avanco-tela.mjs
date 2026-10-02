@@ -134,7 +134,7 @@ function pintarAcoes(E, run, cn) {
       `<span class="avVistos" title="a captura acontece no quadro do fim da run">` +
       `⚪ <b>${vistos}</b> espécie(s) para o quadro do fim</span>`) +
     `<span class="dica">${run.semEncontros
-        ? 'sem encontros hoje: a run ainda paga XP, moeda, drops e o baú'
+        ? 'sem encontros hoje: a run ainda paga XP, drops e o baú — a moeda, só a dos abates'
         : 'recuar guarda o que já caiu — só o baú do estágio se perde'}</span>`;
 }
 

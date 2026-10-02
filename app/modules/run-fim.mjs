@@ -35,6 +35,13 @@ function oQueFicou(r, moeda) {
   return partes.length === 1 ? partes[0] : `${partes.slice(0, -1).join(', ')} e ${partes.at(-1)}`;
 }
 
+/* ST-2.26: o dono — "o limite diário de encontros zera a run sem avisar".
+   A run com o teto do dia batido paga XP, moeda e baú, mas não deixa
+   encontro: o fim diz por quê, no mesmo lugar em que diz o que ficou. */
+const teto = r => (r?.semEncontros
+  ? ' O limite de encontros de hoje já tinha sido atingido: a run pagou o XP inteiro, mas a moeda só dos abates e nenhuma criatura para capturar — ele volta amanhã.'
+  : '');
+
 export function fraseDoFim(r, { moeda = 'moedas', nomeDe = () => null } = {}) {
   if (!r?.fim) return null;
   const wave = Math.min(WAVES, Math.max(1, inteiro(r.wave) || 1));
@@ -44,8 +51,8 @@ export function fraseDoFim(r, { moeda = 'moedas', nomeDe = () => null } = {}) {
     .filter(Boolean);
   const subida = subiram.length ? ` ${subiram.join('; ')}.` : '';
   if (r.fim.motivo === 'limpou')
-    return `Estágio limpo! ${ficou ? `${ficou}, e o baú do estágio.` : 'O baú do estágio é seu.'}${subida}`;
+    return `Estágio limpo! ${ficou ? `${ficou}, e o baú do estágio.` : 'O baú do estágio é seu.'}${subida}${teto(r)}`;
   const onde = r.fim.motivo === 'recuou' ? `Você recuou na wave ${wave} de ${WAVES}.` : `A equipe caiu na wave ${wave} de ${WAVES}.`;
   const resto = ficou ? ` Ficou com o que farmou: ${ficou}.` : ' Desta vez não deu para farmar nada.';
-  return `${onde}${resto} Só o baú do estágio ficou para trás.${subida}`;
+  return `${onde}${resto} Só o baú do estágio ficou para trás.${subida}${teto(r)}`;
 }

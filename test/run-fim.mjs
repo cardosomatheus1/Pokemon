@@ -65,5 +65,11 @@ export function suite() {
     ok(/fraseDoFim\(run, \{/.test(p), 'o painel não usa a frase do fim');
   });
 
+  s.teste('ST-2.26 · com o teto do dia batido, o fim diz por que não há encontro', () => {
+    const f = fraseDoFim({ ...run('hp'), encontros: 0, semEncontros: true }, { moeda: 'Créditos' });
+    ok(/limite de encontros de hoje/.test(f) && /volta amanhã/.test(f), `o fim cala sobre o teto: ${f}`);
+    ok(!/limite/.test(fraseDoFim(run('hp'), { moeda: 'Créditos' })), 'o fim fala do teto numa run comum');
+  });
+
   return s;
 }

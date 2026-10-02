@@ -17,7 +17,7 @@
 import { forcaDe, raridadeDe } from '../../engine/bioma.mjs';
 import { elencoDoEstagio } from '../../engine/elenco-estagio.mjs';
 import { novaRun, avancarRun, curarRun, cenaDaRun, resultadoDa } from '../../engine/run-avanco.mjs';
-import { premioDo, ganhoDaRun, POR_ABATE, fatorDoRendimento, runsNoDia, comRendimento } from '../../engine/avanco.mjs';
+import { premioDo, ganhoDaRun, POR_ABATE, fatorDoRendimento, runsNoDia, comRendimento, encontrosDe } from '../../engine/avanco.mjs';
 import { creditar } from '../../engine/nivel-criatura.mjs';
 import { moedasDa, idDaMoeda, idDoMaterial } from '../../engine/economia-idle.mjs';
 import { sortearItens, agrupar } from '../../engine/drops.mjs';
@@ -126,8 +126,24 @@ export function runCurada(pack, run, motor, { cura, agora }) {
  * baú depois, porque a ordem das chaves aparece no save; e os sorteios do
  * rendimento (`sorteioR`) são consumidos na mesma sequência — a moeda, depois
  * cada Essência do baú. */
-export function contaDaRun(pack, { run, criaturas, motor, avancos, raiz, agora }) {
+/* ── O TIME APRENDE JUNTO (ST-2.26) ───────────────────────────────────────
+ * O dono: "só quem está em campo sobe de nível; com um slot só, o XP vai
+ * quase todo pro Bulbasaur, e nenhum inseto chega ao nível 10 pra evoluir".
+ * Quem está no time e não foi à run aprende METADE do XP dela — sem stamina,
+ * sem vínculo e sem encontro, que são de quem foi. A caixa não aprende: o
+ * time é a escolha, e a caixa é o arquivo. */
+export const XP_DO_BANCO = 0.5;
+export const bancoDaRun = (colecao, run) => (colecao ?? []).filter(c => !c.naCaixa && !(run?.equipe ?? []).includes(c.id));
+
+export function contaDaRun(pack, { run, criaturas, banco = [], motor, avancos, raiz, agora }) {
   const premio = premioDo(resultadoDa(run), { encontrosValem: run?.semEncontros !== true });
+  /* D-148 · DEC-27: o XP é do que ACONTECEU na run — os encontros vistos,
+     valendo para o teto ou não. Com o teto batido a conta pagava o XP pelos
+     encontros que valem, zero, e a run rendia "+2 XP": a progressão parava
+     no meio da tarde. A MOEDA segue pelos encontros que valem, como a
+     emissão foi calibrada (DEC-14): medido, pagá-la cheia depois do teto
+     triplicava a moeda do maratona (1.536 → 4.668 por dia). */
+  const vistos = encontrosDe(resultadoDa(run)).length;
   /* O RENDIMENTO DO DIA (ST-3.6, DEC-14): a posição desta run no dia do mundo. */
   const naJanela = runsNoDia(avancos, agora) + 1;
   const fator = fatorDoRendimento(naJanela);
@@ -145,11 +161,16 @@ export function contaDaRun(pack, { run, criaturas, motor, avancos, raiz, agora }
 
   /* O XP pela MESMA função da expedição; o clima entra DEPOIS da conta, e não
      dentro dela — `ganhoDaRun` é a régua partilhada com a expedição. */
-  const ganhoCru = ganhoDaRun({ abates: premio.abates, encontros: premio.encontros.length, perfil: PERFIL_DO_AVANCO });
+  const ganhoCru = ganhoDaRun({ abates: premio.abates, encontros: vistos, perfil: PERFIL_DO_AVANCO });
   const ganho = { ...ganhoCru, xp: Math.round(aplicarClima(ganhoCru.xp, bonusClima, 'xp')) };
   const credito = [], subiram = [];
   for (const c of criaturas) {
     const novo = creditar(c, { xp: ganho.xp, vinculo: VINCULO_DA_RUN });
+    credito.push({ id: c.id, xp: novo.xp, nivel: novo.nivel, vinculo: novo.vinculo });
+    if (novo.subiu > 0) subiram.push({ id: c.id, para: novo.nivel, quantos: novo.subiu });
+  }
+  for (const c of banco) {
+    const novo = creditar(c, { xp: Math.round(ganho.xp * XP_DO_BANCO) });
     credito.push({ id: c.id, xp: novo.xp, nivel: novo.nivel, vinculo: novo.vinculo });
     if (novo.subiu > 0) subiram.push({ id: c.id, para: novo.nivel, quantos: novo.subiu });
   }

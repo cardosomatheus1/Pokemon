@@ -28,7 +28,7 @@ import { emCurso, recuarRun } from '../engine/run-avanco.mjs';
 import { podeAvancar, cabeAvanco, STAMINA_DO_AVANCO, curaDe } from '../engine/avanco.mjs';
 import { EQUIPE_MAX } from '../engine/expedicao.mjs';
 import { estagioAberto, nivelDoEstagio, estagioMaximo } from '../engine/estagios.mjs';
-import { equipeDoMotor, runComecada, runNoInstante, runCurada, contaDaRun } from '../app/modules/avanco-conta.mjs';
+import { equipeDoMotor, runComecada, runNoInstante, runCurada, contaDaRun, bancoDaRun } from '../app/modules/avanco-conta.mjs';
 import { exigirSemReserva } from './reservas.mjs';
 import { criaturasDaConta, estadoDoTeto, emCampo, creditarBolsa, debitarBolsa, creditarRegistro, quantosNaBolsa, shinyDoEncontro } from './idle.mjs';
 
@@ -152,6 +152,7 @@ export function colherRun(db, { userId, pack, agora, raiz = novaRaiz() }) {
   const c = contaDaRun(pack, {
     run, motor: equipeDoMotor(pack, run, colecao), avancos: avancosDe(db, userId, agora), raiz, agora,
     criaturas: (run.equipe ?? []).map(k => colecao.find(x => x.id === k)).filter(Boolean),
+    banco: bancoDaRun(colecao, run),   // ST-2.26: o time aprende junto
   });
   const colhida = { ...run, colhidaEm: agora, semente: String(raiz), encontros: c.encontros, rendeu: c.rendeu };
 

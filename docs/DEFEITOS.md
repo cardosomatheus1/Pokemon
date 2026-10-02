@@ -7471,3 +7471,32 @@ Botão dentro de botão só aparece no DOM que o navegador monta.
 
 **Teste que trava:** `guia` — "D-147 · nenhum botão dentro do cartão da
 criatura". S2608 PEGOU.
+
+## D-148 — com o teto de encontros do dia batido, a run rendia "+2 XP" ✅ CORRIGIDO na ST-2.26 (02/10)
+
+**Achado:** o dono, jogando como jogador novo — *"o limite diário de encontros
+zera a run sem avisar. Depois que ele bate, uma run rendeu só +2 XP e nenhuma
+moeda"*. **Bloco dono:** ST-2.26.
+
+**Causa.** O L-151 manda a run seguir rendendo depois do teto — o teto limita a
+CAPTURA (os encontros que viram pendentes e a conta do dia) — e a tela dizia
+"sem encontros hoje: a run ainda paga XP, moeda, drops e o baú". Mas a conta
+(`contaDaRun`) pagava o XP pelos encontros que VALEM, e com o teto batido eles
+são zero: sobrava a fração dos abates, 1/30 de encontro cada.
+
+**Medido** (a emissão do idle, 7 dias): o XP do diário 482,9 → 1.434,9 por
+dia; o do maratona 1.180,7 → 14.759 — que é o que o desenho sempre disse ("o
+XP não: a stamina e a curva de nível já o seguram", DEC-14). A moeda: paga
+cheia depois do teto, a do maratona ia de 1.536 a 4.668 por dia; por isso ela
+SEGUE pelos encontros que valem (DEC-27), e a tela passou a dizer isso.
+
+**Conserto.** O XP é dos encontros vistos; a moeda, dos que valem (a
+calibrada); a tela da run e a frase do fim dizem o que o teto tira.
+
+**Por que a suíte não viu.** A medição da emissão FOTOGRAFAVA o defeito: ela
+foi gravada com o XP zerando depois do teto, e todo bloco seguinte conferiu
+contra a foto. Fixture de medição guarda o que o motor faz, não o que ele
+devia fazer.
+
+**Teste que trava:** `time-aprende` — "D-148 · DEC-27 · com o teto batido, a
+run paga o mesmo XP". S2610, S2613 PEGOU.
