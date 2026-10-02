@@ -76,8 +76,10 @@ export const STAMINA_MAX = 100;
    criatura só — que é o jogador novo inteiro — eram 4 runs e três horas de
    espera por run. Em 20: um estágio a cada ~70 min, cheia em 5 h. O teto do
    dia não depende disto: o rendimento cai da 7ª run em diante (DEC-14) e os
-   encontros param em 30 (§P5). */
-export const REGEN_POR_HORA = 20;
+   encontros param em 30 (§P5).
+   30/h (DEC-29, 02/10): o dono — "ainda não sei se tá bom, suba um pouco mais
+   essa stamina, bote 30/h". Um estágio (23) a cada ~46 min, cheia em ~3 h 20. */
+export const REGEN_POR_HORA = 30;
 export const EQUIPE_MAX = 3;
 export const SIMULTANEAS_INICIAIS = 1;
 export const SIMULTANEAS_MAX = 4;

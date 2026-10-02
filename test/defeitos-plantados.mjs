@@ -10331,9 +10331,9 @@ export const DEFEITOS = [
   { id:'S2533', arquivo:'app/modules/avanco-barras.mjs', nome:"o XP da run não soma o ganho",
     real:"a barra de XP parada no nível de antes até o fim da run",
     de:"progresso((Number(xpAtual) || 0) + g);", para:"progresso(Number(xpAtual) || 0);" },
-  { id:'S2534', arquivo:'engine/expedicao.mjs', nome:"a regeneração volta a 8/h",
+  { id:'S2534', arquivo:'engine/expedicao.mjs', nome:"a regeneração volta a 20/h (DEC-29)",
     real:"um estágio a cada três horas para quem só tem a inicial",
-    de:"export const REGEN_POR_HORA = 20;", para:"export const REGEN_POR_HORA = 8;" },
+    de:"export const REGEN_POR_HORA = 30;", para:"export const REGEN_POR_HORA = 20;" },
   { id:'S2535', arquivo:'app/modules/idle-paineis.mjs', nome:"a linha da bolsa embaixo da cena fica vazia",
     real:"'onde vejo meus itens?' — de novo",
     de:"    atalho.textContent = r.texto; atalho.classList.toggle('vazia', r.vazia); atalho.hidden = false;\n", para:"" },
@@ -10605,6 +10605,10 @@ export const DEFEITOS = [
   { id:'S2620', arquivo:'app/modules/jornada-tela.mjs', nome:'a correção recusada passa por aplicada',
     real:'a Jornada diz "trocado" quando o servidor recusou a troca',
     de:'if (r?.ok === false) { aplicada = null; avisar(', para:'if (false) { aplicada = null; avisar(' },
+  /* ── DEC-29 · a stamina regenera 30/h ── */
+  { id:'S2621', arquivo:'app/index.html', nome:'a tela segue dizendo 20/h',
+    real:'o rótulo da stamina promete uma recarga que o motor não faz',
+    de:'regenera 30/h</span>', para:'regenera 20/h</span>' },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',

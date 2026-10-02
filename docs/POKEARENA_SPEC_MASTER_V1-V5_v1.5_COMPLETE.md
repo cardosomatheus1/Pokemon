@@ -1762,7 +1762,7 @@ reativo.
 HP        DENTRO do avanço. cai a cada wave. poção levanta.
           zerou -> o avanço PARA na wave alcançada
 STAMINA   ENTRE avanços. ~~3 por wave, 8 na do chefe = 35~~ 2 por wave, 5 no chefe = 23 por estágio limpo (vigente, ver §7.22.4).
-          regenera ~~8/h~~ 20/h (DEC-24, 01/10/2026 — ver abaixo)
+          regenera ~~8/h~~ ~~20/h~~ 30/h (DEC-24, 01/10; DEC-29, 02/10/2026 — ver abaixo)
 ```
 
 > **Atualizado em 01/10/2026 (DEC-24).** A regeneração passou de 8/h para
@@ -1771,6 +1771,11 @@ STAMINA   ENTRE avanços. ~~3 por wave, 8 na do chefe = 35~~ 2 por wave, 5 no ch
 > lenta". Em 20 é um estágio a cada ~70 min e a barra cheia em 5 h. O teto do dia
 > continua nos dois freios que já existiam: o rendimento decrescente da 7ª run
 > em diante (DEC-14) e os 30 encontros do §P5.
+
+> **Atualizado em 02/10/2026 (DEC-29).** O dono: *"ainda não sei se tá bom,
+> suba um pouco mais essa stamina, bote 30/h"*. Em 30/h, um estágio a cada
+> ~46 min e a barra cheia em ~3 h 20. Os freios do dia seguem os mesmos (DEC-14
+> e os 30 encontros); o efeito medido na emissão está na DEC-29 do PLANO.
 
 Com 100 de stamina e 35 por avanço, **uma criatura faz 2 avanços e para**. Os 5
 do teto exigem no mínimo 3 criaturas — o que mantém a regra do §7.13 de que *o

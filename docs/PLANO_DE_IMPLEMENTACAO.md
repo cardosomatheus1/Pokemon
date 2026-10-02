@@ -2475,8 +2475,10 @@ do servidor. Três partes:
   lado do novo no commit), Q5 (a tela da run e a das Rotas sem stamina).
   **Sabotagem:** o banco que não enche; a wave repetida com a mesma duração; o
   chefe igual na 2ª tentativa; o "volta às HH:MM" errado.
-- **Fora:** mudar a regeneração da stamina (DEC-24 fica) e a moeda depois do
-  teto (DEC-27 fica).
+- **Inclui o D-151:** as runs por dia dos perfis da emissão passam a sair do
+  motor (`REGEN_POR_HORA`), e a fixture se regrava com o número velho ao lado.
+- **Fora:** mudar a regeneração da stamina (DEC-29 fica: 30/h) e a moeda
+  depois do teto (DEC-27 fica).
 
 ### ST-2.26a · O time aprende junto, e o teto não zera a run (D-148, DEC-27) ✅ 02/10
 - **Por quê (o dono, 30 min de progressão):** *"só quem está em campo sobe de
@@ -3079,6 +3081,15 @@ desta tabela.
   três visitas renderem pelo menos o que a sessão única rende, sem o maratona
   passar do que tira hoje (DEC-14). Recomendação minha, seguida como padrão;
   é a ST-2.27.
+- ✅ **DEC-29 · a stamina regenera 30/h** (era 20, DEC-24). Decisão do dono,
+  02/10: *"ainda não sei se tá bom, suba um pouco mais essa stamina, bote
+  30/h"*. Medido: uma run de volta a cada **46 min** (era 69), barra cheia em
+  **3 h 20** (era 5 h); a sessão de 1 h com três no time faz 7 runs (eram 6) —
+  o teto de 30 encontros segue fechando na 6ª, e isso é a ST-2.27. O
+  maratona (6 criaturas, 2 em campo, a stamina do dia toda): 62 → 93 runs; o
+  XP acompanha (+50%), a moeda e a Essência sobem só **+14%** (11,13 → 12,68
+  runs-cheias) porque o rendimento decrescente (DEC-14) segura. A medição da
+  emissão não viu nada disso — D-151.
 - **Ainda do dono, e com recomendação escrita como padrão:** a taxa shiny (R18),
   o orçamento da Master Ball, os limites/cooldown/taxas finais (baselines da
   spec §11 e §16 até o gate C medir).

@@ -34,6 +34,8 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            Próximo do cenário: ST-2.9 (L-231, a Floresta sem árvore na vista).
            ST-2.26a (02/10): o banco aprende metade do XP; D-148 (o teto
            zerava o XP da run) e DEC-27 (a moeda segue a calibrada).
+           DEC-29 (02/10, o dono): a stamina regenera 30/h (era 20).
+           D-151: a medição da emissão não vê a regeneração (vai na ST-2.27).
            ST-2.26b (02/10): D-149 (o chefe da wave perdida aguenta com vida,
            barra = número) e D-150 (o 400 do mover). PRÓXIMO: ST-2.27, a forma
            do dia (DEC-28: as Rotas se esgotam em ~35 min; medir 1 h × 3

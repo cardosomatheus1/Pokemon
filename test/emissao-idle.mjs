@@ -276,5 +276,17 @@ export function suite() {
       'a tela não mostra o rendimento antes da run — ele cairia sem aviso');
   });
 
+  /* D-151 — AFIRMADO DE PROPÓSITO. Os perfis guardam as runs por dia de quando
+     a stamina regenerava 8/h (192/dia/criatura → 8 runs). Desde a DEC-24 (20/h)
+     e a DEC-29 (30/h) o teto real é outro, e esta medição não vê a regeneração:
+     a DEC-29 passou com a fixture intocada. Fica VERMELHO quando a ST-2.27
+     derivar as runs do motor — aí este teste vira o que afirma o conserto. */
+  s.teste('D-151 (afirmado de propósito): o maratona ainda mede 8 runs por criatura, de quando a stamina era 8/h', async () => {
+    const { REGEN_POR_HORA } = await import('../engine/expedicao.mjs');
+    const { STAMINA_DO_AVANCO } = await import('../engine/avanco.mjs');
+    igual(PERFIS.maratona.avancos, 8, 'D-151 consertado? a medição passou a derivar as runs — atualize o teste e o DEFEITOS');
+    ok(Math.floor(24 * REGEN_POR_HORA / STAMINA_DO_AVANCO) > PERFIS.maratona.avancos, 'a regeneração voltou a caber em 8 runs');
+  });
+
   return s;
 }

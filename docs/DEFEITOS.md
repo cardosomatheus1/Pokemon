@@ -7543,3 +7543,28 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 **Teste que trava:** `colecao-ops` — "D-150 · mover para onde ela já está é
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
+
+## D-151 — a medição da emissão não vê a regeneração da stamina ⏳ ABERTO (02/10)
+
+**Achado:** ao aplicar a DEC-29 (20 → 30/h), a suíte inteira passou sem
+regravar fixture nenhuma. **Bloco dono:** **ST-2.27** (a forma do dia, que já
+mede os três jogadores).
+
+**Causa.** Os perfis de `test/emissao-idle.mjs` guardam as runs por dia como
+número literal — o maratona com **8 por criatura**, que era o teto quando a
+stamina regenerava 8/h (192 por dia). A DEC-24 (20/h) e a DEC-29 (30/h) mudaram
+o teto real e a medição não acompanhou: ela mede um jogador que não existe
+mais.
+
+**Medido à parte** (6 criaturas, 2 em campo): o maratona faz 62 runs por dia em
+20/h e 93 em 30/h; a moeda sobe 11,13 → 12,68 runs-cheias (DEC-14 segura), o XP
+acompanha as runs.
+
+**Por que não se corrige agora:** derivar as runs muda toda a fixture de
+emissão (o maratona de 8 para dezenas de runs) e é exatamente a medida que a
+ST-2.27 constrói; fazer aqui seria abrir a ST-2.27 por dentro da DEC-29.
+
+**Teste que trava:** `emissao-idle` — "D-151 (afirmado de propósito): o
+maratona ainda mede 8 runs por criatura". Fica VERMELHO quando alguém derivar
+as runs.
+

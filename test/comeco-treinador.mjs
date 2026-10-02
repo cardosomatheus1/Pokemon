@@ -108,9 +108,12 @@ export async function suite() {
     ok(/class="avBarra avXpBarra"/.test(dir), 'a barra de XP sumiu da vaga');
   });
 
-  s.teste('a regeneração é 20/h (DEC-24), e a tela diz o número que o motor usa', () => {
-    igual(REGEN_POR_HORA, 20, 'a regeneração mudou sem decisão');
-    igual(staminaAgora({ stamina: 77, staminaEm: AGORA }, AGORA + 3600_000), 97, 'uma hora não devolveu 20');
+  /* DEC-29 (o dono, 02/10): "ainda não sei se tá bom, suba um pouco mais essa
+     stamina, bote 30/h". Era 20 (DEC-24). */
+  s.teste('a regeneração é 30/h (DEC-29), e a tela diz o número que o motor usa', () => {
+    igual(REGEN_POR_HORA, 30, 'a regeneração mudou sem decisão');
+    igual(staminaAgora({ stamina: 67, staminaEm: AGORA }, AGORA + 3600_000), 97, 'uma hora não devolveu 30');
+    igual(staminaAgora({ stamina: 77, staminaEm: AGORA }, AGORA + 3600_000), 100, 'a regeneração passou do teto');
     const pag = fonte('../app/index.html');
     ok(pag.includes(`<h3>Stamina da equipe <span class="tiny">regenera ${REGEN_POR_HORA}/h</span></h3>`), 'o rótulo da tela diz outro ritmo');
   });
