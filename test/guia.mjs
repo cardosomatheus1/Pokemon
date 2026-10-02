@@ -74,15 +74,16 @@ export function suite() {
     ok(/data-loja-abrir/.test(html) && /id="idleCentro"/.test(html), 'os destinos não existem na página');
   });
 
-  s.teste('ST-2.25 · o guia fala português: termo do jogo vem explicado, e não há "odds", "pool" nem "buff"', () => {
-    const t = JSON.stringify(guiaDoJogo(PACK));
-    ok(!/\bodds?\b|\bpool\b|\bbuffs?\b/i.test(t), 'o guia ainda usa odds/pool/buff');
-    const rotas = guiaDoJogo(PACK).find(x => x.id === 'rotas');
-    ok(rotas.itens.some(i => /corrida/.test(i.termo + i.texto) && /run/.test(i.termo)), 'a "run" não é explicada');
-    ok(rotas.itens.some(i => /stamina/.test(i.termo) && /energia/.test(i.texto)), 'a "stamina" não é explicada');
+  /* DEC-26 (o dono, 02/10): "nomes inglês/português é normal pra jogos, não
+     precisa mudar". O guia usa os MESMOS termos da tela — a Arena diz "odds",
+     a run diz "wave" — e explica o que eles fazem. */
+  s.teste('DEC-26 · o guia fala a língua da tela: odds, run, wave, stamina — explicados', () => {
+    const g = guiaDoJogo(PACK), t = JSON.stringify(g);
+    ok(/\bodds?\b/.test(t) && !/cotação/.test(t), 'o guia chama de "cotação" o que a Arena chama de odd');
+    const rotas = g.find(x => x.id === 'rotas');
+    ok(rotas.itens.some(i => i.termo === 'A run' && /dez waves/i.test(i.texto)), 'a run não é explicada');
+    ok(rotas.itens.some(i => i.termo === 'A stamina' && /energia/.test(i.texto)), 'a stamina não é explicada');
     ok(!/Lutam três \(ou tantos quantos o treinador trouxer\), os mais fortes/.test(t), 'a frase truncada de quem luta');
-    const html = fonte('app/index.html');
-    ok(!/\bbuffs?\b/.test(html.replace(/<!--[\s\S]*?-->/g, '').replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '')), 'o texto da página ainda diz "buff"');
   });
 
   s.teste('ST-2.25 · os textos que se liam colados', () => {

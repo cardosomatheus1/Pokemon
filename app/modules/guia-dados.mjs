@@ -44,7 +44,7 @@ export function guiaDoJogo(pack) {
   return [
     { id: 'moedas', titulo: 'As duas moedas', resumo: `Uma é da aposta, a outra é da aventura. Elas não se convertem uma na outra.`,
       itens: [
-        { termo: `${n.cashS} ${n.cash}`, texto: `A moeda da Arena. Você aposta com ela nos lutadores, recebe a aposta multiplicada pela cotação quando acerta, e compra cosméticos na Boutique. Ela tem duas partes: o bônus (do cadastro, do login e dos desafios), que nunca sai da sua conta, e a parte transferível (PC-T), a única que passa entre jogadores — nas Trocas e no Mercado.` },
+        { termo: `${n.cashS} ${n.cash}`, texto: `A moeda da Arena. Você aposta com ela nos lutadores, recebe aposta × odd quando acerta, e compra cosméticos na Boutique. Ela tem duas partes: o bônus (do cadastro, do login e dos desafios), que nunca sai da sua conta, e a parte transferível (PC-T), a única que passa entre jogadores — nas Trocas e no Mercado.` },
         { termo: `${n.coinS} ${n.coin}`, texto: `A moeda das Rotas. Cai nas runs, nas expedições da Rota OFF e na Jornada (a primeira vitória em cada nó paga ${PVE.PRIMEIRA.rota} numa rota e ${PVE.PRIMEIRA.ginasio} num ginásio), e compra bolas, poções e o resto da Loja. Não aposta e não passa para outro jogador.` },
         { termo: 'PC-T, de onde vem', texto: `A primeira vitória em cada ginásio da Jornada dá ${PCT_JORNADA.insignia} PC-T; cada selo da Liga, ${PCT_JORNADA.selo}; o título de campeão, ${PCT_JORNADA.final} — uma vez na vida da conta. Depois disso, ele vem de vender no Mercado e de trocar. O da Jornada só pode ser usado depois de ${PCT_JORNADA.maturidadeDias} dias de conta.` },
         { termo: n.material, texto: `Não é dinheiro: é material. Junta-se nas Rotas e troca-se por itens que dinheiro não compra.` },
@@ -53,8 +53,8 @@ export function guiaDoJogo(pack) {
 
     { id: 'rotas', titulo: 'As Rotas', resumo: 'Onde a sua equipe luta, ganha XP e encontra criaturas para capturar.',
       itens: [
-        { termo: 'A run (a corrida)', texto: 'Uma corrida de dez ondas de selvagens (as "waves") num bioma, que você assiste. Cada onda dá XP, moeda e encontros; a décima tem um chefe. Se a equipe cair no meio, você fica com tudo o que ganhou até ali e perde só o baú do estágio.' },
-        { termo: 'A stamina (a energia)', texto: `Cada onda gasta energia de quem foi lutar (até ${STAMINA_MAX}), e ela volta sozinha com o tempo. A vida na luta é outra barra, o HP — e a poção cura o HP, não a energia.` },
+        { termo: 'A run', texto: 'Dez waves de selvagens seguidas num bioma, que você assiste. Cada wave dá XP, moeda e encontros; a décima tem um chefe. Se a equipe cair no meio, você fica com tudo o que ganhou até ali e perde só o baú do estágio.' },
+        { termo: 'A stamina', texto: `Cada wave gasta a energia de quem foi lutar (até ${STAMINA_MAX}), e ela volta sozinha com o tempo. A vida na luta é outra barra, o HP — e a poção cura o HP, não a energia.` },
         { termo: 'Os estágios', texto: `Cada bioma tem quatro estágios; o seguinte abre quando a sua melhor criatura chega ao nível da porta (${NIVEL_DO_ESTAGIO.join(', ')}). Estágio mais fundo traz criaturas mais raras.` },
         { termo: 'A captura', texto: `Os encontros esperam a bola no quadro "quem apareceu". Cada bola tem a chance escrita no botão. A captura nasce no nível do estágio (${portas}) — nunca abaixo do nível em que a forma dela existe.` },
         { termo: 'A Rota OFF', texto: 'A expedição de quem vai sair: manda a equipe por 45 min, 3 h ou 8 h, e colhe na volta.' },
@@ -98,10 +98,10 @@ export function guiaDoJogo(pack) {
       ],
       ir: [{ rotulo: 'abrir o Mercado', view: 'viewPokedex', aba: 'pdx:mercado' }] },
 
-    { id: 'arena', titulo: 'A Arena', resumo: 'Doze lutadores, a cotação de cada um calculada antes, trinta segundos para apostar.',
+    { id: 'arena', titulo: 'A Arena', resumo: 'Doze lutadores, odds calculadas, trinta segundos para apostar.',
       itens: [
-        { termo: 'Os lutadores e a cotação', texto: 'Doze lutadores são sorteados, e o servidor simula milhares de batalhas para transformar a chance de cada um numa cotação (o "×" no cartão do lutador), já com a margem da casa. Quanto menos provável, maior a cotação.' },
-        { termo: 'A aposta', texto: 'Trinta segundos para escolher; dá para trocar de lutador até o tempo acabar. Acertou, recebe a aposta multiplicada pela cotação.' },
+        { termo: 'A pool e as odds', texto: 'Doze lutadores são sorteados para a pool, e o servidor simula milhares de batalhas para transformar a chance de cada um em odd (o "×" no cartão do lutador), já com a margem da casa. Quanto menos provável, maior a odd.' },
+        { termo: 'A aposta', texto: 'Trinta segundos para escolher; dá para trocar de lutador até o tempo acabar. Acertou, recebe aposta × odd.' },
         { termo: 'A luta', texto: 'O clima é revelado depois das apostas, e a batalha que você assiste é a gravação de um resultado já decidido.' },
       ],
       ir: [{ rotulo: 'ir para a Arena', view: 'viewArena' }] },

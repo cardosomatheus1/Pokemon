@@ -2447,9 +2447,8 @@ do servidor. Três partes:
   dentro do título da equipe — nas Rotas e na Rota OFF ("…a stamina é da
   criatura compacto"); (4) o Início diz "nome, e-mail, senha e data de
   nascimento"; (5) o guia em português: a run e a stamina explicadas na
-  primeira vez ("a corrida de dez ondas", "a energia"), "cotação" no lugar de
-  "odds" e "pool", "bônus temporário" no lugar de "buff" (no guia, no Início e
-  nas Regras), e a frase de quem luta reescrita; (6) a janela do "💵" do topo
+  primeira vez, e a frase de quem luta reescrita — a troca de "odds"/"pool"/
+  "buff" por termos em português foi DESFEITA pela DEC-26 (02/10); (6) a janela do "💵" do topo
   (que é a de comprar, e não a carteira) ganhou a linha do papel da moeda e o
   caminho para o guia.
 - **D-147, achado no Q5:** o "?" do potencial era botão dentro do cartão-botão;
@@ -2983,6 +2982,12 @@ desta tabela.
   Custo dito: as regras de luta passam a `tbe-2`, e os times congelados na
   Liga com a `tbe-1` pedem "congele de novo" (um clique) antes da próxima
   partida.
+- ✅ **DEC-26 · termos do gênero em inglês ficam** (o dono, 02/10: *"os nomes
+  inglês/português é normal pra jogos, não precisa mudar"*). Run, wave,
+  stamina, odds, pool, buff, shiny seguem como estão na tela; o guia usa os
+  mesmos termos da tela e explica o que eles fazem. Desfaz a troca da ST-2.25
+  ("cotação", "corrida", "bônus temporário"), que deixava o guia com um nome e
+  a Arena com outro. Relatos futuros de "mistura de idiomas" não viram defeito.
 - **Ainda do dono, e com recomendação escrita como padrão:** a taxa shiny (R18),
   o orçamento da Master Ball, os limites/cooldown/taxas finais (baselines da
   spec §11 e §16 até o gate C medir).
