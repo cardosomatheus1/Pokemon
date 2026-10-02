@@ -9392,6 +9392,21 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-248 — duas suítes deixam pastas temporárias para trás
+
+**Registrada em:** 02/10/2026, no fecho da ST-2.27c (o `/tmp` da máquina
+chegou a 20 GB). **Bloco dono:** **T15** (arnês — congelado pela regra de
+16/09: entra só quando IMPEDIR). **Estado:** aberta.
+
+Medido: 9.545 pastas `pa-copia-*` (`test/copia-banco.mjs`, ~2,9 MB cada) e
+1.858 `pa-piloto-*` (`test/piloto.mjs`) — cada execução da suíte e cada
+mutante do Q2 cria as suas com `mkdtempSync` e nenhuma é apagada. Apagadas à
+mão: 20 GB → 1,7 GB. **Por que não cabe agora:** não impede nada — o disco
+desta máquina aguenta várias semanas no ritmo atual. **O que a destrava:**
+o disco faltar no meio de um portão, ou o T15 abrir; o conserto é um
+`rmSync` num `finally` (o mesmo padrão da limpeza das caixas, pendurada na
+saída).
+
 ### L-247 — os rótulos do menu de baixo cortados em 420 px
 
 **Registrada em:** 02/10/2026, no Q7 da ST-10.27 (o crítico cego: "ARENAS" e
