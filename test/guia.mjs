@@ -62,5 +62,46 @@ export function suite() {
     ok(/\(\$\{m\.potencial\}\/100\)/.test(fonte('app/modules/treino-tela.mjs')), 'o Time não mostra o potencial da criatura ao lado da parte do poder');
   });
 
+  s.teste('ST-2.25 · o "ir para" chega ao destino: a Loja abre, o Centro aparece', () => {
+    const g = guiaDoJogo(PACK);
+    const ir = g.flatMap(x => x.ir);
+    const loja = ir.find(i => /Loja/.test(i.rotulo)), centro = ir.find(i => /Centro/.test(i.rotulo));
+    igual(loja?.clica, '[data-loja-abrir]', 'o "ir para a Loja" só abre as Rotas');
+    igual(centro?.rola, '#idleCentro', 'o "ir para o Centro" só abre as Rotas');
+    const tela = fonte('app/modules/guia-tela.mjs');
+    ok(/data-guia-clica/.test(tela) && /data-guia-rola/.test(tela), 'a tela não leva o destino no botão');
+    const html = fonte('app/index.html');
+    ok(/data-loja-abrir/.test(html) && /id="idleCentro"/.test(html), 'os destinos não existem na página');
+  });
+
+  s.teste('ST-2.25 · o guia fala português: termo do jogo vem explicado, e não há "odds", "pool" nem "buff"', () => {
+    const t = JSON.stringify(guiaDoJogo(PACK));
+    ok(!/\bodds?\b|\bpool\b|\bbuffs?\b/i.test(t), 'o guia ainda usa odds/pool/buff');
+    const rotas = guiaDoJogo(PACK).find(x => x.id === 'rotas');
+    ok(rotas.itens.some(i => /corrida/.test(i.termo + i.texto) && /run/.test(i.termo)), 'a "run" não é explicada');
+    ok(rotas.itens.some(i => /stamina/.test(i.termo) && /energia/.test(i.texto)), 'a "stamina" não é explicada');
+    ok(!/Lutam três \(ou tantos quantos o treinador trouxer\), os mais fortes/.test(t), 'a frase truncada de quem luta');
+    const html = fonte('app/index.html');
+    ok(!/\bbuffs?\b/.test(html.replace(/<!--[\s\S]*?-->/g, '').replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '')), 'o texto da página ainda diz "buff"');
+  });
+
+  s.teste('ST-2.25 · os textos que se liam colados', () => {
+    ok(/m\.tipos\.map\(chip\)\.join\(' '\)/.test(fonte('app/modules/treino-tela.mjs')), 'os tipos do Time se leem "PlantaVenenoso"');
+    const html = fonte('app/index.html');
+    const titulo = (html.split('<h3>A equipe que vai')[1] ?? '').split('</h3>')[0];
+    ok(titulo && !/data-modo-cartao/.test(titulo), 'o botão da ficha ainda mora dentro do título');
+    const tituloOff = (html.split('<h3>Equipe <span class="tiny">até três')[1] ?? '').split('</h3>')[0];
+    ok(tituloOff && !/data-modo-cartao/.test(tituloOff), 'na Rota OFF, o botão da ficha ainda mora dentro do título');
+    ok(/nome, e-mail, senha e data de nascimento/.test(html), 'o Início esquece a data de nascimento');
+    ok(/id="depPapel"/.test(html), 'o "Comprar" do topo não diz para que serve a moeda');
+  });
+
+  s.teste('D-147 · nenhum botão dentro do cartão da criatura (o navegador partia o cartão em dois)', () => {
+    const p = fonte('app/modules/idle-paineis.mjs');
+    const cartao = p.slice(p.indexOf('<button class="idleGuardado"'), p.indexOf('</button>`;', p.indexOf('<button class="idleGuardado"')));
+    ok(cartao && !/<button/.test(cartao.slice(1)), 'há um botão dentro do cartão-botão');
+    ok(/#idleEncontros:empty/.test(fonte('app/index.html')), 'o quadro "quem apareceu" vazio aparece como um cartão vazio');
+  });
+
   return s;
 }

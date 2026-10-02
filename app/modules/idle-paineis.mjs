@@ -219,7 +219,7 @@ export function pintarCentro(E) {
     <button class="idleGuardado" data-mover="${c.id}" data-para="${guardado ? '0' : '1'}">
       ${dexImg(c.dex, esp(c.dex).n, 'class=\"idleCriaArte\"', c.shiny === true)}
       <span class="idleCriaNome">${nomeExibido(esp(c.dex).n)}</span>
-      <span class="tiny">nv ${c.nivel ?? 1} · potencial ${c.potencial}/100${c.exemplar ? ' ✦' : ''} <button class="guiaQ" type="button" data-guia-secao="criatura" title="o que é o potencial?">?</button></span>
+      <span class="tiny">nv ${c.nivel ?? 1} · potencial ${c.potencial}/100${c.exemplar ? ' ✦' : ''}</span>
       <span class="idleAcao">${guardado ? '→ equipe' : '→ caixa'}</span>
     </button>`;
 
@@ -257,7 +257,10 @@ export function pintarCentro(E) {
     <h3>Centro <span class="tiny">${ativos.length}/${PARTY_MAX} na equipe ·
         ${guardados.length} na caixa</span></h3>
     <p class="tiny">Só quem está na equipe vai a campo. Quando a equipe está cheia,
-       a captura vai para a caixa — ela nunca é recusada.</p>
+       a captura vai para a caixa — ela nunca é recusada.
+       <!-- D-147: o "?" mora FORA do cartão — o cartão é um botão, e botão
+            dentro de botão o navegador parte em dois. -->
+       <button class="guiaQ" type="button" data-guia-secao="criatura">o que é o potencial? →</button></p>
     <div class="idleLinha">${ativos.map(c => item(c, false)).join('')}</div>
     ${guardados.length ? `
       <h4 class="idleSub">Na caixa</h4>

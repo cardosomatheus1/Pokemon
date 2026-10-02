@@ -7444,3 +7444,30 @@ construção. A queda, que cada ponta vê no próprio relógio, não tinha teste
 **Testes que travam:** `run-fim` — a colheita recusada tenta de novo; a queda
 diz o que ficou e que só o baú se perdeu; o recuo e a limpeza têm frase
 própria.
+
+## D-147 — o "?" do potencial era um botão dentro do cartão-botão, e o navegador partia o cartão ✅ CORRIGIDO na ST-2.25 (02/10)
+
+**Achado:** no Q5 da ST-2.25, olhando o Centro depois do relato do dono (que
+viu o "?" do potencial e não o resto do cartão quebrado). **Bloco dono:**
+ST-2.25 — e o defeito nasceu na ST-2.24.
+
+**Causa.** O cartão da criatura no Centro é um `<button>` (clicar move entre
+equipe e caixa). A ST-2.24 pôs o "?" do potencial — outro `<button>` — dentro
+dele. O HTML não aceita botão dentro de botão: o analisador fecha o cartão no
+"?" e o "?" leva o resto. Na tela, o "?" virou uma faixa da largura do cartão,
+e o "→ caixa" caiu para fora — e clicar nele abria o guia em vez de mover a
+criatura.
+
+**Medido** (captura do Q5 antes e depois, 1440): antes, o cartão termina em
+"potencial 44/100" e há duas pílulas soltas embaixo ("?" e "→ CAIXA"); depois,
+o cartão inteiro de novo, e o caminho para o guia na linha do Centro.
+
+**Por que a suíte não viu.** Os testes leem a fonte (que tinha o "?", como
+pedido) e o Q5 da ST-2.24 olhou a página do guia e o Mercado — não o Centro.
+Botão dentro de botão só aparece no DOM que o navegador monta.
+
+**Conserto.** O "?" saiu do cartão para a linha de explicação do Centro
+("o que é o potencial? →").
+
+**Teste que trava:** `guia` — "D-147 · nenhum botão dentro do cartão da
+criatura". S2608 PEGOU.

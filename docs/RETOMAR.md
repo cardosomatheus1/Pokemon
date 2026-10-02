@@ -32,6 +32,9 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            Rotas abre em 1× e as rotas enchem duas colunas. Olhar no celular:
            node tools/olhar-celular.mjs  (capturas em tools/previas/_celular/).
            Próximo do cenário: ST-2.9 (L-231, a Floresta sem árvore na vista).
+           ST-2.25 (02/10): os achados do dono no guia + D-147 (o "?" dentro
+           do cartão-botão partia o cartão). L-241 (sonda de sabotagem sem
+           linha de base) para o arnês.
            ST-2.24 (02/10): o guia — "Como funciona" explica o jogo inteiro
            (guia-dados.mjs); "?" no potencial, bolsa, carteira e Mercado.
            L-236 fechada (os nomes ficam). Abertas: L-239 (✦), L-240.

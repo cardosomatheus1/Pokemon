@@ -9392,6 +9392,19 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-241 — a sonda manual de sabotagem não confere a linha de base
+
+**Registrada em:** 02/10/2026, na ST-2.25. **Bloco dono:** **T15** (arnês —
+congelado pela regra de 16/09: entra só quando IMPEDIR). **Estado:** aberta.
+
+A sonda que uso entre blocos para conferir defeitos novos roda as suítes
+pedidas com o defeito plantado e chama de "PEGOU" qualquer vermelho. Ela não
+roda as mesmas suítes SEM o defeito antes. Na ST-2.25 o S2438 voltou "PEGOU"
+com a suíte já vermelha. O `npm run sabotagem` (o portão de verdade) valida a
+linha de base (`garantirBase`); a sonda não. **Por que não cabe agora:** não
+impede bloco nenhum — o portão completo pega. **O que a destrava:** a primeira
+vez que um falso PEGOU passar por um bloco.
+
 ### L-240 — "Minha Coleção" não lista as criaturas
 
 **Registrada em:** 02/10/2026, no Q5 da ST-2.24. **Bloco dono:** **ST-2.20**

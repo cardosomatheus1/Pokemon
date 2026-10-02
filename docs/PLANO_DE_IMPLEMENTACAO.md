@@ -2438,6 +2438,36 @@ do servidor. Três partes:
   abertura segue a de antes.
 - **Fica (L-235):** a densidade para quem chega — dez abas e páginas longas.
 
+### ST-2.25 · O que o olhar do dono achou no guia (D-147) ✅ 02/10
+- **Por quê (o dono, conferindo a ST-2.24):** o aviso de versão nova e o
+  potencial batendo entre Time e Rotas funcionaram; e seis coisas não.
+- **Feito:** (1) "abrir a Loja das Rotas" ABRE a Loja e "ver o Centro" ROLA até
+  ele (`clica`/`rola` no item do guia; a tela faz depois de navegar); (2) os
+  tipos no Time com espaço ("Planta Venenoso"); (3) o botão "ficha" saiu de
+  dentro do título da equipe — nas Rotas e na Rota OFF ("…a stamina é da
+  criatura compacto"); (4) o Início diz "nome, e-mail, senha e data de
+  nascimento"; (5) o guia em português: a run e a stamina explicadas na
+  primeira vez ("a corrida de dez ondas", "a energia"), "cotação" no lugar de
+  "odds" e "pool", "bônus temporário" no lugar de "buff" (no guia, no Início e
+  nas Regras), e a frase de quem luta reescrita; (6) a janela do "💵" do topo
+  (que é a de comprar, e não a carteira) ganhou a linha do papel da moeda e o
+  caminho para o guia.
+- **D-147, achado no Q5:** o "?" do potencial era botão dentro do cartão-botão;
+  o navegador partia o cartão e o "→ caixa" passava a abrir o guia (nascido na
+  ST-2.24). E o quadro "quem apareceu" vazio aparecia como um cartão vazio.
+- **Não reproduzido:** as falhas de conexão em `/api/sala` e
+  `/api/mercado/resultado`. Em produção as duas respondem (401 sem sessão, o
+  esperado); no servidor local, 45 s de Arena sem nenhuma falha. O provável é
+  o "Recarregar": os pedidos em voo são cortados na troca de página, e o
+  navegador os anota como falha.
+- **Testes:** `guia` (+4) · S2603–S2609 PEGOU; S2602 e S2438 realvos. **Q5:**
+  guia → Loja aberta, guia → Centro visível, cartão inteiro, tipos com espaço,
+  títulos limpos, a linha na janela de compra; sem pageerror. **Mutantes de
+  navegador:** 1 não plantado (o clique/rolagem depois de navegar).
+- **Lição do arnês:** a sabotagem do S2438 voltou "PEGOU" com a suíte vermelha
+  ANTES do plantio (eu tinha juntado duas regras de CSS); a sonda manual não
+  confere a linha de base. Registrado para o T-dono do arnês (L-241).
+
 ### ST-2.24 · O guia: o que cada coisa faz (L-236) ✅ 02/10
 - **Por quê (o dono):** *"os nomes foi decisão nossa, talvez só tenha que ficar
   mais claro o que cada uma faz; não vi direito a parte dos [bichos], IVs etc.,

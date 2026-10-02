@@ -26,7 +26,8 @@ export function pintarGuia() {
       <h3>${esc(x.titulo)}</h3>
       <p class="guiaResumo">${esc(x.resumo)}</p>
       <dl class="guiaItens">${x.itens.map(i => `<div><dt>${esc(i.termo)}</dt><dd>${esc(i.texto)}</dd></div>`).join('')}</dl>
-      <div class="guiaIr">${x.ir.map(i => `<button class="btn" type="button" data-goto="${i.view}"${i.aba ? ` data-guia-aba="${i.aba}"` : ''}>${esc(i.rotulo)} →</button>`).join('')}</div>
+      <div class="guiaIr">${x.ir.map(i => `<button class="btn" type="button" data-goto="${i.view}"${i.aba ? ` data-guia-aba="${i.aba}"` : ''}${
+        i.clica ? ` data-guia-clica="${esc(i.clica)}"` : ''}${i.rola ? ` data-guia-rola="${esc(i.rola)}"` : ''}>${esc(i.rotulo)} →</button>`).join('')}</div>
     </section>`).join('')}`;
 }
 
@@ -43,6 +44,16 @@ document.addEventListener('click', ev => {
   if (aba) {
     const [vista, nome] = aba.dataset.guiaAba.split(':');
     try { if (CHAVE_DA_ABA[vista]) localStorage.setItem(CHAVE_DA_ABA[vista], nome); } catch { /* privativo */ }
+  }
+  /* ST-2.25: o destino DENTRO da vista — abrir a Loja, rolar até o Centro.
+     Depois da navegação, que a vista precisa existir na tela primeiro. */
+  const destino = ev.target.closest?.('[data-guia-clica], [data-guia-rola]');
+  if (destino) {
+    const { guiaClica: clica, guiaRola: rola } = destino.dataset;
+    setTimeout(() => {
+      if (clica) document.querySelector(clica)?.click();
+      if (rola) document.querySelector(rola)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 350);
   }
   const secao = ev.target.closest?.('[data-guia-secao]');
   if (secao) { ev.preventDefault(); irParaSecao(secao.dataset.guiaSecao); }

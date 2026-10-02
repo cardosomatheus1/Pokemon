@@ -5690,6 +5690,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 /* O saque só existe quando há o que mostrar: vazio, era uma faixa de cartão
    sem nada entre "Quem apareceu" e o Histórico. */
 #idleSaque:empty{display:none}
+#idleEncontros:empty{display:none}   /* D-147: o quadro vazio de quem ainda não correu */
 @media(min-width:900px){.idleGrade{grid-template-columns:1.05fr .95fr}}
 /* A coluna B empilha os proprios cartoes; sem isto eles viram linhas da grade
    externa e a segunda coluna volta a ficar vazia. */
@@ -8174,6 +8175,11 @@ body.soAssiste .pick{cursor:pointer}
 .mkIntro{margin:0 0 10px;color:var(--dim);font-size:13px;line-height:1.5}
 .bolsaPapel{margin:6px 0 0}
 .wPapel{margin:8px 0 0;flex-basis:100%}
+
+/* ST-2.25: o título da equipe e o botão da ficha lado a lado, cada um no seu
+   elemento — dentro do h3, o leitor juntava os dois numa frase só. */
+.idleCabeca{display:flex;align-items:center;gap:10px}
+.idleCabeca h3{flex:1 1 auto}
 </style>
 </head>
 <body>
@@ -8302,7 +8308,7 @@ body.soAssiste .pick{cursor:pointer}
       <p>Sol, chuva, vendaval ou nevasca alteram os stats — e só são revelados
          depois que as apostas fecham.</p></div>
     <div class="feat"><span>🔥</span><h4>Killstreaks</h4>
-      <p>Abates encadeados dão buffs temporários. Já embutidos nas odds,
+      <p>Abates encadeados dão um bônus temporário a quem derruba. Já embutido nas odds,
          nada acontece escondido.</p></div>
     <div class="feat"><span>📈</span><h4>Progressão</h4>
       <p>XP por participar, não por apostar alto. Você sobe de nível mesmo
@@ -8316,7 +8322,7 @@ body.soAssiste .pick{cursor:pointer}
 
   <section class="cta">
     <h3>Pronto para a primeira rodada?</h3>
-    <p>Crie o seu treinador em um minuto: nome, e-mail e senha. Nada de cobrança — o PokéCash é moeda simulada.</p>
+    <p>Crie o seu treinador em um minuto: nome, e-mail, senha e data de nascimento. Nada de cobrança — o PokéCash é moeda simulada.</p>
     <button class="btn gold" id="btnHeroSignup">Criar treinador</button>
   </section>
 </div>
@@ -8467,14 +8473,17 @@ body.soAssiste .pick{cursor:pointer}
              `idlePerfis` e `idleMandar` saíram desta aba e o título deles ficou
              para trás — repetindo a mesma frase duas linhas abaixo da primeira.
              É metade do que o dono chamou de "bagunçado e confuso". -->
-        <h3>A equipe que vai <span class="tiny">até três · a stamina é da criatura</span>
+        <div class="idleCabeca"><h3>A equipe que vai <span class="tiny">até três · a stamina é da criatura</span>
           <!-- A DOBRA DO CARTÃO (L-164). O cartão abre COMPACTO — quem é, se
                pode ir, o que soma — e este botão devolve a ficha inteira.
 
                Ele fica no CABEÇALHO e não em cada cartão: a pergunta "quero ver
                a ficha?" se responde uma vez para a lista toda, e um botão por
                criatura seria onze controles para uma decisão só. -->
-          <button class="btn ghost" id="idleModoCartao" data-modo-cartao>ficha</button></h3>
+          </h3>
+          <!-- ST-2.25: o botão fora do título — dentro dele, o título se lia
+               "…a stamina é da criatura compacto". -->
+          <button class="btn ghost" id="idleModoCartao" data-modo-cartao>ficha</button></div>
         <div id="idleEquipe"></div>
         <!-- Em ROTAS há UM botão, e é o do Avanço. A expedição mudou de aba
              (L-154) porque ela pede a postura oposta: sair em vez de ficar.
@@ -8768,11 +8777,12 @@ body.soAssiste .pick{cursor:pointer}
     <div class="card idleDepois">
       <h3>A expedição <span class="tiny">duração, equipe, e o que cada uma rende</span></h3>
       <div id="idlePerfis"></div>
-      <h3 style="margin-top:16px">Equipe <span class="tiny">até três · a stamina é da criatura</span>
+      <div class="idleCabeca" style="margin-top:16px"><h3>Equipe <span class="tiny">até três · a stamina é da criatura</span>
         <!-- A MESMA dobra da aba ROTAS. O mesmo painel serve as duas, e um
              controle que existe só numa faria o jogador achar que a outra
              está quebrada. -->
-        <button class="btn ghost" id="offModoCartao" data-modo-cartao>ficha</button></h3>
+        </h3>
+        <button class="btn ghost" id="offModoCartao" data-modo-cartao>ficha</button></div>
       <div id="offEquipe"></div>
       <button id="idleMandar" class="btn pri" style="width:100%;margin-top:12px">Mandar a expedição</button>
       <div id="offAviso"></div>
@@ -8965,7 +8975,7 @@ body.soAssiste .pick{cursor:pointer}
          apostas. As odds exibidas não o consideram. Isso é parte do jogo e está
          declarado aqui.</p></div>
     <div class="rule"><h4>7. Killstreaks</h4>
-      <p>Abates encadeados em até 3 segundos concedem buff temporário ao autor.
+      <p>Abates encadeados em até 3 segundos dão um bônus temporário a quem derrubou.
          Como as odds vêm do mesmo motor, o efeito já está embutido nelas.</p></div>
     <div class="rule"><h4>8. Empates e tempo limite</h4>
       <p>Se o tempo máximo for atingido, vence quem tiver a maior porcentagem de
@@ -9481,6 +9491,9 @@ body.soAssiste .pick{cursor:pointer}
       na hora, só pra testar a experiência de compra. Câmbio fixo: <b>10 PokéCash = R$ 1,00</b>,
       igual em todos os pacotes.
     </div>
+    <!-- ST-2.25: para que serve a moeda, e o caminho para o guia — o "💵" do topo
+         abre esta janela, e não a carteira. -->
+    <p class="tiny wPapel" id="depPapel"></p>
     <div id="pkgList"></div>
     <div id="depToast" class="tiny" style="color:var(--green);min-height:16px;margin:6px 0"></div>
     <h3 style="font-size:.72rem;color:var(--dim);margin:10px 0 6px;letter-spacing:.05em;text-transform:uppercase">Histórico (simulado)</h3>
@@ -9796,7 +9809,10 @@ async function ligarModoServidor(){
   api.aoMudarVersao(() => { const b = $('#novaVersao'); if (b) b.hidden = false; });
   /* ST-2.24: o guia e o papel de cada moeda. */
   pintarGuia();
-  { const w = $('#wPapel'); if (w) w.innerHTML = `${papelDaMoeda(PACK, 'arena')}. <button class="guiaQ" type="button" data-guia-secao="moedas" data-fechar="#walletModal">as duas moedas →</button>`; }
+  for (const [sel, modal] of [['#wPapel', '#walletModal'], ['#depPapel', '#depositModal']]) {
+    const w = $(sel);
+    if (w) w.innerHTML = `${papelDaMoeda(PACK, 'arena')}. <button class="guiaQ" type="button" data-guia-secao="moedas" data-fechar="${modal}">as duas moedas →</button>`;
+  }
   $('#btnNovaVersao')?.addEventListener('click', () => location.reload());
   atualizarSaldo();
   $('#btnAuto').classList.add('on');

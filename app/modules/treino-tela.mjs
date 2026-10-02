@@ -44,7 +44,7 @@ function membro(m, podeTirar) {
   const partes = PARTES_DO_POWER.map(p => ({ ...p, v: m.power.partes[p.k] }));
   return `<div class="tbMembro">
     <div class="tbTopo">${dexImg(m.dex, m.nome, 'class="tbSprite"')}
-      <div><b>${m.nome}</b> <span class="tbNv">NV ${m.nivel}</span><div>${m.tipos.map(chip).join('')}</div></div>
+      <div><b>${m.nome}</b> <span class="tbNv">NV ${m.nivel}</span><div>${m.tipos.map(chip).join(' ')}</div></div>
       <span class="tbPower" title="poder: a soma das quatro partes abaixo">${m.power.total}</span></div>
     <div class="tbBarra">${partes.map(p => `<i class="p-${p.k}" style="flex:${p.v}"></i>`).join('')}</div>
     <div class="tbPartes"><span class="tbIgual">poder ${m.power.total} =</span>${partes.map(p => `<span class="p-${p.k}">${p.rotulo} <b>${p.k === 'potencial' ? '+' : ''}${p.v}</b>${p.k === 'potencial' && m.potencial != null ? ` <i class="tbPot" title="o potencial dela, de 0 a 100 — a soma dos seis valores escondidos que nasceram com ela">(${m.potencial}/100)</i>` : ''}</span>`).join('')}</div>
