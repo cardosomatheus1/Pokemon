@@ -190,7 +190,11 @@ export const falaDoCusto = () =>
  * O que decresce: MOEDA e ESSÊNCIA — os dois que a L-185 mediu fora da
  * calibragem. O XP não: a stamina e a curva de nível já o seguram. */
 export const RUNS_CHEIAS = 6;
-export const QUEDA_POR_RUN = 0.75;
+/* DEC-31 (6º relato, "as moedas por run despencaram — +46, +30, +33 contra
+   +317 e +436"): 0,75 por run punha a 10ª run em 24% — e a run DEPOIS DO
+   TETO já pagava 16% (só os abates). Os dois juntos davam 1/20 da run cheia
+   na 10ª. A queda fica mais lenta (85% da anterior); o piso de 5% fica. */
+export const QUEDA_POR_RUN = 0.85;
 export const PISO_DO_RENDIMENTO = 0.05;
 const DIA_MS = 24 * 3600_000;
 /* O mesmo deslocamento de `FUSO_DO_MUNDO_MIN` (`app/modules/hora-do-dia.mjs`):
@@ -219,7 +223,22 @@ export function fatorDoRendimento(n) {
  * 30% mais runs, fica de 104% a 117%. A moeda segue o rendimento decrescente
  * de sempre (DEC-14); o XP não tem corte nenhum. */
 export const XP_DA_RUN = 0.88;
-export const MOEDA_DA_RUN = 0.96;
+/* DEC-31: 0,96 → 0,84. A run depois do teto passou a pagar parte dos
+   encontros vistos (`MOEDA_DOS_VISTOS_NO_TETO`) e a queda do dia ficou mais
+   lenta; para o dia MÉDIO não mudar (o pedido do dono na DEC-29d), toda run
+   paga 87,5% do que pagava. Medido em `test/stamina-balanco.mjs`, com o teto
+   modelado (a run típica da Floresta): a 1ª run 406 → 356, a 7ª 49 → 138, a
+   10ª 21 → 85, a 15ª 5 → 38; e na emissão (`emissao-idle`), por dia: casual
+   1.474 → 1.375, diário 2.015 → 2.166, maratona 1.487 → 2.715 — quem joga
+   mais passa a ganhar mais, em vez de o mesmo que quem joga 2 runs. */
+export const MOEDA_DA_RUN = 0.84;
+
+/* DEC-31: depois do teto de encontros, os encontros VISTOS pagam 35% da
+   moeda. Antes não pagavam nada (DEC-27): a run caía a 16% de uma cheia — os
+   abates —, e o jogador via a moeda "despencar". O XP já os pagava inteiros
+   (D-148); a moeda paga uma parte, porque inteira triplicava o maratona
+   (medido: 50% o levava a 2,5× o dia de antes; 35%, a 1,8×). */
+export const MOEDA_DOS_VISTOS_NO_TETO = 0.35;
 
 /* Quantas runs já foram colhidas HOJE — a próxima é esta mais um. A lista de
    `avancos` guarda as últimas 24 h, e o dia de calendário cabe nelas. */

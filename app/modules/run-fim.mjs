@@ -39,7 +39,7 @@ function oQueFicou(r, moeda) {
    A run com o teto do dia batido paga XP, moeda e baú, mas não deixa
    encontro: o fim diz por quê, no mesmo lugar em que diz o que ficou. */
 const teto = r => (r?.semEncontros
-  ? ' O limite de encontros de hoje já tinha sido atingido: a run pagou o XP inteiro, mas a moeda só dos abates e nenhuma criatura para capturar — ele volta amanhã.'
+  ? ' O limite de encontros de hoje já tinha sido atingido: a run pagou o XP inteiro, a moeda com parte dos encontros e nenhuma criatura para capturar — ele volta amanhã.'
   : '');
 
 export function fraseDoFim(r, { moeda = 'moedas', nomeDe = () => null } = {}) {

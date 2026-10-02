@@ -2531,7 +2531,7 @@ do servidor. Três partes:
   a primeira versão lia só a fonte, e S2640/S2641 escaparam).
   S2637–S2642 PEGOU. **Mutantes de navegador: 0.** Nenhuma fixture mudou.
 
-### ST-2.28 · O 6º relato do dono (D-154 a D-158, L-249) ⏳ — a ST-2.28a e a b feitas; segue a c (a moeda depois do teto)
+### ST-2.28 · O 6º relato do dono (D-154 a D-158, DEC-31) ✅ 02/10 — a, b e c feitas; o doce (L-249) foi para a ST-2.29
 - **O relato (02/10):** a evolução não acontece (o Kakuna no nível 10 seguiu
   Kakuna; o doce gastou sem evoluir); o chefe "fora de ordem" ("estágio
   limpo" antes do Beedrill aparecer, ele em 100/100 no fim); "3 de 2
@@ -2575,12 +2575,30 @@ do servidor. Três partes:
   na equipe", sem placa; a bolsa com cinco itens. Testes: `relato6` (novo,
   5); `comeco-treinador` (a linha da bolsa). S2661–S2665 PEGOU. Mutantes de
   navegador: 0.
-- **ST-2.28c (depois):** a moeda depois do teto e o rendimento do dia —
-  medidos contra os três jogadores da DEC-28 antes de qualquer número
-  (recomendação: a run com o teto batido paga parte dos encontros vistos, e o
-  rendimento cai mais devagar com piso maior, com a média do dia no lugar).
+- **ST-2.28c ✅ 02/10 — a moeda que não despenca (DEC-31):** medido antes
+  (120 runs da Floresta: 406 com encontros, 66 depois do teto); quinze
+  combinações de (parte dos vistos, queda, piso) medidas no modelo do teto e
+  na emissão; escolhida a que tira a run tardia do chão sem levar o maratona
+  a 2,5×. As frases do teto dizem "parte dos encontros". Fixture
+  `emissao-idle` regravada (números na DEC-31). Testes: `stamina-balanco`
+  (+2, e o modelo com o teto); `emissao-idle` (a frase da 7ª run: 85%).
+  S2666–S2668 PEGOU; S2613 e S2623 realvos. Mutantes de navegador: 0.
+- **O sprite "bloqueado":** medido no aparelho local, sem conta e numa run de
+  40 s: só os dois 404 conhecidos (`lojas.mp4`, `battle-theme.mp3`). Falta a
+  linha do console do dono para saber o que o navegador dele bloqueia
+  (extensão de bloqueio, `ERR_BLOCKED_BY_CLIENT`, é o mais provável).
 - **Fora:** as duas migrações (doces do D-144, nível de nascer das capturas
   antigas) — decisão do dono, pendente.
+
+### ST-2.29 · O doce que se sente (L-249) — nova, depois da ST-2.27d
+- **Por quê:** o 6º relato — *"dar um doce gastou o doce sem fazer ele
+  evoluir"*. 1 doce = 2 XP (~1,4% de um nível perto do 10); no gênero, o doce
+  raro é um nível inteiro.
+- **O que medir antes:** a regra dos 25% (`doce-nivel`: o doce do dia rende
+  no máximo 25% do XP diário do casual) contra um doce que valha um NÍVEL e
+  seja mais raro (menos doces por aposta, ou o doce de nível como item
+  próprio). **Portões:** Q1, Q2, Q4 (o XP do casual e do maratona).
+- **Fora:** a fonte do doce (apostas, soltar) — só o valor e a raridade.
 
 ### ST-2.27c · Sem stamina, o que ainda vale (L-244, D-152) ✅ 02/10
 - **Medido antes:** com a equipe sem stamina, a tela das Rotas só dizia "não"
@@ -3310,6 +3328,21 @@ desta tabela.
   corta quem joga 1 h ("não deve limitar quem tá jogando", o dono). Desfeito
   inteiro; a medida está aqui para ninguém refazer às cegas. O que a ST-2.27a
   fez no lugar: a tela diz QUANDO volta.
+- ✅ **DEC-31 · a moeda que não despenca** (ST-2.28c, o 6º relato: *"as
+  moedas por run despencaram — +46, +30, +33 contra +317 e +436"*). Medido: a
+  run com encontros paga 406 em média; depois do teto, 66 (só os abates,
+  DEC-27); e a queda do dia (0,75 por run da 7ª em diante) vinha por cima —
+  os dois juntos davam 1/20 de uma run cheia na 10ª. Agora: (1) depois do
+  teto, os encontros VISTOS pagam **35%** da moeda (`MOEDA_DOS_VISTOS_NO_TETO`;
+  50% levava o maratona a 2,5× o dia de antes, 35% a 1,8×); (2) a queda do
+  dia é **85%** da anterior (o piso de 5% fica); (3) toda run paga **84%**
+  (`MOEDA_DA_RUN`, era 96%) para o dia MÉDIO ficar onde estava (o pedido da
+  DEC-29d). Por run, no modelo do teto: a 1ª 406 → 356, a 7ª 49 → 138, a 10ª
+  21 → 85, a 15ª 5 → 38. Por dia, na emissão: casual 1.474 → 1.375 (−7%),
+  diário 2.015 → 2.166 (+7%), maratona 1.487 → 2.715 (+83%) — quem joga mais
+  passa a ganhar mais, em vez de o mesmo que quem faz 2 runs; a Essência
+  −3% a −10%. Teste: `stamina-balanco` (o modelo agora carrega o teto e as
+  regras de cada momento).
 - **Ainda do dono, e com recomendação escrita como padrão:** a taxa shiny (R18),
   o orçamento da Master Ball, os limites/cooldown/taxas finais (baselines da
   spec §11 e §16 até o gate C medir).

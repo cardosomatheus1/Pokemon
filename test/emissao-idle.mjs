@@ -270,7 +270,7 @@ export function suite() {
     for (let i = 0; i < 1000; i++) soma += comRendimento(1, 0.3, i / 1000);
     igual(soma, 300, 'o arredondamento não guarda a média — 1 × 0,3 em mil runs devia somar 300');
     igual(falaDoRendimento(RUNS_CHEIAS), null, 'a tela avisou de rendimento numa run que paga inteira');
-    ok(/7ª run de hoje/.test(falaDoRendimento(RUNS_CHEIAS + 1) ?? '') && /75%/.test(falaDoRendimento(RUNS_CHEIAS + 1)),
+    ok(/7ª run de hoje/.test(falaDoRendimento(RUNS_CHEIAS + 1) ?? '') && /85%/.test(falaDoRendimento(RUNS_CHEIAS + 1)),
       `a frase não diz a posição e a porcentagem: ${falaDoRendimento(RUNS_CHEIAS + 1)}`);
     ok(/falaDoRendimento\(runsNoDia\(/.test(readFileSync(new URL('../app/modules/avanco-tela.mjs', import.meta.url), 'utf8')),
       'a tela não mostra o rendimento antes da run — ele cairia sem aviso');

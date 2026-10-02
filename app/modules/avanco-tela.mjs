@@ -136,7 +136,7 @@ function pintarAcoes(E, run, cn) {
       `<span class="avVistos" title="a captura acontece no quadro do fim da run">` +
       `⚪ <b>${vistos}</b> espécie(s) para o quadro do fim</span>`) +
     `<span class="dica">${run.semEncontros
-        ? 'sem encontros hoje: a run ainda paga XP, drops e o baú — a moeda, só a dos abates. ' +
+        ? 'sem encontros hoje: a run ainda paga XP, drops e o baú — a moeda, os abates e parte dos encontros. ' +
           (fraseDaVolta({ encontro: voltaDoEncontro(E, { pack: PACK, agora: Date.now() }) }, Date.now()) ?? '')
         : 'recuar guarda o que já caiu — só o baú do estágio se perde'}</span>`;
 }

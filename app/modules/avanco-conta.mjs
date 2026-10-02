@@ -17,7 +17,7 @@
 import { forcaDe, raridadeDe } from '../../engine/bioma.mjs';
 import { elencoDoEstagio } from '../../engine/elenco-estagio.mjs';
 import { novaRun, avancarRun, curarRun, cenaDaRun, resultadoDa } from '../../engine/run-avanco.mjs';
-import { premioDo, ganhoDaRun, POR_ABATE, fatorDoRendimento, XP_DA_RUN, MOEDA_DA_RUN, runsNoDia, comRendimento, encontrosDe } from '../../engine/avanco.mjs';
+import { premioDo, ganhoDaRun, POR_ABATE, fatorDoRendimento, XP_DA_RUN, MOEDA_DA_RUN, MOEDA_DOS_VISTOS_NO_TETO, runsNoDia, comRendimento, encontrosDe } from '../../engine/avanco.mjs';
 import { creditar } from '../../engine/nivel-criatura.mjs';
 import { moedasDa, idDaMoeda, idDoMaterial } from '../../engine/economia-idle.mjs';
 import { sortearItens, agrupar } from '../../engine/drops.mjs';
@@ -184,8 +184,11 @@ export function contaDaRun(pack, { run, criaturas, banco = [], motor, avancos, r
   /* A MOEDA: ramo próprio da semente; o abate paga moeda pela mesma régua do
      XP; o rendimento entra ANTES do clima, e o "+52 por clima" continua
      dizendo o que o clima de fato somou. */
+  /* DEC-31: com o teto batido, os encontros vistos pagam 35% — antes não
+     pagavam nada, e a run caía a 16% de uma cheia. */
+  const vistosNoTeto = run?.semEncontros === true ? comRendimento(vistos, MOEDA_DOS_VISTOS_NO_TETO, sorteioR()) : 0;
   const moedas = comRendimento(moedasDa(semente(derivar(raiz, 'avanco:moeda')), {
-    perfil: PERFIL_DO_AVANCO, encontros: premio.encontros.length + Math.round(premio.abates * POR_ABATE),
+    perfil: PERFIL_DO_AVANCO, encontros: premio.encontros.length + vistosNoTeto + Math.round(premio.abates * POR_ABATE),
   }), fator, sorteioR());
   const moedasComClima = Math.round(aplicarClima(moedas, bonusClima, 'moeda'));
   somar(idDaMoeda(pack), moedasComClima);

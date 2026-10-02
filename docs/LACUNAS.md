@@ -9395,15 +9395,16 @@ arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fi
 ### L-249 — o doce dá 2 XP, e o jogador espera dele um nível
 
 **Registrada em:** 02/10/2026, no 6º relato (*"dar um doce gastou o doce sem
-fazer ele evoluir"*). **Bloco dono:** **ST-2.28c** (a economia do relato).
-**Estado:** aberta — o botão passou a dizer "+2 XP" (ST-2.28a).
+fazer ele evoluir"*). **Bloco dono:** **ST-2.29** (o doce que se sente).
+**Estado:** aberta — o botão passou a dizer "+2 XP" (ST-2.28a); a ST-2.28c
+mexeu só na moeda.
 
 Medido: 1 doce = `XP_POR_DOCE` = 2 XP, ~1,4% de um nível perto do 10. A taxa
 está no teto da regra (`doce-nivel`: o teto do dia de doce rende no máximo 25%
 do XP diário do casual — 30 × 2 = 60 de 73). No gênero o doce raro é um nível
 inteiro. **Por que não cabe agora:** subir a taxa fura a regra dos 25%;
-mudar a regra (o doce como nível, mais raro) é economia e vai junto da moeda
-na ST-2.28c. **O que a destrava:** a medição da ST-2.28c.
+mudar a regra (o doce como nível, mais raro) é economia própria — a
+ST-2.29. **O que a destrava:** nada; é a fila.
 
 ### L-248 — duas suítes deixam pastas temporárias para trás
 
