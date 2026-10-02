@@ -20,7 +20,8 @@
  */
 import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
-import { criaturasDe, vagasDe, proximaVagaDe, bolsaEmLista } from './idle-dados.mjs';
+import { criaturasDe, bolsaEmLista } from './idle-dados.mjs';
+import { rotuloDaEquipeDaRun } from './avanco-relogio.mjs';
 import { falaDoClima } from './avanco-clima.mjs';
 import { retratoAnimado } from './sprites.mjs';
 import { estiloItem } from './itens-icone.mjs';
@@ -87,8 +88,7 @@ export function pintarEquipe(E, run, agora) {
   const sub = $('#avEquipeSub');
   if (!alvo) return;
   const vivas = criaturasDe(E);
-  const vagas = vagasDe(E);
-  if (sub) sub.textContent = `${run.equipe.length} de ${vagas} vaga(s)`;
+  if (sub) sub.textContent = rotuloDaEquipeDaRun(run.equipe.length);
 
   /* o XP que a run já rendeu, pela MESMA conta do "XP até aqui" (e da colheita) */
   const abates = (run.abates ?? []).reduce((a, x) => a + (Number(x?.quantos) || 0), 0);
@@ -135,16 +135,10 @@ export function pintarEquipe(E, run, agora) {
       `<div class="avSub">⚡ stamina ${s} · ${focoCurto(c, agora)}</div></div></div>`;
   }).join('');
 
-  /* A VAGA QUE FALTA MOSTRA O CAMINHO, e não só o cadeado — mesma correção do
-     D-067: uma parede sem placa é lida como o fim do jogo. */
-  const prox = proximaVagaDe(E);
-  const travada = prox
-    ? `<div class="avVaga travada"><div class="avCadeado">🔒</div>` +
-      `<div class="avQuem"><div class="avNome">${prox.vaga}ª vaga</div>` +
-      `<div class="avComoAbre">abre com ${prox.em} espécies no registro — ` +
-      `faltam ${prox.faltam}</div></div></div>`
-    : '';
-  alvo.innerHTML = linhas + travada;
+  /* D-156: aqui morava a "Nª vaga — abre com X espécies", que é a régua das
+     EXPEDIÇÕES (as vagas em campo, na ROTA OFF). A equipe da run tem teto
+     próprio (EQUIPE_MAX), e a placa dela dizia uma coisa que a run não segue. */
+  alvo.innerHTML = linhas;
 }
 
 /* ── O ANÚNCIO DO CHEFE (L-170) ───────────────────────────────────────────

@@ -8,7 +8,7 @@
  *
  * Só contas de tempo, e a frase. A tela pinta.
  */
-import { staminaAgora, REGEN_POR_HORA, TETO_ENCONTROS, PERFIS } from '../../engine/expedicao.mjs';
+import { staminaAgora, REGEN_POR_HORA, TETO_ENCONTROS, PERFIS, comprometido } from '../../engine/expedicao.mjs';
 import { STAMINA_DO_AVANCO } from '../../engine/avanco.mjs';
 import { XP_POR_HORA_TREINO } from '../../engine/ausente.mjs';
 import { relogioDoMundo } from './hora-do-dia.mjs';
@@ -31,6 +31,12 @@ export function quandoVoltaEncontro(lancamentos, agora, { teto = TETO_ENCONTROS,
   }
   return null;
 }
+
+/* D-157: o que está reservado FORA da run aberta. Durante a run o teto
+   reserva os encontros dela (D-107) — e a hora da volta contava essa reserva:
+   a rota dizia 17:50 antes da run e a run dizia 21:04. A pergunta "quando
+   volta o próximo encontro" é sobre o que vem DEPOIS desta run. */
+export const reservadoForaDaRun = t => comprometido({ ...t, reservas: [] }) - (t?.encontrosHoje ?? 0);
 
 /* A hora em que TODOS da equipe têm a stamina da run: a do mais cansado. */
 export function quandoCabeRun(membros, agora, { custo = STAMINA_DO_AVANCO, regen = REGEN_POR_HORA } = {}) {

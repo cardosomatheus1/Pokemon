@@ -47,9 +47,10 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            40% mais curta, "tentativa N" na tela (L-242).
            ST-2.28 (02/10, o 6º relato): a ST-2.28a fez a evolução CHAMAR
            ("✨ Kakuna pode evoluir para Beedrill!" embaixo da cena, D-155).
-           PRÓXIMO: ST-2.28b (D-156 "3 de 2", D-157 17:50×21:04, D-158 "+2",
-           D-154 a aba velha), depois ST-2.28c (a moeda depois do teto), e
-           então a ST-2.27d (D-151).
+           A ST-2.28b fechou os pequenos (D-154 a aba velha recarrega,
+           D-156 "3 de 3 na equipe", D-157 a mesma hora da volta, D-158 "+2
+           outros itens"). PRÓXIMO: ST-2.28c (a moeda depois do teto, L-249
+           o doce), e então a ST-2.27d (D-151).
            ST-2.27c (02/10): sem stamina, o botão diz "Equipe descansando ·
            HH:MM" e embaixo da cena "Enquanto a equipe descansa": quem tem
            stamina (botão "Sair com…"), a Batida que põe o banco a treinar

@@ -7544,6 +7544,54 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
+## D-154 — a aba aberta antes de um deploy reproduz a run com o código velho ✅ CORRIGIDO na ST-2.28b (02/10)
+
+**Achado:** o 6º relato — *"o log marcou 'estágio limpo' antes do Beedrill
+aparecer, e a run terminou com ele ainda em 100/100"*. **Bloco dono:**
+ST-2.28b.
+
+**Causa (medida por exclusão).** O motor é coerente: 58 runs simuladas com a
+wave 10 repetida, nenhum "limpou" antes de o chefe vencedor aparecer; 900
+waves de chefe, ele sempre entra e cai dentro da wave. O relógio do aparelho
+já é corrigido pelo da conta (D-145). O que sobra: com conta, o servidor decide
+e a aba REPRODUZ — e uma aba aberta antes do deploy da ST-2.27b reproduz com o
+código velho (a repetida sem os 60%, outro chefe). O servidor fecha a run
+antes, e a tela ainda mostra o chefe inteiro. O aviso "o jogo foi atualizado"
+(ST-2.26a) existia, mas só avisava.
+
+**Conserto.** Com conta e uma run na conta, a versão nova recarrega a aba (o que
+vale está no servidor; recarregar não perde nada). Sem conta, o aviso basta —
+a run é do aparelho e o código dele é a régua.
+
+**Teste que trava:** `relato6` — "D-154". S2664, S2665 PEGOU.
+
+## D-156 — "3 de 2 vaga(s)": a equipe da run medida pelas vagas de expedição ✅ CORRIGIDO na ST-2.28b (02/10)
+
+**Achado:** o 6º relato. **Causa.** O cabeçalho da equipe da run escrevia
+`${run.equipe.length} de ${vagasDe(E)} vaga(s)` — `vagasDe` é quantas
+EXPEDIÇÕES cabem em campo (por espécies vistas), outra régua; a equipe da run
+tem teto `EQUIPE_MAX` (3). O mesmo painel mostrava a placa "Nª vaga — abre com
+X espécies", também das expedições. **Conserto.** "3 de 3 na equipe", e a
+placa saiu da run (ela continua onde vale, na ROTA OFF). **Teste que trava:**
+`relato6` — "D-156". S2661 PEGOU.
+
+## D-157 — a hora da volta contava a reserva da própria run (17:50 × 21:04) ✅ CORRIGIDO na ST-2.28b (02/10)
+
+**Achado:** o 6º relato — a rota dizia o próximo encontro às 17:50 e a run
+aberta, às 21:04. **Causa.** Durante a run o teto reserva os encontros dela
+(D-107), e `voltaDoEncontro` (aparelho) e `teto.voltaEm` (servidor) somavam
+essa reserva — a pergunta "quando volta" virava "quando volta depois de mais
+5", e a hora pulava horas. **Conserto.** `reservadoForaDaRun` (camada 0), nos
+dois lados. **Teste que trava:** `relato6` — os dois "D-157" (a mesma hora com
+e sem a run aberta). S2662 PEGOU.
+
+## D-158 — "+2" sem nome no fim da linha da bolsa ✅ CORRIGIDO na ST-2.28b (02/10)
+
+**Achado:** o 6º relato. **Causa.** O resumo embaixo da cena mostra três
+itens e o resto como " · +2" — lido como um item sem nome. **Conserto.** "+2
+outros itens" / "+1 outro item". **Teste que trava:** `relato6` — "D-158";
+`comeco-treinador`. S2663 PEGOU.
+
 ## D-155 — a evolução existia e ninguém a via; o clique que falhava calava ✅ CORRIGIDO na ST-2.28a (02/10)
 
 **Achado:** o 6º relato do dono — *"o Kakuna chegou ao nível 10 e continuou

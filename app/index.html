@@ -9728,7 +9728,8 @@ import { renderLiga } from './modules/liga-tela.mjs';
 /* Mesma razão do import da Liga: o módulo se liga sozinho ao clique do menu,
    e sem o import ele nunca é CARREGADO — a aba abriria vazia. */
 import { renderIdle } from './modules/idle-tela.mjs';
-import { idleNoServidor } from './modules/idle-conta.mjs';
+import { idleNoServidor, recarregaNaVersaoNova } from './modules/idle-conta.mjs';
+import { carregar as carregarIdle } from './modules/idle-dados.mjs';
 import { sincronizarIdleDaConta } from './modules/idle-servidor.mjs';
 /* Mesma razao do import da Liga e do idle: sem ele o modulo nunca e CARREGADO,
    e a aba abre vazia. */
@@ -9972,7 +9973,13 @@ async function ligarModoServidor(){
 
 (async function boot(){
   /* D-145: a aba aberta antes de uma atualização roda a regra velha. */
-  api.aoMudarVersao(() => { const b = $('#novaVersao'); if (b) b.hidden = false; });
+  api.aoMudarVersao(() => {
+    const b = $('#novaVersao'); if (b) b.hidden = false;
+    /* D-154: com uma run na conta, a aba velha reproduziria a run com outro
+       código — recarrega já, porque o que vale está no servidor. */
+    let run = null; try { run = carregarIdle()?.run ?? null; } catch { /* sem save, sem run */ }
+    if (recarregaNaVersaoNova({ conta: idleNoServidor(api.temSessao()), run })) location.reload();
+  });
   /* ST-2.26: uma aba parada numa vista que não chama a API nunca via a versão
      nova. Pergunta à /saude de tempos em tempos e ao voltar para a aba. */
   setInterval(() => { if (!document.hidden) api.get('/saude'); }, 3 * 60_000);

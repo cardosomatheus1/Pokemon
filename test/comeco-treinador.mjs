@@ -123,7 +123,7 @@ export async function suite() {
     const rot = id => ({ poke: 'Poké Ball', pocao: 'Poção', fogo: 'Pedra do Fogo', moeda: 'moeda' })[id] ?? id;
     const r = resumoDaBolsa([{ id: 'fogo', quantidade: 1 }, { id: 'pocao', quantidade: 3 }, { id: 'poke', quantidade: 10 }, { id: 'moeda', quantidade: 50 }],
       { rotulo: rot, primeiro: ['poke', 'pocao'] });
-    igual(r.texto, '🎒 na bolsa: 10 Poké Ball · 3 Poção · 1 Pedra do Fogo · +1 — ver tudo ↓', 'a ordem ou o texto da linha mudou');
+    igual(r.texto, '🎒 na bolsa: 10 Poké Ball · 3 Poção · 1 Pedra do Fogo · +1 outro item — ver tudo ↓', 'a ordem ou o texto da linha mudou');
     igual(resumoDaBolsa([], {}).vazia, true, 'a bolsa vazia não diz que está vazia');
     ok(/Loja/.test(resumoDaBolsa([{ id: 'x', quantidade: 0 }]).texto), 'a bolsa vazia não aponta a loja');
     const pag = fonte('../app/index.html'), tela = fonte('../app/modules/avanco-tela.mjs'), pain = fonte('../app/modules/idle-paineis.mjs');

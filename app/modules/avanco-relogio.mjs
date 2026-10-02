@@ -13,6 +13,13 @@
  * O fim da wave vai sempre junto: é o "quanto falta" que o relógio grande
  * conta, agora com nome. */
 
+import { EQUIPE_MAX } from '../../engine/expedicao.mjs';
+
+/* D-156: o cabeçalho da equipe da run. Dividia a equipe pelas VAGAS DE
+   EXPEDIÇÃO (`vagasDe`) — outra régua —, e saía "3 de 2 vaga(s)". A equipe
+   da run tem o teto dela. */
+export const rotuloDaEquipeDaRun = n => `${n} de ${EQUIPE_MAX} na equipe`;
+
 /* mm:ss. A run dura ~40 min e a wave 2 a 4; hora cheia seria ruído, e segundos
    sem minutos deixariam de responder "quanto falta". */
 export const relogioDaWave = ms => {

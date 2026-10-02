@@ -15,6 +15,7 @@ export function resumoDaBolsa(lista, { primeiro = [], rotulo = id => id, max = 3
   const top = [...tem].sort((a, b) => ordem(a.id) - ordem(b.id)).slice(0, max);
   const resto = tem.length - top.length;
   const itens = top.map(i => i.quantidade + ' ' + rotulo(i.id)).join(' · ');
-  const mais = resto > 0 ? ' · +' + resto : '';
+  /* D-158: o resto diz o que é — "+2" sozinho lia como um item sem nome */
+  const mais = resto > 0 ? ` · +${resto} ${resto === 1 ? 'outro item' : 'outros itens'}` : '';
   return { vazia: false, texto: '🎒 na bolsa: ' + itens + mais + ' — ver tudo ↓' };
 }

@@ -56,6 +56,15 @@ export const desvioDoRelogio = ({ servidor, local }) =>
   (Number.isFinite(servidor) && Number.isFinite(local) ? desvioValido(servidor - local) : 0);
 export const agoraDaConta = (e, local) => local + desvioValido(e?.conta?.desvio);
 
+/* ── A VERSÃO NOVA NO MEIO DE UMA RUN (D-154) ─────────────────────────────
+ * A run é reproduzida dos dois lados. Uma aba aberta antes de um deploy
+ * reproduz com o código VELHO — outra duração da wave repetida, outro chefe —
+ * e o servidor, com o novo, fecha a run antes: "estágio limpo" com o chefe
+ * em 100/100 na tela. Com conta e uma run na conta, recarregar não perde nada
+ * (está tudo no servidor) e põe os dois lados no mesmo código. Sem conta, a
+ * run é do aparelho e o código dele é a régua: o aviso basta. */
+export const recarregaNaVersaoNova = ({ conta, run }) => !!conta && !!run;
+
 /* ── O 409 (ST-2.22b) ─────────────────────────────────────────────────────
  * Conflito quer dizer que a conta mudou por outro caminho: a tela relê, e a
  * mensagem diz isso. A run que o servidor já fechou tem frase própria. */

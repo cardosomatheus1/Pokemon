@@ -92,7 +92,7 @@ export async function suite() {
     const corpo = html.slice(html.indexOf('async function ligarModoServidor'), html.indexOf('(async function boot'));
     ok(/if \(idleNoServidor\(api\.temSessao\(\)\)\) await sincronizarIdleDaConta\(\{ api \}\);/.test(corpo), 'o boot não lê o idle da conta (ou lê sem a chave)');
     ok(corpo.indexOf('sincronizarIdleDaConta') > corpo.indexOf('await hidratarPerfil()'), 'a conta do idle é lida antes da sessão estar hidratada');
-    ok(/import \{ idleNoServidor \} from '\.\/modules\/idle-conta\.mjs'/.test(html) && /import \{ sincronizarIdleDaConta \} from '\.\/modules\/idle-servidor\.mjs'/.test(html), 'o boot sem os imports da conta');
+    ok(/import \{ idleNoServidor[\w, ]*\} from '\.\/modules\/idle-conta\.mjs'/.test(html) && /import \{ sincronizarIdleDaConta \} from '\.\/modules\/idle-servidor\.mjs'/.test(html), 'o boot sem os imports da conta');
     /* A tela pinta o aviso a cada leitura do save — e ele nasce escondido nas duas abas. */
     ok(/E = carregar\(\);\s*avisarConta\(E\);/.test(fonte('app/modules/idle-tela.mjs')), 'a tela do idle não pinta o aviso da conta');
     ok(/<p id="idleConta" class="idleConta" role="status" hidden><\/p>/.test(html) && /<p id="offConta" class="idleConta" role="status" hidden><\/p>/.test(html), 'o aviso da conta falta numa das abas, ou nasce à vista');

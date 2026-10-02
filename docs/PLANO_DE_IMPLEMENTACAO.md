@@ -2531,7 +2531,7 @@ do servidor. Três partes:
   a primeira versão lia só a fonte, e S2640/S2641 escaparam).
   S2637–S2642 PEGOU. **Mutantes de navegador: 0.** Nenhuma fixture mudou.
 
-### ST-2.28 · O 6º relato do dono (D-154 a D-158, L-249) ⏳ — a ST-2.28a feita; seguem a b (os pequenos) e a c (a moeda depois do teto)
+### ST-2.28 · O 6º relato do dono (D-154 a D-158, L-249) ⏳ — a ST-2.28a e a b feitas; segue a c (a moeda depois do teto)
 - **O relato (02/10):** a evolução não acontece (o Kakuna no nível 10 seguiu
   Kakuna; o doce gastou sem evoluir); o chefe "fora de ordem" ("estágio
   limpo" antes do Beedrill aparecer, ele em 100/100 no fim); "3 de 2
@@ -2567,9 +2567,14 @@ do servidor. Três partes:
   420, o clique evolui (Kakuna → Beedrill) e a chamada passa ao Metapod da
   caixa. Testes: `evolucao-idle` +4; S2655–S2660 PEGOU; S1943 realvo.
   Mutantes de navegador: 0.
-- **ST-2.28b (a seguir):** D-156 (a equipe sobre o teto dela), D-157 (a
-  volta sem a reserva da própria run), D-158 ("+2 outros itens"), D-154 (a
-  aba velha recarrega quando a versão muda no meio de uma run).
+- **ST-2.28b ✅ 02/10 — os pequenos:** D-156 ("3 de 3 na equipe"; a placa
+  das vagas de expedição saiu do painel da run), D-157 (`reservadoForaDaRun`:
+  a hora da volta é a mesma com e sem a run aberta, no aparelho e no
+  servidor), D-158 ("+2 outros itens"), D-154 (com conta e uma run na conta,
+  a versão nova recarrega a aba). Q5: a run com três em 1440 e 420 — "3 de 3
+  na equipe", sem placa; a bolsa com cinco itens. Testes: `relato6` (novo,
+  5); `comeco-treinador` (a linha da bolsa). S2661–S2665 PEGOU. Mutantes de
+  navegador: 0.
 - **ST-2.28c (depois):** a moeda depois do teto e o rendimento do dia —
   medidos contra os três jogadores da DEC-28 antes de qualquer número
   (recomendação: a run com o teto batido paga parte dos encontros vistos, e o

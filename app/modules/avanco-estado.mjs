@@ -24,13 +24,13 @@ import { acharCriatura, criaturasDe, estadoDoTeto, salvar,
          motivoDaOcupada, lancarRunNoTeto, emCampo, vagasDe } from './idle-dados.mjs';
 import { estagioAberto, estagioMaximo, nivelDoEstagio } from '../../engine/estagios.mjs';
 import { podeAvancar, cabeAvanco, STAMINA_DO_AVANCO, curaDe, ENCONTROS_POR_AVANCO } from '../../engine/avanco.mjs';
-import { quandoVoltaEncontro, quandoCabeRun, fraseDaVolta,
+import { quandoVoltaEncontro, quandoCabeRun, fraseDaVolta, reservadoForaDaRun,
          enquantoDescansa, fraseDoEnquanto, rotuloDaVolta } from './volta-dados.mjs';
 /* A COSTURA DO CLIMA mora em `avanco-clima.mjs`: aqui é o que a run FAZ, lá é o
    que o tempo faz com ela. */
 import { climaDaRun, ritmoDoClima } from './avanco-clima.mjs';
 import { repertorio } from '../../engine/repertorio.mjs';
-import { restamEncontros, tetoDeEncontros, comprometido, cabeExpedicao, EQUIPE_MAX } from '../../engine/expedicao.mjs';
+import { restamEncontros, tetoDeEncontros, cabeExpedicao, EQUIPE_MAX } from '../../engine/expedicao.mjs';
 import { cenaDaRun, recuarRun, emCurso } from '../../engine/run-avanco.mjs';
 import { novaRaiz } from '../../engine/seed.mjs';
 import { linhaDaRun, noHistorico } from './historico-dados.mjs';
@@ -111,7 +111,7 @@ export function avisoDoTeto(e, { pack, agora }) {
 export function voltaDoEncontro(e, { pack, agora }) {
   const t = estadoDoTeto(e, agora, pack);
   const local = quandoVoltaEncontro([...(e.expedicoes ?? []), ...(e.avancos ?? [])], agora,
-    { teto: tetoDeEncontros(t.vistas, t.total), reservado: comprometido(t) - t.encontrosHoje, precisa: ENCONTROS_POR_AVANCO });
+    { teto: tetoDeEncontros(t.vistas, t.total), reservado: reservadoForaDaRun(t), precisa: ENCONTROS_POR_AVANCO });
   const doServidor = e.conta?.teto?.voltaEm;
   return Number.isFinite(doServidor) ? Math.max(doServidor, local ?? 0) : local;
 }
