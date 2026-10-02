@@ -7481,6 +7481,27 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   50%{box-shadow:0 0 0 6px rgba(var(--goldRGB),.15),0 0 34px rgba(var(--goldRGB),.95),0 8px 18px rgba(0,0,0,.5)}}
 @media (prefers-reduced-motion:reduce){ .idleIniciar{animation:none} }
 #viewIdle.emRun .idleIniciar{display:none}
+/* ST-2.27c: a equipe descansando — o botão diz a hora, e três "z" sobem dele.
+   Neon e não pixel: é interface, e o mundo embaixo continua andando. */
+.idleIniciar.descanso{color:#cfe8ff; border-color:rgba(120,190,255,.45); box-shadow:0 0 16px rgba(80,160,255,.25)}
+.idleZz{position:absolute; right:-6px; top:-14px; font-style:normal; font-family:var(--dsp); font-size:.8rem;
+  color:#9fd4ff; text-shadow:0 0 6px rgba(80,160,255,.8); pointer-events:none}
+.idleZz, .idleZz b{display:inline-block; animation:zzSobe 2.6s ease-in-out infinite}
+.idleZz b{font-size:.8em; margin-left:1px; animation-delay:.4s}
+.idleZz b + b{animation-delay:.8s}
+@keyframes zzSobe{0%,100%{transform:translateY(0); opacity:.35}50%{transform:translateY(-5px); opacity:1}}
+@media (prefers-reduced-motion:reduce){ .idleZz, .idleZz b{animation:none} }
+.idleEnquanto{display:flex; flex-direction:column; gap:4px; margin:8px 0 2px; padding:8px 12px; border-radius:9px;
+  background:rgba(80,160,255,.06); border:1px solid rgba(120,190,255,.3); border-left:3px solid #6fb8ff;
+  font-size:.76rem; line-height:1.45; color:var(--txt)}
+.idleEnquanto[hidden]{display:none}
+.idleEnquanto .enqTit{font-family:var(--dsp); font-size:.68rem; letter-spacing:.08em; text-transform:uppercase; color:#9fd4ff}
+.idleEnquanto .enqLinha::before{content:'›'; color:#6fb8ff; margin-right:6px}
+.idleEnquanto .enqSair{align-self:flex-start; margin-top:4px; padding:6px 14px; border-radius:9px; cursor:pointer;
+  font-family:var(--dsp); font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+  color:#08131f; background:var(--gold); border:1px solid #fff; box-shadow:0 0 12px rgba(var(--goldRGB),.5)}
+.idleEnquanto .enqSair:hover{filter:brightness(1.08)}
+#viewIdle.emRun .idleEnquanto{display:none}
 .idleBolsaAtalho{display:block; width:100%; margin:8px 0 2px; padding:6px 10px; border-radius:9px;
   background:rgba(255,255,255,.03); border:1px solid var(--line); color:var(--txt);
   font:inherit; font-size:.74rem; text-align:left; cursor:pointer}
@@ -7491,6 +7512,9 @@ body.tremeTela{animation:tremeTela .7s ease-out}
    cena, sem a legenda — grande o bastante para o polegar, sem tapar o boneco */
 @media (max-width:640px){
   .idleIniciar{bottom:8px; padding:8px 18px; font-size:.82rem; border-radius:11px; white-space:nowrap}
+  /* a recusa que não é stamina (estágio, caixa) é frase: quebra em vez de
+     sair cortada pelas bordas do palco (D-152) */
+  .idleIniciar:disabled:not(.descanso){white-space:normal; width:calc(100% - 24px); font-size:.68rem; line-height:1.35}
   .idleIniciar small{display:none}
 }
 #idleAvancar.chamado{animation:chamaAvancar 1.2s ease-out}
@@ -8543,6 +8567,9 @@ body.soAssiste .pick{cursor:pointer}
       <!-- O QUE SE TEM NA BOLSA, embaixo da cena (ST-2.12 — "onde vejo meus
            itens?"). No celular o cartão da bolsa fica várias telas abaixo; esta
            linha diz o que importa para a run e leva até ele. -->
+      <!-- SEM STAMINA, O QUE AINDA VALE (ST-2.27c, L-244): logo abaixo da cena,
+           porque é ali que o botão disse "descansando". -->
+      <p class="idleEnquanto" id="idleEnquanto" hidden></p>
       <button type="button" class="idleBolsaAtalho" id="idleBolsaAtalho" hidden></button>
       <!-- O BOTÃO GRANDE DE INICIAR mora DENTRO do palco (#idleIniciar, acima).
            Pedidos do dono, 01/10: "não tem o tempo de cada volta, pra saber

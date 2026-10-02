@@ -13,9 +13,10 @@
  */
 import { readFileSync } from 'node:fs';
 import { criarSuite, ok, igual } from './harness.mjs';
-import { quandoVoltaEncontro, quandoCabeRun, fraseDaVolta } from '../app/modules/volta-dados.mjs';
+import { quandoVoltaEncontro, quandoCabeRun, fraseDaVolta, enquantoDescansa, fraseDoEnquanto, painelDoEnquanto } from '../app/modules/volta-dados.mjs';
 import { STAMINA_DO_AVANCO } from '../engine/avanco.mjs';
-import { REGEN_POR_HORA, TETO_ENCONTROS } from '../engine/expedicao.mjs';
+import { REGEN_POR_HORA, TETO_ENCONTROS, PERFIS } from '../engine/expedicao.mjs';
+import { XP_POR_HORA_TREINO } from '../engine/ausente.mjs';
 
 const H = 3600_000, T0 = Date.UTC(2026, 9, 5, 15);   // 12:00 em Brasília
 const fonte = f => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
@@ -66,6 +67,81 @@ export function suite() {
     ok(/stamina/.test(porque) && /pode sair de novo (amanhã )?às \d\d:\d\d/.test(porque), `a recusa por stamina não diz quando a equipe sai: ${porque}`);
     ok(/voltaEm/.test(fonte('server/colecao-rotas.mjs')), 'com conta, o servidor não manda a hora do próximo encontro');
     ok(/voltaEm/.test(fonte('app/modules/idle-conta.mjs')), 'a hora do servidor não volta do disco');
+  });
+
+  /* ── ST-2.27c: SEM STAMINA, O QUE AINDA VALE ──────────────────────────
+     O "não" com hora (ST-2.27a) diz quando voltar; ele não diz o que fazer
+     ATÉ lá. E há o que fazer: outra criatura com stamina sai agora, e uma
+     expedição põe o banco para treinar. Calar sobre isso é o "23 h parado". */
+  const bicho = (id, st, extra = {}) => ({ id, stamina: st, staminaEm: T0, ...extra });
+
+  s.teste('sem stamina, quem MAIS da coleção pode sair agora — fora da caixa, fora de campo, fora da equipe', () => {
+    const r = enquantoDescansa({ agora: T0, equipe: ['a'], vagas: 1,
+      criaturas: [bicho('a', 5), bicho('b', 60), bicho('c', STAMINA_DO_AVANCO - 1), bicho('d', 90, { naCaixa: true }), bicho('e', 90)],
+      expedicoes: [{ equipe: ['e'] }] });
+    igual(r.troca.join(','), 'b', 'a troca ofereceu quem não pode sair (ou esqueceu quem pode)');
+  });
+
+  s.teste('com a vaga livre e alguém com a stamina da Batida, a expedição cabe AGORA — e o banco treina', () => {
+    const r = enquantoDescansa({ agora: T0, equipe: ['a'], vagas: 1,
+      criaturas: [bicho('a', PERFIS.batida.custo), bicho('b', 3)], expedicoes: [] });
+    igual(r.expedicao, T0, 'a Batida cabe agora e a decisão disse que não');
+    igual(r.banco, 1, 'quem fica no banco quando a expedição sai');
+    const f = fraseDoEnquanto(r, T0).join(' ');
+    ok(/Batida/.test(f) && /ROTA OFF/.test(f) && new RegExp(`\\+${XP_POR_HORA_TREINO} XP por hora`).test(f), `a frase não diz o treino: ${f}`);
+  });
+
+  s.teste('sem ninguém com a stamina da Batida, a expedição cabe na hora do MENOS cansado', () => {
+    const r = enquantoDescansa({ agora: T0, equipe: ['a'], vagas: 1,
+      criaturas: [bicho('a', 2), bicho('b', 14)], expedicoes: [] });
+    igual(r.expedicao, T0 + Math.ceil((PERFIS.batida.custo - 14) / REGEN_POR_HORA * H), 'a hora não é a do menos cansado');
+    ok(/expedição cabe às \d\d:\d\d/.test(fraseDoEnquanto(r, T0).join(' ')), 'a frase não diz a hora da expedição');
+  });
+
+  s.teste('com a expedição já em campo, a frase diz quem está treinando agora — e não manda outra', () => {
+    const r = enquantoDescansa({ agora: T0, equipe: ['a'], vagas: 1,
+      criaturas: [bicho('a', 2), bicho('b', 2), bicho('c', 80)], expedicoes: [{ equipe: ['c'] }] });
+    igual(r.treinando, 2, 'quantos treinam enquanto a expedição corre');
+    igual(r.expedicao, null, 'ofereceu expedição sem vaga');
+    const f = fraseDoEnquanto(r, T0).join(' ');
+    ok(/2 no banco treinando agora/.test(f) && !/Mande/.test(f), `a frase com a expedição em campo: ${f}`);
+  });
+
+  s.teste('o teto cheio fecha a expedição; sem nada a fazer, a frase cala', () => {
+    const r = enquantoDescansa({ agora: T0, equipe: ['a'], vagas: 1, cabeNoTeto: false,
+      criaturas: [bicho('a', 2), bicho('b', 50)], expedicoes: [] });
+    igual(r.expedicao, null, 'ofereceu expedição com o teto cheio');
+    igual(fraseDoEnquanto({ troca: [], treinando: 0, expedicao: null, banco: 0 }, T0), null, 'inventou o que fazer');
+  });
+
+  s.teste('a tela das Rotas diz o "enquanto isso" quando a recusa é stamina — e o botão no palco fica curto', async () => {
+    const D = await import('../app/modules/idle-dados.mjs');
+    const { enquantoSemStamina, rotuloDoDescanso } = await import('../app/modules/avanco-estado.mjs');
+    const PACK = (await import('../content/escolhido.mjs')).default;
+    const e = D.VAZIO();
+    const a = D.criarCriatura(PACK, 1, 'captura', T0, 'desc'.padStart(12, 'd') + 'a0');
+    const b = D.criarCriatura(PACK, 4, 'captura', T0, 'desc'.padStart(12, 'd') + 'b0');
+    a.stamina = 3; a.staminaEm = T0; b.stamina = 70; b.staminaEm = T0;
+    e.criaturas.push(a, b);
+    const enq = enquantoSemStamina(e, { pack: PACK, equipe: [a.id], agora: T0 });
+    const linhas = enq?.linhas ?? [];
+    igual((enq?.troca ?? []).join(','), b.id, 'o botão "sair com" não leva quem tem stamina');
+    ok(linhas.some(l => /stamina para a run/.test(l)), `não ofereceu a outra criatura: ${linhas.join(' | ')}`);
+    ok(linhas.some(l => /Batida/.test(l)), `não ofereceu a expedição: ${linhas.join(' | ')}`);
+    igual(enquantoSemStamina(e, { pack: PACK, equipe: [b.id], agora: T0 }), null, 'com a equipe descansada, falou de descanso');
+    const painel = painelDoEnquanto(enq, id => id === b.id ? 'Bê' : '?') ?? '';
+    ok(new RegExp(`data-sair-com="${b.id}"`).test(painel) && /Sair com Bê/.test(painel), `o painel sem o botão "sair com": ${painel}`);
+    igual(painelDoEnquanto(null), null, 'painel sem nada a dizer');
+    /* com o teto de encontros cheio, a Batida seria recusada — a tela não a oferece */
+    e.avancos = [{ colhidaEm: T0 - H, encontros: TETO_ENCONTROS + 10 }];
+    const cheio = enquantoSemStamina(e, { pack: PACK, equipe: [a.id], agora: T0 })?.linhas ?? [];
+    ok(!cheio.some(l => /Batida|expedição cabe/.test(l)), `ofereceu expedição com o teto cheio: ${cheio.join(' | ')}`);
+    const rot = rotuloDoDescanso(e, { equipe: [a.id], agora: T0 }) ?? '';
+    ok(rot.length <= 34 && /\d\d:\d\d/.test(rot), `o rótulo do botão no palco não cabe ou não tem hora: "${rot}"`);
+    ok(/enquantoSemStamina/.test(fonte('app/modules/avanco-tela.mjs')) && /idleEnquanto/.test(fonte('app/index.html')),
+      'a tela das Rotas não pinta o "enquanto isso"');
+    ok(/painelDoEnquanto/.test(fonte('app/modules/avanco-tela.mjs')) && /\[data-sair-com\]/.test(fonte('app/modules/idle-tela.mjs')),
+      'o "sair com" não é um botão que troca a equipe');
   });
 
   return s;

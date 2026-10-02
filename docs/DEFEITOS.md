@@ -7544,6 +7544,27 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
+## D-152 — no celular, a recusa por stamina saía cortada no botão sobre a cena ✅ CORRIGIDO na ST-2.27c (02/10)
+
+**Achado:** na captura de 420 px da ST-2.27c, ao olhar o estado antes de
+mexer: *"STAMINA QUE UM AVANÇO CUSTA. A EQUIPE."*, cortado nas duas pontas.
+**Bloco dono:** ST-2.27c. A captura da ST-2.27a já mostrava isso — eu abri e
+não li (Q5, a segunda metade).
+
+**Causa.** O botão de iniciar mora sobre a cena e, no celular, é uma faixa de
+UMA linha (`white-space: nowrap`, para não tapar o boneco). A ST-2.27a
+alongou a recusa por stamina com a hora da volta, e a frase passou a ter três
+vezes a largura do palco. As outras recusas (estágio, caixa) tinham o mesmo
+risco, mais curto.
+
+**Conserto.** Sem stamina, o botão diz só "Equipe descansando · HH:MM" (o
+resto vai para o painel embaixo da cena); as outras recusas quebram linha no
+celular, dentro do palco. Medido: o botão dentro do palco em 1440, 420,
+390×844 e 375×667.
+
+**Teste que trava:** `volta-dados` — o rótulo do botão no palco tem hora e
+cabe em 34 caracteres. S2653 PEGOU.
+
 ## D-151 — a medição da emissão não vê a regeneração da stamina ⏳ ABERTO (02/10)
 
 **Achado:** ao aplicar a DEC-29 (20 → 30/h), a suíte inteira passou sem

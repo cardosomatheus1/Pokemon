@@ -2531,6 +2531,36 @@ do servidor. Três partes:
   a primeira versão lia só a fonte, e S2640/S2641 escaparam).
   S2637–S2642 PEGOU. **Mutantes de navegador: 0.** Nenhuma fixture mudou.
 
+### ST-2.27c · Sem stamina, o que ainda vale (L-244, D-152) ✅ 02/10
+- **Medido antes:** com a equipe sem stamina, a tela das Rotas só dizia "não"
+  (com hora, desde a ST-2.27a) — e no celular nem isso: a frase inteira
+  morava no botão sobre a cena, numa linha só, e saía cortada nas duas pontas
+  (D-152, que a captura da própria ST-2.27a tinha e eu não li). O treino do
+  banco (`XP_POR_HORA_TREINO`) existia, mas só aparecia na ROTA OFF.
+- **Desenho:** nada de renda nova (a DEC-29d acabou de equilibrar o dia): o
+  treino só roda durante uma expedição, e assim continua. O que muda é a
+  LEITURA: (1) o botão sobre a cena fica curto — "Equipe descansando · 10:31",
+  com três "z" subindo, e o custo por criatura na legenda; (2) logo abaixo da
+  cena, "Enquanto a equipe descansa": quem da coleção tem stamina para a run
+  (com um botão "Sair com Pidgey e Rattata" que troca a equipe num clique), a
+  Batida na ROTA OFF que põe o banco para treinar +3 XP/h — ou a hora em que
+  ela cabe, ou quantos já estão treinando com a expedição em campo. Com o teto
+  de encontros cheio, a Batida não é oferecida (seria recusada).
+- **Camada 0:** `volta-dados.mjs` ganhou `enquantoDescansa`,
+  `fraseDoEnquanto`, `painelDoEnquanto` e `rotuloDaVolta`; o
+  `avanco-estado.mjs` só junta o estado (`enquantoSemStamina`,
+  `rotuloDoDescanso`); a tela põe o texto na página. As outras recusas no
+  palco (estágio, caixa) passam a quebrar linha no celular em vez de cortar.
+- **Q5:** Rotas em 1440 e 420 nos quatro casos (troca possível, todos
+  cansados, só a Batida, expedição em campo) e em 390×844 e 375×667; o botão
+  dentro do palco nos oito; o clique em "Sair com…" troca a equipe e o botão
+  volta a "Iniciar batalhas". Sem `pageerror`.
+- **Testes:** `volta-dados` (+6). S2647–S2654 PEGOU (linha de base verde
+  conferida). **Mutantes de navegador: 0** — a decisão e o HTML do painel
+  moram em Node.
+- **Fica para a ST-2.27d:** o D-151 (a emissão medindo o maratona com 8 runs
+  por criatura, um número de quando a stamina era 8/h).
+
 ### ST-2.27b · A wave repetida não cansa (L-242) ✅ 02/10
 - **Medido antes:** cada tentativa já tinha semente própria e o chefe já era
   sorteado de novo — mas a Floresta tem dois, e ele repetia em metade das
@@ -2548,7 +2578,7 @@ do servidor. Três partes:
 - **Testes:** `wave-repetida` (novo, 4). S2643–S2646 PEGOU; S831 e S2572
   realvos. Mutantes de navegador: 0.
 
-### ST-2.27 · A forma do dia: a run que não cansa e o dia que não se esgota em 35 min (DEC-28, L-242, L-243, L-244) ⏳ — a alavanca 1 recusada (DEC-30), a 2 feita (ST-2.27a), a 3 feita (ST-2.27b); segue a 4 (o treino à vista)
+### ST-2.27 · A forma do dia: a run que não cansa e o dia que não se esgota em 35 min (DEC-28, L-242, L-243, L-244) ⏳ — a alavanca 1 recusada (DEC-30), a 2 feita (ST-2.27a), a 3 feita (ST-2.27b), a 4 feita (ST-2.27c); segue o D-151 (ST-2.27d: as runs por dia da emissão saindo do motor)
 - **Por quê:** o 5º relato (*"waves de 30 a 60 s com o mesmo chefe cansam"*,
   *"a stamina pesa com dois em campo"*) e o dono, 02/10: *"não quero o cara
   entrando no jogo por 1h e deixando 23h parado"*.

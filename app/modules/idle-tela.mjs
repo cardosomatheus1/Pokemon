@@ -545,11 +545,12 @@ document.addEventListener('click', async ev => {
     return;
   }
 
-  const c = ev.target.closest(nasDuas('[data-cria]'));
-  if (c) {
-    const id = c.dataset.cria;
-    equipeEscolhida = equipeEscolhida.includes(id)
-      ? equipeEscolhida.filter(x => x !== id)
+  const sair = ev.target.closest(nasDuas('[data-sair-com]'));   // ST-2.27c: troca a equipe num clique
+  const c = sair ? null : ev.target.closest(nasDuas('[data-cria]'));
+  if (sair || c) {
+    const id = c?.dataset.cria;
+    equipeEscolhida = sair ? sair.dataset.sairCom.split(',').filter(Boolean).slice(0, EQUIPE_MAX)
+      : equipeEscolhida.includes(id) ? equipeEscolhida.filter(x => x !== id)
       : (equipeEscolhida.length < EQUIPE_MAX ? [...equipeEscolhida, id] : equipeEscolhida);
     cartoes(); atualizarBotao(); avisarCompanheiro(E, biomaEscolhido, equipeEscolhida, agora());
     return;

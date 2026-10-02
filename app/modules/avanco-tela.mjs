@@ -33,8 +33,9 @@ import { api } from './api.mjs';
 import { relatar, eventosDoEstado } from './telemetria-servidor.mjs';
 import { comecarNa, recuarNa, pocaoNa, colherRunNa } from './idle-acoes.mjs';   // ST-13.5c: com conta, pelo servidor
 import { runDe, avancoEmCurso, sincronizar, cena,
-         porQueNaoAvancar, avisoDoTeto, equipeDaRun, voltaDoEncontro } from './avanco-estado.mjs';
-import { fraseDaVolta } from './volta-dados.mjs';
+         porQueNaoAvancar, avisoDoTeto, equipeDaRun, voltaDoEncontro,
+         enquantoSemStamina, rotuloDoDescanso } from './avanco-estado.mjs';
+import { fraseDaVolta, painelDoEnquanto } from './volta-dados.mjs';
 import { usarCena } from './avanco-cena.mjs';
 import { pintarColunaDaRun } from './avanco-painel.mjs';
 import { mostrarBioma, acompanhar } from './idle-mundo.mjs';
@@ -508,17 +509,36 @@ export function ligarAvanco({ estado, escolha, recarregar, avisar, agora }) {
 export function atualizarBotaoAvancar(E, escolha, agora) {
   const av = $('#idleAvancar');
   if (!av) return;
-  const porque = porQueNaoAvancar(E, { pack: PACK, agora, ...escolha() });
+  const sel = escolha();
+  const porque = porQueNaoAvancar(E, { pack: PACK, agora, ...sel });
   av.disabled = !!porque;
   av.title = porque ?? 'dez waves, chefe na décima — e você assiste';
   av.textContent = porque ?? '⚔ Avançar (assistido)';
   av.classList.toggle('pri', !porque);
   const grande = $('#idleIniciar');
+  /* ── SEM STAMINA, O BOTÃO NO PALCO É CURTO, E O RESTO VAI EMBAIXO (ST-2.27c) ──
+     A recusa inteira não cabia sobre a cena: no celular ela saía cortada nas
+     duas pontas. Sobre a cena fica "Equipe descansando · HH:MM"; embaixo, o
+     que fazer até lá — outra criatura com stamina, ou a expedição que põe o
+     banco para treinar. Sem isso, o "não" era o fim da sessão. */
+  const descanso = porque ? rotuloDoDescanso(E, { equipe: sel.equipe, agora }) : null;
   if (grande) {
     grande.disabled = !!porque;
-    grande.innerHTML = porque
-      ? `${porque}`
-      : '⚔ Iniciar batalhas<small>os selvagens aparecem na run · o relógio diz quando vem o próximo</small>';
+    grande.classList.toggle('descanso', !!descanso);
+    grande.innerHTML = descanso
+      ? `<i class="idleZz" aria-hidden="true">z<b>z</b><b>z</b></i>${descanso}` +
+        `<small>a run custa ${STAMINA_DO_AVANCO} de stamina a cada criatura</small>`
+      : porque
+        ? `${porque}`
+        : '⚔ Iniciar batalhas<small>os selvagens aparecem na run · o relógio diz quando vem o próximo</small>';
+  }
+  const enq = $('#idleEnquanto');
+  if (enq) {
+    const nome = dex => nomeExibido((PACK.especies ?? []).find(x => x.dex === dex)?.n ?? '?');
+    const r = descanso ? enquantoSemStamina(E, { pack: PACK, equipe: sel.equipe, agora, nome }) : null;
+    const html = painelDoEnquanto(r, id => nome(acharCriatura(E, id)?.dex));
+    enq.hidden = !html;
+    if (html) enq.innerHTML = html;
   }
   const custo = $('#idleCustoRun');
   /* E O QUE ELA PAGA HOJE (ST-3.6): a partir da 7ª run do dia, a frase diz a

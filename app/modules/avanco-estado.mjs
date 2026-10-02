@@ -21,15 +21,16 @@
  */
 import { golpesDaCriatura } from './moveset-dados.mjs';
 import { acharCriatura, criaturasDe, estadoDoTeto, salvar,
-         motivoDaOcupada, lancarRunNoTeto } from './idle-dados.mjs';
+         motivoDaOcupada, lancarRunNoTeto, emCampo, vagasDe } from './idle-dados.mjs';
 import { estagioAberto, estagioMaximo, nivelDoEstagio } from '../../engine/estagios.mjs';
 import { podeAvancar, cabeAvanco, STAMINA_DO_AVANCO, curaDe, ENCONTROS_POR_AVANCO } from '../../engine/avanco.mjs';
-import { quandoVoltaEncontro, quandoCabeRun, fraseDaVolta } from './volta-dados.mjs';
+import { quandoVoltaEncontro, quandoCabeRun, fraseDaVolta,
+         enquantoDescansa, fraseDoEnquanto, rotuloDaVolta } from './volta-dados.mjs';
 /* A COSTURA DO CLIMA mora em `avanco-clima.mjs`: aqui é o que a run FAZ, lá é o
    que o tempo faz com ela. */
 import { climaDaRun, ritmoDoClima } from './avanco-clima.mjs';
 import { repertorio } from '../../engine/repertorio.mjs';
-import { restamEncontros, tetoDeEncontros, comprometido } from '../../engine/expedicao.mjs';
+import { restamEncontros, tetoDeEncontros, comprometido, cabeExpedicao, EQUIPE_MAX } from '../../engine/expedicao.mjs';
 import { cenaDaRun, recuarRun, emCurso } from '../../engine/run-avanco.mjs';
 import { novaRaiz } from '../../engine/seed.mjs';
 import { linhaDaRun, noHistorico } from './historico-dados.mjs';
@@ -113,6 +114,33 @@ export function voltaDoEncontro(e, { pack, agora }) {
     { teto: tetoDeEncontros(t.vistas, t.total), reservado: comprometido(t) - t.encontrosHoje, precisa: ENCONTROS_POR_AVANCO });
   const doServidor = e.conta?.teto?.voltaEm;
   return Number.isFinite(doServidor) ? Math.max(doServidor, local ?? 0) : local;
+}
+
+/* SEM STAMINA, O QUE AINDA VALE (ST-2.27c): `null` quando a equipe escolhida
+   pode sair — o "enquanto isso" só existe quando há um "não" por stamina. A
+   decisão mora em `volta-dados.mjs`; aqui só se junta o estado. */
+const descansando = (e, equipe, agora) => {
+  const membros = (equipe ?? []).map(id => acharCriatura(e, id)).filter(Boolean);
+  return membros.length && !podeAvancar(membros, agora).pode ? membros : null;
+};
+export function enquantoSemStamina(e, { pack, equipe, agora, nome = null }) {
+  if (!descansando(e, equipe, agora)) return null;
+  const r = enquantoDescansa({ criaturas: e.criaturas, equipe, expedicoes: emCampo(e), vagas: vagasDe(e), agora,
+    cabeNoTeto: cabeExpedicao(estadoDoTeto(e, agora, pack), 'batida', 1) });
+  const nomeDe = id => {
+    const dex = acharCriatura(e, id)?.dex;
+    return nome ? nome(dex) : ((pack?.especies ?? []).find(x => x.dex === dex)?.n ?? '?');
+  };
+  const linhas = fraseDoEnquanto(r, agora, nomeDe);
+  /* `troca` vai junto: a tela faz dela um botão de UM clique ("sair com…") —
+     mandar o jogador montar a equipe à mão é a sessão parando de novo. */
+  return linhas ? { linhas, troca: r.troca.slice(0, EQUIPE_MAX) } : null;
+}
+
+/* O rótulo curto do botão sobre a cena, quando a recusa é stamina. */
+export function rotuloDoDescanso(e, { equipe, agora }) {
+  const membros = descansando(e, equipe, agora);
+  return membros ? rotuloDaVolta(quandoCabeRun(membros, agora), agora) : null;
 }
 
 /* ── COMEÇAR ──────────────────────────────────────────────────────────────

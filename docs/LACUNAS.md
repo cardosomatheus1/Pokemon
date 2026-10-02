@@ -9425,7 +9425,7 @@ perguntou de novo (02/10) e ela passou à frente da ST-2.27: é o próximo bloco
 
 **Registrada em:** 02/10/2026 (o dono: *"não quero o cara entrando no jogo por
 1h e deixando 23h parado"*). **Bloco dono:** **ST-2.27** (DEC-28).
-**Estado:** em andamento — a ST-2.27a pôs a hora da volta na tela; o balde foi medido e recusado (DEC-30); falta a run repetida mais curta (L-242) e o treino à vista.
+**Estado:** ✅ fechada na ST-2.27c — a hora da volta na tela (ST-2.27a; o balde medido e recusado, DEC-30), a wave repetida mais curta (ST-2.27b) e, sem stamina, o que ainda vale: outra criatura com stamina num clique e a Batida que põe o banco para treinar (ST-2.27c). A medição da emissão com as runs reais por dia segue no D-151 (ST-2.27d).
 
 Medido: run de ~5,4 min com 5 encontros; o teto de 30 encontros fecha na 6ª
 run, a stamina de um time de três na 6ª–7ª e o rendimento cai da 7ª — os três
