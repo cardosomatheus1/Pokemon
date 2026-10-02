@@ -418,6 +418,7 @@ const CAMADA = {
   'pve-dados.mjs': 0,
   'pve-cenario.mjs': 0,
   'pve-tela.mjs': 4,
+  'luta-classica.mjs': 0,
   /* ST-10.7 · o Team Builder: os dados (0), a gravação (1) e a tela (4). */
   'treino-dados.mjs': 0,
   'time-local.mjs': 1,

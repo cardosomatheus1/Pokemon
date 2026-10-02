@@ -2456,7 +2456,43 @@ do servidor. Três partes:
 - **Mutantes de navegador:** 0 — a decisão do HP mora no motor; a do mover, na
   camada 0; S2618–S2620 são pegos por leitura de fonte em Node.
 
-### ST-10.27 · A luta da Jornada no palco clássico (L-245) ⏳
+### ST-10.27 · A luta da Jornada no palco clássico (L-245) ✅ 02/10
+- **Feito:** `luta-classica.mjs` (camada 0) decide onde cada um pisa — o rival
+  de frente em cima à direita, o nosso de costas embaixo à esquerda, até três
+  na fileira da frente e o resto atrás, todos menores com mais de três —, a
+  ordem das placas (a dos sprites, da esquerda para a direita), quando as
+  placas saem do palco para a faixa (mais de três por lado, ou celular) e o
+  que a caixa diz: quem usou o quê e o PORQUÊ (Água bate forte em
+  Pedra/Terrestre; Água resiste a Fogo; Terrestre é imune a Elétrico), o
+  crítico, a queda, e quem foi mais rápido no primeiro golpe. A tela pinta:
+  arte do cartucho FireRed/LeafGreen (frente e, nova, as costas — mesmo
+  repositório, `back/`, 147 + 146 brilhantes baixados), plataformas com aro
+  neon, placas com a etiqueta "HP" e a barra verde/amarela/vermelha, a caixa
+  azul-noite com letra de pixel e a setinha piscando, aro no chão de quem age.
+  Ritmo 1,35× para dar tempo de ler; "pular" segue. Sem a peça da frente do
+  cenário no clássico (cobria o nosso time).
+- **Q5:** 1920, 1440, 1100, 420 (Brock), 1440 e 420 (Surge), Time de seis em
+  1440 e 420 — nenhum `pageerror`; arte de GBA carregada em todas; placa ×
+  sprite: 0 sobreposições depois das correções.
+- **Q7 (crítico cego, barra: a tela de luta de FireRed):** primeira passada
+  achou a caixa atrás do menu no celular, as placas fora da ordem dos
+  sprites, o nosso cortado pela borda, seis empilhados, o número do dano
+  sumindo na areia e o "voltar" com cara de desabilitado — corrigidos. Fora
+  do escopo, registrados: as pintinhas da grama (ST-2.18) e os rótulos do
+  menu cortados em 420 (ST-2.20) — L-246 e L-247. Segunda passada: "parece
+  FireRed" 6 → 8 e "de quem é quem" 7 → 8 no ginásio em tela larga; dela
+  vieram a caixa de duas linhas, o "pular" que some no fim, a barra que zera
+  na queda e a ordem das faixas pela classe. O cabeçalho com a chance de
+  antes ("parece depuração", disse o crítico) FICA: é a lição da Jornada.
+- **Q5 num celular de verdade** (tela do aparelho, e não o recorte do
+  elemento): em 390×844 a caixa caía atrás da barra — a luta mora no fim da
+  página e a página não rolava o bastante. Agora a área da luta tem a altura
+  da tela, a rolagem reancora, e a caixa gruda acima da barra; em 375×667 o
+  palco encolhe. Medido: as placas, o palco e a caixa acima da barra nos dois.
+- **Testes:** `luta-classica` (novo, 5). S2627–S2636 PEGOU. **Mutantes de
+  navegador: 0** — toda decisão mora na camada 0; os dois da tela (S2632,
+  S2633) são pegos por leitura de fonte em Node.
+
 - **Por quê:** o dono, 02/10, com uma captura de uma luta de FireRed contra a
   Elite Four: *"e as batalhas lá, imagino algo mais próximo disso, mas com
   gráficos melhores"*.

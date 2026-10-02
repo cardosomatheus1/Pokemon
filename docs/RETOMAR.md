@@ -37,8 +37,10 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            DEC-29 (02/10, o dono): a stamina regenera 30/h (era 20); DEC-29d
            equilibra (substitui 29b e 29c, que cortavam por run e o dono
            recusou): toda run paga 88% do XP e 96% da moeda — o dia médio fica
-           em 101%/100%. PRÓXIMO: ST-10.27 (a luta no palco clássico, L-245),
-           depois ST-2.27 (a forma do dia).
+           em 101%/100%.
+           ST-10.27 (02/10): a luta da Jornada no palco clássico (FireRed):
+           rival de frente em cima, o nosso de costas embaixo, a caixa narra
+           o porquê. PRÓXIMO: ST-2.27 (a forma do dia).
            D-151: a medição da emissão não vê a regeneração (vai na ST-2.27).
            ST-2.26b (02/10): D-149 (o chefe da wave perdida aguenta com vida,
            barra = número) e D-150 (o 400 do mover). a seguir: ST-2.27, a forma

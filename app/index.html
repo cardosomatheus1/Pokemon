@@ -1827,6 +1827,124 @@ img[data-prestigio="1"]{filter:drop-shadow(0 0 4px rgba(var(--neonRGB),.75))}
 .pveFx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
 .pveLog{margin:0;padding:8px 12px;font-size:.8rem;min-height:1.4em;border-top:1px solid var(--line)}
 .pveFim{padding:10px 12px 12px;border-top:1px solid var(--line)}
+/* ── O PALCO CLÁSSICO (ST-10.27 · L-245) ─────────────────────────────────
+   A referência do dono é a luta de FireRed: o rival de frente em cima à
+   direita, o nosso de costas embaixo à esquerda, cada lado na plataforma; as
+   placas que se leem num olhar; a caixa de texto embaixo. O mundo segue GBA
+   (pixel inteiro, a arte do cartucho); a moldura — placas e caixa — é neon.
+   Onde cada um pisa, a camada 0 decide (`luta-classica.mjs`); aqui só se pinta. */
+.lcClassico,#jnLuta .lcClassico{max-width:1100px;margin:0 auto;display:flex;flex-direction:column}
+/* A ordem na tela, como no cartucho: as nossas placas encostam no palco e a
+   caixa vem embaixo. Num celular de verdade (844 px) a luta inteira cabe
+   (~580 px) — medido com a tela do aparelho, e não com o recorte do elemento. */
+.lcClassico>.pveTopo{order:0}.lcClassico>.lcFaixaB{order:1}.lcClassico>.pvePalco{order:2}
+.lcClassico>.lcFaixaA{order:3}.lcClassico>.lcCaixa{order:4}.lcClassico>.pveFim{order:5}
+/* Acabou a luta, acabou o "pular" (Q7). */
+.pveArea[data-estado="fim"] .lcClassico [data-pve-pular]{visibility:hidden}
+/* Quem caiu: a barra vai a zero na hora, sem a sobra de cor (Q7). */
+.lcClassico .pvePlaca.caido .pveVida i{width:0!important;transition:none}
+.lcClassico .pvePalco{display:block;padding:0;min-height:300px;aspect-ratio:16/10;max-height:600px;width:100%;container-type:inline-size;--hz:34%}
+/* A peça da frente do cenário cobria o nosso time (Q5): no clássico, a frente é nossa. */
+.lcClassico .pveFrente{display:none}
+.lcClassico .pveLado{position:static;display:block;padding:0}
+.lcClassico .pveLutador{position:absolute;left:var(--x);top:var(--y);display:block;transform:translate(-50%,-100%);
+  --base:clamp(68px,15.5cqw,176px)}
+.lcClassico .pveSprite{width:calc(var(--base) * var(--e));height:calc(var(--base) * var(--e))}
+.lcClassico .pveImg{width:100%;height:100%;image-rendering:pixelated;object-fit:contain;object-position:50% 100%}
+.lcClassico .pveB .pveImg{transform:none}
+.lcClassico .pveSombra{left:14%;right:14%;bottom:-2%;height:14%;background:rgba(0,0,0,.28);box-shadow:none}
+.lcClassico .pveSombra::after{display:none}
+/* Quem age ganha um aro no chão, na cor da placa dele — é o que liga a placa ao sprite (Q7). */
+.lcClassico .pveLutador.vez .pveSombra{box-shadow:0 0 0 2px var(--neon),0 0 12px rgba(var(--goldRGB),.6)}
+.lcClassico .pveLutador.alvo .pveSombra{box-shadow:0 0 0 2px rgba(var(--perigoRGB),.9),0 0 12px rgba(var(--perigoRGB),.5)}
+/* O número do dano com contorno: em cima da areia ele sumia (Q7). */
+.lcClassico .pveNum{font-size:.9rem;text-shadow:-2px 0 0 #000,2px 0 0 #000,0 -2px 0 #000,0 2px 0 #000,0 0 8px rgba(0,0,0,.8)}
+/* Sem "lutar de novo", "voltar" é a ação principal — e parecia desabilitado (Q7). */
+.lcClassico .pveBotoes .btn:only-child{border-color:var(--neon);color:var(--txt);box-shadow:0 0 12px rgba(var(--goldRGB),.35)}
+/* A plataforma: o chão da região em elipse, com o aro neon — o GBA vestido no tema. */
+.lcPlataforma{position:absolute;z-index:0;border-radius:50%;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 40%,rgba(255,255,255,.22),transparent 62%),var(--piso,#5f8f4e) center/28px 28px;
+  image-rendering:pixelated;box-shadow:inset 0 -6px 0 rgba(0,0,0,.3),0 0 0 2px rgba(var(--goldRGB),.5),0 0 26px rgba(var(--goldRGB),.3)}
+.lcPlataformaB{left:52%;width:42%;top:48%;height:13%}
+.lcPlataformaA{left:-6%;width:58%;top:84%;height:22%}
+/* As placas: a pilha do rival no alto à esquerda, a nossa embaixo à direita. */
+.lcPlacas{position:absolute;z-index:5;display:flex;flex-direction:column;gap:6px;width:min(44%,240px)}
+.lcPlacasB{left:2.5%;top:4%}
+.lcPlacasA{right:2.5%;bottom:5%}
+.lcClassico .pvePlaca{min-width:0;padding:6px 10px 5px;border-radius:10px 2px 10px 2px;background:linear-gradient(160deg,rgba(14,22,44,.94),rgba(8,12,26,.94));
+  border:1px solid rgba(var(--goldRGB),.55);box-shadow:0 0 0 1px rgba(0,0,0,.5),0 0 14px rgba(var(--goldRGB),.18),0 3px 0 rgba(0,0,0,.45);
+  transition:opacity .4s,filter .4s,border-color .2s,box-shadow .2s}
+.lcClassico .lcPlacasA .pvePlaca{border-radius:2px 10px 2px 10px}
+.lcClassico .pveNome{align-items:baseline;font-family:var(--px);font-size:.56rem;letter-spacing:.02em}
+.lcClassico .pveNome b{font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lcClassico .pveNv{font-size:.5rem;color:var(--neon);opacity:1}
+.lcHpLinha{display:flex;align-items:center;gap:5px;margin:5px 0 2px}
+.lcHpTag{flex:none;font-family:var(--px);font-size:.42rem;padding:2px 4px 1px;border-radius:3px;background:#f2b52a;color:#3a2200}
+.lcClassico .pveVida{flex:1;height:7px;margin:0;border-radius:4px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22)}
+.lcClassico .pveVida i{background:#48d868;box-shadow:inset 0 2px 0 rgba(255,255,255,.35)}
+.lcClassico .pveVida i.media{background:#f8c838}
+.lcClassico .pveVida i.baixa{background:#f85838}
+.lcClassico .pveHp{font-family:var(--px);font-size:.48rem;margin-top:3px}
+.lcClassico .pvePlaca.vez{border-color:var(--neon);box-shadow:0 0 16px rgba(var(--goldRGB),.55)}
+.lcClassico .pvePlaca.alvo{border-color:rgba(var(--perigoRGB),.9);box-shadow:0 0 16px rgba(var(--perigoRGB),.45)}
+.lcClassico .pvePlaca.caido{opacity:.45;filter:grayscale(1)}
+.lcClassico .lcPlacas .pveRotulo{margin:0;font-size:.6rem}
+.lcClassico .lcPlacasB .pveRotulo{text-align:left}
+/* O golpe: o nosso avança para cima e à direita; o rival, para baixo e à esquerda. */
+.lcClassico .pveA .pveLutador.ataca .pveSprite{animation:lcAtacaA .45s}
+.lcClassico .pveB .pveLutador.ataca .pveSprite{animation:lcAtacaB .45s}
+@keyframes lcAtacaA{40%{transform:translate(18px,-14px)}}
+@keyframes lcAtacaB{40%{transform:translate(-18px,12px)}}
+/* A queda vence o golpe: quem caiu logo depois de atacar ainda tem a classe do
+   ataque, e a animação dele sobrepunha a da queda — virava um fantasma (Q5). */
+.lcClassico .pveLado .pveLutador.caido.caido .pveSprite{animation:lcCai .6s forwards}
+@keyframes lcCai{to{transform:translateY(40%);opacity:0}}
+/* A caixa: a do cartucho, azul-noite com moldura neon e letra de pixel; a
+   setinha pisca no canto como lá — mas a caixa anda sozinha. */
+.lcCaixa{position:relative;margin:0;padding:14px 38px 14px 18px;min-height:5.6em;font-family:var(--px);font-size:.72rem;line-height:1.9;color:#fff;
+  background:linear-gradient(180deg,#14234a,#0b1530);border-top:3px solid rgba(var(--goldRGB),.75);box-shadow:inset 0 0 0 3px #0a1022,inset 0 0 0 5px rgba(120,170,255,.35)}
+.lcCaixa::after{content:'▼';position:absolute;right:14px;bottom:10px;font-size:.6rem;color:var(--neon);animation:lcPisca 1s steps(2) infinite}
+.lcCaixa.lcNova{animation:lcEntra .3s ease-out}
+@keyframes lcEntra{from{opacity:.2;transform:translateY(3px)}}
+@keyframes lcPisca{50%{opacity:0}}
+/* Mais de três por lado: as placas saem do palco para uma faixa (camada 0). */
+.lcFaixa{padding:8px 10px;background:rgba(8,12,26,.6);border-top:1px solid var(--line)}
+.lcFaixa .lcPlacas{position:static;width:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+@media (max-width:620px){
+  /* No celular as placas moram na faixa (camada 0) e viram UMA linha cada:
+     nome, barra e número — o palco fica inteiro para a luta. */
+  .lcClassico .pveLog{position:static}
+  .lcClassico .pvePalco{aspect-ratio:auto;min-height:270px}
+  .lcFaixa{padding:6px 8px}
+  .lcFaixa .lcPlacas{grid-template-columns:1fr;gap:4px}
+  .lcFaixa .lcPlacas:has(> .pvePlaca:nth-of-type(4)){grid-template-columns:1fr 1fr}
+  /* Seis por lado em duas colunas: o nível sai, o nome encolhe — nome, barra e número cabem. */
+  .lcFaixa .lcPlacas:has(> .pvePlaca:nth-of-type(4)) .pveNv{display:none}
+  .lcFaixa .lcPlacas:has(> .pvePlaca:nth-of-type(4)) .pvePlaca{padding:3px 5px;gap:0 4px;min-width:0}
+  .lcFaixa .lcPlacas:has(> .pvePlaca:nth-of-type(4)) .pveNome{font-size:.46rem;min-width:0}
+  .lcFaixa .lcPlacas:has(> .pvePlaca:nth-of-type(4)) .pveHp{font-size:.42rem}
+  .lcFaixa .pvePlaca{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:0 6px;padding:4px 7px}
+  .lcFaixa .pvePlaca .pveNome{gap:4px}.lcFaixa .lcHpLinha{margin:0}.lcFaixa .lcHpTag{display:none}
+  .lcFaixa .pvePlaca .pveHp{margin:0}
+  .lcCaixa{font-size:.58rem;padding:10px 30px 10px 12px;min-height:3.8em}
+}
+@media (max-width:640px){
+  /* No celular a caixa GRUDA logo acima da barra de baixo enquanto a luta está
+     na tela: medido num aparelho de 390×844, a luta não começa no topo (o
+     mapa fica em cima), e a caixa caía atrás da barra (Q5/Q7). */
+  .lcClassico>.lcCaixa{position:sticky;bottom:calc(84px + env(safe-area-inset-bottom));z-index:6}
+  /* A luta mora no fim da página: sem altura, a página não rola o bastante para
+     trazê-la ao topo, e ela ficava 270 px abaixo dele (medido em 390×844). */
+  .pveArea:has(> .lcClassico){min-height:calc(100dvh - 84px - env(safe-area-inset-bottom))}
+}
+/* Celular baixo (375×667): a caixa grudada cobria as nossas placas — o palco
+   encolhe para tudo caber acima da barra. */
+@media (max-width:640px) and (max-height:760px){
+  .lcClassico .pvePalco{min-height:215px}
+  .lcCaixa{min-height:4.2em;padding:8px 28px 8px 10px;line-height:1.7}
+}
+@media (prefers-reduced-motion:reduce){.lcCaixa::after,.lcCaixa.lcNova{animation:none}}
+
 .pveFim h4{margin:0 0 4px;font-family:var(--dsp);letter-spacing:.06em}
 .pveFim.venceu h4{color:var(--neon)}.pveFim.perdeu h4{color:#ff8a7a}.pveFim.empate h4{color:var(--dim)}
 .pveFim p{margin:0 0 8px;font-size:.8rem}

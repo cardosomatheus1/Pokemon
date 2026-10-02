@@ -200,6 +200,12 @@ const DEX_GBA = [
 export const dexURLGba = (dex, shiny) => candidatos(DEX_GBA[0](dex, shiny), null)[0];
 export const dexURLGbaReserva = (dex, shiny) => candidatos(DEX_GBA[1](dex, shiny), null)[0];
 
+/* AS COSTAS do mesmo cartucho (ST-10.27): a luta da Jornada no palco clássico
+   põe o nosso time de costas, embaixo. Mesmo repositório e pasta de versão,
+   subpasta `back/` — o mesmo desenho visto de trás, nunca outra fonte. */
+export const dexURLGbaCostas = (dex, shiny) => candidatos('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' +
+  `versions/generation-iii/firered-leafgreen/back/${shiny ? 'shiny/' : ''}${dex}.png`, null)[0];
+
 /* O RETRATO ANIMADO — o sprite de batalha que o pack declara (R13).
  *
  * O `dexImg` logo abaixo tem a cadeia inteira em PNG ESTÁTICO, e é ele que o

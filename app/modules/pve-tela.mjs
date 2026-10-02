@@ -11,25 +11,41 @@
 import { $ } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { carregar } from './idle-dados.mjs';
-import { dexImg } from './sprites.mjs';
+import { dexURL, dexURLGba, dexURLGbaCostas } from './sprites.mjs';
 import { fxSheet } from './efeitos.mjs';
 import { folhaDoImpacto } from './avanco-efeito.mjs';
 import { simular } from '../../engine/treino-batalha.mjs';
 import { entradasDoTime, rivalDe, treinador } from './treino-dados.mjs';
 import { linhaDoTempo, fraseDoResultado, PASSO_MS } from './pve-dados.mjs';
 import { cenarioDaLuta } from './pve-cenario.mjs';
+import { arranjoClassico, narrar, RITMO_CLASSICO } from './luta-classica.mjs';
 import { porcentagemExibida, textoDaMargem } from '../../engine/treino-preco.mjs';
 
 const QUADROS_POR_S = 18;
 let geracao = 0, deNovo = null;
 const estouros = [];
 
-function lutador(f) {
-  return `<div class="pveLutador" data-slot="${f.slot}">
-    <div class="pveSprite"><i class="pveSombra"></i>${dexImg(f.dex, f.nome, 'class="pveImg"')}</div>
-    <div class="pvePlaca"><div class="pveNome"><b>${f.nome}</b><span class="pveNv">NV ${f.nivel}</span></div>
-      <div class="pveVida"><i style="width:100%"></i></div><span class="pveHp">${f.maxHp}/${f.maxHp}</span></div></div>`;
+/* ── O PALCO CLÁSSICO (ST-10.27) ──────────────────────────────────────────
+ * O sprite e a placa são peças SEPARADAS: o sprite fica onde o arranjo da
+ * camada 0 manda (o rival de frente em cima, o nosso de costas embaixo); a
+ * placa fica na pilha do seu lado. A arte é a do cartucho — frente e costas
+ * do FireRed/LeafGreen — e, se faltar, cai no retrato de sempre. */
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function lutador(f, p) {
+  const src = p.costas ? dexURLGbaCostas(f.dex, f.shiny) : dexURLGba(f.dex, f.shiny);
+  return `<div class="pveLutador" data-slot="${f.slot}" style="--x:${p.x}%;--y:${p.y}%;--e:${p.escala};z-index:${p.z}">
+    <div class="pveSprite"><i class="pveSombra"></i><img class="pveImg lcGba" src="${src}" alt="${esc(f.nome)}"${f.shiny ? ' data-shiny="1"' : ''}
+      onerror="this.onerror=null;this.classList.remove('lcGba');this.src='${dexURL(f.dex, f.shiny)}'"></div></div>`;
 }
+/* A placa: nome e nível em pixel, a etiqueta "HP" do cartucho, a barra que
+   muda de cor como lá (verde, amarela, vermelha) e o número — no neon. */
+function placa(f) {
+  return `<div class="pvePlaca" data-placa="${f.slot}">
+    <div class="pveNome"><b>${esc(f.nome)}</b><span class="pveNv">Nv${f.nivel}</span></div>
+    <div class="lcHpLinha"><span class="lcHpTag">HP</span><div class="pveVida"><i style="width:100%"></i></div></div>
+    <span class="pveHp">${f.maxHp}/${f.maxHp}</span></div>`;
+}
+const placaDe = slot => document.querySelector(`.pvePlaca[data-placa="${slot}"]`);
 
 /* O CENÁRIO (ST-2.17): a tela só pinta o que `cenarioDaLuta` decidiu — o
    céu e a luz no fundo do palco, as colinas e o horizonte na faixa do céu, o
@@ -89,17 +105,22 @@ function aplicar(passo, L, animar = true, g = geracao) {
   /* Quem ATACA e quem LEVA ficam marcados até o próximo golpe: o olho acha a
      ação no palco sem ler o texto (Q7 da ST-11.6b). */
   const log = $('#pveLog');
+  const pDe = placaDe(passo.de), pPara = placaDe(passo.para);
   const acerta = () => {
     /* O texto e as marcas entram QUANDO o golpe acerta, junto com a barra e o
-       número — antes, dizia "−27" com a barra ainda cheia. */
-    if (log) log.textContent = passo.texto;
-    document.querySelectorAll('.pveLutador.vez, .pveLutador.alvo').forEach(x => x.classList.remove('vez', 'alvo'));
-    de?.classList.add('vez'); para?.classList.add('alvo');
-    if (!para) return;
-    para.querySelector('.pveVida i').style.width = `${Math.round(passo.fracaoDoAlvo * 100)}%`;
-    para.querySelector('.pveVida i').classList.toggle('baixa', passo.fracaoDoAlvo < 0.3);
-    para.querySelector('.pveHp').textContent = `${passo.vidaDoAlvo}/${max}`;
-    if (passo.caiu) para.classList.add('caido');
+       número — antes, dizia "−27" com a barra ainda cheia. A caixa narra o
+       PORQUÊ (ST-10.27): a frase é da camada 0. */
+    if (log) { log.textContent = narrar(PACK, passo, L); log.classList.remove('lcNova'); void log.offsetWidth; log.classList.add('lcNova'); }
+    document.querySelectorAll('.pveLutador.vez, .pveLutador.alvo, .pvePlaca.vez, .pvePlaca.alvo').forEach(x => x.classList.remove('vez', 'alvo'));
+    de?.classList.add('vez'); para?.classList.add('alvo'); pDe?.classList.add('vez'); pPara?.classList.add('alvo');
+    if (!para || !pPara) return;
+    const barra = pPara.querySelector('.pveVida i');
+    barra.style.width = `${Math.round(passo.fracaoDoAlvo * 100)}%`;
+    /* As três cores do cartucho: verde, amarela abaixo da metade, vermelha abaixo de um quinto. */
+    barra.classList.toggle('media', passo.fracaoDoAlvo < 0.5 && passo.fracaoDoAlvo >= 0.2);
+    barra.classList.toggle('baixa', passo.fracaoDoAlvo < 0.2);
+    pPara.querySelector('.pveHp').textContent = `${passo.vidaDoAlvo}/${max}`;
+    if (passo.caiu) { para.classList.add('caido'); pPara.classList.add('caido'); }
     if (!animar) return;
     if (!passo.errou && passo.dano > 0) {
       para.classList.remove('leva'); void para.offsetWidth; para.classList.add('leva');
@@ -145,23 +166,40 @@ export function encenar({ alvo, A, B, r, antes, titulo, extraNoFim = '', aoFim =
   r ??= { vencedor: L.vencedor };
   if (!alvo) return;
   const cena = pintarCena(cenarioDaLuta(cenario, semente ?? titulo));
-  alvo.innerHTML = `<div class="pveLuta">
+  /* ST-10.27: onde cada um fica e onde moram as placas, a camada 0 decide. */
+  const arr = arranjoClassico(L.lados, { estreito: globalThis.matchMedia?.('(max-width: 620px)').matches ?? false });
+  const posDe = (lado, f) => arr[lado].find(x => x.slot === f.slot);
+  /* As placas na ordem dos sprites, da esquerda para a direita (Q7). */
+  const pilha = lado => `<div class="lcPlacas lcPlacas${lado}">${rotulos ? `<span class="pveRotulo">${rotulos[lado]}</span>` : ''}${
+    arr.ordem[lado].map(slot => placa(L.lados[lado].find(f => f.slot === slot))).join('')}</div>`;
+  const noPalco = arr.modo === 'palco';
+  alvo.innerHTML = `<div class="pveLuta lcClassico lc-${arr.modo}">
     <div class="pveTopo"><b>${titulo}</b><span>${topo ?? `antes da luta: ${porcentagemExibida(antes.p)} · ${textoDaMargem(antes)}`}</span>
       <button class="btn" data-pve-pular>pular</button></div>
+    ${noPalco ? '' : `<div class="lcFaixa lcFaixaB">${pilha('B')}</div>`}
     <div class="pvePalco" id="pvePalco" style="${cena.estilo}">${cena.fundo}
-      <div class="pveLado pveA">${rotulos ? `<span class="pveRotulo">${rotulos.A}</span>` : ''}${L.lados.A.map(lutador).join('')}</div>
-      <div class="pveLado pveB">${rotulos ? `<span class="pveRotulo">${rotulos.B}</span>` : ''}${L.lados.B.map(lutador).join('')}</div>
+      <i class="lcPlataforma lcPlataformaB" aria-hidden="true"></i><i class="lcPlataforma lcPlataformaA" aria-hidden="true"></i>
+      <div class="pveLado pveB">${L.lados.B.map(f => lutador(f, posDe('B', f))).join('')}</div>
+      <div class="pveLado pveA">${L.lados.A.map(f => lutador(f, posDe('A', f))).join('')}</div>
+      ${noPalco ? pilha('B') + pilha('A') : ''}
       ${cena.frente}<canvas class="pveFx" id="pveFx"></canvas>
     </div>
-    <p class="pveLog" id="pveLog">a luta vai começar…</p>
+    <p class="pveLog lcCaixa" id="pveLog" aria-live="polite">a luta vai começar…</p>
+    ${noPalco ? '' : `<div class="lcFaixa lcFaixaA">${pilha('A')}</div>`}
     <div class="pveFim" id="pveFim" hidden></div>
   </div>`;
   alvo.hidden = false;
   alvo.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  /* A rolagem suave parava no meio no celular: a Jornada esconde o painel no
+     mesmo instante, e a página muda de altura durante a rolagem (medido em
+     390×844 — a luta ficava 270 px abaixo do topo e a caixa, atrás da barra).
+     Se ela parou longe, ancora de novo. */
+  setTimeout(() => { if (g === geracao && Math.abs(alvo.getBoundingClientRect().top) > 24) alvo.scrollIntoView({ block: 'start' }); }, 700);
   alvo.dataset.estado = 'lutando';
   const acabar = () => { fim(L, antes, r, extraNoFim, voltar, final); alvo.dataset.estado = 'fim'; aoFim?.(); };
-  L.passos.forEach(p => setTimeout(() => { if (g === geracao) aplicar(p, L); }, p.t + 400));
-  setTimeout(() => { if (g === geracao) acabar(); }, L.duracaoMs + 900);
+  /* O ritmo do clássico: tempo de ler a caixa (RITMO_CLASSICO), e "pular" segue ali. */
+  L.passos.forEach(p => setTimeout(() => { if (g === geracao) aplicar(p, L); }, p.t * RITMO_CLASSICO + 400));
+  setTimeout(() => { if (g === geracao) acabar(); }, L.duracaoMs * RITMO_CLASSICO + 900);
   alvo._pular = () => { if (g !== geracao) return; geracao++; L.passos.forEach(p => aplicar(p, L, false)); acabar(); };
 }
 

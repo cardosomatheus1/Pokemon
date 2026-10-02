@@ -90,6 +90,14 @@ function alvos() {
     const gbaShiny = `versions/generation-iii/firered-leafgreen/shiny/${esp.dex}.png`;
     lista.push({ url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${gbaShiny}`,
                  espelho: `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${gbaShiny}` });
+    /* ST-10.27: as COSTAS do mesmo cartucho — a luta da Jornada no palco
+       clássico põe o nosso time de costas, embaixo. Mesmo repositório, mesma
+       pasta de versão, subpasta `back/`: o mesmo desenho visto de trás, e não
+       outra fonte de arte (a regra da v0.6.1). */
+    for (const costas of [`versions/generation-iii/firered-leafgreen/back/${esp.dex}.png`,
+                          `versions/generation-iii/firered-leafgreen/back/shiny/${esp.dex}.png`])
+      lista.push({ url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${costas}`,
+                   espelho: `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${costas}` });
   }
   /* AVATARES DE TREINADOR (V1.15). Dezesseis arquivos, e eles já eram pedidos
      antes — pela topbar e pela tela de customização. O portão de egresso

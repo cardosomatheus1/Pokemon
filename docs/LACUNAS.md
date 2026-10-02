@@ -9392,11 +9392,26 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-247 — os rótulos do menu de baixo cortados em 420 px
+
+**Registrada em:** 02/10/2026, no Q7 da ST-10.27 (o crítico cego: "ARENAS" e
+"MAIS" cortados nas bordas). **Bloco dono:** **ST-2.20** (quem chega: o menu).
+**Estado:** aberta. **Por que não cabe agora:** é o menu, não a luta.
+**O que a destrava:** nada — entra na ST-2.20.
+
+### L-246 — as pintinhas da grama da luta leem como ruído
+
+**Registrada em:** 02/10/2026, no Q7 da ST-10.27 (o crítico cego: "as
+pintinhas rosas e brancas em toda a grama parecem ruído de renderização").
+**Bloco dono:** **ST-2.18** (o cenário da luta). **Estado:** aberta. **Por que
+não cabe agora:** é o ar do lugar (`pve-cenario.mjs`, ST-2.17), e não o palco.
+**O que a destrava:** nada — entra na ST-2.18.
+
 ### L-245 — a luta da Jornada não tem o palco clássico que o dono imagina
 
 **Registrada em:** 02/10/2026 (o dono, com a captura de uma luta de FireRed:
 *"imagino algo mais próximo disso, mas com gráficos melhores"*). **Bloco
-dono:** **ST-10.27**. **Estado:** aberta.
+dono:** **ST-10.27**. **Estado:** ✅ fechada na ST-10.27 (02/10).
 
 A luta da Jornada encena a batalha, mas sem o arranjo que a referência ensina
 a ler: as duas placas de HP, o rival de frente em cima e o nosso de costas
