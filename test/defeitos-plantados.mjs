@@ -6714,7 +6714,7 @@ export const DEFEITOS = [
      continua valendo, e é ela que ele planta agora. */
   { id:'S831', arquivo:WAVE, nome:'a decima passa a sortear entre TODOS, e nao entre os chefes',
     real:'o clímax do estagio viraria um comum qualquer — e o anuncio no meio da tela estaria mentindo',
-    de:'    ? [fonte[Math.floor(sorte() * fonte.length) % fonte.length]]',
+    de:'    ? [deOnde[Math.floor(sorte() * deOnde.length) % deOnde.length]]',
     para:'    ? [sortearDois(sorte, [...fonte, ...(elenco?.comuns ?? [])])[0]]' },
 
   { id:'S832', arquivo:WAVE, nome:'abate quem nao estava na wave',
@@ -10454,7 +10454,7 @@ export const DEFEITOS = [
     de:'(Math.floor(Number(estagio) || 1) <= 1 ? RITMO_DA_ENTRADA : 1)', para:'RITMO_DA_ENTRADA' },
   { id:'S2572', arquivo:RUNAV, nome:'a run esquece o passo da wave',
     real:'a constante existe e a wave não a usa — o teste da constante fica verde e o jogador espera o mesmo',
-    de:'              * passoDaWave({ venceu: r.venceu, estagio: run.estagio });', para:'              * 1;' },
+    de:'              * passoDaWave({ venceu: r.venceu, estagio: run.estagio })', para:'              * 1' },
   /* ── ST-2.22a · o doce da conta (D-144) · b · a run fantasma (D-145) · c · o fim (D-146) ── */
   { id:'S2573', arquivo:'app/modules/doce-conta.mjs', nome:'o fim da rodada volta a resgatar o doce da conta',
     real:'"usar um doce mostrou sem doce da linha dela e deu erro 400"',
@@ -10675,6 +10675,19 @@ export const DEFEITOS = [
   { id:'S2642', arquivo:'app/modules/idle-conta.mjs', nome:'a hora da volta torta volta do disco',
     real:'um texto no lugar da hora entra na conta da volta',
     de:'voltaEm: Number.isFinite(c.teto.voltaEm) ? c.teto.voltaEm : null', para:'voltaEm: c.teto.voltaEm ?? null' },
+  /* ── ST-2.27b · a wave repetida não cansa ── */
+  { id:'S2643', arquivo:WAVE, nome:'a repetida volta a evitar ninguém',
+    real:'"o mesmo chefe se repetindo cansa": o Beedrill de novo na tentativa 2',
+    de:'const outros = chefe && evitar != null && fonte.length > 1 ? fonte.filter(x => x.dex !== evitar) : fonte;', para:'const outros = fonte;' },
+  { id:'S2644', arquivo:RUNAV, nome:'a repetida volta ao tamanho cheio',
+    real:'a mesma luta de 60 s vista de novo, inteira',
+    de:"* (run.tentativa > 0 ? RITMO_DA_REPETIDA : 1);", para:"* (run.tentativa > 0 ? 1 : 1);" },
+  { id:'S2645', arquivo:RUNAV, nome:'o chefe evitado é o da primeira, e não o da anterior',
+    real:'na terceira tentativa o chefe da segunda volta — a alternância some',
+    de:'evitar: anterior })[0]?.dex ?? null;', para:'evitar: null })[0]?.dex ?? null;' },
+  { id:'S2646', arquivo:'app/modules/avanco-tela.mjs', nome:'a tela cala a tentativa',
+    real:'a wave repete e o jogador não sabe que é outra tentativa',
+    de:"(run.tentativa > 0 ? ` · tentativa ${run.tentativa + 1}` : '')", para:"''" },
   /* ── ST-11.7d · a moldura exclusiva da Liga ──────────────────────── */
   { id:'S1883', arquivo:'app/modules/cosmeticos.mjs', nome:'a boutique vende a peça da Liga',
     real:'a mesma moldura por PokéCash e por League Points — um câmbio implícito entre as duas moedas (§10.12)',

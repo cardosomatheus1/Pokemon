@@ -33,7 +33,7 @@
  * reaplicada no mesmo instante em que aconteceu, e a barra recalculada bate.
  */
 import { WAVES, HP_MAX, resolverWave, ehWaveDeChefe, fatorDoRitmo, passoDaWave,
-         poderDaEquipe, ameacaDa } from './wave.mjs';
+         poderDaEquipe, ameacaDa, composicaoDaWave, RITMO_DA_REPETIDA } from './wave.mjs';
 import { roteiroDaWave, estadoEm, APROXIMACAO_MS, HP_MOB } from './roteiro-wave.mjs';
 import { derivar } from './seed.mjs';
 import { semente } from './instancia.mjs';
@@ -111,10 +111,21 @@ export const emCurso = run => !!run && !run.fim;
  * para o resultado, outra para a cena — e a separação tem uma razão prática:
  * mexer na encenação (mais entradas, outro ritmo) não pode mover o equilíbrio
  * de lugar, e com uma semente só qualquer ajuste visual reescreveria a curva. */
+/* O CHEFE DE CADA TENTATIVA (ST-2.27b): a tentativa t evita o da t − 1, que
+   evitou o da t − 2… — refeito da semente de cada uma, então reabrir a aba
+   devolve os mesmos chefes. Fora da wave do chefe, ninguém a evitar. */
+function chefeAnterior(run, elenco) {
+  if (!ehWaveDeChefe(run.wave) || !(run.tentativa > 0)) return null;
+  let anterior = null;
+  for (let t = 0; t < run.tentativa; t++)
+    anterior = composicaoDaWave(semente(derivar(run.raiz, rotuloDaWave(run.wave, t))), { elenco, wave: run.wave, evitar: anterior })[0]?.dex ?? null;
+  return anterior;
+}
+
 export function waveAtual(run, { elenco, equipe, golpesMeus = 1, golpesDele = 1,
                                 climaRitmo = 1 }) {
   const r = resolverWave(semente(derivar(run.raiz, rotuloDaWave(run.wave, run.tentativa))),
-    { elenco, wave: run.wave, estagio: run.estagio, hp: run.hpNaWave, equipe });
+    { elenco, wave: run.wave, estagio: run.estagio, hp: run.hpNaWave, equipe, evitar: chefeAnterior(run, elenco) });
   /* O RITMO SAI DA MESMA CONTA QUE A CHANCE: poder contra ameaça. É por isso
      que ele não precisa de calibração própria — quando o A2 for recalibrado,
      o relógio acompanha sozinho. */
@@ -138,7 +149,8 @@ export function waveAtual(run, { elenco, equipe, golpesMeus = 1, golpesDele = 1,
   const ritmo = fatorDoRitmo(poderDaEquipe(equipe),
                              ameacaDa({ elenco, wave: run.wave, estagio: run.estagio }))
               / Math.max(1e-6, Number(climaRitmo) || 1)
-              * passoDaWave({ venceu: r.venceu, estagio: run.estagio });
+              * passoDaWave({ venceu: r.venceu, estagio: run.estagio })
+              * (run.tentativa > 0 ? RITMO_DA_REPETIDA : 1);   // ST-2.27b: a repetida é mais curta
   const roteiro = roteiroDaWave(
     semente(derivar(run.raiz, `${rotuloDaWave(run.wave, run.tentativa)}:cena`)),
     { comp: r.comp, venceu: r.venceu, dano: r.dano, golpesMeus, golpesDele, ritmo });

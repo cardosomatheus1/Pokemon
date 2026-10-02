@@ -130,7 +130,11 @@ function sortearDois(sorte, lista) {
   return saiu;
 }
 
-export function composicaoDaWave(sorte, { elenco, wave }) {
+/* `evitar` (ST-2.27b · L-242): o chefe da tentativa ANTERIOR. Com mais de um
+   no estágio, a tentativa seguinte traz o outro — "o mesmo chefe se repetindo
+   cansa", o dono. O sorteio é o MESMO (um só, na mesma ordem): a chance e o
+   resultado da wave não mudam; muda só quem aparece. */
+export function composicaoDaWave(sorte, { elenco, wave, evitar = null }) {
   const chefe = ehWaveDeChefe(wave);
   const fonte = chefe ? (elenco?.chefes ?? []) : (elenco?.comuns ?? []);
   if (!fonte.length) return [];
@@ -153,8 +157,10 @@ export function composicaoDaWave(sorte, { elenco, wave }) {
    *
    * O SORTEIO PASSA PELA SEMENTE como todo o resto (§P3): a run é auditável, e
    * o chefe que saiu pode ser reproduzido. */
+  const outros = chefe && evitar != null && fonte.length > 1 ? fonte.filter(x => x.dex !== evitar) : fonte;
+  const deOnde = outros.length ? outros : fonte;
   const escolhidas = chefe
-    ? [fonte[Math.floor(sorte() * fonte.length) % fonte.length]]
+    ? [deOnde[Math.floor(sorte() * deOnde.length) % deOnde.length]]
     : sortearDois(sorte, fonte);
   const quantos = Math.round(total / escolhidas.length);
   return escolhidas.map(x => ({ dex: x.dex, forca: x.forca, quantos }));
@@ -404,6 +410,10 @@ export function ameacaDa({ elenco, wave, estagio }) {
  * par poder-ameaça, e não para isto. */
 export const RITMO_DA_ENTRADA = 0.7;
 export const RITMO_DA_DERROTA = 0.6;
+/* A TENTATIVA REPETIDA É MAIS CURTA (ST-2.27b · L-242): o jogador já viu a
+   luta. Só a encenação encurta — o resultado sai de outra semente. */
+export const RITMO_DA_REPETIDA = 0.6;
+
 export const passoDaWave = ({ venceu, estagio }) =>
   (venceu ? 1 : RITMO_DA_DERROTA) * (Math.floor(Number(estagio) || 1) <= 1 ? RITMO_DA_ENTRADA : 1);
 
@@ -459,8 +469,8 @@ export const DANO_MAX = 45;
 const danoDe = (venceu, razaoInversa) => Math.min(DANO_MAX, Math.max(DANO_MIN,
   Math.round((venceu ? DANO_VITORIA : DANO_DERROTA) * razaoInversa)));
 
-export function resolverWave(sorte, { elenco, wave, estagio, hp, equipe }) {
-  const comp = composicaoDaWave(sorte, { elenco, wave });
+export function resolverWave(sorte, { elenco, wave, estagio, hp, equipe, evitar = null }) {
+  const comp = composicaoDaWave(sorte, { elenco, wave, evitar });
   const poder = poderDaEquipe(equipe);
   const ameaca = ameacaDa({ elenco, wave, estagio });
   const p = chanceDe(poder, ameaca);

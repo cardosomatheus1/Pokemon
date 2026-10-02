@@ -303,7 +303,7 @@ function pintarRunEmCurso(E, { vista, painel, agora }) {
 
   pintarCabeca(run, cn);
   pintarHp(cn);
-  { const t = $("#avLogTitulo"); if (t) t.textContent = `wave ${run.wave} de ${WAVES}`; }
+  { const t = $("#avLogTitulo"); if (t) t.textContent = `wave ${run.wave} de ${WAVES}` + (run.tentativa > 0 ? ` · tentativa ${run.tentativa + 1}` : ''); }   // ST-2.27b
   pintarTira(run);
   /* A COLUNA DA ESQUERDA mora em `avanco-painel.mjs` — ela LÊ, e este
      arquivo AGE. Ver o cabeçalho de lá. */

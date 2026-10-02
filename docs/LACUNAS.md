@@ -9451,7 +9451,7 @@ tela. **O que a destrava:** nada — é a ST-2.27.
 
 **Registrada em:** 02/10/2026, no 5º relato do dono (*"waves de 30 a 60
 segundos com o mesmo chefe se repetindo cansam"*). **Bloco dono:**
-**ST-2.27**. **Estado:** aberta.
+**ST-2.27**. **Estado:** ✅ fechada na ST-2.27b (o outro chefe na tentativa seguinte, a repetida 40% mais curta, "tentativa N" na tela).
 
 A wave do chefe repete o MESMO chefe em toda tentativa, e a duração da wave não
 encurta quando ela já foi perdida uma vez. Caminhos a medir: a wave repetida

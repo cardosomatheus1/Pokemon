@@ -42,8 +42,10 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            rival de frente em cima, o nosso de costas embaixo, a caixa narra
            o porquê.
            ST-2.27a (02/10): a tela diz QUANDO volta (encontro e stamina);
-           o teto como balde foi medido e recusado (DEC-30). PRÓXIMO: ST-2.27b
-           (a wave repetida mais curta e o chefe variando, L-242).
+           o teto como balde foi medido e recusado (DEC-30).
+           ST-2.27b (02/10): o outro chefe na tentativa seguinte, a repetida
+           40% mais curta, "tentativa N" na tela (L-242). PRÓXIMO: ST-2.27c
+           (o treino por hora à vista quando a stamina acaba).
            D-151: a medição da emissão não vê a regeneração (vai na ST-2.27).
            ST-2.26b (02/10): D-149 (o chefe da wave perdida aguenta com vida,
            barra = número) e D-150 (o 400 do mover). a seguir: ST-2.27, a forma

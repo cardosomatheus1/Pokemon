@@ -2531,7 +2531,24 @@ do servidor. Três partes:
   a primeira versão lia só a fonte, e S2640/S2641 escaparam).
   S2637–S2642 PEGOU. **Mutantes de navegador: 0.** Nenhuma fixture mudou.
 
-### ST-2.27 · A forma do dia: a run que não cansa e o dia que não se esgota em 35 min (DEC-28, L-242, L-243, L-244) ⏳ — a alavanca 1 recusada (DEC-30), a 2 feita (ST-2.27a); seguem a 3 (L-242) e a 4
+### ST-2.27b · A wave repetida não cansa (L-242) ✅ 02/10
+- **Medido antes:** cada tentativa já tinha semente própria e o chefe já era
+  sorteado de novo — mas a Floresta tem dois, e ele repetia em metade das
+  tentativas. A duração da wave não decide nada: é só o ritmo da encenação.
+- **Feito:** (1) no chefe, a tentativa seguinte traz o OUTRO quando o estágio
+  tem mais de um (`composicaoDaWave(..., { evitar })`, a cadeia refeita da
+  semente de cada tentativa); o sorteio é o MESMO, na mesma ordem — chance e
+  resultado idênticos, sorteio por sorteio (200 sementes); (2) a tentativa
+  repetida dura 60% (`RITMO_DA_REPETIDA`) — a mais curta passa de 13 s a 8 s;
+  (3) a tela diz "wave 10 de 10 · tentativa 2".
+- **Medido depois:** emissão idêntica (a fixture não mudou); antifraude:
+  diário 12,03 → 12,05 capturas/dia, maratona est. 3 17,10 → 17,05 (o outro
+  chefe tem outra raridade). Um teste do Avanço amostrava o relógio de 20 em
+  20 s — maior que a wave mais curta já era 13 s; passou a 7 s.
+- **Testes:** `wave-repetida` (novo, 4). S2643–S2646 PEGOU; S831 e S2572
+  realvos. Mutantes de navegador: 0.
+
+### ST-2.27 · A forma do dia: a run que não cansa e o dia que não se esgota em 35 min (DEC-28, L-242, L-243, L-244) ⏳ — a alavanca 1 recusada (DEC-30), a 2 feita (ST-2.27a), a 3 feita (ST-2.27b); segue a 4 (o treino à vista)
 - **Por quê:** o 5º relato (*"waves de 30 a 60 s com o mesmo chefe cansam"*,
   *"a stamina pesa com dois em campo"*) e o dono, 02/10: *"não quero o cara
   entrando no jogo por 1h e deixando 23h parado"*.

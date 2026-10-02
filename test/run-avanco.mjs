@@ -122,7 +122,11 @@ export function suite() {
       let r = comecar(`golpe-${i}`), t = T0, antes = r;
       while (emCurso(r) && t - T0 < 6 * 3600_000) {
         antes = r;
-        t += 20_000;
+        /* O passo tem de ser MENOR que a wave mais curta: com um passo maior,
+           uma tentativa inteira cabe nele e o "antes" é de outra wave. Medido
+           na ST-2.27b: a mais curta é de 13 s na primeira tentativa e de 8 s
+           na repetida (o ritmo da repetida, `RITMO_DA_REPETIDA`). Era 20 s. */
+        t += 7_000;
         r = avancarRun(r, { elenco: ELENCO, equipe: EQUIPE(NIVEL), agora: t }).run;
       }
       if (r.fim?.motivo !== 'hp') continue;
