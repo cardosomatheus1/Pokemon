@@ -7544,6 +7544,26 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
+## D-159 — o cansado ficava travado na equipe que vai ✅ CORRIGIDO na ST-2.28d (02/10)
+
+**Achado:** o dono — *"um pokémon acabou a stamina e fica travado no time, não
+consigo guardar ele pra botar outro pra upar"*. **Bloco dono:** ST-2.28d.
+
+**Causa (medida no navegador).** Duas travas. (1) O cartão do cansado em "A
+equipe que vai" ficava ACESO e DESABILITADO ao mesmo tempo: `disabled` vinha só
+da stamina, sem olhar se ele já estava escolhido — escolhido, sem clique para
+sair. (2) Guardado na caixa pelo Centro, a escolha da run (`equipeEscolhida`)
+seguia com o id dele, e o botão continuava "Equipe descansando"; a escolha só
+era refeita quando ficava VAZIA, e caía em `E.criaturas[0]`, cansado ou na
+caixa.
+
+**Conserto.** A stamina impede ENTRAR na equipe que vai, nunca SAIR
+(`cartaoTravado`); a escolha larga a cada pintura quem foi para a caixa ou
+não existe, e vazia cai no mais descansado da equipe ativa
+(`equipeDaEscolha`, camada 0).
+
+**Teste que trava:** `relato6` — os dois "D-159". S2669–S2671 PEGOU.
+
 ## D-154 — a aba aberta antes de um deploy reproduz a run com o código velho ✅ CORRIGIDO na ST-2.28b (02/10)
 
 **Achado:** o 6º relato — *"o log marcou 'estágio limpo' antes do Beedrill

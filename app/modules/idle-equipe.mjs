@@ -23,7 +23,7 @@ import { expedicaoEm, podemIr } from './idle-quem.mjs';
 import { pintarEm } from './idle-hud.mjs';
 import { $, nosDois } from './dom.mjs';
 import { mostra, MODO_PADRAO, proximoModo, resumoDaEvolucao,
-         mostraNivelSolto } from './idle-escolha.mjs';
+         mostraNivelSolto, cartaoTravado } from './idle-escolha.mjs';
 import { FALA as FALA_DO_FOCO } from './idle-foco.mjs';
 import { NIVEL_PARA_ESCOLHER as NIVEL_DO_FOCO, descansando as descansandoFoco }
   from '../../engine/foco.mjs';
@@ -225,7 +225,7 @@ export function pintarCartoes(E, { perfil, selecao = [], agora = Date.now(),
     return `
       <button class="idleCria${sel ? ' on' : ''}${pode ? '' : ' seca'}${fora ? ' fora' : ''}" data-cria="${c.id}" data-dex="${c.dex}"
               title="${fora ? 'já está ' + AVENTURAS[fora].onde + ' — recolha antes' : ''}"
-              ${pode ? '' : 'disabled'}>
+              ${cartaoTravado({ sel, pode }) ? 'disabled' : ''}>
         ${fora ? `<span class="criaFora">${AVENTURAS[fora].selo}</span>` : ''}
         ${c.shiny === true ? '<span class="criaShiny">✦ brilhante</span>' : ''}
         <i class="criaBola${sel ? ' acesa' : ''}" aria-hidden="true"

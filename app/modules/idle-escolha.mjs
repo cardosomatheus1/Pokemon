@@ -288,3 +288,25 @@ export function guardarModo(modo, deposito = globalThis.localStorage) {
    com um terceiro modo um dia, o botão não precisa saber contar. */
 export const proximoModo = modo =>
   MODOS[(MODOS.indexOf(modoValido(modo)) + 1) % MODOS.length];
+
+/* ── O CANSADO NÃO PRENDE O TIME (ST-2.28d · D-159) ──────────────────────
+ *
+ * O dono: *"um pokémon acabou a stamina e fica travado no time, não consigo
+ * guardar ele pra botar outro para upar"*. Duas travas, medidas no navegador:
+ * o cartão do cansado ficava ACESO e DESABILITADO ao mesmo tempo — escolhido,
+ * e sem clique para sair; e guardado na caixa pelo Centro, a escolha da run
+ * seguia com o id dele, e o botão continuava "descansando".
+ *
+ * A stamina impede ENTRAR na equipe que vai; nunca impede SAIR. */
+export const cartaoTravado = ({ sel, pode }) => !pode && !sel;
+
+/* A escolha que vale: só quem existe e está na equipe ativa. Vazia, cai no
+   mais descansado — é ele que o jogador quer mandar depois de guardar o
+   cansado. `staminaDe(c)` vem de quem chama (o relógio é da tela). */
+export function equipeDaEscolha(escolhida, criaturas, staminaDe) {
+  const ativas = (criaturas ?? []).filter(c => c?.id != null && !c.naCaixa);
+  const ids = new Set(ativas.map(c => c.id));
+  const fica = (escolhida ?? []).filter(id => ids.has(id));
+  if (fica.length || !ativas.length) return fica;
+  return [[...ativas].sort((a, b) => staminaDe(b) - staminaDe(a))[0].id];
+}

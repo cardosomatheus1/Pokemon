@@ -10688,6 +10688,16 @@ export const DEFEITOS = [
   { id:'S2646', arquivo:'app/modules/avanco-tela.mjs', nome:'a tela cala a tentativa',
     real:'a wave repete e o jogador não sabe que é outra tentativa',
     de:"(run.tentativa > 0 ? ` · tentativa ${run.tentativa + 1}` : '')", para:"''" },
+  /* ── ST-2.28d · o cansado não prende o time (D-159) ───────────────── */
+  { id:'S2669', arquivo:'app/modules/idle-escolha.mjs', nome:'o cansado escolhido volta a travar no cartão',
+    real:'"acabou a stamina e fica travado no time" — aceso e desabilitado, sem clique para sair',
+    de:'export const cartaoTravado = ({ sel, pode }) => !pode && !sel;', para:'export const cartaoTravado = ({ sel, pode }) => !pode;' },
+  { id:'S2670', arquivo:'app/modules/idle-escolha.mjs', nome:'a escolha guarda quem foi para a caixa',
+    real:'guardado na caixa, ele continua na equipe da run — e o botão segue "descansando"',
+    de:'const ativas = (criaturas ?? []).filter(c => c?.id != null && !c.naCaixa);', para:'const ativas = (criaturas ?? []).filter(c => c?.id != null);' },
+  { id:'S2671', arquivo:'app/modules/idle-escolha.mjs', nome:'a escolha vazia cai no primeiro, e não no descansado',
+    real:'depois de guardar o cansado, a run escolhe outro cansado',
+    de:'sort((a, b) => staminaDe(b) - staminaDe(a))[0].id]', para:'sort((a, b) => 0)[0].id]' },
   /* ── ST-2.28c · DEC-31, a moeda que não despenca ─────────────────── */
   { id:'S2666', arquivo:'engine/avanco.mjs', nome:'DEC-31 · a run depois do teto volta a pagar só os abates',
     real:'"+46, +30, +33" — a moeda despenca a 16% de uma run cheia depois do teto',

@@ -16,6 +16,7 @@ import { rotuloDaEquipeDaRun } from '../app/modules/avanco-relogio.mjs';
 import { reservadoForaDaRun } from '../app/modules/volta-dados.mjs';
 import { resumoDaBolsa } from '../app/modules/bolsa-resumo.mjs';
 import { recarregaNaVersaoNova } from '../app/modules/idle-conta.mjs';
+import { cartaoTravado, equipeDaEscolha } from '../app/modules/idle-escolha.mjs';
 import { EQUIPE_MAX, comprometido } from '../engine/expedicao.mjs';
 import { ENCONTROS_POR_AVANCO } from '../engine/avanco.mjs';
 
@@ -64,6 +65,28 @@ export function suite() {
     const pag = fonte('app/index.html');
     const i = pag.indexOf('api.aoMudarVersao(');
     ok(i > 0 && /recarregaNaVersaoNova\(/.test(pag.slice(i, i + 500)) && /location\.reload\(\)/.test(pag.slice(i, i + 500)), 'a aba não recarrega na versão nova');
+  });
+
+  /* ── ST-2.28d · o cansado não prende o time (D-159) ────────────────────
+     O dono: "um pokémon acabou a stamina e fica travado no time, não consigo
+     guardar ele pra botar outro para upar". Medido no navegador: o cartão do
+     cansado ficava ACESO E DESABILITADO ao mesmo tempo (não saía da escolha);
+     e guardado na caixa pelo Centro, a escolha da run seguia com o id dele. */
+  s.teste('D-159: o cartão cansado não entra na escolha, mas SAI dela', () => {
+    igual(cartaoTravado({ sel: false, pode: false }), true, 'o cansado de fora pôde entrar');
+    igual(cartaoTravado({ sel: true, pode: false }), false, 'o cansado escolhido não pode ser tirado');
+    igual(cartaoTravado({ sel: false, pode: true }), false, 'o descansado ficou travado');
+    ok(/cartaoTravado\(\{ sel, pode \}\)/.test(fonte('app/modules/idle-equipe.mjs')), 'o cartão da equipe que vai não usa a regra');
+  });
+
+  s.teste('D-159: a escolha da run larga quem foi para a caixa, e cai no mais descansado', () => {
+    const cr = [{ id: 'a', naCaixa: true }, { id: 'b' }, { id: 'c' }, { id: 'd' }];
+    const st = { a: 0, b: 40, c: 90, d: 10 };
+    igual(equipeDaEscolha(['a', 'd'], cr, c => st[c.id]).join(','), 'd', 'a escolha manteve quem está na caixa');
+    igual(equipeDaEscolha(['a'], cr, c => st[c.id]).join(','), 'c', 'sem ninguém, não caiu no mais descansado');
+    igual(equipeDaEscolha(['zz'], cr, c => st[c.id]).join(','), 'c', 'manteve um id que não existe');
+    igual(equipeDaEscolha([], [{ id: 'x', naCaixa: true }], () => 0).join(','), '', 'inventou equipe com todos na caixa');
+    ok(/equipeEscolhida = equipeDaEscolha\(/.test(fonte('app/modules/idle-tela.mjs')), 'a tela não limpa a escolha a cada pintura');
   });
 
   return s;

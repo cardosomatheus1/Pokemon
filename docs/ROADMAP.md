@@ -261,6 +261,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **ST-2.28d** · o cansado não prende o time (D-159) | 02/10 | o cartão do cansado escolhido volta a ter clique para sair; guardado na caixa, a escolha da run larga ele e cai no mais descansado |
 | **ST-2.28c** · a moeda que não despenca (DEC-31) | 02/10 | a run depois do teto paga 35% dos encontros vistos (era só os abates: 16% de uma cheia); a queda do dia 85% por run (era 75%); toda run 84% para o dia médio ficar igual — a 7ª run 49 → 138, a 10ª 21 → 85; casual −7%, diário +7%, maratona +83% por dia |
 | **ST-2.28b** · os pequenos do 6º relato (D-154, D-156, D-157, D-158) | 02/10 | "3 de 3 na equipe" (era "3 de 2 vaga(s)"); a hora da volta igual na rota e na run; "+2 outros itens"; a aba aberta antes de um deploy recarrega quando há run na conta |
 | **ST-2.28a** · a evolução chama (D-155, 6º relato) | 02/10 | "✨ Kakuna pode evoluir para Beedrill!" embaixo da cena, com as duas formas e o botão; "✨ evoluir" no Centro, ao lado do doce; a recusa do servidor deixou de calar; o doce diz "+2 XP" |

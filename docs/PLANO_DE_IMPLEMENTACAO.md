@@ -2583,6 +2583,12 @@ do servidor. Três partes:
   `emissao-idle` regravada (números na DEC-31). Testes: `stamina-balanco`
   (+2, e o modelo com o teto); `emissao-idle` (a frase da 7ª run: 85%).
   S2666–S2668 PEGOU; S2613 e S2623 realvos. Mutantes de navegador: 0.
+- **ST-2.28d ✅ 02/10 — o cansado não prende o time (D-159):** o cartão do
+  cansado escolhido volta a ter clique (para SAIR); a escolha da run larga quem
+  foi para a caixa e, vazia, cai no mais descansado. Q5: o cansado sai da
+  escolha, outro entra, "Iniciar batalhas" volta; guardado pelo Centro, a
+  escolha se ajusta. Testes: `relato6` +2; S2669–S2671 PEGOU. Mutantes de
+  navegador: 0.
 - **O sprite "bloqueado":** medido no aparelho local, sem conta e numa run de
   40 s: só os dois 404 conhecidos (`lojas.mp4`, `battle-theme.mp3`). Falta a
   linha do console do dono para saber o que o navegador dele bloqueia

@@ -53,7 +53,7 @@ import { PACK, nomeExibido } from './motor.mjs';
 import { dexImg, retratoAnimado } from './sprites.mjs';
 import { estiloIcone } from './icones.mjs';
 import { seloDoFoco, seloDaEvolucao, desenharHud, pintarCartoes } from './idle-equipe.mjs';
-import { modoGuardado, guardarModo, proximoModo, MODO_PADRAO } from './idle-escolha.mjs';
+import { modoGuardado, guardarModo, proximoModo, MODO_PADRAO, equipeDaEscolha } from './idle-escolha.mjs';
 import { nomesDe } from './itens-nome.mjs';
 import { confirmarExpedicao, confirmarLance } from './idle-confirma.mjs';
 import { ligarLoja, usarEstado as lojaUsaEstado } from './loja-tela.mjs';
@@ -261,7 +261,7 @@ export function renderIdle() {
      acontecendo; o resto e um clique. */
   if (!biomaEscolhido)
     biomaEscolhido = biomaDeAbertura(emCampo(E), PACK.biomas);
-  if (!equipeEscolhida.length) equipeEscolhida = [E.criaturas[0].id];
+  equipeEscolhida = equipeDaEscolha(equipeEscolhida, E.criaturas, c => staminaDe(E, c.id, agora()));   // D-159
 
   /* ── A RUN TOMA A ABA QUANDO EXISTE (A4b, §7.22) ───────────────────────
      Ela não é uma aba nova: o arranjo que o dono aprovou mostra "Rotas" aceso
