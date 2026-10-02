@@ -7544,6 +7544,29 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
+## D-153 — o Q2 do bloco morria antes do primeiro mutante (desde a ST-2.22) ✅ CORRIGIDO no fecho da ST-2.27c (02/10)
+
+**Achado:** ao fechar a ST-2.27c, `npm run sabotagem:bloco` caiu com
+*"Invalid regular expression … Unterminated group"* logo depois da linha de
+base. **Bloco dono:** arnês, fecho da ST-2.27c — pela regra de 16/09 ele
+IMPEDE (o portão não termina), então entrou agora, com orçamento de um
+conserto e um teste.
+
+**Causa.** `prefixosVarridos` (`test/fecho.mjs`) lê o argumento de cada
+`readdirSync(...)` e, quando não é caminho, trata como NOME de constante e o
+põe cru numa `RegExp`. A ST-2.22 trouxe `readdirSync(join(base, p))` ao
+`server/build.mjs`: `join(base` virou um grupo sem fechar, e a exceção
+derrubou o portão inteiro. Desde então os blocos fecharam com a sonda manual
+(defeitos novos do bloco), e não com o `sabotagem:bloco`.
+
+**Conserto.** Só nome simples (`/^[A-Za-z_$][\w$]*$/`) vai para a
+RegExp; expressão não se resolve e o arquivo ganha fecho TUDO — a direção
+segura da regra "dúvida no fecho resolve para TUDO".
+
+**Teste que trava:** `portao` — "D-153: readdirSync com expressão no
+argumento vira fecho TUDO, e não derruba o portão". Vermelho sem o conserto
+(medido). Sem defeito plantado: o arnês não planta em si mesmo (D-101).
+
 ## D-152 — no celular, a recusa por stamina saía cortada no botão sobre a cena ✅ CORRIGIDO na ST-2.27c (02/10)
 
 **Achado:** na captura de 420 px da ST-2.27c, ao olhar o estado antes de

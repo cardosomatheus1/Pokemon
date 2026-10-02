@@ -225,7 +225,10 @@ function prefixosVarridos(arq, txt) {
       const rel = relRaiz(abs);
       if (rel && !rel.startsWith('..')) fora.push(rel.endsWith('/') ? rel : rel + '/');
     } else {
-      /* Nome de variável: procura a constante literal no mesmo arquivo. */
+      /* Nome de variável: procura a constante literal no mesmo arquivo. Só
+         nome SIMPLES: uma expressão (`join(base, p)`, D-153) entrava crua na
+         RegExp e derrubava o Q2 do bloco. Não resolvida, é TUDO. */
+      if (!/^[A-Za-z_$][\w$]*$/.test(bruto)) return null;
       const decl = txt.match(new RegExp(`const ${bruto}\\s*=\\s*new URL\\(\\s*['"]([^'"]+)['"]`));
       if (!decl) return null;                 /* não resolvi: quem chama decide TUDO */
       const abs = resolve(dirname(arq), decl[1]);

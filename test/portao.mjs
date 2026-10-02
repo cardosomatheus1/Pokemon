@@ -185,6 +185,24 @@ export function suite() {
       'a mesma fatia pediu defeitos diferentes: o cache da fatia não reaproveitaria');
   });
 
+  /* D-153: `readdirSync(join(base, p))` no `server/build.mjs` entrava cru
+     numa RegExp e derrubava o Q2 do bloco antes do primeiro mutante. Nome que
+     não é uma constante simples não se resolve — e dúvida no fecho é TUDO. */
+  s.teste('D-153: readdirSync com expressão no argumento vira fecho TUDO, e não derruba o portão', async () => {
+    const { fechoDeArquivo, TUDO } = await import('./fecho.mjs');
+    const { mkdtempSync, writeFileSync, rmSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const dir = mkdtempSync(join(tmpdir(), 'd153-'));
+    try {
+      const arq = join(dir, 'varre.mjs');
+      writeFileSync(arq, "import { readdirSync } from 'node:fs';\nexport const f = (base, p) => readdirSync(join(base, p));\n");
+      let r, erro = null;
+      try { r = fechoDeArquivo(arq); } catch (e) { erro = e; }
+      ok(!erro, `o fecho estourou: ${erro?.message}`);
+      igual(r, TUDO, 'expressão no readdirSync não resolveu para TUDO');
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+
   s.teste('T14: fatia fora da faixa é recusada, não vira fatia vazia', () => {
     let erro = null;
     try { fatiar([{ id: 'a' }], 4, 3); } catch (e) { erro = e; }
