@@ -2531,6 +2531,52 @@ do servidor. Três partes:
   a primeira versão lia só a fonte, e S2640/S2641 escaparam).
   S2637–S2642 PEGOU. **Mutantes de navegador: 0.** Nenhuma fixture mudou.
 
+### ST-2.28 · O 6º relato do dono (D-154 a D-158, L-249) ⏳ — a ST-2.28a feita; seguem a b (os pequenos) e a c (a moeda depois do teto)
+- **O relato (02/10):** a evolução não acontece (o Kakuna no nível 10 seguiu
+  Kakuna; o doce gastou sem evoluir); o chefe "fora de ordem" ("estágio
+  limpo" antes do Beedrill aparecer, ele em 100/100 no fim); "3 de 2
+  vaga(s)"; o próximo encontro às 17:50 na rota e às 21:04 na run; um "+2"
+  sem nome no resumo da bolsa; a moeda por run de +317/+436 para +46/+30/+33.
+- **Medido antes de mexer:**
+  - a evolução EXISTE e funciona pela conta (Kakuna xp 634 → Beedrill no
+    servidor). O selo "evoluir" morava no cartão "A equipe que vai", lá
+    embaixo da página; o Centro (onde fica o "dar doce") não oferecia, nada
+    chamava, e o clique que falhava calava (`catch { return; }`) — D-155;
+  - o doce dá 2 XP (1,4% de um nível perto do 10) — calibrado no teto de 25%
+    do XP diário do casual (30 doces × 2 = 60 de 73); não cabe subir — L-249;
+  - o motor do chefe é coerente (58 runs com a wave 10 repetida, 900 waves de
+    chefe: ele sempre entra e cai dentro da wave). A divergência é entre a
+    aba e o servidor: uma aba aberta antes do deploy da ST-2.27b reproduz a
+    run com o código velho (sem a repetida mais curta, outro chefe) e o
+    servidor a fecha antes — D-154;
+  - "3 de 2": o cabeçalho da run dividia a equipe (teto 3) pelas VAGAS DE
+    EXPEDIÇÃO — D-156;
+  - 17:50 × 21:04: durante a run o teto reserva os 5 encontros dela (D-107),
+    e a hora da volta contava essa reserva, no aparelho e no servidor — D-157;
+  - o "+2" é o resto da bolsa ("+2" tipos de item) sem dizer o quê — D-158;
+  - a moeda: com o teto batido a run paga só os abates (DEC-27), ~1/6 da run
+    com encontros; e o rendimento do dia (DEC-14) cai 25% por run da 7ª em
+    diante. Decisão de economia — ST-2.28c, medida antes.
+- **ST-2.28a ✅ 02/10 — a evolução chama (D-155):** embaixo da cena,
+  "✨ Kakuna pode evoluir para Beedrill!" com as duas formas e o botão
+  Evoluir (o mesmo clique e o mesmo aviso de golpe perdido do selo); "+1
+  pronta" quando há mais; a equipe antes da caixa; a linha que se abre não
+  promete um ramo. No Centro, "✨ evoluir" ao lado do doce. A recusa do
+  servidor vira aviso. O doce diz "(+2 XP)". Camada 0:
+  `chamadaDaEvolucao`, `painelDaEvolucao` (`evolucao-idle.mjs`). Q5: 1440 e
+  420, o clique evolui (Kakuna → Beedrill) e a chamada passa ao Metapod da
+  caixa. Testes: `evolucao-idle` +4; S2655–S2660 PEGOU; S1943 realvo.
+  Mutantes de navegador: 0.
+- **ST-2.28b (a seguir):** D-156 (a equipe sobre o teto dela), D-157 (a
+  volta sem a reserva da própria run), D-158 ("+2 outros itens"), D-154 (a
+  aba velha recarrega quando a versão muda no meio de uma run).
+- **ST-2.28c (depois):** a moeda depois do teto e o rendimento do dia —
+  medidos contra os três jogadores da DEC-28 antes de qualquer número
+  (recomendação: a run com o teto batido paga parte dos encontros vistos, e o
+  rendimento cai mais devagar com piso maior, com a média do dia no lugar).
+- **Fora:** as duas migrações (doces do D-144, nível de nascer das capturas
+  antigas) — decisão do dono, pendente.
+
 ### ST-2.27c · Sem stamina, o que ainda vale (L-244, D-152) ✅ 02/10
 - **Medido antes:** com a equipe sem stamina, a tela das Rotas só dizia "não"
   (com hora, desde a ST-2.27a) — e no celular nem isso: a frase inteira

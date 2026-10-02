@@ -125,4 +125,37 @@ export function aplicar(pack, criatura, bolsa, alvo = null) {
 export const prontasNaCaixa = (pack, criaturas, bolsa) =>
   (criaturas ?? []).filter(c => prontasPara(pack, c, bolsa).length > 0);
 
+/* ── A EVOLUÇÃO CHAMA O JOGADOR (ST-2.28a · D-155) ───────────────────────
+ *
+ * O 6º relato: *"o Kakuna chegou ao nível 10 e continuou Kakuna"*. O motor
+ * evoluía; o selo "evoluir" morava num cartão lá embaixo da página, e nada
+ * dizia que ele tinha aparecido. No gênero a evolução é um MOMENTO — a tela
+ * para e pergunta. Aqui ela continua uma escolha (evoluir pode custar um
+ * golpe exclusivo, ST-10.3), mas a escolha passa a ser feita à vista.
+ *
+ * A equipe vem antes da caixa: é quem o jogador está olhando. `null` quando
+ * ninguém está pronto. */
+export function chamadaDaEvolucao(pack, criaturas, bolsa, nome = dex => dex) {
+  const ordem = [...(criaturas ?? [])].sort((a, b) => (a?.naCaixa ? 1 : 0) - (b?.naCaixa ? 1 : 0));
+  const prontas = prontasNaCaixa(pack, ordem, bolsa);
+  if (!prontas.length) return null;
+  const c = prontas[0], arestas = prontasPara(pack, c, bolsa);
+  const de = Number(c.dex), para = arestas.length === 1 ? arestas[0].para : null;
+  /* a linha que se abre não promete um destino: quem escolhe é a ficha */
+  const texto = para != null ? `${nome(de)} pode evoluir para ${nome(para)}!` : `${nome(de)} pode evoluir!`;
+  return { id: c.id, de, para, texto, mais: prontas.length - 1 };
+}
+
+/* O painel, como texto: a tela só o põe na página (o botão é o mesmo
+   `data-evoluir` do selo — o mesmo clique, o mesmo aviso do golpe perdido). */
+export function painelDaEvolucao(ch, arte = null) {
+  if (!ch) return null;
+  /* as duas formas lado a lado, quando a tela sabe desenhar: é o "antes e
+     depois" que o gênero ensinou a ler como evolução */
+  const formas = arte ? `<span class="evlFormas">${arte(ch.de)}${ch.para != null ? `<i>→</i>${arte(ch.para)}` : ''}</span>` : '';
+  return formas + `<span class="evlTexto">✨ ${ch.texto}</span>` +
+    `<button type="button" class="evlBotao" data-evoluir="${ch.id}">Evoluir</button>` +
+    (ch.mais > 0 ? `<span class="evlMais">+${ch.mais} pronta${ch.mais > 1 ? 's' : ''} na equipe ou na caixa</span>` : '');
+}
+
 export { estagioDe };

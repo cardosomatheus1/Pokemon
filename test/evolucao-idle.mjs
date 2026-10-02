@@ -16,6 +16,7 @@
 import { criarSuite, ok, igual } from './harness.mjs';
 import {
   paraMotor, itensDe, prontasPara, podeUmDia, oQueFalta, aplicar, prontasNaCaixa,
+  chamadaDaEvolucao, painelDaEvolucao,
 } from '../app/modules/evolucao-idle.mjs';
 import {
   msDaAlternancia, msTotal, montar, falaDe, corDoTipo,
@@ -226,6 +227,48 @@ export function suite() {
     igual(aplicar(kanto, cria(25, 5), { trovao: 1 }).consome, 'trovao', 'a evolução por pedra não diz qual pedra consome');
     igual(aplicar(kanto, cria(4, 16), {}).consome, null, 'a evolução por nível diz que consome alguma coisa');
     igual(aplicar(kanto, cria(133, 5), { agua: 1, trovao: 1 }, 135).consome, 'trovao', 'o ramo escolhido consome a pedra de outro ramo');
+  });
+
+  /* ── ST-2.28a · A EVOLUÇÃO QUE NINGUÉM VIA (D-155) ───────────────────
+     O 6º relato: "o Kakuna chegou ao nível 10 e continuou Kakuna". O motor
+     evoluía — o selo "evoluir" existia, num cartão lá embaixo da página, e o
+     clique que falhava calava. A evolução tem de CHAMAR o jogador. */
+  const nome = dex => ({ 14: 'Kakuna', 15: 'Beedrill', 1: 'Bulbasaur', 133: 'Eevee', 11: 'Metapod' })[dex] ?? `#${dex}`;
+
+  s.teste('D-155: quem está pronto para evoluir é chamado pelo nome — a equipe antes da caixa', () => {
+    const lista = [cria(1, 12, { id: 'b' }), cria(11, 10, { id: 'm', naCaixa: true }), cria(14, 10, { id: 'k' })];
+    const ch = chamadaDaEvolucao(kanto, lista, {}, nome);
+    igual(ch?.id, 'k', 'chamou quem está na caixa antes de quem está na equipe');
+    igual(`${ch.de}>${ch.para}`, '14>15', 'a chamada não diz de quem para quem');
+    ok(/Kakuna pode evoluir para Beedrill/.test(ch.texto), `a frase: ${ch.texto}`);
+    igual(ch.mais, 1, 'não contou o outro pronto (o da caixa)');
+    igual(chamadaDaEvolucao(kanto, [cria(14, 9, { id: 'k' }), cria(1, 15, { id: 'b' })], {}, nome), null, 'chamou quem ainda não pode');
+  });
+
+  s.teste('D-155: a linha que se abre não promete um destino só', () => {
+    const ch = chamadaDaEvolucao(kanto, [cria(133, 5, { id: 'e' })], { agua: 1, trovao: 1 }, nome);
+    ok(ch && !/para/.test(ch.texto) && /Eevee pode evoluir/.test(ch.texto), `a frase prometeu um ramo: ${ch?.texto}`);
+  });
+
+  s.teste('D-155: o painel tem o botão que evolui, e cala sem ninguém pronto', () => {
+    const ch = chamadaDaEvolucao(kanto, [cria(14, 10, { id: 'kk' }), cria(11, 10, { id: 'mm' })], {}, nome);
+    const html = painelDaEvolucao(ch) ?? '';
+    ok(/data-evoluir="kk"/.test(html) && /Evoluir/.test(html), `o painel sem o botão: ${html}`);
+    ok(/\+1 pronta/.test(html), `o painel não diz que há outra pronta: ${html}`);
+    igual(painelDaEvolucao(null), null, 'painel sem ninguém pronto');
+    const comArte = painelDaEvolucao(ch, dex => `<img data-d="${dex}">`) ?? '';
+    ok(/data-d="14"[\s\S]*→[\s\S]*data-d="15"/.test(comArte), `o painel não desenha o antes e o depois: ${comArte}`);
+  });
+
+  s.teste('D-155: a tela chama — o painel embaixo da cena, o botão no Centro, e a recusa não cala', () => {
+    ok(/id="idleEvolui"/.test(ler('app/index.html')), 'a cena das Rotas não tem onde chamar a evolução');
+    const pain = ler('app/modules/idle-paineis.mjs');
+    ok(/painelDaEvolucao\(/.test(pain) && /idleEvolui/.test(pain), 'ninguém pinta a chamada da evolução');
+    ok(/prontasPara\(PACK, c, E\.bolsa\)/.test(pain) && /data-evoluir="\$\{c\.id\}"/.test(pain), 'o Centro (onde fica o "dar doce") não oferece evoluir');
+    const tela = ler('app/modules/idle-tela.mjs').replace(/\/\*[\s\S]*?\*\//g, '');
+    const i = tela.indexOf('= await evoluirNa(');
+    ok(/catch \(e\) \{ avisar\(/.test(tela.slice(i, i + 120)), 'o clique em evoluir que falha continua calado');
+    ok(/\+\$\{XP_POR_DOCE\} XP/.test(pain), 'o botão do doce não diz quanto XP ele dá');
   });
 
   return s;

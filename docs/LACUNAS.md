@@ -9392,6 +9392,19 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-249 — o doce dá 2 XP, e o jogador espera dele um nível
+
+**Registrada em:** 02/10/2026, no 6º relato (*"dar um doce gastou o doce sem
+fazer ele evoluir"*). **Bloco dono:** **ST-2.28c** (a economia do relato).
+**Estado:** aberta — o botão passou a dizer "+2 XP" (ST-2.28a).
+
+Medido: 1 doce = `XP_POR_DOCE` = 2 XP, ~1,4% de um nível perto do 10. A taxa
+está no teto da regra (`doce-nivel`: o teto do dia de doce rende no máximo 25%
+do XP diário do casual — 30 × 2 = 60 de 73). No gênero o doce raro é um nível
+inteiro. **Por que não cabe agora:** subir a taxa fura a regra dos 25%;
+mudar a regra (o doce como nível, mais raro) é economia e vai junto da moeda
+na ST-2.28c. **O que a destrava:** a medição da ST-2.28c.
+
 ### L-248 — duas suítes deixam pastas temporárias para trás
 
 **Registrada em:** 02/10/2026, no fecho da ST-2.27c (o `/tmp` da máquina

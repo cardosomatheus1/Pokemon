@@ -526,7 +526,7 @@ document.addEventListener('click', async ev => {
     let r;
     /* A PEDRA É CONSUMIDA dentro de `evoluirNa` — no aparelho ou na conta. */
     try { r = await evoluirNa(E, PACK, i); }
-    catch { return; }
+    catch (e) { avisar(`não evoluiu: ${e.message}`); return; }   // D-155: a recusa calada era o "não acontece"
     salvarE();
     ligarEvolucao();
     tocarEvolucao(r.de, r.para, () => { renderIdle(); avisarPokedex(); });

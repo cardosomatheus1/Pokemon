@@ -7502,6 +7502,24 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   color:#08131f; background:var(--gold); border:1px solid #fff; box-shadow:0 0 12px rgba(var(--goldRGB),.5)}
 .idleEnquanto .enqSair:hover{filter:brightness(1.08)}
 #viewIdle.emRun .idleEnquanto{display:none}
+/* ST-2.28a: a evolução chama — dourada, porque é o momento do gênero */
+.idleEvolui{display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px; margin:8px 0 2px; padding:8px 12px; border-radius:9px;
+  background:linear-gradient(90deg, rgba(var(--goldRGB),.16), rgba(var(--goldRGB),.04)); border:1px solid rgba(var(--goldRGB),.55);
+  font-size:.8rem; color:var(--txt); animation:evoBrilha 2.4s ease-in-out infinite}
+.idleEvolui[hidden]{display:none}
+.idleEvolui .evlTexto{font-weight:700}
+.idleEvolui .evlFormas{display:inline-flex; align-items:center; gap:2px}
+.idleEvolui .evlFormas i{font-style:normal; color:var(--gold); font-weight:700}
+.idleEvolui .evlArte{width:52px; height:52px; margin:-6px 0; image-rendering:pixelated; object-fit:contain}
+.idleEvolui .evlBotao, .idleEvoluir{padding:5px 14px; border-radius:9px; cursor:pointer; font-family:var(--dsp); font-size:.72rem;
+  letter-spacing:.06em; text-transform:uppercase; color:#08131f; background:var(--gold); border:1px solid #fff;
+  box-shadow:0 0 12px rgba(var(--goldRGB),.55)}
+.idleEvolui .evlBotao:hover, .idleEvoluir:hover{filter:brightness(1.08)}
+.idleEvolui .evlMais{font-size:.7rem; color:var(--dim)}
+.idleEvoluir{display:block; width:100%; margin-top:4px}
+@keyframes evoBrilha{0%,100%{box-shadow:0 0 0 rgba(var(--goldRGB),0)}50%{box-shadow:0 0 14px rgba(var(--goldRGB),.35)}}
+@media (prefers-reduced-motion:reduce){ .idleEvolui{animation:none} }
+#viewIdle.emRun .idleEvolui{display:none}
 .idleBolsaAtalho{display:block; width:100%; margin:8px 0 2px; padding:6px 10px; border-radius:9px;
   background:rgba(255,255,255,.03); border:1px solid var(--line); color:var(--txt);
   font:inherit; font-size:.74rem; text-align:left; cursor:pointer}
@@ -8569,6 +8587,8 @@ body.soAssiste .pick{cursor:pointer}
            linha diz o que importa para a run e leva até ele. -->
       <!-- SEM STAMINA, O QUE AINDA VALE (ST-2.27c, L-244): logo abaixo da cena,
            porque é ali que o botão disse "descansando". -->
+      <!-- A EVOLUÇÃO CHAMA (ST-2.28a, D-155): quem está pronto aparece aqui. -->
+      <p class="idleEvolui" id="idleEvolui" hidden></p>
       <p class="idleEnquanto" id="idleEnquanto" hidden></p>
       <button type="button" class="idleBolsaAtalho" id="idleBolsaAtalho" hidden></button>
       <!-- O BOTÃO GRANDE DE INICIAR mora DENTRO do palco (#idleIniciar, acima).

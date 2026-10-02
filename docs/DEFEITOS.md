@@ -7544,6 +7544,26 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
+## D-155 — a evolução existia e ninguém a via; o clique que falhava calava ✅ CORRIGIDO na ST-2.28a (02/10)
+
+**Achado:** o 6º relato do dono — *"o Kakuna chegou ao nível 10 e continuou
+Kakuna, e dar um doce gastou o doce sem fazer ele evoluir"*. **Bloco dono:**
+ST-2.28a.
+
+**Causa (medida).** A regra estava certa: pela conta, Kakuna com 634 de XP
+(nível 10) vira Beedrill. O que faltava era CHAMAR: o selo "evoluir" morava
+no cartão "A equipe que vai", várias telas abaixo da cena; o Centro — onde o
+dono procurou, ao lado do "dar doce" — não oferecia; nada dizia que alguém
+ficou pronto; e o clique tinha `catch { return; }`, então uma recusa do
+servidor sumia em silêncio. O doce dá 2 XP (L-249), e o dono esperava dele a
+evolução.
+
+**Conserto.** A chamada embaixo da cena (as duas formas, a frase, o botão, "+N
+prontas"), o "✨ evoluir" no Centro, a recusa como aviso, e o doce dizendo
+"+2 XP".
+
+**Teste que trava:** `evolucao-idle` — os quatro "D-155". S2655–S2660 PEGOU.
+
 ## D-153 — o Q2 do bloco morria antes do primeiro mutante (desde a ST-2.22) ✅ CORRIGIDO no fecho da ST-2.27c (02/10)
 
 **Achado:** ao fechar a ST-2.27c, `npm run sabotagem:bloco` caiu com

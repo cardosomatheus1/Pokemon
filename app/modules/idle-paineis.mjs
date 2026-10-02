@@ -29,6 +29,7 @@ import { avisoDoDoce } from './prende-dados.mjs';
 import { golpesDaCriatura, liberados, GOLPES_MAX, exclusivosDaCriatura } from './moveset-dados.mjs';
 import { compararGolpes } from './comparador-golpes.mjs';
 import { chaveDoDoce, XP_POR_DOCE } from '../../engine/doce.mjs';
+import { prontasPara, chamadaDaEvolucao, painelDaEvolucao } from './evolucao-idle.mjs';
 import { estiloItem, usarCatalogo } from './itens-icone.mjs';
 
 /* O CATALOGO DO PACK ALIMENTA OS ICONES. Uma vez, na carga do modulo: o mapa
@@ -245,10 +246,13 @@ export function pintarCentro(E) {
         ${cmp.emComum.length ? '<span class="idleLeg">(sublinhado: você também tem)</span>' : ''}
         <br><i>${cmp.razao}</i></p>` : ''}
     </details>`;
+    /* D-155: evoluir mora AO LADO do doce — era aqui que o dono procurava. */
+    const pronta = prontasPara(PACK, c, E.bolsa).length > 0;
     return `<div class="idleCaixaItem">${ficha(c, guardado)}
       ${golpes}
+      ${pronta ? `<button class="idleEvoluir" data-evoluir="${c.id}" title="o nível que a linha pede chegou">✨ evoluir</button>` : ''}
       ${doces > 0 ? `<button class="idleDarDoce${prende ? ' prende' : ''}" data-dar-doce="${c.id}"${prende ? ' data-prende="1"' : ''}
-        title="${XP_POR_DOCE} XP por doce · o doce é da linha inteira${prende ? ` · ${prende.frase}` : ''}">dar doce · ${doces} da linha${prende ? ' · ⚠ prende' : ''}</button>` : ''}
+        title="${XP_POR_DOCE} XP por doce · o doce é da linha inteira${prende ? ` · ${prende.frase}` : ''}">dar doce (+${XP_POR_DOCE} XP) · ${doces} da linha${prende ? ' · ⚠ prende' : ''}</button>` : ''}
       ${guardado ? `<button class="idleSoltar" data-soltar="${c.id}" data-doce="${doceAoSoltar(PACK, c.dex)}"
         title="soltar vira doce da linha — a Pokédex continua lembrando que você a teve">soltar · +${doceAoSoltar(PACK, c.dex)} doce</button>` : ''}
     </div>`;
@@ -265,6 +269,16 @@ export function pintarCentro(E) {
     ${guardados.length ? `
       <h4 class="idleSub">Na caixa</h4>
       <div class="idleLinha">${guardados.map(c => item(c, true)).join('')}</div>` : ''}`);
+
+  /* ── E A CHAMADA EMBAIXO DA CENA (D-155) ── quem está pronto aparece onde o
+     jogador está olhando, e não só no cartão lá embaixo. */
+  const ch = $('#idleEvolui');
+  if (ch) {
+    const html = painelDaEvolucao(chamadaDaEvolucao(PACK, E.criaturas, E.bolsa, dex => nomeExibido(esp(dex).n)),
+      dex => dexImg(dex, esp(dex).n, 'class="evlArte"'));
+    ch.hidden = !html;
+    if (html) ch.innerHTML = html;
+  }
 }
 
 /* ── A MOCHILA E O POKÉDEX ─────────────────────────────────────────────────
