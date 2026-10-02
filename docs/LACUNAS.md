@@ -9392,6 +9392,20 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-245 — a luta da Jornada não tem o palco clássico que o dono imagina
+
+**Registrada em:** 02/10/2026 (o dono, com a captura de uma luta de FireRed:
+*"imagino algo mais próximo disso, mas com gráficos melhores"*). **Bloco
+dono:** **ST-10.27**. **Estado:** aberta.
+
+A luta da Jornada encena a batalha, mas sem o arranjo que a referência ensina
+a ler: as duas placas de HP, o rival de frente em cima e o nosso de costas
+embaixo, a caixa de texto narrando um acontecimento por vez. A análise e a
+diferença nomeada (a caixa narra a LIÇÃO do nó, no neon da interface) estão na
+ficha. **Por que não cabe agora:** chegou no meio da DEC-29b, e é tela nova
+inteira, com arte nova (as costas). **O que a destrava:** nada — entra logo
+depois da ST-2.27.
+
 ### L-244 — o dia das Rotas se esgota em ~35 minutos
 
 **Registrada em:** 02/10/2026 (o dono: *"não quero o cara entrando no jogo por

@@ -191,7 +191,11 @@ export const falaDoCusto = () =>
  * calibragem. O XP não: a stamina e a curva de nível já o seguram. */
 export const RUNS_CHEIAS = 6;
 export const QUEDA_POR_RUN = 0.75;
-export const PISO_DO_RENDIMENTO = 0.05;
+/* 0,03 (DEC-29b, 02/10): era 0,05. Com a stamina a 30/h (DEC-29) o maratona
+   faz runs a mais no dia, e quase todas caem no piso: a 5% a moeda dele subia
+   14%. A 3% o dia inteiro dele fica onde estava em 20/h (11,13 → 11,15
+   runs-cheias com 2 em campo) — e a run do piso ainda paga alguma coisa. */
+export const PISO_DO_RENDIMENTO = 0.03;
 const DIA_MS = 24 * 3600_000;
 /* O mesmo deslocamento de `FUSO_DO_MUNDO_MIN` (`app/modules/hora-do-dia.mjs`):
    o motor não importa da aplicação, e `test/emissao-idle.mjs` confere que os
@@ -204,6 +208,21 @@ export function fatorDoRendimento(n) {
   const alem = Math.max(0, (Math.floor(Number(n)) || 1) - RUNS_CHEIAS);
   return Math.max(PISO_DO_RENDIMENTO, QUEDA_POR_RUN ** alem);
 }
+
+/* ── O XP DO DIA (DEC-29b) ───────────────────────────────────────────────
+ * O XP não decrescia: "a stamina e a curva de nível já o seguram". Com a
+ * stamina a 30/h a stamina segura menos — o maratona ia de 62 a 93 runs por
+ * dia, e o XP junto (+50%). O dono: "você pode balancear na XP/moeda em vez de
+ * subir tudo".
+ *
+ * Inteiro até a 24ª run do dia — mais de duas horas de runs, que nenhum dia
+ * normal alcança — e METADE depois. Medido (seis criaturas): o XP do dia do
+ * maratona fica entre −15% e +5% do que era em 20/h, conforme quantos ele põe
+ * em campo. A metade, e não um piso: XP é progressão, e a run longa do dia
+ * ainda tem de levar o time adiante. */
+export const RUNS_XP_CHEIAS = 24;
+export const XP_DEPOIS_DO_DIA = 0.5;
+export const fatorDoXp = n => ((Math.floor(Number(n)) || 1) > RUNS_XP_CHEIAS ? XP_DEPOIS_DO_DIA : 1);
 
 /* Quantas runs já foram colhidas HOJE — a próxima é esta mais um. A lista de
    `avancos` guarda as últimas 24 h, e o dia de calendário cabe nelas. */
@@ -220,7 +239,8 @@ export const comRendimento = (quantidade, fator, u) =>
 export function falaDoRendimento(n) {
   const f = fatorDoRendimento(n);
   if (f >= 1) return null;
-  return `Esta seria a ${n}ª run de hoje: ela paga ${Math.round(f * 100)}% de moeda e Essência. ` +
+  const xp = fatorDoXp(n) < 1 ? ` e metade do XP` : '';
+  return `Esta seria a ${n}ª run de hoje: ela paga ${Math.round(f * 100)}% de moeda e Essência${xp}. ` +
          `O rendimento volta inteiro à meia-noite (horário de Brasília).`;
 }
 

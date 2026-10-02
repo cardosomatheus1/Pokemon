@@ -17,7 +17,7 @@
 import { forcaDe, raridadeDe } from '../../engine/bioma.mjs';
 import { elencoDoEstagio } from '../../engine/elenco-estagio.mjs';
 import { novaRun, avancarRun, curarRun, cenaDaRun, resultadoDa } from '../../engine/run-avanco.mjs';
-import { premioDo, ganhoDaRun, POR_ABATE, fatorDoRendimento, runsNoDia, comRendimento, encontrosDe } from '../../engine/avanco.mjs';
+import { premioDo, ganhoDaRun, POR_ABATE, fatorDoRendimento, fatorDoXp, runsNoDia, comRendimento, encontrosDe } from '../../engine/avanco.mjs';
 import { creditar } from '../../engine/nivel-criatura.mjs';
 import { moedasDa, idDaMoeda, idDoMaterial } from '../../engine/economia-idle.mjs';
 import { sortearItens, agrupar } from '../../engine/drops.mjs';
@@ -162,7 +162,9 @@ export function contaDaRun(pack, { run, criaturas, banco = [], motor, avancos, r
   /* O XP pela MESMA função da expedição; o clima entra DEPOIS da conta, e não
      dentro dela — `ganhoDaRun` é a régua partilhada com a expedição. */
   const ganhoCru = ganhoDaRun({ abates: premio.abates, encontros: vistos, perfil: PERFIL_DO_AVANCO });
-  const ganho = { ...ganhoCru, xp: Math.round(aplicarClima(ganhoCru.xp, bonusClima, 'xp')) };
+  /* DEC-29b: depois da 24ª run do dia, metade do XP — a stamina a 30/h não
+     infla o dia do maratona. Antes do clima, como a moeda. */
+  const ganho = { ...ganhoCru, xp: Math.round(aplicarClima(Math.round(ganhoCru.xp * fatorDoXp(naJanela)), bonusClima, 'xp')) };
   const credito = [], subiram = [];
   for (const c of criaturas) {
     const novo = creditar(c, { xp: ganho.xp, vinculo: VINCULO_DA_RUN });

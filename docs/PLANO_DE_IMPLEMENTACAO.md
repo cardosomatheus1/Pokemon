@@ -392,7 +392,7 @@ isso trouxe. O sigilo do clima sorteado (L-177) não se quebra.
 ### ST-3.6 · DEC-14: o rendimento do Avanço decresce com as runs do dia — ✅ fechada em 25/09 (fecha a L-185)
 
 - **Feito:** `fatorDoRendimento` no motor — 6 runs cheias por dia, depois ×0,75
-  por run, piso de 5%; moeda e Essência (o XP não); arredondamento semeado que
+  por run, piso de 5% (3% desde a DEC-29b); moeda e Essência (o XP não); arredondamento semeado que
   guarda a média; o dia é o de CALENDÁRIO no relógio do mundo (Brasília,
   DEC-10) — a janela móvel de 24 h foi medida e punia quem joga todo dia no
   mesmo horário. A frase aparece sob o botão Avançar a partir da 7ª run.
@@ -2456,6 +2456,27 @@ do servidor. Três partes:
 - **Mutantes de navegador:** 0 — a decisão do HP mora no motor; a do mover, na
   camada 0; S2618–S2620 são pegos por leitura de fonte em Node.
 
+### ST-10.27 · A luta da Jornada no palco clássico (L-245) ⏳
+- **Por quê:** o dono, 02/10, com uma captura de uma luta de FireRed contra a
+  Elite Four: *"e as batalhas lá, imagino algo mais próximo disso, mas com
+  gráficos melhores"*.
+- **ANALISAR (o que a referência faz bem):** duas placas que se leem num olhar
+  (nome, nível, barra de HP; a minha com o número e a barra de EXP); o rival
+  de frente em cima e o meu de costas embaixo, cada um na sua plataforma — a
+  perspectiva diz quem é quem sem legenda; a caixa de texto embaixo narra um
+  acontecimento por vez, e o turno tem ritmo.
+- **NOMEAR a diferença:** as placas e a caixa no neon da interface sobre o
+  mundo GBA; o fundo é o do ginásio/bioma do nó; e a caixa de texto narra a
+  LIÇÃO do nó (o tipo que bateu forte, quem foi mais rápido, a imunidade) —
+  a referência narra o golpe, a nossa narra o porquê.
+- **APERFEIÇOAR o ponto fraco:** o texto lento que trava a luta — o nosso
+  avança sozinho, com toque para acelerar.
+- **Arte:** as costas vêm da MESMA fonte das frentes (Showdown, `gen5ani-back`),
+  baixadas como as outras — nunca outra fonte.
+- **Portões:** Q1, Q2, Q5 (1920, 1440, 1100, 420), Q7 com crítico cego e barra
+  nomeada (a captura do dono como referência). A decisão do que a caixa diz
+  mora na camada 0 (a encenação já vem de `simular`).
+
 ### ST-2.27 · A forma do dia: a run que não cansa e o dia que não se esgota em 35 min (DEC-28, L-242, L-243, L-244) ⏳
 - **Por quê:** o 5º relato (*"waves de 30 a 60 s com o mesmo chefe cansam"*,
   *"a stamina pesa com dois em campo"*) e o dono, 02/10: *"não quero o cara
@@ -3090,6 +3111,18 @@ desta tabela.
   XP acompanha (+50%), a moeda e a Essência sobem só **+14%** (11,13 → 12,68
   runs-cheias) porque o rendimento decrescente (DEC-14) segura. A medição da
   emissão não viu nada disso — D-151.
+- ✅ **DEC-29b · a stamina mais rápida sem inflar o dia** (o dono, 02/10, vendo
+  o custo da DEC-29: *"você pode balancear na XP/moeda em vez de subir
+  tudo"*). Fica a VOLTA mais rápida (30/h); paga menos só a run A MAIS que ela
+  cria. (1) O piso do rendimento de moeda e Essência vai de 5% a **3%**; (2) o
+  XP passa a ter dia também: inteiro até a **24ª run**, metade depois
+  (`fatorDoXp`), e a frase do rendimento avisa. Medido, seis criaturas, o dia
+  do maratona em 30/h contra 20/h: moeda 13,97 / 11,15 / 10,22 runs-cheias
+  contra 14,28 / 11,13 / 10,08 (1, 2 e 3 em campo); XP 106 / 117 / 129 contra
+  125 / 124 / 123. Na medição da emissão: casual e diário **idênticos**; o
+  maratona (perfil literal de 48 runs, D-151) XP 14.759 → 11.168 e 14.801 →
+  11.202, moeda 1.549,43 → 1.504,86 e 1.715,29 → 1.663,29, Essência 62,29 →
+  59,14 e 49,71 → 47,43. Teste: `stamina-balanco`.
 - **Ainda do dono, e com recomendação escrita como padrão:** a taxa shiny (R18),
   o orçamento da Master Ball, os limites/cooldown/taxas finais (baselines da
   spec §11 e §16 até o gate C medir).
