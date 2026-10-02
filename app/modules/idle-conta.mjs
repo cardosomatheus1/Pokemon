@@ -31,7 +31,9 @@ export function camposDaConta(cru) {
   /* O teto volta do disco como NÚMEROS inteiros não negativos: `hoje` entra
      na soma do teto do aparelho, e é campo lido de onde o jogador escreve. */
   const n = v => (Number.isInteger(v) && v >= 0 ? v : 0);
-  const teto = c.teto && typeof c.teto === 'object' ? { restam: n(c.teto.restam), hoje: n(c.teto.hoje) } : null;
+  const teto = c.teto && typeof c.teto === 'object' ? { restam: n(c.teto.restam), hoje: n(c.teto.hoje),
+    /* ST-2.27a: a hora em que o próximo encontro volta — só se for número. */
+    voltaEm: Number.isFinite(c.teto.voltaEm) ? c.teto.voltaEm : null } : null;
   /* D-139 (ST-14.3d): os LOTES e os doces PRESOS voltam do disco junto. Sem
      eles, o `carregar` os descartava e o aviso "prende" (o do lance, desde a
      ST-14.0D, e os da pedra e do doce) nunca chegava à tela — o servidor

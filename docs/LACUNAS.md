@@ -9425,7 +9425,7 @@ perguntou de novo (02/10) e ela passou à frente da ST-2.27: é o próximo bloco
 
 **Registrada em:** 02/10/2026 (o dono: *"não quero o cara entrando no jogo por
 1h e deixando 23h parado"*). **Bloco dono:** **ST-2.27** (DEC-28).
-**Estado:** aberta.
+**Estado:** em andamento — a ST-2.27a pôs a hora da volta na tela; o balde foi medido e recusado (DEC-30); falta a run repetida mais curta (L-242) e o treino à vista.
 
 Medido: run de ~5,4 min com 5 encontros; o teto de 30 encontros fecha na 6ª
 run, a stamina de um time de três na 6ª–7ª e o rendimento cai da 7ª — os três
@@ -9438,7 +9438,7 @@ das Rotas.
 ### L-243 — a stamina pesa com dois em campo, e a tela não diz o custo de cada um
 
 **Registrada em:** 02/10/2026, no 5º relato do dono (*"a stamina pesa com dois
-em campo"*). **Bloco dono:** **ST-2.27**. **Estado:** aberta.
+em campo"*). **Bloco dono:** **ST-2.27**. **Estado:** ✅ fechada na ST-2.27a (a recusa por stamina diz a hora em que a equipe sai; o custo por criatura já estava na tela).
 
 A regeneração (20/h, DEC-24) fica como está: é ela que segura a emissão. O que
 falta é LEITURA — a tela da run mostra a stamina, mas não quanto cada criatura

@@ -17,6 +17,8 @@
 import { $, nosDois } from './dom.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
 import { retratoAnimado } from './sprites.mjs';
+import { voltaDoEncontro } from './avanco-estado.mjs';   // ST-2.27a
+import { fraseDaVolta } from './volta-dados.mjs';
 import {
   emCampo, encontrosHoje, estadoDoTeto, comprometido, TETO_ENCONTROS, concluidasHoje,
   especiesVistas, tetoDeEncontros, proximoEncontro, totalDeEspecies,
@@ -117,7 +119,10 @@ export function pintarCampo(E) {
     ? `<i class="tetoEscada">+${px.ganho} ${px.completo ? `ao COMPLETAR o ${nomeDoRegistro()}` : `com ${px.em} espécies no ${nomeDoRegistro()}`}` +
       ` (faltam ${px.faltam})</i>`
     : `<i class="tetoEscada cheia">${nomeDoRegistro()} completo — teto máximo</i>`;
+  /* ST-2.27a: sem lugar para mais uma run, o contador diz QUANDO volta. */
+  const volta = fraseDaVolta({ encontro: voltaDoEncontro(E, { pack: PACK, agora: t }) }, t);
   const teto = `<span class="idleTeto"><em>${usados}/${tetoHoje} encontros hoje</em>` +
+    (volta ? `<i class="tetoVolta">${volta}</i>` : '') +
     (reservado ? `<b class="tetoRes">+${reservado} reservados</b>` +
                  `<i class="tetoLivre">${livre} livres</i>` : '') + escada + '</span>';
 

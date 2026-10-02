@@ -33,7 +33,8 @@ import { api } from './api.mjs';
 import { relatar, eventosDoEstado } from './telemetria-servidor.mjs';
 import { comecarNa, recuarNa, pocaoNa, colherRunNa } from './idle-acoes.mjs';   // ST-13.5c: com conta, pelo servidor
 import { runDe, avancoEmCurso, sincronizar, cena,
-         porQueNaoAvancar, avisoDoTeto, equipeDaRun } from './avanco-estado.mjs';
+         porQueNaoAvancar, avisoDoTeto, equipeDaRun, voltaDoEncontro } from './avanco-estado.mjs';
+import { fraseDaVolta } from './volta-dados.mjs';
 import { usarCena } from './avanco-cena.mjs';
 import { pintarColunaDaRun } from './avanco-painel.mjs';
 import { mostrarBioma, acompanhar } from './idle-mundo.mjs';
@@ -134,7 +135,8 @@ function pintarAcoes(E, run, cn) {
       `<span class="avVistos" title="a captura acontece no quadro do fim da run">` +
       `⚪ <b>${vistos}</b> espécie(s) para o quadro do fim</span>`) +
     `<span class="dica">${run.semEncontros
-        ? 'sem encontros hoje: a run ainda paga XP, drops e o baú — a moeda, só a dos abates'
+        ? 'sem encontros hoje: a run ainda paga XP, drops e o baú — a moeda, só a dos abates. ' +
+          (fraseDaVolta({ encontro: voltaDoEncontro(E, { pack: PACK, agora: Date.now() }) }, Date.now()) ?? '')
         : 'recuar guarda o que já caiu — só o baú do estágio se perde'}</span>`;
 }
 

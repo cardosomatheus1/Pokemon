@@ -2513,7 +2513,25 @@ do servidor. Três partes:
   nomeada (a captura do dono como referência). A decisão do que a caixa diz
   mora na camada 0 (a encenação já vem de `simular`).
 
-### ST-2.27 · A forma do dia: a run que não cansa e o dia que não se esgota em 35 min (DEC-28, L-242, L-243, L-244) ⏳
+### ST-2.27a · Quando volta o que vale (DEC-28, DEC-30, L-243, L-244) ✅ 02/10
+- **Medido e recusado primeiro:** o teto como balde — ver a DEC-30.
+- **Feito:** `volta-dados.mjs` (camada 0): `quandoVoltaEncontro` (a hora em
+  que o mais antigo sai da janela e cabe uma run, com a reserva),
+  `quandoCabeRun` (a hora do mais cansado da equipe) e `fraseDaVolta` (hora
+  de Brasília, "amanhã" quando passa do dia, só o que falta). O "não" passou a
+  ter hora em três lugares: o aviso do teto, a recusa por stamina ("a equipe
+  pode sair de novo às 10:01") e a dica da run sem encontros; o contador
+  "30/30 encontros hoje" diz "o próximo encontro volta …". Com conta, o
+  servidor manda `teto.voltaEm` (ele vê as expedições colhidas, que não
+  descem); vale a mais tarde das duas contas. O custo de stamina por
+  criatura já estava na tela (`falaDoCusto`) — a L-243 pedia a hora.
+- **Q5:** Rotas em 1440 e 420 com o teto gasto e a equipe sem stamina — as
+  duas frases na tela, sem `pageerror`.
+- **Testes:** `volta-dados` (novo, 4; os dois avisos por comportamento —
+  a primeira versão lia só a fonte, e S2640/S2641 escaparam).
+  S2637–S2642 PEGOU. **Mutantes de navegador: 0.** Nenhuma fixture mudou.
+
+### ST-2.27 · A forma do dia: a run que não cansa e o dia que não se esgota em 35 min (DEC-28, L-242, L-243, L-244) ⏳ — a alavanca 1 recusada (DEC-30), a 2 feita (ST-2.27a); seguem a 3 (L-242) e a 4
 - **Por quê:** o 5º relato (*"waves de 30 a 60 s com o mesmo chefe cansam"*,
   *"a stamina pesa com dois em campo"*) e o dono, 02/10: *"não quero o cara
   entrando no jogo por 1h e deixando 23h parado"*.
@@ -3183,6 +3201,17 @@ desta tabela.
   30% mais runs) fica entre 104% e 117%. A medição da emissão, com as runs por
   dia literais (D-151), só vê o valor da run: XP −11%, moeda −4% em todo
   perfil. Teste: `stamina-balanco`.
+- ✅ **DEC-30 · o teto de encontros continua a janela de 24 h — o balde foi
+  medido e recusado** (ST-2.27a). A alavanca 1 da ST-2.27 (o teto como balde
+  que enche: o mesmo teto, um encontro de volta a cada 24 h ÷ teto) foi
+  construída e medida contra a fixture da emissão antes de fechar. Nenhum
+  ritmo de enchimento deixou o dia "sem mudar tanto": em 24 h, encontros
+  +15% a +28% e moeda +20% a +46% (a janela recusava expedições inteiras por
+  horário, o balde não); em 30 h, moeda até +34%; em 36 h, encontros −19% e
+  moeda +24% no maratona; em 42 h, encontros −28%. Um balde menor que o teto
+  corta quem joga 1 h ("não deve limitar quem tá jogando", o dono). Desfeito
+  inteiro; a medida está aqui para ninguém refazer às cegas. O que a ST-2.27a
+  fez no lugar: a tela diz QUANDO volta.
 - **Ainda do dono, e com recomendação escrita como padrão:** a taxa shiny (R18),
   o orçamento da Master Ball, os limites/cooldown/taxas finais (baselines da
   spec §11 e §16 até o gate C medir).

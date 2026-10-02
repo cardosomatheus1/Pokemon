@@ -34,9 +34,11 @@ import PACK from '../content/escolhido.mjs';
 import { doJogador } from './criaturas.mjs';
 import { garantirKitInicial } from './idle.mjs';
 import { lotesLivres } from './inventario.mjs';
-import { bolsaDe, registroDe, emCampo, estadoDoTeto, especiesVistas, pendentesDe,
+import { bolsaDe, registroDe, emCampo, estadoDoTeto, lancamentosDoTeto, especiesVistas, pendentesDe,
          iniciar, colher, lancarPendente, escolherInicial } from './idle.mjs';
-import { staminaAgora, restamEncontros, vagasPor, EQUIPE_MAX } from '../engine/expedicao.mjs';
+import { staminaAgora, restamEncontros, vagasPor, EQUIPE_MAX, tetoDeEncontros, comprometido } from '../engine/expedicao.mjs';
+import { ENCONTROS_POR_AVANCO } from '../engine/avanco.mjs';
+import { quandoVoltaEncontro } from '../app/modules/volta-dados.mjs';
 import { sincronizarRun, comecarRun, pocaoNaRun, recuarNaRun, colherRun } from './run.mjs';
 import { moverNaConta, trocarNaConta, soltarNaConta, escolherFocoNaConta, trocarGolpeNaConta, evoluirNaConta, darDoceNaConta } from './colecao.mjs';
 import { estagioMaximo, proximoEstagio } from '../engine/estagios.mjs';
@@ -122,7 +124,11 @@ export function colecaoDe(db, { userId, agora, pack = PACK }) {
        ao aparelho, e sem este número o teto dele contaria o dia cheio. As
        runs ficam de fora — elas descem em `avancos`, e contariam duas vezes. */
     teto: (t => ({ restam: restamEncontros(t),
-      hoje: t.encontrosHoje - avancos.filter(a => a.colhidaEm > agora - DIA_MS).reduce((n, a) => n + a.encontros, 0) }))(estadoDoTeto(db, userId, agora, pack)),
+      hoje: t.encontrosHoje - avancos.filter(a => a.colhidaEm > agora - DIA_MS).reduce((n, a) => n + a.encontros, 0),
+      /* ST-2.27a: QUANDO o próximo encontro de uma run volta — o servidor vê
+         as expedições colhidas, que não descem ao aparelho. */
+      voltaEm: quandoVoltaEncontro(lancamentosDoTeto(db, userId, agora), agora,
+        { teto: tetoDeEncontros(t.vistas, t.total), reservado: comprometido(t) - t.encontrosHoje, precisa: ENCONTROS_POR_AVANCO }) }))(estadoDoTeto(db, userId, agora, pack)),
     estagio: { aberto: estagioMaximo(criaturas), proximo: proximoEstagio(criaturas) },
     /* A jornada (ST-13.7): o que o servidor venceu por ela. */
     jornada: jornadaDaConta(db, userId).jornada,

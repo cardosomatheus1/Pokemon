@@ -23,12 +23,13 @@ import { golpesDaCriatura } from './moveset-dados.mjs';
 import { acharCriatura, criaturasDe, estadoDoTeto, salvar,
          motivoDaOcupada, lancarRunNoTeto } from './idle-dados.mjs';
 import { estagioAberto, estagioMaximo, nivelDoEstagio } from '../../engine/estagios.mjs';
-import { podeAvancar, cabeAvanco, STAMINA_DO_AVANCO, curaDe } from '../../engine/avanco.mjs';
+import { podeAvancar, cabeAvanco, STAMINA_DO_AVANCO, curaDe, ENCONTROS_POR_AVANCO } from '../../engine/avanco.mjs';
+import { quandoVoltaEncontro, quandoCabeRun, fraseDaVolta } from './volta-dados.mjs';
 /* A COSTURA DO CLIMA mora em `avanco-clima.mjs`: aqui é o que a run FAZ, lá é o
    que o tempo faz com ela. */
 import { climaDaRun, ritmoDoClima } from './avanco-clima.mjs';
 import { repertorio } from '../../engine/repertorio.mjs';
-import { restamEncontros } from '../../engine/expedicao.mjs';
+import { restamEncontros, tetoDeEncontros, comprometido } from '../../engine/expedicao.mjs';
 import { cenaDaRun, recuarRun, emCurso } from '../../engine/run-avanco.mjs';
 import { novaRaiz } from '../../engine/seed.mjs';
 import { linhaDaRun, noHistorico } from './historico-dados.mjs';
@@ -74,9 +75,10 @@ export function porQueNaoAvancar(e, { pack, bioma, estagio, equipe, agora }) {
   if (ocupada) return ocupada;
 
   const { pode, semStamina } = podeAvancar(membros, agora);
+  /* ST-2.27a: o "não" diz QUANDO — sem hora, o jogador fecha a aba e não volta. */
   if (!pode)
     return `${semStamina.length} criatura(s) sem os ${STAMINA_DO_AVANCO} de ` +
-      'stamina que um avanço custa';
+      'stamina que um avanço custa. ' + (fraseDaVolta({ run: quandoCabeRun(membros, agora) }, agora) ?? '');
 
   /* ── O TETO NÃO RECUSA MAIS: ELE AVISA (L-151) ────────────────────────
    *
@@ -98,7 +100,19 @@ export function avisoDoTeto(e, { pack, agora }) {
   if (cabeAvanco(estadoDoTeto(e, agora, pack))) return null;
   return `Os encontros de hoje acabaram (restam ${restamEncontros(estadoDoTeto(e, agora, pack))}). ` +
     'A run acontece igual — abates, XP, moeda, drops e o baú —, mas nenhuma ' +
-    'espécie nova entra no registro e a bola não terá em quem ser usada.';
+    'espécie nova entra no registro e a bola não terá em quem ser usada. ' +
+    (fraseDaVolta({ encontro: voltaDoEncontro(e, { pack, agora }) }, agora) ?? '');
+}
+
+/* QUANDO VOLTA O ENCONTRO (ST-2.27a): a conta do aparelho, com os lançamentos
+   que ele tem; com conta, a do servidor (que vê as expedições colhidas, que
+   não descem) — vale a mais tarde das duas. */
+export function voltaDoEncontro(e, { pack, agora }) {
+  const t = estadoDoTeto(e, agora, pack);
+  const local = quandoVoltaEncontro([...(e.expedicoes ?? []), ...(e.avancos ?? [])], agora,
+    { teto: tetoDeEncontros(t.vistas, t.total), reservado: comprometido(t) - t.encontrosHoje, precisa: ENCONTROS_POR_AVANCO });
+  const doServidor = e.conta?.teto?.voltaEm;
+  return Number.isFinite(doServidor) ? Math.max(doServidor, local ?? 0) : local;
 }
 
 /* ── COMEÇAR ──────────────────────────────────────────────────────────────

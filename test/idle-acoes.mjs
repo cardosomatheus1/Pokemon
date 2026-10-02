@@ -39,7 +39,9 @@ export async function suite() {
 
   s.teste('camada 0: o lance da conta diz se foi para a caixa, e o teto do disco é número', () => {
     igual(`${lanceDaConta({ capturou: true, criatura: { naCaixa: true } }).foiParaCaixa}|${lanceDaConta({ capturou: false, criatura: null }).foiParaCaixa}`, 'true|false', 'o lance da conta sem a caixa');
-    igual(JSON.stringify(camposDaConta({ conta: { teto: { restam: 5, hoje: -40 } } }).conta.teto), JSON.stringify({ restam: 5, hoje: 0 }), 'um `hoje` negativo escrito à mão entra no teto');
+    igual(JSON.stringify(camposDaConta({ conta: { teto: { restam: 5, hoje: -40 } } }).conta.teto), JSON.stringify({ restam: 5, hoje: 0, voltaEm: null }), 'um `hoje` negativo escrito à mão entra no teto');
+    /* ST-2.27a: a hora da volta só volta do disco se for número. */
+    igual(camposDaConta({ conta: { teto: { restam: 0, hoje: 30, voltaEm: 'amanhã' } } }).conta.teto.voltaEm, null, 'uma hora torta voltou do disco');
     /* O teto do aparelho soma o dia colhido do servidor. */
     const e = { ...D.carregar(armazemFalso()), conta: { teto: { restam: 3, hoje: 27 } } };
     igual(D.encontrosHoje(e, T0), 27, 'com conta, o teto do aparelho esquece o que o servidor já colheu');

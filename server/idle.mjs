@@ -121,6 +121,13 @@ export const encontrosHoje = (db, userId, agora) =>
                 UNION ALL SELECT encontros FROM runs WHERE user_id = ? AND colhida_em IS NOT NULL AND colhida_em > ?)`)
     .get(userId, agora - DIA_MS, userId, agora - DIA_MS).n;
 
+/* Os lançamentos da janela (quando, quantos) — para a hora em que o próximo
+   encontro volta (ST-2.27a): a conta é a do aparelho, `quandoVoltaEncontro`. */
+export const lancamentosDoTeto = (db, userId, agora) =>
+  db.prepare(`SELECT colhida_em AS colhidaEm, encontros FROM expedicoes WHERE user_id = ? AND colhida_em IS NOT NULL AND colhida_em > ?
+              UNION ALL SELECT colhida_em AS colhidaEm, encontros FROM runs WHERE user_id = ? AND colhida_em IS NOT NULL AND colhida_em > ?`)
+    .all(userId, agora - DIA_MS, userId, agora - DIA_MS);
+
 /* O estado que o motor lê: só o que JÁ ACONTECEU — na MESMA forma do
    `estadoDoTeto` do cliente (ST-13.2a). A primeira versão mandava só a lista de
    perfis: a reserva ignorava o tamanho da equipe (L-140, a Vigília de três
