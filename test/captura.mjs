@@ -77,6 +77,14 @@ export function suite() {
 
   /* --- o formato da chance ------------------------------------------------ */
 
+  s.teste('DEC-32: o teto de 85% ainda morde uma bola forte o bastante', () => {
+    /* Com a chance ×0,8, nenhuma bola do pack chega a 85% (a melhor dá 79%) —
+       o teto passou a valer só para um pack com bola mais forte. Um pack de
+       prova o exercita, senão tirar o teto não quebraria nada à vista. */
+    const forte = { raridade: [['x', 0, 0.9, 1]], bolas: [{ id: 'b', mult: 5 }] };
+    igual(chanceDe(forte, { raridade: 'x', bola: 'b' }), TETO_CAPTURA, 'a bola forte passou do teto');
+  });
+
   s.teste('a chance nunca passa do teto, em nenhuma combinação', () => {
     for (const r of FAIXAS) for (const b of IDS_BOLA) {
       const c = chanceDe(kanto, { raridade: r, bola: b });

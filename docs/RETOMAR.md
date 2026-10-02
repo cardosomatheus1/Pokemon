@@ -52,6 +52,8 @@ o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p
            outros itens"). A ST-2.28c fez a moeda não despencar (DEC-31:
            depois do teto, 35% dos vistos; queda 85%; toda run 84%).
            A ST-2.28d soltou o cansado da equipe que vai (D-159).
+           ST-2.30 (DEC-32, o dono): teto de encontros 45, chance ×0,8, bolas
+           ×0,8 na Loja.
            PRÓXIMO: ST-2.27d (D-151), depois ST-2.29 (o doce, L-249).
            ST-2.27c (02/10): sem stamina, o botão diz "Equipe descansando ·
            HH:MM" e embaixo da cena "Enquanto a equipe descansa": quem tem

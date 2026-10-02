@@ -17,6 +17,10 @@ import { reservadoForaDaRun } from '../app/modules/volta-dados.mjs';
 import { resumoDaBolsa } from '../app/modules/bolsa-resumo.mjs';
 import { recarregaNaVersaoNova } from '../app/modules/idle-conta.mjs';
 import { cartaoTravado, equipeDaEscolha } from '../app/modules/idle-escolha.mjs';
+import { chanceDe, FATOR_DE_CAPTURA, TETO_CAPTURA } from '../engine/captura.mjs';
+import { tetoDeEncontros, MARCOS_ENCONTROS, GANHO_COMPLETO, TETO_ENCONTROS } from '../engine/expedicao.mjs';
+import { precoDeCompra } from '../engine/loja.mjs';
+import PACK from '../content/escolhido.mjs';
 import { EQUIPE_MAX, comprometido } from '../engine/expedicao.mjs';
 import { ENCONTROS_POR_AVANCO } from '../engine/avanco.mjs';
 
@@ -87,6 +91,21 @@ export function suite() {
     igual(equipeDaEscolha(['zz'], cr, c => st[c.id]).join(','), 'c', 'manteve um id que não existe');
     igual(equipeDaEscolha([], [{ id: 'x', naCaixa: true }], () => 0).join(','), '', 'inventou equipe com todos na caixa');
     ok(/equipeEscolhida = equipeDaEscolha\(/.test(fonte('app/modules/idle-tela.mjs')), 'a tela não limpa a escolha a cada pintura');
+  });
+
+  /* ── ST-2.30 · DEC-32: mais encontros, menos chance, bola mais barata ──
+     O dono: "aumentar [os encontros] e diminuir a chance de captura, para o
+     jogador ficar mais tempo jogando" — e "reduz o preço da bola, nessa
+     proporção também". */
+  s.teste('DEC-32: o teto a 45, a escada ×1,5, a chance ×0,8 e a bola ×0,8', () => {
+    igual(TETO_ENCONTROS, 45, 'o teto de encontros');
+    igual(MARCOS_ENCONTROS.map(m => m.ganho).join(',') + '|' + GANHO_COMPLETO, '3,3,5,5,6|9', 'a escada não acompanhou o teto');
+    const cheio = (tetoDeEncontros(999, 151) - TETO_ENCONTROS) / TETO_ENCONTROS;
+    ok(cheio >= 0.6 && cheio <= 0.75, `completar a dex rende ${(cheio * 100).toFixed(0)}% de teto (era 67%)`);
+    igual(FATOR_DE_CAPTURA, 0.8, 'o fator de captura');
+    ok(Math.abs(chanceDe(PACK, { raridade: 'comum', bola: 'poke' }) - 0.36) < 1e-9, 'a comum na bola básica não é 36%');
+    igual(chanceDe(PACK, { raridade: 'comum', bola: 'ultra' }), Math.min(TETO_CAPTURA, 0.45 * 2.2 * 0.8), 'a ultra não segue o fator');
+    igual(['poke', 'great', 'ultra'].map(b => precoDeCompra(PACK, b)).join(','), '160,280,400', 'as bolas não ficaram 20% mais baratas');
   });
 
   return s;

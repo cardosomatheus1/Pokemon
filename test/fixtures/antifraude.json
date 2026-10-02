@@ -2,32 +2,32 @@
  "banda": {
   "casual": {
    "estagio1": {
-    "capturasPorDia": 5.76,
-    "encontrosPorDia": 16.71
+    "capturasPorDia": 6,
+    "encontrosPorDia": 21.43
    },
    "estagio3": {
-    "capturasPorDia": 3.69,
+    "capturasPorDia": 2.96,
     "encontrosPorDia": 22
    }
   },
   "diario": {
    "estagio1": {
-    "capturasPorDia": 12.05,
-    "encontrosPorDia": 23.71
+    "capturasPorDia": 12.96,
+    "encontrosPorDia": 36.57
    },
    "estagio3": {
-    "capturasPorDia": 8.33,
-    "encontrosPorDia": 40.86
+    "capturasPorDia": 7.45,
+    "encontrosPorDia": 51.86
    }
   },
   "maratona": {
    "estagio1": {
-    "capturasPorDia": 16.44,
-    "encontrosPorDia": 25.43
+    "capturasPorDia": 21.24,
+    "encontrosPorDia": 40.29
    },
    "estagio3": {
-    "capturasPorDia": 17.05,
-    "encontrosPorDia": 45.57
+    "capturasPorDia": 19.49,
+    "encontrosPorDia": 74.86
    }
   }
  },

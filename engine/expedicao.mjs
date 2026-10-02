@@ -199,7 +199,14 @@ export const TETO_DIARIO = 4;
  * o dia CHEIO caber inclusive quando a sorte vem alta. Cortar em 27 faria o
  * jogador que teve sorte na Vigília perder a última Batida — punido por sorte,
  * que é a pior forma de um limite aparecer. */
-export const TETO_ENCONTROS = 30;
+/* DEC-32 (02/10, o dono: "aumentar isso e diminuir a chance de captura, para
+   o jogador ficar mais tempo jogando"): 30 → 45. O dia com encontro passa de
+   ~6 runs a ~9; a chance de captura cai a 80% (`FATOR_DE_CAPTURA`) para as
+   capturas do dia ficarem perto de onde estavam. Medido na emissão e na
+   antifraude, por dia: encontros +18% a +58% (casual de estágio 3 igual),
+   capturas −20% a +29% (o diário +8%/−14%), moeda +3% a +32% — quem joga
+   mais tempo ganha mais, e a bola gasta no lance que falha devolve parte. */
+export const TETO_ENCONTROS = 45;
 
 /* ── E O REGISTRO DE ESPÉCIES LEVANTA ESSE TETO (1.19) ────────────────────
  *
@@ -258,11 +265,13 @@ export const MARCOS_ENCONTROS = [
   /* 30 e nao 25: as vagas abrem em 0/10/25/45, e um degrau em cima de outro
      faria as DUAS escadas responderem no mesmo ponto — o jogador deixaria de
      ter dois objetivos e passaria a ter um so, com premio dobrado. */
-  { em: 30,  ganho: 2 },
-  { em: 50,  ganho: 2 },
-  { em: 75,  ganho: 3 },
-  { em: 100, ganho: 3 },
-  { em: 125, ganho: 4 },
+  /* DEC-32: a escada ×1,5 junto com o teto (30 → 45) — sem isso, completar a
+     dex passaria de +67% a +44% do teto, e a melhora deixaria de ser sentida. */
+  { em: 30,  ganho: 3 },
+  { em: 50,  ganho: 3 },
+  { em: 75,  ganho: 5 },
+  { em: 100, ganho: 5 },
+  { em: 125, ganho: 6 },
 ];
 
 /* ── E O ÚLTIMO MARCO É "COMPLETO", QUE NÃO É UM NÚMERO ────────────────────
@@ -280,7 +289,7 @@ export const MARCOS_ENCONTROS = [
    escrita aqui antes do 1.27, e ela continua valendo — o que mudou é o número
    que a cumpre: era +2 contra degraus de +1, e agora é +6 contra degraus de
    +4, que é o único passo que DOBRA. */
-export const GANHO_COMPLETO = 6;
+export const GANHO_COMPLETO = 9;   // DEC-32: ×1,5, como a escada (era 6)
 
 export const bonusDeEncontros = (vistas, total = Infinity) => {
   const n = Math.max(0, Math.floor(Number(vistas) || 0));

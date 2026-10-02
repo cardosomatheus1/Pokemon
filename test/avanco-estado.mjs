@@ -22,7 +22,7 @@ import {
   comecarAvanco, porQueNaoAvancar, avancoEmCurso, sincronizar, cena, recuar,
   avisoDoTeto, encontrosValemNa, colherAvancoDaRun, equipeDaRun,
 } from '../app/modules/avanco-estado.mjs';
-import { comprometido, restamEncontros } from '../engine/expedicao.mjs';
+import { comprometido, restamEncontros, TETO_ENCONTROS } from '../engine/expedicao.mjs';
 import { ENCONTROS_POR_AVANCO } from '../engine/avanco.mjs';
 import { poderDaEquipe } from '../engine/wave.mjs';
 import kanto from '../content/pokemon_kanto_v1.mjs';
@@ -397,7 +397,7 @@ export function suite() {
   s.teste('com o teto estourado a run COMEÇA, e ela sabe que não dá espécie', () => {
     const e = jogador();
     /* Enche o dia com colheitas de expedição. */
-    e.expedicoes = [{ id: 'x', perfil: 'vigilia', colhidaEm: AGORA - 1000, encontros: 30 }];
+    e.expedicoes = [{ id: 'x', perfil: 'vigilia', colhidaEm: AGORA - 1000, encontros: TETO_ENCONTROS }];
 
     const motivo = porQueNaoAvancar(e, { pack: kanto, bioma: 'floresta', estagio: 1,
       equipe: [e.criaturas[0].id], agora: AGORA });

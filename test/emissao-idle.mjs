@@ -44,7 +44,7 @@ export const PERFIS = {
 /* O QUE SEGURA CADA RECURSO, escrito. A suíte cobra uma linha por recurso
    medido: recurso novo sem linha aqui é emissão sem ninguém ter pensado nela. */
 export const TETOS = {
-  encontros: 'TETO: 30 por dia + o bônus da coleção (MARCOS_ENCONTROS; o veterano medido tem 50), janela móvel (D-052, §P5) — e a run colhida pesa nele desde o ST-1.1',
+  encontros: 'TETO: 45 por dia (DEC-32; era 30) + o bônus da coleção (MARCOS_ENCONTROS; o veterano medido tem 50), janela móvel (D-052, §P5) — e a run colhida pesa nele desde o ST-1.1',
   xp:        'sem teto próprio: a stamina (192/dia/criatura) e a curva de nível seguram',
   xpDoce:    'TETO: 10 apostas com doce por dia × 3 × XP_POR_DOCE — no máximo 25% do XP diário do casual (ST-9.10)',
   pokecoin:  'rendimento decrescente por run no dia do mundo: 6 cheias, depois ×0,75 por run, piso de 5% (ST-3.6, DEC-14)',

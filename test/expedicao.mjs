@@ -255,7 +255,7 @@ export function suite() {
       'Se as quatro couberem, o teto voltou a contar cliques em vez de encontros ' +
       'e o D-052 está de volta — a Vigília volta a render o dobro pelo mesmo ' +
       'teto, e os perfis deixam de ser uma troca.');
-    igual(TETO_ENCONTROS, 30);
+    igual(TETO_ENCONTROS, 45);   // DEC-32: era 30 — mais encontros, chance de captura ×0,8
   });
 
   /* --- 3b · O TETO É DE ENCONTROS, E A RESERVA É O QUE O TORNA POSSÍVEL --- */
@@ -286,10 +286,11 @@ export function suite() {
     /* Sem reservar, o jogador manda quatro Vigílias ao mesmo tempo e só descobre
        o teto na colheita — quando já não dá para desfazer. */
     const semReserva = { encontrosHoje: 0, emCampo: [] };
-    const comReserva = { encontrosHoje: 0, emCampo: ['vigilia', 'vigilia'] };
+    /* DEC-32: com o teto a 45, três Vigílias em campo (42) — a quarta não cabe. */
+    const comReserva = { encontrosHoje: 0, emCampo: ['vigilia', 'vigilia', 'vigilia'] };
     ok(cabeExpedicao(semReserva, 'vigilia'), 'a primeira Vigília do dia tem de caber');
     ok(!cabeExpedicao(comReserva, 'vigilia'),
-      'com duas Vigílias em campo, a terceira foi aceita. O teto seria descoberto ' +
+      'com três Vigílias em campo, a quarta foi aceita. O teto seria descoberto ' +
       'só na colheita, quando já não dá para desfazer — e o jogador teria mandado ' +
       'stamina para o ralo.');
   });
@@ -595,7 +596,7 @@ export function suite() {
   s.teste('e a recusa de nova expedição também conhece a curva', () => {
     const vistas = 0, total = 146;
     /* Um estado com o teto quase cheio: cabe uma Batida de um, e não de três. */
-    const quase = { encontrosHoje: 24, vistas, total };
+    const quase = { encontrosHoje: TETO_ENCONTROS - 6, vistas, total };
     ok(cabeExpedicao(quase, 'batida', 1),
       'uma Batida de um não coube num teto com 6 de folga');
     ok(!cabeExpedicao(quase, 'batida', 3),

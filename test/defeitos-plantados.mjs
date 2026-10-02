@@ -4484,15 +4484,15 @@ export const DEFEITOS = [
      farm vira planilha, que e exatamente o que o teto existe para impedir. */
   { id:'S548', arquivo:CAPT, nome:'a chance de captura perde o teto de 85%',
     real:'"ninguem chega perto do teto mesmo" — comum com ultra da 99%',
-    de:'  return Math.min(TETO_CAPTURA, base * b.mult);',
-    para:'  return base * b.mult;' },
+    de:'  return Math.min(TETO_CAPTURA, base * b.mult * FATOR_DE_CAPTURA);',
+    para:'  return base * b.mult * FATOR_DE_CAPTURA;' },
 
   /* BOLA DESCONHECIDA VIRA MULTIPLICADOR NEUTRO. Passa a capturar com uma bola
      que nao existe — captura sem consumir nada, que e criatura de graca. */
   { id:'S549', arquivo:CAPT, nome:'bola inexistente passa a funcionar como poke',
     real:'"o padrao razoavel e 1" — o padrao razoavel para dado errado e ZERO',
-    de:'  if (!b) return 0;\n  return Math.min(TETO_CAPTURA, base * b.mult);',
-    para:'  if (!b) return Math.min(TETO_CAPTURA, base);\n  return Math.min(TETO_CAPTURA, base * b.mult);' },
+    de:'  if (!b) return 0;\n  return Math.min(TETO_CAPTURA, base * b.mult * FATOR_DE_CAPTURA);',
+    para:'  if (!b) return Math.min(TETO_CAPTURA, base);\n  return Math.min(TETO_CAPTURA, base * b.mult * FATOR_DE_CAPTURA);' },
 
   /* A BOLA VOLTA PARA A BOLSA QUANDO A CAPTURA FALHA. O lance deixa de ter
      custo, e escolher a bola deixa de ser decisao: usa-se a melhor sempre. */
@@ -6011,8 +6011,8 @@ export const DEFEITOS = [
     /* O número mudou no 1.27 (L-132): +2 num teto de 30 era 6%, e completar a
        dex é o feito mais difícil do jogo. O defeito é o mesmo — igualar o fim
        a mais um degrau qualquer. */
-    de:'export const GANHO_COMPLETO = 6;',
-    para:'export const GANHO_COMPLETO = 4;' },
+    de:'export const GANHO_COMPLETO = 9;',
+    para:'export const GANHO_COMPLETO = 6;' },
 
   /* O TETO DA DEX VOLTA A SER CONSTANTE NO MOTOR. E o §Gen2, e ele pegou a
      primeira versao deste bloco: `{ em: 146 }` estava escrito aqui. */
@@ -10339,7 +10339,7 @@ export const DEFEITOS = [
     de:"    atalho.textContent = r.texto; atalho.classList.toggle('vazia', r.vazia); atalho.hidden = false;\n", para:"" },
   { id:'S2536', arquivo:'engine/captura.mjs', nome:"toda bola pega",
     real:"'todos os pokémons estão sendo capturados de primeira'",
-    de:"  return Math.min(TETO_CAPTURA, base * b.mult);", para:"  return 1;" },
+    de:"  return Math.min(TETO_CAPTURA, base * b.mult * FATOR_DE_CAPTURA);", para:"  return 1;" },
   { id:'S2537', arquivo:'server/idle.mjs', nome:"o sorteio do lance no servidor sempre sai zero",
     real:"a chance certa na tela e a captura certa no bolso, com o dado viciado no meio",
     de:"tentar(semente(derivar(raiz, 'lance')), pack, { raridade: en.raridade, bola })", para:"tentar(() => 0, pack, { raridade: en.raridade, bola })" },
@@ -10688,6 +10688,16 @@ export const DEFEITOS = [
   { id:'S2646', arquivo:'app/modules/avanco-tela.mjs', nome:'a tela cala a tentativa',
     real:'a wave repete e o jogador não sabe que é outra tentativa',
     de:"(run.tentativa > 0 ? ` · tentativa ${run.tentativa + 1}` : '')", para:"''" },
+  /* ── ST-2.30 · DEC-32, mais encontros e menos chance ─────────────── */
+  { id:'S2672', arquivo:'engine/expedicao.mjs', nome:'DEC-32 · o teto volta a 30',
+    real:'o dia com encontro volta a ~6 runs — "o jogador ficar mais tempo jogando" desfeito',
+    de:'export const TETO_ENCONTROS = 45;', para:'export const TETO_ENCONTROS = 30;' },
+  { id:'S2673', arquivo:'engine/captura.mjs', nome:'DEC-32 · a chance de captura volta inteira com o teto a 45',
+    real:'50% mais encontros com a mesma chance: as capturas do dia sobem junto',
+    de:'export const FATOR_DE_CAPTURA = 0.8;', para:'export const FATOR_DE_CAPTURA = 1;' },
+  { id:'S2674', arquivo:'content/itens_v1.mjs', nome:'DEC-32 · a bola básica volta ao preço de antes',
+    real:'erra-se mais e a bola custa o mesmo — o dono pediu "reduz o preço da bola, nessa proporção"',
+    de:"faixa: 'comum', porta: 'loja', preco: 160,", para:"faixa: 'comum', porta: 'loja', preco: 200," },
   /* ── ST-2.28d · o cansado não prende o time (D-159) ───────────────── */
   { id:'S2669', arquivo:'app/modules/idle-escolha.mjs', nome:'o cansado escolhido volta a travar no cartão',
     real:'"acabou a stamina e fica travado no time" — aceso e desabilitado, sem clique para sair',

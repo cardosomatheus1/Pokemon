@@ -27,7 +27,7 @@ export function suite() {
   s.teste('o próximo encontro volta quando o mais antigo sai da janela de 24 h', () => {
     const lanc = [{ colhidaEm: T0 - 5 * H, encontros: 10 }, { colhidaEm: T0 - 2 * H, encontros: 20 }];
     /* teto 30, tudo usado: precisa de 5 → volta quando os 10 de 5 h atrás saem (19 h a partir de agora) */
-    igual(quandoVoltaEncontro(lanc, T0, { teto: TETO_ENCONTROS, precisa: 5 }), T0 - 5 * H + 24 * H, 'a hora do próximo encontro');
+    igual(quandoVoltaEncontro(lanc, T0, { teto: 30, precisa: 5 }), T0 - 5 * H + 24 * H, 'a hora do próximo encontro');
     /* com folga, já é agora */
     igual(quandoVoltaEncontro([{ colhidaEm: T0 - H, encontros: 10 }], T0, { teto: 30, precisa: 5 }), T0, 'com folga, não é agora');
     /* a reserva de uma run aberta conta: 20 usados + 10 reservados, precisa de 5 → quando os 20 saem */
@@ -60,7 +60,7 @@ export function suite() {
     const c = D.criarCriatura(PACK, 1, 'captura', T0, 'volta'.padStart(12, 'v') + 'm0');
     c.xp = 10_000; c.stamina = 8; c.staminaEm = T0;
     e.criaturas.push(c);
-    e.avancos = [{ colhidaEm: T0 - 5 * H, encontros: 10 }, { colhidaEm: T0 - 2 * H, encontros: 20 }];
+    e.avancos = [{ colhidaEm: T0 - 5 * H, encontros: 10 }, { colhidaEm: T0 - 2 * H, encontros: TETO_ENCONTROS - 10 }];
     const aviso = avisoDoTeto(e, { pack: PACK, agora: T0 }) ?? '';
     ok(/acabaram/.test(aviso) && /volta (amanhã )?às \d\d:\d\d/.test(aviso), `o aviso do teto não diz quando volta: ${aviso}`);
     const porque = porQueNaoAvancar(e, { pack: PACK, bioma: 'floresta', estagio: 1, equipe: [c.id], agora: T0 }) ?? '';

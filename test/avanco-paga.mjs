@@ -19,6 +19,7 @@
  *     proposta, DOBRAVA a run e contradizia a paridade com a expedição no
  *     mesmo fôlego.
  */
+import { TETO_ENCONTROS } from '../engine/expedicao.mjs';
 import { criarSuite, ok, igual } from './harness.mjs';
 import {
   ENCONTROS_POR_AVANCO, cabeAvanco, premioDo, staminaAteWave,
@@ -42,9 +43,9 @@ export function suite() {
      como porta e passa a usá-la como aviso. */
   s.teste('o teto ainda sabe dizer quando os encontros acabaram', () => {
     ok(cabeAvanco(teto(0)), 'com o dia inteiro livre, o avanço não coube');
-    ok(!cabeAvanco(teto(30)), 'com o teto estourado, ele ainda disse que cabe');
-    ok(cabeAvanco(teto(24)), 'faltando exatamente um elenco, ele recusou');
-    ok(!cabeAvanco(teto(25)), 'faltando menos que um elenco, ele aceitou');
+    ok(!cabeAvanco(teto(TETO_ENCONTROS)), 'com o teto estourado, ele ainda disse que cabe');
+    ok(cabeAvanco(teto(TETO_ENCONTROS - 6)), 'faltando exatamente um elenco, ele recusou');
+    ok(!cabeAvanco(teto(TETO_ENCONTROS - 5)), 'faltando menos que um elenco, ele aceitou');
   });
 
   s.teste('SEM teto a run ainda paga tudo, menos espécie', () => {

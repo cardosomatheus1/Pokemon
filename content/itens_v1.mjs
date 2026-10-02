@@ -283,13 +283,13 @@ export const BOLAS_EXTRA = [
  * L-137, e é lá que a cor se resolve — não trocando de casa. */
 export const BOLAS_DO_PACK = [
   { id: 'poke', nome: 'Poké Ball', en: 'Poké Ball', icone: 3, comoAchei: 'olhado',
-    faixa: 'comum', porta: 'loja', preco: 200,
+    faixa: 'comum', porta: 'loja', preco: 160,   // DEC-32: ×0,8 (era 200), junto com a chance
     texto: 'A bola comum. Serve para a maioria das capturas do dia a dia.' },
   { id: 'great', nome: 'Great Ball', en: 'Great Ball', icone: 2, comoAchei: 'olhado',
-    faixa: 'comum', porta: 'loja', preco: 350,
+    faixa: 'comum', porta: 'loja', preco: 280,   // DEC-32: ×0,8 (era 350)
     texto: 'Uma bola melhor que a comum, com taxa de captura mais alta.' },
   { id: 'ultra', nome: 'Ultra Ball', en: 'Ultra Ball', icone: 1, comoAchei: 'olhado',
-    faixa: 'incomum', porta: 'loja', preco: 500,
+    faixa: 'incomum', porta: 'loja', preco: 400,   // DEC-32: ×0,8 (era 500)
     texto: 'Alto desempenho: taxa de captura duas vezes melhor que a comum.' },
 ];
 

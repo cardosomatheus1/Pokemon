@@ -69,6 +69,12 @@
    Ele fica no MOTOR e não no pack: é regra de jogo, não de tema. */
 export const TETO_CAPTURA = 0.85;
 
+/* DEC-32: com o teto de encontros a 45 (era 30), a chance de cada lance cai a
+   80% — comum na bola básica 45% → 36%, raro 14% → 11%. O jogador encontra mais
+   e erra mais, e as capturas do dia ficam perto de onde estavam. Regra de
+   jogo, e não de tema: fica no motor, ao lado do teto. A garantida não muda. */
+export const FATOR_DE_CAPTURA = 0.8;
+
 export const FRAGMENTOS_POR_ENCONTRO = 1;
 
 /* As três leituras do pack. Índice 2 é a chance base; índice 3, o alvo do
@@ -97,7 +103,7 @@ export function chanceDe(pack, { raridade, bola }) {
   if (garantida(pack, bola)) return 1;
   const b = bolaDe(pack, bola);
   if (!b) return 0;
-  return Math.min(TETO_CAPTURA, base * b.mult);
+  return Math.min(TETO_CAPTURA, base * b.mult * FATOR_DE_CAPTURA);
 }
 
 /* ── A CAPTURA GARANTIDA É CAPACIDADE, NÃO NOME ───────────────────────────

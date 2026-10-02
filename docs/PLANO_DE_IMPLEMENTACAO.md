@@ -2596,6 +2596,19 @@ do servidor. Três partes:
 - **Fora:** as duas migrações (doces do D-144, nível de nascer das capturas
   antigas) — decisão do dono, pendente.
 
+### ST-2.30 · Mais encontros, menos chance, bola mais barata (DEC-32) ✅ 02/10
+- **Por quê:** o dono — mais tempo de jogo com encontro no dia, sem as
+  capturas dispararem; e a bola acompanhando o lance que erra mais.
+- **Medido antes:** o teto de 30 só prende quem joga mais (casual ~17
+  encontros/dia, diário ~24, maratona ~25–46); ×0,67 na chance tirava um terço
+  das capturas de quem não ganha encontro (o casual de estágio 3) — ficou ×0,8.
+- **Feito:** DEC-32. Fixtures regravadas: `emissao-idle` e `antifraude` (os
+  números na DEC-32). Testes: `relato6` (+1, DEC-32), `captura` (+1, o teto de
+  85% num pack de prova), `expedicao`, `avanco-paga`, `avanco-estado`,
+  `volta-dados`, `colheita-rotas` (o dia de prova: 4 → 5 saídas) passaram a
+  medir contra `TETO_ENCONTROS` e não contra 30. S2672–S2674 PEGOU; S548,
+  S549, S731 e S2536 realvos.
+
 ### ST-2.29 · O doce que se sente (L-249) — nova, depois da ST-2.27d
 - **Por quê:** o 6º relato — *"dar um doce gastou o doce sem fazer ele
   evoluir"*. 1 doce = 2 XP (~1,4% de um nível perto do 10); no gênero, o doce
@@ -3349,6 +3362,21 @@ desta tabela.
   passa a ganhar mais, em vez de o mesmo que quem faz 2 runs; a Essência
   −3% a −10%. Teste: `stamina-balanco` (o modelo agora carrega o teto e as
   regras de cada momento).
+- ✅ **DEC-32 · mais encontros, menos chance, bola mais barata** (ST-2.30, o
+  dono, 02/10: *"a gente pode aumentar [os encontros] e diminuir a chance de
+  captura, para o jogador ficar mais tempo jogando"* e *"reduz o preço da
+  bola, nessa proporção também"*). O teto de encontros vai a **45** (era 30);
+  a escada da coleção ×1,5 (+3/+3/+5/+5/+6 e +9 ao completar — sem isso,
+  completar a dex cairia de +67% a +44% do teto); a chance de cada lance
+  ×**0,8** (`FATOR_DE_CAPTURA`: comum na bola básica 45% → 36%); as bolas da
+  Loja ×0,8 (160 / 280 / 400, eram 200 / 350 / 500; a League Shop não muda).
+  Medido por dia (estágio 1 / estágio 3): encontros casual +28%/igual, diário
+  +54%/+27%, maratona +58%/+64%; capturas casual +4%/−20%, diário +8%/−11%,
+  maratona +29%/+14%; moeda casual +32%/igual, diário +23%/+35%, maratona
+  +7%/+7%; o dia com encontro passa de ~6 a ~9 runs. A banda da antifraude
+  (`BANDA_DE_CAPTURA`) remedida: 1,8–21,4 → 1,4–26,6; a detecção não muda. O
+  teto de 85% da chance deixou de morder as bolas do pack (a melhor dá 79%) —
+  fica para bola mais forte, e um teste de pack de prova o exercita.
 - **Ainda do dono, e com recomendação escrita como padrão:** a taxa shiny (R18),
   o orçamento da Master Ball, os limites/cooldown/taxas finais (baselines da
   spec §11 e §16 até o gate C medir).
