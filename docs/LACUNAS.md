@@ -9392,6 +9392,40 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-250 — o jogo mora num endereço emprestado (`sslip.io`)
+
+**Registrada em:** 03/10/2026, quando um amigo do piloto recebeu
+`NET::ERR_CERT_AUTHORITY_INVALID` no Opera GX e não conseguiu entrar. O dono:
+*"tem q ter um jeito de evitar q no dele n da isso, imagina isso p milhoes de
+pessoas"*. **Bloco dono:** **ST-7.2d** (o endereço próprio do piloto — sub-bloco
+da ST-7.2, ainda sem ficha). **Estado:** aberta — espera a decisão do dono de
+comprar o domínio (custo, ver abaixo).
+
+Medido no mesmo dia, de fora do proxy (SSL Labs): **nota A**, certificado
+Let's Encrypt (YE1, emitido 01/10, vence 30/12), SCT presente, cadeia sem
+problema, confiável nos repositórios de Windows, Mozilla, Apple, Android e Java.
+Os resolvedores com filtro (Cloudflare security/family, Google, AdGuard)
+respondem o IP certo. **O servidor está certo para quem chega até ele.**
+
+O que o servidor NÃO controla, e o `sslip.io` piora: o `sslip.io` é DNS curinga
+gratuito, muito usado em golpe, e filtros de antivírus, de roteador e de
+provedor costumam bloqueá-lo — o bloqueio responde com uma página própria e um
+certificado próprio, que o navegador lê exatamente como esse erro. Um domínio
+nosso tira essa classe inteira; o que sobra (antivírus que intercepta TODO
+HTTPS, relógio errado) é igual em qualquer site, Google incluso.
+
+**Teste que separa as duas causas:** se `https://google.com` abre normal no
+aparelho do amigo e o nosso não, é o endereço — e o domínio resolve. Se o
+Google também reclama, é o aparelho.
+
+**Por que não cabe agora:** custa dinheiro (~US$ 12/ano um `.com`; ~R$ 40/ano
+um `.com.br` no Registro.br, que pede CPF) e o nome é decisão do dono — de
+preferência sem a franquia no nome (§0.3.1). **O que a destrava:** o dono
+escolher e comprar o domínio. Daí: apontar o DNS para o IP estático, trocar o
+`HOST` do `deploy/lightsail/caddyfile.sh` (hoje derivado do IP), redirecionar o
+endereço velho para o novo e atualizar `docs/PILOTO.md`. Para escala (milhões),
+uma CDN na frente (CloudFront/Cloudflare) entra depois, no lançamento.
+
 ### L-249 — o doce dá 2 XP, e o jogador espera dele um nível
 
 **Registrada em:** 02/10/2026, no 6º relato (*"dar um doce gastou o doce sem
