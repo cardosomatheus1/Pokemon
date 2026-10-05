@@ -2150,7 +2150,8 @@ run"*; a equipe desce.
 
 Pedido do dono: corrigir XP fixo apesar de avançar fases e treino offline sem
 resultado antes de continuar AT6/GQ. Esta seção atualiza o §7.22.14: o treino
-do banco não exige uma expedição. O ritmo permanece 3 XP/h e 1 vínculo/h.
+do banco não exige uma expedição. O ritmo inicial de 3 XP/h foi substituído
+pelo §7.22.20; vínculo permanece 1/h.
 
 O XP base de Avanço e expedição tem fatores 1/1,5/2/3 nos estágios 1/2/3/4.
 O primeiro mantém os valores anteriores. Depois do fator entram os 88% de
@@ -2239,6 +2240,55 @@ Squirtle vencem 5/78/4%. Tipos e aprendizado acumulam vantagens ao longo dos
 37 oponentes; essa diferença exige orientação/rota inicial e calibração em
 GQ-01/AT6-05. Não declarar os iniciais equilibrados nem apagar vantagem de
 preparo com vitória artificial. Q5 e aceitação visual continuam pendentes.
+
+
+### 7.22.20 Treino passivo progressivo — XP-OFF-2 (04/10/2026)
+
+Pedido do dono: 3 XP/h é insignificante diante de runs de cerca de 77 XP.
+Após comparar propostas, pediu meio termo entre a taxa pequena e 300 XP/h.
+A taxa inicial fica em 150 XP/h por criatura do banco, multiplicada pelos
+fatores 1/1,5/2/3 dos quatro estágios: **150/225/300/450 XP/h**. Esta seção
+substitui as taxas de treino anteriores; não altera o XP das expedições,
+já progressivo pelo §7.22.18, nem o XP das batalhas da Jornada.
+
+O estágio do treino usa a melhor criatura da coleção, nível derivado do XP,
+com portas 1/12/19/31; inclui a caixa. O estágio alcançado fica guardado no
+relógio e não regride ao vender/soltar uma criatura. É congelado para o
+intervalo seguinte: desbloquear uma fase ao retornar não multiplica horas
+passadas. Primeira ativação arma o relógio sem retroatividade. Save antigo
+sem estágio liquida o intervalo aberto na taxa base, preserva frações e arma
+o estágio atual para o próximo; não recebe multiplicador avançado retroativo.
+
+Em oito horas, o banco recebe **1.200/1.800/2.400/3.600 XP por criatura**,
+conforme a fase congelada. Vínculo continua 1/h. Até doze horas por retorno,
+sem encontros, itens, moeda, stamina ou alteração de IV. Intervalos em aventura
+continuam excluídos até colher; criação/treino anterior e sobreposições são
+respeitados. Consulta não autoriza horário/taxa/estágio enviados pelo cliente:
+o servidor calcula pelo XP e estado persistido. Crédito e cursor são atômicos.
+
+A UI mostra a taxa do intervalo e seu estágio nas duas abas. Retorno automático
+usa o relógio independente; colheita direta também usa sua fase congelada.
+Uma janela legada sem relógio usa o estágio gravado na expedição. A marca de
+pagamento por criatura impede repagar as horas na combinação colheita/retorno.
+As funções antigas de compatibilidade mantêm default 3 XP/h; **nenhum caminho
+atual de crédito depende desse default**: colheita fornece a taxa progressiva
+explicitamente, e o relógio independente calcula pelo mesmo helper.
+
+**Medição determinística:** ESTUDO_RITMO_OFFLINE.json. Começando no nível 5,
+oito horas no estágio 1 dão 1.200 XP e levam ao nível 14; doze horas dão 1.800
+XP e levam ao 16. Ausência única de 24 horas paga só doze. Com retornos a cada
+oito horas, sem aventuras, chega ao nível 26 em 24h e 42 em 48h. Isso acelera
+intencionalmente a coleção; as referências antigas de dias para abrir fases
+não certificam este ritmo. Captura, evolução por itens, IV e composição do
+PvP continuam sendo eixos separados. Não declarar emissão/progressão completas
+certificadas por estas fixtures nem ajustar dinheiro junto com XP.
+
+**Validação focada:** 351 testes em 25 suítes, zero falhas. HTTP real, fonte
+soberana de fase/taxa, retry, rollback, frações, estado legado, promoção sem
+retroatividade, limite de ausência, exclusão de aventuras, painel e combinação
+colheita/retorno. Quatro mutantes de taxa/progressão/retroatividade/colheita
+capturados. Q5 e revisão dos cenários gerais de progressão permanecem abertos.
+
 
 
 # 8. Fase 4 — Time e Jornada

@@ -7747,3 +7747,12 @@ implicitamente de 92% na TBE. Catálogo explícito e ficha compartilham precisã
 poder/categoria e ausência de secundários. O teste exige texto no botão nas
 duas abas; S90304 prova que apenas tooltip não basta. Catálogo da Arena comum
 permanece intacto. Inspeção visual continua pendente em L-AT6-02.
+
+
+## D-XP-OFF-03 — banco progride pouco diante do combate · corrigido
+
+**Dono:** XP-OFF-2 · **Relato:** dono, 04/10/2026. 3 XP/h pagava 24 após oito
+horas; runs observadas rendem cerca de 77. Novo ritmo 150/225/300/450 por fase,
+com ciclo congelado e sem crédito retroativo avançado. Colheita usa a mesma
+fase que o relógio independente; default legado não entra no crédito atual.
+Testes HTTP/save/painel, frações, retry e rollback; S90401–04 capturados.

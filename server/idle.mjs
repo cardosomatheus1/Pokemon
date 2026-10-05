@@ -293,8 +293,10 @@ export function colher(db, { id, pack, agora, raiz = novaRaiz() }) {
        função, com a raiz sorteada aqui e o bônus da aposta lido do banco. */
     const x = { id, bioma: exp.bioma, perfil: exp.perfil, estagio: exp.estagio,
                 equipe: JSON.parse(exp.equipe_json), iniciadaEm: exp.iniciada_em, terminaEm: exp.termina_em };
+    const estadoTreino = db.prepare('SELECT estado_json FROM treinos_offline WHERE user_id=?').get(exp.user_id);
     const c = contaDaColheita({ pack, expedicao: x, criaturas: criaturasDaConta(db, exp.user_id),
-      raiz, bonus: bonusDoServidor(db, exp.user_id, pack), agora });
+      raiz, bonus: bonusDoServidor(db, exp.user_id, pack), agora,
+      treinoOffline: estadoTreino ? JSON.parse(estadoTreino.estado_json) : null });
 
     for (const [chave, n] of Object.entries(c.bolsa)) creditarBolsa(db, exp.user_id, chave, n, { fonte: `colheita:${id}`, agora });
     /* O nível é escrito junto com o XP, pela mesma conta — duas escritas

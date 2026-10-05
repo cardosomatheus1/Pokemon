@@ -8136,7 +8136,7 @@ export const DEFEITOS = [
     de:'({ linha: baseDe(pack, Number(dex)), ate: agora + DURACAO_BONUS_MS })', para:'({ linha: Number(dex), ate: agora + DURACAO_BONUS_MS })' },
   { id:'S1342', arquivo:'app/modules/idle-colheita.mjs', nome:'a colheita local ignora o bonus',
     real:'a previa mostra x4, a aposta foi feita, e a colheita sorteia como se nada tivesse acontecido',
-    de:'contaDaColheita({ pack, expedicao: x, criaturas: e.criaturas, raiz, bonus, agora });', para:'contaDaColheita({ pack, expedicao: x, criaturas: e.criaturas, raiz, agora });' },
+    de:'contaDaColheita({ pack, expedicao: x, criaturas: e.criaturas, raiz, bonus, agora, treinoOffline: e.treinoOffline });', para:'contaDaColheita({ pack, expedicao: x, criaturas: e.criaturas, raiz, agora, treinoOffline: e.treinoOffline });' },
 
   /* ── ST-9.7 · o doce: a regra ─────────────────────────────────────── */
   { id:'S1343', arquivo:'engine/doce.mjs', nome:'o doce escala com o valor apostado',
@@ -11634,7 +11634,7 @@ export const DEFEITOS = [
     de:'    for (const k of c.credito) escrever.run(', para:'    for (const k of []) escrever.run(' },
   { id:'S1591', arquivo:'server/idle.mjs', nome:'o servidor colhe sem o bônus da aposta',
     real:'a linha apostada pesa x4 no aparelho e x1 na conta real — o mesmo jogador recebe duas regras',
-    de:'raiz, bonus: bonusDoServidor(db, exp.user_id, pack), agora });', para:'raiz, bonus: null, agora });' },
+    de:'raiz, bonus: bonusDoServidor(db, exp.user_id, pack), agora,', para:'raiz, bonus: null, agora,' },
   { id:'S1592', arquivo:'server/idle.mjs', nome:'a reserva do servidor esquece o tamanho da equipe',
     real:'a Vigília de três reserva o mesmo que a de um — o teto do §P5 vira sugestão no servidor (L-140)',
     de:'membros: JSON.parse(x.equipe_json).length })', para:'membros: 1 })' },
@@ -12927,4 +12927,12 @@ export const DEFEITOS = [
     de:'Array.isArray(t.efeitos) && t.efeitos.length === 0',para:'true'},
   {id:'S90304',arquivo:'app/modules/idle-paineis.mjs',nome:'precisão some da escolha dos golpes',real:'jogador só lê nome apesar de risco diferente',
     de:"${f ? ` · ${f.resumo}` : ''}",para:"${''}"},
+  {id:'S90401',arquivo:'engine/treino-offline.mjs',nome:'banco volta a pagar 3 XP por hora',real:'progresso passivo volta a ser insignificante',
+    de:'export const XP_BASE_TREINO_OFFLINE=150;',para:'export const XP_BASE_TREINO_OFFLINE=3;'},
+  {id:'S90402',arquivo:'engine/treino-offline.mjs',nome:'treino ignora o estágio desbloqueado',real:'progressão da conta não melhora treino do banco',
+    de:'XP_BASE_TREINO_OFFLINE*fatorXpDoEstagio(estagio)',para:'XP_BASE_TREINO_OFFLINE'},
+  {id:'S90403',arquivo:'engine/treino-offline.mjs',nome:'desbloqueio multiplica horas passadas',real:'promover uma criatura logo antes do retorno paga retroativamente o estágio novo',
+    de:'const taxa=xpPorHoraTreino(estado.estagio??1);',para:'const taxa=xpPorHoraTreino(etapaDaColecao(criaturas));'},
+  {id:'S90404',arquivo:'engine/colheita.mjs',nome:'colheita do banco usa o ritmo antigo',real:'sem sincronização prévia o banco recebe 3 XP/h apesar da nova taxa',
+    de:'xpPorHora: xpPorHoraTreino(treinoOffline?.estagio??estagio)',para:'xpPorHora: 3'},
 ];

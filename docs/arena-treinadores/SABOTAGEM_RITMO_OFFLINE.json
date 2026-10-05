@@ -1,0 +1,150 @@
+{
+  "escopo": "somente mutantes do ritmo offline; não é Q2 legado integral",
+  "total": 4,
+  "capturados": 4,
+  "resultados": [
+    {
+      "id": "S90401",
+      "nome": "banco volta a pagar 3 XP por hora",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "retorno credita treino sem expedição no relógio do servidor; GET e retry não duplicam",
+          "erro": "undefined — esperado [1200,1200], veio [24,24]",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "treino guarda frações entre retornos e limita ausência a doze horas",
+          "erro": "undefined — esperado [150,150], veio [3,3]",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "quem está em expedição não recebe treino em paralelo; colheita não repaga o banco",
+          "erro": "undefined — esperado [0,1200], veio [0,24]",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "intervalos sobrepostos são excluídos uma vez e criaturas novas não ganham tempo anterior",
+          "erro": "undefined — esperado 300, veio 6",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "save local mantém frações no disco e paga ao retornar sem expedição",
+          "erro": "undefined — esperado 75, veio 1",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "falha no crédito desfaz também o cursor; retry continua pagando uma única vez",
+          "erro": "undefined — esperado [1200,1200], veio [24,24]",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "treino passivo acompanha estágios e paga 150/225/300/450 por hora por criatura",
+          "erro": "undefined — esperado 150, veio 3",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "desbloqueio aumenta só o intervalo seguinte; nível falso e body não aumentam a taxa",
+          "erro": "undefined — esperado 150, veio 3",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "save antigo não recebe multiplicador avançado retroativo e guarda frações de XP",
+          "erro": "undefined — esperado 1, veio 0",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "server define estágio a partir do XP e salva a taxa para o próximo retorno",
+          "erro": "undefined — esperado 450, veio 9",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "colheita sem sincronização anterior usa a taxa progressiva e mantém local/servidor no mesmo cálculo",
+          "erro": "undefined — esperado 150, veio 3",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "painel mostra a taxa do intervalo e seu estágio, em vez da constante antiga de 3 XP/h",
+          "erro": "painel não mostra o ritmo pago",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "colheita lê a fase congelada do treino mesmo numa rota menor; retorno completa só o restante",
+          "erro": "colheita de 45 min não usou os 300 XP/h da fase 3 — esperado 225, veio 4",
+          "suite": "progressao-offline"
+        }
+      ]
+    },
+    {
+      "id": "S90402",
+      "nome": "treino ignora o estágio desbloqueado",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "treino passivo acompanha estágios e paga 150/225/300/450 por hora por criatura",
+          "erro": "undefined — esperado 225, veio 150",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "desbloqueio aumenta só o intervalo seguinte; nível falso e body não aumentam a taxa",
+          "erro": "undefined — esperado 450, veio 150",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "server define estágio a partir do XP e salva a taxa para o próximo retorno",
+          "erro": "undefined — esperado 450, veio 150",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "colheita sem sincronização anterior usa a taxa progressiva e mantém local/servidor no mesmo cálculo",
+          "erro": "undefined — esperado 225, veio 150",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "painel mostra a taxa do intervalo e seu estágio, em vez da constante antiga de 3 XP/h",
+          "erro": "painel não mostra o ritmo pago",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "colheita lê a fase congelada do treino mesmo numa rota menor; retorno completa só o restante",
+          "erro": "colheita de 45 min não usou os 300 XP/h da fase 3 — esperado 225, veio 112",
+          "suite": "progressao-offline"
+        }
+      ]
+    },
+    {
+      "id": "S90403",
+      "nome": "desbloqueio multiplica horas passadas",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "desbloqueio aumenta só o intervalo seguinte; nível falso e body não aumentam a taxa",
+          "erro": "undefined — esperado 150, veio 450",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "save antigo não recebe multiplicador avançado retroativo e guarda frações de XP",
+          "erro": "undefined — esperado 1, veio 2",
+          "suite": "progressao-offline"
+        }
+      ]
+    },
+    {
+      "id": "S90404",
+      "nome": "colheita do banco usa o ritmo antigo",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "colheita sem sincronização anterior usa a taxa progressiva e mantém local/servidor no mesmo cálculo",
+          "erro": "undefined — esperado 150, veio 3",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "colheita lê a fase congelada do treino mesmo numa rota menor; retorno completa só o restante",
+          "erro": "colheita de 45 min não usou os 300 XP/h da fase 3 — esperado 225, veio 2",
+          "suite": "progressao-offline"
+        }
+      ]
+    }
+  ]
+}

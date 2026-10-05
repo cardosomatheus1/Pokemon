@@ -204,6 +204,8 @@ export const rendimentoAusente = v =>
    Um terço do XP por hora da Batida. Se fosse igual, ninguém aventuraria com a
    segunda criatura — e o modo que existe para viabilizar a coleção passaria a
    substituí-la. */
+/* Taxa de compatibilidade das janelas legadas; crédito atual usa
+   xpPorHoraTreino, de treino-offline.mjs (XP-OFF-2). */
 export const XP_POR_HORA_TREINO = 3;
 export const VINCULO_POR_HORA_TREINO = 1;
 
@@ -237,7 +239,7 @@ export function podeTreinar(criatura, emAventura) {
  * O teto de XP do dia não pode ser o número de vagas — é o mesmo vazamento
  * que o teto de encontros fecha do outro lado.
  */
-export function treinoDaJanela({ criaturas = [], equipe = [], de = 0, ate = 0 } = {}) {
+export function treinoDaJanela({ criaturas = [], equipe = [], de = 0, ate = 0, xpPorHora = XP_POR_HORA_TREINO } = {}) {
   const fim = numero(ate);
   const abertura = numero(de);
   const foram = new Set((equipe ?? []).map(c => c?.id ?? c));
@@ -249,7 +251,7 @@ export function treinoDaJanela({ criaturas = [], equipe = [], de = 0, ate = 0 } 
        colheita fora de ordem, e ela não pode creditar nem um NaN — que é pior
        que um zero porque contamina o nível da criatura em silêncio. */
     if (!(fim > inicio)) continue;
-    const ganho = treinoDe({ minutos: (fim - inicio) / 60_000 });
+    const ganho = treinoDe({ minutos: (fim - inicio) / 60_000, xpPorHora });
     if (ganho.xp <= 0 && ganho.vinculo <= 0) continue;
     saida.push({ id: c.id, minutos: (fim - inicio) / 60_000,
                  xp: ganho.xp, vinculo: ganho.vinculo, ate: fim });
@@ -257,10 +259,10 @@ export function treinoDaJanela({ criaturas = [], equipe = [], de = 0, ate = 0 } 
   return saida;
 }
 
-export function treinoDe({ minutos } = {}) {
+export function treinoDe({ minutos, xpPorHora = XP_POR_HORA_TREINO } = {}) {
   const h = Math.max(0, numero(minutos) / 60);
   return {
-    xp: Math.floor(h * XP_POR_HORA_TREINO),
+    xp: Math.floor(h * Math.max(0,numero(xpPorHora,XP_POR_HORA_TREINO))),
     vinculo: Math.floor(h * VINCULO_POR_HORA_TREINO),
     /* Explícito, e não omitido: quem ler este objeto tem de VER que o treino
        não faz estas duas coisas. Ausência se lê como esquecimento; zero se lê

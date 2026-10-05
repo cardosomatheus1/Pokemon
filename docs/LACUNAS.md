@@ -9707,3 +9707,13 @@ régua da TBE. `movesetDoRival` ainda calcula a precisão omitida como 100%,
 enquanto combate usa 92%. Corrigir altera equipes novas e pede medição de
 Jornada/Avanço, preservando snapshots existentes. Não incluir essa mudança
 comportamental num commit apresentado como migração semântica do catálogo.
+
+
+### L-XP-OFF-04 — recalibrar referências de espera após buff do banco
+
+**Dono:** GQ-02/03 · **Notada em:** XP-OFF-2, 04/10/2026 · **Estado:** aberta.
+Treino novo pode levar nível 5→14 em oito horas, 26 em 24h e 42 em 48h com
+retornos a cada oito horas. As medições antigas de 12,7 dias para abrir as
+rotas não descrevem esse ritmo. Rever captura/evolução/custos e tempo até
+Liga/6×6 usando treino atual e coleção real. Não confundir estudo do banco
+sem aventuras com certificação de todas as jornadas ou emissão financeira.

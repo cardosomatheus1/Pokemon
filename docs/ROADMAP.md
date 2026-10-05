@@ -11,7 +11,7 @@ A fila legada de 25/09 continua preservada para rastreabilidade.
 
 | Ordem | Bloco | Escopo e condição de saída |
 |---|---|---|
-| 0 | 🟡 XP-OFF | Prioridade do dono: XP por estágio e treino automático implementados e testados; aceite visual/deploy pendentes. Spec §7.22.18. |
+| 0 | 🟡 XP-OFF / XP-OFF-2 | XP de expedições por estágio e banco a 150/225/300/450 XP/h implementados/testados (351 testes, 4 mutantes novos). §§7.22.18/20. Q5 e revisão geral de progressão pendentes. |
 | 1 | 🟡 AT6-base | Motor, acesso 6×6, ranked, defesa, 10% da casa, kit, XP repetido e atividade de temporada implementados com validação focada. Fechar apresentação via Q5 antes de marcar entrega visual concluída. Contrato 09 delimita os critérios aplicados. |
 | 2 | 🟡 AT6-13 | Novas runs com HP/golpes reais, snapshots e cura/recuo sincronizados. 470 testes e 8 mutantes; Spec §7.22.19. Q5 e calibração dos iniciais (L-AT6-04) pendentes; não certifica emissão diária. |
 | 3 | 🟡 AT6-14 | Catálogo TBE e informação do moveset implementados (194 testes, 4 mutantes; §8.18). Q5, auditoria de dominância e precisão no seletor dos rivais continuam pendentes; mudar NPCs exige recalibrar. |

@@ -1,0 +1,211 @@
+{
+  "baseXpHora": 150,
+  "multiplicadores": [
+    1,
+    1.5,
+    2,
+    3
+  ],
+  "capHoras": 12,
+  "semAventuras": true,
+  "resultados": [
+    {
+      "nivelAntes": 1,
+      "estagioInicial": 1,
+      "horasAusente": 1,
+      "xpRecebido": 150,
+      "nivelDepois": 5,
+      "estagioSeguinte": 1
+    },
+    {
+      "nivelAntes": 1,
+      "estagioInicial": 1,
+      "horasAusente": 8,
+      "xpRecebido": 1200,
+      "nivelDepois": 13,
+      "estagioSeguinte": 2
+    },
+    {
+      "nivelAntes": 1,
+      "estagioInicial": 1,
+      "horasAusente": 12,
+      "xpRecebido": 1800,
+      "nivelDepois": 16,
+      "estagioSeguinte": 2
+    },
+    {
+      "nivelAntes": 1,
+      "estagioInicial": 1,
+      "horasAusente": 24,
+      "xpRecebido": 1800,
+      "nivelDepois": 16,
+      "estagioSeguinte": 2
+    },
+    {
+      "nivelAntes": 5,
+      "estagioInicial": 1,
+      "horasAusente": 1,
+      "xpRecebido": 150,
+      "nivelDepois": 6,
+      "estagioSeguinte": 1
+    },
+    {
+      "nivelAntes": 5,
+      "estagioInicial": 1,
+      "horasAusente": 8,
+      "xpRecebido": 1200,
+      "nivelDepois": 14,
+      "estagioSeguinte": 2
+    },
+    {
+      "nivelAntes": 5,
+      "estagioInicial": 1,
+      "horasAusente": 12,
+      "xpRecebido": 1800,
+      "nivelDepois": 16,
+      "estagioSeguinte": 2
+    },
+    {
+      "nivelAntes": 5,
+      "estagioInicial": 1,
+      "horasAusente": 24,
+      "xpRecebido": 1800,
+      "nivelDepois": 16,
+      "estagioSeguinte": 2
+    },
+    {
+      "nivelAntes": 12,
+      "estagioInicial": 2,
+      "horasAusente": 1,
+      "xpRecebido": 225,
+      "nivelDepois": 13,
+      "estagioSeguinte": 2
+    },
+    {
+      "nivelAntes": 12,
+      "estagioInicial": 2,
+      "horasAusente": 8,
+      "xpRecebido": 1800,
+      "nivelDepois": 19,
+      "estagioSeguinte": 3
+    },
+    {
+      "nivelAntes": 12,
+      "estagioInicial": 2,
+      "horasAusente": 12,
+      "xpRecebido": 2700,
+      "nivelDepois": 22,
+      "estagioSeguinte": 3
+    },
+    {
+      "nivelAntes": 12,
+      "estagioInicial": 2,
+      "horasAusente": 24,
+      "xpRecebido": 2700,
+      "nivelDepois": 22,
+      "estagioSeguinte": 3
+    },
+    {
+      "nivelAntes": 19,
+      "estagioInicial": 3,
+      "horasAusente": 1,
+      "xpRecebido": 300,
+      "nivelDepois": 19,
+      "estagioSeguinte": 3
+    },
+    {
+      "nivelAntes": 19,
+      "estagioInicial": 3,
+      "horasAusente": 8,
+      "xpRecebido": 2400,
+      "nivelDepois": 25,
+      "estagioSeguinte": 3
+    },
+    {
+      "nivelAntes": 19,
+      "estagioInicial": 3,
+      "horasAusente": 12,
+      "xpRecebido": 3600,
+      "nivelDepois": 28,
+      "estagioSeguinte": 3
+    },
+    {
+      "nivelAntes": 19,
+      "estagioInicial": 3,
+      "horasAusente": 24,
+      "xpRecebido": 3600,
+      "nivelDepois": 28,
+      "estagioSeguinte": 3
+    },
+    {
+      "nivelAntes": 31,
+      "estagioInicial": 4,
+      "horasAusente": 1,
+      "xpRecebido": 450,
+      "nivelDepois": 31,
+      "estagioSeguinte": 4
+    },
+    {
+      "nivelAntes": 31,
+      "estagioInicial": 4,
+      "horasAusente": 8,
+      "xpRecebido": 3600,
+      "nivelDepois": 36,
+      "estagioSeguinte": 4
+    },
+    {
+      "nivelAntes": 31,
+      "estagioInicial": 4,
+      "horasAusente": 12,
+      "xpRecebido": 5400,
+      "nivelDepois": 39,
+      "estagioSeguinte": 4
+    },
+    {
+      "nivelAntes": 31,
+      "estagioInicial": 4,
+      "horasAusente": 24,
+      "xpRecebido": 5400,
+      "nivelDepois": 39,
+      "estagioSeguinte": 4
+    }
+  ],
+  "retornosACada8h": [
+    {
+      "horas": 8,
+      "xpTotal": 1200,
+      "nivel": 14,
+      "estagio": 2
+    },
+    {
+      "horas": 16,
+      "xpTotal": 3000,
+      "nivel": 20,
+      "estagio": 3
+    },
+    {
+      "horas": 24,
+      "xpTotal": 5400,
+      "nivel": 26,
+      "estagio": 3
+    },
+    {
+      "horas": 32,
+      "xpTotal": 7800,
+      "nivel": 31,
+      "estagio": 4
+    },
+    {
+      "horas": 40,
+      "xpTotal": 11400,
+      "nivel": 37,
+      "estagio": 4
+    },
+    {
+      "horas": 48,
+      "xpTotal": 15000,
+      "nivel": 42,
+      "estagio": 4
+    }
+  ]
+}

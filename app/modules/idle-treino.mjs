@@ -14,7 +14,7 @@
  *   > A regra pedia uma coleção, e o jogo não dava por onde criá-la.
  *
  * O treino do banco é por onde. E ele é de propósito MAIS LENTO que aventurar:
- * a um terço do XP por hora da Batida. Se fosse igual, ninguém aventuraria com
+ * abaixo do combate ativo, conforme XP-OFF-2. Se fosse igual, ninguém aventuraria com
  * a segunda criatura — e o modo que existe para viabilizar a coleção passaria
  * a substituí-la.
  *
@@ -29,7 +29,8 @@ import { PACK, nomeExibido } from './motor.mjs';
 import { retratoAnimado } from './sprites.mjs';
 import { emCampo, criaturasDe } from './idle-dados.mjs';
 import { noBanco } from './idle-banco.mjs';
-import { XP_POR_HORA_TREINO, VINCULO_POR_HORA_TREINO } from '../../engine/ausente.mjs';
+import { VINCULO_POR_HORA_TREINO } from '../../engine/ausente.mjs';
+import { ritmoTreinoOffline } from '../../engine/treino-offline.mjs';
 
 const esp = dex => (PACK.especies ?? []).find(e => e.dex === dex) ?? { n: '?', dex };
 
@@ -38,9 +39,7 @@ const esp = dex => (PACK.especies ?? []).find(e => e.dex === dex) ?? { n: '?', d
  * Primeiro QUEM treina — porque a pergunta que ele faz ao abrir é "o meu
  * segundo bicho está subindo?". Depois QUANTO, e só então a ressalva.
  *
- * A conta é mostrada JÁ MULTIPLICADA pela expedição em campo quando há uma:
- * "3 XP/h" obriga o jogador a fazer a conta que a tela já sabe fazer, e uma
- * conta que a tela esconde é uma decisão que ela não ajuda a tomar. */
+ * A taxa mostrada é a do intervalo corrente de treino, congelada ao voltar. */
 export function pintarTreino(E) {
   /* O painel é só da ROTA OFF: em ROTAS o jogador está OLHANDO, e o treino do
      banco é justamente o que acontece quando ele não está. */
@@ -57,10 +56,11 @@ export function pintarTreino(E) {
     return;
   }
 
+  const ritmo = ritmoTreinoOffline(E.treinoOffline, E.criaturas);
   const ultimos = E.treinoOffline?.ultimo?.ganhos ?? [];
   const recebido = ultimos.filter(x => banco.some(c => c.id === x.id)).reduce((n,x) => n+x.xp,0);
   const cabecalho = `<p class="tiny"><b class="trQuantos">${banco.length}</b> no banco. ` +
-    `Treino automático: <b class="trGanho">${XP_POR_HORA_TREINO} XP/h</b> e ` +
+    `Treino automático: <b class="trGanho">${ritmo.xpPorHora} XP/h</b> (estágio ${ritmo.estagio}) e ` +
     `${VINCULO_POR_HORA_TREINO} de vínculo/h por Pokémon. O crédito chega ao voltar, ` +
     `com até 12 h por ausência; não precisa mandar expedição.` +
     (recebido ? ` Último crédito do banco: +${recebido} XP no total.` : '') + '</p>';
@@ -74,7 +74,7 @@ export function pintarTreino(E) {
   escrever(cabecalho + `<div class="trBanco">${lista}</div>` +
     `<p class="tiny trRessalva">O treino <b>não dá encontro nem item</b> — ` +
     `por isso ele não gasta o seu teto do dia. Ele rende ` +
-    `${XP_POR_HORA_TREINO} XP e ${VINCULO_POR_HORA_TREINO} de vínculo por hora, ` +
-    `de propósito abaixo de aventurar: se fosse igual, ninguém levaria a ` +
-    `segunda criatura a campo.</p>`);
+    `${ritmo.xpPorHora} XP e ${VINCULO_POR_HORA_TREINO} de vínculo por hora. ` +
+    `A taxa aumenta com os estágios desbloqueados. O novo ritmo vale a partir ` +
+    `do próximo intervalo, sem repagar as horas anteriores.</p>`);
 }

@@ -22,9 +22,25 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 04/10/2026 · AT6-14-info
+## 0. ONDE PARAMOS — 04/10/2026 · XP-OFF-2
 
-Último bloco: catálogo explícito para o treinador e dados de poder/categoria/
+Último bloco: treino do banco a 150/225/300/450 XP/h por fase, pedido do dono
+para meio termo após considerar 300/h demais. Em oito horas, fase 1: 1.200 XP
+por criatura. Fase congelada para o intervalo seguinte, derivada do XP da
+coleção; não promove horas anteriores. Retorno automático e colheita direta
+compartilham fase/taxa; cliente não define horário/valor. Vínculo 1/h, cap
+12h, sem aventuras/itens/encontros e sem pagamentos duplicados.
+
+VALIDACAO_RITMO_OFFLINE.json: 25 suítes, 351 testes verdes.
+SABOTAGEM_RITMO_OFFLINE.json: 4/4 capturados.
+ESTUDO_RITMO_OFFLINE.json: nível 5→14 em 8h; retornos de oito em oito horas
+levam ao 26 em 24h e 42 em 48h. L-XP-OFF-04: rever referências gerais de
+espera/captura/evolução. Q5 e publicação pendentes; progresso local somente.
+Spec §7.22.20 é a taxa vigente. As funções de janela antigas mantêm default
+3 só por compatibilidade; runtime sempre fornece o ritmo novo.
+
+Bloco anterior: AT6-14-info (commit `094db4a`).
+Catálogo explícito para o treinador e dados de poder/categoria/
 precisão visíveis na escolha dos golpes do Centro, nas duas abas. Spec §8.18;
 catálogo da Arena comum preservado. TBE consome a mesma precisão que a ficha.
 Sem secundários; não prometer prioridade, paralisia/recarga pelo nome.
@@ -52,9 +68,9 @@ nível/IV ajudam, mas iniciais nível 5 na Floresta vencem 5/78/4% (planta/fogo/
 
 XP progressivo inclui expedições idle/Rota OFF e Avanço: fatores 1/1,5/2/3
 por estágio, prévia e pagamento iguais. Treino independente funciona no
-retorno: 3 XP/h e 1 vínculo/h, até 12h/ausência, frações, sem retroatividade
-inicial e sem tempo em aventuras. A taxa desse treino continua fixa; não
-confundir com XP escalonado das expedições. XP-OFF tem seu relatório histórico
+retorno: agora 150/225/300/450 XP/h e 1 vínculo/h, até 12h/ausência, frações,
+sem retroatividade inicial e sem tempo em aventuras. Não confundir taxa de
+treino da coleção com XP por estágio escolhido nas expedições. XP-OFF tem seu relatório histórico
 338 testes e 6 mutantes; regressões adicionais incluídas nos 470 atuais.
 
 Q5 pendente por ausência de Chromium; não afirmar inspeção visual ou release.

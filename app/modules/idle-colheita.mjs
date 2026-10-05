@@ -58,7 +58,7 @@ export function colher(e, { pack, id, agora, raiz = novaRaiz(), bonus = carregar
 
   x.colhidaEm = agora;
   x.semente = String(raiz);
-  const r = contaDaColheita({ pack, expedicao: x, criaturas: e.criaturas, raiz, bonus, agora });
+  const r = contaDaColheita({ pack, expedicao: x, criaturas: e.criaturas, raiz, bonus, agora, treinoOffline: e.treinoOffline });
 
   for (const [chave, n] of Object.entries(r.bolsa)) e.bolsa[chave] = (e.bolsa[chave] ?? 0) + n;
   for (const k of r.credito) {

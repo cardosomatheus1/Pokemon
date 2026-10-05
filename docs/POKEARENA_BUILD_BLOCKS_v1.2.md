@@ -3588,3 +3588,25 @@ integral não certificados. AT6-14 completa segue parcial: seletor dos rivais e
 auditoria de golpes dominados têm dono no ROADMAP; não expandir este commit
 para mudar IA/NPCs sem recalibrar. Dados são aditivos; runs já congeladas seguem
 seus golpes e as mesmas regras `tbe-4`.
+
+
+## XP-OFF-2 — treino passivo útil e progressivo
+
+**Pedido do dono, 04/10/2026:** aumentar o treino de 3 XP/h. Após proposta de
+300/h, pediu meio termo; aplicar 150/225/300/450 por fase. Método INV, porte M;
+Spec §7.22.20. Fase congelada por intervalo e taxa derivada do XP da coleção,
+nunca de parâmetros do cliente. Relógio e colheita direta compartilham a taxa.
+
+Q1/Q3/Q6: HTTP real e tentativa de forjar fase/taxa, cursor atômico, rollback,
+retry, frações, estado legado, fase sem retroatividade, doze horas, aventuras,
+colheita e retorno complementar. UI expõe taxa/fase; DOM sintético não substitui
+Q5. Q2 dirigido S90401–04: taxa 3, fase ignorada, promoção retroativa e colheita
+com default antigo. Todos capturados; sem certificação Q2 legado integral.
+Q4: 351 testes/25 suítes e estudo de níveis em 1/8/12/24h, retornos até 48h.
+O ritmo muda intencionalmente, sem regravar fixtures para esconder regressão.
+Q8/Q9: sem nova superfície/telemetria; transações mantidas. Q5 pendente.
+
+Saída funcional: UI/crédito iguais e progressão maior. Funções de janela
+legada têm default antigo apenas para compatibilidade; runtime fornece a taxa
+nova. Registrar que antigas simulações de dias de progressão precisam revisão
+GQ-02/03; o balanço completo da economia não está fechado por este ajuste.

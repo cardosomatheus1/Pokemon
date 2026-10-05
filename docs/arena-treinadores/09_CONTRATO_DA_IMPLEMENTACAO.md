@@ -147,3 +147,22 @@ moveset do rival exigem calibração própria antes de alterar NPCs.
 node tools/testar-arena.mjs --so=catalogo-treinador,conteudo,modulos,treino-batalha,batalha-precisao,combate-continuo,moveset,comparador,exclusivos,arena-treinadores,liga-partida,liga-replay,jornada-equilibrio,presets,equipe-snapshot,avanco-combate,run-servidor,idle-acoes,minha-colecao,golden,paridade,primitivas --saida=docs/arena-treinadores/VALIDACAO_CATALOGO.json
 node tools/sabotar-arena.mjs --grupo=catalogo --saida=docs/arena-treinadores/SABOTAGEM_CATALOGO.json
 ```
+
+
+## Novo ritmo do banco — XP-OFF-2
+
+Spec §7.22.20 substitui 3 XP/h por 150/225/300/450 conforme a fase desbloqueada.
+Em oito horas: 1.200/1.800/2.400/3.600 por criatura, com até doze horas por
+retorno, sem itens/encontros. A fase é congelada para o próximo intervalo,
+sem promoção retroativa; servidor deriva do XP e ignora taxa enviada no body.
+Colheita direta usa a mesma fase do relógio e não repaga horas já creditadas.
+A XP das expedições idle continua com fatores 1/1,5/2/3 por estágio.
+
+351 testes focados em 25 suítes, quatro mutantes capturados. Estudo mostra
+nível 5→14 em oito horas; referências anteriores de espera não certificam
+este ritmo. Q5, cenários gerais de progressão e plano AT6/GQ completo pendentes.
+
+```bash
+node tools/testar-arena.mjs --so=progressao-offline,modulos,idle-conta,idle-acoes,colheita,colheita-rotas,ausente,time-aprende,stamina-balanco,avanco-paga,comeco-treinador,avanco-tela,expedicao,estagios,banco-servidor,colecao-servidor,avanco-estado,run-servidor,run-avanco,avanco-forca,forma-estagio,curva-comeco,historico,arena-treinadores,run-fantasma --saida=docs/arena-treinadores/VALIDACAO_RITMO_OFFLINE.json
+node tools/sabotar-arena.mjs --grupo=ritmo-offline --saida=docs/arena-treinadores/SABOTAGEM_RITMO_OFFLINE.json
+```
