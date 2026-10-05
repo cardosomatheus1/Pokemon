@@ -2726,6 +2726,28 @@ export const MIGRACOES = [
     )`),
     desce: db => db.exec('DROP TABLE treinos_offline'),
   },
+  {
+    nome:'fatos-missoes-treinador',
+    sobe:db=>db.exec(`CREATE TABLE treinador_fatos (
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      chave TEXT NOT NULL, tipo TEXT NOT NULL CHECK(tipo IN ('explorar','treinar','jornada')),
+      criado_em INTEGER NOT NULL, PRIMARY KEY(user_id,chave)
+    ); CREATE INDEX treinador_fatos_dia ON treinador_fatos(user_id,criado_em);`),
+    desce:db=>db.exec('DROP TABLE treinador_fatos'),
+  },
+  {
+    nome:'campanhas-arena-coorte',
+    sobe:db=>db.exec(`CREATE TABLE arena_campanhas (
+      id TEXT PRIMARY KEY, config_json TEXT NOT NULL, fim INTEGER NOT NULL, criada_em INTEGER NOT NULL
+    ); CREATE TABLE arena_dotacoes (
+      referencia TEXT PRIMARY KEY, campanha TEXT NOT NULL UNIQUE REFERENCES arena_campanhas(id),
+      valor INTEGER NOT NULL CHECK(valor>0), criado_em INTEGER NOT NULL
+    ); CREATE TRIGGER arena_campanhas_sem_update BEFORE UPDATE ON arena_campanhas BEGIN SELECT RAISE(ABORT,'campanha imutável'); END;
+    CREATE TRIGGER arena_campanhas_sem_delete BEFORE DELETE ON arena_campanhas BEGIN SELECT RAISE(ABORT,'campanha imutável'); END;
+    CREATE TRIGGER arena_dotacoes_sem_update BEFORE UPDATE ON arena_dotacoes BEGIN SELECT RAISE(ABORT,'dotação imutável'); END;
+    CREATE TRIGGER arena_dotacoes_sem_delete BEFORE DELETE ON arena_dotacoes BEGIN SELECT RAISE(ABORT,'dotação imutável'); END;`),
+    desce:db=>db.exec('DROP TABLE arena_dotacoes; DROP TABLE arena_campanhas'),
+  },
 ];
 
 const TABELA_VERSAO = `

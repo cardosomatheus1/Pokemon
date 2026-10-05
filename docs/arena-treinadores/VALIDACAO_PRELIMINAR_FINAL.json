@@ -1,0 +1,32 @@
+{
+  "escopo": "focado AT6; sem navegador e sem suíte integral",
+  "total": 23,
+  "falhas": [],
+  "resultados": [
+    {
+      "nome": "arena-metricas",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "arena-recompensas",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "arena-rotas",
+      "total": 1,
+      "falhas": []
+    },
+    {
+      "nome": "arena-cosmeticos",
+      "total": 2,
+      "falhas": []
+    },
+    {
+      "nome": "mercado-jogadores-dados",
+      "total": 6,
+      "falhas": []
+    }
+  ]
+}

@@ -32,6 +32,8 @@ import { diaDoMundo } from '../engine/avanco.mjs';
 import { criaturasDaConta, creditarBolsa } from './idle.mjs';
 import { doJogador } from './criaturas.mjs';
 import { emitir } from './telemetria.mjs';
+import {anotarElegibilidadeArena} from './arena-metricas.mjs';
+import {registrarMissao} from './missoes-treinador.mjs';
 import { emTransacao } from './carteira.mjs';
 import { emitirControlado } from './emissao-controlada.mjs';
 import { creditar } from './carteira.mjs';
@@ -135,6 +137,8 @@ export function lutarNaConta(db, { userId, pack, id, preset = 'balanced', chaveI
     const doServidor = e => emitir(db, { nome: e.nome, userId, chave: `srv:${e.chave}`, campos: { ...e.campos, origem: 'servidor' }, agora });
     doServidor(eventoDaLuta({ no: id, semente, p, preset, timeA: c.timeA, venceu, agora }));
     if (c.ganhouInsignia) doServidor(eventoDoGinasio({ no: id, insignia: c.ganhouInsignia, agora }));
+    anotarElegibilidadeArena(db,{userId,pack,agora});
+    if(venceu)registrarMissao(db,{userId,tipo:'jornada',chave:`jornada:${idem}`,agora});
     return resposta;
   });
 }

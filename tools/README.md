@@ -60,3 +60,14 @@ npm test                             # o desenho novo passa pelas mesmas regras
 O tileset é de cores (uma casa por chão, altura e obra) — serve para o arranjo;
 a arte que o jogo pinta é a de `arte/chao/`. A ida e a volta são sem perda, e o
 teste recusa `.tmj` velho: depois de mexer no texto, rode `exportar`.
+
+
+### Validação dirigida AT6/GQ
+
+`node tools/testar-arena.mjs --finalizacao` executa o recorte versionado
+em arena-suites-finais.mjs. `progressao-offline` deve rodar isoladamente
+por D-AT6-05-04. `node tools/sabotar-arena.mjs --grupo=finalizacao` executa
+23 mutantes dirigidos; não é a sabotagem legada integral. Para o fluxo real:
+`PW_MODULO=/caminho/playwright/index.mjs PW_CHROME=/caminho/chromium node tools/validar-arena-navegador.mjs`.
+Nenhuma dependência de QA é instalada no produto. Relatório 13 e JSONs
+em docs/arena-treinadores contêm critérios, resultados e limites.

@@ -38,6 +38,7 @@ import { exigirAcessoArena } from './arena-acesso.mjs';
 import { creditarTaxaCasa } from './tesouraria-arena.mjs';
 import PACK from '../content/escolhido.mjs';
 import { emitir } from './telemetria.mjs';
+import {anotarArena} from './arena-metricas.mjs';
 
 export const ERRO_STAKE = Object.freeze({
   NAO_INSCRITO: 'STAKE_NAO_INSCRITO',
@@ -85,6 +86,8 @@ export function inscrever(db, { userId, ativo, agora, checkpoint = CHECKPOINT_25
               ON CONFLICT (user_id) DO UPDATE SET ativo = excluded.ativo, atualizado_em = excluded.atualizado_em`).run(userId, ativo ? 1 : 0, agora);
   emitir(db,{nome:'arena_defesa_autorizacao',userId,chave:`arena-defesa:${userId}:${agora}:${ativo}`,agora,
     campos:{origem:'servidor',ativo:!!ativo,restantes:defesaDaConta(db,userId,agora).restantes}});
+  const defesa=defesaDaConta(db,userId,agora);
+  if(ativo)anotarArena(db,{nome:'arena_defesa_autorizada',userId,chave:`defesa:${userId}:${agora}`,agora,campos:{...defesa,ativo:true}});
   return { inscrito: !!ativo, defesa: defesaDaConta(db, userId, agora) };
   });
 }

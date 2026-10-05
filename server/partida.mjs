@@ -30,6 +30,7 @@ import { sincronizarTemporada } from './temporada.mjs';
 import { temporadaDe } from '../engine/temporada.mjs';
 import { INTEGRIDADE, emCooldown, sinaisDaPartida, elegivel } from '../engine/integridade-liga.mjs';
 import { emitir } from './telemetria.mjs';
+import {anotarArena,exposicaoArena} from './arena-metricas.mjs';
 import { exigirBandeira } from './feature-flags.mjs';
 import { snapshotDe, snapshotPorId, ERRO_EQUIPE } from './equipe.mjs';
 import { aplicarPartida, tierDaConta, ratingDe } from './liga-mmr.mjs';
@@ -150,6 +151,7 @@ export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveId
       if (!parCompativel(a, b, ratingDe(db, a.user).rating, ratingDe(db, userId).rating)) throw falha('ARENA_FORA_DA_FAIXA', 'O pareamento mudou; busque novamente.');
       prep = prepararStake(db, { userA:a.user, userB:userId, agora, ...(checkpoint !== undefined ? {checkpoint} : {}) });
     }
+    const tiers={A:tierDaConta(db,a.user).tier,B:tierDaConta(db,userId).tier};
     /* Os dois stakes saem ANTES de a partida existir: sem eles, não há partida. */
     if (prep) reservarStakes(db, { id, userA: a.user, userB: userId, prep, agora });
     db.prepare(`INSERT INTO league_matches (id, idem_key, snap_a, snap_b, user_a, user_b, raiz, sal, commit_hash, semente,
@@ -175,6 +177,13 @@ export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveId
                       campos: { partida: id, sinais: sinais.map(x => x.sinal).join(',').slice(0, 40) } });
     emitir(db,{nome:'arena_partida_concluida',userId,chave:`arena-resultado:${id}`,agora,
       campos:{origem:'servidor',partida:id,modo:stake?'ranqueada':'amistoso',contou:stake&&elegivel(sinais),stake:prep?.stake??0,vencedor:c.vencedor,turnos:c.turnos}});
+    const taxaCasa=db.prepare("SELECT COALESCE(SUM(delta),0) n FROM arena_tesouraria WHERE referencia=? AND tipo='LEAGUE_RAKE'").get(id).n;
+    if(autorizacao===AUTORIZACAO_FILA)anotarArena(db,{nome:'arena_busca_concluida',userId,chave:`busca:${idem}:partida`,agora,
+      campos:{tier:tiers.B,modo:stake?'ranqueada':'amistoso',encontrou:true,partida:id,motivo:'adversario'}});
+    anotarArena(db,{nome:'arena_partida_liquidada',userId,chave:`liquidacao:${id}`,agora,
+      campos:{partida:id,lados:[a.user,userId],tiers,exposicao:{A:exposicaoArena(a),B:exposicaoArena(b)},
+        modo:stake?'ranqueada':'amistoso',contou:stake&&elegivel(sinais),stake:prep?.stake??0,pot:(prep?.stake??0)*2,
+        taxaCasa,referenciaCasa:taxaCasa?id:null,vencedor:c.vencedor,turnos:c.turnos,temporada:temporadaDe(agora).numero}});
   });
   return comStake(db, publica(db.prepare(`SELECT * FROM league_matches WHERE id = ?`).get(id), sinalDe(db, id)));
 }
@@ -254,7 +263,11 @@ export function buscarPartida(db, { userId, pack = PACK, meu, chaveIdem, agora, 
     pool=pool.filter(x=>x.user!==candidato.user);
   }
   if (adv) return criarPartida(db, { userId, pack, meu, adversario: adv.snapshot.id, chaveIdem, agora, raiz, sal, stake, checkpoint, autorizacao: AUTORIZACAO_FILA });
-  if (stake) throw falha(ERRO_STAKE.SEM_ADVERSARIO, 'ninguém da sua faixa na fila com stake agora — nada foi cobrado');
+  if (stake) {
+    anotarArena(db,{nome:'arena_busca_concluida',userId,chave:`busca:${idem}:vazia`,agora,
+      campos:{tier:tierDaConta(db,userId).tier,modo:'ranqueada',encontrou:false,candidatos:candidatos.length,motivo:'fila_vazia'}});
+    throw falha(ERRO_STAKE.SEM_ADVERSARIO, 'ninguém da sua faixa na fila com stake agora — nada foi cobrado');
+  }
   const bot = botPara(pack, eu);
   const c = confrontoDaLiga({ pack, a: bot, b, raiz });
   if (!c.ok) throw falha(ERRO_PARTIDA.VERSAO, c.motivo);
@@ -264,6 +277,8 @@ export function buscarPartida(db, { userId, pack = PACK, meu, chaveIdem, agora, 
                 versao_motor, versao_conteudo, vencedor, turnos, log_json, criada_em)
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
     .run(id, idem, bot.id, b.id, userId, raiz, sal, commit, c.semente, c.versaoMotor, c.versaoConteudo, c.vencedor, c.turnos, JSON.stringify(c.log), agora);
+  anotarArena(db,{nome:'arena_busca_concluida',userId,chave:`busca:${idem}:bot`,agora,
+    campos:{tier:tierDaConta(db,userId).tier,modo:'amistoso',encontrou:false,motivo:'bot_treino'}});
   return publicaBot(db.prepare(`SELECT * FROM league_bot_matches WHERE id = ?`).get(id), bot.nome);
 }
 

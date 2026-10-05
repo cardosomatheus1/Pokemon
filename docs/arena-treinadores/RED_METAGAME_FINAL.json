@@ -1,0 +1,23 @@
+{
+  "escopo": "focado AT6; sem navegador e sem suíte integral",
+  "total": 7,
+  "falhas": [
+    {
+      "titulo": "retenção observa D1/D7 completos; metagame exclui amistosos e usa indivíduo",
+      "erro": "undefined — esperado 20, veio 30",
+      "suite": "arena-metricas"
+    }
+  ],
+  "resultados": [
+    {
+      "nome": "arena-metricas",
+      "total": 7,
+      "falhas": [
+        {
+          "titulo": "retenção observa D1/D7 completos; metagame exclui amistosos e usa indivíduo",
+          "erro": "undefined — esperado 20, veio 30"
+        }
+      ]
+    }
+  ]
+}

@@ -221,3 +221,12 @@ eliminações e amostra Monte Carlo com empates são narrados corretamente.
 a falha inicial de ordem do teste offline e sua repetição isolada. Q5,
 apresentação integral e instrumentação do funil continuam pendentes.
 TBE `tbe-4`, economia e banco 150/225/300/450 XP/h por fase iguais.
+
+
+## Integração posterior AT6-15 — 05/10/2026
+
+As pendências de implementação de funil, preparação/mercado/retorno e prévia
+foram integradas no relatório 13 e Spec §9.19. Campanhas agora têm código
+com verba reservada, mas não nascem ativas por padrão. Q5 do recorte foi
+executado em três larguras; não é release integral ou medição da população.
+O estado e a fila atualizados permanecem em RETOMAR/ROADMAP.

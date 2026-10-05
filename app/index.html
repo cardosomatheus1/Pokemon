@@ -4150,6 +4150,9 @@ td.od{text-shadow:0 0 8px rgba(var(--goldRGB),.6)}
   border:2px solid var(--line);height:352px;
   box-shadow:0 6px 18px rgba(0,0,0,.45)}
 .bnCena{position:absolute;inset:0}
+.lcPreviewBox{padding:12px;border:1px solid rgba(0,220,255,.3);border-radius:12px;margin:10px 0;background:rgba(0,12,24,.6)}
+.lcPrevia{position:relative;height:180px;border-radius:12px;overflow:hidden;margin-top:8px;box-shadow:inset 0 0 26px #001020;border:1px solid rgba(0,220,255,.25)}
+.lcPreviewBox p{font-size:12px;line-height:1.5;color:var(--dim)}
 .bnVeu{position:absolute;inset:0;
   background:linear-gradient(180deg,rgba(8,11,18,.55) 0%,transparent 26%,transparent 52%,rgba(8,11,18,.88) 100%)}
 .bnTopo{position:absolute;top:0;left:0;right:0;padding:9px 10px 0;text-align:center}
@@ -8394,7 +8397,7 @@ body.soAssiste .pick{cursor:pointer}
     <button class="nav on" data-view="viewArena">Arenas</button>
     <button class="nav" data-view="viewLiga">Liga</button>
     <button class="nav" data-view="viewIdle">Rotas</button>
-    <button class="nav" data-view="viewTreino">Time</button>
+    <button class="nav" data-view="viewTreino">Time / Arena</button>
     <!-- ── NO CELULAR, A BARRA DE BAIXO (barra-celular.mjs) ──────────────────
          Em tela de telefone as dez abas quebravam em três linhas e comiam o
          topo de TODA aba. Lá, as quatro de cima viram a barra do rodapé, e as
@@ -8996,7 +8999,7 @@ body.soAssiste .pick{cursor:pointer}
       <button class="pdxAba on" data-treino-aba="time">Time</button>
       <button class="pdxAba" data-treino-aba="jornada">Jornada</button>
       <!-- ST-11.6a: a Liga de TIMES mora aqui, com o time; a aba Liga (previsão) é outra coisa (§9.15) -->
-      <button class="pdxAba" data-treino-aba="liga">Liga de times</button>
+      <button class="pdxAba" data-treino-aba="liga">Arena 6×6</button>
     </div>
     <div id="treinoCorpo"></div>
     <div id="jornadaCorpo" hidden><div id="jnMapaArea"></div><div id="jnLuta" class="pveArea" hidden></div></div>

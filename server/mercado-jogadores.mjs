@@ -56,11 +56,11 @@ const contaPode = (db, userId, quem, agora, checkpoint) => {
 /* O que o comprador vê da criatura — e é isto que o anúncio GUARDA (e o fill
    da ordem de criatura, ST-14.11B, que confere os critérios nele). O nível
    é o do XP, como em todo o jogo; o potencial sai da mesma função dos IVs
-   (`hidratar`), e os IVs crus não saem. */
+   (`hidratar`), e os seis IVs crus acompanham a ficha anunciada. */
 export function retrato(db, pack, id) {
   const c = ler(db, id, pack);
   return { dex: c.especie, nivel: Math.max(c.nivel ?? 1, nivelDe(c.xp ?? 0)), natureza: c.natureza?.nome ?? null,
-           shiny: !!c.shiny, potencial: c.potencial, exemplar: !!c.exemplar, origem: c.origem,
+           shiny: !!c.shiny, potencial: c.potencial, exemplar: !!c.exemplar, origem: c.origem,iv:c.iv.slice(),
            ...(c.golpes ? { golpes: c.golpes } : {}) };
 }
 

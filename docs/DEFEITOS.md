@@ -7824,3 +7824,24 @@ preservada em `VALIDACAO_COMPARACAO_RESULTADO.json.primeiraExecucao`; trava
 existente: caso “painel mostra a taxa do intervalo” após `modulos`.
 A correção do Centro em D-AT6-14-03 não corrigiu todos os testes UI. Isolamento
 é o limite desta verificação; padronização cabe ao dono, quando impedir produto.
+
+
+## D-AT6-15-01 — recompensas sem rotas válidas · corrigido
+
+Dono AT6-15. Handlers inseridos na home em vez da tabela de rotas causavam
+404. Q5 encontrou; teste HTTP primeiro vermelho (RED_INTEGRACAO_FINAL),
+verde após mover para rotasDaLigaEquipe. Sessão, conta/valor autoritativos e
+reenvio verificados. S90820 trava a ligação. Nenhuma concessão era publicada.
+
+## D-AT6-15-02 — espécie recebia atributos médios da equipe · corrigido
+
+Dono AT6-15. Metagame usava média da equipe para cada espécie. Fixture com
+níveis 20/40 e IVs 0/30 afirmou médias individuais, ficou vermelha, e passou
+com os arrays da exposição. RED_METAGAME_FINAL; S90821. Não muda combate.
+
+## D-AT6-15-03 — resposta inicial apagava um filtro recém-editado · corrigido
+
+Dono AT6-15/AT6-09. No Chromium, tipo selecionado durante a busca inicial
+sumia ao repintar, ficando fora da requisição composta. Fieldset bloqueia
+edição durante carregamento; submit lê nível máximo/tipo/IV. Q5 afirma a URL
+com os quatro parâmetros nas três larguras; não prova isso só pelo HTML.

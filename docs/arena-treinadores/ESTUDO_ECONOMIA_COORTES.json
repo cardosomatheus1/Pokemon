@@ -1,0 +1,257 @@
+{
+  "modelo": "arena-economia-coorte-1",
+  "hipoteses": {
+    "contas": 100,
+    "semanas": 12,
+    "partidasPorConta": 8,
+    "coortePorSemana": 10,
+    "rotinaPorConta": 80,
+    "kitPorConta": 300,
+    "gastoCosmeticoTotalPorSemana": 2000,
+    "aviso": "Todos obtêm o máximo rotineiro e compram cosméticos conforme hipótese; partidas são elegíveis e sem empates. Frequência, vitórias e compras não são métricas observadas."
+  },
+  "tiers": [
+    {
+      "tier": "Bronze",
+      "entrada": 50,
+      "retornoVencedor": 90,
+      "lucro": 40,
+      "perda": 50,
+      "taxaCasa": 10
+    },
+    {
+      "tier": "Silver",
+      "entrada": 100,
+      "retornoVencedor": 180,
+      "lucro": 80,
+      "perda": 100,
+      "taxaCasa": 20
+    },
+    {
+      "tier": "Gold",
+      "entrada": 250,
+      "retornoVencedor": 450,
+      "lucro": 200,
+      "perda": 250,
+      "taxaCasa": 50
+    },
+    {
+      "tier": "Platinum",
+      "entrada": 500,
+      "retornoVencedor": 900,
+      "lucro": 400,
+      "perda": 500,
+      "taxaCasa": 100
+    },
+    {
+      "tier": "Diamond",
+      "entrada": 1000,
+      "retornoVencedor": 1800,
+      "lucro": 800,
+      "perda": 1000,
+      "taxaCasa": 200
+    },
+    {
+      "tier": "Master",
+      "entrada": 2500,
+      "retornoVencedor": 4500,
+      "lucro": 2000,
+      "perda": 2500,
+      "taxaCasa": 500
+    },
+    {
+      "tier": "Champion",
+      "entrada": 5000,
+      "retornoVencedor": 9000,
+      "lucro": 4000,
+      "perda": 5000,
+      "taxaCasa": 1000
+    }
+  ],
+  "seisDerrotas": [
+    {
+      "derrotas": 1,
+      "saldo": 250
+    },
+    {
+      "derrotas": 2,
+      "saldo": 200
+    },
+    {
+      "derrotas": 3,
+      "saldo": 150
+    },
+    {
+      "derrotas": 4,
+      "saldo": 100
+    },
+    {
+      "derrotas": 5,
+      "saldo": 50
+    },
+    {
+      "derrotas": 6,
+      "saldo": 0
+    }
+  ],
+  "recuperacaoSemAposta": {
+    "rotinaPorSemana": 80,
+    "entradasBronze": 1,
+    "preparacaoFinanciadaMax": 270
+  },
+  "sustentabilidade": {
+    "verbaUniversalSemanal": 37000,
+    "receitaCasaSemanal": 4000,
+    "campanhaUniversalFinanciavel": false,
+    "coorteFinanciavelPorSemana": 10,
+    "aviso": "450 PC-B por semana não é promessa universal. Sem verba a campanha não nasce. Coorte definida antes dos resgates, com rotação anunciada; sem prioridade de clique."
+  },
+  "earned": {
+    "valorPorConta": 50,
+    "coorte": 10,
+    "dotacaoPorSemana": 500,
+    "maximo12Semanas": 6000,
+    "origem": "dotação separada; sem converter bônus ou taxa em PC-T"
+  },
+  "totais": {
+    "jogadores": 98400,
+    "casa": 3600,
+    "cosmeticos": 24000,
+    "emitido": 126000,
+    "promos": 44400
+  },
+  "serie": [
+    {
+      "semana": 1,
+      "partidas": 400,
+      "rotinaEmitida": 8000,
+      "taxaCasa": 4000,
+      "campanhaFinanciada": 3700,
+      "coorte": 10,
+      "saldoJogadores": 35700,
+      "saldoCasa": 300,
+      "cosmeticos": 2000
+    },
+    {
+      "semana": 2,
+      "partidas": 400,
+      "rotinaEmitida": 8000,
+      "taxaCasa": 4000,
+      "campanhaFinanciada": 3700,
+      "coorte": 10,
+      "saldoJogadores": 41400,
+      "saldoCasa": 600,
+      "cosmeticos": 2000
+    },
+    {
+      "semana": 3,
+      "partidas": 400,
+      "rotinaEmitida": 8000,
+      "taxaCasa": 4000,
+      "campanhaFinanciada": 3700,
+      "coorte": 10,
+      "saldoJogadores": 47100,
+      "saldoCasa": 900,
+      "cosmeticos": 2000
+    },
+    {
+      "semana": 4,
+      "partidas": 400,
+      "rotinaEmitida": 8000,
+      "taxaCasa": 4000,
+      "campanhaFinanciada": 3700,
+      "coorte": 10,
+      "saldoJogadores": 52800,
+      "saldoCasa": 1200,
+      "cosmeticos": 2000
+    },
+    {
+      "semana": 5,
+      "partidas": 400,
+      "rotinaEmitida": 8000,
+      "taxaCasa": 4000,
+      "campanhaFinanciada": 3700,
+      "coorte": 10,
+      "saldoJogadores": 58500,
+      "saldoCasa": 1500,
+      "cosmeticos": 2000
+    },
+    {
+      "semana": 6,
+      "partidas": 400,
+      "rotinaEmitida": 8000,
+      "taxaCasa": 4000,
+      "campanhaFinanciada": 3700,
+      "coorte": 10,
+      "saldoJogadores": 64200,
+      "saldoCasa": 1800,
+      "cosmeticos": 2000
+    },
+    {
+      "semana": 7,
+      "partidas": 400,
+      "rotinaEmitida": 8000,
+      "taxaCasa": 4000,
+      "campanhaFinanciada": 3700,
+      "coorte": 10,
+      "saldoJogadores": 69900,
+      "saldoCasa": 2100,
+      "cosmeticos": 2000
+    },
+    {
+      "semana": 8,
+      "partidas": 400,
+      "rotinaEmitida": 8000,
+      "taxaCasa": 4000,
+      "campanhaFinanciada": 3700,
+      "coorte": 10,
+      "saldoJogadores": 75600,
+      "saldoCasa": 2400,
+      "cosmeticos": 2000
+    },
+    {
+      "semana": 9,
+      "partidas": 400,
+      "rotinaEmitida": 8000,
+      "taxaCasa": 4000,
+      "campanhaFinanciada": 3700,
+      "coorte": 10,
+      "saldoJogadores": 81300,
+      "saldoCasa": 2700,
+      "cosmeticos": 2000
+    },
+    {
+      "semana": 10,
+      "partidas": 400,
+      "rotinaEmitida": 8000,
+      "taxaCasa": 4000,
+      "campanhaFinanciada": 3700,
+      "coorte": 10,
+      "saldoJogadores": 87000,
+      "saldoCasa": 3000,
+      "cosmeticos": 2000
+    },
+    {
+      "semana": 11,
+      "partidas": 400,
+      "rotinaEmitida": 8000,
+      "taxaCasa": 4000,
+      "campanhaFinanciada": 3700,
+      "coorte": 10,
+      "saldoJogadores": 92700,
+      "saldoCasa": 3300,
+      "cosmeticos": 2000
+    },
+    {
+      "semana": 12,
+      "partidas": 400,
+      "rotinaEmitida": 8000,
+      "taxaCasa": 4000,
+      "campanhaFinanciada": 3700,
+      "coorte": 10,
+      "saldoJogadores": 98400,
+      "saldoCasa": 3600,
+      "cosmeticos": 2000
+    }
+  ]
+}

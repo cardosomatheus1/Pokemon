@@ -1,0 +1,12 @@
+{
+  "escopo": "focado AT6; sem navegador e sem suíte integral",
+  "total": 16,
+  "falhas": [],
+  "resultados": [
+    {
+      "nome": "progressao-offline",
+      "total": 16,
+      "falhas": []
+    }
+  ]
+}

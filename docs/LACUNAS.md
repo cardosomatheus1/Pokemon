@@ -9742,3 +9742,23 @@ Medir distribuição de captura/emissão, objetivos de coleção e escolha das
 rotas antes de reajustar recompensas. Destrava: estudos de progressão e
 telemetria do funil, mantendo vantagem de tipos e sem obrigar derrota. Fonte:
 BALANCEAMENTO_ORIENTACAO_AVANCO.json/relatório 11. Não é chance ótima certificada.
+
+
+### Atualização L-AT6-02 e L-AT6-03 — AT6-15, 05/10/2026
+
+L-AT6-02: recorte alterado inspecionado em Chromium real, 390/768/1440 px.
+Publicação/fila/replay/mercado/cosméticos/offline/resgate/evolução/Jornada
+sem pageerrors. Não substitui primeira sessão integral ou Q5 legado.
+L-AT6-03: código de funil, campanhas, filtros, desafios, evolução e prévia
+entregue. Dono operacional AT6-07/08/10: faltam observação da população,
+financiamento de campanha anunciada e oferta/conteúdo para monetização real.
+Fixtures/modelo não certificam retenção ou sustentabilidade comercial.
+A fila única está no ROADMAP; relatório 13 guarda os limites da medição.
+
+### L-AT6-15-MIDIA — vídeo da NPC não foi certificado nesta instalação
+
+Dono ST-1.25/AT6-10. Notada no Q5 AT6-15. Boutique funciona e o preço/prévia
+são verificáveis; o vídeo decorativo da NPC não carregou nas capturas.
+Não foi alterado neste bloco. Destrava: conferir entrega e playback do
+assets/npc/lojas.mp4 no ambiente de apresentação, com inspeção mobile/desktop.
+Não implica falha de compra ou do motor de batalha.

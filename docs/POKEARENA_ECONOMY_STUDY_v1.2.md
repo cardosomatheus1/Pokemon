@@ -1138,3 +1138,20 @@ continuam sujeitos ao §25.1; a hipótese de 450 PC semanais não foi ativada.
 A medição em quatro espelhos mostrou vantagens de IVs maiores do que power
 indica; filtros estatísticos da fila complementam níveis/MMR. Os dados da TBE4
 não certificam retenção, liquidez de mercado nem sustentabilidade comercial.
+
+
+## Integração de campanha financiada — AT6-15, 05/10/2026
+
+Engine/emissao declara 270 de preparação e 100 de marco. Com a rotina
+preservada de até 80, máximo 450 PC-B por semana; o complemento diário
+desconta a rotina do dia e tem teto 270. Configuração imutável, orçamento
+para toda a coorte reservado antes de disponibilizar resgates, nenhum bônus
+convertido em PC-T. Sem registro/financiamento continuam somente rotinas e
+kit único. Earned de até 50 PC-T tem dotação externa exclusiva e maturação.
+
+O modelo incremental fechado ESTUDO_ECONOMIA_COORTES.json mede 100 contas,
+12 semanas e oito partidas por conta/semana: Bronze gera 4.000 por semana
+para a casa; 370 extras universais custariam 37.000. Simula dez vagas
+financiadas/semana, seis perdas do kit e recuperação com rotina sem stake,
+consumo cosmético e conservação. Não é promessa de campanha universal,
+receita real, retenção ou certificação de toda a economia. Relatório 13.

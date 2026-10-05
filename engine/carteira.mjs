@@ -96,6 +96,7 @@ export const SALDO_INICIAL = 1000;
    produto ainda não tem seria inventar histórico. */
 export const TIPOS = [
   'ARENA_CHAMPION_KIT',
+  'ARENA_EARNED_REWARD',
   'WELCOME_GRANT', 'DAILY_REWARD', 'CHALLENGE_REWARD',
   /* F1.10 · o `rescue grant` do §0.4 e do §28.8. A rota que o credita nasceu no
      F1.10 usando este tipo, e ele NÃO estava aqui — o crédito teria lançado

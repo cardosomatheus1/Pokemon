@@ -1,4 +1,5 @@
 import { emTransacao, creditar } from './carteira.mjs';
+import {verbaReservada,campanhaDoResgate} from './arena-orcamento.mjs';
 
 export const saldoCasaArena = db => Object.fromEntries(['bonus', 'competitivo'].map(b => [b,
   db.prepare('SELECT COALESCE(SUM(delta), 0) AS saldo FROM arena_tesouraria WHERE bucket = ?').get(b).saldo]));
@@ -28,7 +29,8 @@ export function pagarCampanhaArena(db, { campanha, userId, valor, teto, agora })
       WHERE substr(referencia, 1, ?) = ? AND tipo = 'PROMO_DEBIT'`).get(campanha.length + 1, `${campanha}:`).n;
     if (usado + valor > teto) throw new Error('orçamento da campanha esgotado');
     const saldo = saldoCasaArena(db);
-    if (saldo.bonus + saldo.competitivo < valor) throw new Error('saldo da casa insuficiente');
+    const livre=saldo.bonus+saldo.competitivo-verbaReservada(db,{agora,exceto:campanhaDoResgate(db,campanha)});
+    if (livre < valor) throw new Error('saldo da casa insuficiente');
     let restante = valor;
     for (const bucket of ['bonus', 'competitivo']) {
       const n = Math.min(restante, saldo[bucket]);

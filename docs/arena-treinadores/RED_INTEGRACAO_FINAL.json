@@ -1,0 +1,38 @@
+{
+  "escopo": "focado AT6; sem navegador e sem suíte integral",
+  "total": 3,
+  "falhas": [
+    {
+      "titulo": "HTTP exige sessão, ignora valor e conta forjados e não duplica o pagamento",
+      "erro": "undefined — esperado 401, veio 404",
+      "suite": "arena-rotas"
+    },
+    {
+      "titulo": "comprar/equipar com bônus preserva power e 30 batalhas byte a byte, sem criar PC-T",
+      "erro": "",
+      "suite": "arena-cosmeticos"
+    }
+  ],
+  "resultados": [
+    {
+      "nome": "arena-rotas",
+      "total": 1,
+      "falhas": [
+        {
+          "titulo": "HTTP exige sessão, ignora valor e conta forjados e não duplica o pagamento",
+          "erro": "undefined — esperado 401, veio 404"
+        }
+      ]
+    },
+    {
+      "nome": "arena-cosmeticos",
+      "total": 2,
+      "falhas": [
+        {
+          "titulo": "comprar/equipar com bônus preserva power e 30 batalhas byte a byte, sem criar PC-T",
+          "erro": ""
+        }
+      ]
+    }
+  ]
+}

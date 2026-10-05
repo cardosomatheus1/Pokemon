@@ -231,15 +231,12 @@ export function laudo({ pegou, nome, chance = null, foiParaCaixa = false, bola =
       nota: pc == null ? null : `a chance era de ${pc}%`,
     };
   }
-  const quase = pc != null && pc >= 55;
   return {
     tom: 'fugiu',
     titulo: `${nome} escapou.`,
     linha: rotuloBola
       ? `A ${rotuloBola} foi embora com ele.`
       : 'A bola foi embora com ele.',
-    nota: pc == null ? null
-      : quase ? `a chance era de ${pc}% — faltou pouco`
-              : `a chance era de ${pc}%`,
+    nota: pc == null ? null : `a chance era de ${pc}% — uma chance não garante captura`,
   };
 }

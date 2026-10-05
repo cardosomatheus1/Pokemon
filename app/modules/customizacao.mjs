@@ -26,6 +26,8 @@ import { reiniciarCarteira, saldo, modoServidor } from './banco.mjs';
    sem. A regra mora em `posse-atual.mjs` (camada 0); aqui só se pinta. */
 import { posseAtual, podeEquipar, escolhaDoCosmetico, catalogoCosmetico } from './posse-atual.mjs';
 import { api } from './api.mjs';
+import {desafiosDoServidor,hidratarPerfil,perfilHidratado} from './perfil-dados.mjs';
+import {desafiosParaTela} from './missoes-dados.mjs';
 
 /* =====================================================================
    CUSTOMIZAÇÃO — avatar e banner
@@ -318,7 +320,7 @@ function renderShiny(){
 }
 
 function renderDaily(){
-  const d = ensureDaily();
+  const d = modoServidor()?desafiosParaTela(desafiosDoServidor()):ensureDaily();
   $('#dailyList').innerHTML = d.lista.map(c => {
     const pct = Math.min(100, (c.prog / c.meta) * 100);
     return `<div class="chal ${c.feito ? 'ok' : ''}">
@@ -332,14 +334,14 @@ function renderDaily(){
            Econômico. Agora o XP é por desafio e o PC-B vem do marco semanal,
            que é onde a tela precisa prometê-lo. Prometer por desafio um
            dinheiro que só sai no marco seria a tela mentindo. -->
-      <div class="rw">Recompensa: <b>+${c.xp} XP</b></div>
+      <div class="rw">${d.servidor?'Marco semanal: 12 objetivos concedem até 30 PC-B, dentro do orçamento da conta.':`Recompensa: <b>+${c.xp} XP</b>`}</div>
     </div>`;
   }).join('') +
-  `<div class="tiny" style="margin-top:8px">Desafios concluídos no total:
-     <b style="color:var(--gold)">${S.profile.dailyDone || 0}</b></div>`;
+  (d.servidor?`<p class="tiny">Progresso registrado pelo servidor. ${perfilHidratado()?'Atualizado ao abrir o perfil.':'Carregando objetivos…'}</p>`:`<div class="tiny" style="margin-top:8px">Desafios concluídos no total: <b style="color:var(--gold)">${S.profile.dailyDone || 0}</b></div>`);
 }
 
 function renderProfile(){
+  if(modoServidor())hidratarPerfil().then(()=>renderDaily()).catch(()=>{});
   const winRate = S.profile.betsCount ? Math.round(S.profile.winsCount/S.profile.betsCount*100) : 0;
   const desde = new Date(S.profile.since).toLocaleDateString('pt-BR', {day:'2-digit',month:'short',year:'numeric'});
   const saldoLiq = S.profile.totalWon - S.profile.totalLost;

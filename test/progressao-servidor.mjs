@@ -87,11 +87,13 @@ export function suite() {
        que não seja o incremento de `registrarFeito` é uma porta. */
     const fonte = readFileSync(new URL('../server/progressao.mjs', import.meta.url), 'utf8');
     const escritas = [...fonte.matchAll(/progresso\s*=\s*[^,\s)]+/g)].map(m => m[0]);
-    igual(escritas.length, 1,
+    igual(escritas.filter(x=>x!=='progresso=alvo').length, 1,
       `há ${escritas.length} escritas em \`progresso\`: ${escritas.join(' | ')}. ` +
-      `Só pode existir uma, dentro de \`registrarFeito\`, que INCREMENTA. ` +
+      `Além da conclusão por fatos persistidos (progresso=alvo), só existe o incremento de registrarFeito. ` +
       `Qualquer outra é o cliente podendo dizer quanto progrediu — que é a ` +
       `edição de JSON do localStorage com mais passos.`);
+    igual(escritas.filter(x=>x==='progresso=alvo').length,1);
+    ok(fonte.includes('const fatos=fatosDasMissoes(db,userId,dia)'));
   });
 
   s.teste('o progresso vem do FATO, e para no alvo', () => {

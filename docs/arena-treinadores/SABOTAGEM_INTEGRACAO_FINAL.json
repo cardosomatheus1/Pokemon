@@ -1,0 +1,298 @@
+{
+  "escopo": "mutantes integração final; não é Q2 legado integral",
+  "total": 23,
+  "capturados": 23,
+  "resultados": [
+    {
+      "id": "S770",
+      "nome": "o laudo diz \"faltou pouco\" com 4%",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "chance alta não prova proximidade do sorteio e não vira quase captura",
+          "erro": "72% não revela a distância do sorteio: a chance era de 72% — faltou pouco",
+          "suite": "captura-tela"
+        }
+      ]
+    },
+    {
+      "id": "S1881",
+      "nome": "a busca com stake cai no bot",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "publicação, melhoria, fila vazia e liquidação nascem dos fatos reais uma vez",
+          "erro": "undefined — esperado 1, veio 2",
+          "suite": "arena-metricas"
+        },
+        {
+          "titulo": "os portões: inscrição, pausa, limite e saldo — e recusar não cobra nada",
+          "erro": "o defensor sem inscrição — esperado STAKE_SEM_ADVERSARIO, veio undefined",
+          "suite": "liga-stake"
+        },
+        {
+          "titulo": "11.11 · a busca com stake: só entre inscritos, e nunca o bot",
+          "erro": "sem inscrito na fila, a busca caiu no bot — esperado STAKE_SEM_ADVERSARIO, veio undefined",
+          "suite": "liga-stake"
+        }
+      ]
+    },
+    {
+      "id": "S90801",
+      "nome": "média usa criaturas em vez dos seis IVs",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "exposição usa seis IVs, espécies, níveis e preset sem saldo ou risco privado",
+          "erro": "undefined — esperado 6.833333333333333, veio 41",
+          "suite": "arena-metricas"
+        }
+      ]
+    },
+    {
+      "id": "S90802",
+      "nome": "amistosos contaminam metagame",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "retenção observa D1/D7 completos; metagame exclui amistosos e usa indivíduo",
+          "erro": "undefined — esperado 6, veio 8",
+          "suite": "arena-metricas"
+        }
+      ]
+    },
+    {
+      "id": "S90803",
+      "nome": "devolução interna vira emissão",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "painel separa stake, devolução e ganho internos da emissão; soma casa pelo ledger",
+          "erro": "undefined — esperado 300, veio 50",
+          "suite": "arena-metricas"
+        }
+      ]
+    },
+    {
+      "id": "S90804",
+      "nome": "IV de velocidade consulta HP",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "busca competitiva filtra tipo e IV de atributo, sem confundir potencial total",
+          "erro": "undefined — esperado an-020124, veio an-020122",
+          "suite": "e14-busca"
+        }
+      ]
+    },
+    {
+      "id": "S90805",
+      "nome": "mercado ignora tipos",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "busca competitiva filtra tipo e IV de atributo, sem confundir potencial total",
+          "erro": "undefined — esperado , veio an-020124",
+          "suite": "e14-busca"
+        }
+      ]
+    },
+    {
+      "id": "S90806",
+      "nome": "mercado aceita IV 32",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "IV tem faixa zero a 31 e atributo fechado; filtros continuam parâmetros SQL",
+          "erro": "IV inválido passou",
+          "suite": "e14-busca"
+        }
+      ]
+    },
+    {
+      "id": "S90807",
+      "nome": "tela não transmite tipo",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "a busca vira consulta: só o que foi preenchido, e o shiny em palavras",
+          "erro": "undefined — esperado electric, veio null",
+          "suite": "mercado-jogadores-dados"
+        }
+      ]
+    },
+    {
+      "id": "S90808",
+      "nome": "fato antigo completa missão diária",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "treinador recebe três objetivos sem aposta; fatos reais e repetição pagam só um marco semanal",
+          "erro": "undefined — esperado 0, veio 1",
+          "suite": "missoes-treinador"
+        }
+      ]
+    },
+    {
+      "id": "S90809",
+      "nome": "objetivo diário paga sem ação",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "treinador recebe três objetivos sem aposta; fatos reais e repetição pagam só um marco semanal",
+          "erro": "undefined — esperado 0, veio 1",
+          "suite": "missoes-treinador"
+        },
+        {
+          "titulo": "offline só conclui missão quando houve crédito positivo, e primeiro acesso/reenvio não fabricam XP",
+          "erro": "undefined — esperado 0, veio 1",
+          "suite": "missoes-treinador"
+        }
+      ]
+    },
+    {
+      "id": "S90810",
+      "nome": "incremento genérico forja missão",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "treinador recebe três objetivos sem aposta; fatos reais e repetição pagam só um marco semanal",
+          "erro": "undefined — esperado 0, veio 1",
+          "suite": "missoes-treinador"
+        }
+      ]
+    },
+    {
+      "id": "S90811",
+      "nome": "outra campanha rouba verba reservada",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "campanha precisa de verba, reserva todas as vagas e não aceita editar a coorte",
+          "erro": "verba da coorte foi gasta por outra campanha",
+          "suite": "arena-recompensas"
+        }
+      ]
+    },
+    {
+      "id": "S90812",
+      "nome": "coortes sobrepostas duplicam limite",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "preparação limita campanha a 270, semanal a 100 e não sobrepõe coortes",
+          "erro": "",
+          "suite": "arena-recompensas"
+        }
+      ]
+    },
+    {
+      "id": "S90813",
+      "nome": "conta vinculada recebe promoção",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "semana real: três rivais em dois dias liberam earned uma vez; amistoso e conta ligada não contam",
+          "erro": "",
+          "suite": "arena-recompensas"
+        }
+      ]
+    },
+    {
+      "id": "S90814",
+      "nome": "earned dispensa maturação",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "semana real: três rivais em dois dias liberam earned uma vez; amistoso e conta ligada não contam",
+          "erro": "PC-T antes dos sete dias",
+          "suite": "arena-recompensas"
+        }
+      ]
+    },
+    {
+      "id": "S90815",
+      "nome": "pagamento sobrevive ao rollback do fato",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "erro no fato da recompensa desfaz crédito e taxa mesmo depois de pagar",
+          "erro": "undefined — esperado 740, veio 690",
+          "suite": "arena-recompensas"
+        }
+      ]
+    },
+    {
+      "id": "S90816",
+      "nome": "preparação excede 270 por semana",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "preparação limita campanha a 270, semanal a 100 e não sobrepõe coortes",
+          "erro": "undefined — esperado 270, veio 350",
+          "suite": "arena-recompensas"
+        }
+      ]
+    },
+    {
+      "id": "S90817",
+      "nome": "arena permite seis espécies repetidas",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "próxima ação existe antes e depois da Liga, sem prometer acesso com time incompleto",
+          "erro": "undefined — esperado equipe, veio arena",
+          "suite": "preparacao"
+        }
+      ]
+    },
+    {
+      "id": "S90818",
+      "nome": "prévia oculta ramificações evolutivas",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "evolução ramificada mostra alternativas e item, sem escolher ou gastar automaticamente",
+          "erro": "",
+          "suite": "preparacao"
+        }
+      ]
+    },
+    {
+      "id": "S90819",
+      "nome": "prévia equipa sem autorização",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "prévia mostra peça e preço do catálogo, sem equipar ou alterar o perfil",
+          "erro": "undefined — esperado {\"name\":\"j\",\"battle\":{\"cena\":\"cidade\",\"efeito\":\"neon\",\"moldura\":\"neon\"}}, veio {\"name\":\"j\",\"battle\":{\"cena\":\"cidade\",\"efeito\":\"neon\",\"moldura\":\"aurora\"}}",
+          "suite": "arena-cosmeticos"
+        }
+      ]
+    },
+    {
+      "id": "S90820",
+      "nome": "rota de recompensa retorna ao objeto errado",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "HTTP exige sessão, ignora valor e conta forjados e não duplica o pagamento",
+          "erro": "undefined — esperado 401, veio 404",
+          "suite": "arena-rotas"
+        }
+      ]
+    },
+    {
+      "id": "S90821",
+      "nome": "estatística da espécie recebe nível médio do time",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "retenção observa D1/D7 completos; metagame exclui amistosos e usa indivíduo",
+          "erro": "undefined — esperado 20, veio 30",
+          "suite": "arena-metricas"
+        }
+      ]
+    }
+  ]
+}

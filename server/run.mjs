@@ -23,6 +23,7 @@
  * clicar na ordem errada não é decisão de jogo.
  */
 import { randomUUID } from 'node:crypto';
+import {registrarMissao} from './missoes-treinador.mjs';
 import { novaRaiz } from '../engine/seed.mjs';
 import { emCurso, recuarRun } from '../engine/run-avanco.mjs';
 import { podeAvancar, cabeAvanco, STAMINA_DO_AVANCO, curaDe } from '../engine/avanco.mjs';
@@ -174,6 +175,7 @@ export function colherRun(db, { userId, pack, agora, raiz = novaRaiz() }) {
       pend.run(p.chave, userId, id, p.dex, p.raridade, p.bioma, p.em, s.shiny ? 1 : 0, s.versao);
     }
     for (const f of c.fragmentos) creditarRegistro(db, userId, pack.id, f.dex, f.n, agora);
+    if(c.encontros>0)registrarMissao(db,{userId,tipo:'explorar',chave:`run:${id}`,agora});
     db.exec('COMMIT');
   } catch (e) { try { db.exec('ROLLBACK'); } catch {} throw e; }
   return colhida;

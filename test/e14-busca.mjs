@@ -202,5 +202,18 @@ export async function suite() {
     } finally { await srv.fechar(); }
   });
 
+  s.teste('busca competitiva filtra tipo e IV de atributo, sem confundir potencial total',()=>{
+    const c=cena();
+    c.db.prepare("UPDATE player_market_listings SET snapshot_json=json_set(snapshot_json,'$.iv',json(?)) WHERE id=?").run(JSON.stringify([31,0,0,0,0,0]),c.ids.pikaBarato);
+    c.db.prepare("UPDATE player_market_listings SET snapshot_json=json_set(snapshot_json,'$.iv',json(?)) WHERE id=?").run(JSON.stringify([0,0,0,0,0,31]),c.ids.pikaForte);
+    igual(idsDe(busca(c,{tipo:'electric',ivStat:'vel',ivMin:25})),c.ids.pikaForte);
+    igual(idsDe(busca(c,{tipo:'electric',ivStat:'hp',ivMin:25})),c.ids.pikaBarato);
+    igual(idsDe(busca(c,{tipo:'water',ivStat:'vel',ivMin:25})), '');c.db.close();
+  });
+  s.teste('IV tem faixa zero a 31 e atributo fechado; filtros continuam parâmetros SQL',()=>{
+    for(const q of [{ivMin:32,ivStat:'hp'},{ivMin:5,ivStat:'injetado'},{ivMin:5},{ivStat:'hp',ivMin:-1}])ok(recusa(()=>normalizarBusca(q)), 'IV inválido passou');
+    const c=cena();const r=montarBusca({pack:PACK,agora:AGORA,busca:normalizarBusca({tipo:'electric',ivStat:'vel',ivMin:20})});
+    ok(r.sql.includes('json_extract'));ok(r.args.includes(20));c.db.close();
+  });
   return s;
 }

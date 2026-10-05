@@ -13,6 +13,8 @@ import { especieDe } from '../../engine/especie.mjs';
 import { $ } from './dom.mjs';
 import { avisar } from './dialogo.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
+import {objetivoArena} from './preparacao-dados.mjs';
+import {htmlObjetivoArena} from './preparacao-tela.mjs';
 import { carregar } from './idle-dados.mjs';
 import { dexImg } from './sprites.mjs';
 import { miniMapa, rioDoMapa } from './jornada-mundo.mjs';
@@ -414,6 +416,7 @@ export function renderJornada({ nova = null } = {}) {
   const estradaSvg = empe => (desenho ? '' : trilha(empe));
   const rioSvg = empe => rios.map(r => `<polyline class="jnRioBeira" points="${linha(r.pontos, empe)}"/><polyline class="jnRio" points="${linha(r.pontos, empe)}"/>`).join('');
   alvo.innerHTML = `
+    ${htmlObjetivoArena(objetivoArena(PACK,estado))}
     <div class="jnTopo"><span><b>${mapa.feitos}</b> de ${mapa.total} passos · <b>${ganhas}</b> de ${mapa.insignias.length} insígnias${mapa.atual ? '' : ' · <b class="jnFeito">caminho vencido de ponta a ponta</b>'}</span>
       <div class="jnEstojo"><span class="jnEstojoRot">insígnias</span>${mapa.insignias.map(x => `<i class="jnInsignia${x.arte ? ' conhecida' : ''}${x.ganha ? ' ganha' : ''}${x.id && x.id === nova ? ' nova' : ''}"
           title="${x.nome ? `${x.nome} (${x.onde})${x.ganha ? '' : ' — ainda não é sua'}` : 'ainda não há ginásio aqui'}">${x.arte ? `<img src="${x.arte}" alt="">` : ''}</i>`).join('')}</div></div>
@@ -454,7 +457,7 @@ export function renderJornada({ nova = null } = {}) {
 const ABAS_TREINO = Object.freeze({
   time:    { corpo: '#treinoCorpo',  titulo: 'Time',           lema: 'monte o time e veja a chance mexer — treino, sem aposta' },
   jornada: { corpo: '#jornadaCorpo', titulo: 'Jornada',        lema: 'o caminho da jornada — vença cada nó para abrir o próximo' },
-  liga:    { corpo: '#ligaEqCorpo',  titulo: 'Liga de times',  lema: 'o seu time publicado contra os de outros jogadores — sem aposta' },
+  liga:    { corpo: '#ligaEqCorpo',  titulo: 'Arena 6×6',  lema: 'publique o time: amistoso grátis ou ranking com aposta após completar a Liga' },
 });
 export function mostrarAbaTreino(aba) {
   if (!ABAS_TREINO[aba]) aba = 'time';

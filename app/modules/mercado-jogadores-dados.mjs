@@ -27,11 +27,13 @@ export const abasDoMercado = (rotulos = {}) => [
 export const ORDENS_MERCADO = Object.freeze([['recente', 'Mais novos'], ['preco', 'Mais baratos'], ['preco_desc', 'Mais caros']]);
 
 /* A busca: só o que foi preenchido vira parâmetro, e o cursor vai junto. */
-export function consultaDaBusca({ categoria, dex, shiny, nivelMin, natureza, potencialMin, precoMax, ordem = 'recente', cursor } = {}) {
+export function consultaDaBusca({ categoria, dex, shiny, nivelMin, nivelMax, tipo, ivStat, ivMin, natureza, potencialMin, precoMax, ordem = 'recente', cursor } = {}) {
   const p = new URLSearchParams();
   const por = (k, v) => { if (v != null && v !== '' && !Number.isNaN(v)) p.set(k, String(v)); };
   por('categoria', categoria); por('dex', dex); por('nivelMin', nivelMin); por('natureza', natureza);
   por('potencialMin', potencialMin); por('precoMax', precoMax); por('ordem', ordem); por('cursor', cursor);
+  por('nivelMax',nivelMax);por('tipo',tipo);
+  if(ivMin!=null&&ivMin!==''){por('ivStat',ivStat);por('ivMin',ivMin);}
   if (shiny === true) p.set('shiny', 'sim'); else if (shiny === false) p.set('shiny', 'nao');
   p.set('limite', '24');
   return p.toString();

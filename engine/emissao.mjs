@@ -202,6 +202,9 @@ export function avaliarResgate({ saldoTotal, ruinaEm, agora, recebidosNaSemana,
    o teste compara com o orçamento do documento — e é a conta que o D-007 pedia
    que alguém fizesse. */
 export const emissaoSemanalMaxima = () => ORCAMENTO_DESAFIOS_SEMANAL;
+/* Piloto financiado: reserva os 80 rotineiros e evita somar 450 a eles. */
+export const ORCAMENTO_ARENA_PREPARACAO=270;
+export const ORCAMENTO_ARENA_COMPETITIVO=100;
 
 /* A semana a que uma data pertence, em ISO (`2026-W03`). Semana e não "sete dias
    corridos": com janela deslizante, o jogador que joga sábado e domingo fecha

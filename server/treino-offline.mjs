@@ -1,6 +1,7 @@
 import { contaTreinoOffline, JANELA_TREINO_MS } from '../engine/treino-offline.mjs';
 import { emTransacao } from './carteira.mjs';
 import { sincronizarRun } from './run.mjs';
+import {registrarMissao} from './missoes-treinador.mjs';
 
 export const estadoTreinoOffline = (db,userId) => {
   const r=db.prepare('SELECT estado_json FROM treinos_offline WHERE user_id=?').get(userId);
@@ -24,6 +25,7 @@ export function treinarOffline(db,{userId,pack,agora}){
     for(const c of r.credito)gravar.run(c.xp,c.nivel,c.vinculo,c.treinadoAte,userId,c.id);
     db.prepare(`INSERT INTO treinos_offline(user_id,estado_json) VALUES(?,?)
       ON CONFLICT(user_id) DO UPDATE SET estado_json=excluded.estado_json`).run(userId,JSON.stringify(r.estado));
+    if(r.ganhos.some(g=>g.xp>0))registrarMissao(db,{userId,tipo:'treinar',chave:`offline:${agora}`,agora});
     return {ganhos:r.ganhos,em:r.estado.em,janelaMaxMs:JANELA_TREINO_MS};
   });
 }

@@ -246,7 +246,8 @@ export function pcTElegivel(db, userId, agora = Date.now()) {
   const saldo = Math.max(0, saldos(db, userId).transferivel ?? 0);
   const conta = db.prepare(`SELECT created_at FROM users WHERE id = ?`).get(userId);
   const daJornada = db.prepare(`SELECT COALESCE(SUM(amount), 0) AS s FROM wallet_ledger WHERE user_id = ? AND type = 'JOURNEY_PCT_REWARD'`).get(userId).s;
-  return Math.max(0, saldo - pcTEmMaturacao({ criadaEm: conta?.created_at, agora, daJornada }));
+  const daArena=db.prepare("SELECT COALESCE(SUM(amount),0) s FROM wallet_ledger WHERE user_id=? AND type='ARENA_EARNED_REWARD'").get(userId).s;
+  return Math.max(0, saldo - pcTEmMaturacao({ criadaEm: conta?.created_at, agora, daJornada:daJornada+daArena }));
 }
 
 export function reservarP2PNoBanco(db, { userId, valor, ref, agora = Date.now() }) {

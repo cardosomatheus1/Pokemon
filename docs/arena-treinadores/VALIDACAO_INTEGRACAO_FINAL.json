@@ -1,0 +1,352 @@
+{
+  "escopo": "focado AT6; sem navegador e sem suíte integral",
+  "total": 628,
+  "falhas": [],
+  "resultados": [
+    {
+      "nome": "arena-treinadores",
+      "total": 22,
+      "falhas": []
+    },
+    {
+      "nome": "treino-batalha",
+      "total": 12,
+      "falhas": []
+    },
+    {
+      "nome": "batalha-precisao",
+      "total": 3,
+      "falhas": []
+    },
+    {
+      "nome": "xp-jornada-repeticao",
+      "total": 3,
+      "falhas": []
+    },
+    {
+      "nome": "jornada-servidor",
+      "total": 10,
+      "falhas": []
+    },
+    {
+      "nome": "jornada",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "recompensa-pve",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "liga-stake",
+      "total": 11,
+      "falhas": []
+    },
+    {
+      "nome": "liga-home",
+      "total": 11,
+      "falhas": []
+    },
+    {
+      "nome": "liga-pareamento",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "liga-mmr",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "liga-pontos",
+      "total": 12,
+      "falhas": []
+    },
+    {
+      "nome": "liga-integridade",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "liga-temporada",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "liga-ranking",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "equipe-snapshot",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "presets",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "treino-builds",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "treino-preco",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "ginasios",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "carteira-servidor",
+      "total": 17,
+      "falhas": []
+    },
+    {
+      "nome": "banco-servidor",
+      "total": 15,
+      "falhas": []
+    },
+    {
+      "nome": "liga-partida",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "liga-replay",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "liga-palco",
+      "total": 9,
+      "falhas": []
+    },
+    {
+      "nome": "jornada-equilibrio",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "primitivas",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "conteudo",
+      "total": 17,
+      "falhas": []
+    },
+    {
+      "nome": "treino-trocas",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "arena-metricas",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "arena-recompensas",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "arena-rotas",
+      "total": 2,
+      "falhas": []
+    },
+    {
+      "nome": "arena-concorrencia",
+      "total": 1,
+      "falhas": []
+    },
+    {
+      "nome": "missoes-treinador",
+      "total": 2,
+      "falhas": []
+    },
+    {
+      "nome": "preparacao",
+      "total": 3,
+      "falhas": []
+    },
+    {
+      "nome": "arena-cosmeticos",
+      "total": 2,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-combate",
+      "total": 13,
+      "falhas": []
+    },
+    {
+      "nome": "combate-continuo",
+      "total": 3,
+      "falhas": []
+    },
+    {
+      "nome": "run-servidor",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "comparacao-time",
+      "total": 12,
+      "falhas": []
+    },
+    {
+      "nome": "resumo-batalha",
+      "total": 9,
+      "falhas": []
+    },
+    {
+      "nome": "catalogo-treinador",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "rivais-precisao",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "orientacao-avanco",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "time-aprende",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "e14-busca",
+      "total": 11,
+      "falhas": []
+    },
+    {
+      "nome": "e14-mercado",
+      "total": 11,
+      "falhas": []
+    },
+    {
+      "nome": "mercado-jogadores-dados",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "e14-elegibilidade",
+      "total": 9,
+      "falhas": []
+    },
+    {
+      "nome": "e14-carteira",
+      "total": 10,
+      "falhas": []
+    },
+    {
+      "nome": "e14-inventario",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "e14-prende",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "e14-pct-jornada",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "e14-economia",
+      "total": 11,
+      "falhas": []
+    },
+    {
+      "nome": "cosmeticos-servidor",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "captura-tela",
+      "total": 11,
+      "falhas": []
+    },
+    {
+      "nome": "captura",
+      "total": 19,
+      "falhas": []
+    },
+    {
+      "nome": "progressao-servidor",
+      "total": 18,
+      "falhas": []
+    },
+    {
+      "nome": "progressao-ligada",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "telemetria",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "telemetria-ligada",
+      "total": 11,
+      "falhas": []
+    },
+    {
+      "nome": "admin",
+      "total": 14,
+      "falhas": []
+    },
+    {
+      "nome": "admin-auth",
+      "total": 14,
+      "falhas": []
+    },
+    {
+      "nome": "rotas",
+      "total": 31,
+      "falhas": []
+    },
+    {
+      "nome": "evolucao-idle",
+      "total": 20,
+      "falhas": []
+    },
+    {
+      "nome": "idle-conta",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "idle-acoes",
+      "total": 11,
+      "falhas": []
+    },
+    {
+      "nome": "idle-servidor",
+      "total": 18,
+      "falhas": []
+    },
+    {
+      "nome": "modulos",
+      "total": 19,
+      "falhas": []
+    }
+  ]
+}

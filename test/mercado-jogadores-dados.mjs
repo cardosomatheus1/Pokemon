@@ -17,6 +17,8 @@ export async function suite() {
     igual(consultaDaBusca({ categoria: 'criaturas', dex: 25, shiny: false, nivelMin: '', ordem: 'preco' }), 'categoria=criaturas&dex=25&ordem=preco&shiny=nao&limite=24', 'a consulta');
     ok(/shiny=sim/.test(consultaDaBusca({ shiny: true })) && !/shiny/.test(consultaDaBusca({ shiny: null })), 'o shiny');
     ok(/cursor=abc/.test(consultaDaBusca({ cursor: 'abc' })), 'o cursor não vai junto');
+    const q=new URLSearchParams(consultaDaBusca({tipo:'electric',nivelMax:80,ivStat:'vel',ivMin:25}));
+    igual(q.get('tipo'),'electric');igual(q.get('nivelMax'),'80');igual(q.get('ivStat'),'vel');igual(q.get('ivMin'),'25');
     igual(abasDoMercado().map(a => a[0]).join(), 'criaturas,bolas,essencias,materiais,itens,ordens,meus,compras', 'as abas da spec §10.2 (e as ordens de compra, ST-14.11A)');
     igual(`${abasDoMercado({ criaturas: 'Bichos' })[0][1]}|${abasDoMercado()[0][1]}`, 'Bichos|Criaturas', 'o nome das criaturas vem do pack');
   });

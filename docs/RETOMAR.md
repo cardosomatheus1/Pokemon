@@ -22,7 +22,39 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 05/10/2026 · AT6-05-leitura
+## 0. ONDE PARAMOS — 05/10/2026 · AT6-15-integracao-final
+
+Branch de entrega: `codex/arena-jornada-finalizacao-20261005`.
+Integração implementada: objetivos antes/depois da Liga; preparo/evolução;
+filtros de nível/tipo/IV e ficha de mercado; missões úteis persistidas;
+funil/metagame/D1/D7/economia; campanhas de bônus e earned com verba
+reservada/coorte fechada; prévia cosmética e neutralidade no combate.
+O branch inclui os commits anteriores de TBE4, acesso/ranked/defesa/taxa 10%,
+Avanço TBE, catálogo, orientação e XP progressivo/offline 150/225/300/450 XP/h.
+
+Relatório 13, Spec §9.19 e Build AT6-15 descrevem os contratos aplicados.
+VALIDACAO_INTEGRACAO_FINAL: 69 suítes/628 testes verdes; OFFLINE_FINAL:
+16 testes isolados, total 644. HTTP/MIME verificados no servidor real.
+Para prévia local, executar `PORTA=8099 npm run servidor` e abrir
+http://localhost:8099/app/index.html enquanto o processo estiver ligado.
+SABOTAGEM_INTEGRACAO_FINAL: 23/23; BASE_FINAL: 17/17.
+Q5 real verde em 390/768/1440, incluindo 8 h = 3.600 XP na fase 4 sem duplicação.
+Quatro processos geram um crédito e uma retirada da casa. Âncoras conferidas.
+Comparação cosmética: 30 lutas com mesma semente idênticas antes/depois.
+Inspeção leu replay, filtros, evolução, resgate e preço/prévia da Boutique.
+
+Não existe campanha ativa por padrão. Até 450 inclui a rotina de 80 e depende
+de 370 reservados por vaga; earned usa dotação exclusiva, nunca converte
+bônus. O estudo demonstra que não cabe prometer o máximo a toda a população.
+Nenhum pagamento real, saque, passe sem conteúdo, merge ou tag nesta entrega.
+L-AT6-06 (secundários), L-GQ-01-01 (concentração de rotas), L-AT6-15-MIDIA
+e revisão integral/piloto permanecem delimitados no ROADMAP/LACUNAS.
+Não chamar recorte de suíte/Q2 integrais ou retenção observada.
+Três alterações de arte alheias ao escopo foram preservadas fora do commit.
+
+### Estado anterior preservado para rastreabilidade
+
+## 0-histórico. ANTES — 05/10/2026 · AT6-05-leitura
 
 Último bloco: comparação Publicado/Atual na Liga e fatos da luta no fim da
 Jornada/replay 6×6. Nível pelo XP, IV, natureza, evolução, ordem, preset e

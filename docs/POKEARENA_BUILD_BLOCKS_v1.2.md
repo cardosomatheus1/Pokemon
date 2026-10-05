@@ -3678,3 +3678,31 @@ registrada, D-AT6-05-04 com dono XP-OFF/T14. Demais 29 suítes passaram no
 recorte inicial; resumo/PvE/recompensa e rótulo de treino foram revalidados.
 HTTP/MIME corretos não certificam execução em navegador. Não fecha AT6-05
 integral ou AT6-07. Relatório 12 e JSONs guardam a evidência focada.
+
+
+## AT6-15-integracao-final — fechar as superfícies AT6/GQ (05/10/2026)
+
+Um bloco de integração, um commit. Dependências: AT6-base, AT6-13/14,
+AT6-05-leitura, GQ-01-rotas e XP-OFF-2. Método INV no domínio/ledgers;
+UI nas superfícies atuais. Spec §9.19. Dono das correções D-AT6-15-01/02
+(rotas e médias de exposição) e D-AT6-15-03 (race dos filtros).
+
+Q1/Q3: preparação, ramificações, captura factual, missões derivadas,
+mercado por atributos, coortes, maturação, caps e pureza cosmética.
+Q2 dirigido: S90801–21, S770 e S1881; repetir S90001–17. Conferir âncoras,
+sem declarar os demais mutantes executados. Q4: suites de combate/TBE/Avanço,
+pareamento, economia/carteira/Jornada; estudo incremental de 12 semanas.
+Q5: navegador real, publicação, fila sem rival sem débito, partida e replay,
+filtros efetivamente enviados, prévia paga, XP offline, resgate e evolução,
+objetivo da Jornada em 390/768/1440 px; abrir e ler capturas.
+Q6: sessão nas rotas, dono/motivo/confirmação, valores e usuário autoritativos,
+escape e SQL parametrizado. Q8: quatro processos disputando resgate único,
+rollback de ledger/fato. Q9: fatos idempotentes, D1/D7 e painel por origem.
+Q7 independente e portões integrais pertencem à fila de release; este é um
+commit em branch de trabalho, sem tag ou merge. Vídeo decorativo não
+certificado nesta instalação: L-AT6-15-MIDIA, dono ST-1.25/AT6-10.
+
+A política de campanha é implementada, mas não habilita campanha padrão;
+financiamento real e observação da população são requisitos operacionais.
+Não recalibrar combate ou XP só para obter vantagem em uma fixture.
+Reprodução, artefatos e limites: relatório 13.

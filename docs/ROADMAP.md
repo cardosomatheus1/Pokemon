@@ -11,19 +11,22 @@ A fila legada de 25/09 continua preservada para rastreabilidade.
 
 | Ordem | Bloco | Escopo e condição de saída |
 |---|---|---|
-| 0 | 🟡 XP-OFF / XP-OFF-2 | XP de expedições por estágio e banco a 150/225/300/450 XP/h implementados/testados (351 testes, 4 mutantes novos). §§7.22.18/20. Q5 e revisão geral de progressão pendentes. |
-| 1 | 🟡 AT6-base | Motor, acesso 6×6, ranked, defesa, 10% da casa, kit, XP repetido e atividade de temporada implementados com validação focada. Fechar apresentação via Q5 antes de marcar entrega visual concluída. Contrato 09 delimita os critérios aplicados. |
-| 2 | 🟡 AT6-13 | Novas runs com HP/golpes reais, snapshots e cura/recuo sincronizados. 470 testes e 8 mutantes; Spec §7.22.19. Q5 e calibração dos iniciais (L-AT6-04) pendentes; não certifica emissão diária. |
-| 3 | 🟡 AT6-14 | Catálogo/informação (§8.18), política rival coerente e auditoria (§8.19) implementados/testados: 212 testes, 6 mutantes novos, ginásios/3.500 runs pareadas sem alteração de taxas. Q5 e diversidade dos secundários (L-AT6-06) pendentes. |
-| 4 | 🟡 AT6-05 e AT6-07 | Comparação Publicado/Atual, atributos TBE/precisão e resumo factual de Jornada/replay implementados (§9.18; 256 testes, 14 mutantes). Times antigos precisam republicar. Q5, apresentação integral, funil e instrumentação AT6-07 pendentes. |
-| 5 | 🟡 GQ-01–06 | Orientação de rota por equipe implementada no GQ-01-rotas (§7.22.21; 292 testes, 7 mutantes, 2.400 runs). Q5/primeira sessão integral, captura, evolução, clareza econômica e retorno pendentes. Fichas em `arena-treinadores/06_QUALIDADE_DO_JOGO_E_JORNADA.md`. |
-| 6 | 🟡 AT6-08 | Kit de 300 aplicado e tesouraria interna finita. Reposição semanal/marketing público dependem de medir emissão, funil e sustentabilidade; não ativados. |
-| 7 | ⏳ AT6-09 e AT6-10 | Mercado para montagem de time e monetização por expressão/prestígio. Não concluídos por este bloco; operações reais respeitam §25.1. |
+| 0 | 🟢 XP-OFF / XP-OFF-2 | XP ativo progressivo e banco 150/225/300/450 XP/h; recorte offline verde e Q5 de retorno sem duplicação. |
+| 1 | 🟢 AT6-base / AT6-05 | Motor, acesso 6×6, ranked/defesa, 10% casa, kit, comparação e resumo implementados; Q5 do fluxo aplicado em três larguras. |
+| 2 | 🟢 AT6-13/14 | Avanço TBE com HP/cura/recuo e catálogo/rivais implementados; regressão focada verde. Calibração/diversidade continuam itens explícitos abaixo. |
+| 3 | 🟢 AT6-07 / AT6-15 | Funil, exposição individual, D1/D7 e economia por origem; telemetria autoritativa e idempotente. |
+| 4 | 🟢 GQ-01–06, recorte aplicado | Orientação, próxima ação, captura factual, evolução comparada, objetivos sem stake e filtros compartilhados. Primeira sessão com população real não foi medida. |
+| 5 | 🟢 AT6-08/09 | Campanhas implementadas com verba por todas as vagas, caps, earned separado e maturidade; mercado por tipos/IVs. Não existe campanha padrão ativa. |
+| 6 | 🟢 AT6-10, loja interna | Compra/entrega existente, prévia paga e neutralidade em 30 lutas. Monetização real/passe dependem de operação/conteúdo. |
+| 7 | ⏳ AT6-07/08/10 operacional | Observar população/D1/D7/metagame, financiar e anunciar coortes, medir aquisição/conversão e definir oferta comercial/conteúdo antes de ativar valores reais. |
+| 8 | ⏳ GQ-01 / GQ-02 / AT6-14 | Medir primeira sessão e distribuição de captura/rotas; L-AT6-04, L-GQ-01-01 e L-AT6-06. Não ativar secundários sem contrato/replay/balanceamento próprios. |
+| 9 | ⏳ ST-1.25 / AT6-10 | Validar mídia decorativa da Boutique no ambiente de apresentação (L-AT6-15-MIDIA). |
+| 10 | ⏳ Release | Revisão independente e portões integrais aplicáveis, Q2/Q5 legados e piloto. A entrega atual é branch de trabalho sem merge/tag. |
 
-AT6-01–04/06/11 têm implementação principal no AT6-base, com limites registrados
-no RETOMAR. As fichas originais permanecem referência; a Spec §§8.17/9.17 e o
-contrato 09 definem as regras aplicadas. Não declarar o conjunto AT6/GQ inteiro
-pronto. Antes de release/tag: Q5, portões integrais aplicáveis e Q2 legado.
+AT6-01–04/06/11 têm implementação principal no AT6-base; integração AT6-15
+fecha o recorte descrito na Spec §9.19 e relatório 13. Os estudos anteriores
+continuam referência da TBE; moeda simulada e políticas comerciais preservadas.
+A evidência focada não certifica conteúdo/operação comercial ou toda a fila legada.
 
 > ~~**O último bloco fechado:** 1.32 · **O próximo:** refazer o 1.27f ·
 > **Para retomar:** `docs/CONTINUAR.md`~~ — **velho desde 16/09**; ficou no

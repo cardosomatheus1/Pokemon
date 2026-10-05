@@ -27,6 +27,7 @@
 import { randomUUID } from 'node:crypto';
 import { anotar } from './telemetria.mjs';
 import { creditar, saldos, emTransacao } from './carteira.mjs';
+import {MISSOES_TREINADOR,fatosDasMissoes} from './missoes-treinador.mjs';
 import {
   recompensaDeDesafio, avaliarResgate, semanaDe,
   ORCAMENTO_LOGIN_SEMANAL, RESGATE_VALOR,
@@ -114,16 +115,29 @@ function sorteioDoDia(userId, dia, n = 3) {
 }
 
 export function desafiosDe(db, { userId, agora = Date.now() }) {
+  return emTransacao(db,()=>{
   const dia = diaDe(agora);
   const existentes = db.prepare(
     `SELECT * FROM challenges WHERE user_id = ? AND dia = ? ORDER BY slot`).all(userId, dia);
-  if (existentes.length) return existentes;
-
+  if (!existentes.length) {
   const inserir = db.prepare(
     `INSERT INTO challenges (user_id, dia, slot, tipo, alvo) VALUES (?, ?, ?, ?, ?)`);
-  sorteioDoDia(userId, dia).forEach((d, i) => inserir.run(userId, dia, i, d.tipo, d.alvo));
+  const treinador=db.prepare('SELECT 1 FROM criaturas WHERE user_id=? LIMIT 1').get(userId);
+  (treinador?MISSOES_TREINADOR:sorteioDoDia(userId,dia)).forEach((d,i)=>inserir.run(userId,dia,i,d.tipo,d.alvo));
+  }
+  /* Só fatos da ação concluída neste dia. Reenvios mantêm a chave original;
+     completar uma missão amanhã não reaproveita a exploração de ontem. */
+  const fatos=fatosDasMissoes(db,userId,dia);
+  const atuais=db.prepare(`SELECT * FROM challenges WHERE user_id=? AND dia=? ORDER BY slot`).all(userId,dia);
+  for(const d of atuais){
+    const n=fatos.find(f=>f.tipo===d.tipo)?.n??0;
+    if(d.concluido_em!=null||n<d.alvo)continue;
+    db.prepare(`UPDATE challenges SET progresso=alvo,concluido_em=? WHERE user_id=? AND dia=? AND slot=?`).run(agora,userId,dia,d.slot);
+    pagarDesafio(db,{userId,dia,slot:d.slot,agora});
+  }
   return db.prepare(`SELECT * FROM challenges WHERE user_id = ? AND dia = ? ORDER BY slot`)
     .all(userId, dia);
+  });
 }
 
 /* O CLIENTE DIZ O QUE FEZ, NUNCA QUANTO PROGREDIU.
@@ -133,6 +147,7 @@ export function desafiosDe(db, { userId, agora = Date.now() }) {
  * essa ausência que responde ao item "forjar progresso de desafio pelo cliente"
  * da sabotagem do bloco. */
 export function registrarFeito(db, { userId, tipo, agora = Date.now() }) {
+  if(MISSOES_TREINADOR.some(m=>m.tipo===tipo))return desafiosDe(db,{userId,agora});
   const dia = diaDe(agora);
   desafiosDe(db, { userId, agora });
   const alvos = db.prepare(

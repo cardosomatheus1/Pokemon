@@ -28,6 +28,8 @@ const novaChave = () => `le-${Date.now().toString(36)}-${Math.random().toString(
 const lerPreset = () => { try { return localStorage.getItem('ar_treino_preset'); } catch { return null; } };
 const gravarPreset = p => { try { localStorage.setItem('ar_treino_preset', p); } catch { /* privativo: vale só nesta visita */ } };
 
+import {htmlRecompensasArena} from './arena-recompensas-tela.mjs';
+let campanhas=[];
 let dados = null, acabou = null, ocupado = false, chaveDaBusca = null, erro = null, ultimo = null, assistir = null, ranking = null, temporadaVista = null, pontos = null, loja = null, linhaDoce = null, chaveDaCompra = null, avisoLoja = null, stake = null, confirmando = false;
 
 export async function renderLigaEquipe() {
@@ -35,8 +37,9 @@ export async function renderLigaEquipe() {
   if (!alvo) return;
   const conta = api.temSessao();
   if (conta) {
-    const [r, rk, pt, lj, sk] = await Promise.all([api.get('/api/equipe/liga'), api.get(`/api/equipe/ranking${temporadaVista ? `?temporada=${temporadaVista}` : ''}`),
-                                               api.get('/api/equipe/pontos'), api.get('/api/equipe/loja'), api.get('/api/equipe/stake')]);
+    const [r, rk, pt, lj, sk, premios] = await Promise.all([api.get('/api/equipe/liga'), api.get(`/api/equipe/ranking${temporadaVista ? `?temporada=${temporadaVista}` : ''}`),
+                                               api.get('/api/equipe/pontos'), api.get('/api/equipe/loja'), api.get('/api/equipe/stake'),api.get('/api/equipe/recompensas')]);
+    campanhas=premios.ok?premios.corpo.campanhas:[];
     stake = sk.ok ? sk.corpo : null;
     dados = r.ok ? r.corpo : null;
     ranking = rk.ok ? rk.corpo : null;
@@ -76,7 +79,7 @@ function pintar(alvo, h) {
   alvo.innerHTML = `<div class="leHome le-${h.estado}">
     ${barra}${tier ? '' : passos}
     <div class="lePainel${tier ? '' : ' leSoCentro'}${tier && pontos ? ' leComPontos' : ''}">${tier}<div class="leCentro">${time}${presets}${h.aviso ? `<p class="leAviso">${h.titulo ? `<strong>${esc(h.titulo)}</strong>` : ''}${esc(h.aviso)}</p>` : ''}${htmlDaComparacao(h.comparacao)}${erro ? `<p class="leErro">${esc(erro)}</p>` : ''}${botoes}</div>${tier ? pintarPontos(pontosNaTela(pontos, h.tier.nome)) : ''}</div>
-    ${tier ? passos : ''}${h.time ? pintarStake(stakeNaTela(stake, { confirmando })) : ''}${tier ? pintarLoja(lojaVista()) : ''}<div id="leReplay" class="pveArea" hidden></div>${resultado}<div class="leBaixo">${recentes}${h.tier ? pintarRanking(rankingNaTela(ranking)) : ''}</div></div>`;
+    ${tier ? passos : ''}${h.time ? pintarStake(stakeNaTela(stake, { confirmando })) : ''}${tier ? htmlRecompensasArena(campanhas) : ''}${tier ? pintarLoja(lojaVista()) : ''}${tier?'<aside class="leAviso"><b>Sua identidade na Arena</b><p>Personalize treinador, moldura e palco na Boutique. Preço e prévia aparecem antes da compra; cosméticos não alteram atributos, pareamento ou ranking.</p><button class="btn" data-cash-abrir>Ver cosméticos</button></aside>':''}<div id="leReplay" class="pveArea" hidden></div>${resultado}<div class="leBaixo">${recentes}${h.tier ? pintarRanking(rankingNaTela(ranking)) : ''}</div></div>`;
 }
 
 /* OS LEAGUE POINTS (ST-11.7b): quanto tenho, como ganho, o que a virada faz — e as insígnias. */
@@ -183,6 +186,8 @@ async function verReplay(id) {
 document.addEventListener('liga-equipe:abrir', () => { acabou = null; renderLigaEquipe(); });
 
 document.addEventListener('click', async ev => {
+  const premio=ev.target.closest('[data-arena-resgatar]');
+  if(premio){if(premio.disabled||ocupado)return;ocupado=true;try{const r=await api.post('/api/equipe/recompensas/resgatar',{campanha:premio.dataset.arenaResgatar,tipo:premio.dataset.arenaMissao});erro=r.ok?null:r.corpo?.erro??'Resgate indisponível. Tente novamente.';}finally{ocupado=false;await renderLigaEquipe();}return;}
   const aba = ev.target.closest('[data-le-temporada]');
   if (aba) { temporadaVista = aba.dataset.leTemporada ? Number(aba.dataset.leTemporada) : null; renderLigaEquipe(); return; }
   const sk = ev.target.closest('[data-le-stake-buscar], [data-le-stake-cancelar], [data-le-stake-inscricao], [data-le-stake-confirmar]');

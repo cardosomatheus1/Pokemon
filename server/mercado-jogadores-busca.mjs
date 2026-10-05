@@ -32,6 +32,15 @@ const POR_ORDEM = {
 export function montarBusca({ pack, agora, busca: b }) {
   const partes = [`SELECT * FROM player_market_listings WHERE estado = 'ACTIVE' AND pack_id = ? AND expira_em > ?`];
   const args = [pack.id, agora];
+  if(b.tipo){
+    const dexes=[...(pack.especies??[]),...(pack.lendarios??[])].filter(e=>e.t.includes(b.tipo)).map(e=>e.dex);
+    partes.push(dexes.length?`AND dex IN (${dexes.map(()=>'?').join(',')})`:'AND 0');args.push(...dexes);
+  }
+  if(b.ivMin!==undefined){
+    const indice={hp:0,atq:1,def:2,spa:3,spd:4,vel:5}[b.ivStat];
+    if(indice===undefined)throw Error('atributo de IV inválido');
+    partes.push(`AND json_extract(snapshot_json, '$.iv[${indice}]') >= ?`);args.push(b.ivMin);
+  }
   for (const [campo, sql] of FILTROS) if (b[campo] != null) { partes.push(sql); args.push(b[campo]); }
   if (b.shiny != null) { partes.push('AND shiny = ?'); args.push(b.shiny ? 1 : 0); }
   const o = POR_ORDEM[b.ordem];

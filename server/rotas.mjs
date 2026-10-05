@@ -86,7 +86,9 @@ import { anotar, receberDoCliente } from './telemetria.mjs';
  * que toda rota `/api/admin/` esteja NESTA lista e em nenhuma outra — uma rota
  * admin esquecida aqui responderia 401 para o operador certo, e uma rota admin
  * na lista de públicas seria o incidente inteiro. */
+import {criarCampanhaArena} from './arena-recompensas.mjs';
 export const ROTAS_ADMIN = [
+  'POST /api/admin/arena-campanha',
   'GET /api/admin/painel',
   'POST /api/admin/margem',
   'GET /api/admin/auditoria',
@@ -530,6 +532,12 @@ export const ROTAS = {
   'GET /api/admin/economia-e14': ({ db, cabecalhos, agora }) =>
     comOperador(db, cabecalhos, 'painel.ver', 'consulta da economia E14',
       () => ({ corpo: painelE14(db, { agora }) }), agora),
+
+  'POST /api/admin/arena-campanha':({db,cabecalhos,corpo,agora})=>
+    comOperador(db,cabecalhos,'painel.ver','solicitação de campanha interna',op=>{
+      try{return {corpo:criarCampanhaArena(db,{operadorId:op.id,config:corpo?.config,motivo:corpo?.motivo,confirmado:corpo?.confirmado,agora})};}
+      catch(e){if(e.codigo===ERRO_ADMIN.SEM_PAPEL)return erro(403,ERROS.NAO_AUTORIZADO,'sem permissão');if(e.codigo)return erro(400,e.codigo,e.message);throw e;}
+    },agora),
 
   'GET /api/admin/bandeiras': ({ db, cabecalhos, agora }) =>
     comOperador(db, cabecalhos, 'painel.ver', 'consulta das bandeiras',

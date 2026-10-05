@@ -6,7 +6,9 @@ const padrao = ['arena-treinadores','treino-batalha','batalha-precisao','xp-jorn
   'liga-mmr','liga-pontos','liga-integridade','liga-temporada','liga-ranking',
   'equipe-snapshot','presets','treino-builds','treino-preco','ginasios','carteira-servidor','banco-servidor',
   'liga-partida','liga-replay','liga-palco','jornada-equilibrio','primitivas','conteudo','treino-trocas'];
-const selecionadas = process.argv.find(x=>x.startsWith('--so='))?.slice(5).split(',') ?? padrao;
+const finalizacao=process.argv.includes('--finalizacao');
+const finais=finalizacao?(await import('./arena-suites-finais.mjs')).default:null;
+const selecionadas = process.argv.find(x=>x.startsWith('--so='))?.slice(5).split(',') ?? finais ?? padrao;
 const resultados=[];
 for (const nome of selecionadas) {
   const modulo = await import(new URL(`../test/${nome}.mjs`,import.meta.url));

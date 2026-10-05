@@ -1,0 +1,12 @@
+{
+  "escopo": "focado AT6; sem navegador e sem suíte integral",
+  "total": 1,
+  "falhas": [],
+  "resultados": [
+    {
+      "nome": "arena-concorrencia",
+      "total": 1,
+      "falhas": []
+    }
+  ]
+}

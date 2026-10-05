@@ -71,6 +71,13 @@ export function normalizarBusca(q) {
     limite: inteiro(get('limite'), 1, LIMITE_MAX, 'limite') ?? LIMITE_PADRAO,
   };
   b.cursor = decodificarCursor(get('cursor'), ordem);
+  const tipo=curto(get('tipo'),20,'tipo');if(tipo)b.tipo=tipo;
+  const ivMin=inteiro(get('ivMin'),0,31,'IV mínimo'),ivStat=get('ivStat');
+  if(ivMin!==null||ivStat){
+    if(!['hp','atq','def','spa','spd','vel'].includes(ivStat)||ivMin===null)throw falha('escolha atributo e IV mínimo');
+    b.ivStat=ivStat;b.ivMin=ivMin;
+  }
+  if(b.nivelMin!==null&&b.nivelMax!==null&&b.nivelMin>b.nivelMax)throw falha('nível mínimo maior que máximo');
   return b;
 }
 

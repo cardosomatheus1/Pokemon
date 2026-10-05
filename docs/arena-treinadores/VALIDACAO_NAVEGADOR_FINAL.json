@@ -1,0 +1,95 @@
+{
+  "tipo": "Q5 focado com navegador real",
+  "resultados": [
+    {
+      "largura": 390,
+      "publicacao": true,
+      "filaVaziaSemDebito": true,
+      "rankedReal": true,
+      "replayReal": true,
+      "filtrosEnviados": true,
+      "cosmeticosPrevia": true,
+      "offlineProgressivoSemDuplicar": true,
+      "resgateFinanciadoReal": true,
+      "evolucaoPrevia": true,
+      "objetivoAntesDaLiga": true,
+      "erros": []
+    },
+    {
+      "largura": 768,
+      "publicacao": true,
+      "filaVaziaSemDebito": true,
+      "rankedReal": true,
+      "replayReal": true,
+      "filtrosEnviados": true,
+      "cosmeticosPrevia": true,
+      "offlineProgressivoSemDuplicar": true,
+      "resgateFinanciadoReal": true,
+      "evolucaoPrevia": true,
+      "objetivoAntesDaLiga": true,
+      "erros": []
+    },
+    {
+      "largura": 1440,
+      "publicacao": true,
+      "filaVaziaSemDebito": true,
+      "rankedReal": true,
+      "replayReal": true,
+      "filtrosEnviados": true,
+      "cosmeticosPrevia": true,
+      "offlineProgressivoSemDuplicar": true,
+      "resgateFinanciadoReal": true,
+      "evolucaoPrevia": true,
+      "objetivoAntesDaLiga": true,
+      "erros": []
+    }
+  ],
+  "capturas": "previas-final",
+  "ambiente": {
+    "browser": "Chromium 153",
+    "viewportAltura": 900,
+    "reducedMotion": "reduce",
+    "tipo": "servidor e UI reais com contas fixture"
+  },
+  "inspecaoVisual": {
+    "larguras": [
+      390,
+      768,
+      1440
+    ],
+    "superficies": [
+      "replay com doze sprites",
+      "filtros de mercado",
+      "evolução antes/depois",
+      "resgate",
+      "prévia de moldura paga 375 PC"
+    ],
+    "limite": "vídeo decorativo NPC não carregou nesta instalação; demais interfaces não certificadas"
+  },
+  "amostraVersionada": [
+    {
+      "arquivo": "previas-final/cosmeticos-1440.png",
+      "sha256": "ae18fa2c52caf20ad0dcfb427f8da7abde9b05c3dd44590334360a7fa2daf89f"
+    },
+    {
+      "arquivo": "previas-final/evolucao-390.png",
+      "sha256": "f6ba5503bc11abf523ac608a3bb2a3dcd9de81b3275326bcbb333e102d7e2e4d"
+    },
+    {
+      "arquivo": "previas-final/jornada-390.png",
+      "sha256": "dd7e54f8f5278654f36c874474b7c8006b7a0e740e900c05b3556158584dae1a"
+    },
+    {
+      "arquivo": "previas-final/mercado-1440.png",
+      "sha256": "6c0badae1e120761bd0a40896a5d2fcc4e9124f40bf22da0284f813fa6809814"
+    },
+    {
+      "arquivo": "previas-final/mercado-390.png",
+      "sha256": "e8472268153a25e65c7444d56b8adaa3b9346d9da6ccc2aea27c8354d74001ad"
+    },
+    {
+      "arquivo": "previas-final/replay-390.png",
+      "sha256": "d2fd4294c34f228aa2f7eba414b88967350c3e0297bf8bf28038ac080f51ef04"
+    }
+  ]
+}

@@ -36,6 +36,13 @@ import { podeComprar, chaveDa, temNaConta, custoDaVitrine, aVendaNaVitrine } fro
 import { api } from './api.mjs';
 import { adotarDoServidor, equipadosDoServidor, posseAtual } from './posse-atual.mjs';
 import { saldo, travado, gastarEmCosmetico, modoServidor, hidratar } from './banco.mjs';
+import {S} from './estado.mjs';
+import {avatarURL} from './perfil.mjs';
+import {pinturaDa} from './arenas.mjs';
+import {PALCO} from './liga-palco-dados.mjs';
+import {previaCosmetico} from './cosmetico-previa.mjs';
+let chavePrevia=null;
+const esc=x=>String(x??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
 
 /* O acervo do jogador. Ele entra e sai por fora, como em toda tela desta base:
    quem desenha não guarda, e quem guarda não desenha. */
@@ -133,6 +140,7 @@ function ficha(p, posse, temSaldo) {
   return `<div class="lcPeca ${classe}">
     ${cara(p)}
     <span class="lcNome">${p.nome}</span>
+    <button class="btn" data-cash-previa="${chaveDa(p)}">Prévia</button>
     ${acao}
   </div>`;
 }
@@ -155,6 +163,8 @@ export function pintarCash() {
   const posse = lerPosse() ?? [];
   const disponivel = saldo();
   const daAba = cat.filter(p => p.familia === aba);
+  const prev=previaCosmetico({catalogo:cat,chave:chavePrevia??chaveDa(daAba[0]??{}),perfil:S.profile,avatar:avatarURL()});
+  const previaHtml=prev?`<section class="lcPreviewBox"><b>Prévia: ${esc(prev.nome)}</b><div class="lcPrevia"><div class="bnCena cn-${esc(prev.visual.cena)}"></div><div class="bnVeu"></div><div class="bnTopo"><span class="bnNome ef-${esc(prev.visual.efeito)}">${esc(S.profile?.name??'Treinador')}</span></div><span class="bnMold md-${esc(prev.visual.moldura)}"><img class="bnTreinador" src="${esc(prev.visual.avatar)}" alt="prévia do treinador"></span></div><canvas data-cash-palco aria-label="prévia do cenário" style="width:100%;height:180px;object-fit:contain"></canvas><p>Cenário ilustrativo: no 6×6 o palco vem da semente da partida.</p><p>${prev.compravel?`${num(prev.preco)} PokéCash · entrega permanente à conta`:'Peça do catálogo'} · apenas aparência. Vinculada à conta; não revende por PC-T. A prévia não equipa nem cobra.</p></section>`:'';
 
   /* Quanto falta para ter tudo: é a pergunta que o colecionador faz, e ela
      também é o número que o estudo da L-135 precisa para calibrar. Uma conta
@@ -183,6 +193,7 @@ export function pintarCash() {
         : 'coleção completa'}</span>
     </div>
     <div class="lcAbas">${abas}</div>
+    ${previaHtml}
     ${recado ? `<p class="lcRecado">${recado}</p>` : ''}
     <div class="lcGrade">${daAba.map(p => ficha(p, posse, disponivel)).join('')}</div>
     <!-- ── O AVISO DO §25.1, E ELE NÃO É LETRA MIÚDA ─────────────────────
@@ -193,6 +204,8 @@ export function pintarCash() {
     <p class="lcAviso">Em construção. O PokéCash aqui é <b>moeda simulada</b> —
        não há compra com dinheiro real, e não haverá antes do checkpoint
        econômico e regulatório.</p>`;
+  const cv=alvo.querySelector('[data-cash-palco]');
+  if(cv&&prev){cv.width=PALCO.W;cv.height=PALCO.H;const ctx=cv.getContext('2d'),p=pinturaDa(prev.visual.arena)??pinturaDa('coliseu');p.fundo(0,ctx);p.estatico(ctx);}
   const b = $('#cashFala');
   if (b) b.textContent = fala;
   return true;
@@ -203,6 +216,7 @@ export function abrirCash() {
   if (!cx) return false;
   recado = '';
   aba = primeiraComVenda();
+  chavePrevia=null;
   fala = falaSorteada();
   cx.hidden = false;
   pintarCash();
@@ -296,7 +310,8 @@ export function ligarCash() {
     if (ev.target.closest('[data-cash-fechar]')) { fecharCash(); return; }
 
     const a = ev.target.closest('[data-cash-aba]');
-    if (a) { aba = a.dataset.cashAba; recado = ''; pintarCash(); return; }
+    if (a) { aba = a.dataset.cashAba; chavePrevia=null; recado = ''; pintarCash(); return; }
+    const prev=ev.target.closest('[data-cash-previa]');if(prev){chavePrevia=prev.dataset.cashPrevia;pintarCash();$('#cashCorpo')?.querySelector('.lcPreviewBox')?.scrollIntoView({block:'start',behavior:'instant'});return;}
 
     const c = ev.target.closest('[data-cash-comprar]');
     if (c) comprarPeca(c.dataset.cashComprar);

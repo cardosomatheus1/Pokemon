@@ -4900,3 +4900,46 @@ TBE continua `tbe-4`; sem mudanças de combate, recompensas, taxa, XP,
 matchmaking ou inscrição por esta apresentação. 30 suítes/256 testes focados,
 14 mutantes dirigidos; teste offline UI isolado por dependência de cache de
 imports. Q5/legibilidade e funil AT6-07 não certificados. Relatório 12.
+
+
+## 9.19 Integração AT6/GQ, campanhas e observabilidade (05/10/2026)
+
+A navegação mostra o objetivo atual: inicial, Jornada, seis espécies, Arena.
+Evolução compara fichas TBE antes/depois sem consumir recursos; captura não
+narra proximidade do sucesso apenas pela probabilidade. Mercado compartilha
+busca por tipo/nível/IV individual 0–31; anúncio conserva a ficha da publicação.
+Listagens anteriores sem IV continuam na busca geral, sem inventar IVs.
+Prévia cosmética não equipa nem cobra. O cenário da partida 6×6 vem de sua
+semente; comprar aparência não muda o motor, o power, MMR ou pareamento.
+
+Desafios diários de treinador reutilizam o calendário e orçamento existentes:
+exploração com encontros, XP positivo de banco, vitória de Jornada. Só fatos
+persistidos da ação podem completá-los; leitura do perfil recupera pagamento
+pendente, sem duplicação. Objetivos atribuídos anteriormente não são trocados
+no meio do dia. Sem criatura permanece a política anterior de desafios.
+
+Campanha de bônus não é automática. Janela de sete dias começa segunda-feira
+00 h UTC; público fechado imutável, sem sobreposição de tipo por conta.
+Operador dono autenticado, motivo e confirmação; toda a verba das vagas livre
+na casa antes da criação. Reserva lógica impede outra campanha de gastá-la.
+Até 50 PC-B/dia com preparação comprovada, descontando rotina paga no dia,
+teto 270 de preparação/semana; 100 de marco competitivo; com até 80 da rotina,
+máximo agregado 450. O marco exige três partidas ranqueadas elegíveis contra
+três rivais em dois dias, sem exigência de vitória. Amistoso não conta.
+
+Campanha earned distinta: até 50 PC-T/conta/semana; dotação externa registrada
+exclusiva para toda a coorte, conta madura de sete dias, mesmo marco.
+Bônus não vira PC-T. Carteira reconhece ARENA_EARNED_REWARD e mantém os
+portões existentes. Conta vinculada/pausada, orçamento insuficiente, campanha
+encerrada e objetivo não cumprido recusam resgate. Crédito, débito e fato
+são uma transação idempotente, inclusive sob chamadas concorrentes.
+
+Fatos autoritativos alimentam funil, economia e metagame. Exposição por espécie
+usa os atributos do indivíduo e o resultado da equipe; não é efeito causal.
+D1/D7 usam coorte de primeira partida ranqueada registrada, dias UTC exatos,
+apenas janela completa; amistosos excluídos. Separar emissão de kit/earned,
+stakes/devoluções/ganhos internos, taxa e promoções financiadas. Reserva é
+snapshot temporal, não soma histórica. TBE tbe-4 e XP-OFF-2 não mudam.
+
+Relatório 13 e JSONs documentam contratos, testes, economia e Q5 focado.
+Não são aceite de pagamentos reais ou demonstração de retenção comercial.

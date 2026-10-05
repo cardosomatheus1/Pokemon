@@ -31,6 +31,8 @@ import { compararGolpes } from './comparador-golpes.mjs';
 import { fichaDoGolpe } from './golpe-ficha.mjs';
 import { chaveDoDoce, XP_POR_DOCE } from '../../engine/doce.mjs';
 import { prontasPara, chamadaDaEvolucao, painelDaEvolucao } from './evolucao-idle.mjs';
+import {previsoesEvolucao} from './preparacao-dados.mjs';
+import {htmlPrevisoesEvolucao} from './preparacao-tela.mjs';
 import { estiloItem, usarCatalogo } from './itens-icone.mjs';
 
 /* O CATALOGO DO PACK ALIMENTA OS ICONES. Uma vez, na carga do modulo: o mapa
@@ -275,10 +277,11 @@ export function pintarCentro(E) {
      jogador está olhando, e não só no cartão lá embaixo. */
   const ch = $('#idleEvolui');
   if (ch) {
-    const html = painelDaEvolucao(chamadaDaEvolucao(PACK, E.criaturas, E.bolsa, dex => nomeExibido(esp(dex).n)),
+    const chamada=chamadaDaEvolucao(PACK,E.criaturas,E.bolsa,dex=>nomeExibido(esp(dex).n));
+    const html = painelDaEvolucao(chamada,
       dex => dexImg(dex, esp(dex).n, 'class="evlArte"'));
     ch.hidden = !html;
-    if (html) ch.innerHTML = html;
+    if (html) ch.innerHTML = html + htmlPrevisoesEvolucao(previsoesEvolucao(PACK,E.criaturas.find(c=>c.id===chamada.id),E.bolsa));
   }
 }
 

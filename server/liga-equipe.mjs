@@ -23,6 +23,9 @@ import { criaturasParaLuta } from './jornada.mjs';
 import { concederKitArena } from './arena-premios.mjs';
 import { emTransacao } from './carteira.mjs';
 import { emitir } from './telemetria.mjs';
+import {anotarArena,anotarElegibilidadeArena,exposicaoArena} from './arena-metricas.mjs';
+import {compararTimePublicado} from '../app/modules/comparacao-time.mjs';
+import {recompensasArena,resgatarArena} from './arena-recompensas.mjs';
 
 const RECENTES = 5;
 const nomeDe = (db, id) => db.prepare(`SELECT username FROM users WHERE id = ?`).get(id)?.username ?? 'jogador';
@@ -59,6 +62,7 @@ export function ligaDaConta(db, { userId, agora, pack = PACK }) {
   sincronizarTemporada(db, { agora });
   const t = temporadaDe(agora);
   const equipe = criaturasParaLuta(db, userId, pack).filter(c => !c.naCaixa);
+  anotarElegibilidadeArena(db,{userId,pack,agora});
   return {
     ligada: bandeiraLigada(db, 'league_enabled'),
     temporada: { numero: t.numero, fase: t.fase, dia: t.dia, fim: t.fim },
@@ -110,10 +114,14 @@ export function publicarTime(db, { userId, preset, agora, pack = PACK }) {
   const ids = criaturasDaConta(db, userId).filter(c => !c.naCaixa).map(c => c.id);
   exigirAcessoArena(db, userId, pack, criaturasParaLuta(db, userId, pack).filter(c => !c.naCaixa));
   return emTransacao(db,()=>{
+    const anterior=snapshotsDe(db,userId)[0]??null;
     const snapshot=criarSnapshot(db, { userId, pack, ids, preset, agora });
     concederKitArena(db,{userId,agora});
-    emitir(db,{nome:'arena_time_publicado',userId,chave:`arena-publicar:${snapshot.id}`,agora,
-      campos:{origem:'servidor',snapshot:snapshot.id,tamanho:snapshot.time.length,versao:snapshot.versaoMotor}});
+    anotarElegibilidadeArena(db,{userId,pack,agora});
+    anotarArena(db,{nome:'arena_time_publicado',userId,chave:`publicar:${snapshot.id}`,agora,campos:exposicaoArena(snapshot)});
+    const diff=anterior?compararTimePublicado({pack,publicado:anterior,atual:{...snapshot,ok:true}}):null;
+    if(diff?.compativel&&diff.mudou)anotarArena(db,{nome:'arena_time_melhorado',userId,chave:`melhoria:${snapshot.id}`,agora,
+      campos:{anterior:anterior.id,atual:snapshot.id,mudancas:[...new Set([...diff.mudancas,...diff.membros.flatMap(m=>m.mudancas)].map(m=>m.campo))],antes:exposicaoArena(anterior),depois:exposicaoArena(snapshot)}});
     return snapshot;
   });
 }
@@ -121,6 +129,8 @@ export function publicarTime(db, { userId, preset, agora, pack = PACK }) {
 export function rotasDaLigaEquipe(daExcecao) {
   const tentar = fn => { try { return { corpo: fn() }; } catch (e) { return daExcecao(e); } };
   return {
+    'GET /api/equipe/recompensas':({db,userId,agora})=>({corpo:{campanhas:recompensasArena(db,{userId,agora})}}),
+    'POST /api/equipe/recompensas/resgatar':({db,userId,corpo,agora})=>tentar(()=>resgatarArena(db,{userId,campanha:corpo?.campanha,tipo:corpo?.tipo,agora})),
     'GET /api/equipe/liga': ({ db, userId, agora }) => ({ corpo: ligaDaConta(db, { userId, agora }) }),
     'GET /api/equipe/pontos': ({ db, userId, agora }) => ({ corpo: pontosDaConta(db, { userId, agora }) }),
     'GET /api/equipe/ranking': ({ db, userId, agora, query }) => {

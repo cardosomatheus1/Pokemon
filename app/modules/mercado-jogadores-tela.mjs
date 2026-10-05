@@ -98,16 +98,20 @@ const cartao = a => {
 function filtrosHtml() {
   const f = M.f, criaturas = M.aba === 'criaturas';
   const sel = (nome, opcoes, atual) => `<select data-mk-f="${nome}">${opcoes.map(([v, r]) => `<option value="${esc(v)}"${String(atual ?? '') === String(v) ? ' selected' : ''}>${esc(r)}</option>`).join('')}</select>`;
-  return `<form class="mkFiltros" id="mkFiltros" autocomplete="off">
+  return `<form class="mkFiltros" id="mkFiltros" autocomplete="off"><fieldset style="display:contents"${M.carregando?' disabled':''}>
     ${criaturas ? `<label>Espécie<input data-mk-f="especie" list="mkEspecies" value="${esc(f.especie ?? '')}" placeholder="qualquer"></label>
       <datalist id="mkEspecies">${(PACK.especies ?? []).map(e => `<option value="${esc(nomeExibido(e.n))}">`).join('')}</datalist>
       <label>Brilhante${sel('shiny', [['', 'todos'], ['nao', 'normal'], ['sim', 'brilhante']], f.shiny === true ? 'sim' : f.shiny === false ? 'nao' : '')}</label>
       <label>Nível mín.<input type="number" min="1" max="100" data-mk-f="nivelMin" value="${esc(f.nivelMin ?? '')}"></label>
+      <label>Nível máx.<input type="number" min="1" max="100" data-mk-f="nivelMax" value="${esc(f.nivelMax ?? '')}"></label>
+      <label>Tipo${sel('tipo',[['','qualquer'],...Object.entries(PACK.tipos.nomes)],f.tipo)}</label>
+      <label>Atributo do IV${sel('ivStat',[['hp','HP'],['atq','Ataque'],['def','Defesa'],['spa','At. especial'],['spd','Def. especial'],['vel','Velocidade']],f.ivStat??'hp')}</label>
+      <label>IV mínimo (0–31)<input type="number" min="0" max="31" data-mk-f="ivMin" value="${esc(f.ivMin??'')}"></label>
       <label>Natureza${sel('natureza', [['', 'qualquer'], ...NATUREZAS.map(n => [n, n])], f.natureza)}</label>
       <label>Potencial mín.<input type="number" min="0" max="100" data-mk-f="potencialMin" value="${esc(f.potencialMin ?? '')}"></label>` : ''}
     <label>Preço máx.<input type="number" min="0" data-mk-f="precoMax" value="${esc(f.precoMax ?? '')}"></label>
     <label>Ordem${sel('ordem', ORDENS_MERCADO, f.ordem)}</label>
-    <button class="btn gold">Buscar</button></form>`;
+    <button class="btn gold">${M.carregando?'Buscando…':'Buscar'}</button></fieldset></form>`;
 }
 
 function detalheHtml() {
@@ -128,6 +132,7 @@ function detalheHtml() {
     <div class="mkAbertoTopo">${icone(c, 72)}<div><h4>${esc(c.titulo)}${c.shiny ? ' <span class="mkSelo">brilhante</span>' : ''}</h4>
       <p class="mkDetalhe">${esc(c.detalhe)}${r.exemplar ? ' · exemplar' : ''}</p><p class="mkPreco">${esc(c.preco)}${c.porUnidade ? ` <small>${esc(c.porUnidade)}</small>` : ''}</p>
       <p class="tiny">de ${esc(c.vendedor)} · vence ${new Date(a.expiraEm).toLocaleString('pt-BR')}</p></div></div>
+    ${Array.isArray(r.iv)?`<p class="tiny">IVs (HP / ataque / defesa / at. especial / def. especial / velocidade): ${r.iv.map(x=>esc(x)).join(' / ')}. Potencial total não é chance de vitória.</p>`:a.tipo==='criatura'?'<p class="tiny">Anúncio antigo sem IV detalhado: não aparece nos filtros por atributo.</p>':''}
     ${r.golpes?.length ? `<p class="tiny">Golpes: ${r.golpes.map(g => esc(String(g))).join(', ')}</p>` : ''}
     <div class="mkHist"><b>Preço desta série</b> <span class="tiny">${M.historico ? `${esc(M.historico.janela?.fuso ?? 'UTC')}, 7 dias` : ''}</span>
       ${hist.length ? `<dl>${hist.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>` : '<p class="tiny">carregando…</p>'}
@@ -417,7 +422,7 @@ document.addEventListener('submit', async ev => {
     const val = k => ev.target.querySelector(`[data-mk-f="${k}"]`)?.value ?? '';
     const especie = val('especie').trim().toLowerCase();
     const dex = especie ? (PACK.especies ?? []).find(e => nomeExibido(e.n).toLowerCase() === especie)?.dex ?? -1 : null;
-    M.f = { ordem: val('ordem') || 'recente', precoMax: val('precoMax'), nivelMin: val('nivelMin'), natureza: val('natureza'), potencialMin: val('potencialMin'),
+    M.f = { ordem: val('ordem') || 'recente', precoMax: val('precoMax'), nivelMin: val('nivelMin'), nivelMax: val('nivelMax'), tipo: val('tipo'), ivStat: val('ivStat'), ivMin: val('ivMin'), natureza: val('natureza'), potencialMin: val('potencialMin'),
             especie: val('especie'), dex: dex === -1 ? null : dex, shiny: val('shiny') === 'sim' ? true : val('shiny') === 'nao' ? false : null };
     if (dex === -1) { M.msg = 'Não conheço essa espécie.'; M.lista = []; pintar(); return; }
     M.aberto = null; await buscar(); return;

@@ -26,6 +26,7 @@
  * economia está saudável?" — que é o critério de saída deste bloco.
  */
 import { randomUUID } from 'node:crypto';
+import {painelArena} from './arena-metricas.mjs';
 import { BUCKETS } from '../engine/carteira.mjs';
 import { SO_RESERVA, RESERVAS } from './carteira.mjs';
 import { MARGEM_MAX, margemValida } from '../engine/preco.mjs';
@@ -40,6 +41,7 @@ export const PAPEIS = ['leitura', 'suporte', 'economia', 'dono'];
    `podeFazer`. Ação nova nasce proibida, do mesmo jeito que rota nova nasce
    privada. */
 export const EXIGE = {
+  'arena.campanha.criar': 'dono',
   'painel.ver':          'leitura',
   'jogador.ver':         'suporte',
   'jogador.pausar':      'suporte',
@@ -64,6 +66,7 @@ export const EXIGE = {
 /* Ações que mexem no jogador ou no dinheiro. Exigem `confirmado: true` — e o
    valor tem que vir do chamador, nunca de um padrão. */
 export const DESTRUTIVAS = new Set(['jogador.pausar', 'margem.definir', 'operador.desativar', 'bandeira.definir', 'p2p.congelar', 'p2p.descongelar', 'economia.divergencia.fechar', 'mercado.venda.excluir']);
+DESTRUTIVAS.add('arena.campanha.criar');
 
 export const ERRO_ADMIN = {
   SEM_OPERADOR:  'operador_desconhecido',
@@ -206,6 +209,7 @@ export function painelEconomico(db, { desde = 0, ate = Number.MAX_SAFE_INTEGER }
     faucets, sinks, entreJogadores, emCirculacao, divergencia, passivo,
     totalEmitido: Object.values(faucets).reduce((a, v) => a + v, 0),
     totalRetirado: Object.values(sinks).reduce((a, v) => a + v, 0),
+    arena:painelArena(db,{desde,ate}),
   };
 }
 

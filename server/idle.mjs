@@ -39,6 +39,7 @@
  */
 import { nivelDeNascer } from '../engine/estagios.mjs';
 import { randomUUID } from 'node:crypto';
+import {registrarMissao} from './missoes-treinador.mjs';
 import { novaRaiz, derivar } from '../engine/seed.mjs';
 import { semente } from '../engine/instancia.mjs';
 import {
@@ -325,6 +326,7 @@ export function colher(db, { id, pack, agora, raiz = novaRaiz() }) {
        sem o que ela pagou. */
     db.prepare(`UPDATE expedicoes SET encontros = ?, resultado_json = ? WHERE id = ?`)
       .run(c.total, JSON.stringify(resposta), id);
+    if(c.total>0)registrarMissao(db,{userId:exp.user_id,tipo:'explorar',chave:`expedicao:${id}`,agora});
 
     db.exec('COMMIT');
     return resposta;

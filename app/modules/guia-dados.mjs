@@ -78,7 +78,7 @@ export function guiaDoJogo(pack) {
         { termo: 'Quem luta', texto: 'Entram na luta três criaturas suas — ou mais, se o treinador trouxer mais — e são sempre as mais fortes do seu time. A chance de vencer aparece antes de você lutar.' },
         { termo: 'O que paga', texto: `A primeira vitória em cada nó paga moeda das Rotas, bolas, um doce por linha, e ${PVE.XP_POR_NIVEL_DO_RIVAL} de XP por nível do rival a cada um que lutou. Repetir paga uma fração.` },
         { termo: 'Os ginásios', texto: 'Cada ginásio ensina uma coisa (fraqueza de tipo, velocidade, imunidade…), e a dica aparece no painel do nó. Dão a insígnia e PC-T.' },
-        { termo: 'A Liga de times', texto: 'O seu time publicado luta contra os de outros jogadores, sem aposta, por pontos de Liga.' },
+        { termo: 'A Arena 6×6', texto: 'Complete a Liga e prepare seis espécies diferentes. Publique o time para enfrentar outros jogadores: amistoso grátis ou ranking com aposta crescente por tier, começando em 50 PC no Bronze. A casa recebe 10% do pote; treinar ou evoluir pede nova publicação da defesa.' },
       ],
       ir: [{ rotulo: 'abrir a Jornada', view: 'viewTreino', aba: 'treino:jornada' }] },
 

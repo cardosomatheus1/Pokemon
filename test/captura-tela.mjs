@@ -137,11 +137,11 @@ export function suite() {
     igual(naEquipe.tom, 'pegou');
   });
 
-  s.teste('"faltou pouco" só quando faltou pouco', () => {
+  s.teste('chance alta não prova proximidade do sorteio e não vira quase captura', () => {
     /* Mentira num laudo ensina o jogador a ignorá-lo. */
     const alto = laudo({ pegou: false, nome: 'X', chance: .72 });
     const baixo = laudo({ pegou: false, nome: 'X', chance: .04 });
-    ok(/faltou pouco/.test(alto.nota ?? ''), `com 72% a nota saiu: ${alto.nota}`);
+    ok(!/faltou pouco/.test(alto.nota ?? ''), `72% não revela a distância do sorteio: ${alto.nota}`);
     ok(!/faltou pouco/.test(baixo.nota ?? ''),
       `com 4% o laudo disse "faltou pouco" — e não faltou: ${baixo.nota}`);
     igual(baixo.tom, 'fugiu');
