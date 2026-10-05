@@ -51,6 +51,11 @@ export const nomeDoDex = dex => nomeExibido((especieDe(dex) ?? { n: '?' }).n);
  * comportamento de antes. É deliberado — um chamador esquecido não pode ficar
  * com balão vazio, e a suíte cobra o argumento onde ele importa. */
 export function golpeDoDex(dex, i, nivel = null, escolhidos = null) {
+  // O combate real publica o nome exato, incluindo o último recurso sem tipo.
+  if (typeof i === 'string') {
+    const mv=Object.values(PACK.golpes??{}).flat().find(g=>g.n===i);
+    return {nome:i,cor:mv?(PACK.tipos?.cores??tipoCores??{})[mv.t]||null:null};
+  }
   const todos = (PACK.golpes ?? {})[(especieDe(dex)?.t ?? [])[0]] ?? [];
   /* ST-9.12: com moveset, a lista é a dos ESCOLHIDOS, na ordem do jogador —
      e `avanco-estado` contou esse mesmo tamanho para o motor sortear. */

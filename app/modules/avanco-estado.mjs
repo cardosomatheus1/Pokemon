@@ -221,7 +221,7 @@ export function cena(e, { pack, agora }) {
   const elenco = elencoDaRun(pack, run);
   const meusGolpes = equipe[0] ? golpesDaCriatura(pack, equipe[0]) : null;
   const c = cenaDaRun(run, {
-    elenco, equipe, agora, climaRitmo: ritmoDoClima(pack, run, equipe),
+    elenco, equipe, agora, pack, climaRitmo: ritmoDoClima(pack, run, equipe),
     golpesMeus: quantosGolpes(pack, equipe[0]?.dex, equipe[0]?.nivel, meusGolpes),
     golpesDele: quantosGolpes(pack, (elenco.comuns ?? [])[0]?.dex,
                               nivelDoEstagio(run.estagio)),
@@ -246,7 +246,7 @@ export function cena(e, { pack, agora }) {
      este arquivo. O campo é o `fx` — o VOCABULÁRIO de desenho —, e não a
      chave do clima: o app sabe desenhar chuva, e não sabe o que é Nevasca. */
   const cl = climaDaRun(pack, run);
-  return { ...c, nivelMeu: Math.floor(Number(equipe[0]?.nivel) || 1), golpesMeu: meusGolpes,
+  return { ...c, nivelMeu: c.heroi?.nivel ?? Math.floor(Number(equipe[0]?.nivel) || 1), golpesMeu: c.heroi?.golpes ?? meusGolpes,
            nivelDeles: nivelDoEstagio(run.estagio),
            climaFx: cl?.fx ?? null };
 }
@@ -259,9 +259,9 @@ export function cena(e, { pack, agora }) {
  *
  * A run RECUADA não some: ela fica com `fim` marcado até ser colhida, e é a
  * colheita que paga e limpa. Apagar aqui perderia o saque de quem clicou. */
-export function recuar(e, agora) {
+export function recuar(e, agora, pack) {
   if (!avancoEmCurso(e)) return null;
-  e.run = recuarRun(runDe(e), agora);
+  e.run = recuarRun(runDe(e), agora, { pack });
   salvar(e);
   return e.run;
 }

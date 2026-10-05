@@ -24,6 +24,7 @@ import { jornadaDaConta } from '../server/jornada.mjs';
 import { simular } from '../engine/treino-batalha.mjs';
 import { gerar } from '../server/criaturas.mjs';
 import { xpParaNivel } from '../engine/nivel-criatura.mjs';
+import { waveAtual } from '../engine/run-avanco.mjs';
 
 const T0 = Date.UTC(2026, 9, 1, 12), H = 3600e3;
 const fonte = f => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
@@ -102,7 +103,7 @@ export async function suite() {
 
   s.teste('a tela da run chama as ações, e a colheita com conta tem trava', () => {
     const t = fonte('app/modules/avanco-tela.mjs');
-    for (const chamada of ['await comecarNa(estado(), {', 'await recuarNa(estado(), agora())', 'await pocaoNa(E, {', 'const r = colherRunNa(E, {'])
+    for (const chamada of ['await comecarNa(estado(), {', 'await recuarNa(estado(), agora(), { pack: PACK })', 'await pocaoNa(E, {', 'const r = colherRunNa(E, {'])
       ok(t.includes(chamada), `a tela da run não chama ${chamada}`);
     ok(/!parada\.colhidaEm && !colhendo\)/.test(t) && /colhendo = true;/.test(t) && /\.finally\(\(\) => \{ colhendo = false; \}\)/.test(t), 'a colheita com conta sem a trava: a mesma run seria pedida a cada quadro');
     ok(/r\.then\(colhida => \{ (tentativas = 0; )?depoisDaColheita\(E, colhida, agora\); recarregarAba\?\.\(\); \}\)/.test(t), 'com conta, o quadro "quem apareceu" não repinta depois da colheita');
@@ -121,6 +122,8 @@ export async function suite() {
       const E = D.carregar(deposito);
       const ini = await inicialNa(E, PACK, PACK.iniciais[0], t, o);
 
+      // Este caso mede cura/recuo: titular ferido e consciente, com atributos fixos.
+      srv.db.prepare('UPDATE criaturas SET xp=0,o_hp=31,o_atq=31,o_def=31,o_spa=31,o_spd=31,o_vel=31,natureza=? WHERE id=?').run('Hardy',ini.id);
       const run = await comecarNa(E, { pack: PACK, bioma: 'floresta', estagio: 1, equipe: [ini.id], agora: t }, o);
       ok(run && E.run?.id === run.id && E.run.raiz != null, 'a run da conta não chegou à tela com o id e a raiz do servidor');
 
@@ -130,14 +133,10 @@ export async function suite() {
       let recusa = null;
       try { await pocaoNa(E, { pack: PACK, item: pocao, agora: t }, o); } catch (e) { recusa = e.message; }
       ok(/cheia/.test(recusa ?? ''), `a poção com a vida cheia não foi recusada pelo servidor: ${recusa}`);
-      /* A luta tira vida quando tira — a semente é do servidor (D-134: o teste
-         apostava em "um minuto basta", medido em 18 sementes). Avança de 30 em
-         30 s até a poção curar; outra recusa que não "vida cheia" reprova. */
-      let cura = null;
-      for (let k = 0; k < 12 && !cura; k++) {
-        t += 30e3;
-        try { cura = await pocaoNa(E, { pack: PACK, item: pocao, agora: t }, o); } catch (e) { if (!/cheia/.test(e.message)) throw e; }
-      }
+      /* Consulta no impacto real. Trinta segundos podiam saltar dano e recuperação. */
+      const hit=waveAtual(E.run,{pack:PACK}).roteiro.momentos.find(m=>m.tipo==='golpe'&&m.de==='dele'&&m.dano>0&&!m.caiu);
+      ok(hit,'sem ferimento no caso de cura');t=run.waveComecouEm+hit.t+1;
+      const cura=await pocaoNa(E,{pack:PACK,item:pocao,agora:t},o);
       /* sobra o que o kit de quem começa deu (ST-2.12): a creditada aqui foi a usada */
       igual(`${cura?.curou > 0}|${cura?.item}|${E.bolsa[pocao] ?? 0}`, `true|${pocao}|${PACK.kitInicial?.[pocao] ?? 0}`, 'a poção da conta não curou ou não saiu da bolsa da tela');
 

@@ -161,6 +161,19 @@ function escolher(chart, A, inimigos, preset, aliados) {
   return melhor;
 }
 
+
+function atacar(chart, A, inimigos, aliados, preset, recurso, R, turno, iniciativa) {
+      let { g, D } = escolher(chart, A, inimigos, preset, aliados);
+      if (inimigos.every(I => A.golpes.every(x => danoEsperado(chart, A, I, x) === 0))) g = recurso;
+      const errou = R() >= (g.acc ?? REGRAS.ACERTO_PADRAO);
+      const r = errou ? { dmg: 0, eff: efeito(chart, g.t, D.types), crit: false }
+        : dano(chart, A, D, g, R, 1, 1, A.nivel, REGRAS.CRITICO, REGRAS.MULT_CRITICO);
+      D.hp = Math.max(0, D.hp - r.dmg);
+      return ({ turno, de: `${A.lado}${A.i}`, para: `${D.lado}${D.i}`, golpe: g.n,
+                                     dano: r.dmg, eff: r.eff, crit: r.crit, errou, caiu: D.hp === 0,
+                                     velocidade: A.spe, iniciativa });
+}
+
 export function simular(pack, timeA, timeB, semente, { registrar = true, preset = 'balanced', presetRival = 'balanced' } = {}) {
   for (const p of [preset, presetRival]) if (!PRESETS.includes(p)) throw new Error(`preset desconhecido: ${p}`);
   for (const t of [timeA, timeB])
@@ -182,18 +195,63 @@ export function simular(pack, timeA, timeB, semente, { registrar = true, preset 
       if (A.hp <= 0) continue;
       const inimigos = vivos(A.lado === 'A' ? 'B' : 'A');
       if (!inimigos.length) break;
-      let { g, D } = escolher(chart, A, inimigos, A.lado === 'A' ? preset : presetRival, vivos(A.lado));
-      if (inimigos.every(I => A.golpes.every(x => danoEsperado(chart, A, I, x) === 0))) g = recurso;
-      const errou = R() >= (g.acc ?? REGRAS.ACERTO_PADRAO);
-      const r = errou ? { dmg: 0, eff: efeito(chart, g.t, D.types), crit: false }
-        : dano(chart, A, D, g, R, 1, 1, A.nivel, REGRAS.CRITICO, REGRAS.MULT_CRITICO);
-      D.hp = Math.max(0, D.hp - r.dmg);
-      if (registrar) eventos.push({ turno, de: `${A.lado}${A.i}`, para: `${D.lado}${D.i}`, golpe: g.n,
-                                     dano: r.dmg, eff: r.eff, crit: r.crit, errou, caiu: D.hp === 0,
-                                     velocidade: A.spe, iniciativa });
+      const evento = atacar(chart, A, inimigos, vivos(A.lado), A.lado === 'A' ? preset : presetRival, recurso, R, turno, iniciativa);
+      if (registrar) eventos.push(evento);
     }
   }
   const a = vivos('A').length, b = vivos('B').length;
   return { vencedor: a && !b ? 'A' : b && !a ? 'B' : null, turnos: turno, eventos,
            restantes: { A: a, B: b } };
+}
+
+/* Combate pausável para aventuras. JSON guarda HP, fila de iniciativa e cursor
+   do mesmo Mulberry32; uma poção não ressorteia o turno nem refaz o passado.
+   simular() conserva o caminho rápido para Monte Carlo e usa o mesmo atacar(). */
+export function iniciarCombate(pack, timeA, timeB, seed,
+  { hpA, hpB, preset = 'balanced', presetRival = 'balanced' } = {}) {
+  if (![preset,presetRival].every(p=>PRESETS.includes(p))) throw new Error('preset desconhecido');
+  const lados = {};
+  for (const [lado,time,hps] of [['A',timeA,hpA],['B',timeB,hpB]]) {
+    if (!Array.isArray(time)||!time.length||time.length>REGRAS.TIME_MAX) throw new Error('time inválido');
+    if (hps && (!Array.isArray(hps)||hps.length!==time.length)) throw new Error('HP inválido');
+    lados[lado]=time.map((c,i)=>{
+      const f=montarLutador(pack,c,lado,i),hp=hps?.[i]??f.maxHp;
+      if (!Number.isInteger(hp)||hp<0||hp>f.maxHp) throw new Error('HP inválido');
+      return {...f,hp};
+    });
+  }
+  return {versao:VERSAO_TBE,lados,rng:seed>>>0,turno:0,ordem:[],preset,presetRival};
+}
+
+export function passoCombate(pack, entrada) {
+  if (entrada?.versao!==VERSAO_TBE) throw new Error('versão de combate incompatível');
+  const estado=JSON.parse(JSON.stringify(entrada)),{lados}=estado;
+  const vivos=l=>lados[l].filter(f=>f.hp>0);
+  const resultado=evento=>{
+    const a=vivos('A').length,b=vivos('B').length;
+    return {estado,evento,fim:!a||!b||(!estado.ordem.length&&estado.turno>=REGRAS.TURNOS_MAX),
+      vencedor:a&&!b?'A':b&&!a?'B':null};
+  };
+  if (!vivos('A').length||!vivos('B').length) return resultado(null);
+  let draws=0;
+  const original=rng(estado.rng),R=()=>{draws++;return original();};
+  if (!estado.ordem.length) {
+    if (estado.turno>=REGRAS.TURNOS_MAX) return resultado(null);
+    estado.turno++;
+    estado.ordem=[...vivos('A'),...vivos('B')].map(f=>({f,k:R()}))
+      .map(x=>({...x,iniciativa:x.f.spe*(1-REGRAS.VARIACAO_INICIATIVA+2*REGRAS.VARIACAO_INICIATIVA*x.k)}))
+      .sort((x,y)=>y.iniciativa-x.iniciativa||x.k-y.k)
+      .map(x=>({lado:x.f.lado,i:x.f.i,iniciativa:x.iniciativa}));
+  }
+  let evento=null;
+  while (estado.ordem.length&&!evento) {
+    const x=estado.ordem.shift(),A=lados[x.lado][x.i];
+    if (A.hp<=0) continue;
+    evento=atacar(pack.tipos.efetividade,A,vivos(A.lado==='A'?'B':'A'),vivos(A.lado),
+      A.lado==='A'?estado.preset:estado.presetRival,recursoDo(pack),R,estado.turno,x.iniciativa);
+  }
+  // Cursor do rng() depois das chamadas, sem descartar os sorteios anteriores.
+  estado.rng=(estado.rng+Math.imul(draws,0x6D2B79F5))>>>0;
+  if (!vivos('A').length||!vivos('B').length) estado.ordem=[];
+  return resultado(evento);
 }

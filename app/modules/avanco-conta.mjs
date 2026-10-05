@@ -31,6 +31,8 @@ import { semente } from '../../engine/instancia.mjs';
 import { derivar } from '../../engine/seed.mjs';
 import { leituraDoClima, ritmoDoClima, falaDoClima } from './avanco-clima.mjs';
 import { preferenciasDaRun, eventosDoElenco } from './elenco-condicao.mjs';
+import { armarCombateDaRun } from './avanco-combate.mjs';
+import { golpesDaCriatura } from './moveset-dados.mjs';
 
 /* ── QUAL PERFIL O AVANÇO USA PARA PAGAR ─────────────────────────────────
  * A TRILHA, a do meio das três — e reusar um perfil existente em vez de criar
@@ -57,6 +59,8 @@ export const paraOMotor = (pack, c) => {
   return {
     id: c.id, dex: c.dex, nivel: c.nivel ?? 1, vinculo: c.vinculo ?? 0, foco: c.foco ?? null,
     forca: forcaDe(especie), tipos: [...(especie.t ?? [])], nome: exibido(pack, especie.n),
+    iv: c.iv ? [...c.iv] : null, natureza: c.natureza ?? null,
+    golpes: golpesDaCriatura(pack,c), exclusivos: c.exclusivos ? [...c.exclusivos] : [],
   };
 };
 
@@ -96,21 +100,22 @@ export function runComecada(pack, { bioma, estagio, equipe, motor, raiz, agora, 
     }];
   }
   run.eventos = [...(run.eventos ?? []), ...eventosDoElenco(pack, run, agora)];
-  return run;
+  return armarCombateDaRun(pack,run,motor,elencoDaRun(pack,run),ritmoDoClima(pack,run,motor));
 }
 
 /* ── O RELÓGIO ────────────────────────────────────────────────────────────
  * A CHUVA DA TELA É A MESMA QUE ENCURTA A WAVE (1.32): o ritmo do clima entra
  * no mesmo contexto que o elenco e a equipe. */
 export const runNoInstante = (pack, run, motor, agora) => avancarRun(run, {
-  elenco: elencoDaRun(pack, run), equipe: motor, agora, climaRitmo: ritmoDoClima(pack, run, motor) });
+  elenco: elencoDaRun(pack, run), equipe: motor, agora, pack, climaRitmo: ritmoDoClima(pack, run, motor) });
 
 /* ── A POÇÃO ──────────────────────────────────────────────────────────────
  * Curar com a barra cheia é RECUSADO: um clique errado gastaria a poção que
  * salvaria a run três waves adiante. A leitura da barra é a do motor sem o
  * ritmo do clima — é como o aparelho sempre curou (ver a D-127). */
 export function runCurada(pack, run, motor, { cura, agora }) {
-  const ctx = { elenco: elencoDaRun(pack, run), equipe: motor };
+  if (run.combate) run = runNoInstante(pack, run, motor, agora).run;
+  const ctx = { elenco: elencoDaRun(pack, run), equipe: motor, pack };
   const antes = cenaDaRun(run, { ...ctx, agora });
   if (antes.hp >= antes.hpMax) throw new Error('a vida já está cheia — guarde a poção');
   return curarRun(run, { cura, agora, ...ctx });
@@ -264,4 +269,3 @@ export function contaDaRun(pack, { run, criaturas, banco = [], motor, avancos, r
     encontros: premio.encontros.length, rendeu,
   };
 }
-

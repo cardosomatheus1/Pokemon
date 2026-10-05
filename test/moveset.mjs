@@ -71,7 +71,7 @@ export function suite() {
                      '../server/scheduler.mjs', '../engine/luta-rodada.mjs'])
       ok(!/moveset/.test(fonte(f)), `${f} lê o moveset — ele virou mecânica da Arena`);
     const cena = fonte('../app/modules/avanco-cena.mjs');
-    igual((cena.match(/golpeDe\(meu\.dex, golpe\.golpe, cena\.nivelMeu, cena\.golpesMeu\)/g) ?? []).length, 3,
+    igual((cena.match(/golpeDe\(meu\.dex, golpe\.nome \?\? golpe\.golpe, golpe\.nivel \?\? cena\.nivelMeu, cena\.golpesMeu\)/g) ?? []).length, 3,
       'um dos três lugares do nosso golpe (balão, efeito, projétil) ignora o moveset');
     const estado = fonte('../app/modules/avanco-estado.mjs');
     ok(/golpesMeus: quantosGolpes\(pack, equipe\[0\]\?\.dex, equipe\[0\]\?\.nivel, meusGolpes\)/.test(estado),

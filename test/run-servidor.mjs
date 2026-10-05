@@ -38,7 +38,7 @@ function cena({ xp = [0, 0, 0, 0] } = {}) {
   const u = cadastrar(db, { username: 'run', email: 'run@x.test', senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01', agora: T0 }).id;
   const e = D.VAZIO();
   const ids = [1, 4, 7, 25].map((dex, i) => {
-    const c = gerar(db, { userId: u, pack: PACK, dex, origem: 'inicial' });
+    const c = gerar(db, { userId: u, pack: PACK, dex, origem: 'inicial', raiz: raizDe(900+i) });
     db.prepare(`UPDATE criaturas SET xp = ?, nivel = ?, stamina = ?, stamina_em = ?, criada_em = ? WHERE id = ?`)
       .run(xp[i], 1, STAMINA_MAX, T0 - 60 * MIN, T0 - 60 * MIN + i, c.id);
     e.criaturas.push({ id: c.id, dex, iv: c.iv, natureza: c.natureza.nome, exemplar: c.exemplar, xp: xp[i], nivel: 1,
@@ -108,7 +108,7 @@ export function suite() {
   s.teste('identidade: a mesma run termina e paga IGUAL no aparelho e no servidor — caiu, limpou, recuou, com poção', () => {
     const fins = new Set(); let baus = 0, pocoes = 0, casos = 0;
     const cenarios = [
-      { xp: [0, 0, 0, 0], equipe: [0], passos: [[5, 'sync'], [12, 'sync'], [30, 'sync']], colherEm: 90 },
+      { xp: [0, 0, 0, 0], equipe: [0], passos: [[.11, 'pocao', 'pocao'], [5, 'sync'], [12, 'sync'], [30, 'sync']], colherEm: 90 },
       { xp: [xpParaNivel(30), xpParaNivel(30), xpParaNivel(28), 0], equipe: [0, 1, 2], passos: [[2, 'pocao', 'pocao'], [8, 'sync'], [20, 'sync']], colherEm: 120 },
       { xp: [xpParaNivel(10), xpParaNivel(9), 0, 0], equipe: [0, 1], passos: [[4, 'sync'], [9, 'pocao', 'superpocao'], [14, 'pocao', 'pocao'], [21, 'sync']], colherEm: 100 },
       { xp: [xpParaNivel(14), 0, 0, 0], equipe: [0], passos: [[1, 'sync'], [2, 'recuar']], colherEm: 3 },

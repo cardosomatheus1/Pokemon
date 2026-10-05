@@ -13,7 +13,7 @@ A fila legada de 25/09 continua preservada para rastreabilidade.
 |---|---|---|
 | 0 | 🟡 XP-OFF | Prioridade do dono: XP por estágio e treino automático implementados e testados; aceite visual/deploy pendentes. Spec §7.22.18. |
 | 1 | 🟡 AT6-base | Motor, acesso 6×6, ranked, defesa, 10% da casa, kit, XP repetido e atividade de temporada implementados com validação focada. Fechar apresentação via Q5 antes de marcar entrega visual concluída. Contrato 09 delimita os critérios aplicados. |
-| 2 | ⏳ AT6-13 | Avanço com HP e ataques reais, compatibilidade das runs antigas, cura/captura/CAS e economia preservados. Calibrar antes de substituir o motor agregado. |
+| 2 | 🟡 AT6-13 | Novas runs com HP/golpes reais, snapshots e cura/recuo sincronizados. 470 testes e 8 mutantes; Spec §7.22.19. Q5 e calibração dos iniciais (L-AT6-04) pendentes; não certifica emissão diária. |
 | 3 | 🟡 AT6-14 | IA e cálculo de golpes implementados. Completar informação explícita do catálogo/UI, efeitos adicionais apenas com contrato e testes próprios. |
 | 4 | ⏳ AT6-05 e AT6-07 | Comparação útil do time, leitura da chance/resultado e funil completo; textos e eventos mínimos atuais não completam essas fichas. |
 | 5 | ⏳ GQ-01–06 | Entrada, captura, evolução, clareza econômica e retorno. Fichas em `arena-treinadores/06_QUALIDADE_DO_JOGO_E_JORNADA.md`, incorporadas no PLANO. |

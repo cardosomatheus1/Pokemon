@@ -122,7 +122,7 @@ function caixaDoQuadro(img, fw, fh) {
 const ANIM_DO_COMBATE = { w: 'Walk', a: 'Attack', h: 'Hurt' };
 
 export function desenharCompanheiro(g, p, cam, dirTreinador, escala, sombra) {
-  const dex = dexAcompanhando;
+  const dex = p.dex ?? dexAcompanhando;
   if (dex == null) { esconder('comp'); return null; }
   const grade = gradeDe(dex);
   if (!grade) { esconder('comp'); return null; }
@@ -203,4 +203,3 @@ export function desenharCompanheiro(g, p, cam, dirTreinador, escala, sombra) {
   v.img.style.animation = 'none';
   return p.y;
 }
-

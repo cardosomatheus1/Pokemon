@@ -95,3 +95,33 @@ no relógio do servidor, ou mesma conta no save local. Relatórios reproduzívei
 node tools/testar-arena.mjs --so=progressao-offline,modulos,idle-conta,idle-acoes,colheita,colheita-rotas,ausente,time-aprende,stamina-balanco,avanco-paga,comeco-treinador,avanco-tela,expedicao,estagios,banco-servidor,colecao-servidor,avanco-estado,run-servidor,run-avanco,avanco-forca,forma-estagio,curva-comeco,historico,arena-treinadores --saida=docs/arena-treinadores/VALIDACAO_XP_OFFLINE.json
 node tools/sabotar-arena.mjs --grupo=progressao --saida=docs/arena-treinadores/SABOTAGEM_XP_OFFLINE.json
 ```
+
+
+## Avanço com combate real — AT6-13
+
+Spec §7.22.19 substitui o motor agregado somente nas novas runs. Nível, IV,
+natureza, tipos, golpes, precisão e críticos passam a produzir cada impacto
+real. HP persiste entre inimigos; guia ajuda outro consciente; recuperação
+não revive. Poções e recuo sincronizam a ação antes de aplicar seu efeito;
+abates parciais são salvos mesmo sem descoberta nova. A cena usa a espécie,
+vida e golpes do aliado ativo. Runs legadas seguem sua regra até colher.
+
+`VALIDACAO_AVANCO.json`: 37 suítes, 470 testes, zero falhas. Inclui combate
+contínuo versus rápido, relógio regressivo, cura após impacto, SQL/HTTP,
+rollback, colheita/captura e leituras frequentes versus retorno offline.
+Após ajustar o rótulo de imunidade, 115 testes das superfícies de cena/moveset/
+módulos foram repetidos sem falhas. Servidor estático entregou HTML e os novos
+módulos com HTTP 200/MIME correto; isso não equivale a inspeção visual.
+`SABOTAGEM_AVANCO.json`: 8/8 defeitos capturados. O teste de gravação parcial
+foi refinado para exigir um abate sem outro evento, evitando um falso positivo.
+
+`BALANCEAMENTO_AVANCO.json`: 3.500 runs exploratórias. Mais nível e IV ajudam;
+porém, os iniciais nível 5 na Floresta vencem 5/78/4%, na ordem planta/fogo/
+água. Essa assimetria fica aberta em L-AT6-04. Não declarar balanceamento
+completo, certificação de emissão, Q5 ou plano AT6/GQ inteiro concluídos.
+
+```bash
+node tools/testar-arena.mjs --so=avanco-combate,combate-continuo,run-servidor,run-rotas,run-avanco,avanco-estado,avanco-tela,avanco-efeito,avanco-forca,avanco-paga,avanco-boss,avanco,guia,foco,primitivas,treino-batalha,batalha-precisao,arena-treinadores,liga-partida,presets,idle-acoes,idle-conta,idle-servidor,colecao-servidor,colheita,colheita-rotas,expedicao,progressao-offline,curva-comeco,time-aprende,banco-servidor,modulos,conteudo,moveset,run-fim,run-fantasma,captura --saida=docs/arena-treinadores/VALIDACAO_AVANCO.json
+node tools/sabotar-arena.mjs --grupo=avanco --saida=docs/arena-treinadores/SABOTAGEM_AVANCO.json
+node tools/medir-avanco-combate.mjs --saida=docs/arena-treinadores/BALANCEAMENTO_AVANCO.json
+```

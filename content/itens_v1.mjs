@@ -343,16 +343,16 @@ export const POCOES = [
    * ESCOLHE, nunca o que DECIDE uma batalha*. Poção decide batalha. */
   { id: 'pocao', nome: 'Poção', en: 'Potion', icone: 17, comoAchei: 'olhado',
     faixa: 'comum', porta: 'loja', preco: 150, cura: 20,
-    texto: 'Devolve 20 de vida durante um avanço — o bastante para desfazer uma wave perdida.' },
+    texto: 'Recupera até 20% da vida máxima de cada criatura consciente no Avanço. Não revive.' },
   { id: 'superpocao', nome: 'Super Poção', en: 'Super Potion', icone: 18, comoAchei: 'olhado',
     faixa: 'incomum', porta: 'loja', preco: 500, cura: 50,
-    texto: 'Devolve 50 de vida. Metade da barra: é a que se guarda para a wave do chefe.' },
+    texto: 'Recupera até 50% da vida máxima de cada criatura consciente no Avanço. Não revive.' },
   { id: 'hiperpocao', nome: 'Hiper Poção', en: 'Hyper Potion', icone: 19, comoAchei: 'olhado',
     faixa: 'raro', porta: 'loja', preco: 1400, cura: 80,
-    texto: 'Devolve 80 de vida — quase o custo de um avanço inteiro.' },
+    texto: 'Recupera até 80% da vida máxima de cada criatura consciente no Avanço. Não revive.' },
   { id: 'pocaomaxima', nome: 'Poção Máxima', en: 'Max Potion', icone: 20, comoAchei: 'olhado',
     faixa: 'muitoRaro', porta: 'bau', andarMinimo: 3, cura: 999,
-    texto: 'Enche a vida inteira. Não se compra: sai do baú de um estágio limpo, e é o que salva a run seguinte.' },
+    texto: 'Enche a vida das criaturas conscientes no Avanço. Não revive. Sai do baú de um estágio limpo.' },
 ];
 
 /* ── O QUE É NOSSO, E MORA NO FIM DA FOLHA ────────────────────────────────

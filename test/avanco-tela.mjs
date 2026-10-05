@@ -625,7 +625,7 @@ export function suite() {
        Foi assim que ele aconteceu da primeira vez, e é por isso que este
        teste existe em vez de uma nota no comentário. */
     const cena = ler('../app/modules/avanco-cena.mjs');
-    const linha = cena.split('\n').find(l => l.includes("'-' + golpe.dano"));
+    const linha = cena.split('\n').find(l => l.includes('textoDoDano(golpe)') && l.includes('cena.wave'));
     ok(linha, 'não achei onde o número do dano é emitido');
     ok(linha.includes('cena.wave'),
       'a chave do número de dano não tem a wave: os danos somem a partir da ' +

@@ -88,7 +88,7 @@ export async function comecarNa(e, { pack, bioma, estagio, equipe, agora }, opco
 
 export async function recuarNa(e, agora, opcoes) {
   const o = ondeFaz(opcoes);
-  if (!o.conta) return recuar(e, agora);
+  if (!o.conta) return recuar(e, agora, opcoes?.pack);
   return (await naConta(e, '/api/idle/run/recuar', {}, o)).run;
 }
 

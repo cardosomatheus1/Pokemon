@@ -9667,10 +9667,11 @@ esse trio. **Por que não cabe agora:** a ST-2.10 é sobre o boneco e o relógio
 
 ### L-AT6-01 — Avanço ainda usa força e HP agregados
 
-**Dono:** AT6-13 · **Notada em:** AT6-base, 04/10/2026 · **Estado:** aberta.
-A TBE nova atende Jornada/treino/ranked, mas o Avanço mantém seu motor legado.
-O bloco dono deve versionar runs, integrar HP/golpes/replay reais e medir cura,
-captura, progressão e emissão. Não fechar só por adicionar IV ao power.
+**Dono:** AT6-13 · **Notada em:** AT6-base, 04/10/2026 · **Estado:** resolvida
+funcionalmente em AT6-13. Novas runs usam TBE/HP/golpes reais e snapshots;
+runs antigas mantêm compatibilidade. Cura, recuo, captura e gravação parcial
+cobertos por testes; estudo exploratório versionado. Q5 permanece L-AT6-02;
+balanceamento inicial continua L-AT6-04. Não equivale a certificação de emissão.
 
 ### L-AT6-02 — apresentação da Arena não foi inspecionada
 
@@ -9685,3 +9686,13 @@ Não liberar tag nem afirmar aceite visual por HTTP ou HTML gerado.
 Eventos de busca/resultado, kit e tesouraria interna são base. Faltam funil
 completo, instrumentos de montagem do time, retorno e monetização descritos
 nas fichas. Não ativar emissão semanal ou campanha pública sem medição.
+
+
+### L-AT6-04 — vantagem de tipos desigual na primeira rota
+
+**Dono:** GQ-01/AT6-05 · **Notada em:** AT6-13, 04/10/2026 · **Estado:** aberta.
+Holdout de 100 sementes por inicial no nível 5 na Floresta: planta/fogo/água
+5/78/4% de conclusão; derrota parcial ainda paga abates. A sequência de tipos
+e aprendizado dos golpes amplifica a diferença. Medir rota/orientação inicial
+e calibração por composição antes de declarar entrada equilibrada; preservar
+vantagem real de nível/IV/tipos. Fonte: BALANCEAMENTO_AVANCO.json; Spec §7.22.19.

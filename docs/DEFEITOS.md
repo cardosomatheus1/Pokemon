@@ -7717,3 +7717,24 @@ expedição; fechar sem expedição nunca rendia XP. Relógio independente, fra�
 persistidas e operação autenticada no retorno substituem essa dependência.
 Primeira ativação sem retroatividade; até 12 h/ausência. Testes reais HTTP/save
 local e mutantes S90103–06 cobrem crédito, limites e intervalos de aventuras.
+
+
+## D-AT6-13-01 — SQL descartava IV/natureza do elenco · corrigido
+
+A leitura usada pelo Avanço entregava os atributos no aparelho, mas não na
+conta. SELECT/mapa passam a manter seis IVs e natureza. Testes de snapshot e
+paridade local/SQL travam a diferença; S90202 remove IV para provar detecção.
+
+## D-AT6-13-02 — abate parcial só persistia junto a outro evento · corrigido
+
+Sincronização gravava apenas quando havia nova espécie/wave. O golpe fatal
+podia responder certo e sumir ao reler. Agora grava mudanças no estado real,
+inclusive abates/HP/cursor. Teste exige abate sem evento auxiliar e releitura
+do disco; S90205 capturado. Cura/recuo locais também avançam até a ação.
+
+## D-AT6-13-03 — erro de treino conservava run fantasma · corrigido
+
+A integração XP-OFF recusava aplicar GET válido quando POST treino falhava.
+Agora aplica a conta autoritativa e mantém aviso/status do treino pendente.
+Teste progressao-offline simula treino 503 e releitura válida; run-fantasma
+continua coberto. Crédito não é inventado nem repetido pelo cliente.

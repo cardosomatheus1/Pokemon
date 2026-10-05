@@ -14,6 +14,7 @@ import { criarServidor } from '../server/servidor.mjs';
 import { creditarBolsa, iniciar } from '../server/idle.mjs';
 import { gerar } from '../server/criaturas.mjs';
 import { xpParaNivel } from '../engine/nivel-criatura.mjs';
+import { waveAtual } from '../engine/run-avanco.mjs';
 import { API_VERSAO, CABECALHO_VERSAO } from '../server/contrato.mjs';
 
 const T0 = Date.UTC(2026, 8, 28, 14);
@@ -50,12 +51,14 @@ export async function suite() {
     const c = await montar();
     try {
       const a = await c.conta();
+      c.srv.db.prepare('UPDATE criaturas SET dex=1,xp=0,o_hp=31,o_atq=31,o_def=31,o_spa=31,o_spd=31,o_vel=31,natureza=? WHERE id=?').run('Hardy',a.ini.id);
       const r = await a.post('/api/idle/run', { bioma: 'floresta', equipe: [a.ini.id], raiz: 'forjada', semEncontros: false, wave: 10, agora: T0 + 99 * MIN });
       igual(r.status, 200, `começar: ${JSON.stringify(r.corpo)}`);
       igual(r.corpo.run.iniciadaEm, T0, 'o instante veio do corpo');
       ok(r.corpo.run.raiz !== 'forjada', 'a raiz veio do corpo');
       igual(r.corpo.run.wave, 1, 'a wave veio do corpo');
-      c.avancar(90_000);
+      const hit=waveAtual(r.corpo.run,{pack:PACK}).roteiro.momentos.find(m=>m.tipo==='golpe'&&m.de==='dele'&&m.dano>0&&!m.caiu);
+      ok(hit,'a fixture não oferece ferimento para testar cura');c.avancar(hit.t+1);
       const l = await a.ler();
       igual(l.run.id, r.corpo.run.id, 'a leitura não trouxe a run aberta');
       ok(l.run.eventos.length > r.corpo.run.eventos.length, 'a run não avançou na leitura');
@@ -64,7 +67,7 @@ export async function suite() {
          comuns (o kit), e "sem ter o item" precisa de um item que o kit não dá. */
       igual((await a.post('/api/idle/run/pocao', { item: 'superpocao' })).status, 400, 'poção sem ter o item');
       creditarBolsa(c.srv.db, a.id, 'superpocao', 2);
-      ok(l.run.hpNaWave < 100 || l.run.wave > 1, 'a barra ainda cheia aos 90 s — a cura não será exercitada');
+      ok(l.run.hpNaWave < 100, 'a barra ainda cheia no impacto — a cura não será exercitada');
       const p = await a.post('/api/idle/run/pocao', { item: 'superpocao' });
       igual(p.status, 200, `a poção: ${JSON.stringify(p.corpo)}`);
       ok(p.corpo.curou > 0, 'a poção não curou');

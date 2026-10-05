@@ -38,6 +38,7 @@ import { roteiroDaWave, estadoEm, APROXIMACAO_MS, HP_MOB } from './roteiro-wave.
 import { derivar } from './seed.mjs';
 import { semente } from './instancia.mjs';
 import { REGRA_DO_ELENCO } from './elenco-estagio.mjs';
+import { waveDeCombate, avancarCombate, cenaDoCombate, curarCombate } from './run-combate.mjs';
 
 /* Quanto tempo um golpe fica "acontecendo" para a tela. É a vida do balão na
    arena (1,9 s) arredondada: mais curto e o jogador não lê o nome do golpe;
@@ -123,7 +124,8 @@ function chefeAnterior(run, elenco) {
 }
 
 export function waveAtual(run, { elenco, equipe, golpesMeus = 1, golpesDele = 1,
-                                climaRitmo = 1 }) {
+                                climaRitmo = 1, pack }) {
+  if (run.combate) return waveDeCombate(run, pack);
   const r = resolverWave(semente(derivar(run.raiz, rotuloDaWave(run.wave, run.tentativa))),
     { elenco, wave: run.wave, estagio: run.estagio, hp: run.hpNaWave, equipe, evitar: chefeAnterior(run, elenco) });
   /* O RITMO SAI DA MESMA CONTA QUE A CHANCE: poder contra ameaça. É por isso
@@ -201,7 +203,8 @@ const somar = (lista, dex, quantos) => {
  *
  * **É por isso que o quadro de log e o relatório de volta são uma peça só.** A
  * L-141 pedia o quadro; o §7.22.9 pedia o relatório. Os dois leem daqui. */
-export function avancarRun(run, { elenco, equipe, agora, climaRitmo = 1 }) {
+export function avancarRun(run, { elenco, equipe, agora, climaRitmo = 1, pack }) {
+  if (run?.combate) return avancarCombate(run, { pack, agora });
   if (!emCurso(run)) return { run, aconteceu: [] };
 
   let r = {
@@ -300,7 +303,8 @@ const vidaDoMob = (cai, entrou, t) =>
   cai == null ? 1 : Math.max(0, Math.min(1, 1 - (t - entrou) / Math.max(1, cai - entrou)));
 
 export function cenaDaRun(run, { elenco, equipe, agora, golpesMeus = 1, golpesDele = 1,
-                                 climaRitmo = 1 }) {
+                                 climaRitmo = 1, pack }) {
+  if (run?.combate) return cenaDoCombate(run, { pack, agora });
   if (!run) return null;
   const { comp, roteiro, venceu, p } = waveAtual(run, { elenco, equipe, golpesMeus, golpesDele , climaRitmo });
   const t = Math.max(0, Math.min(roteiro.duracao, inteiro(agora) - run.waveComecouEm));
@@ -388,7 +392,8 @@ function hpDoMob(roteiro, i, t) {
  * de 40 com a barra em 80 curou 20, e é 20 que fica gravado. Guardar 40 e
  * aparar na leitura devolveria os 40 na wave seguinte, quando a barra tivesse
  * espaço — uma poção que rende mais por ser lida mais tarde. */
-export function curarRun(run, { cura, agora, elenco, equipe, climaRitmo = 1 }) {
+export function curarRun(run, { cura, agora, elenco, equipe, climaRitmo = 1, pack }) {
+  if (run?.combate) return curarCombate(run, { pack, cura, agora });
   if (!emCurso(run)) throw new Error('não há run em curso');
   const { roteiro } = waveAtual(run, { elenco, equipe , climaRitmo });
   const t = Math.max(0, Math.min(roteiro.duracao, inteiro(agora) - run.waveComecouEm));
@@ -405,7 +410,8 @@ export function curarRun(run, { cura, agora, elenco, equipe, climaRitmo = 1 }) {
  * escolhida em vez de sofrida: fica tudo que caiu, perde-se o baú. Ter as duas
  * saídas pagando igual é o que torna a decisão honesta — quem está com a barra
  * em 12 na wave 8 pode guardar a criatura para a próxima run. */
-export function recuarRun(run, agora) {
+export function recuarRun(run, agora, { pack } = {}) {
+  if (run?.combate && pack) run = avancarCombate(run, { pack, agora }).run;
   if (!emCurso(run)) return run;
   return { ...run, fim: { em: inteiro(agora), completou: false, motivo: 'recuou' } };
 }

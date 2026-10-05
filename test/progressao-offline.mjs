@@ -10,6 +10,7 @@ import { gerar } from '../server/criaturas.mjs';
 import { iniciar, colher } from '../server/idle.mjs';
 import PACK from '../content/escolhido.mjs';
 import { API_VERSAO, CABECALHO_VERSAO } from '../server/contrato.mjs';
+import { sincronizarIdleDaConta } from '../app/modules/idle-servidor.mjs';
 const H=3600000,T=Date.UTC(2026,9,4,10);
 async function cena(fn) {
   let agora=T;
@@ -26,6 +27,13 @@ async function cena(fn) {
   try{await fn({srv,user,cs,post,xp,tempo:t=>{agora=t;},get:()=>fetch(url('/api/idle'),{headers})});}finally{await srv.fechar();}
 }
 export function suite(){const s=criarSuite('progressao-offline');
+  s.teste('falha no treino não impede atualizar a run pela leitura válida do servidor',async()=>{
+    const dados=new Map(),deposito={getItem:k=>dados.get(k)??null,setItem:(k,v)=>dados.set(k,String(v))};
+    const fim={em:T,completou:false,motivo:'hp'},api={post:async()=>({ok:false,status:503}),
+      get:async rota=>({ok:true,corpo:rota==='/api/doces'?{}:{agora:T,criaturas:[],bolsa:{},expedicoes:[],run:{bioma:'campo',fim}}})};
+    const r=await sincronizarIdleDaConta({api,deposito});ok(!r.ok);igual(r.status,503);
+    const e=carregar(deposito);igual(JSON.stringify(e.run.fim),JSON.stringify(fim));ok(e.conta.desatualizado);
+  });
   s.teste('mesmos abates e encontros pagam XP crescente por estágio, preservando o primeiro',()=>{
     const base=ganhoDaRun({abates:37,encontros:6,estagio:1}).xp;
     const etapas=[1,2,3,4].map(estagio=>ganhoDaRun({abates:37,encontros:6,estagio}).xp);

@@ -61,7 +61,7 @@ export function sincronizarRun(db, { userId, pack, agora }) {
   if (!a) return { run: null, aconteceu: [] };
   if (!emCurso(a.run)) return { run: a.run, aconteceu: [], id: a.id };
   const r = runNoInstante(pack, a.run, motorDe(db, userId, pack, a.run), agora);
-  if (r.aconteceu.length) gravar(db, a.id, r.run);
+  if (r.aconteceu.length || (a.run.combate && JSON.stringify(r.run) !== a.estado_json)) gravar(db, a.id, r.run);
   return { run: r.run, aconteceu: r.aconteceu, id: a.id };
 }
 
@@ -135,7 +135,7 @@ export function pocaoNaRun(db, { userId, pack, item, agora }) {
 export function recuarNaRun(db, { userId, pack, agora }) {
   const { run, id } = sincronizarRun(db, { userId, pack, agora });
   if (!emCurso(run)) throw falha(ERRO_RUN.SEM_RUN, 'não há run em curso');
-  const nova = recuarRun(run, agora);
+  const nova = recuarRun(run, agora, { pack });
   gravar(db, id, nova);
   return nova;
 }
@@ -178,4 +178,3 @@ export function colherRun(db, { userId, pack, agora, raiz = novaRaiz() }) {
   } catch (e) { try { db.exec('ROLLBACK'); } catch {} throw e; }
   return colhida;
 }
-

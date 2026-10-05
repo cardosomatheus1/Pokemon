@@ -3539,3 +3539,28 @@ não aplicável. Recorte focado autorizado pelo dono; não substitui gates de ta
 Saída funcional: progressão cresce, banco recebe ao retorno e regressões das
 superfícies tocadas passam. A migração é aditiva; rollback de código não pode
 apagar XP já creditado. Continuar AT6-13 e demais fichas na ordem do ROADMAP.
+
+
+## AT6-13 — Avanço no motor de golpes reais
+
+**Pedido do dono:** continuar a implementação depois de XP-OFF, com testes
+focados antes do commit. Método INV, porte G; Spec §7.22.19.
+
+Escopo: snapshots da coleção, TBE contínua, roteiro de golpes/HP reais,
+compatibilidade das runs antigas, cura/recuo no instante da ação, abates
+parciais persistidos, guia, renderização do titular e estado da conta.
+
+Q1/Q3/Q6: paridade local/SQL/HTTP, reprise versus simulador rápido em 60
+sementes, consulta offline versus consultas frequentes, rollback forçado de
+poção, inventário, relógio regressivo, ataques não reescritos e recuo sem poll.
+Q2 dirigido S90201–08: HP inicial ignorado, IV perdido, cura cosmética, abate
+adiado, progresso sem gravação, barra falsa, retrato errado e guia esquecido.
+Q4: 3.500 runs exploratórias; relatório expõe progressão e diferença entre
+iniciais, sem certificar economia diária ou todas as composições. Q5 pendente;
+sem alteração de layout/CSS, Q7 não aplicável. Q8 limita turnos/duelo; não é
+ensaio de carga. Antes de tag continuam exigidos os portões integrais.
+
+Saída funcional: 37 suítes, 470 testes sem falhas, oito mutantes capturados.
+Pendência de produto: calibrar experiência dos iniciais na Floresta e concluir
+inspeção visual. Rollback: manter discriminador das runs antigas; não remover
+campos nem reprocessar saques já pagos. ROADMAP/RETOMAR seguem a fila única.

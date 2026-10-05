@@ -7,9 +7,9 @@
  * ── O QUE O MOVESET NÃO TOCA (P4) ──────────────────────────────────────────
  *
  * A Arena escolhe os golpes dela por `atribuirGolpes`, e nada aqui chega lá.
- * No Avanço (R8) o moveset é VISUAL nesta fase: muda o nome do balão e o
- * efeito, e nunca o poder da wave — o motor sorteia um índice, e o tamanho da
- * lista só decide qual nome sai. O combate com golpe de verdade é o E10.
+ * Runs antigas do Avanço usam esses nomes somente nos efeitos visuais.
+ * Novas runs AT6-13 congelam o moveset e calculam cada golpe pela TBE,
+ * como Jornada e Arena da coleção. A Arena comum continua independente.
  */
 import { especieDe } from '../../engine/especie.mjs';
 import { repertorio } from '../../engine/repertorio.mjs';

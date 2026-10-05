@@ -1,0 +1,192 @@
+{
+  "escopo": "focado AT6; sem navegador e sem suíte integral",
+  "total": 470,
+  "falhas": [],
+  "resultados": [
+    {
+      "nome": "avanco-combate",
+      "total": 13,
+      "falhas": []
+    },
+    {
+      "nome": "combate-continuo",
+      "total": 3,
+      "falhas": []
+    },
+    {
+      "nome": "run-servidor",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "run-rotas",
+      "total": 3,
+      "falhas": []
+    },
+    {
+      "nome": "run-avanco",
+      "total": 23,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-estado",
+      "total": 28,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-tela",
+      "total": 57,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-efeito",
+      "total": 22,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-forca",
+      "total": 10,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-paga",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-boss",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "avanco",
+      "total": 17,
+      "falhas": []
+    },
+    {
+      "nome": "guia",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "foco",
+      "total": 28,
+      "falhas": []
+    },
+    {
+      "nome": "primitivas",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "treino-batalha",
+      "total": 12,
+      "falhas": []
+    },
+    {
+      "nome": "batalha-precisao",
+      "total": 3,
+      "falhas": []
+    },
+    {
+      "nome": "arena-treinadores",
+      "total": 22,
+      "falhas": []
+    },
+    {
+      "nome": "liga-partida",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "presets",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "idle-acoes",
+      "total": 11,
+      "falhas": []
+    },
+    {
+      "nome": "idle-conta",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "idle-servidor",
+      "total": 18,
+      "falhas": []
+    },
+    {
+      "nome": "colecao-servidor",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "colheita",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "colheita-rotas",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "expedicao",
+      "total": 30,
+      "falhas": []
+    },
+    {
+      "nome": "progressao-offline",
+      "total": 9,
+      "falhas": []
+    },
+    {
+      "nome": "curva-comeco",
+      "total": 9,
+      "falhas": []
+    },
+    {
+      "nome": "time-aprende",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "banco-servidor",
+      "total": 15,
+      "falhas": []
+    },
+    {
+      "nome": "modulos",
+      "total": 19,
+      "falhas": []
+    },
+    {
+      "nome": "conteudo",
+      "total": 17,
+      "falhas": []
+    },
+    {
+      "nome": "moveset",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "run-fim",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "run-fantasma",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "captura",
+      "total": 19,
+      "falhas": []
+    }
+  ]
+}

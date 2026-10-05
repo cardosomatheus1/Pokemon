@@ -155,9 +155,10 @@ export const especiesVistas = (db, userId, packId) =>
    nível, porque o nível é derivado dele. */
 export const criaturasDaConta = (db, userId) =>
   db.prepare(`SELECT id, dex, xp, vinculo, foco, treinado_ate, stamina, stamina_em, na_caixa, foco_em, descansa_ate,
-                      golpes_json, exclusivos_json
+                      golpes_json, exclusivos_json, o_hp, o_atq, o_def, o_spa, o_spd, o_vel, natureza
                FROM criaturas WHERE user_id = ? ORDER BY criada_em, id`).all(userId)
     .map(l => ({ id: l.id, dex: l.dex, xp: l.xp, nivel: nivelDe(l.xp), vinculo: l.vinculo, foco: l.foco,
+                 iv: [l.o_hp,l.o_atq,l.o_def,l.o_spa,l.o_spd,l.o_vel], natureza: l.natureza,
                  stamina: l.stamina, staminaEm: l.stamina_em, naCaixa: l.na_caixa === 1,
                  ...(l.foco_em != null ? { focoEm: l.foco_em } : {}),
                  ...(l.descansa_ate != null ? { descansaAte: l.descansa_ate } : {}),

@@ -2175,6 +2175,72 @@ Colheitas antigas continuam válidas; `treinadoAte` impede repagar seu treino.
 O save local usa a mesma conta e guarda os intervalos antes de retirar a run.
 
 
+### 7.22.19 Avanço com HP e golpes reais — AT6-13 (04/10/2026)
+
+Novas runs usam `avanco-tbe-1` sobre TBE `tbe-4`. Runs já existentes sem
+`combate` mantêm o motor agregado até sua colheita; não reinterpretar o save.
+Avanço continua com até três aliados e duelos sucessivos contra um adversário.
+A Arena pós-Liga é o modo separado 6×6 do §9.17.
+
+Na entrada ficam congelados nível, seis IVs, natureza, foco, golpes liberados,
+HP máximo, rivais, regra e ritmo do clima. A TBE calcula iniciativa, precisão,
+crítico, ataque físico/especial, defesa, tipos e STAB por golpe. Precisão ausente
+usa 92%; crítico padrão 1/16 com multiplicador 1,5. O cursor de RNG e a ordem
+permitem pausar sem sortear de novo: o combate contínuo reproduz o simulador
+rápido para a mesma semente. Vínculo não aumenta dano. Guia consciente ajuda
+outro aliado com +25% de ataque físico/especial, uma vez; não ajuda a si mesmo
+nem aplica esse bônus no PvP.
+
+A política numérica inicial define níveis comuns 1/8/14/24 por estágio, mais
+`floor((wave-1)/3)`; chefes 5/15/24/36. O pack pode sobrescrever essa regra,
+sem levar espécies ou nomes ao motor genérico. Rivais têm IV 15 e golpes
+legais do seu nível. Mais nível/IV deve ajudar no conjunto de sementes,
+sem garantir vitória: tipos, golpes e composição também determinam o resultado.
+
+HP individual atravessa adversários e waves. Ao derrotar um rival, recupera
+25% do HP máximo de cada aliado consciente, limitado ao HP faltante. Não
+revive. Poções curam 20/50/80% ou completam a vida dos conscientes; retorno
+`curou` informa pontos reais de HP. Vida cheia e uso depois do fim são
+recusados. No instante de um impacto, a cura ocorre depois do golpe já
+ocorrido. Uma leitura anterior não regride cursor, abates ou vida; não se
+pode inserir uma cura no passado. Cura e recuo sincronizam o instante da ação
+antes de aplicá-la, inclusive na passagem de wave.
+
+Cena e efeitos mostram golpes e dano reais, erro, imunidade, super efetivo,
+resistência e crítico. Placa do aliado mostra a vida individual; soma da equipe
+serve à disponibilidade da cura. HP do adversário não é interpolado até uma
+queda predeterminada. Quando o titular cai, retrato/nível/golpes mudam para o
+próximo consciente. Abates são creditados no golpe fatal, inclusive antes do
+fim da wave; recuar preserva o que efetivamente caiu.
+
+Aproximação padrão 3,5 s e intervalo de golpe 1,4 s; wave vencida dura ao
+menos 45 s, ajustados pelo ritmo do clima. Combate pode durar mais; a derrota
+usa sua duração real. Cada duelo tem limite de cem turnos; empate encerra a
+run, sem rerrolagem. As fórmulas de prêmio, 88%, clima, drops, stamina,
+captura, teto de espécies e redução diária de moeda continuam as mesmas;
+mudam os abates e a duração que as alimentam. Isso altera rendimento por
+hora e não constitui certificação da emissão diária.
+
+Conta e aparelho usam o mesmo motor. SQL passa a carregar IV/natureza e
+persistir progresso parcial mesmo sem evento novo de espécie/wave. Poção e
+inventário são atômicos. Se treino automático falhar mas a releitura da conta
+funcionar, aplicar o estado autoritativo e manter aviso de treino pendente;
+um erro de treino não pode conservar uma run fantasma no cliente.
+
+**Medição inicial:** `BALANCEAMENTO_AVANCO.json`, 3.500 runs em 35 cenários,
+100 sementes por cenário, horários 12h/23h UTC alternados. Trio evoluído no
+estágio 2: níveis 12/13/14/17 vencem 43/65/83/100%; estágio 3, níveis
+19/20/21/24: 62/90/100/100%; estágio 4, níveis 31/32/33/36: 88/93/99/100%.
+IV 0/15/31 no trio de nível 19 rende 44/62/84%. São frequências exploratórias,
+com incerteza amostral; não metas garantidas nem probabilidades de PvP.
+
+**Pendência explícita:** sozinho no nível 5, na Floresta, Bulbasaur/Charmander/
+Squirtle vencem 5/78/4%. Tipos e aprendizado acumulam vantagens ao longo dos
+37 oponentes; essa diferença exige orientação/rota inicial e calibração em
+GQ-01/AT6-05. Não declarar os iniciais equilibrados nem apagar vantagem de
+preparo com vitória artificial. Q5 e aceitação visual continuam pendentes.
+
+
 # 8. Fase 4 — Time e Jornada
 
 ## 8.1 Objetivo

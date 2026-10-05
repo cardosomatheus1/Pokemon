@@ -46,6 +46,7 @@
  * quem ele É, e ela ancora.
  */
 import { PMD, ANIM_FILE } from './sprites-dados.mjs';
+import { textoDoDano } from './combate-feedback.mjs';
 /* O ÍCONE DO BALÃO — a cara do bicho que falou. Só a URL: a imagem é
    reaproveitada por balão, e trocar o conteúdo a cada golpe reanimaria a
    opacidade do zero e o balão piscaria entre dois golpes seguidos. */
@@ -171,7 +172,7 @@ export function desenharMobs(g, cam, escala, t, eu, cena, sombra, nomeDe, golpeD
        *"esse parado, ele para e simplesmente congela, está feio"*. Estava
        certo — e a resposta não era inventar um movimento, era usar o que a
        arena já faz há vinte blocos. As constantes vêm de lá inteiras. */
-    const golpesDele = (cena.golpes ?? []).filter(x => x.i === m.i);
+    const golpesDele = (cena.golpes ?? []).filter(x => x.i === m.i && (x.heroi == null || x.heroi === cena.heroi?.i));
     const batendo = golpesDele.some(x => x.de === 'dele');
     const apanhando = golpesDele.some(x => x.de === 'meu');
 
@@ -315,7 +316,7 @@ export function desenharMobs(g, cam, escala, t, eu, cena, sombra, nomeDe, golpeD
         balao(chave, v.el.parentElement, px,
               py - At - 6 - (m.i % POR_LEVA) * 17,
               /* O NÍVEL DELES é o do ESTÁGIO — a régua do lugar (L-168). */
-              golpeDe ? golpeDe(m.dex, golpe.golpe, cena.nivelDeles) : null);
+              golpeDe ? golpeDe(m.dex, golpe.nome ?? golpe.golpe, golpe.nivel ?? cena.nivelDeles) : null);
         /* ── E O EFEITO CAI EM QUEM LEVOU (L-171) ───────────────────
            O golpe DELE acerta o meu companheiro. É a metade do golpe que o
            Avanço nunca teve: sem ela, o atacante se mexe, o balão fala, e nada
@@ -324,15 +325,13 @@ export function desenharMobs(g, cam, escala, t, eu, cena, sombra, nomeDe, golpeD
           /* MUNDO e CÂMERA, e não pixel de tela: o estouro é pintado no
              CANVAS, que não conhece a escala do zoom. Era o D-092 — a conta
              saía daqui em espaço de HTML e chegava lá em espaço de canvas. */
-          estourar(golpeDe ? golpeDe(m.dex, golpe.golpe, cena.nivelDeles)?.nome : null,
+          estourar(golpeDe ? golpeDe(m.dex, golpe.nome ?? golpe.golpe, golpe.nivel ?? cena.nivelDeles)?.nome : null,
                    meu.x, meu.y - 14, cam,
                    'fx' + cena.wave + ':e' + golpe.i + ':' + golpe.t, t);
 
-        /* O ataque dele que não tira nada é um ERRO, e a arena já tem palavra
-           para isso. Sem ela, um balão sem consequência lê como número que
-           sumiu — e o jogador procura o defeito onde não há. */
+        /* Dano zero distingue erro de precisão e imunidade de tipo. */
         if (!golpe.dano)
-          flutuar(v.el.parentElement, px, py - At * 0.9, 'ERROU',
+          flutuar(v.el.parentElement, px, py - At * 0.9, textoDoDano(golpe),
                   cena.wave + ':e' + golpe.i + ':' + golpe.t);
       } else {
         /* A CHAVE CARREGA A WAVE. `golpe.t` é o instante DENTRO da wave, e ele
@@ -343,10 +342,10 @@ export function desenharMobs(g, cam, escala, t, eu, cena, sombra, nomeDe, golpeD
            regra do "ERROU": 11 px, branco, e invisível sobre pixel art clara.
            Medido no navegador, e foi assim que apareceu. */
         flutuar(v.el.parentElement, px, py - At * 0.55,
-                '-' + golpe.dano, cena.wave + ':' + golpe.i + ':' + golpe.t, 'meu');
+                textoDoDano(golpe), cena.wave + ':' + golpe.i + ':' + golpe.t, 'meu');
         /* E o EFEITO no mob, que é quem levou (L-171). */
         estourar(golpeDe && meu.dex != null
-                   ? golpeDe(meu.dex, golpe.golpe, cena.nivelMeu, cena.golpesMeu)?.nome : null,
+                   ? golpeDe(meu.dex, golpe.nome ?? golpe.golpe, golpe.nivel ?? cena.nivelMeu, cena.golpesMeu)?.nome : null,
                  s.x, s.y - fh * 0.45, cam,
                  'fx' + cena.wave + ':' + golpe.i + ':' + golpe.t, t);
       }
@@ -359,8 +358,8 @@ export function desenharMobs(g, cam, escala, t, eu, cena, sombra, nomeDe, golpeD
        no MUNDO, com a câmera — a mesma regra do `estourar` (D-092). */
     if (meu.pronto) for (const golpe of (cena.aCaminho ?? []).filter(x => x.i === m.i)) {
       const dele = golpe.de === 'dele';
-      const nome = !golpeDe ? null : dele ? golpeDe(m.dex, golpe.golpe, cena.nivelDeles)?.nome
-                 : meu.dex != null ? golpeDe(meu.dex, golpe.golpe, cena.nivelMeu, cena.golpesMeu)?.nome : null;
+      const nome = !golpeDe ? null : dele ? golpeDe(m.dex, golpe.nome ?? golpe.golpe, golpe.nivel ?? cena.nivelDeles)?.nome
+                 : meu.dex != null ? golpeDe(meu.dex, golpe.nome ?? golpe.golpe, golpe.nivel ?? cena.nivelMeu, cena.golpesMeu)?.nome : null;
       const mob = { x: s.x, y: s.y - fh * 0.45 }, eu = { x: meu.x, y: meu.y - 14 };
       lancar(nome, dele ? mob : eu, dele ? eu : mob, cam,
              'lc' + cena.wave + ':' + golpe.de + golpe.i + ':' + golpe.t, t + (golpe.t - cena.t));
@@ -388,14 +387,14 @@ export function desenharMobs(g, cam, escala, t, eu, cena, sombra, nomeDe, golpeD
     const camada = camadaViva();
     const mx = (meu.x - cam.x) * escala;
     const my = (meu.y - cam.y) * escala;
-    const meusGolpes = (cena.golpes ?? []).filter(x => x.de === 'meu');
-    const levei = (cena.golpes ?? []).filter(x => x.de === 'dele' && x.dano > 0);
+    const meusGolpes = (cena.golpes ?? []).filter(x => x.de === 'meu' && (x.heroi == null || x.heroi === cena.heroi?.i));
+    const levei = (cena.golpes ?? []).filter(x => x.de === 'dele' && x.dano > 0 && (x.heroi == null || x.heroi === cena.heroi?.i));
 
     if (camada) {
       pintarPlaca('meu', camada, {
         x: mx, y: my + 3,
         texto: nomeDe && meu.dex != null ? nomeDe(meu.dex) : 'você',
-        vida: (cena.hpMax ? cena.hp / cena.hpMax : 1), hp: cena.hp, hpMax: cena.hpMax,
+        vida: cena.heroi ? cena.heroi.hp / cena.heroi.hpMax : (cena.hpMax ? cena.hp / cena.hpMax : 1), hp: cena.heroi?.hp ?? cena.hp, hpMax: cena.heroi?.hpMax ?? cena.hpMax,
         chefe: false, meu: true,
       });
 
@@ -405,17 +404,17 @@ export function desenharMobs(g, cam, escala, t, eu, cena, sombra, nomeDe, golpeD
         balao('meu', camada, mx, my - 52,
               /* E o MEU é o da criatura que foi — ela sobe no meio da run. */
               golpeDe && meu.dex != null
-                ? golpeDe(meu.dex, golpe.golpe, cena.nivelMeu, cena.golpesMeu) : null,
+                ? golpeDe(meu.dex, golpe.nome ?? golpe.golpe, golpe.nivel ?? cena.nivelMeu, cena.golpesMeu) : null,
               meu.dex);
         if (!golpe.dano)
-          flutuar(camada, mx, my - 46, 'ERROU', 'm' + cena.wave + ':e:' + golpe.t, 'meu');
+          flutuar(camada, mx, my - 46, textoDoDano(golpe), 'm' + cena.wave + ':e:' + golpe.t, 'meu');
       }
       if (!meusGolpes.length) baloes.get('meu')?.classList.remove('on');
 
       /* O DANO QUE EU LEVO sobe SOBRE MIM, e em vermelho. Antes ele não
          existia em lugar nenhum: o HP do topo caía e nada dizia por quê. */
       for (const golpe of levei)
-        flutuar(camada, mx, my - 30, '-' + golpe.dano,
+        flutuar(camada, mx, my - 30, textoDoDano(golpe),
                 'm' + cena.wave + ':' + golpe.i + ':' + golpe.t, 'dele');
     }
   } else {
@@ -519,7 +518,7 @@ const meu = { x: 0, y: 0, dir: 0, andando: false, recuo: 0, pronto: false,
 
 export function posicaoDoMeu(eu, cena, t, dexDoMeu = null) {
   if (!cena || !cena.emCena.length) { meu.pronto = false; meu.anim = 'w'; return null; }
-  meu.dex = dexDoMeu;
+  meu.dex = cena.heroi?.dex ?? dexDoMeu;
 
   const campo = pontoDeBatalha(eu, mundoAtual);
   if (!meu.pronto) { meu.x = eu.x; meu.y = eu.y; meu.pronto = true; }
@@ -570,7 +569,7 @@ export function posicaoDoMeu(eu, cena, t, dexDoMeu = null) {
      um bicho que vira as costas sai da luta. */
   if (perto) meu.dir = linhaDe(perto.x - meu.x, perto.y - meu.y);
 
-  return { x: meu.x, y: meu.y, dir: meu.dir, andando: meu.andando,
+  return { x: meu.x, y: meu.y, dir: meu.dir, andando: meu.andando, dex: meu.dex,
            /* `distancia` alimenta o quadro da caminhada no companheiro, que
               anda pela DISTÂNCIA percorrida e não pelo relógio. */
            distancia: (meu.distancia = (meu.distancia ?? 0) + (meu.andando ? vel : 0)) };

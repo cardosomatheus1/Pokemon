@@ -1,0 +1,208 @@
+{
+  "escopo": "somente mutantes Avanço real novos; não é Q2 legado integral",
+  "total": 8,
+  "capturados": 8,
+  "resultados": [
+    {
+      "id": "S90201",
+      "nome": "retomada ignora HP inicial",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "treino melhora a chance gradualmente em holdout; IV melhor também ajuda na aventura",
+          "erro": "nível sem progressão: 0.5125,0.5375,0.825",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "HP inicial é individual; cura durante o turno não ressorteia ataques passados",
+          "erro": "undefined — esperado 1, veio 182",
+          "suite": "combate-continuo"
+        }
+      ]
+    },
+    {
+      "id": "S90202",
+      "nome": "snapshot descarta IVs da aventura",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "novas runs congelam atributos e moveset; run antiga continua no motor agregado",
+          "erro": "Cannot read properties of null (reading '0')",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "treino melhora a chance gradualmente em holdout; IV melhor também ajuda na aventura",
+          "erro": "IV sem vantagem: 0.5625/0.5625",
+          "suite": "avanco-combate"
+        }
+      ]
+    },
+    {
+      "id": "S90203",
+      "nome": "poção não muda o combate",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "poção cura HP individual, preserva passado e não ressuscita; recuar guarda abates parciais",
+          "erro": "",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "identidade: a mesma run termina e paga IGUAL no aparelho e no servidor — caiu, limpou, recuou, com poção",
+          "erro": "t=0.11 (pocao): a run divergiu — esperado {\"bioma\":\"floresta\",\"estagio\":1,\"equipe\":[\"d121d4c6-a9fc-43ed-bdfc-00a93aa5fafb\"],\"raiz\":\"00000000000000000000000005eed000\",\"iniciadaEm\":1790514000000,\"regraElenco\":1,\"wave\":1,\"tentativa\":0,\"waveComecouEm\":1790514000000,\"hpNaWave\":82,\"curas\":[{\"t\":6600,\"quanto\":20}],\"abates\":[],\"apareceram\":[11],\"tentadas\":[],\"eventos\":[{\"tipo\":\"clima\",\"em\":1790514000000,\"key\":\"neutro\",\"nome\":\"Tempo Firme\",\"emoji\":\"⛅\",\"estado\":\"nenhum\",\"frase\":\"sem bônus de clima nesta run\",\"pct\":0},{\"tipo\":\"apareceu\",\"dex\":11,\"wave\":1,\"em\":1790514000000}],\"fim\":null,\"semEncontros\":false,\"combate\":{\"versao\":\"avanco-tbe-1\",\"tbe\":\"tbe-4\",\"regra\":{\"niveisComuns\":[1,8,14,24],\"niveisChefes\":[5,15,24,36],\"recuperacao\":0.25,\"aproximacaoMs\":3500,\"golpeMs\":1400,\"duracaoMinMs\":45000},\"equipe\":[{\"id\":\"d121d4c6-a9fc-43ed-bdfc-00a93aa5fafb\",\"dex\":1,\"nivel\":1,\"iv\":[6,20,23,6,18,25],\"natureza\":\"Bashful\",\"foco\":null,\"golpes\":[\"Magical Leaf\",\"Poison Jab\",\"Quick Attack\"]}],\"waves\":[{\"comp\":[{\"dex\":11,\"forca\":205,\"quantos\":2},{\"dex\":10,\"forca\":195,\"quantos\":2}],\"adversarios\":[{\"dex\":11,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":11,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":10,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":10,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]}]},{\"comp\":[{\"dex\":10,\"forca\":195,\"quantos\":2},{\"dex\":13,\"forca\":195,\"quantos\":2}],\"adversarios\":[{\"dex\":10,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":10,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":13,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":13,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]}]},{\"comp\":[{\"dex\":13,\"forca\":195,\"quantos\":2},{\"dex\":11,\"forca\":205,\"quantos\":2}],\"adversarios\":[{\"dex\":13,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":13,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":11,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":11,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]}]},{\"comp\":[{\"dex\":10,\"forca\":195,\"quantos\":2},{\"dex\":14,\"forca\":205,\"quantos\":2}],\"adversarios\":[{\"dex\":10,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":10,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":14,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":14,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]}]},{\"comp\":[{\"dex\":13,\"forca\":195,\"quantos\":2},{\"dex\":11,\"forca\":205,\"quantos\":2}],\"adversarios\":[{\"dex\":13,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":13,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":11,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":11,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]}]},{\"comp\":[{\"dex\":13,\"forca\":195,\"quantos\":2},{\"dex\":11,\"forca\":205,\"quantos\":2}],\"adversarios\":[{\"dex\":13,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":13,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":11,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":11,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]}]},{\"comp\":[{\"dex\":10,\"forca\":195,\"quantos\":2},{\"dex\":13,\"forca\":195,\"quantos\":2}],\"adversarios\":[{\"dex\":10,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":10,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":13,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":13,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]}]},{\"comp\":[{\"dex\":13,\"forca\":195,\"quantos\":2},{\"dex\":10,\"forca\":195,\"quantos\":2}],\"adversarios\":[{\"dex\":13,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":13,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":10,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":10,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]}]},{\"comp\":[{\"dex\":10,\"forca\":195,\"quantos\":2},{\"dex\":14,\"forca\":205,\"quantos\":2}],\"adversarios\":[{\"dex\":10,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":10,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":14,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":14,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]}]},{\"comp\":[{\"dex\":15,\"forca\":395,\"quantos\":1}],\"adversarios\":[{\"dex\":15,\"nivel\":5,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]}]}],\"hpInicial\":[11],\"creditados\":[],\"ritmo\":1,\"lidoAte\":1790514006600}}, veio {\"bioma\":\"floresta\",\"estagio\":1,\"equipe\":[\"d121d4c6-a9fc-43ed-bdfc-00a93aa5fafb\"],\"raiz\":\"00000000000000000000000005eed000\",\"iniciadaEm\":1790514000000,\"regraElenco\":1,\"wave\":1,\"tentativa\":0,\"waveComecouEm\":1790514000000,\"hpNaWave\":64,\"curas\":[{\"t\":6600,\"quanto\":20}],\"abates\":[],\"apareceram\":[11],\"tentadas\":[],\"eventos\":[{\"tipo\":\"clima\",\"em\":1790514000000,\"key\":\"neutro\",\"nome\":\"Tempo Firme\",\"emoji\":\"⛅\",\"estado\":\"nenhum\",\"frase\":\"sem bônus de clima nesta run\",\"pct\":0},{\"tipo\":\"apareceu\",\"dex\":11,\"wave\":1,\"em\":1790514000000}],\"fim\":null,\"semEncontros\":false,\"combate\":{\"versao\":\"avanco-tbe-1\",\"tbe\":\"tbe-4\",\"regra\":{\"niveisComuns\":[1,8,14,24],\"niveisChefes\":[5,15,24,36],\"recuperacao\":0.25,\"aproximacaoMs\":3500,\"golpeMs\":1400,\"duracaoMinMs\":45000},\"equipe\":[{\"id\":\"d121d4c6-a9fc-43ed-bdfc-00a93aa5fafb\",\"dex\":1,\"nivel\":1,\"iv\":[6,20,23,6,18,25],\"natureza\":\"Bashful\",\"foco\":null,\"golpes\":[\"Magical Leaf\",\"Poison Jab\",\"Quick Attack\"]}],\"waves\":[{\"comp\":[{\"dex\":11,\"forca\":205,\"quantos\":2},{\"dex\":10,\"forca\":195,\"quantos\":2}],\"adversarios\":[{\"dex\":11,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":11,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":10,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":10,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]}]},{\"comp\":[{\"dex\":10,\"forca\":195,\"quantos\":2},{\"dex\":13,\"forca\":195,\"quantos\":2}],\"adversarios\":[{\"dex\":10,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":10,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":13,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":13,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]}]},{\"comp\":[{\"dex\":13,\"forca\":195,\"quantos\":2},{\"dex\":11,\"forca\":205,\"quantos\":2}],\"adversarios\":[{\"dex\":13,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":13,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":11,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":11,\"nivel\":1,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]}]},{\"comp\":[{\"dex\":10,\"forca\":195,\"quantos\":2},{\"dex\":14,\"forca\":205,\"quantos\":2}],\"adversarios\":[{\"dex\":10,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":10,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":14,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":14,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]}]},{\"comp\":[{\"dex\":13,\"forca\":195,\"quantos\":2},{\"dex\":11,\"forca\":205,\"quantos\":2}],\"adversarios\":[{\"dex\":13,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":13,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":11,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":11,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]}]},{\"comp\":[{\"dex\":13,\"forca\":195,\"quantos\":2},{\"dex\":11,\"forca\":205,\"quantos\":2}],\"adversarios\":[{\"dex\":13,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":13,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":11,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":11,\"nivel\":2,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]}]},{\"comp\":[{\"dex\":10,\"forca\":195,\"quantos\":2},{\"dex\":13,\"forca\":195,\"quantos\":2}],\"adversarios\":[{\"dex\":10,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":10,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":13,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":13,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]}]},{\"comp\":[{\"dex\":13,\"forca\":195,\"quantos\":2},{\"dex\":10,\"forca\":195,\"quantos\":2}],\"adversarios\":[{\"dex\":13,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":13,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":10,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":10,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]}]},{\"comp\":[{\"dex\":10,\"forca\":195,\"quantos\":2},{\"dex\":14,\"forca\":205,\"quantos\":2}],\"adversarios\":[{\"dex\":10,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":10,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Bug Bite\",\"Quick Attack\"]},{\"dex\":14,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]},{\"dex\":14,\"nivel\":3,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]}]},{\"comp\":[{\"dex\":15,\"forca\":395,\"quantos\":1}],\"adversarios\":[{\"dex\":15,\"nivel\":5,\"iv\":[15,15,15,15,15,15],\"natureza\":null,\"golpes\":[\"Poison Jab\",\"Bug Bite\"]}]}],\"hpInicial\":[11],\"creditados\":[],\"ritmo\":1,\"lidoAte\":1790514006600}}",
+          "suite": "run-servidor"
+        }
+      ]
+    },
+    {
+      "id": "S90204",
+      "nome": "abate parcial só conta na wave inteira",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "poção cura HP individual, preserva passado e não ressuscita; recuar guarda abates parciais",
+          "erro": "abate parcial perdido — esperado 1, veio 0",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "abate parcial é persistido mesmo sem espécie nova; rollback de poção desfaz item e HP",
+          "erro": "",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "recuar sem consulta anterior credita o abate que já ocorreu",
+          "erro": "undefined — esperado 1, veio 0",
+          "suite": "avanco-combate"
+        }
+      ]
+    },
+    {
+      "id": "S90205",
+      "nome": "abate parcial não vai ao disco",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "abate parcial é persistido mesmo sem espécie nova; rollback de poção desfaz item e HP",
+          "erro": "undefined — esperado [{\"dex\":11,\"quantos\":2},{\"dex\":13,\"quantos\":1}], veio [{\"dex\":11,\"quantos\":2}]",
+          "suite": "avanco-combate"
+        }
+      ]
+    },
+    {
+      "id": "S90206",
+      "nome": "mob volta a ter HP fictício",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "novas runs congelam atributos e moveset; run antiga continua no motor agregado",
+          "erro": "HP inválido",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "HP e golpes do retrato são os eventos reais; barra não interpola dano fictício",
+          "erro": "HP inválido",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "consulta frequente, retorno offline e JSON produzem exatamente o mesmo saque e log",
+          "erro": "HP inválido",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "poção cura HP individual, preserva passado e não ressuscita; recuar guarda abates parciais",
+          "erro": "HP inválido",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "treino melhora a chance gradualmente em holdout; IV melhor também ajuda na aventura",
+          "erro": "HP inválido",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "mesmo nível: golpe escolhido e tipo alteram dano de verdade, não só o balão",
+          "erro": "HP inválido",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "guia ajuda o ataque do aliado consciente, sem ajudar a si nem acumular",
+          "erro": "HP inválido",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "cura no instante de um golpe preserva o impacto já mostrado e não revive reserva caída",
+          "erro": "HP inválido",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "abate parcial é persistido mesmo sem espécie nova; rollback de poção desfaz item e HP",
+          "erro": "HP inválido",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "quando titular cai, o retrato mostra HP, espécie e golpes do próximo aliado",
+          "erro": "HP inválido",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "relógio anterior não regride HP, abates e cursor, nem permite poção no passado",
+          "erro": "HP inválido",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "recuar sem consulta anterior credita o abate que já ocorreu",
+          "erro": "HP inválido",
+          "suite": "avanco-combate"
+        },
+        {
+          "titulo": "identidade: a mesma run termina e paga IGUAL no aparelho e no servidor — caiu, limpou, recuou, com poção",
+          "erro": "HP inválido",
+          "suite": "run-servidor"
+        },
+        {
+          "titulo": "sete runs no mesmo dia: o rendimento decrescente (ST-3.6) e o quadro que a run nova limpa (L-166) são os mesmos",
+          "erro": "HP inválido",
+          "suite": "run-servidor"
+        },
+        {
+          "titulo": "a expedição colhida no meio da run treina quem está nela, e a run segue igual nos dois lados",
+          "erro": "HP inválido",
+          "suite": "run-servidor"
+        },
+        {
+          "titulo": "as recusas: ocupada nos dois sentidos, uma run aberta, poção cheia, colher antes e colher duas vezes; o teto conta a run",
+          "erro": "a poção com a barra cheia",
+          "suite": "run-servidor"
+        },
+        {
+          "titulo": "D-127 consertado: o bônus de clima vale no Avanço para quem é do tipo — no aparelho e no servidor",
+          "erro": "HP inválido",
+          "suite": "run-servidor"
+        }
+      ]
+    },
+    {
+      "id": "S90207",
+      "nome": "cena mostra titular caído",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "quando titular cai, o retrato mostra HP, espécie e golpes do próximo aliado",
+          "erro": "undefined — esperado 1, veio 0",
+          "suite": "avanco-combate"
+        }
+      ]
+    },
+    {
+      "id": "S90208",
+      "nome": "guia deixa de ajudar o aliado",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "guia ajuda o ataque do aliado consciente, sem ajudar a si nem acumular",
+          "erro": "",
+          "suite": "avanco-combate"
+        }
+      ]
+    }
+  ]
+}

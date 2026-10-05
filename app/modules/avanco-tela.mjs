@@ -392,6 +392,7 @@ function levarPalco(paraRun) {
 function pintarHp(cn) {
   const alvo = $('#avHp');
   if (!alvo || !cn) return;
+  alvo.title = cn.heroi ? 'Vida total da equipe; a placa no campo mostra a criatura ativa.' : 'Vida da run';
   const pct = Math.max(0, Math.min(100, (cn.hp / cn.hpMax) * 100));
   /* A COR MUDA ANTES DO NÚMERO FICAR FEIO. Verde até 55, âmbar até 25,
      vermelho abaixo — os mesmos cortes da barra do mob, de propósito: duas
@@ -474,7 +475,7 @@ export function ligarAvanco({ estado, escolha, recarregar, avisar, agora }) {
       return;
     }
     if (ev.target.closest('#avAcoes [data-av="recuar"]')) {
-      try { await recuarNa(estado(), agora()); } catch (e) { avisar(e.message); }
+      try { await recuarNa(estado(), agora(), { pack: PACK }); } catch (e) { avisar(e.message); }
       recarregar();
       return;
     }

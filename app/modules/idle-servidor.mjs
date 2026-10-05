@@ -13,12 +13,14 @@ export async function sincronizarIdleDaConta({ api = apiPadrao, deposito = globa
   const treino = await api.post('/api/idle/treino', {});
   const [r, d] = await Promise.all([api.get('/api/idle'), api.get('/api/doces')]);
   const local = carregar(deposito);
-  if (!treino.ok || !r.ok || !r.corpo) {
+  if (!r.ok || !r.corpo) {
     local.conta = { ...(local.conta ?? {}), desatualizado: true };
     salvar(local, deposito);
     return { ok: false, status: r.status };
   }
   const novo = idleDaConta(local, r.corpo, { doces: d.ok ? d.corpo?.doces ?? null : null, docesPresos: d.ok ? d.corpo?.presos ?? null : null });
+  // Treino indisponível não apaga uma leitura válida nem mantém uma run fantasma.
+  if (!treino.ok) novo.conta.desatualizado = true;
   /* O desvio do relógio (D-145): a hora do servidor contra a do aparelho na
      chegada — a run da tela anda no relógio do servidor. */
   novo.conta.desvio = desvioDoRelogio({ servidor: r.corpo.agora, local: Date.now() });
@@ -32,5 +34,5 @@ export async function sincronizarIdleDaConta({ api = apiPadrao, deposito = globa
     for (const dex of r.corpo.marcas.encontradas ?? []) marcarEncontrada(m, dex);
     gravarMarcas(m, deposito);
   }
-  return { ok: true, treino: treino.corpo?.ganhos ?? [] };
+  return { ok: treino.ok, ...(treino.ok ? {} : { status: treino.status }), treino: treino.corpo?.ganhos ?? [] };
 }
