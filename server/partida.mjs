@@ -37,6 +37,11 @@ import { creditarPartida } from './pontos-liga.mjs';
 import { emTransacao } from './carteira.mjs';
 import { prepararStake, reservarStakes, liquidarStake, stakeGravado, inscrito, exigirStakeLigado, ERRO_STAKE } from './stake-liga.mjs';
 import PACK from '../content/escolhido.mjs';
+import { POLITICA_ARENA, parCompativel } from '../engine/arena-treinadores.mjs';
+import { exigirAcessoArena, acessoDaArena } from './arena-acesso.mjs';
+import { avaliarPareamento } from '../app/modules/pareamento-competitivo.mjs';
+
+const AUTORIZACAO_FILA = Symbol('pareamento do servidor');
 
 export const ERRO_PARTIDA = Object.freeze({
   CHAVE: 'PARTIDA_CHAVE_INVALIDA', SEM_PARTIDA: 'PARTIDA_SEM_PARTIDA', CONTRA_SI: 'PARTIDA_CONTRA_SI', VERSAO: 'PARTIDA_VERSAO',
@@ -98,11 +103,12 @@ const partidasDoPar = (db, users, agora) => db.prepare(`SELECT user_a AS userA, 
    WHERE criada_em > ? AND (user_a IN (?, ?) OR user_b IN (?, ?))`).all(agora - INTEGRIDADE.janelaMs, users[0], users[1], users[0], users[1]);
 
 export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveIdem, agora, raiz = novaRaiz(), sal = novoSal(),
-                                   stake = false, checkpoint }) {
+                                   stake = false, checkpoint, autorizacao }) {
   if (typeof chaveIdem !== 'string' || !CHAVE_OK.test(chaveIdem)) throw falha(ERRO_PARTIDA.CHAVE, 'chave do pedido inválida');
   const idem = `liga:${userId}:${chaveIdem}`;
   const ja = jaJogada(db, idem, pack);
   if (ja) return ja;
+  if (stake && autorizacao !== AUTORIZACAO_FILA) throw falha('ARENA_USAR_FILA', 'A partida ranqueada precisa do pareamento do servidor.');
   /* A temporada vira ANTES da partida: a partida de hoje conta no rating de hoje (ST-11.5). */
   sincronizarTemporada(db, { agora });
   const b = snapshotDe(db, { userId, id: meu });
@@ -112,6 +118,12 @@ export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveId
   /* Os DOIS times, e antes de qualquer escrita: o desafio direto também. */
   exigirQuePossaLutar(db, b, userId);
   exigirQuePossaLutar(db, a, a.user);
+  if (stake) {
+    exigirAcessoArena(db, userId, pack, b.time);
+    exigirAcessoArena(db, a.user, pack, a.time);
+    if (!parCompativel(a, b, ratingDe(db, a.user).rating, ratingDe(db, userId).rating))
+      throw falha('ARENA_FORA_DA_FAIXA', 'Os times estão fora da faixa de competição.');
+  }
   /* O desafio DIRETO também não pareia contas ligadas (§9.12): sem isto, a
      rota direta seria o atalho do win-trading que o pareamento fecha. */
   if (contasLigadas(db, userId).includes(a.user)) throw falha(ERRO_PARTIDA.LIGADA, 'contas ligadas não se enfrentam');
@@ -122,12 +134,22 @@ export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveId
   const c = confrontoDaLiga({ pack, a, b, raiz });
   if (!c.ok) throw falha(ERRO_PARTIDA.VERSAO, c.motivo);
   /* O STAKE (ST-11.10): todos os portões, dos dois lados, ANTES de qualquer escrita. */
-  const prep = stake ? prepararStake(db, { userA: a.user, userB: userId, agora, ...(checkpoint !== undefined ? { checkpoint } : {}) }) : null;
+  let prep = stake ? prepararStake(db, { userA: a.user, userB: userId, agora, ...(checkpoint !== undefined ? { checkpoint } : {}) }) : null;
   const commit = compromisso(raiz, sal);
   const id = randomUUID();
   /* A partida e o Liga MMR na MESMA transação (ST-11.4): a partida gravada sem
      o rating aplicado — ou o contrário — é rating criado ou sumido. */
   emTransacao(db, () => {
+    if (stake) {
+      exigirQuePossaLutar(db, b, userId); exigirQuePossaLutar(db, a, a.user);
+      for (const [dono, snap] of [[userId, b], [a.user, a]]) {
+        const atual = db.prepare('SELECT id FROM team_snapshots WHERE user_id=? ORDER BY criado_em DESC, id DESC LIMIT 1').get(dono);
+        if (atual?.id !== snap.id) throw falha('ARENA_REPUBLICAR', 'Use o último time publicado para competir.');
+        exigirAcessoArena(db, dono, pack, snap.time);
+      }
+      if (!parCompativel(a, b, ratingDe(db, a.user).rating, ratingDe(db, userId).rating)) throw falha('ARENA_FORA_DA_FAIXA', 'O pareamento mudou; busque novamente.');
+      prep = prepararStake(db, { userA:a.user, userB:userId, agora, ...(checkpoint !== undefined ? {checkpoint} : {}) });
+    }
     /* Os dois stakes saem ANTES de a partida existir: sem eles, não há partida. */
     if (prep) reservarStakes(db, { id, userA: a.user, userB: userId, prep, agora });
     db.prepare(`INSERT INTO league_matches (id, idem_key, snap_a, snap_b, user_a, user_b, raiz, sal, commit_hash, semente,
@@ -135,6 +157,8 @@ export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveId
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
       .run(id, idem, a.id, b.id, a.user, userId, raiz, sal, commit, c.semente, c.versaoMotor, c.versaoConteudo, c.vencedor, c.turnos,
            JSON.stringify(c.log), agora);
+    db.prepare('INSERT INTO arena_partidas (partida_id, modo, politica) VALUES (?, ?, ?)')
+      .run(id, stake ? 'ranqueada' : 'amistoso', POLITICA_ARENA.versao);
     /* OS SINAIS (ST-11.8), com a partida de agora incluída: a elegível move o
        Liga MMR; a outra fica gravada, fora do ranking, e o evento vai inteiro
        (sem amostragem) para o operador. */
@@ -145,16 +169,22 @@ export function criarPartida(db, { userId, pack = PACK, meu, adversario, chaveId
     if (prep) liquidarStake(db, { id, userA: a.user, userB: userId, prep, vencedor: c.vencedor, contado: elegivel(sinais), agora });
     /* A partida CONTADA mexe no Liga MMR e paga os League Points (ST-11.7a),
        na mesma transação; a fora do ranking não faz nenhum dos dois. */
-    if (elegivel(sinais)) creditarPartida(db, { id, userA: a.user, userB: userId, vencedor: c.vencedor, agora });
-    if (elegivel(sinais)) aplicarPartida(db, { id, userA: a.user, userB: userId, vencedor: c.vencedor, agora });
-    else emitir(db, { nome: 'liga_partida_fora_do_ranking', userId, chave: `integridade:${id}`, agora,
+    if (stake && elegivel(sinais)) creditarPartida(db, { id, userA: a.user, userB: userId, vencedor: c.vencedor, agora });
+    if (stake && elegivel(sinais)) aplicarPartida(db, { id, userA: a.user, userB: userId, vencedor: c.vencedor, agora });
+    else if (stake) emitir(db, { nome: 'liga_partida_fora_do_ranking', userId, chave: `integridade:${id}`, agora,
                       campos: { partida: id, sinais: sinais.map(x => x.sinal).join(',').slice(0, 40) } });
+    emitir(db,{nome:'arena_partida_concluida',userId,chave:`arena-resultado:${id}`,agora,
+      campos:{origem:'servidor',partida:id,modo:stake?'ranqueada':'amistoso',contou:stake&&elegivel(sinais),stake:prep?.stake??0,vencedor:c.vencedor,turnos:c.turnos}});
   });
   return comStake(db, publica(db.prepare(`SELECT * FROM league_matches WHERE id = ?`).get(id), sinalDe(db, id)));
 }
 
 /* A partida com stake diz o stake (o valor, o pot, o rake e o que aconteceu). */
-const comStake = (db, p) => { const s = stakeGravado(db, p.id); return s ? { ...p, stake: s } : p; };
+const comStake = (db, p) => {
+  const s = stakeGravado(db, p.id), a = db.prepare('SELECT modo, politica FROM arena_partidas WHERE partida_id = ?').get(p.id);
+  return { ...p, ...(s ? { stake: s } : {}), ...(a ? { modo: a.modo, politica: a.politica,
+    rated: a.modo === 'ranqueada' && p.rated, ...(a.modo === 'amistoso' ? { integridade: undefined } : {}) } : {}) };
+};
 
 /* A partida tem LINK PRÓPRIO (I.1): quem tem o id a revê — o replay é
    público, como o reveal da Arena. A do bot também. */
@@ -201,12 +231,29 @@ export function buscarPartida(db, { userId, pack = PACK, meu, chaveIdem, agora, 
   const eu = { user: userId, rating: ratingDe(db, userId).rating, power: b.power };
   /* A BUSCA COM STAKE (ST-11.11): só quem se inscreveu para defender com stake, e NUNCA o bot — o bot não põe dinheiro. */
   if (stake) exigirStakeLigado(db, checkpoint);
-  const candidatos = ultimosSnapshots(db, userId).filter(s => !stake || inscrito(db, s.user))
+  if (stake) exigirAcessoArena(db, userId, pack, b.time);
+  emitir(db,{nome:'arena_busca_iniciada',userId,chave:`arena-busca:${idem}`,agora,campos:{origem:'servidor',ranqueada:stake}});
+  const candidatos = ultimosSnapshots(db, userId).filter(s => !stake || (inscrito(db, s.user, agora)
+    && tierDaConta(db,s.user).tier === tierDaConta(db,userId).tier
+    && acessoDaArena(db, s.user, pack, s.time).ok
+    && parCompativel(s, b, ratingDe(db, s.user).rating, eu.rating)))
+    .filter(s=>{
+      if(!stake)return true;
+      try { prepararStake(db,{userA:s.user,userB:userId,agora,...(checkpoint!==undefined?{checkpoint}:{})});return true; }
+      catch(e){ if(e.userId===s.user)return false;throw e; }
+    })
     .map(s => ({ user: s.user, rating: ratingDe(db, s.user).rating, snapshot: s }));
   const emEspera = db.prepare(`SELECT CASE WHEN user_b = ? THEN user_a ELSE user_b END AS outro FROM league_matches
                                 WHERE (user_a = ? OR user_b = ?) AND criada_em > ?`).all(userId, userId, userId, agora - INTEGRIDADE.cooldownMs).map(l => l.outro);
-  const adv = escolherAdversario({ pack, eu, candidatos, recentes: adversariosRecentes(db, userId), ligadas: contasLigadas(db, userId), evitar: emEspera });
-  if (adv) return criarPartida(db, { userId, pack, meu, adversario: adv.snapshot.id, chaveIdem, agora, raiz, sal, stake, checkpoint });
+  const regras = { pack, eu, recentes: adversariosRecentes(db, userId), ligadas: contasLigadas(db, userId), evitar: emEspera };
+  let pool=candidatos,adv=null;
+  for(let tentativas=0;tentativas<POLITICA_ARENA.candidatosMax;tentativas++){
+    const candidato=escolherAdversario({...regras,candidatos:pool});
+    if(!candidato)break;
+    if(!stake||avaliarPareamento(pack,candidato.snapshot,b).ok){adv=candidato;break;}
+    pool=pool.filter(x=>x.user!==candidato.user);
+  }
+  if (adv) return criarPartida(db, { userId, pack, meu, adversario: adv.snapshot.id, chaveIdem, agora, raiz, sal, stake, checkpoint, autorizacao: AUTORIZACAO_FILA });
   if (stake) throw falha(ERRO_STAKE.SEM_ADVERSARIO, 'ninguém da sua faixa na fila com stake agora — nada foi cobrado');
   const bot = botPara(pack, eu);
   const c = confrontoDaLiga({ pack, a: bot, b, raiz });

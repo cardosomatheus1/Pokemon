@@ -11,13 +11,18 @@
 import { criaturasDaConta } from './idle.mjs';
 import { criarSnapshot, snapshotsDe } from './equipe.mjs';
 import { tierDaConta } from './liga-mmr.mjs';
-import { sincronizarTemporada, rankingDaTemporada } from './temporada.mjs';
+import { sincronizarTemporada, rankingDaTemporada, participantesDaTemporada } from './temporada.mjs';
 import { saldoDePontos, extratoDePontos, insigniasDe, pontosDaPartida } from './pontos-liga.mjs';
 import { PONTOS, PREMIO_DO_TIER } from '../engine/pontos-liga.mjs';
 import { temporadaDe } from '../engine/temporada.mjs';
 import { tierDe } from '../engine/liga-mmr.mjs';
 import { exigirBandeira, bandeiraLigada } from './feature-flags.mjs';
 import PACK from '../content/escolhido.mjs';
+import { acessoDaArena, exigirAcessoArena } from './arena-acesso.mjs';
+import { criaturasParaLuta } from './jornada.mjs';
+import { concederKitArena } from './arena-premios.mjs';
+import { emTransacao } from './carteira.mjs';
+import { emitir } from './telemetria.mjs';
 
 const RECENTES = 5;
 const nomeDe = (db, id) => db.prepare(`SELECT username FROM users WHERE id = ?`).get(id)?.username ?? 'jogador';
@@ -26,17 +31,18 @@ const lado = (vencedor, eu) => (vencedor === 'empate' ? 'empate' : vencedor === 
 /* As minhas partidas, de gente e de bot, do MEU lado e da mais nova para a mais velha. */
 export function minhasPartidas(db, userId, limite = RECENTES, pack = PACK) {
   const gente = db.prepare(`SELECT m.id, m.user_a, m.user_b, m.vencedor, m.turnos, m.criada_em, s.elegivel, e.antes_a, e.antes_b, e.delta,
-                                    k.stake AS st_valor, k.rake AS st_rake, k.estado AS st_estado
+                                    k.stake AS st_valor, k.rake AS st_rake, k.estado AS st_estado, a.modo
                              FROM league_matches m LEFT JOIN liga_sinais s ON s.partida_id = m.id
                              LEFT JOIN liga_mmr_eventos e ON e.partida_id = m.id
                              LEFT JOIN liga_stakes k ON k.partida_id = m.id
+                             LEFT JOIN arena_partidas a ON a.partida_id = m.id
                              WHERE m.user_a = ? OR m.user_b = ? ORDER BY m.criada_em DESC, m.id LIMIT ?`).all(userId, userId, limite)
     .map(l => {
       const eu = l.user_b === userId ? 'B' : 'A';
       /* O EFEITO no tier, pelos NOMES: o antes e o depois do livro viram
          tier aqui dentro, e o número não sai do servidor (§9.7). */
       const antes = eu === 'A' ? l.antes_a : l.antes_b, depois = antes + (eu === 'A' ? l.delta : -l.delta);
-      return { id: l.id, lado: eu, quando: l.criada_em, turnos: l.turnos, resultado: lado(l.vencedor, eu), rated: l.elegivel !== 0,
+      return { id: l.id, modo: l.modo ?? 'legado', lado: eu, quando: l.criada_em, turnos: l.turnos, resultado: lado(l.vencedor, eu), rated: l.modo !== 'amistoso' && l.elegivel !== 0,
                pontos: pontosDaPartida(db, l.id, userId),
                ...(l.st_estado ? { stake: { valor: l.st_valor, rake: l.st_rake, estado: l.st_estado } } : {}),
                ...(l.delta != null ? { tier: { antes: tierDe(antes), depois: tierDe(depois) } } : {}),
@@ -52,13 +58,14 @@ export function minhasPartidas(db, userId, limite = RECENTES, pack = PACK) {
 export function ligaDaConta(db, { userId, agora, pack = PACK }) {
   sincronizarTemporada(db, { agora });
   const t = temporadaDe(agora);
-  const equipe = criaturasDaConta(db, userId).filter(c => !c.naCaixa).map(c => ({ id: c.id, dex: c.dex, nivel: c.nivel }));
+  const equipe = criaturasParaLuta(db, userId, pack).filter(c => !c.naCaixa);
   return {
     ligada: bandeiraLigada(db, 'league_enabled'),
     temporada: { numero: t.numero, fase: t.fase, dia: t.dia, fim: t.fim },
     ...tierDaConta(db, userId),
     meuTime: snapshotsDe(db, userId)[0] ?? null,
     equipe,
+    acesso: acessoDaArena(db, userId, pack, equipe),
     recentes: minhasPartidas(db, userId, RECENTES, pack),
     pontos: saldoDePontos(db, userId),
   };
@@ -86,7 +93,7 @@ export function rankingDaLiga(db, { userId, agora, temporada = null, limite = RA
   const fechadas = db.prepare(`SELECT numero FROM liga_temporadas ORDER BY numero DESC`).all().map(l => l.numero);
   let todas;
   if (n === atual) {
-    todas = db.prepare(`SELECT user_id, rating, partidas FROM liga_mmr WHERE partidas > 0 ORDER BY rating DESC, user_id`).all()
+    todas = participantesDaTemporada(db, atual)
       .map((c, i) => ({ posicao: i + 1, user: c.user_id, tier: tierDe(c.rating), partidas: c.partidas }));
   } else {
     todas = rankingDaTemporada(db, n);
@@ -101,7 +108,14 @@ export function rankingDaLiga(db, { userId, agora, temporada = null, limite = RA
 export function publicarTime(db, { userId, preset, agora, pack = PACK }) {
   exigirBandeira(db, 'league_enabled');
   const ids = criaturasDaConta(db, userId).filter(c => !c.naCaixa).map(c => c.id);
-  return criarSnapshot(db, { userId, pack, ids, preset, agora });
+  exigirAcessoArena(db, userId, pack, criaturasParaLuta(db, userId, pack).filter(c => !c.naCaixa));
+  return emTransacao(db,()=>{
+    const snapshot=criarSnapshot(db, { userId, pack, ids, preset, agora });
+    concederKitArena(db,{userId,agora});
+    emitir(db,{nome:'arena_time_publicado',userId,chave:`arena-publicar:${snapshot.id}`,agora,
+      campos:{origem:'servidor',snapshot:snapshot.id,tamanho:snapshot.time.length,versao:snapshot.versaoMotor}});
+    return snapshot;
+  });
 }
 
 export function rotasDaLigaEquipe(daExcecao) {

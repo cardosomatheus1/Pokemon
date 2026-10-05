@@ -1,0 +1,26 @@
+Verificação do estudo de combate — 03/10/2026
+Commit: f6fe58ffb739ebb42d584f0d827e8d1984b14738
+Branch: claude/docs-planning-tests-6hjthq
+Pack: pokemon_kanto_v1. TBE atual: tbe-2.
+O repositório do jogo ficou sem alterações locais.
+932000 combates: 520000 TBE atual; 328000 candidatos de iniciativa; 84000 arena comum.
+40000 runs de Avanço fixas; 1000 controles pareados adicionais; 800000 tentativas de golpe.
+Cópia sem mudança de iniciativa: paridade de 100 fixtures com eventos completos.
+Fixtures de moveset verificadas com movesetValido do jogo.
+Sem gravação em banco; sem implantar regra experimental.
+Testes executados por importação das suites e .rodar() do arnês, não por mero carregamento dos módulos:
+....
+{"nome":"primitivas","total":4,"falhas":[]}
+........
+{"nome":"treino-batalha","total":8,"falhas":[]}
+.........................
+{"nome":"wave","total":25,"falhas":[]}
+.......
+{"nome":"jornada-equilibrio","total":7,"falhas":[]}
+.......
+{"nome":"liga-partida","total":7,"falhas":[]}
+{"suites":5,"total":51,"failed":0}
+
+SHA256 dos arquivos de pesquisa:
+2cace1c6045b8bc502d6f935f29a6267fdc25f9d7127bbc0f054b2b9d1eb1968  estudo-combate.mjs
+0363cdbadef46a110ff913157e06d4b03902ac50c0932719b28e45f703c25499  resultados-combate.json

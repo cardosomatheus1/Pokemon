@@ -12,7 +12,7 @@
  * ao mesmo tempo, fecha uma vez. E é PREGUIÇOSA: quem lê a Liga sincroniza —
  * não há agendador que possa não rodar.
  */
-import { temporadaDe, softReset } from '../engine/temporada.mjs';
+import { temporadaDe, janelaDaTemporada, softReset } from '../engine/temporada.mjs';
 import { tierDe } from '../engine/liga-mmr.mjs';
 import { virarPontos } from './pontos-liga.mjs';
 
@@ -23,6 +23,18 @@ function emTransacao(db, fn) {
 }
 
 export const temporadaGravada = db => db.prepare(`SELECT temporada FROM liga_estado WHERE id = 1`).get()?.temporada ?? null;
+
+export function participantesDaTemporada(db, numero) {
+  const { inicio, fim } = janelaDaTemporada(numero);
+  return db.prepare(`WITH atividade AS (
+    SELECT m.user_a AS user_id FROM league_matches m JOIN liga_mmr_eventos e ON e.partida_id=m.id
+      WHERE m.criada_em >= ? AND m.criada_em < ?
+    UNION ALL
+    SELECT m.user_b FROM league_matches m JOIN liga_mmr_eventos e ON e.partida_id=m.id
+      WHERE m.criada_em >= ? AND m.criada_em < ?
+  ) SELECT r.user_id, r.rating, COUNT(*) AS partidas FROM atividade a JOIN liga_mmr r ON r.user_id=a.user_id
+    GROUP BY r.user_id ORDER BY r.rating DESC, r.user_id`).all(inicio, fim, inicio, fim);
+}
 
 /* Fecha, em ordem, toda temporada que o relógio já deixou para trás. */
 export function sincronizarTemporada(db, { agora }) {
@@ -40,7 +52,7 @@ export function sincronizarTemporada(db, { agora }) {
       if (!vira.changes) return false;
       const contas = db.prepare(`SELECT user_id, rating, partidas FROM liga_mmr ORDER BY rating DESC, user_id`).all();
       db.prepare(`INSERT INTO liga_temporadas (numero, fechada_em, ranking_json) VALUES (?, ?, ?)`)
-        .run(n, agora, JSON.stringify(contas.map((c, i) => ({ posicao: i + 1, user: c.user_id, tier: tierDe(c.rating), partidas: c.partidas }))));
+        .run(n, agora, JSON.stringify(participantesDaTemporada(db, n).map((c, i) => ({ posicao: i + 1, user: c.user_id, tier: tierDe(c.rating), partidas: c.partidas }))));
       /* Os pontos viram ANTES do soft reset: o prêmio é do tier em que a
          temporada fechou (ST-11.7a). */
       virarPontos(db, { temporada: n, agora });

@@ -1,0 +1,450 @@
+{
+  "versaoMotor": "tbe-4",
+  "data": "2026-10-04",
+  "raiz": 936378368,
+  "paresPorCenario": 1000,
+  "metodo": "espelhos controlados com troca de lado; IC normal por par; movesets fixos de nível 60; sem certificação global de matchmaking",
+  "totalLutas": 40000,
+  "resultados": [
+    {
+      "cenario": "formacao-1",
+      "dexes": [
+        6,
+        9,
+        3,
+        149,
+        143,
+        65
+      ],
+      "efeito": "nivel+0",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1000,
+      "derrotas": 1000,
+      "empates": 0,
+      "pontos": 0.5,
+      "ic95": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "cenario": "formacao-1",
+      "dexes": [
+        6,
+        9,
+        3,
+        149,
+        143,
+        65
+      ],
+      "efeito": "nivel+1",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1167,
+      "derrotas": 833,
+      "empates": 0,
+      "pontos": 0.5835,
+      "ic95": [
+        0.5699454166006059,
+        0.5970545833993941
+      ]
+    },
+    {
+      "cenario": "formacao-1",
+      "dexes": [
+        6,
+        9,
+        3,
+        149,
+        143,
+        65
+      ],
+      "efeito": "nivel+2",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1316,
+      "derrotas": 684,
+      "empates": 0,
+      "pontos": 0.658,
+      "ic95": [
+        0.6412412424818082,
+        0.6747587575181918
+      ]
+    },
+    {
+      "cenario": "formacao-1",
+      "dexes": [
+        6,
+        9,
+        3,
+        149,
+        143,
+        65
+      ],
+      "efeito": "nivel+5",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1745,
+      "derrotas": 255,
+      "empates": 0,
+      "pontos": 0.8725,
+      "ic95": [
+        0.8580240633207126,
+        0.8869759366792875
+      ]
+    },
+    {
+      "cenario": "formacao-1",
+      "dexes": [
+        6,
+        9,
+        3,
+        149,
+        143,
+        65
+      ],
+      "efeito": "IV31-versus15",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1407,
+      "derrotas": 593,
+      "empates": 0,
+      "pontos": 0.7035,
+      "ic95": [
+        0.6858144160322516,
+        0.7211855839677485
+      ]
+    },
+    {
+      "cenario": "formacao-2",
+      "dexes": [
+        68,
+        76,
+        80,
+        94,
+        131,
+        135
+      ],
+      "efeito": "nivel+0",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1000,
+      "derrotas": 1000,
+      "empates": 0,
+      "pontos": 0.5,
+      "ic95": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "cenario": "formacao-2",
+      "dexes": [
+        68,
+        76,
+        80,
+        94,
+        131,
+        135
+      ],
+      "efeito": "nivel+1",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1408,
+      "derrotas": 592,
+      "empates": 0,
+      "pontos": 0.704,
+      "ic95": [
+        0.6871442326994204,
+        0.7208557673005795
+      ]
+    },
+    {
+      "cenario": "formacao-2",
+      "dexes": [
+        68,
+        76,
+        80,
+        94,
+        131,
+        135
+      ],
+      "efeito": "nivel+2",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1599,
+      "derrotas": 401,
+      "empates": 0,
+      "pontos": 0.7995,
+      "ic95": [
+        0.783382963098681,
+        0.8156170369013189
+      ]
+    },
+    {
+      "cenario": "formacao-2",
+      "dexes": [
+        68,
+        76,
+        80,
+        94,
+        131,
+        135
+      ],
+      "efeito": "nivel+5",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1971,
+      "derrotas": 29,
+      "empates": 0,
+      "pontos": 0.9855,
+      "ic95": [
+        0.9802970225279583,
+        0.9907029774720418
+      ]
+    },
+    {
+      "cenario": "formacao-2",
+      "dexes": [
+        68,
+        76,
+        80,
+        94,
+        131,
+        135
+      ],
+      "efeito": "IV31-versus15",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1824,
+      "derrotas": 176,
+      "empates": 0,
+      "pontos": 0.912,
+      "ic95": [
+        0.8997135519206564,
+        0.9242864480793437
+      ]
+    },
+    {
+      "cenario": "formacao-3",
+      "dexes": [
+        18,
+        26,
+        34,
+        59,
+        103,
+        134
+      ],
+      "efeito": "nivel+0",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1000,
+      "derrotas": 1000,
+      "empates": 0,
+      "pontos": 0.5,
+      "ic95": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "cenario": "formacao-3",
+      "dexes": [
+        18,
+        26,
+        34,
+        59,
+        103,
+        134
+      ],
+      "efeito": "nivel+1",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1414,
+      "derrotas": 586,
+      "empates": 0,
+      "pontos": 0.707,
+      "ic95": [
+        0.6884326084322641,
+        0.7255673915677359
+      ]
+    },
+    {
+      "cenario": "formacao-3",
+      "dexes": [
+        18,
+        26,
+        34,
+        59,
+        103,
+        134
+      ],
+      "efeito": "nivel+2",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1753,
+      "derrotas": 247,
+      "empates": 0,
+      "pontos": 0.8765,
+      "ic95": [
+        0.8621569640912712,
+        0.8908430359087287
+      ]
+    },
+    {
+      "cenario": "formacao-3",
+      "dexes": [
+        18,
+        26,
+        34,
+        59,
+        103,
+        134
+      ],
+      "efeito": "nivel+5",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1994,
+      "derrotas": 6,
+      "empates": 0,
+      "pontos": 0.997,
+      "ic95": [
+        0.9946055148446568,
+        0.9993944851553432
+      ]
+    },
+    {
+      "cenario": "formacao-3",
+      "dexes": [
+        18,
+        26,
+        34,
+        59,
+        103,
+        134
+      ],
+      "efeito": "IV31-versus15",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1954,
+      "derrotas": 46,
+      "empates": 0,
+      "pontos": 0.977,
+      "ic95": [
+        0.9700749332024773,
+        0.9839250667975227
+      ]
+    },
+    {
+      "cenario": "formacao-4",
+      "dexes": [
+        38,
+        47,
+        62,
+        82,
+        91,
+        112
+      ],
+      "efeito": "nivel+0",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1000,
+      "derrotas": 1000,
+      "empates": 0,
+      "pontos": 0.5,
+      "ic95": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "cenario": "formacao-4",
+      "dexes": [
+        38,
+        47,
+        62,
+        82,
+        91,
+        112
+      ],
+      "efeito": "nivel+1",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1150,
+      "derrotas": 850,
+      "empates": 0,
+      "pontos": 0.575,
+      "ic95": [
+        0.5592052770434782,
+        0.5907947229565217
+      ]
+    },
+    {
+      "cenario": "formacao-4",
+      "dexes": [
+        38,
+        47,
+        62,
+        82,
+        91,
+        112
+      ],
+      "efeito": "nivel+2",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1278,
+      "derrotas": 722,
+      "empates": 0,
+      "pontos": 0.639,
+      "ic95": [
+        0.6199694927391147,
+        0.6580305072608853
+      ]
+    },
+    {
+      "cenario": "formacao-4",
+      "dexes": [
+        38,
+        47,
+        62,
+        82,
+        91,
+        112
+      ],
+      "efeito": "nivel+5",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1654,
+      "derrotas": 346,
+      "empates": 0,
+      "pontos": 0.827,
+      "ic95": [
+        0.8089131017172791,
+        0.8450868982827208
+      ]
+    },
+    {
+      "cenario": "formacao-4",
+      "dexes": [
+        38,
+        47,
+        62,
+        82,
+        91,
+        112
+      ],
+      "efeito": "IV31-versus15",
+      "pares": 1000,
+      "lutas": 2000,
+      "vitorias": 1418,
+      "derrotas": 582,
+      "empates": 0,
+      "pontos": 0.709,
+      "ic95": [
+        0.6895063324776101,
+        0.7284936675223899
+      ]
+    }
+  ]
+}

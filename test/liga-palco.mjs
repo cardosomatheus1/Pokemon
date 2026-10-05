@@ -21,9 +21,11 @@ import { MOVE_FX } from '../app/modules/efeitos-dados.mjs';
 
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
 function partida() {
-  /* Dois treinadores da jornada com time cheio: a partida de teste tem quatro ou mais de cada lado. */
-  const cheios = (PACK.treinadores ?? []).filter(t => (t.time ?? []).length >= 4 && !(t.time ?? []).some(x => x.vidaX)).map(t => snapshotDoBot(PACK, t));
-  const c = confrontoDaLiga({ pack: PACK, a: cheios[0], b: cheios[1], raiz: 'abc123' });
+  /* Este par tem ataques de contato e de longe. O teste mede coreografia;
+     a atualização da IA pode mudar os ataques escolhidos por outros pares. */
+  const a = snapshotDoBot(PACK,PACK.treinadores.find(t=>t.id==='blaine'));
+  const b = snapshotDoBot(PACK,PACK.treinadores.find(t=>t.id==='lorelei'));
+  const c = confrontoDaLiga({ pack: PACK, a, b, raiz: 'abc123' });
   return c.log;
 }
 const nome = d => `#${d}`;

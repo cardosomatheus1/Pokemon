@@ -19,6 +19,7 @@ import { lutarNo, nosDa, quantosLutam } from '../../engine/jornada.mjs';
 import { powerDe } from '../../engine/time.mjs';
 import { servir } from './jornada-correcao.mjs';
 import { recompensaPve, xpDaLuta } from '../../engine/recompensa-pve.mjs';
+import { limitarXpRepetido } from '../../engine/xp-jornada-repeticao.mjs';
 import { chaveDoDoce } from '../../engine/doce.mjs';
 import { idDaMoeda } from '../../engine/economia-idle.mjs';
 import { chanceDeVencer } from '../../engine/treino-preco.mjs';
@@ -59,7 +60,7 @@ export function chanceDaLuta({ pack, criaturas, id, preset = 'balanced' }) {
   return timeA.length ? chanceDeVencer(pack, timeA, timeB, { raiz: RAIZ_DA_CHANCE, preset }) : null;
 }
 
-export function contaDaLuta({ pack, criaturas, jornada, id, preset = 'balanced', semente, dia }) {
+export function contaDaLuta({ pack, criaturas, jornada, id, preset = 'balanced', semente, dia, agora }) {
   const no = noDa(pack, id);
   if (!no) return { ok: false, motivo: `nó desconhecido: ${id}` };
   const { timeA, timeB, ids } = timesDa(pack, criaturas, no);
@@ -82,7 +83,9 @@ export function contaDaLuta({ pack, criaturas, jornada, id, preset = 'balanced',
   for (const [d, n] of Object.entries(recompensa.essencias ?? {})) somar(`essencia:${d}`, n);
   /* A LUTA ENSINA (ST-2.23): o XP de cada um que lutou. */
   const xp = xpDaLuta({ timeB, venceu: saida.resultado.vencedor === 'A', primeiraVez: saida.primeiraVez });
-  return { ok: true, ...saida, semente, timeA, timeB, recompensa: { ...recompensa, xp },
-           jornada: { ...saida.progresso, pve: recompensa.hoje },
-           credito: { bolsa, doces: { ...recompensa.doces }, xp: xp ? Object.fromEntries(ids.map(id => [id, xp])) : {} } };
+  const limitado=limitarXpRepetido({xp:xp ? Object.fromEntries(ids.map(id=>[id,xp])) : {},estado:jornada?.xpRepeticao,dia,agora,primeiraVez:saida.primeiraVez});
+  const pago=Object.values(limitado.xp)[0]??0;
+  return { ok: true, ...saida, semente, timeA, timeB, recompensa: { ...recompensa, xp:pago, xpMotivo:limitado.motivo },
+           jornada: { ...saida.progresso, pve: recompensa.hoje, xpRepeticao:limitado.estado },
+           credito: { bolsa, doces: { ...recompensa.doces }, xp:limitado.xp } };
 }

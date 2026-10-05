@@ -86,7 +86,7 @@ export async function suite() {
     ligarContas(k.db, { userId: k.b, outroId: k.c, sinal: 'dispositivo', agora: T0 });
     /* B busca: C é ligada, sobra A. */
     const p1 = buscarPartida(k.db, { userId: k.b, meu: k.sb.id, chaveIdem: 'busca-00001', agora: T0 });
-    igual(`${p1.rated}|${p1.defensor}`, `true|${k.sa.id}`, 'B não enfrentou A');
+    igual(`${p1.rated}|${p1.defensor}`, `false|${k.sa.id}`, 'treino sem stake não deve dar ranking');
     igual(recusa(() => criarPartida(k.db, { userId: k.b, meu: k.sb.id, adversario: k.sc.id, chaveIdem: 'direto-0001', agora: T0 }))?.codigo,
           ERRO_PARTIDA.LIGADA, 'o desafio direto pareou contas ligadas');
     /* De novo: A é recente e C é ligada — o bot. */
@@ -104,8 +104,8 @@ export async function suite() {
     ok(/imutável/.test(recusa(() => k.db.prepare(`UPDATE league_bot_matches SET vencedor = 'B'`).run())?.message ?? ''), 'a partida do bot aceitou UPDATE');
     /* A busca: B é recente para A (a partida de agora há pouco), e C não é ligada a A — C. */
     const p3 = buscarPartida(k.db, { userId: k.a, meu: k.sa.id, chaveIdem: 'busca-00003', agora: T0 + 3 });
-    igual(`${p3.rated}|${p3.defensor}`, `true|${k.sc.id}`, 'A repetiu B, ou não achou C');
-    igual(`${ratingDe(k.db, k.a).partidas}|${ratingDe(k.db, k.b).partidas}|${ratingDe(k.db, k.c).partidas}`, '2|1|1', 'as partidas de gente não moveram o MMR de quem jogou');
+    igual(`${p3.rated}|${p3.defensor}`, `false|${k.sc.id}`, 'A repetiu B, ou não achou C');
+    igual(`${ratingDe(k.db, k.a).partidas}|${ratingDe(k.db, k.b).partidas}|${ratingDe(k.db, k.c).partidas}`, '0|0|0', 'treino sem stake não move MMR');
     igual(MMR.inicial, 1000, 'o inicial mudou sem o teste saber');
   });
 

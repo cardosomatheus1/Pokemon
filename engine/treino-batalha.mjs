@@ -9,7 +9,7 @@
  *   sem killstreak, sem tempestade, sem BALANCE, sem alvo aleatório
  *   o nível É da criatura, e os quatro golpes são os que o jogador escolheu
  *   físico × especial, imunidade e tipo — pela mesma fórmula da Arena
- *   quem é mais rápido age antes, e o empate de velocidade é sorteado
+ *   iniciativa por turno: velocidade × sorteio uniforme entre 0,90 e 1,10
  *
  * ── A FRONTEIRA (ST-10.1) ──────────────────────────────────────────────────
  *
@@ -55,6 +55,7 @@ export const REGRAS = Object.freeze({
   CRITICO: 1 / 16, MULT_CRITICO: 1.5, ACERTO_PADRAO: 0.92,
   PESO_OCULTO: 0.10,        // (oculto − 15,5) / 31 × 0,10  →  ±5%
   PESO_NATUREZA: 0.05,      // ±5%
+  VARIACAO_INICIATIVA: 0.10,
   TURNOS_MAX: 100,
   TIME_MAX: 6,
   GOLPES_MAX: 4,
@@ -66,14 +67,14 @@ export const PRESETS = Object.freeze(['balanced', 'aggressive', 'defensive', 'fo
    do dia em que foi criada. Muda a regra, muda a versão — no mesmo commit.
    tbe-2 (ST-2.16): o último recurso — os times congelados na tbe-1 pedem
    congelar de novo. */
-export const VERSAO_TBE = 'tbe-2';
+export const VERSAO_TBE = 'tbe-4';
 
 /* ── O ÚLTIMO RECURSO (ST-2.16) ──────────────────────────────────────────
  *
  * Quem não tem golpe que pegue em NENHUM inimigo vivo usava o melhor dos
  * inúteis e ficava parado: um time todo elétrico contra um imune não fazia
- * dano nenhum, e um imune no nível 3, sozinho, vencia o Lt. Surge (21 a 24)
- * em 100% — medido. Agora ele usa um golpe SEM TIPO, de poder 50: a
+ * dano nenhum, e um imune no nível 3, sozinho, vencia o chefe (21 a 24)
+ * em 100% — medido. Agora ele usa um golpe SEM TIPO, de poder 10: a
  * imunidade continua valendo muito (o golpe é fraco e sem bônus de tipo), e
  * o nível volta a valer também. Só entra quando nada mais pega — numa luta
  * comum ele não aparece. O nome pode vir do pack (`ultimoRecurso`). */
@@ -117,14 +118,29 @@ export function montarLutador(pack, c, lado, i) {
            atk: st(1), def: st(2), spa: st(3), spd: st(4), spe: st(5), golpes };
 }
 
-/* O dano ESPERADO, sem sorteio: é o que o preset compara. */
-export function danoEsperado(chart, A, D, g) {
+/* Integral de round(x). A distribuição do dano é uniforme, como em dano().
+   A estimativa não consome RNG e considera o piso, crítico e precisão reais. */
+const integralArredondado = x => { const n = Math.floor(x + .5); return n * x - n * n / 2; };
+function mediaDano(base, teto = Infinity) {
+  const a = .85 * base, b = base;
+  const integral = x => {
+    const limite = teto - .5, v = Math.max(.5, Math.min(limite, x));
+    return integralArredondado(v) + (x < .5 ? x - .5 : x > limite ? teto * (x - limite) : 0);
+  };
+  return (integral(b) - integral(a)) / (b - a);
+}
+export function avaliarGolpe(chart, A, D, g) {
   const eff = efeito(chart, g.t, D.types);
-  if (eff === 0) return 0;
+  if (eff === 0) return { dano: 0, util: 0, nocaute: 0 };
   const razao = g.cat === 'fis' ? A.atk / D.def : A.spa / D.spd;
   const stab = A.types.includes(g.t) ? 1.5 : 1;
-  return g.p * stab * eff * razao * (g.acc ?? REGRAS.ACERTO_PADRAO);
+  const base = (Math.floor(Math.floor(Math.floor(2 * A.nivel / 5 + 2) * g.p * razao) / 50) + 2) * stab * eff;
+  const hp = Math.max(1, D.hp ?? D.maxHp ?? Infinity), acc = g.acc ?? REGRAS.ACERTO_PADRAO;
+  const ko = b => hp === 1 ? 1 : Math.max(0, Math.min(1, (b - (hp - .5)) / (.15 * b)));
+  const misturar = fn => acc * ((1 - REGRAS.CRITICO) * fn(base) + REGRAS.CRITICO * fn(base * REGRAS.MULT_CRITICO));
+  return { dano: misturar(b => mediaDano(b)), util: misturar(b => mediaDano(b, hp)), nocaute: misturar(ko) };
 }
+export const danoEsperado = (chart, A, D, g) => avaliarGolpe(chart, A, D, g).dano;
 
 /* A AMEAÇA de um rival: o maior dano esperado dele contra algum dos nossos. */
 const ameaca = (chart, D, nossos) => Math.max(0, ...nossos.map(N => Math.max(...D.golpes.map(g => danoEsperado(chart, D, N, g)))));
@@ -135,10 +151,10 @@ function escolher(chart, A, inimigos, preset, aliados) {
     : inimigos;
   let melhor = null;
   for (const D of alvos) for (const g of A.golpes) {
-    const v = danoEsperado(chart, A, D, g);
-    const chave = preset === 'aggressive' ? [Math.min(1, v / Math.max(1, D.hp)), -D.hp]
+    const e = avaliarGolpe(chart, A, D, g), v = e.dano;
+    const chave = preset === 'aggressive' ? [e.nocaute, e.util / Math.max(1, D.hp)]
       : preset === 'focus' ? [efeito(chart, g.t, D.types), v]
-      : [v, 0];
+      : [v, e.nocaute];
     if (!melhor || chave[0] > melhor.chave[0] || (chave[0] === melhor.chave[0] && chave[1] > melhor.chave[1]))
       melhor = { chave, g, D };
   }
@@ -157,11 +173,12 @@ export function simular(pack, timeA, timeB, semente, { registrar = true, preset 
   let turno = 0;
   while (turno < REGRAS.TURNOS_MAX && vivos('A').length && vivos('B').length) {
     turno++;
-    /* A ORDEM: velocidade, e o empate por sorteio — um sorteio por lutador
-       vivo, SEMPRE, para o consumo do gerador não depender de haver empate. */
+    /* Velocidades próximas podem alternar a iniciativa. Diferenças grandes
+       continuam determinantes. Um sorteio por lutador vivo, sempre. */
     const ordem = [...vivos('A'), ...vivos('B')].map(f => ({ f, k: R() }))
-      .sort((x, y) => y.f.spe - x.f.spe || x.k - y.k).map(x => x.f);
-    for (const A of ordem) {
+      .map(x => ({ ...x, iniciativa: x.f.spe * (1 - REGRAS.VARIACAO_INICIATIVA + 2 * REGRAS.VARIACAO_INICIATIVA * x.k) }))
+      .sort((x, y) => y.iniciativa - x.iniciativa || x.k - y.k);
+    for (const { f: A, iniciativa } of ordem) {
       if (A.hp <= 0) continue;
       const inimigos = vivos(A.lado === 'A' ? 'B' : 'A');
       if (!inimigos.length) break;
@@ -172,7 +189,8 @@ export function simular(pack, timeA, timeB, semente, { registrar = true, preset 
         : dano(chart, A, D, g, R, 1, 1, A.nivel, REGRAS.CRITICO, REGRAS.MULT_CRITICO);
       D.hp = Math.max(0, D.hp - r.dmg);
       if (registrar) eventos.push({ turno, de: `${A.lado}${A.i}`, para: `${D.lado}${D.i}`, golpe: g.n,
-                                     dano: r.dmg, eff: r.eff, crit: r.crit, errou, caiu: D.hp === 0 });
+                                     dano: r.dmg, eff: r.eff, crit: r.crit, errou, caiu: D.hp === 0,
+                                     velocidade: A.spe, iniciativa });
     }
   }
   const a = vivos('A').length, b = vivos('B').length;

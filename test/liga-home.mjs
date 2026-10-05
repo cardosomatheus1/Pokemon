@@ -1,3 +1,4 @@
+import { partidaHistorica as criarPartida, publicarTimeHistorico as publicarTime } from './fixtures/liga-historica.mjs';
 /* Q1/Q6 · A LEAGUE HOME (ST-11.6a · Spec §12 telas 25–26, §9.5, §9.7, §9.15)
  *
  * O que a tela diz é da camada 0 (`homeDaLiga`), e é aqui que se cobra:
@@ -17,8 +18,8 @@ import PACK from '../content/escolhido.mjs';
 import { abrirBanco, migrar } from '../server/banco.mjs';
 import { cadastrar } from '../server/auth.mjs';
 import { gerar } from '../server/criaturas.mjs';
-import { criarPartida } from '../server/partida.mjs';
-import { ligaDaConta, publicarTime, minhasPartidas } from '../server/liga-equipe.mjs';
+
+import { ligaDaConta, minhasPartidas } from '../server/liga-equipe.mjs';
 import { criarOperador } from '../server/admin.mjs';
 import { mudarBandeira } from '../server/feature-flags.mjs';
 import { criarServidor } from '../server/servidor.mjs';
@@ -93,7 +94,7 @@ export async function suite() {
     igual(linhaDaPartida({ id: 'c', resultado: 'empate', rated: true, turnos: 30, contra: { tipo: 'jogador', nome: 'Bia' } }).ranking, 'contou no ranking', 'a linha que contou');
     const conta = linhaDaPartida({ id: 'c', resultado: 'empate', rated: true, turnos: 30, contra: { tipo: 'jogador', nome: 'Bia' } });
     igual(JSON.stringify([bot.selo, fora.selo, conta.selo]), '[{"texto":"não contou · bot","tipo":"fora"},{"texto":"fora do ranking","tipo":"fora"},{"texto":"contou","tipo":"ok"}]', 'os selos');
-    igual(`${bot.explica}|${fora.explica}|${conta.explica}`, 'ninguém da sua faixa na fila — por isso um bot|padrão de partidas entre as mesmas contas|null', 'a explicação da partida que não contou');
+    igual(`${bot.explica}|${fora.explica}|${conta.explica}`, 'treino contra um bot identificado|padrão de partidas entre as mesmas contas|null', 'a explicação da partida que não contou');
     const efeito = t => linhaDaPartida({ id: 'x', resultado: 'venceu', rated: true, turnos: 3, tier: t, contra: { tipo: 'jogador', nome: 'Z' } }).selo.texto.replace('contou · ', '');
     igual([{ antes: 'Bronze', depois: 'Silver' }, { antes: 'Gold', depois: 'Silver' }, { antes: 'Gold', depois: 'Gold' }].map(efeito).join('|'), 'subiu para Silver|desceu para Silver|tier mantido: Gold', 'o efeito no tier');
     const com = homeDaLiga({ conta: true, pack: PACK, agora: T0, acabou: 'b', dados: dadosBase({ recentes: [{ id: 'b', resultado: 'perdeu', rated: false, turnos: 9, contra: { tipo: 'bot', nome: 'Brock' } }] }) });
@@ -115,7 +116,7 @@ export async function suite() {
     igual(`${homeDaLiga({ conta: false, pack: PACK, agora: T0 }).passos?.length}|${homeDaLiga({ conta: true, pack: PACK, agora: T0, dados: dadosBase({ meuTime: snap }) }).passos}`, `${PASSOS.length}|undefined`, 'os passos de quem não jogou');
   });
 
-  s.teste('no servidor: uma leitura, as partidas do MEU lado, o bot pelo nome do treinador, e nenhum número', () => {
+  s.teste('histórico anterior a AT6: uma leitura, as partidas do MEU lado, o bot pelo nome do treinador, e nenhum número', () => {
     const c = cena();
     const [a1, a2] = [c.cria(c.u, 6, 60), c.cria(c.u, 9, 60)];
     c.cria(c.u, 3, 60, true);                                    // na caixa: fora do time
@@ -138,7 +139,7 @@ export async function suite() {
     ok(r[0].contra.nome && r[0].contra.nome !== 'bot:brock', `o bot saiu sem o nome do treinador: ${r[0].contra.nome}`);
   });
 
-  s.teste('no servidor: o efeito no tier, do lado de cada um, quando a partida cruza a borda', () => {
+  s.teste('histórico anterior a AT6: o efeito no tier, do lado de cada um, quando a partida cruza a borda', () => {
     const c = cena();
     c.cria(c.u, 6, 60); c.cria(c.v, 10, 5);
     const forte = publicarTime(c.db, { userId: c.u, preset: 'balanced', agora: T0 });
@@ -150,7 +151,7 @@ export async function suite() {
     igual(`${dele.resultado}|${linhaDaPartida(dele).selo.texto}|${meu.resultado}|${linhaDaPartida(meu).selo.texto}`, 'perdeu|contou · desceu para Bronze|venceu|contou · tier mantido: Bronze', 'o efeito de cada lado');
   });
 
-  s.teste('no servidor: a partida com sinal chega à tela como FORA do ranking', () => {
+  s.teste('histórico anterior a AT6: a partida com sinal chega à tela como FORA do ranking', () => {
     const c = cena();
     c.cria(c.u, 6, 60); c.cria(c.v, 10, 5);
     const forte = publicarTime(c.db, { userId: c.u, preset: 'balanced', agora: T0 });
@@ -192,7 +193,8 @@ export async function suite() {
       const c = gerar(srv.db, { userId: uid, pack: PACK, dex: 6, origem: 'captura' });
       srv.db.prepare(`UPDATE criaturas SET xp = ? WHERE id = ?`).run(xpParaNivel(30), c.id);
       igual((await fetch(url('/api/equipe/liga'), { headers: { [CABECALHO_VERSAO]: API_VERSAO } })).status, 401, 'a leitura sem sessão');
-      const pub = await fetch(url('/api/equipe/publicar'), { method: 'POST', headers: H2, body: JSON.stringify({ preset: 'focus' }) }).then(r => r.json());
+      igual((await fetch(url('/api/equipe/publicar'), { method: 'POST', headers: H2, body: JSON.stringify({ preset: 'focus' }) })).status,400,'competição antes da jornada completa');
+      const pub = await fetch(url('/api/equipe/snapshot'), { method: 'POST', headers: H2, body: JSON.stringify({ ids:[c.id],preset: 'focus' }) }).then(r => r.json());
       igual(pub.snapshot?.preset, 'focus', 'publicar pela porta');
       const busca = await fetch(url('/api/equipe/buscar'), { method: 'POST', headers: H2, body: JSON.stringify({ meu: pub.snapshot.id, chaveIdem: 'porta-000001' }) }).then(r => r.json());
       ok(busca.partida?.bot, 'sozinho na fila não caiu no bot');

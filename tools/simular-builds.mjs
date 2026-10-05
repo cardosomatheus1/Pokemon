@@ -13,6 +13,7 @@ import pack from '../content/pokemon_kanto_v1.mjs';
 import { matrizDeBuilds, dominantes, dificuldadePorFaixa } from '../engine/treino-builds.mjs';
 import { padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { rivalDe } from '../app/modules/treino-dados.mjs';
+import { VERSAO_TBE } from '../engine/treino-batalha.mjs';
 
 export const RAIZ = 20260927, NIVEL = 50, SIMS = 200, SIMS_RIVAL = 400;
 export const buildsDoElenco = () => pack.elenco.map(dex => ({ dex, nivel: NIVEL, golpes: padraoDoMoveset(pack, dex, NIVEL) }));
@@ -28,7 +29,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const rivais = (pack.treinadores ?? []).map(t => ({ id: t.id, time: rivalDe(pack, t) }));
   const dif = dificuldadePorFaixa(pack, rivais, referencia, { raiz: RAIZ, sims: SIMS_RIVAL, niveis: NIVEIS });
   const saida = {
-    medidoEm: '2026-09-27', raiz: RAIZ, nivel: NIVEL, simsPorPar: SIMS, elenco: builds.map(b => b.dex),
+    medidoEm: '2026-10-04', versaoMotor: VERSAO_TBE, raiz: RAIZ, nivel: NIVEL, simsPorPar: SIMS, elenco: builds.map(b => b.dex),
     taxa: m.taxa.map(l => l.map(x => (x === null ? null : Math.round(x * 1000) / 1000))),
     dominantes: { especies: dom.especies.slice(0, 10).map(x => ({ dex: x.dex, media: +x.media.toFixed(3) })),
                   ultimas: dom.especies.slice(-5).map(x => ({ dex: x.dex, media: +x.media.toFixed(3) })),

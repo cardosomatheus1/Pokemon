@@ -349,8 +349,10 @@ export function fraseDoPagamento(pack, r, { depois = false } = {}) {
   const bolas = Object.entries(r.bolas ?? {}).map(([b, n]) => `${n} ${(pack.bolas ?? []).find(x => x.id === b)?.rotulo ?? b}`);
   const nomeDe = d => { const n = especieDe(pack, d)?.n ?? String(d); return (pack.nomeExibido ?? (x => x[0].toUpperCase() + x.slice(1)))(n); };
   const essencias = Object.entries(r.essencias ?? {}).map(([d, n]) => `${n} essência de ${nomeDe(d)}`);
+  const xpAviso = depois && r.xpMotivo === 'intervalo' ? ' · XP repetido volta após 30 s.'
+    : depois && r.xpMotivo === 'teto' ? ' · Teto de 6.000 XP repetido da conta atingido hoje.' : '';
   if (r.motivo === 'derrota') return depois ? 'A derrota não tira nada.' : '';
-  if (r.motivo === 'teto') return depois ? `O teto de hoje (${r.teto} ${moeda}) já foi: esta valeu como treino.` : `o teto de hoje (${r.teto}) já foi — a revanche vale como treino`;
+  if (r.motivo === 'teto') return depois ? `O teto de hoje (${r.teto} ${moeda}) já foi: esta valeu como treino.${r.xp>0?` +${r.xp} XP por criatura.`:''}${xpAviso}` : `o teto de hoje (${r.teto}) já foi — a revanche vale como treino`;
   if (r.motivo === 'primeira') {
     const doce = Object.keys(r.doces).length || !depois ? [depois ? `${Object.keys(r.doces).length} doce${Object.keys(r.doces).length === 1 ? '' : 's'}` : 'um doce por criatura do time'] : [];
     /* o PC-T da jornada (ST-14.0E) só existe com conta: o servidor diz quanto pagou */
@@ -361,7 +363,7 @@ export function fraseDoPagamento(pack, r, { depois = false } = {}) {
     return depois ? `Ganhou: ${partes.join(' · ')}.` : `a primeira vitória paga ${partes.join(' · ')}`;
   }
   const mais = essencias.length ? ` + ${essencias.join(' · ')}` : '';
-  return depois ? `Ganhou ${r.pokecoin} ${moeda}${mais}${r.xp > 0 ? ` · +${r.xp} XP` : ''} (hoje: ${r.hoje.pago} de ${r.teto}).`
+  return depois ? `Ganhou ${r.pokecoin} ${moeda}${mais}${r.xp > 0 ? ` · +${r.xp} XP` : ''} (hoje: ${r.hoje.pago} de ${r.teto}).${xpAviso}`
                 : `a revanche paga ${r.pokecoin} ${moeda}${mais} (hoje: ${r.hoje.pago - r.pokecoin} de ${r.teto})`;
 }
 

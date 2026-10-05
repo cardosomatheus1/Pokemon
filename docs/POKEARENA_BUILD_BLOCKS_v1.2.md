@@ -3486,3 +3486,35 @@ Mesmo molde; gerar com `/gauntlet-loop <objetivo do bloco>` e **escolher a barra
 Os 44 blocos INV. Para eles a barra seria uma especificação, não um artefato comparável, e o loop degeneraria em concordância — o modo de falha nº 1 que a própria skill documenta. Fecham por Q1 a Q4, Q6, Q8 e Q9, com o crítico cego atuando como revisor adversarial contra a especificação, não como juiz de A/B.
 
 O bloco **F4.3** merece nota: é o de maior retorno da Fase 4 e é INV puro. A tentação de tratá-lo como problema de interface é forte, porque o entregável é um número numa tela. Mas o que importa é o número ser **verdade** — a probabilidade exibida tem que bater com a frequência observada em 20.000 combates. Se ela mentir, o jogador aprende a coisa errada, e nenhuma qualidade visual conserta isso.
+
+
+## AT6-base — competição da coleção e coerência financeira
+
+**Pedido do dono, 04/10/2026:** iniciar a Arena/endgame e o balanceamento,
+testando o que for alterado antes de commitar; validação focada para conter
+custo. Método INV, porte G. Base: Spec §8.17/§9.17 e fichas AT6/GQ no PLANO.
+
+Escopo coeso: TBE/versionamento/replay, acesso pós-Liga, 6×6, fila ranqueada,
+faixas e estimativa de confronto, autorização limitada de defesa, carteira e
+tesouraria atômicas, ranking sazonal, kit e XP repetível da Jornada.
+
+Portões: Q1/Q3/Q4/Q6/Q9 nas superfícies alteradas; Q2 dirigido aos novos
+invariantes. Q8: limite de candidatos e idempotência/transações; não representa
+ensaio de carga de produção. Q5 é necessário para encerrar a apresentação;
+Q7 só quando mudar o arranjo. Suíte integral e Q2 legado continuam necessários
+antes de tag. O recorte autorizado não os certifica.
+
+Sabotagens S90001–S90017: ordem determinante, gate incompleto, espécie repetida,
+faixa ampla, desafio pago escolhido pelo cliente, MMR em amistoso, taxa perdida,
+expiração ignorada, orçamento renovado, XP multiplicado/instantâneo, campanha
+sem teto, kit duplicado, críticos ausentes, estimativa da fila dispensada e
+nomes de campanha confundidos por wildcard.
+
+Saída: testes focados sem falhas, mutantes detectados e evidências versionadas;
+para lançamento, concluir também inspeção visual e gates comerciais aplicáveis.
+Rollback: desativar competição nas flags; aplicar reversão de código/migração
+somente respeitando a existência de partidas e o ledger. Não apagar acervo
+financeiro de uma migração já usada em produção.
+
+AT6-13 (Avanço individual), AT6-05/09/10 (apresentação, mercado e cosméticos) e
+GQ têm fichas próprias. Ordem/estado exclusivamente no ROADMAP/RETOMAR.

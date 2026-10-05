@@ -60,7 +60,7 @@ function pintar(alvo, h) {
   const tier = h.tier ? `<div class="leTier leTier${esc(h.tier.nome)}"><span class="leTierRot">seu tier</span><b>${esc(h.tier.nome)}</b><span>${esc(h.tier.nota)}</span>
       <ol class="leEscada" aria-label="os tiers da Liga">${h.tier.escada.map(x => `<li class="${x.estado}"><span>${esc(x.nome)}</span></li>`).reverse().join('')}</ol></div>` : '';
   const time = h.time ? `<div class="leTime"><span class="leRot">time publicado · ${esc(h.time.preset)} · power ${h.time.power}</span>
-      <div class="leMembros">${h.time.membros.map(m => `<span class="leMembro">${dexImg(m.dex, nomeDo(m.dex), 'class="leSprite"')}<i>NV ${m.nivel}</i></span>`).join('')}</div></div>` : '';
+      <div class="leMembros">${h.time.membros.map(m => `<span class="leMembro" title="${esc(`IVs: ${(m.iv ?? []).join('/')} · ${m.natureza ?? 'neutra'} · ${(m.golpes ?? []).join(', ')}`)}">${dexImg(m.dex, nomeDo(m.dex), 'class="leSprite"')}<i>NV ${m.nivel}</i></span>`).join('')}</div></div>` : '';
   const presets = h.mostraPresets ? `<div class="lePresets"><span class="leRot">${esc(h.rotuloPresets)}</span>${h.presets.map(p => `<button class="tbPresetBtn${p.on ? ' on' : ''}" data-le-preset="${p.id}" title="${esc(p.explica)}">${esc(p.nome)}</button>`).join('')}</div>` : '';
   const botoes = !h.acao ? '' : `<div class="leAcoes"><button class="btn primary leAcao" data-le-acao="${h.acao.tipo}"${h.acao.habilitada && !ocupado ? '' : ' disabled'}>${esc(ocupado ? 'Lutando…' : h.acao.rotulo)}</button>
       ${h.secundaria ? `<button class="btn leSec" data-le-acao="${h.secundaria.tipo}"${ocupado ? ' disabled' : ''}>${esc(h.secundaria.rotulo)}</button>` : ''}</div>`;

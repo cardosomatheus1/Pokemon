@@ -31,6 +31,7 @@ export const conteudoDaLuta = pack => fnv(JSON.stringify({
   tipos: pack?.tipos?.efetividade ?? {},
   especies: [...(pack?.especies ?? []), ...(pack?.lendarios ?? [])].map(e => [e.dex, e.t, e.s]),
   golpes: pack?.golpes ?? {},
+  naturezas: pack?.naturezas ?? [],
 }));
 
 export function snapshotDoTime({ pack, criaturas, ids, preset = 'balanced' }) {

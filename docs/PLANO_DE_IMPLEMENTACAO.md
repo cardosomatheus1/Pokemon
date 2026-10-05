@@ -3396,3 +3396,31 @@ desta tabela.
 - **Sabotagem:** pagar a cada vitória; pagar em `bonus` (ou o contrário); a
   maturidade pelo relógio do cliente.
 - **Portões:** Q1 Q2 Q3 Q6.
+
+
+## AT6 e GQ — fichas da Arena de Treinadores
+
+Bloco de integração: **AT6-base**, BUILD_BLOCKS. O pedido de 04/10 autorizou
+começar implementação e priorizar testes do que mudar. Contrato normativo:
+Spec §8.17/§9.17; detalhes atuais em arena-treinadores/09_CONTRATO_DA_IMPLEMENTACAO.md.
+
+Incorporam-se por referência as fichas AT6-01 a AT6-14 de
+[04_STORIES_DE_IMPLEMENTACAO.md](arena-treinadores/04_STORIES_DE_IMPLEMENTACAO.md)
+e GQ-01 a GQ-06 de
+[06_QUALIDADE_DO_JOGO_E_JORNADA.md](arena-treinadores/06_QUALIDADE_DO_JOGO_E_JORNADA.md).
+Elas descrevem escopo, dependências, arquivos e critérios; sua sequência
+histórica é proposta, subordinada à fila única do ROADMAP.
+
+Diferenças normativas da implementação: mesmo tier para preservar confirmação
+financeira; estimativa adicional da chance de confronto; tesouraria da Arena
+com proveniência PC-B/PC-C separada dos mercados; kit 300 único; reposição
+semanal não ativada. AT6-14 implementa a IA analítica, preserva precisões
+efetivas existentes e não entrega efeitos completos do gênero.
+
+AT6-13 exige contrato novo de HP por indivíduo, poção, encontros/captura e
+economia. Não substituir o resultado agregado por dano visual renomeado.
+Runs antigas terminam na regra anterior; não acrescentar teto diário de XP.
+
+Evidências: VALIDACAO_FOCADA.json, SABOTAGEM_FOCADA.json e
+BALANCEAMENTO_TBE4.json em arena-treinadores; scripts correspondentes em tools.
+Não marcar essas fichas como lançamento completo apenas por existirem arquivos.

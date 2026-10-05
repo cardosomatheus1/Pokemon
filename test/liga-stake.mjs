@@ -22,10 +22,10 @@ import { criarPartida, buscarPartida } from '../server/partida.mjs';
 import { stakeNaTela } from '../app/modules/liga-stake-dados.mjs';
 import { linhaDaPartida } from '../app/modules/liga-equipe-dados.mjs';
 import { minhasPartidas } from '../server/liga-equipe.mjs';
-import { saldos, creditar, gastar, reconciliarNoBanco } from '../server/carteira.mjs';
+import { saldos, creditar, gastar, reconciliarNoBanco, emTransacao } from '../server/carteira.mjs';
 import { pausar, ERRO_PROTECAO } from '../server/protecao.mjs';
 import { definirLimite } from '../server/limites.mjs';
-import { inscrever, stakeDaConta, ERRO_STAKE } from '../server/stake-liga.mjs';
+import { inscrever, stakeDaConta, ERRO_STAKE, prepararStake, reservarStakes, liquidarStake, defesaDaConta } from '../server/stake-liga.mjs';
 import { ERRO_BANDEIRA } from '../server/feature-flags.mjs';
 import { STAKE_DO_TIER, RAKE, BALDES_DO_STAKE, stakeDaPartida, potDe, planoDoStake, liquidacaoDoStake, recebido } from '../engine/stake-liga.mjs';
 import { xpParaNivel } from '../engine/nivel-criatura.mjs';
@@ -50,14 +50,16 @@ function cena({ ligar = true } = {}) {
     creditar(db, { userId: x, tipo: 'DAILY_REWARD', bucket: 'competitivo', valor: 100, idem: `c-${x}`, agora: T0 });
     creditar(db, { userId: x, tipo: 'WELCOME_GRANT', bucket: 'transferivel', valor: 1000, idem: `t-${x}`, agora: T0 });
   }
+  for(const user of [u,v])db.prepare('INSERT INTO jornadas(user_id,progresso_json,revisao,atualizada_em) VALUES(?,?,0,?)').run(user,JSON.stringify({vencidos:PACK.jornada.map(n=>n.id),insignias:[]}),T0);
   const snap = (dono, lista) => criarSnapshot(db, { userId: dono, pack: PACK, agora: T0, ids: lista.map(([dex, nivel]) => {
     const c = gerar(db, { userId: dono, pack: PACK, dex, origem: 'captura' });
     db.prepare(`UPDATE criaturas SET xp = ? WHERE id = ?`).run(xpParaNivel(nivel), c.id);
+    db.prepare("UPDATE criaturas SET natureza='Hardy',o_hp=15,o_atq=15,o_def=15,o_spa=15,o_spd=15,o_vel=15 WHERE id=?").run(c.id);
     return c.id;
   }) });
-  return { db, u, v, forte: snap(u, [[6, 60], [9, 60], [3, 60]]), fraco: snap(v, [[10, 5]]) };
+  return { db, u, v, forte: snap(u, [6,9,3,149,143,65].map(d=>[d,60])), fraco: snap(v, [6,9,3,149,143,65].map(d=>[d,60])) };
 }
-const joga = (c, k, extra = {}) => criarPartida(c.db, { userId: c.v, meu: c.fraco.id, adversario: c.forte.id, chaveIdem: `stk-${String(k).padStart(6, '0')}`, agora: T0, stake: true, checkpoint: DEC, ...extra });
+const joga = (c, k, extra = {}) => buscarPartida(c.db, { userId: c.v, meu: c.fraco.id, raiz: '1234567890abcdef1234567890abcdef', chaveIdem: `stk-${String(k).padStart(6, '0')}`, agora: T0, stake: true, checkpoint: DEC, ...extra });
 const foto = (db, id) => { const s = saldos(db, id); return `${s.bonus}/${s.competitivo}/${s.transferivel}`; };
 const ambos = c => { inscrever(c.db, { userId: c.u, ativo: true, agora: T0, checkpoint: DEC }); inscrever(c.db, { userId: c.v, ativo: true, agora: T0, checkpoint: DEC }); };
 
@@ -113,7 +115,7 @@ export async function suite() {
     const c = cena();
     inscrever(c.db, { userId: c.v, ativo: true, agora: T0, checkpoint: DEC });
     const antes = `${foto(c.db, c.u)}|${foto(c.db, c.v)}`;
-    igual(recusa(() => joga(c, 1))?.codigo, ERRO_STAKE.NAO_INSCRITO, 'o defensor sem inscrição');
+    igual(recusa(() => joga(c, 1))?.codigo, ERRO_STAKE.SEM_ADVERSARIO, 'o defensor sem inscrição');
     inscrever(c.db, { userId: c.u, ativo: true, agora: T0, checkpoint: DEC });
     definirLimite(c.db, { userId: c.v, tipo: 'max_stake_per_round', valor: 10, agora: T0 });
     const lim = recusa(() => joga(c, 2));
@@ -124,20 +126,20 @@ export async function suite() {
     igual(recusa(() => joga(d, 3))?.codigo, ERRO_STAKE.SALDO, 'sem bônus nem competitivo, com transferível sobrando');
     const e = cena(); ambos(e);
     pausar(e.db, { userId: e.u, tipo: 'cooloff', duracao: '24h', agora: T0 });
-    igual(recusa(() => joga(e, 4))?.codigo, ERRO_PROTECAO.PAUSADO, 'o defensor em pausa');
+    igual(recusa(() => joga(e, 4))?.codigo, ERRO_STAKE.SEM_ADVERSARIO, 'o defensor em pausa sai da fila');
     igual(`${foto(c.db, c.u)}|${foto(c.db, c.v)}`, antes, 'a recusa cobrou');
     igual(c.db.prepare(`SELECT COUNT(*) AS n FROM league_matches`).get().n + d.db.prepare(`SELECT COUNT(*) AS n FROM league_matches`).get().n, 0, 'a recusa jogou a partida');
   });
 
-  s.teste('a partida fora do ranking é o cancelamento técnico: devolve 100%, sem rake', () => {
-    const c = cena(); ambos(c);
-    creditar(c.db, { userId: c.v, tipo: 'DAILY_REWARD', bucket: 'bonus', valor: 500, idem: 'mais', agora: T0 });
-    creditar(c.db, { userId: c.u, tipo: 'DAILY_REWARD', bucket: 'bonus', valor: 500, idem: 'mais', agora: T0 });
-    for (let k = 1; k <= 4; k++) joga(c, k, { agora: T0 + (k - 1) * 7 * H });
-    const antes = `${foto(c.db, c.u)}|${foto(c.db, c.v)}`;
-    const quinta = joga(c, 5, { agora: T0 + 28 * H });
-    igual(`${quinta.rated}|${quinta.stake.estado}|${quinta.stake.rake}`, 'false|devolvida|0', 'a quinta com stake');
-    igual(`${foto(c.db, c.u)}|${foto(c.db, c.v)}`, antes, 'a partida fora do ranking mexeu no dinheiro');
+  s.teste('cancelamento técnico devolve 100%, sem rake nem consumo da defesa', () => {
+    const c=cena(); ambos(c);
+    const antes=`${foto(c.db,c.u)}|${foto(c.db,c.v)}`;
+    const prep=prepararStake(c.db,{userA:c.u,userB:c.v,agora:T0});
+    const p=criarPartida(c.db,{userId:c.v,meu:c.fraco.id,adversario:c.forte.id,chaveIdem:'tecnico-0001',agora:T0});
+    emTransacao(c.db,()=>{reservarStakes(c.db,{id:p.id,userA:c.u,userB:c.v,prep,agora:T0});
+      liquidarStake(c.db,{id:p.id,userA:c.u,userB:c.v,prep,vencedor:'A',contado:false,agora:T0});});
+    igual(`${foto(c.db,c.u)}|${foto(c.db,c.v)}`,antes);
+    igual(defesaDaConta(c.db,c.u,T0).restantes,3);
   });
 
   s.teste('falhou no meio, nada aconteceu — nem a partida, nem o dinheiro', () => {
@@ -157,13 +159,8 @@ export async function suite() {
     igual(recusa(() => busca(1))?.codigo, ERRO_STAKE.SEM_ADVERSARIO, 'sem inscrito na fila, a busca caiu no bot');
     igual(`${foto(c.db, c.v)}|${c.db.prepare(`SELECT COUNT(*) AS n FROM league_bot_matches`).get().n}`, `${antes}|0`, 'a busca sem adversário cobrou ou jogou');
     /* Um par da MESMA faixa de força (o pareamento respeita a faixa): o forte não aparece para o fraco. */
-    const w = cadastrar(c.db, { username: 'stk2', email: 'stk2@x.test', senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01', agora: T0 }).id;
-    creditar(c.db, { userId: w, tipo: 'DAILY_REWARD', bucket: 'bonus', valor: 200, idem: 'b-w', agora: T0 });
-    const cw = gerar(c.db, { userId: w, pack: PACK, dex: 13, origem: 'captura' });
-    c.db.prepare(`UPDATE criaturas SET xp = ? WHERE id = ?`).run(xpParaNivel(5), cw.id);
-    criarSnapshot(c.db, { userId: w, pack: PACK, agora: T0, ids: [cw.id] });
-    igual(recusa(() => busca(2))?.codigo, ERRO_STAKE.SEM_ADVERSARIO, 'o da mesma faixa sem inscrição foi pareado');
-    inscrever(c.db, { userId: w, ativo: true, agora: T0, checkpoint: DEC });
+    igual(recusa(() => busca(2))?.codigo, ERRO_STAKE.SEM_ADVERSARIO, 'sem consentimento o time não defende');
+    inscrever(c.db, { userId:c.u, ativo:true, agora:T0 });
     const p = busca(3);
     igual(`${p.stake?.valor}|${p.defensor === c.fraco.id ? 'eu' : 'outro'}`, '50|outro', 'a busca com stake');
     const esperado = p.stake.estado !== 'liquidada' ? /^stake devolvido/ : p.vencedor === 'B' ? /^\+40 de stake$/ : /^−50 de stake$/;
@@ -185,9 +182,9 @@ export async function suite() {
       'você põe=250 PC (do bônus e do competitivo) | se vencer, recebe=450 PC (lucro de 200) | se perder, você perde=250 PC (o stake inteiro) | a casa leva=50 PC (10% do pot, tirado do prêmio)', 'os quatro números');
     igual(k.conta, 'pot 500 = 250 seu + 250 do adversário · a casa tira 50 · o vencedor leva 450', 'a conta do pot');
     ok(k.regras.some(r => /nunca do transferível/.test(r)) && k.regras.some(r => /devolve tudo/.test(r)), 'as regras não dizem o transferível e a devolução');
-    igual(`${k.estado.texto}|${k.estado.classe}`, 'Você ESTÁ na fila com stake|dentro', 'o estado da fila');
-    ok(/mesmo com você fora do jogo/.test(k.estado.explica), 'o estado não diz que o time pode ser desafiado valendo sem o jogador');
-    igual(`${stakeNaTela({ ...base, inscrito: false }).estado.classe}|${stakeNaTela({ ...base, inscrito: false }).inscricao.rotulo}`, 'fora|Entrar na fila com stake', 'fora da fila');
+    igual(`${k.estado.texto}|${k.estado.classe}`, 'Defesa automática autorizada|dentro', 'o estado da fila');
+    ok(/restam .* defesas/.test(k.estado.explica), 'o estado não diz que o time pode ser desafiado valendo sem o jogador');
+    igual(`${stakeNaTela({ ...base, inscrito: false }).estado.classe}|${stakeNaTela({ ...base, inscrito: false }).inscricao.rotulo}`, 'fora|Autorizar 3 defesas · até 750 PC por 24 h', 'fora da fila');
     igual(k.saldo, 'bônus 300 · competitivo 1.000', 'o saldo por balde');
     ok(!/sem aposta/.test(k.lema), 'o lema da aba diz "sem aposta" com o stake ligado');
     igual(`${k.acao.habilitada}|${k.motivo}|${k.confirmacao}`, 'true|null|null', 'pronto para buscar, sem confirmação aberta');
@@ -197,7 +194,7 @@ export async function suite() {
     igual(stakeNaTela({ ...base, elegivel: 99999, stake: 5000, pot: 10000, rake: 1000, payout: 9000 }).numeros[1].valor, '9.000 PC', 'o milhar');
     const semSaldo = stakeNaTela({ ...base, elegivel: 100 }, { confirmando: true });
     igual(`${semSaldo.acao.habilitada}|${semSaldo.confirmacao}|${semSaldo.motivo}`, 'false|null|faltam 150 PC de bônus ou competitivo — o transferível nunca entra no stake', 'sem saldo');
-    ok(/fila com stake primeiro/.test(stakeNaTela({ ...base, inscrito: false }).motivo), 'sem inscrição não diz o que falta');
+    ok(stakeNaTela({ ...base, inscrito: false }).acao.habilitada, 'atacar não exige autorizar defesas');
     ok(/pausa/.test(stakeNaTela({ ...base, pausa: true }).motivo), 'a pausa não aparece');
   });
 
@@ -220,7 +217,7 @@ export async function suite() {
       const l = await fetch(url('/api/equipe/stake'), { headers: H2 }).then(r => r.json());
       igual(`${l.ligado}|${l.tier}|${l.stake}|${l.pot}|${l.rake}|${l.payout}`, 'true|Bronze|50|100|10|90', 'a leitura');
       igual((await fetch(url('/api/equipe/stake/inscricao'), { method: 'POST', headers: H2, body: JSON.stringify({ ativo: 'sim' }) })).status, 400, 'o corpo inválido');
-      igual((await fetch(url('/api/equipe/stake/inscricao'), { method: 'POST', headers: H2, body: JSON.stringify({ ativo: true }) })).status, 200, 'a inscrição com o stake ligado pelo dono');
+      igual((await fetch(url('/api/equipe/stake/inscricao'), { method: 'POST', headers: H2, body: JSON.stringify({ ativo: true }) })).status, 400, 'conta sem campeão não pode autorizar defesas');
       igual((await fetch(url('/api/equipe/partida'), { method: 'POST', headers: H2, body: JSON.stringify({ meu: 'x', adversario: 'y', stake: true, chaveIdem: 'porta-00001' }) })).status >= 400, true, 'a partida com stake pela porta');
     } finally { await srv.fechar(); }
   });

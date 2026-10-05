@@ -14,13 +14,14 @@
 import { motivoDaVersao } from './partida-dados.mjs';
 import { PRESETS_NA_TELA, presetValido } from './treino-dados.mjs';
 import { TIERS } from '../../engine/liga-mmr.mjs';
+import { snapshotDoTime } from './snapshot-dados.mjs';
 
 /* Quem ainda não jogou lê o que a Liga É antes do que ela pede: três passos,
    na ordem em que acontecem. Some quando o time está publicado. */
 export const PASSOS = Object.freeze([
-  { n: 1, titulo: 'Publique o seu time', texto: 'ele fica congelado como está — evoluir depois não muda a Liga' },
-  { n: 2, titulo: 'Busque partida', texto: 'o servidor acha um time da sua faixa; sem ninguém, um bot identificado' },
-  { n: 3, titulo: 'Suba de tier', texto: 'vencer sobe, perder desce; a temporada fecha a cada 28 dias' },
+  { n: 1, titulo: 'Complete a jornada', texto: 'vença o campeão e prepare seis espécies diferentes' },
+  { n: 2, titulo: 'Publique o seu time', texto: 'nível, IVs, natureza e golpes ficam congelados até republicar' },
+  { n: 3, titulo: 'Entre na arena ranqueada', texto: 'a aposta depende do tier; a casa recebe 10% do pot' },
 ]);
 
 export const ROTULO_BOT = 'bot — treinador da jornada, não é um jogador';
@@ -69,7 +70,7 @@ export function linhaDaPartida(p, agora = null) {
     titulo: p.resultado === 'venceu' ? 'Vitória' : p.resultado === 'perdeu' ? 'Derrota' : 'Empate',
     contra: bot ? `contra ${p.contra.nome}` : `contra ${p.contra?.nome ?? 'jogador'}`,
     bot: bot ? ROTULO_BOT : null,
-    ranking: bot ? 'não conta no ranking — é bot' : p.rated ? 'contou no ranking' : 'fora do ranking: padrão de partidas entre as mesmas contas',
+    ranking: bot ? 'não conta no ranking — é bot' : p.modo === 'amistoso' ? 'amistoso — sem ranking' : p.rated ? 'contou no ranking' : 'fora do ranking: padrão de partidas entre as mesmas contas',
     /* O SELO curto, colado ao resultado: "contou" ou não é a segunda pergunta
        depois de ganhei/perdi, e não pode ficar no canto em cinza. */
     /* O efeito no tier É o selo da partida que contou — a resposta a "o que mudou" não pode ser o menor texto da linha. */
@@ -77,7 +78,7 @@ export function linhaDaPartida(p, agora = null) {
     /* A frase longa só quando NÃO contou: é ela que explica o porquê; o "contou" já está no selo. */
     /* O que a partida FEZ: a que contou diz o efeito no tier; a fora do
        ranking diz por quê; a do bot, nada além do selo e do rótulo. */
-    explica: bot ? 'ninguém da sua faixa na fila — por isso um bot' : !p.rated ? 'padrão de partidas entre as mesmas contas' : null,
+    explica: bot ? 'treino contra um bot identificado' : p.modo === 'amistoso' ? 'amistoso não cobra aposta nem dá ranking ou LP' : !p.rated ? 'padrão de partidas entre as mesmas contas' : null,
     turnos: `${p.turnos} turnos`,
     quando: agora != null && p.quando != null ? haQuanto(agora - p.quando) : null,
     /* O QUE A PARTIDA RENDEU (ST-11.7b): só aparece quando rendeu — a do bot e
@@ -155,7 +156,7 @@ export function homeDaLiga({ conta, dados, pack, agora, preset, acabou = null })
     tier: { nome: dados.tier, escada: escadaDoTier(dados.tier), /* "no ranking": a partida contra o bot não conta aqui, e a frase não pode
        dizer "nenhuma partida" em cima de uma vitória contra ele. */
     nota: dados.partidas ? `${dados.partidas} partida${dados.partidas === 1 ? '' : 's'} no ranking` : 'nenhuma partida no ranking ainda — todo mundo começa no Bronze' },
-    time: dados.meuTime ? { membros: dados.meuTime.time.map(m => ({ dex: m.dex, nivel: m.nivel })), power: dados.meuTime.power,
+    time: dados.meuTime ? { membros: dados.meuTime.time.map(m => ({ dex: m.dex, nivel: m.nivel, iv: m.iv, natureza: m.natureza, golpes: m.golpes })), power: dados.meuTime.power,
                             preset: PRESETS_NA_TELA.find(p => p.id === dados.meuTime.preset)?.nome ?? dados.meuTime.preset } : null,
     recentes: (dados.recentes ?? []).map(p => linhaDaPartida(p, agora)),
   };
@@ -166,6 +167,7 @@ export function homeDaLiga({ conta, dados, pack, agora, preset, acabou = null })
   base.semHistorico = !base.resultado && !base.recentes.length;
   if (!dados.ligada) return comPresets({ ...base, estado: 'desligada', acao: { rotulo: 'Buscar partida', habilitada: false, tipo: 'buscar' },
     aviso: 'A Liga está em manutenção agora. As partidas jogadas continuam aqui.' });
+  if (dados.acesso && !dados.acesso.ok) return comPresets({ ...base, estado: 'bloqueada', acao: null, titulo: 'Arena de Treinadores', aviso: dados.acesso.motivo });
   /* Sem time na conta NÃO há botão: um botão apagado sem saída é um beco.
      A frase diz o que é e por onde se sai; o passo 1 aparece bloqueado.
      ST-13.5g · L-211: a DEC-17 decidiu que a conta começa do zero — não há
@@ -178,8 +180,11 @@ export function homeDaLiga({ conta, dados, pack, agora, preset, acabou = null })
   const velho = motivoDaVersao(pack, dados.meuTime);
   if (velho) return comPresets({ ...base, estado: 'desatualizado', acao: { rotulo: 'Publicar de novo', habilitada: true, tipo: 'publicar' },
     aviso: 'As regras da luta mudaram desde que você publicou. Publique de novo para voltar à fila.' });
-  const mudou = idsDo(dados.meuTime) !== (dados.equipe ?? []).map(c => c.id).join();
-  return comPresets({ ...base, estado: 'pronto', acao: { rotulo: 'Buscar partida', habilitada: true, tipo: 'buscar' },
+  const atual = (dados.equipe ?? []).every(c => Array.isArray(c.iv) && c.iv.length === 6)
+    ? snapshotDoTime({ pack, criaturas: dados.equipe, ids: (dados.equipe ?? []).map(c => c.id), preset: dados.meuTime.preset }) : { ok: false };
+  const mudou = idsDo(dados.meuTime) !== (dados.equipe ?? []).map(c => c.id).join()
+    || (atual.ok && JSON.stringify(atual.time) !== JSON.stringify(dados.meuTime.time));
+  return comPresets({ ...base, estado: 'pronto', acao: { rotulo: 'Treinar sem aposta ou ranking', habilitada: true, tipo: 'buscar' },
     secundaria: { rotulo: 'Publicar de novo', tipo: 'publicar' },
     aviso: mudou ? 'O seu time mudou desde a publicação. A Liga luta com o publicado até você publicar de novo.' : null });
 }

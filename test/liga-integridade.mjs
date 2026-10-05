@@ -1,3 +1,4 @@
+import { partidaHistorica as criarPartida } from './fixtures/liga-historica.mjs';
 /* Q1/Q6/Q9 · O ANTI-WIN-TRADING DA LIGA (ST-11.8 · F5.8 · Spec §9.12)
  *
  * Os três sinais e a ação mais barata, cada um com a sua borda:
@@ -18,7 +19,7 @@ import { abrirBanco, migrar, MIGRACOES } from '../server/banco.mjs';
 import { cadastrar } from '../server/auth.mjs';
 import { gerar } from '../server/criaturas.mjs';
 import { criarSnapshot } from '../server/equipe.mjs';
-import { criarPartida, partidaDe, ERRO_PARTIDA } from '../server/partida.mjs';
+import { partidaDe, ERRO_PARTIDA } from '../server/partida.mjs';
 import { ratingDe } from '../server/liga-mmr.mjs';
 import { escolherAdversario } from '../app/modules/pareamento-dados.mjs';
 import { conteudoDaLuta } from '../app/modules/snapshot-dados.mjs';
@@ -86,7 +87,7 @@ export async function suite() {
     return { db, u, v, forte: snap(u, [[6, 60], [9, 60], [3, 60]]), fraco: snap(v, [[10, 5]]) };
   }
 
-  s.teste('no servidor: o cooldown recusa a revanche; o quinto confronto fica gravado, fora do ranking e registrado', () => {
+  s.teste('histórico anterior a AT6: o cooldown recusa a revanche; o quinto confronto fica gravado, fora do ranking e registrado', () => {
     const c = cena();
     const joga = (k, t) => criarPartida(c.db, { userId: c.v, meu: c.fraco.id, adversario: c.forte.id, chaveIdem: `int-${String(k).padStart(6, '0')}`, agora: t });
     joga(1, T0);

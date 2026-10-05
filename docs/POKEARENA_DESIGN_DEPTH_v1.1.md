@@ -444,3 +444,21 @@ Isso acrescenta blocos à fase de Collection: cadeia de evolução, moveset esco
 2. **O doce pode virar motivo para apostar mais.** Por isso a regra de não escalar com valor apostado. Precisa de teste explícito no bloco.
 3. **PvE mal calibrado vira paredão ou passeio.** A probabilidade exibida ajuda o jogador, mas exige que o balanceamento dos ginásios seja medido, não estimado — mesmo método do killstreak e das odds.
 4. **Escopo.** Evolução, moveset e ginásios com probabilidade são bem mais trabalho que a Collection original. Se for preciso cortar, cortar **treino** (§11.7) antes de cortar evolução ou escolha de golpes: treino é o eixo com menos decisão por unidade de esforço.
+
+
+## Arena da coleção — atualização AT6 de 04/10/2026
+
+A Jornada conduz ao endgame: seis espécies próprias, atributos reais, ranking
+e stake por tier. O contrato vigente está na Spec §8.17/§9.17 e o detalhamento
+em arena-treinadores/09_CONTRATO_DA_IMPLEMENTACAO.md.
+
+O incentivo é preparar/capturar/treinar/negociar uma equipe melhor; a fila
+busca confrontos próximos, sem buff por compra/saldo. Bronze custa 50 por
+lado; a casa recebe 10% do pote. O kit único de 300 PC-B é emissão promocional,
+não receita. Taxas arrecadadas têm saldo auditável e campanhas internas finitas.
+PC-B/PC-C não se convertem em PC-T por essa campanha. Compras/saques reais
+continuam sujeitos ao §25.1; a hipótese de 450 PC semanais não foi ativada.
+
+A medição em quatro espelhos mostrou vantagens de IVs maiores do que power
+indica; filtros estatísticos da fila complementam níveis/MMR. Os dados da TBE4
+não certificam retenção, liquidez de mercado nem sustentabilidade comercial.

@@ -22,7 +22,50 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 01/10/2026
+## 0. ONDE PARAMOS — 04/10/2026 · AT6-base
+
+Branch: `codex/arena-completa-20261004`, baseada em `82e47f8`.
+O bloco principal foi implementado; apresentação e plano completo permanecem
+parciais. Não houve deploy nem tag de release.
+
+- TBE `tbe-4`: atributos reais, iniciativa ±10%, IA com precisão/crítico/dano
+  esperado, replays versionados. Ginásios recalibrados; contrato novo explícito
+  na Spec §8.17. Arena comum preservada.
+- Ranked: campeão + seis espécies, mesma faixa de rank, filtros de MMR/power/
+  níveis e estimativa pelo motor real (128 pares; probabilidade e IC). Amistoso
+  não altera ranking. A aposta só é criada pela fila do servidor.
+- Bronze 50 e tabela crescente; 10% para ledger da casa. Carteira, defesa,
+  partida e ranking são atômicos. Defesa: snapshot atual, 24h, três partidas e
+  três stakes brutos. Sem renovação automática. Campanha interna com teto,
+  saldo existente e idempotência; sem endpoint público de emissão.
+- Kit único de campeão: 300 PC-B. XP repetido da Jornada: 30s e 6000 por
+  conta/dia. Não mudou o XP do Avanço nem DEC-29/31. Ranking exige atividade
+  real da temporada atual. Textos da UI explicam as novas condições.
+
+**Evidência:** `docs/arena-treinadores/VALIDACAO_FOCADA.json`,
+`SABOTAGEM_FOCADA.json` e `BALANCEAMENTO_TBE4.json`. O último tem 40 mil
+combates novos: +1 nível variou de 57,5% a 70,7%; IV31 versus IV15 de 70,4%
+a 97,7%. Por isso power sozinho não autoriza o confronto. Não são odds globais.
+O recorte focado passou em 242/242 testes de 29 suítes; foi solicitado pelo
+dono e não equivale à suíte inteira. HTTP local do modo estático verificado
+com status 200 nesta sessão; não substitui inspeção em navegador.
+
+**Limites de validação:** Q5 não executado: não há Chromium disponível neste
+ambiente. Nenhuma alteração de CSS/layout; não houve revisão visual nem Q7.
+Q2 dirigido captura 17/17 defeitos; o Q2 legado acumulado continua pendente
+antes de tag. Há testes de rollback e HTTP real, mas não teste de carga global.
+A imagem `tools/previas/_jornada/mapa-agatha-1920.png` já estava alterada na
+retomada; não pertence a este bloco e deve ficar fora do commit.
+
+**Retomada:** seguir a prioridade AT6/GQ no ROADMAP. AT6-13 exige combate real
+no Avanço, não apenas repassar IV ao cálculo agregado; versionar runs antigas,
+preservar economia, HP, cura, captura e CAS. O contrato 09 explica o recorte.
+Modo local: `node tools/servir.mjs --porta 8099`, endereço
+`http://127.0.0.1:8099/app/index.html` no ambiente que executar esse comando.
+Isso não certifica o fluxo PvP autenticado. Raiz local:
+`/workspace/scratch/20f7386fd0c9/pokemon-implementation`.
+
+## 0-histórico. ANTES — 01/10/2026
 
 ```text
 o ÚLTIMO   ST-2.8 · o jogo no celular (01/10, pedido do dono: "tá feião p

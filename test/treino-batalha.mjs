@@ -116,5 +116,43 @@ export function suite() {
     igual(adamant.def, base.def, 'a natureza mexeu no que ela não cita');
   });
 
+  s.teste('AT6-12: ganho pequeno de nível é gradual em formação espelhada', () => {
+    const base = [6, 9, 3, 149, 143, 65].map(d => cria(d, 60, { iv: Array(6).fill(15), natureza: 'Hardy' }));
+    const maior = base.map(c => ({ ...c, nivel: 61 }));
+    let pontos = 0;
+    for (let k = 0; k < 2000; k++) {
+      const seed = 0xB7030000 + k;
+      const a = simular(pack, maior, base, seed, { registrar: false }).vencedor;
+      const b = simular(pack, base, maior, seed, { registrar: false }).vencedor;
+      pontos += (a === 'A' ? 1 : a === null ? .5 : 0) + (b === 'B' ? 1 : b === null ? .5 : 0);
+    }
+    const chance = pontos / 4000;
+    ok(chance > .53 && chance < .68, `+1 nível precisa ajudar sem decidir tudo: ${chance}`);
+  });
+
+  s.teste('AT6-12: replay explica iniciativa sem inventar dano ou ordem', () => {
+    const time = [6, 9, 3].map(d => cria(d, 60));
+    const r = simular(pack, time, time, 3317);
+    ok(r.eventos.every(e => Number.isFinite(e.iniciativa) && Number.isFinite(e.velocidade)), 'iniciativa não registrada');
+    for (const e of r.eventos) {
+      ok(e.iniciativa >= .9 * e.velocidade && e.iniciativa <= 1.1 * e.velocidade, 'iniciativa saiu do intervalo');
+    }
+  });
+  s.teste('AT6-12: treino progressivo aumenta a vantagem sem substituir o confronto',()=>{
+    const base=[6,9,3,149,143,65].map(d=>cria(d,60,{iv:Array(6).fill(15),natureza:'Hardy'}));
+    const taxas=[1,2,5].map(delta=>{let pontos=0;const alto=base.map(c=>({...c,nivel:c.nivel+delta}));
+      for(let k=0;k<500;k++){const seed=0xEA170000+k,a=simular(pack,alto,base,seed,{registrar:false}).vencedor,b=simular(pack,base,alto,seed,{registrar:false}).vencedor;
+        pontos+=(a==='A'?1:a===null?.5:0)+(b==='B'?1:b===null?.5:0);}return pontos/1000;});
+    ok(taxas[0]>.53&&taxas[0]<.68,`+1: ${taxas[0]}`);
+    ok(taxas[1]>taxas[0]+.03&&taxas[2]>taxas[1]+.10,`curva: ${taxas}`);
+  });
+  s.teste('precisão e crítico realmente acontecem nas frequências declaradas',()=>{
+    igual(REGRAS.CRITICO,1/16);igual(REGRAS.MULT_CRITICO,1.5);igual(REGRAS.ACERTO_PADRAO,.92);
+    const t=[cria(6,60,{golpes:['Payback']})];let total=0,miss=0,crit=0;
+    for(let k=0;k<1000;k++)for(const e of simular(pack,t,t,0xDA830000+k).eventos){total++;if(e.errou)miss++;if(e.crit)crit++;}
+    ok(total>5000);ok(Math.abs(miss/total-.08)<.015,`erro: ${miss/total}`);
+    ok(Math.abs(crit/(total-miss)-1/16)<.015,`crítico: ${crit/(total-miss)}`);
+  });
+
   return s;
 }

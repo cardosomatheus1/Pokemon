@@ -39,7 +39,7 @@ export function snapshotPorId(db, id) {
   return l ? { ...doBanco(l), user: l.user_id } : null;
 }
 export const snapshotsDe = (db, userId) =>
-  db.prepare(`SELECT * FROM team_snapshots WHERE user_id = ? ORDER BY criado_em DESC, id`).all(userId).map(doBanco);
+  db.prepare(`SELECT * FROM team_snapshots WHERE user_id = ? ORDER BY criado_em DESC, id DESC`).all(userId).map(doBanco);
 
 const texto = v => (typeof v === 'string' && v.length > 0 && v.length <= 80 ? v : null);
 export function rotasDaEquipe(daExcecao) {

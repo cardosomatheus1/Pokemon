@@ -1,3 +1,4 @@
+import { partidaHistorica as criarPartida } from './fixtures/liga-historica.mjs';
 /* Q1/Q3/Q6 · OS LEAGUE POINTS (ST-11.7a · Spec §9.10, §10.1, §10.12)
  *
  *   A FONTE       a partida CONTADA paga os dois lados — quem desafia sempre um
@@ -17,7 +18,7 @@ import { abrirBanco, migrar, MIGRACOES } from '../server/banco.mjs';
 import { cadastrar } from '../server/auth.mjs';
 import { gerar } from '../server/criaturas.mjs';
 import { criarSnapshot } from '../server/equipe.mjs';
-import { criarPartida } from '../server/partida.mjs';
+
 import { sincronizarTemporada } from '../server/temporada.mjs';
 import { saldoDePontos, extratoDePontos, creditarPartida, insigniasDe } from '../server/pontos-liga.mjs';
 import { ligaDaConta, pontosDaConta, minhasPartidas } from '../server/liga-equipe.mjs';
@@ -67,7 +68,7 @@ export async function suite() {
     igual(JSON.stringify(viradaDaConta({ saldo: 0, tier: 'Bronze', partidas: 0 })), '{"reset":0,"premio":0}', 'a conta vazia');
   });
 
-  s.teste('no servidor: a partida contada paga os dois lados, uma vez, e a carteira não se mexe', () => {
+  s.teste('histórico anterior a AT6: a partida contada paga os dois lados, uma vez, e a carteira não se mexe', () => {
     const c = cena();
     const cart = carteiraMexeu(c.db);
     const p = criarPartida(c.db, { userId: c.v, meu: c.fracoV.id, adversario: c.forte.id, chaveIdem: 'lp-000001', agora: T0 });
@@ -80,7 +81,7 @@ export async function suite() {
     igual(ligaDaConta(c.db, { userId: c.v, agora: T0 }).pontos, 10, 'a Liga não mostra o saldo');
   });
 
-  s.teste('no servidor: a partida fora do ranking não paga', () => {
+  s.teste('histórico anterior a AT6: a partida fora do ranking não paga', () => {
     const c = cena();
     const joga = (k, t) => criarPartida(c.db, { userId: c.v, meu: c.fracoV.id, adversario: c.forte.id, chaveIdem: `lp-${String(k).padStart(6, '0')}`, agora: t });
     for (let k = 1; k <= 4; k++) joga(k, T0 + (k - 1) * 7 * H);
@@ -200,7 +201,7 @@ export async function suite() {
       const cr = gerar(srv.db, { userId: uid, pack: PACK, dex: 6, origem: 'captura' });
       srv.db.prepare(`UPDATE criaturas SET xp = ? WHERE id = ?`).run(xpParaNivel(30), cr.id);
       igual((await fetch(url('/api/equipe/pontos'), { headers: { [CABECALHO_VERSAO]: API_VERSAO } })).status, 401, 'os pontos sem sessão');
-      const pub = await fetch(url('/api/equipe/publicar'), { method: 'POST', headers: H2, body: JSON.stringify({ preset: 'focus' }) }).then(r => r.json());
+      const pub = await fetch(url('/api/equipe/snapshot'), { method: 'POST', headers: H2, body: JSON.stringify({ ids:[cr.id],preset: 'focus' }) }).then(r => r.json());
       const busca = await fetch(url('/api/equipe/buscar'), { method: 'POST', headers: H2, body: JSON.stringify({ meu: pub.snapshot.id, chaveIdem: 'lpporta-01' }) }).then(r => r.json());
       ok(busca.partida?.bot, 'sozinho na fila não caiu no bot');
       const p = await fetch(url('/api/equipe/pontos'), { headers: H2 }).then(r => r.json());

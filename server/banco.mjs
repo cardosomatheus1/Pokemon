@@ -76,6 +76,7 @@ export const TIPOS_LIMITE = [
   'max_loss_dia', 'max_loss_semana', 'max_loss_mes',   // perda LÍQUIDA
   'max_rounds_dia',        // frequência, não valor
   'max_session_time',      // minutos de sessão
+
 ];
 
 const emAspas = lista => lista.map(x => `'${x}'`).join(',');
@@ -2682,6 +2683,41 @@ export const MIGRACOES = [
     },
   },
 
+  {
+    nome: 'arena-treinadores-at6-1',
+    sobe: db => db.exec(`
+      CREATE TABLE arena_partidas (
+        partida_id TEXT PRIMARY KEY REFERENCES league_matches(id),
+        modo TEXT NOT NULL CHECK (modo IN ('ranqueada', 'amistoso')),
+        politica TEXT NOT NULL
+      );
+      CREATE TRIGGER arena_partidas_sem_update BEFORE UPDATE ON arena_partidas
+        BEGIN SELECT RAISE(ABORT, 'modo da partida imutável'); END;
+      CREATE TRIGGER arena_partidas_sem_delete BEFORE DELETE ON arena_partidas
+        BEGIN SELECT RAISE(ABORT, 'modo da partida imutável'); END;
+      CREATE TABLE arena_defesas (
+        user_id TEXT PRIMARY KEY REFERENCES users(id),
+        snapshot_id TEXT NOT NULL REFERENCES team_snapshots(id),
+        stake_max INTEGER NOT NULL CHECK (stake_max > 0),
+        orcamento INTEGER NOT NULL CHECK (orcamento >= 0),
+        restantes INTEGER NOT NULL CHECK (restantes >= 0),
+        expira_em INTEGER NOT NULL
+      );
+      CREATE TABLE arena_tesouraria (
+        referencia TEXT NOT NULL,
+        tipo TEXT NOT NULL CHECK (tipo IN ('LEAGUE_RAKE', 'PROMO_DEBIT')),
+        bucket TEXT NOT NULL CHECK (bucket IN ('bonus', 'competitivo')),
+        delta INTEGER NOT NULL CHECK ((tipo = 'LEAGUE_RAKE' AND delta > 0) OR (tipo = 'PROMO_DEBIT' AND delta < 0)),
+        criado_em INTEGER NOT NULL,
+        PRIMARY KEY (referencia, tipo, bucket)
+      );
+      CREATE TRIGGER arena_tesouraria_sem_update BEFORE UPDATE ON arena_tesouraria
+        BEGIN SELECT RAISE(ABORT, 'tesouraria imutável'); END;
+      CREATE TRIGGER arena_tesouraria_sem_delete BEFORE DELETE ON arena_tesouraria
+        BEGIN SELECT RAISE(ABORT, 'tesouraria imutável'); END;
+    `),
+    desce: db => db.exec('DROP TABLE arena_tesouraria; DROP TABLE arena_defesas; DROP TABLE arena_partidas;'),
+  },
 ];
 
 const TABELA_VERSAO = `

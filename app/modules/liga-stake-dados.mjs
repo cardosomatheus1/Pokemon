@@ -16,6 +16,7 @@
  * Com a bandeira desligada (o estado de hoje — ligar é a D2, do dono), não há
  * nada: a seção não existe para o jogador, em vez de aparecer apagada.
  */
+import { POLITICA_ARENA } from '../../engine/arena-treinadores.mjs';
 const milhar = n => String(Math.max(0, Math.trunc(Number(n) || 0))).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
 export function stakeNaTela(s, { confirmando = false } = {}) {
@@ -23,20 +24,19 @@ export function stakeNaTela(s, { confirmando = false } = {}) {
   const falta = Math.max(0, (s.stake ?? 0) - (s.elegivel ?? 0));
   const porcento = s.pot ? Math.round((s.rake / s.pot) * 100) : 0;
   const lucro = (s.payout ?? 0) - (s.stake ?? 0);
-  const motivo = s.pausa ? 'a sua conta está em pausa — o stake volta quando a pausa acabar'
-    : !s.inscrito ? 'entre na fila com stake primeiro: quem desafia valendo também pode ser desafiado valendo'
+  const motivo = s.acesso && !s.acesso.ok ? s.acesso.motivo : s.pausa ? 'a sua conta está em pausa — o stake volta quando a pausa acabar'
     : falta > 0 ? `faltam ${milhar(falta)} PC de bônus ou competitivo — o transferível nunca entra no stake`
     : null;
   return {
     /* O lema da aba dizia "sem aposta" em cima desta seção (Q7 da 11.11). */
     lema: 'o seu time publicado contra os de outros jogadores — valendo só quando você confirma',
-    titulo: `Partida com stake · ${s.tier}`,
+    titulo: `Arena de Treinadores · ${s.tier}`,
     /* O ESTADO em primeiro lugar, e grande: estar na fila quer dizer que o seu
        time pode ser desafiado valendo sem você apertar nada — isso não pode
        ser a menor frase da seção (Q7 da 11.11). */
     estado: s.inscrito
-      ? { texto: 'Você ESTÁ na fila com stake', explica: 'quem te desafiar com stake joga valendo contra o seu time publicado, mesmo com você fora do jogo', classe: 'dentro' }
-      : { texto: 'Você não está na fila com stake', explica: 'enquanto estiver fora, ninguém joga valendo contra o seu time', classe: 'fora' },
+      ? { texto: 'Defesa automática autorizada', explica: `restam ${s.defesa?.restantes ?? 0} defesas e ${milhar(s.defesa?.orcamento)} PC de orçamento; vence em ${new Date(s.defesa?.expiraEm).toLocaleString('pt-BR', { timeZone: 'America/Bahia' })}. Ganhar não renova a autorização.`, classe: 'dentro' }
+      : { texto: 'Defesa automática desligada', explica: 'você pode buscar uma partida sem autorizar cobranças quando estiver fora', classe: 'fora' },
     numeros: [
       { rotulo: 'você põe', valor: `${milhar(s.stake)} PC`, sub: 'do bônus e do competitivo', classe: '' },
       /* O LÍQUIDO ao lado do bruto: "recebe 90" sozinho lia como 90 de lucro. */
@@ -53,7 +53,8 @@ export function stakeNaTela(s, { confirmando = false } = {}) {
     ],
     saldo: `bônus ${milhar(s.bonus)} · competitivo ${milhar(s.competitivo)}`,
     inscrito: !!s.inscrito,
-    inscricao: s.inscrito ? { rotulo: 'Sair da fila com stake', ativo: false } : { rotulo: 'Entrar na fila com stake', ativo: true },
+    inscricao: s.inscrito ? { rotulo: 'Desligar defesa automática', ativo: false }
+      : { rotulo: `Autorizar ${POLITICA_ARENA.defesas} defesas · até ${milhar(POLITICA_ARENA.defesas * s.stake)} PC por ${POLITICA_ARENA.validadeMs/3600000} h`, ativo: true },
     acao: { rotulo: `Buscar partida valendo ${milhar(s.stake)} PC`, habilitada: !motivo },
     motivo,
     confirmacao: confirmando && !motivo ? {

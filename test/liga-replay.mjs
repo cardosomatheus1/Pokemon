@@ -99,7 +99,7 @@ export async function suite() {
     ok(/NÃO confere/.test(replayNaTela(linha, { ok: false }).prova), 'a prova que falhou não diz');
     const bot = replayNaTela(linhaDaPartida({ id: 'b', lado: 'B', resultado: 'venceu', rated: false, turnos: 3, contra: { tipo: 'bot', nome: 'Brock' } }), { ok: true });
     igual(`${bot.rotulos.B}|${bot.fim.titulo}`, 'Brock · bot|Você venceu', 'o bot no replay');
-    igual(`${bot.fim.selo.texto}|${bot.fim.texto}`, 'não contou · bot|ninguém da sua faixa na fila — por isso um bot', 'o fim do replay do bot');
+    igual(`${bot.fim.selo.texto}|${bot.fim.texto}`, 'não contou · bot|treino contra um bot identificado', 'o fim do replay do bot');
     void ROTULO_BOT;
   });
 

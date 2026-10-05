@@ -9663,3 +9663,25 @@ outra ("Kakuna na · 78 7100100"). O `separarPlacas` existe, mas não separou
 esse trio. **Por que não cabe agora:** a ST-2.10 é sobre o boneco e o relógio.
 **O que a destrava:** nada — é a próxima da cena da run.
 
+
+
+### L-AT6-01 — Avanço ainda usa força e HP agregados
+
+**Dono:** AT6-13 · **Notada em:** AT6-base, 04/10/2026 · **Estado:** aberta.
+A TBE nova atende Jornada/treino/ranked, mas o Avanço mantém seu motor legado.
+O bloco dono deve versionar runs, integrar HP/golpes/replay reais e medir cura,
+captura, progressão e emissão. Não fechar só por adicionar IV ao power.
+
+### L-AT6-02 — apresentação da Arena não foi inspecionada
+
+**Dono:** AT6-base (Q5), depois AT6-05 · **Estado:** aberta.
+Não há Chromium no ambiente atual. Textos e dados passaram testes, mas faltam
+inspeção real, screenshots nas larguras exigidas e validação do fluxo visual.
+Não liberar tag nem afirmar aceite visual por HTTP ou HTML gerado.
+
+### L-AT6-03 — funil, mercado e melhorias gerais não estão completos
+
+**Dono:** AT6-07/08/09/10 e GQ-01–06, na ordem do ROADMAP · **Estado:** aberta.
+Eventos de busca/resultado, kit e tesouraria interna são base. Faltam funil
+completo, instrumentos de montagem do time, retorno e monetização descritos
+nas fichas. Não ativar emissão semanal ou campanha pública sem medição.

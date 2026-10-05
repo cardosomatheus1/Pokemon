@@ -71,9 +71,9 @@ export function suite() {
   });
 
   s.teste('o progresso é aditivo no save', () => {
-    igual(JSON.stringify(camposDaJornada({})), '{"jornada":{"vencidos":[],"insignias":[],"pve":{"dia":null,"pago":0,"nos":[],"chefes":[]}}}', 'save antigo');
+    igual(JSON.stringify(camposDaJornada({})), '{"jornada":{"vencidos":[],"insignias":[],"xpRepeticao":{"dia":null,"pago":0,"ultimo":null},"pve":{"dia":null,"pago":0,"nos":[],"chefes":[]}}}', 'save antigo');
     igual(JSON.stringify(camposDaJornada({ jornada: { vencidos: ['a', 'a', 3], insignias: 'x' } })),
-      '{"jornada":{"vencidos":["a","3"],"insignias":[],"pve":{"dia":null,"pago":0,"nos":[],"chefes":[]}}}', 'lixo no save');
+      '{"jornada":{"vencidos":["a","3"],"insignias":[],"xpRepeticao":{"dia":null,"pago":0,"ultimo":null},"pve":{"dia":null,"pago":0,"nos":[],"chefes":[]}}}', 'lixo no save');
     const d = deposito();
     const e = VAZIO(); e.criaturas = [cria('x', 6, 60)];
     salvar(e, d);

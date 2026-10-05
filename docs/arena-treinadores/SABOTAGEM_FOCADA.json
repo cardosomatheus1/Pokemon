@@ -1,0 +1,251 @@
+{
+  "escopo": "somente mutantes AT6 novos; não é Q2 legado integral",
+  "total": 17,
+  "capturados": 17,
+  "resultados": [
+    {
+      "id": "S90001",
+      "nome": "velocidade próxima volta a decidir tudo",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "AT6-12: ganho pequeno de nível é gradual em formação espelhada",
+          "erro": "+1 nível precisa ajudar sem decidir tudo: 0.9225",
+          "suite": "treino-batalha"
+        },
+        {
+          "titulo": "AT6-12: treino progressivo aumenta a vantagem sem substituir o confronto",
+          "erro": "+1: 0.929",
+          "suite": "treino-batalha"
+        }
+      ]
+    },
+    {
+      "id": "S90002",
+      "nome": "pula a jornada até o campeão",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "acesso exige jornada inteira, seis indivíduos e espécies distintas",
+          "erro": "",
+          "suite": "arena-treinadores"
+        }
+      ]
+    },
+    {
+      "id": "S90003",
+      "nome": "permite repetir espécies",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "acesso exige jornada inteira, seis indivíduos e espécies distintas",
+          "erro": "",
+          "suite": "arena-treinadores"
+        }
+      ]
+    },
+    {
+      "id": "S90004",
+      "nome": "permite diferença excessiva de força",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "pareamento é simétrico e corta rating, power e níveis concentrados",
+          "erro": "",
+          "suite": "arena-treinadores"
+        }
+      ]
+    },
+    {
+      "id": "S90005",
+      "nome": "cliente escolhe partida com dinheiro",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "amistoso não cobra, não dá MMR nem LP; cliente não escolhe ranqueada",
+          "erro": "undefined — esperado ARENA_USAR_FILA, veio PARTIDA_COOLDOWN",
+          "suite": "arena-treinadores"
+        },
+        {
+          "titulo": "HTTP ignora vencedor e raiz do cliente; só a fila cobra e ranqueia",
+          "erro": "undefined — esperado 400, veio 200",
+          "suite": "arena-treinadores"
+        }
+      ]
+    },
+    {
+      "id": "S90006",
+      "nome": "amistoso volta a dar ranking",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "amistoso não cobra, não dá MMR nem LP; cliente não escolhe ranqueada",
+          "erro": "undefined — esperado 0, veio 1",
+          "suite": "arena-treinadores"
+        }
+      ]
+    },
+    {
+      "id": "S90007",
+      "nome": "a taxa volta a desaparecer do saldo da casa",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "Bronze 50 por lado, casa 10 e vencedor 90; reenvio não repaga",
+          "erro": "undefined — esperado 1000, veio 990",
+          "suite": "arena-treinadores"
+        },
+        {
+          "titulo": "falha na tesouraria desfaz saldo, partida, ranking e consumo da defesa",
+          "erro": "",
+          "suite": "arena-treinadores"
+        },
+        {
+          "titulo": "campanha usa saldo real da casa e orçamento; resgate repetido é idempotente",
+          "erro": "saldo da casa insuficiente",
+          "suite": "arena-treinadores"
+        },
+        {
+          "titulo": "orçamentos de campanhas com underscore não se confundem",
+          "erro": "saldo da casa insuficiente",
+          "suite": "arena-treinadores"
+        },
+        {
+          "titulo": "HTTP ignora vencedor e raiz do cliente; só a fila cobra e ranqueia",
+          "erro": "undefined — esperado 10, veio 0",
+          "suite": "arena-treinadores"
+        }
+      ]
+    },
+    {
+      "id": "S90008",
+      "nome": "defesa continua ativa após prazo",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "consentimento expira, acaba por número/orçamento e não se renova com publicação",
+          "erro": "",
+          "suite": "arena-treinadores"
+        }
+      ]
+    },
+    {
+      "id": "S90009",
+      "nome": "defesa ganha orçamento de partidas ao ser usada",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "três defesas reais consomem autorização bruta; ganhar não libera uma quarta",
+          "erro": "undefined — esperado 0, veio 6",
+          "suite": "arena-treinadores"
+        }
+      ]
+    },
+    {
+      "id": "S90010",
+      "nome": "teto de XP multiplicado pelo time",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "teto é da conta, dividido pelo time; primeira vitória não consome teto",
+          "erro": "undefined — esperado {\"a\":2,\"b\":2,\"c\":2}, veio {\"a\":100,\"b\":100,\"c\":100}",
+          "suite": "xp-jornada-repeticao"
+        },
+        {
+          "titulo": "repetir milhares de vezes nunca multiplica o teto pelo número de criaturas",
+          "erro": "undefined — esperado 6000, veio 36000",
+          "suite": "xp-jornada-repeticao"
+        }
+      ]
+    },
+    {
+      "id": "S90011",
+      "nome": "repetição instantânea volta a dar XP",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "trinta segundos são globais; virar o dia libera o orçamento",
+          "erro": "undefined — esperado 0, veio 90",
+          "suite": "xp-jornada-repeticao"
+        }
+      ]
+    },
+    {
+      "id": "S90012",
+      "nome": "campanha ultrapassa orçamento",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "campanha usa saldo real da casa e orçamento; resgate repetido é idempotente",
+          "erro": "",
+          "suite": "arena-treinadores"
+        },
+        {
+          "titulo": "orçamentos de campanhas com underscore não se confundem",
+          "erro": "",
+          "suite": "arena-treinadores"
+        }
+      ]
+    },
+    {
+      "id": "S90013",
+      "nome": "kit repaga a cada publicação",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "kit de 300 PC-B é único mesmo republicando; não vira taxa ou PC-T",
+          "erro": "undefined — esperado 800, veio 1100",
+          "suite": "arena-treinadores"
+        }
+      ]
+    },
+    {
+      "id": "S90014",
+      "nome": "remove os críticos",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "precisão e crítico realmente acontecem nas frequências declaradas",
+          "erro": "undefined — esperado 0.0625, veio 0",
+          "suite": "treino-batalha"
+        }
+      ]
+    },
+    {
+      "id": "S90015",
+      "nome": "declara crítico mas não o aplica",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "precisão e crítico realmente acontecem nas frequências declaradas",
+          "erro": "crítico: 0",
+          "suite": "treino-batalha"
+        }
+      ]
+    },
+    {
+      "id": "S90016",
+      "nome": "fila dispensa estimativa do confronto",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "power igual não deixa passar confronto com vantagem extrema de IV",
+          "erro": "Cannot read properties of null (reading 'codigo')",
+          "suite": "arena-treinadores"
+        }
+      ]
+    },
+    {
+      "id": "S90017",
+      "nome": "underscore mistura orçamentos de campanha",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "orçamentos de campanhas com underscore não se confundem",
+          "erro": "orçamento da campanha esgotado",
+          "suite": "arena-treinadores"
+        }
+      ]
+    }
+  ]
+}

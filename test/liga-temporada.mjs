@@ -1,3 +1,4 @@
+import { partidaHistorica as criarPartida } from './fixtures/liga-historica.mjs';
 /* Q1/Q3/Q8 · A TEMPORADA DA LIGA (ST-11.5 · F5.2 · Spec §9.8)
  *
  * O ACEITE da ficha: A VIRADA É IDEMPOTENTE — chamar duas vezes, ou com o
@@ -15,7 +16,7 @@ import { abrirBanco, migrar, MIGRACOES } from '../server/banco.mjs';
 import { cadastrar } from '../server/auth.mjs';
 import { gerar } from '../server/criaturas.mjs';
 import { criarSnapshot } from '../server/equipe.mjs';
-import { criarPartida } from '../server/partida.mjs';
+
 import { ratingDe } from '../server/liga-mmr.mjs';
 import { sincronizarTemporada, rankingDaTemporada, temporadaGravada } from '../server/temporada.mjs';
 import { criarServidor } from '../server/servidor.mjs';

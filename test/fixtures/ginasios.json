@@ -1,5 +1,6 @@
 {
- "medidoEm": "2026-09-27",
+ "medidoEm": "2026-10-04",
+ "versaoMotor": "tbe-4",
  "raiz": 20260928,
  "sims": 2000,
  "primeiroNo": {
@@ -8,11 +9,11 @@
   "inicial": [
    {
     "dex": 1,
-    "p": 0.887
+    "p": 0.889
    },
    {
     "dex": 4,
-    "p": 0.926
+    "p": 0.9075
    },
    {
     "dex": 7,
@@ -25,105 +26,105 @@
    "id": "pewter",
    "rival": "brock",
    "ensina": "fraqueza de tipo",
-   "ignora": 0,
-   "aplica": 0.9995,
+   "ignora": 0.0005,
+   "aplica": 1,
    "erro": 0.001
   },
   {
    "id": "cerulean",
    "rival": "misty",
    "ensina": "a velocidade decide trocas apertadas",
-   "ignora": 0.06,
-   "aplica": 0.7495,
-   "erro": 0.019
+   "ignora": 0.3,
+   "aplica": 0.5945,
+   "erro": 0.0215
   },
   {
    "id": "vermilion",
    "rival": "surge",
    "ensina": "imunidade",
-   "ignora": 0.1355,
+   "ignora": 0.15,
    "aplica": 1,
-   "erro": 0.015
+   "erro": 0.0156
   },
   {
    "id": "celadon",
    "rival": "erika",
    "ensina": "resistência — quem apanha pouco",
-   "ignora": 0.216,
-   "aplica": 0.9305,
-   "erro": 0.018
+   "ignora": 0.254,
+   "aplica": 0.8925,
+   "erro": 0.0191
   },
   {
    "id": "fuchsia",
    "rival": "koga",
    "ensina": "o preset certo — derrube a ameaça primeiro",
-   "ignora": 0.1475,
-   "aplica": 0.7135,
-   "erro": 0.0198
+   "ignora": 0.2785,
+   "aplica": 0.7485,
+   "erro": 0.0196
   },
   {
    "id": "saffron",
    "rival": "sabrina",
    "ensina": "físico contra especial",
-   "ignora": 0.122,
-   "aplica": 0.7995,
-   "erro": 0.0175
+   "ignora": 0.111,
+   "aplica": 0.676,
+   "erro": 0.0205
   },
   {
    "id": "cinnabar",
    "rival": "blaine",
    "ensina": "termine o ferido primeiro — cada um que cai é um golpe a menos",
-   "ignora": 0.2155,
-   "aplica": 0.865,
-   "erro": 0.018
+   "ignora": 0.247,
+   "aplica": 0.509,
+   "erro": 0.0219
   },
   {
    "id": "viridian",
    "rival": "giovanni",
    "ensina": "o tipo duplo — os dois tipos contam",
-   "ignora": 0.071,
-   "aplica": 0.982,
-   "erro": 0.0113
+   "ignora": 0.1325,
+   "aplica": 0.981,
+   "erro": 0.0149
   },
   {
    "id": "lorelei",
    "rival": "lorelei",
    "ensina": "o preset certo — derrube a ameaça primeiro",
-   "ignora": 0.214,
-   "aplica": 0.6855,
-   "erro": 0.0203
+   "ignora": 0.213,
+   "aplica": 0.667,
+   "erro": 0.0207
   },
   {
    "id": "bruno",
    "rival": "bruno",
    "ensina": "imunidade",
    "ignora": 0.002,
-   "aplica": 0.8325,
-   "erro": 0.0164
+   "aplica": 0.8385,
+   "erro": 0.0161
   },
   {
    "id": "agatha",
    "rival": "agatha",
    "ensina": "físico contra especial",
-   "ignora": 0.2,
-   "aplica": 0.7015,
-   "erro": 0.0201
+   "ignora": 0.18,
+   "aplica": 0.465,
+   "erro": 0.0219
   },
   {
    "id": "lance",
    "rival": "lance",
    "ensina": "resistência — quem apanha pouco",
    "ignora": 0.059,
-   "aplica": 0.8545,
-   "erro": 0.0155
+   "aplica": 0.693,
+   "erro": 0.0202
   },
   {
    "id": "campeao",
    "rival": "campeao",
    "ensina": "não persiga o ferido — o preset certo depende de quem está do outro lado",
-   "ignora": 0.0115,
-   "aplica": 0.698,
-   "erro": 0.0201
+   "ignora": 0.5095,
+   "aplica": 0.7425,
+   "erro": 0.0219
   }
  ]
 }

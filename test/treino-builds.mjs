@@ -12,6 +12,7 @@ import { RAIZ, NIVEL, SIMS, SIMS_RIVAL, NIVEIS, buildsDoElenco, referencia } fro
 import { padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { rng } from '../engine/primitivas.mjs';
 import { rivalDe } from '../app/modules/treino-dados.mjs';
+import { VERSAO_TBE } from '../engine/treino-batalha.mjs';
 
 const fx = JSON.parse(readFileSync(new URL('./fixtures/treino-builds.json', import.meta.url), 'utf8'));
 
@@ -19,6 +20,7 @@ export function suite() {
   const s = criarSuite('treino-builds');
 
   s.teste('a fixture: o elenco inteiro, a raiz e os parâmetros da ferramenta', () => {
+    igual(fx.versaoMotor, VERSAO_TBE, 'a medição precisa corresponder ao motor atual');
     igual(JSON.stringify(fx.elenco), JSON.stringify(pack.elenco), 'o elenco mudou — regrave a medição');
     igual(`${fx.raiz}/${fx.nivel}/${fx.simsPorPar}`, `${RAIZ}/${NIVEL}/${SIMS}`, 'a fixture não é da ferramenta de hoje');
     const n = fx.elenco.length;

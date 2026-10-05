@@ -17,6 +17,7 @@
  * no que recebeu.
  */
 import { simular } from './treino-batalha.mjs';
+import { estadoXpRepetido } from './xp-jornada-repeticao.mjs';
 
 export const nosDa = pack => pack?.jornada ?? [];
 export const progressoVazio = () => ({ vencidos: [], insignias: [] });
@@ -29,6 +30,7 @@ export function camposDaJornada(cru) {
   const pve = j?.pve;
   const dia = Number.isInteger(pve?.dia) ? pve.dia : null;
   return { jornada: { vencidos: lista(j?.vencidos), insignias: lista(j?.insignias),
+                      xpRepeticao: estadoXpRepetido(j?.xpRepeticao, j?.xpRepeticao?.dia ?? null),
                       pve: { dia, pago: dia !== null && Number.isFinite(pve?.pago) && pve.pago > 0 ? Math.floor(pve.pago) : 0, nos: dia !== null ? lista(pve?.nos) : [],
                              chefes: dia !== null ? lista(pve?.chefes) : [] } } };
 }

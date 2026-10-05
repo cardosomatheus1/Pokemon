@@ -5,9 +5,10 @@
  * "Dificuldade de cada ginásio é MEDIDA, não estimada." Para cada ginásio, dois
  * times de referência que diferem em UM membro — o que ignora a lição e o que
  * a aplica —, 2.000 lutas cada pela mesma conta da chance exibida (`lote`,
- * raiz fixa). O aceite (a Spec pede que ignorar a lição perca a maior parte
- * das vezes; o plano recomenda ≥ 70% de derrota e ≥ 60% de vitória) é cobrado
- * pelo `test/ginasios.mjs` contra o NÚMERO GRAVADO, e o teste refaz a conta.
+ * raiz fixa). A Spec §8.17 substitui as antigas metas 70%/60%: nos ginásios,
+ * ignorar a lição vence menos de 50%; aplicá-la melhora pelo menos 20 pp
+ * e mais de três erros padrão. Na Liga cobra-se o ganho relativo. O teste
+ * refaz a conta contra o NÚMERO GRAVADO.
  *
  * E o primeiro nó (D-125): o inicial SOZINHO, no nível 5, contra o primeiro
  * rival do caminho — quem acabou de chegar tem de conseguir dar o primeiro
@@ -22,6 +23,7 @@ import pack from '../content/pokemon_kanto_v1.mjs';
 import { lote, resumo } from '../engine/treino-preco.mjs';
 import { padraoDoMoveset } from '../app/modules/moveset-dados.mjs';
 import { rivalDe, treinador } from '../app/modules/treino-dados.mjs';
+import { VERSAO_TBE } from '../engine/treino-batalha.mjs';
 
 export const RAIZ = 20260928, SIMS = 2000, INICIAIS = [1, 4, 7], NIVEL_INICIAL = 5;
 /* Cada membro: [dex, nível] ou [dex, nível, { iv, natureza }] — o terceiro é o
@@ -102,7 +104,7 @@ export function medir() {
   });
   const primeiro = (pack.jornada ?? [])[0];
   const inicial = INICIAIS.map(dex => ({ dex, p: +chance(time([[dex, NIVEL_INICIAL]]), primeiro.rival).toFixed(4) }));
-  return { medidoEm: '2026-09-27', raiz: RAIZ, sims: SIMS, primeiroNo: { id: primeiro.id, rival: primeiro.rival, inicial }, ginasios };
+  return { medidoEm: '2026-10-04', versaoMotor: VERSAO_TBE, raiz: RAIZ, sims: SIMS, primeiroNo: { id: primeiro.id, rival: primeiro.rival, inicial }, ginasios };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

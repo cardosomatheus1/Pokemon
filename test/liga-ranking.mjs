@@ -18,6 +18,7 @@ import { rankingNaTela } from '../app/modules/liga-equipe-dados.mjs';
 import { temporadaDe, TEMPORADA } from '../engine/temporada.mjs';
 import { criarServidor } from '../server/servidor.mjs';
 import { API_VERSAO, CABECALHO_VERSAO } from '../server/contrato.mjs';
+import { registrarAtividade } from './fixtures/atividade-ranking.mjs';
 
 const DIA = 86_400_000, T1 = Date.UTC(2026, 9, 5, 12);
 const fonte = f => readFileSync(new URL(f, import.meta.url), 'utf8');
@@ -27,6 +28,8 @@ function cena(n = 25) {
   const ids = Array.from({ length: n }, (_, i) => cadastrar(db, { username: `Rk${String(i).padStart(2, '0')}`, email: `rk${i}@x.test`, senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01', agora: T1 }).id);
   /* Ratings de 1500 para baixo, de 20 em 20; a última conta nunca jogou. */
   ids.slice(0, n - 1).forEach((id, i) => db.prepare(`INSERT INTO liga_mmr (user_id, rating, partidas, atualizado_em) VALUES (?, ?, ?, ?)`).run(id, 1500 - i * 20, 3 + i, T1));
+  const outro = cadastrar(db,{username:'RkReserva',email:'rk-reserva@x.test',senha:'senha-longa-o-bastante-1',nascimento:'1990-01-01',agora:T1}).id;
+  ids.slice(0,n-1).forEach((id,i)=>registrarAtividade(db,id,outro,3+i,T1));
   return { db, ids };
 }
 

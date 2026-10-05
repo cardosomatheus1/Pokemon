@@ -36,6 +36,7 @@ import { emTransacao } from './carteira.mjs';
 import { emitirControlado } from './emissao-controlada.mjs';
 import { creditar } from './carteira.mjs';
 import { pcTDoNo } from '../engine/pct-jornada.mjs';
+import { concederKitArena } from './arena-premios.mjs';
 
 export const ERRO_JORNADA = Object.freeze({
   CHAVE: 'JORNADA_CHAVE_INVALIDA', PRESET: 'JORNADA_PRESET_INVALIDO', CONFLITO: 'JORNADA_CONFLITO' });
@@ -72,7 +73,7 @@ export function lutarNaConta(db, { userId, pack, id, preset = 'balanced', chaveI
 
   const criaturas = criaturasParaLuta(db, userId, pack);
   const { jornada, revisao } = jornadaDaConta(db, userId);
-  const c = contaDaLuta({ pack, criaturas, jornada, id, preset, semente, dia: diaDoMundo(agora) });
+  const c = contaDaLuta({ pack, criaturas, jornada, id, preset, semente, dia: diaDoMundo(agora), agora });
   if (!c.ok) throw new Error(c.motivo);
   const p = chanceDaLuta({ pack, criaturas, id, preset })?.p ?? null;
   const venceu = c.resultado.vencedor === 'A';
@@ -93,6 +94,8 @@ export function lutarNaConta(db, { userId, pack, id, preset = 'balanced', chaveI
       : db.prepare(`UPDATE jornadas SET progresso_json = ?, revisao = revisao + 1, atualizada_em = ?
                     WHERE user_id = ? AND revisao = ?`).run(JSON.stringify(c.jornada), agora, userId, revisao);
     if (!gravar.changes) throw falha(ERRO_JORNADA.CONFLITO, 'a jornada mudou durante a luta — tente de novo');
+    if (venceu && c.primeiraVez && id === pack.jornada?.at(-1)?.id)
+      resposta.recompensa.kitArena=concederKitArena(db,{userId,agora});
     /* O PRÊMIO DE EMISSÃO CONTROLADA (ST-14.4): o nó diz qual item e qual
        fonte; o orçamento decide se ele sai. A resposta diz o que aconteceu —
        inclusive a recusa por orçamento —, e é gravada com ele. */

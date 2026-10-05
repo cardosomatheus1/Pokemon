@@ -2433,6 +2433,38 @@ Usos:
 
 Só lançar competição quando o Trainer Battle Engine estiver suficientemente balanceado e houver base ativa para produzir adversários variados.
 
+## 8.17 Contrato de combate AT6 — 04/10/2026
+
+As regras atuais do treinador são `tbe-4`: níveis reais; IV limitado a ±5%
+por stat; natureza ±5%; físico/especial; STAB 1,5; efetividade incluindo
+imunidade; precisão específica do golpe (92% quando omitida); crítico 1/16
+com multiplicador 1,5; dano variável entre 0,85 e 1. EV, PP, status,
+prioridade e carga não estão implementados. O nome conhecido do golpe não
+promete esses efeitos.
+
+A iniciativa por turno é velocidade × uniforme(0,90;1,10), com um sorteio
+por sobrevivente. Velocidade e iniciativa viajam no replay. Diferenças pequenas
+de velocidade podem alternar a ordem; diferenças grandes mantêm vantagem.
+Equilibrado compara dano esperado real; Agressivo compara primeiro chance de
+KO, depois dano útil proporcional à vida restante. Defensivo/Foco conservam
+suas prioridades. A estimativa analítica não usa sorte nem o futuro da luta.
+
+A TBE serve Jornada, treino e PvP da coleção. A Arena comum continua com
+motor independente. Avanço conserva a resolução agregada enquanto AT6-13 não
+entregar combate individual, saúde, poções e economia calibrados juntos.
+
+Qualidade dos ginásios: nas referências fixas, ignorar a lição perde a maioria
+das vezes; aplicar aumenta a vitória em pelo menos vinte pontos percentuais,
+acima de três erros de estimação. Na Liga mede-se o ganho relativo da lição.
+Esse contrato substitui os alvos absolutos anteriores de 70% de derrota e
+60% de vitória nas referências, que a TBE nova não preservou em todos os nós.
+O primeiro nó mantém pelo menos 80% para cada inicial sozinho no nível 5.
+
+XP repetível da Jornada: intervalo global de 30 s entre pagamentos repetidos;
+teto de 6000 XP por conta/dia do mundo, agregado entre criaturas. Primeiras
+vitórias ficam fora do teto. Progresso, contador e crédito são atômicos e
+idempotentes. Não aplicar esse teto ao Avanço; manter DEC-29/31.
+
 ---
 
 # 9. Fase 5 — Liga
@@ -2843,7 +2875,59 @@ Não misturar habilidade em apostas com força do time.
 
 ---
 
+## 9.17 Arena de Treinadores — contrato AT6, 04/10/2026
+
+Este contrato atualiza as regras iniciais de acesso/pareamento deste capítulo.
+Concluir todos os nós da Jornada, incluindo Campeão, libera a publicação
+competitiva de **seis indivíduos de espécies diferentes**. A Arena usa os
+atributos reais da coleção e a TBE §8.17. A partida é automática e assíncrona;
+o replay continua usando o palco de arena existente.
+
+Ranqueada com aposta só nasce na **busca do servidor**. Desafio direto e treino
+sem aposta não alteram Liga MMR nem LP. Bots são identificados, exclusivamente
+para treino sem aposta. Não criar adversário pago para preencher fila vazia.
+
+Os participantes devem estar no mesmo tier: Bronze 50, Silver 100, Gold 250,
+Platinum 500, Diamond 1000, Master 2500, Champion 5000 PC por jogador. Assim o
+valor informado na confirmação corresponde ao valor cobrado. Filtros atuais:
+diferença MMR ≤150; razão simétrica de power ≤1,05; diferença média de nível ≤1;
+diferença por posição de níveis ordenados ≤2; exclusão de contas ligadas,
+três adversários recentes e cooldown de seis horas.
+
+Power não inclui toda vantagem de IV/tipos/preset. Por isso a fila também
+simula 128 pares com lados alternados, em sementes independentes da raiz da
+partida. Aceita pontuação estimada de 35%–65% e IC95 contido em 30%–70%, com
+no máximo doze candidatos por busca. São parâmetros de piloto, não certificação
+da chance verdadeira. O filtro escolhe adversário; não normaliza stats nem
+aplica handicap. Sem par elegível, nada é cobrado.
+
+O defensor autoriza **até três partidas/24 h**, com orçamento bruto de três
+stakes, ligado ao último snapshot. Vitórias não renovam orçamento; republicar
+invalida o consentimento. Ataque é confirmado manualmente e não exige inscrição
+do desafiante para defender. Defensores em pausa ou sem saldo não bloqueiam
+outros candidatos. Saldo/limites/posse/último snapshot são revalidados na
+transação financeira.
+
+A casa recebe **10% do pote** num ledger imutável de Arena, separado da
+tesouraria dos mercados de previsão, preservando PC-B/PC-C de origem. Em Bronze:
+100 no pote = 90 pagos ao vencedor + 10 na casa. Empate/cancelamento técnico
+devolvem 100%, sem taxa. Partida, carteiras, taxa, defesa, MMR e LP são atômicos;
+idempotência impede repetir débito e pagamento. Não retrocreditar taxas antigas.
+Campanhas internas usam somente saldo disponível da casa, com orçamento e
+idempotência; não existe endpoint público de emissão nem conversão para PC-T.
+
+Vencer Campeão concede **uma vez 300 PC-B** de preparação. Campeões legados
+recebem na primeira publicação válida. Kit não é taxa arrecadada. Reposição
+semanal de 450 PC permanece hipótese econômica, sem ativação automática.
+Ranking e fechamento contam atividade ranqueada dentro da temporada atual;
+partidas cumulativas anteriores não qualificam inativos. Telemetria registra
+busca, publicação, autorização, resultado e kit com origem servidor.
+
+Compras/saques reais continuam sujeitos ao checkpoint §25.1. Este contrato
+implementa competição com PC-B/PC-C; não representa liberação comercial.
+
 # 10. Economia global
+
 
 ## 10.1 Três moedas no máximo
 

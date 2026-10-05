@@ -19,7 +19,7 @@ export function lutarNaJornadaLocal({ pack, id, preset = 'balanced', semente = c
                                     deposito = globalThis.localStorage) {
   let saida = null;
   const r = comRevisao(e => {
-    const c = contaDaLuta({ pack, criaturas: e.criaturas, jornada: e.jornada, id, preset, semente, dia: diaDoMundo(agora) });
+    const c = contaDaLuta({ pack, criaturas: e.criaturas, jornada: e.jornada, id, preset, semente, dia: diaDoMundo(agora), agora });
     if (!c.ok) return c;
     const { jornada, credito, ...resto } = c;
     saida = resto;

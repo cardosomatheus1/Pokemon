@@ -3,11 +3,26 @@
 **O que é:** o mapa único do projeto. De onde viemos, o que existe hoje, e o que
 vem depois em ordem de prioridade.
 
-**Atualizado em:** 25/09/2026, fim do dia — o **T14** fechou (a suíte de 6 min
-10 s para 1 min 45 s; o Q2 que fecha bloco de horas para minutos), e o
-cruzamento documentos × código achou **três defeitos novos** que passam para a
-frente da fila. A fila está em **O QUE FALTA**, logo abaixo da Parte I; as
-fichas de cada entrega, em `docs/PLANO_DE_IMPLEMENTACAO.md`.
+**Atualizado em:** 04/10/2026. O estado de execução mora em
+`docs/RETOMAR.md`; a fila prioritária AT6/GQ abaixo incorpora a direção do dono.
+A fila legada de 25/09 continua preservada para rastreabilidade.
+
+## Prioridade atual — Arena da coleção e qualidade do jogo
+
+| Ordem | Bloco | Escopo e condição de saída |
+|---|---|---|
+| 1 | 🟡 AT6-base | Motor, acesso 6×6, ranked, defesa, 10% da casa, kit, XP repetido e atividade de temporada implementados com validação focada. Fechar apresentação via Q5 antes de marcar entrega visual concluída. Contrato 09 delimita os critérios aplicados. |
+| 2 | ⏳ AT6-13 | Avanço com HP e ataques reais, compatibilidade das runs antigas, cura/captura/CAS e economia preservados. Calibrar antes de substituir o motor agregado. |
+| 3 | 🟡 AT6-14 | IA e cálculo de golpes implementados. Completar informação explícita do catálogo/UI, efeitos adicionais apenas com contrato e testes próprios. |
+| 4 | ⏳ AT6-05 e AT6-07 | Comparação útil do time, leitura da chance/resultado e funil completo; textos e eventos mínimos atuais não completam essas fichas. |
+| 5 | ⏳ GQ-01–06 | Entrada, captura, evolução, clareza econômica e retorno. Fichas em `arena-treinadores/06_QUALIDADE_DO_JOGO_E_JORNADA.md`, incorporadas no PLANO. |
+| 6 | 🟡 AT6-08 | Kit de 300 aplicado e tesouraria interna finita. Reposição semanal/marketing público dependem de medir emissão, funil e sustentabilidade; não ativados. |
+| 7 | ⏳ AT6-09 e AT6-10 | Mercado para montagem de time e monetização por expressão/prestígio. Não concluídos por este bloco; operações reais respeitam §25.1. |
+
+AT6-01–04/06/11 têm implementação principal no AT6-base, com limites registrados
+no RETOMAR. As fichas originais permanecem referência; a Spec §§8.17/9.17 e o
+contrato 09 definem as regras aplicadas. Não declarar o conjunto AT6/GQ inteiro
+pronto. Antes de release/tag: Q5, portões integrais aplicáveis e Q2 legado.
 
 > ~~**O último bloco fechado:** 1.32 · **O próximo:** refazer o 1.27f ·
 > **Para retomar:** `docs/CONTINUAR.md`~~ — **velho desde 16/09**; ficou no
