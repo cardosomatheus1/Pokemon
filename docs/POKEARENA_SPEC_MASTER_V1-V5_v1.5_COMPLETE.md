@@ -2545,8 +2545,8 @@ KO, depois dano útil proporcional à vida restante. Defensivo/Foco conservam
 suas prioridades. A estimativa analítica não usa sorte nem o futuro da luta.
 
 A TBE serve Jornada, treino e PvP da coleção. A Arena comum continua com
-motor independente. Avanço conserva a resolução agregada enquanto AT6-13 não
-entregar combate individual, saúde, poções e economia calibrados juntos.
+motor independente. Novas runs do Avanço usam o combate individual do
+§7.22.19; runs legadas conservam a resolução agregada até colher.
 
 Qualidade dos ginásios: nas referências fixas, ignorar a lição perde a maioria
 das vezes; aplicar aumenta a vitória em pelo menos vinte pontos percentuais,
@@ -2559,6 +2559,45 @@ XP repetível da Jornada: intervalo global de 30 s entre pagamentos repetidos;
 teto de 6000 XP por conta/dia do mundo, agregado entre criaturas. Primeiras
 vitórias ficam fora do teto. Progresso, contador e crédito são atômicos e
 idempotentes. Não aplicar esse teto ao Avanço; manter DEC-29/31.
+
+---
+
+
+## 8.18 Catálogo explícito do treinador — AT6-14-info (04/10/2026)
+
+Os packs ativos publicam `catalogoTreinador`, separado das listas `golpes`
+que a Arena comum usa na atribuição. Cada entrada preserva nome, tipo, poder,
+categoria e FX visual; explicita precisão (`acc`) e lista vazia de efeitos
+secundários (`efeitos`). Precisão previamente omitida vira 92% somente nesse
+catálogo; a regra da Arena comum permanece em suas listas originais. Kanto
+explicita 66 golpes, 40 deles antes sem precisão; pack original, 48.
+
+A TBE consome esse catálogo, tanto para IA/dano esperado quanto para o sorteio
+de acerto. Pack legado sem catálogo recebe normalização equivalente ao usar
+o golpe, sem mutação das listas originais. O carregamento recusa catálogo
+incompleto, golpe desconhecido, poder/categoria/tipo divergentes, precisão
+fora de (0,1] e efeito secundário não suportado. Não aceitar metadados que
+prometam uma regra que o motor não executa.
+
+O Centro exibe poder, categoria e chance de acerto nos botões de escolha,
+nas abas Rotas/Rota OFF. O título explica crítico geral 6,25%, ×1,5 e ausência
+de efeitos adicionais; exclusivos mantêm sua marca e condição. Não prometer
+prioridade, paralisia, recarga, carga ou PP pelo nome conhecido de um golpe.
+Os dados são da TBE/Jornada/Avanço/PvP da coleção; não apresentar esses acertos
+como os da Arena comum.
+
+A migração é semântica: valores efetivos não mudam e `tbe-4` permanece.
+Verificação: todos os eventos idênticos em 320 confrontos de holdout entre
+pack explícito e legado, nos quatro presets. Testes de Arena comum/goldens/
+paridade continuam verdes. `VALIDACAO_CATALOGO.json`: 194 testes focados;
+`SABOTAGEM_CATALOGO.json`: quatro mutantes capturados. O teste de integração
+exige dados visíveis nos dois Centros, não somente texto no tooltip.
+
+Este recorte não completa toda AT6-14: auditoria de dominância e o seletor do
+moveset de rivais ainda precisam revisão/medição própria. Essa heurística
+legada usa 100% quando precisão é omitida, apesar da TBE usar 92%; corrigir
+muda equipes novas de NPCs e pede recalibração. Q5 permanece pendente;
+teste de HTML/DOM sintético não certifica legibilidade ou funcionamento visual.
 
 ---
 

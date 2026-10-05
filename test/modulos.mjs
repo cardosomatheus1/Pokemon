@@ -405,6 +405,7 @@ const CAMADA = {
   'pareamento-competitivo.mjs': 0,
   'avanco-combate.mjs': 0,
   'combate-feedback.mjs': 0,
+  'golpe-ficha.mjs': 0,
   'treino-local.mjs': 0,
   /* ST-11.2 · a partida da Liga e o replay do log (0). */
   'partida-dados.mjs': 0,

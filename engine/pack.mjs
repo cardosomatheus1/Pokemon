@@ -109,6 +109,23 @@ export function validarPack(pack) {
         `${p.n} não tem nenhum pool de golpe para os tipos ${p.t?.join('/')}`);
   }
 
+  /* Catálogo opcional e separado: efeitos secundários ainda não suportados.
+     Não permite reescrever poder/tipo/categoria do golpe sob o mesmo nome. */
+  if (pack.catalogoTreinador !== undefined && exigir(eObj(pack.catalogoTreinador), 'catalogoTreinador não é objeto')) {
+    const originais = Object.values(pack.golpes ?? {}).flat();
+    const nomes = new Set(originais.map(g => g.n));
+    for (const nome of Object.keys(pack.catalogoTreinador))
+      exigir(nomes.has(nome), `catalogoTreinador tem golpe desconhecido: ${nome}`);
+    for (const g of originais) {
+      const t = Object.hasOwn(pack.catalogoTreinador, g.n) ? pack.catalogoTreinador[g.n] : null;
+      if (!exigir(eObj(t), `catalogoTreinador incompleto: ${g.n}`)) continue;
+      for (const k of ['n','t','p','cat'])
+        exigir(t[k] === g[k], `catalogoTreinador.${g.n}.${k} diverge do golpe`);
+      exigir(Number.isFinite(t.acc) && t.acc > 0 && t.acc <= 1, `catalogoTreinador.${g.n}.acc fora de (0,1]`);
+      exigir(Array.isArray(t.efeitos) && t.efeitos.length === 0, `catalogoTreinador.${g.n}.efeitos não implementados`);
+    }
+  }
+
   /* --- clima --- */
   if (exigir(Array.isArray(pack.clima) && pack.clima.length > 0, 'clima ausente ou vazio')) {
     const tipos = Object.keys(pack.tipos?.efetividade ?? {});

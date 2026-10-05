@@ -1,3 +1,4 @@
+import { criarCatalogoTreinador } from '../engine/catalogo-golpes.mjs';
 import { TODOS as CATALOGO_ITENS } from './itens_v1.mjs';
 import { EXCLUSIVOS } from './exclusivos_kanto_v1.mjs';
 import { TREINADORES } from './treinadores_kanto_v1.mjs';
@@ -1007,6 +1008,7 @@ export const pokemonKantoV1 = {
   kitInicial: KIT_INICIAL,
   elenco:   ARENA_DEX,
   golpes:   MASTER_MOVES,
+  catalogoTreinador: criarCatalogoTreinador(MASTER_MOVES),
   clima:    CLIMA,
   climaIdle: CLIMA_IDLE,
   /* QUEM É DA NOITE (1.33, L-178). O motor só conhece "preferências por tipo";

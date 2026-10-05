@@ -28,6 +28,7 @@ import { doceAoSoltar } from './doce-dados.mjs';
 import { avisoDoDoce } from './prende-dados.mjs';
 import { golpesDaCriatura, liberados, GOLPES_MAX, exclusivosDaCriatura } from './moveset-dados.mjs';
 import { compararGolpes } from './comparador-golpes.mjs';
+import { fichaDoGolpe } from './golpe-ficha.mjs';
 import { chaveDoDoce, XP_POR_DOCE } from '../../engine/doce.mjs';
 import { prontasPara, chamadaDaEvolucao, painelDaEvolucao } from './evolucao-idle.mjs';
 import { estiloItem, usarCatalogo } from './itens-icone.mjs';
@@ -239,8 +240,8 @@ export function pintarCentro(E) {
     const cmp = compararGolpes(PACK, c, { nomeDe: nomeExibido });
     /* Fechado, o resumo já diz QUAIS são (Q7: "golpes · 4/4" não respondia). */
     const golpes = `<details class="idleGolpes" data-golpes-de="${c.id}"><summary>golpes: ${emUso.join(' · ')} <i>(trocar)</i></summary>
-      ${podem.map(n => `<button class="idleGolpe${emUso.includes(n) ? ' on' : ''}${excl.has(n) ? ' excl' : ''}" data-golpe="${n}" data-cria="${c.id}"${
-        excl.has(n) ? ' title="exclusivo: só a forma de antes aprende"' : ''}>${excl.has(n) ? '✦ ' : ''}${n}</button>`).join('')}
+      <p class="idleLeg">Jornada, Avanço e Arena do time: dano, tipos, acerto e críticos. Os golpes não têm efeitos adicionais.</p>
+      ${podem.map(n => { const f = fichaDoGolpe(PACK, n); return `<button class="idleGolpe${emUso.includes(n) ? ' on' : ''}${excl.has(n) ? ' excl' : ''}" data-golpe="${n}" data-cria="${c.id}" title="${excl.has(n) ? 'exclusivo: só a forma de antes aprende · ' : ''}${f?.descricao ?? ''}">${excl.has(n) ? '✦ ' : ''}${n}${f ? ` · ${f.resumo}` : ''}</button>`; }).join('')}
       ${podem.some(n => excl.has(n)) ? '<span class="idleLeg">✦ exclusivo: só a forma de antes aprende, e fica ao evoluir</span>' : ''}
       ${cmp ? `<p class="idleArena"><b>${cmp.rotulo}:</b> ${cmp.arena.map(n => cmp.emComum.includes(n) ? `<u>${n}</u>` : n).join(' · ')}
         ${cmp.emComum.length ? '<span class="idleLeg">(sublinhado: você também tem)</span>' : ''}

@@ -12919,4 +12919,12 @@ export const DEFEITOS = [
   {id:'S90208',arquivo:'engine/run-combate.mjs',nome:'guia deixa de ajudar o aliado',real:'painel promete bônus que o motor esqueceu',
     de:'?BONUS_DO_GUIA:0',para:'?0:0'},
 
+  {id:'S90301',arquivo:'engine/catalogo-golpes.mjs',nome:'treinador herda acerto 100%',real:'quarenta golpes mudam silenciosamente de probabilidade',
+    de:'export const ACERTO_TREINADOR=.92;',para:'export const ACERTO_TREINADOR=1;'},
+  {id:'S90302',arquivo:'engine/treino-batalha.mjs',nome:'TBE ignora catálogo declarado',real:'precisão exibida e motor passam a discordar',
+    de:'const g = golpeTreinador(pack, n);',para:'const g = golpeTreinador({ ...pack, catalogoTreinador: undefined }, n);'},
+  {id:'S90303',arquivo:'engine/pack.mjs',nome:'efeito inventado é aceito no catálogo',real:'pack promete mecânica ausente',
+    de:'Array.isArray(t.efeitos) && t.efeitos.length === 0',para:'true'},
+  {id:'S90304',arquivo:'app/modules/idle-paineis.mjs',nome:'precisão some da escolha dos golpes',real:'jogador só lê nome apesar de risco diferente',
+    de:"${f ? ` · ${f.resumo}` : ''}",para:"${''}"},
 ];

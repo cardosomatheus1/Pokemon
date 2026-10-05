@@ -22,10 +22,20 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 04/10/2026 · AT6-13
+## 0. ONDE PARAMOS — 04/10/2026 · AT6-14-info
+
+Último bloco: catálogo explícito para o treinador e dados de poder/categoria/
+precisão visíveis na escolha dos golpes do Centro, nas duas abas. Spec §8.18;
+catálogo da Arena comum preservado. TBE consome a mesma precisão que a ficha.
+Sem secundários; não prometer prioridade, paralisia/recarga pelo nome.
+194 testes focados (22 suítes), 4/4 mutantes. 320 combates nos quatro presets
+iguais à migração legada; goldens/paridade BR passaram. Relatórios
+VALIDACAO_CATALOGO.json e SABOTAGEM_CATALOGO.json. Q5 pendente; integração
+HTML/DOM sintético não certifica legibilidade. L-AT6-05: seletor de movesets
+rivais ainda usa 100% na ausência de precisão e pede medição própria.
 
 Branch local `codex/arena-completa-20261004`. Bases: AT6-base `3a4e630` e
-XP-OFF `b2166e4`. AT6-13 implementa combate real nas novas runs do Avanço;
+XP-OFF `b2166e4`, AT6-13 `8ce7606`. AT6-13 implementa combate real nas novas runs do Avanço;
 contrato Spec §7.22.19 e documento 09. Runs antigas conservam sua regra.
 
 Nível/IV/natureza/golpes reais congelados na entrada, TBE contínua, HP
@@ -50,9 +60,9 @@ confundir com XP escalonado das expedições. XP-OFF tem seu relatório históri
 Q5 pendente por ausência de Chromium; não afirmar inspeção visual ou release.
 Sem deploy. Push anterior bloqueado pela revisão automática por ausência de
 autorização explícita para publicar a branch. Não repetir sem autorização.
-Imagem de Agatha preexistente permanece fora dos commits.
+Imagem de Agatha e banner de Zapdos preexistentes permanecem fora dos commits.
 
-Próximos trabalhos: calibração/orientação inicial, AT6-14 catálogo/UI, comparação
+Próximos trabalhos: calibração/orientação inicial, AT6-14 dominância/rivais, comparação
 e funil AT6-05/07 e fichas GQ, na ordem do ROADMAP. Mercado/cosméticos e
 campanhas públicas não estão concluídos. Não encerrar AT6/GQ por estes blocos.
 Executar na raiz `/workspace/scratch/20f7386fd0c9/pokemon-implementation`:

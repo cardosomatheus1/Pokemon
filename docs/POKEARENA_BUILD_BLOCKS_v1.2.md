@@ -3564,3 +3564,27 @@ Saída funcional: 37 suítes, 470 testes sem falhas, oito mutantes capturados.
 Pendência de produto: calibrar experiência dos iniciais na Floresta e concluir
 inspeção visual. Rollback: manter discriminador das runs antigas; não remover
 campos nem reprocessar saques já pagos. ROADMAP/RETOMAR seguem a fila única.
+
+
+## AT6-14-info — catálogo e informação fiel dos golpes
+
+**Pedido do dono:** continuar Arena/balanceamento, testando o código alterado
+antes de commitar. Método INV, porte M; Spec §8.18. Recorte de informação e
+migração semântica: explicitar as precisões efetivas e efeitos suportados,
+consumir a mesma entrada no motor e no Centro, preservar Arena comum e replays.
+
+Q1/Q3: esquema, fallback legado puro, consumo pela TBE, Surf 100% versus
+Hydro Pump 80%, precisão antiga 92%, dados visíveis nas duas abas, controles
+selecionados e exclusivos preservados. Q2 dirigido S90301–04: acerto padrão
+100%, motor ignora catálogo, efeito ausente aceito e informação somente em
+tooltip. Zero mutantes exigem navegador; integração HTML roda em Node e não
+substitui Q5. Q4: 320 confrontos com quatro presets idênticos à migração
+legada, goldens/paridade da Arena comum. Q6: validação do catálogo; sem endpoint
+novo. Q8/Q9: sem nova fila/transação/telemetria. Sem troca de arranjo ou CSS;
+Q5 pendente para aceitar legibilidade do conteúdo novo.
+
+Saída funcional: 22 suítes, 194 testes verdes, 4/4 mutantes. Q2 legado e suíte
+integral não certificados. AT6-14 completa segue parcial: seletor dos rivais e
+auditoria de golpes dominados têm dono no ROADMAP; não expandir este commit
+para mudar IA/NPCs sem recalibrar. Dados são aditivos; runs já congeladas seguem
+seus golpes e as mesmas regras `tbe-4`.

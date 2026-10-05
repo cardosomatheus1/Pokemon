@@ -125,3 +125,25 @@ node tools/testar-arena.mjs --so=avanco-combate,combate-continuo,run-servidor,ru
 node tools/sabotar-arena.mjs --grupo=avanco --saida=docs/arena-treinadores/SABOTAGEM_AVANCO.json
 node tools/medir-avanco-combate.mjs --saida=docs/arena-treinadores/BALANCEAMENTO_AVANCO.json
 ```
+
+
+## Catálogo e informação dos golpes — AT6-14-info
+
+Spec §8.18: catálogo explícito separado para o treinador, mantendo listas da
+Arena comum. Precisões efetivas são as mesmas: 40 ausências viram 92% no
+catálogo Kanto; valores individuais existentes permanecem. Efeitos secundários
+continuam ausentes e isso é informado. A TBE e a ficha do Centro consomem os
+mesmos metadados; o carregamento recusa promessas de efeitos não suportados.
+
+194 testes focados, 4/4 defeitos provocados detectados. 320 confrontos nos
+quatro presets preservam eventos; goldens/paridade da Arena comum passam.
+HTTP estático entregou HTML e módulos novos com 200/MIME correto, sem
+certificar execução ou legibilidade num navegador.
+Integração do Centro em DOM sintético verifica texto visível e controles nas
+duas abas. Não equivale a Q5. AT6-14 permanece parcial: dominância/seletor de
+moveset do rival exigem calibração própria antes de alterar NPCs.
+
+```bash
+node tools/testar-arena.mjs --so=catalogo-treinador,conteudo,modulos,treino-batalha,batalha-precisao,combate-continuo,moveset,comparador,exclusivos,arena-treinadores,liga-partida,liga-replay,jornada-equilibrio,presets,equipe-snapshot,avanco-combate,run-servidor,idle-acoes,minha-colecao,golden,paridade,primitivas --saida=docs/arena-treinadores/VALIDACAO_CATALOGO.json
+node tools/sabotar-arena.mjs --grupo=catalogo --saida=docs/arena-treinadores/SABOTAGEM_CATALOGO.json
+```

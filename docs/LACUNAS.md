@@ -9696,3 +9696,14 @@ Holdout de 100 sementes por inicial no nível 5 na Floresta: planta/fogo/água
 e aprendizado dos golpes amplifica a diferença. Medir rota/orientação inicial
 e calibração por composição antes de declarar entrada equilibrada; preservar
 vantagem real de nível/IV/tipos. Fonte: BALANCEAMENTO_AVANCO.json; Spec §7.22.19.
+
+
+### L-AT6-05 — auditar dominância do catálogo e seleção de movesets rivais
+
+**Dono:** AT6-14 · **Notada em:** AT6-14-info, 04/10/2026 · **Estado:** aberta.
+O catálogo de precisão e informação do jogador estão implementados; falta
+medir golpes dominados/diversidade e melhorar seleção de NPCs com a mesma
+régua da TBE. `movesetDoRival` ainda calcula a precisão omitida como 100%,
+enquanto combate usa 92%. Corrigir altera equipes novas e pede medição de
+Jornada/Avanço, preservando snapshots existentes. Não incluir essa mudança
+comportamental num commit apresentado como migração semântica do catálogo.

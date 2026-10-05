@@ -1,0 +1,117 @@
+{
+  "escopo": "focado AT6; sem navegador e sem suíte integral",
+  "total": 194,
+  "falhas": [],
+  "resultados": [
+    {
+      "nome": "catalogo-treinador",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "conteudo",
+      "total": 17,
+      "falhas": []
+    },
+    {
+      "nome": "modulos",
+      "total": 19,
+      "falhas": []
+    },
+    {
+      "nome": "treino-batalha",
+      "total": 12,
+      "falhas": []
+    },
+    {
+      "nome": "batalha-precisao",
+      "total": 3,
+      "falhas": []
+    },
+    {
+      "nome": "combate-continuo",
+      "total": 3,
+      "falhas": []
+    },
+    {
+      "nome": "moveset",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "comparador",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "exclusivos",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "arena-treinadores",
+      "total": 22,
+      "falhas": []
+    },
+    {
+      "nome": "liga-partida",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "liga-replay",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "jornada-equilibrio",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "presets",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "equipe-snapshot",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-combate",
+      "total": 13,
+      "falhas": []
+    },
+    {
+      "nome": "run-servidor",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "idle-acoes",
+      "total": 11,
+      "falhas": []
+    },
+    {
+      "nome": "minha-colecao",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "golden",
+      "total": 20,
+      "falhas": []
+    },
+    {
+      "nome": "paridade",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "primitivas",
+      "total": 4,
+      "falhas": []
+    }
+  ]
+}

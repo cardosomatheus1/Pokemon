@@ -49,10 +49,11 @@
  * que `presetRival` diga outra coisa.
  */
 import { especieDe } from './especie.mjs';
+import { golpeTreinador, ACERTO_TREINADOR } from './catalogo-golpes.mjs';
 import { rng, statNoNivel, efeito, dano } from './primitivas.mjs';
 
 export const REGRAS = Object.freeze({
-  CRITICO: 1 / 16, MULT_CRITICO: 1.5, ACERTO_PADRAO: 0.92,
+  CRITICO: 1 / 16, MULT_CRITICO: 1.5, ACERTO_PADRAO: ACERTO_TREINADOR,
   PESO_OCULTO: 0.10,        // (oculto − 15,5) / 31 × 0,10  →  ±5%
   PESO_NATUREZA: 0.05,      // ±5%
   VARIACAO_INICIATIVA: 0.10,
@@ -83,11 +84,6 @@ const recursoDo = pack => ({ ...ULTIMO_RECURSO, ...(pack?.ultimoRecurso?.n ? { n
 /* A chave da natureza no pack → o índice do stat. */
 const INDICE = { atq: 1, def: 2, spa: 3, spd: 4, vel: 5 };
 
-function golpePorNome(pack, nome) {
-  for (const lista of Object.values(pack.golpes ?? {}))
-    for (const g of lista) if (g.n === nome) return g;
-  return null;
-}
 
 /* `c`: { dex, nivel, golpes: [nomes], iv?: [6], natureza?: nome } */
 export function montarLutador(pack, c, lado, i) {
@@ -98,7 +94,7 @@ export function montarLutador(pack, c, lado, i) {
   const nomes = c.golpes ?? [];
   if (!nomes.length || nomes.length > REGRAS.GOLPES_MAX) throw new Error(`de 1 a ${REGRAS.GOLPES_MAX} golpes, e vieram ${nomes.length}`);
   const golpes = nomes.map(n => {
-    const g = golpePorNome(pack, n);
+    const g = golpeTreinador(pack, n);
     if (!g) throw new Error(`golpe desconhecido: ${n}`);
     return g;
   });

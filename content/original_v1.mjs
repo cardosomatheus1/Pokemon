@@ -1,3 +1,4 @@
+import { criarCatalogoTreinador } from '../engine/catalogo-golpes.mjs';
 /* ContentPack — original_v1 (F1.12)
  *
  * O pack que a V1 lança. O `pokemon_kanto_v1` continua existindo como pack de
@@ -586,6 +587,7 @@ export const originalV1 = {
   iniciais: INICIAIS,
   elenco:   DEX.map(e => e.dex),
   golpes:   MOVES,
+  catalogoTreinador: criarCatalogoTreinador(MOVES),
   clima:    CLIMA,
   climaIdle: CLIMA_IDLE,
   moeda:    MOEDA,

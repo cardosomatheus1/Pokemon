@@ -7738,3 +7738,12 @@ A integração XP-OFF recusava aplicar GET válido quando POST treino falhava.
 Agora aplica a conta autoritativa e mantém aviso/status do treino pendente.
 Teste progressao-offline simula treino 503 e releitura válida; run-fantasma
 continua coberto. Crédito não é inventado nem repetido pelo cliente.
+
+
+## D-AT6-14-01 — informação dos golpes não expunha precisão/poder · corrigido
+
+Antes, a escolha no Centro mostrava nomes/exclusivos; 40 golpes Kanto dependiam
+implicitamente de 92% na TBE. Catálogo explícito e ficha compartilham precisão,
+poder/categoria e ausência de secundários. O teste exige texto no botão nas
+duas abas; S90304 prova que apenas tooltip não basta. Catálogo da Arena comum
+permanece intacto. Inspeção visual continua pendente em L-AT6-02.
