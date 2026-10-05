@@ -24,6 +24,11 @@ defeito meu.
 
 ## 0. ONDE PARAMOS — 05/10/2026 · AT6-15-integracao-final
 
+**No ar em 05/10 (b2a1354):** os 9 commits do ramo `codex/arena-jornada-finalizacao-20261005`
+entraram no `claude/docs-planning-tests-6hjthq` por avanço rápido, com um commit de
+integração que deixou a suíte inteira verde 2/2 (3353 testes; 6 vermelhos e 1
+instável corrigidos — ver a mensagem do b2a1354). Instância `pokearena-26`.
+
 Branch de entrega: `codex/arena-jornada-finalizacao-20261005`.
 Integração implementada: objetivos antes/depois da Liga; preparo/evolução;
 filtros de nível/tipo/IV e ficha de mercado; missões úteis persistidas;
@@ -344,8 +349,9 @@ o RESUMO   A E14 (Shiny, Trading & Player Market) ESTÁ COMPLETA — todas as
 
 ```text
 o NO AR    https://34-224-231-194.sslip.io  (01/10 — o piloto na AWS, Lightsail
-           us-east-1, micro_3_0, instância `pokearena-25` desde a ST-2.30, IP estático
-           `pokearena-ip`; a máquina de antes está no snapshot `pokearena-antes-st230`). ABERTO a quem tem o
+           us-east-1, micro_3_0, instância `pokearena-26` desde 05/10 com o ramo codex
+           integrado (b2a1354, build caf14b02fb6f), IP estático `pokearena-ip`; a
+           máquina de antes está no snapshot `pokearena-antes-codex`). ABERTO a quem tem o
            link, sem convite (DEC-23, 01/10), com `noindex` (não aparece em busca).
            Sem conta, o menu mostra só a vitrine; o resto pede cadastro.
            Atualizar: `deploy/lightsail/LEIAME.md` (dá para fazer sem SSH).
