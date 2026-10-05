@@ -135,6 +135,15 @@ export function runCurada(pack, run, motor, { cura, agora }) {
 export const XP_DO_BANCO = 0.5;
 export const bancoDaRun = (colecao, run) => (colecao ?? []).filter(c => !c.naCaixa && !(run?.equipe ?? []).includes(c.id));
 
+export const xpPagoDaRun = (ganhoCru, bonusClima) => Math.round(aplicarClima(Math.round(ganhoCru.xp * XP_DA_RUN), bonusClima, 'xp'));
+
+/* A barra mostra o mesmo crédito da liquidação, incluindo estágio e clima. */
+export function xpAteAqui(pack,run,motor) {
+  const abates=(run.abates??[]).reduce((n,a)=>n+(Number(a.quantos)||0),0);
+  const ganhoCru=ganhoDaRun({abates,encontros:encontrosDe(resultadoDa(run)).length,perfil:PERFIL_DO_AVANCO,estagio:run.estagio});
+  return xpPagoDaRun(ganhoCru,leituraDoClima(pack,run,motor)?.bonus??null);
+}
+
 export function contaDaRun(pack, { run, criaturas, banco = [], motor, avancos, raiz, agora }) {
   const premio = premioDo(resultadoDa(run), { encontrosValem: run?.semEncontros !== true });
   /* D-148 · DEC-27: o XP é do que ACONTECEU na run — os encontros vistos,
@@ -162,11 +171,11 @@ export function contaDaRun(pack, { run, criaturas, banco = [], motor, avancos, r
 
   /* O XP pela MESMA função da expedição; o clima entra DEPOIS da conta, e não
      dentro dela — `ganhoDaRun` é a régua partilhada com a expedição. */
-  const ganhoCru = ganhoDaRun({ abates: premio.abates, encontros: vistos, perfil: PERFIL_DO_AVANCO });
+  const ganhoCru = ganhoDaRun({ abates: premio.abates, encontros: vistos, perfil: PERFIL_DO_AVANCO, estagio: run.estagio });
   /* DEC-29d: toda run paga 88% do XP — a stamina a 30/h dá mais runs, e o
      XP do dia, na média, fica onde estava. Sem corte por run do dia. Antes
      do clima, como a moeda. */
-  const ganho = { ...ganhoCru, xp: Math.round(aplicarClima(Math.round(ganhoCru.xp * XP_DA_RUN), bonusClima, 'xp')) };
+  const ganho = { ...ganhoCru, xp: xpPagoDaRun(ganhoCru, bonusClima) };
   const credito = [], subiram = [];
   for (const c of criaturas) {
     const novo = creditar(c, { xp: ganho.xp, vinculo: VINCULO_DA_RUN });

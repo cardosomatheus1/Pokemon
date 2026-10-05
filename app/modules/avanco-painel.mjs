@@ -1,3 +1,4 @@
+import { xpAteAqui, equipeDoMotor } from './avanco-conta.mjs';
 /* A LEITURA DA RUN — a coluna da esquerda (blocos A4f/A4g, camada 4).
  *
  * Saiu do `avanco-tela.mjs` quando ele passou de 600 linhas, e a divisão é por
@@ -33,7 +34,7 @@ import { estiloItem } from './itens-icone.mjs';
 import { estiloIcone } from './icones.mjs';
 import { PERFIL_DO_AVANCO } from './avanco-estado.mjs';
 import { WAVES } from '../../engine/wave.mjs';
-import { STAMINA_DO_AVANCO, staminaAteWave, ganhoDaRun } from '../../engine/avanco.mjs';
+import { STAMINA_DO_AVANCO, staminaAteWave } from '../../engine/avanco.mjs';
 import { staminaAgora } from '../../engine/expedicao.mjs';
 import { staminaNaRun } from './avanco-barras.mjs';
 import { leituraDoFoco } from './avanco-foco.mjs';
@@ -302,7 +303,7 @@ const linha = (classe, quando, icone, texto, qtd) =>
  * Mostrar uma estimativa aqui seria inventar um número que o fecho vai
  * desmentir — e um painel que desmente a si mesmo é pior que um campo a menos.
  * Ela entra nesta mesma caixa quando a run fecha. */
-function pintarResumo(run, agora) {
+function pintarResumo(E, run, agora) {
   const alvo = $('#avResumo');
   if (!alvo) return;
   const abates = (run.abates ?? []).reduce((a, x) => a + x.quantos, 0);
@@ -316,7 +317,7 @@ function pintarResumo(run, agora) {
      `ganhoDaRun` é a que credita no fecho. Uma conta parecida escrita aqui
      divergiria dela no dia em que o abate fosse recalibrado — e a que mente
      seria sempre a da tela, porque é a que ninguém testa contra o bolso. */
-  const xp = ganhoDaRun({ abates, encontros: vistas, perfil: PERFIL_DO_AVANCO }).xp;
+  const xp = xpAteAqui(PACK, run, equipeDoMotor(PACK, run, criaturasDe(E)));
 
   alvo.innerHTML =
     `<div class="avLinha"><span>tempo da run</span><span>${relogio(decorrido)}</span></div>` +
@@ -335,5 +336,5 @@ export function pintarColunaDaRun(E, run, agora) {
   pintarStamina(E, run, agora);
   pintarBuffs(E, run);
   pintarLog(run, agora);
-  pintarResumo(run, agora);
+  pintarResumo(E, run, agora);
 }

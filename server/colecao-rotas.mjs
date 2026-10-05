@@ -1,3 +1,4 @@
+import { treinarOffline, estadoTreinoOffline } from './treino-offline.mjs';
 /* A COLEÇÃO NO SERVIDOR (ST-13.1 · E13 · Spec §7.14, §P2).
  *
  * `server/idle.mjs` e `server/criaturas.mjs` são transacionais desde o 1.2d e
@@ -49,7 +50,7 @@ import { linhaDaExpedicao, linhaDaRun, historicoDoDisco, HISTORICO_MAX } from '.
 
 /* As ESCRITAS permitidas sob `/api/idle`, por nome. */
 export const OPERACOES_DO_IDLE = Object.freeze([
-  'POST /api/idle/inicial', 'POST /api/idle/expedicao', 'POST /api/idle/colher', 'POST /api/idle/lancar',
+  'POST /api/idle/treino', 'POST /api/idle/inicial', 'POST /api/idle/expedicao', 'POST /api/idle/colher', 'POST /api/idle/lancar',
   /* A run do Avanço (ST-13.2c2). */
   'POST /api/idle/run', 'POST /api/idle/run/pocao', 'POST /api/idle/run/recuar', 'POST /api/idle/run/colher',
   /* A coleção (ST-13.3a): a caixa, a troca, soltar e o foco. */
@@ -105,7 +106,7 @@ export function colecaoDe(db, { userId, agora, pack = PACK }) {
                moedas: r.rendeu?.moedas ?? 0, xp: r.rendeu?.xp ?? 0 };
     });
   return {
-    pack: pack.id, agora, criaturas,
+    pack: pack.id, agora, criaturas, treinoOffline: estadoTreinoOffline(db,userId),
     registro: registroDe(db, userId, pack.id).map(r => ({ dex: r.dex, fragmentos: r.fragmentos, vistoEm: r.visto_em })),
     bolsa: Object.fromEntries(bolsaDe(db, userId).map(b => [b.item_id, b.quantidade])),
     /* OS LOTES (ST-14.0D · L-224): por item, na ordem em que o débito os gasta,
@@ -170,6 +171,8 @@ export function rotasDaColecao(daExcecao) {
   const tentar = fn => { try { return { corpo: fn() }; } catch (e) { return daExcecao(e); } };
   return {
     'GET /api/idle': ({ db, userId, agora }) => ({ corpo: colecaoDe(db, { userId, agora }) }),
+
+    'POST /api/idle/treino': ({ db, userId, agora }) => tentar(() => treinarOffline(db,{userId,pack:PACK,agora})),
 
     'POST /api/idle/inicial': ({ db, corpo, userId }) => {
       if (!Number.isInteger(corpo?.dex)) return recusa('dex inválido');

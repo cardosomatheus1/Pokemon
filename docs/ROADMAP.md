@@ -11,6 +11,7 @@ A fila legada de 25/09 continua preservada para rastreabilidade.
 
 | Ordem | Bloco | Escopo e condição de saída |
 |---|---|---|
+| 0 | 🟡 XP-OFF | Prioridade do dono: XP por estágio e treino automático implementados e testados; aceite visual/deploy pendentes. Spec §7.22.18. |
 | 1 | 🟡 AT6-base | Motor, acesso 6×6, ranked, defesa, 10% da casa, kit, XP repetido e atividade de temporada implementados com validação focada. Fechar apresentação via Q5 antes de marcar entrega visual concluída. Contrato 09 delimita os critérios aplicados. |
 | 2 | ⏳ AT6-13 | Avanço com HP e ataques reais, compatibilidade das runs antigas, cura/captura/CAS e economia preservados. Calibrar antes de substituir o motor agregado. |
 | 3 | 🟡 AT6-14 | IA e cálculo de golpes implementados. Completar informação explícita do catálogo/UI, efeitos adicionais apenas com contrato e testes próprios. |

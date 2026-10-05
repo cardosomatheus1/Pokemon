@@ -48,7 +48,7 @@ export function pintarTreino(E) {
   if (!alvos.length) return;
   const escrever = html => { for (const el of alvos) el.innerHTML = html; };
 
-  const fora = emCampo(E);
+  const fora = [...emCampo(E), ...(E.run ? [{equipe:E.run.equipe}] : [])];
   const banco = noBanco(criaturasDe(E), fora);
 
   if (!banco.length) {
@@ -57,20 +57,13 @@ export function pintarTreino(E) {
     return;
   }
 
-  /* A JANELA É A DA EXPEDIÇÃO MAIS LONGA em campo. Sem expedição nenhuma o
-     treino não corre — e dizer isso é o que impede o jogador de fechar o jogo
-     esperando um XP que não vai acontecer. */
-  const maisLonga = fora.reduce((m, x) => Math.max(m, x.terminaEm - x.iniciadaEm), 0);
-  const horas = maisLonga / 3_600_000;
-  const xp = Math.floor(horas * XP_POR_HORA_TREINO);
-  const vinculo = Math.floor(horas * VINCULO_POR_HORA_TREINO);
-
-  const cabecalho = fora.length
-    ? `<p class="tiny"><b class="trQuantos">${banco.length}</b> no banco treinando ` +
-      `enquanto a expedição corre — <b class="trGanho">+${xp} XP</b> e ` +
-      `<b class="trGanho">+${vinculo} de vínculo</b> cada, ao colher.</p>`
-    : `<p class="tiny"><b class="trQuantos">${banco.length}</b> no banco. O treino ` +
-      'corre <b>durante a expedição</b> — mande uma e feche o jogo.</p>';
+  const ultimos = E.treinoOffline?.ultimo?.ganhos ?? [];
+  const recebido = ultimos.filter(x => banco.some(c => c.id === x.id)).reduce((n,x) => n+x.xp,0);
+  const cabecalho = `<p class="tiny"><b class="trQuantos">${banco.length}</b> no banco. ` +
+    `Treino automático: <b class="trGanho">${XP_POR_HORA_TREINO} XP/h</b> e ` +
+    `${VINCULO_POR_HORA_TREINO} de vínculo/h por Pokémon. O crédito chega ao voltar, ` +
+    `com até 12 h por ausência; não precisa mandar expedição.` +
+    (recebido ? ` Último crédito do banco: +${recebido} XP no total.` : '') + '</p>';
 
   const lista = banco.map(c => `
     <span class="trQuem" title="${nomeExibido(esp(c.dex).n)} · nível ${c.nivel ?? 1}">

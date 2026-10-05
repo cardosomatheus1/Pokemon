@@ -1,0 +1,109 @@
+{
+  "escopo": "somente mutantes XP/offline novos; não é Q2 legado integral",
+  "total": 6,
+  "capturados": 6,
+  "resultados": [
+    {
+      "id": "S90101",
+      "nome": "estágios voltam a pagar XP fixo",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "mesmos abates e encontros pagam XP crescente por estágio, preservando o primeiro",
+          "erro": "",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "expedição também paga pela dificuldade; estágio inválido não aumenta XP",
+          "erro": "",
+          "suite": "progressao-offline"
+        }
+      ]
+    },
+    {
+      "id": "S90102",
+      "nome": "liquidação esquece o estágio",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "barra e colheita concordam no XP em todos os estágios, com clima e fator 88%",
+          "erro": "undefined — esperado 77, veio 115",
+          "suite": "time-aprende"
+        }
+      ]
+    },
+    {
+      "id": "S90103",
+      "nome": "ausência acumula meses de treino",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "treino guarda frações entre retornos e limita ausência a doze horas",
+          "erro": "undefined — esperado [39,39], veio [300,300]",
+          "suite": "progressao-offline"
+        }
+      ]
+    },
+    {
+      "id": "S90104",
+      "nome": "quem está em aventura também treina",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "quem está em expedição não recebe treino em paralelo; colheita não repaga o banco",
+          "erro": "undefined — esperado [0,24], veio [24,24]",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "intervalos sobrepostos são excluídos uma vez e criaturas novas não ganham tempo anterior",
+          "erro": "undefined — esperado 6, veio 24",
+          "suite": "progressao-offline"
+        }
+      ]
+    },
+    {
+      "id": "S90105",
+      "nome": "retornos curtos perdem frações de treino",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "treino guarda frações entre retornos e limita ausência a doze horas",
+          "erro": "undefined — esperado [3,3], veio [0,0]",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "save local mantém frações no disco e paga ao retornar sem expedição",
+          "erro": "undefined — esperado 3, veio 2",
+          "suite": "progressao-offline"
+        }
+      ]
+    },
+    {
+      "id": "S90106",
+      "nome": "resposta de treino não chega à criatura",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "retorno credita treino sem expedição no relógio do servidor; GET e retry não duplicam",
+          "erro": "undefined — esperado [24,24], veio [0,0]",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "treino guarda frações entre retornos e limita ausência a doze horas",
+          "erro": "undefined — esperado [3,3], veio [0,0]",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "quem está em expedição não recebe treino em paralelo; colheita não repaga o banco",
+          "erro": "undefined — esperado [0,24], veio [0,0]",
+          "suite": "progressao-offline"
+        },
+        {
+          "titulo": "falha no crédito desfaz também o cursor; retry continua pagando uma única vez",
+          "erro": "",
+          "suite": "progressao-offline"
+        }
+      ]
+    }
+  ]
+}

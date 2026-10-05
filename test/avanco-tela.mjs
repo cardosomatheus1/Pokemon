@@ -359,7 +359,7 @@ export function suite() {
        uma das duas fosse calibrada — e o jogador veria um número na tela e
        outro no bolso. */
     const js = painel();
-    ok(/ganhoDaRun/.test(js),
+    ok(/xpAteAqui/.test(js),
       'o XP do painel é calculado à parte de ganhoDaRun() — duas fórmulas ' +
       'para o mesmo número divergem, e a que mente é sempre a da tela');
   });

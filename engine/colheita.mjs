@@ -62,7 +62,7 @@ export function contaDaColheita({ pack, expedicao: x, criaturas = [], raiz, bonu
   if (moedas > 0) somar(idDaMoeda(pack), moedas);
 
   /* Alguns encontros eram treinadores (1.7b): saem do FIM da fila. */
-  const xpUnitario = xpDaExpedicao({ perfil: x.perfil, encontros: 1 });
+  const xpUnitario = xpDaExpedicao({ perfil: x.perfil, encontros: 1, estagio });
   const npc = batalhasDa(semente(derivar(raiz, 'treinador')), {
     encontros: encontros.length, estagio,
     nivelEquipe: nivelDoTopo(equipe.map(c => ({ nivel: nivelDe(c.xp) }))), xpBase: xpUnitario,
@@ -75,7 +75,7 @@ export function contaDaColheita({ pack, expedicao: x, criaturas = [], raiz, bonu
      duas vagas em campo as janelas se cruzam, e quem não pode receber a mesma
      hora duas vezes é ela. A janela acaba em `terminaEm`, e não no `agora`:
      pagar pelo tempo parado esperando a colheita premiaria demorar a voltar. */
-  const xp = xpDaExpedicao({ perfil: x.perfil, encontros: selvagens.length }) + npc.xpExtra;
+  const xp = xpDaExpedicao({ perfil: x.perfil, encontros: selvagens.length, estagio }) + npc.xpExtra;
   const vinculo = vinculoDaExpedicao({ minutos: PERFIS[x.perfil]?.minutos ?? 0 });
   const credito = [], subiram = [];
   for (const id of x.equipe ?? []) {

@@ -104,7 +104,7 @@ export async function suite() {
     igual(textoDoXp(xpNaRun(0, 0)).startsWith('sem XP ainda nesta run'), true, 'a run sem XP mente');
     const dir = fonte('../app/modules/avanco-direita.mjs');
     ok(/const px = xpNaRun\(c\.xp, ganho\);/.test(dir), 'a vaga não usa o XP da run');
-    ok(/const ganho = ganhoDaRun\(\{ abates, encontros: \(run\.apareceram \?\? \[\]\)\.length, perfil: PERFIL_DO_AVANCO \}\)\.xp;/.test(dir), 'o XP da vaga não é o mesmo do "XP até aqui"');
+    ok(/const ganho = xpAteAqui\(PACK, run, equipeDoMotor\(PACK, run, vivas\)\);/.test(dir), 'a vaga não usa o crédito real de XP da run');
     ok(/class="avBarra avXpBarra"/.test(dir), 'a barra de XP sumiu da vaga');
   });
 

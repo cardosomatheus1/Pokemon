@@ -1,3 +1,5 @@
+import { treinarNoAparelho } from './treino-local.mjs';
+export { treinarNoAparelho };
 /* AS ESCRITAS DO IDLE, COM E SEM CONTA (ST-13.5b · E13 · DEC-17) — camada 4.
  *
  * A tela chama uma função só por ação, e é aqui que se decide ONDE ela
@@ -59,7 +61,7 @@ export async function inicialNa(e, pack, dex, agora, opcoes) {
 
 export async function expedicaoNa(e, { pack, bioma, perfil, equipe, agora, estagio = 1 }, opcoes) {
   const o = ondeFaz(opcoes);
-  if (!o.conta) return iniciarExpedicao(e, { pack, bioma, perfil, equipe, agora, estagio });
+  if (!o.conta) { treinarNoAparelho(e, agora); return iniciarExpedicao(e, { pack, bioma, perfil, equipe, agora, estagio }); }
   return (await naConta(e, '/api/idle/expedicao', { bioma, perfil, equipe, estagio }, o)).expedicao;
 }
 
@@ -67,7 +69,7 @@ export async function expedicaoNa(e, { pack, bioma, perfil, equipe, agora, estag
    são `engine/colheita.mjs` —, e é ela que o painel do saque pinta. */
 export async function colherNa(e, { pack, id, agora }, opcoes) {
   const o = ondeFaz(opcoes);
-  if (!o.conta) return colher(e, { pack, id, agora });
+  if (!o.conta) { treinarNoAparelho(e, agora); return colher(e, { pack, id, agora }); }
   return naConta(e, '/api/idle/colher', { expedicao: id }, o);
 }
 
@@ -80,7 +82,7 @@ export async function lancarNa(e, { pack, chave, bola, agora }, opcoes) {
 /* ── A RUN DO AVANÇO (ST-13.5c) ── */
 export async function comecarNa(e, { pack, bioma, estagio, equipe, agora }, opcoes) {
   const o = ondeFaz(opcoes);
-  if (!o.conta) return comecarAvanco(e, { pack, bioma, estagio, equipe, agora });
+  if (!o.conta) { treinarNoAparelho(e, agora); return comecarAvanco(e, { pack, bioma, estagio, equipe, agora }); }
   return (await naConta(e, '/api/idle/run', { bioma, estagio, equipe }, o)).run;
 }
 
@@ -104,7 +106,7 @@ export async function pocaoNa(e, { pack, item, agora }, opcoes) {
    é a mesma `contaDaRun`. */
 export function colherRunNa(e, { pack, agora }, opcoes) {
   const o = ondeFaz(opcoes);
-  if (!o.conta) return colherAvancoDaRun(e, { pack, agora });
+  if (!o.conta) { treinarNoAparelho(e, agora); return colherAvancoDaRun(e, { pack, agora }); }
   return naConta(e, '/api/idle/run/colher', { run: e.run?.id }, o).then(r => r.run);
 }
 

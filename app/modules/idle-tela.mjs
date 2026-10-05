@@ -39,7 +39,7 @@ import { $, nosDois, nasAbasDoFarm } from './dom.mjs';
    linhas. A divisao e por assunto: la vive tudo que a tela DIZ fora dos
    paineis — o banner, quem acompanha, e a faixa de recado. */
 import { avisarBanner, avisarCompanheiro, avisar, avisarConta } from './idle-avisos.mjs';
-import { inicialNa, expedicaoNa, colherNa, lancarNa, moverNaTela, evoluirNa } from './idle-acoes.mjs';   // ST-13.5b: com conta, pelo servidor
+import { inicialNa, expedicaoNa, colherNa, lancarNa, moverNaTela, evoluirNa, treinarNoAparelho } from './idle-acoes.mjs';   // ST-13.5b: com conta, pelo servidor
 import { vigiarOutraAba, AVISO_OUTRA_ABA } from './idle-abas.mjs';
 import {
   VAZIO, carregar, salvar, iniciaisDo, criaturasDe,
@@ -248,8 +248,8 @@ export function renderIdle() {
   }
   const vista = $('#viewIdle');
   if (!vista) return;
-  E = carregar();
-  avisarConta(E);
+  E = carregar(); avisarConta(E);
+  if (!E.conta) { treinarNoAparelho(E, agora()); if (!salvar(E)) return; }
 
   const temCriatura = E.criaturas.length > 0;
   vista.classList.toggle('primeiraVez', !temCriatura);

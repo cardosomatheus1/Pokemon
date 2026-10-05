@@ -22,7 +22,37 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 04/10/2026 · AT6-base
+## 0. ONDE PARAMOS — 04/10/2026 · XP-OFF
+
+Prioridade nova do dono: XP fixo entre fases e treino offline antes do restante.
+Base local: AT6-base `3a4e630`, branch `codex/arena-completa-20261004`.
+
+Correção funcional: XP de Avanço/expedição cresce por estágio (1/1,5/2/3);
+barra aplica o mesmo 88%/clima da colheita. Treino do banco funciona sem
+expedição, creditado automaticamente no retorno da conta ou ao abrir Rotas no
+save local. 3 XP/h, 1 vínculo/h, até 12h de ausência; frações persistidas.
+Primeira ativação arma o relógio sem retroatividade. Aventuras e janelas
+sobrepostas excluídas, cursor/crédito atômicos, retry sem novo pagamento.
+
+`VALIDACAO_XP_OFFLINE.json`: 24 suítes, 338 testes, zero falhas.
+`SABOTAGEM_XP_OFFLINE.json`: 6/6 defeitos capturados. Inclui HTTP real,
+rollback forçado, save local entre retornos, XP dos quatro estágios e módulo
+sintaticamente válido. A verificação encontrou e corrigiu um import duplicado
+nesta integração; também registrou as camadas de módulos novos do AT6-base e
+atualizou a fixture aditiva de `xpRepeticao` no idle da conta.
+
+Q5 continua pendente por ausência de Chromium; não afirmar inspeção visual.
+Sem deploy. Push anterior foi bloqueado pela revisão automática por falta de
+autorização explícita de publicação. Não tentar novamente sem essa autorização.
+A imagem de Agatha já alterada permanece fora dos commits.
+
+Continuar AT6-13 (combate real no Avanço) e as demais fichas no ROADMAP;
+não encerrar o plano AT6/GQ inteiro por estes dois ajustes. URL para executar
+localmente: `node tools/servir.mjs --porta 8099`,
+`http://127.0.0.1:8099/app/index.html`, na raiz
+`/workspace/scratch/20f7386fd0c9/pokemon-implementation`.
+
+## 0-histórico. ANTES — 04/10/2026 · AT6-base
 
 Branch: `codex/arena-completa-20261004`, baseada em `82e47f8`.
 O bloco principal foi implementado; apresentação e plano completo permanecem

@@ -23,7 +23,7 @@ import { xpParaNivel } from '../engine/nivel-criatura.mjs';
 import { novaRun, avancarRun, resultadoDa } from '../engine/run-avanco.mjs';
 import { encontrosDe } from '../engine/avanco.mjs';
 import { elencoDoEstagio } from '../engine/elenco-estagio.mjs';
-import { paraOMotor, contaDaRun, XP_DO_BANCO } from '../app/modules/avanco-conta.mjs';
+import { paraOMotor, contaDaRun, xpAteAqui, XP_DO_BANCO } from '../app/modules/avanco-conta.mjs';
 
 const T0 = Date.UTC(2026, 9, 2, 12);
 const cria = (id, dex, nivel) => ({ id, dex, nivel, xp: xpParaNivel(nivel), iv: [15, 15, 15, 15, 15, 15], natureza: 'Hardy',
@@ -40,6 +40,12 @@ const conta = (run, eq, banco = []) => contaDaRun(PACK, { run, criaturas: [cria(
 
 export function suite() {
   const s = criarSuite('time-aprende');
+  s.teste('barra e colheita concordam no XP em todos os estágios, com clima e fator 88%',()=>{
+    const {run,eq}=runFeita(false);
+    for(const estagio of [1,2,3,4]){
+      const r={...run,estagio};igual(xpAteAqui(PACK,r,eq),conta(r,eq).rendeu.xp);
+    }
+  });
 
   s.teste('D-148 · DEC-27 · com o teto batido, a run paga o mesmo XP — a moeda segue a calibrada, e a captura some', () => {
     const { run, eq } = runFeita(false);

@@ -94,7 +94,7 @@ export function presosDoDisco(cru) {
 export function idleDaConta(local, srv, { doces = null, docesPresos = null } = {}) {
   const agora = srv.agora;
   return {
-    ...local,
+    ...local, treinoOffline: srv.treinoOffline ?? null,
     /* A stamina: o servidor manda o valor no relógio DELE; o aparelho guarda o
        par valor e instante — o instante é o do servidor. */
     criaturas: (srv.criaturas ?? []).map(c => ({ ...c, staminaEm: agora })),

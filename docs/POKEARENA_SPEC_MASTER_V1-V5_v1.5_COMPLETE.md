@@ -2146,6 +2146,35 @@ run"*; a equipe desce.
 
 ---
 
+### 7.22.18 XP por estágio e treino automático no retorno (04/10/2026)
+
+Pedido do dono: corrigir XP fixo apesar de avançar fases e treino offline sem
+resultado antes de continuar AT6/GQ. Esta seção atualiza o §7.22.14: o treino
+do banco não exige uma expedição. O ritmo permanece 3 XP/h e 1 vínculo/h.
+
+O XP base de Avanço e expedição tem fatores 1/1,5/2/3 nos estágios 1/2/3/4.
+O primeiro mantém os valores anteriores. Depois do fator entram os 88% de
+DEC-29 e o clima na run; barra e colheita usam a mesma conta. Isso aumenta
+intencionalmente XP nas fases superiores; não multiplica moeda, drops, IV,
+stamina ou XP da Jornada. O banco da run mantém metade do crédito do time.
+
+Exemplo sem clima, mesmos 37 abates e seis espécies: 89/134/178/267 XP pagos
+nos estágios 1–4. A recompensa acompanha a dificuldade; não é um novo teto.
+
+Ao retornar, o cliente aciona `POST /api/idle/treino` antes de reler a coleção.
+O servidor calcula e grava XP, nível, vínculo, frações e cursor atomicamente,
+no seu relógio. Corpo do pedido não define horário, quantidade ou beneficiários.
+`GET /api/idle` não credita treino. Retry no mesmo instante não repaga.
+
+A primeira ativação inicia o relógio sem retroatividade. Cada retorno paga até
+12 horas de ausência, preservando frações de XP/vínculo entre retornos curtos.
+Não há encontros, itens, moeda, consumo de stamina ou alteração de IVs.
+Intervalos em run/expedição são excluídos, inclusive sobrepostos; a equipe
+permanece ocupada até colher. Criatura nova não recebe tempo anterior à criação.
+Colheitas antigas continuam válidas; `treinadoAte` impede repagar seu treino.
+O save local usa a mesma conta e guarda os intervalos antes de retirar a run.
+
+
 # 8. Fase 4 — Time e Jornada
 
 ## 8.1 Objetivo

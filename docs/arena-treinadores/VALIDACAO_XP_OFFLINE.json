@@ -1,0 +1,127 @@
+{
+  "escopo": "focado AT6; sem navegador e sem suíte integral",
+  "total": 338,
+  "falhas": [],
+  "resultados": [
+    {
+      "nome": "progressao-offline",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "modulos",
+      "total": 19,
+      "falhas": []
+    },
+    {
+      "nome": "idle-conta",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "idle-acoes",
+      "total": 11,
+      "falhas": []
+    },
+    {
+      "nome": "colheita",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "colheita-rotas",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "ausente",
+      "total": 22,
+      "falhas": []
+    },
+    {
+      "nome": "time-aprende",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "stamina-balanco",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-paga",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "comeco-treinador",
+      "total": 9,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-tela",
+      "total": 57,
+      "falhas": []
+    },
+    {
+      "nome": "expedicao",
+      "total": 30,
+      "falhas": []
+    },
+    {
+      "nome": "estagios",
+      "total": 17,
+      "falhas": []
+    },
+    {
+      "nome": "banco-servidor",
+      "total": 15,
+      "falhas": []
+    },
+    {
+      "nome": "colecao-servidor",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-estado",
+      "total": 28,
+      "falhas": []
+    },
+    {
+      "nome": "run-servidor",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "run-avanco",
+      "total": 23,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-forca",
+      "total": 10,
+      "falhas": []
+    },
+    {
+      "nome": "forma-estagio",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "curva-comeco",
+      "total": 9,
+      "falhas": []
+    },
+    {
+      "nome": "historico",
+      "total": 10,
+      "falhas": []
+    },
+    {
+      "nome": "arena-treinadores",
+      "total": 22,
+      "falhas": []
+    }
+  ]
+}

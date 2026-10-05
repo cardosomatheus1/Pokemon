@@ -96,9 +96,15 @@ export const xpPorEncontroDe = perfil => XP_POR_ENCONTRO[perfil] ?? XP_PADRAO;
    não é loteria.** O saque varia porque a graça dele é abrir e ver; o XP não
    varia porque o jogador precisa poder planejar "mais duas Vigílias e ele
    evolui". É a mesma distinção que separou o dinheiro do saque no 1.11. */
-export function xpDaExpedicao({ perfil, encontros }) {
+/* Progressão por dificuldade, sem alterar moeda, stamina ou a curva de nível.
+   O primeiro estágio preserva a calibragem anterior. */
+export const XP_POR_ESTAGIO = Object.freeze([1, 1.5, 2, 3]);
+export const fatorXpDoEstagio = estagio => XP_POR_ESTAGIO[Math.min(4, Math.max(1,
+  Math.floor(Number(estagio) || 1))) - 1];
+
+export function xpDaExpedicao({ perfil, encontros, estagio = 1 }) {
   const n = Math.max(0, Math.floor(Number(encontros) || 0));
-  return n * xpPorEncontroDe(perfil);
+  return Math.round(n * xpPorEncontroDe(perfil) * fatorXpDoEstagio(estagio));
 }
 
 /* ── O VÍNCULO ────────────────────────────────────────────────────────────

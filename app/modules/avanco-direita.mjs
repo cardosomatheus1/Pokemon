@@ -30,8 +30,8 @@ import { FALA as FALA_DO_FOCO } from './foco-fala.mjs';
 import { NIVEL_PARA_ESCOLHER as NIVEL_DO_FOCO,
          descansando as descansandoFoco } from '../../engine/foco.mjs';
 import { staminaAgora } from '../../engine/expedicao.mjs';
-import { ganhoDaRun, staminaAteWave } from '../../engine/avanco.mjs';
-import { PERFIL_DO_AVANCO } from './avanco-conta.mjs';
+import { staminaAteWave } from '../../engine/avanco.mjs';
+import { xpAteAqui, equipeDoMotor } from './avanco-conta.mjs';
 import { staminaNaRun, xpNaRun, textoDoXp } from './avanco-barras.mjs';
 /* O anúncio do chefe é LEITURA, e leitura mora deste lado — ver a L-170. */
 import { leituraDoChefe } from './avanco-boss.mjs';
@@ -91,8 +91,7 @@ export function pintarEquipe(E, run, agora) {
   if (sub) sub.textContent = rotuloDaEquipeDaRun(run.equipe.length);
 
   /* o XP que a run já rendeu, pela MESMA conta do "XP até aqui" (e da colheita) */
-  const abates = (run.abates ?? []).reduce((a, x) => a + (Number(x?.quantos) || 0), 0);
-  const ganho = ganhoDaRun({ abates, encontros: (run.apareceram ?? []).length, perfil: PERFIL_DO_AVANCO }).xp;
+  const ganho = xpAteAqui(PACK, run, equipeDoMotor(PACK, run, vivas));
   const linhas = run.equipe.map(id => {
     const c = vivas.find(x => x.id === id);
     if (!c) return '';

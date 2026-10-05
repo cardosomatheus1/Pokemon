@@ -70,7 +70,7 @@ export async function suite() {
     igual(`${e.encontros[0].origem}|${e.encontros[0].expedicao}`, 'expedicao|x-0', 'o encontro perde a origem');
     igual(e.bolsa.bola, 5, 'a bolsa');
     /* A jornada nunca lutada é o vazio de sempre, e não null. */
-    igual(JSON.stringify(e.jornada), JSON.stringify({ vencidos: [], insignias: [], pve: { dia: null, pago: 0, nos: [], chefes: [] } }), 'a jornada da conta nova');
+    igual(JSON.stringify(e.jornada), JSON.stringify({ vencidos: [], insignias: [], xpRepeticao: {dia:null,pago:0,ultimo:null}, pve: { dia: null, pago: 0, nos: [], chefes: [] } }), 'a jornada da conta nova');
     igual(JSON.stringify(e.doces), JSON.stringify({ '4': 2 }), 'os doces da conta');
     /* O que é só do aparelho não se perde; o que é da conta não vem do aparelho. */
     igual(`${e.missoes.semana}|${e.estilhacos}|${e.jaPossuiu.join()}|${e.rev}`, '3|4|1,4|9', 'o que é do aparelho foi apagado (ou a revisão mudou)');

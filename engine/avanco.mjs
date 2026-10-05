@@ -14,7 +14,7 @@
 import { COMUNS_POR_ESTAGIO, CHEFES_POR_ESTAGIO } from './elenco-estagio.mjs';
 import { WAVES, HP_MAX } from './wave.mjs';
 import { comprometido, tetoDeEncontros, STAMINA_MAX, staminaAgora } from './expedicao.mjs';
-import { xpDaExpedicao } from './nivel-criatura.mjs';
+import { xpDaExpedicao, fatorXpDoEstagio } from './nivel-criatura.mjs';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    A5 — AS TRÊS UNIDADES, E POR QUE ELAS NÃO PODEM SER A MESMA
@@ -382,7 +382,7 @@ export function premioDo(resultado, { encontrosValem = true } = {}) {
  * salário. */
 export const POR_ABATE = 1 / 30;
 
-export function ganhoDaRun({ abates = 0, encontros = 0, perfil = 'trilha' } = {}) {
+export function ganhoDaRun({ abates = 0, encontros = 0, perfil = 'trilha', estagio = 1 } = {}) {
   const n = Math.max(0, Math.floor(Number(encontros) || 0));
   const k = Math.max(0, Math.floor(Number(abates) || 0));
   /* O abate vale uma fração do ENCONTRO, e por isso passa pela mesma função:
@@ -390,7 +390,7 @@ export function ganhoDaRun({ abates = 0, encontros = 0, perfil = 'trilha' } = {}
      sozinho. Uma constante própria aqui envelheceria em silêncio. */
   const porEncontro = xpDaExpedicao({ perfil, encontros: 1 });
   return {
-    xp: Math.round(xpDaExpedicao({ perfil, encontros: n }) + k * POR_ABATE * porEncontro),
+    xp: Math.round(Math.round(xpDaExpedicao({ perfil, encontros: n }) + k * POR_ABATE * porEncontro) * fatorXpDoEstagio(estagio)),
     /* Quantos "encontros de valor" os abates somam. É o número que a tela
        mostra e o que a medição do bloco afirma. */
     encontrosEquivalentes: k * POR_ABATE,

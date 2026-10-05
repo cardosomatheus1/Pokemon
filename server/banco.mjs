@@ -2718,6 +2718,14 @@ export const MIGRACOES = [
     `),
     desce: db => db.exec('DROP TABLE arena_tesouraria; DROP TABLE arena_defesas; DROP TABLE arena_partidas;'),
   },
+  {
+    nome: 'treino-offline-retorno',
+    sobe: db => db.exec(`CREATE TABLE treinos_offline (
+      user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      estado_json TEXT NOT NULL
+    )`),
+    desce: db => db.exec('DROP TABLE treinos_offline'),
+  },
 ];
 
 const TABELA_VERSAO = `

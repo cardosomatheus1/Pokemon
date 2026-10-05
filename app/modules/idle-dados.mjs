@@ -1,3 +1,4 @@
+import { camposTreinoOffline } from './treino-local.mjs';
 /* O ESTADO DO IDLE NO NAVEGADOR (bloco 1.3b, camada 0).
  *
  * Fronteira: guarda e devolve. A REGRA não mora aqui — ela é `engine/expedicao`,
@@ -52,7 +53,6 @@ import { vistosDe } from './pokedex-dados.mjs';
 import { camposDaConta } from './idle-conta.mjs'; import { camposDoHistorico } from './historico-dados.mjs';
 import { xpDaExpedicao, vinculoDaExpedicao, creditar, nivelDe, progresso as progressoNivel } from '../../engine/nivel-criatura.mjs';
 import { FRAGMENTOS_POR_ENCONTRO, chanceDe, tentar } from '../../engine/captura.mjs';
-
 const CHAVE = 'ar_idle';
 const VERSAO = 1;
 const DIA_MS = 24 * 3600_000;
@@ -70,7 +70,7 @@ export const VAZIO = () => ({
   /* A run do Avanço: uma só, `null` quando não há. Ela sobrevive a fechar a
      aba porque o §7.22.16 se apoia nisso — quem fecha recebe a MESMA run de
      quem fica olhando. */
-  run: null,
+  run: null, treinoOffline: null,
   /* ── O CONTADOR DE ESTILHAÇOS (1.29) ────────────────────────────────
      Ele é a SEMENTE do sorteio da parte, e por isso mora no estado em vez de
      sair do relógio ou de `Math.random`.
@@ -116,7 +116,7 @@ export function carregar(deposito = globalThis.localStorage) {
   e.encontros  = arrayOu(cru.encontros,  'encontros',  problemas);
   e.bolsa      = objetoOu(cru.bolsa,     'bolsa',      problemas);
   e.registro     = objetoOu(cru.registro,    'registro',     problemas);
-  Object.assign(e, camposDaEscada(cru, e.criaturas), camposDoDoce(cru), camposDaColecao(cru), camposDaJornada(cru), camposDaConta(cru), camposDoHistorico(cru));   // ST-9.2, 9.8, 9.15, 10.11, 13.5a, 1.28
+  Object.assign(e, camposTreinoOffline(cru), camposDaEscada(cru, e.criaturas), camposDoDoce(cru), camposDaColecao(cru), camposDaJornada(cru), camposDaConta(cru), camposDoHistorico(cru));   // ST-9.2, 9.8, 9.15, 10.11, 13.5a, 1.28
   /* ── `simultaneas` NAO E LIDO DO DISCO, E ISSO E A CORRECAO (D-072) ────
      A versao anterior aceitava o numero salvo e o apertava no maximo. Parecia
      defensivo — o clamp esta la — e nao era: `localStorage` esta a um F12 de

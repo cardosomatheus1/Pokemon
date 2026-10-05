@@ -5550,8 +5550,8 @@ export const DEFEITOS = [
      Vigilias e ele evolui" deixa de ser uma frase que o jogador pode dizer. */
   { id:'S668', arquivo:NIV, nome:'o XP da expedicao passa a ser sorteado',
     real:'"varia pouco" — varia o bastante para nao dar para contar com ele',
-    de:'  return n * xpPorEncontroDe(perfil);',
-    para:'  return Math.round(n * xpPorEncontroDe(perfil) * (0.6 + Math.random() * 0.8));' },
+    de:'  return Math.round(n * xpPorEncontroDe(perfil) * fatorXpDoEstagio(estagio));',
+    para:'  return Math.round(n * xpPorEncontroDe(perfil) * fatorXpDoEstagio(estagio) * (0.6 + Math.random() * 0.8));' },
 
   /* A VIGILIA DEIXA DE PAGAR MAIS XP POR ENCONTRO, e a duracao para de comprar
      qualquer coisa: oito horas viram so "mais vezes". */
@@ -8804,7 +8804,7 @@ export const DEFEITOS = [
     de:"'/api/idle/run', { bioma, estagio, equipe }", para:"'/api/idle/run', { bioma, estagio, equipe: [] }" },
   { id:'S2032', arquivo:'app/modules/idle-acoes.mjs', nome:'sem conta, a colheita da run vira promessa',
     real:'o saque e o quadro saem um quadro depois do fim — e o laço já parou',
-    de:'if (!o.conta) return colherAvancoDaRun(e, { pack, agora });', para:'if (!o.conta) return Promise.resolve(colherAvancoDaRun(e, { pack, agora }));' },
+    de:'if (!o.conta) { treinarNoAparelho(e, agora); return colherAvancoDaRun(e, { pack, agora }); }', para:'if (!o.conta) { treinarNoAparelho(e, agora); return Promise.resolve(colherAvancoDaRun(e, { pack, agora })); }' },
   /* ── ST-13.5d · com conta, a coleção pelo servidor ─────────────────── */
   { id:'S2033', arquivo:'app/modules/colecao-acoes.mjs', nome:'sem conta, a coleção vai ao servidor',
     real:'quem joga sem conta não consegue mexer no time, soltar nem dar doce — toda escrita é recusada',
@@ -9051,7 +9051,7 @@ export const DEFEITOS = [
     de:"    jaPossuiu: Array.isArray(srv.jaPossuiu) ? [...srv.jaPossuiu] : (local.jaPossuiu ?? []),", para:"" },
   { id:'S2112', arquivo:'app/modules/idle-servidor.mjs', nome:"as marcas da conta não chegam ao aparelho",
     real:"a escada do aparelho novo começa vazia",
-    de:"    gravarMarcas(m, deposito);\n  }\n  return { ok: true };", para:"  }\n  return { ok: true };" },
+    de:"    gravarMarcas(m, deposito);\n  }\n  return { ok: true, treino: treino.corpo?.ganhos ?? [] };", para:"  }\n  return { ok: true, treino: treino.corpo?.ganhos ?? [] };" },
   { id:'S2113', arquivo:'app/modules/colecao-tela.mjs', nome:"o resgate da missão volta a ser só do aparelho",
     real:"com conta, o prêmio some na releitura (D-136)",
     de:"  naContaOu('/api/idle/missao', { id: b.dataset.missao },", para:"  ((r, c, f) => Promise.resolve(f()))('/api/idle/missao', { id: b.dataset.missao }," },
@@ -10573,7 +10573,7 @@ export const DEFEITOS = [
   /* ── ST-2.26 · o time aprende junto, e o teto não zera a run ──────── */
   { id:'S2610', arquivo:'app/modules/avanco-conta.mjs', nome:'D-148 · o XP volta a contar só os encontros que valem',
     real:'"depois que o limite bate, uma run rendeu só +2 XP"',
-    de:'  const ganhoCru = ganhoDaRun({ abates: premio.abates, encontros: vistos, perfil: PERFIL_DO_AVANCO });', para:'  const ganhoCru = ganhoDaRun({ abates: premio.abates, encontros: premio.encontros.length, perfil: PERFIL_DO_AVANCO });' },
+    de:'  const ganhoCru = ganhoDaRun({ abates: premio.abates, encontros: vistos, perfil: PERFIL_DO_AVANCO, estagio: run.estagio });', para:'  const ganhoCru = ganhoDaRun({ abates: premio.abates, encontros: premio.encontros.length, perfil: PERFIL_DO_AVANCO, estagio: run.estagio });' },
   { id:'S2611', arquivo:'app/modules/avanco-conta.mjs', nome:'o banco deixa de aprender',
     real:'"o Kakuna e o Bellsprout ficaram parados no 7 e no 5"',
     de:'export const XP_DO_BANCO = 0.5;', para:'export const XP_DO_BANCO = 0;' },
@@ -12890,4 +12890,17 @@ export const DEFEITOS = [
     real:'LIKE interpreta o nome da campanha como padrão e soma despesas de outra campanha',
     de:"WHERE substr(referencia, 1, ?) = ? AND tipo = 'PROMO_DEBIT'`).get(campanha.length + 1, `${campanha}:`).n",
     para:"WHERE referencia LIKE ? AND tipo = 'PROMO_DEBIT'`).get(`${campanha}:%`).n" },
+  {id:'S90101',arquivo:'engine/nivel-criatura.mjs',nome:'estágios voltam a pagar XP fixo',real:'dificuldade cresce e recompensa não acompanha',
+    de:'Object.freeze([1, 1.5, 2, 3])',para:'Object.freeze([1, 1, 1, 1])'},
+  {id:'S90102',arquivo:'app/modules/avanco-conta.mjs',nome:'liquidação esquece o estágio',real:'prévia sobe mas o XP realmente creditado fica fixo',
+    de:'perfil: PERFIL_DO_AVANCO, estagio: run.estagio });',para:'perfil: PERFIL_DO_AVANCO });'},
+  {id:'S90103',arquivo:'engine/treino-offline.mjs',nome:'ausência acumula meses de treino',real:'a janela de retorno deixa de ser limitada',
+    de:'12 * 3600000',para:'1200 * 3600000'},
+  {id:'S90104',arquivo:'engine/treino-offline.mjs',nome:'quem está em aventura também treina',real:'o XP é pago em dois modos simultâneos',
+    de:'tempoLivre(inicio,agora,janelas,c.id)',para:'tempoLivre(inicio,agora,[],c.id)'},
+  {id:'S90105',arquivo:'engine/treino-offline.mjs',nome:'retornos curtos perdem frações de treino',real:'consultar frequentemente mantém o XP parado',
+    de:'+resto(anterior.xp)',para:'+0'},
+  {id:'S90106',arquivo:'server/treino-offline.mjs',nome:'resposta de treino não chega à criatura',real:'a API promete crédito mas o XP no banco não muda',
+    de:'for(const c of r.credito)gravar.run',para:'for(const c of [])gravar.run'},
+
 ];

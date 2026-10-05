@@ -3518,3 +3518,24 @@ financeiro de uma migração já usada em produção.
 
 AT6-13 (Avanço individual), AT6-05/09/10 (apresentação, mercado e cosméticos) e
 GQ têm fichas próprias. Ordem/estado exclusivamente no ROADMAP/RETOMAR.
+
+
+## XP-OFF — progressão por estágio e treino no retorno
+
+**Pedido do dono, 04/10/2026:** corrigir os dois fluxos antes de continuar as
+fichas AT6/GQ. Método INV, porte M; Spec §7.22.18. Um bloco coeso de progressão.
+
+Escopo: XP por estágio em expedição/Avanço, prévia igual ao crédito, relógio
+do treino independente de expedição, operação autenticada e save local,
+frações, exclusão de aventuras, cap de ausência, idempotência e rollback.
+
+Q1/Q3/Q6: HTTP real e falsificação de horário/valor, crédito e cursor atômicos,
+retry, marca legada e intervalos cruzados. Q4: estágio inicial e moeda preservados;
+XP superior muda deliberadamente. Q2 dirigido S90101–06: XP fixo, estágio ausente
+na liquidação, janela ilimitada, crédito durante aventura, frações perdidas e
+resposta sem crédito. Q5 necessário para aceite visual; sem novo layout, Q7
+não aplicável. Recorte focado autorizado pelo dono; não substitui gates de tag.
+
+Saída funcional: progressão cresce, banco recebe ao retorno e regressões das
+superfícies tocadas passam. A migração é aditiva; rollback de código não pode
+apagar XP já creditado. Continuar AT6-13 e demais fichas na ordem do ROADMAP.

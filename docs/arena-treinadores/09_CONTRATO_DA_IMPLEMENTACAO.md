@@ -79,3 +79,19 @@ node tools/medir-arena-treinadores.mjs
 Por instrução do dono, o recorte é focado nas alterações. Não equivale à suíte
 integral, ao Q2 legado inteiro ou à inspeção visual. Fixtures históricas de Liga
 testam leitura/fechamento de dados legados; a suíte AT6 testa as rotas atuais.
+
+
+## Ajuste posterior de progressão — XP-OFF
+
+A Spec §7.22.18 detalha a correção solicitada em 04/10: XP de Avanço e
+expedição cresce por estágio com fatores 1/1,5/2/3, preservando estágio 1 e
+moeda. A barra aplica os mesmos 88% e clima da liquidação. Jornada e seu teto
+repetível não mudaram. Treino do banco passa a acumular independentemente de
+expedição: 3 XP/h, 1 vínculo/h, até 12 horas/ausência, frações preservadas,
+primeira ativação sem retroatividade e aventura excluída. Créditos atômicos
+no relógio do servidor, ou mesma conta no save local. Relatórios reproduzíveis:
+
+```bash
+node tools/testar-arena.mjs --so=progressao-offline,modulos,idle-conta,idle-acoes,colheita,colheita-rotas,ausente,time-aprende,stamina-balanco,avanco-paga,comeco-treinador,avanco-tela,expedicao,estagios,banco-servidor,colecao-servidor,avanco-estado,run-servidor,run-avanco,avanco-forca,forma-estagio,curva-comeco,historico,arena-treinadores --saida=docs/arena-treinadores/VALIDACAO_XP_OFFLINE.json
+node tools/sabotar-arena.mjs --grupo=progressao --saida=docs/arena-treinadores/SABOTAGEM_XP_OFFLINE.json
+```

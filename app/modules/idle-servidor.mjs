@@ -10,9 +10,10 @@ import { idleDaConta, desvioDoRelogio } from './idle-conta.mjs';
 import { carregarMarcas, gravarMarcas, marcarVistas, marcarEncontrada } from './pokedex-estado.mjs';
 
 export async function sincronizarIdleDaConta({ api = apiPadrao, deposito = globalThis.localStorage } = {}) {
+  const treino = await api.post('/api/idle/treino', {});
   const [r, d] = await Promise.all([api.get('/api/idle'), api.get('/api/doces')]);
   const local = carregar(deposito);
-  if (!r.ok || !r.corpo) {
+  if (!treino.ok || !r.ok || !r.corpo) {
     local.conta = { ...(local.conta ?? {}), desatualizado: true };
     salvar(local, deposito);
     return { ok: false, status: r.status };
@@ -31,5 +32,5 @@ export async function sincronizarIdleDaConta({ api = apiPadrao, deposito = globa
     for (const dex of r.corpo.marcas.encontradas ?? []) marcarEncontrada(m, dex);
     gravarMarcas(m, deposito);
   }
-  return { ok: true };
+  return { ok: true, treino: treino.corpo?.ganhos ?? [] };
 }

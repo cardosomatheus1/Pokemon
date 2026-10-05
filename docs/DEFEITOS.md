@@ -7700,3 +7700,20 @@ ST-2.27 constrói; fazer aqui seria abrir a ST-2.27 por dentro da DEC-29.
 maratona ainda mede 8 runs por criatura". Fica VERMELHO quando alguém derivar
 as runs.
 
+
+
+## D-XP-OFF-01 — XP fixo entre estágios · corrigido funcionalmente
+
+**Dono:** XP-OFF · **Relato:** 04/10/2026. `ganhoDaRun`/`xpDaExpedicao`
+ignoravam estágio; mesmas quantidades rendiam igual em fases mais difíceis.
+Fatores 1/1,5/2/3 aplicados e estágio repassado na liquidação e prévia. A barra
+antes mostrava XP bruto sem 88%/clima; agora usa o crédito real. Testes
+`progressao-offline`/`time-aprende`, mutantes S90101/02 travam os dois caminhos.
+
+## D-XP-OFF-02 — banco não treina ao ficar ausente · corrigido funcionalmente
+
+**Dono:** XP-OFF · **Relato:** 04/10/2026. O crédito só ocorria ao colher uma
+expedição; fechar sem expedição nunca rendia XP. Relógio independente, frações
+persistidas e operação autenticada no retorno substituem essa dependência.
+Primeira ativação sem retroatividade; até 12 h/ausência. Testes reais HTTP/save
+local e mutantes S90103–06 cobrem crédito, limites e intervalos de aventuras.
