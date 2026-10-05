@@ -1,0 +1,30 @@
+{
+  "escopo": "Entrega HTTP de HTML e módulos; não executa nem inspeciona UI em navegador",
+  "resultados": [
+    {
+      "caminho": "/app/index.html",
+      "status": 200,
+      "tipo": "text/html; charset=utf-8"
+    },
+    {
+      "caminho": "/app/modules/comparacao-time.mjs",
+      "status": 200,
+      "tipo": "text/javascript; charset=utf-8"
+    },
+    {
+      "caminho": "/app/modules/comparacao-time-tela.mjs",
+      "status": 200,
+      "tipo": "text/javascript; charset=utf-8"
+    },
+    {
+      "caminho": "/app/modules/resumo-batalha.mjs",
+      "status": 200,
+      "tipo": "text/javascript; charset=utf-8"
+    },
+    {
+      "caminho": "/app/modules/resumo-batalha-tela.mjs",
+      "status": 200,
+      "tipo": "text/javascript; charset=utf-8"
+    }
+  ]
+}

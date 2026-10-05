@@ -12,7 +12,7 @@
  *
  *   versaoMotor     `VERSAO_TBE`: as regras do dia em que o time foi congelado
  *   versaoConteudo  a impressão digital do que a luta LÊ do pack — tipos,
- *                   espécies e golpes. Mudar a força de um golpe muda a
+ *                   espécies, golpes e catálogo treinador. Mudar a força ou precisão muda a
  *                   impressão, e a partida velha sabe que não é mais a mesma
  */
 import { hidratar } from './idle-dados.mjs';
@@ -31,6 +31,7 @@ export const conteudoDaLuta = pack => fnv(JSON.stringify({
   tipos: pack?.tipos?.efetividade ?? {},
   especies: [...(pack?.especies ?? []), ...(pack?.lendarios ?? [])].map(e => [e.dex, e.t, e.s]),
   golpes: pack?.golpes ?? {},
+  catalogoTreinador: pack?.catalogoTreinador ?? {},
   naturezas: pack?.naturezas ?? [],
 }));
 

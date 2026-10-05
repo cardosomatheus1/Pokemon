@@ -20,6 +20,7 @@ import { linhaDoTempo, fraseDoResultado, PASSO_MS } from './pve-dados.mjs';
 import { cenarioDaLuta } from './pve-cenario.mjs';
 import { arranjoClassico, narrar, RITMO_CLASSICO } from './luta-classica.mjs';
 import { porcentagemExibida, textoDaMargem } from '../../engine/treino-preco.mjs';
+import { htmlDoResumo } from './resumo-batalha-tela.mjs';
 
 const QUADROS_POR_S = 18;
 let geracao = 0, deNovo = null;
@@ -147,7 +148,7 @@ function fim(L, antes, r, extra, voltar, final = null) {
   if (extra) f.texto += ` ${extra}`;
   el.hidden = false;
   el.className = `pveFim ${final?.classe ?? (r.vencedor === 'A' ? 'venceu' : r.vencedor === 'B' ? 'perdeu' : 'empate')}`;
-  el.innerHTML = `<h4>${f.titulo}</h4><p>${f.texto}</p>
+  el.innerHTML = `<h4>${f.titulo}</h4><p>${f.texto}</p>${htmlDoResumo(L)}
     <div class="pveBotoes">${deNovo ? '<button class="btn gold" data-pve-de-novo>lutar de novo</button>' : ''}<button class="btn" data-pve-fechar>${voltar}</button></div>`;
 }
 

@@ -20,6 +20,7 @@ import { MOVE_FX } from './efeitos-dados.mjs';
 import { PALCO, coreografiaDoPalco, poseNoInstante, impactosEntre, numeroDoGolpe, escalaDe, balaoNoInstante, logNoInstante, vivosNoInstante } from './liga-palco-dados.mjs';
 import { PACK, tipoCores } from './motor.mjs';
 import { golpePorNome } from '../../engine/time.mjs';
+import { htmlDoResumo } from './resumo-batalha-tela.mjs';
 
 const { W, H } = PALCO;
 const ESCALA = 2, ENTRADA_MS = 700;
@@ -201,7 +202,7 @@ export function montarPalco(alvo, { linha, arena = { key: 'coliseu', nome: 'Coli
     if (!f) return;
     f.hidden = false;
     f.className = `pveFim ${final?.classe ?? 'empate'}`;
-    f.innerHTML = `${final?.texto ? `<p>${final.texto}</p>` : ''}<div class="pveBotoes"><button class="btn" data-lp-fechar>${voltar}</button></div>`;
+    f.innerHTML = `${final?.texto ? `<p>${final.texto}</p>` : ''}${htmlDoResumo(linha)}<div class="pveBotoes"><button class="btn" data-lp-fechar>${voltar}</button></div>`;
     /* O FIM EM CIMA DA ILHA, como o vencedor da Arena: o resultado grande e o selo do tier. */
     const banner = alvo.querySelector('.lpBanner');
     if (banner) {

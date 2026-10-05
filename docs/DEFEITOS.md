@@ -7787,3 +7787,40 @@ na mesma Floresta com taxas muito diferentes. Modelo de cobertura/pintura
 agora usa seleção e estágio reais, mostra motivo, alerta e comparação sem
 iniciar/gastar. S90601–07 capturados. Q5 e primeira sessão integral pendentes;
 não afirmar que chance de vitória foi calculada ou todos os tipos igualados.
+
+
+## D-AT6-05-01 — precisão explícita ausente da versão do snapshot · corrigido
+
+**Dono:** AT6-05-leitura. `conteudoDaLuta` incluía golpes brutos, mas não o
+catálogo treinador que a TBE lê. Alterar só `acc` nesse catálogo preservava
+a impressão, permitindo comparar/lutar com dados novos como se fossem os
+publicados. Campo incluído; teste de precisão alterada recusa comparação e
+confronto antigos. S90707 capturado. Times anteriores exigem republicação;
+log de replays não muda. Sem alteração da fórmula de combate.
+
+## D-AT6-05-02 — empate era narrado como ausência de eliminações · corrigido
+
+**Dono:** AT6-05-leitura. Resultado dizia “Ninguém caiu” ao chegar ao limite,
+embora pudesse haver nocautes. Monte Carlo com empates também dizia todas
+as derrotas quando p=0 ou incluía empates no complemento da vitória.
+Narrativa informa ausência de vencedor e empates registrados. Casos novos
+em `test/resumo-batalha.mjs`; S90712/14 capturados. Fórmula de chance não muda.
+
+## D-AT6-05-03 — ficha dizia que nenhuma arena usa seus atributos · corrigido
+
+**Dono:** AT6-05-leitura. Texto do treino “A Arena não usa nada disto” era
+ambíguo após AT6-base. Agora distingue a arena comum da arena 6×6, que usa
+snapshot publicado. Suíte treino-tela revalidada (5 testes); aceite visual Q5
+continua pendente. Sem alteração de stats/movesets ou ação financeira.
+
+## D-AT6-05-04 — teste offline UI depende da ordem de importação · aberto
+
+**Dono:** XP-OFF/T14. `modulos` importa UI sem DOM e o Node guarda a avaliação
+rejeitada. Rodar `progressao-offline` depois dá `document is not defined`,
+mesmo com DOM sintético instalado pelo caso. A execução inicial de 30 suítes
+registrou uma falha; os 16 testes offline passaram em processo isolado.
+Não é falha observada no produto, nem correção silenciosa do arnês. Evidência
+preservada em `VALIDACAO_COMPARACAO_RESULTADO.json.primeiraExecucao`; trava
+existente: caso “painel mostra a taxa do intervalo” após `modulos`.
+A correção do Centro em D-AT6-14-03 não corrigiu todos os testes UI. Isolamento
+é o limite desta verificação; padronização cabe ao dono, quando impedir produto.

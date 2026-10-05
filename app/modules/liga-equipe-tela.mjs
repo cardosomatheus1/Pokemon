@@ -20,6 +20,7 @@ import { avatarURL } from './perfil.mjs';
 import { linhaDoLog, provaDaPartida } from './partida-dados.mjs';
 import { montarPalco } from './liga-palco.mjs';
 import { sortearArena } from './arenas-dados.mjs';
+import { htmlDaComparacao } from './comparacao-time-tela.mjs';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const nomeDo = dex => nomeExibido((PACK.especies ?? []).find(e => e.dex === dex)?.n ?? '');
@@ -74,7 +75,7 @@ function pintar(alvo, h) {
   const passos = h.passos ? `<ol class="lePassos">${h.passos.map(p => `<li class="${p.bloqueado ? 'leBloq' : ''}"><b>${p.bloqueado ? '✕' : p.n}</b><span><strong>${esc(p.titulo)}</strong>${esc(p.texto)}</span></li>`).join('')}</ol>` : '';
   alvo.innerHTML = `<div class="leHome le-${h.estado}">
     ${barra}${tier ? '' : passos}
-    <div class="lePainel${tier ? '' : ' leSoCentro'}${tier && pontos ? ' leComPontos' : ''}">${tier}<div class="leCentro">${time}${presets}${h.aviso ? `<p class="leAviso">${h.titulo ? `<strong>${esc(h.titulo)}</strong>` : ''}${esc(h.aviso)}</p>` : ''}${erro ? `<p class="leErro">${esc(erro)}</p>` : ''}${botoes}</div>${tier ? pintarPontos(pontosNaTela(pontos, h.tier.nome)) : ''}</div>
+    <div class="lePainel${tier ? '' : ' leSoCentro'}${tier && pontos ? ' leComPontos' : ''}">${tier}<div class="leCentro">${time}${presets}${h.aviso ? `<p class="leAviso">${h.titulo ? `<strong>${esc(h.titulo)}</strong>` : ''}${esc(h.aviso)}</p>` : ''}${htmlDaComparacao(h.comparacao)}${erro ? `<p class="leErro">${esc(erro)}</p>` : ''}${botoes}</div>${tier ? pintarPontos(pontosNaTela(pontos, h.tier.nome)) : ''}</div>
     ${tier ? passos : ''}${h.time ? pintarStake(stakeNaTela(stake, { confirmando })) : ''}${tier ? pintarLoja(lojaVista()) : ''}<div id="leReplay" class="pveArea" hidden></div>${resultado}<div class="leBaixo">${recentes}${h.tier ? pintarRanking(rankingNaTela(ranking)) : ''}</div></div>`;
 }
 

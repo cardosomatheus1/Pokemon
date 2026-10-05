@@ -408,6 +408,10 @@ const CAMADA = {
   'golpe-ficha.mjs': 0,
   'orientacao-avanco.mjs': 0,
   'orientacao-avanco-tela.mjs': 4,
+  'comparacao-time.mjs': 0,
+  'comparacao-time-tela.mjs': 4,
+  'resumo-batalha.mjs': 0,
+  'resumo-batalha-tela.mjs': 4,
   'treino-local.mjs': 0,
   /* ST-11.2 · a partida da Liga e o replay do log (0). */
   'partida-dados.mjs': 0,

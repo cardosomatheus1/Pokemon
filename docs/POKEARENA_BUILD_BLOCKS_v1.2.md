@@ -3652,3 +3652,29 @@ comparação integrados ao controle, documentação
 com limite da aproximação. Não fecha GQ-01 integral, Q5, revisão de captura/
 evolução ou economia do direcionamento. L-AT6-04 segue parcial; L-GQ-01-01
 registra diversidade de rotas após orientar equipes pela afinidade.
+
+
+## AT6-05-leitura — comparar a defesa e explicar fatos da luta
+
+Método INV para comparação/log; conteúdo nas superfícies atuais. Spec §9.18.
+Camada 0 compara snapshots válidos e monta atributos TBE reais; camada 4
+mostra Publicado/Atual sem hover, sem publicar ou apostar automaticamente.
+Resumo final de Jornada/replay usa somente a linha já gravada/encenada.
+Incluir catálogo treinador na impressão para não reavaliar defesa antiga com
+precisão alterada. Atualização pede republicação, preservando replays do log.
+
+Q1/Q3: nível pelo XP, IV/natureza, evolução, golpes, ordem, preset, aparência,
+sem RNG/mutação, incompatibilidade, fatos/HP útil/KO e perspectiva dos dois
+jogadores. Q2 dirigido S90701–14. Q4: conferência em 100 lutas PvE e 30 lutas
+6×6; regras TBE/BR não alteradas, suítes de combate e pareamento incluídas.
+Q6: texto escapado, sem nova superfície de API ou operação financeira.
+Q8/Q9: sem transação/telemetria nova. Q5 pendente por Chromium ausente, sem
+capturas ou aceite de legibilidade. Sem alteração de grid/CSS.
+
+Saída funcional: 30 suítes/256 testes, 14/14 mutantes, 2.721 âncoras presentes.
+Os 2.707 mutantes fora do grupo não foram executados nesta rodada.
+Teste offline UI repetido isolado por cache de import sem DOM; falha inicial
+registrada, D-AT6-05-04 com dono XP-OFF/T14. Demais 29 suítes passaram no
+recorte inicial; resumo/PvE/recompensa e rótulo de treino foram revalidados.
+HTTP/MIME corretos não certificam execução em navegador. Não fecha AT6-05
+integral ou AT6-07. Relatório 12 e JSONs guardam a evidência focada.

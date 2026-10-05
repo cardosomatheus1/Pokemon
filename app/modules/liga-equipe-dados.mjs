@@ -15,6 +15,7 @@ import { motivoDaVersao } from './partida-dados.mjs';
 import { PRESETS_NA_TELA, presetValido } from './treino-dados.mjs';
 import { TIERS } from '../../engine/liga-mmr.mjs';
 import { snapshotDoTime } from './snapshot-dados.mjs';
+import { compararTimePublicado } from './comparacao-time.mjs';
 
 /* Quem ainda não jogou lê o que a Liga É antes do que ela pede: três passos,
    na ordem em que acontecem. Some quando o time está publicado. */
@@ -181,10 +182,11 @@ export function homeDaLiga({ conta, dados, pack, agora, preset, acabou = null })
   if (velho) return comPresets({ ...base, estado: 'desatualizado', acao: { rotulo: 'Publicar de novo', habilitada: true, tipo: 'publicar' },
     aviso: 'As regras da luta mudaram desde que você publicou. Publique de novo para voltar à fila.' });
   const atual = (dados.equipe ?? []).every(c => Array.isArray(c.iv) && c.iv.length === 6)
-    ? snapshotDoTime({ pack, criaturas: dados.equipe, ids: (dados.equipe ?? []).map(c => c.id), preset: dados.meuTime.preset }) : { ok: false };
+    ? snapshotDoTime({ pack, criaturas: dados.equipe, ids: (dados.equipe ?? []).map(c => c.id), preset: escolhido }) : { ok: false };
+  const comparacao = compararTimePublicado({ pack, publicado: dados.meuTime, atual });
   const mudou = idsDo(dados.meuTime) !== (dados.equipe ?? []).map(c => c.id).join()
-    || (atual.ok && JSON.stringify(atual.time) !== JSON.stringify(dados.meuTime.time));
-  return comPresets({ ...base, estado: 'pronto', acao: { rotulo: 'Treinar sem aposta ou ranking', habilitada: true, tipo: 'buscar' },
+    || comparacao?.mudou;
+  return comPresets({ ...base, comparacao, estado: 'pronto', acao: { rotulo: 'Treinar sem aposta ou ranking', habilitada: true, tipo: 'buscar' },
     secundaria: { rotulo: 'Publicar de novo', tipo: 'publicar' },
     aviso: mudou ? 'O seu time mudou desde a publicação. A Liga luta com o publicado até você publicar de novo.' : null });
 }

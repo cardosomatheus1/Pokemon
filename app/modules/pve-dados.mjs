@@ -52,10 +52,13 @@ export function fraseDoResultado({ vencedor, turnos }, antes) {
   const pct = pontosExibidos(antes.p), m = margemDaChance(antes);
   /* Lote unânime não tem "±1" (o mesmo Q7 da ST-10.7): diz o que foi. */
   const lutas = Number(antes.sims || 0).toLocaleString('pt-BR');
-  const chance = antes.p === 1 ? `o seu time tinha vencido todas as ${lutas} lutas simuladas`
+  const empates = Number(antes.empates || 0);
+  const chance = empates > 0 ? `a chance de vitória antes da luta era ${porcentagemExibida(antes.p)} (±${m}); houve ${empates.toLocaleString('pt-BR')} empates nas ${lutas} lutas simuladas`
+    : antes.p === 1 ? `o seu time tinha vencido todas as ${lutas} lutas simuladas`
     : antes.p === 0 ? `o seu time tinha perdido todas as ${lutas} lutas simuladas`
     : `a chance antes da luta era ${porcentagemExibida(antes.p)} (±${m})`;
   if (vencedor === 'A') return { titulo: 'Você venceu', texto: `${chance[0].toUpperCase()}${chance.slice(1)}.` };
+  if (vencedor === 'B' && empates > 0) return { titulo: 'Você perdeu', texto: `${chance[0].toUpperCase()}${chance.slice(1)}. Esta partida terminou em vitória do rival.` };
   if (vencedor === 'B') return { titulo: 'Você perdeu', texto: `${chance[0].toUpperCase()}${chance.slice(1)}: em ${100 - pct} de cada 100 lutas assim, o rival vence.` };
-  return { titulo: 'Empate', texto: `Ninguém caiu em ${turnos} turnos. ${chance[0].toUpperCase()}${chance.slice(1)}.` };
+  return { titulo: 'Empate', texto: `A luta terminou sem vencedor após ${turnos} turnos. ${chance[0].toUpperCase()}${chance.slice(1)}.` };
 }

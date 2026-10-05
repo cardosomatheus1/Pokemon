@@ -1,0 +1,205 @@
+{
+  "escopo": "somente mutantes comparação e fatos da luta; não é Q2 legado integral",
+  "total": 14,
+  "capturados": 14,
+  "resultados": [
+    {
+      "id": "S90701",
+      "nome": "comparação ignora IV real",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "IVs e natureza reais mostram ganhos e perdas por stat",
+          "erro": "undefined — esperado 136, veio 129",
+          "suite": "comparacao-time"
+        }
+      ]
+    },
+    {
+      "id": "S90702",
+      "nome": "comparação ignora natureza",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "IVs e natureza reais mostram ganhos e perdas por stat",
+          "erro": "natureza ocultou perda de stat",
+          "suite": "comparacao-time"
+        }
+      ]
+    },
+    {
+      "id": "S90703",
+      "nome": "nível novo não aparece",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "XP deriva o nível atual mesmo com o campo nível antigo; stats são os da TBE",
+          "erro": "Cannot read properties of undefined (reading 'antes')",
+          "suite": "comparacao-time"
+        },
+        {
+          "titulo": "pintura mostra antes/depois sem hover, escapa nomes e não publica automaticamente",
+          "erro": "",
+          "suite": "comparacao-time"
+        }
+      ]
+    },
+    {
+      "id": "S90704",
+      "nome": "ficha antiga usa regras novas",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "regras incompatíveis não recalculam ficha histórica com conteúdo novo",
+          "erro": "undefined — esperado false, veio true",
+          "suite": "comparacao-time"
+        },
+        {
+          "titulo": "precisão explícita alterada torna o publicado incompatível antes de comparar",
+          "erro": "undefined — esperado false, veio true",
+          "suite": "comparacao-time"
+        }
+      ]
+    },
+    {
+      "id": "S90705",
+      "nome": "preset não publicado some da comparação",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "preset escolhido ainda não publicado aparece na home, inclusive sem mudar criaturas",
+          "erro": "",
+          "suite": "comparacao-time"
+        }
+      ]
+    },
+    {
+      "id": "S90706",
+      "nome": "nome injeta HTML na comparação",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "pintura mostra antes/depois sem hover, escapa nomes e não publica automaticamente",
+          "erro": "",
+          "suite": "comparacao-time"
+        }
+      ]
+    },
+    {
+      "id": "S90707",
+      "nome": "hash ignora precisão do catálogo treinador",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "precisão explícita alterada torna o publicado incompatível antes de comparar",
+          "erro": "hash ignorou catálogo treinador",
+          "suite": "comparacao-time"
+        }
+      ]
+    },
+    {
+      "id": "S90708",
+      "nome": "dano excedente infla desempenho",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "conta log real e limita HP retirado à vida restante, sem dano excedente",
+          "erro": "undefined — esperado 20, veio 92",
+          "suite": "resumo-batalha"
+        },
+        {
+          "titulo": "lado B original que assiste é Seu time; não troca slot com lado da tela",
+          "erro": "undefined — esperado 20, veio 92",
+          "suite": "resumo-batalha"
+        },
+        {
+          "titulo": "cem lutas PvE reais: dano útil e nocautes correspondem à vida final",
+          "erro": "undefined — esperado 124, veio 128",
+          "suite": "resumo-batalha"
+        },
+        {
+          "titulo": "seis versus seis e replays dos dois jogadores mantêm HP e perspectiva",
+          "erro": "",
+          "suite": "resumo-batalha"
+        }
+      ]
+    },
+    {
+      "id": "S90709",
+      "nome": "replay de desafiante atribui resumo ao rival",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "lado B original que assiste é Seu time; não troca slot com lado da tela",
+          "erro": "undefined — esperado 20, veio 3",
+          "suite": "resumo-batalha"
+        },
+        {
+          "titulo": "seis versus seis e replays dos dois jogadores mantêm HP e perspectiva",
+          "erro": "undefined — esperado {\"tentativas\":12,\"erros\":0,\"criticos\":1,\"superEfetivos\":4,\"resistidos\":0,\"imunidades\":0,\"hpRetirado\":699,\"nocautes\":6}, veio {\"tentativas\":13,\"erros\":0,\"criticos\":0,\"superEfetivos\":3,\"resistidos\":4,\"imunidades\":0,\"hpRetirado\":620,\"nocautes\":5}",
+          "suite": "resumo-batalha"
+        }
+      ]
+    },
+    {
+      "id": "S90710",
+      "nome": "golpe errado conta crítico",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "conta log real e limita HP retirado à vida restante, sem dano excedente",
+          "erro": "undefined — esperado 0, veio 1",
+          "suite": "resumo-batalha"
+        }
+      ]
+    },
+    {
+      "id": "S90711",
+      "nome": "imunidade não aparece no resultado",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "conta log real e limita HP retirado à vida restante, sem dano excedente",
+          "erro": "undefined — esperado 1, veio 0",
+          "suite": "resumo-batalha"
+        }
+      ]
+    },
+    {
+      "id": "S90712",
+      "nome": "empate afirma que não houve eliminação",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "empate após eliminações não afirma que ninguém caiu",
+          "erro": "",
+          "suite": "resumo-batalha"
+        }
+      ]
+    },
+    {
+      "id": "S90713",
+      "nome": "home ignora preset escolhido",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "preset escolhido ainda não publicado aparece na home, inclusive sem mudar criaturas",
+          "erro": "",
+          "suite": "comparacao-time"
+        }
+      ]
+    },
+    {
+      "id": "S90714",
+      "nome": "zero vitórias com empates vira todas derrotas",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "chance de perder não inclui empates; zero de vitórias não significa todas derrotas",
+          "erro": "",
+          "suite": "resumo-batalha"
+        }
+      ]
+    }
+  ]
+}

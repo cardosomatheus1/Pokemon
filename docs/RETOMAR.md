@@ -22,9 +22,34 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 05/10/2026 · GQ-01-rotas
+## 0. ONDE PARAMOS — 05/10/2026 · AT6-05-leitura
 
-Último bloco: orientação de golpes por equipe no Avanço assistido, política
+Último bloco: comparação Publicado/Atual na Liga e fatos da luta no fim da
+Jornada/replay 6×6. Nível pelo XP, IV, natureza, evolução, ordem, preset e
+golpes mostram diferenças concretas; ficha usa a TBE, incluindo perdas de
+natureza. Golpes mostram poder/tipo/categoria/precisão. Nenhuma republicação
+automática ou chance inventada. Resumo usa o log, limita HP ao restante e
+respeita a perspectiva do desafiante; mostra erros/críticos/efetividade/KO.
+
+Snapshot agora inclui catálogo treinador na impressão do conteúdo: times
+anteriores precisam republicar; log histórico continua válido. TBE `tbe-4`,
+combate/economia e banco 150/225/300/450 XP/h por fase permanecem iguais.
+Narrativa de empate não afirma que ninguém caiu; empates Monte Carlo não
+viram derrotas. Texto do treino distingue a arena comum da arena 6×6.
+
+VALIDACAO_COMPARACAO_RESULTADO.json: 30 suítes/256 testes verdes, com teste
+offline repetido isoladamente após cache de import sem DOM na execução inicial.
+21 testes novos incluem 100 lutas PvE/30 lutas 6×6. Sabotagem: 14/14 S90701–14;
+2.721 âncoras presentes. Relatório 12/Spec §9.18. D-AT6-05-04 registra ordem
+do teste UI legado, sem esconder a falha inicial. HTTP/MIME dos módulos passou.
+
+Q5/inspeção das larguras continuam pendentes por Chromium ausente. Funil,
+instrumentação e apresentação integral AT6-05/07 não concluídos. Local
+somente, sem publicação. A fila permanece exclusivamente no ROADMAP.
+
+### Bloco anterior — GQ-01-rotas (`e69826f`)
+
+Orientação de golpes por equipe no Avanço assistido, política
 `cobertura-duelos-1`. Usa equipe/estágio selecionados, dano esperado TBE,
 IV/nível/moveset, elenco e período públicos. Mostra motivo, alerta da rota
 selecionada e botão de comparar; não inicia/gasta ou troca membros. Recusa

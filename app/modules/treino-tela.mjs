@@ -53,7 +53,7 @@ function membro(m, podeTirar) {
     <details class="tbBuild"><summary>ver build</summary>
       <div class="tbFicha">${Object.entries({ vida: 'Vida', atq: 'Ataque', def: 'Defesa', esp: 'Esp. Atq', espDef: 'Esp. Def', vel: 'Velocidade' })
         .map(([k, r]) => `<span>${r} <b>${m.ficha[k]}</b></span>`).join('')}</div>
-      <p class="tiny">No nível ${m.nivel}, como ela luta no treino. A Arena não usa nada disto.</p>
+      <p class="tiny">No nível ${m.nivel}, ficha do treino e da Jornada. Na arena 6×6 vale o time publicado; a arena comum usa outro combate.</p>
     </details>
     <div class="tbAcoes">
       <button class="btn" data-goto="viewIdle" title="os golpes se escolhem no Centro das Rotas">escolher golpes →</button>

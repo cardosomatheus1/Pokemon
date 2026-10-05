@@ -202,3 +202,22 @@ Rota OFF, regras de luta e treino 150/225/300/450 XP/h permanecem iguais.
 2.400 runs pareadas com Floresta como referência; não certifica escolha
 ótima ou probabilidade mostrada pela UI. Velocidade, ordem/HP acumulado,
 poções e guia não são simulados pelo conselho. Q5 e GQ-01 integral pendentes.
+
+
+## Comparação e leitura da batalha — AT6-05-leitura
+
+Spec §9.18, relatório 12. Liga mostra diferenças entre publicado e atual,
+identificadas por ID: nível pelo XP, IV/natureza, evolução/tipos, golpes,
+ordem e preset. Atributos são TBE reais; poder/categoria/precisão dos golpes
+vêm do catálogo treinador. Nenhuma republicação ou chance automática.
+
+Hash de conteúdo passa a incluir catálogo treinador: times antigos precisam
+republicar; replays já gravados permanecem no log. Jornada/replay 6×6 ganham
+resumo factual de erros, críticos, efetividade, HP útil e KO dos dois lados.
+Não explica causalmente o resultado ou recalcula a luta. Empate com
+eliminações e amostra Monte Carlo com empates são narrados corretamente.
+
+256 testes/30 suítes e 14 mutantes dirigidos. Ver relatório de validação para
+a falha inicial de ordem do teste offline e sua repetição isolada. Q5,
+apresentação integral e instrumentação do funil continuam pendentes.
+TBE `tbe-4`, economia e banco 150/225/300/450 XP/h por fase iguais.

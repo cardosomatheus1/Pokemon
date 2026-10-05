@@ -1,0 +1,169 @@
+{
+  "escopo": "focado AT6; sem navegador e sem suíte integral",
+  "total": 256,
+  "falhas": [],
+  "resultados": [
+    {
+      "nome": "comparacao-time",
+      "total": 12,
+      "falhas": []
+    },
+    {
+      "nome": "resumo-batalha",
+      "total": 9,
+      "falhas": []
+    },
+    {
+      "nome": "modulos",
+      "total": 19,
+      "falhas": []
+    },
+    {
+      "nome": "equipe-snapshot",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "liga-home",
+      "total": 11,
+      "falhas": []
+    },
+    {
+      "nome": "liga-partida",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "liga-replay",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "liga-palco",
+      "total": 9,
+      "falhas": []
+    },
+    {
+      "nome": "liga-stake",
+      "total": 11,
+      "falhas": []
+    },
+    {
+      "nome": "liga-integridade",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "arena-treinadores",
+      "total": 22,
+      "falhas": []
+    },
+    {
+      "nome": "treino-batalha",
+      "total": 12,
+      "falhas": []
+    },
+    {
+      "nome": "batalha-precisao",
+      "total": 3,
+      "falhas": []
+    },
+    {
+      "nome": "pve",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "recompensa-pve",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "treino-tela",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "treino-preco",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "ginasios",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "jornada",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "jornada-servidor",
+      "total": 10,
+      "falhas": []
+    },
+    {
+      "nome": "liga-pareamento",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "liga-mmr",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "liga-ranking",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "liga-temporada",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "catalogo-treinador",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "progressao-offline",
+      "total": 16,
+      "falhas": []
+    },
+    {
+      "nome": "orientacao-avanco",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-combate",
+      "total": 13,
+      "falhas": []
+    },
+    {
+      "nome": "combate-continuo",
+      "total": 3,
+      "falhas": []
+    },
+    {
+      "nome": "run-servidor",
+      "total": 6,
+      "falhas": []
+    }
+  ],
+  "primeiraExecucao": {
+    "total": 255,
+    "falhas": [
+      {
+        "titulo": "painel mostra a taxa do intervalo e seu estágio, em vez da constante antiga de 3 XP/h",
+        "erro": "document is not defined",
+        "suite": "progressao-offline"
+      }
+    ]
+  },
+  "metodo": "30 suítes focadas; progressao-offline repetida em processo isolado após conflito de cache de imports UI sem DOM em modulos. Demais 29 passaram no recorte inicial. Não substitui navegador ou suíte integral.",
+  "revalidacao": "Após ajustar a narrativa de empates e o texto do treino, resumo-batalha/pve/recompensa-pve e treino-tela foram repetidos; 26 verificações sem falhas."
+}

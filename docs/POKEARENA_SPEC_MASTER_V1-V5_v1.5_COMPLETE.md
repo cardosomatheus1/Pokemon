@@ -4861,3 +4861,42 @@ Floresta como referência, iniciais nível 5: planta 3→100%, água 3→95%, fo
 79→79%. São resultados da amostra, não chances publicadas pela UI nem prova
 de que a rota sugerida é ótima. Orientação é funcional; Q5 e fluxo integral
 GQ-01 ainda pendentes. Dados em BALANCEAMENTO_ORIENTACAO_AVANCO.json.
+
+
+## 9.18 Comparação de defesa e fatos da luta — AT6-05-leitura (05/10/2026)
+
+A Liga deve distinguir o time publicado da equipe atual e do preset escolhido.
+Comparar por ID, incluindo evolução com mesmo ID, ordem/entradas/saídas,
+nível derivado do XP, IVs, natureza, tipos e golpes. Ficha usa `montarLutador`
+com entradas reais; mostrar HP/ataque/defesa/especial/defesa especial/velocidade
+que mudaram, incluindo perdas. Mostrar poder/categoria/tipo/precisão dos golpes
+pelo catálogo treinador. XP sem ganhar nível e aparência shiny não geram
+vantagem de combate. Comparação não é porcentagem de vitória nem republicação.
+
+Publicado/Atual deve ser visível por detalhe expansível, sem depender de hover.
+A arena continua usando a defesa congelada até publicação explícita. Preset
+selecionado, ainda não publicado, também deve ser distinguido. Mudança de regras
+ou conteúdo impede reconstruir uma ficha histórica com dados novos.
+
+A impressão do conteúdo do snapshot inclui `catalogoTreinador`, além de tipos,
+espécies, golpes brutos e naturezas. Mudança só de precisão explícita invalida
+a defesa anterior. A inclusão deste campo exige republicar times antigos;
+replays gravados continuam lendo o log, sem recalcular com o conteúdo atual.
+Dados incompletos pedem atualização, sem inventar uma comparação de atributos.
+
+Fim da Jornada e replay 6×6 exibem resumo exclusivamente da linha encenada:
+golpes registrados, erros, críticos, super efetivos, resistidos, imunidades,
+HP retirado e nocautes por lado. Mapear slots pela perspectiva da tela, sem
+confundir lado original B com rival. HP retirado é limitado ao restante do alvo;
+golpe errado não contribui para crítico/efetividade/dano. Nenhuma nova simulação,
+consulta ao time atual ou afirmação causal de que IV/azar decidiu o resultado.
+
+Empate por limite de turnos informa ausência de vencedor, sem afirmar ausência
+de eliminações. Quando Monte Carlo registra empates, informar sua quantidade;
+não chamar `1 - p(vitória)` de derrota ou zero vitórias de todas derrotas.
+Texto do treino distingue a arena comum do modo 6×6 com time publicado.
+
+TBE continua `tbe-4`; sem mudanças de combate, recompensas, taxa, XP,
+matchmaking ou inscrição por esta apresentação. 30 suítes/256 testes focados,
+14 mutantes dirigidos; teste offline UI isolado por dependência de cache de
+imports. Q5/legibilidade e funil AT6-07 não certificados. Relatório 12.
