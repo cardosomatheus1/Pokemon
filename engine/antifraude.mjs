@@ -34,7 +34,7 @@
 /* Remedida na ST-2.30 (DEC-32: teto de encontros 45, chance ×0,8): o casual
    no estágio 3 captura 2,96 por dia e o maratona no estágio 1, 21,24 — banda
    1,8–21,4 → 1,4–26,6. */
-export const BANDA_DE_CAPTURA = Object.freeze({ min: 1.4, max: 26.6 });
+export const BANDA_DE_CAPTURA = Object.freeze({ min: 1.4, max: 25.5 });
 
 /* O detector de horário. Medido com fraude plantada (`test/antifraude.mjs`):
    a TAXA DE DETECÇÃO e a de FALSO POSITIVO estão na fixture, e o gate 3→4 as

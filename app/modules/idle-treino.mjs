@@ -61,7 +61,7 @@ export function pintarTreino(E) {
   const recebido = ultimos.filter(x => banco.some(c => c.id === x.id)).reduce((n,x) => n+x.xp,0);
   const cabecalho = `<p class="tiny"><b class="trQuantos">${banco.length}</b> no banco. ` +
     `Treino automático: <b class="trGanho">${ritmo.xpPorHora} XP/h</b> (estágio ${ritmo.estagio}) e ` +
-    `${VINCULO_POR_HORA_TREINO} de vínculo/h por Pokémon. O crédito chega ao voltar, ` +
+    `${VINCULO_POR_HORA_TREINO} de vínculo/h por criatura. O crédito chega ao voltar, ` +
     `com até 12 h por ausência; não precisa mandar expedição.` +
     (recebido ? ` Último crédito do banco: +${recebido} XP no total.` : '') + '</p>';
 

@@ -69,7 +69,8 @@ export function orientacaoAvanco(pack,estado,{equipe=[],estagio=1,bioma,agora,bl
 
 export function textoDaOrientacao(pack,r){
   if(r.bloqueio)return r.bloqueio;
-  const x=r.sugestao.exemplo,nome=d=>{const e=especieDe(pack,d);return (pack.nomeExibido??(s=>s))(e?.n??String(d));};
+  const x=r.sugestao.exemplo;
+  const nome=d=>{const e=especieDe(pack,d);return (pack.nomeExibido??(s=>s))(e?.n??String(d));};
   const afinidade=x.efetividade>1?`super efetivo (${x.efetividade}×)`:x.efetividade<1?`resistido (${x.efetividade}×)`:'dano neutro';
   return `Para a equipe selecionada, compare ${r.sugestao.rotulo}, estágio ${r.estagio}. `+
     `${x.golpe} de ${nome(x.criatura)} causa ${afinidade} contra ${nome(x.rival)} (nível ${x.nivel}). `+

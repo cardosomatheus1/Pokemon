@@ -83,7 +83,7 @@ export function suite() {
     ok(/textoDaMargem\(r\)/.test(tela) && /textoDaTrocaFeita\(escolhida, nomeNaTela\)/.test(tela) && !/\.replace\(\//.test(tela), 'a tela remenda o texto da chance');
     ok(!/toFixed|Math\.round/.test(tela), 'a tela arredonda por conta própria');
     const html = fonte('../app/index.html');
-    ok(/<button class="nav" data-view="viewTreino">Time<\/button>/.test(html) && /<div id="viewTreino" class="view">/.test(html)
+    ok(/<button class="nav" data-view="viewTreino">Time(?: \/ Arena)?<\/button>/.test(html) && /<div id="viewTreino" class="view">/.test(html)
        && /import '\.\/modules\/treino-tela\.mjs';/.test(html), 'a vista não existe ou não é carregada');
   });
 

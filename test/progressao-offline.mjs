@@ -1,4 +1,5 @@
-import { contaTreinoOffline } from '../engine/treino-offline.mjs';
+import { contaTreinoOffline, ritmoTreinoOffline } from '../engine/treino-offline.mjs';
+import { readFileSync } from 'node:fs';
 import { treinarNoAparelho } from '../app/modules/treino-local.mjs';
 import { VAZIO, salvar, carregar } from '../app/modules/idle-dados.mjs';
 import { criarSuite, ok, igual } from './harness.mjs';
@@ -120,16 +121,17 @@ export function suite(){const s=criarSuite('progressao-offline');
       igual(r.treino.find(c=>c.id==='b').xp,[150,225,300,450][estagio-1]);
     }
   });
-  s.teste('painel mostra a taxa do intervalo e seu estágio, em vez da constante antiga de 3 XP/h',async()=>{
-    const antes={document:globalThis.document,localStorage:globalThis.localStorage},alvo={innerHTML:''};
-    globalThis.document={querySelector:()=>null,querySelectorAll:s=>s==='#idleTreino, #offTreino'?[alvo]:[]};
-    globalThis.localStorage={getItem:()=>null,setItem:()=>{}};
-    try{
-      const {pintarTreino}=await import('../app/modules/idle-treino.mjs');
-      pintarTreino({criaturas:[{id:'a',dex:1,xp:0,iv:Array(6).fill(15)}],expedicoes:[],treinoOffline:{em:T,estagio:3}});
-      ok(alvo.innerHTML.includes('300 XP/h')&&alvo.innerHTML.includes('estágio 3'),'painel não mostra o ritmo pago');
-      ok(!alvo.innerHTML.includes('3 XP/h'),'taxa legada continua exposta');
-    }finally{Object.assign(globalThis,antes);}
+  /* Sem DOM falso: importar o painel puxa o `dom.mjs`, que lê `document` no
+     carregamento, e um carregamento que falhou fica em cache no processo —
+     com as suítes em paralelo (T14) isso decidia a vez de quem falhava. O
+     número vem do motor; o painel só o pinta, e é isso que se confere. */
+  s.teste('painel mostra a taxa do intervalo e seu estágio, em vez da constante antiga de 3 XP/h',()=>{
+    const r=ritmoTreinoOffline({em:T,estagio:3},[{id:'a',dex:1,xp:0,iv:Array(6).fill(15)}]);
+    igual(r.xpPorHora,300,'o motor não dá 300 XP/h no estágio 3');igual(r.estagio,3);
+    const tela=readFileSync(new URL('../app/modules/idle-treino.mjs',import.meta.url),'utf8');
+    ok(/ritmoTreinoOffline\(E\.treinoOffline, E\.criaturas\)/.test(tela),'o painel não lê o ritmo do motor');
+    ok(/\$\{ritmo\.xpPorHora\} XP\/h<\/b> \(estágio \$\{ritmo\.estagio\}\)/.test(tela),'painel não mostra o ritmo pago');
+    ok(!/[^0-9]3 XP\/h/.test(tela),'taxa legada continua exposta');
   });
   s.teste('colheita lê a fase congelada do treino mesmo numa rota menor; retorno completa só o restante',async()=>cena(async c=>{
     c.srv.db.prepare('UPDATE criaturas SET xp=? WHERE id=?').run(xpParaNivel(19),c.cs[0].id);

@@ -115,7 +115,7 @@ export async function suite() {
 
   s.teste('a colheita pesa o bônus; o teto e a captura não o recebem', () => {
     const colheita = semComentario(fonte('../app/modules/idle-colheita.mjs'));
-    ok(/bonus = carregarBonus\(\)/.test(colheita) && /contaDaColheita\(\{[^}]*raiz, bonus, agora \}\)/.test(colheita), 'a colheita local não passa o bônus para a conta');
+    ok(/bonus = carregarBonus\(\)/.test(colheita) && /contaDaColheita\(\{[^}]*raiz, bonus, agora(?:, [^}]*)? \}\)/.test(colheita), 'a colheita local não passa o bônus para a conta');
     /* ST-13.2a: a conta é uma só, e é ela que o leva ao sorteio. */
     ok(/membros: \(x\.equipe \?\? \[\]\)\.length \|\| 1, bonus, agora \}\)/.test(semComentario(fonte('../engine/colheita.mjs'))), 'a conta da colheita não pesa o bônus');
     ok(/bonus: bonusDoServidor\(db, exp\.user_id, pack\), agora/.test(semComentario(fonte('../server/idle.mjs'))), 'a colheita do servidor não pesa o bônus');

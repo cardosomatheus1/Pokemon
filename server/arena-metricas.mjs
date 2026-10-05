@@ -24,7 +24,8 @@ export function anotarElegibilidadeArena(db,{userId,pack,agora}){
 export function painelArena(db,{desde=0,ate=Number.MAX_SAFE_INTEGER,agora=Date.now()}={}){
   if(![desde,ate].every(Number.isSafeInteger)||desde<0||ate<desde)throw Error('janela inválida');
   const eventos=db.prepare("SELECT nome,user_id,campos FROM telemetry_events WHERE criado_em>=? AND criado_em<? AND nome LIKE 'arena_%'").all(desde,ate);
-  const ev=nome=>eventos.filter(e=>e.nome===nome),contas=nome=>new Set(ev(nome).map(e=>e.user_id).filter(Boolean)).size;
+  const ev=nome=>eventos.filter(e=>e.nome===nome);
+  const contas=nome=>new Set(ev(nome).map(e=>e.user_id).filter(Boolean)).size;
   const soma=tipo=>db.prepare('SELECT COALESCE(SUM(amount),0) n FROM wallet_ledger WHERE type=? AND created_at>=? AND created_at<?').get(tipo,desde,ate).n;
   const casa=tipo=>db.prepare('SELECT COALESCE(SUM(delta),0) n FROM arena_tesouraria WHERE tipo=? AND criado_em>=? AND criado_em<?').get(tipo,desde,ate).n;
   const resultados=ev('arena_partida_liquidada').map(e=>JSON.parse(e.campos));
