@@ -9392,6 +9392,36 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-251 — o banco sozinho leva a caixa inteira ao nível 100
+
+**Registrada em:** 05/10/2026, quando o dono perguntou como deixar a
+progressão de XP *"nem muito nem tão pouco"*. **Bloco dono:** **ST-2.31** (o
+treino do banco com teto e vagas — sem ficha ainda). **Estado:** aberta —
+proposta escrita, à espera do veredito do dono, porque a taxa de 150 XP/h foi
+escolha dele (XP-OFF-2).
+
+Medido no `b2a1354` (`xpParaNivel`, `xpPorHoraTreino`, `NIVEL_DO_ESTAGIO`), uma
+criatura nível 5 SÓ no banco, sem jogar:
+
+```text
+1 volta/dia    nv31 no dia 3 · nv50 no dia 6 · nv100 no dia 21
+2 voltas/dia   nv31 no dia 1,5 · nv50 no dia 3 · nv75 no dia 6 · nv100 no dia 10,5
+```
+
+O Campeão tem nível 57–63; a Elite Four, 53–60. Três causas, e nenhuma é a
+taxa sozinha: (1) o treino vale para TODA criatura do banco, então cresce com
+o tamanho da caixa; (2) não há teto — o banco passa do time que joga; (3) o
+estágio do treino sai do maior nível da coleção, que o próprio banco sobe
+(150 → 450 XP/h sem jogar). Na emissão, o XP/dia do diário no estágio 3 foi de
+1.545 para 7.770: ~80% passou a vir de não jogar.
+
+**Proposta (mantém 150/225/300/450 XP/h):** teto — o banco não passa do nível
+do melhor do time que joga menos 3; vagas — 6 criaturas treinam (decisão de
+quem), não a caixa; estágio do treino pelo estágio desbloqueado jogando, não
+pelo nível da coleção. Calibrar por simulação contra os níveis da Jornada,
+com a meta de ritmo do Campeão por perfil (casual ~4–6 semanas, diário
+~2–3, maratona ~1). **O que a destrava:** o veredito do dono.
+
 ### L-250 — o jogo mora num endereço emprestado (`sslip.io`)
 
 **Registrada em:** 03/10/2026, quando um amigo do piloto recebeu
