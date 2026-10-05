@@ -7777,3 +7777,13 @@ DOM sintético disponível. A integração agora roda em processo isolado, com
 as mesmas verificações visíveis e controles. Ordem módulos→catálogo passou
 27 testes; S90304 precisa continuar reprovando informação só em tooltip.
 Sem alteração de código de produto ou navegador; não substitui Q5.
+
+
+## D-GQ-01-01 — mapa não orientava a equipe selecionada · corrigido funcionalmente
+
+**Dono:** GQ-01-rotas. Rotas mostravam habitantes, mas não explicavam quais
+golpes/níveis da equipe favoreciam um confronto. Iniciais diferentes entravam
+na mesma Floresta com taxas muito diferentes. Modelo de cobertura/pintura
+agora usa seleção e estágio reais, mostra motivo, alerta e comparação sem
+iniciar/gastar. S90601–07 capturados. Q5 e primeira sessão integral pendentes;
+não afirmar que chance de vitória foi calculada ou todos os tipos igualados.

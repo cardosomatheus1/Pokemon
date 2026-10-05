@@ -1,0 +1,327 @@
+{
+  "politica": "cobertura-duelos-1",
+  "runs": 2400,
+  "n": 100,
+  "sementes": "orientacao-holdout-20261005-i",
+  "horarios": "12h/23h UTC alternados",
+  "condicoes": "sem poções; IV 15; sugestão não acessa clima/seed; confronto recomendado versus Floresta, não versus melhor rota possível",
+  "custoOrientacaoMs": {
+    "mediana": 1.1286009999998896,
+    "p95": 2.5044959999995626,
+    "maximo": 15.181964000000008
+  },
+  "resultados": [
+    {
+      "dex": [
+        1
+      ],
+      "nivel": 5,
+      "estagio": 1,
+      "escolhidoDia": "deserto",
+      "escolhidoNoite": "deserto",
+      "medidas": {
+        "sugerida": {
+          "vitorias": 100,
+          "abates": 3700,
+          "n": 100,
+          "taxa": 1,
+          "abatesMedios": 37
+        },
+        "floresta": {
+          "vitorias": 3,
+          "abates": 3281,
+          "n": 100,
+          "taxa": 0.03,
+          "abatesMedios": 32.81
+        }
+      }
+    },
+    {
+      "dex": [
+        1
+      ],
+      "nivel": 10,
+      "estagio": 1,
+      "escolhidoDia": "ruina",
+      "escolhidoNoite": "deserto",
+      "medidas": {
+        "sugerida": {
+          "vitorias": 100,
+          "abates": 3700,
+          "n": 100,
+          "taxa": 1,
+          "abatesMedios": 37
+        },
+        "floresta": {
+          "vitorias": 100,
+          "abates": 3700,
+          "n": 100,
+          "taxa": 1,
+          "abatesMedios": 37
+        }
+      }
+    },
+    {
+      "dex": [
+        4
+      ],
+      "nivel": 5,
+      "estagio": 1,
+      "escolhidoDia": "floresta",
+      "escolhidoNoite": "floresta",
+      "medidas": {
+        "sugerida": {
+          "vitorias": 79,
+          "abates": 3679,
+          "n": 100,
+          "taxa": 0.79,
+          "abatesMedios": 36.79
+        },
+        "floresta": {
+          "vitorias": 79,
+          "abates": 3679,
+          "n": 100,
+          "taxa": 0.79,
+          "abatesMedios": 36.79
+        }
+      }
+    },
+    {
+      "dex": [
+        4
+      ],
+      "nivel": 10,
+      "estagio": 1,
+      "escolhidoDia": "floresta",
+      "escolhidoNoite": "floresta",
+      "medidas": {
+        "sugerida": {
+          "vitorias": 100,
+          "abates": 3700,
+          "n": 100,
+          "taxa": 1,
+          "abatesMedios": 37
+        },
+        "floresta": {
+          "vitorias": 100,
+          "abates": 3700,
+          "n": 100,
+          "taxa": 1,
+          "abatesMedios": 37
+        }
+      }
+    },
+    {
+      "dex": [
+        7
+      ],
+      "nivel": 5,
+      "estagio": 1,
+      "escolhidoDia": "deserto",
+      "escolhidoNoite": "deserto",
+      "medidas": {
+        "sugerida": {
+          "vitorias": 95,
+          "abates": 3691,
+          "n": 100,
+          "taxa": 0.95,
+          "abatesMedios": 36.91
+        },
+        "floresta": {
+          "vitorias": 3,
+          "abates": 2503,
+          "n": 100,
+          "taxa": 0.03,
+          "abatesMedios": 25.03
+        }
+      }
+    },
+    {
+      "dex": [
+        7
+      ],
+      "nivel": 10,
+      "estagio": 1,
+      "escolhidoDia": "deserto",
+      "escolhidoNoite": "deserto",
+      "medidas": {
+        "sugerida": {
+          "vitorias": 100,
+          "abates": 3700,
+          "n": 100,
+          "taxa": 1,
+          "abatesMedios": 37
+        },
+        "floresta": {
+          "vitorias": 97,
+          "abates": 3697,
+          "n": 100,
+          "taxa": 0.97,
+          "abatesMedios": 36.97
+        }
+      }
+    },
+    {
+      "dex": [
+        2,
+        5,
+        8
+      ],
+      "nivel": 12,
+      "estagio": 2,
+      "escolhidoDia": "deserto",
+      "escolhidoNoite": "deserto",
+      "medidas": {
+        "sugerida": {
+          "vitorias": 99,
+          "abates": 3699,
+          "n": 100,
+          "taxa": 0.99,
+          "abatesMedios": 36.99
+        },
+        "floresta": {
+          "vitorias": 46,
+          "abates": 3641,
+          "n": 100,
+          "taxa": 0.46,
+          "abatesMedios": 36.41
+        }
+      }
+    },
+    {
+      "dex": [
+        2,
+        5,
+        8
+      ],
+      "nivel": 14,
+      "estagio": 2,
+      "escolhidoDia": "deserto",
+      "escolhidoNoite": "deserto",
+      "medidas": {
+        "sugerida": {
+          "vitorias": 100,
+          "abates": 3700,
+          "n": 100,
+          "taxa": 1,
+          "abatesMedios": 37
+        },
+        "floresta": {
+          "vitorias": 86,
+          "abates": 3686,
+          "n": 100,
+          "taxa": 0.86,
+          "abatesMedios": 36.86
+        }
+      }
+    },
+    {
+      "dex": [
+        3,
+        6,
+        9
+      ],
+      "nivel": 19,
+      "estagio": 3,
+      "escolhidoDia": "deserto",
+      "escolhidoNoite": "deserto",
+      "medidas": {
+        "sugerida": {
+          "vitorias": 100,
+          "abates": 3700,
+          "n": 100,
+          "taxa": 1,
+          "abatesMedios": 37
+        },
+        "floresta": {
+          "vitorias": 63,
+          "abates": 3659,
+          "n": 100,
+          "taxa": 0.63,
+          "abatesMedios": 36.59
+        }
+      }
+    },
+    {
+      "dex": [
+        3,
+        6,
+        9
+      ],
+      "nivel": 24,
+      "estagio": 3,
+      "escolhidoDia": "deserto",
+      "escolhidoNoite": "deserto",
+      "medidas": {
+        "sugerida": {
+          "vitorias": 100,
+          "abates": 3700,
+          "n": 100,
+          "taxa": 1,
+          "abatesMedios": 37
+        },
+        "floresta": {
+          "vitorias": 100,
+          "abates": 3700,
+          "n": 100,
+          "taxa": 1,
+          "abatesMedios": 37
+        }
+      }
+    },
+    {
+      "dex": [
+        3,
+        6,
+        9
+      ],
+      "nivel": 31,
+      "estagio": 4,
+      "escolhidoDia": "deserto",
+      "escolhidoNoite": "deserto",
+      "medidas": {
+        "sugerida": {
+          "vitorias": 95,
+          "abates": 3695,
+          "n": 100,
+          "taxa": 0.95,
+          "abatesMedios": 36.95
+        },
+        "floresta": {
+          "vitorias": 80,
+          "abates": 3680,
+          "n": 100,
+          "taxa": 0.8,
+          "abatesMedios": 36.8
+        }
+      }
+    },
+    {
+      "dex": [
+        3,
+        6,
+        9
+      ],
+      "nivel": 36,
+      "estagio": 4,
+      "escolhidoDia": "deserto",
+      "escolhidoNoite": "deserto",
+      "medidas": {
+        "sugerida": {
+          "vitorias": 100,
+          "abates": 3700,
+          "n": 100,
+          "taxa": 1,
+          "abatesMedios": 37
+        },
+        "floresta": {
+          "vitorias": 100,
+          "abates": 3700,
+          "n": 100,
+          "taxa": 1,
+          "abatesMedios": 37
+        }
+      }
+    }
+  ]
+}

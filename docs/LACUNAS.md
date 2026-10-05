@@ -9690,7 +9690,7 @@ nas fichas. Não ativar emissão semanal ou campanha pública sem medição.
 
 ### L-AT6-04 — vantagem de tipos desigual na primeira rota
 
-**Dono:** GQ-01/AT6-05 · **Notada em:** AT6-13, 04/10/2026 · **Estado:** aberta.
+**Dono:** GQ-01/AT6-05 · **Notada em:** AT6-13, 04/10/2026 · **Estado:** parcial.
 Holdout de 100 sementes por inicial no nível 5 na Floresta: planta/fogo/água
 5/78/4% de conclusão; derrota parcial ainda paga abates. A sequência de tipos
 e aprendizado dos golpes amplifica a diferença. Medir rota/orientação inicial
@@ -9698,7 +9698,9 @@ e calibração por composição antes de declarar entrada equilibrada; preservar
 vantagem real de nível/IV/tipos. Fonte: BALANCEAMENTO_AVANCO.json; Spec §7.22.19.
 AT6-14-rivais adicionou 3.300 runs por bioma: Praia/planta 98%,
 Floresta/fogo 81%, Deserto/água 92% no nível 5. Sementes independentes, sem
-poções e sem validar acesso da conta. Orientação inicial ainda não aplicada.
+poções e sem validar acesso da conta. GQ-01-rotas aplicou orientação por
+equipe/estágio em 05/10; holdout 2.400 runs, iniciais planta/água 3→100/95%.
+Sem alteração de regras ou chances. Q5 e primeira sessão completa pendentes.
 
 
 ### L-AT6-05 — auditar dominância do catálogo e seleção de movesets rivais
@@ -9729,3 +9731,14 @@ ambos no 28, poder 100, precisão 60/80%. Sem confusão o primeiro perde uso.
 Destrava: desenho explícito de efeitos suportados, balanceamento com holdout,
 replay/versionamento e interface coerente. Não ativar efeitos pelo nome nem
 remover golpes escolhidos de saves existentes. Fonte: AUDITORIA_RIVAIS.json.
+
+
+### L-GQ-01-01 — distribuição de rotas após orientar por afinidade
+
+**Dono:** GQ-02/AT6-05 · **Notada em:** GQ-01-rotas, 05/10/2026 · **Estado:** aberta.
+Na amostra de trios, Deserto foi sugerido nos três estágios superiores.
+Confrontos favoráveis concentram farm; aconselhar agora torna isso visível.
+Medir distribuição de captura/emissão, objetivos de coleção e escolha das
+rotas antes de reajustar recompensas. Destrava: estudos de progressão e
+telemetria do funil, mantendo vantagem de tipos e sem obrigar derrota. Fonte:
+BALANCEAMENTO_ORIENTACAO_AVANCO.json/relatório 11. Não é chance ótima certificada.

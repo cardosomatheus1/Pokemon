@@ -189,3 +189,16 @@ node tools/sabotar-arena.mjs --grupo=rivais --saida=docs/arena-treinadores/SABOT
 A comparação histórica em AUDITORIA_RIVAIS usa `--antes` com o mapa de
 movesets extraído de `57388f6` antes de alterar a política. Sem esse argumento
 o comando publica somente a auditoria atual; não reproduz a comparação.
+
+
+## Orientação de rota — GQ-01-rotas
+
+Spec §7.22.21, relatório 11 e política `cobertura-duelos-1`. Controle do
+Avanço assistido compara golpes da seleção contra elenco/níveis reais da
+prévia, com precisão/dano esperado TBE, sem clima ou semente futura.
+Botão apenas escolhe outra rota. Guarda da ação limpa conselho executável.
+Rota OFF, regras de luta e treino 150/225/300/450 XP/h permanecem iguais.
+
+2.400 runs pareadas com Floresta como referência; não certifica escolha
+ótima ou probabilidade mostrada pela UI. Velocidade, ordem/HP acumulado,
+poções e guia não são simulados pelo conselho. Q5 e GQ-01 integral pendentes.

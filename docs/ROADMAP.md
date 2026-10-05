@@ -16,7 +16,7 @@ A fila legada de 25/09 continua preservada para rastreabilidade.
 | 2 | 🟡 AT6-13 | Novas runs com HP/golpes reais, snapshots e cura/recuo sincronizados. 470 testes e 8 mutantes; Spec §7.22.19. Q5 e calibração dos iniciais (L-AT6-04) pendentes; não certifica emissão diária. |
 | 3 | 🟡 AT6-14 | Catálogo/informação (§8.18), política rival coerente e auditoria (§8.19) implementados/testados: 212 testes, 6 mutantes novos, ginásios/3.500 runs pareadas sem alteração de taxas. Q5 e diversidade dos secundários (L-AT6-06) pendentes. |
 | 4 | ⏳ AT6-05 e AT6-07 | Comparação útil do time, leitura da chance/resultado e funil completo; textos e eventos mínimos atuais não completam essas fichas. |
-| 5 | ⏳ GQ-01–06 | Entrada, captura, evolução, clareza econômica e retorno. Fichas em `arena-treinadores/06_QUALIDADE_DO_JOGO_E_JORNADA.md`, incorporadas no PLANO. |
+| 5 | 🟡 GQ-01–06 | Orientação de rota por equipe implementada no GQ-01-rotas (§7.22.21; 292 testes, 7 mutantes, 2.400 runs). Q5/primeira sessão integral, captura, evolução, clareza econômica e retorno pendentes. Fichas em `arena-treinadores/06_QUALIDADE_DO_JOGO_E_JORNADA.md`. |
 | 6 | 🟡 AT6-08 | Kit de 300 aplicado e tesouraria interna finita. Reposição semanal/marketing público dependem de medir emissão, funil e sustentabilidade; não ativados. |
 | 7 | ⏳ AT6-09 e AT6-10 | Mercado para montagem de time e monetização por expressão/prestígio. Não concluídos por este bloco; operações reais respeitam §25.1. |
 

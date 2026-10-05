@@ -499,7 +499,7 @@ document.addEventListener('click', async ev => {
     avisarCompanheiro(E, biomaEscolhido, equipeEscolhida, agora());
     /* O ESTAGIO E DO LUGAR: trocar de bioma repinta a previa, senao ela ficaria
        mostrando quem mora no bioma anterior. */
-    pintarFundo();
+    pintarFundo(); atualizarBotao();
     return;
   }
 

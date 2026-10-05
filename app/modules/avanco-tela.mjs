@@ -43,6 +43,7 @@ import { WAVES } from '../../engine/wave.mjs';
 import { STAMINA_DO_AVANCO, staminaAteWave, curaDe, ganhoDaRun, falaDoCusto,
          falaDoRendimento, runsNoDia } from '../../engine/avanco.mjs';
 import { staminaAgora } from '../../engine/expedicao.mjs';
+import { pintarOrientacaoAvanco } from './orientacao-avanco-tela.mjs';
 
 /* O catálogo do PACK alimenta os ícones, uma vez na carga: o mapa id -> índice
    é do TEMA, e este arquivo só o consome. Mesma linha do `idle-paineis.mjs`. */
@@ -512,6 +513,7 @@ export function atualizarBotaoAvancar(E, escolha, agora) {
   if (!av) return;
   const sel = escolha();
   const porque = porQueNaoAvancar(E, { pack: PACK, agora, ...sel });
+  pintarOrientacaoAvanco(PACK,{criaturas:criaturasDe(E)},{...sel,agora,bloqueio:porque},$('#idleOrientacaoAvanco'));
   av.disabled = !!porque;
   av.title = porque ?? 'dez waves, chefe na décima — e você assiste';
   av.textContent = porque ?? '⚔ Avançar (assistido)';

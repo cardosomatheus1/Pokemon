@@ -4822,3 +4822,42 @@ Avanço pareadas idênticas ao estudo anterior, 3.300 runs adicionais de entrada
 por bioma. A diversidade de golpes e orientação da primeira sessão têm
 limitações registradas em L-AT6-06 e L-AT6-04. Relatório explicativo 10 e JSONs
 em `docs/arena-treinadores/`; não equivalem a certificar todo AT6/GQ.
+
+
+## 7.22.21 Orientação de rota por equipe — GQ-01-rotas (05/10/2026)
+
+No Avanço assistido, orientar a equipe selecionada antes de iniciar. Rota OFF
+mantém seu motor/seleção atuais; não aplicar a ela uma estimativa TBE. Não
+fixar a rota pelo inicial ou usar a criatura mais forte fora da seleção.
+Respeitar estágio selecionado e a guarda da ação; bloqueio substitui o
+conselho e remove a troca de rota. Comparar não inicia a run nem gasta recursos.
+
+Política `cobertura-duelos-1`: para cada membro selecionado, montar stats/golpes
+reais pela TBE, incluindo IV/natureza/nível e precisão. Avaliar ambos os lados
+pelo dano esperado, com crítico/arredondamento e último recurso quando tudo
+é imune. Cobertura de cada adversário é o maior logaritmo da razão entre
+fração de HP causada por ataque e recebida por ataque, entre os membros
+selecionados. NPCs usam IV 15 e `rival-2`, como snapshots novos do Avanço.
+
+Elenco da prévia conhece somente o período público. Nunca ler clima ou seed
+futuros. Comuns usam o nível da última wave comum; chefes, o nível da décima.
+Índice da rota dá peso igual à média de comuns e de chefes. Empate mantém a
+ordem do mapa do pack. Sem elenco completo, não oferecer a rota.
+
+Mostrar rota, estágio, exemplo de golpe/efetividade/adversário e alerta da
+rota atualmente selecionada. O botão só reaproveita `data-bioma`, permitindo
+comparar antes de iniciar. Atualizar ao trocar rota/estágio/equipe e pelo
+relógio do controle. Escapar texto, nomes e atributos. Sem seleção/bloqueio,
+mostrar a ação de correção, sem uma recomendação executável.
+
+Não mostrar porcentagem de vitória: essa política não simula iniciativa,
+ordem real dos aliados, HP acumulado, poções ou bônus do guia. Precisão/crítico
+entram na expectativa por golpe, não numa previsão da sequência. A UI explica
+que velocidade, sequência, curas e clima também influenciam. Sem mudanças de
+combate, XP, recompensas, RNG, stamina ou acesso aos biomas.
+
+Holdout 2.400 runs/12 cenários, sementes pareadas entre as opções e sem poções. Contra
+Floresta como referência, iniciais nível 5: planta 3→100%, água 3→95%, fogo
+79→79%. São resultados da amostra, não chances publicadas pela UI nem prova
+de que a rota sugerida é ótima. Orientação é funcional; Q5 e fluxo integral
+GQ-01 ainda pendentes. Dados em BALANCEAMENTO_ORIENTACAO_AVANCO.json.

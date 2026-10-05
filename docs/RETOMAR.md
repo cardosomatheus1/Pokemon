@@ -22,9 +22,30 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 05/10/2026 · AT6-14-rivais
+## 0. ONDE PARAMOS — 05/10/2026 · GQ-01-rotas
 
-Último bloco: política `rival-2` ordena golpes dos NPCs por dano esperado TBE
+Último bloco: orientação de golpes por equipe no Avanço assistido, política
+`cobertura-duelos-1`. Usa equipe/estágio selecionados, dano esperado TBE,
+IV/nível/moveset, elenco e período públicos. Mostra motivo, alerta da rota
+selecionada e botão de comparar; não inicia/gasta ou troca membros. Recusa
+substitui conselho executável. Rota OFF e regras de combate/recompensa iguais.
+Controle repinta ao trocar rota/estágio/equipe e no relógio existente.
+
+VALIDACAO_ORIENTACAO_AVANCO.json: 21 suítes/292 testes verdes.
+SABOTAGEM_ORIENTACAO_AVANCO.json: 7/7 mutantes dirigidos capturados.
+BALANCEAMENTO_ORIENTACAO_AVANCO.json: 2.400 runs pareadas/12 cenários em holdout separado,
+planta/água no nível 5: Floresta 3%→Deserto 100/95%; fogo mantém Floresta 79%.
+Não publicar chance pela orientação: ela não simula iniciativa/HP acumulado/
+ordem dos membros/poções/guia. Comparação não prova rota ótima ou garantia.
+
+Spec §7.22.21, relatório 11; L-AT6-04 parcial: orientação funcional aplicada,
+Q5/primeira sessão integral pendentes. L-GQ-01-01 tem dono GQ-02/AT6-05 para
+distribuição de farm/capturas entre rotas. Navegador Chromium ausente: pintura
+em alvo sintético e grafo/HTML não certificam UI/legibilidade. Local somente,
+sem publicação. Banco continua 150/225/300/450 XP/h por fase, sem mudança.
+
+Bloco anterior: AT6-14-rivais (commit `7fd09fd`).
+Política `rival-2` ordena golpes dos NPCs por dano esperado TBE
 com precisão do catálogo, mantendo nível/especialização. Referência neutra de
 base 80 no mesmo nível, sem RNG/leitura do jogador. TBE continua `tbe-4`;
 novas runs têm etiqueta aditiva, anteriores mantêm os golpes congelados.

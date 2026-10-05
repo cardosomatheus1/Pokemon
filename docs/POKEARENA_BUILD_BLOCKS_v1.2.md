@@ -3630,3 +3630,25 @@ Saída: 25 suítes/212 testes, seis mutantes novos e quatro de catálogo
 revalidados. Relatório 10, dados/medições reproduzíveis, catálogo/seletor coerentes;
 L-AT6-05 resolvida. Orientação da primeira sessão e diversidade de secundários
 têm donos GQ-01/AT6-05 e AT6-14; não declarar a Arena completa por esta correção.
+
+
+## GQ-01-rotas — orientar o Avanço antes da primeira run
+
+Método INV para comparação/guardas; texto reaproveita a superfície atual.
+Spec §7.22.21. Módulo puro camada 0 para afinidade de golpes; camada 4 apenas
+pinta exemplo, alerta e botão de comparar. Usar seleção/estágio reais e
+elenco público. Não prometer chance de conclusão nem mudar regras da run.
+
+Q1/Q3: seleção, tipos/golpes, nível/IV, ausência de RNG/clima futuro, outro
+pack, bloqueios, imunidades, palco só assistido, pintura segura e nenhuma
+mutação/gasto. Q2 dirigido S90601–07. Q4: 12 cenários/2.400 runs pareadas,
+comparação com Floresta e custo do conselho. Q6: texto/atributos escapados,
+sem endpoint novo; guarda existente passada pelo controle. Q8/Q9: sem fila,
+transação ou telemetria nova. Q5 pendente por Chromium ausente no ambiente;
+testes de Node/HTML não certificam navegador ou leitura. Sem troca de CSS/grid.
+
+Saída funcional: 21 suítes/292 testes, 7/7 mutantes dirigidos. Conselho e
+comparação integrados ao controle, documentação
+com limite da aproximação. Não fecha GQ-01 integral, Q5, revisão de captura/
+evolução ou economia do direcionamento. L-AT6-04 segue parcial; L-GQ-01-01
+registra diversidade de rotas após orientar equipes pela afinidade.

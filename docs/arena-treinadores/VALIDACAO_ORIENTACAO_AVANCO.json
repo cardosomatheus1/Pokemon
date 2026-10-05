@@ -1,0 +1,112 @@
+{
+  "escopo": "focado AT6; sem navegador e sem suíte integral",
+  "total": 292,
+  "falhas": [],
+  "resultados": [
+    {
+      "nome": "orientacao-avanco",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "modulos",
+      "total": 19,
+      "falhas": []
+    },
+    {
+      "nome": "comeco-treinador",
+      "total": 9,
+      "falhas": []
+    },
+    {
+      "nome": "guia",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "idle-escolha",
+      "total": 14,
+      "falhas": []
+    },
+    {
+      "nome": "idle-tela",
+      "total": 20,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-tela",
+      "total": 57,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-estado",
+      "total": 28,
+      "falhas": []
+    },
+    {
+      "nome": "run-servidor",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "run-fantasma",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "e14-reservas",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "elenco-condicao",
+      "total": 14,
+      "falhas": []
+    },
+    {
+      "nome": "elenco-estagio",
+      "total": 24,
+      "falhas": []
+    },
+    {
+      "nome": "estagios",
+      "total": 17,
+      "falhas": []
+    },
+    {
+      "nome": "curva-comeco",
+      "total": 9,
+      "falhas": []
+    },
+    {
+      "nome": "ritmo-entrada",
+      "total": 3,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-combate",
+      "total": 13,
+      "falhas": []
+    },
+    {
+      "nome": "rivais-precisao",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "catalogo-treinador",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "treino-batalha",
+      "total": 12,
+      "falhas": []
+    },
+    {
+      "nome": "batalha-precisao",
+      "total": 3,
+      "falhas": []
+    }
+  ]
+}
