@@ -7544,6 +7544,23 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
+## D-160 — quem abre o banco durante uma escrita falha na hora ✅ CORRIGIDO na ST-2.31 (05/10)
+
+**Achado:** o `npm run repetir` da ST-2.31 — o `arena-concorrencia` (quatro
+processos resgatando o mesmo prêmio) caiu numa das duas execuções com
+`database is locked`. **Bloco dono:** ST-2.31, porque IMPEDIA fechar o bloco
+(portão instável).
+
+**Causa.** `abrirBanco` liga o WAL logo ao abrir, e ligar o WAL pede a trava
+do arquivo. Sem `busy_timeout`, o SQLite não espera: quem abre enquanto outro
+processo escreve recebe o erro na hora. O teste ligava o prazo DEPOIS de
+`abrirBanco` — tarde demais. No produto, é a mesma coisa para a cópia do banco
+(`tools/banco-copia.mjs`) aberta com o servidor no ar.
+
+**Conserto.** `PRAGMA busy_timeout = 5000` dentro de `abrirBanco`, antes do WAL.
+
+**Teste que trava:** `banco-servidor` — "D-160". S91008 PEGOU.
+
 ## D-159 — o cansado ficava travado na equipe que vai ✅ CORRIGIDO na ST-2.28d (02/10)
 
 **Achado:** o dono — *"um pokémon acabou a stamina e fica travado no time, não

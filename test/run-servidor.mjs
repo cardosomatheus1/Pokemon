@@ -140,7 +140,9 @@ export function suite() {
   });
 
   s.teste('a expedição colhida no meio da run treina quem está nela, e a run segue igual nos dois lados', () => {
-    const c = cena({ xp: [xpParaNivel(12) - 1, xpParaNivel(8), 0, 0] });
+    /* A quarta no 20 é a âncora do teto do banco (ST-2.31): sem ela, a da run
+       seria a mais forte e o banco não a levaria ao 12. */
+    const c = cena({ xp: [xpParaNivel(12) - 1, xpParaNivel(8), 0, xpParaNivel(20)] });
     const x = iniciar(c.db, { userId: c.u, pack: PACK, bioma: 'floresta', perfil: 'batida', equipe: [c.ids[1]], agora: T0 - 40 * MIN });
     const xa = D.iniciarExpedicao(c.e, { pack: PACK, bioma: 'floresta', perfil: 'batida', equipe: [c.ids[1]], agora: T0 - 40 * MIN });
     const raiz = raizDe(77);

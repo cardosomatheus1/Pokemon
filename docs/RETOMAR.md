@@ -24,6 +24,10 @@ defeito meu.
 
 ## 0. ONDE PARAMOS — 05/10/2026 · AT6-15-integracao-final
 
+**ST-2.31 (05/10):** o banco alcança, não ultrapassa — leva até a mais forte
+menos 3; o Campeão sai do 4º dia para o 34º (casual), 31º (diário), 7º
+(maratona). L-251 fechada, L-252 aberta (a comprada sobe o teto).
+
 **No ar em 05/10 (b2a1354):** os 9 commits do ramo `codex/arena-jornada-finalizacao-20261005`
 entraram no `claude/docs-planning-tests-6hjthq` por avanço rápido, com um commit de
 integração que deixou a suíte inteira verde 2/2 (3353 testes; 6 vermelhos e 1

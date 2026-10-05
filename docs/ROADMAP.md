@@ -280,6 +280,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **ST-2.31** · o banco alcança, não ultrapassa (L-251) | 05/10 | o banco leva até a mais forte − 3, e a mais forte só sobe jogando; Campeão (nível 60) no dia 4 → 34 casual · 31 diário · 7 maratona; `teto-banco` 9 testes, S91001–S91007 · Spec §7.22.22 |
 | **ST-2.30** · mais encontros, menos chance, bola mais barata (DEC-32) | 02/10 | teto de encontros 30 → 45 (a escada da coleção ×1,5); chance de captura ×0,8 (comum na bola básica 45% → 36%); bolas da Loja ×0,8 (160/280/400); o dia com encontro passa de ~6 a ~9 runs, as capturas do dia perto de onde estavam |
 | **ST-2.28d** · o cansado não prende o time (D-159) | 02/10 | o cartão do cansado escolhido volta a ter clique para sair; guardado na caixa, a escolha da run larga ele e cai no mais descansado |
 | **ST-2.28c** · a moeda que não despenca (DEC-31) | 02/10 | a run depois do teto paga 35% dos encontros vistos (era só os abates: 16% de uma cheia); a queda do dia 85% por run (era 75%); toda run 84% para o dia médio ficar igual — a 7ª run 49 → 138, a 10ª 21 → 85; casual −7%, diário +7%, maratona +83% por dia |

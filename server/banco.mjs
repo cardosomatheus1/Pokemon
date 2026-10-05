@@ -53,6 +53,12 @@ export function abrirBanco(caminho) {
   db.exec('PRAGMA foreign_keys = ON');
   /* WAL: leitura não bloqueia escrita. O scheduler do F1.5 escreve enquanto
      dezenas de leitores consultam a rodada. Ignorado em `:memory:`. */
+  /* ESPERAR ANTES DE TRAVAR (D-160): ligar o WAL precisa da trava do arquivo,
+     e sem prazo de espera o SQLite responde "database is locked" na hora a
+     quem abre enquanto outro processo escreve — a cópia do banco com o
+     servidor no ar, ou quatro resgates concorrentes da arena. O prazo vem
+     ANTES do WAL porque é o WAL que pede a trava. */
+  if (caminho !== ':memory:') db.exec('PRAGMA busy_timeout = 5000');
   if (caminho !== ':memory:') db.exec('PRAGMA journal_mode = WAL');
   return db;
 }

@@ -281,5 +281,17 @@ export function suite() {
     }
   });
 
+  s.teste('D-160: quem abre o arquivo espera a trava em vez de falhar na hora', () => {
+    const pasta = mkdtempSync(join(tmpdir(), 'pa-trava-'));
+    try {
+      const db = abrirBanco(join(pasta, 'b.sqlite'));
+      igual(db.prepare('PRAGMA busy_timeout').get().timeout, 5000, 'o banco abre sem prazo de espera');
+      const fonte = readFileSync(new URL('../server/banco.mjs', import.meta.url), 'utf8');
+      ok(fonte.indexOf("PRAGMA busy_timeout") < fonte.indexOf("PRAGMA journal_mode = WAL"),
+        'o WAL pede a trava antes de haver prazo de espera');
+      db.close();
+    } finally { rmSync(pasta, { recursive: true, force: true }); }
+  });
+
   return s;
 }

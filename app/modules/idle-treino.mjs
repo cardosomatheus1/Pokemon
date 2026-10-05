@@ -30,7 +30,7 @@ import { retratoAnimado } from './sprites.mjs';
 import { emCampo, criaturasDe } from './idle-dados.mjs';
 import { noBanco } from './idle-banco.mjs';
 import { VINCULO_POR_HORA_TREINO } from '../../engine/ausente.mjs';
-import { ritmoTreinoOffline } from '../../engine/treino-offline.mjs';
+import { ritmoTreinoOffline, FOLGA_DO_BANCO } from '../../engine/treino-offline.mjs';
 
 const esp = dex => (PACK.especies ?? []).find(e => e.dex === dex) ?? { n: '?', dex };
 
@@ -61,12 +61,13 @@ export function pintarTreino(E) {
   const recebido = ultimos.filter(x => banco.some(c => c.id === x.id)).reduce((n,x) => n+x.xp,0);
   const cabecalho = `<p class="tiny"><b class="trQuantos">${banco.length}</b> no banco. ` +
     `Treino automático: <b class="trGanho">${ritmo.xpPorHora} XP/h</b> (estágio ${ritmo.estagio}) e ` +
-    `${VINCULO_POR_HORA_TREINO} de vínculo/h por criatura. O crédito chega ao voltar, ` +
+    `${VINCULO_POR_HORA_TREINO} de vínculo/h por criatura, até o nível <b class="trTeto">${ritmo.nivelTeto}</b> — ` +
+    `${FOLGA_DO_BANCO} abaixo da sua mais forte, que só sobe jogando. O crédito chega ao voltar, ` +
     `com até 12 h por ausência; não precisa mandar expedição.` +
     (recebido ? ` Último crédito do banco: +${recebido} XP no total.` : '') + '</p>';
 
   const lista = banco.map(c => `
-    <span class="trQuem" title="${nomeExibido(esp(c.dex).n)} · nível ${c.nivel ?? 1}">
+    <span class="trQuem${(c.nivel ?? 1) >= ritmo.nivelTeto ? ' trNoTeto' : ''}" title="${nomeExibido(esp(c.dex).n)} · nível ${c.nivel ?? 1}${(c.nivel ?? 1) >= ritmo.nivelTeto ? ' · no teto do banco' : ''}">
       ${retratoAnimado(esp(c.dex), 'class="trArte"', false)}
       <i class="trNivel">${c.nivel ?? 1}</i>
     </span>`).join('');

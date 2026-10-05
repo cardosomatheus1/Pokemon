@@ -36,7 +36,7 @@ import { viesFinal, cabeNoEstagio, nivelDoTopo } from './estagios.mjs';
 import { batalhasDa } from './npc.mjs';
 import { xpDaExpedicao, vinculoDaExpedicao, creditar, nivelDe } from './nivel-criatura.mjs';
 import { treinoDaJanela } from './ausente.mjs';
-import { xpPorHoraTreino } from './treino-offline.mjs';
+import { xpPorHoraTreino, xpTetoDoBanco } from './treino-offline.mjs';
 import { FRAGMENTOS_POR_ENCONTRO } from './captura.mjs';
 
 export function contaDaColheita({ pack, expedicao: x, criaturas = [], raiz, bonus = null, agora, treinoOffline = null }) {
@@ -86,7 +86,7 @@ export function contaDaColheita({ pack, expedicao: x, criaturas = [], raiz, bonu
     credito.push({ id, xp: r.xp, nivel: r.nivel, vinculo: r.vinculo });
     if (r.subiu > 0) subiram.push({ id, para: r.nivel, quantos: r.subiu });
   }
-  const treinados = treinoDaJanela({ criaturas, equipe: x.equipe ?? [], de: x.iniciadaEm, ate: x.terminaEm, xpPorHora: xpPorHoraTreino(treinoOffline?.estagio??estagio) });
+  const treinados = treinoDaJanela({ criaturas, equipe: x.equipe ?? [], de: x.iniciadaEm, ate: x.terminaEm, xpPorHora: xpPorHoraTreino(treinoOffline?.estagio??estagio), xpTeto: xpTetoDoBanco(criaturas) });
   for (const t of treinados) {
     const c = acha(t.id);
     if (!c) continue;

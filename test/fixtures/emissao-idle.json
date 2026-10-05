@@ -42,14 +42,14 @@
     "vigiliasPorDia": 0.14,
     "vigiliasRecusadasPeloTeto": 6,
     "porDia": {
-     "great": 7.14,
-     "essencia": 32.57,
+     "great": 6.57,
+     "essencia": 28,
      "item": 0.14,
-     "poke": 22.57,
-     "pokecoin": 2664.57,
-     "ultra": 2.14,
-     "xp": 1614.9,
-     "encontros": 36.71,
+     "poke": 18.71,
+     "pokecoin": 2492.71,
+     "ultra": 1.86,
+     "xp": 1178.1,
+     "encontros": 35.29,
      "xpDoce": 60
     }
    },
@@ -65,7 +65,7 @@
      "pokecoin": 3929.86,
      "estilhaco": 15,
      "ultra": 1.14,
-     "xp": 7770.3,
+     "xp": 2970.3,
      "encontros": 51.86,
      "xpDoce": 60
     }

@@ -2596,6 +2596,27 @@ do servidor. Três partes:
 - **Fora:** as duas migrações (doces do D-144, nível de nascer das capturas
   antigas) — decisão do dono, pendente.
 
+### ST-2.31 · O banco alcança, não ultrapassa (L-251) ✅ 05/10
+- **Por quê:** o dono — *"o que dá para melhorar na progressão de XP para não
+  ficar muito nem tão pouco"*, e depois *"pode equilibrar como achar melhor"*.
+- **Medido antes** (`node tools/estudo-ritmo-xp.mjs`, o modelo do aparelho):
+  com o treino do banco sem limite, o nível 60 (o Campeão) no **4º dia** em
+  todo perfil, o 100 no 14º, a caixa inteira. Só jogando: casual 34 dias,
+  diário 22, maratona 7 — o XP de quem joga já estava no ritmo.
+- **Feito:** o banco leva até a mais forte menos 3 (`FOLGA_DO_BANCO`) nos dois
+  caminhos (relógio do retorno e janela da expedição); a mais forte só sobe
+  jogando; o corte não vira fração guardada; o painel diz até onde o banco
+  leva, e quem está no teto ganha a borda tracejada. Taxas 150/225/300/450
+  mantidas. Spec §7.22.22.
+- **Depois:** Campeão no dia 34 (casual), 31 (diário), 7 (maratona); a mais
+  fraca a 3 níveis da mais forte. Emissão: diário estágio 1 XP/dia
+  1.614,9 → 1.178,1, estágio 3 7.770,3 → 2.970,3. Antifraude: diário estágio 1
+  13 → 11,15 capturas/dia (a banda não muda).
+- **Testes:** `teto-banco` (novo, 9); `progressao-offline`, `colheita`,
+  `run-servidor`, `missoes-treinador` ganharam uma âncora mais forte (mediam
+  as engrenagens numa coleção sem ninguém forte). S91001–S91007 PEGOU; S90403
+  realvo. Q5: o painel nas 4 larguras, 0 pageerror.
+
 ### ST-2.30 · Mais encontros, menos chance, bola mais barata (DEC-32) ✅ 02/10
 - **Por quê:** o dono — mais tempo de jogo com encontro no dia, sem as
   capturas dispararem; e a bola acompanhando o lance que erra mais.

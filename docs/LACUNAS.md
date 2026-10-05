@@ -9392,13 +9392,30 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
-### L-251 — o banco sozinho leva a caixa inteira ao nível 100
+### L-252 — a criatura comprada sobe o teto do banco
+
+**Registrada em:** 05/10/2026, na ST-2.31. **Bloco dono:** **E14** (o mercado
+de jogadores — a próxima story que tocar a compra de criatura). **Estado:**
+aberta.
+
+O teto do banco é a mais forte da coleção menos 3, e uma criatura comprada no
+mercado conta como qualquer outra: comprar uma no 80 leva a caixa inteira ao
+77 em poucos dias de banco. Hoje a compra é com moeda do jogo e o piloto é
+fechado, então não é furo de dinheiro — é atalho de progressão. **Por que não
+cabe agora:** decidir se a comprada conta (ou conta só depois de N runs com
+ela) é regra de mercado, não de XP. **O que a destrava:** o próximo bloco do
+mercado, ou a métrica do piloto mostrar compra para subir o banco.
+
+### L-251 — o banco sozinho leva a caixa inteira ao nível 100 ✅ FECHADA na ST-2.31 (05/10)
 
 **Registrada em:** 05/10/2026, quando o dono perguntou como deixar a
 progressão de XP *"nem muito nem tão pouco"*. **Bloco dono:** **ST-2.31** (o
 treino do banco com teto e vagas — sem ficha ainda). **Estado:** aberta —
 proposta escrita, à espera do veredito do dono, porque a taxa de 150 XP/h foi
-escolha dele (XP-OFF-2).
+escolha dele (XP-OFF-2). **Fechada na ST-2.31:** o dono liberou (*"pode
+equilibrar como achar melhor"*); entrou o teto, sem as vagas — com o teto, o
+tamanho da caixa deixou de importar para o ritmo, e as vagas pediriam tela e
+rota novas por um ganho que não apareceu na medição.
 
 Medido no `b2a1354` (`xpParaNivel`, `xpPorHoraTreino`, `NIVEL_DO_ESTAGIO`), uma
 criatura nível 5 SÓ no banco, sem jogar:

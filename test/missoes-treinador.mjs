@@ -1,3 +1,4 @@
+import {gerar} from '../server/criaturas.mjs';
 import {criarSuite,ok,igual} from './harness.mjs';
 import {cenaArena} from './fixtures/arena-atual.mjs';
 import {registrarMissao} from '../server/missoes-treinador.mjs';
@@ -21,6 +22,9 @@ export function suite(){const s=criarSuite('missoes-treinador');
   });
   s.teste('offline só conclui missão quando houve crédito positivo, e primeiro acesso/reenvio não fabricam XP',()=>{
     const {db,a,pack,agora}=cenaArena();
+    /* O time da cena está todo no 60, que é o teto dele mesmo (ST-2.31): só
+       quem está abaixo da mais forte recebe XP do banco. */
+    const reserva=gerar(db,{userId:a.id,pack,dex:1,origem:'captura'});db.prepare('UPDATE criaturas SET criada_em=? WHERE id=?').run(agora,reserva.id);
     treinarOffline(db,{userId:a.id,pack,agora});
     igual(desafiosDe(db,{userId:a.id,agora}).find(x=>x.tipo==='treinar').progresso,0);
     const depois=agora+3600000;

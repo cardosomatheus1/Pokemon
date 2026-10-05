@@ -239,7 +239,7 @@ export function podeTreinar(criatura, emAventura) {
  * O teto de XP do dia não pode ser o número de vagas — é o mesmo vazamento
  * que o teto de encontros fecha do outro lado.
  */
-export function treinoDaJanela({ criaturas = [], equipe = [], de = 0, ate = 0, xpPorHora = XP_POR_HORA_TREINO } = {}) {
+export function treinoDaJanela({ criaturas = [], equipe = [], de = 0, ate = 0, xpPorHora = XP_POR_HORA_TREINO, xpTeto = Infinity } = {}) {
   const fim = numero(ate);
   const abertura = numero(de);
   const foram = new Set((equipe ?? []).map(c => c?.id ?? c));
@@ -252,9 +252,11 @@ export function treinoDaJanela({ criaturas = [], equipe = [], de = 0, ate = 0, x
        que um zero porque contamina o nível da criatura em silêncio. */
     if (!(fim > inicio)) continue;
     const ganho = treinoDe({ minutos: (fim - inicio) / 60_000, xpPorHora });
-    if (ganho.xp <= 0 && ganho.vinculo <= 0) continue;
+    /* O teto do banco (ST-2.31): a mesma regra do relógio do treino. */
+    const xp = Math.min(ganho.xp, Math.max(0, numero(xpTeto, Infinity) - Math.floor(numero(c.xp))));
+    if (xp <= 0 && ganho.vinculo <= 0) continue;
     saida.push({ id: c.id, minutos: (fim - inicio) / 60_000,
-                 xp: ganho.xp, vinculo: ganho.vinculo, ate: fim });
+                 xp, vinculo: ganho.vinculo, ate: fim });
   }
   return saida;
 }

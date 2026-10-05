@@ -29,7 +29,10 @@ const recusa = fn => { try { fn(); return null; } catch (e) { return e; } };
 
 /* A mesma situação nos dois lados: quatro criaturas (xp e foco escolhidos),
    uma expedição com `equipe` dela, e o resto no banco. */
-function cena({ perfil = 'trilha', estagio = 1, equipe = 2, xp = [0, 0, 0, 0], foco = [null, null, null, null] } = {}) {
+/* A quarta é a ÂNCORA (ST-2.31): o banco só leva até três níveis abaixo da
+   mais forte, e uma coleção toda no nível 1 não treinaria ninguém. No 11 ela
+   não abre o estágio 2, e o teto (nível 8) dá folga ao banco da cena. */
+function cena({ perfil = 'trilha', estagio = 1, equipe = 2, xp = [0, 0, 0, xpParaNivel(11)], foco = [null, null, null, null] } = {}) {
   const db = abrirBanco(':memory:'); migrar(db);
   const u = cadastrar(db, { username: 'col', email: 'col@x.test', senha: 'senha-longa-o-bastante-1', nascimento: '1990-01-01', agora: T0 }).id;
   const ids = [1, 4, 7, 25].map((dex, i) => {

@@ -2289,6 +2289,39 @@ retroatividade, limite de ausência, exclusão de aventuras, painel e combinaç�
 colheita/retorno. Quatro mutantes de taxa/progressão/retroatividade/colheita
 capturados. Q5 e revisão dos cenários gerais de progressão permanecem abertos.
 
+### 7.22.22 O banco alcança, não ultrapassa — ST-2.31 (05/10/2026)
+
+**Esta seção limita o §7.22.20; as taxas dele ficam.** O dono pediu a
+progressão *"nem muito nem tão pouco"* e deixou o equilíbrio por conta da
+implementação (L-251).
+
+Medido (`node tools/estudo-ritmo-xp.mjs`, o modelo do aparelho, perfis do mapa
+de emissão): com o treino do §7.22.20 sem limite, a coleção inteira chegava ao
+nível 60 — o Campeão — no **4º dia** em qualquer perfil, e ao 100 no 14º, sem
+jogar. Sem o banco, só jogando, o mesmo nível 60 leva **34 dias** no casual,
+**22** no diário e **7** no maratona: o XP de quem joga já estava calibrado, e o
+banco passava por cima dele.
+
+**A regra.** O treino do banco — o relógio do retorno e a janela da expedição —
+leva cada criatura até **o nível da mais forte da coleção menos 3**
+(`FOLGA_DO_BANCO`), e para. A mais forte não recebe XP do banco; vínculo
+continua 1/h para todas. O XP cortado pelo teto não vira fração guardada. Quem
+já está acima do teto não perde nada. Como o estágio do treino sai do nível da
+coleção, e o banco não sobe a mais forte, o estágio também só sobe jogando.
+
+**O efeito, medido com o banco ligado:** o Campeão no dia **34** (casual),
+**31** (diário) e **7** (maratona); a mais fraca da coleção fica a 3 níveis da
+mais forte do começo ao fim. O diário quase empata com o casual na MAIS forte
+porque divide o XP entre três criaturas — e chega com três fortes em vez de uma.
+
+**A tela** (o painel do treino, nas duas abas) diz até que nível o banco leva e
+que a mais forte só sobe jogando; quem está no teto aparece com a borda
+tracejada.
+
+**Fora desta seção:** o XP das runs, expedições e Jornada (§7.22.18), as taxas
+150/225/300/450 (§7.22.20). Criatura comprada no mercado sobe o teto como
+qualquer outra — registrado na L-252.
+
 
 
 # 8. Fase 4 — Time e Jornada
