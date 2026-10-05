@@ -1,0 +1,132 @@
+{
+  "escopo": "focado AT6; sem navegador e sem suíte integral",
+  "total": 212,
+  "falhas": [],
+  "resultados": [
+    {
+      "nome": "rivais-precisao",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "modulos",
+      "total": 19,
+      "falhas": []
+    },
+    {
+      "nome": "ginasios",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "jornada-equilibrio",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "moveset",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "time-aprende",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "catalogo-treinador",
+      "total": 8,
+      "falhas": []
+    },
+    {
+      "nome": "treino-batalha",
+      "total": 12,
+      "falhas": []
+    },
+    {
+      "nome": "batalha-precisao",
+      "total": 3,
+      "falhas": []
+    },
+    {
+      "nome": "treino-preco",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "treino-trocas",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "presets",
+      "total": 5,
+      "falhas": []
+    },
+    {
+      "nome": "jornada",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "jornada-servidor",
+      "total": 10,
+      "falhas": []
+    },
+    {
+      "nome": "avanco-combate",
+      "total": 13,
+      "falhas": []
+    },
+    {
+      "nome": "combate-continuo",
+      "total": 3,
+      "falhas": []
+    },
+    {
+      "nome": "run-servidor",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "equipe-snapshot",
+      "total": 6,
+      "falhas": []
+    },
+    {
+      "nome": "conteudo",
+      "total": 17,
+      "falhas": []
+    },
+    {
+      "nome": "primitivas",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "golden",
+      "total": 20,
+      "falhas": []
+    },
+    {
+      "nome": "paridade",
+      "total": 4,
+      "falhas": []
+    },
+    {
+      "nome": "arena-treinadores",
+      "total": 22,
+      "falhas": []
+    },
+    {
+      "nome": "liga-partida",
+      "total": 7,
+      "falhas": []
+    },
+    {
+      "nome": "liga-replay",
+      "total": 6,
+      "falhas": []
+    }
+  ]
+}

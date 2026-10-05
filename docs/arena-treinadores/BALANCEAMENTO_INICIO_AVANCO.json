@@ -1,0 +1,307 @@
+{
+  "politica": "rival-2",
+  "tbe": "tbe-4",
+  "runs": 3300,
+  "sementes": "avanco-inicio-holdout-20261004-i",
+  "horarios": "12h/23h UTC alternados",
+  "condicoes": "estágio 1, inicial sozinho, IV 15, moveset padrão, sem poções; simulação não verifica desbloqueio de bioma na conta",
+  "resultados": [
+    {
+      "bioma": "floresta",
+      "dex": 1,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 5,
+      "taxa": 0.05,
+      "abatesMedios": 32.71
+    },
+    {
+      "bioma": "floresta",
+      "dex": 4,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 81,
+      "taxa": 0.81,
+      "abatesMedios": 36.75
+    },
+    {
+      "bioma": "floresta",
+      "dex": 7,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 6,
+      "taxa": 0.06,
+      "abatesMedios": 23.22
+    },
+    {
+      "bioma": "praia",
+      "dex": 1,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 98,
+      "taxa": 0.98,
+      "abatesMedios": 36.89
+    },
+    {
+      "bioma": "praia",
+      "dex": 4,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 0,
+      "taxa": 0,
+      "abatesMedios": 4.8
+    },
+    {
+      "bioma": "praia",
+      "dex": 7,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 0,
+      "taxa": 0,
+      "abatesMedios": 27.74
+    },
+    {
+      "bioma": "campo",
+      "dex": 1,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 5,
+      "taxa": 0.05,
+      "abatesMedios": 34.93
+    },
+    {
+      "bioma": "campo",
+      "dex": 4,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 5,
+      "taxa": 0.05,
+      "abatesMedios": 33.74
+    },
+    {
+      "bioma": "campo",
+      "dex": 7,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 2,
+      "taxa": 0.02,
+      "abatesMedios": 32.49
+    },
+    {
+      "bioma": "montanha",
+      "dex": 1,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 82,
+      "taxa": 0.82,
+      "abatesMedios": 36.82
+    },
+    {
+      "bioma": "montanha",
+      "dex": 4,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 0,
+      "taxa": 0,
+      "abatesMedios": 11.89
+    },
+    {
+      "bioma": "montanha",
+      "dex": 7,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 40,
+      "taxa": 0.4,
+      "abatesMedios": 34.46
+    },
+    {
+      "bioma": "gelo",
+      "dex": 1,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 98,
+      "taxa": 0.98,
+      "abatesMedios": 36.89
+    },
+    {
+      "bioma": "gelo",
+      "dex": 4,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 0,
+      "taxa": 0,
+      "abatesMedios": 4.8
+    },
+    {
+      "bioma": "gelo",
+      "dex": 7,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 0,
+      "taxa": 0,
+      "abatesMedios": 27.74
+    },
+    {
+      "bioma": "vulcao",
+      "dex": 1,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 0,
+      "taxa": 0,
+      "abatesMedios": 29.83
+    },
+    {
+      "bioma": "vulcao",
+      "dex": 4,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 0,
+      "taxa": 0,
+      "abatesMedios": 24.61
+    },
+    {
+      "bioma": "vulcao",
+      "dex": 7,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 25,
+      "taxa": 0.25,
+      "abatesMedios": 33.67
+    },
+    {
+      "bioma": "deserto",
+      "dex": 1,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 100,
+      "taxa": 1,
+      "abatesMedios": 37
+    },
+    {
+      "bioma": "deserto",
+      "dex": 4,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 0,
+      "taxa": 0,
+      "abatesMedios": 11.42
+    },
+    {
+      "bioma": "deserto",
+      "dex": 7,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 92,
+      "taxa": 0.92,
+      "abatesMedios": 36.41
+    },
+    {
+      "bioma": "oasis",
+      "dex": 1,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 33,
+      "taxa": 0.33,
+      "abatesMedios": 36.12
+    },
+    {
+      "bioma": "oasis",
+      "dex": 4,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 1,
+      "taxa": 0.01,
+      "abatesMedios": 10.58
+    },
+    {
+      "bioma": "oasis",
+      "dex": 7,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 0,
+      "taxa": 0,
+      "abatesMedios": 12.38
+    },
+    {
+      "bioma": "ruina",
+      "dex": 1,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 64,
+      "taxa": 0.64,
+      "abatesMedios": 34.96
+    },
+    {
+      "bioma": "ruina",
+      "dex": 4,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 0,
+      "taxa": 0,
+      "abatesMedios": 6.27
+    },
+    {
+      "bioma": "ruina",
+      "dex": 7,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 13,
+      "taxa": 0.13,
+      "abatesMedios": 31.97
+    },
+    {
+      "bioma": "estufa",
+      "dex": 1,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 3,
+      "taxa": 0.03,
+      "abatesMedios": 24.96
+    },
+    {
+      "bioma": "estufa",
+      "dex": 4,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 67,
+      "taxa": 0.67,
+      "abatesMedios": 36.26
+    },
+    {
+      "bioma": "estufa",
+      "dex": 7,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 9,
+      "taxa": 0.09,
+      "abatesMedios": 33.66
+    },
+    {
+      "bioma": "ferrovelho",
+      "dex": 1,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 0,
+      "taxa": 0,
+      "abatesMedios": 17.29
+    },
+    {
+      "bioma": "ferrovelho",
+      "dex": 4,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 0,
+      "taxa": 0,
+      "abatesMedios": 28.49
+    },
+    {
+      "bioma": "ferrovelho",
+      "dex": 7,
+      "nivel": 5,
+      "n": 100,
+      "vitorias": 2,
+      "taxa": 0.02,
+      "abatesMedios": 34.28
+    }
+  ]
+}

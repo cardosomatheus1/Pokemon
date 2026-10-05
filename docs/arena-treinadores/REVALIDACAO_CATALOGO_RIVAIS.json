@@ -1,0 +1,60 @@
+{
+  "escopo": "somente mutantes de catálogo TBE; não é Q2 legado integral",
+  "total": 4,
+  "capturados": 4,
+  "resultados": [
+    {
+      "id": "S90301",
+      "nome": "treinador herda acerto 100%",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "packs publicam poder, categoria, precisão e efeitos sem alterar o catálogo da arena comum",
+          "erro": "undefined — esperado 0.92, veio 1",
+          "suite": "catalogo-treinador"
+        },
+        {
+          "titulo": "Surf e Hydro Pump preservam risco diferente; ausência usa 92% no modo treinador",
+          "erro": "undefined — esperado 0.92, veio 1",
+          "suite": "catalogo-treinador"
+        }
+      ]
+    },
+    {
+      "id": "S90302",
+      "nome": "TBE ignora catálogo declarado",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "a TBE consome a precisão declarada, não uma segunda régua de UI",
+          "erro": "undefined — esperado 0.6, veio 0.92",
+          "suite": "catalogo-treinador"
+        }
+      ]
+    },
+    {
+      "id": "S90303",
+      "nome": "efeito inventado é aceito no catálogo",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "carregamento recusa metadados incompletos, inválidos ou efeitos não implementados",
+          "erro": "aceitou {\"n\":\"Body Slam\",\"t\":\"normal\",\"p\":85,\"cat\":\"fis\",\"fx\":\"melee\",\"acc\":0.92,\"efeitos\":[\"paralisia\"]}",
+          "suite": "catalogo-treinador"
+        }
+      ]
+    },
+    {
+      "id": "S90304",
+      "nome": "precisão some da escolha dos golpes",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "Centro integra metadados reais nas duas abas e mantém os controles de seleção",
+          "erro": "file:///tmp/arena-q2-VADGqV/test/harness.mjs:22\nexport function ok(cond, msg) { if (!cond) throw new Error(msg); }\n                                                 ^\n\nError: Surf sem seus dados visíveis\n    at ok (file:///tmp/arena-q2-VADGqV/test/harness.mjs:22:50)\n    at validarCentro (file:///tmp/arena-q2-VADGqV/test/catalogo-treinador.mjs:76:7)\n    at async file:///tmp/arena-q2-VADGqV/[eval1]:1:88\n\nNode.js v24.19.0\n — esperado 0, veio 1",
+          "suite": "catalogo-treinador"
+        }
+      ]
+    }
+  ]
+}

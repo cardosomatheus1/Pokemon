@@ -14,8 +14,12 @@
 import { especieDe } from '../../engine/especie.mjs';
 import { repertorio } from '../../engine/repertorio.mjs';
 import { exclusivosAbertos } from '../../engine/exclusivos.mjs';
+import { golpeTreinador } from '../../engine/catalogo-golpes.mjs';
+import { montarLutador, avaliarGolpe } from '../../engine/treino-batalha.mjs';
+import { statNoNivel } from '../../engine/primitivas.mjs';
 
 export const GOLPES_MAX = 4;
+export const VERSAO_MOVESET_RIVAL = 'rival-2';
 
 /* AS LISTAS DE ONDE ELA ESCOLHE — as mesmas da Arena (`atribuirGolpes`): uma
    por tipo, mais a reserva. Só a do primeiro tipo dava ao Charmander 40 dois
@@ -84,13 +88,11 @@ export function alternarGolpe(pack, c, nome) {
   return v.ok ? { ok: true, golpes: novo } : v;
 }
 
-/* O MOVESET DO RIVAL (ST-10.13 · L-200): os quatro liberados que mais BATEM
-   por quem os usa — poder × precisão × mesmo tipo (1,5) × categoria. A
-   categoria conta pela maior das duas forças: golpe físico num atacante
-   especial vale metade, e o inverso também. Sem isso o Chansey (ataque 5,
-   especial 35) recebia quatro golpes físicos e vencia 0,1% no nível 50 — um
-   ginásio com ele ensinaria que a espécie é inútil, e não que o golpe estava
-   errado.
+/* O MOVESET DO RIVAL (AT6-14-rivais): dano esperado pela própria TBE,
+   incluindo precisão do catálogo, crítico e arredondamento. Compara contra
+   uma referência neutra (defesas de base 80 no mesmo nível): não olha o time
+   do jogador nem a semente. Ataque físico/especial são os stats reais de uma
+   criatura sem modificadores. A especialização abaixo permanece em vigor.
 
    Só o RIVAL usa esta regra. O padrão do jogador continua o de sempre, para o
    save antigo não trocar de golpe sozinho (ST-9.12); o jogador escolhe os
@@ -100,21 +102,25 @@ export function movesetDoRival(pack, dex, nivel) {
   const e = especieDe(pack, dex);
   if (!e) return padraoDoMoveset(pack, dex, nivel);
   const fisico = e.s[1] >= e.s[3];
-  const todos = Object.values(pack.golpes ?? {}).flat();
+  const abertos = liberadosDasListas(pack, dex, nivel);
+  if (!abertos.length) return [];
+  const atacante = montarLutador(pack, {dex,nivel,golpes:[abertos[0]]}, 'B', 0);
+  const defesa = statNoNivel(80, nivel);
+  const referencia = {types:[],def:defesa,spd:defesa,hp:Infinity};
   const nota = n => {
-    const g = todos.find(x => x.n === n);
+    const g = golpeTreinador(pack, n);
     if (!g) return 0;
-    return g.p * (g.acc ?? 1) * (e.t.includes(g.t) ? 1.5 : 1) * ((g.cat === 'fis') === fisico ? 1 : 0.5);
+    return avaliarGolpe(pack.tipos.efetividade, atacante, referencia, g).dano;
   };
-  const lista = liberadosDasListas(pack, dex, nivel).map(n => [n, nota(n)])
+  const lista = abertos.map(n => [n, nota(n)])
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([n]) => n);
   /* L-201 (decidida na ST-10.19c): o rival é ESPECIALISTA — luta com os golpes
      do próprio tipo, e a reserva só completa quando ele tem menos de dois.
      Acima do nível 45 a reserva dava o Skull Bash (130, o maior poder da
      lista) a quase todo rival: a Lorelei deixava de usar Água e Gelo, e a
      lição do ginásio sumia debaixo de um golpe Normal. */
-  const tipo = n => todos.find(x => x.n === n)?.t;
-  const cat = n => todos.find(x => x.n === n)?.cat;
+  const tipo = n => golpeTreinador(pack, n)?.t;
+  const cat = n => golpeTreinador(pack, n)?.cat;
   const proprios = lista.filter(n => e.t.includes(tipo(n)));
   /* E dentro do tipo, a categoria da força dele (L-200), se sobrarem dois. */
   const naForca = proprios.filter(n => (cat(n) === 'fis') === fisico);

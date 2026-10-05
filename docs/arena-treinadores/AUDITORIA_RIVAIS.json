@@ -1,0 +1,1128 @@
+{
+  "politica": "rival-2",
+  "tbe": "tbe-4",
+  "criterio": "mesmo tipo/categoria, efeitos ausentes, poder e precisão >=, pelo menos um estritamente maior; antes da liberação o inferior ainda tem uso",
+  "ressalva": "dominância de dano esperado pode empatar por arredondamento/vida restante; não certifica maior chance de vitória em todo confronto",
+  "kanto": {
+    "golpes": 66,
+    "pares": 23,
+    "dominancia": [
+      {
+        "inferior": "Body Slam",
+        "superior": "Skull Bash",
+        "tipo": "normal",
+        "categoria": "fis",
+        "inferiorAbre": 23,
+        "superiorAbre": 45,
+        "poder": [
+          85,
+          130
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Extreme Speed",
+        "superior": "Body Slam",
+        "tipo": "normal",
+        "categoria": "fis",
+        "inferiorAbre": 20,
+        "superiorAbre": 23,
+        "poder": [
+          80,
+          85
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Extreme Speed",
+        "superior": "Skull Bash",
+        "tipo": "normal",
+        "categoria": "fis",
+        "inferiorAbre": 20,
+        "superiorAbre": 45,
+        "poder": [
+          80,
+          130
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Cross Chop",
+        "superior": "Close Combat",
+        "tipo": "fighting",
+        "categoria": "fis",
+        "inferiorAbre": 28,
+        "superiorAbre": 55,
+        "poder": [
+          100,
+          120
+        ],
+        "precisao": [
+          0.8,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Dynamic Punch",
+        "superior": "Close Combat",
+        "tipo": "fighting",
+        "categoria": "fis",
+        "inferiorAbre": 28,
+        "superiorAbre": 55,
+        "poder": [
+          100,
+          120
+        ],
+        "precisao": [
+          0.6,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Dynamic Punch",
+        "superior": "Cross Chop",
+        "tipo": "fighting",
+        "categoria": "fis",
+        "inferiorAbre": 28,
+        "superiorAbre": 28,
+        "poder": [
+          100,
+          100
+        ],
+        "precisao": [
+          0.6,
+          0.8
+        ]
+      },
+      {
+        "inferior": "Body Press",
+        "superior": "Close Combat",
+        "tipo": "fighting",
+        "categoria": "fis",
+        "inferiorAbre": 1,
+        "superiorAbre": 55,
+        "poder": [
+          80,
+          120
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Dig",
+        "superior": "Earthquake",
+        "tipo": "ground",
+        "categoria": "fis",
+        "inferiorAbre": 31,
+        "superiorAbre": 55,
+        "poder": [
+          80,
+          100
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Psyshock",
+        "superior": "Psychic",
+        "tipo": "psychic",
+        "categoria": "esp",
+        "inferiorAbre": 1,
+        "superiorAbre": 55,
+        "poder": [
+          80,
+          90
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Lick",
+        "superior": "Shadow Claw",
+        "tipo": "ghost",
+        "categoria": "fis",
+        "inferiorAbre": 1,
+        "superiorAbre": 44,
+        "poder": [
+          30,
+          70
+        ],
+        "precisao": [
+          0.96,
+          1
+        ]
+      },
+      {
+        "inferior": "Dragon Claw",
+        "superior": "Outrage",
+        "tipo": "dragon",
+        "categoria": "fis",
+        "inferiorAbre": 1,
+        "superiorAbre": 55,
+        "poder": [
+          80,
+          120
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Crunch",
+        "superior": "Foul Play",
+        "tipo": "dark",
+        "categoria": "fis",
+        "inferiorAbre": 37,
+        "superiorAbre": 55,
+        "poder": [
+          80,
+          95
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Bite",
+        "superior": "Crunch",
+        "tipo": "dark",
+        "categoria": "fis",
+        "inferiorAbre": 12,
+        "superiorAbre": 37,
+        "poder": [
+          60,
+          80
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Bite",
+        "superior": "Knock Off",
+        "tipo": "dark",
+        "categoria": "fis",
+        "inferiorAbre": 12,
+        "superiorAbre": 18,
+        "poder": [
+          60,
+          65
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Bite",
+        "superior": "Foul Play",
+        "tipo": "dark",
+        "categoria": "fis",
+        "inferiorAbre": 12,
+        "superiorAbre": 55,
+        "poder": [
+          60,
+          95
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Knock Off",
+        "superior": "Crunch",
+        "tipo": "dark",
+        "categoria": "fis",
+        "inferiorAbre": 18,
+        "superiorAbre": 37,
+        "poder": [
+          65,
+          80
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Knock Off",
+        "superior": "Foul Play",
+        "tipo": "dark",
+        "categoria": "fis",
+        "inferiorAbre": 18,
+        "superiorAbre": 55,
+        "poder": [
+          65,
+          95
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Payback",
+        "superior": "Crunch",
+        "tipo": "dark",
+        "categoria": "fis",
+        "inferiorAbre": 1,
+        "superiorAbre": 37,
+        "poder": [
+          50,
+          80
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Payback",
+        "superior": "Bite",
+        "tipo": "dark",
+        "categoria": "fis",
+        "inferiorAbre": 1,
+        "superiorAbre": 12,
+        "poder": [
+          50,
+          60
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Payback",
+        "superior": "Knock Off",
+        "tipo": "dark",
+        "categoria": "fis",
+        "inferiorAbre": 1,
+        "superiorAbre": 18,
+        "poder": [
+          50,
+          65
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Payback",
+        "superior": "Foul Play",
+        "tipo": "dark",
+        "categoria": "fis",
+        "inferiorAbre": 1,
+        "superiorAbre": 55,
+        "poder": [
+          50,
+          95
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Iron Head",
+        "superior": "Meteor Mash",
+        "tipo": "steel",
+        "categoria": "fis",
+        "inferiorAbre": 37,
+        "superiorAbre": 46,
+        "poder": [
+          80,
+          90
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      },
+      {
+        "inferior": "Dazzling Gleam",
+        "superior": "Moonblast",
+        "tipo": "fairy",
+        "categoria": "esp",
+        "inferiorAbre": 1,
+        "superiorAbre": 55,
+        "poder": [
+          80,
+          95
+        ],
+        "precisao": [
+          0.92,
+          0.92
+        ]
+      }
+    ]
+  },
+  "original": {
+    "golpes": 48,
+    "pares": 16,
+    "dominancia": [
+      {
+        "inferior": "Lasca de Brasa",
+        "superior": "Investida de Brasa",
+        "tipo": "brasa",
+        "categoria": "fis",
+        "inferiorAbre": 1,
+        "superiorAbre": 25,
+        "poder": [
+          40,
+          90
+        ],
+        "precisao": [
+          1,
+          1
+        ]
+      },
+      {
+        "inferior": "Fenda de Brasa",
+        "superior": "Descarga de Brasa",
+        "tipo": "brasa",
+        "categoria": "esp",
+        "inferiorAbre": 20,
+        "superiorAbre": 23,
+        "poder": [
+          80,
+          85
+        ],
+        "precisao": [
+          0.9,
+          1
+        ]
+      },
+      {
+        "inferior": "Lasca de Seiva",
+        "superior": "Investida de Seiva",
+        "tipo": "seiva",
+        "categoria": "fis",
+        "inferiorAbre": 1,
+        "superiorAbre": 25,
+        "poder": [
+          40,
+          90
+        ],
+        "precisao": [
+          1,
+          1
+        ]
+      },
+      {
+        "inferior": "Fenda de Seiva",
+        "superior": "Descarga de Seiva",
+        "tipo": "seiva",
+        "categoria": "esp",
+        "inferiorAbre": 20,
+        "superiorAbre": 23,
+        "poder": [
+          80,
+          85
+        ],
+        "precisao": [
+          0.9,
+          1
+        ]
+      },
+      {
+        "inferior": "Lasca de Sopro",
+        "superior": "Investida de Sopro",
+        "tipo": "sopro",
+        "categoria": "fis",
+        "inferiorAbre": 1,
+        "superiorAbre": 25,
+        "poder": [
+          40,
+          90
+        ],
+        "precisao": [
+          1,
+          1
+        ]
+      },
+      {
+        "inferior": "Fenda de Sopro",
+        "superior": "Descarga de Sopro",
+        "tipo": "sopro",
+        "categoria": "esp",
+        "inferiorAbre": 20,
+        "superiorAbre": 23,
+        "poder": [
+          80,
+          85
+        ],
+        "precisao": [
+          0.9,
+          1
+        ]
+      },
+      {
+        "inferior": "Lasca de Carga",
+        "superior": "Investida de Carga",
+        "tipo": "carga",
+        "categoria": "fis",
+        "inferiorAbre": 1,
+        "superiorAbre": 25,
+        "poder": [
+          40,
+          90
+        ],
+        "precisao": [
+          1,
+          1
+        ]
+      },
+      {
+        "inferior": "Fenda de Carga",
+        "superior": "Descarga de Carga",
+        "tipo": "carga",
+        "categoria": "esp",
+        "inferiorAbre": 20,
+        "superiorAbre": 23,
+        "poder": [
+          80,
+          85
+        ],
+        "precisao": [
+          0.9,
+          1
+        ]
+      },
+      {
+        "inferior": "Lasca de Liga",
+        "superior": "Investida de Liga",
+        "tipo": "liga",
+        "categoria": "fis",
+        "inferiorAbre": 1,
+        "superiorAbre": 25,
+        "poder": [
+          40,
+          90
+        ],
+        "precisao": [
+          1,
+          1
+        ]
+      },
+      {
+        "inferior": "Fenda de Liga",
+        "superior": "Descarga de Liga",
+        "tipo": "liga",
+        "categoria": "esp",
+        "inferiorAbre": 20,
+        "superiorAbre": 23,
+        "poder": [
+          80,
+          85
+        ],
+        "precisao": [
+          0.9,
+          1
+        ]
+      },
+      {
+        "inferior": "Lasca de Pedra",
+        "superior": "Investida de Pedra",
+        "tipo": "pedra",
+        "categoria": "fis",
+        "inferiorAbre": 1,
+        "superiorAbre": 25,
+        "poder": [
+          40,
+          90
+        ],
+        "precisao": [
+          1,
+          1
+        ]
+      },
+      {
+        "inferior": "Fenda de Pedra",
+        "superior": "Descarga de Pedra",
+        "tipo": "pedra",
+        "categoria": "esp",
+        "inferiorAbre": 20,
+        "superiorAbre": 23,
+        "poder": [
+          80,
+          85
+        ],
+        "precisao": [
+          0.9,
+          1
+        ]
+      },
+      {
+        "inferior": "Lasca de Maré",
+        "superior": "Investida de Maré",
+        "tipo": "mare",
+        "categoria": "fis",
+        "inferiorAbre": 1,
+        "superiorAbre": 25,
+        "poder": [
+          40,
+          90
+        ],
+        "precisao": [
+          1,
+          1
+        ]
+      },
+      {
+        "inferior": "Fenda de Maré",
+        "superior": "Descarga de Maré",
+        "tipo": "mare",
+        "categoria": "esp",
+        "inferiorAbre": 20,
+        "superiorAbre": 23,
+        "poder": [
+          80,
+          85
+        ],
+        "precisao": [
+          0.9,
+          1
+        ]
+      },
+      {
+        "inferior": "Lasca de Véu",
+        "superior": "Investida de Véu",
+        "tipo": "veu",
+        "categoria": "fis",
+        "inferiorAbre": 1,
+        "superiorAbre": 25,
+        "poder": [
+          40,
+          90
+        ],
+        "precisao": [
+          1,
+          1
+        ]
+      },
+      {
+        "inferior": "Fenda de Véu",
+        "superior": "Descarga de Véu",
+        "tipo": "veu",
+        "categoria": "esp",
+        "inferiorAbre": 20,
+        "superiorAbre": 23,
+        "poder": [
+          80,
+          85
+        ],
+        "precisao": [
+          0.9,
+          1
+        ]
+      }
+    ]
+  },
+  "comparacao": {
+    "combinacoes": 15100,
+    "ordemAlterada": 3461,
+    "conteudoAlterado": [
+      {
+        "dex": 28,
+        "nivel": 25,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 28,
+        "nivel": 26,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 28,
+        "nivel": 27,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 28,
+        "nivel": 28,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 28,
+        "nivel": 29,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 28,
+        "nivel": 30,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 50,
+        "nivel": 25,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 50,
+        "nivel": 26,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 50,
+        "nivel": 27,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 50,
+        "nivel": 28,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 50,
+        "nivel": 29,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 50,
+        "nivel": 30,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 51,
+        "nivel": 25,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 51,
+        "nivel": 26,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 51,
+        "nivel": 27,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 51,
+        "nivel": 28,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 51,
+        "nivel": 29,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 51,
+        "nivel": 30,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 104,
+        "nivel": 25,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Hyper Voice",
+          "Body Slam",
+          "Mud Shot",
+          "Extreme Speed"
+        ]
+      },
+      {
+        "dex": 104,
+        "nivel": 26,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Hyper Voice",
+          "Body Slam",
+          "Mud Shot",
+          "Extreme Speed"
+        ]
+      },
+      {
+        "dex": 104,
+        "nivel": 27,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Hyper Voice",
+          "Body Slam",
+          "Mud Shot",
+          "Extreme Speed"
+        ]
+      },
+      {
+        "dex": 104,
+        "nivel": 28,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Hyper Voice",
+          "Body Slam",
+          "Extreme Speed",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 104,
+        "nivel": 29,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Hyper Voice",
+          "Body Slam",
+          "Extreme Speed",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 104,
+        "nivel": 30,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Hyper Voice",
+          "Body Slam",
+          "Extreme Speed",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 105,
+        "nivel": 25,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 105,
+        "nivel": 26,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 105,
+        "nivel": 27,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 105,
+        "nivel": 28,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 105,
+        "nivel": 29,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      },
+      {
+        "dex": 105,
+        "nivel": 30,
+        "antes": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Quick Attack"
+        ],
+        "depois": [
+          "Body Slam",
+          "Extreme Speed",
+          "Hyper Voice",
+          "Mud Shot"
+        ]
+      }
+    ]
+  }
+}

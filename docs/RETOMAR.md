@@ -22,9 +22,34 @@ defeito meu.
 
 ---
 
-## 0. ONDE PARAMOS — 04/10/2026 · XP-OFF-2
+## 0. ONDE PARAMOS — 05/10/2026 · AT6-14-rivais
 
-Último bloco: treino do banco a 150/225/300/450 XP/h por fase, pedido do dono
+Último bloco: política `rival-2` ordena golpes dos NPCs por dano esperado TBE
+com precisão do catálogo, mantendo nível/especialização. Referência neutra de
+base 80 no mesmo nível, sem RNG/leitura do jogador. TBE continua `tbe-4`;
+novas runs têm etiqueta aditiva, anteriores mantêm os golpes congelados.
+
+Auditoria: 15.100 combinações, 3.461 ordens e 30 conjuntos de golpes alterados;
+23/16 pares de dominância Kanto/original. Ginásios com 2.000 simulações por
+referência e 3.500 runs pareadas mantiveram todas as taxas anteriores.
+Mais 3.300 runs medem entrada por bioma: nível 5, Praia/planta 98%,
+Floresta/fogo 81%, Deserto/água 92%, sem poções e sem validar acesso da conta.
+L-AT6-04 permanece aberta: estudo não aplicou orientação inicial. L-AT6-05
+resolvida; L-AT6-06 registra diversidade de secundários ausentes.
+
+VALIDACAO_RIVAIS.json: 25 suítes/212 testes; SABOTAGEM_RIVAIS.json: seis
+mutantes dirigidos. Q5 anterior e publicação continuam pendentes. Local somente.
+O teste do Centro passou a usar DOM sintético em processo isolado: a análise
+prévia de módulos sem DOM deixava avaliação rejeitada no cache do Node.
+Reverificação da ordem módulos→Centro e mutantes de catálogo cobre esse ajuste.
+
+Relatório 10 em `arena-treinadores/10_AVALIACAO_RIVAIS_E_ENTRADA.md`;
+Spec §8.19. Próxima execução segue prioridades no ROADMAP: orientar entrada,
+comparação/resultado, progresso/captura/evolução, mercado/cosméticos e Q5.
+Ainda não declarar toda AT6/GQ concluída.
+
+Bloco anterior: XP-OFF-2 (commit `57388f6`).
+Treino do banco a 150/225/300/450 XP/h por fase, pedido do dono
 para meio termo após considerar 300/h demais. Em oito horas, fase 1: 1.200 XP
 por criatura. Fase congelada para o intervalo seguinte, derivada do XP da
 coleção; não promove horas anteriores. Retorno automático e colheita direta

@@ -3,7 +3,7 @@
 **O que é:** o mapa único do projeto. De onde viemos, o que existe hoje, e o que
 vem depois em ordem de prioridade.
 
-**Atualizado em:** 04/10/2026. O estado de execução mora em
+**Atualizado em:** 05/10/2026. O estado de execução mora em
 `docs/RETOMAR.md`; a fila prioritária AT6/GQ abaixo incorpora a direção do dono.
 A fila legada de 25/09 continua preservada para rastreabilidade.
 
@@ -14,7 +14,7 @@ A fila legada de 25/09 continua preservada para rastreabilidade.
 | 0 | 🟡 XP-OFF / XP-OFF-2 | XP de expedições por estágio e banco a 150/225/300/450 XP/h implementados/testados (351 testes, 4 mutantes novos). §§7.22.18/20. Q5 e revisão geral de progressão pendentes. |
 | 1 | 🟡 AT6-base | Motor, acesso 6×6, ranked, defesa, 10% da casa, kit, XP repetido e atividade de temporada implementados com validação focada. Fechar apresentação via Q5 antes de marcar entrega visual concluída. Contrato 09 delimita os critérios aplicados. |
 | 2 | 🟡 AT6-13 | Novas runs com HP/golpes reais, snapshots e cura/recuo sincronizados. 470 testes e 8 mutantes; Spec §7.22.19. Q5 e calibração dos iniciais (L-AT6-04) pendentes; não certifica emissão diária. |
-| 3 | 🟡 AT6-14 | Catálogo TBE e informação do moveset implementados (194 testes, 4 mutantes; §8.18). Q5, auditoria de dominância e precisão no seletor dos rivais continuam pendentes; mudar NPCs exige recalibrar. |
+| 3 | 🟡 AT6-14 | Catálogo/informação (§8.18), política rival coerente e auditoria (§8.19) implementados/testados: 212 testes, 6 mutantes novos, ginásios/3.500 runs pareadas sem alteração de taxas. Q5 e diversidade dos secundários (L-AT6-06) pendentes. |
 | 4 | ⏳ AT6-05 e AT6-07 | Comparação útil do time, leitura da chance/resultado e funil completo; textos e eventos mínimos atuais não completam essas fichas. |
 | 5 | ⏳ GQ-01–06 | Entrada, captura, evolução, clareza econômica e retorno. Fichas em `arena-treinadores/06_QUALIDADE_DO_JOGO_E_JORNADA.md`, incorporadas no PLANO. |
 | 6 | 🟡 AT6-08 | Kit de 300 aplicado e tesouraria interna finita. Reposição semanal/marketing público dependem de medir emissão, funil e sustentabilidade; não ativados. |

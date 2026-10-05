@@ -3610,3 +3610,23 @@ Saída funcional: UI/crédito iguais e progressão maior. Funções de janela
 legada têm default antigo apenas para compatibilidade; runtime fornece a taxa
 nova. Registrar que antigas simulações de dias de progressão precisam revisão
 GQ-02/03; o balanço completo da economia não está fechado por este ajuste.
+
+
+## AT6-14-rivais — precisão coerente na montagem de NPCs
+
+Método INV, porte M; Spec §8.19. Ordenar golpes liberados pelo dano esperado
+real TBE contra referência neutra declarada; manter especialista e padrão do
+jogador. Tag aditiva `rival-2` nas novas runs; snapshots anteriores preservados.
+Auditar dominância e níveis de liberação sem remover golpes.
+
+Q1/Q3: escolha que respeita precisão, stats das categorias, catálogo, nível,
+especialização, pureza, ausência de RNG e snapshot anterior. Q2: S90501–06,
+todos capturados; testes de Node. Q4: ginásios com 2.000 simulações por time,
+35 cenários/3.500 runs pareadas e 3.300 runs por rotas iniciais. Sem alteração
+de taxas na medição anterior. Q6/Q8/Q9: sem superfície nova. Q5: sem mudança
+de tela; pendência visual anterior preservada. Não certifica Q2 legado/tag.
+
+Saída: 25 suítes/212 testes, seis mutantes novos e quatro de catálogo
+revalidados. Relatório 10, dados/medições reproduzíveis, catálogo/seletor coerentes;
+L-AT6-05 resolvida. Orientação da primeira sessão e diversidade de secundários
+têm donos GQ-01/AT6-05 e AT6-14; não declarar a Arena completa por esta correção.

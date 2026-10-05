@@ -1,0 +1,94 @@
+{
+  "escopo": "somente mutantes da política rival; não é Q2 legado integral",
+  "total": 6,
+  "capturados": 6,
+  "resultados": [
+    {
+      "id": "S90501",
+      "nome": "rival calcula todos os golpes como certeiros",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "rival prefere precisão real quando poder bruto indica a escolha oposta",
+          "erro": "92% foi tratado como 100% — esperado Seguro, veio Arriscado",
+          "suite": "rivais-precisao"
+        },
+        {
+          "titulo": "ordenação corresponde ao dano esperado TBE com alvo neutro de base 80",
+          "erro": "undefined — esperado [\"B\",\"E\",\"C\",\"A\"], veio [\"E\",\"A\",\"B\",\"C\"]",
+          "suite": "rivais-precisao"
+        },
+        {
+          "titulo": "não consulta RNG, não altera conteúdo nem troca padrão do jogador",
+          "erro": "undefined — esperado Seguro, veio Arriscado",
+          "suite": "rivais-precisao"
+        }
+      ]
+    },
+    {
+      "id": "S90502",
+      "nome": "rival ignora o catálogo declarado",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "rival prefere precisão real quando poder bruto indica a escolha oposta",
+          "erro": "ignorou catálogo explícito — esperado Arriscado, veio Seguro",
+          "suite": "rivais-precisao"
+        }
+      ]
+    },
+    {
+      "id": "S90503",
+      "nome": "rival volta à penalidade arbitrária de categoria",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "usa ataque físico e especial reais, sem penalidade arbitrária de metade",
+          "erro": "undefined — esperado Especial, veio Fisico",
+          "suite": "rivais-precisao"
+        }
+      ]
+    },
+    {
+      "id": "S90504",
+      "nome": "rival abre golpes antes da hora",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "ordenação corresponde ao dano esperado TBE com alvo neutro de base 80",
+          "erro": "undefined — esperado [\"D\"], veio [\"B\",\"C\",\"E\",\"A\"]",
+          "suite": "rivais-precisao"
+        },
+        {
+          "titulo": "especialização, liberação e limite continuam válidos nos dois packs",
+          "erro": "1@1",
+          "suite": "rivais-precisao"
+        }
+      ]
+    },
+    {
+      "id": "S90505",
+      "nome": "auditoria confunde risco com dominância",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "auditoria distingue dominância, risco e liberação por nível sem remover opções",
+          "erro": "risco virou dominância",
+          "suite": "rivais-precisao"
+        }
+      ]
+    },
+    {
+      "id": "S90506",
+      "nome": "auditoria compara defesas diferentes",
+      "capturado": true,
+      "falhas": [
+        {
+          "titulo": "auditoria distingue dominância, risco e liberação por nível sem remover opções",
+          "erro": "misturou defesas diferentes — esperado 0, veio 1",
+          "suite": "rivais-precisao"
+        }
+      ]
+    }
+  ]
+}

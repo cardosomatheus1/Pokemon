@@ -1,0 +1,581 @@
+{
+  "versao": "avanco-tbe-1",
+  "tbe": "tbe-4",
+  "politicaRival": "rival-2",
+  "sementes": "avanco-holdout-20261004-i",
+  "horarios": "04/10/2026, 12h e 23h UTC alternados",
+  "runs": 3500,
+  "resultados": [
+    {
+      "nome": "iniciais",
+      "bioma": "floresta",
+      "estagio": 1,
+      "dex": [
+        1
+      ],
+      "nivel": 5,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 5,
+      "taxa": 0.05,
+      "abatesMedios": 32.79,
+      "minutosMedios": 6.250116666666667
+    },
+    {
+      "nome": "iniciais",
+      "bioma": "floresta",
+      "estagio": 1,
+      "dex": [
+        1
+      ],
+      "nivel": 6,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 16,
+      "taxa": 0.16,
+      "abatesMedios": 34.93,
+      "minutosMedios": 6.731116666666667
+    },
+    {
+      "nome": "iniciais",
+      "bioma": "floresta",
+      "estagio": 1,
+      "dex": [
+        1
+      ],
+      "nivel": 7,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 47,
+      "taxa": 0.47,
+      "abatesMedios": 36.45,
+      "minutosMedios": 7.17935
+    },
+    {
+      "nome": "iniciais",
+      "bioma": "floresta",
+      "estagio": 1,
+      "dex": [
+        1
+      ],
+      "nivel": 10,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 100,
+      "taxa": 1,
+      "abatesMedios": 37,
+      "minutosMedios": 7.5
+    },
+    {
+      "nome": "iniciais",
+      "bioma": "floresta",
+      "estagio": 1,
+      "dex": [
+        4
+      ],
+      "nivel": 5,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 78,
+      "taxa": 0.78,
+      "abatesMedios": 36.78,
+      "minutosMedios": 7.362533333333333
+    },
+    {
+      "nome": "iniciais",
+      "bioma": "floresta",
+      "estagio": 1,
+      "dex": [
+        4
+      ],
+      "nivel": 6,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 96,
+      "taxa": 0.96,
+      "abatesMedios": 36.96,
+      "minutosMedios": 7.474666666666667
+    },
+    {
+      "nome": "iniciais",
+      "bioma": "floresta",
+      "estagio": 1,
+      "dex": [
+        4
+      ],
+      "nivel": 7,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 100,
+      "taxa": 1,
+      "abatesMedios": 37,
+      "minutosMedios": 7.5
+    },
+    {
+      "nome": "iniciais",
+      "bioma": "floresta",
+      "estagio": 1,
+      "dex": [
+        4
+      ],
+      "nivel": 10,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 100,
+      "taxa": 1,
+      "abatesMedios": 37,
+      "minutosMedios": 7.5
+    },
+    {
+      "nome": "iniciais",
+      "bioma": "floresta",
+      "estagio": 1,
+      "dex": [
+        7
+      ],
+      "nivel": 5,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 4,
+      "taxa": 0.04,
+      "abatesMedios": 23.39,
+      "minutosMedios": 4.435454666666667
+    },
+    {
+      "nome": "iniciais",
+      "bioma": "floresta",
+      "estagio": 1,
+      "dex": [
+        7
+      ],
+      "nivel": 6,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 15,
+      "taxa": 0.15,
+      "abatesMedios": 31.74,
+      "minutosMedios": 6.065076166666667
+    },
+    {
+      "nome": "iniciais",
+      "bioma": "floresta",
+      "estagio": 1,
+      "dex": [
+        7
+      ],
+      "nivel": 7,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 45,
+      "taxa": 0.45,
+      "abatesMedios": 33.64,
+      "minutosMedios": 6.5689261666666665
+    },
+    {
+      "nome": "iniciais",
+      "bioma": "floresta",
+      "estagio": 1,
+      "dex": [
+        7
+      ],
+      "nivel": 10,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 99,
+      "taxa": 0.99,
+      "abatesMedios": 36.99,
+      "minutosMedios": 7.454233333333334
+    },
+    {
+      "nome": "evoluídos",
+      "bioma": "floresta",
+      "estagio": 2,
+      "dex": [
+        2,
+        5,
+        8
+      ],
+      "nivel": 12,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 43,
+      "taxa": 0.43,
+      "abatesMedios": 36.4,
+      "minutosMedios": 7.163865333333333
+    },
+    {
+      "nome": "evoluídos",
+      "bioma": "floresta",
+      "estagio": 2,
+      "dex": [
+        2,
+        5,
+        8
+      ],
+      "nivel": 13,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 65,
+      "taxa": 0.65,
+      "abatesMedios": 36.65,
+      "minutosMedios": 7.290700500000001
+    },
+    {
+      "nome": "evoluídos",
+      "bioma": "floresta",
+      "estagio": 2,
+      "dex": [
+        2,
+        5,
+        8
+      ],
+      "nivel": 14,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 83,
+      "taxa": 0.83,
+      "abatesMedios": 36.83,
+      "minutosMedios": 7.394747833333334
+    },
+    {
+      "nome": "evoluídos",
+      "bioma": "floresta",
+      "estagio": 2,
+      "dex": [
+        2,
+        5,
+        8
+      ],
+      "nivel": 17,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 100,
+      "taxa": 1,
+      "abatesMedios": 37,
+      "minutosMedios": 7.485626666666667
+    },
+    {
+      "nome": "evoluídos",
+      "bioma": "floresta",
+      "estagio": 3,
+      "dex": [
+        3,
+        6,
+        9
+      ],
+      "nivel": 19,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 62,
+      "taxa": 0.62,
+      "abatesMedios": 36.62,
+      "minutosMedios": 7.286473166666667
+    },
+    {
+      "nome": "evoluídos",
+      "bioma": "floresta",
+      "estagio": 3,
+      "dex": [
+        3,
+        6,
+        9
+      ],
+      "nivel": 20,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 90,
+      "taxa": 0.9,
+      "abatesMedios": 36.9,
+      "minutosMedios": 7.433493333333333
+    },
+    {
+      "nome": "evoluídos",
+      "bioma": "floresta",
+      "estagio": 3,
+      "dex": [
+        3,
+        6,
+        9
+      ],
+      "nivel": 21,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 100,
+      "taxa": 1,
+      "abatesMedios": 37,
+      "minutosMedios": 7.485626666666667
+    },
+    {
+      "nome": "evoluídos",
+      "bioma": "floresta",
+      "estagio": 3,
+      "dex": [
+        3,
+        6,
+        9
+      ],
+      "nivel": 24,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 100,
+      "taxa": 1,
+      "abatesMedios": 37,
+      "minutosMedios": 7.485626666666667
+    },
+    {
+      "nome": "evoluídos",
+      "bioma": "floresta",
+      "estagio": 4,
+      "dex": [
+        3,
+        6,
+        9
+      ],
+      "nivel": 31,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 88,
+      "taxa": 0.88,
+      "abatesMedios": 36.88,
+      "minutosMedios": 7.4196599999999995
+    },
+    {
+      "nome": "evoluídos",
+      "bioma": "floresta",
+      "estagio": 4,
+      "dex": [
+        3,
+        6,
+        9
+      ],
+      "nivel": 32,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 93,
+      "taxa": 0.93,
+      "abatesMedios": 36.93,
+      "minutosMedios": 7.447476666666666
+    },
+    {
+      "nome": "evoluídos",
+      "bioma": "floresta",
+      "estagio": 4,
+      "dex": [
+        3,
+        6,
+        9
+      ],
+      "nivel": 33,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 99,
+      "taxa": 0.99,
+      "abatesMedios": 36.99,
+      "minutosMedios": 7.480343333333333
+    },
+    {
+      "nome": "evoluídos",
+      "bioma": "floresta",
+      "estagio": 4,
+      "dex": [
+        3,
+        6,
+        9
+      ],
+      "nivel": 36,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 100,
+      "taxa": 1,
+      "abatesMedios": 37,
+      "minutosMedios": 7.485626666666667
+    },
+    {
+      "nome": "rotas",
+      "bioma": "praia",
+      "estagio": 2,
+      "dex": [
+        2,
+        5,
+        8
+      ],
+      "nivel": 12,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 7,
+      "taxa": 0.07,
+      "abatesMedios": 32.62,
+      "minutosMedios": 6.372743166666667
+    },
+    {
+      "nome": "rotas",
+      "bioma": "praia",
+      "estagio": 2,
+      "dex": [
+        2,
+        5,
+        8
+      ],
+      "nivel": 17,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 100,
+      "taxa": 1,
+      "abatesMedios": 37,
+      "minutosMedios": 7.485626666666667
+    },
+    {
+      "nome": "rotas",
+      "bioma": "campo",
+      "estagio": 2,
+      "dex": [
+        2,
+        5,
+        8
+      ],
+      "nivel": 12,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 11,
+      "taxa": 0.11,
+      "abatesMedios": 32.73,
+      "minutosMedios": 6.300561666666667
+    },
+    {
+      "nome": "rotas",
+      "bioma": "campo",
+      "estagio": 2,
+      "dex": [
+        2,
+        5,
+        8
+      ],
+      "nivel": 17,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 91,
+      "taxa": 0.91,
+      "abatesMedios": 36.91,
+      "minutosMedios": 7.441419833333334
+    },
+    {
+      "nome": "rotas",
+      "bioma": "montanha",
+      "estagio": 2,
+      "dex": [
+        2,
+        5,
+        8
+      ],
+      "nivel": 12,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 99,
+      "taxa": 0.99,
+      "abatesMedios": 36.99,
+      "minutosMedios": 7.4815825
+    },
+    {
+      "nome": "rotas",
+      "bioma": "montanha",
+      "estagio": 2,
+      "dex": [
+        2,
+        5,
+        8
+      ],
+      "nivel": 17,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 100,
+      "taxa": 1,
+      "abatesMedios": 37,
+      "minutosMedios": 7.485626666666667
+    },
+    {
+      "nome": "rotas",
+      "bioma": "vulcao",
+      "estagio": 2,
+      "dex": [
+        2,
+        5,
+        8
+      ],
+      "nivel": 12,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 10,
+      "taxa": 0.1,
+      "abatesMedios": 27.51,
+      "minutosMedios": 5.296527833333333
+    },
+    {
+      "nome": "rotas",
+      "bioma": "vulcao",
+      "estagio": 2,
+      "dex": [
+        2,
+        5,
+        8
+      ],
+      "nivel": 17,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 100,
+      "taxa": 1,
+      "abatesMedios": 37,
+      "minutosMedios": 7.485626666666667
+    },
+    {
+      "nome": "IVs",
+      "bioma": "floresta",
+      "estagio": 3,
+      "dex": [
+        3,
+        6,
+        9
+      ],
+      "nivel": 19,
+      "iv": 0,
+      "n": 100,
+      "vitorias": 44,
+      "taxa": 0.44,
+      "abatesMedios": 36.36,
+      "minutosMedios": 7.164777666666666
+    },
+    {
+      "nome": "IVs",
+      "bioma": "floresta",
+      "estagio": 3,
+      "dex": [
+        3,
+        6,
+        9
+      ],
+      "nivel": 19,
+      "iv": 15,
+      "n": 100,
+      "vitorias": 62,
+      "taxa": 0.62,
+      "abatesMedios": 36.62,
+      "minutosMedios": 7.286473166666667
+    },
+    {
+      "nome": "IVs",
+      "bioma": "floresta",
+      "estagio": 3,
+      "dex": [
+        3,
+        6,
+        9
+      ],
+      "nivel": 19,
+      "iv": 31,
+      "n": 100,
+      "vitorias": 84,
+      "taxa": 0.84,
+      "abatesMedios": 36.84,
+      "minutosMedios": 7.40506
+    }
+  ]
+}

@@ -5,7 +5,7 @@ import { montarLutador, VERSAO_TBE } from '../../engine/treino-batalha.mjs';
 import { composicaoDaWave, WAVES } from '../../engine/wave.mjs';
 import { semente } from '../../engine/instancia.mjs';
 import { derivar } from '../../engine/seed.mjs';
-import { golpesDaCriatura, movesetDoRival } from './moveset-dados.mjs';
+import { golpesDaCriatura, movesetDoRival, VERSAO_MOVESET_RIVAL } from './moveset-dados.mjs';
 
 export function armarCombateDaRun(pack,run,motor,elenco,ritmo=1){
   const regra={...REGRA_AVANCO_COMBATE,...pack.avancoCombate};
@@ -21,6 +21,6 @@ export function armarCombateDaRun(pack,run,motor,elenco,ritmo=1){
       iv:Array(6).fill(15),natureza:null,golpes:movesetDoRival(pack,x.dex,nivel)})));
     waves.push({comp,adversarios});
   }
-  return {...run,combate:{versao:VERSAO_AVANCO_COMBATE,tbe:VERSAO_TBE,regra,equipe,waves,
+  return {...run,combate:{versao:VERSAO_AVANCO_COMBATE,tbe:VERSAO_TBE,politicaRival:VERSAO_MOVESET_RIVAL,regra,equipe,waves,
     hpInicial:equipe.map((c,i)=>montarLutador(pack,c,'A',i).maxHp),creditados:[],ritmo}};
 }

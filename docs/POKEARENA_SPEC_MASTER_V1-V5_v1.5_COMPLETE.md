@@ -2643,7 +2643,7 @@ paridade continuam verdes. `VALIDACAO_CATALOGO.json`: 194 testes focados;
 `SABOTAGEM_CATALOGO.json`: quatro mutantes capturados. O teste de integração
 exige dados visíveis nos dois Centros, não somente texto no tooltip.
 
-Este recorte não completa toda AT6-14: auditoria de dominância e o seletor do
+Estado deste recorte antes do §8.19: auditoria de dominância e o seletor do
 moveset de rivais ainda precisam revisão/medição própria. Essa heurística
 legada usa 100% quando precisão é omitida, apesar da TBE usar 92%; corrigir
 muda equipes novas de NPCs e pede recalibração. Q5 permanece pendente;
@@ -4793,3 +4793,32 @@ vence" continuar valendo:
    (a troca direta) e `player_market_enabled` (o Market de jogadores). As duas
    nascem desligadas, são de valor (ligar exige o checkpoint do §25.1) e só
    andam com `p2p_transfer_enabled` também ligada.
+
+
+## 8.19 Política de moveset dos NPCs — AT6-14-rivais (04/10/2026)
+
+Substitui a heurística descrita como pendente no §8.18. `rival-2` monta o
+repertório com precisão do catálogo e dano esperado TBE, incluindo crítico,
+variação e arredondamento. Usa stats reais sem IV/natureza e alvo neutro com
+defesas de base 80 no mesmo nível e HP ilimitado. Não lê equipe do jogador
+ou RNG. Preserve a especialização de tipo/categoria, aprendizagem por nível,
+até quatro golpes e desempate alfabético. O padrão do jogador não muda.
+
+A referência ordena a montagem; cada golpe da batalha usa alvo/atributos
+reais. TBE permanece `tbe-4`: não mudou fórmula, crítico ou precisão efetiva.
+Novas runs identificam `politicaRival` e congelam os nomes; anteriores continuam
+aceitas sem a etiqueta e sem remontar adversários. Jornada mantém times
+persistidos. Não aplicar essa política aos times de jogadores ou Arena comum.
+
+Auditoria de dominância: comparar mesmo tipo/categoria e efeitos ausentes,
+poder e precisão não inferiores com pelo menos um estritamente maior.
+Registrar níveis de abertura; não remover opções antigas automaticamente.
+Dominância de dano esperado não significa maior chance em todo confronto.
+Secundários continuam ausentes; não inferir mecânica pelo nome.
+
+Medições: 15.100 combinações (3.461 ordens/30 conjuntos alterados), ginásios
+com 2.000 simulações por referência sem alteração de taxas, 3.500 runs de
+Avanço pareadas idênticas ao estudo anterior, 3.300 runs adicionais de entrada
+por bioma. A diversidade de golpes e orientação da primeira sessão têm
+limitações registradas em L-AT6-06 e L-AT6-04. Relatório explicativo 10 e JSONs
+em `docs/arena-treinadores/`; não equivalem a certificar todo AT6/GQ.

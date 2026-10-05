@@ -1,3 +1,4 @@
+import {spawnSync} from 'node:child_process';
 import {criarSuite,ok,igual} from './harness.mjs';
 import KANTO from '../content/pokemon_kanto_v1.mjs';
 import ORIGINAL from '../content/original_v1.mjs';
@@ -49,7 +50,18 @@ export function suite(){const s=criarSuite('catalogo-treinador');
     const h=fichaDoGolpe(KANTO,'Hyper Beam');ok(!/recarrega|paralisa|prioridade/.test(h.descricao));
     igual(fichaDoGolpe(KANTO,'ausente'),null);
   });
-  s.teste('Centro integra metadados reais nas duas abas e mantém os controles de seleção',async()=>{
+  s.teste('Centro integra metadados reais nas duas abas e mantém os controles de seleção',()=>{
+    // O teste de análise dos módulos importa UI sem DOM e pode deixar uma
+    // avaliação rejeitada no cache do Node. Execute o DOM sintético isolado.
+    const codigo=`import {validarCentro} from ${JSON.stringify(import.meta.url)}; await validarCentro();`;
+    const r=spawnSync(process.execPath,['--input-type=module','-e',codigo],{encoding:'utf8',timeout:30000});
+    igual(r.status,0,r.stderr||r.error?.message);
+  });
+  return s;
+}
+
+
+export async function validarCentro(){
     const antes={document:globalThis.document,localStorage:globalThis.localStorage};
     const alvos=[{innerHTML:''},{innerHTML:''}];
     globalThis.document={querySelector:()=>null,querySelectorAll:sel=>sel==='#idleCentro, #offCentro'?alvos:[]};
@@ -65,6 +77,4 @@ export function suite(){const s=criarSuite('catalogo-treinador');
       ok(hydroTexto?.includes('acerto 80%')&&hydroTexto.includes('poder 110'),'Hydro Pump sem risco explícito visível');
       ok(surf.includes('data-cria="teste"')&&surf.includes(' on'),'controle selecionado perdeu a identidade');
     }finally{Object.assign(globalThis,antes);}
-  });
-  return s;
 }

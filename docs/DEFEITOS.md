@@ -7756,3 +7756,24 @@ horas; runs observadas rendem cerca de 77. Novo ritmo 150/225/300/450 por fase,
 com ciclo congelado e sem crédito retroativo avançado. Colheita usa a mesma
 fase que o relógio independente; default legado não entra no crédito atual.
 Testes HTTP/save/painel, frações, retry e rollback; S90401–04 capturados.
+
+
+## D-AT6-14-02 — rival monta golpes por precisão divergente · corrigido
+
+**Dono:** AT6-14-rivais. Precisão omitida valia 100% na seleção e 92% na TBE;
+categoria secundária valia metade independentemente dos stats reais. Agora
+monta pela expectativa real TBE e catálogo, contra referência neutra declarada.
+Testes com poder 90/92% versus 85/100% e stats físicos/especiais próximos
+reprovam a regra anterior. S90501–04 capturados; snapshots e padrão do jogador
+preservados. Ginásios e 3.500 runs pareadas sem regressão de taxas.
+
+
+## D-AT6-14-03 — teste de Centro depende da ordem de importação · corrigido
+
+**Dono:** AT6-14-rivais. A verificação de análise importa UI sem DOM e tolera
+erros de execução; Node mantém uma avaliação rejeitada no cache. Rodar esse
+check antes do teste de integração fazia o import do Centro falhar mesmo com
+DOM sintético disponível. A integração agora roda em processo isolado, com
+as mesmas verificações visíveis e controles. Ordem módulos→catálogo passou
+27 testes; S90304 precisa continuar reprovando informação só em tooltip.
+Sem alteração de código de produto ou navegador; não substitui Q5.

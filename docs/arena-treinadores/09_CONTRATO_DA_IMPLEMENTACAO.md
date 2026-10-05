@@ -166,3 +166,26 @@ este ritmo. Q5, cenários gerais de progressão e plano AT6/GQ completo pendente
 node tools/testar-arena.mjs --so=progressao-offline,modulos,idle-conta,idle-acoes,colheita,colheita-rotas,ausente,time-aprende,stamina-balanco,avanco-paga,comeco-treinador,avanco-tela,expedicao,estagios,banco-servidor,colecao-servidor,avanco-estado,run-servidor,run-avanco,avanco-forca,forma-estagio,curva-comeco,historico,arena-treinadores,run-fantasma --saida=docs/arena-treinadores/VALIDACAO_RITMO_OFFLINE.json
 node tools/sabotar-arena.mjs --grupo=ritmo-offline --saida=docs/arena-treinadores/SABOTAGEM_RITMO_OFFLINE.json
 ```
+
+
+## Política dos rivais — AT6-14-rivais
+
+Spec §8.19 substitui a pendência do seletor descrita no bloco de catálogo.
+NPCs usam precisão e dano esperado TBE na montagem, referência neutra de
+base 80 no mesmo nível, sem RNG ou leitura do time do jogador. Especialização,
+liberação, movesets dos jogadores e snapshots permanecem preservados.
+`rival-2` não altera `tbe-4`; novas runs identificam a política.
+
+Relatório 10/AUDITORIA_RIVAIS.json: 23/16 pares de dominância, 15.100 combinações.
+Ginásios e 3.500 runs de holdout pareadas sem alteração de resultados; outro
+holdout de 3.300 runs mede orientação por rota. L-AT6-04/06 e Q5 permanecem.
+
+```bash
+node tools/auditar-rivais.mjs --saida=docs/arena-treinadores/AUDITORIA_RIVAIS.json
+node tools/medir-inicio-avanco.mjs --saida=docs/arena-treinadores/BALANCEAMENTO_INICIO_AVANCO.json
+node tools/sabotar-arena.mjs --grupo=rivais --saida=docs/arena-treinadores/SABOTAGEM_RIVAIS.json
+```
+
+A comparação histórica em AUDITORIA_RIVAIS usa `--antes` com o mapa de
+movesets extraído de `57388f6` antes de alterar a política. Sem esse argumento
+o comando publica somente a auditoria atual; não reproduz a comparação.

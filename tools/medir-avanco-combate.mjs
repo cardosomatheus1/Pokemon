@@ -2,6 +2,7 @@
 import {writeFileSync} from 'node:fs';
 import PACK from '../content/escolhido.mjs';
 import {runComecada,runNoInstante,paraOMotor} from '../app/modules/avanco-conta.mjs';
+import {VERSAO_MOVESET_RIVAL} from '../app/modules/moveset-dados.mjs';
 const n=Number(process.argv.find(x=>x.startsWith('--n='))?.slice(4)??100);
 const resultados=[];
 function medir({bioma,estagio,dex,nivel,delta=0,iv=15,nome}){
@@ -23,6 +24,6 @@ for(const estagio of[2,3,4])for(const delta of[0,1,2,5]){
 }
 for(const bioma of['praia','campo','montanha','vulcao'])for(const delta of[0,5])medir({nome:'rotas',bioma,estagio:2,dex:[2,5,8],nivel:12,delta});
 for(const iv of[0,15,31])medir({nome:'IVs',bioma:'floresta',estagio:3,dex:[3,6,9],nivel:19,iv});
-const relatorio={versao:'avanco-tbe-1',tbe:'tbe-4',sementes:'avanco-holdout-20261004-i',horarios:'04/10/2026, 12h e 23h UTC alternados',runs:resultados.length*n,resultados};
+const relatorio={versao:'avanco-tbe-1',tbe:'tbe-4',politicaRival:VERSAO_MOVESET_RIVAL,sementes:'avanco-holdout-20261004-i',horarios:'04/10/2026, 12h e 23h UTC alternados',runs:resultados.length*n,resultados};
 const saida=process.argv.find(x=>x.startsWith('--saida='))?.slice(8);
 if(saida)writeFileSync(saida,JSON.stringify(relatorio,null,2)+'\n');

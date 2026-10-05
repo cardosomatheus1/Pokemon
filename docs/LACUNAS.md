@@ -9696,17 +9696,18 @@ Holdout de 100 sementes por inicial no nível 5 na Floresta: planta/fogo/água
 e aprendizado dos golpes amplifica a diferença. Medir rota/orientação inicial
 e calibração por composição antes de declarar entrada equilibrada; preservar
 vantagem real de nível/IV/tipos. Fonte: BALANCEAMENTO_AVANCO.json; Spec §7.22.19.
+AT6-14-rivais adicionou 3.300 runs por bioma: Praia/planta 98%,
+Floresta/fogo 81%, Deserto/água 92% no nível 5. Sementes independentes, sem
+poções e sem validar acesso da conta. Orientação inicial ainda não aplicada.
 
 
 ### L-AT6-05 — auditar dominância do catálogo e seleção de movesets rivais
 
-**Dono:** AT6-14 · **Notada em:** AT6-14-info, 04/10/2026 · **Estado:** aberta.
-O catálogo de precisão e informação do jogador estão implementados; falta
-medir golpes dominados/diversidade e melhorar seleção de NPCs com a mesma
-régua da TBE. `movesetDoRival` ainda calcula a precisão omitida como 100%,
-enquanto combate usa 92%. Corrigir altera equipes novas e pede medição de
-Jornada/Avanço, preservando snapshots existentes. Não incluir essa mudança
-comportamental num commit apresentado como migração semântica do catálogo.
+**Dono:** AT6-14 · **Notada em:** AT6-14-info · **Resolvida:** AT6-14-rivais,
+04/10/2026. Catálogo/precisão reais e dano esperado TBE no seletor, respeitando
+especialização/nível. Auditoria 23/16 pares Kanto/original; 15.100 combinações,
+35 cenários pareados sem alteração de taxas. Ver relatório 10/JSONs. Diversidade
+dos secundários fica separada em L-AT6-06; Q5 anterior permanece aberto.
 
 
 ### L-XP-OFF-04 — recalibrar referências de espera após buff do banco
@@ -9717,3 +9718,14 @@ retornos a cada oito horas. As medições antigas de 12,7 dias para abrir as
 rotas não descrevem esse ritmo. Rever captura/evolução/custos e tempo até
 Liga/6×6 usando treino atual e coleção real. Não confundir estudo do banco
 sem aventuras com certificação de todas as jornadas ou emissão financeira.
+
+
+### L-AT6-06 — diversidade dos golpes sem secundários
+
+**Dono:** AT6-14 · **Notada em:** AT6-14-rivais, 04/10/2026 · **Estado:** aberta.
+Kanto tem 23 pares de dominância de poder/precisão no mesmo tipo/categoria,
+com zero secundários. Alguns são progressão; Dynamic Punch/Cross Chop abrem
+ambos no 28, poder 100, precisão 60/80%. Sem confusão o primeiro perde uso.
+Destrava: desenho explícito de efeitos suportados, balanceamento com holdout,
+replay/versionamento e interface coerente. Não ativar efeitos pelo nome nem
+remover golpes escolhidos de saves existentes. Fonte: AUDITORIA_RIVAIS.json.
