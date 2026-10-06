@@ -7544,6 +7544,30 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
+## D-172 — os cartões do time apagados com stamina para uma run ✅ CORRIGIDO na ST-2.37 (06/10)
+
+**Achado:** o 8º relato — *"os cards do time ficam apagados depois de uma run,
+mesmo com 37 de stamina — e uma run custa 23"*. **Bloco dono:** ST-2.37.
+**Causa.** O cartão comparava a stamina com o custo da expedição escolhida
+(Trilha, 45), e a mesma equipe sai também pelo Avanço (23). Com 37, o cartão
+dizia "não sai" quando saía. **Conserto.** `staminaParaSair(perfil)` (camada
+0, `volta-dados.mjs`) = o menor dos dois custos; o cartão apaga só quando não
+sai por nenhum caminho, e a expedição sem stamina segue recusada no botão
+dela, com o motivo. **Teste que trava:** `relato8` "D-172". S91034 PEGOU; S928
+realvo e PEGOU.
+
+## D-171 — em 432 px, a barra de baixo cobria o fim da página ✅ CORRIGIDO na ST-2.37 (06/10)
+
+**Achado:** o 8º relato — *"em 432 px, a barra de baixo cobre o fim da
+página; o Ranking da Liga fica escondido"*. **Bloco dono:** ST-2.37.
+**Medido** (Chromium, 432 × 900, Arenas): fim do conteúdo em 900 px, topo da
+barra em 833. **Causa.** O `body` tem `height:100%` no geral; no celular a
+folga de 84 px para a barra caía no fim da TELA, e o conteúdo que passava dela
+terminava sob a barra. **Conserto.** No `@media (max-width:640px)`, `height:auto;
+min-height:100%` — o body cresce com o conteúdo e a folga vai para o fim da
+página. Depois: fim do conteúdo em 816, barra em 833. **Teste que trava:**
+`relato8` "D-171". S91035 PEGOU.
+
 ## D-170 — o chefe do estágio 2 da Floresta era um paredão ✅ CORRIGIDO na ST-2.35 (06/10)
 
 **Achado:** o 8º relato — *"com o time entre os níveis 14 e 16, perdi as 3 runs

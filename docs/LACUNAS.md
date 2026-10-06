@@ -9392,6 +9392,23 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-256 — as runs de um estágio repetem os mesmos encontros
+
+**Registrada em:** 06/10/2026, no 8º relato (*"as 3 runs deixaram os mesmos 4
+encontros esperando: Bellsprout, Oddish, Venonat e Bulbasaur"*). **Bloco
+dono:** **ST-2.38** (proposta no PLANO — a variedade do elenco por estágio).
+**Estado:** aberta.
+
+Não é defeito: o elenco de cada estágio do Avanço é fixo por desenho (o
+estágio 2 da Floresta sorteia entre as mesmas espécies), e a captura pendente
+é sempre de quem apareceu. O relato mostra que, jogado três vezes seguidas, o
+estágio lê como repetido. **Por que não cabe agora:** mexe na tabela de
+encontros, e encontros entram na emissão e na antifraude (capturas/dia) — é
+decisão de economia com medição própria, não conserto de tela. **O que a
+destrava:** medir quantas espécies distintas um jogador diário vê por estágio
+em uma semana (`tools/estudo-ritmo-avanco.mjs`), e propor a rotação (por dia,
+ou um raro por estágio) com a banda da antifraude conferida.
+
 ### L-255 — no Avanço só o primeiro do time luta, e a Poção e o desmaio não importam ✅ FECHADA na ST-2.35 (06/10)
 
 **Registrada em:** 06/10/2026, no 7º relato (*"o Avanço ainda joga sozinho, o

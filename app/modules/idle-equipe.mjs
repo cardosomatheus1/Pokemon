@@ -11,7 +11,7 @@
  * A divisao e por assunto e nao por tamanho: as duas leem a criatura e o
  * relogio, e nenhuma delas decide nada — a decisao mora no `engine/foco.mjs`.
  */
-import { fraseDoCusto } from './volta-dados.mjs';
+import { fraseDoCusto, staminaParaSair } from './volta-dados.mjs';
 import { avisoDeEvolucao } from '../../engine/exclusivos.mjs';
 import { avisoDaPedra } from './prende-dados.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
@@ -220,7 +220,7 @@ export function pintarCartoes(E, { perfil, selecao = [], agora = Date.now(),
        é lida como perdida — e o jogador vai procurá-la na caixa, onde ela não
        está. Fechada com o lugar escrito, ele sabe onde ir buscá-la. */
     const fora = ondeAventura(E, c.id);
-    const pode = st >= custo && !fora;
+    const pode = st >= staminaParaSair(perfil) && !fora;   // ST-2.37: o Avanço também conta
     const sel = selecao.includes(c.id);
     const f = c.forma ?? { ofensiva: 0, defesa: 0, velocidade: 0 };
     return `

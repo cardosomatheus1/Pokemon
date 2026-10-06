@@ -80,7 +80,8 @@ export function suite() {
     ok(/\.mainnav\{position:fixed;left:0;right:0;bottom:0;/.test(celular), 'a barra não desceu');
     ok(/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/.test(celular), 'a barra não tem cinco lugares');
     ok(/\.topbar\{[^}]*backdrop-filter:none\}/.test(celular), 'a topbar com filtro prende a barra fixa dentro dela');
-    ok(/body\{padding:10px 10px calc\(84px \+ env\(safe-area-inset-bottom\)\)\}/.test(celular), 'o fim da página fica atrás da barra');
+    /* D-171 (ST-2.37): a folga só cai no fim da PÁGINA se o body crescer com o conteúdo */
+    ok(/body\{padding:10px 10px calc\(84px \+ env\(safe-area-inset-bottom\)\);height:auto;min-height:100%\}/.test(celular), 'o fim da página fica atrás da barra');
     ok(/\.mainnav\.mais \.navFolha\{display:grid/.test(celular), 'a folha não abre');
     ok(/\.conexao-faixa\{bottom:calc\(84px/.test(celular), 'a faixa de conexão fica atrás da barra');
     ok(/#idleBiomas,#offBiomas\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)\}/.test(celular), 'as rotas não enchem a largura');

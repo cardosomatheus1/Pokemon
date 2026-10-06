@@ -109,6 +109,8 @@ export function criarApi({ base = '', armazem = globalThis.localStorage } = {}) 
     sessaoAtual: () => sessao,
     /* O jogo foi atualizado com a aba aberta (D-145): a tela avisa. */
     aoMudarVersao: f => { aoMudar.add(f); if (novaVersao) f(); },
+    /* a marca do código que este aparelho está rodando (ST-2.37) */
+    versaoVista: () => buildVisto,
     esquecerSessao: () => { sessao = null; gravar(null); },
     /* ADOTAR UM TOKEN QUE A RESPOSTA NÃO ENTREGOU COMO `sessao`.
      *

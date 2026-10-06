@@ -156,3 +156,10 @@ export function fraseDoCusto(quantos, perfil) {
     ? `custam <b>${c.expedicao.total}</b> de stamina na ${c.expedicao.rotulo} (${c.expedicao.cada} cada), ou <b>${run.replace(/^(\d+)/, '$1</b>')}`
     : `custam <b>${run.replace(/^(\d+)/, '$1</b>')} de stamina`;
 }
+
+/* O CARTÃO APAGA SÓ QUANDO NÃO DÁ PARA NADA (ST-2.37). O 8º relato: "os cards
+   do time ficam apagados depois de uma run, mesmo com 37 de stamina — e uma
+   run custa 23". O cartão comparava com a expedição escolhida (Trilha, 45), e
+   a mesma equipe sai também pelo Avanço. Apagado é "não sai por nenhum dos
+   dois"; a expedição sem stamina continua recusada no botão dela, com o motivo. */
+export const staminaParaSair = perfil => Math.min(PERFIS[perfil]?.custo ?? Infinity, STAMINA_DO_AVANCO);

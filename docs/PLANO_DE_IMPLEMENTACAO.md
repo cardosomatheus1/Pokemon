@@ -2596,6 +2596,35 @@ do servidor. Três partes:
 - **Fora:** as duas migrações (doces do D-144, nível de nascer das capturas
   antigas) — decisão do dono, pendente.
 
+### ST-2.37 · O resto do 8º relato: a barra, os cartões e a versão (D-171, D-172) ✅ 06/10
+- **Por quê:** o 8º relato, fora o chefe (que foi a ST-2.35): a barra de baixo
+  cobria o fim da página em 432 px; os cartões do time ficavam apagados com 37
+  de stamina; o dono não achou o número da versão (o "commit" do log das
+  Arenas é o da RODADA, a prova do sorteio, e não o do código).
+- **Medido antes:** 432 × 900 nas Arenas, fim do conteúdo 900 px sob a barra
+  em 833; o cartão comparava com a Trilha (45) e a run custa 23; o servidor já
+  mandava `x-build` em toda resposta e a tela nunca o mostrou.
+- **Feito:** D-171 (`body` cresce com o conteúdo no celular); D-172
+  (`staminaParaSair`, camada 0: o menor custo entre a expedição e o Avanço);
+  a versão no topo do desktop e na folha "Mais" aberta do celular
+  (`api.versaoVista`, pintada depois do primeiro `/saude`). A captura pegou
+  duas leituras erradas da primeira versão — a marca caía entre as abas no
+  desktop e dobrava a barra do visitante — e ela ficou só na folha aberta.
+- **Não construído:** os encontros repetidos viram **L-256** (ST-2.38).
+- **Testes:** `relato8` (novo, 5). S91034–S91038 PEGOU; S928 realvo e PEGOU.
+  Q5: 432 (Arenas, fim da página e folha "Mais"), 1100, 1440, 1920; 0
+  pageerror. Mutantes de navegador: 0 — as regras de CSS são conferidas por
+  texto, e a decisão do cartão mora em Node.
+
+### ST-2.38 · A variedade dos encontros por estágio (L-256) — proposta
+- **Por quê:** o 8º relato — três runs seguidas no estágio 2 da Floresta
+  deixaram os mesmos quatro encontros.
+- **Método:** INV. Medir espécies distintas vistas por estágio numa semana de
+  jogador diário; propor rotação (por dia, ou um raro por estágio) sem tirar a
+  antifraude da banda (capturas/dia) nem a emissão do estudo de economia.
+- **Portões:** Q1, Q2, Q3 (emissão e antifraude), Q4.
+- **Sabotagem:** a rotação volta a fixa; o raro aparece sempre.
+
 ### ST-2.36 · A luta fluida (D-169) ✅ 06/10
 - **Por quê:** o dono — *"a luta do idle tá bem travada"*.
 - **Medido e feito:** D-169 — o `backdrop-filter` dos elementos fixos custava

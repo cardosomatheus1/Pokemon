@@ -7304,8 +7304,8 @@ export const DEFEITOS = [
 
   { id:'S928', arquivo:EQUIPE, nome:'o cartao volta a ofertar quem ja esta fora',
     real:'"o dado recusa" — recusa depois do clique, que e o D-062 de volta',
-    de:'    const pode = st >= custo && !fora;',
-    para:'    const pode = st >= custo;' },
+    de:'    const pode = st >= staminaParaSair(perfil) && !fora;',
+    para:'    const pode = st >= staminaParaSair(perfil);' },
 
   /* ── L-166: A BOLA SAIU DA RUN, E O QUADRO DO FIM E O MOMENTO ──────────
      Quatro pecas independentes: a barra da wave, a marca de origem, a limpeza
@@ -13078,4 +13078,14 @@ export const DEFEITOS = [
     de:"niveisChefes:[5,13,21,33],",para:"niveisChefes:[5,15,24,36],"},
   {id:"S91033",arquivo:"engine/run-combate.mjs",nome:"a run antiga muda de regra no meio",real:"quem apanha muda numa run já começada",
     de:"    return regra.alvo==='espalhado'?",para:"    return true?"},
+  {id:"S91034",arquivo:"app/modules/volta-dados.mjs",nome:"o cartão volta a comparar só com a expedição",real:"com 37 de stamina o time fica apagado (8º relato)",
+    de:"export const staminaParaSair = perfil => Math.min(PERFIS[perfil]?.custo ?? Infinity, STAMINA_DO_AVANCO);",para:"export const staminaParaSair = perfil => PERFIS[perfil]?.custo ?? STAMINA_DO_AVANCO;"},
+  {id:"S91035",arquivo:"app/index.html",nome:"o body do celular volta a ter a altura da tela",real:"em 432 px a barra cobre o fim da página",
+    de:"body{padding:10px 10px calc(84px + env(safe-area-inset-bottom));height:auto;min-height:100%}",para:"body{padding:10px 10px calc(84px + env(safe-area-inset-bottom))}"},
+  {id:"S91036",arquivo:"app/modules/api.mjs",nome:"a api esquece a versão vista",real:"a tela não mostra em que versão o jogador está",
+    de:"    versaoVista: () => buildVisto,",para:"    versaoVista: () => null,"},
+  {id:"S91037",arquivo:"app/index.html",nome:"a folha do Mais perde a versão",real:"no celular não há onde ler a versão",
+    de:'    <small class="versaoApp navVersao"></small>\n',para:""},
+  {id:"S91038",arquivo:"app/index.html",nome:"a versão da folha volta a aparecer solta",real:"a barra do visitante dobra e cobre a página; no desktop a versão cai entre as abas",
+    de:".navVersao{display:none;grid-column:1 / -1;",para:".navVersao{grid-column:1 / -1;"},
 ];

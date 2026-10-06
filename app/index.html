@@ -3144,6 +3144,9 @@ input[type=number]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
   font-size:9px;line-height:1;padding:2px 3px;border-radius:5px;
   background:var(--bg);border:1px solid var(--line);color:var(--gold)}
 .trQuantos{color:var(--gold)}
+/* ST-2.37: a versão do código, discreta — é para quem relata defeito */
+.versaoApp{display:block;font-size:.6rem;letter-spacing:.04em;color:var(--dim);opacity:.8}
+.navVersao{display:none;grid-column:1 / -1;text-align:center;padding:6px 0 2px}
 /* O TETO DO BANCO (ST-2.31): quem chegou nele fica com o selo apagado e a
    borda tracejada — "parou aqui", e não "quebrou". O número do teto vai em
    ciano, a cor da interface, porque é regra e não recompensa. */
@@ -8264,7 +8267,11 @@ body.soAssiste .pick{cursor:pointer}
 
 @media (max-width:640px){
   /* o rodapé da página abre espaço para a barra, e para a "home bar" do iPhone */
-  body{padding:10px 10px calc(84px + env(safe-area-inset-bottom))}
+  /* A FOLGA DA BARRA SÓ VALE NO FIM DO CONTEÚDO se o body crescer com ele
+     (o 8º relato: "em 432 px a barra de baixo cobre o fim da página"). Com o
+     `height:100%` geral, o body ficava do tamanho da tela, a folga caía no
+     fim da TELA, e o conteúdo que passava dela terminava sob a barra. */
+  body{padding:10px 10px calc(84px + env(safe-area-inset-bottom));height:auto;min-height:100%}
   /* O TOPO NUMA LINHA SÓ: marca à esquerda, sessão à direita.
      O `backdrop-filter` SAI aqui de propósito: ancestral com filtro vira o
      bloco de contenção de quem é `position:fixed`, e a barra — que mora
@@ -8333,6 +8340,9 @@ body.soAssiste .pick{cursor:pointer}
   .mainnav.visitante .navFolha .nav{min-height:54px}
   .mainnav.visitante .navFolha .nav:not(.on){background:none;border-color:transparent}
   .mainnav.visitante .navFolha .nav[data-view="viewHome"]{order:-1}
+  /* a versão mora só na folha ABERTA: na barra de pé (visitante) e no topo do
+     desktop ela viraria mais uma linha, e a barra cresceria por cima da página */
+  .mainnav.mais:not(.visitante) .navVersao{display:block;order:2}
 
   /* a faixa de conexão subia por trás da barra */
   .conexao-faixa{bottom:calc(84px + env(safe-area-inset-bottom))}
@@ -8425,6 +8435,7 @@ body.soAssiste .pick{cursor:pointer}
     <span class="pokemark" aria-hidden="true"></span>
     <span class="letrado vivo" id="marcaNome"><i></i><b></b></span>
     <small id="marcaElenco">elenco de 76</small>
+    <small class="versaoApp" id="marcaVersao"></small>
   </div>
   <nav class="mainnav" id="mainnav">
     <!-- A ORDEM DA BARRA E O MAPA MENTAL DO JOGO (1.18).
@@ -8472,6 +8483,7 @@ body.soAssiste .pick{cursor:pointer}
     <button class="nav" data-view="viewWiki">Wiki</button>
     <button class="nav" data-view="viewHow">Como funciona</button>
     <button class="nav" data-view="viewRules">Regras</button>
+    <small class="versaoApp navVersao"></small>
     </div>
   </nav>
   <div class="row" style="gap:6px" id="sessionBox"></div>
@@ -10024,6 +10036,14 @@ function abaDaRecarga() {
   try { const v = sessionStorage.getItem(CHAVE_DA_RECARGA); sessionStorage.removeItem(CHAVE_DA_RECARGA); return v; } catch { return null; }
 }
 
+/* A VERSÃO NA TELA (ST-2.37): o 8º relato não conseguiu confirmar em qual
+   versão estava — o "commit" do log das Arenas é o da RODADA (a prova de
+   justiça do sorteio), e não o do código. */
+function pintarVersao(b) {
+  if (!b) return;
+  for (const el of document.querySelectorAll('.versaoApp')) el.textContent = `versão ${String(b).slice(0, 12)}`;
+}
+
 (async function boot(){
   /* D-145: a aba aberta antes de uma atualização roda a regra velha. */
   api.aoMudarVersao(() => {
@@ -10044,6 +10064,7 @@ function abaDaRecarga() {
     if (w) w.innerHTML = `${papelDaMoeda(PACK, 'arena')}. <button class="guiaQ" type="button" data-guia-secao="moedas" data-fechar="${modal}">as duas moedas →</button>`;
   }
   $('#btnNovaVersao')?.addEventListener('click', recarregarNaMesmaAba);
+  api.get('/saude').then(() => pintarVersao(api.versaoVista())).catch(() => { /* sem servidor, sem versão */ });
   atualizarSaldo();
   $('#btnAuto').classList.add('on');
   ensureDaily();          // garante os 3 desafios do dia já no carregamento
