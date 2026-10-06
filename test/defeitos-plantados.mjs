@@ -12917,7 +12917,7 @@ export const DEFEITOS = [
   {id:'S90206',arquivo:'engine/run-combate.mjs',nome:'mob volta a ter HP fictício',real:'placa encena cem pontos em vez do atributo real',
     de:"maxHp=montarLutador(pack,rival,'B',0).maxHp",para:'maxHp=100'},
   {id:'S90207',arquivo:'engine/run-combate.mjs',nome:'cena mostra titular caído',real:'o sprite e a placa não acompanham quem realmente luta',
-    de:'let heroi=indiceVivo(estado.vidas)',para:'let heroi=0'},
+    de:'let heroi=posto!=null&&estado.vidas[posto]>0?posto:indiceVivo(estado.vidas)',para:'let heroi=0'},
   {id:'S90208',arquivo:'engine/run-combate.mjs',nome:'guia deixa de ajudar o aliado',real:'painel promete bônus que o motor esqueceu',
     de:'?BONUS_DO_GUIA:0',para:'?0:0'},
 
@@ -13070,4 +13070,12 @@ export const DEFEITOS = [
     de:"  aproximacaoMs:3500,golpeMs:1400,duracaoMinMs:24000,",para:"  aproximacaoMs:3500,golpeMs:1400,duracaoMinMs:45000,"},
   {id:"S91029",arquivo:"app/index.html",nome:"os cartões voltam a desfocar o fundo",real:"a luta volta a ~13 quadros por segundo",
     de:".card, .feat, .step, .rule, .modal, .hero-stats div, .stat-box, .opt, .chip{",para:".card, .feat, .step, .rule, .modal, .hero-stats div, .stat-box, .opt, .chip{backdrop-filter:blur(10px);"},
+  {id:"S91030",arquivo:"engine/run-combate.mjs",nome:"só o primeiro volta a lutar",real:"os outros dois passam a run intactos e a Poção não importa",
+    de:"  alvo:'espalhado',",para:"  alvo:'primeiro',"},
+  {id:"S91031",arquivo:"engine/run-combate.mjs",nome:"a cura por abate volta a 25%",real:"o time volta cheio a cada wave",
+    de:"niveisChefes:[5,13,21,33],recuperacao:.10,",para:"niveisChefes:[5,13,21,33],recuperacao:.25,"},
+  {id:"S91032",arquivo:"engine/run-combate.mjs",nome:"o chefe volta a ser paredão",real:"o Venomoth 15 com Sludge Bomb derruba o time do 15",
+    de:"niveisChefes:[5,13,21,33],",para:"niveisChefes:[5,15,24,36],"},
+  {id:"S91033",arquivo:"engine/run-combate.mjs",nome:"a run antiga muda de regra no meio",real:"quem apanha muda numa run já começada",
+    de:"    return regra.alvo==='espalhado'?",para:"    return true?"},
 ];

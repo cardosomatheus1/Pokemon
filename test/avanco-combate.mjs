@@ -74,7 +74,7 @@ export function suite(){const s=criarSuite('avanco-combate');
         ganhou+=Number(runNoInstante(PACK,r,m,T+86400000).run.fim.completou);
       }return ganhou/80;
     };
-    const taxas=[12,13,17].map(n=>taxa(n));
+    const taxas=[10,11,13].map(n=>taxa(n));   // ST-2.35: o chefe desceu, e 12→17 já batia no teto de 100%
     ok(taxas[1]>taxas[0]+.05&&taxas[2]>taxas[1]+.10,`nível sem progressão: ${taxas}`);
     const baixo=taxa(12,0),alto=taxa(12,31);ok(alto>baixo+.025,`IV sem vantagem: ${baixo}/${alto}`);
   });
@@ -87,7 +87,8 @@ export function suite(){const s=criarSuite('avanco-combate');
   });
   s.teste('guia ajuda o ataque do aliado consciente, sem ajudar a si nem acumular',()=>{
     const equipe=[...motor(30,6),...motor(30,9),...motor(30,3)].map((c,i)=>({...c,id:String(i)}));
-    const dano=r=>waveAtual(r,{pack:PACK}).roteiro.momentos.find(m=>m.tipo==='golpe'&&m.de==='meu').dano;
+    /* a regra antiga de alvo (só o primeiro luta): aqui se mede o guia, e não quem apanha (ST-2.35) */
+    const dano=r=>{r.combate.regra={...r.combate.regra,alvo:'primeiro'};return waveAtual(r,{pack:PACK}).roteiro.momentos.find(m=>m.tipo==='golpe'&&m.de==='meu').dano;};
     const base=dano(iniciar(equipe,'guia-real'));equipe[0].foco='guia';
     igual(dano(iniciar(equipe,'guia-real')),base,'guia ajudou a si');
     equipe[1].foco='guia';const ajudou=dano(iniciar(equipe,'guia-real'));ok(ajudou>base);
@@ -135,7 +136,7 @@ export function suite(){const s=criarSuite('avanco-combate');
   });
   s.teste('quando titular cai, o retrato mostra HP, espécie e golpes do próximo aliado',()=>{
     const m=[...motor(1,1),...motor(30,6)].map((c,i)=>({...c,id:String(i)})),r=iniciar(m,'troca-real');
-    r.combate.hpInicial[0]=1;
+    r.combate.hpInicial[0]=1;r.combate.regra={...r.combate.regra,alvo:'primeiro'};   // mede a troca, não quem apanha (ST-2.35)
     const caiu=waveAtual(r,{pack:PACK}).roteiro.momentos.find(m=>m.tipo==='golpe'&&m.de==='dele'&&m.caiu);
     ok(caiu);const c=cenaDaRun(r,{pack:PACK,agora:T+caiu.t});
     igual(c.heroi.i,1);igual(c.heroi.dex,6);igual(JSON.stringify(c.heroi.golpes),JSON.stringify(r.combate.equipe[1].golpes));

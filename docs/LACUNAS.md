@@ -9392,12 +9392,13 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
-### L-255 — no Avanço só o primeiro do time luta, e a Poção e o desmaio não importam
+### L-255 — no Avanço só o primeiro do time luta, e a Poção e o desmaio não importam ✅ FECHADA na ST-2.35 (06/10)
 
 **Registrada em:** 06/10/2026, no 7º relato (*"o Avanço ainda joga sozinho, o
 time quase não leva dano … por isso a Poção e o desmaio nunca chegaram a
 importar"*). **Bloco dono:** **ST-2.35** (o dano chega ao time inteiro).
-**Estado:** aberta — diagnóstico medido, proposta escrita, a construir.
+**Estado:** fechada na ST-2.35 — o selvagem escolhe o alvo entre os vivos, a
+cura por abate é 10%, o chefe desceu 2–3 níveis (D-170).
 
 Medido na ST-2.34 (`node tools/estudo-ritmo-avanco.mjs`, a run de verdade):
 - **só o primeiro vivo luta** (`waveDeCombate`: `indiceVivo`); o 2º e o 3º só

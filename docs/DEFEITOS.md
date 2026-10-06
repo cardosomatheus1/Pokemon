@@ -7544,6 +7544,19 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
+## D-170 — o chefe do estágio 2 da Floresta era um paredão ✅ CORRIGIDO na ST-2.35 (06/10)
+
+**Achado:** o 8º relato — *"com o time entre os níveis 14 e 16, perdi as 3 runs
+na wave 10 … o HP caiu de 42 direto pra 0 com um golpe só"*. **Bloco dono:**
+ST-2.35. **Medido:** o chefe era um Venomoth nível 15 (forma evoluída, At. Esp.
+35, Sludge Bomb) contra Def. Esp. 16–32 do time; Bulbasaur 16 + Kakuna 15 +
+Pidgey 14 vencia 50% das runs, e cada Sludge Bomb tirava em média 81% da vida
+do Kakuna — o crítico matava de uma vez. **Causa.** `niveisChefes` punha o
+chefe 3 níveis acima da porta do estágio sendo a forma evoluída, e só o da
+frente lutava. **Conserto.** Chefes [5,15,24,36] → [5,13,21,33]; no 13 o
+Venomoth ainda não tem Sludge Bomb. O mesmo time: 95% de vitória, golpe médio
+do chefe 35% da vida. **Teste que trava:** `dano-time` "paredão". S91032 PEGOU.
+
 ## D-169 — a luta do idle travada: ~13 quadros por segundo ✅ CORRIGIDO na ST-2.36 (06/10)
 
 **Achado:** o dono — *"a luta do idle tá bem travada, não tá fluida"*.

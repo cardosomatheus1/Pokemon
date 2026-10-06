@@ -7,7 +7,16 @@ import { WAVES } from './wave.mjs';
 import { BONUS_DO_GUIA } from './foco.mjs';
 export const VERSAO_AVANCO_COMBATE='avanco-tbe-1';
 export const REGRA_AVANCO_COMBATE=Object.freeze({
-  niveisComuns:[1,8,14,24],niveisChefes:[5,15,24,36],recuperacao:.25,
+  /* ST-2.35 (o 8º relato: "o chefe do estágio 2 virou um paredão"): o chefe
+     dos estágios 2 a 4 desce 2 a 3 níveis — ele é a forma evoluída, e no
+     nível da porta +3 já ganhava de um time inteiro de não evoluídos.
+     A cura por abate cai de 25% para 10%: com 25% o time voltava cheio a
+     cada wave, e a Poção nunca fazia falta. */
+  niveisComuns:[1,8,14,24],niveisChefes:[5,13,21,33],recuperacao:.10,
+  /* QUEM APANHA: o selvagem escolhe o alvo entre os vivos, e o time apanha
+     junto — com 'primeiro', só o da frente lutava e os outros passavam a run
+     intactos. Run gravada sem esta chave segue a regra dela ('primeiro'). */
+  alvo:'espalhado',
   /* ST-2.34: a wave estica até 24 s, e não até 45. A luta dura ~19 s em todo
      estágio e nível (tools/estudo-ritmo-avanco.mjs); os 26 s que sobravam
      eram campo vazio — o 7º relato: "waves de 45 s deixam o ritmo lento". */
@@ -45,12 +54,17 @@ export function waveDeCombate(run,pack){
     }
   };
   const adversarios=w.adversarios;
+  const vivos=()=>vidas.map((hp,a)=>hp>0?a:-1).filter(a=>a>=0);
+  const alvoDo=(i,k)=>{const v=vivos();if(!v.length)return -1;
+    return regra.alvo==='espalhado'?v[derivar(run.raiz,`avanco:${run.wave}:${i}:alvo:${k}`)%v.length]:v[0];};
   for(let i=0;i<adversarios.length&&indiceVivo(vidas)>=0;i++){
     const rival=adversarios[i],maxHp=montarLutador(pack,rival,'B',0).maxHp;
-    const de=t;marcar('entra',{i,dex:rival.dex,hpMax:maxHp,nivel:rival.nivel});
+    let atual=alvoDo(i,0),troca=0;
+    const de=t;marcar('entra',{i,dex:rival.dex,hpMax:maxHp,nivel:rival.nivel,heroi:atual});
     t+=entradaMs;let hpRival=maxHp;
     while(hpRival>0&&indiceVivo(vidas)>=0&&!empate){
-      const heroi=indiceVivo(vidas);
+      if(!(vidas[atual]>0))atual=alvoDo(i,++troca);
+      const heroi=atual;
       let duelo=iniciarCombate(pack,[equipe[heroi]],[rival],derivar(run.raiz,`avanco:${run.wave}:${i}:${heroi}:combate`),
         {hpA:[vidas[heroi]],hpB:[hpRival]});
       // Guia ajuda os outros, uma vez. No duelo o poder é ataque físico/especial.
@@ -69,7 +83,7 @@ export function waveDeCombate(run,pack){
             iniciativa:e.iniciativa,velocidade:e.velocidade,
             hpAlvo:meu?hpRival:vidas[heroi],hpRival});
           if(e.caiu&&meu)marcar('abate',{i,dex:rival.dex});
-          if(e.caiu&&!meu)marcar('troca',{heroi:indiceVivo(vidas)});
+          if(e.caiu&&!meu){atual=alvoDo(i,++troca);marcar('troca',{heroi:atual});}
         }
         if(passo.fim){if(passo.vencedor===null)empate=true;break;}
       }
@@ -132,7 +146,9 @@ export function cenaDoCombate(run,{pack,agora}){
     const hp=hits.at(-1)?.hpAlvo??m.hpMax;
     return {...m,desde:m.t,chefe:run.wave===WAVES,chegando:t<m.t+Math.round(run.combate.regra.aproximacaoMs/run.combate.ritmo),hp,vida:hp/m.hpMax};
   });
-  let heroi=indiceVivo(estado.vidas);if(heroi<0)heroi=0;
+  /* quem está lutando agora é o último que o roteiro pôs em campo (ST-2.35) */
+  const posto=roteiro.momentos.filter(m=>m.t<=t&&Number.isInteger(m.heroi)&&m.heroi>=0).at(-1)?.heroi;
+  let heroi=posto!=null&&estado.vidas[posto]>0?posto:indiceVivo(estado.vidas);if(heroi<0)heroi=0;
   const unidade=run.combate.equipe[heroi];
   const proxima=roteiro.momentos.find(m=>m.tipo==='entra'&&m.t>t);
   return {wave:run.wave,tentativa:0,chance:null,venceu:w.venceu,duracao:roteiro.duracao,t,restam:roteiro.duracao-t,

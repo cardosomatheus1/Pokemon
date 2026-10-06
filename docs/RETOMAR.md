@@ -24,6 +24,11 @@ defeito meu.
 
 ## 0. ONDE PARAMOS — 05/10/2026 · AT6-15-integracao-final
 
+**ST-2.35 (06/10):** o dano chega ao time inteiro e o chefe deixou de ser
+paredão (L-255, D-170). Na fila: ST-2.37 (o resto do 8º relato — barra do
+celular cobrindo o fim da página, cards apagados com stamina, versão na tela,
+encontros repetidos).
+
 **ST-2.36 (06/10):** a luta fluida — sem desfoque nos elementos fixos, de ~13
 para ~41 quadros por segundo no arnês (D-169).
 

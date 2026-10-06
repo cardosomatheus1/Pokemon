@@ -2616,12 +2616,24 @@ do servidor. Três partes:
   Chromium, 0 pageerror.
 - **O resto do relato** (o time quase não apanha) é a **ST-2.35** — L-255.
 
-### ST-2.35 · O dano chega ao time inteiro (L-255) — o próximo
-- **Por quê:** o 7º relato — a Poção e o desmaio não importam.
-- **O que medir antes:** a vida mínima, o desmaio e a taxa de baú com o
-  selvagem escolhendo o alvo entre os vivos, a cura por abate em ~10% e os
-  comuns a 2 níveis da porta; e o ritmo de XP da ST-2.31 de novo.
-  **Portões:** Q1, Q2, Q4 (emissão), Q5 (a cena com mais de um apanhando).
+### ST-2.35 · O dano chega ao time inteiro, e o chefe sem paredão (L-255, D-170) ✅ 06/10
+- **Por quê:** o 7º relato (a Poção e o desmaio não importam) e o 8º (o chefe
+  da Floresta 2 virou paredão: 0 de 3 runs com o time 14–16).
+- **Medido antes:** só o primeiro vivo lutava; cada abate curava 25%; o chefe
+  da Floresta 2, Venomoth 15 com Sludge Bomb, vencia o time do relato em 50%.
+- **Feito** (`engine/run-combate.mjs`, regra gravada na run): o selvagem
+  escolhe o alvo entre os vivos (`alvo:'espalhado'`; run gravada sem a chave
+  segue 'primeiro' — nada muda no meio de uma run); cura por abate 10%;
+  chefes [5,13,21,33]. A cena mostra quem o roteiro pôs em campo.
+- **Depois** (`tools/estudo-ritmo-avanco.mjs`): no nível da porta +2/+3 um
+  time de três fecha 95–100% das runs com vida abaixo de 30% e desmaio em boa
+  parte delas; sozinho no estágio 3, 55–73%. O time do relato vence o chefe
+  em 95%. Ritmo de XP até o Campeão 34/31/7 → 35/33/7 dias. Emissão: diário
+  est.1 pokecoin 2492,71 → 2568,43, XP 1178,1 → 1189; antifraude diário est.1
+  11,15 → 11,04 capturas/dia (a banda não muda).
+- **Testes:** `dano-time` (novo, 5); `avanco-combate` (o guia e a troca
+  medidos com a regra antiga de alvo; o gradiente de nível em 10/11/13 — o
+  12→17 já batia em 100%). S91030–S91033 PEGOU; S90207 realvo e PEGOU.
 
 ### ST-2.33b · O mapa da run: o time inteiro, e placas que não cobrem ninguém ✅ 06/10
 - **Por quê:** o 7º relato — só o líder andava, e os nomes cobriam os sprites.

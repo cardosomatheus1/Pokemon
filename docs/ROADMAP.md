@@ -280,6 +280,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **ST-2.35** · o dano no time inteiro e o chefe sem paredão (L-255, D-170) | 06/10 | o selvagem escolhe o alvo entre os vivos, cura por abate 25% → 10%, chefes −2/−3 níveis; o time do 8º relato vence o chefe da Floresta 2 em 50% → 95%; `dano-time` 5 testes, S91030–S91033 |
 | **ST-2.36** · a luta fluida (D-169) | 06/10 | o desfoque dos cartões refazia a cada quadro: 77,7 → 24,4 ms por quadro com a run em curso; S91029 |
 | **ST-2.34** · a wave sem tempo morto | 06/10 | a luta da wave dura ~19 s e era esticada até 45 s; agora 24 s (run 7,5 → ~4 min), sem mudar quem vence nem o dano; `ritmo-avanco` 4 testes, S91028 · o dano no time inteiro vira a ST-2.35 (L-255) |
 | **ST-2.33b** · o mapa da run: o time inteiro e placas que não cobrem ninguém | 06/10 | D-167 os de trás seguem o rastro do líder · D-168 as placas desviam dos sprites e do treinador; `mapa-run` 6 testes, S91022–S91027 |
