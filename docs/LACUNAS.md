@@ -9392,6 +9392,30 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-255 — no Avanço só o primeiro do time luta, e a Poção e o desmaio não importam
+
+**Registrada em:** 06/10/2026, no 7º relato (*"o Avanço ainda joga sozinho, o
+time quase não leva dano … por isso a Poção e o desmaio nunca chegaram a
+importar"*). **Bloco dono:** **ST-2.35** (o dano chega ao time inteiro).
+**Estado:** aberta — diagnóstico medido, proposta escrita, a construir.
+
+Medido na ST-2.34 (`node tools/estudo-ritmo-avanco.mjs`, a run de verdade):
+- **só o primeiro vivo luta** (`waveDeCombate`: `indiceVivo`); o 2º e o 3º só
+  entram quando o da frente desmaia — com três, dois passam a run intactos;
+- **cada selvagem derrubado cura 25%** do time (`recuperacao`);
+- subir os comuns em +3 ou +5 níveis e baixar a cura para 12% mexeu pouco: no
+  nível da porta +5, a vida mínima da run cai 1 a 8 pontos.
+A vida mínima vem do chefe; o resto da run não desgasta ninguém.
+
+**Proposta (minha, segue a regra da recomendação):** o selvagem escolhe em
+quem bate entre os vivos (o time apanha junto, e o da frente não é o único
+que gasta vida); a cura por abate cai para ~10%; os comuns chegam a 2 níveis
+da porta. Meta medida: no nível da porta +5, a vida mínima abaixo de 30% em
+25–40% das runs (a Poção decide) e algum desmaio com três. **Por que não cabe
+agora:** muda o modelo do combate (TBE de duelo) e a taxa de baú — mexe na
+emissão e no ritmo de XP da ST-2.31, que precisam ser medidos de novo junto.
+**O que a destrava:** a fila — é o próximo bloco.
+
 ### L-254 — "o fundo da Arena 6×6 corta no meio, deixando uma faixa cinza"
 
 **Registrada em:** 06/10/2026, no 7º relato. **Bloco dono:** **ST-2.33b**.

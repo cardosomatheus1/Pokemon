@@ -2596,6 +2596,27 @@ do servidor. Três partes:
 - **Fora:** as duas migrações (doces do D-144, nível de nascer das capturas
   antigas) — decisão do dono, pendente.
 
+### ST-2.34 · A wave sem tempo morto ✅ 06/10
+- **Por quê:** o 7º relato — *"as waves de uns 45 segundos deixam o ritmo
+  lento"*.
+- **Medido antes** (`tools/estudo-ritmo-avanco.mjs`, 21 cenários × 40 runs):
+  a luta da wave dura ~19 s em todo estágio e nível; a wave era esticada até
+  45 s — 58% de espera. Run de 7,5 min.
+- **Feito:** `duracaoMinMs` 45 s → 24 s. Run de ~4 min. Quem vence, quem cai e
+  o dano não mudam (afirmado: mesma raiz, 45 s × 24 s). A run que já começou
+  guarda a regra dela (copiada na largada). Fixtures sem mudança (a emissão é
+  por stamina, não por tempo).
+- **Testes:** `ritmo-avanco` (novo, 4). S91028 PEGOU. Q5: run local aberta no
+  Chromium, 0 pageerror.
+- **O resto do relato** (o time quase não apanha) é a **ST-2.35** — L-255.
+
+### ST-2.35 · O dano chega ao time inteiro (L-255) — o próximo
+- **Por quê:** o 7º relato — a Poção e o desmaio não importam.
+- **O que medir antes:** a vida mínima, o desmaio e a taxa de baú com o
+  selvagem escolhendo o alvo entre os vivos, a cura por abate em ~10% e os
+  comuns a 2 níveis da porta; e o ritmo de XP da ST-2.31 de novo.
+  **Portões:** Q1, Q2, Q4 (emissão), Q5 (a cena com mais de um apanhando).
+
 ### ST-2.33b · O mapa da run: o time inteiro, e placas que não cobrem ninguém ✅ 06/10
 - **Por quê:** o 7º relato — só o líder andava, e os nomes cobriam os sprites.
 - **Medido antes (Q5, run local):** uma moldura de companheiro só; a placa

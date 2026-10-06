@@ -280,6 +280,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **ST-2.34** · a wave sem tempo morto | 06/10 | a luta da wave dura ~19 s e era esticada até 45 s; agora 24 s (run 7,5 → ~4 min), sem mudar quem vence nem o dano; `ritmo-avanco` 4 testes, S91028 · o dano no time inteiro vira a ST-2.35 (L-255) |
 | **ST-2.33b** · o mapa da run: o time inteiro e placas que não cobrem ninguém | 06/10 | D-167 os de trás seguem o rastro do líder · D-168 as placas desviam dos sprites e do treinador; `mapa-run` 6 testes, S91022–S91027 |
 | **ST-2.33a** · as telas novas do ramo codex, vestidas | 06/10 | prévia de evolução e resumo da luta em tabela (o lado melhor e o sentido de cada mudança em camada 0); nome pelo `nomeExibido`; a ficha do golpe toma a linha; palco clássico cabe inteiro; D-166 (4 suítes que nunca rodavam); `telas-novas` 8 testes, S91016–S91021 |
 | **ST-2.32** · os defeitos de lógica do 7º relato | 05/10 | D-161 custo da equipe pelos dois caminhos · D-162 FOCO = EQUIPE · D-163 log com o tempo da run · D-164 estágio padrão = maior aberto · D-165 a recarga volta à aba · L-253 "+2 outras" com nomes; `relato7` 6 testes, S91009–S91015 |

@@ -8,7 +8,10 @@ import { BONUS_DO_GUIA } from './foco.mjs';
 export const VERSAO_AVANCO_COMBATE='avanco-tbe-1';
 export const REGRA_AVANCO_COMBATE=Object.freeze({
   niveisComuns:[1,8,14,24],niveisChefes:[5,15,24,36],recuperacao:.25,
-  aproximacaoMs:3500,golpeMs:1400,duracaoMinMs:45000,
+  /* ST-2.34: a wave estica até 24 s, e não até 45. A luta dura ~19 s em todo
+     estágio e nível (tools/estudo-ritmo-avanco.mjs); os 26 s que sobravam
+     eram campo vazio — o 7º relato: "waves de 45 s deixam o ritmo lento". */
+  aproximacaoMs:3500,golpeMs:1400,duracaoMinMs:24000,
 });
 const copiar=x=>JSON.parse(JSON.stringify(x));
 const soma=xs=>xs.reduce((n,x)=>n+x,0);

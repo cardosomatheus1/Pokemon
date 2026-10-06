@@ -13066,4 +13066,6 @@ export const DEFEITOS = [
     de:"  return i ? novo.slice(i) : novo;",para:"  return novo;"},
   {id:"S91027",arquivo:"app/modules/seguidores.mjs",nome:"o salto emenda o rastro",real:"na troca de bioma o seguidor atravessa o mapa",
     de:"  if (passo > SALTO) return [{ x: p.x, y: p.y, dir: p.dir ?? 'baixo', d: 0 }];\n",para:""},
+  {id:"S91028",arquivo:"engine/run-combate.mjs",nome:"a wave volta a esticar até 45 s",real:"26 s de campo vazio em cada wave",
+    de:"  aproximacaoMs:3500,golpeMs:1400,duracaoMinMs:24000,",para:"  aproximacaoMs:3500,golpeMs:1400,duracaoMinMs:45000,"},
 ];
