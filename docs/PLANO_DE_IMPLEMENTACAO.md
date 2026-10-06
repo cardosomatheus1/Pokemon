@@ -2616,7 +2616,7 @@ do servidor. Três partes:
   pageerror. Mutantes de navegador: 0 — as regras de CSS são conferidas por
   texto, e a decisão do cartão mora em Node.
 
-### ST-2.40 · O caminho até o chefe sem paredão (D-176) ✅ 06/10
+### ST-2.40 · O caminho até o chefe sem paredão (D-176) — ❌ REVERTIDA em 06/10 pela DEC-33
 - **Por quê:** o 9º relato, com o time de verdade (Beedrill 13 + Bellsprout 13,
   ou Beedrill 13 + Bulbasaur 16, sem terceiro): 0 de 3 na wave 10, depois da
   ST-2.35.
@@ -2635,6 +2635,10 @@ do servidor. Três partes:
   34/30/7 dias.
 - **Testes:** `dano-time` (+1: o time de dois do relato ≥ 33 de 60). S91031
   realvo e PEGOU.
+- **Revertida** (DEC-33): não era bug, era a dificuldade de tipo do chefe e o
+  desgaste da regra escrita. Volta a cura de 10%, as medições de antes e o
+  S91031 original. O que fica dela é a medição, que serve à ST-2.39: o
+  jogador precisa VER que o time chegou desgastado e por quê.
 
 ### ST-2.39 · A run legível: a vida de cada um, quem caiu, e por quê (D-173, D-174, D-175) — próxima
 - **Por quê:** o 9º relato não conseguiu dizer se a ST-2.35 chegou: só a
@@ -3549,6 +3553,18 @@ desta tabela.
   (`BANDA_DE_CAPTURA`) remedida: 1,8–21,4 → 1,4–26,6; a detecção não muda. O
   teto de 85% da chance deixou de morder as bolas do pack (a melhor dá 79%) —
   fica para bola mais forte, e um teste de pack de prova o exercita.
+- ✅ **DEC-33 · dificuldade não se facilita; só bug se conserta** (o dono,
+  06/10, depois da ST-2.40: *"se ele tem dificuldade com elemento de fato é
+  pra se fuder, é pra ajustar só se de fato for bug, n quero facilitar"*). Um
+  time que perde para um chefe por TIPO (o Venomoth inseto/veneno resiste a
+  tudo de um time de Beedrill e Bellsprout) está jogando o jogo, e não
+  achando defeito. Relato de "paredão" passa a ser lido assim: primeiro
+  provar se há bug (regra que não é a escrita, número que a tela mostra
+  diferente do motor, golpe que não devia existir); se não há, a resposta é
+  legibilidade (o jogador ver POR QUE perdeu) e nunca o número da
+  dificuldade. A ST-2.40 (cura por abate 10% → 25%) foi revertida por esta
+  decisão. Pendente com o dono: a descida de nível dos chefes da ST-2.35
+  (Floresta 2: 15 → 13), que também foi facilitação.
 - **Ainda do dono, e com recomendação escrita como padrão:** a taxa shiny (R18),
   o orçamento da Master Ball, os limites/cooldown/taxas finais (baselines da
   spec §11 e §16 até o gate C medir).

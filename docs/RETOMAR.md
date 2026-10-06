@@ -24,9 +24,14 @@ defeito meu.
 
 ## 0. ONDE PARAMOS — 05/10/2026 · AT6-15-integracao-final
 
-**ST-2.40 (06/10):** com o time de verdade do 9º relato (Beedrill 13 +
+**DEC-33 (06/10, o dono):** dificuldade não se facilita; só bug se conserta.
+A ST-2.40 foi REVERTIDA (a cura por abate volta a 10%). Pendente com o dono:
+desfazer também a descida de nível dos chefes da ST-2.35 (Floresta 2: 15 →
+13)? Medido: o time do 9º relato faria 43% → 28%; o do 8º, 97% → 47%.
+
+~~**ST-2.40 (06/10):** com o time de verdade do 9º relato (Beedrill 13 +
 Bellsprout 13, sem terceiro) o caminho até o chefe completava 37%: a cura por
-abate em 10% da ST-2.35 dobrou o desgaste. Volta a 25% → 66% (D-176).
+abate em 10% da ST-2.35 dobrou o desgaste. Volta a 25% → 66% (D-176).~~ Revertida.
 Próximo: ST-2.39, a run legível.
 
 **9º relato (06/10), registrado:** o chefe da Floresta 2 "ainda parece

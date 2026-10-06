@@ -10,13 +10,9 @@ export const REGRA_AVANCO_COMBATE=Object.freeze({
   /* ST-2.35 (o 8º relato: "o chefe do estágio 2 virou um paredão"): o chefe
      dos estágios 2 a 4 desce 2 a 3 níveis — ele é a forma evoluída, e no
      nível da porta +3 já ganhava de um time inteiro de não evoluídos.
-     A CURA POR ABATE É 25% (ST-2.40, o 9º relato). A ST-2.35 a tinha baixado
-     para 10% junto com o alvo espalhado, e as duas juntas dobraram o
-     desgaste: os 10% foram pensados para quando só o da frente apanhava. O
-     time do relato (Beedrill 13 + Bellsprout 13) chegava ao chefe com alguém
-     caído em 78% das runs e completava 37%; com 25%, 66%. Contra o chefe com
-     a vida cheia ele já vencia 26 de 31 — o paredão era o caminho até ele. */
-  niveisComuns:[1,8,14,24],niveisChefes:[5,13,21,33],recuperacao:.25,
+     A cura por abate cai de 25% para 10%: com 25% o time voltava cheio a
+     cada wave, e a Poção nunca fazia falta. */
+  niveisComuns:[1,8,14,24],niveisChefes:[5,13,21,33],recuperacao:.10,
   /* QUEM APANHA: o selvagem escolhe o alvo entre os vivos, e o time apanha
      junto — com 'primeiro', só o da frente lutava e os outros passavam a run
      intactos. Run gravada sem esta chave segue a regra dela ('primeiro'). */

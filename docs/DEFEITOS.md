@@ -7544,7 +7544,7 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
-## D-176 — o caminho até o chefe virou paredão: a ST-2.35 dobrou o desgaste ✅ CORRIGIDO na ST-2.40 (06/10)
+## D-176 — o caminho até o chefe virou paredão: a ST-2.35 dobrou o desgaste — ❌ NÃO É DEFEITO (DEC-33, 06/10)
 
 **Achado:** o 9º relato, com os dados do jogador — Beedrill 13–14 na frente,
 Bellsprout 13–14 (1ª run, Vendaval) ou Bulbasaur 16 (2ª e 3ª, Sol Forte), sem
@@ -7562,6 +7562,9 @@ o time do relato 37% → 66%; Beedrill 13 + Bulbasaur 16 79% → 94%; Beedrill 1
 sozinho 31% → 54%; trio na porta (nível 12) 7% → 34%; estágio 3 com trio no
 21 98% → 100%. **Teste que trava:** `dano-time` "o time de dois do 9º relato".
 S91031 realvo (agora "volta a 10%") e PEGOU.
+**Reclassificado pelo dono (DEC-33):** é dificuldade de tipo e de desgaste,
+pela regra escrita — não é bug. A ST-2.40 foi revertida; a regra volta a cura
+de 10%. O que sobra é de leitura, e é da ST-2.39.
 
 ## D-175 — a Batida em curso não tem botão de chamar de volta
 

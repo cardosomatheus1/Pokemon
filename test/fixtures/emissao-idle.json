@@ -13,7 +13,7 @@
      "great": 3.29,
      "pokecoin": 1804.71,
      "item": 0.57,
-     "xp": 383.7,
+     "xp": 383.4,
      "encontros": 21.14,
      "xpDoce": 60
     }
@@ -39,17 +39,17 @@
   "diario": {
    "estagio1": {
     "runsPorDia": 8,
-    "vigiliasPorDia": 0.14,
-    "vigiliasRecusadasPeloTeto": 6,
+    "vigiliasPorDia": 0.29,
+    "vigiliasRecusadasPeloTeto": 5,
     "porDia": {
      "great": 6.57,
-     "essencia": 28,
-     "item": 0.14,
-     "poke": 18.71,
-     "pokecoin": 2492.71,
+     "essencia": 27.29,
+     "item": 0.29,
+     "poke": 18.43,
+     "pokecoin": 2568.43,
      "ultra": 1.86,
-     "xp": 1178.1,
-     "encontros": 35.29,
+     "xp": 1189,
+     "encontros": 35,
      "xpDoce": 60
     }
    },
@@ -77,12 +77,12 @@
     "vigiliasPorDia": 0,
     "vigiliasRecusadasPeloTeto": 0,
     "porDia": {
-     "pokecoin": 2598,
-     "essencia": 56.86,
+     "pokecoin": 2595.71,
+     "essencia": 56.57,
      "great": 40.57,
-     "poke": 116.71,
+     "poke": 116.43,
      "ultra": 12.57,
-     "xp": 12938,
+     "xp": 12930.1,
      "encontros": 40.29,
      "xpDoce": 60
     }
