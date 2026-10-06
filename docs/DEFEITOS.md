@@ -7544,6 +7544,25 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
+## D-176 — o caminho até o chefe virou paredão: a ST-2.35 dobrou o desgaste ✅ CORRIGIDO na ST-2.40 (06/10)
+
+**Achado:** o 9º relato, com os dados do jogador — Beedrill 13–14 na frente,
+Bellsprout 13–14 (1ª run, Vendaval) ou Bulbasaur 16 (2ª e 3ª, Sol Forte), sem
+terceiro membro; 0 de 3 runs, todas caídas na wave 10. **Bloco dono:**
+ST-2.40. **Medido** (100 runs por linha, IV 8, o código no ar):
+Beedrill 13 + Bellsprout 13 completava **37%** e chegava ao chefe com alguém
+caído em 78%; contra o Venomoth, 3–5 de 56. Com a vida cheia na wave 10 o
+mesmo time vence o Venomoth 26 de 31 — o paredão era o CAMINHO até o chefe.
+**Causa.** A ST-2.35 mudou duas coisas juntas: o alvo espalhado (o time todo
+apanha) e a cura por abate de 25% para 10%. Os 10% foram medidos pensando no
+time que antes não apanhava; com o dano espalhado, o desgaste dobrou, e quem
+cai não volta na run. A ST-2.35 só mediu um time de três no 14–16.
+**Conserto.** Cura por abate de volta a 25%; o alvo segue espalhado. Depois:
+o time do relato 37% → 66%; Beedrill 13 + Bulbasaur 16 79% → 94%; Beedrill 13
+sozinho 31% → 54%; trio na porta (nível 12) 7% → 34%; estágio 3 com trio no
+21 98% → 100%. **Teste que trava:** `dano-time` "o time de dois do 9º relato".
+S91031 realvo (agora "volta a 10%") e PEGOU.
+
 ## D-175 — a Batida em curso não tem botão de chamar de volta
 
 **Achado:** o 9º relato — *"a Batida de 45 min do Bulbasaur na Rota OFF ainda
@@ -7574,7 +7593,8 @@ desmaiou"*, com as 3 runs perdidas na wave 10. **Bloco dono:** ST-2.39.
   Quick Attack" é o jogo de golpes do **Bellsprout do jogador** — o relato
   atribuiu ao chefe os golpes do próprio time;
 - com o time CHEIO na wave 10, Beedrill 15 + Bellsprout 13 + Venonat 10
-  vence o chefe 80/80; Beedrill 14 sozinho vence o Venomoth 16/31;
+  vence o chefe 80/80; Beedrill 14 sozinho vence o Venomoth 16/31 (o time do
+  relato não tinha o Venonat — com os dados dele a medição virou o D-176);
 - a derrota vem do DESGASTE: quem cai numa wave não volta na run, e a cura
   por abate é 10%. Num Beedrill 14 + Bellsprout 12, o Bellsprout cai na wave 5
   e o Beedrill chega sozinho ao chefe: 32/60 runs completas.

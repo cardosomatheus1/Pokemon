@@ -30,9 +30,9 @@ const quemApanha = r => { const s = new Set(); for (let w = 1; w <= 10; w++) { r
 export function suite() {
   const s = criarSuite('dano-time');
 
-  s.teste('a regra nova: o alvo se espalha, a cura por abate é 10%, o chefe desce', () => {
+  s.teste('a regra nova: o alvo se espalha, a cura por abate é 25%, o chefe desce', () => {
     igual(REGRA_AVANCO_COMBATE.alvo, 'espalhado');
-    igual(REGRA_AVANCO_COMBATE.recuperacao, 0.10);
+    igual(REGRA_AVANCO_COMBATE.recuperacao, 0.25);   // ST-2.40: 10% dobrava o desgaste com o alvo espalhado
     igual(JSON.stringify(REGRA_AVANCO_COMBATE.niveisChefes), JSON.stringify([5, 13, 21, 33]));
   });
 
@@ -55,6 +55,19 @@ export function suite() {
     let v = 0;
     for (let i = 0; i < 30; i++) v += medirRun({ estagio: 2, dex: [1, 14, 16], nivel: 15, raiz: `paredao-${i}` }).completou ? 1 : 0;
     ok(v >= 24, `o time Bulbasaur/Kakuna/Pidgey no 15 venceu ${v} de 30`);
+  });
+
+  /* O 9º relato (ST-2.40): Beedrill 13 na frente + Bellsprout 13, sem terceiro
+     — 0 de 3 na wave 10. Com a cura por abate em 10% o time chegava ao chefe
+     com alguém caído em 78% das runs e completava 37%; com 25%, 66%. */
+  s.teste('o time de dois do 9º relato completa a maioria das runs no estágio 2', () => {
+    let v = 0;
+    for (let i = 0; i < 60; i++) {
+      const motor = [[15, 13], [69, 13]].map(([d, nv], k) => paraOMotor(PACK, { id: String(k), dex: d, nivel: nv, iv: Array(6).fill(8) }));
+      const r = runComecada(PACK, { bioma: 'floresta', estagio: 2, equipe: motor.map(c => c.id), motor, raiz: `relato9-${i}`, agora: T });
+      for (let w = 1; w <= 10; w++) { r.wave = w; const x = waveDeCombate(r, PACK); if (!x.venceu) break; if (w === 10) v++; r.combate.hpInicial = x.vidas; }
+    }
+    ok(v >= 33, `Beedrill 13 + Bellsprout 13 completou ${v} de 60 — o caminho até o chefe voltou a ser paredão`);
   });
 
   s.teste('e o dano importa: no nível da porta, a vida desce e alguém desmaia', () => {

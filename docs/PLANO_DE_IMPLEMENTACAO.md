@@ -2616,6 +2616,26 @@ do servidor. Três partes:
   pageerror. Mutantes de navegador: 0 — as regras de CSS são conferidas por
   texto, e a decisão do cartão mora em Node.
 
+### ST-2.40 · O caminho até o chefe sem paredão (D-176) ✅ 06/10
+- **Por quê:** o 9º relato, com o time de verdade (Beedrill 13 + Bellsprout 13,
+  ou Beedrill 13 + Bulbasaur 16, sem terceiro): 0 de 3 na wave 10, depois da
+  ST-2.35.
+- **Medido antes:** o time do relato completava 37%, e chegava ao chefe com
+  alguém caído em 78%; com a vida cheia ele vence o chefe 84%. A cura por
+  abate em 10% foi calibrada antes de o dano se espalhar.
+- **Medidas as alternativas** (100 runs, IV 8; relato · Bee+Bulba · solo ·
+  trio na porta): hoje 37·79·31·7; cura 25% 66·94·54·34; descanso antes do
+  chefe 45·91·41·9; descanso + caídos com 50% 48·93·41·10; cura 20% 60·91·51·25;
+  cura 25% + descanso 71·98·56·38. **Escolhida: cura 25%** — o mesmo efeito
+  do combinado, com um número só e sem mecânica nova para ensinar.
+- **Feito:** `recuperacao:.25` (a run já começada segue a regra dela).
+- **Medições regravadas:** emissão do idle, diário est.1 pokecoin 2568,43 →
+  2492,71, XP 1189 → 1178,1 (demais < 0,5%); antifraude diário est.1 11,04 →
+  11,15 capturas/dia (a banda não muda). Ritmo até o Campeão 35/33/7 →
+  34/30/7 dias.
+- **Testes:** `dano-time` (+1: o time de dois do relato ≥ 33 de 60). S91031
+  realvo e PEGOU.
+
 ### ST-2.39 · A run legível: a vida de cada um, quem caiu, e por quê (D-173, D-174, D-175) — próxima
 - **Por quê:** o 9º relato não conseguiu dizer se a ST-2.35 chegou: só a
   placa de quem luta aparece, o time caído não se vê, e os golpes do próprio

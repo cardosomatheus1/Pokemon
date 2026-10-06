@@ -24,6 +24,11 @@ defeito meu.
 
 ## 0. ONDE PARAMOS — 05/10/2026 · AT6-15-integracao-final
 
+**ST-2.40 (06/10):** com o time de verdade do 9º relato (Beedrill 13 +
+Bellsprout 13, sem terceiro) o caminho até o chefe completava 37%: a cura por
+abate em 10% da ST-2.35 dobrou o desgaste. Volta a 25% → 66% (D-176).
+Próximo: ST-2.39, a run legível.
+
 **9º relato (06/10), registrado:** o chefe da Floresta 2 "ainda parece
 paredão". Medido no código que está no ar: com o time cheio ele cai; a
 derrota vem do desgaste (quem cai não volta), e a tela não mostra quem caiu
