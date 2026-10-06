@@ -2596,6 +2596,26 @@ do servidor. Três partes:
 - **Fora:** as duas migrações (doces do D-144, nível de nascer das capturas
   antigas) — decisão do dono, pendente.
 
+### ST-2.33a · As telas novas do ramo codex, vestidas ✅ 06/10
+- **Por quê:** o 7º relato — a prévia de evolução e o resumo da luta "sem
+  estilo" ('beedrill' em minúsculo, "Antes 31 → Depois 35" solto), a ficha do
+  golpe "espremida numa coluna estreita", o Beedrill cortado no palco.
+- **Medido antes** (leitura do código + Q5): o resumo não tinha UMA classe; a
+  prévia era um parágrafo por campo dentro de um `<p>` (HTML inválido) e o
+  nome saía do slug; a ficha aberta ficava presa num cartão de 150 px e a
+  grade esticava a linha; o 2º da frente em x=10% com escala 1,25 saía ~2% do
+  palco no celular.
+- **Feito:** tabelas Antes | Depois e Seu time | Rival (`linhasDaPrevia`,
+  `linhasDoResumo` em camada 0: o sentido de cada mudança e o lado melhor,
+  com erros/resistidos/imunidades contando ao contrário); o nome pelo
+  `nomeExibido` (também na comparação da Liga); `#idleEvolui` virou `<div>`;
+  a ficha aberta toma a linha inteira e a grade alinha ao topo; o 2º da
+  frente em 14% (`LARGURA_DO_SPRITE` espelha o CSS). D-166.
+- **Testes:** `telas-novas` (novo, 8) + as quatro suítes do D-166. S91016–
+  S91021 PEGOU. Q5: prévia, ficha e resumo nas 4 larguras, 0 pageerror.
+- **Fica para a ST-2.33b:** o mapa da run (só o líder anda; as placas sobre os
+  sprites) e a L-254 (o fundo da Arena — não reproduzido, pede print).
+
 ### ST-2.32 · Os defeitos de lógica do 7º relato ✅ 05/10
 - **Por quê:** o 7º relato do dono (05/10), a parte que é conta e não arranjo.
 - **Feito:** D-161 (o custo da equipe pelos dois caminhos), D-162 (o FOCO com o

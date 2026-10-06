@@ -281,7 +281,7 @@ export function pintarCentro(E) {
     const html = painelDaEvolucao(chamada,
       dex => dexImg(dex, esp(dex).n, 'class="evlArte"'));
     ch.hidden = !html;
-    if (html) ch.innerHTML = html + htmlPrevisoesEvolucao(previsoesEvolucao(PACK,E.criaturas.find(c=>c.id===chamada.id),E.bolsa));
+    if (html) ch.innerHTML = html + htmlPrevisoesEvolucao(previsoesEvolucao(PACK,E.criaturas.find(c=>c.id===chamada.id),E.bolsa),dex=>dexImg(dex,nomeExibido(esp(dex).n),'class="evpArte"'));
   }
 }
 

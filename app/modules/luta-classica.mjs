@@ -39,10 +39,17 @@ export const RITMO_CLASSICO = 1.35;
    passam dela — abaixo disso o crítico via "o Rhyhorn cortado ao meio". O
    rival desceu um pouco do horizonte: colado nele, as peças do fundo
    pareciam saindo da cabeça dele. */
+/* A largura do sprite, a mesma do CSS (`--base:clamp(68px,15.5cqw,176px)`):
+   é com ela que se confere que ninguém sai do palco (ST-2.33). */
+export const LARGURA_DO_SPRITE = Object.freeze({ pct: 15.5, minPx: 68 });
+
+/* ST-2.33: o segundo da frente saiu de 10% para 14%. Em 10%, com a escala de
+   lado (1,25) e o mínimo de 68 px num palco de celular, metade dele ficava
+   fora — o 7º relato viu "o Beedrill cortado na borda esquerda". */
 const POSICOES = {
   B: { frente: [[70, 56], [85, 51], [56, 51]], tras: [[78, 44], [63, 44], [92, 43]],
        escala: { lider: 1, lado: 0.86, tras: 0.7 } },
-  A: { frente: [[26, 98], [10, 95], [42, 95]], tras: [[18, 80], [34, 80], [50, 79]],
+  A: { frente: [[28, 98], [14, 95], [44, 95]], tras: [[18, 80], [34, 80], [50, 79]],
        escala: { lider: 1.45, lado: 1.25, tras: 1 } },
 };
 

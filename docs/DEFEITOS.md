@@ -7544,6 +7544,17 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
+## D-166 — quatro suítes do ramo codex existiam e nunca rodavam ✅ CORRIGIDO na ST-2.33a (06/10)
+
+**Achado:** na ST-2.33a, ao procurar quem testava o resumo da luta. **Bloco
+dono:** ST-2.33a. **Causa.** `comparacao-time`, `orientacao-avanco`,
+`resumo-batalha` e `rivais-precisao` foram escritas no ramo codex e rodadas só
+pelas ferramentas dele (`tools/sabotar-arena.mjs`); nunca entraram no
+`test/run.mjs`. O `npm test` dava verde sem elas — verde de quem não rodou.
+**Conserto.** As quatro registradas (36 testes, verdes) e uma trava: toda
+`test/*.mjs` com `criarSuite(` tem de estar no `run.mjs`. **Teste que trava:**
+`telas-novas` "D-166".
+
 ## D-165 — o Recarregar do aviso de versão jogava o jogador na Arena ✅ CORRIGIDO na ST-2.32 (05/10)
 
 **Achado:** o 7º relato — *"o 'Recarregar' do aviso me jogou na aba Arenas em

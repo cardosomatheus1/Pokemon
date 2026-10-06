@@ -280,6 +280,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **ST-2.33a** · as telas novas do ramo codex, vestidas | 06/10 | prévia de evolução e resumo da luta em tabela (o lado melhor e o sentido de cada mudança em camada 0); nome pelo `nomeExibido`; a ficha do golpe toma a linha; palco clássico cabe inteiro; D-166 (4 suítes que nunca rodavam); `telas-novas` 8 testes, S91016–S91021 |
 | **ST-2.32** · os defeitos de lógica do 7º relato | 05/10 | D-161 custo da equipe pelos dois caminhos · D-162 FOCO = EQUIPE · D-163 log com o tempo da run · D-164 estágio padrão = maior aberto · D-165 a recarga volta à aba · L-253 "+2 outras" com nomes; `relato7` 6 testes, S91009–S91015 |
 | **ST-2.31** · o banco alcança, não ultrapassa (L-251) | 05/10 | o banco leva até a mais forte − 3, e a mais forte só sobe jogando; Campeão (nível 60) no dia 4 → 34 casual · 31 diário · 7 maratona; `teto-banco` 9 testes, S91001–S91007 · Spec §7.22.22 |
 | **ST-2.30** · mais encontros, menos chance, bola mais barata (DEC-32) | 02/10 | teto de encontros 30 → 45 (a escada da coleção ×1,5); chance de captura ×0,8 (comum na bola básica 45% → 36%); bolas da Loja ×0,8 (160/280/400); o dia com encontro passa de ~6 a ~9 runs, as capturas do dia perto de onde estavam |

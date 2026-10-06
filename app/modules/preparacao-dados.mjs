@@ -22,7 +22,19 @@ export function previsoesEvolucao(pack,criatura,bolsa={}){
   return prontasPara(pack,c,bolsa).map(a=>{
     const r=aplicar(pack,c,bolsa,a.para);
     const depois=snapshotDoTime({pack,criaturas:[r.criatura],ids:[c.id]});
-    return {para:a.para,nome:especieDe(pack,a.para)?.n??String(a.para),consome:r.consome,
+    const slug=especieDe(pack,a.para)?.n;
+    return {de:c.dex,para:a.para,nome:slug?(pack.nomeExibido??(s=>s))(slug):String(a.para),consome:r.consome,
       comparacao:compararTimePublicado({pack,publicado:antes,atual:depois}),preservados:r.criatura.exclusivos??[]};
+  });
+}
+
+/* AS LINHAS DA PRÉVIA (ST-2.33): o que muda, com o sentido de cada mudança. A
+   espécie fica fora — ela já é o título. Número que sobe é "sobe", que desce é
+   "desce"; o que não é número (natureza, golpes) só "muda". */
+export function linhasDaPrevia(plano){
+  if(!plano?.comparacao?.compativel)return [];
+  return plano.comparacao.membros.flatMap(m=>m.mudancas).filter(c=>c.campo!=='Espécie').map(c=>{
+    const a=Number(c.antes),d=Number(c.depois),num=String(c.antes).trim()!==''&&Number.isFinite(a)&&Number.isFinite(d);
+    return {campo:c.campo,antes:c.antes,depois:c.depois,delta:num?d-a:null,sentido:!num?'muda':d>a?'sobe':d<a?'desce':'igual'};
   });
 }

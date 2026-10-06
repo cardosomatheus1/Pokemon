@@ -9,7 +9,8 @@ const diferente=(a,b)=>JSON.stringify(a)!==JSON.stringify(b);
 const textoGolpes=gs=>gs.map(g=>`${g.nome}: ${g.tipo}, ${g.categoria}, poder ${g.poder}, precisão ${+(g.precisao*100).toFixed(2)}%`).join('; ');
 function ficha(pack,c){
   const f=montarLutador(pack,c,'A',0),e=especieDe(pack,c.dex);
-  return {nome:e.n,dex:c.dex,nivel:c.nivel,iv:c.iv?.slice()??[],natureza:c.natureza??'neutra',
+  /* O nome que o jogador lê, e não o slug (ST-2.33): "beedrill" saía cru na prévia. */
+  return {nome:(pack.nomeExibido??(s=>s))(e.n),dex:c.dex,nivel:c.nivel,iv:c.iv?.slice()??[],natureza:c.natureza??'neutra',
     tipos:f.types.map(t=>pack.tipos.nomes?.[t]??t),shiny:c.shiny===true,
     stats:Object.fromEntries(Object.entries(ATRIBUTOS).map(([nome,k])=>[nome,f[k]])),
     golpes:f.golpes.map(g=>({nome:g.n,tipo:pack.tipos.nomes?.[g.t]??g.t,

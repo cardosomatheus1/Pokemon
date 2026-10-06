@@ -18,3 +18,16 @@ export function resumoDaBatalha(linha){
   }
   return r;
 }
+
+/* AS LINHAS DO RESUMO (ST-2.33): cada fato com o lado que se saiu melhor nele.
+   Erros, resistidos e imunidades contam ao contrário — menos é melhor para
+   quem atacou. "Golpes registrados" não é mérito de ninguém, e empate não
+   escolhe lado. */
+export const CAMPOS_DO_RESUMO=[['tentativas','Golpes registrados',0],['hpRetirado','HP retirado',1],['nocautes','Nocautes',1],
+  ['superEfetivos','Super efetivos',1],['criticos','Críticos',1],['erros','Erros',-1],['resistidos','Resistidos',-1],['imunidades','Imunidades',-1]];
+export function linhasDoResumo(r){
+  return CAMPOS_DO_RESUMO.map(([chave,rotulo,sinal])=>{
+    const a=r?.A?.[chave]??0,b=r?.B?.[chave]??0,dif=(a-b)*sinal;
+    return {chave,rotulo,a,b,melhor:!sinal||!dif?null:dif>0?'A':'B'};
+  });
+}

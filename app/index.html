@@ -7327,8 +7327,11 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 /* ST-5.15 (L-195): a linha do Centro vira grade que ENCHE a largura — com
    fichas de 176 px fixos, o painel largo ficava com duas colunas e ~170 px
    vazios; três cabem. Só onde a linha é de fichas do Centro. */
-.idleLinha:has(> .idleCaixaItem){display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.idleLinha:has(> .idleCaixaItem){display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;align-items:start}
 .idleLinha > .idleCaixaItem{width:auto}
+/* ST-2.33: a ficha do golpe aberta toma a linha inteira, e a linha não estica
+   os cartões vizinhos — o 7º relato a viu "espremida numa coluna estreita". */
+.idleLinha > .idleCaixaItem:has(.idleGolpes[open]){grid-column:1 / -1}
 .idleEnc{display:flex;flex-direction:column;align-items:center;width:62px;
   background:#141d2b;border:1px solid var(--line);border-radius:8px;padding:5px 3px}
 .idleEncArte{width:42px;height:42px;object-fit:contain;image-rendering:pixelated}
@@ -7529,6 +7532,32 @@ body.tremeTela{animation:tremeTela .7s ease-out}
 @keyframes evoBrilha{0%,100%{box-shadow:0 0 0 rgba(var(--goldRGB),0)}50%{box-shadow:0 0 14px rgba(var(--goldRGB),.35)}}
 @media (prefers-reduced-motion:reduce){ .idleEvolui{animation:none} }
 #viewIdle.emRun .idleEvolui{display:none}
+/* ST-2.33 · ANTES E DEPOIS, EM TABELA — a prévia da evolução e o resumo da luta.
+   Saíam como lista crua (sem classe) e "Antes 31 → Depois 35" solto numa
+   linha. A tabela é a forma de uma comparação: o olho desce a coluna. O sinal
+   em verde/vermelho diz o sentido sem precisar subtrair. */
+.evpPrevia{flex-basis:100%; margin-top:4px; padding:6px 10px; border-left:3px solid var(--gold); border-radius:0 8px 8px 0;
+  background:rgba(0,0,0,.22)}
+.evpPrevia > summary{cursor:pointer; font-weight:700; font-size:.78rem; color:var(--gold)}
+.evpPrevia section{margin-top:6px}
+.evpForma{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:4px 0}
+.evpForma h4{margin:0 6px 0 2px; font-size:.95rem; color:var(--txt)}
+.evpForma b{color:var(--gold)}
+.evpArte{width:40px; height:40px; image-rendering:pixelated; object-fit:contain}
+.evpConsome{font-size:.7rem; color:var(--dim)}
+.evpNota{margin:6px 0 0; font-size:.7rem; color:var(--dim); line-height:1.4}
+.adTabela{border-collapse:collapse; width:100%; max-width:440px; font-size:.78rem; font-variant-numeric:tabular-nums}
+.adTabela th{padding:2px 10px 2px 0; font-weight:400; font-size:.66rem; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); text-align:left}
+.adTabela td{padding:3px 10px 3px 0; border-top:1px solid rgba(255,255,255,.07); color:var(--txt)}
+.adTabela .adNum{text-align:right}
+.adTabela td.adCampo{color:var(--dim)}
+.adTabela i{font-style:normal; font-weight:700}
+.adSobe{color:var(--ok,#5fd08a)}
+.adDesce{color:rgb(var(--perigoRGB))}
+.rbResumo{margin:8px 0; padding:6px 10px; text-align:left; border:1px solid var(--line); border-radius:9px; background:rgba(0,0,0,.28)}
+.rbResumo > summary{cursor:pointer; font-weight:700; font-size:.8rem; color:var(--neon)}
+.rbResumo .adTabela{margin-top:6px}
+.rbTabela td.rbMelhor{color:var(--gold); font-weight:700}
 .idleBolsaAtalho{display:block; width:100%; margin:8px 0 2px; padding:6px 10px; border-radius:9px;
   background:rgba(255,255,255,.03); border:1px solid var(--line); color:var(--txt);
   font:inherit; font-size:.74rem; text-align:left; cursor:pointer}
@@ -8597,7 +8626,7 @@ body.soAssiste .pick{cursor:pointer}
       <!-- SEM STAMINA, O QUE AINDA VALE (ST-2.27c, L-244): logo abaixo da cena,
            porque é ali que o botão disse "descansando". -->
       <!-- A EVOLUÇÃO CHAMA (ST-2.28a, D-155): quem está pronto aparece aqui. -->
-      <p class="idleEvolui" id="idleEvolui" hidden></p>
+      <div class="idleEvolui" id="idleEvolui" hidden></div>
       <p class="idleEnquanto" id="idleEnquanto" hidden></p>
       <button type="button" class="idleBolsaAtalho" id="idleBolsaAtalho" hidden></button>
       <!-- O BOTÃO GRANDE DE INICIAR mora DENTRO do palco (#idleIniciar, acima).
