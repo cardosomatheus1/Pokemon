@@ -24,6 +24,13 @@ defeito meu.
 
 ## 0. ONDE PARAMOS — 05/10/2026 · AT6-15-integracao-final
 
+**9º relato (06/10), registrado:** o chefe da Floresta 2 "ainda parece
+paredão". Medido no código que está no ar: com o time cheio ele cai; a
+derrota vem do desgaste (quem cai não volta), e a tela não mostra quem caiu
+— o relato leu os golpes do próprio Bellsprout como os do chefe (D-173).
+Mais D-174 (evoluir na Rota OFF) e D-175 (chamar a Batida de volta).
+**Próximo: ST-2.39**, a run legível.
+
 **ST-2.37 (06/10):** o resto do 8º relato — a barra do celular não cobre
 mais o fim da página (D-171), os cartões com stamina para uma run não ficam
 apagados (D-172), a versão do código aparece no topo e na folha "Mais".

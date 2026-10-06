@@ -2616,6 +2616,23 @@ do servidor. Três partes:
   pageerror. Mutantes de navegador: 0 — as regras de CSS são conferidas por
   texto, e a decisão do cartão mora em Node.
 
+### ST-2.39 · A run legível: a vida de cada um, quem caiu, e por quê (D-173, D-174, D-175) — próxima
+- **Por quê:** o 9º relato não conseguiu dizer se a ST-2.35 chegou: só a
+  placa de quem luta aparece, o time caído não se vê, e os golpes do próprio
+  time foram lidos como os do chefe.
+- **Escopo:** (1) a vida de cada membro na run, com o caído marcado — a
+  decisão (vida, caído, quem está em campo) em camada 0, a partir de
+  `cenaDoCombate`; (2) o fim da run diz a wave, o adversário, e para cada
+  membro caído o golpe e o atacante (do roteiro, que já tem `de`, `nome`,
+  `dano`, `heroi`); (3) D-174, o evoluir no cartão da Rota OFF; (4) D-175, o
+  "chamar de volta" à vista no cartão da expedição.
+- **Fora:** mexer na dificuldade do chefe — volta a ser medida com o que o
+  jogador passa a ver.
+- **Portões:** Q1, Q2, Q5 (run em 432 e 1440), Q7 (barra: TESTE DOS 3
+  SEGUNDOS aplicado à run — "quem do meu time ainda está de pé?").
+- **Sabotagem:** a vida por membro volta a ser só a do líder; o fim esquece
+  quem caiu; o golpe sai atribuído ao lado errado.
+
 ### ST-2.38 · A variedade dos encontros por estágio (L-256) — proposta
 - **Por quê:** o 8º relato — três runs seguidas no estágio 2 da Floresta
   deixaram os mesmos quatro encontros.

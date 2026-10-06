@@ -7544,6 +7544,48 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
+## D-175 — a Batida em curso não tem botão de chamar de volta
+
+**Achado:** o 9º relato — *"a Batida de 45 min do Bulbasaur na Rota OFF ainda
+estava rodando no fim, porque não achei um botão de cancelar ou de chamar de
+volta, só um diálogo 'Cancelar' escondido"*. **Bloco dono:** ST-2.39.
+**Estado:** aberto. **Medição pendente:** onde mora o recolher hoje e por que
+não aparece no cartão da expedição. **Teste que trava:** a escrever na ST-2.39.
+
+## D-174 — o ✨ evoluir nos cartões da Rota OFF não clica, e a janela abre vazia
+
+**Achado:** o 9º relato — *"o ✨ evoluir nos cards da Rota OFF não clicava, e a
+janela de evolução abria vazia. No card normal do time funcionou"*. **Bloco
+dono:** ST-2.39. **Estado:** aberto. **Medição pendente:** o cartão da Rota
+OFF chama a evolução com a criatura de outro estado (a da expedição), e a
+janela não acha quem evoluir. **Teste que trava:** a escrever na ST-2.39.
+
+## D-173 — a run não mostra quem apanha nem quem caiu, e o relato leu os golpes do time como os do chefe
+
+**Achado:** o 9º relato, depois da ST-2.35 — *"o chefe ainda parece um
+paredão … os golpes listados ainda incluem Sludge Bomb, além de Poison Jab e
+Quick Attack … só aparece a placa do líder (Beedrill 42/42) … ninguém
+desmaiou"*, com as 3 runs perdidas na wave 10. **Bloco dono:** ST-2.39.
+**Medido** (o código que está no ar, a17bdff):
+- o chefe do estágio 2 da Floresta é sorteado entre **Parasect, Venomoth e
+  Ivysaur** (32/24/4 em 60 runs), todos no nível 13; a orientação mostra UM
+  deles (o pior para a equipe), e o relato viu outro;
+- Venomoth 13 luta com **Poison Jab e Bug Bite**. "Sludge Bomb, Poison Jab,
+  Quick Attack" é o jogo de golpes do **Bellsprout do jogador** — o relato
+  atribuiu ao chefe os golpes do próprio time;
+- com o time CHEIO na wave 10, Beedrill 15 + Bellsprout 13 + Venonat 10
+  vence o chefe 80/80; Beedrill 14 sozinho vence o Venomoth 16/31;
+- a derrota vem do DESGASTE: quem cai numa wave não volta na run, e a cura
+  por abate é 10%. Num Beedrill 14 + Bellsprout 12, o Bellsprout cai na wave 5
+  e o Beedrill chega sozinho ao chefe: 32/60 runs completas.
+**Causa (de leitura):** a run mostra só a placa de quem está em campo; não há
+vida por membro, nem marca de quem caiu, nem registro de quem golpeou quem.
+Uma derrota na wave 10 é lida como "um golpe só" e "ninguém desmaiou".
+**Conserto proposto (ST-2.39):** vida de cada membro na run, com o caído
+marcado; o fim da run diz em que wave, contra quem, e quem caiu com que golpe.
+Só depois disso a dificuldade do chefe se mede pelo que o jogador vê.
+**Teste que trava:** a escrever na ST-2.39.
+
 ## D-172 — os cartões do time apagados com stamina para uma run ✅ CORRIGIDO na ST-2.37 (06/10)
 
 **Achado:** o 8º relato — *"os cards do time ficam apagados depois de uma run,
