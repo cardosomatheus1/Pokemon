@@ -36,19 +36,14 @@ import { PERFIL_DO_AVANCO } from './avanco-estado.mjs';
 import { WAVES } from '../../engine/wave.mjs';
 import { STAMINA_DO_AVANCO, staminaAteWave } from '../../engine/avanco.mjs';
 import { staminaAgora } from '../../engine/expedicao.mjs';
-import { staminaNaRun } from './avanco-barras.mjs';
+import { staminaNaRun, xpNaRun } from './avanco-barras.mjs';
 import { leituraDoFoco } from './avanco-foco.mjs';
+import { relogioDaRun, quandoNoLog } from './avanco-relogio.mjs';
 
 const esp = dex => (PACK.especies ?? []).find(e => e.dex === dex) ?? { n: '?', dex };
 const nome = dex => nomeExibido(esp(dex).n);
 
-/* O relógio da coluna: mm:ss enquanto couber, h:mm:ss quando passar da hora. */
-const relogio = ms => {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
-  const dois = n => String(n).padStart(2, '0');
-  return h ? `${h}:${dois(m)}:${dois(r)}` : `${dois(m)}:${dois(r)}`;
-};
+const relogio = relogioDaRun;
 
 /* ── A STAMINA DA EQUIPE ──────────────────────────────────────────────────
  *
@@ -138,6 +133,10 @@ function pintarBuffs(E, run, agora) {
   const alvo = $('#avBuffs');
   if (!alvo) return;
   const vivas = criaturasDe(E);
+  /* O NÍVEL É O DA EQUIPE, projetado com o XP que a run já rendeu (D-162): a
+     coluna EQUIPE mostrava o Kakuna no 9 e o FOCO, com o nível guardado, no 8
+     — a mesma criatura, dois números na mesma tela. */
+  const ganho = xpAteAqui(PACK, run, equipeDoMotor(PACK, run, vivas));
   alvo.innerHTML = (run.equipe ?? []).map(id => {
     const c = vivas.find(x => x.id === id);
     if (!c) return '';
@@ -154,7 +153,7 @@ function pintarBuffs(E, run, agora) {
     return `<div class="avBuff">` +
       `<b class="avBuffQuem">` +
       dexImg(c.dex, esp(c.dex).n, 'class="avBuffArte"', !!c.shiny) +
-      `${nome(c.dex)} <u>lv ${Math.floor(Number(c.nivel) || 1)}</u></b>` +
+      `${nome(c.dex)} <u>lv ${xpNaRun(c.xp, ganho).nivel}</u></b>` +
       `<div class="avFocoLinha">` +
       `<b class="avFoco ${l.estado}"${estilo}>${l.selo}</b>` +
       `<span>${l.linha}</span></div></div>`;
@@ -254,7 +253,9 @@ function pintarLog(run, agora) {
   if (!alvo) return;
   const eventos = [...(run.eventos ?? [])].reverse().slice(0, 60);
   alvo.innerHTML = eventos.map(ev => {
-    const quando = relogio(Math.max(0, agora - ev.em));
+    /* O TEMPO DA RUN, e não "há quanto tempo" (D-163): o relativo andava a
+       cada pintura, e "00:10 Geodude" virava "01:21 Geodude". */
+    const quando = quandoNoLog(ev, run);
     if (ev.tipo === 'wave') {
       /* ── VERDE E VERMELHO, e não uma cor só ────────────────────────
          Pedido do dono: *"wave vencida fica marcado em verde, perdida fica em

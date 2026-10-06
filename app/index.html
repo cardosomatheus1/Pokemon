@@ -9713,7 +9713,7 @@ import { notasDaRodada } from './modules/historico-aposta.mjs';
 /* ST-9.8: soltar na caixa vira doce — o módulo se liga sozinho ao clique. */
 import './modules/doce-tela.mjs';
 import { temRetorno } from './modules/retorno-tela.mjs';
-import { abaDeAbertura, MARCA_DO_CADASTRO, temColecaoNoAparelho } from './modules/conta-real.mjs';
+import { abaDeAbertura, MARCA_DO_CADASTRO, temColecaoNoAparelho, CHAVE_DA_RECARGA } from './modules/conta-real.mjs';
 import './modules/exclusivos-tela.mjs';
 import './modules/treino-tela.mjs';
 import './modules/pve-tela.mjs';
@@ -9981,6 +9981,15 @@ async function ligarModoServidor(){
   pintarConexao(conexaoDaSala());
 }
 
+/* D-165: a recarga guarda a vista aberta e o boot volta para ela. */
+function recarregarNaMesmaAba() {
+  try { sessionStorage.setItem(CHAVE_DA_RECARGA, document.querySelector('.view.on')?.id ?? ''); } catch { /* privativo */ }
+  location.reload();
+}
+function abaDaRecarga() {
+  try { const v = sessionStorage.getItem(CHAVE_DA_RECARGA); sessionStorage.removeItem(CHAVE_DA_RECARGA); return v; } catch { return null; }
+}
+
 (async function boot(){
   /* D-145: a aba aberta antes de uma atualização roda a regra velha. */
   api.aoMudarVersao(() => {
@@ -9988,7 +9997,7 @@ async function ligarModoServidor(){
     /* D-154: com uma run na conta, a aba velha reproduziria a run com outro
        código — recarrega já, porque o que vale está no servidor. */
     let run = null; try { run = carregarIdle()?.run ?? null; } catch { /* sem save, sem run */ }
-    if (recarregaNaVersaoNova({ conta: idleNoServidor(api.temSessao()), run })) location.reload();
+    if (recarregaNaVersaoNova({ conta: idleNoServidor(api.temSessao()), run })) recarregarNaMesmaAba();
   });
   /* ST-2.26: uma aba parada numa vista que não chama a API nunca via a versão
      nova. Pergunta à /saude de tempos em tempos e ao voltar para a aba. */
@@ -10000,7 +10009,7 @@ async function ligarModoServidor(){
     const w = $(sel);
     if (w) w.innerHTML = `${papelDaMoeda(PACK, 'arena')}. <button class="guiaQ" type="button" data-guia-secao="moedas" data-fechar="${modal}">as duas moedas →</button>`;
   }
-  $('#btnNovaVersao')?.addEventListener('click', () => location.reload());
+  $('#btnNovaVersao')?.addEventListener('click', recarregarNaMesmaAba);
   atualizarSaldo();
   $('#btnAuto').classList.add('on');
   ensureDaily();          // garante os 3 desafios do dia já no carregamento
@@ -10011,7 +10020,7 @@ async function ligarModoServidor(){
   // (ST-2.19b — o jogador caía na Arena antes de ter um Pokémon)
   { let recemCriado = false, cru = null;
     try { recemCriado = localStorage.getItem(MARCA_DO_CADASTRO) === '1'; localStorage.removeItem(MARCA_DO_CADASTRO); cru = localStorage.getItem('ar_idle'); } catch { /* privativo */ }
-    goView(abaDeAbertura({ sessao: sessaoAtiva(), retorno: temRetorno(), recemCriado, temCriatura: temColecaoNoAparelho(cru) })); }
+    goView(abaDeAbertura({ sessao: sessaoAtiva(), retorno: temRetorno(), recemCriado, temCriatura: temColecaoNoAparelho(cru), recarregada: abaDaRecarga() })); }
   /* Um cenário antes do primeiro quadro. `drawMap` não desenha sem cenário
      aplicado, e o boot pinta o mapa antes de a primeira rodada existir. */
   aplicarArena(ARENAS[0]);

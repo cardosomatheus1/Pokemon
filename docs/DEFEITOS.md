@@ -7544,6 +7544,52 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
+## D-165 — o Recarregar do aviso de versão jogava o jogador na Arena ✅ CORRIGIDO na ST-2.32 (05/10)
+
+**Achado:** o 7º relato — *"o 'Recarregar' do aviso me jogou na aba Arenas em
+vez de me deixar nas Rotas, onde eu estava"*. **Bloco dono:** ST-2.32.
+**Causa.** O botão (e a recarga automática da D-154) faziam `location.reload()`,
+e o boot escolhe a aba pela regra da primeira visita — o veterano cai na Arena.
+**Conserto.** A recarga guarda a vista aberta na sessão (`recarregarNaMesmaAba`)
+e o boot volta para ela (`abaDeAbertura({ recarregada })`), só se for uma vista
+que existe. **Teste que trava:** `relato7` "D-165". S91013 PEGOU.
+
+## D-164 — a run nascia no estágio 1 com o 2 aberto ✅ CORRIGIDO na ST-2.32 (05/10)
+
+**Achado:** o 7º relato — *"a run começou no estágio 1 com o 2 já liberado.
+Tive que clicar no estágio 2 de propósito"*. **Causa.** `estagioEscolhido`
+nascia em 1 e só descia (`Math.min` com o máximo). **Conserto.** A escolha do
+jogador fica separada (`estagioManual`); sem clique, vale o maior aberto
+(`estagioDaEscolha`, camada 0) — e acompanha quando um estágio novo abre.
+**Teste que trava:** `relato7` "D-164". S91012 PEGOU.
+
+## D-163 — o horário do log da run andava ✅ CORRIGIDO na ST-2.32 (05/10)
+
+**Achado:** o 7º relato — *"um encontro que aparecia como '00:10 Geodude'
+depois virou '01:21 Geodude'"*. **Causa.** O log mostrava `agora - ev.em` — há
+quanto tempo —, que muda a cada pintura, no formato de um relógio. **Conserto.**
+O momento da run em que aconteceu (`quandoNoLog`: `ev.em - run.iniciadaEm`),
+que não muda depois de escrito. **Teste que trava:** `relato7` "D-163". S91011
+PEGOU.
+
+## D-162 — o FOCO e a EQUIPE mostravam níveis diferentes da mesma criatura ✅ CORRIGIDO na ST-2.32 (05/10)
+
+**Achado:** o 7º relato — *"o painel O FOCO mostra níveis velhos, como o
+Kakuna 'lv 8' depois de chegar ao 9"*. **Causa.** A coluna EQUIPE projeta o
+nível com o XP que a run já rendeu (`xpNaRun`); o FOCO lia o nível guardado,
+que só muda na colheita. **Conserto.** O FOCO usa a mesma projeção.
+**Teste que trava:** `relato7` "D-162". S91010 PEGOU.
+
+## D-161 — "3 juntos custam 135" e "até 23 por criatura" na mesma tela ✅ CORRIGIDO na ST-2.32 (05/10)
+
+**Achado:** o 7º relato — *"a tela diz que 3 juntos custam 135 de stamina, mas
+também diz até 23 por criatura, o que dá 69"*. **Causa.** As duas contas eram
+de coisas diferentes — a expedição escolhida (Trilha, 45 cada) e o Avanço (23
+cada) — e o rodapé da equipe dizia só o total da primeira, sem nome.
+**Conserto.** O rodapé diz os dois caminhos, cada um com o seu "cada"
+(`fraseDoCusto`, camada 0). **Teste que trava:** `relato7` "D-161". S91009
+PEGOU.
+
 ## D-160 — quem abre o banco durante uma escrita falha na hora ✅ CORRIGIDO na ST-2.31 (05/10)
 
 **Achado:** o `npm run repetir` da ST-2.31 — o `arena-concorrencia` (quatro

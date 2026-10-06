@@ -142,8 +142,17 @@ export const avisoDaPerda = ({ real, cadastro, colecaoNoAparelho = false }) =>
    de recarregar, e que o boot apaga) —, o jogo abre nas Rotas, onde a escolha
    do inicial é a primeira coisa da tela. */
 export const MARCA_DO_CADASTRO = 'ar_recemCriado';
-export function abaDeAbertura({ sessao, retorno = false, recemCriado = false, temCriatura = false }) {
+export function abaDeAbertura({ sessao, retorno = false, recemCriado = false, temCriatura = false, recarregada = null }) {
   if (!sessao) return 'viewHome';
+  /* A RECARGA VOLTA PARA ONDE ESTAVA (ST-2.32, D-165): o 7º relato — *"o
+     Recarregar do aviso me jogou na aba Arenas em vez de me deixar nas
+     Rotas"*. Só aba que existe: o que vem do armazenamento é dado, não ordem. */
+  if (ABAS_DA_RECARGA.includes(recarregada)) return recarregada;
   if (recemCriado || !temCriatura) return 'viewIdle';
   return retorno ? 'viewHome' : 'viewArena';
 }
+
+/* As vistas para onde uma recarga pode voltar, e a chave de sessão que leva o
+   nome da vista de um lado ao outro da recarga (D-165). */
+export const ABAS_DA_RECARGA = ['viewArena', 'viewLiga', 'viewIdle', 'viewTreino', 'viewHome', 'viewRotaOff', 'viewPokedex', 'viewWiki', 'viewHow', 'viewRules'];
+export const CHAVE_DA_RECARGA = 'pa_aba_recarga';

@@ -41,3 +41,15 @@ export function textoDoProximo(cn) {
   if (cn.proximaEntrada != null) return `<b>próximo selvagem em ${curto(cn.proximaEntrada)}</b> · ${fim}`;
   return `<b>${fim}</b> · depois começa a próxima`;
 }
+
+/* O relógio da coluna: mm:ss enquanto couber, h:mm:ss quando passar da hora. */
+export const relogioDaRun = ms => {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
+  const dois = n => String(n).padStart(2, '0');
+  return h ? `${h}:${dois(m)}:${dois(r)}` : `${dois(m)}:${dois(r)}`;
+};
+
+/* QUANDO, NO LOG (ST-2.32, D-163): o momento DA RUN em que o evento aconteceu.
+   Uma marca escrita não muda depois — é o que o jogador espera de um log. */
+export const quandoNoLog = (ev, run) => relogioDaRun((ev?.em ?? 0) - (run?.iniciadaEm ?? ev?.em ?? 0));

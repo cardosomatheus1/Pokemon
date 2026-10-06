@@ -11,6 +11,7 @@
  * A divisao e por assunto e nao por tamanho: as duas leem a criatura e o
  * relogio, e nenhuma delas decide nada — a decisao mora no `engine/foco.mjs`.
  */
+import { fraseDoCusto } from './volta-dados.mjs';
 import { avisoDeEvolucao } from '../../engine/exclusivos.mjs';
 import { avisoDaPedra } from './prende-dados.mjs';
 import { PACK, nomeExibido } from './motor.mjs';
@@ -265,7 +266,7 @@ export function pintarCartoes(E, { perfil, selecao = [], agora = Date.now(),
         ${seloDoFoco(c, t)}
         ${ver('evolucao') ? seloDaEvolucao(c, E.bolsa, nomesDe(PACK), E.lotes) : ''}
       </button>`;
-  }).join('') + rodapeDaConcentracao(selecao.length, custo));
+  }).join('') + rodapeDaConcentracao(selecao.length, perfil));
 }
 
 /* ── O QUE MANDAR MAIS GENTE RENDE (L-140, bloco 1.27) ────────────────────
@@ -280,16 +281,15 @@ export function pintarCartoes(E, { perfil, selecao = [], agora = Date.now(),
  * E ele diz as DUAS metades, porque a escolha só é escolha com as duas: o
  * ganho é decrescente, e o custo de stamina é linear. Mostrar só o ganho
  * venderia concentrar; mostrar só o custo o esconderia. */
-function rodapeDaConcentracao(quantos, custoPorCriatura) {
+function rodapeDaConcentracao(quantos, perfil) {
   if (quantos < 1) return '';
   const f = fatorDaEquipe(quantos);
-  const total = custoPorCriatura * quantos;
   if (quantos === 1)
     return `<p class="tiny idleConcentra">Mandar mais de um no MESMO bioma rende ` +
            `mais — e o segundo rende mais que o terceiro.</p>`;
   return `<p class="tiny idleConcentra"><b>${quantos} juntos</b> rendem ` +
-         `<b class="concGanho">×${f.toFixed(2)}</b> de encontros e itens, e custam ` +
-         `<b>${total}</b> de stamina. ` +
+         `<b class="concGanho">×${f.toFixed(2)}</b> de encontros e itens, e ` +
+         `${fraseDoCusto(quantos, perfil)}. ` +
          `<i>O ganho é decrescente de propósito: concentrar traz mais do mesmo ` +
          `lugar, espalhar traz variedade.</i></p>`;
 }

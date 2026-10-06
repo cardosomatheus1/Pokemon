@@ -9392,6 +9392,14 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-253 — o "+2" do cartão da rota sem nome ✅ FECHADA na ST-2.32 (05/10)
+
+**Registrada em:** 05/10/2026, no 7º relato (*"os tiles das rotas ainda
+mostram um '+2' sem nome"*; o 6º já tinha cobrado o "+2"). **Bloco dono:**
+ST-2.32. **Estado:** fechada. O cartão mostra até 4 moradores e dizia só "+2". Agora diz
+"+2 outras", e o título nomeia quem são (`rotuloDoResto`, `foraDaLista`).
+**Teste que trava:** `relato7` "L-253". S91014–S91015 PEGOU.
+
 ### L-252 — a criatura comprada sobe o teto do banco
 
 **Registrada em:** 05/10/2026, na ST-2.31. **Bloco dono:** **E14** (o mercado

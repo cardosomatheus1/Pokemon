@@ -24,6 +24,10 @@ defeito meu.
 
 ## 0. ONDE PARAMOS — 05/10/2026 · AT6-15-integracao-final
 
+**ST-2.32 (05/10):** os defeitos de lógica do 7º relato (D-161 a D-165,
+L-253). Na fila: ST-2.33 (o arranjo das telas novas do ramo codex) e ST-2.34
+(o ritmo do Avanço: o time quase não apanha, waves de ~45 s).
+
 **ST-2.31 (05/10):** o banco alcança, não ultrapassa — leva até a mais forte
 menos 3; o Campeão sai do 4º dia para o 34º (casual), 31º (diário), 7º
 (maratona). L-251 fechada, L-252 aberta (a comprada sobe o teto).

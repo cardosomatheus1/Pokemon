@@ -250,6 +250,8 @@ export function resumoDaRota(pack, biomaId, criaturas = [], { ate = MOSTRA_ATE, 
     /* QUANTOS FICARAM DE FORA, para o cartão poder dizer "+N" em vez de
        simplesmente cortar. Cortar em silêncio é mentir por omissão. */
     resto: Math.max(0, dex.length - Math.max(0, ate)),
+    /* E QUEM SÃO (L-253): o "+2" sozinho não dizia nem o que contava. */
+    foraDaLista: dex.slice(Math.max(0, ate)),
     /* AS FAIXAS na ordem em que o motor as entrega — do comum ao raro. É o que
        responde "vale a pena vir aqui?", e é a única linha do cartão que muda
        de rota para rota. */
@@ -310,3 +312,15 @@ export function equipeDaEscolha(escolhida, criaturas, staminaDe) {
   if (fica.length || !ativas.length) return fica;
   return [[...ativas].sort((a, b) => staminaDe(b) - staminaDe(a))[0].id];
 }
+
+/* O "+N" DO CARTÃO DA ROTA (ST-2.32, L-253): o número sozinho não dizia o que
+   contava — o 7º relato o chamou de "+2 sem nome". */
+export const rotuloDoResto = n => (n > 0 ? `+${n} ${n === 1 ? 'outra' : 'outras'}` : '');
+
+/* O ESTÁGIO DA RUN (ST-2.32, D-164): sem escolha do jogador, o maior aberto —
+   o 7º relato: *"a run começou no estágio 1 com o 2 já liberado"*. A escolha
+   dele vale enquanto couber no que está aberto. */
+export const estagioDaEscolha = (escolhido, maximo) => {
+  const max = Math.max(1, Math.floor(Number(maximo) || 1));
+  return escolhido == null ? max : Math.min(Math.max(1, Math.floor(Number(escolhido) || 1)), max);
+};

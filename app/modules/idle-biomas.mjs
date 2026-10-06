@@ -20,7 +20,7 @@
 import { nosDois } from './dom.mjs';
 /* A SALA pergunta ao motor quem mora e o que a rota pede — camada 0, com
    teste próprio. Ver o cabeçalho do `idle-escolha.mjs`. */
-import { resumoDaRota } from './idle-escolha.mjs';
+import { resumoDaRota, rotuloDoResto } from './idle-escolha.mjs';
 /* A NOITE NA PORTA (1.33): a prévia pergunta com o período de agora, no relógio
    do mundo, e com mais nada — o clima só se revela quando a run começa. */
 import { preferenciasDaPrevia } from './elenco-condicao.mjs';
@@ -173,7 +173,7 @@ function pintarNele(alvo) {
         ${quem ? cabecaNoChip(quem) : ''}
       </span>
       <span class="rotaMoram">${moradores}${
-        r.resto ? `<u class="rotaResto">+${r.resto}</u>` : ''}</span>
+        r.resto ? `<u class="rotaResto" title="${r.foraDaLista.map(d => nomeExibido(esp(d).n)).join(', ')}">${rotuloDoResto(r.resto)}</u>` : ''}</span>
       <span class="rotaPede"><b>${r.quantos}</b> espécie(s)
         <u>${r.faixas.map(f => daFaixa(f).rotulo.toLowerCase()).join(' · ')}</u></span>
     </button>`;

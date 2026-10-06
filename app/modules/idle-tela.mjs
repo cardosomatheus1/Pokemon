@@ -53,7 +53,7 @@ import { PACK, nomeExibido } from './motor.mjs';
 import { dexImg, retratoAnimado } from './sprites.mjs';
 import { estiloIcone } from './icones.mjs';
 import { seloDoFoco, seloDaEvolucao, desenharHud, pintarCartoes } from './idle-equipe.mjs';
-import { modoGuardado, guardarModo, proximoModo, MODO_PADRAO, equipeDaEscolha } from './idle-escolha.mjs';
+import { modoGuardado, guardarModo, proximoModo, MODO_PADRAO, equipeDaEscolha, estagioDaEscolha } from './idle-escolha.mjs';
 import { nomesDe } from './itens-nome.mjs';
 import { confirmarExpedicao, confirmarLance } from './idle-confirma.mjs';
 import { ligarLoja, usarEstado as lojaUsaEstado } from './loja-tela.mjs';
@@ -94,7 +94,7 @@ let biomaEscolhido = null;
    que fica aberta por horas. */
 let modoDoCartao = modoGuardado();
 let perfilEscolhido = 'trilha';
-let estagioEscolhido = 1;
+let estagioEscolhido = 1, estagioManual = null;   // sem clique, o maior aberto (D-164)
 let equipeEscolhida = [];
 let ultimaColheita = null;
 let relogio = null;
@@ -141,7 +141,7 @@ function pintarIniciais() {
    recusa que a propria tela ofereceu. */
 function pintarFundo() {
   const cri = criaturasDe(E);
-  estagioEscolhido = Math.min(estagioEscolhido, estagioMaximoDe(E));
+  estagioEscolhido = estagioDaEscolha(estagioManual, estagioMaximoDe(E));
   pintarEstagios(cri, { escolhido: estagioEscolhido, bioma: biomaEscolhido });
   pintarPrevia(biomaEscolhido, perfilEscolhido, estagioEscolhido);
 }
@@ -504,7 +504,7 @@ document.addEventListener('click', async ev => {
   }
 
   const est = ev.target.closest(nasDuas('[data-estagio]'));
-  if (est) { estagioEscolhido = Number(est.dataset.estagio) || 1; pintarFundo(); atualizarBotao(); return; }
+  if (est) { estagioManual = estagioEscolhido = Number(est.dataset.estagio) || 1; pintarFundo(); atualizarBotao(); return; }
 
   const p = ev.target.closest(nasDuas('[data-perfil]'));
   if (p) { perfilEscolhido = p.dataset.perfil; desenharPerfis(); cartoes(); pintarFundo(); atualizarBotao(); return; }

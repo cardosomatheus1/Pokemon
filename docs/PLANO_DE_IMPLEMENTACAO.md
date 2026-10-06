@@ -2596,6 +2596,19 @@ do servidor. Três partes:
 - **Fora:** as duas migrações (doces do D-144, nível de nascer das capturas
   antigas) — decisão do dono, pendente.
 
+### ST-2.32 · Os defeitos de lógica do 7º relato ✅ 05/10
+- **Por quê:** o 7º relato do dono (05/10), a parte que é conta e não arranjo.
+- **Feito:** D-161 (o custo da equipe pelos dois caminhos), D-162 (o FOCO com o
+  nível projetado da EQUIPE), D-163 (o log com o tempo da run), D-164 (o
+  estágio padrão é o maior aberto), D-165 (a recarga volta à aba), L-253 (o
+  "+N outras" com nomes). Toda decisão em camada 0; a tela só pinta.
+- **Testes:** `relato7` (novo, 6); `relato6` (a recarga da D-154 passa pela
+  mesma função). S91009–S91015 PEGOU (S91015 escapou na 1ª versão: o teste
+  só media o tamanho da lista). Q5: Rotas nas 4 larguras, 0 pageerror.
+- **Fica para a ST-2.33** (o arranjo das telas novas) e a **ST-2.34** (o ritmo do
+  Avanço) — o resto do 7º relato. Os 404 de `lojas.mp4` e `battle-theme.mp3`
+  esperam os arquivos do dono.
+
 ### ST-2.31 · O banco alcança, não ultrapassa (L-251) ✅ 05/10
 - **Por quê:** o dono — *"o que dá para melhorar na progressão de XP para não
   ficar muito nem tão pouco"*, e depois *"pode equilibrar como achar melhor"*.

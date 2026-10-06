@@ -68,7 +68,7 @@ export function suite() {
     igual(recarregaNaVersaoNova({ conta: false, run: { id: 'r' } }), false, 'recarregou sem conta — a run do aparelho é a do código dele');
     const pag = fonte('app/index.html');
     const i = pag.indexOf('api.aoMudarVersao(');
-    ok(i > 0 && /recarregaNaVersaoNova\(/.test(pag.slice(i, i + 500)) && /location\.reload\(\)/.test(pag.slice(i, i + 500)), 'a aba não recarrega na versão nova');
+    ok(i > 0 && /recarregaNaVersaoNova\(/.test(pag.slice(i, i + 500)) && /recarregarNaMesmaAba\(\)/.test(pag.slice(i, i + 500)), 'a aba não recarrega na versão nova');   // D-165: a recarga guarda a aba
   });
 
   /* ── ST-2.28d · o cansado não prende o time (D-159) ────────────────────

@@ -133,3 +133,26 @@ export function painelDoEnquanto(r, nome = id => id) {
     (troca.length ? `<button type="button" class="enqSair" data-sair-com="${troca.join(',')}">⚔ Sair com ` +
       `${lista(troca.map(nome))}</button>` : '');
 }
+
+/* ── O CUSTO DA EQUIPE PELOS DOIS CAMINHOS (ST-2.32, D-161) ───────────────
+ *
+ * O 7º relato: *"diz que 3 juntos custam 135 de stamina, mas também diz até 23
+ * por criatura, o que dá 69"*. As duas contas estavam certas e eram de coisas
+ * diferentes — a da expedição escolhida (Trilha, 45 cada) e a do Avanço (23
+ * cada) — e a frase só dizia o total de uma, sem nome. A mesma equipe sai pelos
+ * dois botões, então a frase diz os dois, cada um com o seu "cada". */
+export function custoDaEquipe(quantos, perfil) {
+  const n = Math.max(0, Math.floor(Number(quantos) || 0));
+  const p = PERFIS[perfil];
+  return {
+    expedicao: p ? { rotulo: p.rotulo, cada: p.custo, total: p.custo * n } : null,
+    run: { cada: STAMINA_DO_AVANCO, total: STAMINA_DO_AVANCO * n },
+  };
+}
+export function fraseDoCusto(quantos, perfil) {
+  const c = custoDaEquipe(quantos, perfil);
+  const run = `${c.run.total} no Avanço (${c.run.cada} cada)`;
+  return c.expedicao
+    ? `custam <b>${c.expedicao.total}</b> de stamina na ${c.expedicao.rotulo} (${c.expedicao.cada} cada), ou <b>${run.replace(/^(\d+)/, '$1</b>')}`
+    : `custam <b>${run.replace(/^(\d+)/, '$1</b>')} de stamina`;
+}
