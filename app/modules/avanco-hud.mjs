@@ -195,7 +195,7 @@ export function flutuar(camada, x, y, texto, chaveDoGolpe, lado = '') {
   setTimeout(() => ponto.remove(), 1200);
 }
 
-export function pintarPlaca(chave, camada, { x, y, texto, vida, hp, hpMax, chefe, meu }) {
+export function pintarPlaca(chave, camada, { x, y, texto, vida, hp, hpMax, chefe, meu, topo, sprite }) {
   if (!camada) return;
   const el = placaDe(chave, camada);
   const b = el.children[0], barra = el.children[1].firstChild, num = el.children[2];
@@ -219,7 +219,7 @@ export function pintarPlaca(chave, camada, { x, y, texto, vida, hp, hpMax, chefe
      mesmo assim: a `separarPlacas` roda depois e reescreve quem precisar, e
      enquanto ela não roda a placa já está no lugar certo. Guardar sem
      desenhar deixaria um quadro de atraso em toda placa nova. */
-  el._x = x; el._y = y;
+  el._x = x; el._y = y; el._topo = topo; el._sprite = sprite ?? null;   // ST-2.33b
   el.style.transform = `translate(${x}px, ${y}px)`;
 }
 
@@ -257,15 +257,17 @@ const alturaDe = el => {
   return alturaDaPlaca || 33;
 };
 
-export function separarPlacas() {
+export function separarPlacas(extras = []) {
   const vivas = [...placas.entries()]
     .filter(([, el]) => el && el.isConnected && Number.isFinite(el._y));
   if (!vivas.length) return;
 
   const altura = alturaDe(vivas[0][1]) + 2;
   const postos = separarPontos(
-    vivas.map(([chave, el]) => ({ chave, x: el._x, y: el._y })),
-    { largura: LARGURA_DA_PLACA, altura });
+    vivas.map(([chave, el]) => ({ chave, x: el._x, y: el._y, topo: el._topo })),
+    { largura: LARGURA_DA_PLACA, altura,
+      /* ST-2.33b: os sprites são obstáculo — a placa não cobre o bicho dos outros */
+      obstaculos: [...vivas.map(([chave, el]) => el._sprite && { chave, ...el._sprite }).filter(Boolean), ...extras] });
 
   const porChave = new Map(vivas);
   for (const p of postos) {

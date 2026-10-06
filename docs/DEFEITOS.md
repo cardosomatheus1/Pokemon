@@ -7544,6 +7544,30 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
+## D-168 — no mapa da run, as placas cobriam os sprites dos outros ✅ CORRIGIDO na ST-2.33b (06/10)
+
+**Achado:** o 7º relato — *"no mapa da run, os nomes ficam por cima dos
+sprites"*. Visto no Q5: a placa do Charmander, no pé dele, caía sobre o
+selvagem logo abaixo; a do Oddish, empurrada para baixo pela do Charmander,
+cobria o próprio Oddish. **Bloco dono:** ST-2.33b. **Causa.** A separação
+(`separarPontos`, D-081) só conhecia as placas: empurrava para baixo a que
+batia em outra, sem saber onde estavam os bichos. **Conserto.** Os sprites
+(selvagens, companheiro, seguidores e o treinador) entram como obstáculo; cada
+placa escolhe entre o pé e o alto da cabeça do próprio dono o lugar que menos
+cobre os outros. A separação saiu para `placas-geometria.mjs` (o
+`avanco-geometria` passava de 600 linhas). **Teste que trava:** `mapa-run`.
+S91022–S91023 PEGOU; S934/S934b realvos e PEGOU.
+
+## D-167 — no mapa da run, só o líder andava ✅ CORRIGIDO na ST-2.33b (06/10)
+
+**Achado:** o 7º relato — *"só o líder anda, sem os outros dois membros do
+time"*. **Bloco dono:** ST-2.33b. **Causa.** O mapa tinha UMA moldura de
+companheiro (`'comp'`), e a run passava só `equipe[0]`. **Conserto.** O resto
+do time segue o líder pelo caminho que ele fez, 30 px de mundo um atrás do
+outro (`seguidores.mjs`, camada 0: o rastro com teto de tamanho, e um salto de
+cena recomeça o rastro); `desenharCompanheiro` ganhou a chave da moldura.
+**Teste que trava:** `mapa-run`. S91024–S91027 PEGOU; S981 realvo e PEGOU.
+
 ## D-166 — quatro suítes do ramo codex existiam e nunca rodavam ✅ CORRIGIDO na ST-2.33a (06/10)
 
 **Achado:** na ST-2.33a, ao procurar quem testava o resumo da luta. **Bloco

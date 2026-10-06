@@ -376,58 +376,8 @@ export function aproximarFoco(atual, alvo, dt, tau = TAU_DA_CAMERA) {
   return { x: atual.x + (alvo.x - atual.x) * k, y: atual.y + (alvo.y - atual.y) * k };
 }
 
-/* ── SEPARAR O QUE SE ENCOSTA — a geometria do D-081 ──────────────────────
- *
- * As placas de nome e vida têm largura fixa e se centram no lutador. O desenho
- * do A4g manda o selvagem ATÉ o companheiro para brigar, então dois lutadores
- * encostados são duas placas no mesmo lugar — sempre, e exatamente no instante
- * em que o jogador mais quer ler as duas.
- *
- * ── POR QUE A CONTA MORA AQUI, E NÃO JUNTO DOS ELEMENTOS ────────────────
- *
- * Porque ela é geometria pura, e geometria pura neste projeto tem teste sem
- * navegador. A primeira versão morava no `avanco-hud.mjs`, misturada com
- * `style.transform` — e o portão Q2 provou o custo: o defeito plantado que
- * DESLIGA a aplicação passou, porque nenhum teste conseguia olhar o resultado
- * sem montar um DOM.
- *
- *   > Conta que só pode ser verificada com navegador acaba verificada por
- *   > ninguém. Separar a conta do desenho é o que a torna afirmável.
- *
- * ── SEPARAR, E NUNCA ESCONDER ───────────────────────────────────────────
- *
- * Sumir com a de baixo resolveria a sobreposição perdendo informação — e a
- * perdida seria a do bicho que está apanhando. Todo ponto que entra, sai.
- *
- * A ordem é de cima para baixo, e ela importa: resolvida na ordem de chegada,
- * duas placas trocariam de lugar quando um mob nascesse, e a troca é mais
- * difícil de ler que a sobreposição. */
-export const VOLTAS_DA_SEPARACAO = 8;
-
-export function separarPontos(pontos, { largura, altura } = {}) {
-  const L = Number(largura) || 0;
-  const A = Number(altura) || 0;
-  const fila = [...(pontos ?? [])]
-    .filter(p => p && Number.isFinite(p.x) && Number.isFinite(p.y))
-    .sort((a, b) => a.y - b.y);
-
-  const postos = [];
-  for (const p of fila) {
-    let y = p.y;
-    /* O TETO DE VOLTAS existe porque a lista é curta e isto roda por quadro:
-       com quatro lutadores nunca chega perto, e num caso patológico é melhor
-       uma placa encostada que um quadro travado. */
-    for (let volta = 0; volta < VOLTAS_DA_SEPARACAO; volta++) {
-      const bateu = postos.find(q => Math.abs(q.x - p.x) < L && Math.abs(q.y - y) < A);
-      if (!bateu) break;
-      /* PARA BAIXO: a placa já mora abaixo do sprite, e é a única direção que
-         não atravessa o bicho que ela descreve. */
-      y = bateu.y + A;
-    }
-    postos.push({ ...p, y });
-  }
-  return postos;
-}
+/* A separação das placas mora em `placas-geometria.mjs` (ST-2.33b). */
+export { separarPontos, VOLTAS_DA_SEPARACAO } from './placas-geometria.mjs';
 
 /* ── UM PONTO LIVRE PERTO DO PEDIDO — a geometria do L-172 ────────────────
  *

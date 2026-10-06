@@ -24,6 +24,10 @@ defeito meu.
 
 ## 0. ONDE PARAMOS — 05/10/2026 · AT6-15-integracao-final
 
+**ST-2.33b (06/10):** no mapa da run o time inteiro anda em fila (D-167) e as
+placas não cobrem mais os sprites (D-168). Na fila: ST-2.34 (ritmo do Avanço);
+L-254 pede print do dono.
+
 **ST-2.33a (06/10):** prévia de evolução e resumo da luta em tabela, ficha do
 golpe na linha inteira, palco clássico sem corte, D-166. Na fila: ST-2.33b (o
 mapa da run: seguidores e placas; L-254 pede print) e ST-2.34 (ritmo do Avanço).

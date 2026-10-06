@@ -2596,6 +2596,19 @@ do servidor. Três partes:
 - **Fora:** as duas migrações (doces do D-144, nível de nascer das capturas
   antigas) — decisão do dono, pendente.
 
+### ST-2.33b · O mapa da run: o time inteiro, e placas que não cobrem ninguém ✅ 06/10
+- **Por quê:** o 7º relato — só o líder andava, e os nomes cobriam os sprites.
+- **Medido antes (Q5, run local):** uma moldura de companheiro só; a placa
+  do Charmander sobre o selvagem de baixo e a do Oddish sobre o Oddish.
+- **Feito:** D-167 (os seguidores no rastro do líder) e D-168 (placas com os
+  sprites e o treinador como obstáculo, pé ou cabeça do próprio dono).
+- **Testes:** `mapa-run` (novo, 6). S91022–S91027 PEGOU; S934, S934b e S981
+  realvos (o trecho mudou de arquivo/nome) e PEGOU. Q5: a run em 1440 e 420
+  — os três do time em fila, nenhuma placa sobre outro bicho; 0 pageerror.
+  Mutantes de navegador: 1 (o treinador como obstáculo, em `avanco-cena`, só
+  se vê na tela).
+- **L-254** (a faixa cinza da Arena 6×6) segue aberta: pede print.
+
 ### ST-2.33a · As telas novas do ramo codex, vestidas ✅ 06/10
 - **Por quê:** o 7º relato — a prévia de evolução e o resumo da luta "sem
   estilo" ('beedrill' em minúsculo, "Antes 31 → Depois 35" solto), a ficha do

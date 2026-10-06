@@ -39,11 +39,14 @@ import { relogioDoPasseio } from './avanco-geometria.mjs';
 import { nomeDoDex, golpeDoDex } from './avanco-tema.mjs';
 import { vidaDe, semear, mover, opacidade, mistura } from './particulas.mjs';
 import { vivos } from './vivos.mjs';
-import { desenharCompanheiro, acompanhar as acompanharBicho,
-         quemAcompanha } from './idle-companheiro.mjs';
+import { desenharCompanheiro, acompanhar as acompanharBicho, quemAcompanha, quemSegue } from './idle-companheiro.mjs';
+import { registrarNoRastro, posicoesDoRastro, SEGUIDORES_MAX } from './seguidores.mjs';
 import { prepararHabitantes, desenharHabitantes, desenharSono } from './idle-habitantes.mjs';
 import { janela, niveis, nivelMaisProximo, rotuloZoom, zoomDaRun, zoomDePartida } from './viewport.mjs';
 import { prepararNpcs, desenharNpcs } from './idle-npc.mjs';
+
+/* O caminho do líder na tela, para os seguidores (ST-2.33b). */
+let rastro = [];
 
 /* Quem é o bioma e quem é o companheiro vem de FORA: este módulo desenha, não
    escolhe. O idle-tela.mjs avisa quando o jogador muda um dos dois. */
@@ -459,6 +462,14 @@ async function laçoDoAtor(t) {
     /* A criatura é um elemento HTML e não um desenho: a ordem dela contra o
        treinador é `z-index`, e não a ordem das chamadas. */
     desenharCompanheiro(g, bicho, alvo, eu.dir, escala, sombra);
+    /* OS DE TRÁS (ST-2.33b): o resto do time da run pisa no caminho do líder,
+       um passo atrás do outro. Fora da run a lista é vazia e as molduras
+       deles somem. */
+    const seguidores = quemSegue();
+    rastro = registrarNoRastro(rastro, bicho);
+    posicoesDoRastro(rastro, seguidores.length).forEach((pos, k) =>
+      desenharCompanheiro(g, { ...pos, dex: seguidores[k] }, alvo, eu.dir, escala, sombra, `comp${k + 2}`));
+    for (let k = seguidores.length; k < SEGUIDORES_MAX; k++) esconder(`comp${k + 2}`);
     /* Depois do companheiro e antes dos habitantes: o bando que veio lutar
        está mais perto do jogador que a fauna de fundo. */
     desenharMobs(g, alvo, escala, t, eu, cenaAgora, sombra, nomeDoDex, golpeDoDex,

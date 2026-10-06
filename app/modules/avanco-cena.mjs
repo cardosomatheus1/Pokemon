@@ -80,7 +80,7 @@ const LINHAS_DA_FOLHA = { w: 8, i: 8, a: 8, h: 8 };
 /* A GEOMETRIA MORA FORA, e sem DOM: foi lá que o defeito das direções estava,
    e é lá que ele tem teste. Ver o cabeçalho do `avanco-geometria.mjs`. */
 import {
-  linhaDe, quadroDe, entrada, alvoDoCombate, pontoDeBatalha, COMBATE,
+  linhaDe, quadroDe, entrada, alvoDoCombate, pontoDeBatalha, COMBATE, ALTURA_DO_TREINADOR,
 } from './avanco-geometria.mjs';
 
 /* A MESMA PASTA QUE A ARENA E O COMPANHEIRO USAM. Endereço de arte é tema, e
@@ -119,6 +119,16 @@ const folhaDe = (dex, anim) =>
  * `cena` é o retrato que o motor devolveu (`cenaDaRun`): quem está de pé, há
  * quanto tempo, e quanto sobrou da barra. Este arquivo não pergunta nada ao
  * motor — ele desenha o que recebeu. */
+/* O retângulo de uma moldura viva, nas coordenadas da camada das placas: o
+   `translate` e o tamanho que o desenhista deixou nela (ST-2.33b). */
+function retanguloDe(chave) {
+  const m = vivos.get(chave)?.moldura;
+  if (!m || m.style.display === 'none') return null;
+  const t = /translate\(([-\d.]+)px, ([-\d.]+)px\)/.exec(m.style.transform ?? '');
+  const w = parseFloat(m.style.width), h = parseFloat(m.style.height);
+  return t && w && h ? { x: +t[1], y: +t[2], w, h } : null;
+}
+
 export function desenharMobs(g, cam, escala, t, eu, cena, sombra, nomeDe, golpeDe, mundo) {
   /* O TAMANHO DO MUNDO entra por argumento, como tudo aqui: este arquivo
      desenha, não consulta. É ele que deixa o campo virar para dentro quando o
@@ -294,7 +304,7 @@ export function desenharMobs(g, cam, escala, t, eu, cena, sombra, nomeDe, golpeD
     const py = (s.y - cam.y) * escala;
 
     pintarPlaca(chave, v.el.parentElement, {
-      x: px, y: py + 3,
+      x: px, y: py + 3, topo: py - At, sprite: { x: px - Lt / 2, y: py - At, w: Lt, h: At },
       texto: nomeDe ? nomeDe(m.dex) : '',
       vida: m.vida ?? 1, hp: m.hp, hpMax: m.hpMax, chefe: !!m.chefe,
     });
@@ -391,8 +401,10 @@ export function desenharMobs(g, cam, escala, t, eu, cena, sombra, nomeDe, golpeD
     const levei = (cena.golpes ?? []).filter(x => x.de === 'dele' && x.dano > 0 && (x.heroi == null || x.heroi === cena.heroi?.i));
 
     if (camada) {
+      /* ST-2.33b: o retângulo do companheiro, para as placas não o cobrirem */
+      const rc = retanguloDe('comp');
       pintarPlaca('meu', camada, {
-        x: mx, y: my + 3,
+        x: mx, y: my + 3, topo: rc ? rc.y : undefined, sprite: rc ?? undefined,
         texto: nomeDe && meu.dex != null ? nomeDe(meu.dex) : 'você',
         vida: cena.heroi ? cena.heroi.hp / cena.heroi.hpMax : (cena.hpMax ? cena.hp / cena.hpMax : 1), hp: cena.heroi?.hp ?? cena.hp, hpMax: cena.heroi?.hpMax ?? cena.hpMax,
         chefe: false, meu: true,
@@ -441,7 +453,13 @@ export function desenharMobs(g, cam, escala, t, eu, cena, sombra, nomeDe, golpeD
   /* ── E POR ÚLTIMO, AS PLACAS QUE SE ENCOSTAM (D-081) ─────────────────
      Depois da limpeza de propósito: separar incluindo placas que vão sair
      no mesmo quadro faria as vivas desviarem de fantasmas. */
-  separarPlacas();
+  /* ST-2.33b: o treinador e os de trás também são obstáculo — a placa que
+     sobe para fugir de um selvagem não pode cair na cara deles. */
+  separarPlacas([
+    { chave: 'treinador', x: (eu.x - cam.x - 14) * escala, y: (eu.y - cam.y - ALTURA_DO_TREINADOR) * escala,
+      w: 28 * escala, h: ALTURA_DO_TREINADOR * escala },
+    ...['comp2', 'comp3'].map(k => retanguloDe(k)).filter(Boolean).map(r => ({ chave: 'seguidor', ...r })),
+  ]);
 
   /* ── E OS ESTOUROS POR CIMA DE TUDO (L-171) ─────────────────────────
      Depois dos mobs e do companheiro: o efeito é o que ACONTECE, e o que

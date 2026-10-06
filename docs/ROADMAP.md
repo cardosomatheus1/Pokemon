@@ -280,6 +280,7 @@ A ordem não é a da Spec. Ela segue três critérios, nesta ordem:
 
 | bloco | fechou em | evidência |
 |---|---|---|
+| **ST-2.33b** · o mapa da run: o time inteiro e placas que não cobrem ninguém | 06/10 | D-167 os de trás seguem o rastro do líder · D-168 as placas desviam dos sprites e do treinador; `mapa-run` 6 testes, S91022–S91027 |
 | **ST-2.33a** · as telas novas do ramo codex, vestidas | 06/10 | prévia de evolução e resumo da luta em tabela (o lado melhor e o sentido de cada mudança em camada 0); nome pelo `nomeExibido`; a ficha do golpe toma a linha; palco clássico cabe inteiro; D-166 (4 suítes que nunca rodavam); `telas-novas` 8 testes, S91016–S91021 |
 | **ST-2.32** · os defeitos de lógica do 7º relato | 05/10 | D-161 custo da equipe pelos dois caminhos · D-162 FOCO = EQUIPE · D-163 log com o tempo da run · D-164 estágio padrão = maior aberto · D-165 a recarga volta à aba · L-253 "+2 outras" com nomes; `relato7` 6 testes, S91009–S91015 |
 | **ST-2.31** · o banco alcança, não ultrapassa (L-251) | 05/10 | o banco leva até a mais forte − 3, e a mais forte só sobe jogando; Campeão (nível 60) no dia 4 → 34 casual · 31 diário · 7 maratona; `teto-banco` 9 testes, S91001–S91007 · Spec §7.22.22 |

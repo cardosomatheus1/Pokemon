@@ -128,6 +128,10 @@ const CAMADA = {
      E o que permite percorrer onze horas de caminhada num teste de Node e
      afirmar que ninguem entra na agua em nenhum quadro. */
   'vida.mjs': 0,
+  /* ST-2.33b: o rastro do líder e onde pisam os de trás — geometria pura. */
+  'seguidores.mjs': 0,
+  /* ST-2.33b: onde cada placa cabe, saído do avanco-geometria. */
+  'placas-geometria.mjs': 0,
   /* A VIDA DO AR de cada bioma — vagalume, brasa, plancton, arco. Camada 0:
      aritmetica sobre coordenadas, sem canvas e sem DOM. Portado da previa que
      o dono aprovou, e que morreu num HTML solto por nao ter casa. */

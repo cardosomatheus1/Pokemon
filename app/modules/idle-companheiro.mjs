@@ -13,6 +13,7 @@ import { PACK } from './motor.mjs';
 import { gradeDe } from './caminhada-dados.mjs';
 import { vivos, molduraDe, sondarFolha } from './vivos.mjs';
 import { animDoMomento, aSondar, marcarFolha } from './folha-viva.mjs';
+import { SEGUIDORES_MAX } from './seguidores.mjs';
 
 /* A MESMA PASTA QUE A ARENA USA. Endereco de arte e tema, e usar o mesmo
    garante que o idle nunca mostre uma criatura com desenho diferente. */
@@ -22,7 +23,14 @@ const PMD_SPRITE = '../assets/raw_githubusercontent_com/PMDCollab/SpriteCollab/m
    estado do idle, e ai ele deixaria de ser um ator e viraria mais uma copia da
    regra — que e o que a divisao existe para evitar. */
 let dexAcompanhando = null;
-export function acompanhar(dex) { dexAcompanhando = dex; }
+/* OS DE TRÁS (ST-2.33b): na run, o resto do time segue o líder pelo mapa. Fora
+   dela a lista é vazia — o passeio do idle continua com um só. */
+let dexSeguindo = [];
+export function acompanhar(dex, outros = []) {
+  dexAcompanhando = dex;
+  dexSeguindo = (outros ?? []).filter(d => d != null).slice(0, SEGUIDORES_MAX);
+}
+export const quemSegue = () => [...dexSeguindo];
 
 /* QUEM A CENA ESTA DESENHANDO AGORA, exposto para o portao Q5 poder afirmar
    sobre isso. Sem ele, a unica forma de testar "a sprite do bioma e a do
@@ -121,11 +129,11 @@ function caixaDoQuadro(img, fw, fh) {
    horas na tela de fundo), ela é uma linha aqui e nada mais. */
 const ANIM_DO_COMBATE = { w: 'Walk', a: 'Attack', h: 'Hurt' };
 
-export function desenharCompanheiro(g, p, cam, dirTreinador, escala, sombra) {
+export function desenharCompanheiro(g, p, cam, dirTreinador, escala, sombra, chave = 'comp') {
   const dex = p.dex ?? dexAcompanhando;
-  if (dex == null) { esconder('comp'); return null; }
+  if (dex == null) { esconder(chave); return null; }
   const grade = gradeDe(dex);
-  if (!grade) { esconder('comp'); return null; }
+  if (!grade) { esconder(chave); return null; }
   const id = String(dex).padStart(4, '0');
   /* ── A FOLHA DO MOMENTO, e não sempre a de caminhada ───────────────────
      Correção do dono: *"não consigo visualizar os ataques do meu pokémon"*.
@@ -147,11 +155,11 @@ export function desenharCompanheiro(g, p, cam, dirTreinador, escala, sombra) {
   const urlDaAnim = k => `${PMD_SPRITE}/${id}/${ANIM_DO_COMBATE[k]}-Anim.png`;
   const disponiveis = { w: true, a: true, h: true };
   for (const u of aSondar(disponiveis, urlDaAnim)) sondarFolha(u, marcarFolha);
-  const chave = animDoMomento(
+  const chaveDaFolha = animDoMomento(
     { batendo: p.anim === 'a', apanhando: p.anim === 'h' }, disponiveis, urlDaAnim);
-  const anim = ANIM_DO_COMBATE[chave] ?? 'Walk';
-  const v = molduraDe('comp', urlDaAnim(chave));
-  if (!v || !v.folha) { esconder('comp'); return null; }
+  const anim = ANIM_DO_COMBATE[chaveDaFolha] ?? 'Walk';
+  const v = molduraDe(chave, urlDaAnim(chaveDaFolha));
+  if (!v || !v.folha) { esconder(chave); return null; }
   v.moldura.style.display = '';
 
   /* O QUADRO VEM DA TABELA GERADA, e o NÚMERO DE COLUNAS vem da folha dividida

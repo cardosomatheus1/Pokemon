@@ -7338,12 +7338,12 @@ export const DEFEITOS = [
     de:"  ponto.className = 'avDmgPonto';",
     para:"  ponto.className = 'dmg avDmg ' + lado;" },
 
-  { id:'S934', arquivo:AVGEO2, nome:'a separacao devolve os pontos sem separar nada',
+  { id:'S934', arquivo:'app/modules/placas-geometria.mjs', nome:'a separacao devolve os pontos sem separar nada',
     real:'"o passo existe e e chamado" — e nao move ninguem: as placas voltam a empilhar',
     de:'      y = bateu.y + A;',
     para:'      y = bateu.y;' },
 
-  { id:'S934b', arquivo:AVGEO2, nome:'a separacao ESCONDE em vez de separar',
+  { id:'S934b', arquivo:'app/modules/placas-geometria.mjs', nome:'a separacao ESCONDE em vez de separar',
     real:'"sem sobreposicao" — e some justamente a placa de quem esta apanhando',
     de:'    postos.push({ ...p, y });',
     para:'    if (y === p.y) postos.push({ ...p, y });' },
@@ -12779,7 +12779,7 @@ export const DEFEITOS = [
 
   { id:'S981', arquivo:COMPANHEIRO, nome:'o companheiro volta a escolher a folha pela traducao',
     real:'o bicho que o JOGADOR escolheu some no golpe DELE — mesmo D-091, do lado de ca da luta',
-    de:"  const anim = ANIM_DO_COMBATE[chave] ?? 'Walk';",
+    de:"  const anim = ANIM_DO_COMBATE[chaveDaFolha] ?? 'Walk';",
     para:"  const anim = ANIM_DO_COMBATE[p.anim] ?? 'Walk';" },
 
   /* ── 1.32: O CLIMA DO AVANCO (L-119) ──────────────────────────────────
@@ -13054,4 +13054,16 @@ export const DEFEITOS = [
     de:"gap:8px;align-items:start}",para:"gap:8px}"},
   {id:"S91021",arquivo:"app/modules/resumo-batalha-tela.mjs",nome:"o resumo da luta perde a classe",real:"lista crua sem estilo no fim da luta",
     de:"<details class=\"rbResumo\">",para:"<details>"},
+  {id:"S91022",arquivo:"app/modules/placas-geometria.mjs",nome:"as placas voltam a ignorar os sprites",real:"o nome do Charmander cai em cima do selvagem de baixo",
+    de:"    const outros = (obstaculos ?? []).filter(o => o && o.chave !== p.chave);",para:"    const outros = [];"},
+  {id:"S91023",arquivo:"app/modules/placas-geometria.mjs",nome:"a placa não pode mais subir para a cabeça",real:"sem lugar no pé, a placa cobre um bicho",
+    de:"    const candidatos = Number.isFinite(p.topo) ? [p.y, p.topo - A] : [p.y];",para:"    const candidatos = [p.y];"},
+  {id:"S91024",arquivo:"app/modules/avanco-tela.mjs",nome:"a run volta a mandar só o líder para o mapa",real:"só o líder anda, sem os outros dois",
+    de:"acompanhar(acharCriatura(E, runDe(E).equipe[0])?.dex ?? null, runDe(E).equipe.slice(1).map(id => acharCriatura(E, id)?.dex));",para:"acompanhar(acharCriatura(E, runDe(E).equipe[0])?.dex ?? null);"},
+  {id:"S91025",arquivo:"app/modules/seguidores.mjs",nome:"o seguidor anda olhando para baixo",real:"a fila anda de lado com a cara virada",
+    de:"dir: direcaoDe(b.x - a.x, b.y - a.y), andando: true",para:"dir: 'baixo', andando: true"},
+  {id:"S91026",arquivo:"app/modules/seguidores.mjs",nome:"o rastro cresce sem fim",real:"a aba aberta por horas acumula o caminho inteiro",
+    de:"  return i ? novo.slice(i) : novo;",para:"  return novo;"},
+  {id:"S91027",arquivo:"app/modules/seguidores.mjs",nome:"o salto emenda o rastro",real:"na troca de bioma o seguidor atravessa o mapa",
+    de:"  if (passo > SALTO) return [{ x: p.x, y: p.y, dir: p.dir ?? 'baixo', d: 0 }];\n",para:""},
 ];

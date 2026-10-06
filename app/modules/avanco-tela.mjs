@@ -289,7 +289,8 @@ function pintarRunEmCurso(E, { vista, painel, agora }) {
   if (biomaNaTela !== runDe(E).bioma) {
     biomaNaTela = runDe(E).bioma;
     mostrarBioma(biomaNaTela);
-    acompanhar(acharCriatura(E, runDe(E).equipe[0])?.dex ?? null);
+    /* o time inteiro: o líder e quem vem atrás dele (ST-2.33b) */
+    acompanhar(acharCriatura(E, runDe(E).equipe[0])?.dex ?? null, runDe(E).equipe.slice(1).map(id => acharCriatura(E, id)?.dex));
   }
 
   /* O RELÓGIO ANDA AQUI, e não num lugar próprio: a tela é o único lugar que
