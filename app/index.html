@@ -3653,7 +3653,7 @@ body::after{
   max-width:1790px;padding:10px 16px;border-radius:14px;
   background:linear-gradient(180deg, rgba(var(--goldRGB),.05), transparent), var(--panel);
   border:1px solid var(--line);
-  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+
   box-shadow:0 8px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);
   margin-bottom:14px;position:relative;overflow:hidden;
 }
@@ -3687,7 +3687,7 @@ body::after{
   text-shadow:0 0 8px rgba(var(--goldRGB),.7)}
 
 .tbtn{background:var(--panel2);border:1px solid var(--line);border-radius:9px;
-  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+}
 .tbtn:hover{border-color:var(--gold);color:var(--gold);
   box-shadow:0 0 12px rgba(var(--goldRGB),.35)}
 .tbtn.gold{background:rgba(var(--goldRGB),.12);border-color:var(--gold);
@@ -3758,8 +3758,13 @@ body::after{
 .btn.cta.ghost::after{display:none}
 
 /* ---------- VIDRO: painéis, cartões e modais ---------- */
+/* SEM DESFOQUE NO QUE FICA NA TELA (a luta travada, 06/10). O `backdrop-filter`
+   dos cartões, do topo, do HUD e do log refazia o desfoque a CADA quadro,
+   porque a cena anima por trás e dentro deles. Medido no Chromium, com a run
+   em curso: 73 ms por quadro (~13 fps) com ele, ~25 ms sem. O vidro fica só
+   nos modais e camadas que aparecem por instantes. */
 .card, .feat, .step, .rule, .modal, .hero-stats div, .stat-box, .opt, .chip{
-  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+
 }
 .card{
   background:linear-gradient(180deg, rgba(255,255,255,.045), transparent), var(--panel);
@@ -3991,7 +3996,7 @@ body::after{
   border:1px solid rgba(var(--goldRGB),.34);border-bottom:none;
   border-radius:14px 14px 0 0;
   box-shadow:0 0 24px rgba(var(--goldRGB),.14), inset 0 1px 0 rgba(255,255,255,.06);
-  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+
 }
 .plate{border:1px solid rgba(0,0,0,.55);border-radius:3px;
   background:rgba(0,0,0,.45)}
@@ -4058,7 +4063,7 @@ body::after{
 
 /* pele da faixa de estado e do ticker (V1.16) */
 #faixa{background:var(--panel);border:1px solid rgba(var(--goldRGB),.35);
-  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+
   box-shadow:0 6px 20px rgba(0,0,0,.45), 0 0 22px rgba(var(--goldRGB),.10)}
 .fa-eu b{color:var(--txt)}
 .fa-eu span{color:var(--gold)}
@@ -4080,12 +4085,12 @@ body::after{
 .fa-saldo b{color:var(--gold);text-shadow:0 0 10px rgba(var(--goldRGB),.6)}
 .fa-saldo span{color:var(--dim)}
 #ticker{background:rgba(3,7,14,.72);border:1px solid var(--line);
-  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+}
 #ticker #log{border:none;background:none;box-shadow:none;resize:none;max-height:none}
 
 .corner-badge{background:var(--panel);border:1px solid rgba(var(--goldRGB),.4);
   border-radius:10px;
-  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+
   box-shadow:0 0 18px rgba(var(--goldRGB),.2)}
 .corner-badge b{font-family:var(--dsp);font-weight:700;letter-spacing:.06em;
   text-shadow:0 0 8px rgba(var(--goldRGB),.6)}
@@ -4101,7 +4106,7 @@ body::after{
   box-shadow:inset 0 0 16px rgba(var(--goldRGB),.08)}
 .wallet b{text-shadow:0 0 10px rgba(var(--goldRGB),.7)}
 #log{background:rgba(3,7,14,.72);border:1px solid var(--line);border-radius:10px;
-  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+
   box-shadow:inset 0 0 24px rgba(var(--goldRGB),.06)}
 td.od{text-shadow:0 0 8px rgba(var(--goldRGB),.6)}
 
@@ -5980,7 +5985,7 @@ body.tremeTela{animation:tremeTela .7s ease-out}
   background:linear-gradient(180deg,rgba(6,12,26,.80),rgba(6,12,26,.62));
   border:1px solid color-mix(in srgb,var(--corHud,#5ee7ff) 55%,transparent);
   box-shadow:0 0 14px -6px var(--corHud,#5ee7ff),inset 0 0 0 1px rgba(255,255,255,.04);
-  backdrop-filter:blur(2px)}
+}
 /* AS CANTONEIRAS. Duas linhas de 7 px em cantos opostos: e o que diz "isto e
    uma tela" sem escrever a palavra, e custa dois pseudo-elementos. */
 .hudCanto::before,.hudCanto::after{content:'';position:absolute;width:7px;height:7px;
@@ -8277,10 +8282,10 @@ body.soAssiste .pick{cursor:pointer}
   .mainnav{position:fixed;left:0;right:0;bottom:0;z-index:46;order:0;width:auto;
     display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;
     padding:6px 6px calc(6px + env(safe-area-inset-bottom));
-    background:linear-gradient(180deg, rgba(var(--goldRGB),.07), transparent 70%), rgba(6,10,20,.94);
+    background:linear-gradient(180deg, rgba(var(--goldRGB),.07), transparent 70%), rgba(6,10,20,.985);   /* sem o desfoque (06/10), .94 deixava o conteúdo vazar por baixo */
     border-top:1px solid rgba(var(--goldRGB),.22);
     box-shadow:0 -12px 30px rgba(0,0,0,.55);
-    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+}
   /* o mesmo fio de luz da topbar, agora no alto da barra: as duas pontas do
      chrome falam a mesma língua */
   .mainnav::before{content:'';position:absolute;left:0;right:0;top:-1px;height:1px;

@@ -24,6 +24,9 @@ defeito meu.
 
 ## 0. ONDE PARAMOS — 05/10/2026 · AT6-15-integracao-final
 
+**ST-2.36 (06/10):** a luta fluida — sem desfoque nos elementos fixos, de ~13
+para ~41 quadros por segundo no arnês (D-169).
+
 **ST-2.34 (06/10):** a wave estica até 24 s em vez de 45 (a luta dura ~19 s);
 run de ~4 min. **Próximo: ST-2.35** — o dano chega ao time inteiro (L-255:
 só o primeiro luta, e cada abate cura 25%).

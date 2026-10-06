@@ -2596,6 +2596,12 @@ do servidor. Três partes:
 - **Fora:** as duas migrações (doces do D-144, nível de nascer das capturas
   antigas) — decisão do dono, pendente.
 
+### ST-2.36 · A luta fluida (D-169) ✅ 06/10
+- **Por quê:** o dono — *"a luta do idle tá bem travada"*.
+- **Medido e feito:** D-169 — o `backdrop-filter` dos elementos fixos custava
+  ~50 ms por quadro; sem ele, 77,7 → 24,4 ms com a run em curso. Q5: arena,
+  rotas e a run em 1440 e 420, sem desfoque e legíveis; 0 pageerror.
+
 ### ST-2.34 · A wave sem tempo morto ✅ 06/10
 - **Por quê:** o 7º relato — *"as waves de uns 45 segundos deixam o ritmo
   lento"*.

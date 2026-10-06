@@ -104,5 +104,13 @@ export function suite() {
     }
   });
 
+  s.teste('a luta fluida: nada que fica sempre na tela usa backdrop-filter (73 → 25 ms por quadro)', () => {
+    const css = fonte('../app/index.html');
+    const regra = sel => { const i = css.indexOf(sel); return i < 0 ? '' : css.slice(i, css.indexOf('}', i)); };
+    for (const sel of ['.card, .feat, .step, .rule, .modal, .hero-stats div, .stat-box, .opt, .chip{', '.topbar{', '.tbtn{', '#hud{',
+                       '#faixa{', '#ticker{', '.corner-badge{', '#log{', '.hudCanto{'])
+      ok(regra(sel) && !/backdrop-filter:blur/.test(regra(sel)), `${sel} voltou a desfocar a cada quadro`);
+  });
+
   return s;
 }

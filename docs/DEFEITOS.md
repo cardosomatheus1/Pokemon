@@ -7544,6 +7544,23 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
+## D-169 — a luta do idle travada: ~13 quadros por segundo ✅ CORRIGIDO na ST-2.36 (06/10)
+
+**Achado:** o dono — *"a luta do idle tá bem travada, não tá fluida"*.
+**Bloco dono:** ST-2.36. **Medido** (Chromium, run em curso, 1440 px): 77,7 ms
+por quadro (~13 fps), pico de 183 ms; uma página vazia no mesmo navegador dá
+16,7 ms. O perfil de CPU mostrou o JavaScript 83% ocioso — o tempo ia na
+pintura. Desligando suspeitos um a um: sem `backdrop-filter` 74 → 22,5 ms;
+sem fundo fixo 71; sem animações CSS 76; sem sombras 62. **Causa.** O
+desfoque "de vidro" dos cartões, do topo, do HUD e do log: a cena anima por
+trás e dentro deles, e o navegador refazia o desfoque a cada quadro.
+**Conserto.** Sem desfoque no que fica sempre na tela (cartões, topo, botões
+do topo, HUD, faixa, ticker, selo, log, cantos do HUD, barra do celular — essa
+ficou mais opaca para o conteúdo não vazar); os modais e camadas temporárias
+ficam com o vidro. Depois: 24,4 ms por quadro com a run em curso (~41 fps no
+navegador sem placa de vídeo do arnês; com placa, o teto é o do monitor).
+**Teste que trava:** `telas-novas` "a luta fluida". S91029 PEGOU.
+
 ## D-168 — no mapa da run, as placas cobriam os sprites dos outros ✅ CORRIGIDO na ST-2.33b (06/10)
 
 **Achado:** o 7º relato — *"no mapa da run, os nomes ficam por cima dos

@@ -13068,4 +13068,6 @@ export const DEFEITOS = [
     de:"  if (passo > SALTO) return [{ x: p.x, y: p.y, dir: p.dir ?? 'baixo', d: 0 }];\n",para:""},
   {id:"S91028",arquivo:"engine/run-combate.mjs",nome:"a wave volta a esticar até 45 s",real:"26 s de campo vazio em cada wave",
     de:"  aproximacaoMs:3500,golpeMs:1400,duracaoMinMs:24000,",para:"  aproximacaoMs:3500,golpeMs:1400,duracaoMinMs:45000,"},
+  {id:"S91029",arquivo:"app/index.html",nome:"os cartões voltam a desfocar o fundo",real:"a luta volta a ~13 quadros por segundo",
+    de:".card, .feat, .step, .rule, .modal, .hero-stats div, .stat-box, .opt, .chip{",para:".card, .feat, .step, .rule, .modal, .hero-stats div, .stat-box, .opt, .chip{backdrop-filter:blur(10px);"},
 ];
