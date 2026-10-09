@@ -34,6 +34,13 @@ conferir → apagar a antiga. As escritas entre o snapshot e a troca se perdem:
 faça em hora quieta. Logs: `journalctl -u pokearena -f`. Cópias do banco:
 `/srv/pokearena/app/dados/copias/` (todo dia às 04:00).
 
+**Desde 09/10, o user-data é o `atualizar.sh`** (só troca o código e reinicia),
+e não o `instalar.sh --pacote`: este refaz `apt update` a cada vez, e os
+espelhos do apt seguraram o script antes da troca do código duas vezes — a
+máquina nova subia com o jogo velho, sem erro à vista. Confira SEMPRE que o
+código novo está no ar antes de mover o IP (um arquivo novo do pacote
+respondendo, ou o `build` do `/saude` mudando).
+
 **Fora da máquina:** ligue o snapshot automático (instância → Snapshots →
 Automatic snapshots). A cópia diária fica no MESMO disco; o snapshot é o que
 sobrevive se a instância for apagada. No piloto de 01/10 ele está ligado às 07:00 UTC.
