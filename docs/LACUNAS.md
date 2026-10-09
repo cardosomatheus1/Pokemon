@@ -9392,6 +9392,59 @@ grama e a fauna andando ao fundo — e nenhuma copa. O bioma chamado Floresta
 lê como campo. **Por que não cabe agora:** é arte de cenário, e a ST-2.8 é de
 arranjo. **O que a destrava:** nada — é a próxima melhoria do cenário na fila.
 
+### L-262 — a confirmação de idade congela o e-mail para sempre num erro de digitação
+
+**Registrada em:** 09/10/2026, avaliador cego (`04c-cad-menor.png`): uma data
+de 2012 digitada por engano congela o e-mail; a mensagem seguinte é genérica
+("não foi possível concluir…") e é a mesma de "nome já usado". **Bloco dono:**
+ST-2.43. **Estado:** aberta. **Por que não cabe agora:** é o §28.2 (o
+recadastro barrado é de propósito); o que falta é DIZER ao jogador o que
+aconteceu e por onde recorrer, sem reabrir a porta. **O que a destrava:** a
+frase e o canal de recurso, com o dono (proteção do jogador, Spec cap. 28).
+
+### L-261 — "Comprar PokéCash" credita moeda de graça e esvazia a tensão da aposta
+
+**Registrada em:** 09/10/2026, avaliador cego (`15-carteira.png`). **Bloco
+dono:** nenhum de construção — é **decisão do dono** (DEC-02 / §25.1:
+dinheiro real). **Estado:** aberta, com o dono. A recomendação: no piloto,
+esconder a compra simulada atrás de "modo de teste", para a aposta pesar.
+
+### L-260 — a arena no celular põe a luta por último, e "SUA APOSTA" abaixo da dobra no desktop
+
+**Registrada em:** 09/10/2026, avaliador cego. TESTE DOS 3 SEGUNDOS, "quanto
+vou apostar": 2/10 em 1440 (o painel em y≈930) e 0/10 em 420 (~1.000 px
+abaixo, atrás da barra); "o que está acontecendo": 3/10 em 420 (a luta numa
+caixa de ~230 px no fim da página). **Bloco dono:** **ST-2.44** (a arena
+primeiro, no celular). **Estado:** aberta. **Por que não cabe agora:** é
+arranjo de tela inteira, com Q7.
+
+### L-259 — o primeiro minuto não tem fio
+
+**Registrada em:** 09/10/2026, avaliador cego: login → Rotas vazia (D-180) →
+inicial em cartões genéricos → primeira run perdida na wave 2 sem tela de
+derrota → 138 PokéCoin quando a bola custa 160 → "⚠ prende" sem explicação;
+o INÍCIO logado ainda diz "Crie o seu treinador"; 10 abas e várias moedas no
+primeiro dia. **Bloco dono:** **ST-2.43** (o primeiro minuto). **Estado:**
+aberta. **Atenção à DEC-33:** o que se conserta aqui é o caminho e a
+leitura, não a dificuldade.
+
+### L-258 — glitches de texto da avaliação cega
+
+**Registrada em:** 09/10/2026: "— −💵 100" (travessão e menos juntos), "NV /
+2" quebrado no Time, "harmander" cortado na run em 420, "6 espécie(s)" na rota
+× "12" no estágio, "30s" anunciados e o relógio abrindo em 36–38 s, "APOSTA
+MÁX" cortado em 1100, o nome do treinador escrito de três jeitos. **Bloco
+dono:** ST-2.45. **Estado:** aberta.
+
+### L-257 — auditar os outros textos de jogador que outros jogadores leem
+
+**Registrada em:** 09/10/2026, na ST-2.41 (D-177). O nome era o caso
+encontrado; a mesma pergunta vale para qualquer texto que um jogador escreve
+e outro lê (anúncio do Mercado, nota de troca, nome de preset publicado na
+Liga, se existirem). **Bloco dono:** ST-2.41b (auditoria Q6). **Estado:**
+aberta. **O que a destrava:** varrer as rotas que gravam texto livre e os
+`innerHTML` que o pintam.
+
 ### L-256 — as runs de um estágio repetem os mesmos encontros
 
 **Registrada em:** 06/10/2026, no 8º relato (*"as 3 runs deixaram os mesmos 4

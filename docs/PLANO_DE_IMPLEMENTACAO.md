@@ -2616,6 +2616,41 @@ do servidor. Três partes:
   pageerror. Mutantes de navegador: 0 — as regras de CSS são conferidas por
   texto, e a decisão do cartão mora em Node.
 
+### ST-2.41 · O nome do treinador não vira código (D-177) ✅ 09/10
+- **Por quê:** o avaliador cego executou `alert` pelo nome do treinador — e o
+  nome é lido por outros jogadores.
+- **Feito:** `engine/nome-treinador.mjs` (lista branca; até 18; a tela pede
+  2 letras, o servidor aceita 1 — nome curto não é perigo, e os testes do
+  servidor cadastram `'j'`); o cadastro recusa; o servidor limpa todo nome que entrega (perfil, Liga, Mercado,
+  Trocas) — neutraliza conta maliciosa já gravada, sem migração; a tela
+  limpa o que digita, guarda e recebe.
+- **Q6:** superfície fechada no nome; o resto dos textos de jogador → L-257
+  (ST-2.41b).
+- **Testes:** `nome-treinador` (novo, 6). S91039–S91044 PEGOU; S1186 realvo.
+  Prova no navegador 1440/420: 0 alertas, 0 `<img src=x>`.
+
+### ST-2.42 · A aposta honesta: o valor que se vê é o que se cobra, e ela sobrevive ao recarregar (D-178, D-179) — próxima
+- **Escopo:** a linha de confirmação lê o mesmo valor que vai ao servidor
+  (camada 0); depois de recarregar na janela de aposta, a tela mostra "você
+  apostou X em Y".
+- **Portões:** Q1, Q2, Q5 (1440/420). **Sabotagem:** a confirmação volta a
+  ler o valor padrão; o recarregar esquece a aposta.
+
+### ST-2.43 · O primeiro minuto (D-180, L-259, L-262) — proposta
+- **Escopo:** login → escolha do inicial com cerimônia → primeira run →
+  "agora aposte"; Rotas nunca vazia; tela de derrota da run; "prende"
+  explicado; INÍCIO logado sem "Crie seu treinador"; abas avançadas
+  escondidas até fazerem sentido. **Fora:** a dificuldade (DEC-33).
+- **Portões:** Q1, Q2, Q5, Q7 (barra: um jogador novo sabe o que fazer em
+  cada um dos 5 primeiros minutos).
+
+### ST-2.44 · A arena primeiro, no celular (L-260) — proposta
+- **Escopo:** luta no topo em largura total, odds compactas, painel de
+  aposta fixo; no desktop, "SUA APOSTA" acima da dobra. **Portões:** Q5, Q7
+  (TESTE DOS 3 SEGUNDOS ≥ 7 em todas as perguntas, nas duas larguras).
+
+### ST-2.45 · Os pequenos da avaliação cega (D-182, D-183, L-258) — proposta
+
 ### ST-2.40 · O caminho até o chefe sem paredão (D-176) — ❌ REVERTIDA em 06/10 pela DEC-33
 - **Por quê:** o 9º relato, com o time de verdade (Beedrill 13 + Bellsprout 13,
   ou Beedrill 13 + Bulbasaur 16, sem terceiro): 0 de 3 na wave 10, depois da

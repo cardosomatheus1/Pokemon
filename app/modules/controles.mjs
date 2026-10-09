@@ -10,6 +10,7 @@ import { saldo, travado } from './banco.mjs';
 import { closeModal, renderSession } from './navegacao.mjs';
 import { renderProfile } from './customizacao.mjs';
 import { saveProfile } from './perfil.mjs';
+import { nomeExibivel } from '../../engine/nome-treinador.mjs';
 
 /* ------------------------- CONTROLES ------------------------- */
 /* `saveBal` sumiu no F0.9. Persistir virou responsabilidade de banco.mjs, que
@@ -55,7 +56,7 @@ function atualizarSaldo(){
 $('#profileModal').addEventListener('click', e => { if (e.target.id === 'profileModal') closeModal('#profileModal'); });
 $('#depositModal').addEventListener('click', e => { if (e.target.id === 'depositModal') closeModal('#depositModal'); });
 $('#btnProfSave').onclick = () => {
-  const v = $('#profName').value.trim().slice(0,18) || 'Treinador';
+  const v = nomeExibivel($('#profName').value);   // D-177: o nome é HTML na tela de outros
   S.profile.name = v; saveProfile(S.profile); renderProfile(); renderSession();
 };
 

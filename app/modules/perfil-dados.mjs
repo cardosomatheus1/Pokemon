@@ -46,6 +46,7 @@ import { hidratarPosse, aplicarEquipados } from './posse-atual.mjs';
 import { relatar, eventosDoEstado, diaDaSessao } from './telemetria-servidor.mjs';
 import { carregar } from './idle-dados.mjs';
 import { nivelDe, progressoNivel } from '../../engine/progressao.mjs';
+import { nomeExibivel } from '../../engine/nome-treinador.mjs';
 
 export const CHAVE = 'ar_profile';
 
@@ -103,6 +104,8 @@ export function loadProfile(){
         p[k][sub] = (typeof d[sub] === 'object') ? JSON.parse(JSON.stringify(d[sub])) : d[sub];
   }
   if (!p.since) p.since = Date.now();
+  /* D-177: um nome guardado antes da regra (ou injetado) não volta à tela cru */
+  p.name = nomeExibivel(p.name);
   return p;
 }
 
@@ -142,7 +145,7 @@ export async function hidratarPerfil(){
      seria o bloco 0.1 desfazendo do R24 ao R43 por descuido de uma linha. */
   S.profile.xp = r.corpo?.perfil?.xp ?? 0;
   /* O nome vem da conta (ST-7.2b): noutro aparelho não há perfil local. */
-  if (r.corpo?.nome) S.profile.name = r.corpo.nome;
+  if (r.corpo?.nome) S.profile.name = nomeExibivel(r.corpo.nome);   // D-177
   /* A POSSE DE COSMÉTICO VEM JUNTO (E4): o que ele comprou e o que ele vestiu,
      de qualquer aparelho. Limpar o navegador deixa de levar a compra (L-055). */
   const posse = await hidratarPosse(api);

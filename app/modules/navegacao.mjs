@@ -19,6 +19,7 @@ import { progressoNivel, saveProfile, tituloDe } from './perfil.mjs';
 import { renderDeposit } from './carteira.mjs';
 import { music, somLigado, verVista } from './audio.mjs';
 import { estadoDoMais, folhaDepois, abaLiberada } from './barra-celular.mjs';
+import { nomeExibivel } from '../../engine/nome-treinador.mjs';
 
 /* =====================================================================
    NAVEGAÇÃO E SESSÃO
@@ -220,7 +221,7 @@ $('#btnAuthGo').onclick = async () => {
     /* A PÁGINA RECOMEÇA, como no Sair: o boot com sessão (`ligarModoServidor`)
        hidrata carteira, perfil e posse, e entra na sala. Montar isso à mão
        aqui seria uma segunda ordem de hidratação para manter igual à primeira. */
-    if (authMode === 'signup' && nome){ S.profile.name = nome; saveProfile(S.profile); }
+    if (authMode === 'signup' && nome){ S.profile.name = nomeExibivel(nome); saveProfile(S.profile); }
     /* ST-2.19b: a página recomeça nas Rotas, na escolha do inicial. */
     if (authMode === 'signup') try { localStorage.setItem(MARCA_DO_CADASTRO, '1'); } catch { /* privativo */ }
     location.reload();
@@ -232,7 +233,7 @@ $('#btnAuthGo').onclick = async () => {
 
   if (authMode === 'signup'){
     if (!$('#authAge').checked){ msg.textContent = 'É preciso confirmar a declaração acima.'; return; }
-    S.profile.name = nome;
+    S.profile.name = nomeExibivel(nome);   // D-177
     S.profile.pin = pin || null;
     if (!S.profile.since) S.profile.since = Date.now();
     saveProfile(S.profile);

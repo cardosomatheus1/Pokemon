@@ -24,6 +24,8 @@
  * a mesma para cadastro repetido e dado inválido. Traduzir aqui não pode
  * desfazer isso: nenhuma mensagem diz "este e-mail já existe". */
 
+import { nomeValido, NOME_MIN, NOME_MAX } from '../../engine/nome-treinador.mjs';
+
 export const SENHA_MINIMA = 12;   // a mesma do `server/auth.mjs`
 /* O fim do texto como `(?![\s\S])` e não como cifrão: a peneira de símbolos do
    `test/modulos.mjs` lê o cifrão solto como o `$` do `dom.mjs`. */
@@ -77,7 +79,9 @@ export function validarConta(modo, c = {}, agora = Date.now()) {
   if (modo === 'login') return String(c.senha ?? '') ? { ok: true } : falha('Digite a senha.');
 
   const nome = String(c.nome ?? '').trim();
-  if (nome.length < 2) return falha('Escolha um nome de treinador (2 letras ou mais).');
+  if (nome.length < NOME_MIN) return falha('Escolha um nome de treinador (2 letras ou mais).');
+  /* D-177: a mesma lista branca do servidor — o nome é lido por outros jogadores */
+  if (!nomeValido(nome)) return falha(`Nome de treinador: até ${NOME_MAX} letras, números, espaço, ponto, hífen ou sublinhado.`);
   if (String(c.senha ?? '').length < SENHA_MINIMA) return falha(`A senha precisa de pelo menos ${SENHA_MINIMA} caracteres.`);
   if (!dataValida(c.nascimento, agora)) return falha('Confira a data de nascimento.');
   if (!c.declarou) return falha('É preciso confirmar a declaração acima.');

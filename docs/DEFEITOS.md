@@ -7544,6 +7544,85 @@ e a tela se repinta; a Jornada desfaz o "aplicada" e avisa.
 aceite" e "D-150 · a tela do Time diz a recusa". S2617–S2620 PEGOU; S2043
 realvo.
 
+## D-184 — com ~160 testes de servidor vermelhos, a suíte TRAVA em vez de reprovar
+
+**Achado:** na ST-2.41, 09/10: a primeira versão da regra do nome recusava
+nomes de 1 letra, e ~160 testes de servidor que cadastram `'j'`, `'b'`…
+lançaram no cadastro. A suíte inteira (paralela e `TESTE_SERIAL=1`) parou
+com o trabalhador ocioso, sem imprimir uma linha, por mais de 12 minutos. Em
+grupos com `--so` os mesmos testes reprovaram normalmente, com a mensagem.
+**Bloco dono:** T15 (arnês — a propor; pela regra de 16/09 só se constrói
+quando IMPEDIR: aqui não impediu, o recorte achou a causa em minutos).
+**Estado:** aberto. **Medição pendente:** qual suíte deixa um servidor ou
+temporizador vivo quando o cadastro lança antes do `finally`. É o D-069 de
+outra porta: "portão que não termina não julga nada".
+
+## D-183 — a Jornada no celular mostra o subtítulo da Arena 6×6
+
+**Achado:** avaliador cego, 09/10 (`18g-420-jornada.png`): em 420 px a aba
+Jornada diz "O SEU TIME PUBLICADO CONTRA OS DE OUTROS JOGADORES…". **Bloco
+dono:** ST-2.45 (os pequenos da avaliação cega). **Estado:** aberto.
+**Teste que trava:** a escrever na ST-2.45.
+
+## D-182 — Esc não fecha a Carteira nem a Loja, e duas abas ficam acesas
+
+**Achado:** avaliador cego, 09/10 (`15-loja.png`, `16b-loja-apos-esc.png`):
+Esc não fecha os modais; na sequência, LIGA e ROTAS acesas ao mesmo tempo no
+menu. **Bloco dono:** ST-2.45. **Estado:** aberto.
+
+## D-181 — a coluna VIDA da Colocação não acompanha a luta
+
+**Achado:** avaliador cego, 09/10 (`08b-lutador-escolhido.png`,
+`08d-luta-059s.png`), confirmado na captura do D-177: aos 2–6 s de luta todos
+em 100% na Colocação enquanto as barras do quadro de cima já descem.
+**Bloco dono:** ST-2.39 (a luta legível — vale para a Arena também).
+**Estado:** aberto.
+
+## D-180 — nas Rotas, o primeiro acesso depois do login é um quadro vazio
+
+**Achado:** avaliador cego, 09/10 (`06b-logado.png`, `07-rotas-full.png`):
+"Quão fundo" e "A equipe que vai" vazios, sem aviso; a escolha do inicial só
+apareceu numa visita posterior. **Bloco dono:** ST-2.43 (o primeiro minuto).
+**Estado:** aberto.
+
+## D-179 — recarregar depois de apostar esconde a aposta
+
+**Achado:** avaliador cego, 09/10 (`16f-apos-reload.png`): apostou, recarregou
+na janela de aposta; o saldo seguiu reservado, e a tela voltou a "Escolha seu
+lutador", sem dizer que já há aposta. O servidor não cobra em dobro (a
+segunda substitui a primeira) — o jogador é que não sabe. **Bloco dono:**
+ST-2.42 (a aposta honesta). **Estado:** aberto.
+
+## D-178 — a confirmação da aposta mostra um valor e cobra outro
+
+**Achado:** avaliador cego, 09/10 (`16c-valor-alto.png`,
+`16d-triplo-confirmar.png`): digitou 73,5 em "outro valor" e clicou Usar; o
+painel disse "Apostando 73", a linha de confirmação seguiu "💵 50 em Onix ·
+recebe 282", e a API registrou 73. O jogador confirma uma coisa e paga outra.
+**Bloco dono:** ST-2.42. **Estado:** aberto. Moeda simulada, mas é o mesmo
+defeito que com dinheiro seria fraude de tela.
+
+## D-177 — o nome do treinador executava código (XSS armazenado) ✅ CORRIGIDO na ST-2.41 (09/10)
+
+**Achado:** avaliador cego, 09/10. Um treinador cadastrado pela API com o
+nome `<img src=x onerror=alert(document.domain)>` disparou o alerta 8 vezes
+ao entrar; `<b>Zé</b>`, pelo formulário, virou HTML em 5 lugares. O campo
+limitava a 18 caracteres só na tela, e o servidor aceitava qualquer coisa. O
+nome é lido por OUTROS jogadores (Liga, Mercado, Trocas) — o ataque
+alcançava terceiros. **Bloco dono:** ST-2.41. **Causa.** Nenhuma validação
+de nome no servidor, e a tela pinta o nome por `innerHTML` em vários lugares.
+**Conserto** (`engine/nome-treinador.mjs`, a mesma regra nas três pontas,
+lista branca: letras com acento, números, espaço, ponto, hífen, sublinhado;
+2–18): o cadastro recusa (400 com a regra escrita); TODO nome que o servidor
+entrega passa por `nomeExibivel` — perfil, Liga, Mercado, Trocas —, o que
+neutraliza uma conta maliciosa que já exista no banco de produção, sem
+migração; a tela limpa o que digita, guarda e recebe (inclusive o perfil já
+salvo no navegador). **Prova no navegador** (1440 e 420, conta com o nome
+malicioso gravado direto no banco): 0 alertas, 0 `<img src=x>` no DOM, o
+nome aparece como texto. **Teste que trava:** `nome-treinador` (6). S91039–
+S91044 PEGOU; S1186 realvo e PEGOU. **Fica para auditoria (L-257):** outros
+textos de jogador que outros leem.
+
 ## D-176 — o caminho até o chefe virou paredão: a ST-2.35 dobrou o desgaste — ❌ NÃO É DEFEITO (DEC-33, 06/10)
 
 **Achado:** o 9º relato, com os dados do jogador — Beedrill 13–14 na frente,

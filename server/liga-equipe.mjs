@@ -26,9 +26,10 @@ import { emitir } from './telemetria.mjs';
 import {anotarArena,anotarElegibilidadeArena,exposicaoArena} from './arena-metricas.mjs';
 import {compararTimePublicado} from '../app/modules/comparacao-time.mjs';
 import {recompensasArena,resgatarArena} from './arena-recompensas.mjs';
+import { nomeExibivel } from '../engine/nome-treinador.mjs';
 
 const RECENTES = 5;
-const nomeDe = (db, id) => db.prepare(`SELECT username FROM users WHERE id = ?`).get(id)?.username ?? 'jogador';
+const nomeDe = (db, id) => nomeExibivel(db.prepare(`SELECT username FROM users WHERE id = ?`).get(id)?.username, 'jogador');   // D-177
 const lado = (vencedor, eu) => (vencedor === 'empate' ? 'empate' : vencedor === eu ? 'venceu' : 'perdeu');
 
 /* As minhas partidas, de gente e de bot, do MEU lado e da mais nova para a mais velha. */

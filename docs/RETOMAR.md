@@ -24,6 +24,12 @@ defeito meu.
 
 ## 0. ONDE PARAMOS — 05/10/2026 · AT6-15-integracao-final
 
+**Avaliação cega (09/10), nota 5,5/10:** "bonito em pedaços, protótipo no
+conjunto". **ST-2.41 (09/10):** o nome do treinador executava código (XSS,
+D-177) — fechado nas três pontas. Registrados D-178 a D-183 e L-257 a L-262.
+**Próximo: ST-2.42** (a aposta mostra um valor e cobra outro), depois ST-2.39,
+2.43, 2.44, 2.45.
+
 **DEC-33 (06/10, o dono):** dificuldade não se facilita; só bug se conserta.
 A ST-2.40 foi REVERTIDA (a cura por abate volta a 10%). Pendente com o dono:
 desfazer também a descida de nível dos chefes da ST-2.35 (Floresta 2: 15 →

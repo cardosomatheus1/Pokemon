@@ -30,6 +30,7 @@
  */
 import { randomUUID, randomBytes, scryptSync, timingSafeEqual, createHmac } from 'node:crypto';
 import { anotar } from './telemetria.mjs';
+import { nomeValido, NOME_MAX } from '../engine/nome-treinador.mjs';
 
 export const IDADE_MINIMA = 18;
 
@@ -96,6 +97,9 @@ const HASH_FANTASMA = hashSenha(randomBytes(32).toString('hex'));
 export function cadastrar(db, { username, email, senha, nascimento, agora = Date.now() }) {
   if (!username || !email || !senha || !nascimento)
     throw erro(ERRO_AUTH.DADOS, 'dados incompletos');
+  /* D-177: o nome é o texto que os outros jogadores leem — lista branca. */
+  if (!nomeValido(username, 1))
+    throw erro(ERRO_AUTH.DADOS, `nome de treinador: até ${NOME_MAX} letras, números, espaço, ponto, hífen ou sublinhado`);
   if (!DATA_VALIDA.test(nascimento))
     throw erro(ERRO_AUTH.DADOS, 'data de nascimento inválida');
   if (String(senha).length < 12)

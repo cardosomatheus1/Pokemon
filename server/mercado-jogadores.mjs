@@ -39,6 +39,7 @@ import { cobrarTaxaDeAnuncio } from './taxas-mercado.mjs';
 import { moverReservados, ERRO_POSSE } from './posse-p2p.mjs';
 import { ler } from './criaturas.mjs';
 import { emitir } from './telemetria.mjs';
+import { nomeExibivel } from '../engine/nome-treinador.mjs';
 
 export const ESTADO_ANUNCIO = Object.freeze({ ACTIVE: 'ACTIVE', SOLD: 'SOLD', CANCELLED: 'CANCELLED', EXPIRED: 'EXPIRED', BLOCKED: 'BLOCKED' });
 export const DURACAO_ANUNCIO_MS = 24 * 3_600_000;
@@ -159,7 +160,7 @@ export function expirarAnuncioDaOferta(db, { dono: d, agora }) {
  * também as taxas e o líquido exatos. A vitrine mostra só o que está ATIVO e
  * no prazo — a disponibilidade não depende de o varredor ter passado. */
 const lerAnuncio = (db, id) => (typeof id === 'string' ? db.prepare(`SELECT * FROM player_market_listings WHERE id = ?`).get(id) : null);
-const nomeDe = (db, id) => db.prepare(`SELECT username FROM users WHERE id = ?`).get(id)?.username ?? '?';
+const nomeDe = (db, id) => nomeExibivel(db.prepare(`SELECT username FROM users WHERE id = ?`).get(id)?.username, '?');   // D-177
 
 export const publico = (db, a) => ({ id: a.id, tipo: a.tipo, quantidade: a.quantidade, preco: a.preco, versao: a.versao, estado: a.estado,
                               itemId: a.item_id, retrato: JSON.parse(a.snapshot_json), vendedor: nomeDe(db, a.vendedor_id),

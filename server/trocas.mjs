@@ -36,6 +36,7 @@ import { exigirPodeOfertar, comSinalDeLigada } from './risco-mercado-jogadores.m
 import { reservarOferta, liberarOferta, consumirOferta, holdsAtivos, exigirVigente } from './reservas.mjs';
 import { liquidarPontaDaTroca } from './taxas-mercado.mjs';
 import { emitir } from './telemetria.mjs';
+import { nomeExibivel } from '../engine/nome-treinador.mjs';
 
 export const ESTADO = Object.freeze({ OFFERED: 'OFFERED', LOCKED: 'LOCKED', SETTLED: 'SETTLED', CANCELLED: 'CANCELLED', EXPIRED: 'EXPIRED', BLOCKED: 'BLOCKED' });
 export const PRAZOS_TROCA = Object.freeze({ conviteMs: 24 * 3_600_000, lockMs: 5 * 60_000 });
@@ -330,7 +331,7 @@ export function expirarConvites(db, { agora, limite = 200 }) {
 /* ── O QUE A TELA LÊ ──────────────────────────────────────────────────────
  * Do ponto de vista de quem pede: `meu` e `outro`, o nome do outro (nunca o
  * id), o hash que a confirmação vai exigir, e o recibo quando liquidada. */
-const nomeDe = (db, id) => db.prepare(`SELECT username FROM users WHERE id = ?`).get(id)?.username ?? '?';
+const nomeDe = (db, id) => nomeExibivel(db.prepare(`SELECT username FROM users WHERE id = ?`).get(id)?.username, '?');   // D-177
 
 export function detalheDaTroca(db, { trocaId, userId }) {
   const t = daParte(db, { trocaId, userId });

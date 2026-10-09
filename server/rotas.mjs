@@ -87,6 +87,8 @@ import { anotar, receberDoCliente } from './telemetria.mjs';
  * admin esquecida aqui responderia 401 para o operador certo, e uma rota admin
  * na lista de públicas seria o incidente inteiro. */
 import {criarCampanhaArena} from './arena-recompensas.mjs';
+import { nomeExibivel } from '../engine/nome-treinador.mjs';
+const nomeOuNada = n => (n == null ? null : nomeExibivel(n));
 export const ROTAS_ADMIN = [
   'POST /api/admin/arena-campanha',
   'GET /api/admin/painel',
@@ -356,7 +358,7 @@ export const ROTAS = {
     corpo: {
       /* O NOME DO TREINADOR (ST-7.2b): quem entra noutro aparelho não tem o
          perfil local, e sem isto chegaria sem nome. */
-      nome: db.prepare('SELECT username FROM users WHERE id = ?').get(userId)?.username ?? null,
+      nome: nomeOuNada(db.prepare('SELECT username FROM users WHERE id = ?').get(userId)?.username),   // D-177
       perfil: perfilDe(db, { userId, agora }),
       desafios: desafiosDe(db, { userId, agora }),
       sequencia: sequenciaDeLogin(db, { userId, agora }),

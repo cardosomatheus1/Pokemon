@@ -12462,7 +12462,7 @@ export const DEFEITOS = [
     de:'    && a >= 1900 && t <= agora;', para:'    && a >= 1900;' },
   { id:'S1186', arquivo:'server/rotas.mjs', nome:'o perfil deixa de dizer o nome do treinador',
     real:'quem entra noutro aparelho aparece sem nome',
-    de:"      nome: db.prepare('SELECT username FROM users WHERE id = ?').get(userId)?.username ?? null,",
+    de:"      nome: nomeOuNada(db.prepare('SELECT username FROM users WHERE id = ?').get(userId)?.username),",
     para:'      nome: null,' },
 
   /* ── ST-7.2a · um endereço: o servidor serve o jogo e a API ──────────── */
@@ -13088,4 +13088,16 @@ export const DEFEITOS = [
     de:'    <small class="versaoApp navVersao"></small>\n',para:""},
   {id:"S91038",arquivo:"app/index.html",nome:"a versão da folha volta a aparecer solta",real:"a barra do visitante dobra e cobre a página; no desktop a versão cai entre as abas",
     de:".navVersao{display:none;grid-column:1 / -1;",para:".navVersao{grid-column:1 / -1;"},
+  {id:"S91039",arquivo:"engine/nome-treinador.mjs",nome:"a limpeza do nome deixa a marcação passar",real:"o nome do treinador vira código na tela de outros (D-177)",
+    de:".replace(FORA, '')",para:".replace(FORA, m => m)"},
+  {id:"S91040",arquivo:"server/auth.mjs",nome:"o cadastro aceita qualquer nome",real:"um <img onerror> entra pela API (D-177)",
+    de:"  if (!nomeValido(username, 1))",para:"  if (false)"},
+  {id:"S91041",arquivo:"server/liga-equipe.mjs",nome:"a Liga entrega o nome cru ao adversário",real:"a conta maliciosa ataca quem enfrenta ela",
+    de:"const nomeDe = (db, id) => nomeExibivel(db.prepare(`SELECT username FROM users WHERE id = ?`).get(id)?.username, 'jogador');",para:"const nomeDe = (db, id) => db.prepare(`SELECT username FROM users WHERE id = ?`).get(id)?.username ?? 'jogador';"},
+  {id:"S91042",arquivo:"server/rotas.mjs",nome:"o perfil devolve o nome do banco cru",real:"a conta maliciosa que já existe volta a executar",
+    de:"const nomeOuNada = n => (n == null ? null : nomeExibivel(n));",para:"const nomeOuNada = n => n;"},
+  {id:"S91043",arquivo:"app/modules/perfil-dados.mjs",nome:"o perfil guardado volta cru",real:"o nome injetado antes do conserto continua na tela",
+    de:"  p.name = nomeExibivel(p.name);\n",para:""},
+  {id:"S91044",arquivo:"app/modules/conta-real.mjs",nome:"a tela deixa enviar nome com marcação",real:"o formulário aceita <b>Zé</b>",
+    de:"  if (!nomeValido(nome)) return falha(",para:"  if (false) return falha("},
 ];
